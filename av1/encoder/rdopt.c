@@ -11315,10 +11315,12 @@ PALETTE_EXIT:
                                               cm->allow_high_precision_mv,
                                               bsize, mi_col, mi_row, 0)
                              .as_int;
-      zeromv[1].as_int = gm_get_motion_vector(&cm->global_motion[refs[1]],
-                                              cm->allow_high_precision_mv,
-                                              bsize, mi_col, mi_row, 0)
-                             .as_int;
+      zeromv[1].as_int = (refs[1] != NONE_FRAME)
+                             ? gm_get_motion_vector(&cm->global_motion[refs[1]],
+                                                    cm->allow_high_precision_mv,
+                                                    bsize, mi_col, mi_row, 0)
+                                   .as_int
+                             : 0;
       lower_mv_precision(&zeromv[0].as_mv, cm->allow_high_precision_mv);
       lower_mv_precision(&zeromv[1].as_mv, cm->allow_high_precision_mv);
 #else
