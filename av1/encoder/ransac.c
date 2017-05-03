@@ -8,7 +8,6 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#define _POSIX_C_SOURCE 200112L  // rand_r()
 #include <memory.h>
 #include <math.h>
 #include <time.h>
@@ -890,16 +889,22 @@ static int find_homography(int np, double *pts1, double *pts2, double *mat) {
   return 0;
 }
 
+// Generate a random number in the range [0, 32768).
+static unsigned int lcg_rand16(unsigned int *state) {
+  *state = (unsigned int)(*state * 1103515245ULL + 12345);
+  return *state / 65536 % 32768;
+}
+
 static int get_rand_indices(int npoints, int minpts, int *indices,
                             unsigned int *seed) {
   int i, j;
-  int ptr = rand_r(seed) % npoints;
+  int ptr = lcg_rand16(seed) % npoints;
   if (minpts > npoints) return 0;
   indices[0] = ptr;
   ptr = (ptr == npoints - 1 ? 0 : ptr + 1);
   i = 1;
   while (i < minpts) {
-    int index = rand_r(seed) % npoints;
+    int index = lcg_rand16(seed) % npoints;
     while (index) {
       ptr = (ptr == npoints - 1 ? 0 : ptr + 1);
       for (j = 0; j < i; ++j) {
