@@ -5,10 +5,10 @@
 {%- endmacro %}
 
 {% macro decl_protected_methods(field) -%}
+{{base.decl_internal_getter_method(field)}}
+{{base.decl_internal_setter_method(field)}}
 {% if not field.is_bit_field -%}
 {{base.decl_mutable_method(field)}}
 {%- endif %}
-{{base.decl_internal_getter_method(field)}}
-{{base.decl_internal_setter_method(field)}}
 {%- endmacro %}
 

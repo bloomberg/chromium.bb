@@ -25,8 +25,8 @@ inline void {{field.resetter_method_name}}() {
 {%- endmacro %}
 
 {% macro decl_mutable_method(field) -%}
-{{nonconst_ref(field)}} {{field.mutable_method_name}}() const {
-  return {{decode(field, getter_expression(field))}};
+{{nonconst_ref(field)}} {{field.internal_mutable_method_name}}() {
+  return {{decode(field, setter_expression(field))}};
 }
 {%- endmacro %}
 
