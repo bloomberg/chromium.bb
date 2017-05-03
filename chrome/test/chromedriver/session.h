@@ -10,12 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "base/files/scoped_temp_dir.h"
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/device_metrics.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/network_conditions.h"
+#include "chrome/test/chromedriver/chrome/scoped_temp_dir_with_retry.h"
 #include "chrome/test/chromedriver/command_listener.h"
 
 static const char kAccept[] = "accept";
@@ -82,7 +82,7 @@ struct Session {
   // Logs that populate from DevTools events.
   std::vector<std::unique_ptr<WebDriverLog>> devtools_logs;
   std::unique_ptr<WebDriverLog> driver_log;
-  base::ScopedTempDir temp_dir;
+  ScopedTempDirWithRetry temp_dir;
   std::unique_ptr<base::DictionaryValue> capabilities;
   bool auto_reporting_enabled;
   // |command_listeners| should be declared after |chrome|. When the |Session|
