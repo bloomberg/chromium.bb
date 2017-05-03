@@ -5,6 +5,11 @@
 #include "chrome/browser/notifications/notification_platform_bridge_linux.h"
 
 #include <algorithm>
+#include <memory>
+#include <set>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/files/file_util.h"
@@ -72,12 +77,11 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
   if (!profile)
     return;
 
-  NotificationDisplayService* display_service =
-      NotificationDisplayServiceFactory::GetForProfile(profile);
-
-  static_cast<NativeNotificationDisplayService*>(display_service)
-      ->ProcessNotificationOperation(operation, notification_type, origin,
-                                     notification_id, action_index, reply);
+  auto* display_service = static_cast<NativeNotificationDisplayService*>(
+      NotificationDisplayServiceFactory::GetForProfile(profile));
+  display_service->ProcessNotificationOperation(operation, notification_type,
+                                                origin, notification_id,
+                                                action_index, reply);
 }
 
 void ForwardNotificationOperationOnUiThread(
@@ -89,30 +93,45 @@ void ForwardNotificationOperationOnUiThread(
     const std::string& profile_id,
     bool is_incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  profile_manager->LoadProfile(
+  g_browser_process->profile_manager()->LoadProfile(
       profile_id, is_incognito,
       base::Bind(&ProfileLoadedCallback, operation, notification_type, origin,
                  notification_id, action_index, base::NullableString16()));
 }
 
-// Writes |data| to a new temporary file and returns its path.
-// Returns base::FilePath() on failure.
-base::FilePath WriteDataToTmpFile(
+class ResourceFile {
+ public:
+  explicit ResourceFile(const base::FilePath& file_path)
+      : file_path_(file_path) {
+    DCHECK(!file_path.empty());
+  }
+  ~ResourceFile() { base::DeleteFile(file_path_, false); }
+
+  const base::FilePath& file_path() const { return file_path_; }
+
+ private:
+  const base::FilePath file_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceFile);
+};
+
+// Writes |data| to a new temporary file and returns the ResourceFile
+// that holds it.
+std::unique_ptr<ResourceFile> WriteDataToTmpFile(
     const scoped_refptr<base::RefCountedMemory>& data) {
   int data_len = data->size();
   if (data_len == 0)
-    return base::FilePath();
+    return nullptr;
   base::FilePath file_path;
   if (!base::CreateTemporaryFile(&file_path))
-    return base::FilePath();
+    return nullptr;
+
+  auto resource_file = base::MakeUnique<ResourceFile>(file_path);
   if (base::WriteFile(file_path, data->front_as<char>(), data_len) !=
       data_len) {
-    base::DeleteFile(file_path, false);
-    return base::FilePath();
+    resource_file.reset();
   }
-  return file_path;
+  return resource_file;
 }
 
 }  // namespace
@@ -206,13 +225,6 @@ class NotificationPlatformBridgeLinuxImpl
 
  private:
   friend class base::RefCountedThreadSafe<NotificationPlatformBridgeLinuxImpl>;
-
-  struct ResourceFile {
-    explicit ResourceFile(const base::FilePath& file_path)
-        : file_path(file_path) {}
-    ~ResourceFile() { base::DeleteFile(file_path, false); }
-    const base::FilePath file_path;
-  };
 
   struct NotificationData {
     NotificationData(NotificationCommon::Type notification_type,
@@ -411,15 +423,15 @@ class NotificationPlatformBridgeLinuxImpl
     desktop_entry_writer.AppendVariantOfString(desktop_file.value());
     hints_writer.CloseContainer(&desktop_entry_writer);
 
-    base::FilePath icon_file =
+    std::unique_ptr<ResourceFile> icon_file =
         WriteDataToTmpFile(notification->icon().As1xPNGBytes());
-    if (!icon_file.empty()) {
+    if (icon_file) {
       dbus::MessageWriter image_path_writer(nullptr);
       hints_writer.OpenDictEntry(&image_path_writer);
       image_path_writer.AppendString("image-path");
-      image_path_writer.AppendVariantOfString(icon_file.value());
+      image_path_writer.AppendVariantOfString(icon_file->file_path().value());
       hints_writer.CloseContainer(&image_path_writer);
-      data->resource_files.push_back(base::MakeUnique<ResourceFile>(icon_file));
+      data->resource_files.push_back(std::move(icon_file));
     }
 
     writer.CloseContainer(&hints_writer);
@@ -455,6 +467,7 @@ class NotificationPlatformBridgeLinuxImpl
         writer.AppendUint32(data->dbus_id);
         notification_proxy_->CallMethodAndBlock(
             &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
+        to_erase.push_back(data);
       }
     }
     for (NotificationData* data : to_erase)
@@ -467,11 +480,10 @@ class NotificationPlatformBridgeLinuxImpl
       const GetDisplayedNotificationsCallback& callback) const {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     auto displayed = base::MakeUnique<std::set<std::string>>();
-    for (const auto& notification : notifications_) {
-      if (notification.first->profile_id == profile_id &&
-          notification.first->is_incognito == incognito) {
-        displayed->insert(notification.first->notification_id);
-      }
+    for (const auto& pair : notifications_) {
+      NotificationData* data = pair.first;
+      if (data->profile_id == profile_id && data->is_incognito == incognito)
+        displayed->insert(data->notification_id);
     }
     PostTaskToUiThread(base::BindOnce(callback, std::move(displayed), true));
   }
@@ -492,8 +504,9 @@ class NotificationPlatformBridgeLinuxImpl
     return nullptr;
   }
 
-  NotificationData* FindNotificationData(uint32_t dbus_id) {
+  NotificationData* FindNotificationDataWithDBusId(uint32_t dbus_id) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(dbus_id);
     for (const auto& pair : notifications_) {
       NotificationData* data = pair.first;
       if (data->dbus_id == dbus_id)
@@ -517,13 +530,13 @@ class NotificationPlatformBridgeLinuxImpl
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     dbus::MessageReader reader(signal);
     uint32_t dbus_id;
-    if (!reader.PopUint32(&dbus_id))
+    if (!reader.PopUint32(&dbus_id) || !dbus_id)
       return;
     std::string action;
     if (!reader.PopString(&action))
       return;
 
-    NotificationData* data = FindNotificationData(dbus_id);
+    NotificationData* data = FindNotificationDataWithDBusId(dbus_id);
     if (!data)
       return;
 
@@ -548,10 +561,10 @@ class NotificationPlatformBridgeLinuxImpl
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     dbus::MessageReader reader(signal);
     uint32_t dbus_id;
-    if (!reader.PopUint32(&dbus_id))
+    if (!reader.PopUint32(&dbus_id) || !dbus_id)
       return;
 
-    NotificationData* data = FindNotificationData(dbus_id);
+    NotificationData* data = FindNotificationDataWithDBusId(dbus_id);
     if (!data)
       return;
 
