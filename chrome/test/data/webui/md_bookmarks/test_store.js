@@ -26,6 +26,10 @@ suiteSetup(function() {
         return this.lastAction_;
       },
 
+      resetLastAction() {
+        this.lastAction_ = null;
+      },
+
       get data() {
         return this.data_;
       },

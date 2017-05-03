@@ -76,10 +76,12 @@
 
     <div id="container" class="v-centered" on-tap="selectFolder_"
         draggable="[[!isTopLevelFolder_(depth)]]"
+        tabindex$="[[getTabIndex_(isSelectedFolder_)]]"
         hidden="[[isRootFolder_(depth)]]">
       <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">
         <button is="paper-icon-button-light" id="arrow"
-            is-open$="[[!isClosed_]]" on-tap="toggleFolder_">
+            is-open$="[[!isClosed_]]" on-tap="toggleFolder_"
+            on-mousedown="preventDefault_" tabindex="-1">
           <iron-icon icon="cr:arrow-drop-down"></iron-icon>
         </button>
       </template>
