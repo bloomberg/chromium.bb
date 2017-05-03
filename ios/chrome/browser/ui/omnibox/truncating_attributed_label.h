@@ -25,6 +25,9 @@ typedef enum {
 // Which side(s) to truncate.
 @property(nonatomic, assign) OmniboxPopupTruncatingMode truncateMode;
 
+// Whether the text being displayed should be treated as a URL.
+@property(nonatomic, assign) BOOL displayAsURL;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_TRUNCATING_ATTRIBUTED_LABEL_H_
