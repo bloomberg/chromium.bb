@@ -407,6 +407,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
 
     switch (state) {
       case ByteStreamReader::STREAM_EMPTY:
+        should_terminate = (source_stream->length() == kNoBytesToWrite);
         break;
       case ByteStreamReader::STREAM_HAS_DATA:
         {
@@ -526,8 +527,8 @@ void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
       source_stream->TruncateLengthWithWrittenDataBlock(
           received_slice.offset, received_slice.received_bytes);
     }
-    StreamActive(source_stream);
     num_active_streams_++;
+    StreamActive(source_stream);
   }
 }
 
@@ -610,9 +611,9 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
   source_stream->set_finished(true);
   num_active_streams_--;
 
-  bool can_recover_from_error = false;
+  bool can_recover_from_error = (source_stream->length() == kNoBytesToWrite);
 
-  if (IsSparseFile() && source_stream->length() != kNoBytesToWrite) {
+  if (IsSparseFile() && !can_recover_from_error) {
     // If a neighboring stream request is available, check if it can help
     // download all the data left by |source stream| or has already done so. We
     // want to avoid the situation that a server always fail additional requests

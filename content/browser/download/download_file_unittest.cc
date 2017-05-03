@@ -1022,4 +1022,40 @@ TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
   DestroyDownloadFile(0);
 }
 
+// While one stream is writing, kick off another stream with an offset that has
+// been written by the first one.
+TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
+  int64_t stream_0_length = GetBuffersLength(kTestData6, 2);
+
+  ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true,
+                                 DownloadItem::ReceivedSlices()));
+
+  Sequence seq;
+  SetupDataAppend(kTestData6, 2, input_stream_, seq, 0);
+
+  EXPECT_CALL(*input_stream_, Read(_, _))
+      .InSequence(seq)
+      .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))
+      .RetiresOnSaturation();
+  sink_callback_.Run();
+  base::RunLoop().RunUntilIdle();
+
+  additional_streams_[0] = new StrictMock<MockByteStreamReader>();
+  EXPECT_CALL(*additional_streams_[0], RegisterCallback(_))
+      .WillRepeatedly(Invoke(this, &DownloadFileTest::RegisterCallback))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*additional_streams_[0], Read(_, _))
+      .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))
+      .RetiresOnSaturation();
+
+  download_file_->AddByteStream(
+      std::unique_ptr<MockByteStreamReader>(additional_streams_[0]), 0,
+      DownloadSaveInfo::kLengthFullContent);
+
+  // The stream should get terminated and reset the callback.
+  EXPECT_TRUE(sink_callback_.is_null());
+  download_file_->Cancel();
+  DestroyDownloadFile(0, false);
+}
+
 }  // namespace content
