@@ -322,11 +322,6 @@
         Open startup pages
       </message>
 
-      <!-- Page Info UI -->
-      <message name="IDS_PAGE_INFO_NON_SECURE_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses non-secure transport.">
-        Your connection to this site is not private.
-      </message>
-
       <!-- Advanced Section Titles -->
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY">
         Privacy

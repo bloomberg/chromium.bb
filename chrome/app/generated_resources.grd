@@ -221,125 +221,6 @@ are declared in build/common.gypi.
         </message>
       </if>
 
-      <!-- Page Info UI -->
-      <message name="IDS_PAGE_INFO_TITLE" desc="Title for Page Info dialog.">
-        Manage sites
-      </message>
-      <message name="IDS_PAGE_INFO_INFOBAR_TEXT" desc="The string shown in the infobar after the user has changed site permissions settings, reminding them to reload the page in order for the new settings to take effect.">
-        New site permissions settings will take effect after reloading the page.
-      </message>
-      <message name="IDS_PAGE_INFO_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
-        Reload
-      </message>
-      <message name="IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to allow by the user.">
-        Allow
-      </message>
-      <message name="IDS_PAGE_INFO_BUTTON_TEXT_BLOCKED_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to block by the user.">
-        Block
-      </message>
-      <message name="IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to ask by the user.">
-        Ask
-      </message>
-      <message name="IDS_PAGE_INFO_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to detect important content by the user.">
-        Detect
-      </message>
-      <message name="IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is allow.">
-        Allow (default)
-      </message>
-      <message name="IDS_PAGE_INFO_BUTTON_TEXT_BLOCKED_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is block.">
-        Block (default)
-      </message>
-      <message name="IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is ask.">
-        Ask (default)
-      </message>
-      <message name="IDS_PAGE_INFO_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is detect important content.">
-        Detect (default)
-      </message>
-      <message name="IDS_PAGE_INFO_USB_DEVICE_LABEL" desc="The label used to describe a USB device that the user has granted the site permission to access.">
-        <ph name="DEVICE_NAME">$1<ex>Android Phone</ex></ph>
-      </message>
-      <message name="IDS_PAGE_INFO_DELETE_USB_DEVICE" desc="The tooltip displayed when hovering over the button that will remove permission to access a USB device that the user previously granted to the site.">
-        Revoke access
-      </message>
-      <message name="IDS_PAGE_INFO_TITLE_SITE_PERMISSIONS" desc="Title of the permissions section of the page info popup.">
-        Permissions
-      </message>
-      <message name="IDS_PAGE_INFO_TITLE_SITE_DATA" desc="Title of the site data section of the page info popup.">
-        Cookies
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_ALLOW" desc="The label used in the permissions dropdowns for the option that grants a permissions.">
-        allow
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_BLOCK" desc="The label used in the permissions dropdowns for the option that denies a permissions. ">
-        block
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_ASK" desc="The label used in the permissions dropdowns for the option that makes the browser asks for permission. ">
-        ask
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_AUTOPLAY" desc="The label used for the autoplay permission controls in the Website Settings popup.">
-        Autoplay
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC" desc="The label used for the background sync permission controls in the Website Settings popup.">
-        Background Sync
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_IMAGES" desc="The label used for images permission controls in the Website Settings popup.">
-        Images
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_JAVASCRIPT" desc="The label used for JavaScript permission controls in the Website Settings popup.">
-        JavaScript
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_POPUPS" desc="The label used for popups permission controls in the Website Settings popup.">
-        Popups
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_FLASH" desc="The label used for Flash permissions in the Website Settings popup.">
-        Flash
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_LOCATION" desc="The label used for location permission controls in the Website Settings popup.">
-        Location
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_NOTIFICATIONS" desc="The label used for notifications permission controls in the Website Settings popup.">
-        Notifications
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_MIC" desc="The label used for the microphone permission controls in the Website Settings popup.">
-        Microphone
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_CAMERA" desc="The label used for the camera permission controls in the Website Settings popup.">
-        Camera
-      </message>
-      <message name="IDS_PAGE_INFO_TYPE_MIDI_SYSEX" desc="The label used for MIDI system exclusive message permission controls in the Website Settings popup.">
-        MIDI devices full control
-      </message>
-      <message name="IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_TRANSIENT" desc="Text that is displayed temporarily as a large toast on first entering a WebVR page over non-secure transport.">
-        Your connection to this site is not private. To exit VR mode at any time, remove headset and press back.
-      </message>
-      <message name="IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_PERMANENT" desc="Text that is displayed in a small permanent notification on a WebVR page loaded over non-secure transport. (Should be short, does not need to be a complete sentence.)">
-        Not secure
-      </message>
-      <message name="IDS_PAGE_INFO_NUM_COOKIES" desc="The label of the counts for allowed cookies that are in use on the page.">
-        {NUM_COOKIES, plural, =1 {1 in use} other {# in use}}
-      </message>
-      <message name="IDS_PAGE_INFO_MENU_ITEM_DEFAULT_ALLOW" desc="The text of the menu item of a permissions menu on the Page Info UI that resets the setting to the default setting which is allow.">
-        Use global default (Allow)
-      </message>
-      <message name="IDS_PAGE_INFO_MENU_ITEM_DEFAULT_BLOCK" desc="The text of the menu item of a permissions menu on the Page Info UI that resets the setting to the default setting which is block.">
-        Use global default (Block)
-      </message>
-      <message name="IDS_PAGE_INFO_MENU_ITEM_DEFAULT_ASK" desc="The text of the menu item of a permissions menu on the Page Info UI that reset the setting to the default setting which is ask.">
-        Use global default (Ask)
-      </message>
-      <message name="IDS_PAGE_INFO_MENU_ITEM_DEFAULT_DETECT_IMPORTANT_CONTENT" desc="The text of the menu item of a permissions menu on the Page Info UI that reset the setting to the default setting which is detect important content.">
-        Use global default (Detect)
-      </message>
-      <message name="IDS_PAGE_INFO_MENU_ITEM_ALLOW" desc="The text of the menu item of a permissions menu on the Page Info UI that sets the setting to allow.">
-        Always allow on this site
-      </message>
-      <message name="IDS_PAGE_INFO_MENU_ITEM_BLOCK" desc="The text of the menu item of a permissions menu on the Page Info UI that sets the setting to allow.">
-        Always block on this site
-      </message>
-      <message name="IDS_PAGE_INFO_MENU_ITEM_DETECT_IMPORTANT_CONTENT" desc="The text of the menu item of a permissions menu on the Page Info UI that sets the setting to detect important content.">
-        Always detect important content on this site
-      </message>
-
       <message name="IDS_PERMISSIONS_BUBBLE_PERSIST_TEXT" desc="The label for the checkbox used to allow users to optionally persist a permission request decision">
         Remember my decision
       </message>
@@ -2363,11 +2244,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </message>
       <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plugins.">
         Run all plugins this time
-      </message>
-
-      <!-- Administrator-provided certificate notifications -->
-      <message name="IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE" desc="Text that is displayed in the Website Settings popup when using an administrator-provided certificate">
-        You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> can be intercepted by your administrator.
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
@@ -7088,36 +6964,6 @@ I don't think this site should be blocked!
           Open Browser Window
         </message>
       </if>
-
-      <!-- Page Information Window -->
-      <if expr="is_android">
-        <message name="IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON" desc="Text of button in the page info that resets allow/deny decisions of invalid certificates, which will start showing security warnings for the page again.">
-          Stop using an invalid certificate
-        </message>
-      </if>
-      <if expr="not is_android">
-        <message name="IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON" desc="Text of button in the page info that resets allow/deny decisions of invalid certificates, which will start showing security warnings for the page again.">
-          Re-enable warnings
-        </message>
-      </if>
-      <message name="IDS_PAGE_INFO_COOKIES" desc="The label for the Cookies setting in the Page Information Window.">
-        Cookies
-      </message>
-      <message name="IDS_PAGE_INFO_SITE_SETTINGS_LINK" desc="This is the text of the link pointing to Chrome's Site Settings page. This appears at the bottom of the Permissions pane of the Page Information Window.">
-        Site settings
-      </message>
-
-      <message name="IDS_PAGEINFO_ADDRESS" desc="Locality as reported in the EV identity text.">
-        <ph name="CITY">$1<ex>Mountain View</ex></ph>, <ph name="STATE">$2<ex>California</ex></ph> <ph name="COUNTRY">$3<ex>USA</ex></ph>
-      </message>
-
-      <message name="IDS_PAGEINFO_PARTIAL_ADDRESS" desc="Locality with missing state as reported in the EV identity text.">
-        <ph name="CITY">$1<ex>Mountain View</ex></ph>, <ph name="COUNTRY">$2<ex>US</ex></ph>
-      </message>
-
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED" desc="The text of the identity section when the page is secured with a valid EV cert.">
-        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>.
-      </message>
 
       <!-- Screen Capture strings -->
       <message name="IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE" desc="Title for the prompt shown when screen capturing is requrested by an app.">

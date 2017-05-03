@@ -87,7 +87,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForSocksProxy) {
                                      IDS_LOGIN_DIALOG_PROXY_AUTHORITY,
                                      base::SysNSStringToUTF16(kTestHost)),
                                  l10n_util::GetNSString(
-                                     IDS_PAGE_INFO_NON_SECURE_TRANSPORT)];
+                                     IDS_PAGE_INFO_NOT_SECURE_SUMMARY)];
 
   EXPECT_NSEQ(expectedText, MessageForHTTPAuth(protectionSpace));
 }
@@ -108,7 +108,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpProxy) {
                                      IDS_LOGIN_DIALOG_PROXY_AUTHORITY,
                                      base::SysNSStringToUTF16(kTestHttpOrigin)),
                                  l10n_util::GetNSString(
-                                     IDS_PAGE_INFO_NON_SECURE_TRANSPORT)];
+                                     IDS_PAGE_INFO_NOT_SECURE_SUMMARY)];
   EXPECT_NSEQ(expectedText, MessageForHTTPAuth(protectionSpace));
 }
 
@@ -132,7 +132,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpsProxy) {
                              IDS_LOGIN_DIALOG_PROXY_AUTHORITY,
                              base::SysNSStringToUTF16(kTestHttpsOrigin)),
                          l10n_util::GetNSString(
-                             IDS_PAGE_INFO_NON_SECURE_TRANSPORT)];
+                             IDS_PAGE_INFO_NOT_SECURE_SUMMARY)];
   } else {
     // Expecting the following text:
     // The proxy https://chromium.org:80 requires a username and password.
@@ -158,7 +158,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpServer) {
                                      IDS_LOGIN_DIALOG_AUTHORITY,
                                      base::SysNSStringToUTF16(kTestHttpOrigin)),
                                  l10n_util::GetNSString(
-                                     IDS_PAGE_INFO_NON_SECURE_TRANSPORT)];
+                                     IDS_PAGE_INFO_NOT_SECURE_SUMMARY)];
   EXPECT_NSEQ(expectedText, MessageForHTTPAuth(protectionSpace));
 }
 

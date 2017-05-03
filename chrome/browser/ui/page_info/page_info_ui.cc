@@ -218,33 +218,34 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
     case PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
       switch (connection_status) {
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
-          return CreateSecurityDescription(IDS_PAGEINFO_NOT_SECURE_SUMMARY,
-                                           IDS_PAGEINFO_NOT_SECURE_DETAILS);
+          return CreateSecurityDescription(IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
+                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
-          return CreateSecurityDescription(IDS_PAGEINFO_MIXED_CONTENT_SUMMARY,
-                                           IDS_PAGEINFO_NOT_SECURE_DETAILS);
+          return CreateSecurityDescription(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
+                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
-          return CreateSecurityDescription(IDS_PAGEINFO_MIXED_CONTENT_SUMMARY,
-                                           IDS_PAGEINFO_MIXED_CONTENT_DETAILS);
+          return CreateSecurityDescription(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
+                                           IDS_PAGE_INFO_MIXED_CONTENT_DETAILS);
         default:
-          return CreateSecurityDescription(IDS_PAGEINFO_SECURE_SUMMARY,
-                                           IDS_PAGEINFO_SECURE_DETAILS);
+          return CreateSecurityDescription(IDS_PAGE_INFO_SECURE_SUMMARY,
+                                           IDS_PAGE_INFO_SECURE_DETAILS);
       }
     case PageInfo::SITE_IDENTITY_STATUS_MALWARE:
-      return CreateSecurityDescription(IDS_PAGEINFO_MALWARE_SUMMARY,
-                                       IDS_PAGEINFO_MALWARE_DETAILS);
+      return CreateSecurityDescription(IDS_PAGE_INFO_MALWARE_SUMMARY,
+                                       IDS_PAGE_INFO_MALWARE_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING:
-      return CreateSecurityDescription(IDS_PAGEINFO_SOCIAL_ENGINEERING_SUMMARY,
-                                       IDS_PAGEINFO_SOCIAL_ENGINEERING_DETAILS);
+      return CreateSecurityDescription(
+          IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
+          IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE:
-      return CreateSecurityDescription(IDS_PAGEINFO_UNWANTED_SOFTWARE_SUMMARY,
-                                       IDS_PAGEINFO_UNWANTED_SOFTWARE_DETAILS);
+      return CreateSecurityDescription(IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
+                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:
     default:
-      return CreateSecurityDescription(IDS_PAGEINFO_NOT_SECURE_SUMMARY,
-                                       IDS_PAGEINFO_NOT_SECURE_DETAILS);
+      return CreateSecurityDescription(IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
+                                       IDS_PAGE_INFO_NOT_SECURE_DETAILS);
   }
 }
 
@@ -258,21 +259,6 @@ base::string16 PageInfoUI::PermissionTypeToUIString(ContentSettingsType type) {
   }
   NOTREACHED();
   return base::string16();
-}
-
-// static
-base::string16 PageInfoUI::PermissionValueToUIString(ContentSetting value) {
-  switch (value) {
-    case CONTENT_SETTING_ALLOW:
-      return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PERMISSION_ALLOW);
-    case CONTENT_SETTING_BLOCK:
-      return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PERMISSION_BLOCK);
-    case CONTENT_SETTING_ASK:
-      return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PERMISSION_ASK);
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
 }
 
 // static

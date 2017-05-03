@@ -289,9 +289,9 @@ void BubbleHeaderView::SetDetails(const base::string16& details_text) {
 void BubbleHeaderView::AddResetDecisionsLabel() {
   std::vector<base::string16> subst;
   subst.push_back(
-      l10n_util::GetStringUTF16(IDS_PAGEINFO_INVALID_CERTIFICATE_DESCRIPTION));
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_INVALID_CERTIFICATE_DESCRIPTION));
   subst.push_back(l10n_util::GetStringUTF16(
-      IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON));
+      IDS_PAGE_INFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON));
 
   std::vector<size_t> offsets;
 
@@ -730,7 +730,7 @@ views::View* PageInfoBubbleView::CreateSiteSettingsView(int side_margin) {
   const gfx::ImageSkia icon = PageInfoUI::GetPermissionIcon(info).AsImageSkia();
   // Add the Cookies section.
   site_settings_view->AddChildView(CreateInspectLinkSection(
-      icon, IDS_PAGE_INFO_TITLE_SITE_DATA, cookie_dialog_link_));
+      icon, IDS_PAGE_INFO_COOKIES, cookie_dialog_link_));
 
   return site_settings_view;
 }

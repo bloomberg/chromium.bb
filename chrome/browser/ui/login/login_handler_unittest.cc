@@ -16,7 +16,7 @@ namespace {
 const char kHttpUrl[] = "http://example.com/foo/bar";
 const char kBasicAuthScheme[] = "Basic";
 const char kFooRealm[] = "Foo";
-const char kInsecureProxy[] = "Your connection to this site is not private.";
+const char kInsecureProxy[] = "Your connection to this site is not secure";
 
 enum TargetType { PROXY, SERVER };
 

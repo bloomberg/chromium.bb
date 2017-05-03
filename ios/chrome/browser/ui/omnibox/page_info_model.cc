@@ -68,8 +68,8 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
   if (!ssl.certificate) {
     // Not HTTPS.
     icon_id = ICON_STATE_INFO;
-    summary.assign(l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_SUMMARY));
-    details.assign(l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_DETAILS));
+    summary.assign(l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_SUMMARY));
+    details.assign(l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_DETAILS));
   } else {
     // It is possible to have |SECURITY_STYLE_AUTHENTICATION_BROKEN| and
     // non-error
@@ -83,9 +83,9 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
       icon_id = ICON_STATE_ERROR;
       DCHECK(!net::IsCertStatusMinorError(ssl.cert_status));
       summary.assign(
-          l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_SUMMARY));
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_SUMMARY));
       details.assign(
-          l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_DETAILS));
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_DETAILS));
 
       certificate_details.assign(l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
@@ -111,14 +111,14 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
         // HTTPS with mixed content.
         icon_id = ICON_STATE_INFO;
         summary.assign(
-            l10n_util::GetStringUTF16(IDS_PAGEINFO_MIXED_CONTENT_SUMMARY));
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY));
         details.assign(
-            l10n_util::GetStringUTF16(IDS_PAGEINFO_MIXED_CONTENT_DETAILS));
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_MIXED_CONTENT_DETAILS));
       } else {
         // Valid HTTPS
         icon_id = ICON_STATE_OK;
-        summary.assign(l10n_util::GetStringUTF16(IDS_PAGEINFO_SECURE_SUMMARY));
-        details.assign(l10n_util::GetStringUTF16(IDS_PAGEINFO_SECURE_DETAILS));
+        summary.assign(l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURE_SUMMARY));
+        details.assign(l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURE_DETAILS));
 
         DCHECK(!(ssl.cert_status & net::CERT_STATUS_IS_EV))
             << "Extended Validation should be disabled";
