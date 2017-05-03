@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/json/json_reader.h"
@@ -195,49 +196,55 @@ std::ostream& operator<<(std::ostream& str, const Link& link) {
 
 class SupervisedUserBookmarksHandlerTest : public ::testing::Test {
  protected:
-  static base::DictionaryValue* CreateSettings(base::DictionaryValue* links,
-                                               base::DictionaryValue* folders) {
-    base::DictionaryValue* settings = new base::DictionaryValue;
+  static std::unique_ptr<base::DictionaryValue> CreateSettings(
+      std::unique_ptr<base::DictionaryValue> links,
+      std::unique_ptr<base::DictionaryValue> folders) {
+    auto settings = base::MakeUnique<base::DictionaryValue>();
     settings->SetStringWithoutPathExpansion("some_setting", "bleh");
-    settings->SetWithoutPathExpansion("SupervisedBookmarkLink", links);
+    settings->SetWithoutPathExpansion("SupervisedBookmarkLink",
+                                      std::move(links));
     settings->SetStringWithoutPathExpansion("some_other_setting", "foo");
-    settings->SetWithoutPathExpansion("SupervisedBookmarkFolder", folders);
+    settings->SetWithoutPathExpansion("SupervisedBookmarkFolder",
+                                      std::move(folders));
     settings->SetStringWithoutPathExpansion("another_one", "blurb");
     return settings;
   }
 
-  static base::DictionaryValue* CreateDictionary(const Setting* begin,
-                                                 const Setting* end) {
-    base::DictionaryValue* dict = new base::DictionaryValue;
+  static std::unique_ptr<base::DictionaryValue> CreateDictionary(
+      const Setting* begin,
+      const Setting* end) {
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     for (const Setting* setting = begin; setting != end; ++setting)
       dict->SetStringWithoutPathExpansion(setting->first, setting->second);
     return dict;
   }
 
-  static base::DictionaryValue* CreateLinkDictionary() {
+  static std::unique_ptr<base::DictionaryValue> CreateLinkDictionary() {
     return CreateDictionary(LINK_SETTINGS,
                             LINK_SETTINGS + arraysize(LINK_SETTINGS));
   }
 
-  static base::DictionaryValue* CreateLinkDictionaryWithInvalidParents() {
+  static std::unique_ptr<base::DictionaryValue>
+  CreateLinkDictionaryWithInvalidParents() {
     return CreateDictionary(
         LINK_SETTINGS_INVALID_PARENT,
         LINK_SETTINGS_INVALID_PARENT + arraysize(LINK_SETTINGS_INVALID_PARENT));
   }
 
-  static base::DictionaryValue* CreateFolderDictionary() {
+  static std::unique_ptr<base::DictionaryValue> CreateFolderDictionary() {
     return CreateDictionary(FOLDER_SETTINGS,
                             FOLDER_SETTINGS + arraysize(FOLDER_SETTINGS));
   }
 
-  static base::DictionaryValue* CreateFolderDictionaryWithInvalidParents() {
-    return CreateDictionary(
-        FOLDER_SETTINGS_INVALID_PARENT,
-        FOLDER_SETTINGS_INVALID_PARENT +
-            arraysize(FOLDER_SETTINGS_INVALID_PARENT));
+  static std::unique_ptr<base::DictionaryValue>
+  CreateFolderDictionaryWithInvalidParents() {
+    return CreateDictionary(FOLDER_SETTINGS_INVALID_PARENT,
+                            FOLDER_SETTINGS_INVALID_PARENT +
+                                arraysize(FOLDER_SETTINGS_INVALID_PARENT));
   }
 
-  static base::DictionaryValue* CreateFolderDictionaryWithCircle() {
+  static std::unique_ptr<base::DictionaryValue>
+  CreateFolderDictionaryWithCircle() {
     return CreateDictionary(
         FOLDER_SETTINGS_CIRCLE,
         FOLDER_SETTINGS_CIRCLE + arraysize(FOLDER_SETTINGS_CIRCLE));

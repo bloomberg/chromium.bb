@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
@@ -82,7 +83,7 @@ std::unique_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
 
     std::unique_ptr<base::DictionaryValue> hash_dict(new base::DictionaryValue);
     hash_dict->SetStringWithoutPathExpansion("name", hash_info->name);
-    dict->SetWithoutPathExpansion("hash", hash_dict.release());
+    dict->SetWithoutPathExpansion("hash", std::move(hash_dict));
   }
   // Otherwise, |algorithm| is missing support here or no parameters were
   // required.

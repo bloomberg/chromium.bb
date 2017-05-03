@@ -64,7 +64,7 @@ void SetDeviceProperties(base::DictionaryValue* dictionary) {
       ip_configs->Append(iter.value().CreateDeepCopy());
     }
     device_dictionary->SetWithoutPathExpansion(shill::kIPConfigsProperty,
-                                               ip_configs.release());
+                                               std::move(ip_configs));
   }
   if (!device_dictionary->empty())
     dictionary->Set(shill::kDeviceProperty, std::move(device_dictionary));

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -53,8 +55,8 @@ void DriveAppMapping::Add(const std::string& drive_app_id,
                           const std::string& chrome_app_id,
                           bool generated) {
   DictionaryPrefUpdate update(prefs_, prefs::kAppLauncherDriveAppMapping);
-  update->SetWithoutPathExpansion(
-      drive_app_id, CreateInfoDict(chrome_app_id, generated).release());
+  update->SetWithoutPathExpansion(drive_app_id,
+                                  CreateInfoDict(chrome_app_id, generated));
 }
 
 void DriveAppMapping::Remove(const std::string& drive_app_id) {

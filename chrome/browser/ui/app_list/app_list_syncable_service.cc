@@ -11,11 +11,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/drive/drive_app_provider.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,12 +45,6 @@
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/genius_app/app_id.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 
 using syncer::SyncChange;
 
@@ -185,8 +186,8 @@ void UpdateSyncItemInLocalStorage(
   base::DictionaryValue* dict_item = nullptr;
   if (!pref_update->GetDictionaryWithoutPathExpansion(sync_item->item_id,
       &dict_item)) {
-    dict_item = new base::DictionaryValue();
-    pref_update->SetWithoutPathExpansion(sync_item->item_id, dict_item);
+    dict_item = pref_update->SetDictionaryWithoutPathExpansion(
+        sync_item->item_id, base::MakeUnique<base::DictionaryValue>());
   }
 
   dict_item->SetString(kNameKey, sync_item->item_name);

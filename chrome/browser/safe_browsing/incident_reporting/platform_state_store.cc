@@ -16,6 +16,7 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 #if defined(USE_PLATFORM_STATE_STORE)
@@ -115,8 +116,8 @@ void RestoreFromProtobuf(
     base::DictionaryValue* type_dict = nullptr;
     if (!value_dict->GetDictionaryWithoutPathExpansion(type_string,
                                                        &type_dict)) {
-      type_dict = new base::DictionaryValue();
-      value_dict->SetWithoutPathExpansion(type_string, type_dict);
+      type_dict = value_dict->SetDictionaryWithoutPathExpansion(
+          type_string, base::MakeUnique<base::DictionaryValue>());
     }
     RestoreOfTypeFromProtobuf(type_incidents.incidents().key_to_digest(),
                               type_dict);

@@ -273,7 +273,7 @@ void KioskAppsHandler::SendKioskAppSettings() {
     PopulateAppDict(app_data, app_info.get());
     apps_list->Append(std::move(app_info));
   }
-  settings.SetWithoutPathExpansion("apps", apps_list.release());
+  settings.SetWithoutPathExpansion("apps", std::move(apps_list));
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "extensions.KioskAppsOverlay.setSettings", settings);
