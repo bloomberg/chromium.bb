@@ -17,6 +17,7 @@ service_test("service_unittests") {
   deps = [
     "//services/data_decoder:tests",
     "//services/device:tests",
+    "//services/identity:tests",
     "//services/preferences:tests",
     "//services/resource_coordinator:tests",
     "//services/shape_detection:tests",
@@ -43,6 +44,7 @@ catalog("service_unittests_catalog") {
   testonly = true
   catalog_deps = [
     "//services/device:tests_catalog",
+    "//services/identity:tests_catalog",
     "//services/preferences:tests_catalog",
     "//services/video_capture:tests_catalog",
   ]
