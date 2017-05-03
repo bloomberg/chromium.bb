@@ -265,6 +265,10 @@
       'filepath': 'components/cast_certificate/'\
                   '|components/test/data/cast_certificate/',
     },
+    'cast_channel': {
+      'filepath':  'chrome/test/data/extensions/api_test/cast_channel/' \
+                   '|extensions/(browser|common)/api/cast_channel'
+    },
     'certificate_transparency': {
       'filepath': 'components/certificate_transparency/'\
                   '|components/packed_ct_ev_whitelist/'\
@@ -425,6 +429,11 @@
     },
     'devtools': {
       'filepath': 'devtools',
+    },
+    'dial': {
+      'filepath': 'chrome/(browser|common)/extensions/api/dial' \
+                  '|chrome/browser/media/router/discovery/dial/' \
+                  '|chrome/test/data/extensions/api_test/dial/'
     },
     'disk_cache': {
       'filepath': 'net/disk_cache/|http_cache',
@@ -673,11 +682,15 @@
                   '|media/remoting/',
     },
     'media_router': {
-      'filepath': 'chrome/browser/media/router/*' \
-                  '|chrome/app/theme/*/common/media_router*' \
+      'filepath': 'chrome/android/(java|junit)/src/org/chromium/chrome/browser/media/router/' \
+                  '|chrome/browser/media/router/' \
                   '|chrome/browser/resources/media_router/' \
+                  '|chrome/browser/ui/views/media_router/' \
                   '|chrome/browser/ui/webui/media_router/' \
-                  '|chrome/test/media_router/',
+                  '|chrome/common/media/router/' \
+                  '|chrome/test/data/webui/media_router/' \
+                  '|chrome/test/media_router/' \
+                  '|chrome/utility/media_router/'
     },
     'memory_coordinator': {
       'filepath': 'base/memory/memory_|' \
@@ -907,6 +920,12 @@
     },
     'prerender': {
       'filepath': 'prerender'
+    },
+    'presentation': {
+      'filepath': 'content/(browser|common|renderer)/presentation/' \
+                  '|third_party/WebKit/public/platform/modules/presentation/' \
+                  '|third_party/WebKit/LayoutTests/presentation/' \
+                  '|third_party/WebKit/Source/modules/presentation/'
     },
     'push_messaging': {
       'filepath': 'push_messaging'
@@ -1859,10 +1878,13 @@
              'imcheng+watch@chromium.org',
              'isheriff+watch@chromium.org',
              'jasonroberts+watch@google.com',
+             'mfoltz+watch@chromium.org',
              'miu+watch@chromium.org',
              'xjz+watch@chromium.org'],
     'cast_certificate': ['dougsteed+watch@chromium.org',
+                         'mfoltz+watch@chromium.org',
                          'ryanchung+watch@chromium.org'],
+    'cast_channel': ['mfoltz+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
     'certificate_transparency': ['certificate-transparency-chrome@googlegroups.com',
                                  'eranm@chromium.org',
@@ -1941,6 +1963,8 @@
     'developer_recommended_flags': ['scheib+watch@chromium.org'],
     'devtools': ['devtools-reviews@chromium.org',
                  'pfeldman@chromium.org'],
+    'dial': ['mfoltz+watch@chromium.org',
+             'zhaobin+watch@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'download': ['dtrainor@chromium.org'],
     'downloads_ui': ['dtrainor@chromium.org',
@@ -2049,9 +2073,11 @@
                        'mcasas+mediarecorder@chromium.org'],
     'media_remoting': ['apacible+watch@chromium.org',
                        'erickung+watch@chromium.org',
+                       'mfoltz+watch@chromium.org',
                        'miu+watch@chromium.org',
                        'xjz+watch@chromium.org'],
-    'media_router': ['media-router+watch@chromium.org'],
+    'media_router': ['imcheng+watch@chromium.org',
+                     'mfoltz+watch@chromium.org'],
     'memory_coordinator': ['chrome-grc-reviews+memory@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
@@ -2138,6 +2164,7 @@
     'prerender': ['cbentzel+watch@chromium.org',
                   'gavinp+prer@chromium.org',
                   'tburkard+watch@chromium.org'],
+    'presentation': ['mfoltz+watch@chromium.org'],
     'push_messaging': ['harkness+watch@chromium.org',
                        'johnme+watch@chromium.org',
                        'peter@chromium.org'],
@@ -2185,7 +2212,8 @@
                'nhiroki@chromium.org',
                'tzik@chromium.org'],
     'tab_alert_indicators': ['miu+watch@chromium.org'],
-    'tab_capture': ['miu+watch@chromium.org',
+    'tab_capture': ['mfoltz+watch@chromium.org',
+                    'miu+watch@chromium.org',
                     'xjz+watch@chromium.org'],
     'tab_contents': ['ajwong+watch@chromium.org',
                      'avi@chromium.org',
