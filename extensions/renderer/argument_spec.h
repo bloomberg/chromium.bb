@@ -121,13 +121,13 @@ class ArgumentSpec {
   std::string name_;
 
   // The type of the argument.
-  ArgumentType type_;
+  ArgumentType type_ = ArgumentType::INTEGER;
 
   // Whether or not the argument is required.
-  bool optional_;
+  bool optional_ = false;
 
   // Whether to preserve null properties found in objects.
-  bool preserve_null_;
+  bool preserve_null_ = false;
 
   // The reference the argument points to, if any. Note that if this is set,
   // none of the following fields describing the argument will be.
