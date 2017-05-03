@@ -26,7 +26,6 @@
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -35,6 +34,7 @@
 #include "modules/webaudio/DeferredTaskHandler.h"
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
+#include "platform/bindings/ScriptState.h"
 
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"

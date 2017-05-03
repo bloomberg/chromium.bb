@@ -32,7 +32,6 @@
 #define ElementAnimation_h
 
 #include "bindings/core/v8/DictionarySequenceOrDictionary.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/EffectInput.h"
@@ -44,6 +43,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

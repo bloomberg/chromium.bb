@@ -26,10 +26,10 @@
 #ifndef Database_h
 #define Database_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/text/WTFString.h"

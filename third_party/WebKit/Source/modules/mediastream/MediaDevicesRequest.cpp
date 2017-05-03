@@ -26,10 +26,10 @@
 #include "modules/mediastream/MediaDevicesRequest.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "modules/mediastream/UserMediaController.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

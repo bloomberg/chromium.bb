@@ -5,8 +5,8 @@
 #ifndef Mojo_h
 #define Mojo_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "mojo/public/cpp/system/core.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

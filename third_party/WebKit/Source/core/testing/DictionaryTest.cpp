@@ -4,12 +4,12 @@
 
 #include "core/testing/DictionaryTest.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/testing/InternalDictionary.h"
 #include "core/testing/InternalDictionaryDerived.h"
 #include "core/testing/InternalDictionaryDerivedDerived.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

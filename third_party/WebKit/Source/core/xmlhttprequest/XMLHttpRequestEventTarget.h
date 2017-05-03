@@ -31,8 +31,8 @@
 #ifndef XMLHttpRequestEventTarget_h
 #define XMLHttpRequestEventTarget_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

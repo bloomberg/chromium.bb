@@ -31,10 +31,10 @@
 #ifndef DirectoryReader_h
 #define DirectoryReader_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "modules/filesystem/EntriesCallback.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 

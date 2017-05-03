@@ -31,9 +31,9 @@
 #ifndef SVGAnimatedRect_h
 #define SVGAnimatedRect_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGRectTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

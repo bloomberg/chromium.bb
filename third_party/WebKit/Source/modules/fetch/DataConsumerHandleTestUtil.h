@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/testing/NullExecutionContext.h"
 #include "gin/public/isolate_holder.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Locker.h"

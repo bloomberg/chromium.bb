@@ -5,8 +5,8 @@
 #ifndef DetectedFace_h
 #define DetectedFace_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

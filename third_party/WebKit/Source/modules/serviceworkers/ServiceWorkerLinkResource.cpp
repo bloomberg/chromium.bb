@@ -5,7 +5,6 @@
 #include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
@@ -15,6 +14,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"

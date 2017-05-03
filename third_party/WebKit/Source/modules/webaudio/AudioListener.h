@@ -29,8 +29,8 @@
 #ifndef AudioListener_h
 #define AudioListener_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webaudio/AudioParam.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"

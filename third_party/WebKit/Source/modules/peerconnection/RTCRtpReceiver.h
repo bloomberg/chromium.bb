@@ -7,9 +7,9 @@
 
 #include <map>
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/peerconnection/RTCRtpContributingSource.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Member.h"
 #include "platform/heap/Visitor.h"

@@ -31,8 +31,8 @@
 #ifndef DOMFileSystemSync_h
 #define DOMFileSystemSync_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

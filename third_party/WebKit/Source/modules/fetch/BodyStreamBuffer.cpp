@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -17,6 +16,7 @@
 #include "core/streams/ReadableStreamOperations.h"
 #include "modules/fetch/Body.h"
 #include "modules/fetch/ReadableStreamBytesConsumer.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
 

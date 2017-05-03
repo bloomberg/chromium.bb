@@ -4,7 +4,6 @@
 
 #include "modules/fetch/FetchRequestData.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/ThreadableLoader.h"
 #include "modules/credentialmanager/PasswordCredential.h"
@@ -13,6 +12,7 @@
 #include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/HTTPNames.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"

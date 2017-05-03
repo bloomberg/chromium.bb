@@ -4,10 +4,10 @@
 
 #include "modules/mediasession/NavigatorMediaSession.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/mediasession/MediaSession.h"
 #include "platform/Supplementable.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

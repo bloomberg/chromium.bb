@@ -22,7 +22,6 @@
 
 #include "core/events/Event.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/events/EventDispatchMediator.h"
@@ -32,6 +31,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

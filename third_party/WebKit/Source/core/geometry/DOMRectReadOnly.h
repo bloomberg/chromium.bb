@@ -5,8 +5,8 @@
 #ifndef DOMRectReadOnly_h
 #define DOMRectReadOnly_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

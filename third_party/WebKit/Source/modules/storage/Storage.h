@@ -26,10 +26,10 @@
 #ifndef Storage_h
 #define Storage_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/storage/StorageArea.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/RefPtr.h"

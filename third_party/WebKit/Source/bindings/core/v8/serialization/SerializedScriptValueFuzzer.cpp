@@ -8,12 +8,12 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/Settings.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 #include "platform/wtf/StringHasher.h"
 #include "public/platform/WebBlobInfo.h"

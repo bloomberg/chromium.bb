@@ -4,9 +4,9 @@
 
 #include "modules/screen_orientation/ScreenScreenOrientation.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/frame/Screen.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

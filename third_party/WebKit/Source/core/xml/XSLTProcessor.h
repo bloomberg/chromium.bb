@@ -23,10 +23,10 @@
 #ifndef XSLTProcessor_h
 #define XSLTProcessor_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Node.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/StringHash.h"
 

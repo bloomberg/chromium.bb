@@ -5,7 +5,7 @@
 #ifndef CallbackFunctionTest_h
 #define CallbackFunctionTest_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"

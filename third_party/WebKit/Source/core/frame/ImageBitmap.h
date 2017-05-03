@@ -6,12 +6,12 @@
 #define ImageBitmap_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/html/canvas/ImageElementBase.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"

@@ -31,12 +31,12 @@
 #ifndef RTCCertificate_h
 #define RTCCertificate_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include <memory>
 #include "core/dom/DOMTimeStamp.h"
 #include "modules/ModulesExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "public/platform/WebRTCCertificate.h"
-#include <memory>
 
 namespace blink {
 

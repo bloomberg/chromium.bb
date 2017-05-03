@@ -30,10 +30,10 @@
 #ifndef DOMSelection_h
 #define DOMSelection_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/editing/Position.h"
 #include "core/editing/VisibleSelection.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 

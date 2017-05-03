@@ -4,10 +4,10 @@
 
 #include "modules/fetch/FetchResponseData.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchHeaderList.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"

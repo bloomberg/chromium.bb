@@ -6,12 +6,12 @@
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {

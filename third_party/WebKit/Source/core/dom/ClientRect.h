@@ -27,8 +27,8 @@
 #ifndef ClientRect_h
 #define ClientRect_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/Handle.h"
 

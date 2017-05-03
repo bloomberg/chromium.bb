@@ -7,12 +7,12 @@
 
 #include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/webauth/AuthenticationAssertionOptions.h"
 #include "modules/webauth/RelyingPartyAccount.h"
 #include "modules/webauth/ScopedCredentialOptions.h"
 #include "modules/webauth/ScopedCredentialParameters.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

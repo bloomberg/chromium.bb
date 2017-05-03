@@ -27,11 +27,11 @@
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FilePropertyBag.h"
 #include "core/frame/UseCounter.h"
 #include "platform/FileMetadata.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/wtf/CurrentTime.h"

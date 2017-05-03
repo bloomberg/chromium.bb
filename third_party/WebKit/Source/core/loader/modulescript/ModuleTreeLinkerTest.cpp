@@ -5,7 +5,6 @@
 #include "core/loader/modulescript/ModuleTreeLinker.h"
 
 #include "bindings/core/v8/ScriptModule.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -15,6 +14,7 @@
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
 #include "core/testing/DummyModulator.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringBuilder.h"

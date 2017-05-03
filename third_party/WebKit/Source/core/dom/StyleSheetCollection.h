@@ -30,10 +30,10 @@
 #ifndef StyleSheetCollection_h
 #define StyleSheetCollection_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/css/ActiveStyleSheets.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"

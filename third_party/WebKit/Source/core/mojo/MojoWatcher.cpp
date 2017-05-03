@@ -5,12 +5,12 @@
 #include "core/mojo/MojoWatcher.h"
 
 #include "bindings/core/v8/MojoWatchCallback.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/mojo/MojoHandleSignals.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

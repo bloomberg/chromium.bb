@@ -6,10 +6,10 @@
 #define IDBObserverChanges_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBObservation.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebVector.h"
 

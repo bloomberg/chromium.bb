@@ -22,7 +22,6 @@
 
 #include "core/events/MouseEvent.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Element.h"
 #include "core/events/EventDispatcher.h"
 #include "core/frame/FrameView.h"
@@ -33,6 +32,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/WebPointerProperties.h"
 
 namespace blink {

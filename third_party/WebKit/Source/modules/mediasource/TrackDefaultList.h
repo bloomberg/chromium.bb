@@ -5,8 +5,8 @@
 #ifndef TrackDefaultList_h
 #define TrackDefaultList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/mediasource/TrackDefault.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

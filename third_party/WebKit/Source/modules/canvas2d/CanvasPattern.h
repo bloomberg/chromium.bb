@@ -26,8 +26,8 @@
 #ifndef CanvasPattern_h
 #define CanvasPattern_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGMatrixTearOff.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/graphics/Pattern.h"
 #include "platform/wtf/Forward.h"
 

@@ -28,7 +28,6 @@
 #include <memory>
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
@@ -43,6 +42,7 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebVector.h"

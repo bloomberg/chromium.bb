@@ -25,12 +25,12 @@
 #ifndef Event_h
 #define Event_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMHighResTimeStamp.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/events/EventInit.h"
 #include "core/events/EventPath.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/AtomicString.h"

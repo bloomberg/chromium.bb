@@ -5,9 +5,9 @@
 #ifndef MIDIInputMap_h
 #define MIDIInputMap_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webmidi/MIDIInput.h"
 #include "modules/webmidi/MIDIPortMap.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

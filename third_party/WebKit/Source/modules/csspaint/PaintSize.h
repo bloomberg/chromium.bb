@@ -5,7 +5,7 @@
 #ifndef PaintSize_h
 #define PaintSize_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 

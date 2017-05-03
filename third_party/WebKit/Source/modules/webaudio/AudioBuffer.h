@@ -29,10 +29,10 @@
 #ifndef AudioBuffer_h
 #define AudioBuffer_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/DOMTypedArray.h"
 #include "modules/ModulesExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"

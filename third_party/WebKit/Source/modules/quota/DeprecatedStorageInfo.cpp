@@ -30,7 +30,6 @@
 
 #include "modules/quota/DeprecatedStorageInfo.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
@@ -38,6 +37,7 @@
 #include "modules/quota/StorageQuotaCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {

@@ -26,11 +26,11 @@
 #ifndef Touch_h
 #define Touch_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/TouchInit.h"
 #include "core/events/EventTarget.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/LayoutPoint.h"

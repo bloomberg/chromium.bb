@@ -4,10 +4,10 @@
 
 #include "modules/payments/PaymentAppRequestConversion.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

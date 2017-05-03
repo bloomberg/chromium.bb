@@ -4,13 +4,13 @@
 
 #include "core/dom/ScriptModuleResolverImpl.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/ModuleScript.h"
 #include "core/testing/DummyModulator.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"

@@ -27,8 +27,8 @@
 #ifndef WebGLUniformLocation_h
 #define WebGLUniformLocation_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webgl/WebGLProgram.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

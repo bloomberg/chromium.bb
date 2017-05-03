@@ -4,9 +4,9 @@
 
 #include "core/dom/ModuleScript.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/ScriptModuleResolver.h"
+#include "platform/bindings/ScriptState.h"
 #include "v8/include/v8.h"
 
 namespace blink {

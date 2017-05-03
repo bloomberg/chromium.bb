@@ -5,9 +5,9 @@
 #ifndef CSSPositionValue_h
 #define CSSPositionValue_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

@@ -5,8 +5,8 @@
 #ifndef ServiceWorkerClients_h
 #define ServiceWorkerClients_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/serviceworkers/ClientQueryOptions.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 

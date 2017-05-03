@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
@@ -43,6 +42,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/crypto/CryptoKey.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Atomics.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithm.h"

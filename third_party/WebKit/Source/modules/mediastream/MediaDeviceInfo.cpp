@@ -25,9 +25,9 @@
 
 #include "modules/mediastream/MediaDeviceInfo.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

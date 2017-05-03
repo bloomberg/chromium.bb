@@ -5,7 +5,6 @@
 #include "modules/background_fetch/BackgroundFetchManager.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/modules/v8/RequestOrUSVString.h"
 #include "bindings/modules/v8/RequestOrUSVStringOrRequestOrUSVStringSequence.h"
@@ -16,6 +15,7 @@
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
 namespace blink {

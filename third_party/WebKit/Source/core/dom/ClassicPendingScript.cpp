@@ -5,13 +5,13 @@
 #include "core/dom/ClassicPendingScript.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/SubresourceIntegrity.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/MemoryCache.h"
 
 namespace blink {

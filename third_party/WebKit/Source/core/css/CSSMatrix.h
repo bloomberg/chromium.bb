@@ -27,7 +27,7 @@
 #define CSSMatrix_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/text/WTFString.h"
 

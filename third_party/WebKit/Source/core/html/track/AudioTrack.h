@@ -5,9 +5,9 @@
 #ifndef AudioTrack_h
 #define AudioTrack_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/html/track/TrackBase.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

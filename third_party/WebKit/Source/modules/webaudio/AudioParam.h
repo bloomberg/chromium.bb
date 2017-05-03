@@ -30,12 +30,12 @@
 #define AudioParam_h
 
 #include <sys/types.h>
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/DOMTypedArray.h"
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "modules/webaudio/AudioSummingJunction.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/text/WTFString.h"

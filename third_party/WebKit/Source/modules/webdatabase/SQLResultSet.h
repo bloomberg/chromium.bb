@@ -29,9 +29,9 @@
 #ifndef SQLResultSet_h
 #define SQLResultSet_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

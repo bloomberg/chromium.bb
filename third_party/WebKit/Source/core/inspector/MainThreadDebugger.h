@@ -32,10 +32,10 @@
 #define MainThreadDebugger_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/ThreadDebugger.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8-inspector.h"
 #include "v8/include/v8.h"

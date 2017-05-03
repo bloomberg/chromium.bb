@@ -5,9 +5,9 @@
 #ifndef CSSStyleVariableReferenceValue_h
 #define CSSStyleVariableReferenceValue_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSUnparsedValue.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

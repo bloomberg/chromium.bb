@@ -5,10 +5,10 @@
 #include "bindings/core/v8/V8PromiseRejectionEvent.h"
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "platform/bindings/ScriptState.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

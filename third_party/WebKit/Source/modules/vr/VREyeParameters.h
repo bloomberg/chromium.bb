@@ -5,10 +5,10 @@
 #ifndef VREyeParameters_h
 #define VREyeParameters_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "modules/vr/VRFieldOfView.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 #include "platform/wtf/Forward.h"

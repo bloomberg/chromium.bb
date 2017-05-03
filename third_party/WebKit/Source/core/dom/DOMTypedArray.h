@@ -5,10 +5,10 @@
 #ifndef DOMTypedArray_h
 #define DOMTypedArray_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/typed_arrays/Float32Array.h"
 #include "platform/wtf/typed_arrays/Float64Array.h"
 #include "platform/wtf/typed_arrays/Int16Array.h"

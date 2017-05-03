@@ -5,8 +5,8 @@
 #ifndef USBIsochronousInTransferPacket_h
 #define USBIsochronousInTransferPacket_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMDataView.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/wtf/text/WTFString.h"
 

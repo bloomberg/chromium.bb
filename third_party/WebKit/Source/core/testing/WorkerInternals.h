@@ -5,7 +5,7 @@
 #ifndef WorkerInternals_h
 #define WorkerInternals_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 
 namespace blink {

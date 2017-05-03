@@ -12,7 +12,6 @@
 #include "V8TestConstants.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/ExecutionContext.h"
@@ -20,6 +19,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -38,7 +38,7 @@ const WrapperTypeInfo V8TestConstants::wrapperTypeInfo = { gin::kEmbedderBlink, 
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestConstants.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
-// bindings/core/v8/ScriptWrappable.h.
+// platform/bindings/ScriptWrappable.h.
 const WrapperTypeInfo& TestConstants::wrapper_type_info_ = V8TestConstants::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]

@@ -30,7 +30,6 @@
 
 #include "modules/filesystem/DataTransferItemFileSystem.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/DataTransferItem.h"
@@ -44,6 +43,7 @@
 #include "modules/filesystem/FileEntry.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileMetadata.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

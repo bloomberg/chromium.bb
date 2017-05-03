@@ -4,10 +4,10 @@
 
 #include "modules/payments/PaymentAppServiceWorkerRegistration.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "modules/payments/PaymentManager.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

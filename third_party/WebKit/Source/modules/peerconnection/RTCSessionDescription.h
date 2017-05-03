@@ -31,7 +31,7 @@
 #ifndef RTCSessionDescription_h
 #define RTCSessionDescription_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "public/platform/WebRTCSessionDescription.h"
 

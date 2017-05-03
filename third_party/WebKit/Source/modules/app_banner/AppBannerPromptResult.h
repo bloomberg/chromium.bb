@@ -5,7 +5,7 @@
 #ifndef AppBannerPromptResult_h
 #define AppBannerPromptResult_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 

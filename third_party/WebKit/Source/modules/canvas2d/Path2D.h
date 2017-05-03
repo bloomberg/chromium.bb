@@ -28,10 +28,10 @@
 #ifndef Path2D_h
 #define Path2D_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "modules/canvas2d/CanvasPath.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
 

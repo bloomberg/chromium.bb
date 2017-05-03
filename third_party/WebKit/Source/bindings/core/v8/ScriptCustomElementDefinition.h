@@ -5,10 +5,10 @@
 #ifndef ScriptCustomElementDefinition_h
 #define ScriptCustomElementDefinition_h
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
 #include "v8.h"

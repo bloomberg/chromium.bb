@@ -4,12 +4,12 @@
 
 #include "core/dom/Modulator.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/dom/Document.h"
 #include "core/dom/ModulatorImpl.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

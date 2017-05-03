@@ -31,13 +31,13 @@
 #include "bindings/core/v8/V8NodeFilterCondition.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
 #include "core/frame/UseCounter.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 
