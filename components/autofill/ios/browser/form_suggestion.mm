@@ -10,10 +10,10 @@
 
 @interface FormSuggestion ()
 // Local initializer for a FormSuggestion.
-- (id)initWithValue:(NSString*)value
-    displayDescription:(NSString*)displayDescription
-                  icon:(NSString*)icon
-            identifier:(NSInteger)identifier;
+- (instancetype)initWithValue:(NSString*)value
+           displayDescription:(NSString*)displayDescription
+                         icon:(NSString*)icon
+                   identifier:(NSInteger)identifier;
 @end
 
 @implementation FormSuggestion
@@ -23,10 +23,10 @@
 @synthesize icon = _icon;
 @synthesize identifier = _identifier;
 
-- (id)initWithValue:(NSString*)value
-    displayDescription:(NSString*)displayDescription
-                  icon:(NSString*)icon
-            identifier:(NSInteger)identifier {
+- (instancetype)initWithValue:(NSString*)value
+           displayDescription:(NSString*)displayDescription
+                         icon:(NSString*)icon
+                   identifier:(NSInteger)identifier {
   self = [super init];
   if (self) {
     _value = [value copy];
