@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -17,20 +16,12 @@ import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.widget.ListView;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
@@ -40,8 +31,7 @@ import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferen
 import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -55,29 +45,34 @@ import java.util.List;
 /**
  * Integration tests for ClearBrowsingDataPreferences.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class ClearBrowsingDataPreferencesTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class ClearBrowsingDataPreferencesTest
+        extends ChromeActivityTestCaseBase<ChromeActivity> {
     private EmbeddedTestServer mTestServer;
 
-    @Before
-    public void setUp() throws Exception {
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+    @Override
+    protected void setUp() throws Exception {
+        SigninTestUtil.setUpAuthForTest(getInstrumentation());
+
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
+
         SigninTestUtil.tearDownAuthForTest();
+    }
+
+    public ClearBrowsingDataPreferencesTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     /**  Waits for the progress dialog to disappear from the given CBD preference. */
@@ -94,19 +89,18 @@ public class ClearBrowsingDataPreferencesTest {
     /**
      * Tests that web apps are cleared when the "cookies and site data" option is selected.
      */
-    @Test
     @MediumTest
     public void testClearingSiteDataClearsWebapps() throws Exception {
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
         WebappRegistry.getInstance().register("first", callback);
         callback.waitForCallback(0);
-        Assert.assertEquals(new HashSet<String>(Arrays.asList("first")),
+        assertEquals(new HashSet<String>(Arrays.asList("first")),
                 WebappRegistry.getRegisteredWebappIdsForTesting());
 
         setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_COOKIES_AND_SITE_DATA));
         final ClearBrowsingDataPreferences preferences =
-                (ClearBrowsingDataPreferences) mActivityTestRule
-                        .startPreferences(ClearBrowsingDataPreferences.class.getName())
+                (ClearBrowsingDataPreferences) startPreferences(
+                        ClearBrowsingDataPreferences.class.getName())
                         .getFragmentForTest();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -120,14 +114,13 @@ public class ClearBrowsingDataPreferencesTest {
         });
         waitForProgressToComplete(preferences);
 
-        Assert.assertTrue(WebappRegistry.getRegisteredWebappIdsForTesting().isEmpty());
+        assertTrue(WebappRegistry.getRegisteredWebappIdsForTesting().isEmpty());
     }
 
     /**
      * Tests that web app scopes and last launch times are cleared when the "history" option is
      * selected. However, the web app is not removed from the registry.
      */
-    @Test
     @MediumTest
     public void testClearingHistoryClearsWebappScopesAndLaunchTimes() throws Exception {
         AsyncTask<Void, Void, Intent> shortcutIntentTask = new AsyncTask<Void, Void, Intent>() {
@@ -143,13 +136,13 @@ public class ClearBrowsingDataPreferencesTest {
         callback.waitForCallback(0);
         callback.getStorage().updateFromShortcutIntent(shortcutIntent);
 
-        Assert.assertEquals(new HashSet<String>(Arrays.asList("first")),
+        assertEquals(new HashSet<String>(Arrays.asList("first")),
                 WebappRegistry.getRegisteredWebappIdsForTesting());
 
         setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_HISTORY));
         final ClearBrowsingDataPreferences preferences =
-                (ClearBrowsingDataPreferences) mActivityTestRule
-                        .startPreferences(ClearBrowsingDataPreferences.class.getName())
+                (ClearBrowsingDataPreferences) startPreferences(
+                        ClearBrowsingDataPreferences.class.getName())
                         .getFragmentForTest();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -163,28 +156,27 @@ public class ClearBrowsingDataPreferencesTest {
         });
         waitForProgressToComplete(preferences);
 
-        Assert.assertEquals(new HashSet<String>(Arrays.asList("first")),
+        assertEquals(new HashSet<String>(Arrays.asList("first")),
                 WebappRegistry.getRegisteredWebappIdsForTesting());
 
         // URL and scope should be empty, and last used time should be 0.
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage("first");
-        Assert.assertEquals("", storage.getScope());
-        Assert.assertEquals("", storage.getUrl());
-        Assert.assertEquals(0, storage.getLastUsedTime());
+        assertEquals("", storage.getScope());
+        assertEquals("", storage.getUrl());
+        assertEquals(0, storage.getLastUsedTime());
     }
 
     /**
      * Tests that a fragment with all options preselected indeed has all checkboxes checked
      * on startup, and that deletion with all checkboxes checked completes successfully.
      */
-    @Test
     @MediumTest
     public void testClearingEverything() throws Exception {
         setDataTypesToClear(Arrays.asList(DialogOption.values()));
 
         final ClearBrowsingDataPreferences preferences =
-                (ClearBrowsingDataPreferences) mActivityTestRule
-                        .startPreferences(ClearBrowsingDataPreferences.class.getName())
+                (ClearBrowsingDataPreferences) startPreferences(
+                        ClearBrowsingDataPreferences.class.getName())
                         .getFragmentForTest();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -198,12 +190,12 @@ public class ClearBrowsingDataPreferencesTest {
                         continue;
                     }
                     CheckBoxPreference checkbox = (CheckBoxPreference) pref;
-                    Assert.assertTrue(checkbox.isChecked());
+                    assertTrue(checkbox.isChecked());
                 }
 
                 ButtonPreference clearButton = (ButtonPreference) screen.findPreference(
                         ClearBrowsingDataPreferences.PREF_CLEAR_BUTTON);
-                Assert.assertTrue(clearButton.isEnabled());
+                assertTrue(clearButton.isEnabled());
                 clearButton.getOnPreferenceClickListener().onPreferenceClick(clearButton);
             }
         });
@@ -214,13 +206,12 @@ public class ClearBrowsingDataPreferencesTest {
     /**
      * Tests that for users who are not signed in, only the general footnote is shown.
      */
-    @Test
     @SmallTest
     public void testFooterNonsigned() throws Exception {
         SigninTestUtil.resetSigninState();
 
         final Preferences preferences =
-                mActivityTestRule.startPreferences(ClearBrowsingDataPreferences.class.getName());
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -229,9 +220,9 @@ public class ClearBrowsingDataPreferencesTest {
                         (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
                 PreferenceScreen screen = fragment.getPreferenceScreen();
 
-                Assert.assertNotNull(
+                assertNotNull(
                         screen.findPreference(ClearBrowsingDataPreferences.PREF_GENERAL_SUMMARY));
-                Assert.assertNull(
+                assertNull(
                         screen.findPreference(ClearBrowsingDataPreferences.PREF_GOOGLE_SUMMARY));
             }
         });
@@ -241,14 +232,13 @@ public class ClearBrowsingDataPreferencesTest {
      * Tests that for users who are signed in, both the general and the Google-specific footnotes
      * are shown.
      */
-    @Test
     @MediumTest
     public void testFooterSigned() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
 
         final Preferences preferences =
-                mActivityTestRule.startPreferences(ClearBrowsingDataPreferences.class.getName());
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -257,30 +247,24 @@ public class ClearBrowsingDataPreferencesTest {
                         (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
                 PreferenceScreen screen = fragment.getPreferenceScreen();
 
-                Assert.assertNotNull(
+                assertNotNull(
                         screen.findPreference(ClearBrowsingDataPreferences.PREF_GENERAL_SUMMARY));
 
                 Preference google_summary =
                         screen.findPreference(ClearBrowsingDataPreferences.PREF_GOOGLE_SUMMARY);
-                Assert.assertNotNull(google_summary);
+                assertNotNull(google_summary);
 
                 // There is currently no clickable link in the Google-specific summary.
-                Assert.assertTrue(!(google_summary.getSummary() instanceof SpannableString)
-                        || ((SpannableString) google_summary.getSummary())
-                                        .getSpans(0, google_summary.getSummary().length(),
-                                                Object.class)
-                                        .length
-                                == 0);
+                assertTrue(!(google_summary.getSummary() instanceof SpannableString)
+                        || ((SpannableString) google_summary.getSummary()).getSpans(
+                                0, google_summary.getSummary().length(), Object.class).length == 0);
 
                 // When the web history service reports that there are other forms of browsing
                 // history, we should show a link to them.
                 fragment.showNoticeAboutOtherFormsOfBrowsingHistory();
-                Assert.assertTrue(google_summary.getSummary() instanceof SpannableString);
-                Assert.assertTrue(
-                        ((SpannableString) google_summary.getSummary())
-                                .getSpans(0, google_summary.getSummary().length(), Object.class)
-                                .length
-                        == 1);
+                assertTrue(google_summary.getSummary() instanceof SpannableString);
+                assertTrue(((SpannableString) google_summary.getSummary()).getSpans(
+                        0, google_summary.getSummary().length(), Object.class).length == 1);
             }
         });
     }
@@ -311,7 +295,7 @@ public class ClearBrowsingDataPreferencesTest {
             fragment.enableDialogAboutOtherFormsOfBrowsingHistory();
             ButtonPreference clearButton = (ButtonPreference) screen.findPreference(
                     ClearBrowsingDataPreferences.PREF_CLEAR_BUTTON);
-            Assert.assertTrue(clearButton.isEnabled());
+            assertTrue(clearButton.isEnabled());
             clearButton.getOnPreferenceClickListener().onPreferenceClick(clearButton);
         }
     }
@@ -345,19 +329,17 @@ public class ClearBrowsingDataPreferencesTest {
      * after the deletion completes, if and only if browsing history was checked for deletion
      * and it has not been shown before.
      */
-    @Test
     @LargeTest
     public void testDialogAboutOtherFormsOfBrowsingHistory() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
-        OtherFormsOfHistoryDialogFragment.clearShownPreferenceForTesting(
-                mActivityTestRule.getActivity());
+        OtherFormsOfHistoryDialogFragment.clearShownPreferenceForTesting(getActivity());
 
         // History is not selected. We still need to select some other datatype, otherwise the
         // "Clear" button won't be enabled.
         setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_CACHE));
         final Preferences preferences1 =
-                mActivityTestRule.startPreferences(ClearBrowsingDataPreferences.class.getName());
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
         ThreadUtils.runOnUiThreadBlocking(
                 new OpenPreferencesEnableDialogAndClickClearRunnable(preferences1));
 
@@ -368,7 +350,7 @@ public class ClearBrowsingDataPreferencesTest {
         // Reopen Clear Browsing Data preferences, this time with history selected for clearing.
         setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_HISTORY));
         final Preferences preferences2 =
-                mActivityTestRule.startPreferences(ClearBrowsingDataPreferences.class.getName());
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
         ThreadUtils.runOnUiThreadBlocking(
                 new OpenPreferencesEnableDialogAndClickClearRunnable(preferences2));
 
@@ -401,7 +383,7 @@ public class ClearBrowsingDataPreferencesTest {
         // Reopen Clear Browsing Data preferences and clear history once again.
         setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_HISTORY));
         final Preferences preferences3 =
-                mActivityTestRule.startPreferences(ClearBrowsingDataPreferences.class.getName());
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
         ThreadUtils.runOnUiThreadBlocking(
                 new OpenPreferencesEnableDialogAndClickClearRunnable(preferences3));
 
@@ -419,7 +401,7 @@ public class ClearBrowsingDataPreferencesTest {
                 PreferenceScreen screen = preferences.getPreferenceScreen();
                 ButtonPreference clearButton = (ButtonPreference) screen.findPreference(
                         ClearBrowsingDataPreferences.PREF_CLEAR_BUTTON);
-                Assert.assertTrue(clearButton.isEnabled());
+                assertTrue(clearButton.isEnabled());
                 clearButton.getOnPreferenceClickListener().onPreferenceClick(clearButton);
             }
         };
@@ -431,7 +413,7 @@ public class ClearBrowsingDataPreferencesTest {
         return new Runnable() {
             @Override
             public void run() {
-                Assert.assertNotNull(preferences);
+                assertNotNull(preferences);
                 ConfirmImportantSitesDialogFragment dialog =
                         preferences.getImportantSitesDialogFragment();
                 ((AlertDialog) dialog.getDialog()).getButton(whichButton).performClick();
@@ -448,7 +430,7 @@ public class ClearBrowsingDataPreferencesTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                Assert.assertNotNull(preferences);
+                assertNotNull(preferences);
                 if (preferences.getImportantSitesDialogFragment() == null
                         || !preferences.getImportantSitesDialogFragment().getDialog().isShowing()) {
                     return false;
@@ -475,14 +457,13 @@ public class ClearBrowsingDataPreferencesTest {
      * Tests that the important sites dialog is shown, and if we don't deselect anything we
      * correctly clear everything.
      */
-    @Test
     @CommandLineFlags.Add({"enable-features=ImportantSitesInCBD", "enable-site-engagement"})
     @MediumTest
     @Feature({"SiteEngagement"})
     public void testImportantSitesDialogNoFiltering() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
-        Assert.assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD));
+        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD));
 
         final String testUrl =
                 mTestServer.getURL("/chrome/test/data/android/storage_persistance.html");
@@ -492,21 +473,18 @@ public class ClearBrowsingDataPreferencesTest {
         ThreadUtils.runOnUiThreadBlocking(getMarkOriginsAsImportantRunnable(importantOrigins));
 
         // Load the page and clear any set storage.
-        mActivityTestRule.loadUrl(testUrl + "#clear");
-        Assert.assertEquals(
-                "false", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setStorage()");
-        Assert.assertEquals(
-                "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        loadUrl(testUrl + "#clear");
+        assertEquals("false", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        runJavaScriptCodeInCurrentTab("setStorage()");
+        assertEquals("true", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
 
         // Load the page again and ensure the cookie still is set.
-        mActivityTestRule.loadUrl(testUrl);
-        Assert.assertEquals(
-                "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        loadUrl(testUrl);
+        assertEquals("true", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
 
         ClearBrowsingDataPreferences preferences =
-                (ClearBrowsingDataPreferences) mActivityTestRule
-                        .startPreferences(ClearBrowsingDataPreferences.class.getName())
+                (ClearBrowsingDataPreferences) startPreferences(
+                        ClearBrowsingDataPreferences.class.getName())
                         .getFragmentForTest();
 
         // Clear in root preference.
@@ -519,22 +497,20 @@ public class ClearBrowsingDataPreferencesTest {
         waitForProgressToComplete(preferences);
 
         // Verify we don't have storage.
-        mActivityTestRule.loadUrl(testUrl);
-        Assert.assertEquals(
-                "false", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        loadUrl(testUrl);
+        assertEquals("false", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
     }
 
     /**
      * Tests that the important sites dialog is shown and if we cancel nothing happens.
      */
-    @Test
     @CommandLineFlags.Add({"enable-features=ImportantSitesInCBD", "enable-site-engagement"})
     @MediumTest
     @Feature({"SiteEngagement"})
     public void testImportantSitesDialogNoopOnCancel() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
-        Assert.assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD));
+        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD));
 
         final String testUrl =
                 mTestServer.getURL("/chrome/test/data/android/storage_persistance.html");
@@ -544,15 +520,12 @@ public class ClearBrowsingDataPreferencesTest {
         ThreadUtils.runOnUiThreadBlocking(getMarkOriginsAsImportantRunnable(importantOrigins));
 
         // Load the page and clear any set storage.
-        mActivityTestRule.loadUrl(testUrl + "#clear");
-        Assert.assertEquals(
-                "false", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setStorage()");
-        Assert.assertEquals(
-                "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        loadUrl(testUrl + "#clear");
+        assertEquals("false", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        runJavaScriptCodeInCurrentTab("setStorage()");
+        assertEquals("true", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
 
-        Preferences preferences =
-                mActivityTestRule.startPreferences(ClearBrowsingDataPreferences.class.getName());
+        Preferences preferences = startPreferences(ClearBrowsingDataPreferences.class.getName());
         ClearBrowsingDataPreferences fragment =
                 (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
         ThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(fragment));
@@ -562,23 +535,21 @@ public class ClearBrowsingDataPreferencesTest {
         ThreadUtils.runOnUiThreadBlocking(
                 getPressButtonInImportantDialogRunnable(fragment, AlertDialog.BUTTON_NEGATIVE));
         preferences.finish();
-        mActivityTestRule.loadUrl(testUrl);
-        Assert.assertEquals(
-                "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        loadUrl(testUrl);
+        assertEquals("true", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
     }
 
     /**
      * Tests that the important sites dialog is shown, we can successfully uncheck options, and
      * clicking clear doesn't clear the protected domain.
      */
-    @Test
     @CommandLineFlags.Add({"enable-features=ImportantSitesInCBD", "enable-site-engagement"})
     @MediumTest
     @Feature({"SiteEngagement"})
     public void testImportantSitesDialog() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
-        Assert.assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD));
+        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD));
 
         final String testUrl =
                 mTestServer.getURL("/chrome/test/data/android/storage_persistance.html");
@@ -590,15 +561,13 @@ public class ClearBrowsingDataPreferencesTest {
         ThreadUtils.runOnUiThreadBlocking(getMarkOriginsAsImportantRunnable(importantOrigins));
 
         // Load the page and clear any set storage.
-        mActivityTestRule.loadUrl(testUrl + "#clear");
-        Assert.assertEquals(
-                "false", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("setStorage()");
-        Assert.assertEquals(
-                "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        loadUrl(testUrl + "#clear");
+        assertEquals("false", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        runJavaScriptCodeInCurrentTab("setStorage()");
+        assertEquals("true", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
 
         final Preferences preferences =
-                mActivityTestRule.startPreferences(ClearBrowsingDataPreferences.class.getName());
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
         final ClearBrowsingDataPreferences fragment =
                 (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
 
@@ -630,8 +599,7 @@ public class ClearBrowsingDataPreferencesTest {
 
         waitForProgressToComplete(fragment);
         // And check we didn't clear our cookies.
-        Assert.assertEquals(
-                "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
+        assertEquals("true", runJavaScriptCodeInCurrentTab("hasAllStorage()"));
     }
 
     private void setDataTypesToClear(final List<DialogOption> typesToClear) {

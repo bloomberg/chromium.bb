@@ -5,17 +5,9 @@
 package org.chromium.chrome.browser;
 
 import android.preference.PreferenceScreen;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.util.JsonReader;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -29,8 +21,7 @@ import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferen
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -46,29 +37,31 @@ import java.util.concurrent.TimeoutException;
 /**
  * UI Tests for the history page.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"disable-features=AndroidHistoryManager",
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class HistoryUITest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+@CommandLineFlags.Add("disable-features=AndroidHistoryManager")
+public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String HISTORY_URL = "chrome://history-frame/";
 
     private EmbeddedTestServer mTestServer;
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+    public HistoryUITest() {
+        super(ChromeActivity.class);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     private static class HistoryItem {
@@ -82,17 +75,15 @@ public class HistoryUITest {
     }
 
     private HistoryItem[] getHistoryContents() throws InterruptedException, TimeoutException {
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        String jsResults = mActivityTestRule.runJavaScriptCodeInCurrentTab(
-                new StringBuilder()
-                        .append("var rawResults = document.querySelectorAll('.title');\n")
-                        .append("var results = [];\n")
-                        .append("for (i = 0; i < rawResults.length; ++i) {\n")
-                        .append("    results.push([rawResults[i].childNodes[0].href,\n")
-                        .append("    rawResults[i].childNodes[0].childNodes[0].textContent]);\n")
-                        .append("}\n")
-                        .append("results")
-                        .toString());
+        getInstrumentation().waitForIdleSync();
+        String jsResults = runJavaScriptCodeInCurrentTab(new StringBuilder()
+                .append("var rawResults = document.querySelectorAll('.title');\n")
+                .append("var results = [];\n")
+                .append("for (i = 0; i < rawResults.length; ++i) {\n")
+                .append("    results.push([rawResults[i].childNodes[0].href,\n")
+                .append("    rawResults[i].childNodes[0].childNodes[0].textContent]);\n")
+                .append("}\n")
+                .append("results").toString());
 
         JsonReader jsonReader = new JsonReader(new StringReader(jsResults));
         Vector<HistoryItem> results = new Vector<HistoryItem>();
@@ -100,18 +91,18 @@ public class HistoryUITest {
             jsonReader.beginArray();
             while (jsonReader.hasNext()) {
                 jsonReader.beginArray();
-                Assert.assertTrue(jsonReader.hasNext());
+                assertTrue(jsonReader.hasNext());
                 String url = jsonReader.nextString();
-                Assert.assertTrue(jsonReader.hasNext());
+                assertTrue(jsonReader.hasNext());
                 String title = jsonReader.nextString();
-                Assert.assertFalse(jsonReader.hasNext());
+                assertFalse(jsonReader.hasNext());
                 jsonReader.endArray();
                 results.add(new HistoryItem(url, title));
             }
             jsonReader.endArray();
             jsonReader.close();
         } catch (IOException ioe) {
-            Assert.fail("Failed to evaluate JavaScript: " + jsResults + "\n" + ioe);
+            fail("Failed to evaluate JavaScript: " + jsResults + "\n" + ioe);
         }
 
         HistoryItem[] history = new HistoryItem[results.size()];
@@ -121,7 +112,7 @@ public class HistoryUITest {
 
     private void removeSelectedHistoryEntryAtIndex(int index)
             throws InterruptedException, TimeoutException {
-        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+        runJavaScriptCodeInCurrentTab(
                 "document.getElementsByClassName('remove-entry')[" + index + "].click();");
     }
 
@@ -155,20 +146,18 @@ public class HistoryUITest {
                 });
     }
 
-    @Test
     @MediumTest
     @Feature({"History"})
     @RetryOnFailure
     public void testSearchHistory() throws InterruptedException, TimeoutException {
         // Introduce some entries in the history page.
-        mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/about.html"));
-        mActivityTestRule.loadUrl(
-                mTestServer.getURL("/chrome/test/data/android/get_title_test.html"));
-        mActivityTestRule.loadUrl(HISTORY_URL);
-        waitForResultCount(mActivityTestRule.getActivity().getCurrentContentViewCore(), 2);
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/about.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/get_title_test.html"));
+        loadUrl(HISTORY_URL);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
 
         // Search for one of them.
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        Tab tab = getActivity().getActivityTab();
         final CallbackHelper loadCallback = new CallbackHelper();
         TabObserver observer = new EmptyTabObserver() {
             @Override
@@ -179,20 +168,19 @@ public class HistoryUITest {
             }
         };
         tab.addObserver(observer);
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("historyView.setSearch('about')");
+        runJavaScriptCodeInCurrentTab("historyView.setSearch('about')");
         loadCallback.waitForCallback(0);
-        waitForResultCount(mActivityTestRule.getActivity().getCurrentContentViewCore(), 1);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 1);
 
         // Delete the search term.
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("historyView.setSearch('')");
+        runJavaScriptCodeInCurrentTab("historyView.setSearch('')");
         loadCallback.waitForCallback(1);
-        waitForResultCount(mActivityTestRule.getActivity().getCurrentContentViewCore(), 2);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
         tab.removeObserver(observer);
     }
 
     // @LargeTest
     // @Feature({"History"})
-    @Test
     @DisabledTest
     public void testRemovingEntries() throws InterruptedException, TimeoutException {
         // Urls will be visited in reverse order to preserve the array ordering
@@ -204,69 +192,64 @@ public class HistoryUITest {
 
         String[] testTitles = new String[testUrls.length];
         for (int i = testUrls.length - 1; i >= 0; --i) {
-            mActivityTestRule.loadUrl(testUrls[i]);
-            testTitles[i] = mActivityTestRule.getActivity().getActivityTab().getTitle();
+            loadUrl(testUrls[i]);
+            testTitles[i] = getActivity().getActivityTab().getTitle();
         }
 
         // Check that the history page contains the visited pages.
-        mActivityTestRule.loadUrl(HISTORY_URL);
-        waitForResultCount(mActivityTestRule.getActivity().getCurrentContentViewCore(), 2);
+        loadUrl(HISTORY_URL);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
 
         HistoryItem[] history = getHistoryContents();
         for (int i = 0; i < testUrls.length; ++i) {
-            Assert.assertEquals(testUrls[i], history[i].url);
-            Assert.assertEquals(testTitles[i], history[i].title);
+            assertEquals(testUrls[i], history[i].url);
+            assertEquals(testTitles[i], history[i].title);
         }
 
         // Remove the first entry from history.
-        Assert.assertTrue(history.length >= 1);
+        assertTrue(history.length >= 1);
         removeSelectedHistoryEntryAtIndex(0);
-        waitForResultCount(mActivityTestRule.getActivity().getCurrentContentViewCore(), 1);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 1);
 
         // Check that now the first result is the second visited page.
         history = getHistoryContents();
-        Assert.assertEquals(testUrls[1], history[0].url);
-        Assert.assertEquals(testTitles[1], history[0].title);
+        assertEquals(testUrls[1], history[0].url);
+        assertEquals(testTitles[1], history[0].title);
     }
 
-    @Test
     @LargeTest
     @Feature({"History"})
     @RetryOnFailure
     public void testClearBrowsingData() throws InterruptedException, TimeoutException {
         // Introduce some entries in the history page.
-        mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/google.html"));
-        mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/about.html"));
-        mActivityTestRule.loadUrl(HISTORY_URL);
-        waitForResultCount(mActivityTestRule.getActivity().getCurrentContentViewCore(), 2);
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/google.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/about.html"));
+        loadUrl(HISTORY_URL);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
 
         // Trigger cleaning up all the browsing data. JS finishing events will make it synchronous
         // to us.
         final Preferences prefActivity = ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(), Preferences.class, new Runnable() {
+                getInstrumentation(), Preferences.class, new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            mActivityTestRule.runJavaScriptCodeInCurrentTab(
-                                    "openClearBrowsingData()");
+                            runJavaScriptCodeInCurrentTab("openClearBrowsingData()");
                         } catch (InterruptedException e) {
-                            Assert.fail("Exception occurred while attempting to open clear browing"
-                                    + " data");
+                            fail("Exception occurred while attempting to open clear browing data");
                         } catch (TimeoutException e) {
-                            Assert.fail("Exception occurred while attempting to open clear browing"
-                                    + " data");
+                            fail("Exception occurred while attempting to open clear browing data");
                         }
                     }
                 });
-        Assert.assertNotNull("Could not find the preferences activity", prefActivity);
+        assertNotNull("Could not find the preferences activity", prefActivity);
 
         final ClearBrowsingDataPreferences clearBrowsingFragment =
                 (ClearBrowsingDataPreferences) prefActivity.getFragmentForTest();
-        Assert.assertNotNull("Could not find clear browsing data fragment", clearBrowsingFragment);
+        assertNotNull("Could not find clear browsing data fragment", clearBrowsingFragment);
 
         final ChromeActivity mainActivity = ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity().getClass(), new Runnable() {
+                getInstrumentation(), getActivity().getClass(), new Runnable() {
                     @Override
                     public void run() {
                         ThreadUtils.runOnUiThread(new Runnable() {
@@ -283,7 +266,7 @@ public class HistoryUITest {
                         });
                     }
                 });
-        Assert.assertNotNull("Main never resumed", mainActivity);
+        assertNotNull("Main never resumed", mainActivity);
         CriteriaHelper.pollUiThread(new Criteria("Main tab never restored") {
             @Override
             public boolean isSatisfied() {
@@ -294,6 +277,6 @@ public class HistoryUITest {
         });
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mainActivity.getCurrentContentViewCore().getWebContents(), "reloadHistory()");
-        waitForResultCount(mActivityTestRule.getActivity().getCurrentContentViewCore(), 0);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 0);
     }
 }

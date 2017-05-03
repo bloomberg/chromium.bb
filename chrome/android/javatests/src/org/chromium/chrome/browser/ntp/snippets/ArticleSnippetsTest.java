@@ -5,24 +5,16 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.BitmapFactory;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -39,8 +31,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
 import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsMetricsReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -51,14 +42,7 @@ import java.util.Arrays;
 /**
  * Tests for the appearance of Article Snippets.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class ArticleSnippetsTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private ViewRenderer mViewRenderer;
 
     private SuggestionsUiDelegate mUiDelegate;
@@ -69,7 +53,10 @@ public class ArticleSnippetsTest {
     private FrameLayout mContentView;
     private UiConfig mUiConfig;
 
-    @Test
+    public ArticleSnippetsTest() {
+        super(ChromeActivity.class);
+    }
+
     @MediumTest
     @Feature({"ArticleSnippets", "RenderTest"})
     @RetryOnFailure
@@ -79,12 +66,12 @@ public class ArticleSnippetsTest {
             public void run() {
                 setupTestData();
 
-                mContentView = new FrameLayout(mActivityTestRule.getActivity());
+                mContentView = new FrameLayout(getActivity());
                 mUiConfig = new UiConfig(mContentView);
 
-                mActivityTestRule.getActivity().setContentView(mContentView);
+                getActivity().setContentView(mContentView);
 
-                mRecyclerView = new SuggestionsRecyclerView(mActivityTestRule.getActivity());
+                mRecyclerView = new SuggestionsRecyclerView(getActivity());
                 mContentView.addView(mRecyclerView);
 
                 mAdapter = new NewTabPageAdapter(mUiDelegate, /* aboveTheFold = */ null, mUiConfig,
@@ -95,7 +82,7 @@ public class ArticleSnippetsTest {
             }
         });
 
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
 
         int first = mAdapter.getFirstCardPosition();
         mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first), "short_snippet");
@@ -124,7 +111,7 @@ public class ArticleSnippetsTest {
             }
         });
 
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
 
         mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first), "short_snippet_narrow");
         mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first + 1), "long_snippet_narrow");
@@ -145,9 +132,8 @@ public class ArticleSnippetsTest {
                 1466614774, // Publish timestamp
                 10f, // Score
                 1466634774); // Fetch timestamp
-        shortSnippet.setThumbnailBitmap(
-                BitmapFactory.decodeResource(mActivityTestRule.getActivity().getResources(),
-                        R.drawable.signin_promo_illustration));
+        shortSnippet.setThumbnailBitmap(BitmapFactory.decodeResource(getActivity().getResources(),
+                R.drawable.signin_promo_illustration));
 
         SnippetArticle longSnippet = new SnippetArticle(fullCategory, "id2",
                 new String(new char[20]).replace("\0", "Snippet "),
@@ -189,11 +175,16 @@ public class ArticleSnippetsTest {
                 minimalCategory, Arrays.asList(minimalSnippet, minimalSnippet2));
     }
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mViewRenderer = new ViewRenderer(mActivityTestRule.getActivity(),
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+        mViewRenderer = new ViewRenderer(getActivity(),
                 "chrome/test/data/android/render_tests", this.getClass().getSimpleName());
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         mUiDelegate = new MockUiDelegate();
         mSnippetsSource = new FakeSuggestionsSource();
     }
@@ -214,9 +205,8 @@ public class ArticleSnippetsTest {
                 public void run() {
                     // Return an arbitrary drawable.
                     faviconCallback.onFaviconAvailable(
-                            BitmapFactory.decodeResource(
-                                    mActivityTestRule.getActivity().getResources(),
-                                    R.drawable.star_green),
+                            BitmapFactory.decodeResource(getActivity().getResources(),
+                            R.drawable.star_green),
                             url);
                 }
             });

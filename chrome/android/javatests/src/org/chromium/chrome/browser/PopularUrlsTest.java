@@ -7,25 +7,15 @@ package org.chromium.chrome.browser;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.os.Environment;
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Manual;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 
@@ -49,13 +39,7 @@ import java.util.concurrent.TimeoutException;
  * page load. When aborted, they save the last opened URL in /sdcard/test_status.txt, so that they
  * can continue opening the next URL when they are restarted.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class PopularUrlsTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class PopularUrlsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TAG = "PopularUrlsTest";
     private static final String NEW_LINE = System.getProperty("line.separator");
@@ -77,19 +61,29 @@ public class PopularUrlsTest {
     private boolean mFailed;
     private boolean mDoShortWait;
 
-    @Before
-    public void setUp() throws Exception {
+    public PopularUrlsTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
         mStatus = new RunStatus(STATUS_FILE);
         mFailed = false;
         mDoShortWait = checkDoShortWait();
-        mActivityTestRule.startMainActivityFromLauncher();
+        super.setUp();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         if (mStatus != null) {
             mStatus.cleanUp();
         }
+        super.tearDown();
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityFromLauncher();
     }
 
     private BufferedReader getInputStream(File inputFile) throws FileNotFoundException {
@@ -230,7 +224,7 @@ public class PopularUrlsTest {
      */
     public void loadUrl(final String url, OutputStreamWriter failureWriter)
             throws InterruptedException, IOException {
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        Tab tab = getActivity().getActivityTab();
         final CallbackHelper loadedCallback = new CallbackHelper();
         final CallbackHelper failedCallback = new CallbackHelper();
         final CallbackHelper crashedCallback = new CallbackHelper();
@@ -252,10 +246,10 @@ public class PopularUrlsTest {
             }
         });
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                Tab tab = mActivityTestRule.getActivity().getActivityTab();
+                Tab tab = getActivity().getActivityTab();
                 int pageTransition = PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR;
                 tab.loadUrl(new LoadUrlParams(url, pageTransition));
             }
@@ -310,13 +304,13 @@ public class PopularUrlsTest {
             mFailed = true;
         }
         // Try to stop page load.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getActivity().getActivityTab().stopLoading();
+                getActivity().getActivityTab().stopLoading();
             }
         });
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
     }
 
     /**
@@ -366,7 +360,7 @@ public class PopularUrlsTest {
                 loadUrl(page, failureWriter);
                 long stopTime = System.currentTimeMillis();
 
-                String currentUrl = mActivityTestRule.getActivity().getActivityTab().getUrl();
+                String currentUrl = getActivity().getActivityTab().getUrl();
                 Log.i(TAG, "Finish: " + currentUrl);
                 logToStream(page + "|" + (stopTime - startTime) + NEW_LINE, outputWriter);
                 mStatus.incrementPage();
@@ -394,7 +388,7 @@ public class PopularUrlsTest {
             int loopCount = perf ? PERF_LOOPCOUNT : STABILITY_LOOPCOUNT;
             try {
                 loopUrls(bufferedReader, outputWriter, failureWriter, true, loopCount);
-                Assert.assertFalse(
+                assertFalse(
                         String.format("Failed to load all pages. Take a look at %s", FAILURE_FILE),
                         mFailed);
             } finally {
@@ -404,7 +398,7 @@ public class PopularUrlsTest {
             }
         } catch (FileNotFoundException fnfe) {
             Log.e(TAG, fnfe.getMessage(), fnfe);
-            Assert.fail(String.format("URL file %s is not found.", INPUT_FILE));
+            fail(String.format("URL file %s is not found.", INPUT_FILE));
         } finally {
             if (outputWriter != null) {
                 outputWriter.close();
@@ -418,7 +412,6 @@ public class PopularUrlsTest {
     /**
      * Repeats loading all URLs by PERF_LOOPCOUNT times, and records the time each load takes.
      */
-    @Test
     @Manual
     public void testLoadPerformance() throws IOException, InterruptedException {
         loadPages(true);
@@ -427,7 +420,6 @@ public class PopularUrlsTest {
     /**
      * Loads all URLs.
      */
-    @Test
     @Manual
     public void testStability() throws IOException, InterruptedException {
         loadPages(false);
