@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <map>
-#include <string>
 #include <vector>
 
 #include "ash/shell.h"
@@ -51,6 +50,7 @@
 
 using base::ProcessHandle;
 using base::TimeDelta;
+using base::TimeTicks;
 using content::BrowserThread;
 
 namespace memory {
@@ -554,6 +554,15 @@ TabManagerDelegate::GetSortedCandidates(
   return candidates;
 }
 
+bool TabManagerDelegate::IsRecentlyKilledArcProcess(
+    const std::string& process_name,
+    const TimeTicks& now) {
+  const auto it = recently_killed_arc_processes_.find(process_name);
+  if (it == recently_killed_arc_processes_.end())
+    return false;
+  return (now - it->second) <= GetArcRespawnKillDelay();
+}
+
 bool TabManagerDelegate::KillArcProcess(const int nspid) {
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager)
@@ -590,6 +599,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
       GetSortedCandidates(tab_list, arc_processes);
 
   int target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
+  const TimeTicks now = TimeTicks::Now();
 
   // Kill processes until the estimated amount of freed memory is sufficient to
   // bring the system memory back to a normal level.
@@ -610,9 +620,14 @@ void TabManagerDelegate::LowMemoryKillImpl(
       continue;
     }
     if (it->app()) {
+      if (IsRecentlyKilledArcProcess(it->app()->process_name(), now)) {
+        MEMORY_LOG(ERROR) << "Avoided killing " << *it << " too often";
+        continue;
+      }
       int estimated_memory_freed_kb =
           mem_stat_->EstimatedMemoryFreedKB(it->app()->pid());
       if (KillArcProcess(it->app()->nspid())) {
+        recently_killed_arc_processes_[it->app()->process_name()] = now;
         target_memory_to_free_kb -= estimated_memory_freed_kb;
         MemoryKillsMonitor::LogLowMemoryKill("APP", estimated_memory_freed_kb);
         MEMORY_LOG(ERROR) << "Killed " << *it << ", estimated "
