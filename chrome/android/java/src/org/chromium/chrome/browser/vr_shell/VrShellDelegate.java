@@ -14,6 +14,8 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -233,15 +235,38 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
      * If VR Shell is enabled, and the activity is supported, register with the Daydream
      * platform that this app would like to be launched in VR when the device enters VR.
      */
-    public static void maybeRegisterVrEntryHook(ChromeActivity activity) {
+    public static void maybeRegisterVrEntryHook(final ChromeActivity activity) {
+        // Daydream is not supported on pre-N devices.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         if (sInstance != null) return; // Will be handled in onResume.
         if (!activitySupportsVrBrowsing(activity)) return;
-        VrClassesWrapper wrapper = getVrClassesWrapper();
-        if (wrapper == null) return;
-        VrDaydreamApi api = wrapper.createVrDaydreamApi(activity);
-        if (api == null) return;
-        int vrSupportLevel = getVrSupportLevel(api, wrapper.createVrCoreVersionChecker(), null);
-        if (isVrShellEnabled(vrSupportLevel)) registerDaydreamIntent(api, activity);
+
+        // Reading VR support level and version can be slow, so do it asynchronously.
+        new AsyncTask<Void, Void, VrDaydreamApi>() {
+            @Override
+            protected VrDaydreamApi doInBackground(Void... params) {
+                VrClassesWrapper wrapper = getVrClassesWrapper();
+                if (wrapper == null) return null;
+                VrDaydreamApi api = wrapper.createVrDaydreamApi(activity);
+                if (api == null) return null;
+                int vrSupportLevel =
+                        getVrSupportLevel(api, wrapper.createVrCoreVersionChecker(), null);
+                if (!isVrShellEnabled(vrSupportLevel)) return null;
+                return api;
+            }
+
+            @Override
+            protected void onPostExecute(VrDaydreamApi api) {
+                // Registering the daydream intent has to be done on the UI thread. Note that this
+                // call is slow (~10ms at time of writing).
+                if (api != null
+                        && ApplicationStatus.getStateForActivity(activity)
+                                == ActivityState.RESUMED) {
+                    registerDaydreamIntent(api, activity);
+                }
+            }
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -249,6 +274,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
      * from being launched from the background when the device enters VR.
      */
     public static void maybeUnregisterVrEntryHook(ChromeActivity activity) {
+        // Daydream is not supported on pre-N devices.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         if (sInstance != null) return; // Will be handled in onPause.
         if (!activitySupportsVrBrowsing(activity)) return;
         VrClassesWrapper wrapper = getVrClassesWrapper();
@@ -324,10 +351,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private static void registerDaydreamIntent(
             final VrDaydreamApi daydreamApi, final ChromeActivity activity) {
         if (sVrBroadcastReceiver != null) sVrBroadcastReceiver.unregister();
+        if (!daydreamApi.registerDaydreamIntent(getEnterVrPendingIntent(activity))) return;
         IntentFilter filter = new IntentFilter(VR_ENTRY_RESULT_ACTION);
         sVrBroadcastReceiver = new VrBroadcastReceiver(activity);
         activity.registerReceiver(sVrBroadcastReceiver, filter);
-        daydreamApi.registerDaydreamIntent(getEnterVrPendingIntent(activity));
     }
 
     /**
@@ -608,9 +635,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
 
         if (mVrSupportLevel != VR_DAYDREAM) return;
-        if (mListeningForWebVrActivateBeforePause
-                || (isVrShellEnabled(mVrSupportLevel) && activitySupportsVrBrowsing(mActivity))) {
-            registerDaydreamIntent(mVrDaydreamApi, mActivity);
+        if (isVrShellEnabled(mVrSupportLevel) && activitySupportsVrBrowsing(mActivity)) {
+            // registerDaydreamIntent is slow, so run it after resuming.
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!mPaused) registerDaydreamIntent(mVrDaydreamApi, mActivity);
+                }
+            });
         }
 
         if (mVrDaydreamApi.isDaydreamCurrentViewer()
@@ -698,7 +730,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // mListeningForWebVrActivate for them.
         if (mVrSupportLevel != VR_DAYDREAM) return;
         mListeningForWebVrActivate = listening;
-        if (listening) {
+        if (listening && !mPaused) {
             registerDaydreamIntent(mVrDaydreamApi, mActivity);
         } else {
             unregisterDaydreamIntent(mVrDaydreamApi);
