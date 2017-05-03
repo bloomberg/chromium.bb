@@ -66,18 +66,23 @@
 
 namespace {
 
-NSString* kUsername = @"testusername";
-NSString* kPassword = @"testpassword";
+NSString* const kSite = @"https://testorigin.com/";
+NSString* const kUsername = @"testusername";
+NSString* const kPassword = @"testpassword";
 
-int kUsernameSection = 0;
-int kUsernameItem = 0;
-int kCopyUsernameButtonItem = 1;
+const int kSiteSection = 0;
+const int kSiteItem = 0;
+const int kCopySiteButtonItem = 1;
 
-int kPasswordSection = 1;
-int kPasswordItem = 0;
-int kShowHideButtonItem = 1;
-int kCopyPasswordButtonItem = 2;
-int kDeleteButtonItem = 3;
+const int kUsernameSection = 1;
+const int kUsernameItem = 0;
+const int kCopyUsernameButtonItem = 1;
+
+const int kPasswordSection = 2;
+const int kPasswordItem = 0;
+const int kShowHideButtonItem = 1;
+const int kCopyPasswordButtonItem = 2;
+const int kDeleteButtonItem = 3;
 
 class PasswordDetailsCollectionViewControllerTest
     : public CollectionViewControllerTest {
@@ -86,14 +91,19 @@ class PasswordDetailsCollectionViewControllerTest
       : thread_bundle_(web::TestWebThreadBundle::REAL_DB_THREAD) {}
   void SetUp() override {
     CollectionViewControllerTest::SetUp();
-    origin_ = @"testorigin.com";
+    origin_ = kSite;
     delegate_ = [[MockSavePasswordsCollectionViewController alloc] init];
     reauthenticationModule_ = [[MockReauthenticationModule alloc] init];
   }
 
   CollectionViewController* InstantiateController() override {
+    autofill::PasswordForm form;
+    form.username_value = base::SysNSStringToUTF16(kUsername);
+    form.password_value = base::SysNSStringToUTF16(kPassword);
+    form.signon_realm = base::SysNSStringToUTF8(origin_);
+    form.origin = GURL(form.signon_realm);
     return [[PasswordDetailsCollectionViewController alloc]
-          initWithPasswordForm:*(new autofill::PasswordForm())
+          initWithPasswordForm:form
                       delegate:delegate_
         reauthenticationModule:reauthenticationModule_
                       username:kUsername
@@ -115,7 +125,16 @@ class PasswordDetailsCollectionViewControllerTest
 TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
   CreateController();
   CheckController();
-  EXPECT_EQ(2, NumberOfSections());
+  EXPECT_EQ(3, NumberOfSections());
+  // Site section
+  EXPECT_EQ(2, NumberOfItemsInSection(kUsernameSection));
+  CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_SITE, kSiteSection);
+  PasswordDetailsItem* siteItem =
+      GetCollectionViewItem(kSiteSection, kSiteItem);
+  EXPECT_NSEQ(origin_, siteItem.text);
+  EXPECT_TRUE(siteItem.showingText);
+  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_SITE_COPY_BUTTON, kSiteSection,
+                           kCopySiteButtonItem);
   // Username section
   EXPECT_EQ(2, NumberOfItemsInSection(kUsernameSection));
   CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME,
@@ -160,6 +179,15 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, SimplifyOrigin) {
         << " for origin " << base::SysNSStringToUTF8(test_data[i].origin);
     ResetController();
   }
+}
+
+TEST_F(PasswordDetailsCollectionViewControllerTest, CopySite) {
+  CreateController();
+  [controller() collectionView:[controller() collectionView]
+      didSelectItemAtIndexPath:[NSIndexPath indexPathForRow:kCopySiteButtonItem
+                                                  inSection:kSiteSection]];
+  UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
+  EXPECT_NSEQ(origin_, generalPasteboard.string);
 }
 
 TEST_F(PasswordDetailsCollectionViewControllerTest, CopyUsername) {

@@ -72,10 +72,26 @@ id<GREYMatcher> EditButton() {
 // same for multiple types of copied items (just "Copy"). Therefore the
 // matchers here check the relative position of the Copy buttons to their
 // respective section headers as well. The scheme of the vertical order is:
+//   Site header
+//   Copy (site) button
 //   Username header
 //   Copy (username) button
 //   Password header
 //   Copy (password) button
+
+id<GREYMatcher> SiteHeader() {
+  return grey_allOf(
+      grey_accessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE)),
+      grey_accessibilityTrait(UIAccessibilityTraitHeader), nullptr);
+}
+
+id<GREYMatcher> UsernameHeader() {
+  return grey_allOf(
+      grey_accessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME)),
+      grey_accessibilityTrait(UIAccessibilityTraitHeader), nullptr);
+}
 
 id<GREYMatcher> PasswordHeader() {
   return grey_allOf(
@@ -84,15 +100,40 @@ id<GREYMatcher> PasswordHeader() {
       grey_accessibilityTrait(UIAccessibilityTraitHeader), nullptr);
 }
 
-// Matcher for the Copy username button in Password Details view. This is the
-// button above the Password section header.
-id<GREYMatcher> CopyUsernameButton() {
-  GREYLayoutConstraint* above = [GREYLayoutConstraint
+GREYLayoutConstraint* Above() {
+  return [GREYLayoutConstraint
       layoutConstraintWithAttribute:kGREYLayoutAttributeBottom
                           relatedBy:kGREYLayoutRelationLessThanOrEqual
                toReferenceAttribute:kGREYLayoutAttributeTop
                          multiplier:1.0
                            constant:0.0];
+}
+
+GREYLayoutConstraint* Below() {
+  return [GREYLayoutConstraint
+      layoutConstraintWithAttribute:kGREYLayoutAttributeTop
+                          relatedBy:kGREYLayoutRelationGreaterThanOrEqual
+               toReferenceAttribute:kGREYLayoutAttributeBottom
+                         multiplier:1.0
+                           constant:0.0];
+}
+
+// Matcher for the Copy site button in Password Details view.
+id<GREYMatcher> CopySiteButton() {
+  return grey_allOf(
+      ButtonWithAccessibilityLabel(
+          [NSString stringWithFormat:@"%@: %@",
+                                     l10n_util::GetNSString(
+                                         IDS_IOS_SHOW_PASSWORD_VIEW_SITE),
+                                     l10n_util::GetNSString(
+                                         IDS_IOS_SETTINGS_SITE_COPY_BUTTON)]),
+      grey_layout(@[ Below() ], SiteHeader()),
+      grey_layout(@[ Above() ], UsernameHeader()),
+      grey_layout(@[ Above() ], PasswordHeader()), nullptr);
+}
+
+// Matcher for the Copy username button in Password Details view.
+id<GREYMatcher> CopyUsernameButton() {
   return grey_allOf(
       ButtonWithAccessibilityLabel([NSString
           stringWithFormat:@"%@: %@",
@@ -100,18 +141,13 @@ id<GREYMatcher> CopyUsernameButton() {
                                IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME),
                            l10n_util::GetNSString(
                                IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON)]),
-      grey_layout(@[ above ], PasswordHeader()), nullptr);
+      grey_layout(@[ Below() ], SiteHeader()),
+      grey_layout(@[ Below() ], UsernameHeader()),
+      grey_layout(@[ Above() ], PasswordHeader()), nullptr);
 }
 
-// Matcher for the Copy password button in Password Details view. This is the
-// button below the Password section header.
+// Matcher for the Copy password button in Password Details view.
 id<GREYMatcher> CopyPasswordButton() {
-  GREYLayoutConstraint* below = [GREYLayoutConstraint
-      layoutConstraintWithAttribute:kGREYLayoutAttributeTop
-                          relatedBy:kGREYLayoutRelationGreaterThanOrEqual
-               toReferenceAttribute:kGREYLayoutAttributeBottom
-                         multiplier:1.0
-                           constant:0.0];
   return grey_allOf(
       ButtonWithAccessibilityLabel([NSString
           stringWithFormat:@"%@: %@",
@@ -119,7 +155,9 @@ id<GREYMatcher> CopyPasswordButton() {
                                IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD),
                            l10n_util::GetNSString(
                                IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON)]),
-      grey_layout(@[ below ], PasswordHeader()), nullptr);
+      grey_layout(@[ Below() ], SiteHeader()),
+      grey_layout(@[ Below() ], UsernameHeader()),
+      grey_layout(@[ Below() ], PasswordHeader()), nullptr);
 }
 
 }  // namespace
@@ -371,6 +409,33 @@ id<GREYMatcher> CopyPasswordButton() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   NSString* snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE);
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
+      assertWithMatcher:grey_notNil()];
+
+  [self tapBackArrow];
+  [self tapBackArrow];
+  [self tapDone];
+  [self clearPasswordStore];
+}
+
+// Checks that attempts to copy a site URL provide appropriate feedback.
+- (void)testCopySiteToast {
+  [self scopedEnablePasswordManagementAndViewingUI];
+
+  // Saving a form is needed for using the "password details" view.
+  [self saveExamplePasswordForm];
+
+  [self openPasswordSettings];
+
+  [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
+      performAction:grey_tap()];
+
+  // Check the snackbar.
+  [[EarlGrey selectElementWithMatcher:CopySiteButton()]
+      performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  NSString* snackbarLabel =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE);
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       assertWithMatcher:grey_notNil()];
 

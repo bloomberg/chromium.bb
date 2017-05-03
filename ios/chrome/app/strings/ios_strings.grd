@@ -1107,6 +1107,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SEARCH_ENGINE_SETTING_TITLE" desc="The title for Search Engine selection setting [iOS only]">
         Search Engine
       </message>
+      <message name="IDS_IOS_SETTINGS_SITE_COPY_BUTTON" desc="Button that the user can press to copy the site to clipboard. [Length: 12em]">
+        Copy
+      </message>
       <message name="IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON" desc="Button that the user can press to copy the username to clipboard. [Length: 12em]">
         Copy
       </message>
@@ -1130,6 +1133,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON" desc="Button that the user can press in order to have the password displayed in plain text. [Length: 12em]">
         Show
+      </message>
+      <message name="IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE" desc="Confirmation that the site URL of a saved credential was copied. This is shown alone in an infobar at the bottom of the screen. [Length: 40em]">
+        The site URL was copied.
       </message>
       <message name="IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE" desc="Confirmation that the username was copied. This is shown alone in an infobar at the bottom of the screen. [Length: 40em]">
         Your username was copied.
@@ -1196,6 +1202,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       </message>
       <message name="IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD" desc="Label indicating that the text displayed below is a password. [Length: 20em] [iOS only]">
         Password
+      </message>
+      <message name="IDS_IOS_SHOW_PASSWORD_VIEW_SITE" desc="Label indicating that the text displayed below is the site on which the associated password was saved. The password is displayed in the same view, but under a diferent label. [Length: 20em] [iOS only]">
+        Site
       </message>
       <message name="IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME" desc="Label indicating that the text displayed below is the username to which a saved password corresponds. The password is displayed in the same view, but under a diferent label. [Length: 20em] [iOS only]">
         Username
