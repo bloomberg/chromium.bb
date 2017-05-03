@@ -261,8 +261,9 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
                       current_offset.y());
 }
 
-RenderSurfaceImpl* LayerTreeImpl::RootRenderSurface() const {
-  return layer_list_.empty() ? nullptr : layer_list_[0]->GetRenderSurface();
+const RenderSurfaceImpl* LayerTreeImpl::RootRenderSurface() const {
+  return property_trees_.effect_tree.GetRenderSurface(
+      EffectTree::kContentsRootNodeId);
 }
 
 bool LayerTreeImpl::LayerListIsEmpty() const {
@@ -1059,8 +1060,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     TRACE_EVENT2("cc", "LayerTreeImpl::UpdateDrawProperties::Occlusion",
                  "IsActive", IsActiveTree(), "SourceFrameNumber",
                  source_frame_number_);
-    OcclusionTracker occlusion_tracker(
-        layer_list_[0]->GetRenderSurface()->content_rect());
+    OcclusionTracker occlusion_tracker(RootRenderSurface()->content_rect());
     occlusion_tracker.set_minimum_tracking_size(
         settings().minimum_occlusion_tracking_size);
 

@@ -734,11 +734,12 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
   }
 }
 
-static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
-                                    RenderPass* target_render_pass,
-                                    RenderSurfaceImpl* root_render_surface,
-                                    SkColor screen_background_color,
-                                    const Region& fill_region) {
+static void AppendQuadsToFillScreen(
+    const gfx::Rect& root_scroll_layer_rect,
+    RenderPass* target_render_pass,
+    const RenderSurfaceImpl* root_render_surface,
+    SkColor screen_background_color,
+    const Region& fill_region) {
   if (!root_render_surface || !SkColorGetA(screen_background_color))
     return;
   if (fill_region.IsEmpty())
@@ -792,7 +793,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   // If the root render surface has no visible damage, then don't generate a
   // frame at all.
-  RenderSurfaceImpl* root_surface = active_tree_->RootRenderSurface();
+  const RenderSurfaceImpl* root_surface = active_tree_->RootRenderSurface();
   bool root_surface_has_no_visible_damage =
       !root_surface->GetDamageRect().Intersects(root_surface->content_rect());
   bool root_surface_has_contributing_layers =

@@ -582,7 +582,8 @@ void CalculateDrawPropertiesInternal(
 
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
-  DCHECK(inputs->root_layer->GetRenderSurface());
+  DCHECK(inputs->property_trees->effect_tree.GetRenderSurface(
+      EffectTree::kContentsRootNodeId));
 }
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
