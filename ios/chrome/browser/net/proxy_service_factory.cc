@@ -53,7 +53,7 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   std::unique_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateUsingSystemProxyResolver(
-          std::move(proxy_config_service), 0, net_log));
+          std::move(proxy_config_service), net_log));
   proxy_service->set_quick_check_enabled(quick_check_enabled);
   return proxy_service;
 }

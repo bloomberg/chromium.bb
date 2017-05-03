@@ -254,7 +254,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
 
   DCHECK(proxy_config_service_);
   proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
-      std::move(proxy_config_service_), 0, NULL);
+      std::move(proxy_config_service_), NULL);
   system_dependencies_initialized_ = true;
 }
 
