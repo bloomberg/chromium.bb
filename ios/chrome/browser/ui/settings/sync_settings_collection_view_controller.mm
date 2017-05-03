@@ -964,6 +964,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewAccountItem* item =
       base::mac::ObjCCastStrict<CollectionViewAccountItem>(
           [_identityMap objectForKey:identity.gaiaID]);
+  if (!item) {
+    // Ignoring unknown identity.
+    return;
+  }
   [self updateAccountItem:item withIdentity:identity];
   [self reconfigureCellsForItems:@[ item ]
          inSectionWithIdentifier:SectionIdentifierSyncAccounts];
