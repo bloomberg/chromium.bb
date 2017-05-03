@@ -467,6 +467,12 @@ class BLINK_EXPORT WebFrameClient {
     return WebEffectiveConnectionType::kTypeUnknown;
   }
 
+  // Returns whether or not the requested image should be replaced with a
+  // placeholder as part of the Client Lo-Fi previews feature.
+  virtual bool ShouldUseClientLoFiForRequest(const WebURLRequest&) {
+    return false;
+  }
+
   // PlzNavigate
   // Called to abort a navigation that is being handled by the browser process.
   virtual void AbortClientNavigation() {}

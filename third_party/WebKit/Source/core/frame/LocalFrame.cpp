@@ -90,7 +90,9 @@
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/json/JSONValues.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/text/TextStream.h"
@@ -99,6 +101,7 @@
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/InterfaceRegistry.h"
 #include "public/platform/WebScreenInfo.h"
+#include "public/platform/WebURLRequest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -949,6 +952,21 @@ ScopedFrameBlamer::ScopedFrameBlamer(LocalFrame* frame) : frame_(frame) {
 ScopedFrameBlamer::~ScopedFrameBlamer() {
   if (frame_ && frame_->Client() && frame_->Client()->GetFrameBlameContext())
     frame_->Client()->GetFrameBlameContext()->Leave();
+}
+
+void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
+  if (GetSettings() && GetSettings()->GetFetchImagePlaceholders()) {
+    params.SetAllowImagePlaceholder();
+    return;
+  }
+
+  if (Client() &&
+      Client()->ShouldUseClientLoFiForRequest(params.GetResourceRequest())) {
+    params.MutableResourceRequest().SetPreviewsState(
+        params.GetResourceRequest().GetPreviewsState() |
+        WebURLRequest::kClientLoFiOn);
+    params.SetAllowImagePlaceholder();
+  }
 }
 
 }  // namespace blink

@@ -29,7 +29,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
-#include "core/frame/Settings.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleInvalidImage.h"
@@ -119,9 +119,8 @@ StyleImage* CSSImageSetValue::CacheImage(
       params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
                                          cross_origin);
     }
-    if (document.GetSettings() &&
-        document.GetSettings()->GetFetchImagePlaceholders())
-      params.SetAllowImagePlaceholder();
+    if (document.GetFrame())
+      document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
     if (ImageResourceContent* cached_image =
             ImageResourceContent::Fetch(params, document.Fetcher())) {

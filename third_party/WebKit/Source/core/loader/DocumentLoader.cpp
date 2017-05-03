@@ -186,10 +186,8 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
   Resource* resource = nullptr;
   switch (type) {
     case Resource::kImage:
-      if (frame_ && frame_->GetSettings() &&
-          frame_->GetSettings()->GetFetchImagePlaceholders()) {
-        params.SetAllowImagePlaceholder();
-      }
+      if (frame_)
+        frame_->MaybeAllowImagePlaceholder(params);
       resource = ImageResource::Fetch(params, Fetcher());
       break;
     case Resource::kScript:

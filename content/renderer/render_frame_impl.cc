@@ -4174,6 +4174,26 @@ RenderFrameImpl::GetEffectiveConnectionType() {
   return effective_connection_type_;
 }
 
+bool RenderFrameImpl::ShouldUseClientLoFiForRequest(
+    const WebURLRequest& request) {
+  if (request.GetPreviewsState() != WebURLRequest::kPreviewsUnspecified)
+    return request.GetPreviewsState() & WebURLRequest::kClientLoFiOn;
+
+  if (!(previews_state_ & CLIENT_LOFI_ON))
+    return false;
+  if (previews_state_ &
+      (SERVER_LITE_PAGE_ON | PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM)) {
+    return false;
+  }
+
+  // Even if this frame is using Server Lo-Fi, https:// images won't be handled
+  // by Server Lo-Fi since their requests won't be sent to the Data Saver proxy,
+  // so use Client Lo-Fi instead.
+  if (previews_state_ & SERVER_LOFI_ON)
+    return request.Url().ProtocolIs("https");
+  return true;
+}
+
 void RenderFrameImpl::AbortClientNavigation() {
   Send(new FrameHostMsg_AbortNavigation(routing_id_));
 }
@@ -4476,10 +4496,17 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
       request.SetPreviewsState(static_cast<WebURLRequest::PreviewsState>(
           navigation_state->common_params().previews_state));
     } else {
-      request.SetPreviewsState(
-          previews_state_ == PREVIEWS_UNSPECIFIED
-              ? WebURLRequest::kPreviewsOff
-              : static_cast<WebURLRequest::PreviewsState>(previews_state_));
+      WebURLRequest::PreviewsState request_previews_state =
+          static_cast<WebURLRequest::PreviewsState>(previews_state_);
+
+      // The decision of whether or not to enable Client Lo-Fi is made earlier
+      // in the request lifetime, using ShouldUseClientLoFiForRequest(), so
+      // don't add the Client Lo-Fi bit to the request here.
+      request_previews_state &= ~(WebURLRequest::kClientLoFiOn);
+      if (request_previews_state == WebURLRequest::kPreviewsUnspecified)
+        request_previews_state = WebURLRequest::kPreviewsOff;
+
+      request.SetPreviewsState(request_previews_state);
     }
   }
 

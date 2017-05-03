@@ -316,10 +316,8 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetClientHintsPreferences());
 
-    if (update_behavior != kUpdateForcedReload && document.GetSettings() &&
-        document.GetSettings()->GetFetchImagePlaceholders()) {
-      params.SetAllowImagePlaceholder();
-    }
+    if (update_behavior != kUpdateForcedReload && document.GetFrame())
+      document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
     new_image = ImageResourceContent::Fetch(params, document.Fetcher());
 
