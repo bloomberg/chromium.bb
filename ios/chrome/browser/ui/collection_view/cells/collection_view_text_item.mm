@@ -71,11 +71,15 @@
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
   cell.isAccessibilityElement = YES;
-  if (self.detailText.length == 0) {
-    cell.accessibilityLabel = self.text;
+  if ([self.accessibilityLabel length] != 0) {
+    cell.accessibilityLabel = self.accessibilityLabel;
   } else {
-    cell.accessibilityLabel =
-        [NSString stringWithFormat:@"%@, %@", self.text, self.detailText];
+    if (self.detailText.length == 0) {
+      cell.accessibilityLabel = self.text;
+    } else {
+      cell.accessibilityLabel =
+          [NSString stringWithFormat:@"%@, %@", self.text, self.detailText];
+    }
   }
 
   // Styling.
