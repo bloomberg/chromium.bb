@@ -85,17 +85,29 @@ DeviceService::~DeviceService() {
 }
 
 void DeviceService::OnStart() {
-  registry_.AddInterface<mojom::Fingerprint>(this);
-  registry_.AddInterface<mojom::MotionSensor>(this);
-  registry_.AddInterface<mojom::OrientationSensor>(this);
-  registry_.AddInterface<mojom::OrientationAbsoluteSensor>(this);
-  registry_.AddInterface<mojom::PowerMonitor>(this);
-  registry_.AddInterface<mojom::ScreenOrientationListener>(this);
+  registry_.AddInterface<mojom::Fingerprint>(base::Bind(
+      &DeviceService::BindFingerprintRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::MotionSensor>(base::Bind(
+      &DeviceService::BindMotionSensorRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::OrientationSensor>(base::Bind(
+      &DeviceService::BindOrientationSensorRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::OrientationAbsoluteSensor>(
+      base::Bind(&DeviceService::BindOrientationAbsoluteSensorRequest,
+                 base::Unretained(this)));
+  registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
+      &DeviceService::BindPowerMonitorRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::ScreenOrientationListener>(
+      base::Bind(&DeviceService::BindScreenOrientationListenerRequest,
+                 base::Unretained(this)));
   if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
-    registry_.AddInterface<mojom::SensorProvider>(this);
+    registry_.AddInterface<mojom::SensorProvider>(base::Bind(
+        &DeviceService::BindSensorProviderRequest, base::Unretained(this)));
   }
-  registry_.AddInterface<mojom::TimeZoneMonitor>(this);
-  registry_.AddInterface<mojom::WakeLockContextProvider>(this);
+  registry_.AddInterface<mojom::TimeZoneMonitor>(base::Bind(
+      &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::WakeLockContextProvider>(
+      base::Bind(&DeviceService::BindWakeLockContextProviderRequest,
+                 base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   registry_.AddInterface(GetJavaInterfaceProvider()
@@ -104,8 +116,10 @@ void DeviceService::OnStart() {
       GetJavaInterfaceProvider()
           ->CreateInterfaceFactory<mojom::VibrationManager>());
 #else
-  registry_.AddInterface<mojom::BatteryMonitor>(this);
-  registry_.AddInterface<mojom::VibrationManager>(this);
+  registry_.AddInterface<mojom::BatteryMonitor>(base::Bind(
+      &DeviceService::BindBatteryMonitorRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::VibrationManager>(base::Bind(
+      &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
 #endif
 }
 
@@ -118,24 +132,28 @@ void DeviceService::OnBindInterface(
 }
 
 #if !defined(OS_ANDROID)
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::BatteryMonitorRequest request) {
+void DeviceService::BindBatteryMonitorRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::BatteryMonitorRequest request) {
   BatteryMonitorImpl::Create(std::move(request));
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::VibrationManagerRequest request) {
+void DeviceService::BindVibrationManagerRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::VibrationManagerRequest request) {
   VibrationManagerImpl::Create(std::move(request));
 }
 #endif
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::FingerprintRequest request) {
+void DeviceService::BindFingerprintRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::FingerprintRequest request) {
   Fingerprint::Create(std::move(request));
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::MotionSensorRequest request) {
+void DeviceService::BindMotionSensorRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::MotionSensorRequest request) {
 #if defined(OS_ANDROID)
   // On Android the device sensors implementations need to run on the UI thread
   // to communicate to Java.
@@ -150,8 +168,9 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
 #endif  // defined(OS_ANDROID)
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::OrientationSensorRequest request) {
+void DeviceService::BindOrientationSensorRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::OrientationSensorRequest request) {
 #if defined(OS_ANDROID)
   // On Android the device sensors implementations need to run on the UI thread
   // to communicate to Java.
@@ -167,8 +186,9 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
 #endif  // defined(OS_ANDROID)
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::OrientationAbsoluteSensorRequest request) {
+void DeviceService::BindOrientationAbsoluteSensorRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::OrientationAbsoluteSensorRequest request) {
 #if defined(OS_ANDROID)
   // On Android the device sensors implementations need to run on the UI thread
   // to communicate to Java.
@@ -184,8 +204,9 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
 #endif  // defined(OS_ANDROID)
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::PowerMonitorRequest request) {
+void DeviceService::BindPowerMonitorRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::PowerMonitorRequest request) {
   if (!power_monitor_message_broadcaster_) {
     power_monitor_message_broadcaster_ =
         base::MakeUnique<PowerMonitorMessageBroadcaster>();
@@ -193,8 +214,9 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
   power_monitor_message_broadcaster_->Bind(std::move(request));
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::ScreenOrientationListenerRequest request) {
+void DeviceService::BindScreenOrientationListenerRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::ScreenOrientationListenerRequest request) {
 #if defined(OS_ANDROID)
   if (io_task_runner_) {
     io_task_runner_->PostTask(
@@ -204,8 +226,9 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
 #endif
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::SensorProviderRequest request) {
+void DeviceService::BindSensorProviderRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::SensorProviderRequest request) {
   if (io_task_runner_) {
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&device::SensorProviderImpl::Create,
@@ -213,15 +236,17 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
   }
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::TimeZoneMonitorRequest request) {
+void DeviceService::BindTimeZoneMonitorRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::TimeZoneMonitorRequest request) {
   if (!time_zone_monitor_)
     time_zone_monitor_ = TimeZoneMonitor::Create(file_task_runner_);
   time_zone_monitor_->Bind(std::move(request));
 }
 
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::WakeLockContextProviderRequest request) {
+void DeviceService::BindWakeLockContextProviderRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::WakeLockContextProviderRequest request) {
   WakeLockContextProvider::Create(std::move(request), file_task_runner_,
                                   wake_lock_context_callback_);
 }

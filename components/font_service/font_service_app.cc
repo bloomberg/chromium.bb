@@ -40,7 +40,8 @@ base::File GetFileForPath(const base::FilePath& path) {
 namespace font_service {
 
 FontServiceApp::FontServiceApp() {
-  registry_.AddInterface(this);
+  registry_.AddInterface(
+      base::Bind(&FontServiceApp::Create, base::Unretained(this)));
 }
 
 FontServiceApp::~FontServiceApp() {}
@@ -53,12 +54,6 @@ void FontServiceApp::OnBindInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(source_info, interface_name,
                           std::move(interface_pipe));
-}
-
-void FontServiceApp::Create(
-    const service_manager::Identity& remote_identity,
-    mojo::InterfaceRequest<mojom::FontService> request) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 void FontServiceApp::MatchFamilyName(const std::string& family_name,
@@ -110,6 +105,11 @@ void FontServiceApp::OpenStream(uint32_t id_number,
   }
 
   callback.Run(std::move(file));
+}
+
+void FontServiceApp::Create(const service_manager::BindSourceInfo& source_info,
+                            mojom::FontServiceRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 int FontServiceApp::FindOrAddPath(const SkString& path) {

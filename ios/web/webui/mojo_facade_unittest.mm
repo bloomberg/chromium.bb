@@ -16,8 +16,7 @@
 #include "ios/web/test/mojo_test.mojom.h"
 #include "ios/web/web_state/web_state_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -44,18 +43,6 @@ id GetObject(const std::string& json) {
                                            error:nil];
 }
 
-// Test mojo handler factory.
-class TestUIHandlerFactory
-    : public service_manager::InterfaceFactory<TestUIHandlerMojo> {
- public:
-  ~TestUIHandlerFactory() override {}
-
- private:
-  // service_manager::InterfaceFactory overrides.
-  void Create(const service_manager::Identity& remote_identity,
-              mojo::InterfaceRequest<TestUIHandlerMojo> request) override {}
-};
-
 }  // namespace
 
 // A test fixture to test MojoFacade class.
@@ -63,7 +50,8 @@ class MojoFacadeTest : public WebTest {
  protected:
   MojoFacadeTest() {
     interface_provider_ = base::MakeUnique<WebStateInterfaceProvider>();
-    interface_provider_->registry()->AddInterface(&ui_handler_factory_);
+    interface_provider_->registry()->AddInterface(base::Bind(
+        &MojoFacadeTest::BindTestUIHandlerMojoRequest, base::Unretained(this)));
     evaluator_.reset([[OCMockObject
         mockForProtocol:@protocol(CRWJSInjectionEvaluator)] retain]);
     facade_.reset(new MojoFacade(
@@ -75,7 +63,10 @@ class MojoFacadeTest : public WebTest {
   MojoFacade* facade() { return facade_.get(); }
 
  private:
-  TestUIHandlerFactory ui_handler_factory_;
+  void BindTestUIHandlerMojoRequest(
+      const service_manager::BindSourceInfo& source_info,
+      TestUIHandlerMojoRequest request) {}
+
   std::unique_ptr<WebStateInterfaceProvider> interface_provider_;
   base::scoped_nsobject<OCMockObject> evaluator_;
   std::unique_ptr<MojoFacade> facade_;

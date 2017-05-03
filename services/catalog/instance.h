@@ -12,7 +12,6 @@
 #include "services/catalog/entry.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/store.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace catalog {

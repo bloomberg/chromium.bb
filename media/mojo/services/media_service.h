@@ -18,7 +18,6 @@
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -30,8 +29,6 @@ class MojoMediaClient;
 
 class MEDIA_MOJO_EXPORT MediaService
     : public NON_EXPORTED_BASE(service_manager::Service),
-      public NON_EXPORTED_BASE(
-          service_manager::InterfaceFactory<mojom::MediaService>),
       public NON_EXPORTED_BASE(mojom::MediaService) {
  public:
   explicit MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client);
@@ -45,9 +42,8 @@ class MEDIA_MOJO_EXPORT MediaService
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnServiceManagerConnectionLost() final;
 
-  // service_manager::InterfaceFactory<mojom::MediaService> implementation.
-  void Create(const service_manager::Identity& remote_identity,
-              mojom::MediaServiceRequest request) final;
+  void Create(const service_manager::BindSourceInfo& source_info,
+              mojom::MediaServiceRequest request);
 
   // mojom::MediaService implementation.
   void CreateInterfaceFactory(

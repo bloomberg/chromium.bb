@@ -11,7 +11,8 @@ namespace service_manager {
 namespace test {
 
 AppClient::AppClient() {
-  registry_.AddInterface<mojom::LifecycleControl>(this);
+  registry_.AddInterface<mojom::LifecycleControl>(
+      base::Bind(&AppClient::Create, base::Unretained(this)));
 }
 
 AppClient::~AppClient() {}
@@ -28,7 +29,7 @@ bool AppClient::OnServiceManagerConnectionLost() {
   return true;
 }
 
-void AppClient::Create(const Identity& remote_identity,
+void AppClient::Create(const BindSourceInfo& source_info,
                        mojom::LifecycleControlRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

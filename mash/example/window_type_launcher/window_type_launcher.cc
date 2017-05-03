@@ -432,7 +432,8 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 }  // namespace
 
 WindowTypeLauncher::WindowTypeLauncher() {
-  registry_.AddInterface<mash::mojom::Launchable>(this);
+  registry_.AddInterface<mash::mojom::Launchable>(
+      base::Bind(&WindowTypeLauncher::Create, base::Unretained(this)));
 }
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
@@ -474,7 +475,7 @@ void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
 }
 
 void WindowTypeLauncher::Create(
-    const service_manager::Identity& remote_identity,
+    const service_manager::BindSourceInfo& source_info,
     mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

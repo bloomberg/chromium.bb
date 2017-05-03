@@ -2700,7 +2700,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
       base::Unretained(this)));
 
-  GetInterfaceRegistry()->AddInterface<media::mojom::InterfaceFactory>(this);
+  GetInterfaceRegistry()->AddInterface<media::mojom::InterfaceFactory>(
+      base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
+                 base::Unretained(this)));
 
   // This is to support usage of WebSockets in cases in which there is an
   // associated RenderFrame. This is important for showing the correct security
@@ -3705,8 +3707,8 @@ void RenderFrameHostImpl::ResetFeaturePolicy() {
       parent_policy, container_policy, last_committed_origin_);
 }
 
-void RenderFrameHostImpl::Create(
-    const service_manager::Identity& remote_identity,
+void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
+    const service_manager::BindSourceInfo& source_info,
     media::mojom::InterfaceFactoryRequest request) {
   DCHECK(!media_interface_proxy_);
   media_interface_proxy_.reset(new MediaInterfaceProxy(

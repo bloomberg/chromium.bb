@@ -279,7 +279,8 @@ class TaskViewerContents
 }  // namespace
 
 TaskViewer::TaskViewer() {
-  registry_.AddInterface<::mash::mojom::Launchable>(this);
+  registry_.AddInterface<::mash::mojom::Launchable>(
+      base::Bind(&TaskViewer::Create, base::Unretained(this)));
 }
 TaskViewer::~TaskViewer() {}
 
@@ -332,7 +333,7 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void TaskViewer::Create(const service_manager::Identity& remote_identity,
+void TaskViewer::Create(const service_manager::BindSourceInfo& source_info,
                         ::mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

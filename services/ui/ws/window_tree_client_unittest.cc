@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -547,11 +546,10 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 // -----------------------------------------------------------------------------
 
 // InterfaceFactory for vending TestWindowTreeClients.
-class WindowTreeClientFactory
-    : public service_manager::InterfaceFactory<WindowTreeClient> {
+class WindowTreeClientFactory {
  public:
   WindowTreeClientFactory() {}
-  ~WindowTreeClientFactory() override {}
+  ~WindowTreeClientFactory() {}
 
   // Runs a nested MessageLoop until a new instance has been created.
   std::unique_ptr<TestWindowTreeClient> WaitForInstance() {
@@ -564,16 +562,16 @@ class WindowTreeClientFactory
     return std::move(client_impl_);
   }
 
- private:
-  // InterfaceFactory<WindowTreeClient>:
-  void Create(const service_manager::Identity& remote_identity,
-              InterfaceRequest<WindowTreeClient> request) override {
+  void BindWindowTreeClientRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::WindowTreeClientRequest request) {
     client_impl_ = base::MakeUnique<TestWindowTreeClient>();
     client_impl_->Bind(std::move(request));
     if (run_loop_.get())
       run_loop_->Quit();
   }
 
+ private:
   std::unique_ptr<TestWindowTreeClient> client_impl_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -687,7 +685,9 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
 
   void SetUp() override {
     client_factory_ = base::MakeUnique<WindowTreeClientFactory>();
-    registry_.AddInterface(client_factory_.get());
+    registry_.AddInterface(
+        base::Bind(&WindowTreeClientFactory::BindWindowTreeClientRequest,
+                   base::Unretained(client_factory_.get())));
 
     WindowServerServiceTestBase::SetUp();
 

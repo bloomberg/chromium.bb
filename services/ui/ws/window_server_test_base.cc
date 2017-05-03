@@ -33,7 +33,9 @@ void TimeoutRunLoop(const base::Closure& timeout_task, bool* timeout) {
 }  // namespace
 
 WindowServerTestBase::WindowServerTestBase() {
-  registry_.AddInterface<mojom::WindowTreeClient>(this);
+  registry_.AddInterface<mojom::WindowTreeClient>(
+      base::Bind(&WindowServerTestBase::BindWindowTreeClientRequest,
+                 base::Unretained(this)));
 }
 
 WindowServerTestBase::~WindowServerTestBase() {}
@@ -279,8 +281,8 @@ void WindowServerTestBase::OnWmDeactivateWindow(aura::Window* window) {
     window_manager_delegate_->OnWmDeactivateWindow(window);
 }
 
-void WindowServerTestBase::Create(
-    const service_manager::Identity& remote_identity,
+void WindowServerTestBase::BindWindowTreeClientRequest(
+    const service_manager::BindSourceInfo& source_info,
     mojom::WindowTreeClientRequest request) {
   const bool create_discardable_memory = false;
   window_tree_clients_.push_back(base::MakeUnique<aura::WindowTreeClient>(

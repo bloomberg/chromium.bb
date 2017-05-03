@@ -12,7 +12,6 @@
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
@@ -24,15 +23,14 @@ const char kTestServiceName[] = "device_unittests";
 
 // The test service responsible to package Device Service.
 class ServiceTestClient : public service_manager::test::ServiceTestClient,
-                          public service_manager::mojom::ServiceFactory,
-                          public service_manager::InterfaceFactory<
-                              service_manager::mojom::ServiceFactory> {
+                          public service_manager::mojom::ServiceFactory {
  public:
   explicit ServiceTestClient(service_manager::test::ServiceTest* test)
       : service_manager::test::ServiceTestClient(test),
         io_thread_("DeviceServiceTestIOThread"),
         file_thread_("DeviceServiceTestFileThread") {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(this);
+    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
+        base::Bind(&ServiceTestClient::Create, base::Unretained(this)));
   }
   ~ServiceTestClient() override {}
 
@@ -64,8 +62,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
     }
   }
 
-  void Create(const service_manager::Identity& remote_identity,
-              service_manager::mojom::ServiceFactoryRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              service_manager::mojom::ServiceFactoryRequest request) {
     service_factory_bindings_.AddBinding(this, std::move(request));
   }
 

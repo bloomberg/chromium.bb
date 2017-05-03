@@ -13,7 +13,6 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -46,10 +45,6 @@ void ReceiveString(std::string* string,
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
 class ConnectTestApp : public Service,
-                       public InterfaceFactory<test::mojom::ConnectTestService>,
-                       public InterfaceFactory<test::mojom::StandaloneApp>,
-                       public InterfaceFactory<test::mojom::BlockedInterface>,
-                       public InterfaceFactory<test::mojom::UserIdTest>,
                        public test::mojom::ConnectTestService,
                        public test::mojom::StandaloneApp,
                        public test::mojom::BlockedInterface,
@@ -67,10 +62,15 @@ class ConnectTestApp : public Service,
     standalone_bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestApp::OnConnectionError,
                    base::Unretained(this)));
-    registry_.AddInterface<test::mojom::ConnectTestService>(this);
-    registry_.AddInterface<test::mojom::StandaloneApp>(this);
-    registry_.AddInterface<test::mojom::BlockedInterface>(this);
-    registry_.AddInterface<test::mojom::UserIdTest>(this);
+    registry_.AddInterface<test::mojom::ConnectTestService>(
+        base::Bind(&ConnectTestApp::BindConnectTestServiceRequest,
+                   base::Unretained(this)));
+    registry_.AddInterface<test::mojom::StandaloneApp>(base::Bind(
+        &ConnectTestApp::BindStandaloneAppRequest, base::Unretained(this)));
+    registry_.AddInterface<test::mojom::BlockedInterface>(base::Bind(
+        &ConnectTestApp::BindBlockedInterfaceRequest, base::Unretained(this)));
+    registry_.AddInterface<test::mojom::UserIdTest>(base::Bind(
+        &ConnectTestApp::BindUserIdTestRequest, base::Unretained(this)));
   }
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
@@ -80,34 +80,33 @@ class ConnectTestApp : public Service,
   }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
-  void Create(const Identity& remote_identity,
-              test::mojom::ConnectTestServiceRequest request) override {
+  void BindConnectTestServiceRequest(
+      const BindSourceInfo& source_info,
+      test::mojom::ConnectTestServiceRequest request) {
     bindings_.AddBinding(this, std::move(request));
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
-    state->connection_remote_name = remote_identity.name();
-    state->connection_remote_userid = remote_identity.user_id();
+    state->connection_remote_name = source_info.identity.name();
+    state->connection_remote_userid = source_info.identity.user_id();
     state->initialize_local_name = context()->identity().name();
     state->initialize_userid = context()->identity().user_id();
 
-    context()->connector()->BindInterface(remote_identity, &caller_);
+    context()->connector()->BindInterface(source_info.identity, &caller_);
     caller_->ConnectionAccepted(std::move(state));
   }
 
-  // InterfaceFactory<test::mojom::StandaloneApp>:
-  void Create(const Identity& remote_identity,
-              test::mojom::StandaloneAppRequest request) override {
+  void BindStandaloneAppRequest(const BindSourceInfo& source_info,
+                                test::mojom::StandaloneAppRequest request) {
     standalone_bindings_.AddBinding(this, std::move(request));
   }
 
-  // InterfaceFactory<test::mojom::BlockedInterface>:
-  void Create(const Identity& remote_identity,
-              test::mojom::BlockedInterfaceRequest request) override {
+  void BindBlockedInterfaceRequest(
+      const BindSourceInfo& source_info,
+      test::mojom::BlockedInterfaceRequest request) {
     blocked_bindings_.AddBinding(this, std::move(request));
   }
 
-  // InterfaceFactory<test::mojom::UserIdTest>:
-  void Create(const Identity& remote_identity,
-              test::mojom::UserIdTestRequest request) override {
+  void BindUserIdTestRequest(const BindSourceInfo& source_info,
+                             test::mojom::UserIdTestRequest request) {
     user_id_test_bindings_.AddBinding(this, std::move(request));
   }
 

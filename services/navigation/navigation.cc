@@ -40,7 +40,8 @@ Navigation::Navigation()
       ref_factory_(base::MessageLoop::QuitWhenIdleClosure()) {
   bindings_.set_connection_error_handler(
       base::Bind(&Navigation::ViewFactoryLost, base::Unretained(this)));
-  registry_.AddInterface<mojom::ViewFactory>(this);
+  registry_.AddInterface<mojom::ViewFactory>(
+      base::Bind(&Navigation::BindViewFactoryRequest, base::Unretained(this)));
 }
 Navigation::~Navigation() {}
 
@@ -72,8 +73,9 @@ void Navigation::CreateView(mojom::ViewClientPtr client,
                  base::Passed(&context_ref)));
 }
 
-void Navigation::Create(const service_manager::Identity& remote_identity,
-                        mojom::ViewFactoryRequest request) {
+void Navigation::BindViewFactoryRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::ViewFactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
   refs_.insert(ref_factory_.CreateRef());
 }

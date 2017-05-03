@@ -79,8 +79,11 @@ class AutoclickUI : public views::WidgetDelegateView,
 
 AutoclickApplication::AutoclickApplication()
     : launchable_binding_(this), autoclick_binding_(this) {
-  registry_.AddInterface<mash::mojom::Launchable>(this);
-  registry_.AddInterface<mojom::AutoclickController>(this);
+  registry_.AddInterface<mash::mojom::Launchable>(base::Bind(
+      &AutoclickApplication::BindLaunchableRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::AutoclickController>(
+      base::Bind(&AutoclickApplication::BindAutoclickControllerRequest,
+                 base::Unretained(this)));
 }
 
 AutoclickApplication::~AutoclickApplication() {}
@@ -128,15 +131,15 @@ void AutoclickApplication::SetAutoclickDelay(uint32_t delay_in_milliseconds) {
       base::TimeDelta::FromMilliseconds(delay_in_milliseconds));
 }
 
-void AutoclickApplication::Create(
-    const service_manager::Identity& remote_identity,
+void AutoclickApplication::BindLaunchableRequest(
+    const service_manager::BindSourceInfo& source_info,
     mash::mojom::LaunchableRequest request) {
   launchable_binding_.Close();
   launchable_binding_.Bind(std::move(request));
 }
 
-void AutoclickApplication::Create(
-    const service_manager::Identity& remote_identity,
+void AutoclickApplication::BindAutoclickControllerRequest(
+    const service_manager::BindSourceInfo& source_info,
     mojom::AutoclickControllerRequest request) {
   autoclick_binding_.Close();
   autoclick_binding_.Bind(std::move(request));

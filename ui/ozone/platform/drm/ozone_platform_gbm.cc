@@ -17,8 +17,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ui_features.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -79,9 +79,7 @@ class GlApiLoader {
   DISALLOW_COPY_AND_ASSIGN(GlApiLoader);
 };
 
-class OzonePlatformGbm
-    : public OzonePlatform,
-      public service_manager::InterfaceFactory<ozone::mojom::DeviceCursor> {
+class OzonePlatformGbm : public OzonePlatform {
  public:
   OzonePlatformGbm() : using_mojo_(false), single_process_(false) {}
   ~OzonePlatformGbm() override {}
@@ -109,11 +107,11 @@ class OzonePlatformGbm
     return event_factory_ozone_->CreateSystemInputInjector();
   }
   void AddInterfaces(service_manager::BinderRegistry* registry) override {
-    registry->AddInterface<ozone::mojom::DeviceCursor>(this);
+    registry->AddInterface<ozone::mojom::DeviceCursor>(
+        base::Bind(&OzonePlatformGbm::Create, base::Unretained(this)));
   }
-  // service_manager::InterfaceFactory<ozone::mojom::DeviceCursor>:
-  void Create(const service_manager::Identity& remote_identity,
-              ozone::mojom::DeviceCursorRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              ozone::mojom::DeviceCursorRequest request) {
     if (drm_thread_proxy_)
       drm_thread_proxy_->AddBinding(std::move(request));
     else

@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
@@ -19,10 +18,7 @@ namespace navigation {
 
 std::unique_ptr<service_manager::Service> CreateNavigationService();
 
-class Navigation
-    : public service_manager::Service,
-      public mojom::ViewFactory,
-      public service_manager::InterfaceFactory<mojom::ViewFactory> {
+class Navigation : public service_manager::Service, public mojom::ViewFactory {
  public:
   Navigation();
   ~Navigation() override;
@@ -37,8 +33,9 @@ class Navigation
   void CreateView(mojom::ViewClientPtr client,
                   mojom::ViewRequest request) override;
 
-  void Create(const service_manager::Identity& remote_identity,
-              mojom::ViewFactoryRequest request) override;
+  void BindViewFactoryRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::ViewFactoryRequest request);
 
   void ViewFactoryLost();
 

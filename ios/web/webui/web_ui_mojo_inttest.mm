@@ -20,7 +20,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
@@ -39,9 +39,7 @@ const char kTestWebUIURLHost[] = "testwebui";
 // Once "fin" is received |IsFinReceived()| call will return true, indicating
 // that communication was successful. See test WebUI page code here:
 // ios/web/test/data/mojo_test.js
-class TestUIHandler
-    : public TestUIHandlerMojo,
-      public service_manager::InterfaceFactory<TestUIHandlerMojo> {
+class TestUIHandler : public TestUIHandlerMojo {
  public:
   TestUIHandler() {}
   ~TestUIHandler() override {}
@@ -70,13 +68,13 @@ class TestUIHandler
     }
   }
 
- private:
-  // service_manager::InterfaceFactory overrides.
-  void Create(const service_manager::Identity& remote_identity,
-              mojo::InterfaceRequest<TestUIHandlerMojo> request) override {
+  void BindTestUIHandlerMojoRequest(
+      const service_manager::BindSourceInfo& souce_info,
+      TestUIHandlerMojoRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
+ private:
   mojo::BindingSet<TestUIHandlerMojo> bindings_;
   TestPagePtr page_ = nullptr;
   // |true| if "syn" has been received.
@@ -104,7 +102,8 @@ class TestUI : public WebUIIOSController {
     web::WebUIIOSDataSource::Add(web_state->GetBrowserState(), source);
 
     web_state->GetWebStateInterfaceProvider()->registry()->AddInterface(
-        ui_handler);
+        base::Bind(&TestUIHandler::BindTestUIHandlerMojoRequest,
+                   base::Unretained(ui_handler)));
   }
 };
 

@@ -12,14 +12,11 @@
 #include "content/network/network_context.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
 namespace content {
 
-class NetworkService
-    : public service_manager::Service,
-      public service_manager::InterfaceFactory<mojom::URLLoaderFactory> {
+class NetworkService : public service_manager::Service {
  public:
   explicit NetworkService(
       std::unique_ptr<service_manager::BinderRegistry> registry);
@@ -31,9 +28,8 @@ class NetworkService
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  // service_manager::InterfaceFactory<mojom::UrlLoaderFactory>:
-  void Create(const service_manager::Identity& remote_identity,
-              mojom::URLLoaderFactoryRequest request) override;
+  void Create(const service_manager::BindSourceInfo& source_info,
+              mojom::URLLoaderFactoryRequest request);
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 

@@ -25,7 +25,6 @@
 #include "services/file/file_service.h"
 #include "services/file/public/interfaces/constants.mojom.h"
 #include "services/file/user_id_map.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -611,13 +610,12 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
 namespace {
 
 class ServiceTestClient : public service_manager::test::ServiceTestClient,
-                          public service_manager::mojom::ServiceFactory,
-                          public service_manager::InterfaceFactory<
-                              service_manager::mojom::ServiceFactory> {
+                          public service_manager::mojom::ServiceFactory {
  public:
   explicit ServiceTestClient(service_manager::test::ServiceTest* test)
       : service_manager::test::ServiceTestClient(test) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(this);
+    registry_.AddInterface<service_manager::mojom::ServiceFactory>(base::Bind(
+        &ServiceTestClient::BindServiceFactoryRequest, base::Unretained(this)));
   }
   ~ServiceTestClient() override {}
 
@@ -640,8 +638,9 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
     }
   }
 
-  void Create(const service_manager::Identity& remote_identity,
-              service_manager::mojom::ServiceFactoryRequest request) override {
+  void BindServiceFactoryRequest(
+      const service_manager::BindSourceInfo& source_info,
+      service_manager::mojom::ServiceFactoryRequest request) {
     service_factory_bindings_.AddBinding(this, std::move(request));
   }
 

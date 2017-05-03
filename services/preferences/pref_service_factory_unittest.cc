@@ -21,7 +21,6 @@
 #include "services/preferences/public/cpp/scoped_pref_update.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -30,15 +29,14 @@ namespace prefs {
 namespace {
 
 class ServiceTestClient : public service_manager::test::ServiceTestClient,
-                          public service_manager::mojom::ServiceFactory,
-                          public service_manager::InterfaceFactory<
-                              service_manager::mojom::ServiceFactory> {
+                          public service_manager::mojom::ServiceFactory {
  public:
   ServiceTestClient(service_manager::test::ServiceTest* test,
                     scoped_refptr<base::SequencedWorkerPool> worker_pool)
       : service_manager::test::ServiceTestClient(test),
         worker_pool_(std::move(worker_pool)) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(this);
+    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
+        base::Bind(&ServiceTestClient::Create, base::Unretained(this)));
   }
 
  protected:
@@ -62,8 +60,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
     }
   }
 
-  void Create(const service_manager::Identity& remote_identity,
-              service_manager::mojom::ServiceFactoryRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              service_manager::mojom::ServiceFactoryRequest request) {
     service_factory_bindings_.AddBinding(this, std::move(request));
   }
 

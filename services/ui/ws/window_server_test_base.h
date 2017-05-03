@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/window_server_service_test_base.h"
 #include "ui/aura/mus/property_converter.h"
@@ -29,11 +28,9 @@ namespace ui {
 // WindowServer. SetUp() connects to the WindowServer and blocks until OnEmbed()
 // has been invoked. window_manager() can be used to access the WindowServer
 // established as part of SetUp().
-class WindowServerTestBase
-    : public WindowServerServiceTestBase,
-      public aura::WindowTreeClientDelegate,
-      public aura::WindowManagerDelegate,
-      public service_manager::InterfaceFactory<mojom::WindowTreeClient> {
+class WindowServerTestBase : public WindowServerServiceTestBase,
+                             public aura::WindowTreeClientDelegate,
+                             public aura::WindowManagerDelegate {
  public:
   WindowServerTestBase();
   ~WindowServerTestBase() override;
@@ -131,9 +128,9 @@ class WindowServerTestBase
   bool IsWindowActive(aura::Window* window) override;
   void OnWmDeactivateWindow(aura::Window* window) override;
 
-  // InterfaceFactory<WindowTreeClient>:
-  void Create(const service_manager::Identity& remote_identity,
-              mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
+  void BindWindowTreeClientRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::WindowTreeClientRequest request);
 
  private:
   // Removes |window_tree_host| from |window_tree_hosts_| and deletes it.

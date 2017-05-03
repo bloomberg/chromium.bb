@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"

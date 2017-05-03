@@ -249,7 +249,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
 #include "mash/public/interfaces/launchable.mojom.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
@@ -506,13 +505,12 @@ const char kChromeServiceName[] = "chrome";
 // Packaged service implementation used to expose miscellaneous application
 // control features. This is a singleton service which runs on the main thread
 // and never stops.
-class ChromeServiceChromeOS
-    : public service_manager::Service,
-      public mash::mojom::Launchable,
-      public service_manager::InterfaceFactory<mash::mojom::Launchable> {
+class ChromeServiceChromeOS : public service_manager::Service,
+                              public mash::mojom::Launchable {
  public:
   ChromeServiceChromeOS() {
-    interfaces_.AddInterface<mash::mojom::Launchable>(this);
+    interfaces_.AddInterface<mash::mojom::Launchable>(
+        base::Bind(&ChromeServiceChromeOS::Create, base::Unretained(this)));
   }
   ~ChromeServiceChromeOS() override {}
 
@@ -552,9 +550,8 @@ class ChromeServiceChromeOS
     }
   }
 
-  // mojo::InterfaceFactory<mash::mojom::Launchable>:
-  void Create(const service_manager::Identity& remote_identity,
-              mash::mojom::LaunchableRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              mash::mojom::LaunchableRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 

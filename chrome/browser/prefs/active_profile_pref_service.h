@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
 // A |prefs::mojom::PrefStoreConnector| implementation that forwards connection
@@ -22,8 +21,6 @@
 // TODO(http://crbug.com/705347): Once mash supports several profiles, remove
 // this class and the forwarder service.
 class ActiveProfilePrefService : public prefs::mojom::PrefStoreConnector,
-                                 public service_manager::InterfaceFactory<
-                                     prefs::mojom::PrefStoreConnector>,
                                  public service_manager::Service {
  public:
   ActiveProfilePrefService();
@@ -36,15 +33,14 @@ class ActiveProfilePrefService : public prefs::mojom::PrefStoreConnector,
       const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
       const ConnectCallback& callback) override;
 
-  // service_manager::InterfaceFactory<PrefStoreConnector>:
-  void Create(const service_manager::Identity& remote_identity,
-              prefs::mojom::PrefStoreConnectorRequest request) override;
-
   // service_manager::Service:
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  void Create(const service_manager::BindSourceInfo& source_info,
+              prefs::mojom::PrefStoreConnectorRequest request);
 
   // Called if forwarding the connection request to the per-profile service
   // instance failed.

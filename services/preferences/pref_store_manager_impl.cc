@@ -124,9 +124,15 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
   // The user store is not actually connected to in the implementation, but
   // accessed directly.
   expected_pref_stores_.erase(PrefValueStore::USER_STORE);
-  registry_.AddInterface<prefs::mojom::PrefStoreConnector>(this);
-  registry_.AddInterface<prefs::mojom::PrefStoreRegistry>(this);
-  registry_.AddInterface<prefs::mojom::PrefServiceControl>(this);
+  registry_.AddInterface<prefs::mojom::PrefStoreConnector>(
+      base::Bind(&PrefStoreManagerImpl::BindPrefStoreConnectorRequest,
+                 base::Unretained(this)));
+  registry_.AddInterface<prefs::mojom::PrefStoreRegistry>(
+      base::Bind(&PrefStoreManagerImpl::BindPrefStoreRegistryRequest,
+                 base::Unretained(this)));
+  registry_.AddInterface<prefs::mojom::PrefServiceControl>(
+      base::Bind(&PrefStoreManagerImpl::BindPrefServiceControlRequest,
+                 base::Unretained(this)));
 }
 
 PrefStoreManagerImpl::~PrefStoreManagerImpl() = default;
@@ -171,25 +177,25 @@ void PrefStoreManagerImpl::Connect(
   }
 }
 
-void PrefStoreManagerImpl::Create(
-    const service_manager::Identity& remote_identity,
+void PrefStoreManagerImpl::BindPrefStoreConnectorRequest(
+    const service_manager::BindSourceInfo& source_info,
     prefs::mojom::PrefStoreConnectorRequest request) {
   connector_bindings_.AddBinding(this, std::move(request));
 }
 
-void PrefStoreManagerImpl::Create(
-    const service_manager::Identity& remote_identity,
+void PrefStoreManagerImpl::BindPrefStoreRegistryRequest(
+    const service_manager::BindSourceInfo& source_info,
     prefs::mojom::PrefStoreRegistryRequest request) {
   registry_bindings_.AddBinding(this, std::move(request));
 }
 
-void PrefStoreManagerImpl::Create(
-    const service_manager::Identity& remote_identity,
+void PrefStoreManagerImpl::BindPrefServiceControlRequest(
+    const service_manager::BindSourceInfo& source_info,
     prefs::mojom::PrefServiceControlRequest request) {
   if (init_binding_.is_bound()) {
     LOG(ERROR)
         << "Pref service received unexpected control interface connection from "
-        << remote_identity.name();
+        << source_info.identity.name();
     return;
   }
 
