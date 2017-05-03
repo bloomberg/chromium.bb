@@ -226,7 +226,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     protected IntentHandler mIntentHandler;
 
+    /** Set if {@link #postDeferredStartupIfNeeded()} is called before native has loaded. */
+    private boolean mDeferredStartupQueued;
+
+    /** Whether or not {@link #postDeferredStartupIfNeeded()} has already successfully run. */
     private boolean mDeferredStartupPosted;
+
     private boolean mTabModelsInitialized;
     private boolean mNativeInitialized;
     private boolean mRemoveWindowBackgroundDone;
@@ -764,6 +769,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onStartWithNative() {
+        assert mNativeInitialized : "onStartWithNative was called before native was initialized.";
+
         super.onStartWithNative();
         UpdateMenuItemHelper.getInstance().onStart();
         ChromeActivitySessionTracker.getInstance().onStartWithNative();
@@ -779,7 +786,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // #onPageLoadFinished() and #onCrash(). If we are not actively loading a tab (e.g.
         // in Android N multi-instance, which is created by re-parenting an existing tab),
         // ensure onDeferredStartup() gets called by calling postDeferredStartupIfNeeded() here.
-        if (getActivityTab() == null || !getActivityTab().isLoading()) {
+        if (mDeferredStartupQueued || getActivityTab() == null || !getActivityTab().isLoading()) {
             postDeferredStartupIfNeeded();
         }
     }
@@ -2010,6 +2017,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     protected final void postDeferredStartupIfNeeded() {
+        if (!mNativeInitialized) {
+            // Native hasn't loaded yet.  Queue it up for later.
+            mDeferredStartupQueued = true;
+            return;
+        }
+        mDeferredStartupQueued = false;
+
         if (!mDeferredStartupPosted) {
             mDeferredStartupPosted = true;
             RecordHistogram.recordLongTimesHistogram(
