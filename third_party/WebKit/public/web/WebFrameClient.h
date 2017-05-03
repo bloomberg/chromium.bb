@@ -270,6 +270,9 @@ class BLINK_EXPORT WebFrameClient {
   // Called the first time this frame is the target of a user gesture.
   virtual void SetHasReceivedUserGesture() {}
 
+  // Notification of the devtools id for this frame.
+  virtual void SetDevToolsFrameId(const blink::WebString& devtools_frame_id) {}
+
   // Console messages ----------------------------------------------------
 
   // Whether or not we should report a detailed message for the given source.

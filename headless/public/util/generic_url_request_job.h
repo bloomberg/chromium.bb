@@ -31,6 +31,7 @@ class ResourceRequestInfo;
 
 namespace headless {
 
+class HeadlessBrowserContext;
 class URLRequestDispatcher;
 
 // Wrapper around net::URLRequest with helpers to access select metadata.
@@ -154,11 +155,14 @@ class HEADLESS_EXPORT GenericURLRequestJob
 
   // NOTE |url_request_dispatcher| and |delegate| must outlive the
   // GenericURLRequestJob.
-  GenericURLRequestJob(net::URLRequest* request,
-                       net::NetworkDelegate* network_delegate,
-                       URLRequestDispatcher* url_request_dispatcher,
-                       std::unique_ptr<URLFetcher> url_fetcher,
-                       Delegate* delegate);
+  // TODO(alexclarke): Remove the default parameter.
+  GenericURLRequestJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      URLRequestDispatcher* url_request_dispatcher,
+      std::unique_ptr<URLFetcher> url_fetcher,
+      Delegate* delegate,
+      HeadlessBrowserContext* headless_browser_context = nullptr);
   ~GenericURLRequestJob() override;
 
   // net::URLRequestJob implementation:
@@ -212,6 +216,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   std::unique_ptr<MockResponseData> mock_response_;
   Delegate* delegate_;          // Not owned.
+  HeadlessBrowserContext* headless_browser_context_;           // Not owned.
   const content::ResourceRequestInfo* request_resource_info_;  // Not owned.
   const char* body_ = nullptr;  // Not owned.
   size_t body_size_ = 0;

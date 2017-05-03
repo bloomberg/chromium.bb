@@ -1430,6 +1430,10 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
 // propagated to any remote frames.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SetHasReceivedUserGesture)
 
+// Used to tell the browser what the DevTools FrameId is. Needed by Headless
+// Chrome.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_SetDevToolsFrameId, std::string)
+
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params
 // object contains information about the node(s) that were selected when the

@@ -12,6 +12,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "headless/lib/browser/headless_browser_context_impl.h"
+#include "headless/public/headless_browser_context.h"
 #include "headless/public/util/url_request_dispatcher.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -42,13 +44,15 @@ GenericURLRequestJob::GenericURLRequestJob(
     net::NetworkDelegate* network_delegate,
     URLRequestDispatcher* url_request_dispatcher,
     std::unique_ptr<URLFetcher> url_fetcher,
-    Delegate* delegate)
+    Delegate* delegate,
+    HeadlessBrowserContext* headless_browser_context)
     : ManagedDispatchURLRequestJob(request,
                                    network_delegate,
                                    url_request_dispatcher),
       url_fetcher_(std::move(url_fetcher)),
       origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       delegate_(delegate),
+      headless_browser_context_(headless_browser_context),
       request_resource_info_(
           content::ResourceRequestInfo::ForRequest(request_)),
       request_id_(next_request_id_++),
@@ -197,11 +201,18 @@ int GenericURLRequestJob::GetFrameTreeNodeId() const {
   // URLRequestUserData will be set for all renderer initiated resource
   // requests, but not for browser side navigations.
   int render_process_id;
-  int render_frame_id;
+  int render_frame_routing_id;
   if (content::ResourceRequestInfo::GetRenderFrameForRequest(
-          request_, &render_process_id, &render_frame_id)) {
+          request_, &render_process_id, &render_frame_routing_id) &&
+      render_process_id != -1) {
+    if (headless_browser_context_) {
+      return static_cast<HeadlessBrowserContextImpl*>(headless_browser_context_)
+          ->GetFrameTreeNodeId(render_process_id, render_frame_routing_id);
+    }
+    // TODO(alexclarke): Remove this.
     content::RenderFrameHost* render_frame_host =
-        content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+        content::RenderFrameHost::FromID(render_process_id,
+                                         render_frame_routing_id);
     DCHECK(render_frame_host);
     return render_frame_host->GetFrameTreeNodeId();
   }

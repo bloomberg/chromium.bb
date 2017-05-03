@@ -454,6 +454,7 @@ if (is_mac) {
 test("headless_browsertests") {
   sources = [
     "lib/embedder_mojo_browsertest.cc",
+    "lib/frame_id_browsertest.cc",
     "lib/headless_browser_browsertest.cc",
     "lib/headless_browser_context_browsertest.cc",
     "lib/headless_devtools_client_browsertest.cc",

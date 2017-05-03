@@ -45,6 +45,12 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   void Close() override;
   const std::string& Id() const override;
 
+  void SetFrameTreeNodeId(int render_process_id,
+                          int render_frame_routing_id,
+                          int frame_tree_node_id);
+
+  void RemoveFrameTreeNode(int render_process_id, int render_frame_routing_id);
+
   // BrowserContext implementation:
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
@@ -81,6 +87,10 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   HeadlessBrowserImpl* browser() const;
   const HeadlessBrowserContextOptions* options() const;
 
+  // Returns the FrameTreeNode id for the corresponding RenderFrameHost or -1
+  // if it can't be found. Can be called on any thread.
+  int GetFrameTreeNodeId(int render_process_id, int render_frame_id) const;
+
  private:
   HeadlessBrowserContextImpl(
       HeadlessBrowserImpl* browser,
@@ -97,6 +107,13 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
 
   std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
       web_contents_map_;
+
+  // Guards |frame_tree_node_map_| from being concurrently written on the UI
+  // thread and read on the IO thread.
+  // TODO(alexclarke): Remove if we can add FrameTreeNode ID to
+  // URLRequestUserData. See https://crbug.com/715541
+  mutable base::Lock frame_tree_node_map_lock_;
+  std::map<std::pair<int, int>, int> frame_tree_node_map_;
 
   std::unique_ptr<content::PermissionManager> permission_manager_;
 

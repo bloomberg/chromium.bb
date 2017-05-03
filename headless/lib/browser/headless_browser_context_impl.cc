@@ -146,6 +146,32 @@ HeadlessBrowserContextImpl::GetAllWebContents() {
   return result;
 }
 
+void HeadlessBrowserContextImpl::SetFrameTreeNodeId(int render_process_id,
+                                                    int render_frame_routing_id,
+                                                    int frame_tree_node_id) {
+  base::AutoLock lock(frame_tree_node_map_lock_);
+  frame_tree_node_map_[std::make_pair(
+      render_process_id, render_frame_routing_id)] = frame_tree_node_id;
+}
+
+void HeadlessBrowserContextImpl::RemoveFrameTreeNode(
+    int render_process_id,
+    int render_frame_routing_id) {
+  base::AutoLock lock(frame_tree_node_map_lock_);
+  frame_tree_node_map_.erase(
+      std::make_pair(render_process_id, render_frame_routing_id));
+}
+
+int HeadlessBrowserContextImpl::GetFrameTreeNodeId(int render_process_id,
+                                                   int render_frame_id) const {
+  base::AutoLock lock(frame_tree_node_map_lock_);
+  const auto& find_it = frame_tree_node_map_.find(
+      std::make_pair(render_process_id, render_frame_id));
+  if (find_it == frame_tree_node_map_.end())
+    return -1;
+  return find_it->second;
+}
+
 void HeadlessBrowserContextImpl::Close() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   browser_->DestroyBrowserContext(this);

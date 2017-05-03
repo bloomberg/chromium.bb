@@ -216,6 +216,10 @@ void HeadlessWebContentsImpl::RenderFrameCreated(
                                      browser()->BrowserMainThread());
   }
 
+  browser_context_->SetFrameTreeNodeId(render_frame_host->GetProcess()->GetID(),
+                                       render_frame_host->GetRoutingID(),
+                                       render_frame_host->GetFrameTreeNodeId());
+
   std::string devtools_agent_host_id =
       content::DevToolsAgentHost::GetOrCreateFor(render_frame_host)->GetId();
   render_frame_host_to_devtools_agent_host_id_[render_frame_host] =
@@ -226,6 +230,10 @@ void HeadlessWebContentsImpl::RenderFrameCreated(
 
 void HeadlessWebContentsImpl::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+  browser_context_->RemoveFrameTreeNode(
+      render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID());
+
   auto find_it =
       render_frame_host_to_devtools_agent_host_id_.find(render_frame_host);
   if (find_it == render_frame_host_to_devtools_agent_host_id_.end())
@@ -244,6 +252,19 @@ bool HeadlessWebContentsImpl::GetFrameTreeNodeIdForDevToolsAgentHostId(
     return false;
   *frame_tree_node_id = find_it->second;
   return true;
+}
+
+std::string
+HeadlessWebContentsImpl::GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
+    int process_id,
+    int frame_tree_node_id) const {
+  return content::DevToolsAgentHost::
+      GetUntrustedDevToolsFrameIdForFrameTreeNodeId(process_id,
+                                                    frame_tree_node_id);
+}
+
+int HeadlessWebContentsImpl::GetMainFrameRenderProcessId() const {
+  return web_contents()->GetMainFrame()->GetProcess()->GetID();
 }
 
 bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {

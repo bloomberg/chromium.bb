@@ -218,6 +218,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void SetHasReceivedUserGesture(bool received_previously) override;
 
+  void SetDevToolsFrameId(const String& devtools_frame_id) override;
+
   void AbortClientNavigation() override;
 
   TextCheckerClient& GetTextCheckerClient() const override;

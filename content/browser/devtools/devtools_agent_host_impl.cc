@@ -21,7 +21,9 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/netlog_observer.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 
@@ -55,6 +57,24 @@ std::string DevToolsAgentHost::GetProtocolVersion() {
 bool DevToolsAgentHost::IsSupportedProtocolVersion(const std::string& version) {
   // TODO(dgozman): generate this.
   return version == "1.0" || version == "1.1" || version == "1.2";
+}
+
+// static
+std::string DevToolsAgentHost::GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
+    int process_id,
+    int frame_tree_node_id) {
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  if (!frame_tree_node)
+    return "";
+  // Make sure |process_id| hasn't changed.
+  RenderFrameHostImpl* render_frame_host_impl =
+      frame_tree_node->current_frame_host();
+  if (!render_frame_host_impl ||
+      render_frame_host_impl->GetProcess()->GetID() != process_id) {
+    return "";
+  }
+  return render_frame_host_impl->untrusted_devtools_frame_id();
 }
 
 // static

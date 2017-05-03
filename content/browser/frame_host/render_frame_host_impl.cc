@@ -841,6 +841,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGesture,
                         OnSetHasReceivedUserGesture)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SetDevToolsFrameId, OnSetDevToolsFrameId)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -2465,6 +2466,11 @@ void RenderFrameHostImpl::OnFocusedNodeChanged(
 
 void RenderFrameHostImpl::OnSetHasReceivedUserGesture() {
   frame_tree_node_->OnSetHasReceivedUserGesture();
+}
+
+void RenderFrameHostImpl::OnSetDevToolsFrameId(
+    const std::string& devtools_frame_id) {
+  untrusted_devtools_frame_id_ = devtools_frame_id;
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

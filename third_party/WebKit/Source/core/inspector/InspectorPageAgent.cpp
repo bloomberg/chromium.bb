@@ -38,6 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -380,6 +381,11 @@ Response InspectorPageAgent::enable() {
   enabled_ = true;
   state_->setBoolean(PageAgentState::kPageAgentEnabled, true);
   instrumenting_agents_->addInspectorPageAgent(this);
+
+  // Tell the browser the ids for all existing frames.
+  for (LocalFrame* frame : *inspected_frames_) {
+    frame->Client()->SetDevToolsFrameId(FrameId(frame));
+  }
   return Response::OK();
 }
 
@@ -674,8 +680,10 @@ void InspectorPageAgent::FrameAttachedToParent(LocalFrame* frame) {
     parent_frame = 0;
   std::unique_ptr<SourceLocation> location =
       SourceLocation::CaptureWithFullStackTrace();
+  String frame_id = FrameId(frame);
+  frame->Client()->SetDevToolsFrameId(frame_id);
   GetFrontend()->frameAttached(
-      FrameId(frame), FrameId(ToLocalFrame(parent_frame)),
+      frame_id, FrameId(ToLocalFrame(parent_frame)),
       location ? location->BuildInspectorObject() : nullptr);
 }
 
