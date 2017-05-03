@@ -7,7 +7,7 @@
 set -e
 
 for dir in */ ; do
-  cd $dir
+  cd "$dir"
 
   if [ -f generate-chains.py ]; then
     python generate-chains.py
