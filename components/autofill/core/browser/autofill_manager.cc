@@ -1176,10 +1176,11 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   std::unique_ptr<CreditCard> imported_credit_card;
+  bool imported_credit_card_matches_masked_server_credit_card;
   if (!personal_data_->ImportFormData(
-          submitted_form, IsCreditCardUploadEnabled(), &imported_credit_card)) {
+          submitted_form, IsCreditCardUploadEnabled(), &imported_credit_card,
+          &imported_credit_card_matches_masked_server_credit_card))
     return;
-  }
 
 #ifdef ENABLE_FORM_DEBUG_DUMP
   // Debug code for research on what autofill Chrome extracts from the last few
@@ -1215,10 +1216,12 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   if (!imported_credit_card)
     return;
 
-  if (!IsCreditCardUploadEnabled()) {
-    // This block will only be reached if we have observed a new card. In this
-    // case, ImportFormData will return false if the card matches one already
-    // stored.
+  if (!IsCreditCardUploadEnabled() ||
+      imported_credit_card_matches_masked_server_credit_card) {
+    // This block will only be reached if we have observed a new card or a card
+    // whose |TypeAndLastFourDigits|  matches a masked server card.
+    // |ImportFormData| will return false if the card matches a full card that
+    // we have already stored.
     client_->ConfirmSaveCreditCardLocally(
         *imported_credit_card,
         base::Bind(
@@ -1227,7 +1230,8 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   } else {
     // Whereas, because we pass IsCreditCardUploadEnabled() to ImportFormData,
     // this block can be reached on observing either a new card or one already
-    // stored locally. We will offer to upload either kind.
+    // stored locally and whose |TypeAndLastFourDigits| do not match a masked
+    // server card. We will offer to upload either kind.
     upload_request_ = payments::PaymentsClient::UploadRequestDetails();
     upload_request_.card = *imported_credit_card;
 
