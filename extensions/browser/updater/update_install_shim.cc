@@ -80,8 +80,7 @@ UpdateInstallShim::~UpdateInstallShim() {}
 void UpdateInstallShim::RunCallbackOnUIThread(const base::FilePath& temp_dir) {
   if (callback_.is_null()) {
     base::PostTaskWithTraits(FROM_HERE,
-                             base::TaskTraits().MayBlock().WithPriority(
-                                 base::TaskPriority::BACKGROUND),
+                             {base::MayBlock(), base::TaskPriority::BACKGROUND},
                              base::Bind(base::IgnoreResult(&base::DeleteFile),
                                         temp_dir, true /*recursive */));
     return;
