@@ -293,11 +293,8 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   }
 
   content::RenderFrameHost* FindFrameByName(const std::string& name) {
-    for (content::RenderFrameHost* frame : web_contents()->GetAllFrames()) {
-      if (frame->GetFrameName() == name)
-        return frame;
-    }
-    return nullptr;
+    return content::FrameMatchingPredicate(
+        web_contents(), base::Bind(&content::FrameMatchesName, name));
   }
 
   bool WasParsedScriptElementLoaded(content::RenderFrameHost* rfh) {

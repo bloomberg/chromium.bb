@@ -941,8 +941,8 @@ RenderFrameHost* FrameMatchingPredicate(
   std::set<RenderFrameHost*> frame_set;
   web_contents->ForEachFrame(
       base::Bind(&AddToSetIfFrameMatchesPredicate, &frame_set, predicate));
-  DCHECK_EQ(1U, frame_set.size());
-  return *frame_set.begin();
+  EXPECT_EQ(1U, frame_set.size());
+  return frame_set.size() == 1 ? *frame_set.begin() : nullptr;
 }
 
 bool FrameMatchesName(const std::string& name, RenderFrameHost* frame) {

@@ -11,6 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -280,24 +283,12 @@ RenderFrameHost* WebUIImpl::TargetFrame() {
   if (frame_name_.empty())
     return web_contents_->GetMainFrame();
 
-  std::set<RenderFrameHost*> frame_set;
-  web_contents_->ForEachFrame(base::Bind(&WebUIImpl::AddToSetIfFrameNameMatches,
-                                         base::Unretained(this),
-                                         &frame_set));
-
-  // It happens that some sub-pages attempt to send JavaScript messages before
-  // their frames are loaded.
-  DCHECK_GE(1U, frame_set.size());
-  if (frame_set.empty())
-    return NULL;
-  return *frame_set.begin();
-}
-
-void WebUIImpl::AddToSetIfFrameNameMatches(
-    std::set<RenderFrameHost*>* frame_set,
-    RenderFrameHost* host) {
-  if (host->GetFrameName() == frame_name_)
-    frame_set->insert(host);
+  FrameTreeNode* frame_tree_node = static_cast<WebContentsImpl*>(web_contents_)
+                                       ->GetFrameTree()
+                                       ->FindByName(frame_name_);
+  if (frame_tree_node)
+    return frame_tree_node->current_frame_host();
+  return nullptr;
 }
 
 void WebUIImpl::DisallowJavascriptOnAllHandlers() {
