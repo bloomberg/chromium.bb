@@ -134,7 +134,7 @@ std::unique_ptr<net::ProxyService>
 ShellURLRequestContextGetter::GetProxyService() {
   // TODO(jam): use v8 if possible, look at chrome code.
   return net::ProxyService::CreateUsingSystemProxyResolver(
-      std::move(proxy_config_service_), 0, url_request_context_->net_log());
+      std::move(proxy_config_service_), url_request_context_->net_log());
 }
 
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {

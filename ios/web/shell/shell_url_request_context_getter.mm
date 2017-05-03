@@ -95,8 +95,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
                                                            user_agent));
     storage_->set_proxy_service(
         net::ProxyService::CreateUsingSystemProxyResolver(
-            std::move(proxy_config_service_), 0,
-            url_request_context_->net_log()));
+            std::move(proxy_config_service_), url_request_context_->net_log()));
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
 

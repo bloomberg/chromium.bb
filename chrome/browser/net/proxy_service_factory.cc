@@ -117,22 +117,6 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     use_v8 = false;  // Fallback to non-v8 implementation.
   }
 
-  size_t num_pac_threads = 0u;  // Use default number of threads.
-
-  // Check the command line for an override on the number of proxy resolver
-  // threads to use.
-  if (command_line.HasSwitch(switches::kNumPacThreads)) {
-    std::string s = command_line.GetSwitchValueASCII(switches::kNumPacThreads);
-
-    // Parse the switch (it should be a positive integer formatted as decimal).
-    int n;
-    if (base::StringToInt(s, &n) && n > 0) {
-      num_pac_threads = static_cast<size_t>(n);
-    } else {
-      LOG(ERROR) << "Invalid switch for number of PAC threads: " << s;
-    }
-  }
-
   std::unique_ptr<net::ProxyService> proxy_service;
   if (use_v8) {
     std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher;
@@ -160,7 +144,7 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
 #endif  // !defined(OS_ANDROID)
   } else {
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
-        std::move(proxy_config_service), num_pac_threads, net_log);
+        std::move(proxy_config_service), net_log);
   }
 
   proxy_service->set_quick_check_enabled(quick_check_enabled);

@@ -424,7 +424,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
           .release());
   main_context_->set_proxy_service(
       net::ProxyService::CreateUsingSystemProxyResolver(
-          std::move(proxy_config_service_), 0, nullptr)
+          std::move(proxy_config_service_), nullptr)
           .release());
 
   // Cache

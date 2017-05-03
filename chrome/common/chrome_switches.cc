@@ -626,10 +626,6 @@ const char kNoStartupWindow[]               = "no-startup-window";
 const char kNoSupervisedUserAcknowledgmentCheck[]  =
     "no-managed-user-acknowledgment-check";
 
-// Specifies the maximum number of threads to use for running the Proxy
-// Autoconfig (PAC) script.
-const char kNumPacThreads[]                 = "num-pac-threads";
-
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 

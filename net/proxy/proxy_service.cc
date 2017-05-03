@@ -62,6 +62,8 @@ namespace net {
 
 namespace {
 
+const size_t kDefaultNumPacThreads = 4;
+
 // When the IP address changes we don't immediately re-run proxy auto-config.
 // Instead, we  wait for |kDelayAfterNetworkChangesMs| before
 // attempting to re-valuate proxy auto-config.
@@ -956,7 +958,6 @@ ProxyService::ProxyService(
 // static
 std::unique_ptr<ProxyService> ProxyService::CreateUsingSystemProxyResolver(
     std::unique_ptr<ProxyConfigService> proxy_config_service,
-    size_t num_pac_threads,
     NetLog* net_log) {
   DCHECK(proxy_config_service);
 
@@ -965,12 +966,9 @@ std::unique_ptr<ProxyService> ProxyService::CreateUsingSystemProxyResolver(
     return CreateWithoutProxyResolver(std::move(proxy_config_service), net_log);
   }
 
-  if (num_pac_threads == 0)
-    num_pac_threads = kDefaultNumPacThreads;
-
   return base::WrapUnique(new ProxyService(
       std::move(proxy_config_service),
-      base::MakeUnique<ProxyResolverFactoryForSystem>(num_pac_threads),
+      base::MakeUnique<ProxyResolverFactoryForSystem>(kDefaultNumPacThreads),
       net_log));
 }
 
@@ -988,7 +986,7 @@ std::unique_ptr<ProxyService> ProxyService::CreateFixed(const ProxyConfig& pc) {
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
   return CreateUsingSystemProxyResolver(
-      base::MakeUnique<ProxyConfigServiceFixed>(pc), 0, NULL);
+      base::MakeUnique<ProxyConfigServiceFixed>(pc), NULL);
 }
 
 // static

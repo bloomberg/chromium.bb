@@ -71,8 +71,6 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
     SAFE,
   };
 
-  static const size_t kDefaultNumPacThreads = 4;
-
   // This interface defines the set of policies for when to poll the PAC
   // script for changes.
   //
@@ -267,7 +265,6 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // proxy autoconfig.
   static std::unique_ptr<ProxyService> CreateUsingSystemProxyResolver(
       std::unique_ptr<ProxyConfigService> proxy_config_service,
-      size_t num_pac_threads,
       NetLog* net_log);
 
   // Creates a ProxyService without support for proxy autoconfig.
