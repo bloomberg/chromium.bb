@@ -4,6 +4,7 @@
 
 #include "chrome/browser/loader/chrome_navigation_data.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "net/url_request/url_request.h"
 
@@ -23,7 +24,8 @@ ChromeNavigationData* ChromeNavigationData::GetDataAndCreateIfNecessary(
   if (data)
     return data;
   data = new ChromeNavigationData();
-  request->SetUserData(kChromeNavigationDataUserDataKey, data);
+  request->SetUserData(kChromeNavigationDataUserDataKey,
+                       base::WrapUnique(data));
   return data;
 }
 

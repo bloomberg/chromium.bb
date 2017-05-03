@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -38,8 +39,7 @@ void FontFamilyCache::FillFontFamilyMap(Profile* profile,
       static_cast<FontFamilyCache*>(profile->GetUserData(&kFontFamilyCacheKey));
   if (!cache) {
     cache = new FontFamilyCache(profile);
-    // The profile takes ownership of |cache|.
-    profile->SetUserData(&kFontFamilyCacheKey, cache);
+    profile->SetUserData(&kFontFamilyCacheKey, base::WrapUnique(cache));
   }
 
   cache->FillFontFamilyMap(map_name, map);

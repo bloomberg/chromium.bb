@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -88,7 +89,7 @@ net::NSSCertDatabaseChromeOS* GetNSSCertDatabaseChromeOS(
           context->GetUserData(kDatabaseManagerKey));
   if (!manager) {
     manager = new NSSCertDatabaseChromeOSManager(GetUsername(context));
-    context->SetUserData(kDatabaseManagerKey, manager);
+    context->SetUserData(kDatabaseManagerKey, base::WrapUnique(manager));
   }
   return manager->GetNSSCertDatabase(callback);
 }

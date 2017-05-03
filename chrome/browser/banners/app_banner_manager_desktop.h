@@ -22,13 +22,14 @@ class AppBannerManagerDesktop
     : public AppBannerManager,
       public content::WebContentsUserData<AppBannerManagerDesktop> {
  public:
+  ~AppBannerManagerDesktop() override;
+
   static bool IsEnabled();
 
  private:
   friend class content::WebContentsUserData<AppBannerManagerDesktop>;
 
   explicit AppBannerManagerDesktop(content::WebContents* web_contents);
-  ~AppBannerManagerDesktop() override;
 
   // AppBannerManager overrides.
   void DidFinishCreatingBookmarkApp(

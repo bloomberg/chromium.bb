@@ -527,7 +527,7 @@ class ClearDomainReliabilityTester {
         new TestingDomainReliabilityServiceFactoryUserData(profile_,
                                                            mock_service_);
     EXPECT_FALSE(profile_->GetUserData(kKey));
-    profile_->SetUserData(kKey, data);
+    profile_->SetUserData(kKey, base::WrapUnique(data));
 
     // Set and use factory that will attach service stuffed in kludgey struct.
     DomainReliabilityServiceFactory::GetInstance()->SetTestingFactoryAndUse(

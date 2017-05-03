@@ -88,8 +88,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
   tab_id_provider->ProvideTabId(
       base::Bind(&AnnotateDataUse, base::Passed(&data_use), callback));
 
-  // |request| takes ownership of |tab_id_provider|.
-  request->SetUserData(TabIdProvider::kUserDataKey, tab_id_provider.release());
+  request->SetUserData(TabIdProvider::kUserDataKey, std::move(tab_id_provider));
 }
 
 }  // namespace chrome_browser_data_usage

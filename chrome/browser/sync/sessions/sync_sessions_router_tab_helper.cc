@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
@@ -21,8 +22,9 @@ void SyncSessionsRouterTabHelper::CreateForWebContents(
     SyncSessionsWebContentsRouter* router) {
   DCHECK(web_contents);
   if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(
-        UserDataKey(), new SyncSessionsRouterTabHelper(web_contents, router));
+    web_contents->SetUserData(UserDataKey(),
+                              base::WrapUnique(new SyncSessionsRouterTabHelper(
+                                  web_contents, router)));
   }
 }
 

@@ -30,6 +30,8 @@ class InfoBarService : public infobars::InfoBarManager,
                        public content::WebContentsObserver,
                        public content::WebContentsUserData<InfoBarService> {
  public:
+  ~InfoBarService() override;
+
   static infobars::InfoBarDelegate::NavigationDetails
       NavigationDetailsFromLoadCommittedDetails(
           const content::LoadCommittedDetails& details);
@@ -59,7 +61,6 @@ class InfoBarService : public infobars::InfoBarManager,
   friend class content::WebContentsUserData<InfoBarService>;
 
   explicit InfoBarService(content::WebContents* web_contents);
-  ~InfoBarService() override;
 
   // InfoBarManager:
   int GetActiveEntryID() override;
