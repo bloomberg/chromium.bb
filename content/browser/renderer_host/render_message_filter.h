@@ -42,7 +42,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/threading/worker_pool.h"
 #endif
 
 class GURL;

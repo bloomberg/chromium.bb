@@ -31,7 +31,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"

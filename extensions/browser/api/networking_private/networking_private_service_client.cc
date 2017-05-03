@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"

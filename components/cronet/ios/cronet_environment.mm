@@ -23,7 +23,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "base/threading/worker_pool.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/ios/version.h"
 #include "components/prefs/json_pref_store.h"
