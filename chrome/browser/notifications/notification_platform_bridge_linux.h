@@ -12,6 +12,10 @@
 
 class NotificationPlatformBridgeLinuxImpl;
 
+namespace dbus {
+class Bus;
+}
+
 class NotificationPlatformBridgeLinux : public NotificationPlatformBridge {
  public:
   NotificationPlatformBridgeLinux();
@@ -33,6 +37,13 @@ class NotificationPlatformBridgeLinux : public NotificationPlatformBridge {
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
 
  private:
+  friend class NotificationPlatformBridgeLinuxTest;
+
+  // Constructor only used in unit testing.
+  explicit NotificationPlatformBridgeLinux(scoped_refptr<dbus::Bus> bus);
+
+  void CleanUp();
+
   scoped_refptr<NotificationPlatformBridgeLinuxImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeLinux);
