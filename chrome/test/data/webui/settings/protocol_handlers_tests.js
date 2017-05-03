@@ -3,122 +3,120 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for protocol_handlers. */
-cr.define('protocol_handlers', function() {
-  function registerTests() {
-    suite('ProtocolHandlers', function() {
-      /**
-       * A dummy protocol handler element created before each test.
-       * @type {ProtocolHandlers}
-       */
-      var testElement;
+suite('ProtocolHandlers', function() {
+  /**
+   * A dummy protocol handler element created before each test.
+   * @type {ProtocolHandlers}
+   */
+  var testElement;
 
-      /**
-       * A list of ProtocolEntry fixtures.
-       * @type {!Array<!ProtocolEntry>}
-       */
-      var protocols = [
+  /**
+   * A list of ProtocolEntry fixtures.
+   * @type {!Array<!ProtocolEntry>}
+   */
+  var protocols = [
+    {
+      default_handler: 0,
+      handlers: [{
+        host: 'www.google.com',
+        protocol: 'mailto',
+        spec: 'http://www.google.com/%s'
+      }],
+      has_policy_recommendations: false,
+      is_default_handler_set_by_user: true,
+      protocol: 'mailto'
+    },
+    {
+      default_handler: 0,
+      handlers: [
         {
-          default_handler: 0,
-          handlers: [
-            {
-              host: 'www.google.com',
-              protocol: 'mailto',
-              spec: 'http://www.google.com/%s'
-            }
-          ],
-          has_policy_recommendations: false,
-          is_default_handler_set_by_user: true,
-          protocol: 'mailto'
-        }, {
-          default_handler: 0,
-          handlers: [
-            {
-              host: 'www.google1.com',
-              protocol: 'webcal',
-              spec: 'http://www.google1.com/%s'
-            }, {
-              host: 'www.google2.com',
-              protocol: 'webcal',
-              spec: 'http://www.google2.com/%s'
-            }
-          ],
-          has_policy_recommendations: false,
-          is_default_handler_set_by_user: true,
-          protocol: 'webcal'
+          host: 'www.google1.com',
+          protocol: 'webcal',
+          spec: 'http://www.google1.com/%s'
+        },
+        {
+          host: 'www.google2.com',
+          protocol: 'webcal',
+          spec: 'http://www.google2.com/%s'
         }
-      ];
+      ],
+      has_policy_recommendations: false,
+      is_default_handler_set_by_user: true,
+      protocol: 'webcal'
+    }
+  ];
 
-      /**
-       * The mock proxy object to use during test.
-       * @type {TestSiteSettingsPrefsBrowserProxy}
-       */
-      var browserProxy = null;
+  /**
+   * The mock proxy object to use during test.
+   * @type {TestSiteSettingsPrefsBrowserProxy}
+   */
+  var browserProxy = null;
 
-      setup(function() {
-        browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-        settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
-      });
+  setup(function() {
+    browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+  });
 
-      teardown(function() {
-        testElement.remove();
-        testElement = null;
-      });
+  teardown(function() {
+    testElement.remove();
+    testElement = null;
+  });
 
-      /** @return {!Promise} */
-      function initPage() {
-        browserProxy.reset();
-        PolymerTest.clearBody();
-        testElement = document.createElement('protocol-handlers');
-        document.body.appendChild(testElement);
-        return browserProxy.whenCalled('observeProtocolHandlers').
-            then(Polymer.dom.flush.bind(Polymer.dom));
-      }
+  /** @return {!Promise} */
+  function initPage() {
+    browserProxy.reset();
+    PolymerTest.clearBody();
+    testElement = document.createElement('protocol-handlers');
+    document.body.appendChild(testElement);
+    return browserProxy.whenCalled('observeProtocolHandlers')
+        .then(Polymer.dom.flush.bind(Polymer.dom));
+  }
 
-      test('empty list', function() {
-        return initPage().then(function(){
-          var listFrames = testElement.root.querySelectorAll('.list-frame');
-          assertEquals(0, listFrames.length);
-        });
-      });
+  test('empty list', function() {
+    return initPage().then(function() {
+      var listFrames = testElement.root.querySelectorAll('.list-frame');
+      assertEquals(0, listFrames.length);
+    });
+  });
 
-      test('non-empty list', function() {
-        browserProxy.setProtocolHandlers(protocols);
+  test('non-empty list', function() {
+    browserProxy.setProtocolHandlers(protocols);
 
-        return initPage().then(function(){
-          var listFrames = testElement.root.querySelectorAll('.list-frame');
-          var listItems = testElement.root.querySelectorAll('.list-item');
-          // There are two protocols: ["mailto", "webcal"].
-          assertEquals(2, listFrames.length);
-          // There are three total handlers within the two protocols.
-          assertEquals(3, listItems.length);
+    return initPage().then(function() {
+      var listFrames = testElement.root.querySelectorAll('.list-frame');
+      var listItems = testElement.root.querySelectorAll('.list-item');
+      // There are two protocols: ["mailto", "webcal"].
+      assertEquals(2, listFrames.length);
+      // There are three total handlers within the two protocols.
+      assertEquals(3, listItems.length);
 
-          // Check that item hosts are rendered correctly.
-          var hosts = testElement.root.querySelectorAll('.protocol-host');
-          assertEquals('www.google.com', hosts[0].textContent);
-          assertEquals('www.google1.com', hosts[1].textContent);
-          assertEquals('www.google2.com', hosts[2].textContent);
+      // Check that item hosts are rendered correctly.
+      var hosts = testElement.root.querySelectorAll('.protocol-host');
+      assertEquals('www.google.com', hosts[0].textContent);
+      assertEquals('www.google1.com', hosts[1].textContent);
+      assertEquals('www.google2.com', hosts[2].textContent);
 
-          // Check that item default subtexts are rendered correctly.
-          var defText = testElement.root.querySelectorAll('.protocol-default');
-          assertFalse(defText[0].hidden);
-          assertFalse(defText[1].hidden);
-          assertTrue(defText[2].hidden);
-        });
-      });
+      // Check that item default subtexts are rendered correctly.
+      var defText = testElement.root.querySelectorAll('.protocol-default');
+      assertFalse(defText[0].hidden);
+      assertFalse(defText[1].hidden);
+      assertTrue(defText[2].hidden);
+    });
+  });
 
-      /**
-       * A reusable function to test different action buttons.
-       * @param {string} button id of the button to test.
-       * @param {string} handler name of browserProxy handler to react.
-       * @return {!Promise}
-       */
-      function testButtonFlow(button, browserProxyHandler) {
-        var menuButtons, functionButton, dialog;
+  /**
+   * A reusable function to test different action buttons.
+   * @param {string} button id of the button to test.
+   * @param {string} handler name of browserProxy handler to react.
+   * @return {!Promise}
+   */
+  function testButtonFlow(button, browserProxyHandler) {
+    var menuButtons, functionButton, dialog;
 
-        return initPage().then(function(){
+    return initPage()
+        .then(function() {
           // Initiating the elements
-          menuButtons = testElement.root.
-              querySelectorAll('paper-icon-button');
+          menuButtons = testElement.root.querySelectorAll('paper-icon-button');
           functionButton = testElement.$[button];
           dialog = testElement.$$('dialog[is=cr-action-menu]');
           assertEquals(3, menuButtons.length);
@@ -130,7 +128,8 @@ cr.define('protocol_handlers', function() {
           MockInteractions.tap(functionButton);
 
           return browserProxy.whenCalled(browserProxyHandler);
-        }).then(function(args) {
+        })
+        .then(function(args) {
           // BrowserProxy's handler is expected to be called with arguments as
           // [protocol, url].
           assertEquals(protocols[0].protocol, args[0]);
@@ -146,25 +145,20 @@ cr.define('protocol_handlers', function() {
           MockInteractions.tap(functionButton);
 
           return browserProxy.whenCalled(browserProxyHandler);
-        }).then(function(args) {
+        })
+        .then(function(args) {
           assertEquals(protocols[1].protocol, args[0]);
           assertEquals(protocols[1].handlers[0].spec, args[1]);
         });
-      }
-
-      test('remove button works', function() {
-        browserProxy.setProtocolHandlers(protocols);
-        return testButtonFlow('removeButton', 'removeProtocolHandler');
-      });
-
-      test('default button works', function() {
-        browserProxy.setProtocolHandlers(protocols);
-        return testButtonFlow('defaultButton', 'setProtocolDefault');
-      });
-    });
   }
 
-  return {
-    registerTests: registerTests,
-  };
+  test('remove button works', function() {
+    browserProxy.setProtocolHandlers(protocols);
+    return testButtonFlow('removeButton', 'removeProtocolHandler');
+  });
+
+  test('default button works', function() {
+    browserProxy.setProtocolHandlers(protocols);
+    return testButtonFlow('defaultButton', 'setProtocolDefault');
+  });
 });
