@@ -84,8 +84,8 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
                         QRScannerViewControllerDelegate,
                         VoiceSearchControllerDelegate>
 
-@property(nonatomic, assign) id<WebToolbarDelegate> delegate;
-@property(nonatomic, assign, readonly) id<UrlLoader> urlLoader;
+@property(nonatomic, weak) id<WebToolbarDelegate> delegate;
+@property(nonatomic, weak, readonly) id<UrlLoader> urlLoader;
 
 // Mark inherited initializer as unavailable.
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style NS_UNAVAILABLE;
