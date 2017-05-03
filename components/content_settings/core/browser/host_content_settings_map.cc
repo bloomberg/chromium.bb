@@ -178,13 +178,15 @@ content_settings::PatternPair GetPatternsForContentSettingsType(
 
 HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
                                                bool is_incognito_profile,
-                                               bool is_guest_profile)
+                                               bool is_guest_profile,
+                                               bool store_last_modified)
     : RefcountedKeyedService(base::ThreadTaskRunnerHandle::Get()),
 #ifndef NDEBUG
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
       prefs_(prefs),
       is_incognito_(is_incognito_profile || is_guest_profile),
+      store_last_modified_(store_last_modified),
       weak_ptr_factory_(this) {
   DCHECK(!(is_incognito_profile && is_guest_profile));
 
@@ -194,8 +196,8 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
       base::WrapUnique(policy_provider);
   policy_provider->AddObserver(this);
 
-  pref_provider_ =
-      new content_settings::PrefProvider(prefs_, is_incognito_);
+  pref_provider_ = new content_settings::PrefProvider(prefs_, is_incognito_,
+                                                      store_last_modified_);
   content_settings_providers_[PREF_PROVIDER] = base::WrapUnique(pref_provider_);
   pref_provider_->AddObserver(this);
 
@@ -658,22 +660,27 @@ void HostContentSettingsMap::ClearSettingsForOneType(
 
 void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
     ContentSettingsType content_type,
-    const base::Callback<bool(const ContentSettingsPattern& primary_pattern,
-                              const ContentSettingsPattern& secondary_pattern)>&
-        pattern_predicate) {
-  if (pattern_predicate.is_null()) {
+    base::Time begin_time,
+    const PatternSourcePredicate& pattern_predicate) {
+  if (pattern_predicate.is_null() && begin_time.is_null()) {
     ClearSettingsForOneType(content_type);
     return;
   }
-
+  UsedContentSettingsProviders();
   ContentSettingsForOneType settings;
   GetSettingsForOneType(content_type, std::string(), &settings);
   for (const ContentSettingPatternSource& setting : settings) {
-    if (pattern_predicate.Run(setting.primary_pattern,
+    if (pattern_predicate.is_null() ||
+        pattern_predicate.Run(setting.primary_pattern,
                               setting.secondary_pattern)) {
-      SetWebsiteSettingCustomScope(setting.primary_pattern,
-                                   setting.secondary_pattern, content_type,
-                                   std::string(), nullptr);
+      base::Time last_modified = pref_provider_->GetWebsiteSettingLastModified(
+          setting.primary_pattern, setting.secondary_pattern, content_type,
+          std::string());
+      if (last_modified >= begin_time) {
+        pref_provider_->SetWebsiteSetting(setting.primary_pattern,
+                                          setting.secondary_pattern,
+                                          content_type, std::string(), nullptr);
+      }
     }
   }
 }

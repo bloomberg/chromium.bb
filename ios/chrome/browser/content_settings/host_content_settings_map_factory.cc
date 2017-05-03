@@ -44,7 +44,7 @@ HostContentSettingsMapFactory::BuildServiceInstanceFor(
   }
   return make_scoped_refptr(new HostContentSettingsMap(
       browser_state->GetPrefs(), browser_state->IsOffTheRecord(),
-      false /* guest_profile */));
+      false /* guest_profile */, false /* store_last_modified */));
 }
 
 web::BrowserState* HostContentSettingsMapFactory::GetBrowserStateToUse(

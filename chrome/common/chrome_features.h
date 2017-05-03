@@ -169,6 +169,8 @@ extern const base::Feature kSimplifiedFullscreenUI;
 extern const base::Feature kSyzyasanDeferredFree;
 #endif
 
+extern const base::Feature kTabsInCbd;
+
 extern const base::Feature kUseGroupedPermissionInfobars;
 
 extern const base::Feature kUsePermissionManagerForMediaRequests;

@@ -32,7 +32,7 @@ class PrefProvider : public ObservableProvider {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  PrefProvider(PrefService* prefs, bool incognito);
+  PrefProvider(PrefService* prefs, bool incognito, bool store_last_modified);
   ~PrefProvider() override;
 
   // ProviderInterface implementations.
@@ -46,6 +46,13 @@ class PrefProvider : public ObservableProvider {
                          ContentSettingsType content_type,
                          const ResourceIdentifier& resource_identifier,
                          base::Value* value) override;
+
+  // Returns the |last_modified| date of a setting.
+  base::Time GetWebsiteSettingLastModified(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier);
 
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
 

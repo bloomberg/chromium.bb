@@ -333,9 +333,7 @@ void ChromeSSLHostStateDelegate::Clear(
   // Convert host matching to content settings pattern matching. Content
   // settings deletion is done synchronously on the UI thread, so we can use
   // |host_filter| by reference.
-  base::Callback<bool(const ContentSettingsPattern& primary_pattern,
-                      const ContentSettingsPattern& secondary_pattern)>
-      pattern_filter;
+  HostContentSettingsMap::PatternSourcePredicate pattern_filter;
   if (!host_filter.is_null()) {
     pattern_filter =
         base::Bind(&HostFilterToPatternFilter, base::ConstRef(host_filter));
@@ -343,7 +341,8 @@ void ChromeSSLHostStateDelegate::Clear(
 
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->ClearSettingsForOneTypeWithPredicate(
-          CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, pattern_filter);
+          CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, base::Time(),
+          pattern_filter);
 }
 
 content::SSLHostStateDelegate::CertJudgment

@@ -714,7 +714,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   if (remove_mask & DATA_TYPE_DURABLE_PERMISSION) {
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->ClearSettingsForOneTypeWithPredicate(
-            CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+            CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, base::Time(),
             base::Bind(&WebsiteSettingsFilterAdapter, filter));
   }
 
@@ -723,7 +723,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   if (remove_mask & DATA_TYPE_SITE_USAGE_DATA) {
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->ClearSettingsForOneTypeWithPredicate(
-            CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+            CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, base::Time(),
             base::Bind(&WebsiteSettingsFilterAdapter, filter));
   }
 
@@ -731,7 +731,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       (remove_mask & DATA_TYPE_HISTORY)) {
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->ClearSettingsForOneTypeWithPredicate(
-            CONTENT_SETTINGS_TYPE_APP_BANNER,
+            CONTENT_SETTINGS_TYPE_APP_BANNER, base::Time(),
             base::Bind(&WebsiteSettingsFilterAdapter, filter));
 
     PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveCountsByUrl(

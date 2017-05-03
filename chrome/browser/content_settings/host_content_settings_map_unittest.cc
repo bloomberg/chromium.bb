@@ -11,10 +11,14 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
@@ -1683,7 +1687,7 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
 
   // First, test that we clear only COOKIES (not APP_BANNER), and pattern2.
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
-      CONTENT_SETTINGS_TYPE_COOKIES,
+      CONTENT_SETTINGS_TYPE_COOKIES, base::Time(),
       base::Bind(&MatchPrimaryPattern, pattern2));
   host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &host_settings);
@@ -1728,7 +1732,7 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
   ContentSettingsPattern http_pattern =
       ContentSettingsPattern::FromURLNoWildcard(url3_origin_only);
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
-      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, base::Time(),
       base::Bind(&MatchPrimaryPattern, http_pattern));
   // Verify we only have one, and it's url1.
   host_content_settings_map->GetSettingsForOneType(
@@ -1736,6 +1740,62 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
   EXPECT_EQ(1u, host_settings.size());
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(url1),
             host_settings[0].primary_pattern);
+}
+
+TEST_F(HostContentSettingsMapTest, ClearSettingsWithTimePredicate) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kTabsInCbd);
+
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+  ContentSettingsForOneType host_settings;
+
+  GURL url1("https://www.google.com/");
+  GURL url2("https://maps.google.com/");
+
+  // Add setting for url1.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url1, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+      CONTENT_SETTING_BLOCK);
+
+  // Make sure that the timestamp for url1 is different from |t|.
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  base::Time t = base::Time::Now();
+
+  // Add setting for url2.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url2, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+      CONTENT_SETTING_BLOCK);
+
+  // Verify we have two pattern and the default.
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &host_settings);
+  EXPECT_EQ(3u, host_settings.size());
+
+  // Clear all settings since |t|.
+  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+      CONTENT_SETTINGS_TYPE_POPUPS, t,
+      HostContentSettingsMap::PatternSourcePredicate());
+
+  // Verify we only have one pattern (url1) and the default.
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &host_settings);
+  EXPECT_EQ(2u, host_settings.size());
+  EXPECT_EQ("https://www.google.com:443",
+            host_settings[0].primary_pattern.ToString());
+  EXPECT_EQ("*", host_settings[1].primary_pattern.ToString());
+
+  // Clear all settings since the beginning of time.
+  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+      CONTENT_SETTINGS_TYPE_POPUPS, base::Time(),
+      HostContentSettingsMap::PatternSourcePredicate());
+
+  // Verify we only have the default setting.
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
+  EXPECT_EQ("*", host_settings[0].primary_pattern.ToString());
 }
 
 TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {

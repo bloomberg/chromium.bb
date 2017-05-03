@@ -836,7 +836,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
   {
     scoped_refptr<HostContentSettingsMap> temp_map(new HostContentSettingsMap(
         profile()->GetPrefs(), false /* is_incognito_profile */,
-        false /* is_guest_profile */));
+        false /* is_guest_profile */, false /* store_last_modified */));
     temp_map->ShutdownOnUIThread();
   }
 
@@ -868,7 +868,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
   {
     scoped_refptr<HostContentSettingsMap> temp_map(new HostContentSettingsMap(
         profile()->GetPrefs(), false /* is_incognito_profile */,
-        false /* is_guest_profile */));
+        false /* is_guest_profile */, false /* store_last_modified */));
     temp_map->ShutdownOnUIThread();
   }
 

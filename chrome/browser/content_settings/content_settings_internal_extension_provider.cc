@@ -211,8 +211,9 @@ void InternalExtensionProvider::SetContentSettingForExtensionAndResource(
                              CONTENT_SETTINGS_TYPE_PLUGINS,
                              resource);
     } else {
+      // Do not set a timestamp for extension settings.
       value_map_.SetValue(primary_pattern, secondary_pattern,
-                          CONTENT_SETTINGS_TYPE_PLUGINS, resource,
+                          CONTENT_SETTINGS_TYPE_PLUGINS, resource, base::Time(),
                           new base::Value(setting));
     }
   }
