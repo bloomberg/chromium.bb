@@ -30,6 +30,8 @@ static_library("sandbox") {
     "src/handle_closer.h",
     "src/handle_closer_agent.cc",
     "src/handle_closer_agent.h",
+    "src/heap_helper.cc",
+    "src/heap_helper.h",
     "src/interception.cc",
     "src/interception.h",
     "src/interception_agent.cc",

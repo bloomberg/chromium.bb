@@ -12,6 +12,7 @@
 #include <winioctl.h>
 
 #include "base/win/windows_version.h"
+#include "sandbox/win/src/heap_helper.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -147,6 +148,68 @@ TEST(LpcPolicyTest, GetUserDefaultLocaleName) {
       L"Lpc_GetUserDefaultLocaleName " + std::wstring(locale_name);
   TestRunner runner;
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(cmd.c_str()));
+}
+
+// Closing ALPC port can invalidate its heap.
+// Test that all heaps are valid.
+SBOX_TESTS_COMMAND int Lpc_TestValidProcessHeaps(int argc, wchar_t** argv) {
+  if (argc != 0)
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+  // Retrieves the number of heaps in the current process.
+  DWORD number_of_heaps = ::GetProcessHeaps(0, NULL);
+  // Try to retrieve a handle to all the heaps owned by this process. Returns
+  // false if the number of heaps has changed.
+  //
+  // This is inherently racy as is, but it's not something that we observe a lot
+  // in Chrome, the heaps tend to be created at startup only.
+  std::unique_ptr<HANDLE[]> all_heaps(new HANDLE[number_of_heaps]);
+  if (::GetProcessHeaps(number_of_heaps, all_heaps.get()) != number_of_heaps)
+    return SBOX_TEST_FAILED;
+
+  for (size_t i = 0; i < number_of_heaps; ++i) {
+    HANDLE handle = all_heaps[i];
+    if (!HeapLock(handle)) {
+      return SBOX_TEST_FAILED;
+    }
+
+    if (!HeapUnlock(handle)) {
+      return SBOX_TEST_FAILED;
+    }
+  }
+  return SBOX_TEST_SUCCEEDED;
+}
+
+TEST(LpcPolicyTest, TestValidProcessHeaps) {
+  TestRunner runner;
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"Lpc_TestValidProcessHeaps"));
+}
+
+// All processes should have a shared heap with csrss.exe. This test ensures
+// that this heap can be found.
+TEST(LpcPolicyTest, TestCanFindCsrPortHeap) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+    // This functionality has not been verified on versions before Win10.
+    return;
+  }
+  HANDLE csr_port_handle = sandbox::FindCsrPortHeap();
+  EXPECT_NE(nullptr, csr_port_handle);
+}
+
+TEST(LpcPolicyTest, TestHeapFlags) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+    // This functionality has not been verified on versions before Win10.
+    return;
+  }
+  // Windows does not support callers supplying arbritary flag values. So we
+  // write some non-trivial value to reduce the chance we match this in random
+  // data.
+  DWORD flags = 0x41007;
+  HANDLE heap = HeapCreate(flags, 0, 0);
+  EXPECT_NE(nullptr, heap);
+  DWORD actual_flags = 0;
+  EXPECT_TRUE(sandbox::HeapFlags(heap, &actual_flags));
+  EXPECT_EQ(flags, actual_flags);
+  EXPECT_TRUE(HeapDestroy(heap));
 }
 
 }  // namespace sandbox
