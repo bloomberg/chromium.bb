@@ -585,6 +585,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
       'conformance2/textures/webgl_canvas/tex-3d-rgb9_e5-rgb-half_float.html',
       ['sierra', 'intel'], bug=663188)
 
+    # Regressions in 10.12.4 on Haswell GPUs.
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
+        ['mac', ('intel', 0x0a2e)], bug=718194)
+    self.Fail('deqp/functional/gles3/fboinvalidate/format_00.html',
+        ['mac', ('intel', 0x0a2e)], bug=718194)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_05.html',
+        ['mac', ('intel', 0x0a2e)], bug=718194)
+
     self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
         ['mac', 'intel'], bug=679692)
     self.Fail('deqp/functional/gles3/fbomultisample*',
