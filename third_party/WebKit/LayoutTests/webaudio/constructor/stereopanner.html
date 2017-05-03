@@ -5,8 +5,8 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
-    <script src="audionodeoptions.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
@@ -15,210 +15,174 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("initialize", function (taskDone) {
-        Should("context = new OfflineAudioContext(...)", function () {
-          context = new OfflineAudioContext(1, 1, 48000);
-        }).notThrow();
-
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("invalid constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        success = Should("new StereoPannerNode()", function () {
-          node = new StereoPannerNode();
-        }).throw("TypeError");
-        success = Should("new StereoPannerNode(1)", function () {
-          node = new StereoPannerNode(1) && success;
-        }).throw("TypeError");
-        success = Should("new StereoPannerNode(context, 42)", function () {
-          node = new StereoPannerNode(context, 42) && success;
-        }).throw("TypeError");
-
-        Should("Invalid constructors", success)
-            .summarize(
-                "correctly threw errors",
-                "did not throw errors in all cases");
-
-        taskDone();
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(should, 'StereoPannerNode', context);
+        task.done();
       });
 
-      audit.defineTask("default constructor", function (taskDone) {
-        var node;
-        var success = true;
+      audit.define('default constructor', (task, should) => {
+        let prefix = 'node0';
+        let node = testDefaultConstructor(should, 'StereoPannerNode', context, {
+          prefix: prefix,
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          channelCount: 2,
+          channelCountMode: 'clamped-max',
+          channelInterpretation: 'speakers'
+        });
 
-        success = Should("node0 = new StereoPannerNode(context)", function () {
-          node = new StereoPannerNode(context);
-        }).notThrow();
-        success = Should("node0 instanceof StereoPannerNode", node instanceof StereoPannerNode)
-          .beEqualTo(true) && success;
+        testDefaultAttributes(should, node, prefix, [{name: 'pan', value: 0}]);
 
-        success = Should("node0.pan.value", node.pan.value)
-          .beEqualTo(0) && success;
-
-        Should("new StereoPannerNode(context)", success)
-            .summarize(
-                "constructed node with correct attributes",
-                "did not construct correct node correctly")
-
-        taskDone();
+        task.done();
       });
 
-      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+      audit.define('test AudioNodeOptions', (task, should) => {
         // Can't use testAudioNodeOptions because the constraints for this node
         // are not supported there.
         var node;
-        var success = true;
 
         // Test that we can set the channel count to 1 or 2.
-        var options = {
-          channelCount: 1
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).notThrow() && success;
-        success = Should("node.channelCount", node.channelCount)
-          .beEqualTo(1) && success;
+        var options = {channelCount: 1};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .notThrow();
+        should(node.channelCount, 'node.channelCount').beEqualTo(1);
 
-        options = {
-          channelCount: 2
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).notThrow() && success;
-        success = Should("node.channelCount", node.channelCount)
-          .beEqualTo(2) && success;
+        options = {channelCount: 2};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .notThrow();
+        should(node.channelCount, 'node.channelCount').beEqualTo(2);
 
         // Test that other channel counts throw an error
-        options = {
-          channelCount: 0
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).throw("NotSupportedError") && success;
+        options = {channelCount: 0};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .throw('NotSupportedError');
 
-        options = {
-          channelCount: 3
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).throw("NotSupportedError") && success;
+        options = {channelCount: 3};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .throw('NotSupportedError');
 
-        options = {
-          channelCount: 99
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).throw("NotSupportedError") && success;
+        options = {channelCount: 99};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .throw('NotSupportedError');
 
         // Test channelCountMode.  A mode of "max" is illegal, but others are
         // ok.
-        options = {
-          channelCountMode: "clamped-max"
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).notThrow() && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
-          .beEqualTo(options.channelCountMode) && success;
+        options = {channelCountMode: 'clamped-max'};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .notThrow();
+        should(node.channelCountMode, 'node.channelCountMode')
+            .beEqualTo(options.channelCountMode);
 
-        options = {
-          channelCountMode: "explicit"
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).notThrow() && success;
-        success = Should("node.channelCountMode", node.channelCountMode)
-          .beEqualTo(options.channelCountMode) && success;
+        options = {channelCountMode: 'explicit'};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .notThrow();
+        should(node.channelCountMode, 'node.channelCountMode')
+            .beEqualTo(options.channelCountMode);
 
-        options = {
-          channelCountMode: "max"
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).throw("NotSupportedError") && success;
+        options = {channelCountMode: 'max'};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .throw('NotSupportedError');
 
-        options = {
-          channelCountMode: "foobar"
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).throw("TypeError") && success;
+        options = {channelCountMode: 'foobar'};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .throw('TypeError');
 
         // Test channelInterpretation.
-        options = {
-          channelInterpretation: "speakers"
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).notThrow() && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
-          .beEqualTo(options.channelInterpretation) && success;
+        options = {channelInterpretation: 'speakers'};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .notThrow();
+        should(node.channelInterpretation, 'node.channelInterpretation')
+            .beEqualTo(options.channelInterpretation);
 
-        options = {
-          channelInterpretation: "discrete"
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).notThrow() && success;
-        success = Should("node.channelInterpretation", node.channelInterpretation)
-          .beEqualTo(options.channelInterpretation) && success;
+        options = {channelInterpretation: 'discrete'};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .notThrow();
+        should(node.channelInterpretation, 'node.channelInterpretation')
+            .beEqualTo(options.channelInterpretation);
 
-        options = {
-          channelInterpretation: "foobar"
-        };
-        success = Should("new StereoPannerNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).throw("TypeError") && success;
+        options = {channelInterpretation: 'foobar'};
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'new StereoPannerNode(c, ' + JSON.stringify(options) + ')')
+            .throw('TypeError');
 
-        Should("AudioNodeOptions for StereoPannerNode", success)
-          .summarize(
-            "were correctly handled",
-            "were not correctly handled");
-
-        taskDone();
+        task.done();
       });
 
-      audit.defineTask("constructor with options", function (taskDone) {
+      audit.define('constructor with options', (task, should) => {
         var node;
-        var success = true;
         var options = {
           pan: 0.75,
         };
 
-        success = Should("node1 = new StereoPannerNode(, " + JSON.stringify(options) + ")",
-          function () {
-            node = new StereoPannerNode(context, options);
-          }).notThrow();
-        success = Should("node1 instanceof StereoPannerNode", node instanceof StereoPannerNode)
-          .beEqualTo(true) && success;
+        should(
+            () => {
+              node = new StereoPannerNode(context, options);
+            },
+            'node1 = new StereoPannerNode(, ' + JSON.stringify(options) + ')')
+            .notThrow();
+        should(
+            node instanceof StereoPannerNode,
+            'node1 instanceof StereoPannerNode')
+            .beEqualTo(true);
 
-        success = Should("node1.pan.value", node.pan.value)
-          .beEqualTo(options.pan) && success;
+        should(node.pan.value, 'node1.pan.value').beEqualTo(options.pan);
 
-        Should("new StereoPannerNode() with options", success)
-          .summarize(
-            "constructed with correct attributes",
-            "was not constructed correctly");
-
-        taskDone();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
