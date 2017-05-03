@@ -76,6 +76,13 @@ void ConnectionBarrier::Create(
 
 void ConnectionBarrier::Init(const PrefStorePtrs& pref_store_ptrs,
                              const std::vector<std::string>& observed_prefs) {
+  if (pref_store_ptrs.empty()) {
+    // After this method exits |this| will get destroyed so it's safe to move
+    // out the members.
+    callback_.Run(std::move(persistent_pref_store_connection_),
+                  std::move(connections_));
+    return;
+  }
   for (const auto& ptr : pref_store_ptrs) {
     ptr.second->AddObserver(
         observed_prefs,
