@@ -2988,8 +2988,7 @@ void RenderFrameHostImpl::DeleteSurroundingTextInCodePoints(int before,
 void RenderFrameHostImpl::JavaScriptDialogClosed(
     IPC::Message* reply_msg,
     bool success,
-    const base::string16& user_input,
-    bool dialog_was_suppressed) {
+    const base::string16& user_input) {
   GetProcess()->SetIgnoreInputEvents(false);
 
   SendJavaScriptDialogReply(reply_msg, success, user_input);
@@ -2998,17 +2997,10 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // timers stopped in this frame or a frame up in the frame hierarchy. Restart
   // any timers that were stopped in OnRunBeforeUnloadConfirm().
   for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent()) {
-    if (frame->is_waiting_for_beforeunload_ack_) {
-      // If we are waiting for a beforeunload ack and the user has suppressed
-      // messages, kill the tab immediately. A page that's spamming is
-      // presumably malicious, so there's no point in continuing to run its
-      // script and dragging out the process.
-      if (dialog_was_suppressed) {
-        frame->SimulateBeforeUnloadAck();
-      } else if (frame->beforeunload_timeout_) {
-        frame->beforeunload_timeout_->Start(
-            TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
-      }
+    if (frame->is_waiting_for_beforeunload_ack_ &&
+        frame->beforeunload_timeout_) {
+      frame->beforeunload_timeout_->Start(
+          TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
     }
   }
 }
