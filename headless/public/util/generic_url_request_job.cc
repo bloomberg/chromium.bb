@@ -287,6 +287,9 @@ std::string GenericURLRequestJob::GetPostData() const {
   if (!stream->GetElementReaders())
     return "";
 
+  if (stream->GetElementReaders()->size() == 0)
+    return "";
+
   DCHECK_EQ(1u, stream->GetElementReaders()->size());
   const net::UploadBytesElementReader* reader =
       (*stream->GetElementReaders())[0]->AsBytesReader();
