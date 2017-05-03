@@ -5,20 +5,28 @@
 package org.chromium.chrome.browser.media.remote;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.common.MediaMetadata;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.annotation.Nullable;
 
@@ -28,6 +36,7 @@ import javax.annotation.Nullable;
  */
 public class CastNotificationControl implements MediaRouteController.UiListener,
         MediaNotificationListener, AudioManager.OnAudioFocusChangeListener {
+    private static final String TAG = "MediaFling";
 
     @SuppressLint("StaticFieldLeak")
     private static CastNotificationControl sInstance;
@@ -118,6 +127,11 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
 
         updateNotificationBuilderIfPosterIsGoodEnough();
         mState = initialState;
+
+        // Set origin once per the notification so it doesn't change if another tab becomes active.
+        String origin = getCurrentTabOrigin();
+        if (origin != null) mNotificationBuilder.setOrigin(origin);
+
         updateNotification();
         mIsShowing = true;
     }
@@ -133,6 +147,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
         if (mNotificationBuilder == null) return;
 
         mNotificationBuilder.setMetadata(new MediaMetadata(mTitle, "", ""));
+
         if (mState == PlayerState.PAUSED || mState == PlayerState.PLAYING) {
             mNotificationBuilder.setPaused(mState != PlayerState.PLAYING);
             mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP
@@ -246,6 +261,25 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
         if (MediaNotificationManager.isBitmapSuitableAsMediaImage(poster)) {
             mNotificationBuilder.setNotificationLargeIcon(poster);
             mNotificationBuilder.setMediaSessionImage(poster);
+        }
+    }
+
+    private String getCurrentTabOrigin() {
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+
+        if (!(activity instanceof ChromeTabbedActivity)) return null;
+
+        Tab tab = ((ChromeTabbedActivity) activity).getActivityTab();
+        if (tab == null || !tab.isInitialized()) return null;
+
+        String url = tab.getUrl();
+        try {
+            return UrlFormatter.formatUrlForSecurityDisplay(new URI(url), true);
+        } catch (URISyntaxException | UnsatisfiedLinkError e) {
+            // UnstatisfiedLinkError can only happen in tests as the natives are not initialized
+            // yet.
+            Log.e(TAG, "Unable to parse the origin from the URL. Using the full URL instead.");
+            return url;
         }
     }
 }
