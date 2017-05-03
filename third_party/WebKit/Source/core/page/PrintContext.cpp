@@ -30,19 +30,6 @@ namespace blink {
 
 namespace {
 
-// By shrinking to a width of 75% (1.333f) we will render the correct physical
-// dimensions in paged media (i.e. cm, pt,). The shrinkage used
-// to be 80% (1.25f) to match other browsers - they have since moved on.
-// Wide pages will be scaled down more than this.
-const float kPrintingMinimumShrinkFactor = 1.33333333f;
-
-// This number determines how small we are willing to reduce the page content
-// in order to accommodate the widest line. If the page would have to be
-// reduced smaller to make the widest line fit, we just clip instead (this
-// behavior matches MacIE and Mozilla, at least).
-// TODO(rhogan): Decide if this quirk is still required.
-const float kPrintingMaximumShrinkFactor = 2;
-
 LayoutBoxModelObject* EnclosingBoxModelObject(LayoutObject* object) {
   while (object && !object->IsBoxModelObject())
     object = object->Parent();
@@ -271,8 +258,8 @@ void PrintContext::OutputLinkedDestinations(GraphicsContext& context,
     if (!layout_object || !layout_object->GetFrameView())
       continue;
     IntRect bounding_box = layout_object->AbsoluteBoundingBoxRect();
-    // TODO(bokan): boundingBox looks to be in content coordinates but
-    // convertToRootFrame doesn't apply scroll offsets when converting up to
+    // TODO(bokan): |bounding_box| looks to be in content coordinates but
+    // ConvertToRootFrame() doesn't apply scroll offsets when converting up to
     // the root frame.
     IntPoint point = layout_object->GetFrameView()->ConvertToRootFrame(
         bounding_box.Location());
