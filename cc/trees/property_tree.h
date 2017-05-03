@@ -378,8 +378,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   bool HasCopyRequests() const;
   void ClearCopyRequests();
 
-  int ClosestAncestorWithCopyRequest(int id) const;
-
   // Given the ids of two effect nodes that have render surfaces, returns the
   // id of the lowest common ancestor effect node that also has a render
   // surface.

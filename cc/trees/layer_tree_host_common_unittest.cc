@@ -5649,6 +5649,50 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
 }
 
+TEST_F(LayerTreeHostCommonTest, SingularTransformAndCopyRequests) {
+  LayerImpl* root = root_layer_for_testing();
+  root->SetBounds(gfx::Size(50, 50));
+  root->SetDrawsContent(true);
+
+  LayerImpl* singular_transform_layer = AddChild<LayerImpl>(root);
+  singular_transform_layer->SetBounds(gfx::Size(100, 100));
+  singular_transform_layer->SetDrawsContent(true);
+  gfx::Transform singular;
+  singular.Scale3d(6.f, 6.f, 0.f);
+  singular_transform_layer->test_properties()->transform = singular;
+
+  LayerImpl* copy_layer = AddChild<LayerImpl>(singular_transform_layer);
+  copy_layer->SetBounds(gfx::Size(100, 100));
+  copy_layer->SetDrawsContent(true);
+  copy_layer->test_properties()->copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+
+  LayerImpl* copy_child = AddChild<LayerImpl>(copy_layer);
+  copy_child->SetBounds(gfx::Size(100, 100));
+  copy_child->SetDrawsContent(true);
+
+  LayerImpl* copy_grand_child = AddChild<LayerImpl>(copy_child);
+  copy_grand_child->SetBounds(gfx::Size(100, 100));
+  copy_grand_child->SetDrawsContent(true);
+  copy_grand_child->test_properties()->transform = singular;
+
+  DCHECK(!copy_layer->test_properties()->copy_requests.empty());
+  ExecuteCalculateDrawProperties(root);
+  DCHECK(copy_layer->test_properties()->copy_requests.empty());
+
+  // A layer with singular transform should not contribute to drawn render
+  // surface.
+  EXPECT_FALSE(singular_transform_layer->contributes_to_drawn_render_surface());
+  // Even though copy_layer and copy_child have singular screen space transform,
+  // they still contribute to drawn render surface as their transform to the
+  // closest ancestor with copy request is not singular.
+  EXPECT_TRUE(copy_layer->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(copy_child->contributes_to_drawn_render_surface());
+  // copy_grand_child's transform to its closest ancestor with copy request is
+  // also singular. So, it doesn't contribute to drawn render surface.
+  EXPECT_FALSE(copy_grand_child->contributes_to_drawn_render_surface());
+}
+
 TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   LayerImpl* root = root_layer_for_testing();
   root->SetBounds(gfx::Size(50, 50));

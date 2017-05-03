@@ -322,6 +322,28 @@ static void AddSurfaceToRenderSurfaceList(
   }
 }
 
+static bool SkipForInvertibility(const LayerImpl* layer,
+                                 PropertyTrees* property_trees) {
+  const TransformNode* transform_node =
+      property_trees->transform_tree.Node(layer->transform_tree_index());
+  const EffectNode* effect_node =
+      property_trees->effect_tree.Node(layer->effect_tree_index());
+  bool non_root_copy_request =
+      effect_node->closest_ancestor_with_copy_request_id >
+      EffectTree::kContentsRootNodeId;
+  gfx::Transform from_target;
+  // If there is a copy request, we check the invertibility of the transform
+  // between the node corresponding to the layer and the node corresponding to
+  // the copy request. Otherwise, we are interested in the invertibility of
+  // screen space transform which is already cached on the transform node.
+  return non_root_copy_request
+             ? !property_trees->GetFromTarget(
+                   layer->transform_tree_index(),
+                   effect_node->closest_ancestor_with_copy_request_id,
+                   &from_target)
+             : !transform_node->ancestors_are_invertible;
+}
+
 static void ComputeInitialRenderSurfaceList(
     LayerTreeImpl* layer_tree_impl,
     PropertyTrees* property_trees,
@@ -354,9 +376,7 @@ static void ComputeInitialRenderSurfaceList(
         draw_property_utils::LayerShouldBeSkippedForDrawPropertiesComputation(
             layer, property_trees->transform_tree, property_trees->effect_tree);
 
-    const TransformNode* transform_node =
-        property_trees->transform_tree.Node(layer->transform_tree_index());
-    bool skip_for_invertibility = !transform_node->ancestors_are_invertible;
+    bool skip_for_invertibility = SkipForInvertibility(layer, property_trees);
 
     bool skip_layer = !is_root && (skip_draw_properties_computation ||
                                    skip_for_invertibility);
