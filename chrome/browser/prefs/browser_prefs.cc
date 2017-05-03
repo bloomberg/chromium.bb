@@ -814,7 +814,12 @@ std::set<PrefValueStore::PrefStoreType> ExpectedPrefStores() {
 
 std::set<PrefValueStore::PrefStoreType> InProcessPrefStores() {
   auto pref_stores = ExpectedPrefStores();
-  pref_stores.erase(PrefValueStore::DEFAULT_STORE);
+  // Until we have a distinction between owned and unowned prefs, we always have
+  // default values for all prefs locally. Since we already have the defaults it
+  // would be wasteful to request them from the service by connecting to the
+  // DEFAULT_STORE.
+  // TODO(sammc): Once we have this distinction, connect to the default pref
+  // store here (by erasing it from |pref_stores|).
   pref_stores.erase(PrefValueStore::USER_STORE);
   return pref_stores;
 }
