@@ -49,6 +49,9 @@ class WebstoreInlineInstaller : public WebstoreStandaloneInstaller,
 
   ~WebstoreInlineInstaller() override;
 
+  // Returns whether to use the new navigation event tracker.
+  virtual bool SafeBrowsingNavigationEventsEnabled() const;
+
   // Implementations WebstoreStandaloneInstaller Template Method's hooks.
   std::string GetJsonPostData() override;
   bool CheckRequestorAlive() const override;
