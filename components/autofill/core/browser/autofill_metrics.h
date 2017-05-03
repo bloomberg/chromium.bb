@@ -97,38 +97,38 @@ class AutofillMetrics {
   enum CardUploadDecisionMetric {
     // All the required conditions were satisfied and the card upload prompt was
     // triggered.
-    UPLOAD_OFFERED,
+    UPLOAD_OFFERED = 1 << 0,
     // No CVC was detected. We don't know whether any addresses were available
     // nor whether we would have been able to get upload details.
-    UPLOAD_NOT_OFFERED_NO_CVC,
+    UPLOAD_NOT_OFFERED_NO_CVC = 1 << 1,
     // A CVC was detected but no recently created or used address was available.
     // We don't know whether we would have been able to get upload details.
-    UPLOAD_NOT_OFFERED_NO_ADDRESS,
+    UPLOAD_NOT_OFFERED_NO_ADDRESS = 1 << 2,
     // A CVC and one or more addresses were available but no name was found on
     // either the card or the adress(es). We don't know whether the address(es)
     // were otherwise valid nor whether we would have been able to get upload
     // details.
-    UPLOAD_NOT_OFFERED_NO_NAME,
+    UPLOAD_NOT_OFFERED_NO_NAME = 1 << 3,
     // A CVC, multiple addresses, and a name were available but the adresses had
     // conflicting zip codes. We don't know whether we would have been able to
     // get upload details.
-    UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS,
+    UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS = 1 << 4,
     // A CVC, one or more addresses, and a name were available but no zip code
     // was found on any of the adress(es). We don't know whether we would have
     // been able to get upload details.
-    UPLOAD_NOT_OFFERED_NO_ZIP_CODE,
+    UPLOAD_NOT_OFFERED_NO_ZIP_CODE = 1 << 5,
     // A CVC, one or more valid addresses, and a name were available but the
     // request to Payments for upload details failed.
-    UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED,
+    UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED = 1 << 6,
     // A CVC and one or more addresses were available but the names on the card
     // and/or the addresses didn't match. We don't know whether the address(es)
     // were otherwise valid nor whether we would have been able to get upload
     // details.
-    UPLOAD_NOT_OFFERED_CONFLICTING_NAMES,
+    UPLOAD_NOT_OFFERED_CONFLICTING_NAMES = 1 << 7,
     // No CVC was detected, but valid addresses and names were.  Upload is still
     // possible if the user manually enters CVC, so upload was offered.
-    UPLOAD_OFFERED_NO_CVC,
-    NUM_CARD_UPLOAD_DECISION_METRICS,
+    UPLOAD_OFFERED_NO_CVC = 1 << 8,
+    // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
   enum DeveloperEngagementMetric {
@@ -645,7 +645,8 @@ class AutofillMetrics {
     base::TimeTicks form_loaded_timestamp_;
   };
 
-  static void LogCardUploadDecisionMetric(CardUploadDecisionMetric metric);
+  // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
+  static void LogCardUploadDecisionMetrics(int upload_decision_metrics);
   static void LogCreditCardInfoBarMetric(
       InfoBarMetric metric,
       bool is_uploading,
@@ -804,19 +805,18 @@ class AutofillMetrics {
   // suggestion to show an explanation of the warning.
   static void LogShowedHttpNotSecureExplanation();
 
-  // Logs the card upload decision ukm based on the specified |url| and
-  // |upload_decision|.
-  static void LogCardUploadDecisionUkm(
-      ukm::UkmService* ukm_service,
-      const GURL& url,
-      AutofillMetrics::CardUploadDecisionMetric upload_decision);
+  // Logs the card upload decisions ukm for the specified |url|.
+  // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
+  static void LogCardUploadDecisionsUkm(ukm::UkmService* ukm_service,
+                                        const GURL& url,
+                                        int upload_decision_metrics);
 
   // Logs the developer engagement ukm for the specified |url| and autofill
-  // fields in the form structure.
-  static void LogDeveloperEngagementUkm(
-      ukm::UkmService* ukm_service,
-      const GURL& url,
-      std::vector<AutofillMetrics::DeveloperEngagementMetric> metrics);
+  // fields in the form structure. |developer_engagement_metrics| is a bitmask
+  // of |AutofillMetrics::DeveloperEngagementMetric|.
+  static void LogDeveloperEngagementUkm(ukm::UkmService* ukm_service,
+                                        const GURL& url,
+                                        int developer_engagement_metrics);
 
   // Logs the the |ukm_entry_name| with the specified |url| and the specified
   // |metrics|. Returns whether the ukm was sucessfully logged.
@@ -886,6 +886,8 @@ class AutofillMetrics {
   };
 
  private:
+  static const int kNumCardUploadDecisionMetrics = 9;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };
 

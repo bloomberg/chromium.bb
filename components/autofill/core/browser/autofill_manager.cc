@@ -42,6 +42,7 @@
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -1041,7 +1042,7 @@ void AutofillManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
     std::unique_ptr<base::DictionaryValue> legal_message) {
-  // TODO(jdonnelly): Log duration.
+  int card_upload_decision_metrics;
   if (result == AutofillClient::SUCCESS) {
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
@@ -1054,11 +1055,9 @@ void AutofillManager::OnDidGetUploadDetails(
                    weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(base::Bind(&AutofillManager::OnDidGetUploadRiskData,
                                      weak_ptr_factory_.GetWeakPtr()));
-    AutofillMetrics::CardUploadDecisionMetric card_upload_decision_metric =
-        should_cvc_be_requested_ ? AutofillMetrics::UPLOAD_OFFERED_NO_CVC
-                                 : AutofillMetrics::UPLOAD_OFFERED;
-    AutofillMetrics::LogCardUploadDecisionMetric(card_upload_decision_metric);
-    LogCardUploadDecisionUkm(card_upload_decision_metric);
+    card_upload_decision_metrics = should_cvc_be_requested_
+                                       ? AutofillMetrics::UPLOAD_OFFERED_NO_CVC
+                                       : AutofillMetrics::UPLOAD_OFFERED;
   } else {
     // If the upload details request failed, fall back to a local save. The
     // reasoning here is as follows:
@@ -1076,11 +1075,10 @@ void AutofillManager::OnDidGetUploadDetails(
         base::Bind(
             base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
             base::Unretained(personal_data_), upload_request_.card));
-    AutofillMetrics::LogCardUploadDecisionMetric(
-        AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
-    LogCardUploadDecisionUkm(
-        AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
+    card_upload_decision_metrics =
+        AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED;
   }
+  LogCardUploadDecisions(card_upload_decision_metrics);
   pending_upload_request_url_ = GURL();
 }
 
@@ -1257,14 +1255,9 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
 
     // Upload requires that recently used or modified addresses meet the
     // client-side validation rules.
-    autofill::AutofillMetrics::CardUploadDecisionMetric
-        get_profiles_decision_metric = AutofillMetrics::UPLOAD_OFFERED;
     std::string rappor_metric_name;
-    bool get_profiles_succeeded =
-        GetProfilesForCreditCardUpload(*imported_credit_card,
-                                       &upload_request_.profiles,
-                                       &get_profiles_decision_metric,
-                                       &rappor_metric_name);
+    int upload_decision_metrics = GetProfilesForCreditCardUpload(
+        *imported_credit_card, &upload_request_.profiles, &rappor_metric_name);
 
     pending_upload_request_url_ = GURL(submitted_form.source_url());
 
@@ -1272,26 +1265,19 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     // reporting on CVC then address.
     should_cvc_be_requested_ = false;
     if (upload_request_.cvc.empty()) {
-      if (IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled()) {
-        should_cvc_be_requested_ = true;
-      } else {
-        AutofillMetrics::LogCardUploadDecisionMetric(
-            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
-        LogCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
-        pending_upload_request_url_ = GURL();
-        CollectRapportSample(submitted_form.source_url(),
-                             "Autofill.CardUploadNotOfferedNoCvc");
-        return;
+      should_cvc_be_requested_ =
+          (!upload_decision_metrics &&
+           IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled());
+      if (!should_cvc_be_requested_) {
+        upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC;
+        rappor_metric_name = "Autofill.CardUploadNotOfferedNoCvc";
       }
     }
-    if (!get_profiles_succeeded) {
-      DCHECK(get_profiles_decision_metric != AutofillMetrics::UPLOAD_OFFERED);
-      AutofillMetrics::LogCardUploadDecisionMetric(
-          get_profiles_decision_metric);
-      LogCardUploadDecisionUkm(get_profiles_decision_metric);
+    if (upload_decision_metrics) {
+      LogCardUploadDecisions(upload_decision_metrics);
       pending_upload_request_url_ = GURL();
       if (!rappor_metric_name.empty()) {
-        CollectRapportSample(submitted_form.source_url(), rappor_metric_name);
+        CollectRapporSample(submitted_form.source_url(), rappor_metric_name);
       }
       return;
     }
@@ -1301,15 +1287,14 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   }
 }
 
-bool AutofillManager::GetProfilesForCreditCardUpload(
+int AutofillManager::GetProfilesForCreditCardUpload(
     const CreditCard& card,
     std::vector<AutofillProfile>* profiles,
-    autofill::AutofillMetrics::CardUploadDecisionMetric*
-        address_upload_decision_metric,
     std::string* rappor_metric_name) const {
   std::vector<AutofillProfile> candidate_profiles;
   const base::Time now = AutofillClock::Now();
   const base::TimeDelta fifteen_minutes = base::TimeDelta::FromMinutes(15);
+  int upload_decision_metrics = 0;
 
   // First, collect all of the addresses used recently.
   for (AutofillProfile* profile : personal_data_->GetProfiles()) {
@@ -1319,10 +1304,8 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
     }
   }
   if (candidate_profiles.empty()) {
-    *address_upload_decision_metric =
-        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS;
+    upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS;
     *rappor_metric_name = "Autofill.CardUploadNotOfferedNoAddress";
-    return false;
   }
 
   // If any of the names on the card or the addresses don't match (where
@@ -1331,28 +1314,28 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
   // server-side by Google Payments and ensures that we don't send upload
   // requests that are guaranteed to fail.
   base::string16 verified_name;
-  base::string16 card_name =
+  const base::string16 card_name =
       card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL), app_locale_);
   if (!card_name.empty()) {
     verified_name = RemoveMiddleInitial(card_name);
   }
   for (const AutofillProfile& profile : candidate_profiles) {
-    base::string16 address_name =
+    const base::string16 address_name =
         profile.GetInfo(AutofillType(NAME_FULL), app_locale_);
     if (!address_name.empty()) {
       if (verified_name.empty()) {
         verified_name = RemoveMiddleInitial(address_name);
       } else {
-        // TODO(crbug.com/590307): We only use ASCII case insensitivity here
-        // because the feature is launching US-only and middle initials only
-        // make sense for Western-style names anyway. As we launch in more
-        // countries, we'll need to make the name comparison more sophisticated.
+        // TODO(crbug.com/590307): We'll need to make the name comparison more
+        // sophisticated.
         if (!base::EqualsCaseInsensitiveASCII(
                 verified_name, RemoveMiddleInitial(address_name))) {
-          *address_upload_decision_metric =
+          if (!upload_decision_metrics)
+            *rappor_metric_name =
+                "Autofill.CardUploadNotOfferedConflictingNames";
+          upload_decision_metrics |=
               AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
-          *rappor_metric_name = "Autofill.CardUploadNotOfferedConflictingNames";
-          return false;
+          break;
         }
       }
     }
@@ -1360,10 +1343,9 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
   // If neither the card nor any of the addresses have a name associated with
   // them, the candidate set is invalid.
   if (verified_name.empty()) {
-    *address_upload_decision_metric =
-        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
-    *rappor_metric_name = "Autofill.CardUploadNotOfferedNoName";
-    return false;
+    if (!upload_decision_metrics)
+      *rappor_metric_name = "Autofill.CardUploadNotOfferedNoName";
+    upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
   }
 
   // If any of the candidate addresses have a non-empty zip that doesn't match
@@ -1372,7 +1354,7 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
   for (const AutofillProfile& profile : candidate_profiles) {
     // TODO(jdonnelly): Use GetInfo instead of GetRawInfo once zip codes are
     // canonicalized. See http://crbug.com/587465.
-    base::string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
+    const base::string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
     if (!zip.empty()) {
       if (verified_zip.empty()) {
         verified_zip = zip;
@@ -1388,9 +1370,9 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
         // likely to fail.
         if (!(StartsWith(verified_zip, zip, base::CompareCase::SENSITIVE) ||
               StartsWith(zip, verified_zip, base::CompareCase::SENSITIVE))) {
-          *address_upload_decision_metric =
+          upload_decision_metrics |=
               AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS;
-          return false;
+          break;
         }
       }
     }
@@ -1398,19 +1380,18 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
 
   // If none of the candidate addresses have a zip, the candidate set is
   // invalid.
-  if (verified_zip.empty()) {
-    *address_upload_decision_metric =
-        AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
-    return false;
-  }
+  if (verified_zip.empty())
+    upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
 
-  profiles->assign(candidate_profiles.begin(), candidate_profiles.end());
-  return true;
+  if (!upload_decision_metrics)
+    profiles->assign(candidate_profiles.begin(), candidate_profiles.end());
+
+  return upload_decision_metrics;
 }
 
-void AutofillManager::CollectRapportSample(const GURL& source_url,
-                                           const std::string& metric_name)
-    const {
+void AutofillManager::CollectRapporSample(
+    const GURL& source_url,
+    const std::string& metric_name) const {
   if (source_url.is_valid() && client_->GetRapporServiceImpl()) {
     rappor::SampleDomainAndRegistryFromGURL(client_->GetRapporServiceImpl(),
                                             metric_name, source_url);
@@ -2262,10 +2243,11 @@ void AutofillManager::DumpAutofillData(bool imported_cc) const {
 }
 #endif  // ENABLE_FORM_DEBUG_DUMP
 
-void AutofillManager::LogCardUploadDecisionUkm(
-    AutofillMetrics::CardUploadDecisionMetric upload_decision) {
-  AutofillMetrics::LogCardUploadDecisionUkm(
-      client_->GetUkmService(), pending_upload_request_url_, upload_decision);
+void AutofillManager::LogCardUploadDecisions(int upload_decision_metrics) {
+  AutofillMetrics::LogCardUploadDecisionMetrics(upload_decision_metrics);
+  AutofillMetrics::LogCardUploadDecisionsUkm(client_->GetUkmService(),
+                                             pending_upload_request_url_,
+                                             upload_decision_metrics);
 }
 
 }  // namespace autofill

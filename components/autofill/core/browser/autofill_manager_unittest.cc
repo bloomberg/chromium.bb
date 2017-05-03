@@ -1094,30 +1094,42 @@ class AutofillManagerTest : public testing::Test {
     const ukm::Entry_Metric* metric = FindMetric(
         internal::kUKMDeveloperEngagementMetricName, entry_proto.metrics());
     ASSERT_NE(nullptr, metric);
-    EXPECT_EQ(static_cast<int>(
-                  AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS),
+    EXPECT_EQ(1 << AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS,
               metric->value());
+  }
+
+  void ExpectUniqueCardUploadDecision(
+      const base::HistogramTester& histogram_tester,
+      AutofillMetrics::CardUploadDecisionMetric metric) {
+    histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionMetric",
+                                        ToHistogramSample(metric), 1);
+  }
+
+  void ExpectCardUploadDecision(
+      const base::HistogramTester& histogram_tester,
+      AutofillMetrics::CardUploadDecisionMetric metric) {
+    histogram_tester.ExpectBucketCount("Autofill.CardUploadDecisionMetric",
+                                       ToHistogramSample(metric), 1);
   }
 
   void ExpectCardUploadDecisionUkm(
       AutofillMetrics::CardUploadDecisionMetric upload_decision) {
+    int expected_metric_value = upload_decision;
     ExpectMetric(internal::kUKMCardUploadDecisionMetricName,
                  internal::kUKMCardUploadDecisionEntryName,
-                 static_cast<int>(upload_decision),
-                 1 /* expected_num_matching_entries */);
+                 expected_metric_value, 1 /* expected_num_matching_entries */);
   }
 
   void ExpectFillableFormParsedUkm(int num_fillable_forms_parsed) {
     ExpectMetric(internal::kUKMDeveloperEngagementMetricName,
                  internal::kUKMDeveloperEngagementEntryName,
-                 static_cast<int>(
-                     AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS),
+                 1 << AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS,
                  num_fillable_forms_parsed);
   }
 
   void ExpectMetric(const char* metric_name,
                     const char* entry_name,
-                    int metric_value,
+                    int expected_metric_value,
                     int expected_num_matching_entries) {
     ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
 
@@ -1137,7 +1149,7 @@ class AutofillManagerTest : public testing::Test {
         const ukm::Entry_Metric* metric =
             FindMetric(metric_name, entry_proto.metrics());
         ASSERT_NE(nullptr, metric);
-        EXPECT_EQ(metric_value, metric->value());
+        EXPECT_EQ(expected_metric_value, metric->value());
         ++num_matching_entries;
       }
     }
@@ -1155,6 +1167,16 @@ class AutofillManagerTest : public testing::Test {
   TestPersonalDataManager personal_data_;
   base::FieldTrialList field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
+  int ToHistogramSample(AutofillMetrics::CardUploadDecisionMetric metric) {
+    for (int sample = 0; sample < metric + 1; ++sample)
+      if (metric & (1 << sample))
+        return sample;
+
+    NOTREACHED();
+    return 0;
+  }
 };
 
 class TestFormStructure : public FormStructure {
@@ -4643,8 +4665,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
   EXPECT_TRUE(autofill_manager_->GetCreditCards().empty());
 
   // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
-                                      AutofillMetrics::UPLOAD_OFFERED, 1);
+  ExpectUniqueCardUploadDecision(histogram_tester,
+                                 AutofillMetrics::UPLOAD_OFFERED);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
@@ -4740,8 +4762,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_FeatureNotEnabled) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that no histogram entry was logged called.
-  histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionExpanded", 0);
+  // Verify that no histogram entry was logged.
+  histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -4786,10 +4808,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcUnavailable) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
@@ -4844,10 +4865,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcInvalidLength) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
@@ -4925,8 +4945,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_MultipleCvcFields) {
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
-                                      AutofillMetrics::UPLOAD_OFFERED, 1);
+  ExpectUniqueCardUploadDecision(histogram_tester,
+                                 AutofillMetrics::UPLOAD_OFFERED);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
@@ -4987,12 +5007,14 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoCvcFieldOnForm) {
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
-                                      AutofillMetrics::UPLOAD_OFFERED_NO_CVC,
-                                      1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_OFFERED_NO_CVC);
   // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED_NO_CVC);
+  ExpectMetric(internal::kUKMCardUploadDecisionMetricName,
+               internal::kUKMCardUploadDecisionEntryName,
+               AutofillMetrics::UPLOAD_OFFERED_NO_CVC,
+               1 /* expected_num_matching_entries */);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -5052,10 +5074,9 @@ TEST_F(AutofillManagerTest,
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
@@ -5104,12 +5125,17 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoProfileAvailable) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS, 1);
+  // Verify that the correct histogram entries are logged.
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
   // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
+  ExpectMetric(internal::kUKMCardUploadDecisionMetricName,
+               internal::kUKMCardUploadDecisionEntryName,
+               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS |
+               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE,
+               1 /* expected_num_matching_entries */);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -5159,12 +5185,20 @@ TEST_F(AutofillManagerTest,
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
   // Verify that the correct UKM was logged.
-  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+  ExpectMetric(internal::kUKMCardUploadDecisionMetricName,
+               internal::kUKMCardUploadDecisionEntryName,
+               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC |
+               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS |
+               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE,
+               1 /* expected_num_matching_entries */);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -5216,10 +5250,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoNameAvailable) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
 
@@ -5284,10 +5317,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesConflict) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(
+      histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
@@ -5342,8 +5374,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesHavePrefixMatch) {
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
-                                      AutofillMetrics::UPLOAD_OFFERED, 1);
+  ExpectUniqueCardUploadDecision(histogram_tester,
+                                 AutofillMetrics::UPLOAD_OFFERED);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
@@ -5395,10 +5427,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoZipCodeAvailable) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
 }
@@ -5455,8 +5486,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesMatchLoosely) {
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
-                                      AutofillMetrics::UPLOAD_OFFERED, 1);
+  ExpectUniqueCardUploadDecision(histogram_tester,
+                                 AutofillMetrics::UPLOAD_OFFERED);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
@@ -5509,10 +5540,9 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesHaveToMatch) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(
+      histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
@@ -5572,10 +5602,10 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_UploadDetailsFails) {
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
-  // Verify that the correct histogram entry (and only that) was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadDecisionExpanded",
-      AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED, 1);
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);

@@ -427,20 +427,18 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void ImportFormData(const FormStructure& submitted_form);
 
   // Logs |metric_name| with RAPPOR, for the specific form |source_url|.
-  void CollectRapportSample(const GURL& source_url,
-                            const std::string& metric_name) const;
+  void CollectRapporSample(const GURL& source_url,
+                           const std::string& metric_name) const;
 
   // Examines |card| and the stored profiles and if a candidate set of profiles
   // is found that matches the client-side validation rules, assigns the values
-  // to |profiles|.  If no valid set can be found, returns false, assigns the
-  // failure reason to |address_upload_decision_metric|, and if applicable, the
-  // RAPPOR metric to log to |rappor_metric_name|.
-  bool GetProfilesForCreditCardUpload(const CreditCard& card,
-                                      std::vector<AutofillProfile>* profiles,
-                                      autofill::AutofillMetrics::
-                                          CardUploadDecisionMetric*
-                                              address_upload_decision_metric,
-                                      std::string* rappor_metric_name) const;
+  // to |profiles| and returns 0. If no valid set can be found, returns the
+  // failure reasons and, if applicable, the RAPPOR metric to log to
+  // |rappor_metric_name|. The return value is a bitmask of
+  // |AutofillMetrics::CardUploadDecisionMetric|.
+  int GetProfilesForCreditCardUpload(const CreditCard& card,
+                                     std::vector<AutofillProfile>* profiles,
+                                     std::string* rappor_metric_name) const;
 
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
@@ -486,9 +484,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void DumpAutofillData(bool imported_cc) const;
 #endif
 
-  // Logs the card upload decision UKM.
-  void LogCardUploadDecisionUkm(
-      AutofillMetrics::CardUploadDecisionMetric upload_decision);
+  // Logs the card upload decisions in UKM and UMA.
+  // |upload_decision_metrics| is a bitmask of
+  // |AutofillMetrics::CardUploadDecisionMetric|.
+  void LogCardUploadDecisions(int upload_decision_metrics);
 
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
