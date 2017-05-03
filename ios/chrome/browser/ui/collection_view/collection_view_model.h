@@ -172,9 +172,11 @@ const NSInteger kItemTypeEnumZero = 100;
 - (BOOL)hasItem:(ObjectType)item
     inSectionWithIdentifier:(NSInteger)sectionIdentifier;
 
+// Returns whether |item| exists.
+- (BOOL)hasItem:(ObjectType)item;
+
 // Returns the index path corresponding to the given |item|.
-- (NSIndexPath*)indexPathForItem:(ObjectType)item
-         inSectionWithIdentifier:(NSInteger)sectionIdentifier;
+- (NSIndexPath*)indexPathForItem:(ObjectType)item;
 
 #pragma mark UICollectionView data sourcing
 

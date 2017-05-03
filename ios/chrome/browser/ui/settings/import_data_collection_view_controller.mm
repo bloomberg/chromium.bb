@@ -197,8 +197,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _keepDataSeparateItem.accessoryType =
       importDataSelected ? MDCCollectionViewCellAccessoryNone
                          : MDCCollectionViewCellAccessoryCheckmark;
-  [self reconfigureCellsForItems:@[ _importDataItem, _keepDataSeparateItem ]
-         inSectionWithIdentifier:SectionIdentifierOptions];
+  [self reconfigureCellsForItems:@[ _importDataItem, _keepDataSeparateItem ]];
 }
 
 - (void)didTapContinue {

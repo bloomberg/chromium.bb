@@ -229,8 +229,7 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
   _translationItem.get().on = [_translationEnabled value];
 
   // Update the cell.
-  [self reconfigureCellsForItems:@[ _translationItem ]
-         inSectionWithIdentifier:SectionIdentifierTranslate];
+  [self reconfigureCellsForItems:@[ _translationItem ]];
 }
 
 #pragma mark - Actions

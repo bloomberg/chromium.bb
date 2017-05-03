@@ -121,8 +121,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
   }
 
-  [self reconfigureCellsForItems:modifiedItems
-         inSectionWithIdentifier:SectionIdentifierOptions];
+  [self reconfigureCellsForItems:modifiedItems];
 }
 
 - (void)updateBasePref:(BOOL)basePref wifiPref:(BOOL)wifiPref {

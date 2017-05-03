@@ -185,8 +185,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSString* subtitle = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
     _translateDetailItem.detailText = subtitle;
-    [self reconfigureCellsForItems:@[ _translateDetailItem ]
-           inSectionWithIdentifier:SectionIdentifierSettings];
+    [self reconfigureCellsForItems:@[ _translateDetailItem ]];
   }
 }
 
@@ -202,8 +201,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _blockPopupsDetailItem.detailText = subtitle;
 
   // Update the cell.
-  [self reconfigureCellsForItems:@[ _blockPopupsDetailItem ]
-         inSectionWithIdentifier:SectionIdentifierSettings];
+  [self reconfigureCellsForItems:@[ _blockPopupsDetailItem ]];
 }
 
 @end

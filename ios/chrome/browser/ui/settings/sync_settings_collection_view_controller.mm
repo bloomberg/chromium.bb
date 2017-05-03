@@ -723,8 +723,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   SyncSwitchItem* syncItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
       [self.collectionViewModel itemAtIndexPath:indexPath]);
   syncItem.on = _syncSetupService->IsSyncEnabled();
-  [self reconfigureCellsForItems:@[ syncItem ]
-         inSectionWithIdentifier:SectionIdentifierEnableSync];
+  [self reconfigureCellsForItems:@[ syncItem ]];
 
   // Update Sync Accounts section.
   if ([self hasAccountsSection]) {
@@ -745,8 +744,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       accountItem.enabled = _syncSetupService->IsSyncEnabled();
       [accountsToReconfigure addObject:accountItem];
     }
-    [self reconfigureCellsForItems:accountsToReconfigure
-           inSectionWithIdentifier:SectionIdentifierSyncAccounts];
+    [self reconfigureCellsForItems:accountsToReconfigure];
   }
 
   // Update Sync Services section.
@@ -758,8 +756,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           [self.collectionViewModel itemAtIndexPath:indexPath]);
   syncEverythingItem.on = _syncSetupService->IsSyncingAllDataTypes();
   syncEverythingItem.enabled = [self shouldSyncEverythingItemBeEnabled];
-  [self reconfigureCellsForItems:@[ syncEverythingItem ]
-         inSectionWithIdentifier:SectionIdentifierSyncServices];
+  [self reconfigureCellsForItems:@[ syncEverythingItem ]];
 
   NSInteger section = [self.collectionViewModel
       sectionForSectionIdentifier:SectionIdentifierSyncServices];
@@ -783,8 +780,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     syncSwitchItem.enabled = [self shouldSyncableItemsBeEnabled];
     [switchsToReconfigure addObject:syncSwitchItem];
   }
-  [self reconfigureCellsForItems:switchsToReconfigure
-         inSectionWithIdentifier:SectionIdentifierSyncServices];
+  [self reconfigureCellsForItems:switchsToReconfigure];
 
   // Update Encryption cell.
   [self updateEncryptionCell];
@@ -827,8 +823,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemAtIndexPath:indexPath]);
   item.shouldDisplayError = shouldDisplayEncryptionError;
   item.enabled = [self shouldEncryptionItemBeEnabled];
-  [self reconfigureCellsForItems:@[ item ]
-         inSectionWithIdentifier:SectionIdentifierEncryptionAndFooter];
+  [self reconfigureCellsForItems:@[ item ]];
 }
 
 - (void)updateAccountItem:(CollectionViewAccountItem*)item
@@ -969,8 +964,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
   [self updateAccountItem:item withIdentity:identity];
-  [self reconfigureCellsForItems:@[ item ]
-         inSectionWithIdentifier:SectionIdentifierSyncAccounts];
+  [self reconfigureCellsForItems:@[ item ]];
 }
 
 - (void)onChromeIdentityServiceWillBeDestroyed {

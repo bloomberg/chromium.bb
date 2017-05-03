@@ -166,8 +166,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   // Set the new engine as the default.
   [self setValueFromIndex:[model indexInItemTypeForIndexPath:indexPath]];
 
-  [self reconfigureCellsForItems:modifiedItems
-         inSectionWithIdentifier:SectionIdentifierSearchEngines];
+  [self reconfigureCellsForItems:modifiedItems];
 }
 
 #pragma mark Internal methods

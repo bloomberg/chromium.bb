@@ -214,8 +214,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     _preloadWebpagesDetailItem.detailText = detailText;
 
-    [self reconfigureCellsForItems:@[ _preloadWebpagesDetailItem ]
-           inSectionWithIdentifier:SectionIdentifierActions];
+    [self reconfigureCellsForItems:@[ _preloadWebpagesDetailItem ]];
   }
 }
 

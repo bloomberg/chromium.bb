@@ -227,8 +227,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _blockPopupsItem.on = [_disablePopupsSetting value];
 
   // Update the cell.
-  [self reconfigureCellsForItems:@[ _blockPopupsItem ]
-         inSectionWithIdentifier:SectionIdentifierMainSwitch];
+  [self reconfigureCellsForItems:@[ _blockPopupsItem ]];
 
   // Update the rest of the UI.
   [self.editor setEditing:NO];

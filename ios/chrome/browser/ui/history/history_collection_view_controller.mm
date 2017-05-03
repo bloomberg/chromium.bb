@@ -279,9 +279,7 @@ const CGFloat kSeparatorInset = 10;
           hasSectionForSectionIdentifier:sectionIdentifier] &&
       [self.collectionViewModel hasItem:item
                 inSectionWithIdentifier:sectionIdentifier]) {
-    NSIndexPath* indexPath =
-        [self.collectionViewModel indexPathForItem:item
-                           inSectionWithIdentifier:sectionIdentifier];
+    NSIndexPath* indexPath = [self.collectionViewModel indexPathForItem:item];
     [self.collectionView
         selectItemAtIndexPath:indexPath
                      animated:NO
@@ -311,10 +309,7 @@ const CGFloat kSeparatorInset = 10;
           hasSectionForSectionIdentifier:sectionIdentifier] &&
       [self.collectionViewModel hasItem:item
                 inSectionWithIdentifier:sectionIdentifier]) {
-    [self
-        reconfigureCellsForItems:@[ item ]
-         inSectionWithIdentifier:
-             [self.entryInserter sectionIdentifierForTimestamp:item.timestamp]];
+    [self reconfigureCellsForItems:@[ item ]];
   }
 }
 
@@ -655,8 +650,7 @@ const CGFloat kSeparatorInset = 10;
             base::mac::ObjCCastStrict<HistoryEntryItem>(item);
         if (![entries containsObject:historyItem]) {
           NSIndexPath* indexPath =
-              [self.collectionViewModel indexPathForItem:historyItem
-                                 inSectionWithIdentifier:sectionIdentifier];
+              [self.collectionViewModel indexPathForItem:historyItem];
           [self.collectionView
               selectItemAtIndexPath:indexPath
                            animated:NO

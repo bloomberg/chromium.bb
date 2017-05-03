@@ -293,8 +293,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
           [model itemAtIndexPath:path]);
   item.text = [self showHideButtonText];
   item.textColor = [[MDCPalette cr_bluePalette] tint500];
-  [self reconfigureCellsForItems:@[ item ]
-         inSectionWithIdentifier:SectionIdentifierPassword];
+  [self reconfigureCellsForItems:@[ item ]];
   [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
@@ -311,8 +310,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
         return;
       PasswordDetailsItem* passwordItem = strongSelf->_passwordItem;
       passwordItem.showingText = YES;
-      [strongSelf reconfigureCellsForItems:@[ passwordItem ]
-                   inSectionWithIdentifier:SectionIdentifierPassword];
+      [strongSelf reconfigureCellsForItems:@[ passwordItem ]];
       [[strongSelf collectionView].collectionViewLayout invalidateLayout];
       strongSelf->_plainTextPasswordShown = YES;
       [strongSelf toggleShowHideButton];
@@ -330,8 +328,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
     return;
   }
   _passwordItem.showingText = NO;
-  [self reconfigureCellsForItems:@[ _passwordItem ]
-         inSectionWithIdentifier:SectionIdentifierPassword];
+  [self reconfigureCellsForItems:@[ _passwordItem ]];
   [self.collectionView.collectionViewLayout invalidateLayout];
   _plainTextPasswordShown = NO;
   [self toggleShowHideButton];

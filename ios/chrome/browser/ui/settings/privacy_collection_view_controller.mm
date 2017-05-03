@@ -447,8 +447,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _showSuggestionsItem.get().on = [_suggestionsEnabled value];
 
   // Update the cell.
-  [self reconfigureCellsForItems:@[ _showSuggestionsItem ]
-         inSectionWithIdentifier:SectionIdentifierWebServices];
+  [self reconfigureCellsForItems:@[ _showSuggestionsItem ]];
 }
 
 #pragma mark - Actions
@@ -480,8 +479,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
             : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
     _handoffDetailItem.get().detailText = detailText;
-    [self reconfigureCellsForItems:@[ _handoffDetailItem ]
-           inSectionWithIdentifier:SectionIdentifierOtherDevices];
+    [self reconfigureCellsForItems:@[ _handoffDetailItem ]];
     return;
   }
 
@@ -494,8 +492,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     _sendUsageDetailItem.get().detailText = detailText;
 
-    [self reconfigureCellsForItems:@[ _sendUsageDetailItem ]
-           inSectionWithIdentifier:SectionIdentifierWebServices];
+    [self reconfigureCellsForItems:@[ _sendUsageDetailItem ]];
     return;
   }
 }

@@ -188,16 +188,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 [self.dataSource
                     selectableItemAtIndex:self.dataSource.selectedItemIndex]);
         oldSelectedItem.accessoryType = MDCCollectionViewCellAccessoryNone;
-        [self reconfigureCellsForItems:@[ oldSelectedItem ]
-               inSectionWithIdentifier:SectionIdentifierItems];
+        [self reconfigureCellsForItems:@[ oldSelectedItem ]];
       }
 
       // Update the newly selected cell.
       CollectionViewItem<PaymentsHasAccessoryType>* newSelectedItem =
           reinterpret_cast<CollectionViewItem<PaymentsHasAccessoryType>*>(item);
       newSelectedItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
-      [self reconfigureCellsForItems:@[ newSelectedItem ]
-             inSectionWithIdentifier:SectionIdentifierItems];
+      [self reconfigureCellsForItems:@[ newSelectedItem ]];
 
       // Notify the delegate of the selection.
       NSUInteger index =

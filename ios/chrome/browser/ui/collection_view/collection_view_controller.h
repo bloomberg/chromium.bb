@@ -44,8 +44,7 @@ typedef NS_ENUM(NSInteger, CollectionViewControllerStyle) {
 
 // Reconfigures the cells corresponding to the given |items| by calling
 // |configureCell:| on each cell.
-- (void)reconfigureCellsForItems:(NSArray*)items
-         inSectionWithIdentifier:(NSInteger)sectionIdentifier;
+- (void)reconfigureCellsForItems:(NSArray*)items;
 
 // Reconfigures the cells corresponding to the given |indexPaths| by calling
 // |configureCell:| on each cell.

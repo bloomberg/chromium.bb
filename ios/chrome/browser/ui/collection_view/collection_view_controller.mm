@@ -61,12 +61,9 @@
   _collectionViewModel = [[CollectionViewModel alloc] init];
 }
 
-- (void)reconfigureCellsForItems:(NSArray*)items
-         inSectionWithIdentifier:(NSInteger)sectionIdentifier {
+- (void)reconfigureCellsForItems:(NSArray*)items {
   for (CollectionViewItem* item in items) {
-    NSIndexPath* indexPath =
-        [self.collectionViewModel indexPathForItem:item
-                           inSectionWithIdentifier:sectionIdentifier];
+    NSIndexPath* indexPath = [self.collectionViewModel indexPathForItem:item];
     [self reconfigureCellAtIndexPath:indexPath withItem:item];
   }
 }

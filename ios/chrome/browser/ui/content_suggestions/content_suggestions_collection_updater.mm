@@ -184,8 +184,7 @@ SectionIdentifier SectionIdentifierForInfo(
     return;
 
   NSIndexPath* indexPath = [self.collectionViewController.collectionViewModel
-             indexPathForItem:correspondingItem
-      inSectionWithIdentifier:sectionIdentifier];
+      indexPathForItem:correspondingItem];
   [self.collectionViewController dismissEntryAtIndexPath:indexPath];
 }
 
@@ -339,9 +338,6 @@ SectionIdentifier SectionIdentifierForInfo(
 #pragma mark - ContentSuggestionsArticleItemDelegate
 
 - (void)loadImageForArticleItem:(ContentSuggestionsArticleItem*)articleItem {
-  NSInteger sectionIdentifier =
-      SectionIdentifierForInfo(articleItem.suggestionIdentifier.sectionInfo);
-
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
   __weak ContentSuggestionsArticleItem* weakArticle = articleItem;
 
@@ -354,8 +350,7 @@ SectionIdentifier SectionIdentifierForInfo(
 
     strongArticle.image = image;
     [strongSelf.collectionViewController
-        reconfigureCellsForItems:@[ strongArticle ]
-         inSectionWithIdentifier:sectionIdentifier];
+        reconfigureCellsForItems:@[ strongArticle ]];
   };
 
   [self.dataSource.imageFetcher
@@ -485,7 +480,8 @@ SectionIdentifier SectionIdentifierForInfo(
 
                             weakItem.attributes =
                                 [FaviconAttributes attributesWithImage:favicon];
-                            [weakSelf reconfigure:weakItem];
+                            [weakSelf.collectionViewController
+                                reconfigureCellsForItems:@[ weakItem ]];
                           }];
 
   return articleItem;
@@ -535,7 +531,8 @@ SectionIdentifier SectionIdentifierForInfo(
 
         callback(attributes);
 
-        [strongSelf reconfigure:strongItem];
+        [strongSelf.collectionViewController
+            reconfigureCellsForItems:@[ strongItem ]];
       };
 
   [self.dataSource fetchFaviconAttributesForURL:URL completion:completionBlock];
@@ -552,23 +549,6 @@ SectionIdentifier SectionIdentifierForInfo(
   [model addItem:item toSectionWithIdentifier:sectionIdentifier];
 
   return [NSIndexPath indexPathForItem:itemNumber inSection:section];
-}
-
-// Reconfigures the |item| in the collection view.
-- (void)reconfigure:(CSCollectionViewItem*)item {
-  CSCollectionViewModel* model =
-      self.collectionViewController.collectionViewModel;
-
-  for (NSInteger sectionNumber = 0; sectionNumber < [model numberOfSections];
-       sectionNumber++) {
-    NSInteger sectionIdentifier =
-        [model sectionIdentifierForSection:sectionNumber];
-    if ([model hasItem:item inSectionWithIdentifier:sectionIdentifier]) {
-      [self.collectionViewController
-          reconfigureCellsForItems:@[ item ]
-           inSectionWithIdentifier:sectionIdentifier];
-    }
-  }
 }
 
 @end

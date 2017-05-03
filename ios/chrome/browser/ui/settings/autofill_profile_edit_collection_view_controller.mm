@@ -169,8 +169,7 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   // Update the cells.
   [self reconfigureCellsForItems:
             [self.collectionViewModel
-                itemsInSectionWithIdentifier:SectionIdentifierFields]
-         inSectionWithIdentifier:SectionIdentifierFields];
+                itemsInSectionWithIdentifier:SectionIdentifierFields]];
 }
 
 - (void)loadModel {

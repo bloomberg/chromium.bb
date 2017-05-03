@@ -133,8 +133,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Update the cells.
   [self reconfigureCellsForItems:
             [self.collectionViewModel
-                itemsInSectionWithIdentifier:SectionIdentifierFields]
-         inSectionWithIdentifier:SectionIdentifierFields];
+                itemsInSectionWithIdentifier:SectionIdentifierFields]];
 }
 
 - (void)loadModel {
@@ -231,8 +230,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                                 withString:newText];
     item.cardTypeIcon = [self cardTypeIconFromCardNumber:updatedText];
     // Update the cell.
-    [self reconfigureCellsForItems:@[ item ]
-           inSectionWithIdentifier:SectionIdentifierFields];
+    [self reconfigureCellsForItems:@[ item ]];
   }
 
   return YES;

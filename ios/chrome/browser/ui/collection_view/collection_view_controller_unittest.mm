@@ -44,9 +44,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeFooBiz,
 };
 
-typedef void (^ReconfigureBlock)(CollectionViewController*,
-                                 NSArray*,
-                                 SectionIdentifier);
+typedef void (^ReconfigureBlock)(CollectionViewController*, NSArray*);
 
 class CollectionViewControllerTest : public BlockCleanupTest {
  public:
@@ -99,7 +97,7 @@ class CollectionViewControllerTest : public BlockCleanupTest {
         firstReconfiguredItem, secondReconfiguredItem, thirdReconfiguredItem
       ];
       // Action.
-      block(controller, itemsToReconfigure, SectionIdentifierFoo);
+      block(controller, itemsToReconfigure);
     }
 
     // Tests.
@@ -145,30 +143,26 @@ TEST_F(CollectionViewControllerTest, CellForItemAtIndexPath) {
 }
 
 TEST_F(CollectionViewControllerTest, ReconfigureCells) {
-  TestReconfigureBlock(^void(CollectionViewController* controller,
-                             NSArray* itemsToReconfigure,
-                             SectionIdentifier sectionIdentifier) {
-    [controller reconfigureCellsForItems:itemsToReconfigure
-                 inSectionWithIdentifier:sectionIdentifier];
-  });
+  TestReconfigureBlock(
+      ^void(CollectionViewController* controller, NSArray* itemsToReconfigure) {
+        [controller reconfigureCellsForItems:itemsToReconfigure];
+      });
 }
 
 TEST_F(CollectionViewControllerTest, ReconfigureCellsWithIndexPath) {
-  TestReconfigureBlock(^void(CollectionViewController* controller,
-                             NSArray* itemsToReconfigure,
-                             SectionIdentifier sectionIdentifier) {
-    // More setup.
-    NSMutableArray* indexPaths = [NSMutableArray array];
-    for (CollectionViewItem* item : itemsToReconfigure) {
-      NSIndexPath* indexPath =
-          [controller.collectionViewModel indexPathForItem:item
-                                   inSectionWithIdentifier:sectionIdentifier];
-      if (indexPath) {
-        [indexPaths addObject:indexPath];
-      }
-    }
+  TestReconfigureBlock(
+      ^void(CollectionViewController* controller, NSArray* itemsToReconfigure) {
+        // More setup.
+        NSMutableArray* indexPaths = [NSMutableArray array];
+        for (CollectionViewItem* item : itemsToReconfigure) {
+          NSIndexPath* indexPath =
+              [controller.collectionViewModel indexPathForItem:item];
+          if (indexPath) {
+            [indexPaths addObject:indexPath];
+          }
+        }
 
-    // Action.
-    [controller reconfigureCellsAtIndexPaths:indexPaths];
-  });
+        // Action.
+        [controller reconfigureCellsAtIndexPaths:indexPaths];
+      });
 }

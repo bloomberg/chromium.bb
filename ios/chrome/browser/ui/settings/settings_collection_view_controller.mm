@@ -589,8 +589,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
               _mainBrowserState)));
 
   _defaultSearchEngineItem.get().detailText = defaultSearchEngineName;
-  [self reconfigureCellsForItems:@[ _defaultSearchEngineItem ]
-         inSectionWithIdentifier:SectionIdentifierBasics];
+  [self reconfigureCellsForItems:@[ _defaultSearchEngineItem ]];
 }
 
 #pragma mark Item Constructors
@@ -980,8 +979,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
           [self.collectionViewModel itemAtIndexPath:accountCellIndexPath]);
   if (identityAccountItem) {
     [self updateIdentityAccountItem:identityAccountItem];
-    [self reconfigureCellsForItems:@[ identityAccountItem ]
-           inSectionWithIdentifier:SectionIdentifierSignIn];
+    [self reconfigureCellsForItems:@[ identityAccountItem ]];
   }
 }
 
@@ -1095,8 +1093,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   _showMemoryDebugToolsItem.get().on = [_showMemoryDebugToolsEnabled value];
 
   // Update the Cell.
-  [self reconfigureCellsForItems:@[ _showMemoryDebugToolsItem ]
-         inSectionWithIdentifier:SectionIdentifierDebug];
+  [self reconfigureCellsForItems:@[ _showMemoryDebugToolsItem ]];
 }
 
 #pragma mark - PrefObserverDelegate
@@ -1111,8 +1108,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
             : localeConfig->GetDefaultLocale();
     NSString* languageName = base::SysUTF16ToNSString(locale.display_name);
     _voiceSearchDetailItem.get().detailText = languageName;
-    [self reconfigureCellsForItems:@[ _voiceSearchDetailItem ]
-           inSectionWithIdentifier:SectionIdentifierAdvanced];
+    [self reconfigureCellsForItems:@[ _voiceSearchDetailItem ]];
   }
 
   if (preferenceName ==
@@ -1124,8 +1120,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
 
     _savePasswordsDetailItem.get().detailText = passwordsDetail;
-    [self reconfigureCellsForItems:@[ _savePasswordsDetailItem ]
-           inSectionWithIdentifier:SectionIdentifierBasics];
+    [self reconfigureCellsForItems:@[ _savePasswordsDetailItem ]];
   }
 
   if (preferenceName == autofill::prefs::kAutofillEnabled) {
@@ -1135,8 +1130,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
         autofillEnabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                         : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
     _autoFillDetailItem.get().detailText = autofillDetail;
-    [self reconfigureCellsForItems:@[ _autoFillDetailItem ]
-           inSectionWithIdentifier:SectionIdentifierBasics];
+    [self reconfigureCellsForItems:@[ _autoFillDetailItem ]];
   }
 }
 
@@ -1157,8 +1151,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [self.collectionViewModel itemAtIndexPath:signinPromoCellIndexPath]);
   if (signinPromoItem) {
     signinPromoItem.configurator = configurator;
-    [self reconfigureCellsForItems:@[ signinPromoItem ]
-           inSectionWithIdentifier:SectionIdentifierSignIn];
+    [self reconfigureCellsForItems:@[ signinPromoItem ]];
     if (newIdentity)
       [self.collectionViewLayout invalidateLayout];
   }
