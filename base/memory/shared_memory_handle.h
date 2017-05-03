@@ -100,6 +100,7 @@ class BASE_EXPORT SharedMemoryHandle {
   // mapped memory.
   bool MapAt(off_t offset, size_t bytes, void** memory, bool read_only);
 #elif defined(OS_WIN)
+  // Takes implicit ownership of |h|.
   SharedMemoryHandle(HANDLE h);
 
   HANDLE GetHandle() const;
