@@ -3270,16 +3270,6 @@ crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 # CQ and Rebaseline-cl for crrev.com/2626973005 does not include this
 crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
 
-# No mock Mojo interface for services yet
-crbug.com/659139 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Skip ]
-crbug.com/659139 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedetection-cross-origin.html [ Skip ]
-#crbug.com/659139 [ Mac ] shapedetection/detection-HTMLCanvasElement.html [ Skip ]
-crbug.com/659139 [ Mac ] shapedetection/detection-HTMLImageElement.html [ Skip ]
-crbug.com/659139 [ Mac ] shapedetection/detection-HTMLVideoElement.html [ Skip ]
-crbug.com/659139 [ Mac ] shapedetection/detection-ImageBitmap.html [ Skip ]
-crbug.com/659139 [ Mac ] shapedetection/detection-ImageData.html [ Skip ]
-crbug.com/659139 [ Mac ] shapedetection/detection-options.html [ Skip ]
-
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 
@@ -3321,7 +3311,6 @@ crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failu
 crbug.com/703503 inspector/tracing/timeline-js/timeline-runtime-stats.html [ Failure Pass ]
 crbug.com/703518 inspector/tracing/worker-js-frames.html [ Failure Pass ]
 crbug.com/703518 virtual/threaded/inspector/tracing/worker-js-frames.html [ Failure Pass ]
-crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Failure Pass Timeout ]
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [ Pass Failure ]
 
@@ -3329,11 +3318,6 @@ crbug.com/708499 fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-m
 crbug.com/708499 virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout ]
 
 crbug.com/706091 [ Linux ] virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
-
-# Sheriff failures 2017-04-03
-# Should be [ Crash Pass ], but this has a commented out [ Skip ] expectation
-# for Mac earlier in the file, so just skip it everywhere.
-crbug.com/707689 shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 
 # Sheriff failures 2017-04-19
 crbug.com/713094 [ Win ] virtual/sharedarraybuffer/fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]

@@ -22,13 +22,13 @@ var createTestForEmptyInput = function(createDetector) {
     image.onload = tryDetection;
     image.onerror = tryDetection;
     image.src = "";
-  }, "Detectors should resolve empty images with empty results.");
+  });
 };
 
 generate_tests(createTestForEmptyInput, [
-  [ "Face", () => { return new FaceDetector(); } ],
-  [ "Barcode", () => { return new BarcodeDetector(); } ],
-  [ "Text", () => { return new TextDetector(); } ]
+  [ "Face - detect(empty)", () => { return new FaceDetector(); } ],
+  [ "Barcode - detect(empty)", () => { return new BarcodeDetector(); } ],
+  [ "Text - detect(empty)", () => { return new TextDetector(); } ]
 ]);
 
 </script>

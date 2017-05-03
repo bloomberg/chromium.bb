@@ -36,7 +36,7 @@ var createTestForImageElement = function(createDetector, mockReady,
         assert_unreached("Error during detect(img): " + error);
       });
 
-  }, "Detector detect(HTMLImageElement)");
+  });
 };
 
 function FaceDetectorDetectionResultTest(detectionResult, mock) {
@@ -63,19 +63,19 @@ function TextDetectorDetectionResultTest(detectionResult, mock) {
 // Use the mock mojo server implemented in mock-{barcode,face}detection.js.
 generate_tests(createTestForImageElement, [
   [
-    "Face",
+    "Face - detect(HTMLImageElement)",
     () => { return new FaceDetector(); },
     () => { return mockFaceDetectionProviderReady; },
     FaceDetectorDetectionResultTest
   ],
   [
-    "Barcode",
+    "Barcode - detect(HTMLImageElement)",
     () => { return new BarcodeDetector(); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ],
   [
-    "Text",
+    "Text - detect(HTMLImageElement)",
     () => { return new TextDetector(); },
     () => { return mockTextDetectionReady; },
     TextDetectorDetectionResultTest
