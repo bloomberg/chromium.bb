@@ -42,7 +42,9 @@ class ThumbnailListSource : public content::URLDataSource {
   std::string GetMimeType(const std::string& path) const override;
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
       const std::string& path) const override;
-  bool ShouldServiceRequest(const net::URLRequest* request) const override;
+  bool ShouldServiceRequest(const GURL& url,
+                            content::ResourceContext* resource_context,
+                            int render_process_id) const override;
   bool ShouldReplaceExistingSource() const override;
 
  private:

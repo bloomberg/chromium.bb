@@ -435,12 +435,11 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
   if (!source)
     return false;
 
-  if (!source->source()->ShouldServiceRequest(request))
+  if (!source->source()->ShouldServiceRequest(request->url()))
     return false;
 
   std::string path;
   URLToRequestPath(request->url(), &path);
-  source->source()->WillServiceRequest(request, &path);
 
   // Save this request so we know where to send the data.
   RequestID request_id = next_request_id_++;

@@ -41,7 +41,9 @@ class ThumbnailSource : public content::URLDataSource {
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
       const std::string& path) const override;
   bool AllowCaching() const override;
-  bool ShouldServiceRequest(const net::URLRequest* request) const override;
+  bool ShouldServiceRequest(const GURL& url,
+                            content::ResourceContext* resource_context,
+                            int render_process_id) const override;
 
   // Extracts the |page_url| (e.g. cnn.com) and the |fallback_thumbnail_url|
   // fetchable from the server, if present, from the |path|. Visible for

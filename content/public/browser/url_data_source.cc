@@ -60,11 +60,10 @@ bool URLDataSource::ShouldDenyXFrameOptions() const {
   return true;
 }
 
-bool URLDataSource::ShouldServiceRequest(const net::URLRequest* request) const {
-  if (request->url().SchemeIs(kChromeDevToolsScheme) ||
-      request->url().SchemeIs(kChromeUIScheme))
-    return true;
-  return false;
+bool URLDataSource::ShouldServiceRequest(const GURL& url,
+                                         ResourceContext* resource_context,
+                                         int render_process_id) const {
+  return url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme);
 }
 
 bool URLDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {

@@ -35,9 +35,9 @@ class DomDistillerViewerSource : public content::URLDataSource {
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
-  bool ShouldServiceRequest(const net::URLRequest* request) const override;
-  void WillServiceRequest(const net::URLRequest* request,
-                          std::string* path) const override;
+  bool ShouldServiceRequest(const GURL& url,
+                            content::ResourceContext* resource_context,
+                            int render_process_id) const override;
   std::string GetContentSecurityPolicyStyleSrc() const override;
   std::string GetContentSecurityPolicyChildSrc() const override;
 

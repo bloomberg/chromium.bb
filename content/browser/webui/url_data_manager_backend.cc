@@ -680,12 +680,16 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   if (!source)
     return false;
 
-  if (!source->source()->ShouldServiceRequest(request))
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!source->source()->ShouldServiceRequest(
+          request->url(), info ? info->GetContext() : nullptr,
+          info ? info->GetChildID() : -1)) {
     return false;
+  }
 
   std::string path;
   URLToRequestPath(request->url(), &path);
-  source->source()->WillServiceRequest(request, &path);
 
   // Save this request so we know where to send the data.
   RequestID request_id = next_request_id_++;
@@ -730,7 +734,6 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
 
   // Look up additional request info to pass down.
   ResourceRequestInfo::WebContentsGetter wc_getter;
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info)
     wc_getter = info->GetWebContentsGetterForRequest();
 

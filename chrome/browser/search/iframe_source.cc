@@ -41,11 +41,14 @@ bool IframeSource::AllowCaching() const {
 }
 
 bool IframeSource::ShouldServiceRequest(
-    const net::URLRequest* request) const {
-  const std::string& path = request->url().path();
-  return InstantIOContext::ShouldServiceRequest(request) &&
-         request->url().SchemeIs(chrome::kChromeSearchScheme) &&
-         request->url().host_piece() == GetSource() && ServesPath(path);
+    const GURL& url,
+    content::ResourceContext* resource_context,
+    int render_process_id) const {
+  const std::string& path = url.path();
+  return InstantIOContext::ShouldServiceRequest(url, resource_context,
+                                                render_process_id) &&
+         url.SchemeIs(chrome::kChromeSearchScheme) &&
+         url.host_piece() == GetSource() && ServesPath(path);
 }
 
 bool IframeSource::ShouldDenyXFrameOptions() const {
