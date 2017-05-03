@@ -113,9 +113,10 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
   bridge->BookmarkNodeFaviconChanged(NULL, NULL);
   bridge->BookmarkNodeChildrenReordered(NULL, NULL);
   bridge->BookmarkNodeRemoved(NULL, NULL, 0, NULL, std::set<GURL>());
-  // 7 calls above plus an initial Loaded() in init routine makes 8.
-  EXPECT_EQ(controller.get()->called_selectors_.size(), 8U);
+  // 7 calls above plus two Loaded() in init routing makes 9.
+  EXPECT_EQ(controller.get()->called_selectors_.size(), 9U);
   std::vector<SEL> expected_selectors = {
+    @selector(loaded:),  // initial from init
     @selector(loaded:),  // initial from init
     @selector(loaded:),
     @selector(nodeMoved:oldParent:oldIndex:newParent:newIndex:),
