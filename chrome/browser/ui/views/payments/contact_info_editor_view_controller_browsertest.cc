@@ -38,7 +38,6 @@ class PaymentRequestContactInfoEditorTest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
   InvokePaymentRequestUI();
-  OpenContactInfoScreen();
   OpenContactInfoEditorScreen();
 
   SetEditorTextfieldValue(base::ASCIIToUTF16(kNameFull), autofill::NAME_FULL);
@@ -75,7 +74,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, Validation) {
   InvokePaymentRequestUI();
-  OpenContactInfoScreen();
   OpenContactInfoEditorScreen();
 
   // Insert invalid values into fields which have rules more complex than

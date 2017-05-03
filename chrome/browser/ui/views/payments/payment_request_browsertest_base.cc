@@ -286,19 +286,43 @@ void PaymentRequestBrowserTestBase::OpenContactInfoScreen() {
 void PaymentRequestBrowserTestBase::OpenCreditCardEditorScreen() {
   ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
 
-  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON);
+  views::View* view = delegate_->dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON));
+  if (!view) {
+    view = delegate_->dialog_view()->GetViewByID(static_cast<int>(
+        DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON));
+  }
+
+  EXPECT_TRUE(view);
+  ClickOnDialogViewAndWait(view);
 }
 
 void PaymentRequestBrowserTestBase::OpenShippingAddressEditorScreen() {
   ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
 
-  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON);
+  views::View* view = delegate_->dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON));
+  if (!view) {
+    view = delegate_->dialog_view()->GetViewByID(static_cast<int>(
+        DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON));
+  }
+
+  EXPECT_TRUE(view);
+  ClickOnDialogViewAndWait(view);
 }
 
 void PaymentRequestBrowserTestBase::OpenContactInfoEditorScreen() {
   ResetEventObserver(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
 
-  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_METHOD_ADD_CONTACT_BUTTON);
+  views::View* view = delegate_->dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CONTACT_BUTTON));
+  if (!view) {
+    view = delegate_->dialog_view()->GetViewByID(static_cast<int>(
+        DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON));
+  }
+
+  EXPECT_TRUE(view);
+  ClickOnDialogViewAndWait(view);
 }
 
 void PaymentRequestBrowserTestBase::ClickOnBackArrow() {
