@@ -12,7 +12,6 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -20,13 +19,12 @@
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/mus/aura_init.h"
 
-class ViewsExamples
-    : public service_manager::Service,
-      public mash::mojom::Launchable,
-      public service_manager::InterfaceFactory<mash::mojom::Launchable> {
+class ViewsExamples : public service_manager::Service,
+                      public mash::mojom::Launchable {
  public:
   ViewsExamples() {
-    registry_.AddInterface<mash::mojom::Launchable>(this);
+    registry_.AddInterface<mash::mojom::Launchable>(
+        base::Bind(&ViewsExamples::Create, base::Unretained(this)));
   }
   ~ViewsExamples() override {}
 
@@ -50,9 +48,8 @@ class ViewsExamples
     views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE);
   }
 
-  // service_manager::InterfaceFactory<mash::mojom::Launchable>:
-  void Create(const service_manager::Identity& remote_identity,
-              mash::mojom::LaunchableRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              mash::mojom::LaunchableRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 

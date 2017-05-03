@@ -4,7 +4,7 @@
 
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 
-#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace web {
 

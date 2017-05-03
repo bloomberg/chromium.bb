@@ -151,7 +151,8 @@ class UI : public views::WidgetDelegateView,
 };
 
 Webtest::Webtest() {
-  registry_.AddInterface<mojom::Launchable>(this);
+  registry_.AddInterface<mojom::Launchable>(
+      base::Bind(&Webtest::Create, base::Unretained(this)));
 }
 Webtest::~Webtest() {}
 
@@ -203,7 +204,7 @@ void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {
   AddWindow(window);
 }
 
-void Webtest::Create(const service_manager::Identity& remote_identity,
+void Webtest::Create(const service_manager::BindSourceInfo& source_info,
                      mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

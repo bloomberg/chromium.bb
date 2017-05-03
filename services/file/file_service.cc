@@ -84,8 +84,10 @@ FileService::FileService(
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner)
     : file_service_runner_(std::move(file_service_runner)),
       leveldb_service_runner_(std::move(leveldb_service_runner)) {
-  registry_.AddInterface<leveldb::mojom::LevelDBService>(this);
-  registry_.AddInterface<mojom::FileSystem>(this);
+  registry_.AddInterface<leveldb::mojom::LevelDBService>(base::Bind(
+      &FileService::BindLevelDBServiceRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::FileSystem>(
+      base::Bind(&FileService::BindFileSystemRequest, base::Unretained(this)));
 }
 
 FileService::~FileService() {
@@ -108,23 +110,24 @@ void FileService::OnBindInterface(
                           std::move(interface_pipe));
 }
 
-void FileService::Create(const service_manager::Identity& remote_identity,
-                         mojom::FileSystemRequest request) {
+void FileService::BindFileSystemRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::FileSystemRequest request) {
   file_service_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FileService::FileSystemObjects::OnFileSystemRequest,
-                 file_system_objects_->AsWeakPtr(), remote_identity,
+                 file_system_objects_->AsWeakPtr(), source_info.identity,
                  base::Passed(&request)));
 }
 
-void FileService::Create(const service_manager::Identity& remote_identity,
-                         leveldb::mojom::LevelDBServiceRequest request) {
+void FileService::BindLevelDBServiceRequest(
+    const service_manager::BindSourceInfo& source_info,
+    leveldb::mojom::LevelDBServiceRequest request) {
   leveldb_service_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
-          &FileService::LevelDBServiceObjects::OnLevelDBServiceRequest,
-          leveldb_objects_->AsWeakPtr(), remote_identity,
-          base::Passed(&request)));
+      base::Bind(&FileService::LevelDBServiceObjects::OnLevelDBServiceRequest,
+                 leveldb_objects_->AsWeakPtr(), source_info.identity,
+                 base::Passed(&request)));
 }
 
 }  // namespace user_service

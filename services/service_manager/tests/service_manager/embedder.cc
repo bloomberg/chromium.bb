@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -36,12 +35,11 @@ class Singleton : public service_manager::Service {
 };
 
 class Embedder : public service_manager::Service,
-                 public service_manager::InterfaceFactory<
-                     service_manager::mojom::ServiceFactory>,
                  public service_manager::mojom::ServiceFactory {
  public:
   Embedder() {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(this);
+    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
+        base::Bind(&Embedder::Create, base::Unretained(this)));
   }
   ~Embedder() override {}
 
@@ -59,9 +57,8 @@ class Embedder : public service_manager::Service,
     return true;
   }
 
-  // service_manager::InterfaceFactory<ServiceFactory>:
-  void Create(const service_manager::Identity& remote_identity,
-              service_manager::mojom::ServiceFactoryRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              service_manager::mojom::ServiceFactoryRequest request) {
     service_factory_bindings_.AddBinding(this, std::move(request));
   }
 

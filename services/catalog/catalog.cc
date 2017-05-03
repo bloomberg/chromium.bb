@@ -116,9 +116,12 @@ void LoadCatalogManifestIntoCache(const base::Value* root, EntryCache* cache) {
 class Catalog::ServiceImpl : public service_manager::Service {
  public:
   explicit ServiceImpl(Catalog* catalog) : catalog_(catalog) {
-    registry_.AddInterface<mojom::Catalog>(catalog_);
-    registry_.AddInterface<filesystem::mojom::Directory>(catalog_);
-    registry_.AddInterface<service_manager::mojom::Resolver>(catalog_);
+    registry_.AddInterface<mojom::Catalog>(
+        base::Bind(&Catalog::BindCatalogRequest, base::Unretained(catalog_)));
+    registry_.AddInterface<filesystem::mojom::Directory>(
+        base::Bind(&Catalog::BindDirectoryRequest, base::Unretained(catalog_)));
+    registry_.AddInterface<service_manager::mojom::Resolver>(
+        base::Bind(&Catalog::BindResolverRequest, base::Unretained(catalog_)));
   }
   ~ServiceImpl() override {}
 
@@ -178,20 +181,23 @@ void Catalog::LoadDefaultCatalogManifest(const base::FilePath& path) {
   catalog::Catalog::SetDefaultCatalogManifest(std::move(manifest_value));
 }
 
-void Catalog::Create(const service_manager::Identity& remote_identity,
-                     service_manager::mojom::ResolverRequest request) {
-  Instance* instance = GetInstanceForUserId(remote_identity.user_id());
+void Catalog::BindResolverRequest(
+    const service_manager::BindSourceInfo& source_info,
+    service_manager::mojom::ResolverRequest request) {
+  Instance* instance = GetInstanceForUserId(source_info.identity.user_id());
   instance->BindResolver(std::move(request));
 }
 
-void Catalog::Create(const service_manager::Identity& remote_identity,
-                     mojom::CatalogRequest request) {
-  Instance* instance = GetInstanceForUserId(remote_identity.user_id());
+void Catalog::BindCatalogRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::CatalogRequest request) {
+  Instance* instance = GetInstanceForUserId(source_info.identity.user_id());
   instance->BindCatalog(std::move(request));
 }
 
-void Catalog::Create(const service_manager::Identity& remote_identity,
-                     filesystem::mojom::DirectoryRequest request) {
+void Catalog::BindDirectoryRequest(
+    const service_manager::BindSourceInfo& source_info,
+    filesystem::mojom::DirectoryRequest request) {
   if (!lock_table_)
     lock_table_ = new filesystem::LockTable;
 

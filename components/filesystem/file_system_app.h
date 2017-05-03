@@ -11,14 +11,11 @@
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
 namespace filesystem {
 
-class FileSystemApp
-    : public service_manager::Service,
-      public service_manager::InterfaceFactory<mojom::FileSystem> {
+class FileSystemApp : public service_manager::Service {
  public:
   FileSystemApp();
   ~FileSystemApp() override;
@@ -33,9 +30,8 @@ class FileSystemApp
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  // |InterfaceFactory<Files>| implementation:
-  void Create(const service_manager::Identity& remote_identity,
-              mojo::InterfaceRequest<mojom::FileSystem> request) override;
+  void Create(const service_manager::BindSourceInfo& source_info,
+              mojom::FileSystemRequest request);
 
   service_manager::BinderRegistry registry_;
 

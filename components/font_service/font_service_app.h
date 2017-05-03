@@ -12,16 +12,13 @@
 #include "components/font_service/public/interfaces/font_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "skia/ext/skia_utils_base.h"
 
 namespace font_service {
 
-class FontServiceApp
-    : public service_manager::Service,
-      public service_manager::InterfaceFactory<mojom::FontService>,
-      public mojom::FontService {
+class FontServiceApp : public service_manager::Service,
+                       public mojom::FontService {
  public:
   FontServiceApp();
   ~FontServiceApp() override;
@@ -33,16 +30,15 @@ class FontServiceApp
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  // service_manager::InterfaceFactory<mojom::FontService>:
-  void Create(const service_manager::Identity& remote_identity,
-              mojo::InterfaceRequest<mojom::FontService> request) override;
-
   // FontService:
   void MatchFamilyName(const std::string& family_name,
                        mojom::TypefaceStylePtr requested_style,
                        const MatchFamilyNameCallback& callback) override;
   void OpenStream(uint32_t id_number,
                   const OpenStreamCallback& callback) override;
+
+  void Create(const service_manager::BindSourceInfo& source_info,
+              mojom::FontServiceRequest request);
 
   int FindOrAddPath(const SkString& path);
 

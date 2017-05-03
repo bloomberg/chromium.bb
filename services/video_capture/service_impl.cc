@@ -45,6 +45,7 @@ bool ServiceImpl::OnServiceManagerConnectionLost() {
 }
 
 void ServiceImpl::OnDeviceFactoryProviderRequest(
+    const service_manager::BindSourceInfo& source_info,
     mojom::DeviceFactoryProviderRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   mojo::MakeStrongBinding(

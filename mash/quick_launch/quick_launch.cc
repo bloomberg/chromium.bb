@@ -152,7 +152,8 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 };
 
 QuickLaunch::QuickLaunch() {
-  registry_.AddInterface<::mash::mojom::Launchable>(this);
+  registry_.AddInterface<::mash::mojom::Launchable>(
+      base::Bind(&QuickLaunch::Create, base::Unretained(this)));
 }
 
 QuickLaunch::~QuickLaunch() {
@@ -202,7 +203,7 @@ void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void QuickLaunch::Create(const service_manager::Identity& remote_identity,
+void QuickLaunch::Create(const service_manager::BindSourceInfo& source_info,
                          ::mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

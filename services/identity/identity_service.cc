@@ -11,7 +11,8 @@ namespace identity {
 
 IdentityService::IdentityService(SigninManagerBase* signin_manager)
     : signin_manager_(signin_manager) {
-  registry_.AddInterface<mojom::IdentityManager>(this);
+  registry_.AddInterface<mojom::IdentityManager>(
+      base::Bind(&IdentityService::Create, base::Unretained(this)));
 }
 
 IdentityService::~IdentityService() {}
@@ -26,7 +27,7 @@ void IdentityService::OnBindInterface(
                           std::move(interface_pipe));
 }
 
-void IdentityService::Create(const service_manager::Identity& remote_identity,
+void IdentityService::Create(const service_manager::BindSourceInfo& source_info,
                              mojom::IdentityManagerRequest request) {
   IdentityManager::Create(std::move(request), signin_manager_);
 }

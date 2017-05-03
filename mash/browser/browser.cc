@@ -855,7 +855,8 @@ class UI : public views::WidgetDelegateView,
 };
 
 Browser::Browser() {
-  registry_.AddInterface<mojom::Launchable>(this);
+  registry_.AddInterface<mojom::Launchable>(
+      base::Bind(&Browser::Create, base::Unretained(this)));
 }
 Browser::~Browser() {}
 
@@ -908,7 +909,7 @@ void Browser::Launch(uint32_t what, mojom::LaunchMode how) {
   AddWindow(window);
 }
 
-void Browser::Create(const service_manager::Identity& remote_identity,
+void Browser::Create(const service_manager::BindSourceInfo& source_info,
                      mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

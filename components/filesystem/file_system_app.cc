@@ -38,7 +38,8 @@ const char kUserDataDir[] = "user-data-dir";
 }  // namespace filesystem
 
 FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {
-  registry_.AddInterface<mojom::FileSystem>(this);
+  registry_.AddInterface<mojom::FileSystem>(
+      base::Bind(&FileSystemApp::Create, base::Unretained(this)));
 }
 
 FileSystemApp::~FileSystemApp() {}
@@ -53,12 +54,12 @@ void FileSystemApp::OnBindInterface(
                           std::move(interface_pipe));
 }
 
-// |InterfaceFactory<Files>| implementation:
-void FileSystemApp::Create(const service_manager::Identity& remote_identity,
+void FileSystemApp::Create(const service_manager::BindSourceInfo& source_info,
                            mojom::FileSystemRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<FileSystemImpl>(
-                              remote_identity, GetUserDataDir(), lock_table_),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      base::MakeUnique<FileSystemImpl>(source_info.identity, GetUserDataDir(),
+                                       lock_table_),
+      std::move(request));
 }
 
 //static

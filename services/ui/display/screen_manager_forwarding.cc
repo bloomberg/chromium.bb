@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/display/screen_base.h"
 #include "ui/display/types/display_constants.h"
@@ -49,7 +50,9 @@ ScreenManagerForwarding::~ScreenManagerForwarding() {
 
 void ScreenManagerForwarding::AddInterfaces(
     service_manager::BinderRegistry* registry) {
-  registry->AddInterface<mojom::NativeDisplayDelegate>(this);
+  registry->AddInterface<mojom::NativeDisplayDelegate>(
+      base::Bind(&ScreenManagerForwarding::BindNativeDisplayDelegateRequest,
+                 base::Unretained(this)));
 }
 
 void ScreenManagerForwarding::Init(ScreenManagerDelegate* delegate) {
@@ -176,8 +179,8 @@ void ScreenManagerForwarding::SetColorCorrection(
                                                gamma_lut, correction_matrix);
 }
 
-void ScreenManagerForwarding::Create(
-    const service_manager::Identity& remote_identity,
+void ScreenManagerForwarding::BindNativeDisplayDelegateRequest(
+    const service_manager::BindSourceInfo& source_info,
     mojom::NativeDisplayDelegateRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));

@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/entry_cache.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
@@ -41,11 +40,7 @@ class ManifestProvider;
 
 // Creates and owns an instance of the catalog. Exposes a ServicePtr that
 // can be passed to the service manager, potentially in a different process.
-class Catalog
-    : public service_manager::InterfaceFactory<mojom::Catalog>,
-      public service_manager::InterfaceFactory<filesystem::mojom::Directory>,
-      public service_manager::InterfaceFactory<
-          service_manager::mojom::Resolver> {
+class Catalog {
  public:
   // Constructs a catalog over a static manifest. This catalog never performs
   // file I/O. Note that either |static_manifest| or |service_manifest_provider|
@@ -53,7 +48,7 @@ class Catalog
   explicit Catalog(std::unique_ptr<base::Value> static_manifest,
                    ManifestProvider* service_manifest_provider = nullptr);
 
-  ~Catalog() override;
+  ~Catalog();
 
   service_manager::mojom::ServicePtr TakeService();
 
@@ -69,17 +64,14 @@ class Catalog
  private:
   class ServiceImpl;
 
-  // service_manager::InterfaceFactory<service_manager::mojom::Resolver>:
-  void Create(const service_manager::Identity& remote_identity,
-              service_manager::mojom::ResolverRequest request) override;
+  void BindResolverRequest(const service_manager::BindSourceInfo& source_info,
+                           service_manager::mojom::ResolverRequest request);
 
-  // service_manager::InterfaceFactory<mojom::Catalog>:
-  void Create(const service_manager::Identity& remote_identity,
-              mojom::CatalogRequest request) override;
+  void BindCatalogRequest(const service_manager::BindSourceInfo& source_info,
+                          mojom::CatalogRequest request);
 
-  // service_manager::InterfaceFactory<filesystem::mojom::Directory>:
-  void Create(const service_manager::Identity& remote_identity,
-              filesystem::mojom::DirectoryRequest request) override;
+  void BindDirectoryRequest(const service_manager::BindSourceInfo& source_info,
+                            filesystem::mojom::DirectoryRequest request);
 
   Instance* GetInstanceForUserId(const std::string& user_id);
 

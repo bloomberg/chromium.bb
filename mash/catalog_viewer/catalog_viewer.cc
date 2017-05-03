@@ -206,7 +206,8 @@ class CatalogViewerContents : public views::WidgetDelegateView,
 }  // namespace
 
 CatalogViewer::CatalogViewer() {
-  registry_.AddInterface<mojom::Launchable>(this);
+  registry_.AddInterface<mojom::Launchable>(
+      base::Bind(&CatalogViewer::Create, base::Unretained(this)));
 }
 CatalogViewer::~CatalogViewer() {}
 
@@ -249,7 +250,7 @@ void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void CatalogViewer::Create(const service_manager::Identity& remote_identity,
+void CatalogViewer::Create(const service_manager::BindSourceInfo& source_info,
                            mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

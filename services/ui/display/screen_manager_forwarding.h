@@ -11,10 +11,13 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/display/screen_manager.h"
 #include "ui/display/mojo/native_display_delegate.mojom.h"
 #include "ui/display/types/native_display_observer.h"
+
+namespace service_manager {
+struct BindSourceInfo;
+}
 
 namespace display {
 
@@ -23,11 +26,9 @@ class NativeDisplayDelegate;
 // ScreenManager implementation that implements mojom::NativeDisplayDelegate.
 // This will own a real NativeDisplayDelegate and forwards calls to and
 // responses from it over Mojo.
-class ScreenManagerForwarding
-    : public ScreenManager,
-      public NativeDisplayObserver,
-      public mojom::NativeDisplayDelegate,
-      service_manager::InterfaceFactory<mojom::NativeDisplayDelegate> {
+class ScreenManagerForwarding : public ScreenManager,
+                                public NativeDisplayObserver,
+                                public mojom::NativeDisplayDelegate {
  public:
   ScreenManagerForwarding();
   ~ScreenManagerForwarding() override;
@@ -64,11 +65,11 @@ class ScreenManagerForwarding
       const std::vector<display::GammaRampRGBEntry>& gamma_lut,
       const std::vector<float>& correction_matrix) override;
 
-  // service_manager::InterfaceFactory<mojom::NativeDisplayDelegate>:
-  void Create(const service_manager::Identity& remote_identity,
-              mojom::NativeDisplayDelegateRequest request) override;
-
  private:
+  void BindNativeDisplayDelegateRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::NativeDisplayDelegateRequest request);
+
   // Forwards results from GetDisplays() back with |callback|.
   void ForwardGetDisplays(const GetDisplaysCallback& callback,
                           const std::vector<DisplaySnapshot*>& displays);

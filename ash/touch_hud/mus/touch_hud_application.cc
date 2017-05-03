@@ -62,7 +62,8 @@ class TouchHudUI : public views::WidgetDelegateView,
 };
 
 TouchHudApplication::TouchHudApplication() : binding_(this) {
-  registry_.AddInterface<mash::mojom::Launchable>(this);
+  registry_.AddInterface<mash::mojom::Launchable>(
+      base::Bind(&TouchHudApplication::Create, base::Unretained(this)));
 }
 TouchHudApplication::~TouchHudApplication() {}
 
@@ -102,7 +103,7 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
 }
 
 void TouchHudApplication::Create(
-    const service_manager::Identity& remote_identity,
+    const service_manager::BindSourceInfo& source_info,
     mash::mojom::LaunchableRequest request) {
   binding_.Close();
   binding_.Bind(std::move(request));

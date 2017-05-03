@@ -10,7 +10,6 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -22,12 +21,9 @@ namespace service_manager {
 
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
-class ConnectTestClassApp
-    : public Service,
-      public InterfaceFactory<test::mojom::ConnectTestService>,
-      public InterfaceFactory<test::mojom::ClassInterface>,
-      public test::mojom::ConnectTestService,
-      public test::mojom::ClassInterface {
+class ConnectTestClassApp : public Service,
+                            public test::mojom::ConnectTestService,
+                            public test::mojom::ClassInterface {
  public:
   ConnectTestClassApp()
       : ref_factory_(base::Bind(&ConnectTestClassApp::HandleQuit,
@@ -36,8 +32,12 @@ class ConnectTestClassApp
         &ConnectTestClassApp::HandleInterfaceClose, base::Unretained(this)));
     class_interface_bindings_.set_connection_error_handler(base::Bind(
         &ConnectTestClassApp::HandleInterfaceClose, base::Unretained(this)));
-    registry_.AddInterface<test::mojom::ConnectTestService>(this);
-    registry_.AddInterface<test::mojom::ClassInterface>(this);
+    registry_.AddInterface<test::mojom::ConnectTestService>(
+        base::Bind(&ConnectTestClassApp::BindConnectTestServiceRequest,
+                   base::Unretained(this)));
+    registry_.AddInterface<test::mojom::ClassInterface>(
+        base::Bind(&ConnectTestClassApp::BindClassInterfaceRequest,
+                   base::Unretained(this)));
   }
   ~ConnectTestClassApp() override {}
 
@@ -50,16 +50,15 @@ class ConnectTestClassApp
                             std::move(interface_pipe));
   }
 
-  // InterfaceFactory<test::mojom::ConnectTestService>:
-  void Create(const Identity& remote_identity,
-              test::mojom::ConnectTestServiceRequest request) override {
+  void BindConnectTestServiceRequest(
+      const BindSourceInfo& source_info,
+      test::mojom::ConnectTestServiceRequest request) {
     refs_.push_back(ref_factory_.CreateRef());
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // InterfaceFactory<test::mojom::ClassInterface>:
-  void Create(const Identity& remote_identity,
-              test::mojom::ClassInterfaceRequest request) override {
+  void BindClassInterfaceRequest(const BindSourceInfo& source_info,
+                                 test::mojom::ClassInterfaceRequest request) {
     refs_.push_back(ref_factory_.CreateRef());
     class_interface_bindings_.AddBinding(this, std::move(request));
   }

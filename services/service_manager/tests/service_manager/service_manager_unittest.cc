@@ -25,7 +25,6 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/constants.mojom.h"
@@ -37,14 +36,13 @@ namespace service_manager {
 
 namespace {
 
-class ServiceManagerTestClient
-    : public test::ServiceTestClient,
-      public InterfaceFactory<test::mojom::CreateInstanceTest>,
-      public test::mojom::CreateInstanceTest {
+class ServiceManagerTestClient : public test::ServiceTestClient,
+                                 public test::mojom::CreateInstanceTest {
  public:
   explicit ServiceManagerTestClient(test::ServiceTest* test)
       : test::ServiceTestClient(test), binding_(this) {
-    registry_.AddInterface<test::mojom::CreateInstanceTest>(this);
+    registry_.AddInterface<test::mojom::CreateInstanceTest>(
+        base::Bind(&ServiceManagerTestClient::Create, base::Unretained(this)));
   }
   ~ServiceManagerTestClient() override {}
 
@@ -64,9 +62,8 @@ class ServiceManagerTestClient
                             std::move(interface_pipe));
   }
 
-  // InterfaceFactory<test::mojom::CreateInstanceTest>:
-  void Create(const Identity& remote_identity,
-              test::mojom::CreateInstanceTestRequest request) override {
+  void Create(const BindSourceInfo& source_info,
+              test::mojom::CreateInstanceTestRequest request) {
     binding_.Bind(std::move(request));
   }
 

@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
 class DefaultPrefStore;
@@ -34,14 +33,10 @@ class PrefStoreImpl;
 // and the pref stores that store those preferences. Pref stores use the
 // |PrefStoreRegistry| interface to register themselves with the manager and
 // clients use the |PrefStoreConnector| interface to connect to these stores.
-class PrefStoreManagerImpl
-    : public mojom::PrefStoreRegistry,
-      public mojom::PrefStoreConnector,
-      public service_manager::InterfaceFactory<mojom::PrefStoreConnector>,
-      public service_manager::InterfaceFactory<mojom::PrefStoreRegistry>,
-      public mojom::PrefServiceControl,
-      public service_manager::InterfaceFactory<mojom::PrefServiceControl>,
-      public service_manager::Service {
+class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
+                             public mojom::PrefStoreConnector,
+                             public mojom::PrefServiceControl,
+                             public service_manager::Service {
  public:
   // Only replies to Connect calls when all |expected_pref_stores| have
   // registered. |expected_pref_stores| must contain
@@ -68,17 +63,15 @@ class PrefStoreManagerImpl
       const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
       const ConnectCallback& callback) override;
 
-  // service_manager::InterfaceFactory<PrefStoreConnector>:
-  void Create(const service_manager::Identity& remote_identity,
-              prefs::mojom::PrefStoreConnectorRequest request) override;
-
-  // service_manager::InterfaceFactory<PrefStoreRegistry>:
-  void Create(const service_manager::Identity& remote_identity,
-              prefs::mojom::PrefStoreRegistryRequest request) override;
-
-  // service_manager::InterfaceFactory<PrefServiceControl>:
-  void Create(const service_manager::Identity& remote_identity,
-              prefs::mojom::PrefServiceControlRequest request) override;
+  void BindPrefStoreConnectorRequest(
+      const service_manager::BindSourceInfo& source_info,
+      prefs::mojom::PrefStoreConnectorRequest request);
+  void BindPrefStoreRegistryRequest(
+      const service_manager::BindSourceInfo& source_info,
+      prefs::mojom::PrefStoreRegistryRequest request);
+  void BindPrefServiceControlRequest(
+      const service_manager::BindSourceInfo& source_info,
+      prefs::mojom::PrefServiceControlRequest request);
 
   // PrefServiceControl:
   void Init(mojom::PersistentPrefStoreConfigurationPtr configuration) override;

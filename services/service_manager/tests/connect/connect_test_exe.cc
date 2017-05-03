@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -21,10 +20,12 @@ using service_manager::test::mojom::ConnectTestServiceRequest;
 namespace {
 
 class Target : public service_manager::Service,
-               public service_manager::InterfaceFactory<ConnectTestService>,
                public ConnectTestService {
  public:
-  Target() { registry_.AddInterface<ConnectTestService>(this); }
+  Target() {
+    registry_.AddInterface<ConnectTestService>(
+        base::Bind(&Target::Create, base::Unretained(this)));
+  }
   ~Target() override {}
 
  private:
@@ -36,9 +37,8 @@ class Target : public service_manager::Service,
                             std::move(interface_pipe));
   }
 
-  // service_manager::InterfaceFactory<ConnectTestService>:
-  void Create(const service_manager::Identity& remote_identity,
-              ConnectTestServiceRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              ConnectTestServiceRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 

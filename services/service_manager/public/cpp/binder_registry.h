@@ -13,9 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/lib/callback_binder.h"
-#include "services/service_manager/public/cpp/lib/interface_factory_binder.h"
 
 namespace service_manager {
 
@@ -29,15 +27,6 @@ class BinderRegistry {
 
   BinderRegistry();
   ~BinderRegistry();
-
-  // Provide a factory to be called when a request to bind |Interface| is
-  // received by this registry.
-  template <typename Interface>
-  void AddInterface(InterfaceFactory<Interface>* factory) {
-    SetInterfaceBinder(
-        Interface::Name_,
-        base::MakeUnique<internal::InterfaceFactoryBinder<Interface>>(factory));
-  }
 
   // Provide a callback to be run when a request to bind |Interface| is received
   // by this registry.

@@ -8,7 +8,6 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 
 // This class is intended for web ui pages that use mojo. It is expected that
 // subclasses will do two things:
@@ -19,13 +18,12 @@
 // . Override BindUIHandler() to create and bind the implementation of the
 //   bindings.
 template <typename Interface>
-class MojoWebUIIOSController
-    : public web::WebUIIOSController,
-      public service_manager::InterfaceFactory<Interface> {
+class MojoWebUIIOSController : public web::WebUIIOSController {
  public:
   explicit MojoWebUIIOSController(web::WebUIIOS* web_ui)
       : web::WebUIIOSController(web_ui) {
-    web_ui->GetWebState()->GetMojoInterfaceRegistry()->AddInterface(this);
+    web_ui->GetWebState()->GetMojoInterfaceRegistry()->AddInterface(
+        base::Bind(&MojoWebUIIOSController::Create, base::Unretained(this)));
   }
 
  protected:
@@ -33,9 +31,8 @@ class MojoWebUIIOSController
   virtual void BindUIHandler(mojo::InterfaceRequest<Interface> request) = 0;
 
  private:
-  // service_manager::InterfaceFactory overrides:
-  void Create(const service_manager::Identity& remote_identity,
-              mojo::InterfaceRequest<Interface> request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              mojo::InterfaceRequest<Interface> request) {
     BindUIHandler(std::move(request));
   }
 

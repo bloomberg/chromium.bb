@@ -48,7 +48,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
@@ -117,8 +116,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NON_EXPORTED_BASE(public mojom::FrameHostInterfaceBroker),
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
-      public NON_EXPORTED_BASE(
-          service_manager::InterfaceFactory<media::mojom::InterfaceFactory>),
       public NON_EXPORTED_BASE(service_manager::mojom::InterfaceProvider),
       public CSPContext {
  public:
@@ -905,9 +902,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DeleteWebBluetoothService(
       WebBluetoothServiceImpl* web_bluetooth_service);
 
-  // service_manager::InterfaceFactory<media::mojom::InterfaceFactory>
-  void Create(const service_manager::Identity& remote_identity,
-              media::mojom::InterfaceFactoryRequest request) override;
+  void BindMediaInterfaceFactoryRequest(
+      const service_manager::BindSourceInfo& source_info,
+      media::mojom::InterfaceFactoryRequest request);
 
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();

@@ -17,7 +17,6 @@
 #include "base/test/test_suite.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
@@ -85,7 +84,6 @@ void QuitLoop(base::RunLoop* loop) {
 }  // namespace
 
 class ConnectTest : public test::ServiceTest,
-                    public InterfaceFactory<test::mojom::ExposedInterface>,
                     public test::mojom::ExposedInterface {
  public:
   ConnectTest() : ServiceTest("connect_unittests") {}
@@ -111,7 +109,8 @@ class ConnectTest : public test::ServiceTest,
    public:
     explicit TestService(ConnectTest* connect_test)
         : test::ServiceTestClient(connect_test), connect_test_(connect_test) {
-      registry_.AddInterface<test::mojom::ExposedInterface>(connect_test_);
+      registry_.AddInterface<test::mojom::ExposedInterface>(
+          base::Bind(&ConnectTest::Create, base::Unretained(connect_test_)));
     }
     ~TestService() override {}
 
@@ -149,9 +148,8 @@ class ConnectTest : public test::ServiceTest,
     return base::MakeUnique<TestService>(this);
   }
 
-  // InterfaceFactory<test::mojom::ExposedInterface>:
-  void Create(const Identity& remote_identity,
-              test::mojom::ExposedInterfaceRequest request) override {
+  void Create(const BindSourceInfo& source_info,
+              test::mojom::ExposedInterfaceRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 

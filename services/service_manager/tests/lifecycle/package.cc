@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -20,11 +19,8 @@
 
 namespace {
 
-class PackagedApp
-    : public service_manager::Service,
-      public service_manager::InterfaceFactory<
-          service_manager::test::mojom::LifecycleControl>,
-      public service_manager::test::mojom::LifecycleControl {
+class PackagedApp : public service_manager::Service,
+                    public service_manager::test::mojom::LifecycleControl {
  public:
   PackagedApp(
       const base::Closure& service_manager_connection_closed_callback,
@@ -35,7 +31,7 @@ class PackagedApp
     bindings_.set_connection_error_handler(base::Bind(&PackagedApp::BindingLost,
                                                       base::Unretained(this)));
     registry_.AddInterface<service_manager::test::mojom::LifecycleControl>(
-        this);
+        base::Bind(&PackagedApp::Create, base::Unretained(this)));
   }
 
   ~PackagedApp() override {}
@@ -49,10 +45,8 @@ class PackagedApp
                             std::move(interface_pipe));
   }
 
-  // service_manager::InterfaceFactory<LifecycleControl>
-  void Create(
-      const service_manager::Identity& remote_identity,
-      service_manager::test::mojom::LifecycleControlRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              service_manager::test::mojom::LifecycleControlRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -101,12 +95,11 @@ class PackagedApp
 };
 
 class Package : public service_manager::ForwardingService,
-                public service_manager::InterfaceFactory<
-                    service_manager::mojom::ServiceFactory>,
                 public service_manager::mojom::ServiceFactory {
  public:
   Package() : ForwardingService(&app_client_) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(this);
+    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
+        base::Bind(&Package::Create, base::Unretained(this)));
   }
   ~Package() override {}
 
@@ -124,9 +117,8 @@ class Package : public service_manager::ForwardingService,
     }
   }
 
-  // service_manager::InterfaceFactory<service_manager::mojom::ServiceFactory>:
-  void Create(const service_manager::Identity& remote_identity,
-              service_manager::mojom::ServiceFactoryRequest request) override {
+  void Create(const service_manager::BindSourceInfo& source_info,
+              service_manager::mojom::ServiceFactoryRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
