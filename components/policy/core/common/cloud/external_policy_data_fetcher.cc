@@ -17,6 +17,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -177,8 +178,32 @@ ExternalPolicyDataFetcherBackend::CreateFrontend(
 void ExternalPolicyDataFetcherBackend::StartJob(
     ExternalPolicyDataFetcher::Job* job) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  std::unique_ptr<net::URLFetcher> owned_fetcher = net::URLFetcher::Create(
-      ++last_fetch_id_, job->url, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("external_policy_fetcher", R"(
+        semantics {
+          sender: "Cloud Policy"
+          description:
+            "Used to fetch policy for extensions, policy-controlled wallpaper, "
+            "and custom terms of service."
+          trigger:
+            "Periodically loaded when a managed user is signed in to Chrome."
+          data:
+            "This request does not send any data. It loads external resources "
+            "by a unique URL provided by the admin."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be controlled by Chrome settings, but users "
+            "can sign out of Chrome to disable it."
+          policy_exception_justification:
+            "Not implemented, considered not useful. This request is part of "
+            "the policy fetcher itself."
+        })");
+  std::unique_ptr<net::URLFetcher> owned_fetcher =
+      net::URLFetcher::Create(++last_fetch_id_, job->url, net::URLFetcher::GET,
+                              this, traffic_annotation);
   net::URLFetcher* fetcher = owned_fetcher.get();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::POLICY);
