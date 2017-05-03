@@ -329,6 +329,9 @@ class SymbolGroup(BaseSymbol):
         seen_aliases_lists.add(id(s.aliases))
         yield s
 
+  def CountUniqueSymbols(self):
+    return sum(1 for s in self.IterUniqueSymbols())
+
   @property
   def size(self):
     if self._size is None:

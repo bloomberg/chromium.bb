@@ -126,8 +126,8 @@ class Describer(object):
     ro_size = code_syms.Inverted().WhereInSection('r').pss
     unique_paths = set(s.object_path for s in group)
     header_desc = [
-        'Showing {:,} symbols with total pss: {} bytes'.format(
-            len(group), int(total_size)),
+        'Showing {:,} symbols ({:,} unique) with total pss: {} bytes'.format(
+            len(group), group.CountUniqueSymbols(), int(total_size)),
         '.text={:<10} .rodata={:<10} other={:<10} total={}'.format(
             _PrettySize(int(code_size)), _PrettySize(int(ro_size)),
             _PrettySize(int(total_size - code_size - ro_size)),

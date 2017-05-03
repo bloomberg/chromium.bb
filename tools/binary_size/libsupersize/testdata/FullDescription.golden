@@ -56,7 +56,7 @@ Section t: has 100.0% of 35900712 bytes accounted for from 16 symbols. 0 bytes a
 * Contains 5 aliases, mapped to 2 unique addresses (60 bytes)
 * 1 symbols have shared ownership (12 bytes)
 
-Showing 44 symbols with total pss: 44309900 bytes
+Showing 44 symbols (41 unique) with total pss: 44309900 bytes
 .text=34.2mb     .rodata=5.65mb     other=2.37mb     total=42.3mb
 Number of object files: 10
 

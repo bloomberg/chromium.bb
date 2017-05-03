@@ -1,5 +1,5 @@
 GroupByNamespace()
-Showing 10 symbols with total pss: 44309900 bytes
+Showing 10 symbols (10 unique) with total pss: 44309900 bytes
 .text=0 bytes    .rodata=0 bytes    other=42.3mb     total=42.3mb
 Number of object files: 5
 
@@ -25,7 +25,7 @@ First columns are: running total, address, pss
 44309900 *@Group      4       third_party/paint.cc
              blink::CSSValueKeywordsHash::findValueImpl (count=1)
 GroupByNamespace(depth=1)
-Showing 7 symbols with total pss: 44309900 bytes
+Showing 7 symbols (7 unique) with total pss: 44309900 bytes
 .text=0 bytes    .rodata=0 bytes    other=42.3mb     total=42.3mb
 Number of object files: 4
 
@@ -45,7 +45,7 @@ First columns are: running total, address, pss
 44309900 *@Group      8       {no path}
              google (count=2)
 GroupByNamespace(depth=1, fallback=None)
-Showing 7 symbols with total pss: 44309900 bytes
+Showing 7 symbols (7 unique) with total pss: 44309900 bytes
 .text=0 bytes    .rodata=0 bytes    other=42.3mb     total=42.3mb
 Number of object files: 4
 
@@ -64,7 +64,7 @@ First columns are: running total, address, pss
 44309900 *@Group      8       {no path}
              google (count=2)
 GroupByNamespace(depth=1, min_count=2)
-Showing 7 symbols with total pss: 44309900 bytes
+Showing 7 symbols (7 unique) with total pss: 44309900 bytes
 .text=0 bytes    .rodata=0 bytes    other=42.3mb     total=42.3mb
 Number of object files: 4
 
