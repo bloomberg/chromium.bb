@@ -172,7 +172,6 @@ if (window.testRunner) {
 
         if (runner && test.tracingCategories && window.testRunner &&
             window.testRunner.supportTracing) {
-            window.testRunner.traceEventsToMeasure = test.traceEventsToMeasure;
             window.testRunner.startTracing(test.tracingCategories, function() {
                 scheduleNextRun(scheduler, runner);
             });
