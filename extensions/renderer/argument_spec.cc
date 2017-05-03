@@ -72,8 +72,7 @@ bool CheckFundamentalBounds(T value,
 
 }  // namespace
 
-ArgumentSpec::ArgumentSpec(const base::Value& value)
-    : type_(ArgumentType::INTEGER), optional_(false), preserve_null_(false) {
+ArgumentSpec::ArgumentSpec(const base::Value& value) {
   const base::DictionaryValue* dict = nullptr;
   CHECK(value.GetAsDictionary(&dict));
   dict->GetBoolean("optional", &optional_);
@@ -82,7 +81,7 @@ ArgumentSpec::ArgumentSpec(const base::Value& value)
   InitializeType(dict);
 }
 
-ArgumentSpec::ArgumentSpec(ArgumentType type) : type_(type), optional_(false) {}
+ArgumentSpec::ArgumentSpec(ArgumentType type) : type_(type) {}
 
 void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
   std::string ref_string;
