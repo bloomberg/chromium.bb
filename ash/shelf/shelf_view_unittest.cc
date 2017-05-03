@@ -238,7 +238,7 @@ class ShelfViewTest : public AshTestBase {
   static const char*
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
 
-  ShelfViewTest() : model_(nullptr), shelf_view_(nullptr), browser_index_(1) {}
+  ShelfViewTest() {}
   ~ShelfViewTest() override {}
 
   void SetUp() override {
@@ -434,6 +434,8 @@ class ShelfViewTest : public AshTestBase {
                             int destination_index,
                             bool progressively) {
     views::View* button = SimulateViewPressed(pointer, button_index);
+    if (pointer == ShelfView::TOUCH && reach_touch_time_threshold_)
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(300));
 
     if (!progressively) {
       ContinueDrag(button, pointer, button_index, destination_index, false);
@@ -591,9 +593,10 @@ class ShelfViewTest : public AshTestBase {
     return button->GetBoundsInScreen().CenterPoint();
   }
 
-  ShelfModel* model_;
-  ShelfView* shelf_view_;
-  int browser_index_;
+  ShelfModel* model_ = nullptr;
+  ShelfView* shelf_view_ = nullptr;
+  int browser_index_ = 1;
+  bool reach_touch_time_threshold_ = true;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;
 
@@ -1041,6 +1044,46 @@ TEST_F(ShelfViewTest, SimultaneousDrag) {
   shelf_view_->PointerReleasedOnButton(dragged_button_touch, ShelfView::TOUCH,
                                        false);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+}
+
+TEST_F(ShelfViewTest, DragWithTimeThreshold) {
+  std::vector<std::pair<ShelfID, views::View*>> id_map;
+  SetupForDragTest(&id_map);
+
+  // Start a touch drag that does not reach the touch time threshold.
+  reach_touch_time_threshold_ = false;
+  views::View* dragged_button_touch =
+      SimulateDrag(ShelfView::TOUCH, 4, 2, false);
+  // Nothing changes since the drag didn't reach the touch time threshold.
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  shelf_view_->PointerReleasedOnButton(dragged_button_touch, ShelfView::TOUCH,
+                                       false);
+
+  // Start a touch drag that does reach the touch time threshold.
+  reach_touch_time_threshold_ = true;
+  dragged_button_touch = SimulateDrag(ShelfView::TOUCH, 1, 3, false);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  shelf_view_->PointerReleasedOnButton(dragged_button_touch, ShelfView::TOUCH,
+                                       false);
+
+  // Start a mouse drag that does not reach the touch time threshold.
+  reach_touch_time_threshold_ = false;
+  views::View* dragged_button_mouse =
+      SimulateDrag(ShelfView::MOUSE, 1, 3, false);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
+  // The ordering changes since there is no time threshold for mouse drags.
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  shelf_view_->PointerReleasedOnButton(dragged_button_mouse, ShelfView::MOUSE,
+                                       false);
+
+  // Start a mouse drag that does reach the touch time threshold.
+  reach_touch_time_threshold_ = true;
+  dragged_button_mouse = SimulateDrag(ShelfView::MOUSE, 4, 2, false);
+  std::rotate(id_map.begin() + 3, id_map.begin() + 4, id_map.begin() + 5);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  shelf_view_->PointerReleasedOnButton(dragged_button_mouse, ShelfView::MOUSE,
+                                       false);
 }
 
 // Ensure the app list button cannot be dragged and other items cannot be
