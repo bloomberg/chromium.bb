@@ -380,6 +380,18 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     return ::CreateContextMenu(web_contents(), registry_.get());
   }
 
+  // Returns a test context menu for a chrome:// url not permitted to open in
+  // incognito mode.
+  std::unique_ptr<TestRenderViewContextMenu> CreateContextMenuOnChromeLink() {
+    content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+    params.unfiltered_link_url = params.link_url = GURL("chrome://settings");
+    std::unique_ptr<TestRenderViewContextMenu> menu(
+        new TestRenderViewContextMenu(web_contents()->GetMainFrame(), params));
+    menu->set_protocol_handler_registry(registry_.get());
+    menu->Init();
+    return menu;
+  }
+
   void AppendImageItems(TestRenderViewContextMenu* menu) {
     menu->AppendImageItems();
   }
@@ -450,6 +462,17 @@ TEST_F(RenderViewContextMenuPrefsTest,
   IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
                                       IncognitoModePrefs::DISABLED);
   menu = CreateContextMenu();
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+  EXPECT_FALSE(
+      menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+}
+
+// Verifies Incognito Mode is not enabled for links disallowed in Incognito.
+TEST_F(RenderViewContextMenuPrefsTest,
+       DisableOpenInIncognitoWindowForDisallowedUrls) {
+  std::unique_ptr<TestRenderViewContextMenu> menu(
+      CreateContextMenuOnChromeLink());
+
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));

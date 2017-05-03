@@ -2116,6 +2116,9 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
   if (browser_context_->IsOffTheRecord() || !params_.link_url.is_valid())
     return false;
 
+  if (!chrome::IsURLAllowedInIncognito(params_.link_url, browser_context_))
+    return false;
+
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(GetPrefs(browser_context_));
   return incognito_avail != IncognitoModePrefs::DISABLED;
