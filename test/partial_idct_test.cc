@@ -231,8 +231,8 @@ TEST_P(PartialIDctTest, AddOutputBlock) {
 }
 
 TEST_P(PartialIDctTest, SingleExtremeCoeff) {
-  const int16_t max_coeff = std::numeric_limits<int16_t>::max();
-  const int16_t min_coeff = std::numeric_limits<int16_t>::min();
+  const int16_t max_coeff = INT16_MAX;
+  const int16_t min_coeff = INT16_MIN;
   for (int i = 0; i < last_nonzero_; ++i) {
     memset(input_block_, 0, sizeof(*input_block_) * input_block_size_);
     // Run once for min and once for max.
