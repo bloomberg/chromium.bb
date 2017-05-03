@@ -338,7 +338,8 @@ external/wpt/resources/examples [ Skip ]
 external/wpt/resources/webidl2/README.md [ Skip ]
 external/wpt/resources/webidl2/test [ Skip ]
 external/wpt/screen-orientation [ Skip ]
-external/wpt/secure-contexts [ Skip ]
+## Owners: mkwst@chromium.org
+# external/wpt/secure-contexts [ Pass ]
 ## Owners: dom-dev@chromium.org
 # external/wpt/selection [ Pass ]
 external/wpt/selectors [ Skip ]
