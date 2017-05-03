@@ -14,10 +14,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job_worker.h"
@@ -444,13 +444,20 @@ void PrintJob::ControlledWorkerShutdown() {
   }
 #endif
 
-
   // Now make sure the thread object is cleaned up. Do this on a worker
   // thread because it may block.
-  base::WorkerPool::PostTaskAndReply(
+  // TODO(fdoray): Remove MayBlock() once base::Thread::Stop() passes
+  // base::ThreadRestrictions::AssertWaitAllowed().
+  base::PostTaskWithTraitsAndReply(
       FROM_HERE,
+      base::TaskTraits()
+          .MayBlock()
+          .WithBaseSyncPrimitives()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::BindOnce(&PrintJobWorker::Stop, base::Unretained(worker_.get())),
-      base::BindOnce(&PrintJob::HoldUntilStopIsCalled, this), false);
+      base::BindOnce(&PrintJob::HoldUntilStopIsCalled, this));
 
   is_job_pending_ = false;
   registrar_.RemoveAll();
