@@ -108,7 +108,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   ~OffTheRecordProfileIOData() override;
 
   void InitializeInternal(
-      std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)

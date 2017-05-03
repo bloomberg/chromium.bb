@@ -674,6 +674,11 @@ ProfileIOData::~ProfileIOData() {
         std::unique_ptr<net::ReportingService>());
   }
 
+  // This should be shut down last, as any other requests may initiate more
+  // activity when the ProxyService aborts lookups.
+  if (proxy_service_)
+    proxy_service_->OnShutdown();
+
   // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
   // are already done in the URLRequestContext destructor.
   if (main_request_context_)
@@ -991,7 +996,7 @@ void ProfileIOData::Init(
 
   main_request_context_->set_enable_brotli(io_thread_globals->enable_brotli);
 
-  std::unique_ptr<ChromeNetworkDelegate> network_delegate(
+  std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
           io_thread_globals->extension_event_router_forwarder.get(),
@@ -1000,7 +1005,7 @@ void ProfileIOData::Init(
 #endif
           &enable_referrers_));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  network_delegate->set_extension_info_map(
+  chrome_network_delegate->set_extension_info_map(
       profile_params_->extension_info_map.get());
   if (!command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling)) {
     extension_throttle_manager_.reset(
@@ -1008,26 +1013,39 @@ void ProfileIOData::Init(
   }
 #endif
 
-  network_delegate->set_url_blacklist_manager(url_blacklist_manager_.get());
-  network_delegate->set_profile(profile_params_->profile);
-  network_delegate->set_profile_path(profile_params_->path);
-  network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
-  network_delegate->set_enable_do_not_track(&enable_do_not_track_);
-  network_delegate->set_force_google_safe_search(&force_google_safesearch_);
-  network_delegate->set_force_youtube_restrict(&force_youtube_restrict_);
-  network_delegate->set_allowed_domains_for_apps(&allowed_domains_for_apps_);
-  network_delegate->set_data_use_aggregator(
+  chrome_network_delegate->set_url_blacklist_manager(
+      url_blacklist_manager_.get());
+  chrome_network_delegate->set_profile(profile_params_->profile);
+  chrome_network_delegate->set_profile_path(profile_params_->path);
+  chrome_network_delegate->set_cookie_settings(
+      profile_params_->cookie_settings.get());
+  chrome_network_delegate->set_enable_do_not_track(&enable_do_not_track_);
+  chrome_network_delegate->set_force_google_safe_search(
+      &force_google_safesearch_);
+  chrome_network_delegate->set_force_youtube_restrict(&force_youtube_restrict_);
+  chrome_network_delegate->set_allowed_domains_for_apps(
+      &allowed_domains_for_apps_);
+  chrome_network_delegate->set_data_use_aggregator(
       io_thread_globals->data_use_aggregator.get(), IsOffTheRecord());
+
+  std::unique_ptr<net::NetworkDelegate> network_delegate =
+      ConfigureNetworkDelegate(profile_params_->io_thread,
+                               std::move(chrome_network_delegate));
+
+  main_request_context_->set_host_resolver(
+      io_thread_globals->host_resolver.get());
 
   // NOTE: Proxy service uses the default io thread network delegate, not the
   // delegate just created.
   proxy_service_ = ProxyServiceFactory::CreateProxyService(
-      io_thread->net_log(),
-      io_thread_globals->proxy_script_fetcher_context.get(),
-      io_thread_globals->system_network_delegate.get(),
+      io_thread->net_log(), main_request_context_.get(), network_delegate.get(),
       std::move(profile_params_->proxy_config_service), command_line,
       io_thread->WpadQuickCheckEnabled(),
       io_thread->PacHttpsUrlStrippingEnabled());
+
+  main_request_context_storage_->set_network_delegate(
+      std::move(network_delegate));
+
   transport_security_state_.reset(new net::TransportSecurityState());
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   transport_security_persister_.reset(
@@ -1119,8 +1137,8 @@ void ProfileIOData::Init(
       base::Bind(&IOThread::UnregisterSTHObserver, base::Unretained(io_thread),
                  ct_tree_tracker_.get());
 
-  InitializeInternal(std::move(network_delegate), profile_params_.get(),
-                     protocol_handlers, std::move(request_interceptors));
+  InitializeInternal(profile_params_.get(), protocol_handlers,
+                     std::move(request_interceptors));
 
   profile_params_.reset();
   initialized_ = true;
@@ -1308,6 +1326,13 @@ std::unique_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
       base::WrapUnique(new DevToolsNetworkTransactionFactory(
           network_controller_handle_.GetController(), shared_session)),
       std::move(backend), false /* is_main_cache */);
+}
+
+std::unique_ptr<net::NetworkDelegate> ProfileIOData::ConfigureNetworkDelegate(
+    IOThread* io_thread,
+    std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate) const {
+  return base::WrapUnique<net::NetworkDelegate>(
+      chrome_network_delegate.release());
 }
 
 void ProfileIOData::SetCookieSettingsForTesting(

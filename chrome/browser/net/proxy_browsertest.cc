@@ -4,11 +4,13 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -16,15 +18,21 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -273,6 +281,93 @@ class OutOfProcessProxyResolverBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessProxyResolverBrowserTest, Verify) {
   VerifyProxyScript(browser());
+}
+
+// Waits for the one connection. It's fine if there are more.
+class WaitForConnectionsListener
+    : public net::test_server::EmbeddedTestServerConnectionListener {
+ public:
+  WaitForConnectionsListener() {}
+
+  void AcceptedSocket(const net::StreamSocket& socket) override {
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     run_loop_.QuitClosure());
+  }
+
+  void ReadFromSocket(const net::StreamSocket& socket, int rv) override {}
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaitForConnectionsListener);
+};
+
+// Fetch PAC script via a hanging http:// URL.
+class HangingPacRequestProxyScriptBrowserTest : public InProcessBrowserTest {
+ public:
+  HangingPacRequestProxyScriptBrowserTest() {}
+  ~HangingPacRequestProxyScriptBrowserTest() override {}
+
+  void SetUp() override {
+    // Must start listening (And get a port for the proxy) before calling
+    // SetUp().
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    // This must be created after the main message loop has been set up.
+    connection_listener_ = base::MakeUnique<WaitForConnectionsListener>();
+    embedded_test_server()->SetConnectionListener(connection_listener_.get());
+    embedded_test_server()->StartAcceptingConnections();
+
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kProxyPacUrl, embedded_test_server()->GetURL("/hung").spec());
+  }
+
+ protected:
+  std::unique_ptr<WaitForConnectionsListener> connection_listener_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HangingPacRequestProxyScriptBrowserTest);
+};
+
+// URLFetcherDelegate that expects a request to hang.
+class HangingURLFetcherDelegate : public net::URLFetcherDelegate {
+ public:
+  HangingURLFetcherDelegate() {}
+  ~HangingURLFetcherDelegate() override {}
+
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
+    ADD_FAILURE() << "This request should never complete.";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HangingURLFetcherDelegate);
+};
+
+// Check that the URLRequest for a PAC that is still alive during shutdown is
+// safely cleaned up.  This test relies on AssertNoURLRequests being called on
+// the main URLRequestContext.
+IN_PROC_BROWSER_TEST_F(HangingPacRequestProxyScriptBrowserTest, Shutdown) {
+  // Request that should hang while trying to request the PAC script.
+  // Enough requests are created on startup that this probably isn't needed, but
+  // best to be safe.
+  HangingURLFetcherDelegate hanging_request_delegate;
+  std::unique_ptr<net::URLFetcher> hanging_fetcher = net::URLFetcher::Create(
+      GURL("http://blah/"), net::URLFetcher::GET, &hanging_request_delegate);
+  hanging_fetcher->SetRequestContext(browser()->profile()->GetRequestContext());
+  hanging_fetcher->Start();
+
+  connection_listener_->Wait();
 }
 
 }  // namespace
