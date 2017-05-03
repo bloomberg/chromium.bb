@@ -62,8 +62,10 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleDialogViewTest,
   RunDialog();
 }
 
+// Disabled: ExecuteManagePasswordsCommand() spins a runloop which will be flaky
+// in a browser test. See http://crbug.com/716681.
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleDialogViewTest,
-                       InvokeDialog_ManagePasswordBubble) {
+                       DISABLED_InvokeDialog_ManagePasswordBubble) {
   RunDialog();
 }
 
