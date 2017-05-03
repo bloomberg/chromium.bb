@@ -688,18 +688,10 @@ void OfflinePageModelImpl::OnCreateArchiveDone(
     const SavePageCallback& callback,
     OfflinePageArchiver* archiver,
     ArchiverResult archiver_result,
-    const GURL& url,
+    const GURL& saved_url,
     const base::FilePath& file_path,
     const base::string16& title,
     int64_t file_size) {
-  if (save_page_params.url != url) {
-    DVLOG(1) << "Saved URL does not match requested URL.";
-    InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED,
-                       save_page_params.client_id, offline_id);
-    DeletePendingArchiver(archiver);
-    return;
-  }
-
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {
     SavePageResult result = ToSavePageResult(archiver_result);
     InformSavePageDone(
@@ -707,8 +699,18 @@ void OfflinePageModelImpl::OnCreateArchiveDone(
     DeletePendingArchiver(archiver);
     return;
   }
-  OfflinePageItem offline_page_item(url, offline_id, save_page_params.client_id,
-                                    file_path, file_size, start_time);
+
+  if (save_page_params.url != saved_url) {
+    DVLOG(1) << "Saved URL does not match requested URL.";
+    InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED,
+                       save_page_params.client_id, offline_id);
+    DeletePendingArchiver(archiver);
+    return;
+  }
+
+  OfflinePageItem offline_page_item(saved_url, offline_id,
+                                    save_page_params.client_id, file_path,
+                                    file_size, start_time);
   offline_page_item.title = title;
   offline_page_item.original_url = save_page_params.original_url;
   store_->AddOfflinePage(offline_page_item,
