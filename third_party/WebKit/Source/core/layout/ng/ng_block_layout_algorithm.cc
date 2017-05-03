@@ -63,6 +63,10 @@ bool ClearanceMayAffectLayout(
   return false;
 }
 
+bool IsLegacyBlock(const NGLayoutInputNode& node) {
+  return node.IsBlock() && !ToNGBlockNode(node).CanUseNewLayout();
+}
+
 // Whether we've run out of space in this flow. If so, there will be no work
 // left to do for this block in this fragmentainer.
 bool IsOutOfSpace(const NGConstraintSpace& space, LayoutUnit content_size) {
@@ -239,7 +243,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     if (child->IsFloating())
       FinishFloatChildLayout(child->Style(), *child_space, layout_result.Get());
     else
-      FinishChildLayout(child_space.Get(), layout_result.Get());
+      FinishChildLayout(*child_space, child, layout_result.Get());
 
     entry = child_iterator.NextChild();
     child = entry.node;
@@ -344,15 +348,14 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PrepareChildLayout(
       curr_margin_strut_.Append(curr_child_margins_.block_start);
   }
 
-  bool is_legacy_block =
-      child->IsBlock() && !ToNGBlockNode(child)->CanUseNewLayout();
-
   // TODO(crbug.com/716930): We should also collapse margins below once we
   // remove LayoutInline splitting.
 
   // Should collapse margins if our child is a legacy block.
-  if (is_legacy_block) {
-    curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
+  if (IsLegacyBlock(*child)) {
+    curr_bfc_offset_ +=
+        {border_and_padding_.inline_start + curr_child_margins_.inline_start,
+         curr_margin_strut_.Sum()};
     MaybeUpdateFragmentBfcOffset(ConstraintSpace(), curr_bfc_offset_,
                                  &container_builder_);
     PositionPendingFloats(curr_bfc_offset_.block_offset, &container_builder_,
@@ -364,7 +367,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PrepareChildLayout(
 }
 
 void NGBlockLayoutAlgorithm::FinishChildLayout(
-    const NGConstraintSpace* child_space,
+    const NGConstraintSpace& child_space,
+    const NGLayoutInputNode* child,
     NGLayoutResult* layout_result) {
   // Pull out unpositioned floats to the current fragment. This may needed if
   // for example the child fragment could not position its floats because it's
@@ -378,10 +382,12 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
 
   // Determine the fragment's position in the parent space.
   WTF::Optional<NGLogicalOffset> child_bfc_offset;
-  if (child_space->IsNewFormattingContext())
-    child_bfc_offset = PositionNewFc(fragment, *child_space);
+  if (child_space.IsNewFormattingContext())
+    child_bfc_offset = PositionNewFc(fragment, child_space);
   else if (fragment.BfcOffset())
     child_bfc_offset = PositionWithBfcOffset(fragment);
+  else if (IsLegacyBlock(*child))
+    child_bfc_offset = PositionLegacy(child_space);
   else if (container_builder_.BfcOffset())
     child_bfc_offset = PositionWithParentBfc();
 
@@ -469,6 +475,12 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc() {
   curr_bfc_offset_ +=
       {border_and_padding_.inline_start + curr_child_margins_.inline_start,
        curr_margin_strut_.Sum()};
+  return curr_bfc_offset_;
+}
+
+NGLogicalOffset NGBlockLayoutAlgorithm::PositionLegacy(
+    const NGConstraintSpace& child_space) {
+  AdjustToClearance(child_space.ClearanceOffset(), &curr_bfc_offset_);
   return curr_bfc_offset_;
 }
 

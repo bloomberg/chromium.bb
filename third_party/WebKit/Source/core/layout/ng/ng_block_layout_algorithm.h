@@ -59,7 +59,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // @return Estimated BFC offset for the "to be layout" child.
   NGLogicalOffset PrepareChildLayout(NGLayoutInputNode*);
 
-  void FinishChildLayout(const NGConstraintSpace*, NGLayoutResult*);
+  void FinishChildLayout(const NGConstraintSpace&,
+                         const NGLayoutInputNode* child,
+                         NGLayoutResult*);
 
   // Positions the fragment that establishes a new formatting context.
   //
@@ -94,6 +96,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //   <div style="padding: 1px">
   //     <div id="empty-div" style="margins: 1px"></div>
   NGLogicalOffset PositionWithParentBfc();
+
+  NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space);
 
   void FinishFloatChildLayout(const ComputedStyle&,
                               const NGConstraintSpace&,
