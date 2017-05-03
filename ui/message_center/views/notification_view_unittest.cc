@@ -16,6 +16,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,25 +35,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget_delegate.h"
-
-namespace {
-
-std::unique_ptr<ui::GestureEvent> GenerateGestureEvent(ui::EventType type) {
-  ui::GestureEventDetails detail(type);
-  std::unique_ptr<ui::GestureEvent> event(
-      new ui::GestureEvent(0, 0, 0, base::TimeTicks(), detail));
-  return event;
-}
-
-std::unique_ptr<ui::GestureEvent> GenerateGestureVerticalScrollUpdateEvent(
-    int dx) {
-  ui::GestureEventDetails detail(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0);
-  std::unique_ptr<ui::GestureEvent> event(
-      new ui::GestureEvent(0, 0, 0, base::TimeTicks(), detail));
-  return event;
-}
-
-}  // anonymouse namespace
 
 namespace message_center {
 
@@ -186,8 +168,11 @@ class NotificationViewTest : public views::ViewsTestBase,
     notification_view()->UpdateWithNotification(*notification());
   }
 
-  float GetNotificationScrollAmount() const {
-    return notification_view()->GetTransform().To2dTranslation().x();
+  float GetNotificationSlideAmount() const {
+    return notification_view_->GetSlideOutLayer()
+        ->transform()
+        .To2dTranslation()
+        .x();
   }
 
   bool IsRemoved(const std::string& notification_id) const {
@@ -195,6 +180,26 @@ class NotificationViewTest : public views::ViewsTestBase,
   }
 
   void RemoveNotificationView() { notification_view_.reset(); }
+
+  void DispatchGesture(const ui::GestureEventDetails& details) {
+    ui::test::EventGenerator generator(
+        notification_view()->GetWidget()->GetNativeWindow());
+    ui::GestureEvent event(0, 0, 0, ui::EventTimeForNow(), details);
+    generator.Dispatch(&event);
+  }
+
+  void BeginScroll() {
+    DispatchGesture(ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+  }
+
+  void EndScroll() {
+    DispatchGesture(ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+  }
+
+  void ScrollBy(int dx) {
+    DispatchGesture(
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0));
+  }
 
  private:
   std::set<std::string> removed_ids_;
@@ -237,6 +242,7 @@ void NotificationViewTest::SetUp() {
   widget->Init(init_params);
   widget->SetContentsView(notification_view_.get());
   widget->SetSize(notification_view_->GetPreferredSize());
+  widget->Show();
 }
 
 void NotificationViewTest::TearDown() {
@@ -659,24 +665,43 @@ TEST_F(NotificationViewTest, SlideOut) {
   UpdateNotificationViews();
   std::string notification_id = notification()->id();
 
-  auto event_begin = GenerateGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN);
-  auto event_scroll10 = GenerateGestureVerticalScrollUpdateEvent(-10);
-  auto event_scroll500 = GenerateGestureVerticalScrollUpdateEvent(-500);
-  auto event_end = GenerateGestureEvent(ui::ET_GESTURE_SCROLL_END);
+  BeginScroll();
+  ScrollBy(-10);
+  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_EQ(-10.f, GetNotificationSlideAmount());
+  EndScroll();
+  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
-  notification_view()->OnGestureEvent(event_begin.get());
-  notification_view()->OnGestureEvent(event_scroll10.get());
+  BeginScroll();
+  ScrollBy(-200);
   EXPECT_FALSE(IsRemoved(notification_id));
-  EXPECT_EQ(-10.f, GetNotificationScrollAmount());
-  notification_view()->OnGestureEvent(event_end.get());
-  EXPECT_FALSE(IsRemoved(notification_id));
-  EXPECT_EQ(0.f, GetNotificationScrollAmount());
+  EXPECT_EQ(-200.f, GetNotificationSlideAmount());
+  EndScroll();
+  EXPECT_TRUE(IsRemoved(notification_id));
+}
 
-  notification_view()->OnGestureEvent(event_begin.get());
-  notification_view()->OnGestureEvent(event_scroll500.get());
+TEST_F(NotificationViewTest, SlideOutNested) {
+  ui::ScopedAnimationDurationScaleMode zero_duration_scope(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  UpdateNotificationViews();
+  notification_view()->SetIsNested();
+  std::string notification_id = notification()->id();
+
+  BeginScroll();
+  ScrollBy(-10);
   EXPECT_FALSE(IsRemoved(notification_id));
-  EXPECT_EQ(-500.f, GetNotificationScrollAmount());
-  notification_view()->OnGestureEvent(event_end.get());
+  EXPECT_EQ(-10.f, GetNotificationSlideAmount());
+  EndScroll();
+  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
+
+  BeginScroll();
+  ScrollBy(-200);
+  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_EQ(-200.f, GetNotificationSlideAmount());
+  EndScroll();
   EXPECT_TRUE(IsRemoved(notification_id));
 }
 
@@ -691,15 +716,11 @@ TEST_F(NotificationViewTest, SlideOutPinned) {
   UpdateNotificationViews();
   std::string notification_id = notification()->id();
 
-  auto event_begin = GenerateGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN);
-  auto event_scroll500 = GenerateGestureVerticalScrollUpdateEvent(-500);
-  auto event_end = GenerateGestureEvent(ui::ET_GESTURE_SCROLL_END);
-
-  notification_view()->OnGestureEvent(event_begin.get());
-  notification_view()->OnGestureEvent(event_scroll500.get());
+  BeginScroll();
+  ScrollBy(-200);
   EXPECT_FALSE(IsRemoved(notification_id));
-  EXPECT_LT(-500.f, GetNotificationScrollAmount());
-  notification_view()->OnGestureEvent(event_end.get());
+  EXPECT_LT(-200.f, GetNotificationSlideAmount());
+  EndScroll();
   EXPECT_FALSE(IsRemoved(notification_id));
 }
 
