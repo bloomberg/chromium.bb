@@ -132,12 +132,12 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   void ReadDataOnNetworkThread(
       scoped_refptr<IOBufferWithByteBuffer> read_buffer,
       int buffer_size);
-  void DestroyOnNetworkThread(bool send_on_canceled);
+  void DestroyOnNetworkThread(bool jsend_on_canceled);
 
   // Report error and cancel request_adapter.
   void ReportError(net::URLRequest* request, int net_error);
   // Reports metrics collected to the Java layer
-  void MaybeReportMetrics(JNIEnv* env) const;
+  void MaybeReportMetrics(JNIEnv* env);
 
   CronetURLRequestContextAdapter* context_;
 
@@ -154,9 +154,10 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
   std::unique_ptr<net::URLRequest> url_request_;
 
-  // Whether detailed metrics should be collected and reported to Java for this
-  // request.
+  // Whether detailed metrics should be collected and reported to Java.
   const bool enable_metrics_;
+  // Whether metrics have been reported to Java.
+  bool metrics_reported_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestAdapter);
 };

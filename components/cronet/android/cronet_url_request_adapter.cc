@@ -92,7 +92,8 @@ CronetURLRequestAdapter::CronetURLRequestAdapter(
       initial_priority_(priority),
       initial_method_("GET"),
       load_flags_(context->default_load_flags()),
-      enable_metrics_(jenable_metrics == JNI_TRUE) {
+      enable_metrics_(jenable_metrics == JNI_TRUE),
+      metrics_reported_(false) {
   DCHECK(!context_->IsOnNetworkThread());
   owner_.Reset(env, jurl_request);
   if (jdisable_cache == JNI_TRUE)
@@ -245,12 +246,7 @@ void CronetURLRequestAdapter::OnSSLCertificateError(
   DCHECK(context_->IsOnNetworkThread());
   request->Cancel();
   int net_error = net::MapCertStatusToNetError(ssl_info.cert_status);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  cronet::Java_CronetUrlRequest_onError(
-      env, owner_.obj(), NetErrorToUrlRequestError(net_error), net_error,
-      net::QUIC_NO_ERROR,
-      ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
-      request->GetTotalReceivedBytes());
+  ReportError(request, net_error);
 }
 
 void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request,
@@ -286,6 +282,7 @@ void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
 
   if (bytes_read == 0) {
     JNIEnv* env = base::android::AttachCurrentThread();
+    MaybeReportMetrics(env);
     cronet::Java_CronetUrlRequest_onSucceeded(
         env, owner_.obj(), url_request_->GetTotalReceivedBytes());
   } else {
@@ -376,10 +373,10 @@ void CronetURLRequestAdapter::ReadDataOnNetworkThread(
 void CronetURLRequestAdapter::DestroyOnNetworkThread(bool send_on_canceled) {
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (send_on_canceled) {
-    cronet::Java_CronetUrlRequest_onCanceled(env, owner_.obj());
-  }
   MaybeReportMetrics(env);
+  if (send_on_canceled)
+    cronet::Java_CronetUrlRequest_onCanceled(env, owner_.obj());
+  cronet::Java_CronetUrlRequest_onNativeAdapterDestroyed(env, owner_.obj());
   delete this;
 }
 
@@ -401,14 +398,15 @@ void CronetURLRequestAdapter::ReportError(net::URLRequest* request,
       request->GetTotalReceivedBytes());
 }
 
-void CronetURLRequestAdapter::MaybeReportMetrics(JNIEnv* env) const {
+void CronetURLRequestAdapter::MaybeReportMetrics(JNIEnv* env) {
   // If there was an exception while starting the CronetUrlRequest, there won't
   // be a native URLRequest. In this case, the caller gets the exception
   // immediately, and the onFailed callback isn't called, so don't report
   // metrics either.
-  if (!enable_metrics_ || !url_request_) {
+  if (!enable_metrics_ || metrics_reported_ || !url_request_) {
     return;
   }
+  metrics_reported_ = true;
   net::LoadTimingInfo metrics;
   url_request_->GetLoadTimingInfo(&metrics);
   base::Time start_time = metrics.request_start_time;
