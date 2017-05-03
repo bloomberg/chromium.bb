@@ -3691,7 +3691,7 @@ void WebViewImpl::ResizeAfterLayout(WebLocalFrameImpl* webframe) {
   if (GetPageScaleConstraintsSet().ConstraintsDirty())
     RefreshPageScaleFactorAfterLayout();
 
-  UpdateICBAndResizeViewport();
+  ResizeFrameView(webframe);
 }
 
 void WebViewImpl::LayoutUpdated(WebLocalFrameImpl* webframe) {
