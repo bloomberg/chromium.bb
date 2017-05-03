@@ -115,8 +115,8 @@ void QuicChromiumClientStream::OnClose() {
 void QuicChromiumClientStream::OnCanWrite() {
   QuicStream::OnCanWrite();
 
-  if (!HasBufferedData() && !callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(OK);
+  if (!HasBufferedData() && !write_callback_.is_null()) {
+    base::ResetAndReturn(&write_callback_).Run(OK);
   }
 }
 
@@ -156,7 +156,7 @@ int QuicChromiumClientStream::WriteStreamData(
     return OK;
   }
 
-  callback_ = callback;
+  write_callback_ = callback;
   return ERR_IO_PENDING;
 }
 
@@ -177,7 +177,7 @@ int QuicChromiumClientStream::WritevStreamData(
     return OK;
   }
 
-  callback_ = callback;
+  write_callback_ = callback;
   return ERR_IO_PENDING;
 }
 
@@ -219,16 +219,6 @@ int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
   // Since HasBytesToRead is true, Readv() must of read some data.
   DCHECK_NE(0u, bytes_read);
   return bytes_read;
-}
-
-bool QuicChromiumClientStream::CanWrite(const CompletionCallback& callback) {
-  bool can_write = session()->connection()->CanWrite(HAS_RETRANSMITTABLE_DATA);
-  if (!can_write) {
-    session()->MarkConnectionLevelWriteBlocked(id());
-    DCHECK(callback_.is_null());
-    callback_ = callback;
-  }
-  return can_write;
 }
 
 void QuicChromiumClientStream::NotifyDelegateOfHeadersCompleteLater(
