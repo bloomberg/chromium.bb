@@ -11,7 +11,7 @@ FAIL HTMLMediaElement interface: [object HTMLUnknownElement] must inherit proper
 PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface object 
 PASS CanvasCaptureMediaStreamTrack interface object length 
 PASS CanvasCaptureMediaStreamTrack interface object name 
-FAIL CanvasCaptureMediaStreamTrack interface: existence and properties of interface prototype object assert_equals: class string of CanvasCaptureMediaStreamTrack.prototype expected "[object CanvasCaptureMediaStreamTrackPrototype]" but got "[object CanvasCaptureMediaStreamTrack]"
+PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface prototype object 
 PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property 
 PASS CanvasCaptureMediaStreamTrack interface: attribute canvas 
 PASS CanvasCaptureMediaStreamTrack interface: operation requestFrame() 

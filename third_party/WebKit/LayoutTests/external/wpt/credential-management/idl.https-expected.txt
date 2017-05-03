@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 PASS CredentialsContainer interface: existence and properties of interface object 
 PASS CredentialsContainer interface object length 
 PASS CredentialsContainer interface object name 
-FAIL CredentialsContainer interface: existence and properties of interface prototype object assert_equals: class string of CredentialsContainer.prototype expected "[object CredentialsContainerPrototype]" but got "[object CredentialsContainer]"
+PASS CredentialsContainer interface: existence and properties of interface prototype object 
 PASS CredentialsContainer interface: existence and properties of interface prototype object's "constructor" property 
 PASS CredentialsContainer interface: operation get(CredentialRequestOptions) 
 PASS CredentialsContainer interface: operation store(Credential) 
@@ -17,7 +17,7 @@ PASS CredentialsContainer interface: navigator.credentials must inherit property
 PASS PasswordCredential interface: existence and properties of interface object 
 PASS PasswordCredential interface object length 
 PASS PasswordCredential interface object name 
-FAIL PasswordCredential interface: existence and properties of interface prototype object assert_equals: class string of PasswordCredential.prototype expected "[object PasswordCredentialPrototype]" but got "[object PasswordCredential]"
+PASS PasswordCredential interface: existence and properties of interface prototype object 
 PASS PasswordCredential interface: existence and properties of interface prototype object's "constructor" property 
 PASS PasswordCredential interface: attribute idName 
 PASS PasswordCredential interface: attribute passwordName 
@@ -34,7 +34,7 @@ PASS Credential interface: new PasswordCredential({ id: "id", password: "pencil"
 PASS FederatedCredential interface: existence and properties of interface object 
 PASS FederatedCredential interface object length 
 PASS FederatedCredential interface object name 
-FAIL FederatedCredential interface: existence and properties of interface prototype object assert_equals: class string of FederatedCredential.prototype expected "[object FederatedCredentialPrototype]" but got "[object FederatedCredential]"
+PASS FederatedCredential interface: existence and properties of interface prototype object 
 PASS FederatedCredential interface: existence and properties of interface prototype object's "constructor" property 
 PASS FederatedCredential interface: attribute provider 
 PASS FederatedCredential interface: attribute protocol 

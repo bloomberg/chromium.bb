@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
-Found 89 tests; 84 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 89 tests; 87 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS XPathEvaluator interface: existence and properties of interface object 
 PASS XPathEvaluator interface object length 
 PASS XPathEvaluator interface object name 
-FAIL XPathEvaluator interface: existence and properties of interface prototype object assert_equals: class string of XPathEvaluator.prototype expected "[object XPathEvaluatorPrototype]" but got "[object XPathEvaluator]"
+PASS XPathEvaluator interface: existence and properties of interface prototype object 
 PASS XPathEvaluator interface: existence and properties of interface prototype object's "constructor" property 
 PASS XPathEvaluator interface: operation createExpression(DOMString,XPathNSResolver) 
 PASS XPathEvaluator interface: operation createNSResolver(Node) 
@@ -11,7 +11,7 @@ PASS XPathEvaluator interface: operation evaluate(DOMString,Node,XPathNSResolver
 PASS XPathExpression interface: existence and properties of interface object 
 PASS XPathExpression interface object length 
 PASS XPathExpression interface object name 
-FAIL XPathExpression interface: existence and properties of interface prototype object assert_equals: class string of XPathExpression.prototype expected "[object XPathExpressionPrototype]" but got "[object XPathExpression]"
+PASS XPathExpression interface: existence and properties of interface prototype object 
 PASS XPathExpression interface: existence and properties of interface prototype object's "constructor" property 
 PASS XPathExpression interface: operation evaluate(Node,unsigned short,object) 
 PASS XPathExpression must be primary interface of expression 
@@ -25,7 +25,7 @@ PASS XPathNSResolver interface: operation lookupNamespaceURI(DOMString)
 PASS XPathResult interface: existence and properties of interface object 
 PASS XPathResult interface object length 
 PASS XPathResult interface object name 
-FAIL XPathResult interface: existence and properties of interface prototype object assert_equals: class string of XPathResult.prototype expected "[object XPathResultPrototype]" but got "[object XPathResult]"
+PASS XPathResult interface: existence and properties of interface prototype object 
 PASS XPathResult interface: existence and properties of interface prototype object's "constructor" property 
 PASS XPathResult interface: constant ANY_TYPE on interface object 
 PASS XPathResult interface: constant ANY_TYPE on interface prototype object 

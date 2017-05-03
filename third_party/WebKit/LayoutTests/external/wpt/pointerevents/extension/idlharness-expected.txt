@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS PointerEvent interface: existence and properties of interface object 
-PASS PointerEvent interface object length 
-PASS PointerEvent interface object name 
-FAIL PointerEvent interface: existence and properties of interface prototype object assert_equals: class string of PointerEvent.prototype expected "[object PointerEventPrototype]" but got "[object PointerEvent]"
-PASS PointerEvent interface: existence and properties of interface prototype object's "constructor" property 
-PASS PointerEvent interface: operation getCoalescedEvents() 
-Harness: the test ran to completion.
-

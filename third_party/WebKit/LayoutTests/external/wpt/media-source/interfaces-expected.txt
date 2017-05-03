@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 116 tests; 110 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 116 tests; 113 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL interface: operation createObjectURL(MediaSource) 
 PASS AudioTrack interface: attribute sourceBuffer 
 PASS VideoTrack interface: attribute sourceBuffer 
@@ -7,7 +7,7 @@ FAIL TextTrack interface: attribute sourceBuffer assert_true: The prototype obje
 PASS MediaSource interface: existence and properties of interface object 
 PASS MediaSource interface object length 
 PASS MediaSource interface object name 
-FAIL MediaSource interface: existence and properties of interface prototype object assert_equals: class string of MediaSource.prototype expected "[object MediaSourcePrototype]" but got "[object MediaSource]"
+PASS MediaSource interface: existence and properties of interface prototype object 
 PASS MediaSource interface: existence and properties of interface prototype object's "constructor" property 
 PASS MediaSource interface: attribute sourceBuffers 
 PASS MediaSource interface: attribute activeSourceBuffers 
@@ -51,7 +51,7 @@ PASS EventTarget interface: calling dispatchEvent(Event) on mediaSource with too
 PASS SourceBuffer interface: existence and properties of interface object 
 PASS SourceBuffer interface object length 
 PASS SourceBuffer interface object name 
-FAIL SourceBuffer interface: existence and properties of interface prototype object assert_equals: class string of SourceBuffer.prototype expected "[object SourceBufferPrototype]" but got "[object SourceBuffer]"
+PASS SourceBuffer interface: existence and properties of interface prototype object 
 PASS SourceBuffer interface: existence and properties of interface prototype object's "constructor" property 
 PASS SourceBuffer interface: attribute mode 
 PASS SourceBuffer interface: attribute updating 
@@ -100,7 +100,7 @@ PASS EventTarget interface: calling dispatchEvent(Event) on sourceBuffer with to
 PASS SourceBufferList interface: existence and properties of interface object 
 PASS SourceBufferList interface object length 
 PASS SourceBufferList interface object name 
-FAIL SourceBufferList interface: existence and properties of interface prototype object assert_equals: class string of SourceBufferList.prototype expected "[object SourceBufferListPrototype]" but got "[object SourceBufferList]"
+PASS SourceBufferList interface: existence and properties of interface prototype object 
 PASS SourceBufferList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SourceBufferList interface: attribute length 
 PASS SourceBufferList interface: attribute onaddsourcebuffer 
