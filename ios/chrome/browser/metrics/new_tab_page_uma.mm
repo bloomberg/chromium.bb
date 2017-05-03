@@ -13,6 +13,10 @@
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace new_tab_page_uma {
 
 bool IsCurrentlyOnNTP(ios::ChromeBrowserState* browserState) {

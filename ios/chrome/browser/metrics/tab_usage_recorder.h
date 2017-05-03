@@ -191,7 +191,7 @@ class TabUsageRecorder {
 
   // Keep track of the current tab, but only if it has been evicted.
   // This is kept as a pointer value only - it should never be dereferenced.
-  void* evicted_tab_;
+  __unsafe_unretained Tab* evicted_tab_;
 
   // State of |evicted_tab_| at the time it became the current tab.
   TabStateWhenSelected evicted_tab_state_;
@@ -199,11 +199,11 @@ class TabUsageRecorder {
   // Keep track of the tab last selected when this tab model was switched
   // away from to another mode (e.g. to incognito).
   // Kept as a pointer value only - it should never be dereferenced.
-  void* mode_switch_tab_;
+  __unsafe_unretained Tab* mode_switch_tab_;
 
   // Keep track of a tab that was created to be immediately selected.  It should
   // not contribute to the "StatusWhenSwitchedBackToForeground" metric.
-  void* tab_created_selected_;
+  __unsafe_unretained Tab* tab_created_selected_;
 
   // Keep track of when the evicted tab starts to reload, so that the total
   // time it takes to reload can be recorded.
