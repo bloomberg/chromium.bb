@@ -789,13 +789,10 @@ void WallpaperManagerBase::DeleteUserWallpapers(
   wallpaper_path = wallpaper_path.Append(path_to_file);
   file_to_remove.push_back(wallpaper_path);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .MayBlock(),
-      base::Bind(&DeleteWallpaperInList, file_to_remove));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                           base::Bind(&DeleteWallpaperInList, file_to_remove));
 }
 
 void WallpaperManagerBase::SetCommandLineForTesting(

@@ -196,10 +196,8 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
   // |launch_params.resource_files_to_prefetch|.
   base::PostTaskWithTraits(
       FROM_HERE,
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::USER_BLOCKING)
-          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN),
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::Bind(&NaClHostMessageFilter::BatchOpenResourceFiles, this,
                  safe_launch_params, reply_msg, permissions));
 }

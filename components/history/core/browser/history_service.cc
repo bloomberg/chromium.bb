@@ -901,11 +901,9 @@ bool HistoryService::Init(
     backend_task_runner_ = thread_->task_runner();
   } else {
     backend_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        base::TaskTraits()
-            .WithPriority(base::TaskPriority::USER_BLOCKING)
-            .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN)
-            .MayBlock()
-            .WithBaseSyncPrimitives());
+        {base::MayBlock(), base::WithBaseSyncPrimitives(),
+         base::TaskPriority::USER_BLOCKING,
+         base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   }
 
   // Create the history backend.

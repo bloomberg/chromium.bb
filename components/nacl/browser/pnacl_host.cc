@@ -33,11 +33,8 @@ static const int kTranslationCacheInitializationDelayMs = 20;
 void CloseBaseFile(base::File file) {
   base::PostTaskWithTraits(
       FROM_HERE,
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind([](base::File file) {}, Passed(std::move(file))));
 }
 
@@ -382,9 +379,7 @@ void PnaclHost::CheckCacheQueryReady(
   FileProxy* proxy(new FileProxy(std::move(file), this));
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&FileProxy::Write, base::Unretained(proxy),
                  pt->nexe_read_buffer),
       base::Bind(&FileProxy::WriteDone, base::Owned(proxy), entry->first));
@@ -457,9 +452,7 @@ void PnaclHost::TranslationFinished(int render_process_id,
     entry->second.got_nexe_fd = false;
 
     base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE,
-        base::TaskTraits().MayBlock().WithPriority(
-            base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&PnaclHost::CopyFileToBuffer, Passed(&file)),
         base::Bind(&PnaclHost::StoreTranslatedNexe, base::Unretained(this),
                    id));
