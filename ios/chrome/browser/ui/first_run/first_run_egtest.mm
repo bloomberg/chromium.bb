@@ -217,7 +217,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
 // Signs in to an account and then taps the Advanced link to go to settings.
 // TODO(crbug.com/718023): Re-enable test.
-- (void)testSignInAndTapSettingsLink_DISABLED {
+- (void)DISABLED_testSignInAndTapSettingsLink {
   ChromeIdentity* identity = GetFakeIdentity();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
