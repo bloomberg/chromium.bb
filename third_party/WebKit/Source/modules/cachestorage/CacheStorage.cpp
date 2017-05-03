@@ -226,8 +226,8 @@ class CacheStorage::KeysCallbacks final
 
 CacheStorage* CacheStorage::Create(
     GlobalFetch::ScopedFetcher* fetcher,
-    WebServiceWorkerCacheStorage* web_cache_storage) {
-  return new CacheStorage(fetcher, WTF::WrapUnique(web_cache_storage));
+    std::unique_ptr<WebServiceWorkerCacheStorage> web_cache_storage) {
+  return new CacheStorage(fetcher, std::move(web_cache_storage));
 }
 
 ScriptPromise CacheStorage::open(ScriptState* script_state,

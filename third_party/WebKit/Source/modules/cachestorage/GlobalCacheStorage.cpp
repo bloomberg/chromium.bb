@@ -60,7 +60,7 @@ class GlobalCacheStorageImpl final
     if (!caches_) {
       caches_ = CacheStorage::Create(
           GlobalFetch::ScopedFetcher::From(fetching_scope),
-          Platform::Current()->CacheStorage(
+          Platform::Current()->CreateCacheStorage(
               WebSecurityOrigin(context->GetSecurityOrigin())));
     }
     return caches_;

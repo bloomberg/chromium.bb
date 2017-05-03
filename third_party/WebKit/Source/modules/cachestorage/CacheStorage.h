@@ -29,7 +29,7 @@ class CacheStorage final : public GarbageCollectedFinalized<CacheStorage>,
 
  public:
   static CacheStorage* Create(GlobalFetch::ScopedFetcher*,
-                              WebServiceWorkerCacheStorage*);
+                              std::unique_ptr<WebServiceWorkerCacheStorage>);
   ~CacheStorage();
   void Dispose();
 

@@ -80,9 +80,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   // local input (e.g. loopback from OS audio system), but Chromium's media
   // renderer does not support it currently. Thus, we use zero for the number
   // of input channels.
-  web_audio_device_ = WTF::WrapUnique(Platform::Current()->CreateAudioDevice(
+  web_audio_device_ = Platform::Current()->CreateAudioDevice(
       0, number_of_output_channels, latency_hint, this, String(),
-      std::move(security_origin)));
+      std::move(security_origin));
   DCHECK(web_audio_device_);
 
   callback_buffer_size_ = web_audio_device_->FramesPerBuffer();
@@ -176,8 +176,8 @@ void AudioDestination::Start() {
 
   // Start the "audio device" after the rendering thread is ready.
   if (web_audio_device_ && !is_playing_) {
-    rendering_thread_ = WTF::WrapUnique(
-        Platform::Current()->CreateThread("WebAudio Rendering Thread"));
+    rendering_thread_ =
+        Platform::Current()->CreateThread("WebAudio Rendering Thread");
     web_audio_device_->Start();
     is_playing_ = true;
   }

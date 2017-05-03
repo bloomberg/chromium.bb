@@ -6,6 +6,11 @@
 
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "media/base/renderer_factory.h"
+#include "third_party/WebKit/public/platform/WebAudioDevice.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
+#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
+#include "third_party/WebKit/public/platform/WebSpeechSynthesizer.h"
+#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
 
@@ -50,25 +55,26 @@ void ContentRendererClient::DeferMediaLoad(
   closure.Run();
 }
 
-blink::WebMediaStreamCenter*
+std::unique_ptr<blink::WebMediaStreamCenter>
 ContentRendererClient::OverrideCreateWebMediaStreamCenter(
     blink::WebMediaStreamCenterClient* client) {
   return nullptr;
 }
 
-blink::WebRTCPeerConnectionHandler*
+std::unique_ptr<blink::WebRTCPeerConnectionHandler>
 ContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client) {
   return nullptr;
 }
 
-blink::WebMIDIAccessor*
+std::unique_ptr<blink::WebMIDIAccessor>
 ContentRendererClient::OverrideCreateMIDIAccessor(
     blink::WebMIDIAccessorClient* client) {
   return nullptr;
 }
 
-blink::WebAudioDevice* ContentRendererClient::OverrideCreateAudioDevice(
+std::unique_ptr<blink::WebAudioDevice>
+ContentRendererClient::OverrideCreateAudioDevice(
     const blink::WebAudioLatencyHint& latency_hint) {
   return nullptr;
 }
@@ -81,7 +87,8 @@ blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
   return nullptr;
 }
 
-blink::WebSpeechSynthesizer* ContentRendererClient::OverrideSpeechSynthesizer(
+std::unique_ptr<blink::WebSpeechSynthesizer>
+ContentRendererClient::OverrideSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {
   return nullptr;
 }

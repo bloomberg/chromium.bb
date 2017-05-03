@@ -31,9 +31,9 @@ void SharedGpuContext::CreateContextProviderOnMainThread(
   Platform::ContextAttributes context_attributes;
   context_attributes.web_gl_version = 1;  // GLES2
   Platform::GraphicsInfo graphics_info;
-  context_provider_ = WTF::WrapUnique(
+  context_provider_ =
       Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-          context_attributes, WebURL(), nullptr, &graphics_info));
+          context_attributes, WebURL(), nullptr, &graphics_info);
   if (waitable_event)
     waitable_event->Signal();
 }
@@ -50,9 +50,8 @@ void SharedGpuContext::CreateContextProviderIfNeeded() {
     // This path should only be used in unit tests
     context_provider_ = context_provider_factory_();
   } else if (IsMainThread()) {
-    context_provider_ =
-        WTF::WrapUnique(blink::Platform::Current()
-                            ->CreateSharedOffscreenGraphicsContext3DProvider());
+    context_provider_ = blink::Platform::Current()
+                            ->CreateSharedOffscreenGraphicsContext3DProvider();
   } else {
     // This synchronous round-trip to the main thread is the reason why
     // SharedGpuContext encasulates the context provider: so we only have to do

@@ -5,6 +5,7 @@
 #include "core/exported/WebViewBase.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/TestingPlatformSupport.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebRTCError.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCRtpReceiver.h"
@@ -97,9 +98,10 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
 
 class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {
  public:
-  blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
+  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
+  CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient*) override {
-    return new MockWebRTCPeerConnectionHandler();
+    return WTF::MakeUnique<MockWebRTCPeerConnectionHandler>();
   }
 };
 

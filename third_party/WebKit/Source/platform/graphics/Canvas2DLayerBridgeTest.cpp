@@ -507,7 +507,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -560,7 +560,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -620,7 +620,7 @@ TEST_F(Canvas2DLayerBridgeTest,
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -699,7 +699,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -764,7 +764,7 @@ TEST_F(
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -837,7 +837,7 @@ TEST_F(Canvas2DLayerBridgeTest,
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -908,7 +908,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -952,7 +952,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -1015,7 +1015,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -1063,7 +1063,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -1109,7 +1109,7 @@ TEST_F(Canvas2DLayerBridgeTest,
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -1155,7 +1155,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -1198,7 +1198,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
@@ -1247,7 +1247,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 {
   FakeGLES2Interface gl;
   std::unique_ptr<WebThread> test_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("TestThread"));
+      Platform::Current()->CreateThread("TestThread");
 
   // The Canvas2DLayerBridge has to be created on the thread that will use it
   // to avoid WeakPtr thread check issues.
