@@ -697,7 +697,7 @@ SSLServerContextImpl::SSLServerContextImpl(
   std::string command("DEFAULT:!SHA256:!SHA384:!AESGCM+AES256:!aPSK");
 
   if (ssl_server_config_.require_ecdhe)
-    command.append(":!kRSA:!kDHE");
+    command.append(":!kRSA");
 
   // Remove any disabled ciphers.
   for (uint16_t id : ssl_server_config_.disabled_cipher_suites) {
@@ -708,12 +708,7 @@ SSLServerContextImpl::SSLServerContextImpl(
     }
   }
 
-  int rv = SSL_CTX_set_cipher_list(ssl_ctx_.get(), command.c_str());
-  // If this fails (rv = 0) it means there are no ciphers enabled on this SSL.
-  // This will almost certainly result in the socket failing to complete the
-  // handshake at which point the appropriate error is bubbled up to the client.
-  LOG_IF(WARNING, rv != 1) << "SSL_set_cipher_list('" << command
-                           << "') returned " << rv;
+  CHECK(SSL_CTX_set_strict_cipher_list(ssl_ctx_.get(), command.c_str()));
 
   if (ssl_server_config_.client_cert_type !=
           SSLServerConfig::ClientCertType::NO_CLIENT_CERT &&
