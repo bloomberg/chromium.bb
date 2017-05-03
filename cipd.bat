@@ -9,4 +9,4 @@
 :: in the file's properties dialog.
 echo.>"%~dp0\cipd.ps1:Zone.Identifier"
 
-powershell -NoProfile -ExecutionPolicy RemoteSigned -File "%~dp0\cipd.ps1" %*
+powershell -NoProfile -ExecutionPolicy RemoteSigned -Command "%~dp0\cipd.ps1" %*
