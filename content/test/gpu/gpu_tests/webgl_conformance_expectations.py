@@ -131,6 +131,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1635) # angle bug ID
     self.Fail('conformance/reading/read-pixels-test.html',
         ['passthrough'], bug=1639) # angle bug ID
+    self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
+        ['passthrough'], bug=1635) # angle bug ID
     self.Fail('conformance/textures/misc/texture-mips.html',
         ['passthrough'], bug=665518)
     self.Fail('WebglExtension_OES_texture_float_linear',
