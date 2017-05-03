@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/media/router/offscreen_presentation_manager.h"
 #include "chrome/browser/media/router/offscreen_presentation_manager_factory.h"
 
@@ -23,9 +24,10 @@ void ReceiverPresentationServiceDelegateImpl::CreateForWebContents(
   if (FromWebContents(web_contents))
     return;
 
-  web_contents->SetUserData(UserDataKey(),
-                            new ReceiverPresentationServiceDelegateImpl(
-                                web_contents, presentation_id));
+  web_contents->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new ReceiverPresentationServiceDelegateImpl(
+          web_contents, presentation_id)));
 }
 
 void ReceiverPresentationServiceDelegateImpl::AddObserver(

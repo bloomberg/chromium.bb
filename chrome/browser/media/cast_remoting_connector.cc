@@ -146,7 +146,7 @@ CastRemotingConnector* CastRemotingConnector::Get(
         media_router::MediaSourceForTabContentRemoting(
             SessionTabHelper::IdForTab(contents))
             .id());
-    contents->SetUserData(kUserDataKey, connector);
+    contents->SetUserData(kUserDataKey, base::WrapUnique(connector));
   }
   return connector;
 }
