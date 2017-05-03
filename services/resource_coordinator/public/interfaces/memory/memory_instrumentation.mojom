@@ -25,8 +25,17 @@ struct RequestArgs {
   LevelOfDetail level_of_detail;
 };
 
+struct PlatformPrivateFootprint {
+  uint64 phys_footprint_bytes = 0;
+  uint64 internal_bytes = 0;
+  uint64 compressed_bytes = 0;
+  uint64 rss_anon_bytes = 0;
+  uint64 vm_swap_bytes = 0;
+};
+
 struct OSMemDump {
   uint32 resident_set_kb = 0;
+  PlatformPrivateFootprint platform_private_footprint;
 };
 
 struct ChromeMemDump {

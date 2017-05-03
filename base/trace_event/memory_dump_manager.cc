@@ -78,6 +78,7 @@ void FillOsDumpFromProcessMemoryDump(
   if (pmd->has_process_totals()) {
     const ProcessMemoryTotals* totals = pmd->process_totals();
     osDump->resident_set_kb = totals->resident_set_bytes() / 1024;
+    osDump->platform_private_footprint = totals->GetPlatformPrivateFootprint();
   }
 }
 
