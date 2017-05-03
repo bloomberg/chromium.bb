@@ -70,6 +70,11 @@ class APIBindingHooks {
                          const std::string& event_name,
                          v8::Local<v8::Value>* event_out);
 
+  // Performs any extra initialization on the template.
+  void InitializeTemplate(v8::Isolate* isolate,
+                          v8::Local<v8::ObjectTemplate> object_template,
+                          const APITypeReferenceMap& type_refs);
+
   void SetDelegate(std::unique_ptr<APIBindingHooksDelegate> delegate);
 
  private:

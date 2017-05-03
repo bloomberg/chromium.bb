@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative_content/content_constants.h"
+#include "extensions/common/api/declarative/declarative_constants.h"
 
 namespace extensions {
 namespace declarative_content_constants {

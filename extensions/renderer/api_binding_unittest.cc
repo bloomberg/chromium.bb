@@ -1151,4 +1151,34 @@ TEST_F(APIBindingUnittest, FilteredEvents) {
   check_supports_filters("filteredTwo", true);
 }
 
+TEST_F(APIBindingUnittest, HooksTemplateInitializer) {
+  SetFunctions(kFunctions);
+
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
+  auto hook = [](v8::Isolate* isolate,
+                 v8::Local<v8::ObjectTemplate> object_template,
+                 const APITypeReferenceMap& type_refs) {
+    object_template->Set(gin::StringToSymbol(isolate, "hookedProperty"),
+                         gin::ConvertToV8(isolate, 42));
+  };
+  hooks->SetTemplateInitializer(base::Bind(hook));
+  SetHooksDelegate(std::move(hooks));
+
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, base::Bind(&AllowAllAPIs));
+
+  // The extra property should be present on the binding object.
+  EXPECT_EQ("42", GetStringPropertyFromObject(binding_object, context,
+                                              "hookedProperty"));
+  // Sanity check: other values should still be there.
+  EXPECT_EQ("function",
+            GetStringPropertyFromObject(binding_object, context, "oneString"));
+}
+
 }  // namespace extensions

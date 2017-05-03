@@ -79,10 +79,15 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleAppTest) {
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, DeclarativeEvents) {
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
   ASSERT_TRUE(StartEmbeddedTestServer());
-  // Load an extension and wait for it to be ready.
+  // Load an extension. On load, this extension will a) run a few simple tests
+  // using chrome.test.runTests() and b) set up rules for declarative events for
+  // a browser-driven test. Wait for both the tests to finish and the extension
+  // to be ready.
   ExtensionTestMessageListener listener("ready", false);
+  ResultCatcher catcher;
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("native_bindings/declarative_content"));
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
   ASSERT_TRUE(extension);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
@@ -93,6 +98,7 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, DeclarativeEvents) {
       browser()->tab_strip_model()->GetActiveWebContents();
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+  EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
 
   // Navigating to example.com should show the page action.
   ui_test_utils::NavigateToURL(
@@ -100,6 +106,7 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, DeclarativeEvents) {
                      "example.com", "/native_bindings/simple.html"));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+  EXPECT_FALSE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
 
   // And the extension should be notified of the click.
   ExtensionTestMessageListener clicked_listener("clicked and removed", false);

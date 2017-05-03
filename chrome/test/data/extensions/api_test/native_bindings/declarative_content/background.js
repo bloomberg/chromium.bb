@@ -8,12 +8,15 @@
 
 const kRuleId = 'rule1';
 
+var imageData = new ImageData(19, 19);
+
 var rule = {
   conditions: [
     new chrome.declarativeContent.PageStateMatcher(
         {pageUrl: {hostPrefix: 'example'}}),
   ], actions: [
     new chrome.declarativeContent.ShowPageAction(),
+    new chrome.declarativeContent.SetIcon({imageData: imageData}),
   ],
   id: kRuleId,
 };
@@ -34,3 +37,24 @@ chrome.declarativeContent.onPageChanged.addRules([rule], function() {
     chrome.test.sendMessage('ready');
   });
 });
+
+function didThrow(func) {
+  var caught = false;
+  try {
+    func();
+  } catch (e) {
+    caught = true;
+  }
+  return caught;
+}
+
+chrome.test.runTests([
+  function validationCheck() {
+    // Test that type constructions are properly validated.
+    chrome.test.assertTrue(didThrow(function() {
+      var matcher = new chrome.declarativeContent.PageStateMatcher(
+          {pageUrl: {fake: 'bogus'}});
+    }));
+    chrome.test.succeed();
+  },
+]);

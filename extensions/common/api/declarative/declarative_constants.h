@@ -4,8 +4,8 @@
 
 // Constants used for the declarativeContent API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_CONSTANTS_H_
+#ifndef EXTENSIONS_COMMON_API_DECLARATIVE_DECLARATIVE_CONSTANTS_H_
+#define EXTENSIONS_COMMON_API_DECLARATIVE_DECLARATIVE_CONSTANTS_H_
 
 namespace extensions {
 namespace declarative_content_constants {
@@ -31,4 +31,4 @@ extern const char kSetIcon[];
 }  // namespace declarative_content_constants
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_CONSTANTS_H_
+#endif  // EXTENSIONS_COMMON_API_DECLARATIVE_DECLARATIVE_CONSTANTS_H_

@@ -10,6 +10,7 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
+class APITypeReferenceMap;
 
 // A per-API set of custom hooks to override the default behavior.
 class APIBindingHooksDelegate {
@@ -31,6 +32,12 @@ class APIBindingHooksDelegate {
       v8::Local<v8::Context> context,
       std::vector<v8::Local<v8::Value>>* arguments,
       const APITypeReferenceMap& refs);
+
+  // Allows custom implementations to add additional properties or types to an
+  // API object.
+  virtual void InitializeTemplate(v8::Isolate* isolate,
+                                  v8::Local<v8::ObjectTemplate> object_template,
+                                  const APITypeReferenceMap& type_refs) {}
 };
 
 }  // namespace extensions

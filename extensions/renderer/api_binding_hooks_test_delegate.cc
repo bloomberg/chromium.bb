@@ -31,6 +31,11 @@ void APIBindingHooksTestDelegate::SetCustomEvent(
   custom_event_ = custom_event;
 }
 
+void APIBindingHooksTestDelegate::SetTemplateInitializer(
+    const TemplateInitializer& initializer) {
+  template_initializer_ = initializer;
+}
+
 APIBindingHooks::RequestResult APIBindingHooksTestDelegate::HandleRequest(
     const std::string& method_name,
     const APISignature* signature,
@@ -43,6 +48,14 @@ APIBindingHooks::RequestResult APIBindingHooksTestDelegate::HandleRequest(
         APIBindingHooks::RequestResult::NOT_HANDLED);
   }
   return iter->second.Run(signature, context, arguments, refs);
+}
+
+void APIBindingHooksTestDelegate::InitializeTemplate(
+    v8::Isolate* isolate,
+    v8::Local<v8::ObjectTemplate> object_template,
+    const APITypeReferenceMap& type_refs) {
+  if (template_initializer_)
+    template_initializer_.Run(isolate, object_template, type_refs);
 }
 
 }  // namespace extensions
