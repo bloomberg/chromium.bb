@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -42,8 +43,8 @@ void StateStore::Transaction::MarkAsReported(IncidentType type,
   base::DictionaryValue* type_dict = nullptr;
   if (!incidents_sent->GetDictionaryWithoutPathExpansion(type_string,
                                                          &type_dict)) {
-    type_dict = new base::DictionaryValue();
-    incidents_sent->SetWithoutPathExpansion(type_string, type_dict);
+    type_dict = incidents_sent->SetDictionaryWithoutPathExpansion(
+        type_string, base::MakeUnique<base::DictionaryValue>());
   }
   type_dict->SetStringWithoutPathExpansion(key, base::UintToString(digest));
 }

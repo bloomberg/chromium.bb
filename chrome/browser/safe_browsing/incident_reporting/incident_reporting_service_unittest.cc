@@ -22,6 +22,7 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
@@ -1313,12 +1314,13 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   // Set up a prune state dict with data to be cleared (and not).
   std::unique_ptr<base::DictionaryValue> incidents_sent(
       new base::DictionaryValue());
-  base::DictionaryValue* type_dict = new base::DictionaryValue();
+  auto type_dict = base::MakeUnique<base::DictionaryValue>();
   type_dict->SetStringWithoutPathExpansion("foo", "47");
-  incidents_sent->SetWithoutPathExpansion(omnibox_type, type_dict);
-  type_dict = new base::DictionaryValue();
+  incidents_sent->SetWithoutPathExpansion(omnibox_type, std::move(type_dict));
+  type_dict = base::MakeUnique<base::DictionaryValue>();
   type_dict->SetStringWithoutPathExpansion("bar", "43");
-  incidents_sent->SetWithoutPathExpansion(preference_type, type_dict);
+  incidents_sent->SetWithoutPathExpansion(preference_type,
+                                          std::move(type_dict));
 
   // Add a profile.
   Profile* profile =

@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -180,7 +182,7 @@ TEST_F(ProfileInfoHandlerTest, PushProfileManagesSupervisedUsers) {
       new DictionaryPrefUpdate(profile()->GetPrefs(), prefs::kSupervisedUsers));
   base::DictionaryValue* dict = update->Get();
   dict->SetWithoutPathExpansion("supervised-user-id",
-                                new base::DictionaryValue);
+                                base::MakeUnique<base::DictionaryValue>());
   update.reset();
 
   EXPECT_EQ(1U, web_ui()->call_data().size());

@@ -48,13 +48,13 @@ namespace {
 std::string BuildGetFamilyProfileResponse(
     const FamilyInfoFetcher::FamilyProfile& family) {
   base::DictionaryValue dict;
-  base::DictionaryValue* family_dict = new base::DictionaryValue;
+  auto family_dict = base::MakeUnique<base::DictionaryValue>();
   family_dict->SetStringWithoutPathExpansion("familyId", family.id);
   std::unique_ptr<base::DictionaryValue> profile_dict =
       base::MakeUnique<base::DictionaryValue>();
   profile_dict->SetStringWithoutPathExpansion("name", family.name);
   family_dict->SetWithoutPathExpansion("profile", std::move(profile_dict));
-  dict.SetWithoutPathExpansion("family", family_dict);
+  dict.SetWithoutPathExpansion("family", std::move(family_dict));
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
@@ -62,8 +62,8 @@ std::string BuildGetFamilyProfileResponse(
 
 std::string BuildEmptyGetFamilyProfileResponse() {
   base::DictionaryValue dict;
-  base::DictionaryValue* family_dict = new base::DictionaryValue;
-  dict.SetWithoutPathExpansion("family", family_dict);
+  dict.SetWithoutPathExpansion("family",
+                               base::MakeUnique<base::DictionaryValue>());
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
@@ -72,7 +72,7 @@ std::string BuildEmptyGetFamilyProfileResponse() {
 std::string BuildGetFamilyMembersResponse(
     const std::vector<FamilyInfoFetcher::FamilyMember>& members) {
   base::DictionaryValue dict;
-  base::ListValue* list = new base::ListValue;
+  auto list = base::MakeUnique<base::ListValue>();
   for (size_t i = 0; i < members.size(); i++) {
     const FamilyInfoFetcher::FamilyMember& member = members[i];
     std::unique_ptr<base::DictionaryValue> member_dict(
@@ -85,7 +85,7 @@ std::string BuildGetFamilyMembersResponse(
         !member.email.empty() ||
         !member.profile_url.empty() ||
         !member.profile_image_url.empty()) {
-      base::DictionaryValue* profile_dict = new base::DictionaryValue;
+      auto profile_dict = base::MakeUnique<base::DictionaryValue>();
       if (!member.display_name.empty())
         profile_dict->SetStringWithoutPathExpansion("displayName",
                                                     member.display_name);
@@ -99,11 +99,11 @@ std::string BuildGetFamilyMembersResponse(
         profile_dict->SetStringWithoutPathExpansion("profileImageUrl",
                                                     member.profile_image_url);
 
-      member_dict->SetWithoutPathExpansion("profile", profile_dict);
+      member_dict->SetWithoutPathExpansion("profile", std::move(profile_dict));
     }
     list->Append(std::move(member_dict));
   }
-  dict.SetWithoutPathExpansion("members", list);
+  dict.SetWithoutPathExpansion("members", std::move(list));
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;

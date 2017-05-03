@@ -10,6 +10,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -44,8 +45,8 @@ DictionaryValue* FindOrCreateDictionary(DictionaryValue* parent,
                                         const std::string& key) {
   DictionaryValue* dict = nullptr;
   if (!parent->GetDictionaryWithoutPathExpansion(key, &dict)) {
-    dict = new DictionaryValue;
-    parent->SetWithoutPathExpansion(key, dict);
+    dict = parent->SetDictionaryWithoutPathExpansion(
+        key, base::MakeUnique<base::DictionaryValue>());
   }
   return dict;
 }
@@ -110,10 +111,10 @@ void SupervisedUserSharedSettingsService::SetValueInternal(
   DictionaryValue* dict = nullptr;
   bool has_key = update_dict->GetDictionaryWithoutPathExpansion(key, &dict);
   if (!has_key) {
-    dict = new DictionaryValue;
-    update_dict->SetWithoutPathExpansion(key, dict);
+    dict = update_dict->SetDictionaryWithoutPathExpansion(
+        key, base::MakeUnique<base::DictionaryValue>());
   }
-  dict->SetWithoutPathExpansion(kValue, value.DeepCopy());
+  dict->SetWithoutPathExpansion(kValue, base::MakeUnique<base::Value>(value));
   dict->SetBooleanWithoutPathExpansion(kAcknowledged, acknowledged);
 
   if (!sync_processor_)
@@ -230,7 +231,7 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
     ScopedSupervisedUserSharedSettingsUpdate update(prefs_, su_id);
     const std::string& key = supervised_user_shared_setting.key();
     DictionaryValue* dict = FindOrCreateDictionary(update.Get(), key);
-    dict->SetWithoutPathExpansion(kValue, value.release());
+    dict->SetWithoutPathExpansion(kValue, std::move(value));
 
     // Every setting we get from the server should have the acknowledged flag
     // set.
@@ -341,12 +342,12 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
         } else {
           // Otherwise, it should be an add action.
           DCHECK_EQ(SyncChange::ACTION_ADD, sync_change.change_type());
-          dict = new DictionaryValue;
-          update_dict->SetWithoutPathExpansion(key, dict);
+          dict = update_dict->SetDictionaryWithoutPathExpansion(
+              key, base::MakeUnique<base::DictionaryValue>());
         }
         std::unique_ptr<Value> value =
             base::JSONReader::Read(supervised_user_shared_setting.value());
-        dict->SetWithoutPathExpansion(kValue, value.release());
+        dict->SetWithoutPathExpansion(kValue, std::move(value));
         dict->SetBooleanWithoutPathExpansion(
             kAcknowledged, supervised_user_shared_setting.acknowledged());
         break;

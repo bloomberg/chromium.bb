@@ -15,6 +15,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/prefs/json_pref_store.h"
@@ -173,7 +174,7 @@ void SupervisedUserSettingsService::SetLocalSetting(
     const std::string& key,
     std::unique_ptr<base::Value> value) {
   if (value)
-    local_settings_->SetWithoutPathExpansion(key, value.release());
+    local_settings_->SetWithoutPathExpansion(key, std::move(value));
   else
     local_settings_->RemoveWithoutPathExpansion(key, nullptr);
 
@@ -252,7 +253,7 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
     std::string name_suffix = supervised_user_setting.name();
     std::string name_key = name_suffix;
     base::DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
-    dict->SetWithoutPathExpansion(name_suffix, value.release());
+    dict->SetWithoutPathExpansion(name_suffix, std::move(value));
     if (seen_keys.find(name_key) == seen_keys.end()) {
       added_sync_keys.insert(name_key);
       num_added++;
@@ -282,7 +283,8 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
         dict->HasKey(key_suffix) ? SyncChange::ACTION_UPDATE
                                  : SyncChange::ACTION_ADD;
     change_list.push_back(SyncChange(FROM_HERE, change_type, data));
-    dict->SetWithoutPathExpansion(key_suffix, it.value().DeepCopy());
+    dict->SetWithoutPathExpansion(key_suffix,
+                                  base::MakeUnique<base::Value>(it.value()));
     if (added_sync_keys.find(name_key) != added_sync_keys.end()) {
       num_added--;
     }
@@ -372,7 +374,7 @@ SyncError SupervisedUserSettingsService::ProcessSyncChanges(
           DLOG_IF(WARNING, change_type == SyncChange::ACTION_UPDATE)
               << "Value for key " << key << " doesn't exist yet";
         }
-        dict->SetWithoutPathExpansion(key, value.release());
+        dict->SetWithoutPathExpansion(key, std::move(value));
         break;
       }
       case SyncChange::ACTION_DELETE: {

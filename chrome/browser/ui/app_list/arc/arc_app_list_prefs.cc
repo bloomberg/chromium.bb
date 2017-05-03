@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
@@ -71,8 +72,8 @@ class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
     base::DictionaryValue* dict = DictionaryPrefUpdate::Get();
     base::DictionaryValue* dict_item = nullptr;
     if (!dict->GetDictionaryWithoutPathExpansion(id_, &dict_item)) {
-      dict_item = new base::DictionaryValue();
-      dict->SetWithoutPathExpansion(id_, dict_item);
+      dict_item = dict->SetDictionaryWithoutPathExpansion(
+          id_, base::MakeUnique<base::DictionaryValue>());
     }
     return dict_item;
   }

@@ -281,7 +281,7 @@ void SupervisedUserSyncService::UpdateSupervisedUserImpl(
 
   DCHECK_EQ(add_user, !dict->HasKey(id));
   base::DictionaryValue* entry = value.get();
-  dict->SetWithoutPathExpansion(id, value.release());
+  dict->SetWithoutPathExpansion(id, std::move(value));
 
   if (!sync_processor_)
     return;

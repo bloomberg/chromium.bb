@@ -5,8 +5,10 @@
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -23,9 +25,9 @@ const char kAccountId[] = "account@gmail.com";
 
 std::string BuildResponse() {
   base::DictionaryValue dict;
-  base::DictionaryValue* permission_dict = new base::DictionaryValue;
+  auto permission_dict = base::MakeUnique<base::DictionaryValue>();
   permission_dict->SetStringWithoutPathExpansion("id", "requestid");
-  dict.SetWithoutPathExpansion("permissionRequest", permission_dict);
+  dict.SetWithoutPathExpansion("permissionRequest", std::move(permission_dict));
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
