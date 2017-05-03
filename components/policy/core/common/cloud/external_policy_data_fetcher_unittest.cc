@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/external_policy_data_fetcher.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -111,7 +112,7 @@ void ExternalPolicyDataFetcherTest::OnJobFinished(
   ++callback_count_;
   callback_job_index_ = job_index;
   callback_result_ = result;
-  callback_data_.reset(data.release());
+  callback_data_ = std::move(data);
   jobs_.erase(job_index);
 }
 

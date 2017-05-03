@@ -5,6 +5,7 @@
 #include "components/sync/engine_impl/cycle/data_type_tracker.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -108,7 +109,7 @@ void DataTypeTracker::RecordRemoteInvalidation(
   // The incoming invalidation may have caused us to exceed our buffer size.
   // Trim some items from our list, if necessary.
   while (pending_invalidations_.size() > payload_buffer_size_) {
-    last_dropped_invalidation_.reset(pending_invalidations_.front().release());
+    last_dropped_invalidation_ = std::move(pending_invalidations_.front());
     last_dropped_invalidation_->Drop();
     pending_invalidations_.erase(pending_invalidations_.begin());
   }
