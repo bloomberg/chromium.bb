@@ -30,6 +30,13 @@ WebContents* GetWebContentsFromFTNID(int frame_tree_node_id) {
   return WebContentsImpl::FromFrameTreeNode(frame_tree_node);
 }
 
+int FrameTreeNodeIdFromHostIds(int render_process_host_id,
+                               int render_frame_host_id) {
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_host_id, render_frame_host_id);
+  return render_frame_host ? render_frame_host->GetFrameTreeNodeId() : -1;
+}
+
 }  // namespace
 
 // ----------------------------------------------------------------------------
@@ -210,6 +217,24 @@ ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
 
   return base::Bind(&WebContentsImpl::FromRenderFrameHostID,
                     render_process_host_id, render_frame_host_id);
+}
+
+ResourceRequestInfo::FrameTreeNodeIdGetter
+ResourceRequestInfoImpl::GetFrameTreeNodeIdGetterForRequest() const {
+  if (frame_tree_node_id_ != -1) {
+    DCHECK(IsBrowserSideNavigationEnabled());
+    return base::Bind([](int id) { return id; }, frame_tree_node_id_);
+  }
+
+  int render_process_host_id = -1;
+  int render_frame_host_id = -1;
+  if (!GetAssociatedRenderFrame(&render_process_host_id,
+                                &render_frame_host_id)) {
+    NOTREACHED();
+  }
+
+  return base::Bind(&FrameTreeNodeIdFromHostIds, render_process_host_id,
+                    render_frame_host_id);
 }
 
 ResourceContext* ResourceRequestInfoImpl::GetContext() const {

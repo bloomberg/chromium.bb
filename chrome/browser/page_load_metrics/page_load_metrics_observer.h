@@ -14,6 +14,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/resource_type.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "url/gurl.h"
 
@@ -201,6 +202,8 @@ struct PageLoadExtraInfo {
 // load.
 struct ExtraRequestCompleteInfo {
   ExtraRequestCompleteInfo(
+      const GURL& url,
+      int frame_tree_node_id,
       bool was_cached,
       int64_t raw_body_bytes,
       int64_t original_network_content_length,
@@ -209,6 +212,12 @@ struct ExtraRequestCompleteInfo {
       content::ResourceType detected_resource_type);
 
   ~ExtraRequestCompleteInfo();
+
+  // The URL for the request.
+  const GURL url;
+
+  // The frame tree node id that initiated the request.
+  const int frame_tree_node_id;
 
   // True if the resource was loaded from cache.
   const bool was_cached;
@@ -286,6 +295,15 @@ class PageLoadMetricsObserver {
   // Observers that return STOP_OBSERVING will not receive any additional
   // callbacks, and will be deleted after invocation of this method returns.
   virtual ObservePolicy OnCommit(content::NavigationHandle* navigation_handle);
+
+  // OnDidFinishSubFrameNavigation is triggered when a sub-frame of the
+  // committed page has finished navigating. It has either committed, aborted,
+  // was a same document navigation, or has been replaced. It is up to the
+  // observer to query |navigation_handle| to determine which happened. Note
+  // that |navigation_handle| will be destroyed soon after this call. Don't
+  // hold a reference to it.
+  virtual ObservePolicy OnDidFinishSubFrameNavigation(
+      content::NavigationHandle* navigation_handle);
 
   // OnHidden is triggered when a page leaves the foreground. It does not fire
   // when a foreground page is permanently closed; for that, listen to
@@ -405,7 +423,9 @@ class PageLoadMetricsObserver {
   virtual void OnStartedResource(
       const ExtraRequestStartInfo& extra_request_start_info) {}
 
-  // Called whenever a request is loaded for this page load.
+  // Called whenever a request is loaded for this page load. This comes
+  // unfiltered from the ResourceDispatcherHost and may include blob requests
+  // and data uris.
   virtual void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info) {}
 };
