@@ -1032,6 +1032,14 @@ void BlinkTestRunner::OnReset() {
 
 void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {
   DCHECK(is_main_window_ && render_view()->GetMainRenderFrame());
+
+  // Avoid a situation where TestFinished is called twice, because
+  // of a racey test finish in 2 secondary renderers.
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+  if (!interfaces->TestIsRunning())
+    return;
+
   TestFinished();
 }
 
