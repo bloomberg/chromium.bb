@@ -6,9 +6,9 @@
  * @fileoverview Login UI based on a stripped down OOBE controller.
  */
 
-var isMd = false;
+var isMd = true;
 
-// <include src="login_shared.js">
+// <include src="md_login_shared.js">
 // <include src="login_non_lock_shared.js">
 // <include src="notification_card.js">
 

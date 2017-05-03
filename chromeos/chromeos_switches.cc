@@ -422,6 +422,9 @@ const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
 
+// If true, the md login and lock screens will be shown.
+const char kShowMdLogin[] = "show-md-login";
+
 // Specifies power stub behavior:
 //  'cycle=2' - Cycles power states every 2 seconds.
 // See FakeDBusThreadManager::ParsePowerCommandLineSwitch for full details.
