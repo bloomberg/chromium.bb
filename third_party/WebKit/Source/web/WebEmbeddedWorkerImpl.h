@@ -84,7 +84,7 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
   void LoadShadowPage();
 
   // WebFrameClient overrides.
-  void DidFinishDocumentLoad(WebLocalFrame*) override;
+  void DidFinishDocumentLoad() override;
 
   // WebDevToolsAgentClient overrides.
   void SendProtocolMessage(int session_id,

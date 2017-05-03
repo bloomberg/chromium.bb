@@ -10390,9 +10390,7 @@ class CallbackOrderingWebFrameClient
                                 WebHistoryCommitType) override {
     EXPECT_EQ(2, callback_count_++);
   }
-  void DidFinishDocumentLoad(WebLocalFrame*) override {
-    EXPECT_EQ(3, callback_count_++);
-  }
+  void DidFinishDocumentLoad() override { EXPECT_EQ(3, callback_count_++); }
   void DidHandleOnloadEvents() override { EXPECT_EQ(4, callback_count_++); }
   void DidFinishLoad() override { EXPECT_EQ(5, callback_count_++); }
   void DidStopLoading() override {
@@ -11750,7 +11748,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
       EXPECT_TRUE(false) << "The load should not have failed.";
     }
 
-    void DidFinishDocumentLoad(WebLocalFrame*) override {
+    void DidFinishDocumentLoad() override {
       // TODO(dcheng): Investigate not calling this as well during frame detach.
       did_call_did_finish_document_load_ = true;
     }
