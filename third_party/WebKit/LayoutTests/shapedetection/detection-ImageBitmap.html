@@ -44,7 +44,7 @@ var createTestForImageBitmap = function(createDetector, mockReady,
           });
     }
     img.src = "../media/content/greenbox.png";
-  }, "Detector detect(ImageBitmap)");
+  });
 };
 
 function FaceDetectorDetectionResultTest(detectionResult, mock) {
@@ -71,19 +71,19 @@ function TextDetectorDetectionResultTest(detectionResult, mock) {
 // Use the mock mojo server implemented in mock-{barcode,face}detection.js.
 generate_tests(createTestForImageBitmap, [
   [
-    "Face",
+    "Face - detect(ImageBitmap)",
     () => { return new FaceDetector(); },
     () => { return mockFaceDetectionProviderReady; },
     FaceDetectorDetectionResultTest
   ],
   [
-    "Barcode",
+    "Barcode - detect(ImageBitmap)",
     () => { return new BarcodeDetector(); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ],
   [
-    "Text",
+    "Text - detect(ImageBitmap)",
     () => { return new TextDetector(); },
     () => { return mockTextDetectionReady; },
     TextDetectorDetectionResultTest

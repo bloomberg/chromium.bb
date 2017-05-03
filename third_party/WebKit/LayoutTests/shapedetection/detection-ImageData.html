@@ -41,7 +41,7 @@ var createTestForImageData = function(createDetector, mockReady,
     }
 
     img.src = "../media/content/greenbox.png";
-  }, "Detector detect(ImageData)");
+  });
 };
 
 function FaceDetectorDetectionResultTest(detectionResult, mock) {
@@ -68,19 +68,19 @@ function TextDetectorDetectionResultTest(detectionResult, mock) {
 // the mock mojo server implemented in mock-{barcode,face}detection.js.
 generate_tests(createTestForImageData, [
   [
-    "Face - ImageData",
+    "Face - detect(ImageData)",
     () => { return new FaceDetector(); },
     () => { return mockFaceDetectionProviderReady; },
     FaceDetectorDetectionResultTest
   ],
   [
-    "Barcode - ImageData",
+    "Barcode - detect(ImageData)",
     () => { return new BarcodeDetector(); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ],
   [
-    "Text",
+    "Text - detect(ImageData)",
     () => { return new TextDetector(); },
     () => { return mockTextDetectionReady; },
     TextDetectorDetectionResultTest

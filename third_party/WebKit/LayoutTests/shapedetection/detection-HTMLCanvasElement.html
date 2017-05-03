@@ -42,7 +42,7 @@ var createTestForCanvasElement = function(createDetector,
     }
 
     img.src = "../media/content/greenbox.png";
-  }, "Detector detect(HTMLCanvasElement)");
+  });
 };
 
 function FaceDetectorDetectionResultTest(detectionResult, mock) {
@@ -70,42 +70,42 @@ function TextDetectorDetectionResultTest(detectionResult, mock) {
 // mock-{barcode,face}detection.js.
 generate_tests(createTestForCanvasElement, [
   [
-    "Face - HTMLCanvasElement",
+    "Face - detect(HTMLCanvasElement)",
     () => { return new FaceDetector(); },
     () => { return document.createElement("canvas"); },
     () => { return mockFaceDetectionProviderReady; },
     FaceDetectorDetectionResultTest
   ],
   [
-    "Face - OffscreenCanvas",
+    "Face - detect(OffscreenCanvas)",
     () => { return new FaceDetector(); },
     () => { return new OffscreenCanvas(300, 150); },
     () => { return mockFaceDetectionProviderReady; },
     FaceDetectorDetectionResultTest
   ],
   [
-    "Barcode - HTMLCanvasElement",
+    "Barcode - detect(HTMLCanvasElement)",
     () => { return new BarcodeDetector(); },
     () => { return document.createElement("canvas"); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ],
   [
-    "Barcode - OffscreenCanvas",
+    "Barcode - detect(OffscreenCanvas)",
     () => { return new BarcodeDetector(); },
     () => { return new OffscreenCanvas(300, 150); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ],
   [
-    "Text - HTMLCanvasElement",
+    "Text - detect(HTMLCanvasElement)",
     () => { return new TextDetector(); },
     () => { return document.createElement("canvas"); },
     () => { return mockTextDetectionReady; },
     TextDetectorDetectionResultTest
   ],
   [
-    "Text - OffscreenCanvas",
+    "Text - detect(OffscreenCanvas)",
     () => { return new TextDetector(); },
     () => { return new OffscreenCanvas(300, 150); },
     () => { return mockTextDetectionReady; },

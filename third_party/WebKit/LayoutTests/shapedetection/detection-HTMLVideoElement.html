@@ -39,7 +39,7 @@ var createTestForVideoElement = function(createDetector, mockReady,
     });
 
     video.load();
-  }, "Detector detect(HTMLVideoElement)");
+  });
 };
 
 function FaceDetectorDetectionResultTest(detectionResult, mock) {
@@ -67,19 +67,19 @@ function TextDetectorDetectionResultTest(detectionResult, mock) {
 // Use the mock mojo server implemented in mock-{barcode,face}detection.js.
 generate_tests(createTestForVideoElement, [
   [
-    "Face",
+    "Face - detect(HTMLVideoElement)",
     () => { return new FaceDetector(); },
     () => { return mockFaceDetectionProviderReady; },
     FaceDetectorDetectionResultTest
   ],
   [
-    "Barcode",
+    "Barcode - detect(HTMLVideoElement)",
     () => { return new BarcodeDetector(); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
   ],
   [
-    "Text",
+    "Text - detect(HTMLVideoElement)",
     () => { return new TextDetector(); },
     () => { return mockTextDetectionReady; },
     TextDetectorDetectionResultTest
