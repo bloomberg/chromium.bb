@@ -238,12 +238,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
     token_cache[scan[c]] = av1_pt_energy_class[token];
 
-    val = token_to_value(r, token, tx_size,
-#if CONFIG_HIGHBITDEPTH
-                         xd->bd);
-#else
-                         8);
-#endif  // CONFIG_HIGHBITDEPTH
+    val = token_to_value(r, token, tx_size, xd->bd);
 
 #if CONFIG_NEW_QUANT
     v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val);
@@ -258,11 +253,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 
     v = aom_read_bit(r, ACCT_STR) ? -v : v;
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-#if CONFIG_HIGHBITDEPTH
     check_range(v, xd->bd);
-#else
-    check_range(v, 8);
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
 
     dqcoeff[scan[c]] = v;
@@ -311,12 +302,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
             aom_read_symbol(r, *cdf, CATEGORY6_TOKEN - ONE_TOKEN + 1, ACCT_STR);
     INCREMENT_COUNT(ONE_TOKEN + (token > ONE_TOKEN));
     assert(token != ZERO_TOKEN);
-    val = token_to_value(r, token, tx_size,
-#if CONFIG_HIGHBITDEPTH
-                         xd->bd);
-#else
-                         8);
-#endif  // CONFIG_HIGHBITDEPTH
+    val = token_to_value(r, token, tx_size, xd->bd);
 #else   // CONFIG_EC_MULTISYMBOL
     if (!aom_read(r, prob[ONE_CONTEXT_NODE], ACCT_STR)) {
       INCREMENT_COUNT(ONE_TOKEN);
@@ -327,12 +313,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       token = aom_read_tree(r, av1_coef_con_tree,
                             av1_pareto8_full[prob[PIVOT_NODE] - 1], ACCT_STR);
       assert(token != ZERO_TOKEN && token != ONE_TOKEN);
-      val = token_to_value(r, token, tx_size,
-#if CONFIG_HIGHBITDEPTH
-                           xd->bd);
-#else
-                           8);
-#endif  // CONFIG_HIGHBITDEPTH
+      val = token_to_value(r, token, tx_size, xd->bd);
     }
 #endif  // CONFIG_EC_MULTISYMBOL
 #if CONFIG_NEW_QUANT
@@ -347,12 +328,8 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif  // CONFIG_NEW_QUANT
 
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-#if CONFIG_HIGHBITDEPTH
     dqcoeff[scan[c]] =
-        highbd_check_range((aom_read_bit(r, ACCT_STR) ? -v : v), xd->bd);
-#else
-    dqcoeff[scan[c]] = check_range(aom_read_bit(r, ACCT_STR) ? -v : v, 8);
-#endif  // CONFIG_HIGHBITDEPTH
+        check_range((aom_read_bit(r, ACCT_STR) ? -v : v), xd->bd);
 #else
     dqcoeff[scan[c]] = aom_read_bit(r, ACCT_STR) ? -v : v;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING

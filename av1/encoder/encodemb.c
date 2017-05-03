@@ -184,11 +184,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   int64_t rd_cost0, rd_cost1;
   int16_t t0, t1;
   int i, final_eob;
-#if CONFIG_HIGHBITDEPTH
   const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, xd->bd);
-#else
-  const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, 8);
-#endif
   unsigned int(*token_costs)[2][COEFF_CONTEXTS][ENTROPY_TOKENS] =
       mb->token_costs[txsize_sqr_map[tx_size]][plane_type][ref];
   const int default_eob = tx_size_2d[tx_size];
@@ -549,11 +545,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   int best, band = (eob < default_eob) ? band_translate[eob]
                                        : band_translate[eob - 1];
   int pt, i, final_eob;
-#if CONFIG_HIGHBITDEPTH
   const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, xd->bd);
-#else
-  const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, 8);
-#endif
   unsigned int(*token_costs)[2][COEFF_CONTEXTS][ENTROPY_TOKENS] =
       mb->token_costs[txsize_sqr_map[tx_size]][plane_type][ref];
   const uint16_t *band_counts = &band_count_table[tx_size][band];
@@ -1545,9 +1537,7 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
   DECLARE_ALIGNED(16, int32_t, ref_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, int32_t, out_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
 
-#if CONFIG_HIGHBITDEPTH
   hbd_downshift = x->e_mbd.bd - 8;
-#endif
 
   assert(OD_COEFF_SHIFT >= 4);
   // DC quantizer for PVQ

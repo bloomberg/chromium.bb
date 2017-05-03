@@ -367,9 +367,7 @@ static int av1_pvq_decode_helper(MACROBLOCKD *xd, tran_low_t *ref_coeff,
   od_coeff ref_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX];
   od_coeff out_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX];
 
-#if CONFIG_HIGHBITDEPTH
   hbd_downshift = xd->bd - 8;
-#endif  // CONFIG_HIGHBITDEPTH
 
   od_raster_to_coding_order(ref_coeff_pvq, blk_size, tx_type, ref_coeff,
                             blk_size);
@@ -4293,9 +4291,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   }
 #endif
 
-#if CONFIG_HIGHBITDEPTH
   get_frame_new_buffer(cm)->bit_depth = cm->bit_depth;
-#endif
   get_frame_new_buffer(cm)->color_space = cm->color_space;
   get_frame_new_buffer(cm)->color_range = cm->color_range;
   get_frame_new_buffer(cm)->render_width = cm->render_width;
@@ -4361,9 +4357,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   decode_restoration_mode(cm, rb);
 #endif  // CONFIG_LOOP_RESTORATION
   setup_quantization(cm, rb);
-#if CONFIG_HIGHBITDEPTH
   xd->bd = (int)cm->bit_depth;
-#endif
 
 #if CONFIG_Q_ADAPT_PROBS
   av1_default_coef_probs(cm);

@@ -643,10 +643,8 @@ typedef struct macroblockd {
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *tile_ctx;
 #endif
-#if CONFIG_HIGHBITDEPTH
   /* Bit depth: 8, 10, 12 */
   int bd;
-#endif
 
   int qindex[MAX_SEGMENTS];
   int lossless[MAX_SEGMENTS];
