@@ -377,9 +377,7 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
       // task and further file access will not occur until after we get a
       // response.
       base::PostTaskWithTraitsAndReply(
-          FROM_HERE,
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::BACKGROUND),
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
           base::Bind(ReadCache, validation_cache_file_path_, data),
           base::Bind(&NaClBrowser::OnValidationCacheLoaded,
                      base::Unretained(this), base::Owned(data)));

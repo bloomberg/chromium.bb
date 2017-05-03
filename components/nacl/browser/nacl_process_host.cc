@@ -819,9 +819,7 @@ bool NaClProcessHost::StartNaClExecution() {
       // compromised renderer to pass an arbitrary fd that could get loaded
       // into the plugin process.
       base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE,
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::BACKGROUND),
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
           base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
           base::Bind(&NaClProcessHost::StartNaClFileResolved,
                      weak_factory_.GetWeakPtr(), params, file_path));
@@ -1037,9 +1035,7 @@ void NaClProcessHost::OnResolveFileToken(uint64_t file_token_lo,
 
   // Open the file.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
       base::Bind(&NaClProcessHost::FileResolved, weak_factory_.GetWeakPtr(),
                  file_token_lo, file_token_hi, file_path));

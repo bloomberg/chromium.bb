@@ -95,8 +95,7 @@ void WebRestrictionsClient::SetAuthorityTask(
       reinterpret_cast<jlong>(this)));
   supports_request_ = false;
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CheckSupportsRequestTask, java_provider_),
       base::Bind(&WebRestrictionsClient::RequestSupportKnown,
                  base::Unretained(this), provider_authority_));

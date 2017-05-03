@@ -179,7 +179,7 @@ void GetReadonlyPnaclFd(
     bool is_executable,
     IPC::Message* reply_msg) {
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock(),
+      FROM_HERE, {base::MayBlock()},
       base::Bind(&DoOpenPnaclFile, nacl_host_message_filter, filename,
                  is_executable, reply_msg));
 }
@@ -260,7 +260,7 @@ void OpenNaClExecutable(
   // file path and convert that to a file descriptor. This should be done on a
   // blocking pool thread.
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock(),
+      FROM_HERE, {base::MayBlock()},
       base::Bind(&DoOpenNaClExecutableOnThreadPool, nacl_host_message_filter,
                  file_url, enable_validation_caching, reply_msg));
 }

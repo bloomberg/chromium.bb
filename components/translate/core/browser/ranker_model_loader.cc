@@ -100,11 +100,8 @@ RankerModelLoader::RankerModelLoader(
     GURL model_url,
     std::string uma_prefix)
     : background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))),
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       validate_model_cb_(std::move(validate_model_cb)),
       on_model_available_cb_(std::move(on_model_available_cb)),
       model_path_(std::move(model_path)),
