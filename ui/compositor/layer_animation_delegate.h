@@ -29,6 +29,7 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual void SetBrightnessFromAnimation(float brightness) = 0;
   virtual void SetGrayscaleFromAnimation(float grayscale) = 0;
   virtual void SetColorFromAnimation(SkColor color) = 0;
+  virtual void SetTemperatureFromAnimation(float temperature) = 0;
   virtual void ScheduleDrawForAnimation() = 0;
   virtual const gfx::Rect& GetBoundsForAnimation() const = 0;
   virtual gfx::Transform GetTransformForAnimation() const = 0;
@@ -37,6 +38,7 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual float GetBrightnessForAnimation() const = 0;
   virtual float GetGrayscaleForAnimation() const = 0;
   virtual SkColor GetColorForAnimation() const = 0;
+  virtual float GetTemperatureFromAnimation() const = 0;
   virtual float GetDeviceScaleFactor() const = 0;
   virtual cc::Layer* GetCcLayer() const = 0;
   virtual LayerAnimatorCollection* GetLayerAnimatorCollection() = 0;

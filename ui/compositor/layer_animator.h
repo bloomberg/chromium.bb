@@ -102,6 +102,11 @@ class COMPOSITOR_EXPORT LayerAnimator
   virtual void SetColor(SkColor color);
   SkColor GetTargetColor() const;
 
+  // Sets the color temperature on the delegate. May cause an implicit
+  // animation.
+  virtual void SetTemperature(float temperature);
+  float GetTargetTemperature() const;
+
   // Returns the default length of animations, including adjustment for slow
   // animation mode if set.
   base::TimeDelta GetTransitionDuration() const;

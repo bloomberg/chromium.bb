@@ -254,6 +254,40 @@ class ColorTransition : public LayerAnimationElement {
   DISALLOW_COPY_AND_ASSIGN(ColorTransition);
 };
 
+// TemperatureTransition -------------------------------------------------------
+
+class TemperatureTransition : public LayerAnimationElement {
+ public:
+  TemperatureTransition(float target, base::TimeDelta duration)
+      : LayerAnimationElement(TEMPERATURE, duration),
+        start_(0.0f),
+        target_(target) {}
+  ~TemperatureTransition() override {}
+
+ protected:
+  void OnStart(LayerAnimationDelegate* delegate) override {
+    start_ = delegate->GetTemperatureFromAnimation();
+  }
+
+  bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
+    delegate->SetTemperatureFromAnimation(
+        gfx::Tween::FloatValueBetween(t, start_, target_));
+    return true;
+  }
+
+  void OnGetTarget(TargetValue* target) const override {
+    target->temperature = target_;
+  }
+
+  void OnAbort(LayerAnimationDelegate* delegate) override {}
+
+ private:
+  float start_;
+  const float target_;
+
+  DISALLOW_COPY_AND_ASSIGN(TemperatureTransition);
+};
+
 // ThreadedLayerAnimationElement -----------------------------------------------
 
 class ThreadedLayerAnimationElement : public LayerAnimationElement {
@@ -442,8 +476,8 @@ LayerAnimationElement::TargetValue::TargetValue(
       visibility(delegate ? delegate->GetVisibilityForAnimation() : false),
       brightness(delegate ? delegate->GetBrightnessForAnimation() : 0.0f),
       grayscale(delegate ? delegate->GetGrayscaleForAnimation() : 0.0f),
-      color(delegate ? delegate->GetColorForAnimation() : SK_ColorTRANSPARENT) {
-}
+      color(delegate ? delegate->GetColorForAnimation() : SK_ColorTRANSPARENT),
+      temperature(delegate ? delegate->GetTemperatureFromAnimation() : 0.0f) {}
 
 // LayerAnimationElement -------------------------------------------------------
 
@@ -684,6 +718,13 @@ std::unique_ptr<LayerAnimationElement>
 LayerAnimationElement::CreateColorElement(SkColor color,
                                           base::TimeDelta duration) {
   return base::MakeUnique<ColorTransition>(color, duration);
+}
+
+// static
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateTemperatureElement(float temperature,
+                                                base::TimeDelta duration) {
+  return base::MakeUnique<TemperatureTransition>(temperature, duration);
 }
 
 }  // namespace ui
