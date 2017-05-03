@@ -19,7 +19,6 @@ struct PrePaintTreeWalkContext {
   PrePaintTreeWalkContext()
       : tree_builder_context(
             WTF::WrapUnique(new PaintPropertyTreeBuilderContext)),
-        paint_invalidator_context(tree_builder_context.get()),
         ancestor_overflow_paint_layer(nullptr),
         ancestor_transformed_or_root_paint_layer(nullptr) {}
 
@@ -30,8 +29,7 @@ struct PrePaintTreeWalkContext {
                                 ? new PaintPropertyTreeBuilderContext(
                                       *parent_context.tree_builder_context)
                                 : nullptr)),
-        paint_invalidator_context(tree_builder_context.get(),
-                                  parent_context.paint_invalidator_context),
+        paint_invalidator_context(parent_context.paint_invalidator_context),
         ancestor_overflow_paint_layer(
             parent_context.ancestor_overflow_paint_layer),
         ancestor_transformed_or_root_paint_layer(
@@ -94,6 +92,7 @@ void PrePaintTreeWalk::Walk(FrameView& frame_view,
                                             *context.tree_builder_context);
   }
   paint_invalidator_.InvalidatePaint(frame_view,
+                                     context.tree_builder_context.get(),
                                      context.paint_invalidator_context);
 
   if (LayoutView* view = frame_view.GetLayoutView()) {
@@ -312,7 +311,8 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
         object, *context.tree_builder_context);
   }
 
-  paint_invalidator_.InvalidatePaint(object, context.paint_invalidator_context);
+  paint_invalidator_.InvalidatePaint(object, context.tree_builder_context.get(),
+                                     context.paint_invalidator_context);
 
   if (context.tree_builder_context) {
     property_tree_builder_.UpdatePropertiesForChildren(

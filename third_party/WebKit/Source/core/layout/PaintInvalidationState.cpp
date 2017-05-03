@@ -639,7 +639,7 @@ void PaintInvalidationState::assertFastPathAndSlowPathRectsEqual(
 
 PaintInvalidatorContextAdapter::PaintInvalidatorContextAdapter(
     const PaintInvalidationState& paint_invalidation_state)
-    : PaintInvalidatorContext(nullptr),
+    : PaintInvalidatorContext(),
       paint_invalidation_state_(paint_invalidation_state) {
   forced_subtree_invalidation_flags =
       paint_invalidation_state.forced_subtree_invalidation_flags_;
