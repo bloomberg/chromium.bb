@@ -56,8 +56,9 @@ std::unique_ptr<ImageDecoder> CreateDecoder() {
   return CreateDecoder(ImageDecoder::kAlphaNotPremultiplied);
 }
 
-// If 'parseErrorExpected' is true, error is expected during parse (frameCount()
-// call); else error is expected during decode (frameBufferAtIndex() call).
+// If 'parse_error_expected' is true, error is expected during parse
+// (FrameCount() call); else error is expected during decode
+// (FrameBufferAtIndex() call).
 void TestInvalidImage(const char* webp_file, bool parse_error_expected) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
@@ -449,7 +450,7 @@ TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
 
   ASSERT_EQ(3u, decoder->FrameCount());
   // We need to store pointers to the image frames, since calling
-  // frameBufferAtIndex will decode the frame if it is not FrameComplete,
+  // FrameBufferAtIndex will decode the frame if it is not FrameComplete,
   // and we want to read the status of the frame without decoding it again.
   ImageFrame* buffers[3];
   size_t buffer_sizes[3];
@@ -461,7 +462,7 @@ TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
 
   // Explicitly set the required previous frame for the frames, since this test
   // is designed on this chain. Whether the frames actually depend on each
-  // other is not important for this test - clearCacheExceptFrame just looks at
+  // other is not important for this test - ClearCacheExceptFrame just looks at
   // the frame status and the required previous frame.
   buffers[1]->SetRequiredPreviousFrameIndex(0);
   buffers[2]->SetRequiredPreviousFrameIndex(1);
@@ -500,7 +501,7 @@ TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
   // FrameComplete    depends on    FrameEmpty   depends on    FramePartial
   //
   // The expected outcome is that frame 0 and frame 2 are preserved. Frame 2
-  // should be preserved since it is the frame passed to clearCacheExceptFrame.
+  // should be preserved since it is the frame passed to ClearCacheExceptFrame.
   // Frame 0 should be preserved since it is the nearest FrameComplete ancestor.
   // Thus, since frame 1 is FrameEmpty, no data is cleared in this case.
   for (size_t i = 0; i < decoder->FrameCount(); i++) {

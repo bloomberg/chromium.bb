@@ -50,21 +50,21 @@ int GIFImageDecoder::RepetitionCount() const {
   // in the wild declare it near the beginning of the file, so it usually is
   // set by the time we've decoded the size, but (depending on the GIF and the
   // packets sent back by the webserver) not always.  If the reader hasn't
-  // seen a loop count yet, it will return cLoopCountNotSeen, in which case we
+  // seen a loop count yet, it will return kCLoopCountNotSeen, in which case we
   // should default to looping once (the initial value for
-  // |m_repetitionCount|).
+  // |repetition_count_|).
   //
-  // There are some additional wrinkles here. First, ImageSource::clear()
+  // There are some additional wrinkles here. First, ImageSource::Clear()
   // may destroy the reader, making the result from the reader _less_
   // authoritative on future calls if the recreated reader hasn't seen the
   // loop count.  We don't need to special-case this because in this case the
-  // new reader will once again return cLoopCountNotSeen, and we won't
+  // new reader will once again return kCLoopCountNotSeen, and we won't
   // overwrite the cached correct value.
   //
   // Second, a GIF might never set a loop count at all, in which case we
   // should continue to treat it as a "loop once" animation.  We don't need
   // special code here either, because in this case we'll never change
-  // |m_repetitionCount| from its default value.
+  // |repetition_count_| from its default value.
   //
   // Third, we use the same GIFImageReader for counting frames and we might
   // see the loop count and then encounter a decoding error which happens
@@ -105,8 +105,8 @@ bool GIFImageDecoder::HaveDecodedRow(size_t frame_index,
   const GIFFrameContext* frame_context = reader_->frameContext(frame_index);
   // The pixel data and coordinates supplied to us are relative to the frame's
   // origin within the entire image size, i.e.
-  // (frameContext->xOffset, frameContext->yOffset). There is no guarantee
-  // that width == (size().width() - frameContext->xOffset), so
+  // (frameC_context->xOffset, frame_context->yOffset). There is no guarantee
+  // that width == (size().width() - frame_context->xOffset), so
   // we must ensure we don't run off the end of either the source data or the
   // row's X-coordinates.
   const int x_begin = frame_context->xOffset();
@@ -148,7 +148,7 @@ bool GIFImageDecoder::HaveDecodedRow(size_t frame_index,
   // later ones.
   //
   // The loops below are almost identical. One writes a transparent pixel
-  // and one doesn't based on the value of |writeTransparentPixels|.
+  // and one doesn't based on the value of |write_transparent_pixels|.
   // The condition check is taken out of the loop to enhance performance.
   // This optimization reduces decoding time by about 15% for a 3MB image.
   if (write_transparent_pixels) {
@@ -187,7 +187,7 @@ bool GIFImageDecoder::ParseCompleted() const {
 
 bool GIFImageDecoder::FrameComplete(size_t frame_index) {
   // Initialize the frame if necessary.  Some GIFs insert do-nothing frames,
-  // in which case we never reach haveDecodedRow() before getting here.
+  // in which case we never reach HaveDecodedRow() before getting here.
   if (!InitFrameBuffer(frame_index))
     return SetFailed();
 
@@ -211,7 +211,7 @@ void GIFImageDecoder::ClearFrameBuffer(size_t frame_index) {
 
 size_t GIFImageDecoder::DecodeFrameCount() {
   Parse(kGIFFrameCountQuery);
-  // If decoding fails, |m_reader| will have been destroyed.  Instead of
+  // If decoding fails, |reader_| will have been destroyed.  Instead of
   // returning 0 in this case, return the existing number of frames.  This way
   // if we get halfway through the image before decoding fails, we won't
   // suddenly start reporting that the image has zero frames.

@@ -44,7 +44,7 @@ void TestMergeBuffer(DecoderCreator create_decoder,
                      const char* dir,
                      const char* file);
 
-// |skippingStep| is used to randomize the decoding order. For images with
+// |skipping_step| is used to randomize the decoding order. For images with
 // a small number of frames (e.g. < 10), this value should be smaller, on the
 // order of (number of frames) / 2.
 void TestRandomFrameDecode(DecoderCreator,
@@ -55,7 +55,7 @@ void TestRandomFrameDecode(DecoderCreator,
                            const char* file,
                            size_t skipping_step = 5);
 
-// |skippingStep| is used to randomize the decoding order. For images with
+// |skipping_step| is used to randomize the decoding order. For images with
 // a small number of frames (e.g. < 10), this value should be smaller, on the
 // order of (number of frames) / 2.
 void TestRandomDecodeAfterClearFrameBufferCache(DecoderCreator,

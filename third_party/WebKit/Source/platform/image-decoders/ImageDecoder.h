@@ -92,7 +92,7 @@ class PLATFORM_EXPORT ImageDecoder {
   // Returns a caller-owned decoder of the appropriate type.  Returns nullptr if
   // we can't sniff a supported type from the provided data (possibly
   // because there isn't enough data yet).
-  // Sets m_maxDecodedBytes to Platform::maxImageDecodedBytes().
+  // Sets |max_decoded_bytes_| to Platform::MaxImageDecodedBytes().
   static std::unique_ptr<ImageDecoder> Create(RefPtr<SegmentReader> data,
                                               bool data_complete,
                                               AlphaOption,
@@ -178,8 +178,8 @@ class PLATFORM_EXPORT ImageDecoder {
     return true;
   }
 
-  // Calls decodeFrameCount() to get the frame count (if possible), without
-  // decoding the individual frames.  Resizes m_frameBufferCache to the
+  // Calls DecodeFrameCount() to get the frame count (if possible), without
+  // decoding the individual frames.  Resizes |frame_buffer_cache_| to the
   // correct size and returns its size.
   size_t FrameCount();
 
@@ -245,17 +245,17 @@ class PLATFORM_EXPORT ImageDecoder {
   // subsequent frames depend on this frame's required previous frame, then that
   // frame is also kept in cache to prevent re-decoding from the beginning.
   // Callers may pass WTF::kNotFound to clear all frames.
-  // Note: If |m_frameBufferCache| contains only one frame, it won't be cleared.
-  // Returns the number of bytes of frame data actually cleared.
+  // Note: If |frame_buffer_cache_| contains only one frame, it won't be
+  // cleared. Returns the number of bytes of frame data actually cleared.
   //
   // This is a virtual method because MockImageDecoder needs to override it in
-  // order to run the test ImageFrameGeneratorTest::clearMultiFrameDecode.
+  // order to run the test ImageFrameGeneratorTest::ClearMultiFrameDecode.
   //
-  // @TODO  Let MockImageDecoder override ImageFrame::clearFrameBuffer instead,
+  // @TODO  Let MockImageDecoder override ImageFrame::ClearFrameBuffer instead,
   //        so this method can be made non-virtual. It is used in the test
-  //        ImageFrameGeneratorTest::clearMultiFrameDecode. The test needs to
+  //        ImageFrameGeneratorTest::ClearMultiFrameDecode. The test needs to
   //        be modified since two frames may be kept in cache, instead of
-  //        always just one, with this clearCacheExceptFrame implementation.
+  //        always just one, with this ClearCacheExceptFrame implementation.
   virtual size_t ClearCacheExceptFrame(size_t);
 
   // If the image has a cursor hot-spot, stores it in the argument
@@ -265,7 +265,7 @@ class PLATFORM_EXPORT ImageDecoder {
   void SetMemoryAllocator(SkBitmap::Allocator* allocator) {
     // FIXME: this doesn't work for images with multiple frames.
     if (frame_buffer_cache_.IsEmpty()) {
-      // Ensure that initializeNewFrame is called, after parsing if
+      // Ensure that InitializeNewFrame is called, after parsing if
       // necessary.
       if (!FrameCount())
         return;
@@ -288,26 +288,26 @@ class PLATFORM_EXPORT ImageDecoder {
         purge_aggressively_(false) {}
 
   // Calculates the most recent frame whose image data may be needed in
-  // order to decode frame |frameIndex|, based on frame disposal methods
-  // and |frameRectIsOpaque|, where |frameRectIsOpaque| signifies whether
-  // the rectangle of frame at |frameIndex| is known to be opaque.
+  // order to decode frame |frame_index|, based on frame disposal methods
+  // and |frame_rect_is_opaque|, where |frame_rect_is_opaque| signifies whether
+  // the rectangle of frame at |frame_index| is known to be opaque.
   // If no previous frame's data is required, returns WTF::kNotFound.
   //
   // This function requires that the previous frame's
-  // |m_requiredPreviousFrameIndex| member has been set correctly. The
+  // |required_previous_frame_index_| member has been set correctly. The
   // easiest way to ensure this is for subclasses to call this method and
-  // store the result on the frame via setRequiredPreviousFrameIndex()
+  // store the result on the frame via SetRequiredPreviousFrameIndex()
   // as soon as the frame has been created and parsed sufficiently to
   // determine the disposal method; assuming this happens for all frames
   // in order, the required invariant will hold.
   //
   // Image formats which do not use more than one frame do not need to
   // worry about this; see comments on
-  // ImageFrame::m_requiredPreviousFrameIndex.
+  // ImageFrame::required_previous_frame+index_.
   size_t FindRequiredPreviousFrame(size_t frame_index,
                                    bool frame_rect_is_opaque);
 
-  // This is called by clearCacheExceptFrame() if that method decides it wants
+  // This is called by ClearCacheExceptFrame() if that method decides it wants
   // to preserve another frame, to avoid unnecessary redecoding.
   size_t ClearCacheExceptTwoFrames(size_t, size_t);
   virtual void ClearFrameBuffer(size_t frame_index);
@@ -322,8 +322,8 @@ class PLATFORM_EXPORT ImageDecoder {
   // Called to initialize the frame buffer with the given index, based on the
   // provided and previous frame's characteristics. Returns true on success.
   // Before calling this method, the caller must verify that the frame exists.
-  // On failure, the client should call setFailed. This method does not call
-  // setFailed itself because that might delete the object directly making this
+  // On failure, the client should call SetFailed. This method does not call
+  // SetFailed itself because that might delete the object directly making this
   // call.
   bool InitFrameBuffer(size_t);
 
@@ -341,7 +341,7 @@ class PLATFORM_EXPORT ImageDecoder {
   // caller must verify that the frame exists.
   Vector<size_t> FindFramesToDecode(size_t) const;
 
-  // This is called by decode() after decoding a frame in an animated image.
+  // This is called by Decode() after decoding a frame in an animated image.
   // Before calling this method, the caller must verify that the frame exists.
   // @return true  if the frame was fully decoded,
   //         false otherwise.
@@ -367,32 +367,32 @@ class PLATFORM_EXPORT ImageDecoder {
 
   // The maximum amount of memory a decoded image should require. Ideally,
   // image decoders should downsample large images to fit under this limit
-  // (and then return the downsampled size from decodedSize()). Ignoring
+  // (and then return the downsampled size from DecodedSize()). Ignoring
   // this limit can cause excessive memory use or even crashes on low-
   // memory devices.
   const size_t max_decoded_bytes_;
 
   // While decoding, we may learn that there are so many animation frames that
   // we would go beyond our cache budget.
-  // If that happens, m_purgeAggressively is set to true. This signals
+  // If that happens, purge_aggressively_ is set to true. This signals
   // future decodes to purge old frames as it goes.
   void UpdateAggressivePurging(size_t index);
 
   // The method is only relevant for multi-frame images.
   //
   // This method indicates whether the provided frame has enough data to decode
-  // successive frames that depend on it. It is used by clearCacheExceptFrame
+  // successive frames that depend on it. It is used by ClearCacheExceptFrame
   // to determine which frame to keep in cache when the indicated frame is not
   // yet sufficiently decoded.
   //
   // The default condition is that the frame status needs to be FramePartial or
   // FrameComplete, since the data of previous frames is copied in
-  // initFrameBuffer() before setting the status to FramePartial. For WebP,
+  // InitFrameBuffer() before setting the status to FramePartial. For WebP,
   // however, the status needs to be FrameComplete since the complete buffer is
-  // used to do alpha blending in WEBPImageDecoder::applyPostProcessing().
+  // used to do alpha blending in WEBPImageDecoder::ApplyPostProcessing().
   //
   // Before calling this, verify that frame |index| exists by checking that
-  // |index| is smaller than |m_frameBufferCache|.size().
+  // |index| is smaller than |frame_buffer_cache_|.size().
   virtual bool FrameStatusSufficientForSuccessors(size_t index) {
     DCHECK(index < frame_buffer_cache_.size());
     return frame_buffer_cache_[index].GetStatus() != ImageFrame::kFrameEmpty;
@@ -413,11 +413,11 @@ class PLATFORM_EXPORT ImageDecoder {
 
   bool purge_aggressively_;
 
-  // This methods gets called at the end of initFrameBuffer. Subclasses can do
+  // This methods gets called at the end of InitFrameBuffer. Subclasses can do
   // format specific initialization, for e.g. alpha settings, here.
   virtual void OnInitFrameBuffer(size_t){};
 
-  // Called by initFrameBuffer to determine if it can take the bitmap of the
+  // Called by InitFrameBuffer to determine if it can take the bitmap of the
   // previous frame. This condition is different for GIF and WEBP.
   virtual bool CanReusePreviousFrameBuffer(size_t) const { return false; }
 

@@ -63,7 +63,7 @@ inline bool MatchesBMPSignature(const char* contents) {
   return !memcmp(contents, "BM", 2);
 }
 
-// This needs to be updated if we ever add a matches*Signature() which requires
+// This needs to be updated if we ever add a Matches*Signature() which requires
 // more characters.
 static constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
 
@@ -216,16 +216,17 @@ size_t ImageDecoder::ClearCacheExceptFrame(size_t clear_except_frame) {
   // We expect that after this call, we'll be asked to decode frames after this
   // one. So we want to avoid clearing frames such that those requests would
   // force re-decoding from the beginning of the image. There are two cases in
-  // which preserving |clearCacheExcept| frame is not enough to avoid that:
+  // which preserving |clear_except_frame| is not enough to avoid that:
   //
-  // 1. |clearExceptFrame| is not yet sufficiently decoded to decode subsequent
-  //    frames. We need the previous frame to sufficiently decode this frame.
-  // 2. The disposal method of |clearExceptFrame| is DisposeOverwritePrevious.
+  // 1. |clear_except_frame| is not yet sufficiently decoded to decode
+  //    subsequent frames. We need the previous frame to sufficiently decode
+  //    this frame.
+  // 2. The disposal method of |clear_except_frame| is DisposeOverwritePrevious.
   //    In that case, we need to keep the required previous frame in the cache
-  //    to prevent re-decoding that frame when |clearExceptFrame| is disposed.
+  //    to prevent re-decoding that frame when |clear_except_frame| is disposed.
   //
   // If either 1 or 2 is true, store the required previous frame in
-  // |clearExceptFrame2| so it won't be cleared.
+  // |clear_except_frame2| so it won't be cleared.
   size_t clear_except_frame2 = kNotFound;
   if (clear_except_frame < frame_buffer_cache_.size()) {
     const ImageFrame& frame = frame_buffer_cache_[clear_except_frame];
@@ -234,7 +235,7 @@ size_t ImageDecoder::ClearCacheExceptFrame(size_t clear_except_frame) {
       clear_except_frame2 = frame.RequiredPreviousFrameIndex();
   }
 
-  // Now |clearExceptFrame2| indicates the frame that |clearExceptFrame|
+  // Now |clear_except_frame2| indicates the frame that |clear_except_frame|
   // depends on, as described above. But if decoding is skipping forward past
   // intermediate frames, this frame may be insufficiently decoded. So we need
   // to keep traversing back through the required previous frames until we find
@@ -294,7 +295,7 @@ void ImageDecoder::CorrectAlphaWhenFrameBufferSawNoAlpha(size_t index) {
   DCHECK(index < frame_buffer_cache_.size());
   ImageFrame& buffer = frame_buffer_cache_[index];
 
-  // When this frame spans the entire image rect we can set hasAlpha to false,
+  // When this frame spans the entire image rect we can SetHasAlpha to false,
   // since there are logically no transparent pixels outside of the frame rect.
   if (buffer.OriginalFrameRect().Contains(IntRect(IntPoint(), Size()))) {
     buffer.SetHasAlpha(false);
@@ -302,7 +303,7 @@ void ImageDecoder::CorrectAlphaWhenFrameBufferSawNoAlpha(size_t index) {
   } else if (buffer.RequiredPreviousFrameIndex() != kNotFound) {
     // When the frame rect does not span the entire image rect, and it does
     // *not* have a required previous frame, the pixels outside of the frame
-    // rect will be fully transparent, so we shoudn't set hasAlpha to false.
+    // rect will be fully transparent, so we shoudn't SetHasAlpha to false.
     //
     // It is a tricky case when the frame does have a required previous frame.
     // The frame does not have alpha only if everywhere outside its rect
@@ -314,8 +315,8 @@ void ImageDecoder::CorrectAlphaWhenFrameBufferSawNoAlpha(size_t index) {
     // happen, since the required frame should in that case be the required
     // frame of this frame's required frame.
     //
-    // If |prevBuffer| is DisposeNotSpecified or DisposeKeep, |buffer| has no
-    // alpha if |prevBuffer| had no alpha. Since initFrameBuffer() already
+    // If |prev_buffer| is DisposeNotSpecified or DisposeKeep, |buffer| has no
+    // alpha if |prev_buffer| had no alpha. Since InitFrameBuffer() already
     // copied the alpha state, there's nothing to do here.
     //
     // The only remaining case is a DisposeOverwriteBgcolor frame.  If
@@ -323,10 +324,10 @@ void ImageDecoder::CorrectAlphaWhenFrameBufferSawNoAlpha(size_t index) {
     // rect, we know the current frame has no alpha.
     //
     // For DisposeNotSpecified, DisposeKeep and DisposeOverwriteBgcolor there
-    // is one situation that is not taken into account - when |prevBuffer|
+    // is one situation that is not taken into account - when |prev_buffer|
     // *does* have alpha, but only in the frame rect of |buffer|, we can still
     // say that this frame has no alpha. However, to determine this, we
-    // potentially need to analyze all image pixels of |prevBuffer|, which is
+    // potentially need to analyze all image pixels of |prev_buffer|, which is
     // too computationally expensive.
     const ImageFrame* prev_buffer =
         &frame_buffer_cache_[buffer.RequiredPreviousFrameIndex()];
@@ -363,9 +364,9 @@ bool ImageDecoder::InitFrameBuffer(size_t frame_index) {
         &frame_buffer_cache_[required_previous_frame_index];
     DCHECK(prev_buffer->GetStatus() == ImageFrame::kFrameComplete);
 
-    // We try to reuse |prevBuffer| as starting state to avoid copying.
-    // If canReusePreviousFrameBuffer returns false, we must copy the data since
-    // |prevBuffer| is necessary to decode this or later frames. In that case,
+    // We try to reuse |prev_buffer| as starting state to avoid copying.
+    // If CanReusePreviousFrameBuffer returns false, we must copy the data since
+    // |prev_buffer| is necessary to decode this or later frames. In that case,
     // copy the data instead.
     if ((!CanReusePreviousFrameBuffer(frame_index) ||
          !buffer->TakeBitmapDataIfWritable(prev_buffer)) &&
@@ -401,7 +402,7 @@ void ImageDecoder::UpdateAggressivePurging(size_t index) {
   // benefit and would consume more memory.
   // So instead, simply purge unused frames if caching all of the frames of
   // the image would use more memory than the image decoder is allowed
-  // (m_maxDecodedBytes) or would overflow 32 bits..
+  // (|max_decoded_bytes|) or would overflow 32 bits..
   //
   // As we decode we will learn the total number of frames, and thus total
   // possible image memory used.
@@ -446,7 +447,7 @@ size_t ImageDecoder::FindRequiredPreviousFrame(size_t frame_index,
   switch (prev_buffer->GetDisposalMethod()) {
     case ImageFrame::kDisposeNotSpecified:
     case ImageFrame::kDisposeKeep:
-      // prevFrame will be used as the starting state for this frame.
+      // |prev_frame| will be used as the starting state for this frame.
       // FIXME: Be even smarter by checking the frame sizes and/or
       // alpha-containing regions.
       return prev_frame;

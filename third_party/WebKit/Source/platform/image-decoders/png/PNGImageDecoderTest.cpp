@@ -141,7 +141,7 @@ void CompareFrameWithExpectation(const PublicFrameInfo& expected,
   EXPECT_EQ(expected.alpha_blend, frame->GetAlphaBlendSource());
 }
 
-// This function removes |length| bytes at |offset|, and then calls frameCount.
+// This function removes |length| bytes at |offset|, and then calls FrameCount.
 // It assumes the missing bytes should result in a failed decode because the
 // parser jumps |length| bytes too far in the next chunk.
 void TestMissingDataBreaksDecoding(const char* png_file,
@@ -256,8 +256,8 @@ void TestProgressiveDecodingContinuesAfterFullData(
   EXPECT_EQ(hash_full, hash_upfront);
 }
 
-// Modify the frame data bytes for frame |frameIndex| so that decoding fails.
-// Parsing should work fine, and is checked with |expectedFrameCount|.
+// Modify the frame data bytes for frame |frame_index| so that decoding fails.
+// Parsing should work fine, and is checked with |expected_frame_count|.
 void TestFailureDuringDecode(const char* file,
                              size_t idat_offset,
                              size_t frame_index,
@@ -265,7 +265,7 @@ void TestFailureDuringDecode(const char* file,
   RefPtr<SharedBuffer> full_data = ReadFile(file);
   ASSERT_FALSE(full_data->IsEmpty());
 
-  // This is the offset where the frame data chunk frame |frameIndex| starts.
+  // This is the offset where the frame data chunk frame |frame_index| starts.
   RefPtr<SharedBuffer> data =
       SharedBuffer::Create(full_data->Data(), idat_offset + 8u);
   // Repeat the first 8 bytes of the frame data. This should result in a
@@ -654,7 +654,7 @@ TEST(AnimatedPNGTests, VerifyAlphaBlending) {
                     "png-animated-idat-part-of-animation.png");
 }
 
-// This tests if the frame count gets set correctly when parsing frameCount
+// This tests if the frame count gets set correctly when parsing FrameCount
 // fails in one of the parsing queries.
 //
 // First, enough data is provided such that two frames should be registered.
@@ -787,7 +787,7 @@ TEST(AnimatedPNGTests, VerifyInvalidDisposalAndBlending) {
   auto decoder = CreateDecoder();
 
   // The disposal byte in the frame control chunk is the 24th byte, alpha
-  // blending the 25th. |offsetDisposalOp| is 241 bytes to get to the third
+  // blending the 25th. |kOffsetDisposalOp| is 241 bytes to get to the third
   // fctl chunk, 8 bytes to skip the length and tag bytes, and 24 bytes to get
   // to the disposal op.
   //

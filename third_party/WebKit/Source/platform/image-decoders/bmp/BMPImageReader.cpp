@@ -32,7 +32,7 @@
 
 namespace {
 
-// See comments on m_lookupTableAddresses in the header.
+// See comments on lookup_table_addresses_ in the header.
 const uint8_t nBitTo8BitlookupTable[] = {
     // 1 bit
     0, 255,
@@ -90,7 +90,7 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent,
 
 bool BMPImageReader::DecodeBMP(bool only_size) {
   // Defensively clear the FastSharedBufferReader's cache, as another caller
-  // may have called SharedBuffer::mergeSegmentsIntoBuffer().
+  // may have called SharedBuffer::MergeSegmentsIntoBuffer().
   fast_reader_.ClearCache();
 
   // Calculate size of info header.
@@ -102,7 +102,7 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
   if ((decoded_offset_ < header_end) && !ProcessInfoHeader())
     return false;
 
-  // processInfoHeader() set the size, so if that's all we needed, we're done.
+  // ProcessInfoHeader() set the size, so if that's all we needed, we're done.
   if (only_size)
     return true;
 
@@ -124,7 +124,7 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
     }
     buffer_->ZeroFillPixelData();
     buffer_->SetStatus(ImageFrame::kFramePartial);
-    // setSize() calls eraseARGB(), which resets the alpha flag, so we force
+    // SetSize() calls EraseARGB(), which resets the alpha flag, so we force
     // it back to false here.  We'll set it true below in all cases where
     // these 0s could actually show through.
     buffer_->SetHasAlpha(false);
@@ -181,8 +181,8 @@ bool BMPImageReader::ReadInfoHeaderSize() {
       ((data_->size() - decoded_offset_) < 4))
     return false;
   info_header_.bi_size = ReadUint32(0);
-  // Don't increment m_decodedOffset here, it just makes the code in
-  // processInfoHeader() more confusing.
+  // Don't increment decoded_offset here, it just makes the code in
+  // ProcessInfoHeader() more confusing.
 
   // Don't allow the header to overflow (which would be harmless here, but
   // problematic or at least confusing in other places), or to overrun the
@@ -301,10 +301,10 @@ bool BMPImageReader::ReadInfoHeader() {
   // compression format isn't BITFIELDS, the RGB bitmasks will be ignored and
   // overwritten in processBitmasks(). (The alpha bitmask will never be
   // overwritten: images that actually want alpha have to specify a valid
-  // alpha mask. See comments in processBitmasks().)
+  // alpha mask. See comments in ProcessBitmasks().)
   //
-  // For non-Windows V4+, m_bitMasks[] et. al will be initialized later
-  // during processBitmasks().
+  // For non-Windows V4+, bit_masks_[] et. al will be initialized later
+  // during ProcessBitmasks().
   if (IsWindowsV4Plus()) {
     bit_masks_[0] = ReadUint32(40);
     bit_masks_[1] = ReadUint32(44);
@@ -315,7 +315,7 @@ bool BMPImageReader::ReadInfoHeader() {
   // Detect top-down BMPs.
   if (info_header_.bi_height < 0) {
     // We can't negate INT32_MIN below to get a positive int32_t.
-    // isInfoHeaderValid() will reject heights of 1 << 16 or larger anyway,
+    // IsInfoHeaderValid() will reject heights of 1 << 16 or larger anyway,
     // so just reject this bitmap now.
     if (info_header_.bi_height == INT32_MIN)
       return parent_->SetFailed();
@@ -400,7 +400,7 @@ bool BMPImageReader::IsInfoHeaderValid() const {
 
     default:
       // Some type we don't understand.  This should have been caught in
-      // readInfoHeader().
+      // ReadInfoHeader().
       NOTREACHED();
       return false;
   }
@@ -435,7 +435,7 @@ bool BMPImageReader::IsInfoHeaderValid() const {
 }
 
 bool BMPImageReader::ProcessBitmasks() {
-  // Create m_bitMasks[] values for R/G/B.
+  // Create bit_masks_[] values for R/G/B.
   if (info_header_.bi_compression != BITFIELDS) {
     // The format doesn't actually use bitmasks.  To simplify the decode
     // logic later, create bitmasks for the RGB data.  For Windows V4+,
@@ -656,8 +656,8 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
               (is_top_down_ ? (coord_.Y() < (parent_->Size().Height() - 1))
                             : (coord_.Y() > 0)))
             buffer_->SetHasAlpha(true);
-          // There's no need to move |m_coord| here to trigger the caller
-          // to call setPixelsChanged().  If the only thing that's changed
+          // There's no need to move |coord_| here to trigger the caller
+          // to call SetPixelsChanged().  If the only thing that's changed
           // is the alpha state, that will be properly written into the
           // underlying SkBitmap when we mark the frame complete.
           return kSuccess;
@@ -688,7 +688,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
         default: {  // Absolute mode
           // |code| pixels specified as in BI_RGB, zero-padded at the end
           // to a multiple of 16 bits.
-          // Because processNonRLEData() expects m_decodedOffset to
+          // Because ProcessNonRLEData() expects decoded_offset_ to
           // point to the beginning of the pixel data, bump it past
           // the escape bytes and then reset if decoding failed.
           decoded_offset_ += 2;
@@ -797,7 +797,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
             } else
               coord_.Move(1, 0);
           } else {
-            // See comments near the end of processRLEData().
+            // See comments near the end of ProcessRLEData().
             if (color_index < info_header_.bi_clr_used)
               SetI(color_index);
             else
@@ -817,7 +817,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
         // until we actually see a non-zero alpha value; at that point,
         // reset any previously-decoded pixels to fully transparent and
         // continue decoding based on the real alpha channel values.
-        // As an optimization, avoid setting "hasAlpha" to true for
+        // As an optimization, avoid calling SetHasAlpha(true) for
         // images where all alpha values are 255; opaque images are
         // faster to draw.
         int alpha = GetAlpha(pixel);

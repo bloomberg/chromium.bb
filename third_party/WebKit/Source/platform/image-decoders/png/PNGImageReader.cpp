@@ -109,7 +109,7 @@ PNGImageReader::~PNGImageReader() {
 // png friendly way, and pass it to libpng for decoding.
 //
 // Pre-conditions before using this:
-// - |reader|.size() >= |readOffset| + |length|
+// - |reader|.size() >= |read_offset| + |length|
 // - |buffer|.size() >= |length|
 // - |length| <= |kBufferSize|
 //
@@ -598,7 +598,7 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
     }
   }
 
-  // Not enough data to call headerAvailable.
+  // Not enough data to call HeaderAvailable.
   return true;
 }
 
@@ -616,7 +616,7 @@ const PNGImageReader::FrameInfo& PNGImageReader::GetFrameInfo(
   return frame_info_[index];
 }
 
-// Extract the fcTL frame control info and store it in m_newFrame. The length
+// Extract the fcTL frame control info and store it in new_frame_. The length
 // check on the fcTL data has been done by the calling code.
 bool PNGImageReader::ParseFrameInfo(const png_byte* data) {
   if (fctl_needs_dat_chunk_)

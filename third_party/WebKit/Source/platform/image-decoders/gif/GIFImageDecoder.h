@@ -52,7 +52,7 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   int RepetitionCount() const override;
   bool FrameIsCompleteAtIndex(size_t) const override;
   float FrameDurationAtIndex(size_t) const override;
-  // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
+  // CAUTION: SetFailed() deletes |reader_|.  Be careful to avoid
   // accessing deleted memory, especially when calling this from inside
   // GIFImageReader!
   bool SetFailed() override;

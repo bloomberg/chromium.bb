@@ -77,7 +77,7 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
        ++length) {
     source_data[0]->Append(source, 1u);
     source_data[1]->Append(source++, 1u);
-    // Alternate the buffers to cover the JPEGImageDecoder::onSetData restart
+    // Alternate the buffers to cover the JPEGImageDecoder::OnSetData restart
     // code.
     decoder->SetData(source_data[length & 1].Get(), length == data->size());
 
@@ -89,9 +89,9 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
 
     for (size_t i = frames_decoded; i < frame_count; ++i) {
       // In ICOImageDecoder memory layout could differ from frame order.
-      // E.g. memory layout could be |<frame1><frame0>| and frameCount
+      // E.g. memory layout could be |<frame1><frame0>| and frame_count
       // would return 1 until receiving full file.
-      // When file is completely received frameCount would return 2 and
+      // When file is completely received frame_count would return 2 and
       // only then both frames could be completely decoded.
       ImageFrame* frame = decoder->FrameBufferAtIndex(i);
       if (frame && frame->GetStatus() == ImageFrame::kFrameComplete)
@@ -111,7 +111,7 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
   }
 }
 
-// This test verifies that calling SharedBuffer::mergeSegmentsIntoBuffer() does
+// This test verifies that calling SharedBuffer::MergeSegmentsIntoBuffer() does
 // not break decoding at a critical point: in between a call to decode the size
 // (when the decoder stops while it may still have input data to read) and a
 // call to do a full decode.
@@ -131,7 +131,7 @@ static void TestMergeBuffer(DecoderCreator create_decoder, SharedBuffer* data) {
 
   ASSERT_TRUE(decoder->IsSizeAvailable());
 
-  // This will call SharedBuffer::mergeSegmentsIntoBuffer, copying all
+  // This will call SharedBuffer::MergeSegmentsIntoBuffer, copying all
   // segments into the contiguous buffer. If the ImageDecoder was pointing to
   // data in a segment, its pointer would no longer be valid.
   segmented_data->Data();
@@ -201,7 +201,7 @@ static void TestDecodeAfterReallocatingData(DecoderCreator create_decoder,
   decoder->SetData(data, true);
   size_t frame_count = decoder->FrameCount();
 
-  // ... and then decode frames from 'reallocatedData'.
+  // ... and then decode frames from 'reallocated_data'.
   RefPtr<SharedBuffer> reallocated_data = data->Copy();
   ASSERT_TRUE(reallocated_data.Get());
   data->Clear();
@@ -222,7 +222,7 @@ static void TestByteByByteSizeAvailable(DecoderCreator create_decoder,
   EXPECT_LT(frame_offset, data->size());
 
   // Send data to the decoder byte-by-byte and use the provided frame offset in
-  // the data to check that isSizeAvailable() changes state only when that
+  // the data to check that IsSizeAvailable() changes state only when that
   // offset is reached. Also check other decoder state.
   RefPtr<SharedBuffer> temp_data = SharedBuffer::Create();
   const char* source = data->Data();
@@ -299,7 +299,7 @@ void TestUpdateRequiredPreviousFrameAfterFirstDecode(
   std::unique_ptr<ImageDecoder> decoder = create_decoder();
 
   // Give it data that is enough to parse but not decode in order to check the
-  // status of requiredPreviousFrameIndex before decoding.
+  // status of RequiredPreviousFrameIndex before decoding.
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
   const char* source = full_data->Data();
   do {

@@ -78,10 +78,10 @@ class PLATFORM_EXPORT ImageFrame final {
 
   ImageFrame();
 
-  // The assignment operator reads m_hasAlpha (inside setStatus()) before it
-  // sets it (in setHasAlpha()).  This doesn't cause any problems, since the
-  // setHasAlpha() call ensures all state is set correctly, but it means we
-  // need to initialize m_hasAlpha to some value before calling the operator
+  // The assignment operator reads has_alpha_ (inside SetStatus()) before it
+  // sets it (in SetHasAlpha()).  This doesn't cause any problems, since the
+  // SetHasAlpha() call ensures all state is set correctly, but it means we
+  // need to initialize has_alpha_ to some value before calling the operator
   // lest any tools complain about using an uninitialized value.
   ImageFrame(const ImageFrame& other) : has_alpha_(false) { operator=(other); }
 
@@ -104,9 +104,9 @@ class PLATFORM_EXPORT ImageFrame final {
   // marked as done (immutable).  Returns whether the move succeeded.
   bool TakeBitmapDataIfWritable(ImageFrame*);
 
-  // Copies the pixel data at [(startX, startY), (endX, startY)) to the
+  // Copies the pixel data at [(start_x, start_y), (end_x, start_y)) to the
   // same X-coordinates on each subsequent row up to but not including
-  // endY.
+  // end_y.
   void CopyRowNTimes(int start_x, int end_x, int start_y, int end_y) {
     DCHECK_LT(start_x, Width());
     DCHECK_LE(end_x, Width());
@@ -136,9 +136,9 @@ class PLATFORM_EXPORT ImageFrame final {
   // Returns the bitmap that is the output of decoding.
   const SkBitmap& Bitmap() const { return bitmap_; }
 
-  // Create SkImage from bitmap() and return it.  This should be called only
+  // Create SkImage from Bitmap() and return it.  This should be called only
   // if frame is complete.  The bitmap is set immutable before creating
-  // SkImage to avoid copying bitmap in SkImage::MakeFromBitmap(m_bitmap).
+  // SkImage to avoid copying bitmap in SkImage::MakeFromBitmap(bitmap_).
   sk_sp<SkImage> FinalizePixelsAndGetImage();
 
   // Returns true if the pixels changed, but the bitmap has not yet been
@@ -163,9 +163,9 @@ class PLATFORM_EXPORT ImageFrame final {
   void SetMemoryAllocator(SkBitmap::Allocator* allocator) {
     allocator_ = allocator;
   }
-  // The pixelsChanged flag needs to be set when the raw pixel data was directly
-  // modified (e.g. through a pointer or setRGBA). The flag is usually set after
-  // a batch of changes was made.
+  // The pixels_changed flag needs to be set when the raw pixel data was
+  // directly modified (e.g. through a pointer or SetRGBA). The flag is usually
+  // set after a batch of changes has been made.
   void SetPixelsChanged(bool pixels_changed) {
     pixels_changed_ = pixels_changed;
   }
@@ -293,7 +293,7 @@ class PLATFORM_EXPORT ImageFrame final {
 
   // The frame that must be decoded before this frame can be decoded.
   // WTF::kNotFound if this frame doesn't require any previous frame.
-  // This is used by ImageDecoder::clearCacheExceptFrame(), and will never
+  // This is used by ImageDecoder::ClearCacheExceptFrame(), and will never
   // be read for image formats that do not have multiple frames.
   size_t required_previous_frame_index_;
 };
