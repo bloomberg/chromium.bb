@@ -343,10 +343,12 @@ void VerifyDeveloperEngagementUkm(
   ASSERT_NE(nullptr, source);
   EXPECT_EQ(form.origin, source->url());
 
-  std::vector<std::pair<const char*, int64_t>> expected_metrics;
+  int expected_metric_value = 0;
   for (const auto it : expected_metric_values)
-    expected_metrics.push_back(
-        {internal::kUKMDeveloperEngagementMetricName, it});
+    expected_metric_value |= 1 << it;
+
+  const std::vector<std::pair<const char*, int64_t>> expected_metrics{
+      {internal::kUKMDeveloperEngagementMetricName, expected_metric_value}};
 
   EXPECT_THAT(entry_proto.metrics(),
               UnorderedPointwise(CompareMetrics(), expected_metrics));

@@ -378,24 +378,26 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmService* ukm_service) {
   UpdateAutofillCount();
   IdentifySections(has_author_specified_sections_);
 
-  std::vector<AutofillMetrics::DeveloperEngagementMetric> metrics;
+  int developer_engagement_metrics = 0;
   if (IsAutofillable()) {
     AutofillMetrics::DeveloperEngagementMetric metric =
         has_author_specified_types_
             ? AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS
             : AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS;
-    metrics.push_back(metric);
+    developer_engagement_metrics |= 1 << metric;
     AutofillMetrics::LogDeveloperEngagementMetric(metric);
   }
 
   if (has_author_specified_upi_vpa_hint_) {
     AutofillMetrics::LogDeveloperEngagementMetric(
         AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
-    metrics.push_back(AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
+    developer_engagement_metrics |=
+        1 << AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT;
   }
 
-  AutofillMetrics::LogDeveloperEngagementUkm(ukm_service, source_url(),
-                                             metrics);
+  if (developer_engagement_metrics)
+    AutofillMetrics::LogDeveloperEngagementUkm(ukm_service, source_url(),
+                                               developer_engagement_metrics);
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
       base::TimeTicks::Now() - determine_heuristic_types_start_time);

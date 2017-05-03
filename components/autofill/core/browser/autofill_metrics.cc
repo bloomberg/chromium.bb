@@ -307,11 +307,15 @@ void LogTypeQualityMetric(const std::string& base_name,
 }  // namespace
 
 // static
-void AutofillMetrics::LogCardUploadDecisionMetric(
-    CardUploadDecisionMetric metric) {
-  DCHECK_LT(metric, NUM_CARD_UPLOAD_DECISION_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.CardUploadDecisionExpanded", metric,
-                            NUM_CARD_UPLOAD_DECISION_METRICS);
+void AutofillMetrics::LogCardUploadDecisionMetrics(
+    int upload_decision_metrics) {
+  DCHECK(upload_decision_metrics);
+  DCHECK_LT(upload_decision_metrics, 1 << kNumCardUploadDecisionMetrics);
+
+  for (int metric = 0; metric < kNumCardUploadDecisionMetrics; ++metric)
+    if (upload_decision_metrics & (1 << metric))
+      UMA_HISTOGRAM_ENUMERATION("Autofill.CardUploadDecisionMetric", metric,
+                                kNumCardUploadDecisionMetrics);
 }
 
 // static
@@ -749,16 +753,14 @@ void AutofillMetrics::LogShowedHttpNotSecureExplanation() {
 }
 
 // static
-void AutofillMetrics::LogCardUploadDecisionUkm(
-    ukm::UkmService* ukm_service,
-    const GURL& url,
-    AutofillMetrics::CardUploadDecisionMetric upload_decision) {
-  if (upload_decision >= AutofillMetrics::NUM_CARD_UPLOAD_DECISION_METRICS)
-    return;
+void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmService* ukm_service,
+                                                const GURL& url,
+                                                int upload_decision_metrics) {
+  DCHECK(upload_decision_metrics);
+  DCHECK_LT(upload_decision_metrics, 1 << kNumCardUploadDecisionMetrics);
 
   const std::vector<std::pair<const char*, int>> metrics = {
-      {internal::kUKMCardUploadDecisionMetricName,
-       static_cast<int>(upload_decision)}};
+      {internal::kUKMCardUploadDecisionMetricName, upload_decision_metrics}};
   LogUkm(ukm_service, url, internal::kUKMCardUploadDecisionEntryName, metrics);
 }
 
@@ -766,14 +768,16 @@ void AutofillMetrics::LogCardUploadDecisionUkm(
 void AutofillMetrics::LogDeveloperEngagementUkm(
     ukm::UkmService* ukm_service,
     const GURL& url,
-    std::vector<AutofillMetrics::DeveloperEngagementMetric> metrics) {
-  std::vector<std::pair<const char*, int>> form_structure_metrics;
-  for (const auto it : metrics)
-    form_structure_metrics.push_back(
-        {internal::kUKMDeveloperEngagementMetricName, static_cast<int>(it)});
+    int developer_engagement_metrics) {
+  DCHECK(developer_engagement_metrics);
+  DCHECK_LT(developer_engagement_metrics,
+            1 << NUM_DEVELOPER_ENGAGEMENT_METRICS);
 
-  LogUkm(ukm_service, url, internal::kUKMDeveloperEngagementEntryName,
-         form_structure_metrics);
+  const std::vector<std::pair<const char*, int>> metrics = {
+      {internal::kUKMDeveloperEngagementMetricName,
+       developer_engagement_metrics}};
+
+  LogUkm(ukm_service, url, internal::kUKMDeveloperEngagementEntryName, metrics);
 }
 
 // static
