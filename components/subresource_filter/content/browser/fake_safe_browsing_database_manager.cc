@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -32,11 +33,26 @@ bool FakeSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
   if (!url_to_threat_type_.count(url))
     return true;
 
+  // Enforce the invariant that a client will not send multiple requests, with
+  // the subresource filter client implementation.
+  DCHECK(checks_.find(client) == checks_.end());
+  checks_.insert(client);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&Client::OnCheckBrowseUrlResult, base::Unretained(client), url,
-                 url_to_threat_type_[url], safe_browsing::ThreatMetadata()));
+      base::Bind(&FakeSafeBrowsingDatabaseManager::
+                     OnCheckUrlForSubresourceFilterComplete,
+                 base::Unretained(this), base::Unretained(client), url));
   return false;
+}
+
+void FakeSafeBrowsingDatabaseManager::OnCheckUrlForSubresourceFilterComplete(
+    Client* client,
+    const GURL& url) {
+  // Check to see if the request was cancelled to avoid use-after-free.
+  if (checks_.find(client) == checks_.end())
+    return;
+  client->OnCheckBrowseUrlResult(url, url_to_threat_type_[url],
+                                 safe_browsing::ThreatMetadata());
 }
 
 bool FakeSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
@@ -50,7 +66,9 @@ bool FakeSafeBrowsingDatabaseManager::IsSupported() const {
 bool FakeSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
   return false;
 }
-void FakeSafeBrowsingDatabaseManager::CancelCheck(Client* client) {}
+void FakeSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
+  checks_.erase(client);
+}
 bool FakeSafeBrowsingDatabaseManager::CanCheckResourceType(
     content::ResourceType /* resource_type */) const {
   return true;
