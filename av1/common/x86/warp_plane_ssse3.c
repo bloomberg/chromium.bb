@@ -250,6 +250,14 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
       iy4 = y4 >> WARPEDMODEL_PREC_BITS;
       sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
 
+      sx4 += alpha * (-4) + beta * (-4);
+      sy4 += gamma * (-4) + delta * (-4);
+
+      sx4 = ROUND_POWER_OF_TWO_SIGNED(sx4, WARP_PARAM_REDUCE_BITS)
+            << WARP_PARAM_REDUCE_BITS;
+      sy4 = ROUND_POWER_OF_TWO_SIGNED(sy4, WARP_PARAM_REDUCE_BITS)
+            << WARP_PARAM_REDUCE_BITS;
+
       // Horizontal filter
       for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
         int iy = iy4 + k;
@@ -270,10 +278,10 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
               ref[iy * stride + (width - 1)] *
               (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         } else {
-          const int sx = sx4 + alpha * (-4) + beta * k +
-                         // Include rounding and offset here
-                         (1 << (WARPEDDIFF_PREC_BITS - 1)) +
-                         (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
+          int sx = sx4 + beta * (k + 4) +
+                   // Include rounding and offset here
+                   (1 << (WARPEDDIFF_PREC_BITS - 1)) +
+                   (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
 
           // Load source pixels
           const __m128i src =
@@ -367,9 +375,8 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
 
       // Vertical filter
       for (k = -4; k < AOMMIN(4, p_height - i - 4); ++k) {
-        const int sy = sy4 + gamma * (-4) + delta * k +
-                       (1 << (WARPEDDIFF_PREC_BITS - 1)) +
-                       (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
+        int sy = sy4 + delta * (k + 4) + (1 << (WARPEDDIFF_PREC_BITS - 1)) +
+                 (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
 
         // Load from tmp and rearrange pairs of consecutive rows into the
         // column order 0 0 2 2 4 4 6 6; 1 1 3 3 5 5 7 7
