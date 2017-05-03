@@ -41,8 +41,7 @@ namespace test {
 // base::PostTask(FROM_HERE, base::Bind(&RunLoop::Quit, &run_loop));
 // base::PostTask(FROM_HERE, base::Bind(&C));
 // base::PostTaskWithTraits(
-//     base::TaskTraits().WithShutdownBehavior(
-//         base::TaskShutdownBehavior::BLOCK_SHUTDOWN),
+//     {base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
 //     base::Bind(&D));
 // run_loop.Run();  // Returns after running B and RunLoop::Quit.
 //
