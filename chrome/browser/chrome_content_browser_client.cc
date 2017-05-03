@@ -1608,15 +1608,6 @@ bool IsAutoReloadVisibleOnlyEnabled() {
   return true;
 }
 
-#if !defined(OS_ANDROID)
-bool AreExperimentalWebPlatformFeaturesEnabled() {
-  const base::CommandLine& browser_command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return browser_command_line.HasSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-}
-#endif
-
 void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     const base::CommandLine& browser_command_line,
     base::CommandLine* command_line) {
@@ -3219,8 +3210,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToFrame(
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));
   }
 #else
-  if (AreExperimentalWebPlatformFeaturesEnabled() &&
-      base::FeatureList::IsEnabled(features::kWebPayments)) {
+  if (base::FeatureList::IsEnabled(features::kWebPayments)) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
     if (web_contents) {
