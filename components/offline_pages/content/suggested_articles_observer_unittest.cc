@@ -49,6 +49,10 @@ class TestingPrefetchService : public PrefetchService {
     last_removed_client_id = base::MakeUnique<ClientId>(client_id);
   }
 
+  void BeginBackgroundTask(
+      std::unique_ptr<ScopedBackgroundTask> task) override {}
+  void StopBackgroundTask(ScopedBackgroundTask* task) override {}
+
   std::vector<PrefetchURL> latest_prefetch_urls;
   std::unique_ptr<ClientId> last_removed_client_id;
 

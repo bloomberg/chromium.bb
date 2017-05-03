@@ -22,6 +22,8 @@ class PrefetchServiceImpl : public PrefetchService {
       const std::vector<PrefetchURL>& suggested_urls) override;
   void RemoveAllUnprocessedPrefetchURLs(const std::string& name_space) override;
   void RemovePrefetchURLsByClientId(const ClientId& client_id) override;
+  void BeginBackgroundTask(std::unique_ptr<ScopedBackgroundTask> task) override;
+  void StopBackgroundTask(ScopedBackgroundTask* task) override;
 
   // KeyedService implementation:
   void Shutdown() override;

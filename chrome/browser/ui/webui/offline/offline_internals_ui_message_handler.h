@@ -59,6 +59,12 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Load whether device is currently offline.
   void HandleGetNetworkStatus(const base::ListValue* args);
 
+  // Schedules an NWake signal.
+  void HandleScheduleNwake(const base::ListValue* args);
+
+  // Cancels an NWake signal.
+  void HandleCancelNwake(const base::ListValue* args);
+
   // Callback for async GetAllPages calls.
   void HandleStoredPagesCallback(
       std::string callback_id,

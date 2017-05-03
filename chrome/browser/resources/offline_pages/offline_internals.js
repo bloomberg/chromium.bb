@@ -292,6 +292,12 @@ cr.define('offlineInternals', function() {
             });
       }
     };
+    $('schedule-nwake').onclick = function() {
+      browserProxy_.scheduleNwake();
+    }
+    $('cancel-nwake').onclick = function() {
+      browserProxy_.cancelNwake();
+    }
     if (!incognito)
       refreshAll();
   }
