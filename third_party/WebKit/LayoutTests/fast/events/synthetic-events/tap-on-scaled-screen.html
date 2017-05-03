@@ -41,4 +41,16 @@ testTap.step(function () {
 
 }, 'Test that chrome.gpuBenchmarking.tap always taps on the expected position no matter what the screen scale factor is.');
 
+test(function(t) {
+        if (window.chrome && chrome.gpuBenchmarking) {
+        var exception;
+        try {
+            chrome.gpuBenchmarking.tap(-1, -1, t.unreached_func('Listener should not fire'));
+        } catch(e) {
+          exception = e;
+        }
+        assert_not_equals(exception, undefined);
+    }
+}, 'Test that chrome.gpuBenchmarking.tap throws an exception on invalid input values.');
+
 </script>

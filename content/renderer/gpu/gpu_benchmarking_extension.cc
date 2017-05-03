@@ -974,11 +974,18 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
     return false;
   }
 
-  std::unique_ptr<SyntheticTapGestureParams> gesture_params(
-      new SyntheticTapGestureParams);
-
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
   float page_scale_factor = context.web_view()->PageScaleFactor();
+  gfx::Rect rect = context.render_view_impl()->GetWidget()->ViewRect();
+  rect -= rect.OffsetFromOrigin();
+  if (!rect.Contains(position_x * page_scale_factor,
+                     position_y * page_scale_factor)) {
+    args->ThrowError();
+    return false;
+  }
+
+  std::unique_ptr<SyntheticTapGestureParams> gesture_params(
+      new SyntheticTapGestureParams);
 
   gesture_params->position.SetPoint(position_x * page_scale_factor,
                                     position_y * page_scale_factor);
