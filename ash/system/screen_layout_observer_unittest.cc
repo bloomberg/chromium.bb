@@ -430,4 +430,32 @@ TEST_F(ScreenLayoutObserverTest, DockedModeWithExternalPrimaryDisplayMessage) {
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 }
 
+// Tests that rotation notifications are only shown when the rotation source is
+// a user action. The accelerometer source nevber produces any notifications.
+TEST_F(ScreenLayoutObserverTest, RotationNotification) {
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
+  UpdateDisplay("400x400");
+  const int64_t primary_id =
+      display_manager()->GetPrimaryDisplayCandidate().id();
+
+  // The accelerometer source.
+  display_manager()->SetDisplayRotation(
+      primary_id, display::Display::ROTATE_90,
+      display::Display::ROTATION_SOURCE_ACCELEROMETER);
+  EXPECT_TRUE(GetDisplayNotificationText().empty());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
+
+  // The user source.
+  display_manager()->SetDisplayRotation(primary_id,
+                                        display::Display::ROTATE_180,
+                                        display::Display::ROTATION_SOURCE_USER);
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName(),
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180)),
+            GetDisplayNotificationAdditionalText());
+  EXPECT_TRUE(GetDisplayNotificationText().empty());
+}
+
 }  // namespace ash
