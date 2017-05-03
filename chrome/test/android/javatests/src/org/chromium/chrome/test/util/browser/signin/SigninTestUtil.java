@@ -59,7 +59,6 @@ public final class SigninTestUtil {
      * Tears down the test authentication environment.
      */
     public static void tearDownAuthForTest() {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
         sContext = null;
     }
 
