@@ -27,16 +27,12 @@
 namespace blink {
 
 StyleBackgroundData::StyleBackgroundData()
-    : background_(kBackgroundFillLayer, true),
-      color_(ComputedStyle::InitialBackgroundColor()) {}
+    : background_(FillLayer(kBackgroundFillLayer, true)),
+      background_color_(Color::kTransparent) {}
 
-StyleBackgroundData::StyleBackgroundData(const StyleBackgroundData& o)
-    : RefCounted<StyleBackgroundData>(),
-      background_(o.background_),
-      color_(o.color_) {}
-
-bool StyleBackgroundData::operator==(const StyleBackgroundData& o) const {
-  return background_ == o.background_ && color_ == o.color_;
+bool StyleBackgroundData::operator==(const StyleBackgroundData& other) const {
+  return background_ == other.background_ &&
+         background_color_ == other.background_color_;
 }
 
 }  // namespace blink
