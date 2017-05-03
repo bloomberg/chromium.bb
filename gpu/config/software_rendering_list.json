@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.4",
+  "version": "13.5",
   "entries": [
     {
       "id": 1,
@@ -1348,18 +1348,6 @@
       "device_id": ["0x2a02"],
       "features": [
         "all"
-      ]
-    },
-    {
-      "id": 132,
-      "description": "Mali accelerated 2d canvas is slow on Linux",
-      "cr_bugs": [691601],
-      "os": {
-        "type": "linux"
-      },
-      "gl_renderer": "Mali-4.*",
-      "features": [
-        "accelerated_2d_canvas"
       ]
     },
     {
