@@ -32,12 +32,15 @@
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierUsername = kSectionIdentifierEnumZero,
+  SectionIdentifierSite = kSectionIdentifierEnumZero,
+  SectionIdentifierUsername,
   SectionIdentifierPassword,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeHeader = kItemTypeEnumZero,
+  ItemTypeSite,
+  ItemTypeCopySite,
   ItemTypeUsername,
   ItemTypeCopyUsername,
   ItemTypePassword,
@@ -53,6 +56,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* _username;
   // The saved password.
   NSString* _password;
+  // The origin site of the saved credential.
+  NSString* _site;
   // Whether the password is shown in plain text form or in obscured form.
   BOOL _plainTextPasswordShown;
   // The password form.
@@ -88,6 +93,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
     _passwordForm = passwordForm;
     _username = [username copy];
     _password = [password copy];
+    _site = base::SysUTF8ToNSString(_passwordForm.origin.spec());
     self.title =
         [PasswordDetailsCollectionViewController simplifyOrigin:origin];
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -118,6 +124,19 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 - (void)loadModel {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
+
+  [model addSectionWithIdentifier:SectionIdentifierSite];
+  CollectionViewTextItem* siteHeader =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+  siteHeader.text = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
+  [model setHeader:siteHeader forSectionWithIdentifier:SectionIdentifierSite];
+  PasswordDetailsItem* siteItem =
+      [[PasswordDetailsItem alloc] initWithType:ItemTypeSite];
+  siteItem.text = _site;
+  siteItem.showingText = YES;
+  [model addItem:siteItem toSectionWithIdentifier:SectionIdentifierSite];
+  [model addItem:[self siteCopyButtonItem]
+      toSectionWithIdentifier:SectionIdentifierSite];
 
   [model addSectionWithIdentifier:SectionIdentifierUsername];
   CollectionViewTextItem* usernameHeader =
@@ -165,6 +184,23 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 }
 
 #pragma mark - Items
+
+- (CollectionViewItem*)siteCopyButtonItem {
+  CollectionViewTextItem* item =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeCopySite];
+  item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_COPY_BUTTON);
+  item.textColor = [[MDCPalette cr_bluePalette] tint500];
+  // Accessibility label adds the header to the text, so that accessibility
+  // users do not have to rely on the visual grouping to understand which part
+  // of the credential is being copied.
+  item.accessibilityLabel = [NSString
+      stringWithFormat:@"%@: %@",
+                       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE),
+                       l10n_util::GetNSString(
+                           IDS_IOS_SETTINGS_SITE_COPY_BUTTON)];
+  item.accessibilityTraits |= UIAccessibilityTraitButton;
+  return item;
+}
 
 - (CollectionViewItem*)usernameCopyButtonItem {
   CollectionViewTextItem* item =
@@ -221,6 +257,13 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 }
 
 #pragma mark - Actions
+
+- (void)copySite {
+  UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
+  generalPasteboard.string = _site;
+  [self showCopyResultToast:l10n_util::GetNSString(
+                                IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE)];
+}
 
 - (void)copyUsername {
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
@@ -349,6 +392,9 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
+    case ItemTypeCopySite:
+      [self copySite];
+      break;
     case ItemTypeCopyUsername:
       [self copyUsername];
       break;
