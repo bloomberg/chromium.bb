@@ -57,10 +57,28 @@ EGLConfig ChildWindowSurfaceWin::GetConfig() {
 
     EGLDisplay display = GetHardwareDisplay();
     EGLint num_configs;
-    if (!eglChooseConfig(display, config_attribs, &config_, 1, &num_configs)) {
+    if (!eglChooseConfig(display, config_attribs, NULL, 0, &num_configs)) {
       LOG(ERROR) << "eglChooseConfig failed with error "
                  << ui::GetLastEGLErrorString();
       return NULL;
+    }
+    std::vector<EGLConfig> configs(num_configs);
+    if (!eglChooseConfig(display, config_attribs, configs.data(), num_configs,
+                         &num_configs)) {
+      LOG(ERROR) << "eglChooseConfig failed with error "
+                 << ui::GetLastEGLErrorString();
+      return NULL;
+    }
+    config_ = configs[0];
+    for (int i = 0; i < num_configs; i++) {
+      EGLint red_bits;
+      eglGetConfigAttrib(display, configs[i], EGL_RED_SIZE, &red_bits);
+      // Try to pick a configuration with the right number of bits rather
+      // than one that just has enough bits.
+      if (red_bits == bits_per_channel) {
+        config_ = configs[i];
+        break;
+      }
     }
   }
 
