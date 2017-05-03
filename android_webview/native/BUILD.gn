@@ -18,7 +18,6 @@ source_set("native") {
     "//components/spellcheck:build_features",
     "//components/web_contents_delegate_android:web_contents_delegate_android",
     "//content/public/common",
-    "//device/battery:mojo_bindings",
     "//media",
     "//net",
     "//skia",

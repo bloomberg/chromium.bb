@@ -20,8 +20,6 @@ is_linux_without_udev = is_linux && !use_udev
 test("device_unittests") {
   sources = [
     "base/synchronization/one_writer_seqlock_unittest.cc",
-    "battery/battery_status_manager_win_unittest.cc",
-    "battery/battery_status_service_unittest.cc",
     "bluetooth/bluetooth_adapter_mac_unittest.mm",
     "bluetooth/bluetooth_adapter_unittest.cc",
     "bluetooth/bluetooth_adapter_win_unittest.cc",
@@ -81,8 +79,6 @@ test("device_unittests") {
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//device/base/synchronization",
-    "//device/battery",
-    "//device/battery:mojo_bindings",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//device/bluetooth:mojo",
@@ -110,11 +106,6 @@ test("device_unittests") {
     "//tools/usb_gadget",
     "//url",
   ]
-
-  if (is_linux && !is_chromeos && use_dbus) {
-    sources += [ "battery/battery_status_manager_linux_unittest.cc" ]
-    deps += [ "//dbus:test_support" ]
-  }
 
   if (!is_linux_without_udev) {
     sources +=
@@ -191,7 +182,6 @@ test("device_unittests") {
   }
 
   if (is_android) {
-    sources -= [ "battery/battery_status_service_unittest.cc" ]
     deps += [
       ":bluetooth_test_java",
       ":bluetooth_test_jni_headers",
@@ -200,7 +190,6 @@ test("device_unittests") {
       "//device/sensors:java",
       "//device/usb:java",
     ]
-    deps -= [ "//device/battery" ]
   }
 
   if (is_chromeos) {

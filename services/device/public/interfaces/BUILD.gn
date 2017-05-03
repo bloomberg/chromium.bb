@@ -6,6 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
+    "battery_monitor.mojom",
+    "battery_status.mojom",
     "fingerprint.mojom",
     "power_monitor.mojom",
     "time_zone_monitor.mojom",

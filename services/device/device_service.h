@@ -6,7 +6,6 @@
 #define SERVICES_DEVICE_DEVICE_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
-#include "device/battery/battery_monitor.mojom.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
@@ -14,6 +13,7 @@
 #include "device/wake_lock/public/interfaces/wake_lock_context_provider.mojom.h"
 #include "device/wake_lock/wake_lock_service_context.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/device/public/interfaces/battery_monitor.mojom.h"
 #include "services/device/public/interfaces/fingerprint.mojom.h"
 #include "services/device/public/interfaces/power_monitor.mojom.h"
 #include "services/device/public/interfaces/time_zone_monitor.mojom.h"
