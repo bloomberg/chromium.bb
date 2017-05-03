@@ -166,6 +166,10 @@ bool UiScene::GetWebVrRenderingEnabled() const {
   return webvr_rendering_enabled_;
 }
 
+void UiScene::SetWebVrRenderingEnabled(bool enabled) {
+  webvr_rendering_enabled_ = enabled;
+}
+
 const std::vector<std::unique_ptr<UiElement>>& UiScene::GetUiElements() const {
   return ui_elements_;
 }

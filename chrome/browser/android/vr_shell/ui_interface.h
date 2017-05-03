@@ -49,7 +49,6 @@ class UiInterface {
   void RemoveTab(bool incognito, int id);
   void SetURL(const GURL& url);
   void HandleAppButtonGesturePerformed(Direction direction);
-  void HandleAppButtonClicked();
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
 
  private:

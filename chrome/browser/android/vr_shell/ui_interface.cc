@@ -42,8 +42,6 @@ void UiInterface::SetURL(const GURL& url) {}
 
 void UiInterface::HandleAppButtonGesturePerformed(Direction direction) {}
 
-void UiInterface::HandleAppButtonClicked() {}
-
 void UiInterface::SetHistoryButtonsEnabled(bool can_go_back,
                                            bool can_go_forward) {}
 

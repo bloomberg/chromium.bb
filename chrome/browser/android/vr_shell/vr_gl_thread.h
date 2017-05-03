@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace vr_shell {
@@ -20,7 +21,7 @@ class UiSceneManager;
 class VrShell;
 class VrShellGl;
 
-class VrGLThread : public base::Thread {
+class VrGLThread : public VrBrowserInterface, public base::Thread {
  public:
   VrGLThread(
       const base::WeakPtr<VrShell>& weak_vr_shell,
@@ -34,6 +35,20 @@ class VrGLThread : public base::Thread {
   base::WeakPtr<UiSceneManager> GetSceneManager() {
     return weak_scene_manager_;
   }
+
+  // VrBrowserInterface implementation.
+  void ContentSurfaceChanged(jobject surface) override;
+  void GvrDelegateReady() override;
+  void UpdateGamepadData(device::GvrGamepadData) override;
+  void AppButtonGesturePerformed(UiInterface::Direction direction) override;
+  void OnAppButtonClicked() override;
+  void ProcessContentGesture(
+      std::unique_ptr<blink::WebInputEvent> event) override;
+  void ForceExitVr() override;
+  void RunVRDisplayInfoCallback(
+      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+      device::mojom::VRDisplayInfoPtr* info) override;
+  void OnContentPaused(bool enabled) override;
 
  protected:
   void Init() override;
