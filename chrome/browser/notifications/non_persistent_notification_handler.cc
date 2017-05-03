@@ -31,7 +31,10 @@ void NonPersistentNotificationHandler::OnClick(
   DCHECK(reply.is_null());
 
   if (notifications_.find(notification_id) != notifications_.end()) {
-    notifications_[notification_id]->Click();
+    if (action_index >= 0)
+      notifications_[notification_id]->ButtonClick(action_index);
+    else
+      notifications_[notification_id]->Click();
   }
 }
 
