@@ -3388,3 +3388,5 @@ crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-path-context-cli
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Timeout ]
 
+crbug.com/717914 virtual/stable/webexposed/element-instance-property-listing.html [ Failure ]
+crbug.com/717914 virtual/stable/webexposed/global-interface-listing.html [ Failure ]
