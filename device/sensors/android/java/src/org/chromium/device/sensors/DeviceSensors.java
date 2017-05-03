@@ -4,7 +4,6 @@
 
 package org.chromium.device.sensors;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -66,11 +65,6 @@ class DeviceSensors implements SensorEventListener {
 
     // Lazily initialized when registering for notifications.
     private SensorManagerProxy mSensorManagerProxy;
-
-    // The only instance of that class and its associated lock.
-    @SuppressLint("StaticFieldLeak")
-    private static DeviceSensors sSingleton;
-    private static Object sSingletonLock = new Object();
 
     static final Set<Integer> DEVICE_ORIENTATION_SENSORS_A =
             CollectionUtil.newHashSet(Sensor.TYPE_GAME_ROTATION_VECTOR);
@@ -571,13 +565,8 @@ class DeviceSensors implements SensorEventListener {
     }
 
     @CalledByNative
-    static DeviceSensors getInstance(Context appContext) {
-        synchronized (sSingletonLock) {
-            if (sSingleton == null) {
-                sSingleton = new DeviceSensors(appContext);
-            }
-            return sSingleton;
-        }
+    static DeviceSensors create(Context appContext) {
+        return new DeviceSensors(appContext);
     }
 
     /**
