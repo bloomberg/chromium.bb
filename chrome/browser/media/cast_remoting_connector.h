@@ -66,6 +66,8 @@ class CastRemotingConnector
     : public base::SupportsUserData::Data,
       public media_router::MediaRoutesObserver {
  public:
+  ~CastRemotingConnector() final;
+
   // Returns the instance of the CastRemotingConnector associated with
   // |source_contents|, creating a new instance if needed.
   static CastRemotingConnector* Get(content::WebContents* source_contents);
@@ -98,8 +100,6 @@ class CastRemotingConnector
   // by this instance (i.e., any remoted content from one tab/WebContents).
   CastRemotingConnector(media_router::MediaRouter* router,
                         const media_router::MediaSource::Id& media_source_id);
-
-  ~CastRemotingConnector() final;
 
   // Creates a RemotingBridge that implements the requested Remoter service, and
   // binds it to the interface |request|.
