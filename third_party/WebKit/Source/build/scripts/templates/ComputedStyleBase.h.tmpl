@@ -118,7 +118,7 @@ class CORE_EXPORT ComputedStyleBase {
     {% endfor %}
   }
 
-  {% for field in computed_style.fields %}
+  {% for field in computed_style.all_fields %}
   {% if field.field_template in ('storage_only', 'monotonic_flag', 'external') %}
   // {{field.property_name}}
   {{field_templates[field.field_template].decl_protected_methods(field)|indent(2)}}

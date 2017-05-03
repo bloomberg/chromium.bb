@@ -12,5 +12,5 @@ void {{field.setter_method_name}}({{field.type_name}}&& v) {
 {% endmacro %}
 
 {% macro decl_protected_methods(field) -%}
-{{base.decl_mutable_getter_method(field)}}
+{{base.decl_mutable_method(field)}}
 {%- endmacro %}
