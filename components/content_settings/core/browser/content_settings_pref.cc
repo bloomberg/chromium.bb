@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -24,6 +25,7 @@
 namespace {
 
 const char kSettingPath[] = "setting";
+const char kLastModifiedPath[] = "last_modified";
 const char kPerResourceIdentifierPrefName[] = "per_resource";
 
 // If the given content type supports resource identifiers in user preferences,
@@ -51,6 +53,17 @@ bool IsValueAllowedForType(const base::Value* value, ContentSettingsType type) {
   return value->GetType() == base::Value::Type::DICTIONARY;
 }
 
+// Extract a timestamp from |dictionary[kLastModifiedPath]|.
+// Will return base::Time() if no timestamp exists.
+base::Time GetTimeStamp(const base::DictionaryValue* dictionary) {
+  std::string timestamp_str;
+  dictionary->GetStringWithoutPathExpansion(kLastModifiedPath, &timestamp_str);
+  int64_t timestamp = 0;
+  base::StringToInt64(timestamp_str, &timestamp);
+  base::Time last_modified = base::Time::FromInternalValue(timestamp);
+  return last_modified;
+}
+
 }  // namespace
 
 namespace content_settings {
@@ -61,12 +74,14 @@ ContentSettingsPref::ContentSettingsPref(
     PrefChangeRegistrar* registrar,
     const std::string& pref_name,
     bool incognito,
+    bool store_last_modified,
     NotifyObserversCallback notify_callback)
     : content_type_(content_type),
       prefs_(prefs),
       registrar_(registrar),
       pref_name_(pref_name),
       is_incognito_(incognito),
+      store_last_modified_(store_last_modified),
       updating_preferences_(false),
       notify_callback_(notify_callback) {
   DCHECK(prefs_);
@@ -111,15 +126,15 @@ bool ContentSettingsPref::SetWebsiteSetting(
   if (!is_incognito_)
     map_to_modify = &value_map_;
 
+  base::Time modified_time =
+      store_last_modified_ ? base::Time::Now() : base::Time();
+
   {
     base::AutoLock auto_lock(lock_);
     if (value.get()) {
-      map_to_modify->SetValue(
-          primary_pattern,
-          secondary_pattern,
-          content_type_,
-          resource_identifier,
-          value->DeepCopy());
+      map_to_modify->SetValue(primary_pattern, secondary_pattern, content_type_,
+                              resource_identifier, modified_time,
+                              value->DeepCopy());
     } else {
       map_to_modify->DeleteValue(
           primary_pattern,
@@ -130,16 +145,27 @@ bool ContentSettingsPref::SetWebsiteSetting(
   }
   // Update the content settings preference.
   if (!is_incognito_) {
-    UpdatePref(primary_pattern,
-               secondary_pattern,
-               resource_identifier,
-               value.get());
+    UpdatePref(primary_pattern, secondary_pattern, resource_identifier,
+               modified_time, value.get());
   }
 
   notify_callback_.Run(
       primary_pattern, secondary_pattern, content_type_, resource_identifier);
 
   return true;
+}
+
+base::Time ContentSettingsPref::GetWebsiteSettingLastModified(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    const ResourceIdentifier& resource_identifier) {
+  OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
+  if (!is_incognito_)
+    map_to_modify = &value_map_;
+
+  base::Time last_modified = map_to_modify->GetLastModified(
+      primary_pattern, secondary_pattern, content_type_, resource_identifier);
+  return last_modified;
 }
 
 void ContentSettingsPref::ClearPref() {
@@ -202,7 +228,8 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
 
   value_map_.clear();
 
-  // Careful: The returned value could be NULL if the pref has never been set.
+  // Careful: The returned value could be nullptr if the pref has never been
+  // set.
   if (!all_settings_dictionary)
     return;
 
@@ -236,14 +263,15 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
 
     // Get settings dictionary for the current pattern string, and read
     // settings from the dictionary.
-    const base::DictionaryValue* settings_dictionary = NULL;
+    const base::DictionaryValue* settings_dictionary = nullptr;
     bool is_dictionary = i.value().GetAsDictionary(&settings_dictionary);
     DCHECK(is_dictionary);
 
     if (SupportsResourceIdentifiers(content_type_)) {
-      const base::DictionaryValue* resource_dictionary = NULL;
+      const base::DictionaryValue* resource_dictionary = nullptr;
       if (settings_dictionary->GetDictionary(
               kPerResourceIdentifierPrefName, &resource_dictionary)) {
+        base::Time last_modified = GetTimeStamp(settings_dictionary);
         for (base::DictionaryValue::Iterator j(*resource_dictionary);
              !j.IsAtEnd();
              j.Advance()) {
@@ -253,10 +281,9 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
           DCHECK(is_integer);
           DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
           std::unique_ptr<base::Value> setting_ptr(new base::Value(setting));
-          value_map_.SetValue(pattern_pair.first,
-                              pattern_pair.second,
-                              content_type_,
-                              resource_identifier,
+          // Per resource settings store a single timestamps for all resources.
+          value_map_.SetValue(pattern_pair.first, pattern_pair.second,
+                              content_type_, resource_identifier, last_modified,
                               setting_ptr->DeepCopy());
         }
       }
@@ -264,13 +291,11 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
 
     const base::Value* value = nullptr;
     settings_dictionary->GetWithoutPathExpansion(kSettingPath, &value);
-
     if (value) {
+      base::Time last_modified = GetTimeStamp(settings_dictionary);
       DCHECK(IsValueAllowedForType(value, content_type_));
-      value_map_.SetValue(pattern_pair.first,
-                          pattern_pair.second,
-                          content_type_,
-                          ResourceIdentifier(),
+      value_map_.SetValue(pattern_pair.first, pattern_pair.second,
+                          content_type_, ResourceIdentifier(), last_modified,
                           value->DeepCopy());
       if (content_type_ == CONTENT_SETTINGS_TYPE_COOKIES) {
         ContentSetting s = ValueToContentSetting(value);
@@ -321,6 +346,7 @@ void ContentSettingsPref::UpdatePref(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     const ResourceIdentifier& resource_identifier,
+    const base::Time last_modified,
     const base::Value* value) {
   // Ensure that |lock_| is not held by this thread, since this function will
   // send out notifications (by |~DictionaryPrefUpdate|).
@@ -334,7 +360,7 @@ void ContentSettingsPref::UpdatePref(
     // Get settings dictionary for the given patterns.
     std::string pattern_str(CreatePatternString(primary_pattern,
                                                 secondary_pattern));
-    base::DictionaryValue* settings_dictionary = NULL;
+    base::DictionaryValue* settings_dictionary = nullptr;
     bool found = pattern_pairs_settings->GetDictionaryWithoutPathExpansion(
         pattern_str, &settings_dictionary);
 
@@ -347,41 +373,53 @@ void ContentSettingsPref::UpdatePref(
     if (settings_dictionary) {
       if (SupportsResourceIdentifiers(content_type_) &&
           !resource_identifier.empty()) {
-        base::DictionaryValue* resource_dictionary = NULL;
+        base::DictionaryValue* resource_dictionary = nullptr;
         found = settings_dictionary->GetDictionary(
             kPerResourceIdentifierPrefName, &resource_dictionary);
         if (!found) {
-          if (value == NULL)
+          if (value == nullptr)
             return;  // Nothing to remove. Exit early.
           resource_dictionary = new base::DictionaryValue;
           settings_dictionary->Set(
               kPerResourceIdentifierPrefName, resource_dictionary);
         }
         // Update resource dictionary.
-        if (value == NULL) {
+        if (value == nullptr) {
           resource_dictionary->RemoveWithoutPathExpansion(resource_identifier,
-                                                          NULL);
+                                                          nullptr);
           if (resource_dictionary->empty()) {
             settings_dictionary->RemoveWithoutPathExpansion(
-                kPerResourceIdentifierPrefName, NULL);
+                kPerResourceIdentifierPrefName, nullptr);
+            settings_dictionary->RemoveWithoutPathExpansion(kLastModifiedPath,
+                                                            nullptr);
           }
         } else {
           resource_dictionary->SetWithoutPathExpansion(
               resource_identifier, value->DeepCopy());
+          // Update timestamp for whole resource dictionary.
+          settings_dictionary->SetStringWithoutPathExpansion(
+              kLastModifiedPath,
+              base::Int64ToString(last_modified.ToInternalValue()));
         }
       } else {
         // Update settings dictionary.
-        if (value == NULL) {
-          settings_dictionary->RemoveWithoutPathExpansion(kSettingPath, NULL);
+        if (value == nullptr) {
+          settings_dictionary->RemoveWithoutPathExpansion(kSettingPath,
+                                                          nullptr);
+          settings_dictionary->RemoveWithoutPathExpansion(kLastModifiedPath,
+                                                          nullptr);
         } else {
           settings_dictionary->SetWithoutPathExpansion(
               kSettingPath, value->DeepCopy());
+          settings_dictionary->SetStringWithoutPathExpansion(
+              kLastModifiedPath,
+              base::Int64ToString(last_modified.ToInternalValue()));
         }
       }
       // Remove the settings dictionary if it is empty.
       if (settings_dictionary->empty()) {
-        pattern_pairs_settings->RemoveWithoutPathExpansion(
-            pattern_str, NULL);
+        pattern_pairs_settings->RemoveWithoutPathExpansion(pattern_str,
+                                                           nullptr);
       }
     }
   }
@@ -415,7 +453,7 @@ void ContentSettingsPref::CanonicalizeContentSettingsExceptions(
     }
 
     // Clear old pattern if prefs already have canonicalized pattern.
-    const base::DictionaryValue* new_pattern_settings_dictionary = NULL;
+    const base::DictionaryValue* new_pattern_settings_dictionary = nullptr;
     if (all_settings_dictionary->GetDictionaryWithoutPathExpansion(
             canonicalized_pattern_str, &new_pattern_settings_dictionary)) {
       remove_items.push_back(pattern_str);
@@ -423,7 +461,7 @@ void ContentSettingsPref::CanonicalizeContentSettingsExceptions(
     }
 
     // Move old pattern to canonicalized pattern.
-    const base::DictionaryValue* old_pattern_settings_dictionary = NULL;
+    const base::DictionaryValue* old_pattern_settings_dictionary = nullptr;
     if (i.value().GetAsDictionary(&old_pattern_settings_dictionary)) {
       move_items.push_back(
           std::make_pair(pattern_str, canonicalized_pattern_str));
@@ -431,7 +469,8 @@ void ContentSettingsPref::CanonicalizeContentSettingsExceptions(
   }
 
   for (size_t i = 0; i < remove_items.size(); ++i) {
-    all_settings_dictionary->RemoveWithoutPathExpansion(remove_items[i], NULL);
+    all_settings_dictionary->RemoveWithoutPathExpansion(remove_items[i],
+                                                        nullptr);
   }
 
   for (size_t i = 0; i < move_items.size(); ++i) {

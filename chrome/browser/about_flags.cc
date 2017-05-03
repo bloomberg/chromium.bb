@@ -2340,7 +2340,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kImportantSitesInCBD)},
     {"tabs-in-cbd", flag_descriptions::kTabsInCbdName,
      flag_descriptions::kTabsInCbdDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabsInCBD)},
+     FEATURE_VALUE_TYPE(features::kTabsInCbd)},
 #endif  // OS_ANDROID
     {"enable-pointer-events", flag_descriptions::kExperimentalPointerEventName,
      flag_descriptions::kExperimentalPointerEventDescription, kOsAll,

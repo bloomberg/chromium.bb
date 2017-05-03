@@ -132,7 +132,8 @@ class PasswordProtectionServiceTest : public testing::Test {
   void SetUp() override {
     HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
     content_setting_map_ = new HostContentSettingsMap(
-        &test_pref_service_, false /* incognito */, false /* guest_profile */);
+        &test_pref_service_, false /* incognito */, false /* guest_profile */,
+        false /* store_last_modified */);
     database_manager_ = new MockSafeBrowsingDatabaseManager();
     dummy_request_context_getter_ = new DummyURLRequestContextGetter();
     password_protection_service_ =

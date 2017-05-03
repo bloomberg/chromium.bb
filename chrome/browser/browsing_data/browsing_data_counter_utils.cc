@@ -10,6 +10,7 @@
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/media_licenses_counter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,9 +27,6 @@
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
-#endif
 
 bool AreCountersEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -46,13 +44,8 @@ bool AreCountersEnabled() {
 }
 
 bool IsSiteDataCounterEnabled() {
-#if defined(OS_ANDROID)
   // Only use the site data counter for the new CBD ui.
-  return base::FeatureList::IsEnabled(chrome::android::kTabsInCBD);
-#else
-  // Don't use the counter on other platforms that don't yet have the new ui.
-  return false;
-#endif
+  return base::FeatureList::IsEnabled(features::kTabsInCbd);
 }
 
 // A helper function to display the size of cache in units of MB or higher.

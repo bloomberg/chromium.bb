@@ -357,7 +357,7 @@ void PasswordProtectionService::RemoveContentSettingsOnURLsDeleted(
     int verdict_count = static_cast<int>(verdict_dictionary->size());
     stored_verdict_count_ = GetStoredVerdictCount() - verdict_count;
     content_settings_->ClearSettingsForOneTypeWithPredicate(
-        CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+        CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
         base::Bind(&OriginMatchPrimaryPattern, url_key));
   }
 }

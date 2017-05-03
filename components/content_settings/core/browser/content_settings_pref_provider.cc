@@ -80,9 +80,10 @@ void PrefProvider::RegisterProfilePrefs(
 #endif  // !defined(OS_IOS)
 }
 
-PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
-    : prefs_(prefs),
-      is_incognito_(incognito) {
+PrefProvider::PrefProvider(PrefService* prefs,
+                           bool incognito,
+                           bool store_last_modified)
+    : prefs_(prefs), is_incognito_(incognito) {
   DCHECK(prefs_);
   // Verify preferences version.
   if (!prefs_->HasPrefPath(prefs::kContentSettingsVersion)) {
@@ -105,7 +106,7 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
         info->type(),
         base::MakeUnique<ContentSettingsPref>(
             info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
-            is_incognito_,
+            is_incognito_, store_last_modified,
             base::Bind(&PrefProvider::Notify, base::Unretained(this)))));
   }
 
@@ -153,6 +154,19 @@ bool PrefProvider::SetWebsiteSetting(
   return GetPref(content_type)
       ->SetWebsiteSetting(primary_pattern, secondary_pattern,
                           resource_identifier, in_value);
+}
+
+base::Time PrefProvider::GetWebsiteSettingLastModified(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(prefs_);
+
+  return GetPref(content_type)
+      ->GetWebsiteSettingLastModified(primary_pattern, secondary_pattern,
+                                      resource_identifier);
 }
 
 void PrefProvider::ClearAllContentSettingsRules(

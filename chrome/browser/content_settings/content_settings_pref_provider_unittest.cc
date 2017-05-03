@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
@@ -114,7 +115,9 @@ class PrefProviderTest : public testing::Test {
 
 TEST_F(PrefProviderTest, Observer) {
   TestingProfile profile;
-  PrefProvider pref_content_settings_provider(profile.GetPrefs(), false);
+  PrefProvider pref_content_settings_provider(profile.GetPrefs(),
+                                              false /* incognito */,
+                                              true /* store_last_modified */);
 
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
@@ -162,7 +165,8 @@ TEST_F(PrefProviderTest, DiscardObsoleteFullscreenAndMouselockPreferences) {
 
   // Instantiate a new PrefProvider here, because we want to test the
   // constructor's behavior after setting the above.
-  PrefProvider provider(prefs, false);
+  PrefProvider provider(prefs, false /* incognito */,
+                        true /* store_last_modified */);
   provider.ShutdownOnUIThread();
 
   // Check that fullscreen and mouselock have been deleted.
@@ -220,7 +224,8 @@ TEST_F(PrefProviderTest, DiscardObsoleteLastUsagePreferences) {
 
   // Instantiate a new PrefProvider here, because we want to test the
   // constructor's behavior after setting the above.
-  PrefProvider provider(prefs, false);
+  PrefProvider provider(prefs, false /* incognito */,
+                        true /* store_last_modified */);
 
   // Check that last_used data has been deleted.
   EXPECT_TRUE(prefs->GetDictionary(kGeolocationPrefPath)->empty());
@@ -273,8 +278,10 @@ TEST_F(PrefProviderTest, Incognito) {
   otr_profile_builder.SetPrefService(base::WrapUnique(otr_prefs));
   otr_profile_builder.BuildIncognito(profile.get());
 
-  PrefProvider pref_content_settings_provider(regular_prefs, false);
-  PrefProvider pref_content_settings_provider_incognito(otr_prefs, true);
+  PrefProvider pref_content_settings_provider(
+      regular_prefs, false /* incognito */, true /* store_last_modified */);
+  PrefProvider pref_content_settings_provider_incognito(
+      otr_prefs, true /* incognito */, true /* store_last_modified */);
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
   pref_content_settings_provider.SetWebsiteSetting(
@@ -303,7 +310,8 @@ TEST_F(PrefProviderTest, Incognito) {
 
 TEST_F(PrefProviderTest, GetContentSettingsValue) {
   TestingProfile testing_profile;
-  PrefProvider provider(testing_profile.GetPrefs(), false);
+  PrefProvider provider(testing_profile.GetPrefs(), false /* incognito */,
+                        true /* store_last_modified */);
 
   GURL primary_url("http://example.com/");
   ContentSettingsPattern primary_pattern =
@@ -344,7 +352,8 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
 TEST_F(PrefProviderTest, Patterns) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
-                                              false);
+                                              false /* incognito */,
+                                              true /* store_last_modified */);
 
   GURL host1("http://example.com/");
   GURL host2("http://www.example.com/");
@@ -404,7 +413,8 @@ TEST_F(PrefProviderTest, Patterns) {
 TEST_F(PrefProviderTest, ResourceIdentifier) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
-                                              false);
+                                              false /* incognito */,
+                                              true /* store_last_modified */);
 
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
@@ -444,7 +454,8 @@ TEST_F(PrefProviderTest, Deadlock) {
 
   const WebsiteSettingsInfo* info = WebsiteSettingsRegistry::GetInstance()->Get(
       CONTENT_SETTINGS_TYPE_COOKIES);
-  PrefProvider provider(&prefs, false);
+  PrefProvider provider(&prefs, false /* incognito */,
+                        true /* store_last_modified */);
   DeadlockCheckerObserver observer(&prefs, &provider);
   {
     DictionaryPrefUpdate update(&prefs, info->pref_name());
@@ -470,7 +481,8 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
   std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_ALLOW));
 
   // Create a normal provider and set a setting.
-  PrefProvider normal_provider(&prefs, false);
+  PrefProvider normal_provider(&prefs, false /* incognito */,
+                               true /* store_last_modified */);
   normal_provider.SetWebsiteSetting(pattern_1, wildcard,
                                     CONTENT_SETTINGS_TYPE_COOKIES,
                                     std::string(), value->DeepCopy());
@@ -492,7 +504,8 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
   }
 
   // Create an incognito provider and set a setting.
-  PrefProvider incognito_provider(&prefs, true);
+  PrefProvider incognito_provider(&prefs, true /* incognito */,
+                                  true /* store_last_modified */);
   incognito_provider.SetWebsiteSetting(pattern_2, wildcard,
                                        CONTENT_SETTINGS_TYPE_COOKIES,
                                        std::string(), value->DeepCopy());
@@ -530,7 +543,8 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
   std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_ALLOW));
   ResourceIdentifier res_id("abcde");
 
-  PrefProvider provider(&prefs, false);
+  PrefProvider provider(&prefs, false /* incognito */,
+                        true /* store_last_modified */);
 
   // Non-empty pattern, syncable, empty resource identifier.
   provider.SetWebsiteSetting(pattern, wildcard,
@@ -592,6 +606,63 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
     const base::DictionaryValue* dictionary = update.Get();
     EXPECT_EQ(1u, dictionary->size());
   }
+
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PrefProviderTest, LastModified) {
+  sync_preferences::TestingPrefServiceSyncable prefs;
+  PrefProvider::RegisterProfilePrefs(prefs.registry());
+
+  ContentSettingsPattern pattern_1 =
+      ContentSettingsPattern::FromString("google.com");
+  ContentSettingsPattern pattern_2 =
+      ContentSettingsPattern::FromString("www.google.com");
+  auto value = base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW);
+
+  base::Time t1 = base::Time::Now();
+
+  // Create a  provider and set a few settings.
+  PrefProvider provider(&prefs, false /* incognito */,
+                        true /* store_last_modified */);
+  provider.SetWebsiteSetting(pattern_1, ContentSettingsPattern::Wildcard(),
+                             CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                             value->DeepCopy());
+  provider.SetWebsiteSetting(pattern_2, ContentSettingsPattern::Wildcard(),
+                             CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                             value->DeepCopy());
+  // Make sure that the timestamps for pattern_1 and patter_2 are before |t2|.
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  base::Time t2 = base::Time::Now();
+
+  base::Time last_modified = provider.GetWebsiteSettingLastModified(
+      pattern_1, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  EXPECT_GE(last_modified, t1);
+  EXPECT_LT(last_modified, t2);
+  last_modified = provider.GetWebsiteSettingLastModified(
+      pattern_2, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  EXPECT_GE(last_modified, t1);
+  EXPECT_LT(last_modified, t2);
+
+  // A change for pattern_1, which will update the last_modified timestamp.
+  auto value2 = base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK);
+  provider.SetWebsiteSetting(pattern_1, ContentSettingsPattern::Wildcard(),
+                             CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                             value2->DeepCopy());
+
+  last_modified = provider.GetWebsiteSettingLastModified(
+      pattern_1, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  EXPECT_GE(last_modified, t2);
+
+  // The timestamp of pattern_2 shouldn't change.
+  last_modified = provider.GetWebsiteSettingLastModified(
+      pattern_2, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  EXPECT_GE(last_modified, t1);
+  EXPECT_LT(last_modified, t2);
 
   provider.ShutdownOnUIThread();
 }

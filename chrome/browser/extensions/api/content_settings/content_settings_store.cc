@@ -109,8 +109,9 @@ void ContentSettingsStore::SetExtensionContentSetting(
     if (setting == CONTENT_SETTING_DEFAULT) {
       map->DeleteValue(primary_pattern, secondary_pattern, type, identifier);
     } else {
+      // Do not set a timestamp for extension settings.
       map->SetValue(primary_pattern, secondary_pattern, type, identifier,
-                    new base::Value(setting));
+                    base::Time(), new base::Value(setting));
     }
   }
 

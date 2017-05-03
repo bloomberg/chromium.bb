@@ -133,7 +133,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
         signin_client_.get(), nullptr, &account_tracker_service_, nullptr));
     account_tracker_service_.Initialize(signin_client_.get());
     settings_map_ = new HostContentSettingsMap(
-        &prefs_, false /* incognito_profile */, false /* guest_profile */);
+        &prefs_, false /* incognito_profile */, false /* guest_profile */,
+        false /* store_last_modified */);
     cookie_settings_ =
         new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");
     ResetAccountConsistencyService();
