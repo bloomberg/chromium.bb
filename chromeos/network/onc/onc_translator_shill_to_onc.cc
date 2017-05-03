@@ -636,11 +636,16 @@ void ShillToONCTranslator::TranslateStaticIPConfig() {
 void ShillToONCTranslator::TranslateEap() {
   CopyPropertiesAccordingToSignature();
 
-  // Translate EAP Outer and Inner values.
-  TranslateWithTableAndSet(shill::kEapMethodProperty, kEAPOuterTable,
-                           ::onc::eap::kOuter);
-  TranslateWithTableAndSet(shill::kEapPhase2AuthProperty, kEAP_TTLS_InnerTable,
-                           ::onc::eap::kInner);
+  // Translate EAP Outer and Inner values if EAP.EAP exists and is not empty.
+  std::string shill_eap;
+  if (shill_dictionary_->GetStringWithoutPathExpansion(
+          shill::kEapMethodProperty, &shill_eap) &&
+      !shill_eap.empty()) {
+    TranslateWithTableAndSet(shill::kEapMethodProperty, kEAPOuterTable,
+                             ::onc::eap::kOuter);
+    TranslateWithTableAndSet(shill::kEapPhase2AuthProperty,
+                             kEAP_TTLS_InnerTable, ::onc::eap::kInner);
+  }
 }
 
 void ShillToONCTranslator::TranslateAndAddNestedObject(
