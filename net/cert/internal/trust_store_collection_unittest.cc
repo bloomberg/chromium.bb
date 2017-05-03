@@ -16,12 +16,9 @@ class TrustStoreCollectionTest : public testing::Test {
  public:
   void SetUp() override {
     ParsedCertificateList chain;
-
-    VerifyCertChainTest test;
-    ReadVerifyCertChainTestFromFile(
-        "net/data/verify_certificate_chain_unittest/key-rollover-oldchain.pem",
-        &test);
-    chain = test.chain;
+    ASSERT_TRUE(ReadCertChainFromFile(
+        "net/data/verify_certificate_chain_unittest/key-rollover/oldchain.pem",
+        &chain));
 
     ASSERT_EQ(3U, chain.size());
     target_ = chain[0];
@@ -31,11 +28,10 @@ class TrustStoreCollectionTest : public testing::Test {
     ASSERT_TRUE(oldintermediate_);
     ASSERT_TRUE(oldroot_);
 
-    ReadVerifyCertChainTestFromFile(
-        "net/data/verify_certificate_chain_unittest/"
-        "key-rollover-longrolloverchain.pem",
-        &test);
-    chain = test.chain;
+    ASSERT_TRUE(
+        ReadCertChainFromFile("net/data/verify_certificate_chain_unittest/"
+                              "key-rollover/longrolloverchain.pem",
+                              &chain));
 
     ASSERT_EQ(5U, chain.size());
     newintermediate_ = chain[1];

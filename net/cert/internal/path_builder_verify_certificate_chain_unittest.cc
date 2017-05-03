@@ -49,7 +49,7 @@ class PathBuilderDelegate {
     path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
 
     path_builder.Run();
-    EXPECT_EQ(test.expected_result, result.HasValidPath());
+    EXPECT_EQ(!test.HasHighSeverityErrors(), result.HasValidPath());
   }
 };
 
