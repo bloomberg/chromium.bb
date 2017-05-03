@@ -14,34 +14,28 @@
 
     .gradient1 {
       /* Green should coincide with the edge of the box, with blue fill (buggy in CG). */
-      background-image: -webkit-radial-gradient(left, circle closest-corner, red, green 150px, blue);
-      background-image: -moz-radial-gradient(left, circle closest-corner, red, green 150px, blue);
+      background-image: radial-gradient(circle closest-corner at left, red, green 150px, blue);
     }
 
     .gradient2 {
       /* Fill should be orange (buggy in CG). */
-      background-image: -webkit-radial-gradient(left, circle closest-corner, red, green 150px, blue, orange 101%);
-      background-image: -moz-radial-gradient(left, circle closest-corner, red, green 150px, blue, orange 101%);
+      background-image: radial-gradient(circle closest-corner at left, red, green 150px, blue, orange 101%);
     }
 
     .gradient3 {
-      background-image: -webkit-radial-gradient(-100px center, ellipse farthest-corner, black, white);
-      background-image: -moz-radial-gradient(-100px center, ellipse farthest-corner, black, white);
+      background-image: radial-gradient(ellipse farthest-corner at -100px center, black, white);
     }
     
     .gradient4 {
-      background-image: -webkit-radial-gradient(-100px center, ellipse closest-corner, black, white);
-      background-image: -moz-radial-gradient(-100px center, ellipse closest-corner, black, white);
+      background-image: radial-gradient(ellipse closest-corner at -100px center, black, white);
     }
 
     .gradient5 {
-      background-image: -webkit-radial-gradient(bottom right, black, white);
-      background-image: -moz-radial-gradient(bottom right, black, white);
+      background-image: radial-gradient(at bottom right, black, white);
     }
 
     .gradient6 {
-      background-image: -webkit-radial-gradient(50% 20%, ellipse contain, black, white);
-      background-image: -moz-radial-gradient(50% 20%, ellipse contain, black, white);
+      background-image: radial-gradient(ellipse closest-side at 50% 20%, black, white);
     }
 
   </style>
