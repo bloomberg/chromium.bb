@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
@@ -21,15 +20,6 @@ InstantIOContext* GetDataForResourceContext(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return base::UserDataAdapter<InstantIOContext>::Get(
       context, InstantIOContext::kInstantIOContextKeyName);
-}
-
-InstantIOContext* GetDataForRequest(const net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!info)
-    return NULL;
-
-  return GetDataForResourceContext(info->GetContext());
 }
 
 }  // namespace
@@ -78,24 +68,22 @@ void InstantIOContext::ClearInstantProcessesOnIO(
 }
 
 // static
-bool InstantIOContext::ShouldServiceRequest(const net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!info)
+bool InstantIOContext::ShouldServiceRequest(
+    const GURL& url,
+    content::ResourceContext* resource_context,
+    int render_process_id) {
+  if (!resource_context)
     return false;
 
-  InstantIOContext* instant_io_context = GetDataForRequest(request);
+  InstantIOContext* instant_io_context =
+      GetDataForResourceContext(resource_context);
   if (!instant_io_context)
     return false;
 
-  int process_id = -1;
-  int render_frame_id = -1;
-  info->GetAssociatedRenderFrame(&process_id, &render_frame_id);
   // For PlzNavigate, the process_id for the navigation request will be -1. If
   // so, allow this request since it's not going to another renderer.
-  if (process_id == -1 || instant_io_context->IsInstantProcess(process_id))
-    return true;
-  return false;
+  return render_process_id == -1 ||
+         instant_io_context->IsInstantProcess(render_process_id);
 }
 
 bool InstantIOContext::IsInstantProcess(int process_id) const {

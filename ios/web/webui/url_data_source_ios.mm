@@ -35,11 +35,8 @@ bool URLDataSourceIOS::ShouldDenyXFrameOptions() const {
   return true;
 }
 
-bool URLDataSourceIOS::ShouldServiceRequest(
-    const net::URLRequest* request) const {
-  if (GetWebClient()->IsAppSpecificURL(request->url()))
-    return true;
-  return false;
+bool URLDataSourceIOS::ShouldServiceRequest(const GURL& url) const {
+  return GetWebClient()->IsAppSpecificURL(url);
 }
 
 }  // namespace web

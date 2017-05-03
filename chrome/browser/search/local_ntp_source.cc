@@ -388,16 +388,20 @@ bool LocalNtpSource::AllowCaching() const {
 }
 
 bool LocalNtpSource::ShouldServiceRequest(
-    const net::URLRequest* request) const {
+    const GURL& url,
+    content::ResourceContext* resource_context,
+    int render_process_id) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  DCHECK(request->url().host_piece() == chrome::kChromeSearchLocalNtpHost);
-  if (!InstantIOContext::ShouldServiceRequest(request))
+  DCHECK(url.host_piece() == chrome::kChromeSearchLocalNtpHost);
+  if (!InstantIOContext::ShouldServiceRequest(url, resource_context,
+                                              render_process_id)) {
     return false;
+  }
 
-  if (request->url().SchemeIs(chrome::kChromeSearchScheme)) {
+  if (url.SchemeIs(chrome::kChromeSearchScheme)) {
     std::string filename;
-    webui::ParsePathAndScale(request->url(), &filename, nullptr);
+    webui::ParsePathAndScale(url, &filename, nullptr);
     for (size_t i = 0; i < arraysize(kResources); ++i) {
       if (filename == kResources[i].filename)
         return true;

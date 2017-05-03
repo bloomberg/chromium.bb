@@ -29,7 +29,9 @@ class ThemeSource : public content::URLDataSource {
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
       const std::string& path) const override;
   bool AllowCaching() const override;
-  bool ShouldServiceRequest(const net::URLRequest* request) const override;
+  bool ShouldServiceRequest(const GURL& url,
+                            content::ResourceContext* resource_context,
+                            int render_process_id) const override;
 
  private:
   // Fetches and sends the theme bitmap.

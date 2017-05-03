@@ -10,12 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
+class GURL;
+
 namespace content {
 class ResourceContext;
-}
-
-namespace net {
-class URLRequest;
 }
 
 // IO thread data held for Instant.  This reflects the data held in
@@ -48,7 +46,9 @@ class InstantIOContext : public base::RefCountedThreadSafe<InstantIOContext> {
 
   // Determine if this chrome-search: request is coming from an Instant render
   // process.
-  static bool ShouldServiceRequest(const net::URLRequest* request);
+  static bool ShouldServiceRequest(const GURL& url,
+                                   content::ResourceContext* resource_context,
+                                   int render_process_id);
 
  protected:
    virtual ~InstantIOContext();

@@ -142,10 +142,16 @@ bool FaviconSource::ShouldReplaceExistingSource() const {
   return false;
 }
 
-bool FaviconSource::ShouldServiceRequest(const net::URLRequest* request) const {
-  if (request->url().SchemeIs(chrome::kChromeSearchScheme))
-    return InstantIOContext::ShouldServiceRequest(request);
-  return URLDataSource::ShouldServiceRequest(request);
+bool FaviconSource::ShouldServiceRequest(
+    const GURL& url,
+    content::ResourceContext* resource_context,
+    int render_process_id) const {
+  if (url.SchemeIs(chrome::kChromeSearchScheme)) {
+    return InstantIOContext::ShouldServiceRequest(url, resource_context,
+                                                  render_process_id);
+  }
+  return URLDataSource::ShouldServiceRequest(url, resource_context,
+                                             render_process_id);
 }
 
 bool FaviconSource::HandleMissingResource(const IconRequest& request) {

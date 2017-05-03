@@ -68,7 +68,9 @@ class FaviconSource : public content::URLDataSource {
   std::string GetMimeType(const std::string&) const override;
   bool AllowCaching() const override;
   bool ShouldReplaceExistingSource() const override;
-  bool ShouldServiceRequest(const net::URLRequest* request) const override;
+  bool ShouldServiceRequest(const GURL& url,
+                            content::ResourceContext* resource_context,
+                            int render_process_id) const override;
 
  protected:
   struct IconRequest {

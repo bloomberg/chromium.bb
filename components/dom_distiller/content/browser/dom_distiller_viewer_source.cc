@@ -290,14 +290,10 @@ std::string DomDistillerViewerSource::GetMimeType(
 }
 
 bool DomDistillerViewerSource::ShouldServiceRequest(
-    const net::URLRequest* request) const {
-  return request->url().SchemeIs(scheme_);
-}
-
-// TODO(nyquist): Start tracking requests using this method.
-void DomDistillerViewerSource::WillServiceRequest(
-    const net::URLRequest* request,
-    std::string* path) const {
+    const GURL& url,
+    content::ResourceContext* resource_context,
+    int render_process_id) const {
+  return url.SchemeIs(scheme_);
 }
 
 std::string DomDistillerViewerSource::GetContentSecurityPolicyStyleSrc()

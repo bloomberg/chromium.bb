@@ -40,7 +40,9 @@ class LocalNtpSource : public content::URLDataSource,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
   bool AllowCaching() const override;
-  bool ShouldServiceRequest(const net::URLRequest* request) const override;
+  bool ShouldServiceRequest(const GURL& url,
+                            content::ResourceContext* resource_context,
+                            int render_process_id) const override;
   std::string GetContentSecurityPolicyScriptSrc() const override;
   std::string GetContentSecurityPolicyChildSrc() const override;
 
