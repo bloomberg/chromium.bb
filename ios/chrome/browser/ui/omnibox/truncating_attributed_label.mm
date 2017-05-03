@@ -23,6 +23,7 @@
 }
 
 @synthesize truncateMode = truncateMode_;
+@synthesize displayAsURL = displayAsURL_;
 
 - (void)setup {
   self.backgroundColor = [UIColor clearColor];
@@ -70,6 +71,10 @@
       [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
   textStyle.lineBreakMode = self.lineBreakMode;
   textStyle.alignment = self.textAlignment;
+  // URLs have their text direction set to to LTR (avoids RTL characters
+  // making the URL render from right to left, as per RFC 3987 Section 4.1).
+  if (self.displayAsURL)
+    textStyle.baseWritingDirection = NSWritingDirectionLeftToRight;
   [attributedString addAttribute:NSParagraphStyleAttributeName
                            value:textStyle
                            range:NSMakeRange(0, [self.text length])];

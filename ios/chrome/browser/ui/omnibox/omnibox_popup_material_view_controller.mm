@@ -258,6 +258,9 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   // truncation by ellipse for the multi-line text sometimes shown in answers.
   row.detailTruncatingLabel.hidden = answerPresent;
   row.detailAnswerLabel.hidden = !answerPresent;
+  // URLs have have special layout requirements that need to be invoked here.
+  row.detailTruncatingLabel.displayAsURL =
+      !AutocompleteMatch::IsSearchType(match.type);
   // TODO(crbug.com/697647): The complexity of managing these two separate
   // labels could probably be encapusulated in the row class if we moved the
   // layout logic there.
