@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -30,7 +30,7 @@
 
     // Extract a transitional region from the AudioBuffer. If no transition
     // found, fail this test.
-    function extractPanningTransition(input, prefix) {
+    function extractPanningTransition(should, input, prefix) {
       var chanL = input.getChannelData(0);
       var chanR = input.getChannelData(1);
       var start, end;
@@ -40,7 +40,7 @@
       // samples are identical, the transition has not started.
       while (chanL[index-1] === chanL[index] || chanR[index-1] === chanR[index]) {
         if (++index >= input.length) {
-          Should(false, prefix + ': Transition in the channel data')
+          should(false, prefix + ': Transition in the channel data')
             .summarize('found', 'not found');
           return null;
         }
@@ -51,16 +51,12 @@
       // the transition is still ongoing.
       while (chanL[index-1] !== chanL[index] || chanR[index-1] !== chanR[index]) {
         if (++index >= input.length) {
-          Should(false, 'Transition found')
+          should(false, 'Transition found')
             .summarize('', 'but the buffer ended prematurely');
           return null;
         }
       }
       end = index;
-
-      Should(prefix + ': Transition found between sample #' + start + ' and #' + end,
-        true)
-        .summarize('correctly', 'incorrectly');
 
       return {
         left: chanL.subarray(start, end),
@@ -120,7 +116,7 @@
 
     // Build audio graph and render. Change the pan parameter in the middle of
     // rendering.
-    function panAndVerify(options, done) {
+    function panAndVerify(should, options) {
       var context = new OfflineAudioContext(2, renderDuration * sampleRate, sampleRate);
       var source = context.createBufferSource();
       var panner = context.createStereoPanner();
@@ -141,45 +137,39 @@
         context.resume();
       });
 
-      context.startRendering().then(function (buffer) {
-        var actual = extractPanningTransition(buffer, options.message);
+      return context.startRendering().then(function (buffer) {
+        var actual = extractPanningTransition(should, buffer, options.message);
         var expected = generateStereoEqualPanningResult(stereoBuffer,
           options.startPanValue, options.endPanValue, actual.length);
 
         // |notGlitch| tests are redundant if the actual and expected results
         // match and if the expected results themselves don't glitch.
-        Should(options.message + ': Channel #0', actual.left).notGlitch(GLITCH_THRESHOLD);
-        Should(options.message + ': Channel #1', actual.right).notGlitch(GLITCH_THRESHOLD);
+        should(actual.left, options.message + ': Channel #0').notGlitch(GLITCH_THRESHOLD);
+        should(actual.right, options.message + ': Channel #1').notGlitch(GLITCH_THRESHOLD);
 
-        Should(options.message + ': Channel #0', actual.left, SHOULD_OPTS)
-          .beCloseToArray(expected.left, MAX_ERROR_ALLOWED);
-        Should(options.message + ': Channel #1', actual.right, SHOULD_OPTS)
-          .beCloseToArray(expected.right, MAX_ERROR_ALLOWED);
-      }).then(done);
+        should(actual.left, options.message + ': Channel #0', SHOULD_OPTS)
+          .beCloseToArray(expected.left, {absoluteThreshold: MAX_ERROR_ALLOWED});
+        should(actual.right, options.message + ': Channel #1', SHOULD_OPTS)
+          .beCloseToArray(expected.right, {absoluteThreshold: MAX_ERROR_ALLOWED});
+      });
     }
 
     // Task: move pan from negative (-0.1) to positive (0.1) value to check if
     // there is a glitch during the transition. See crbug.com/470559.
-    audit.defineTask('negative-to-positive', function (done) {
-      panAndVerify({ startPanValue: -0.1, endPanValue: 0.1, message: "L->R" }, done);
+    audit.define('negative-to-positive', (task, should) => {
+      panAndVerify(should, { startPanValue: -0.1, endPanValue: 0.1, message: "L->R" })
+       .then(() => task.done());
     });
 
 
     // Task: move pan from positive (0.1) to negative (-0.1) value to check if
     // there is a glitch during the transition.
-    audit.defineTask('positive-to-negative', function (done) {
-      panAndVerify({ startPanValue: 0.1, endPanValue: -0.1, message: "R->L" }, done);
+    audit.define('positive-to-negative', (task, should) => {
+      panAndVerify(should, { startPanValue: 0.1, endPanValue: -0.1, message: "R->L" })
+       .then(() => task.done());
     });
 
-    audit.defineTask('finish-test', function (done) {
-      done();
-    });
-
-    audit.runTasks(
-      'negative-to-positive',
-      'positive-to-negative',
-      'finish-test'
-    );
+    audit.run();
   </script>
 </body>
 
