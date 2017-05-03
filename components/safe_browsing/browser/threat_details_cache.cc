@@ -4,7 +4,7 @@
 //
 // Implementation of the ThreatDetails class.
 
-#include "chrome/browser/safe_browsing/threat_details.h"
+#include "components/safe_browsing/browser/threat_details.h"
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 #include "base/lazy_instance.h"
 #include "base/md5.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/safe_browsing/threat_details_cache.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/safe_browsing/browser/threat_details_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -98,7 +98,7 @@ void ThreatDetailsCacheCollector::OpenEntry() {
           setting:
             "Users can enable or disable this feature by stopping sending "
             "security incident reports to Google via disabling 'Automatically "
-            "report details of possible security incdients to Google.' in "
+            "report details of possible security incidents to Google.' in "
             "Chrome's settings under Advanced Settings, Privacy. The feature "
             "is disabled by default."
           chrome_policy {

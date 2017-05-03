@@ -4,14 +4,14 @@
 //
 // Implementation of the ThreatDetailsRedirectsCollector class.
 
-#include "chrome/browser/safe_browsing/threat_details_history.h"
+#include "components/safe_browsing/browser/threat_details_history.h"
 
 #include <stddef.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/safe_browsing/threat_details.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/safe_browsing/browser/threat_details.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
