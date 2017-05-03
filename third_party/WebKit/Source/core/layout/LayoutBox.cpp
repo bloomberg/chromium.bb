@@ -1177,11 +1177,11 @@ bool LayoutBox::MapVisualRectToContainer(
     const LayoutObject* ancestor,
     VisualRectFlags visual_rect_flags,
     TransformState& transform_state) const {
-  bool container_preserve_3d = container_object->Style()->Preserves3D();
+  bool preserve3D = container_object->Style()->Preserves3D();
 
   TransformState::TransformAccumulation accumulation =
-      container_preserve_3d ? TransformState::kAccumulateTransform
-                            : TransformState::kFlattenTransform;
+      preserve3D ? TransformState::kAccumulateTransform
+                 : TransformState::kFlattenTransform;
 
   // If there is no transform on this box, adjust for container offset and
   // container scrolling, then apply container clip.
@@ -1195,48 +1195,32 @@ bool LayoutBox::MapVisualRectToContainer(
     return true;
   }
 
-  // Otherwise, do the following:
-  // 1. Expand for pixel snapping.
-  // 2. Generate transformation matrix combining, in this order
-  //    a) transform,
-  //    b) container offset,
-  //    c) container scroll offset,
-  //    d) perspective applied by container.
-  // 3. Apply transform Transform+flattening.
-  // 4. Apply container clip.
+  // Otherwise, apply the following:
+  // 1. Transform.
+  // 2. Container offset.
+  // 3. Container scroll offset.
+  // 4. Perspective applied by container.
+  // 5. Transform flattening.
+  // 6. Expansion for pixel snapping.
+  // 7. Container clip.
 
-  // 1. Expand for pixel snapping.
-  // Use EnclosingBoundingBox because we cannot properly compute pixel
-  // snapping for painted elements within the transform since we don't know
-  // the desired subpixel accumulation at this point, and the transform may
-  // include a scale. This only makes sense for non-preserve3D, and it's
-  // applicable only for SPv1 paint invalidation use cases when the slow-path
-  // is used to map visual rect/location.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      !StyleRef().Preserves3D()) {
-    transform_state.Flatten();
-    transform_state.SetQuad(
-        FloatQuad(transform_state.LastPlanarQuad().EnclosingBoundingBox()));
-  }
-
-  // 2. Generate transformation matrix.
-  // a) Transform.
+  // 1. Transform.
   TransformationMatrix transform;
   if (Layer() && Layer()->Transform())
     transform.Multiply(Layer()->CurrentTransform());
 
-  // b) Container offset.
+  // 2. Container offset.
   transform.PostTranslate(container_offset.X().ToFloat(),
                           container_offset.Y().ToFloat());
 
-  // c) Container scroll offset.
+  // 3. Container scroll offset.
   if (container_object->IsBox() && container_object != ancestor &&
       container_object->HasOverflowClip()) {
     IntSize offset = -ToLayoutBox(container_object)->ScrolledContentOffset();
     transform.PostTranslate(offset.Width(), offset.Height());
   }
 
-  // d) Perspective applied by container.
+  // 4. Perspective applied by container.
   if (container_object && container_object->HasLayer() &&
       container_object->Style()->HasPerspective()) {
     // Perspective on the container affects us, so we have to factor it in here.
@@ -1253,12 +1237,21 @@ bool LayoutBox::MapVisualRectToContainer(
     transform = perspective_matrix * transform;
   }
 
-  // 3. Apply transform and flatten.
+  // 5. Transform flattening.
   transform_state.ApplyTransform(transform, accumulation);
-  if (!container_preserve_3d)
-    transform_state.Flatten();
 
-  // 4. Apply container clip.
+  // 6. Expansion for pixel snapping.
+  // Use enclosingBoundingBox because we cannot properly compute pixel
+  // snapping for painted elements within the transform since we don't know
+  // the desired subpixel accumulation at this point, and the transform may
+  // include a scale.
+  if (!preserve3D) {
+    transform_state.Flatten();
+    transform_state.SetQuad(
+        FloatQuad(transform_state.LastPlanarQuad().EnclosingBoundingBox()));
+  }
+
+  // 7. Container clip.
   if (container_object->IsBox() && container_object != ancestor &&
       container_object->HasClipRelatedProperty()) {
     return ToLayoutBox(container_object)

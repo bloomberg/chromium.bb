@@ -835,18 +835,10 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
   delta.MoveBy(fragment_translation);
   TransformationMatrix transform(
       paint_layer_.RenderableTransform(painting_info.GetGlobalPaintFlags()));
-  LayoutSize adjusted_sub_pixel_accumulation;
-  if (transform.IsIdentityOrTranslation()) {
-    IntPoint rounded_delta = RoundedIntPoint(delta);
-    transform.PostTranslate(rounded_delta.X(), rounded_delta.Y());
-    adjusted_sub_pixel_accumulation =
-        painting_info.sub_pixel_accumulation + (delta - rounded_delta);
-  } else {
-    // We can't pass subpixel offsets through a non-translation transform.
-    // Bake the offsets into the transform instead.
-    delta += painting_info.sub_pixel_accumulation;
-    transform.PostTranslate(delta.X().ToDouble(), delta.Y().ToDouble());
-  }
+  IntPoint rounded_delta = RoundedIntPoint(delta);
+  transform.PostTranslate(rounded_delta.X(), rounded_delta.Y());
+  LayoutSize adjusted_sub_pixel_accumulation =
+      painting_info.sub_pixel_accumulation + (delta - rounded_delta);
 
   // TODO(jbroman): Put the real transform origin here, instead of using a
   // matrix with the origin baked in.

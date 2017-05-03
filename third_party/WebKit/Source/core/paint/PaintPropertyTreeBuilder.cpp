@@ -265,40 +265,26 @@ void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     // called "subpixel accumulation". For more information, see
     // PaintLayer::subpixelAccumulation() and
     // PaintLayerPainter::paintFragmentByApplyingTransform.
-    LayoutPoint used_paint_offset(context.current.paint_offset.X().Round(),
-                                  context.current.paint_offset.Y().Round());
-    LayoutPoint remainder_paint_offset =
-        LayoutPoint(context.current.paint_offset - used_paint_offset);
-
-    if (remainder_paint_offset != LayoutPoint()) {
-      // However, if the object has a non-translation transform, we can't pass
-      // subpixel offsets through the transform to descendants.
-      TransformationMatrix matrix;
-      object.StyleRef().ApplyTransform(
-          matrix, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
-          ComputedStyle::kIncludeMotionPath,
-          ComputedStyle::kIncludeIndependentTransformProperties);
-      if (!matrix.IsIdentityOrTranslation()) {
-        remainder_paint_offset = LayoutPoint();
-        used_paint_offset = context.current.paint_offset;
-      }
-    }
+    IntPoint rounded_paint_offset =
+        RoundedIntPoint(context.current.paint_offset);
+    LayoutPoint fractional_paint_offset =
+        LayoutPoint(context.current.paint_offset - rounded_paint_offset);
 
     force_subtree_update |= properties.UpdatePaintOffsetTranslation(
         context.current.transform,
-        TransformationMatrix().Translate(used_paint_offset.X().ToDouble(),
-                                         used_paint_offset.Y().ToDouble()),
+        TransformationMatrix().Translate(rounded_paint_offset.X(),
+                                         rounded_paint_offset.Y()),
         FloatPoint3D(), context.current.should_flatten_inherited_transform,
         context.current.rendering_context_id);
 
     context.current.transform = properties.PaintOffsetTranslation();
-    context.current.paint_offset = remainder_paint_offset;
+    context.current.paint_offset = fractional_paint_offset;
     if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
         object.IsLayoutView()) {
       context.absolute_position.transform = properties.PaintOffsetTranslation();
       context.fixed_position.transform = properties.PaintOffsetTranslation();
-      context.absolute_position.paint_offset = remainder_paint_offset;
-      context.fixed_position.paint_offset = remainder_paint_offset;
+      context.absolute_position.paint_offset = LayoutPoint();
+      context.fixed_position.paint_offset = LayoutPoint();
     }
   } else {
     if (auto* properties = object.GetMutableForPainting().PaintProperties())

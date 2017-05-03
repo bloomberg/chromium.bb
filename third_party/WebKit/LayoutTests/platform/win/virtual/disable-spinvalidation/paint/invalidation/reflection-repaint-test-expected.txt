@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [40, 50, 208, 118],
+          "rect": [22, 50, 226, 167],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [52, 51, 42, 31],
+          "rect": [23, 51, 70, 109],
           "reason": "full"
         }
       ]
