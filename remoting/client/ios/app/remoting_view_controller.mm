@@ -13,10 +13,11 @@
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "remoting/client/ios/app/client_connection_view_controller.h"
 #import "remoting/client/ios/app/host_collection_view_controller.h"
 #import "remoting/client/ios/app/host_view_controller.h"
-#import "remoting/client/ios/app/pin_entry_view_controller.h"
 #import "remoting/client/ios/app/remoting_settings_view_controller.h"
+#import "remoting/client/ios/domain/client_session_details.h"
 #import "remoting/client/ios/facade/remoting_service.h"
 #import "remoting/client/ios/session/remoting_client.h"
 
@@ -27,6 +28,7 @@
 static CGFloat kHostInset = 5.f;
 
 @interface RemotingViewController ()<HostCollectionViewControllerDelegate,
+                                     ClientConnectionViewControllerDelegate,
                                      UIViewControllerAnimatedTransitioning,
                                      UIViewControllerTransitioningDelegate> {
   bool _isAuthenticated;
@@ -34,6 +36,7 @@ static CGFloat kHostInset = 5.f;
   MDCAppBar* _appBar;
   HostCollectionViewController* _collectionViewController;
   RemotingService* _remotingService;
+  RemotingClient* _client;
 }
 @end
 
@@ -82,6 +85,12 @@ static CGFloat kHostInset = 5.f;
                                         target:self
                                         action:@selector(didSelectRefresh)];
     self.navigationItem.rightBarButtonItem = refreshButton;
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(hostSessionStatusChanged:)
+               name:kHostSessionStatusChanged
+             object:nil];
   }
   return self;
 }
@@ -146,11 +155,26 @@ static CGFloat kHostInset = 5.f;
   [_collectionViewController.collectionView reloadData];
 }
 
+#pragma mark - ClientConnectionViewControllerDelegate
+
+- (void)clientConnected {
+  HostViewController* hostViewController =
+      [[HostViewController alloc] initWithClient:_client];
+  [self presentViewController:hostViewController animated:YES completion:nil];
+}
+
+- (NSString*)getConnectingHostName {
+  if (_client) {
+    return _client.hostInfo.hostName;
+  }
+  return nil;
+}
+
 #pragma mark - HostCollectionViewControllerDelegate
 
 - (void)didSelectCell:(HostCollectionViewCell*)cell
            completion:(void (^)())completionBlock {
-  RemotingClient* client = [[RemotingClient alloc] init];
+  _client = [[RemotingClient alloc] init];
 
   [_remotingService
       callbackWithAccessToken:base::BindBlockArc(^(
@@ -159,37 +183,17 @@ static CGFloat kHostInset = 5.f;
                                   const std::string& access_token) {
         // TODO(nicholss): Check status.
         HostInfo* hostInfo = cell.hostInfo;
-        DCHECK(hostInfo);
-        DCHECK(hostInfo.jabberId);
-        DCHECK(hostInfo.hostId);
-        DCHECK(hostInfo.publicKey);
-
-        remoting::ConnectToHostInfo info;
-        info.username = user_email;
-        info.auth_token = access_token;
-        info.host_jid = base::SysNSStringToUTF8(hostInfo.jabberId);
-        info.host_id = base::SysNSStringToUTF8(hostInfo.hostId);
-        info.host_pubkey = base::SysNSStringToUTF8(hostInfo.publicKey);
-        // TODO(nicholss): If iOS supports pairing, pull the stored data and
-        // insert it here.
-        info.pairing_id = "";
-        info.pairing_secret = "";
-
-        // TODO(nicholss): I am not sure about the following fields yet.
-        // info.capabilities =
-        // info.flags =
-        // info.host_version =
-        // info.host_os =
-        // info.host_os_version =
-        [client connectToHost:info];
+        [_client connectToHost:hostInfo
+                      username:base::SysUTF8ToNSString(user_email)
+                   accessToken:base::SysUTF8ToNSString(access_token)];
       })];
 
-  HostViewController* hostViewController =
-      [[HostViewController alloc] initWithClient:client];
-
-  // TODO(nicholss): Add feedback on status of request.
-  [self presentViewController:hostViewController animated:YES completion:nil];
-
+  ClientConnectionViewController* clientConnectionViewController =
+      [[ClientConnectionViewController alloc] init];
+  clientConnectionViewController.delegate = self;
+  [self presentViewController:clientConnectionViewController
+                     animated:YES
+                   completion:nil];
   completionBlock();
 }
 
@@ -231,6 +235,10 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 #pragma mark - Private
 
+- (void)hostSessionStatusChanged:(NSNotification*)notification {
+  NSLog(@"hostSessionStatusChanged: %@", [notification userInfo]);
+}
+
 - (void)closeViewController {
   [self dismissViewControllerAnimated:true completion:nil];
 }
@@ -239,17 +247,14 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   // TODO(nicholss) implement this.
   NSLog(@"Should refresh...");
   _dialogTransitionController = [[MDCDialogTransitionController alloc] init];
-  PinEntryViewController* vc =
-      [[PinEntryViewController alloc] initWithCallback:nil];
-  vc.modalPresentationStyle = UIModalPresentationCustom;
-  vc.transitioningDelegate = _dialogTransitionController;
-  [self presentViewController:vc animated:YES completion:nil];
 }
 
 - (void)didSelectSettings {
-  RemotingSettingsViewController* settingsVC =
-      [RemotingSettingsViewController new];
-  [self presentViewController:settingsVC animated:YES completion:nil];
+  RemotingSettingsViewController* settingsViewController =
+      [[RemotingSettingsViewController alloc] init];
+  [self presentViewController:settingsViewController
+                     animated:YES
+                   completion:nil];
 }
 
 - (void)presentStatus {

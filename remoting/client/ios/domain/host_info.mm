@@ -73,4 +73,10 @@
   }
 }
 
+- (NSString*)description {
+  return
+      [NSString stringWithFormat:@"HostInfo: name=%@ status=%@ updatedTime= %@",
+                                 _hostName, _status, _updatedTime];
+}
+
 @end

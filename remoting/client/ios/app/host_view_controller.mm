@@ -11,6 +11,7 @@
 #import <GLKit/GLKit.h>
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/client/ios/display/gl_display_handler.h"
 #import "remoting/client/ios/session/remoting_client.h"
 
 static const CGFloat kFabInset = 15.f;

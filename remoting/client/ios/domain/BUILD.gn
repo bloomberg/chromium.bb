@@ -8,6 +8,8 @@ import("//remoting/build/config/remoting_build.gni")
 
 source_set("domain") {
   sources = [
+    "client_session_details.h",
+    "client_session_details.mm",
     "host_info.h",
     "host_info.mm",
     "user_info.h",
