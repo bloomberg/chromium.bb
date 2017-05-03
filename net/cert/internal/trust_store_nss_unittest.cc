@@ -24,13 +24,10 @@ class TrustStoreNSSTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(test_nssdb_.is_open());
-
-    VerifyCertChainTest test;
     ParsedCertificateList chain;
-    ReadVerifyCertChainTestFromFile(
-        "net/data/verify_certificate_chain_unittest/key-rollover-oldchain.pem",
-        &test);
-    chain = test.chain;
+    ReadCertChainFromFile(
+        "net/data/verify_certificate_chain_unittest/key-rollover/oldchain.pem",
+        &chain);
 
     ASSERT_EQ(3U, chain.size());
     target_ = chain[0];
@@ -40,11 +37,10 @@ class TrustStoreNSSTest : public testing::Test {
     ASSERT_TRUE(oldintermediate_);
     ASSERT_TRUE(oldroot_);
 
-    ReadVerifyCertChainTestFromFile(
+    ReadCertChainFromFile(
         "net/data/verify_certificate_chain_unittest/"
-        "key-rollover-longrolloverchain.pem",
-        &test);
-    chain = test.chain;
+        "key-rollover/longrolloverchain.pem",
+        &chain);
 
     ASSERT_EQ(5U, chain.size());
     newintermediate_ = chain[1];

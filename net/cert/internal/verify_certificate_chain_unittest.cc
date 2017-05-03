@@ -21,8 +21,6 @@ class VerifyCertificateChainDelegate {
     CertPathErrors errors;
     VerifyCertificateChain(test.chain, test.last_cert_trust, &signature_policy,
                            test.time, test.key_purpose, &errors);
-    bool result = !errors.ContainsHighSeverityErrors();
-    EXPECT_EQ(test.expected_result, result);
     EXPECT_EQ(test.expected_errors, errors.ToDebugString(test.chain))
         << "Test file: " << test_file_path;
   }

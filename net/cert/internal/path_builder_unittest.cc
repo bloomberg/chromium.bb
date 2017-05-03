@@ -434,7 +434,7 @@ class PathBuilderKeyRolloverTest : public ::testing::Test {
 
     VerifyCertChainTest test;
     ReadVerifyCertChainTestFromFile(
-        "net/data/verify_certificate_chain_unittest/key-rollover-oldchain.pem",
+        "net/data/verify_certificate_chain_unittest/key-rollover/oldchain.test",
         &test);
     path = test.chain;
     ASSERT_EQ(3U, path.size());
@@ -448,7 +448,7 @@ class PathBuilderKeyRolloverTest : public ::testing::Test {
 
     ReadVerifyCertChainTestFromFile(
         "net/data/verify_certificate_chain_unittest/"
-        "key-rollover-longrolloverchain.pem",
+        "key-rollover/longrolloverchain.test",
         &test);
     path = test.chain;
 
