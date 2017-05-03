@@ -976,10 +976,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
         owner_key_path.DirName().AppendASCII(kStubDevicePolicyFile);
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
-        base::TaskTraits()
-            .WithShutdownBehavior(
-                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-            .MayBlock(),
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(&GetFileContent, device_policy_path),
         base::Bind(&NotifyOnRetrievePolicySuccess, callback));
   }
@@ -999,10 +996,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                              const RetrievePolicyCallback& callback) override {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
-        base::TaskTraits()
-            .WithShutdownBehavior(
-                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-            .MayBlock(),
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(&GetFileContent,
                    GetUserFilePath(cryptohome_id, kStubPolicyFile)),
         base::Bind(&NotifyOnRetrievePolicySuccess, callback));
@@ -1038,10 +1032,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
 
     if (response.has_new_public_key()) {
       base::PostTaskWithTraits(
-          FROM_HERE, base::TaskTraits()
-                         .WithShutdownBehavior(
-                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                         .MayBlock(),
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
           base::Bind(&StoreFile, owner_key_path, response.new_public_key()));
     }
 
@@ -1053,10 +1045,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     base::FilePath device_policy_path =
         owner_key_path.DirName().AppendASCII(kStubDevicePolicyFile);
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits()
-                       .WithShutdownBehavior(
-                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                       .MayBlock(),
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(&StoreFile, device_policy_path, policy_blob),
         base::Bind(callback, true));
   }
@@ -1075,10 +1065,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     if (response.has_new_public_key()) {
       base::FilePath key_path = GetUserFilePath(cryptohome_id, "policy.pub");
       base::PostTaskWithTraits(
-          FROM_HERE, base::TaskTraits()
-                         .WithShutdownBehavior(
-                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                         .MayBlock(),
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
           base::Bind(&StoreFile, key_path, response.new_public_key()));
     }
 
@@ -1087,10 +1075,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     base::FilePath stub_policy_path =
         GetUserFilePath(cryptohome_id, kStubPolicyFile);
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits()
-                       .WithShutdownBehavior(
-                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                       .MayBlock(),
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(&StoreFile, stub_policy_path, policy_blob),
         base::Bind(callback, true));
   }
@@ -1114,10 +1100,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
         owner_key_path.DirName().AppendASCII(kStubStateKeysFile);
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
-        base::TaskTraits()
-            .WithShutdownBehavior(
-                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-            .MayBlock(),
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(&ReadCreateStateKeysStub, state_keys_path),
         base::Bind(&RunStateKeysCallbackStub, callback));
   }

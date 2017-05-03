@@ -207,10 +207,7 @@ void CertLoader::CertificatesLoaded(
   crypto::ScopedPK11Slot system_slot = database_->GetSystemSlot();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits()
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-          .MayBlock(),
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FilterSystemTokenCertificates,
                      base::Unretained(all_certs.get()), std::move(system_slot)),
       base::BindOnce(&CertLoader::UpdateCertificates,

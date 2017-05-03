@@ -104,10 +104,8 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
   mounted_paths_.insert(mounted_path);
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .MayBlock(),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&PerformFakeMount, source_path, mounted_path),
       base::Bind(&DidMount, mount_completed_handler_, source_path, type,
                  callback, mounted_path));
@@ -124,11 +122,9 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
   if (mounted_paths_.count(base::FilePath::FromUTF8Unsafe(device_path)) > 0) {
     mounted_paths_.erase(base::FilePath::FromUTF8Unsafe(device_path));
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits()
-                       .WithShutdownBehavior(
-                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                       .WithPriority(base::TaskPriority::BACKGROUND)
-                       .MayBlock(),
+        FROM_HERE,
+        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(base::IgnoreResult(&base::DeleteFile),
                    base::FilePath::FromUTF8Unsafe(device_path),
                    true /* recursive */),
