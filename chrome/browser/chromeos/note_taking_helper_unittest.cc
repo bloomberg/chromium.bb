@@ -260,7 +260,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
     extensions::ExtensionSystem::Get(profile)
         ->extension_service()
         ->UnloadExtension(extension->id(),
-                          extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
+                          extensions::UnloadedExtensionReason::UNINSTALL);
   }
 
   // BrowserWithTestWindowTest:

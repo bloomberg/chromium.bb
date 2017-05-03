@@ -66,7 +66,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
-      const UnloadedExtensionInfo::Reason reason) override;
+      const UnloadedExtensionReason reason) override;
 
   const OneShotEvent& ready() const override;
   ContentVerifier* content_verifier() override;  // shared

@@ -249,7 +249,7 @@ void ExtensionHost::OnExtensionReady(content::BrowserContext* browser_context,
 void ExtensionHost::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   // The extension object will be deleted after this notification has been sent.
   // Null it out so that dirty pointer issues don't arise in cases when multiple
   // ExtensionHost objects pointing to the same Extension are present.

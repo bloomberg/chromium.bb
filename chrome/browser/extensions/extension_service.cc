@@ -133,7 +133,7 @@ using extensions::PermissionIDSet;
 using extensions::PermissionSet;
 using extensions::SharedModuleInfo;
 using extensions::SharedModuleService;
-using extensions::UnloadedExtensionInfo;
+using extensions::UnloadedExtensionReason;
 
 namespace {
 
@@ -821,7 +821,7 @@ bool ExtensionService::UninstallExtension(
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
-  UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_UNINSTALL);
+  UnloadExtension(extension->id(), UnloadedExtensionReason::UNINSTALL);
   if (registry_->blacklisted_extensions().Contains(extension->id()))
     registry_->RemoveBlacklisted(extension->id());
 
@@ -991,7 +991,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
   registry_->AddDisabled(make_scoped_refptr(extension));
   if (registry_->enabled_extensions().Contains(extension->id())) {
     registry_->RemoveEnabled(extension->id());
-    NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::REASON_DISABLE);
+    NotifyExtensionUnloaded(extension, UnloadedExtensionReason::DISABLE);
   } else {
     registry_->RemoveTerminated(extension->id());
   }
@@ -1049,7 +1049,7 @@ void ExtensionService::BlockAllExtensions() {
     registry_->RemoveTerminated(id);
 
     registry_->AddBlocked(extension.get());
-    UnloadExtension(id, extensions::UnloadedExtensionInfo::REASON_LOCK_ALL);
+    UnloadExtension(id, extensions::UnloadedExtensionReason::LOCK_ALL);
   }
 }
 
@@ -1169,9 +1169,8 @@ void ExtensionService::OnExtensionRegisteredWithRequestContexts(
     registry_->TriggerOnReady(extension.get());
 }
 
-void ExtensionService::NotifyExtensionUnloaded(
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+void ExtensionService::NotifyExtensionUnloaded(const Extension* extension,
+                                               UnloadedExtensionReason reason) {
   registry_->TriggerOnUnloaded(extension, reason);
 
   renderer_helper_->OnExtensionUnloaded(*extension);
@@ -1287,7 +1286,7 @@ void ExtensionService::CheckManagementPolicy() {
   }
 
   for (const std::string& id : to_unload)
-    UnloadExtension(id, UnloadedExtensionInfo::REASON_DISABLE);
+    UnloadExtension(id, UnloadedExtensionReason::DISABLE);
 
   for (const auto& i : to_disable)
     DisableExtension(i.first, i.second);
@@ -1402,9 +1401,8 @@ void ExtensionService::OnAllExternalProvidersReady() {
   external_install_manager_->UpdateExternalExtensionAlert();
 }
 
-void ExtensionService::UnloadExtension(
-    const std::string& extension_id,
-    UnloadedExtensionInfo::Reason reason) {
+void ExtensionService::UnloadExtension(const std::string& extension_id,
+                                       UnloadedExtensionReason reason) {
   // Make sure the extension gets deleted after we return from this function.
   int include_mask =
       ExtensionRegistry::EVERYTHING & ~ExtensionRegistry::TERMINATED;
@@ -1451,7 +1449,7 @@ void ExtensionService::RemoveComponentExtension(
     const std::string& extension_id) {
   scoped_refptr<const Extension> extension(
       GetExtensionById(extension_id, false));
-  UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_UNINSTALL);
+  UnloadExtension(extension_id, UnloadedExtensionReason::UNINSTALL);
   if (extension.get()) {
     ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(
         extension.get(), extensions::UNINSTALL_REASON_COMPONENT_REMOVED);
@@ -1568,7 +1566,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   if (is_extension_loaded && !reloading) {
     // To upgrade an extension in place, unload the old one and then load the
     // new one.  ReloadExtension disables the extension, which is sufficient.
-    UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_UPDATE);
+    UnloadExtension(extension->id(), UnloadedExtensionReason::UPDATE);
   }
 
   if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
@@ -2077,7 +2075,7 @@ void ExtensionService::TrackTerminatedExtension(
 
   // No need to check for duplicates; inserting a duplicate is a no-op.
   registry_->AddTerminated(make_scoped_refptr(extension));
-  UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_TERMINATE);
+  UnloadExtension(extension->id(), UnloadedExtensionReason::TERMINATE);
 }
 
 void ExtensionService::TerminateExtension(const std::string& extension_id) {
@@ -2471,7 +2469,7 @@ void ExtensionService::UpdateBlacklistedExtensions(
     registry_->AddBlacklisted(extension);
     extension_prefs_->SetExtensionBlacklistState(
         extension->id(), extensions::BLACKLISTED_MALWARE);
-    UnloadExtension(*it, UnloadedExtensionInfo::REASON_BLACKLIST);
+    UnloadExtension(*it, UnloadedExtensionReason::BLACKLIST);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlacklistInstalled",
                               extension->location(), Manifest::NUM_LOCATIONS);
   }
@@ -2565,6 +2563,6 @@ void ExtensionService::OnProfileDestructionStarted() {
   for (ExtensionIdSet::iterator it = ids_to_unload.begin();
        it != ids_to_unload.end();
        ++it) {
-    UnloadExtension(*it, UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN);
+    UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
   }
 }

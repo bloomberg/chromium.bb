@@ -84,7 +84,7 @@ class RegistryObserver : public ExtensionRegistryObserver {
   // ExtensionRegistryObserver
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override {
+                           UnloadedExtensionReason reason) override {
     unloaded_.insert(extension->id());
     if (awaited_unload_id_ == extension->id()) {
       awaited_unload_id_.clear();

@@ -377,7 +377,7 @@ TEST_F(ExtensionProtocolsTest, ComponentResourceRequest) {
 
   // And then test it with the extension disabled.
   extension_info_map_->RemoveExtension(extension->id(),
-                                       UnloadedExtensionInfo::REASON_DISABLE);
+                                       UnloadedExtensionReason::DISABLE);
   {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(

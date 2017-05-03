@@ -119,9 +119,8 @@ void AppWindowGeometryCacheTest::LoadExtension(
 void AppWindowGeometryCacheTest::UnloadExtension(
     const std::string& extension_id) {
   scoped_refptr<Extension> extension = CreateExtension(extension_id);
-  cache_->OnExtensionUnloaded(browser_context(),
-                              extension.get(),
-                              UnloadedExtensionInfo::REASON_DISABLE);
+  cache_->OnExtensionUnloaded(browser_context(), extension.get(),
+                              UnloadedExtensionReason::DISABLE);
   WaitForSync();
 }
 

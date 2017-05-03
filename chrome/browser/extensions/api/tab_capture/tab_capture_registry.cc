@@ -285,7 +285,7 @@ void TabCaptureRegistry::GetCapturedTabs(
 void TabCaptureRegistry::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   // Cleanup all the requested media streams for this extension.
   for (std::vector<std::unique_ptr<LiveRequest>>::iterator it =
            requests_.begin();

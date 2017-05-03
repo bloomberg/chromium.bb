@@ -16,7 +16,6 @@ namespace extensions {
 
 class Extension;
 class ExtensionRegistry;
-struct UnloadedExtensionInfo;
 
 // Observer for ExtensionRegistry. Exists in a separate header file to reduce
 // the include file burden for typical clients of ExtensionRegistry.
@@ -40,7 +39,7 @@ class ExtensionRegistryObserver {
   // member of one of the other sets, like disabled, blacklisted or terminated.
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason) {}
+                                   UnloadedExtensionReason reason) {}
 
   // Called when |extension| is about to be installed. |is_update| is true if
   // the installation is the result of it updating, in which case |old_name| is

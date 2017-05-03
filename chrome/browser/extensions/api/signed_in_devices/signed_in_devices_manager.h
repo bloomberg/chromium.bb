@@ -73,7 +73,7 @@ class SignedInDevicesManager : public BrowserContextKeyedAPI,
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // EventRouter::Observer:
   void OnListenerAdded(const EventListenerInfo& details) override;

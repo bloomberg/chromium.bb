@@ -38,8 +38,8 @@ void LauncherExtensionAppUpdater::OnExtensionLoaded(
 void LauncherExtensionAppUpdater::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
-  if (reason == extensions::UnloadedExtensionInfo::REASON_UNINSTALL)
+    extensions::UnloadedExtensionReason reason) {
+  if (reason == extensions::UnloadedExtensionReason::UNINSTALL)
     delegate()->OnAppUninstalledPrepared(browser_context, extension->id());
   else
     delegate()->OnAppUpdated(browser_context, extension->id());

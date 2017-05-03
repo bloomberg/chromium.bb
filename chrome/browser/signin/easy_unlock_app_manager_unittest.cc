@@ -113,7 +113,7 @@ class ExtensionReloadTracker : public extensions::ExtensionRegistryObserver {
   void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override {
+      extensions::UnloadedExtensionReason reason) override {
     ASSERT_FALSE(unloaded_);
     ASSERT_EQ(extension_id_, extension->id());
     unloaded_ = true;

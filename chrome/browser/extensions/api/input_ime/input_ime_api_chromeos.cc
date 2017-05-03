@@ -627,7 +627,7 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
 
 void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
-                                      UnloadedExtensionInfo::Reason reason) {
+                                      UnloadedExtensionReason reason) {
   const std::vector<InputComponentInfo>* input_components =
       InputComponents::GetInputComponents(extension);
   if (!input_components || input_components->empty())

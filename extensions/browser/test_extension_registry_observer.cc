@@ -99,7 +99,7 @@ void TestExtensionRegistryObserver::OnExtensionLoaded(
 void TestExtensionRegistryObserver::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   if (extension_id_.empty() || extension->id() == extension_id_)
     unloaded_waiter_->OnObserved(extension);
 }

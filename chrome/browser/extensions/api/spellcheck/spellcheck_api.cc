@@ -74,7 +74,7 @@ void SpellcheckAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
 void SpellcheckAPI::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   SpellcheckDictionaryInfo* spellcheck_info =
       GetSpellcheckDictionaryInfo(extension);
   if (spellcheck_info) {

@@ -64,7 +64,7 @@ TEST_F(NotificationSystemObserverTest, MultiProfileExtensionUnloaded) {
   ASSERT_NE(extension->url(), ui_manager()->last_canceled_source());
   // Claim the extension has been unloaded.
   extensions::ExtensionRegistry::Get(profile())->TriggerOnUnloaded(
-      extension.get(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
+      extension.get(), extensions::UnloadedExtensionReason::UNINSTALL);
   // Check the NotificationUIManger has canceled the source coming from the
   // unloaded extension.
   EXPECT_EQ(extension->url(), ui_manager()->last_canceled_source());
@@ -75,6 +75,6 @@ TEST_F(NotificationSystemObserverTest, MultiProfileExtensionUnloaded) {
       CreateGoodExtension("bar");
   // Claim the extension has been unloaded with anoter profile.
   extensions::ExtensionRegistry::Get(profile2)->TriggerOnUnloaded(
-      extension2.get(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
+      extension2.get(), extensions::UnloadedExtensionReason::UNINSTALL);
   EXPECT_EQ(extension2->url(), ui_manager()->last_canceled_source());
 }

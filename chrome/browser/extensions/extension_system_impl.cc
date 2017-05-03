@@ -461,7 +461,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
 
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
-    const UnloadedExtensionInfo::Reason reason) {
+    const UnloadedExtensionReason reason) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&InfoMap::RemoveExtension, info_map(),
                                          extension_id, reason));

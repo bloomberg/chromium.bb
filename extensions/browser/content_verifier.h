@@ -72,7 +72,7 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                          const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentVerifier);

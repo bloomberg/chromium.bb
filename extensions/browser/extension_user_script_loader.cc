@@ -236,7 +236,7 @@ void ExtensionUserScriptLoader::UpdateHostsInfo(
 void ExtensionUserScriptLoader::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   hosts_info_.erase(HostID(HostID::EXTENSIONS, extension->id()));
 }
 

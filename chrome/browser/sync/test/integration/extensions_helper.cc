@@ -179,7 +179,7 @@ void ExtensionsMatchChecker::OnExtensionLoaded(
 void ExtensionsMatchChecker::OnExtensionUnloaded(
     content::BrowserContext* context,
     const extensions::Extension* extenion,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   CheckExitCondition();
 }
 

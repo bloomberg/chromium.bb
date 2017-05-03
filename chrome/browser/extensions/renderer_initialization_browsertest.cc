@@ -28,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
       ui::PAGE_TRANSITION_TYPED, false));
   // Without waiting for the tab to finish, unload the extension.
   extension_service()->UnloadExtension(extension->id(),
-                                       UnloadedExtensionInfo::REASON_TERMINATE);
+                                       UnloadedExtensionReason::TERMINATE);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   // Wait for the web contents to stop loading.

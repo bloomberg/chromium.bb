@@ -61,7 +61,7 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   // ExtensionRegistryObserver
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // Returns the extension id registered for |hex_ssid|. If no extension is
   // registered for this |hex_ssid|, the function returns an empty string.

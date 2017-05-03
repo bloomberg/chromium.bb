@@ -178,7 +178,7 @@ void LazyBackgroundTaskQueue::Observe(
 void LazyBackgroundTaskQueue::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   // Notify consumers that the page failed to load.
   ProcessPendingTasks(NULL, browser_context, extension);
   // If this extension is also running in an off-the-record context, notify that

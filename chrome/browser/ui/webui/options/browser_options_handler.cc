@@ -1391,7 +1391,7 @@ void BrowserOptionsHandler::OnExtensionLoaded(
 void BrowserOptionsHandler::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   SetupExtensionControlledIndicators();
 }
 

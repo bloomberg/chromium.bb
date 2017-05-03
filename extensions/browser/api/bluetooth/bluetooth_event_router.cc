@@ -504,7 +504,7 @@ void BluetoothEventRouter::Observe(
 void BluetoothEventRouter::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   CleanUpForExtension(extension->id());
 }
 

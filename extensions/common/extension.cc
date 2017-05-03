@@ -768,12 +768,6 @@ InstalledExtensionInfo::InstalledExtensionInfo(
       from_ephemeral(from_ephemeral),
       old_name(old_name) {}
 
-UnloadedExtensionInfo::UnloadedExtensionInfo(
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason)
-    : reason(reason),
-      extension(extension) {}
-
 UpdatedExtensionPermissionsInfo::UpdatedExtensionPermissionsInfo(
     const Extension* extension,
     const PermissionSet& permissions,

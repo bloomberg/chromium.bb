@@ -86,7 +86,7 @@ class LazyBackgroundTaskQueue : public KeyedService,
   // ExtensionRegistryObserver interface.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // Called when a lazy background page has finished loading, or has failed to
   // load (host is NULL in that case). All enqueued tasks are run in order.

@@ -421,7 +421,7 @@ void NoteTakingHelper::OnExtensionLoaded(
 void NoteTakingHelper::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   if (IsWhitelistedChromeApp(extension) ||
       extensions::ActionHandlersInfo::HasActionHandler(
           extension, app_runtime::ACTION_TYPE_NEW_NOTE)) {

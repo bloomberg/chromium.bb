@@ -386,10 +386,9 @@ class ExtensionDownloadsEventRouter
       std::unique_ptr<base::Value> json_arg);
 
   // extensions::ExtensionRegistryObserver.
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
 
   Profile* profile_;
   AllDownloadItemNotifier notifier_;

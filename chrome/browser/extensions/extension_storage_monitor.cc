@@ -303,7 +303,7 @@ void ExtensionStorageMonitor::OnExtensionLoaded(
 void ExtensionStorageMonitor::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   StopMonitoringStorage(extension->id());
 }
 

@@ -47,7 +47,7 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
                          const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   const Extension* Wait(std::unique_ptr<Waiter>* waiter);
 

@@ -248,6 +248,6 @@ void UberFrameUI::OnExtensionLoaded(content::BrowserContext* browser_context,
 void UberFrameUI::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   UpdateHistoryNavigation(web_ui());
 }

@@ -211,7 +211,7 @@ class ProcessManager : public KeyedService,
                          const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // Extra information we keep for each extension's background page.
   struct BackgroundPageData;

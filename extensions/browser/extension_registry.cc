@@ -62,9 +62,8 @@ void ExtensionRegistry::TriggerOnReady(const Extension* extension) {
     observer.OnExtensionReady(browser_context_, extension);
 }
 
-void ExtensionRegistry::TriggerOnUnloaded(
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+void ExtensionRegistry::TriggerOnUnloaded(const Extension* extension,
+                                          UnloadedExtensionReason reason) {
   CHECK(extension);
   DCHECK(!enabled_extensions_.Contains(extension->id()));
   for (auto& observer : observers_)

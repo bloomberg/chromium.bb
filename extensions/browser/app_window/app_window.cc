@@ -991,7 +991,7 @@ content::WebContents* AppWindow::GetAssociatedWebContents() const {
 
 void AppWindow::OnExtensionUnloaded(BrowserContext* browser_context,
                                     const Extension* extension,
-                                    UnloadedExtensionInfo::Reason reason) {
+                                    UnloadedExtensionReason reason) {
   if (extension_id_ == extension->id())
     native_app_window_->Close();
 }

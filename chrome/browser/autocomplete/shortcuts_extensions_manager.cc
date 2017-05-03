@@ -21,7 +21,7 @@ ShortcutsExtensionsManager::~ShortcutsExtensionsManager() {}
 void ShortcutsExtensionsManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   scoped_refptr<ShortcutsBackend> shortcuts_backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
   if (!shortcuts_backend)

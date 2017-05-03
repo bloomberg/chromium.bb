@@ -419,7 +419,7 @@ void ExtensionActionRunner::DidFinishNavigation(
 void ExtensionActionRunner::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   PendingScriptMap::iterator iter = pending_scripts_.find(extension->id());
   if (iter != pending_scripts_.end()) {
     pending_scripts_.erase(iter);

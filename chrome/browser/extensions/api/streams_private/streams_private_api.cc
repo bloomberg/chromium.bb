@@ -160,7 +160,7 @@ void StreamsPrivateAPI::AbortStream(const std::string& extension_id,
 void StreamsPrivateAPI::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   streams_.erase(extension->id());
 }
 

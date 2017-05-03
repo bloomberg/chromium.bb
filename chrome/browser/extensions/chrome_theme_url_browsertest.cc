@@ -26,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   // Unload the extension so we can reload it below with no chance of side
   // effects.
   extension_service()->UnloadExtension(extension->id(),
-                                       UnloadedExtensionInfo::REASON_UNINSTALL);
+                                       UnloadedExtensionReason::UNINSTALL);
   listener.Reset();
 
   // Now try loading the extension as a component extension.  This time the

@@ -152,10 +152,9 @@ void Service::OnExtensionLoaded(content::BrowserContext* browser_context,
   cached_listener_extension_ids_.reset();
 }
 
-void Service::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+void Service::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                  const extensions::Extension* extension,
+                                  extensions::UnloadedExtensionReason reason) {
   // Invalidate cache.
   cached_listener_extension_ids_.reset();
 }

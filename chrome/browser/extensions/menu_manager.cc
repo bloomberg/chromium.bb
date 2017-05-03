@@ -855,7 +855,7 @@ void MenuManager::OnExtensionLoaded(content::BrowserContext* browser_context,
 
 void MenuManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
-                                      UnloadedExtensionInfo::Reason reason) {
+                                      UnloadedExtensionReason reason) {
   MenuItem::ExtensionKey extension_key(extension->id());
   if (base::ContainsKey(context_items_, extension_key)) {
     RemoveAllContextItems(extension_key);

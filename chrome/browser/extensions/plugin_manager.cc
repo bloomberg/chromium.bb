@@ -97,7 +97,7 @@ void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
 void PluginManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   bool plugins_or_nacl_changed = false;
 #if !defined(DISABLE_NACL)
   const NaClModuleInfo::List* nacl_modules =

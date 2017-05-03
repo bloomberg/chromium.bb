@@ -88,7 +88,7 @@ void PowerAPI::SetCreateBlockerFunctionForTesting(
 
 void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason) {
+                                   UnloadedExtensionReason reason) {
   RemoveRequest(extension->id());
   UpdatePowerSaveBlocker();
 }

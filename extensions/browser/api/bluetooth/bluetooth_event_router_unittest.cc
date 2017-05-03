@@ -94,8 +94,8 @@ TEST_F(BluetoothEventRouterTest, UnloadExtension) {
           .SetID(kTestExtensionId)
           .Build();
 
-  ExtensionRegistry::Get(browser_context())->TriggerOnUnloaded(
-      extension.get(), UnloadedExtensionInfo::REASON_DISABLE);
+  ExtensionRegistry::Get(browser_context())
+      ->TriggerOnUnloaded(extension.get(), UnloadedExtensionReason::DISABLE);
 
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
 }

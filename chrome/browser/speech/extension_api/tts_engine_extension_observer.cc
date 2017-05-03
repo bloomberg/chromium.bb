@@ -119,7 +119,7 @@ void TtsEngineExtensionObserver::OnListenerAdded(
 void TtsEngineExtensionObserver::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   if (engine_extension_ids_.find(extension->id()) !=
       engine_extension_ids_.end()) {
     engine_extension_ids_.erase(extension->id());

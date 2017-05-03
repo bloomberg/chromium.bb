@@ -290,7 +290,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   Profile* profile_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
@@ -422,7 +422,7 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
 void ExtensionDevToolsClientHost::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   if (extension->id() == extension_id_)
     Close();
 }

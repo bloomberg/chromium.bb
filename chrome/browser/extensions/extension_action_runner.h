@@ -170,7 +170,7 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // The total number of requests from the renderer on the current page,
   // including any that are pending or were immediately granted.

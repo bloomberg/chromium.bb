@@ -79,7 +79,7 @@ class WarningService : public KeyedService,
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // Currently existing warnings.
   WarningSet warnings_;

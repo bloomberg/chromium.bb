@@ -81,7 +81,7 @@ void TestExtensionService::AddComponentExtension(const Extension* extension) {
 
 void TestExtensionService::UnloadExtension(
     const std::string& extension_id,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   ADD_FAILURE();
 }
 

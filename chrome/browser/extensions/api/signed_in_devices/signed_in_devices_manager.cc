@@ -158,7 +158,7 @@ void SignedInDevicesManager::RemoveChangeObserverForExtension(
 void SignedInDevicesManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   RemoveChangeObserverForExtension(extension->id());
 }
 

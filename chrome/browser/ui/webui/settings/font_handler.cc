@@ -113,10 +113,9 @@ void FontHandler::OnExtensionLoaded(content::BrowserContext*,
   NotifyAdvancedFontSettingsAvailability();
 }
 
-void FontHandler::OnExtensionUnloaded(
-    content::BrowserContext*,
-    const extensions::Extension*,
-    extensions::UnloadedExtensionInfo::Reason) {
+void FontHandler::OnExtensionUnloaded(content::BrowserContext*,
+                                      const extensions::Extension*,
+                                      extensions::UnloadedExtensionReason) {
   NotifyAdvancedFontSettingsAvailability();
 }
 

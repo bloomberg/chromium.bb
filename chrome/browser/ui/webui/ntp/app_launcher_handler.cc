@@ -347,7 +347,7 @@ void AppLauncherHandler::OnExtensionLoaded(
 void AppLauncherHandler::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   AppRemoved(extension, false);
 }
 

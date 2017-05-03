@@ -38,7 +38,7 @@ class KeepAliveImpl : public KeepAlive, public ExtensionRegistryObserver {
   // ExtensionRegistryObserver overrides.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
   void OnShutdown(ExtensionRegistry* registry) override;
 
   // Invoked when the mojo connection is disconnected.

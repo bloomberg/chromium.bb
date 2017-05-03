@@ -106,11 +106,11 @@ void ExtensionGCMAppHandler::OnExtensionLoaded(
 void ExtensionGCMAppHandler::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   if (!IsGCMPermissionEnabled(extension))
     return;
 
-  if (reason == UnloadedExtensionInfo::REASON_UPDATE &&
+  if (reason == UnloadedExtensionReason::UPDATE &&
       GetGCMDriver()->app_handlers().size() >= 1) {
     // When the extension is being updated, it will be first unloaded and then
     // loaded again by ExtensionService::AddExtension. If the app handler for
@@ -138,7 +138,7 @@ void ExtensionGCMAppHandler::OnExtensionUnloaded(
   // When the extention is being uninstalled, it will be unloaded first. We
   // should not remove the app handler in this case and it will be handled
   // in OnExtensionUninstalled.
-  if (reason != UnloadedExtensionInfo::REASON_UNINSTALL)
+  if (reason != UnloadedExtensionReason::UNINSTALL)
     RemoveAppHandler(extension->id());
 }
 

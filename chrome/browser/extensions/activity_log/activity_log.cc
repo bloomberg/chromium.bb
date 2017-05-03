@@ -681,7 +681,7 @@ void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
 
 void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
-                                      UnloadedExtensionInfo::Reason reason) {
+                                      UnloadedExtensionReason reason) {
   if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
     return;
   --active_consumers_;

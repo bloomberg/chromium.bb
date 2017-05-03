@@ -1216,7 +1216,7 @@ void BluetoothLowEnergyEventRouter::OnNotificationsStop(
 void BluetoothLowEnergyEventRouter::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   const std::string& app_id = extension->id();
   const auto& services = app_id_to_service_ids_.find(app_id);
   if (services == app_id_to_service_ids_.end())

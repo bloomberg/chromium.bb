@@ -108,7 +108,7 @@ TEST_F(ShortcutsProviderExtensionTest, Extension) {
           .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
           .Build();
   extensions::ExtensionRegistry::Get(&profile_)->TriggerOnUnloaded(
-      extension.get(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
+      extension.get(), extensions::UnloadedExtensionReason::UNINSTALL);
 
   // Now the URL should have disappeared.
   RunShortcutsProviderTest(provider_, text, false, ExpectedURLs(),

@@ -195,7 +195,7 @@ void ContentVerifier::OnExtensionLoaded(
 void ContentVerifier::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   if (shutdown_)
     return;
   content::BrowserThread::PostTask(

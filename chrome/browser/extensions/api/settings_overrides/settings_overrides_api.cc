@@ -197,7 +197,7 @@ void SettingsOverridesAPI::OnExtensionLoaded(
 void SettingsOverridesAPI::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   const SettingsOverrides* settings = SettingsOverrides::Get(extension);
   if (settings) {
     if (settings->homepage) {
