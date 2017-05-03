@@ -68,13 +68,16 @@ namespace {
 
 NSString* kUsername = @"testusername";
 NSString* kPassword = @"testpassword";
-int kShowHideButtonItem = 1;
-int kCopyButtonItem = 2;
-int kDeleteButtonItem = 3;
+
 int kUsernameSection = 0;
 int kUsernameItem = 0;
+int kCopyUsernameButtonItem = 1;
+
 int kPasswordSection = 1;
 int kPasswordItem = 0;
+int kShowHideButtonItem = 1;
+int kCopyPasswordButtonItem = 2;
+int kDeleteButtonItem = 3;
 
 class PasswordDetailsCollectionViewControllerTest
     : public CollectionViewControllerTest {
@@ -114,13 +117,15 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
   CheckController();
   EXPECT_EQ(2, NumberOfSections());
   // Username section
-  EXPECT_EQ(1, NumberOfItemsInSection(kUsernameSection));
+  EXPECT_EQ(2, NumberOfItemsInSection(kUsernameSection));
   CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME,
                            kUsernameSection);
   PasswordDetailsItem* usernameItem =
       GetCollectionViewItem(kUsernameSection, kUsernameItem);
   EXPECT_NSEQ(kUsername, usernameItem.text);
   EXPECT_TRUE(usernameItem.showingText);
+  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON,
+                           kUsernameSection, kCopyUsernameButtonItem);
   // Password section
   EXPECT_EQ(4, NumberOfItemsInSection(kPasswordSection));
   CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD,
@@ -132,7 +137,7 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
   CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON,
                            kPasswordSection, kShowHideButtonItem);
   CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON,
-                           kPasswordSection, kCopyButtonItem);
+                           kPasswordSection, kCopyPasswordButtonItem);
   CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON,
                            kPasswordSection, kDeleteButtonItem);
 }
@@ -155,6 +160,16 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, SimplifyOrigin) {
         << " for origin " << base::SysNSStringToUTF8(test_data[i].origin);
     ResetController();
   }
+}
+
+TEST_F(PasswordDetailsCollectionViewControllerTest, CopyUsername) {
+  CreateController();
+  [controller() collectionView:[controller() collectionView]
+      didSelectItemAtIndexPath:[NSIndexPath
+                                   indexPathForRow:kCopyUsernameButtonItem
+                                         inSection:kUsernameSection]];
+  UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
+  EXPECT_NSEQ(kUsername, generalPasteboard.string);
 }
 
 TEST_F(PasswordDetailsCollectionViewControllerTest, ShowPassword) {
@@ -194,8 +209,9 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, HidePassword) {
 TEST_F(PasswordDetailsCollectionViewControllerTest, CopyPassword) {
   CreateController();
   [controller() collectionView:[controller() collectionView]
-      didSelectItemAtIndexPath:[NSIndexPath indexPathForRow:kCopyButtonItem
-                                                  inSection:kPasswordSection]];
+      didSelectItemAtIndexPath:[NSIndexPath
+                                   indexPathForRow:kCopyPasswordButtonItem
+                                         inSection:kPasswordSection]];
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
   EXPECT_NSEQ(kPassword, generalPasteboard.string);
   EXPECT_NSEQ(
