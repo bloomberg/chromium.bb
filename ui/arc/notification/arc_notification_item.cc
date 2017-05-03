@@ -236,8 +236,7 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
 
   // TODO(yoshiki): Remove decoding by passing a bitmap directly from Android.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().WithShutdownBehavior(
-                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&DecodeImage, data->icon_data),
       base::Bind(&ArcNotificationItem::OnImageDecoded,
                  weak_ptr_factory_.GetWeakPtr()));

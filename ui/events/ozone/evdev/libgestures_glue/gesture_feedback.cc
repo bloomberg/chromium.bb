@@ -234,11 +234,9 @@ void DumpTouchEventLog(
 
   // Compress touchpad/mouse logs asynchronously
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .MayBlock(),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&CompressDumpedLog, base::Passed(&log_paths_to_be_compressed)),
       base::Bind(reply, base::Passed(&log_paths)));
 }

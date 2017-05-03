@@ -55,10 +55,8 @@ class FileSurface : public SurfaceOzoneCanvas {
     // See crbug.com/361605 for details.
     if (surface_->getCanvas()->readPixels(bitmap, 0, 0)) {
       base::PostTaskWithTraits(
-          FROM_HERE, base::TaskTraits()
-                         .WithShutdownBehavior(
-                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                         .MayBlock(),
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
           base::Bind(&WriteDataToFile, location_, bitmap));
     }
   }
