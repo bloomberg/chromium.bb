@@ -425,10 +425,6 @@ void NetworkStateListDetailedView::CallRequestScan() {
       base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));
 }
 
-void NetworkStateListDetailedView::OnNetworkEntryClicked(views::View* sender) {
-  HandleViewClicked(sender);
-}
-
 void NetworkStateListDetailedView::RelayoutScrollList() {
   scroller()->Layout();
 }

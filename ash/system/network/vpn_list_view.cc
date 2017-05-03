@@ -25,6 +25,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/system/tray/view_click_listener.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -67,25 +68,14 @@ bool VpnProviderMatchesNetwork(const VPNProvider& provider,
              provider.extension_id;
 }
 
-// The base class of all list entries, a |HoverHighlightView| with no border.
-class VPNListEntryBase : public HoverHighlightView {
- public:
-  // When the user clicks the entry, the |parent|'s OnViewClicked() will be
-  // invoked.
-  explicit VPNListEntryBase(VPNListView* parent);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VPNListEntryBase);
-};
-
 // A list entry that represents a VPN provider.
 class VPNListProviderEntry : public views::ButtonListener, public views::View {
  public:
-  VPNListProviderEntry(ViewClickListener* parent,
+  VPNListProviderEntry(const VPNProvider& vpn_provider,
                        bool top_item,
                        const std::string& name,
                        int button_accessible_name_id)
-      : parent_(parent) {
+      : vpn_provider_(vpn_provider) {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(new views::FillLayout);
     TriView* tri_view = TrayPopupUtils::CreateSubHeaderRowView(false);
@@ -112,12 +102,23 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
  protected:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    parent_->OnViewClicked(this);
+    // If the user clicks on a provider entry, request that the "add network"
+    // dialog for this provider be shown.
+    if (vpn_provider_.third_party) {
+      ShellPort::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
+      Shell::Get()->system_tray_controller()->ShowThirdPartyVpnCreate(
+          vpn_provider_.extension_id);
+    } else {
+      ShellPort::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
+      Shell::Get()->system_tray_controller()->ShowNetworkCreate(
+          shill::kTypeVPN);
+    }
   }
 
  private:
-  // Our parent to handle events.
-  ViewClickListener* parent_;
+  const VPNProvider vpn_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(VPNListProviderEntry);
 };
@@ -126,10 +127,10 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
 // connecting, the icon shown by this list entry will be animated. If the
 // network is currently connected, a disconnect button will be shown next to its
 // name.
-class VPNListNetworkEntry : public VPNListEntryBase,
+class VPNListNetworkEntry : public HoverHighlightView,
                             public network_icon::AnimationObserver {
  public:
-  VPNListNetworkEntry(VPNListView* parent,
+  VPNListNetworkEntry(ViewClickListener* listener,
                       const chromeos::NetworkState* network);
   ~VPNListNetworkEntry() override;
 
@@ -153,12 +154,9 @@ class VPNListNetworkEntry : public VPNListEntryBase,
   DISALLOW_COPY_AND_ASSIGN(VPNListNetworkEntry);
 };
 
-VPNListEntryBase::VPNListEntryBase(VPNListView* parent)
-    : HoverHighlightView(parent) {}
-
-VPNListNetworkEntry::VPNListNetworkEntry(VPNListView* parent,
+VPNListNetworkEntry::VPNListNetworkEntry(ViewClickListener* listener,
                                          const chromeos::NetworkState* network)
-    : VPNListEntryBase(parent), guid_(network->guid()) {
+    : HoverHighlightView(listener), guid_(network->guid()) {
   UpdateFromNetworkState(network);
 }
 
@@ -175,7 +173,7 @@ void VPNListNetworkEntry::NetworkIconChanged() {
 void VPNListNetworkEntry::ButtonPressed(Button* sender,
                                         const ui::Event& event) {
   if (sender != disconnect_button_) {
-    VPNListEntryBase::ButtonPressed(sender, event);
+    HoverHighlightView::ButtonPressed(sender, event);
     return;
   }
 
@@ -337,34 +335,8 @@ void VPNListView::OnVPNProvidersChanged() {
   Update();
 }
 
-void VPNListView::OnViewClicked(views::View* sender) {
-  const auto& provider_iter = provider_view_map_.find(sender);
-  if (provider_iter != provider_view_map_.end()) {
-    // If the user clicks on a provider entry, request that the "add network"
-    // dialog for this provider be shown.
-    const VPNProvider& provider = provider_iter->second;
-    if (provider.third_party) {
-      ShellPort::Get()->RecordUserMetricsAction(
-          UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
-      Shell::Get()->system_tray_controller()->ShowThirdPartyVpnCreate(
-          provider.extension_id);
-    } else {
-      ShellPort::Get()->RecordUserMetricsAction(
-          UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
-      Shell::Get()->system_tray_controller()->ShowNetworkCreate(
-          shill::kTypeVPN);
-    }
-    return;
-  }
-
-  // If the user clicked on a network entry, let the |delegate_| trigger a
-  // connection attempt (if the network is currently disconnected) or show a
-  // configuration dialog (if the network is currently connected or connecting).
-  detailed_view()->OnNetworkEntryClicked(sender);
-}
-
 void VPNListView::AddNetwork(const chromeos::NetworkState* network) {
-  views::View* entry(new VPNListNetworkEntry(this, network));
+  views::View* entry(new VPNListNetworkEntry(detailed_view(), network));
   container()->AddChildView(entry);
   network_view_guid_map_[entry] = network->guid();
   list_empty_ = false;
@@ -383,7 +355,7 @@ void VPNListView::AddProviderAndNetworks(
 
   // Add a list entry for the VPN provider.
   views::View* provider_view = nullptr;
-  provider_view = new VPNListProviderEntry(this, list_empty_, vpn_name,
+  provider_view = new VPNListProviderEntry(vpn_provider, list_empty_, vpn_name,
                                            IDS_ASH_STATUS_TRAY_ADD_CONNECTION);
   container()->AddChildView(provider_view);
   provider_view_map_[provider_view] = vpn_provider;

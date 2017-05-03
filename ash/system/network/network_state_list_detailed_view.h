@@ -46,9 +46,6 @@ class NetworkStateListDetailedView
   // Manager properties (e.g. technology state) have changed.
   void Update();
 
-  // Called when the user clicks on an entry representing a network in the list.
-  void OnNetworkEntryClicked(views::View* sender);
-
   void RelayoutScrollList();
 
  private:
