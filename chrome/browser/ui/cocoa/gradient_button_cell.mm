@@ -490,6 +490,10 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   [innerPath stroke];
 }
 
+- (CGFloat)insetInView:(NSView*)controlView {
+  return [controlView cr_lineWidth];
+}
+
 // TODO(viettrungluu): clean this up.
 // (Private)
 - (void)getDrawParamsForFrame:(NSRect)cellFrame
@@ -497,22 +501,22 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
                    innerFrame:(NSRect*)returnInnerFrame
                     innerPath:(NSBezierPath**)returnInnerPath
                      clipPath:(NSBezierPath**)returnClipPath {
-  const CGFloat kLineWidth = [controlView cr_lineWidth];
-  const CGFloat kHalfLineWidth = kLineWidth / 2.0;
+  const CGFloat lineWidth = [self insetInView:controlView];
+  const CGFloat halfLineWidth = lineWidth / 2.0;
 
   NSRect drawFrame = NSZeroRect;
   NSRect innerFrame = NSZeroRect;
   CGFloat cornerRadius = 2;
   if (![self isMaterialDesignButtonType]) {
-    drawFrame = NSInsetRect(cellFrame, 1.5 * kLineWidth, 1.5 * kLineWidth);
-    innerFrame = NSInsetRect(cellFrame, kLineWidth, kLineWidth);
+    drawFrame = NSInsetRect(cellFrame, 1.5 * lineWidth, 1.5 * lineWidth);
+    innerFrame = NSInsetRect(cellFrame, lineWidth, lineWidth);
     cornerRadius = 3;
   } else {
     drawFrame = cellFrame;
     // Hover and click paths are always 20pt tall, regardless of the button's
     // height.
     drawFrame.size.height = 20;
-    innerFrame = NSInsetRect(drawFrame, kLineWidth, kLineWidth);
+    innerFrame = NSInsetRect(drawFrame, lineWidth, lineWidth);
   }
 
   ButtonType type = [[(NSControl*)controlView cell] tag];
@@ -550,16 +554,16 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
                                                          xRadius:cornerRadius
                                                          yRadius:cornerRadius];
     }
-    [*returnInnerPath setLineWidth:kLineWidth];
+    [*returnInnerPath setLineWidth:lineWidth];
   }
   if (returnClipPath) {
     DCHECK(*returnClipPath == nil);
     NSRect clipPathRect =
-        NSInsetRect(drawFrame, -kHalfLineWidth, -kHalfLineWidth);
-    *returnClipPath = [NSBezierPath
-        bezierPathWithRoundedRect:clipPathRect
-                          xRadius:cornerRadius + kHalfLineWidth
-                          yRadius:cornerRadius + kHalfLineWidth];
+        NSInsetRect(drawFrame, -halfLineWidth, -halfLineWidth);
+    *returnClipPath =
+        [NSBezierPath bezierPathWithRoundedRect:clipPathRect
+                                        xRadius:cornerRadius + halfLineWidth
+                                        yRadius:cornerRadius + halfLineWidth];
   }
 }
 
@@ -743,7 +747,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     if (shouldClipTheTitle)
       [NSBezierPath clipRect:solidPart];
 
-    CGFloat textLeft = [self textStartXOffset];
 
     // For some reason, the height of cellFrame as passed in is totally bogus.
     // For vertical centering purposes, we need the bounds of the containing
@@ -751,17 +754,15 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     NSRect buttonFrame = [[self controlView] frame];
 
     // Call the vertical offset to match native NSButtonCell's version.
-    textOffset = NSMakePoint(textLeft,
-                             (NSHeight(buttonFrame) - size.height) / 2 +
-                             [self verticalTextOffset]);
+    textOffset = NSMakePoint(
+        NSMinX(cellFrame),
+        (NSHeight(buttonFrame) - size.height) / 2 + [self verticalTextOffset]);
     // WIth Material Design we want an ellipsis if the title is too long to fit,
     // so have to use drawInRect: instead of drawAtPoint:.
     if (isModeMaterial) {
-      NSRect textBounds = NSMakeRect(textOffset.x,
-                                     textOffset.y,
-                                     NSWidth(buttonFrame) - textOffset.x,
-                                     NSHeight(buttonFrame));
-      [title drawInRect:textBounds];
+      NSRect textFrame = NSMakeRect(textOffset.x, textOffset.y,
+                                    NSWidth(cellFrame), NSHeight(buttonFrame));
+      [title drawInRect:textFrame];
     } else {
       [title drawAtPoint:textOffset];
     }

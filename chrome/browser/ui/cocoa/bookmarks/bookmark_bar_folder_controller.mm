@@ -21,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #import "components/bookmarks/managed/managed_bookmark_service.h"
@@ -276,7 +277,8 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
 
     parentController_.reset([parentController retain]);
     if (!parentController_)
-      [self setSubFolderGrowthToRight:YES];
+      [self setSubFolderGrowthToRight:!cocoa_l10n_util::
+                                          ShouldDoExperimentalRTLLayout()];
     else
       [self setSubFolderGrowthToRight:[parentController
                                         subFolderGrowthToRight]];
@@ -529,17 +531,25 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   if (![parentController_ isKindOfClass:[self class]]) {
     // If we're not popping up from one of ourselves, we must be
     // popping up from the bookmark bar itself.  In this case, start
-    // BELOW the parent button.  Our left is the button left; our top
-    // is bottom of button's parent view.
-    NSPoint buttonBottomLeftInScreen = ui::ConvertPointFromWindowToScreen(
+    // BELOW the parent button. Our leading edge is the button leading
+    // edge; our top is bottom of button's parent view.
+    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+    NSPoint buttonAnchorPoint =
+        isRTL ? NSMakePoint(NSWidth([parentButton_ frame]), 0) : NSZeroPoint;
+    NSPoint buttonAnchorPointInScreen = ui::ConvertPointFromWindowToScreen(
         [parentButton_ window],
-        [parentButton_ convertPoint:NSZeroPoint toView:nil]);
-    NSPoint bookmarkBarBottomLeftInScreen = ui::ConvertPointFromWindowToScreen(
+        [parentButton_ convertPoint:buttonAnchorPoint toView:nil]);
+    NSPoint bookmarkBarAnchorPoint =
+        isRTL ? NSMakePoint(NSWidth([[parentButton_ superview] frame]), 0)
+              : NSZeroPoint;
+    NSPoint bookmarkBarAnchorPointInScreen = ui::ConvertPointFromWindowToScreen(
         [parentButton_ window],
-        [[parentButton_ superview] convertPoint:NSZeroPoint toView:nil]);
+        [[parentButton_ superview] convertPoint:bookmarkBarAnchorPoint
+                                         toView:nil]);
     newWindowTopLeft = NSMakePoint(
-        buttonBottomLeftInScreen.x,
-        bookmarkBarBottomLeftInScreen.y + bookmarks::kBookmarkBarMenuOffset);
+        isRTL ? buttonAnchorPointInScreen.x - windowWidth
+              : buttonAnchorPointInScreen.x,
+        bookmarkBarAnchorPointInScreen.y + bookmarks::kBookmarkBarMenuOffset);
     // Make sure the window is on-screen; if not, push left or right. It is
     // intentional that top level folders "push left" or "push right" slightly
     // different than subfolders.
@@ -1478,7 +1488,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // Make this menu key, so key status doesn't go back to the browser
     // window when the submenu closes.
     [[self window] makeKeyWindow];
-    [self setSubFolderGrowthToRight:YES];
+    [self setSubFolderGrowthToRight:!cocoa_l10n_util::
+                                        ShouldDoExperimentalRTLLayout()];
     [[folderController_ window] close];
     folderController_ = nil;
   }

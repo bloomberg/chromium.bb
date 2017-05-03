@@ -96,6 +96,30 @@ bool ShouldFlipWindowControlsInRTL() {
   return ShouldDoExperimentalRTLLayout() && base::mac::IsAtLeastOS10_12();
 }
 
+// TODO(lgrey): Remove these when all builds are on 10.12 SDK.
+#if defined(MAC_OS_X_VERSION_10_12) && \
+    (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12)
+#warning LeadingCellImagePosition/TrailingCellImagePosition \
+  should be removed since the deployment target is >= 10.12
+#endif
+
+#if !defined(MAC_OS_X_VERSION_10_12) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12
+NSCellImagePosition LeadingCellImagePosition() {
+  return ShouldDoExperimentalRTLLayout() ? NSImageRight : NSImageLeft;
+}
+NSCellImagePosition TrailingCellImagePosition() {
+  return ShouldDoExperimentalRTLLayout() ? NSImageLeft : NSImageRight;
+}
+#else
+NSCellImagePosition LeadingCellImagePosition() {
+  return NSImageLeading;
+}
+NSCellImagePosition TrailingCellImagePosition() {
+  return NSImageTrailing;
+}
+#endif  // MAC_OS_X_VERSION_10_12
+
 // Adapted from Apple's RTL docs (goo.gl/cBaFnT)
 NSImage* FlippedImage(NSImage* image) {
   const NSSize size = [image size];

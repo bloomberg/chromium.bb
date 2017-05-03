@@ -90,6 +90,10 @@ typedef enum {
 - (NSBezierPath*)clipPathForFrame:(NSRect)cellFrame
                            inView:(NSView*)controlView;
 
+// Returns the amount by which the control frame is inset on all sides for
+// drawing.
+- (CGFloat)insetInView:(NSView*)controlView;
+
 // Turn on or off pulse sticking.  When turning off sticking, leave our pulse
 // state in the correct ending position for our isMouseInside_ property.  Public
 // since it's called from the bookmark bubble.
@@ -105,9 +109,6 @@ typedef enum {
 
 // Actually fetches current mouse position and does a hit test.
 - (BOOL)isMouseReallyInside;
-
-// Returns the offset of the start of the text in the cell.
-- (CGFloat)textStartXOffset;
 
 // Defines the top offset of text within the cell. Used by drawTitle and can
 // be overriden by objects that inherit this class for placement of text.
