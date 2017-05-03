@@ -58,9 +58,8 @@ function createFolder(id, children, config) {
  */
 function removeChild(tree, index) {
   tree.children.splice(index, 1);
-  for (var i = index; i < tree.children.length; i++) {
+  for (var i = index; i < tree.children.length; i++)
     tree.children[i].index = i;
-  }
 }
 
 /**
@@ -113,4 +112,23 @@ function customClick(element, config) {
   element.dispatchEvent(new MouseEvent('mousedown', props));
   element.dispatchEvent(new MouseEvent('mouseup', props));
   element.dispatchEvent(new MouseEvent('click', props));
+}
+
+/**
+ * Returns a folder node beneath |rootNode| which matches |id|.
+ * @param {BookmarksFolderNodeElement} rootNode
+ * @param {string} id
+ * @return {BookmarksFolderNodeElement}
+ */
+function findFolderNode(rootNode, id) {
+  var nodes = [rootNode];
+  var node;
+  while (nodes.length) {
+    node = nodes.pop();
+    if (node.itemId == id)
+      return node;
+
+    node.root.querySelectorAll('bookmarks-folder-node')
+        .forEach((x) => {nodes.unshift(x)});
+  }
 }

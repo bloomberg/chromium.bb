@@ -18,16 +18,7 @@ suite('drag and drop', function() {
   };
 
   function getFolderNode(id) {
-    var nodes = [rootFolderNode];
-    var node;
-    while (nodes.length) {
-      node = nodes.pop();
-      if (node.itemId == id)
-        return node;
-
-      node.root.querySelectorAll('bookmarks-folder-node')
-          .forEach((x) => {nodes.unshift(x)});
-    }
+    return findFolderNode(rootFolderNode, id);
   }
 
   function getListItem(id) {

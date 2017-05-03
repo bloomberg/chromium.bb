@@ -6,6 +6,10 @@ suite('<bookmarks-folder-node>', function() {
   var rootNode;
   var store;
 
+  function getFolderNode(id) {
+    return findFolderNode(rootNode, id);
+  }
+
   setup(function() {
     store = new bookmarks.TestStore({
       nodes: testTree(
@@ -21,6 +25,7 @@ suite('<bookmarks-folder-node>', function() {
                 createItem('5'),
               ]),
           createFolder('7', [])),
+      selectedFolder: '1',
     });
     bookmarks.Store.instance_ = store;
 
@@ -75,9 +80,6 @@ suite('<bookmarks-folder-node>', function() {
   test('doesn\'t highlight selected folder while searching', function() {
     var rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
 
-    store.data.selectedFolder = '1';
-    store.notifyObservers();
-
     assertEquals('1', rootFolders['0'].itemId);
     assertTrue(rootFolders['0'].isSelectedFolder_);
 
@@ -89,5 +91,44 @@ suite('<bookmarks-folder-node>', function() {
     store.notifyObservers();
 
     assertFalse(rootFolders['0'].isSelectedFolder_);
+  });
+
+  test('last visible descendant', function() {
+    assertEquals('7', rootNode.getLastVisibleDescendant_().itemId);
+    assertEquals('4', getFolderNode('1').getLastVisibleDescendant_().itemId);
+
+    store.data.closedFolders = new Set('2');
+    store.notifyObservers();
+
+    assertEquals('2', getFolderNode('1').getLastVisibleDescendant_().itemId);
+  });
+
+  test('get node parent', function() {
+    assertEquals(getFolderNode('0'), getFolderNode('1').getParentFolderNode_());
+    assertEquals(getFolderNode('2'), getFolderNode('4').getParentFolderNode_());
+    assertEquals(null, getFolderNode('0').getParentFolderNode_());
+  });
+
+  test('next/previous folder nodes', function() {
+    function getNextChild(parentId, targetId, reverse) {
+      return getFolderNode(parentId).getNextChild_(
+          reverse, getFolderNode(targetId));
+    }
+
+    // Forwards.
+    assertEquals('4', getNextChild('2', '3', false).itemId);
+    assertEquals(null, getNextChild('2', '4', false));
+
+    // Backwards.
+    assertEquals(null, getNextChild('1', '2', true));
+    assertEquals('3', getNextChild('2', '4', true).itemId);
+    assertEquals('4', getNextChild('0', '7', true).itemId);
+
+    // Skips closed folders.
+    store.data.closedFolders = new Set('2');
+    store.notifyObservers();
+
+    assertEquals(null, getNextChild('1', '2', false));
+    assertEquals('2', getNextChild('0', '7', true).itemId);
   });
 });
