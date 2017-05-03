@@ -73,7 +73,7 @@ void AV1WarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
 
     *alpha = clamp(mat[2] - (1 << WARPEDMODEL_PREC_BITS), INT16_MIN, INT16_MAX);
     *beta = clamp(mat[3], INT16_MIN, INT16_MAX);
-    *gamma = clamp(((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2],
+    *gamma = clamp(((int64_t)mat[4] * (1 << WARPEDMODEL_PREC_BITS)) / mat[2],
                    INT16_MIN, INT16_MAX);
     *delta =
         clamp(mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
@@ -196,7 +196,7 @@ void AV1HighbdWarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
 
     *alpha = clamp(mat[2] - (1 << WARPEDMODEL_PREC_BITS), INT16_MIN, INT16_MAX);
     *beta = clamp(mat[3], INT16_MIN, INT16_MAX);
-    *gamma = clamp(((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2],
+    *gamma = clamp(((int64_t)mat[4] * (1 << WARPEDMODEL_PREC_BITS)) / mat[2],
                    INT16_MIN, INT16_MAX);
     *delta =
         clamp(mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
