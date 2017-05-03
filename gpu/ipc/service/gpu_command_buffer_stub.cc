@@ -831,6 +831,21 @@ bool GpuCommandBufferStub::Initialize(
   if (offscreen && !active_url_.is_empty())
     manager->delegate()->DidCreateOffscreenContext(active_url_);
 
+  if (use_virtualized_gl_context_) {
+    // If virtualized GL contexts are in use, then real GL context state
+    // is in an indeterminate state, since the GLStateRestorer was not
+    // initialized at the time the GLContextVirtual was made current. In
+    // the case that this command decoder is the next one to be
+    // processed, force a "full" MakeCurrent to be performed. Note that
+    // GpuChannel's initialization of the gpu::Capabilities expects the
+    // context to be left current.
+    context->ReleaseCurrent(surface_.get());
+    if (!context->MakeCurrent(surface_.get())) {
+      LOG(ERROR) << "Failed to make context current after initialization.";
+      return false;
+    }
+  }
+
   initialized_ = true;
   return true;
 }
