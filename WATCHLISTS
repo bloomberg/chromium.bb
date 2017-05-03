@@ -2021,7 +2021,7 @@
     'installer_linux': [ 'mmoss@chromium.org'],
     'instant': ['dcblack@chromium.org',
                 'donnd+watch@chromium.org',
-                'jered@chromium.org',
+                'jered+watch@chromium.org',
                 'jfweitz+watch@chromium.org',
                 'kmadhusu+watch@chromium.org',
                 'melevin+watch@chromium.org',
