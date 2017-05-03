@@ -7,5 +7,5 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSURLImageValue : CSSImageValue {
-    readonly attribute DOMString url;
+    readonly attribute USVString url;
 };
