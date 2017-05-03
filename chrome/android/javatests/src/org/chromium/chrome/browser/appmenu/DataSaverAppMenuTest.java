@@ -6,37 +6,22 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import android.test.UiThreadTest;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
 /**
  * Tests the Data Saver AppMenu footer
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class DataSaverAppMenuTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class DataSaverAppMenuTest extends ChromeActivityTestCaseBase<ChromeTabbedActivity> {
     private AppMenuHandlerForTest mAppMenuHandler;
 
     /**
@@ -59,8 +44,17 @@ public class DataSaverAppMenuTest {
         }
     }
 
-    @Before
-    public void setUp() throws Exception {
+    public DataSaverAppMenuTest() {
+        super(ChromeTabbedActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
+    @Override
+    protected void setUp() throws Exception {
         ChromeTabbedActivity.setAppMenuHandlerFactoryForTesting(
                 new ChromeTabbedActivity.AppMenuHandlerFactory() {
                     @Override
@@ -72,91 +66,76 @@ public class DataSaverAppMenuTest {
                     }
                 });
 
-        mActivityTestRule.startMainActivityOnBlankPage();
+        super.setUp();
     }
 
     /**
      * Verify the Data Saver item does not show when the feature isn't on, and the proxy is enabled.
      */
-    @Test
     @SmallTest
+    @UiThreadTest
     @CommandLineFlags.Add("disable-field-trial-config")
     @Feature({"Browser", "Main"})
-    public void testMenuDataSaverNoFeature() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ContextUtils.getAppSharedPreferences().edit().clear().apply();
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), true);
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-            }
-        });
+    public void testMenuDataSaverNoFeature() {
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+        assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                getActivity().getApplicationContext(), true);
+        assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
     }
 
     /**
      * Verify the Data Saver footer shows with the flag when the proxy is on.
      */
-    @Test
     @SmallTest
+    @UiThreadTest
     @CommandLineFlags.Add({"enable-features=DataReductionProxyMainMenu",
             "disable-field-trial-config"})
     @Feature({"Browser", "Main"})
-    public void testMenuDataSaver() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ContextUtils.getAppSharedPreferences().edit().clear().apply();
-                // Data Saver hasn't been turned on, the footer shouldn't show.
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+    public void testMenuDataSaver() {
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+        // Data Saver hasn't been turned on, the footer shouldn't show.
+        assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
 
-                // Turn Data Saver on, the footer should show.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), true);
-                Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
-                        mAppMenuHandler.getDelegate().getFooterResourceId());
+        // Turn Data Saver on, the footer should show.
+        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                getActivity().getApplicationContext(), true);
+        assertEquals(R.layout.data_reduction_main_menu_footer,
+                mAppMenuHandler.getDelegate().getFooterResourceId());
 
-                // Ensure the footer is removed if the proxy is turned off.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), false);
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-            }
-        });
+        // Ensure the footer is removed if the proxy is turned off.
+        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                getActivity().getApplicationContext(), false);
+        assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
     }
 
     /**
      * Verify the Data Saver footer shows with the flag when the proxy turns on and remains in the
      * main menu.
      */
-    @Test
     @SmallTest
+    @UiThreadTest
     @CommandLineFlags.Add({"enable-features=DataReductionProxyMainMenu<DataReductionProxyMainMenu",
             "force-fieldtrials=DataReductionProxyMainMenu/Enabled",
             "force-fieldtrial-params=DataReductionProxyMainMenu.Enabled:"
                     + "persistent_menu_item_enabled/true",
             "disable-field-trial-config"})
     @Feature({"Browser", "Main"})
-    public void testMenuDataSaverPersistent() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ContextUtils.getAppSharedPreferences().edit().clear().apply();
-                // Data Saver hasn't been turned on, the footer shouldn't show.
-                Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
+    public void testMenuDataSaverPersistent() {
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+        // Data Saver hasn't been turned on, the footer shouldn't show.
+        assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
 
-                // Turn Data Saver on, the footer should show.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), true);
-                Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
-                        mAppMenuHandler.getDelegate().getFooterResourceId());
+        // Turn Data Saver on, the footer should show.
+        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                getActivity().getApplicationContext(), true);
+        assertEquals(R.layout.data_reduction_main_menu_footer,
+                mAppMenuHandler.getDelegate().getFooterResourceId());
 
-                // Ensure the footer remains if the proxy is turned off.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity().getApplicationContext(), false);
-                Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
-                        mAppMenuHandler.getDelegate().getFooterResourceId());
-            }
-        });
+        // Ensure the footer remains if the proxy is turned off.
+        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                getActivity().getApplicationContext(), false);
+        assertEquals(R.layout.data_reduction_main_menu_footer,
+                mAppMenuHandler.getDelegate().getFooterResourceId());
     }
 }

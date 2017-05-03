@@ -4,14 +4,13 @@
 
 package org.chromium.chrome.test.util;
 
-import android.app.Activity;
-import android.app.Instrumentation;
+import android.test.ActivityInstrumentationTestCase2;
 import android.text.SpannableString;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.TextView;
 
-import org.junit.Assert;
+import junit.framework.Assert;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -26,9 +25,11 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 public class TranslateUtil {
     /**
      * Finds the first clickable span inside a TextView and clicks it.
+     *
+     * @return True if the panel is opened.
      */
-    public static void openLanguagePanel(
-            Instrumentation instrumentation, Activity activity, InfoBar infoBar) {
+    public static void openLanguagePanel(ActivityInstrumentationTestCase2<?> test,
+            InfoBar infoBar) {
         View view = infoBar.getView().findViewById(R.id.infobar_message);
         Assert.assertNotNull(view);
 
@@ -51,9 +52,10 @@ public class TranslateUtil {
         float xPos = text.getPaddingLeft() + (sizePerChar * x);
         float yPos = text.getHeight() / (float) 2;
 
-        TestTouchUtils.singleClickView(instrumentation, text, (int) xPos, (int) yPos);
+        TestTouchUtils.singleClickView(test.getInstrumentation(), text, (int) xPos, (int) yPos);
 
-        assertInfoBarText(infoBar, activity.getString(R.string.translate_infobar_change_languages));
+        assertInfoBarText(infoBar, test.getActivity().getString(
+                R.string.translate_infobar_change_languages));
     }
 
     public static void assertInfoBarText(InfoBar infoBar, String expectedText) {

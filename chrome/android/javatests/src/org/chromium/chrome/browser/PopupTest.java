@@ -4,27 +4,17 @@
 
 package org.chromium.chrome.browser;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -36,50 +26,51 @@ import java.util.concurrent.Callable;
 /**
  * Tests whether popup windows appear.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class PopupTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String POPUP_HTML_PATH = "/chrome/test/data/android/popup_test.html";
 
     private String mPopupHtmlUrl;
     private EmbeddedTestServer mTestServer;
 
-    private int getNumInfobarsShowing() {
-        return mActivityTestRule.getInfoBars().size();
+    public PopupTest() {
+        super(ChromeActivity.class);
     }
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    private int getNumInfobarsShowing() {
+        return getInfoBars().size();
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Assert.assertTrue(getNumInfobarsShowing() == 0);
+                assertTrue(getNumInfobarsShowing() == 0);
             }
         });
 
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mPopupHtmlUrl = mTestServer.getURL(POPUP_HTML_PATH);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
-    @Test
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     @MediumTest
     @Feature({"Popup"})
     public void testPopupInfobarAppears() throws Exception {
-        mActivityTestRule.loadUrl(mPopupHtmlUrl);
+        loadUrl(mPopupHtmlUrl);
         CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
@@ -88,23 +79,22 @@ public class PopupTest {
         }));
     }
 
-    @Test
     @MediumTest
     @Feature({"Popup"})
     public void testPopupWindowsAppearWhenAllowed() throws Exception {
-        final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
+        final TabModelSelector selector = getActivity().getTabModelSelector();
 
-        mActivityTestRule.loadUrl(mPopupHtmlUrl);
+        loadUrl(mPopupHtmlUrl);
         CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getNumInfobarsShowing();
             }
         }));
-        Assert.assertEquals(1, selector.getTotalTabCount());
+        assertEquals(1, selector.getTotalTabCount());
         final InfoBarContainer container = selector.getCurrentTab().getInfoBarContainer();
         ArrayList<InfoBar> infobars = container.getInfoBarsForTesting();
-        Assert.assertEquals(1, infobars.size());
+        assertEquals(1, infobars.size());
 
         // Wait until the animations are done, then click the "open popups" button.
         final InfoBar infobar = infobars.get(0);
@@ -126,11 +116,11 @@ public class PopupTest {
             }
         }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
-        Assert.assertEquals(4, selector.getTotalTabCount());
+        assertEquals(4, selector.getTotalTabCount());
         int currentTabId = selector.getCurrentTab().getId();
 
         // Test that revisiting the original page makes popup windows immediately.
-        mActivityTestRule.loadUrl(mPopupHtmlUrl);
+        loadUrl(mPopupHtmlUrl);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -139,6 +129,6 @@ public class PopupTest {
                 return TextUtils.equals("Three", selector.getCurrentTab().getTitle());
             }
         }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        Assert.assertNotSame(currentTabId, selector.getCurrentTab().getId());
+        assertNotSame(currentTabId, selector.getCurrentTab().getId());
     }
 }

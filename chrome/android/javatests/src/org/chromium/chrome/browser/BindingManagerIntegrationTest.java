@@ -5,21 +5,12 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.test.MoreAsserts;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -30,8 +21,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
@@ -41,7 +31,6 @@ import org.chromium.content.browser.ManagedChildProcessConnection;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettings;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -53,14 +42,8 @@ import java.util.concurrent.Callable;
  * Integration tests for the BindingManager API. This test plants a mock BindingManager
  * implementation and verifies that the signals it relies on are correctly delivered.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class BindingManagerIntegrationTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static class MockBindingManager implements BindingManager {
         // Maps pid to the last received visibility state of the renderer.
@@ -172,21 +155,24 @@ public class BindingManagerIntegrationTest {
     private static final String SHARED_RENDERER_PAGE2_PATH =
             "/chrome/test/data/android/bindingmanager/shared_renderer2.html";
 
+    public BindingManagerIntegrationTest() {
+        super(ChromeActivity.class);
+    }
+
     /**
      * Verifies that the .setProcessInForeground() signal is called correctly as the tabs are
      * created and switched.
      */
-    @Test
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testTabSwitching() throws InterruptedException {
         // Create two tabs and wait until they are loaded, so that their renderers are around.
         final Tab[] tabs = new Tab[2];
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Foreground tab.
-                TabCreator tabCreator = mActivityTestRule.getActivity().getCurrentTabCreator();
+                TabCreator tabCreator = getActivity().getCurrentTabCreator();
                 tabs[0] = tabCreator.createNewTab(
                         new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
                                 TabLaunchType.FROM_CHROME_UI, null);
@@ -204,8 +190,8 @@ public class BindingManagerIntegrationTest {
         ChromeTabUtils.waitForTabPageLoaded(tabs[1], mTestServer.getURL(FILE_PATH));
 
         // Wait for the new tab animations on phones to finish.
-        if (!DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
-            final ChromeActivity activity = mActivityTestRule.getActivity();
+        if (!DeviceFormFactor.isTablet(getActivity())) {
+            final ChromeActivity activity = getActivity();
             CriteriaHelper.pollUiThread(new Criteria("Did not finish animation") {
                 @Override
                 public boolean isSatisfied() {
@@ -215,14 +201,14 @@ public class BindingManagerIntegrationTest {
                 }
             });
         }
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Make sure that the renderers were spawned.
-                Assert.assertTrue(tabs[0].getContentViewCore().getCurrentRenderProcessId() > 0);
-                Assert.assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
+                assertTrue(tabs[0].getContentViewCore().getCurrentRenderProcessId() > 0);
+                assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
 
                 // Verify that the renderer of the foreground tab was signalled as visible.
                 mBindingManager.assertIsInForeground(
@@ -233,8 +219,7 @@ public class BindingManagerIntegrationTest {
                         tabs[1].getContentViewCore().getCurrentRenderProcessId());
 
                 // Select tabs[1] and verify that the renderer visibility was flipped.
-                TabModelUtils.setIndex(
-                        mActivityTestRule.getActivity().getCurrentTabModel(), indexOf(tabs[1]));
+                TabModelUtils.setIndex(getActivity().getCurrentTabModel(), indexOf(tabs[1]));
                 mBindingManager.assertIsInBackground(
                         tabs[0].getContentViewCore().getCurrentRenderProcessId());
                 mBindingManager.assertIsInForeground(
@@ -248,18 +233,17 @@ public class BindingManagerIntegrationTest {
      * crashed in background is restored in foreground. This is a regression test for
      * http://crbug.com/399521.
      */
-    @Test
     @DisabledTest(message = "crbug.com/543153")
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testCrashInBackground() throws InterruptedException {
         // Create two tabs and wait until they are loaded, so that their renderers are around.
         final Tab[] tabs = new Tab[2];
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Foreground tab.
-                TabCreator tabCreator = mActivityTestRule.getActivity().getCurrentTabCreator();
+                TabCreator tabCreator = getActivity().getCurrentTabCreator();
                 tabs[0] = tabCreator.createNewTab(
                         new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
                                 TabLaunchType.FROM_CHROME_UI, null);
@@ -277,8 +261,8 @@ public class BindingManagerIntegrationTest {
         ChromeTabUtils.waitForTabPageLoaded(tabs[1], mTestServer.getURL(FILE_PATH));
 
         // Wait for the new tab animations on phones to finish.
-        if (!DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
-            final ChromeActivity activity = mActivityTestRule.getActivity();
+        if (!DeviceFormFactor.isTablet(getActivity())) {
+            final ChromeActivity activity = getActivity();
             CriteriaHelper.pollUiThread(new Criteria("Did not finish animation") {
                 @Override
                 public boolean isSatisfied() {
@@ -288,14 +272,14 @@ public class BindingManagerIntegrationTest {
                 }
             });
         }
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Make sure that the renderers were spawned.
-                Assert.assertTrue(tabs[0].getContentViewCore().getCurrentRenderProcessId() > 0);
-                Assert.assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
+                assertTrue(tabs[0].getContentViewCore().getCurrentRenderProcessId() > 0);
+                assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
 
                 // Verify that the renderer of the foreground tab was signalled as visible.
                 mBindingManager.assertIsInForeground(
@@ -308,7 +292,7 @@ public class BindingManagerIntegrationTest {
         });
 
         // Kill the renderer and wait for the crash to be noted by the browser process.
-        Assert.assertTrue(ChildProcessLauncher.crashProcessForTesting(
+        assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tabs[1].getContentViewCore().getCurrentRenderProcessId()));
 
         CriteriaHelper.pollInstrumentationThread(
@@ -320,11 +304,10 @@ public class BindingManagerIntegrationTest {
                 });
 
         // Switch to the tab that crashed in background.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                TabModelUtils.setIndex(
-                        mActivityTestRule.getActivity().getCurrentTabModel(), indexOf(tabs[1]));
+                TabModelUtils.setIndex(getActivity().getCurrentTabModel(), indexOf(tabs[1]));
             }
         });
 
@@ -341,7 +324,7 @@ public class BindingManagerIntegrationTest {
                 "isInForeground() was not called for the process.",
                 tabs[1].getContentViewCore().getCurrentRenderProcessId());
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Verify the visibility of the renderers.
@@ -357,7 +340,6 @@ public class BindingManagerIntegrationTest {
      * Verifies that a renderer that crashes in foreground has the correct visibility when
      * recreated.
      */
-    @Test
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testCrashInForeground() throws InterruptedException {
@@ -367,17 +349,16 @@ public class BindingManagerIntegrationTest {
                 new Callable<Tab>() {
                     @Override
                     public Tab call() throws Exception {
-                        TabCreator tabCreator =
-                                mActivityTestRule.getActivity().getCurrentTabCreator();
+                        TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         return tabCreator.createNewTab(
                                 new LoadUrlParams(testUrl), TabLaunchType.FROM_CHROME_UI, null);
                     }
                 });
         ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
 
         // Kill the renderer and wait for the crash to be noted by the browser process.
-        Assert.assertTrue(ChildProcessLauncher.crashProcessForTesting(
+        assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tab.getContentViewCore().getCurrentRenderProcessId()));
 
         CriteriaHelper.pollInstrumentationThread(
@@ -389,7 +370,7 @@ public class BindingManagerIntegrationTest {
                 });
 
         // Reload the tab, respawning the renderer.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 tab.reload();
@@ -411,7 +392,7 @@ public class BindingManagerIntegrationTest {
                 "isInForeground() was not called for the process.",
                 tab.getContentViewCore().getCurrentRenderProcessId());
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Verify the visibility of the renderer.
@@ -435,7 +416,6 @@ public class BindingManagerIntegrationTest {
      * setInForeground(), but it can't be guaranteed because they are triggered from different
      * threads.
      */
-    @Test
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testVisibilityDetermined() throws InterruptedException {
@@ -444,8 +424,7 @@ public class BindingManagerIntegrationTest {
                 new Callable<Tab>() {
                     @Override
                     public Tab call() {
-                        TabCreator tabCreator =
-                                mActivityTestRule.getActivity().getCurrentTabCreator();
+                        TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         return tabCreator.createNewTab(
                                 new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
                                         TabLaunchType.FROM_CHROME_UI, null);
@@ -455,11 +434,10 @@ public class BindingManagerIntegrationTest {
         // Ensure the following calls happened:
         //  - FG - setInForeground(true) - when the tab is created in the foreground
         //  - DETERMINED - visibilityDetermined() - after the initial navigation is committed
-        Assert.assertEquals(
-                "FG;DETERMINED;", mBindingManager.getVisibilityCalls(initialNavigationPid));
+        assertEquals("FG;DETERMINED;", mBindingManager.getVisibilityCalls(initialNavigationPid));
 
         // Navigate to about:version which requires a different renderer.
-        mActivityTestRule.loadUrlInTab(ABOUT_VERSION_PATH, PageTransition.LINK, fgTab);
+        loadUrlInTab(ABOUT_VERSION_PATH, PageTransition.LINK, fgTab);
         int secondNavigationPid = getRenderProcessId(fgTab);
         MoreAsserts.assertNotEqual(secondNavigationPid, initialNavigationPid);
         // Ensure the following calls happened:
@@ -470,17 +448,15 @@ public class BindingManagerIntegrationTest {
         // visibilityDetermined() are triggered from different threads.
         mBindingManager.assertIsInForeground(secondNavigationPid);
         String visibilityCalls = mBindingManager.getVisibilityCalls(secondNavigationPid);
-        Assert.assertTrue(visibilityCalls,
-                "BG;FG;DETERMINED;".equals(visibilityCalls)
-                        || "BG;DETERMINED;FG;".equals(visibilityCalls));
+        assertTrue(visibilityCalls, "BG;FG;DETERMINED;".equals(visibilityCalls)
+                || "BG;DETERMINED;FG;".equals(visibilityCalls));
 
         // Open a tab in the background and load it.
         final Tab bgTab = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<Tab>() {
                     @Override
                     public Tab call() {
-                        TabCreator tabCreator =
-                                mActivityTestRule.getActivity().getCurrentTabCreator();
+                        TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         Tab tab = tabCreator.createNewTab(
                                 new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
                                         TabLaunchType.FROM_LONGPRESS_BACKGROUND, null);
@@ -495,7 +471,7 @@ public class BindingManagerIntegrationTest {
         // Ensure the following calls happened:
         //  - BG - setInForeground(false) - when tab is created in the background
         //  - DETERMINED - visibilityDetermined() - after the navigation is committed
-        Assert.assertEquals("BG;DETERMINED;", mBindingManager.getVisibilityCalls(bgNavigationPid));
+        assertEquals("BG;DETERMINED;", mBindingManager.getVisibilityCalls(bgNavigationPid));
     }
 
     /**
@@ -503,39 +479,36 @@ public class BindingManagerIntegrationTest {
      * process and discards its old render process. Test that visibilityDetermined() is called for
      * the swapped in render process.
      */
-    @Test
     @LargeTest
     @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"ProcessManagement"})
     public void testVisibilityDeterminedNavigateToPrerenderedPage() throws InterruptedException {
-        mActivityTestRule.loadUrl(mTestServer.getURL(FILE_PATH));
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        loadUrl(mTestServer.getURL(FILE_PATH));
+        Tab tab = getActivity().getActivityTab();
         int pid1 = getRenderProcessId(tab);
 
         String prerenderUrl = mTestServer.getURL(FILE_PATH2);
         PrerenderTestHelper.prerenderUrl(prerenderUrl, tab);
-        Assert.assertEquals(
-                TabLoadStatus.FULL_PRERENDERED_PAGE_LOAD, mActivityTestRule.loadUrl(prerenderUrl));
+        assertEquals(TabLoadStatus.FULL_PRERENDERED_PAGE_LOAD, loadUrl(prerenderUrl));
 
         int pid2 = getRenderProcessId(tab);
         MoreAsserts.assertNotEqual(pid1, pid2);
 
-        Assert.assertTrue(mBindingManager.getVisibilityCalls(pid1).contains("DETERMINED;"));
-        Assert.assertTrue(mBindingManager.getVisibilityCalls(pid2).contains("DETERMINED;"));
+        assertTrue(mBindingManager.getVisibilityCalls(pid1).contains("DETERMINED;"));
+        assertTrue(mBindingManager.getVisibilityCalls(pid2).contains("DETERMINED;"));
     }
 
     /**
      * Verifies that BindingManager.releaseAllModerateBindings() is called once all the sandboxed
      * services are allocated.
      */
-    @Test
     @ChildProcessAllocatorSettings(sandboxedServiceCount = 4)
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testReleaseAllModerateBindings() throws InterruptedException {
-        final TabCreator tabCreator = mActivityTestRule.getActivity().getCurrentTabCreator();
+        final TabCreator tabCreator = getActivity().getCurrentTabCreator();
         final Tab[] tabs = new Tab[3];
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Foreground tab.
@@ -549,9 +522,9 @@ public class BindingManagerIntegrationTest {
         ChromeTabUtils.waitForTabPageLoaded(tabs[0], "about:blank");
         ChromeTabUtils.waitForTabPageLoaded(tabs[1], "about:blank");
         // At this point 3 sanboxed services are allocated; the initial one + 2 new tabs.
-        Assert.assertFalse(mBindingManager.isReleaseAllModerateBindingsCalled());
+        assertFalse(mBindingManager.isReleaseAllModerateBindingsCalled());
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Foreground tab.
@@ -565,34 +538,33 @@ public class BindingManagerIntegrationTest {
     }
 
     // Test crashes on tablets. See crbug.com/594407
-    @Test
     @LargeTest
     @Feature({"ProcessManagement"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testRestoreSharedRenderer() throws Exception {
-        mActivityTestRule.loadUrl(mTestServer.getURL(SHARED_RENDERER_PAGE_PATH));
+        loadUrl(mTestServer.getURL(SHARED_RENDERER_PAGE_PATH));
 
         final Tab[] tabs = new Tab[2];
-        tabs[0] = mActivityTestRule.getActivity().getActivityTab();
-        TouchCommon.singleClickView(tabs[0].getView());
+        tabs[0] = getActivity().getActivityTab();
+        singleClickView(tabs[0].getView());
 
         CriteriaHelper.pollInstrumentationThread(new Criteria("Child tab isn't opened.") {
             @Override
             public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getCurrentTabModel().getCount() == 2
-                        && tabs[0] != mActivityTestRule.getActivity().getActivityTab()
-                        && mActivityTestRule.getActivity()
+                return getActivity().getCurrentTabModel().getCount() == 2
+                        && tabs[0] != getActivity().getActivityTab()
+                        && getActivity()
                                    .getActivityTab()
                                    .getContentViewCore()
                                    .getCurrentRenderProcessId()
                         != 0;
             }
         });
-        tabs[1] = mActivityTestRule.getActivity().getActivityTab();
-        Assert.assertEquals(tabs[0].getContentViewCore().getCurrentRenderProcessId(),
+        tabs[1] = getActivity().getActivityTab();
+        assertEquals(tabs[0].getContentViewCore().getCurrentRenderProcessId(),
                 tabs[1].getContentViewCore().getCurrentRenderProcessId());
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Verify the visibility of the renderer.
@@ -601,7 +573,7 @@ public class BindingManagerIntegrationTest {
             }
         });
 
-        Assert.assertTrue(ChildProcessLauncher.crashProcessForTesting(
+        assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tabs[1].getContentViewCore().getCurrentRenderProcessId()));
 
         CriteriaHelper.pollInstrumentationThread(
@@ -612,7 +584,7 @@ public class BindingManagerIntegrationTest {
                     }
                 });
         // Reload the tab, respawning the renderer.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 tabs[1].reload();
@@ -635,7 +607,7 @@ public class BindingManagerIntegrationTest {
                 "setInForeground() was not called for the process.",
                 tabs[1].getContentViewCore().getCurrentRenderProcessId());
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Verify the visibility of the renderer.
@@ -648,27 +620,32 @@ public class BindingManagerIntegrationTest {
         });
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
+    @Override
+    protected void setUp() throws Exception {
         // Hook in the test binding manager.
         mBindingManager = new MockBindingManager();
         ChildProcessLauncher.setBindingManagerForTesting(mBindingManager);
 
-        mActivityTestRule.startMainActivityOnBlankPage();
+        super.setUp();
 
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
      * @return the index of the given tab in the current tab model
      */
     private int indexOf(Tab tab) {
-        return mActivityTestRule.getActivity().getCurrentTabModel().indexOf(tab);
+        return getActivity().getCurrentTabModel().indexOf(tab);
     }
 }

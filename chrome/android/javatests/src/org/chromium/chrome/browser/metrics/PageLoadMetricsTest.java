@@ -4,24 +4,13 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -31,14 +20,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for {@link PageLoadMetrics}
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class PageLoadMetricsTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class PageLoadMetricsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+    public PageLoadMetricsTest() {
+        super(ChromeActivity.class);
+    }
 
     private static final int PAGE_LOAD_METRICS_TIMEOUT_MS = 3000;
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
@@ -48,19 +34,17 @@ public class PageLoadMetricsTest {
     private EmbeddedTestServer mTestServer;
     private PageLoadMetricsObserver mMetricsObserver;
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE);
 
-        mMetricsObserver =
-                new PageLoadMetricsObserver(mActivityTestRule.getActivity().getActivityTab());
+        mMetricsObserver = new PageLoadMetricsObserver(getActivity().getActivityTab());
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -69,6 +53,12 @@ public class PageLoadMetricsTest {
         });
 
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
@@ -106,11 +96,10 @@ public class PageLoadMetricsTest {
         }
     }
 
-    @Test
     @SmallTest
     public void testPageLoadMetricEmitted() throws InterruptedException {
-        Assert.assertFalse("Tab shouldn't be loading anything before we add observer",
-                mActivityTestRule.getActivity().getActivityTab().isLoading());
+        assertFalse("Tab shouldn't be loading anything before we add observer",
+                getActivity().getActivityTab().isLoading());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -118,11 +107,11 @@ public class PageLoadMetricsTest {
             }
         });
 
-        mActivityTestRule.loadUrl(mTestPage);
+        loadUrl(mTestPage);
 
-        Assert.assertTrue("First Contentful Paint should be reported",
+        assertTrue("First Contentful Paint should be reported",
                 mMetricsObserver.waitForFirstContentfulPaintEvent());
-        Assert.assertTrue("Load event start event should be reported",
+        assertTrue("Load event start event should be reported",
                 mMetricsObserver.waitForLoadEventStartEvent());
     }
 }

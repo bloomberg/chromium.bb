@@ -10,13 +10,6 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.util.LongSparseArray;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -25,12 +18,10 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Manual;
 import org.chromium.base.test.util.TimeoutScale;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.evaluation.OfflinePageEvaluationBridge;
 import org.chromium.chrome.browser.offlinepages.evaluation.OfflinePageEvaluationBridge.OfflinePageEvaluationObserver;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.offlinepages.BackgroundSavePageResult;
 
 import java.io.BufferedReader;
@@ -42,6 +33,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -55,19 +47,12 @@ import java.util.concurrent.TimeUnit;
  * record metrics (failure rate, time elapsed etc.) by writing metrics to a file on external
  * storage. This will always use prerenderer.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"disable-features=BackgroundLoader",
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class OfflinePageSavePageLaterEvaluationTest {
+@CommandLineFlags.Add({"disable-features=BackgroundLoader"})
+public class OfflinePageSavePageLaterEvaluationTest
+        extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Class which is used to calculate time difference.
      */
-
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
     static class TimeDelta {
         public void setStartTime(Long startTime) {
             mStartTime = startTime;
@@ -118,15 +103,19 @@ public class OfflinePageSavePageLaterEvaluationTest {
 
     private LongSparseArray<RequestMetadata> mRequestMetadata;
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    public OfflinePageSavePageLaterEvaluationTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         mRequestMetadata = new LongSparseArray<RequestMetadata>();
         mCount = 0;
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         NotificationManager notificationManager =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
@@ -157,6 +146,12 @@ public class OfflinePageSavePageLaterEvaluationTest {
                 "Timed out when clearing remaining requests!");
         mBridge.closeLog();
         mBridge.destroy();
+        super.tearDown();
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     /**
@@ -217,7 +212,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
     private void checkTrue(boolean condition, String message) {
         if (!condition) {
             log(TAG, message);
-            Assert.fail();
+            fail();
         }
     }
 
@@ -237,7 +232,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
                 mBridge = new OfflinePageEvaluationBridge(
                         profile, useTestingScheduler, useBackgroundLoader);
                 if (mBridge == null) {
-                    Assert.fail("OfflinePageEvaluationBridge initialization failed!");
+                    fail("OfflinePageEvaluationBridge initialization failed!");
                     return;
                 }
                 if (mBridge.isOfflinePageModelLoaded()) {
@@ -337,7 +332,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
 
     private void processUrls(List<String> urls) throws InterruptedException, IOException {
         if (mBridge == null) {
-            Assert.fail("Test initialization error, aborting. No results would be written.");
+            fail("Test initialization error, aborting. No results would be written.");
             return;
         }
         int count = 0;
@@ -374,7 +369,7 @@ public class OfflinePageSavePageLaterEvaluationTest {
             }
         } catch (FileNotFoundException e) {
             Log.e(TAG, e.getMessage(), e);
-            Assert.fail(String.format("URL file %s is not found.", inputFilePath));
+            fail(String.format("URL file %s is not found.", inputFilePath));
         }
     }
 
@@ -502,11 +497,11 @@ public class OfflinePageSavePageLaterEvaluationTest {
                     Boolean.parseBoolean(properties.getProperty("UseBackgroundLoader"));
         } catch (FileNotFoundException e) {
             Log.e(TAG, e.getMessage(), e);
-            Assert.fail(String.format(
+            fail(String.format(
                     "Config file %s is not found, aborting the test.", CONFIG_FILE_PATH));
         } catch (NumberFormatException e) {
             Log.e(TAG, e.getMessage(), e);
-            Assert.fail("Error parsing config file, aborting test.");
+            fail("Error parsing config file, aborting test.");
         } finally {
             if (inputStream != null) {
                 inputStream.close();
@@ -523,10 +518,10 @@ public class OfflinePageSavePageLaterEvaluationTest {
      * immediate processing also works on svelte devices. This flag will *not* affect normal
      * devices.
      */
-    @Test
     @Manual
     @TimeoutScale(4)
-    @CommandLineFlags.Add({"enable-features=OfflinePagesSvelteConcurrentLoading"})
+    @CommandLineFlags
+            .Add({"enable-features=OfflinePagesSvelteConcurrentLoading"})
     @CommandLineFlags.Remove({"disable-features=OfflinePagesSvelteConcurrentLoading"})
     public void testFailureRate() throws IOException, InterruptedException {
         parseConfigFile();
@@ -540,12 +535,12 @@ public class OfflinePageSavePageLaterEvaluationTest {
      * immediate processing also works on svelte devices. This flag will *not* affect normal
      * devices.
      */
-    @Test
     @Manual
     @TimeoutScale(4)
-    @CommandLineFlags.Add({"enable-features=BackgroundLoaderOfflinePagesSvelteConcurrentLoading"})
-    @CommandLineFlags.Remove({
-            "disable-features=BackgroundLoaderOfflinePagesSvelteConcurrentLoading"})
+    @CommandLineFlags
+            .Add({"enable-features=BackgroundLoader,OfflinePagesSvelteConcurrentLoading"})
+    @CommandLineFlags
+            .Remove({"disable-features=BackgroundLoader,OfflinePagesSvelteConcurrentLoading"})
     public void testBackgroundLoaderFailureRate() throws IOException, InterruptedException {
         testFailureRate();
     }

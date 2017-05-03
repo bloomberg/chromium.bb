@@ -12,14 +12,7 @@ import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -29,10 +22,8 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
@@ -52,14 +43,8 @@ import java.util.concurrent.TimeUnit;
  * TODO(cimamoglu): Add a test with multiple, stacked onLayout/onWrite calls.
  * TODO(cimamoglu): Add a test which emulates Chromium failing to generate a PDF.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class PrintingControllerTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class PrintingControllerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEMP_FILE_NAME = "temp_print";
     private static final String TEMP_FILE_EXTENSION = ".pdf";
@@ -69,8 +54,12 @@ public class PrintingControllerTest {
     private static final String PDF_PREAMBLE = "%PDF-1";
     private static final long TEST_TIMEOUT = 20000L;
 
-    @Before
-    public void setUp() throws InterruptedException {
+    public PrintingControllerTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
         // Do nothing.
     }
 
@@ -103,15 +92,14 @@ public class PrintingControllerTest {
      * controller: onStart, onLayout, onWrite, onFinish.  Each one is called once, and in this
      * order, in the UI thread.
      */
-    @Test
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @LargeTest
     @Feature({"Printing"})
     public void testNormalPrintingFlow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 
-        mActivityTestRule.startMainActivityWithURL(URL);
-        final Tab currentTab = mActivityTestRule.getActivity().getActivityTab();
+        startMainActivityWithURL(URL);
+        final Tab currentTab = getActivity().getActivityTab();
 
         final PrintingControllerImpl printingController = createControllerOnUiThread();
 
@@ -120,8 +108,7 @@ public class PrintingControllerTest {
         callStartOnUiThread(printingController);
 
         // Create a temporary file to save the PDF.
-        final File cacheDir =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir();
+        final File cacheDir = getInstrumentation().getTargetContext().getCacheDir();
         final File tempFile = File.createTempFile(TEMP_FILE_NAME, TEMP_FILE_EXTENSION, cacheDir);
         final ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(tempFile,
                 (ParcelFileDescriptor.MODE_CREATE | ParcelFileDescriptor.MODE_READ_WRITE));
@@ -153,12 +140,12 @@ public class PrintingControllerTest {
         try {
             // This blocks until the PDF is generated.
             result.get(TEST_TIMEOUT, TimeUnit.MILLISECONDS);
-            Assert.assertTrue(tempFile.length() > 0);
+            assertTrue(tempFile.length() > 0);
             in = new FileInputStream(tempFile);
             byte[] b = new byte[PDF_PREAMBLE.length()];
             in.read(b);
             String preamble = new String(b);
-            Assert.assertEquals(PDF_PREAMBLE, preamble);
+            assertEquals(PDF_PREAMBLE, preamble);
         } finally {
             callFinishOnUiThread(printingController);
             if (in != null) in.close();
@@ -175,7 +162,6 @@ public class PrintingControllerTest {
      * @SmallTest
      * @Feature({"Printing"})
      */
-    @Test
     @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
     @DisabledTest(message = "crbug.com/532652")
     public void testPrintClosedWindow() throws Throwable {
@@ -187,16 +173,15 @@ public class PrintingControllerTest {
                 + "  setTimeout(()=>{w.print(); document.title='completed'}, 0);"
                 + "}</script></body></html>";
 
-        mActivityTestRule.startMainActivityWithURL("data:text/html;charset=utf-8," + html);
+        startMainActivityWithURL("data:text/html;charset=utf-8," + html);
 
-        Tab mTab = mActivityTestRule.getActivity().getActivityTab();
-        Assert.assertEquals(
-                "title does not match initial title", "printwindowclose", mTab.getTitle());
+        Tab mTab = getActivity().getActivityTab();
+        assertEquals("title does not match initial title", "printwindowclose", mTab.getTitle());
 
         TabTitleObserver mOnTitleUpdatedHelper = new TabTitleObserver(mTab, "completed");
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("printClosedWindow();");
+        runJavaScriptCodeInCurrentTab("printClosedWindow();");
         mOnTitleUpdatedHelper.waitForTitleUpdate(5);
-        Assert.assertEquals("JS did not finish running", "completed", mTab.getTitle());
+        assertEquals("JS did not finish running", "completed", mTab.getTitle());
     }
 
     private PrintingControllerImpl createControllerOnUiThread() {
@@ -211,11 +196,11 @@ public class PrintingControllerTest {
                         }
                     });
 
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(task);
+            runTestOnUiThread(task);
             PrintingControllerImpl result = task.get(TEST_TIMEOUT, TimeUnit.MILLISECONDS);
             return result;
         } catch (Throwable e) {
-            Assert.fail("Error on creating PrintingControllerImpl on the UI thread: " + e);
+            fail("Error on creating PrintingControllerImpl on the UI thread: " + e);
         }
         return null;
     }
@@ -231,27 +216,27 @@ public class PrintingControllerTest {
                 }
             };
 
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     controller.startPrint(new TabPrinter(tab), mockPrintManagerDelegate);
                 }
             });
         } catch (Throwable e) {
-            Assert.fail("Error on calling startPrint of PrintingControllerImpl " + e);
+            fail("Error on calling startPrint of PrintingControllerImpl " + e);
         }
     }
 
     private void callStartOnUiThread(final PrintingControllerImpl controller) {
         try {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     controller.onStart();
                 }
             });
         } catch (Throwable e) {
-            Assert.fail("Error on calling onStart of PrintingControllerImpl " + e);
+            fail("Error on calling onStart of PrintingControllerImpl " + e);
         }
     }
 
@@ -261,7 +246,7 @@ public class PrintingControllerTest {
             final PrintAttributes newAttributes,
             final PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper layoutResultCallback) {
         try {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     controller.onLayout(
@@ -273,7 +258,7 @@ public class PrintingControllerTest {
                 }
             });
         } catch (Throwable e) {
-            Assert.fail("Error on calling onLayout of PrintingControllerImpl " + e);
+            fail("Error on calling onLayout of PrintingControllerImpl " + e);
         }
     }
 
@@ -295,26 +280,26 @@ public class PrintingControllerTest {
                                 // Result is ready, signal to continue.
                                 result.run();
                             } catch (IOException ex) {
-                                Assert.fail("Failed file operation: " + ex.toString());
+                                fail("Failed file operation: " + ex.toString());
                             }
                         }
                     }
             );
         } catch (Throwable e) {
-            Assert.fail("Error on calling onWriteInternal of PrintingControllerImpl " + e);
+            fail("Error on calling onWriteInternal of PrintingControllerImpl " + e);
         }
     }
 
     private void callFinishOnUiThread(final PrintingControllerImpl controller) {
         try {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     controller.onFinish();
                 }
             });
         } catch (Throwable e) {
-            Assert.fail("Error on calling onFinish of PrintingControllerImpl " + e);
+            fail("Error on calling onFinish of PrintingControllerImpl " + e);
         }
     }
 }

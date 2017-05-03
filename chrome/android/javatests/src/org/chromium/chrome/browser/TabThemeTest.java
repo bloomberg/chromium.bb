@@ -4,25 +4,16 @@
 
 package org.chromium.chrome.browser;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -33,13 +24,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests related to the Tab's theme color.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class TabThemeTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class TabThemeTest extends ChromeActivityTestCaseBase<ChromeTabbedActivity> {
 
     private static final String TEST_PAGE = "/chrome/test/data/android/simple.html";
     private static final String THEMED_TEST_PAGE =
@@ -74,32 +59,36 @@ public class TabThemeTest {
         }
     }
 
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    public TabThemeTest() {
+        super(ChromeTabbedActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     /**
      * AssertEquals two colors as strings so the text output shows their hex value.
      */
     private void assertColorsEqual(int color1, int color2) {
-        Assert.assertEquals(Integer.toHexString(color1), Integer.toHexString(color2));
+        assertEquals(Integer.toHexString(color1), Integer.toHexString(color2));
     }
 
     /**
      * Test that the toolbar has the correct color set.
      */
-    @Test
     @Feature({"Toolbar-Theme-Color"})
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testThemeColorIsCorrect()
             throws ExecutionException, InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
 
-        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                getInstrumentation().getContext());
+
+        final Tab tab = getActivity().getActivityTab();
 
         ThemeColorWebContentsObserver colorObserver = new ThemeColorWebContentsObserver();
         CallbackHelper themeColorHelper = colorObserver.getCallbackHelper();
@@ -107,12 +96,12 @@ public class TabThemeTest {
 
         // Navigate to a themed page.
         int curCallCount = themeColorHelper.getCallCount();
-        mActivityTestRule.loadUrl(testServer.getURL(THEMED_TEST_PAGE));
+        loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
         assertColorsEqual(THEME_COLOR, tab.getThemeColor());
 
         // Navigate to a native page from a themed page.
-        mActivityTestRule.loadUrl("chrome://newtab");
+        loadUrl("chrome://newtab");
         // WebContents does not set theme color for native pages, so don't wait for the call.
         int nativePageThemeColor = ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
             @Override
@@ -124,21 +113,21 @@ public class TabThemeTest {
 
         // Navigate to a themed page from a native page.
         curCallCount = themeColorHelper.getCallCount();
-        mActivityTestRule.loadUrl(testServer.getURL(THEMED_TEST_PAGE));
+        loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
         assertColorsEqual(THEME_COLOR, colorObserver.getColor());
         assertColorsEqual(THEME_COLOR, tab.getThemeColor());
 
         // Navigate to a non-native non-themed page.
         curCallCount = themeColorHelper.getCallCount();
-        mActivityTestRule.loadUrl(testServer.getURL(TEST_PAGE));
+        loadUrl(testServer.getURL(TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
         assertColorsEqual(tab.getDefaultThemeColor(), colorObserver.getColor());
         assertColorsEqual(tab.getDefaultThemeColor(), tab.getThemeColor());
 
         // Navigate to a themed page from a non-native page.
         curCallCount = themeColorHelper.getCallCount();
-        mActivityTestRule.loadUrl(testServer.getURL(THEMED_TEST_PAGE));
+        loadUrl(testServer.getURL(THEMED_TEST_PAGE));
         themeColorHelper.waitForCallback(curCallCount, 1);
         assertColorsEqual(THEME_COLOR, colorObserver.getColor());
         assertColorsEqual(THEME_COLOR, tab.getThemeColor());

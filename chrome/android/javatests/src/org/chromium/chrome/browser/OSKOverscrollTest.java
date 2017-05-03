@@ -8,17 +8,11 @@ import android.graphics.Rect;
 import android.support.test.filters.MediumTest;
 import android.test.MoreAsserts;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -37,14 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Integration test to ensure that OSK resizes only the visual viewport.
  */
 
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class OSKOverscrollTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class OSKOverscrollTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String FIXED_FOOTER_PAGE = UrlUtils.encodeHtmlDataUri(""
             + "<html>"
             + "<head>"
@@ -78,15 +65,23 @@ public class OSKOverscrollTest {
     // point. Need some buffer for error.
     private static final int ERROR_EPS_PIX = 1;
 
+    public OSKOverscrollTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() {
+        // Don't launch activity automatically.
+    }
+
     private void waitForKeyboard() {
         // Wait until the keyboard is showing.
         CriteriaHelper.pollUiThread(new Criteria("Keyboard was never shown.") {
             @Override
             public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity()
-                                .getCurrentContentViewCore()
-                                .getContainerView());
+                return UiUtils.isKeyboardShowing(
+                        getActivity(),
+                        getActivity().getCurrentContentViewCore().getContainerView());
             }
         });
     }
@@ -98,7 +93,7 @@ public class OSKOverscrollTest {
             MoreAsserts.assertNotEqual(jsonText.trim().toLowerCase(Locale.US), "null");
             return Integer.parseInt(jsonText);
         } catch (Exception ex) {
-            Assert.fail(ex.toString());
+            fail(ex.toString());
         }
         return -1;
     }
@@ -114,20 +109,19 @@ public class OSKOverscrollTest {
      * @throws TimeoutException
      * @throws ExecutionException
      */
-    @Test
     @MediumTest
     @CommandLineFlags.Add({ChromeSwitches.ENABLE_OSK_OVERSCROLL})
     @RetryOnFailure
     public void testOnlyVisualViewportResizes()
             throws InterruptedException, TimeoutException, ExecutionException {
-        mActivityTestRule.startMainActivityWithURL(FIXED_FOOTER_PAGE);
+        startMainActivityWithURL(FIXED_FOOTER_PAGE);
 
         final AtomicReference<ContentViewCore> viewCoreRef = new AtomicReference<ContentViewCore>();
         final AtomicReference<WebContents> webContentsRef = new AtomicReference<WebContents>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                viewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
+                viewCoreRef.set(getActivity().getCurrentContentViewCore());
                 webContentsRef.set(viewCoreRef.get().getWebContents());
             }
         });
@@ -149,7 +143,7 @@ public class OSKOverscrollTest {
         // Get the position of the footer after bringing up the OSK. This should be the same as the
         // position before because only the visual viewport should have resized.
         Rect footerPositionAfter = DOMUtils.getNodeBounds(webContentsRef.get(), "footer");
-        Assert.assertEquals(footerPositionBefore, footerPositionAfter);
+        assertEquals(footerPositionBefore, footerPositionAfter);
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -157,9 +151,7 @@ public class OSKOverscrollTest {
                 // Verify that the size of the viewport before the OSK show is equal to the size of
                 // the viewport after the OSK show plus the size of the keyboard.
                 int viewportHeightAfterCss = getViewportHeight(webContentsRef.get());
-                int keyboardHeight = mActivityTestRule.getActivity()
-                                             .getActivityTab()
-                                             .getSystemWindowInsetBottom();
+                int keyboardHeight = getActivity().getActivityTab().getSystemWindowInsetBottom();
 
                 int priorHeight = (int) (viewportHeightBeforeCss * cssToDevicePixFactor);
                 int afterHeightPlusKeyboard =
