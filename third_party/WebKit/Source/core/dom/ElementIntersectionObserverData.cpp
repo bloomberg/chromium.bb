@@ -57,11 +57,6 @@ void ElementIntersectionObserverData::ActivateValidIntersectionObservers(
 
 void ElementIntersectionObserverData::DeactivateAllIntersectionObservers(
     Node& node) {
-  for (auto& observer : intersection_observers_) {
-    observer->TrackingDocument()
-        .EnsureIntersectionObserverController()
-        .AddTrackedObserver(*observer);
-  }
   node.GetDocument()
       .EnsureIntersectionObserverController()
       .RemoveTrackedObserversForRoot(node);
