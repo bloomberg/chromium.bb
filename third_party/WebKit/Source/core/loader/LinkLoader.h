@@ -45,6 +45,7 @@ namespace blink {
 
 class Document;
 class LinkRelAttribute;
+class LocalFrame;
 class NetworkHintsInterface;
 class PrerenderHandle;
 struct ViewportDescriptionWrapper;
@@ -95,7 +96,8 @@ class CORE_EXPORT LinkLoader final
   enum MediaPreloadPolicy { kLoadAll, kOnlyLoadNonMedia, kOnlyLoadMedia };
   static void LoadLinksFromHeader(const String& header_value,
                                   const KURL& base_url,
-                                  Document*,
+                                  LocalFrame&,
+                                  Document*,  // can be nullptr
                                   const NetworkHintsInterface&,
                                   CanLoadResources,
                                   MediaPreloadPolicy,
