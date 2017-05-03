@@ -12,7 +12,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/cpp/memory/coordinator.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
+#include "services/resource_coordinator/public/cpp/memory/memory_export.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -26,11 +26,11 @@ namespace memory_instrumentation {
 // no Coordinator service in child processes. So, in a child process, the
 // local dump manager remotely connects to the Coordinator service. In the
 // browser process, it locally connects to the Coordinator service.
-class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
+class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
     ProcessLocalDumpManagerImpl
     : public NON_EXPORTED_BASE(mojom::ProcessLocalDumpManager) {
  public:
-  class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT Config {
+  class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT Config {
    public:
     Config(service_manager::Connector* connector,
            const std::string& service_name)
