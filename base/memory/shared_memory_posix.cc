@@ -360,12 +360,6 @@ SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
   return readonly_shm_.Duplicate();
 }
 
-bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
-                                        SharedMemoryHandle* new_handle) {
-  *new_handle = shm_.Duplicate();
-  return new_handle->IsValid();
-}
-
 bool SharedMemory::GetUniqueId(SharedMemory::UniqueId* id) const {
   // This function is called just after mmap. fstat is a system call that might
   // cause I/O. It's safe to call fstat here because mmap for shared memory is

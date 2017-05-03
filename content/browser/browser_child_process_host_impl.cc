@@ -514,9 +514,8 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
 
 void BrowserChildProcessHostImpl::ShareMetricsAllocatorToProcess() {
   if (metrics_allocator_) {
-    base::SharedMemoryHandle shm_handle;
-    metrics_allocator_->shared_memory()->ShareToProcess(data_.handle,
-                                                        &shm_handle);
+    base::SharedMemoryHandle shm_handle =
+        metrics_allocator_->shared_memory()->handle().Duplicate();
     Send(new ChildProcessMsg_SetHistogramMemory(
         shm_handle, metrics_allocator_->shared_memory()->mapped_size()));
   }

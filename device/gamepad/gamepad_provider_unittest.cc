@@ -110,8 +110,7 @@ TEST_F(GamepadProviderTest, PollingAccess) {
   base::RunLoop().RunUntilIdle();
 
   // Renderer-side, pull data out of poll buffer.
-  base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
-      base::GetCurrentProcessHandle());
+  base::SharedMemoryHandle handle = provider->DuplicateSharedMemoryHandle();
   std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle, true));
   EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));
@@ -161,8 +160,7 @@ TEST_F(GamepadProviderTest, ConnectDisconnectMultiple) {
   base::RunLoop().RunUntilIdle();
 
   // Renderer-side, pull data out of poll buffer.
-  base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
-      base::GetCurrentProcessHandle());
+  base::SharedMemoryHandle handle = provider->DuplicateSharedMemoryHandle();
   std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle, true));
   EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));
@@ -221,8 +219,7 @@ TEST_F(GamepadProviderTest, UserGesture) {
   base::RunLoop().RunUntilIdle();
 
   // Renderer-side, pull data out of poll buffer.
-  base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
-      base::GetCurrentProcessHandle());
+  base::SharedMemoryHandle handle = provider->DuplicateSharedMemoryHandle();
   std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle, true));
   EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));
@@ -276,8 +273,7 @@ TEST_F(GamepadProviderTest, Sanitization) {
   base::RunLoop().RunUntilIdle();
 
   // Renderer-side, pull data out of poll buffer.
-  base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
-      base::GetCurrentProcessHandle());
+  base::SharedMemoryHandle handle = provider->DuplicateSharedMemoryHandle();
   std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle, true));
   EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));

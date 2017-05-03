@@ -1085,10 +1085,11 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   base::SharedMemory shm;
   LOG_ASSERT(shm.CreateAndMapAnonymous(next_fragment_size));
   memcpy(shm.memory(), next_fragment_bytes.data(), next_fragment_size);
-  base::SharedMemoryHandle dup_handle;
-  bool result =
-      shm.ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle);
-  LOG_ASSERT(result);
+  base::SharedMemoryHandle dup_handle = shm.handle().Duplicate();
+  LOG_ASSERT(dup_handle.IsValid());
+
+  // TODO(erikchen): This may leak the SharedMemoryHandle.
+  // https://crbug.com/640840.
   BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_, dup_handle,
                                    next_fragment_size);
   decode_start_time_[next_bitstream_buffer_id_] = base::TimeTicks::Now();

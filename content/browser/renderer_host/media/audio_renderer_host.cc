@@ -113,11 +113,12 @@ void AudioRendererHost::OnStreamCreated(
     return;
   }
 
-  base::SharedMemoryHandle foreign_memory_handle;
   base::SyncSocket::TransitDescriptor socket_descriptor;
   size_t shared_memory_size = shared_memory->requested_size();
 
-  if (!(shared_memory->ShareToProcess(PeerHandle(), &foreign_memory_handle) &&
+  base::SharedMemoryHandle foreign_memory_handle =
+      shared_memory->handle().Duplicate();
+  if (!(foreign_memory_handle.IsValid() &&
         foreign_socket->PrepareTransitDescriptor(PeerHandle(),
                                                  &socket_descriptor))) {
     // Something went wrong in preparing the IPC handles.

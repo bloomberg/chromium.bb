@@ -292,10 +292,8 @@ class VideoEncoderResourceTest : public PluginProxyTest,
     std::vector<SerializedHandle> handles;
     for (base::SharedMemory* mem : shared_memory_bitstreams_) {
       ASSERT_EQ(mem->requested_size(), buffer_length);
-      base::SharedMemoryHandle handle;
-
-      ASSERT_TRUE(
-          mem->ShareToProcess(base::Process::Current().Handle(), &handle));
+      base::SharedMemoryHandle handle = mem->handle().Duplicate();
+      ASSERT_TRUE(handle.IsValid());
       handles.push_back(SerializedHandle(handle, buffer_length));
     }
     SendReplyWithHandles(
@@ -307,9 +305,9 @@ class VideoEncoderResourceTest : public PluginProxyTest,
                                uint32_t frame_count,
                                uint32_t frame_length,
                                const PP_Size& size) {
-    base::SharedMemoryHandle handle;
-    ASSERT_TRUE(video_frames_manager_.shm()->ShareToProcess(
-        base::Process::Current().Handle(), &handle));
+    base::SharedMemoryHandle handle =
+        video_frames_manager_.shm()->handle().Duplicate();
+    ASSERT_TRUE(handle.IsValid());
     SendReplyWithHandle(
         params, PP_OK, PpapiPluginMsg_VideoEncoder_GetVideoFramesReply(
                            frame_count,

@@ -227,10 +227,12 @@ void AudioOutputDeviceTest::CreateStream() {
   SyncSocket::TransitDescriptor audio_device_socket_descriptor;
   ASSERT_TRUE(renderer_socket_.PrepareTransitDescriptor(
       base::GetCurrentProcessHandle(), &audio_device_socket_descriptor));
-  base::SharedMemoryHandle duplicated_memory_handle;
-  ASSERT_TRUE(shared_memory_.ShareToProcess(base::GetCurrentProcessHandle(),
-                                            &duplicated_memory_handle));
+  base::SharedMemoryHandle duplicated_memory_handle =
+      shared_memory_.handle().Duplicate();
+  ASSERT_TRUE(duplicated_memory_handle.IsValid());
 
+  // TODO(erikchen): This appears to leak the SharedMemoryHandle.
+  // https://crbug.com/640840.
   audio_device_->OnStreamCreated(
       duplicated_memory_handle,
       SyncSocket::UnwrapHandle(audio_device_socket_descriptor), kMemorySize);

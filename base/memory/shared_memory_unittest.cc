@@ -410,8 +410,8 @@ TEST(SharedMemoryTest, ShareToSelf) {
   memcpy(shmem.memory(), contents.data(), contents.size());
   EXPECT_TRUE(shmem.Unmap());
 
-  SharedMemoryHandle shared_handle;
-  ASSERT_TRUE(shmem.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
+  SharedMemoryHandle shared_handle = shmem.handle().Duplicate();
+  ASSERT_TRUE(shared_handle.IsValid());
 #if defined(OS_WIN)
   ASSERT_TRUE(shared_handle.OwnershipPassesToIPC());
 #endif
@@ -422,8 +422,8 @@ TEST(SharedMemoryTest, ShareToSelf) {
       contents,
       StringPiece(static_cast<const char*>(shared.memory()), contents.size()));
 
-  shared_handle = SharedMemoryHandle();
-  ASSERT_TRUE(shmem.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
+  shared_handle = shmem.handle().Duplicate();
+  ASSERT_TRUE(shared_handle.IsValid());
 #if defined(OS_WIN)
   ASSERT_TRUE(shared_handle.OwnershipPassesToIPC());
 #endif

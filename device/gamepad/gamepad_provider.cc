@@ -82,12 +82,8 @@ GamepadProvider::~GamepadProvider() {
   DCHECK(data_fetchers_.empty());
 }
 
-base::SharedMemoryHandle GamepadProvider::GetSharedMemoryHandleForProcess(
-    base::ProcessHandle process) {
-  base::SharedMemoryHandle renderer_handle;
-  gamepad_shared_buffer_->shared_memory()->ShareToProcess(process,
-                                                          &renderer_handle);
-  return renderer_handle;
+base::SharedMemoryHandle GamepadProvider::DuplicateSharedMemoryHandle() {
+  return gamepad_shared_buffer_->shared_memory()->handle().Duplicate();
 }
 
 mojo::ScopedSharedBufferHandle GamepadProvider::GetSharedBufferHandle() {

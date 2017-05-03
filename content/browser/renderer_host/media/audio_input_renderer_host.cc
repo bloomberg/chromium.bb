@@ -176,9 +176,9 @@ void AudioInputRendererHost::DoCompleteCreation(
 
   // Once the audio stream is created then complete the creation process by
   // mapping shared memory and sharing with the renderer process.
-  base::SharedMemoryHandle foreign_memory_handle;
-  if (!entry->shared_memory.ShareToProcess(PeerHandle(),
-                                           &foreign_memory_handle)) {
+  base::SharedMemoryHandle foreign_memory_handle =
+      entry->shared_memory.handle().Duplicate();
+  if (!foreign_memory_handle.IsValid()) {
     // If we failed to map and share the shared memory then close the audio
     // stream and send an error message.
     DeleteEntryOnError(entry, MEMORY_SHARING_FAILED);

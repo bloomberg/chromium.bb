@@ -1646,9 +1646,11 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   if (state_ != CS_ENCODING)
     return;
 
-  base::SharedMemoryHandle dup_handle;
-  LOG_ASSERT(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
+  base::SharedMemoryHandle dup_handle = shm->handle().Duplicate();
+  LOG_ASSERT(dup_handle.IsValid());
 
+  // TODO(erikchen): This may leak the SharedMemoryHandle.
+  // https://crbug.com/640840.
   BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
                                    output_buffer_size_);
   LOG_ASSERT(output_buffers_at_client_
@@ -1912,8 +1914,8 @@ void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
   if (!has_encoder())
     return;
 
-  base::SharedMemoryHandle dup_handle;
-  LOG_ASSERT(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
+  base::SharedMemoryHandle dup_handle = shm->handle().Duplicate();
+  LOG_ASSERT(dup_handle.IsValid());
 
   BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
                                    output_size);

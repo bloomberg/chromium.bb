@@ -20,7 +20,6 @@ PepperGamepadHost::PepperGamepadHost(BrowserPpapiHost* host,
                                      PP_Instance instance,
                                      PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      browser_ppapi_host_(host),
       gamepad_service_(device::GamepadService::GetInstance()),
       is_started_(false),
       weak_factory_(this) {}
@@ -30,7 +29,6 @@ PepperGamepadHost::PepperGamepadHost(device::GamepadService* gamepad_service,
                                      PP_Instance instance,
                                      PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      browser_ppapi_host_(host),
       gamepad_service_(gamepad_service),
       is_started_(false),
       weak_factory_(this) {}
@@ -71,8 +69,7 @@ int32_t PepperGamepadHost::OnRequestMemory(
 void PepperGamepadHost::GotUserGesture(
     const ppapi::host::ReplyMessageContext& context) {
   base::SharedMemoryHandle handle =
-      gamepad_service_->GetSharedMemoryHandleForProcess(
-          browser_ppapi_host_->GetPluginProcess().Handle());
+      gamepad_service_->DuplicateSharedMemoryHandle();
 
   context.params.AppendHandle(ppapi::proxy::SerializedHandle(
       handle, sizeof(ppapi::ContentGamepadHardwareBuffer)));

@@ -27,8 +27,7 @@ TEST_F(HostSharedBitmapManagerTest, TestCreate) {
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
 
   HostSharedBitmapManagerClient client(manager_.get());
-  base::SharedMemoryHandle handle;
-  bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
+  base::SharedMemoryHandle handle = bitmap->handle().Duplicate();
   client.ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
   std::unique_ptr<cc::SharedBitmap> large_bitmap;
@@ -85,10 +84,9 @@ TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
   memset(bitmap->memory(), 0xff, size_in_bytes);
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
 
-  base::SharedMemoryHandle handle;
   std::unique_ptr<HostSharedBitmapManagerClient> client(
       new HostSharedBitmapManagerClient(manager_.get()));
-  bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
+  base::SharedMemoryHandle handle = bitmap->handle().Duplicate();
   client->ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
   std::unique_ptr<cc::SharedBitmap> shared_bitmap;
@@ -118,8 +116,7 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
   HostSharedBitmapManagerClient client(manager_.get());
 
-  base::SharedMemoryHandle handle;
-  bitmap->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
+  base::SharedMemoryHandle handle = bitmap->handle().Duplicate();
   client.ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
   std::unique_ptr<base::SharedMemory> bitmap2(new base::SharedMemory());

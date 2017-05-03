@@ -373,16 +373,15 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachReadOnly) {
   ASSERT_DEATH(memset(shared_memory2.memory(), 'b', s_memory_size), "");
 }
 
-// Tests that the method ShareToProcess() works.
-TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcess) {
+// Tests that duplication of the underlying handle works.
+TEST_F(SharedMemoryMacMultiProcessTest, MachDuplicate) {
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   {
     std::unique_ptr<SharedMemory> shared_memory(
         CreateSharedMemory(s_memory_size));
 
-    SharedMemoryHandle shm2;
-    ASSERT_TRUE(shared_memory->ShareToProcess(GetCurrentProcId(), &shm2));
+    SharedMemoryHandle shm2 = shared_memory->handle().Duplicate();
     ASSERT_TRUE(shm2.IsValid());
     SharedMemory shared_memory2(shm2, true);
     shared_memory2.Map(s_memory_size);
@@ -396,7 +395,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcess) {
 
 // Tests that the method GetReadOnlyHandle() creates a memory object that
 // is read only.
-TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonly) {
+TEST_F(SharedMemoryMacMultiProcessTest, MachReadonly) {
   std::unique_ptr<SharedMemory> shared_memory(
       CreateSharedMemory(s_memory_size));
 
@@ -435,7 +434,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonly) {
 }
 
 // Tests that the method GetReadOnlyHandle() doesn't leak.
-TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonlyLeak) {
+TEST_F(SharedMemoryMacMultiProcessTest, MachReadonlyLeak) {
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   {

@@ -140,10 +140,9 @@ void GamepadService::OnGamepadDisconnected(int index, const Gamepad& pad) {
   }
 }
 
-base::SharedMemoryHandle GamepadService::GetSharedMemoryHandleForProcess(
-    base::ProcessHandle handle) {
+base::SharedMemoryHandle GamepadService::DuplicateSharedMemoryHandle() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-  return provider_->GetSharedMemoryHandleForProcess(handle);
+  return provider_->DuplicateSharedMemoryHandle();
 }
 
 mojo::ScopedSharedBufferHandle GamepadService::GetSharedBufferHandle() {

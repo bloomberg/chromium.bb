@@ -618,16 +618,16 @@ void NaClProcessHost::ReplyToRenderer(
   // Hereafter, we always send an IPC message with handles created above
   // which, on Windows, are not closable in this process.
   std::string error_message;
-  base::SharedMemoryHandle crash_info_shmem_renderer_handle;
-  if (!crash_info_shmem_.ShareToProcess(nacl_host_message_filter_->PeerHandle(),
-                                        &crash_info_shmem_renderer_handle)) {
+  base::SharedMemoryHandle crash_info_shmem_renderer_handle =
+      crash_info_shmem_.handle().Duplicate();
+  if (!crash_info_shmem_renderer_handle.IsValid()) {
     // On error, we do not send "IPC::ChannelHandle"s to the renderer process.
     // Note that some other FDs/handles still get sent to the renderer, but
     // will be closed there.
     ppapi_channel_handle.reset();
     trusted_channel_handle.reset();
     manifest_service_channel_handle.reset();
-    error_message = "ShareToProcess() failed";
+    error_message = "handle duplication failed";
   }
 
   const ChildProcessData& data = process_->GetData();
@@ -785,9 +785,9 @@ bool NaClProcessHost::StartNaClExecution() {
 #endif
   }
 
-  if (!crash_info_shmem_.ShareToProcess(process_->GetData().handle,
-                                        &params.crash_info_shmem_handle)) {
-    DLOG(ERROR) << "Failed to ShareToProcess() a shared memory buffer";
+  params.crash_info_shmem_handle = crash_info_shmem_.handle().Duplicate();
+  if (!params.crash_info_shmem_handle.IsValid()) {
+    DLOG(ERROR) << "Failed to duplicate a shared memory buffer";
     return false;
   }
 

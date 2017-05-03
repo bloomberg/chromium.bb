@@ -167,9 +167,9 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     shared_memory_map_[request_id] = base::WrapUnique(shared_memory);
     EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(buffer_size));
 
-    base::SharedMemoryHandle duplicate_handle;
-    EXPECT_TRUE(shared_memory->ShareToProcess(base::GetCurrentProcessHandle(),
-                                              &duplicate_handle));
+    base::SharedMemoryHandle duplicate_handle =
+        shared_memory->handle().Duplicate();
+    EXPECT_TRUE(duplicate_handle.IsValid());
     EXPECT_TRUE(dispatcher_->OnMessageReceived(ResourceMsg_SetDataBuffer(
         request_id, duplicate_handle, shared_memory->requested_size(), 0)));
   }

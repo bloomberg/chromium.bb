@@ -24,6 +24,10 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   MockAudioDelegate() {
     Reset();
   }
+  ~MockAudioDelegate() override {
+    if (handle_.IsValid())
+      handle_.Close();
+  }
 
   void OnError() override { error_received_ = true; }
 
@@ -54,6 +58,8 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     device_status_ = media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
 
     created_received_ = false;
+    if (handle_.IsValid())
+      handle_.Close();
     handle_ = base::SharedMemoryHandle();
     length_ = 0;
 

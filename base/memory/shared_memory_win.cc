@@ -340,26 +340,6 @@ SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
   return handle;
 }
 
-bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
-                                        SharedMemoryHandle* new_handle) {
-  *new_handle = SharedMemoryHandle();
-  DWORD access = FILE_MAP_READ | SECTION_QUERY;
-  DWORD options = 0;
-  HANDLE mapped_file = mapped_file_.Get();
-  HANDLE result;
-  if (!read_only_)
-    access |= FILE_MAP_WRITE;
-
-  if (!::DuplicateHandle(GetCurrentProcess(), mapped_file, process, &result,
-                         access, FALSE, options)) {
-    return false;
-  }
-  *new_handle = SharedMemoryHandle(result, base::GetProcId(process));
-  new_handle->SetOwnershipPassesToIPC(true);
-  return true;
-}
-
-
 void SharedMemory::Close() {
   mapped_file_.Close();
 }

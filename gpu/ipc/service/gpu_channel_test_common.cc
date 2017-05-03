@@ -155,9 +155,7 @@ void GpuChannelTestCommon::HandleMessage(GpuChannel* channel,
 base::SharedMemoryHandle GpuChannelTestCommon::GetSharedHandle() {
   base::SharedMemory shared_memory;
   shared_memory.CreateAnonymous(10);
-  base::SharedMemoryHandle shmem_handle;
-  shared_memory.ShareToProcess(base::GetCurrentProcessHandle(), &shmem_handle);
-  return shmem_handle;
+  return shared_memory.handle().Duplicate();
 }
 
 }  // namespace gpu

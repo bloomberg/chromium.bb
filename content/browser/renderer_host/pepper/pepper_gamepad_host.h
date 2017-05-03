@@ -60,8 +60,6 @@ class CONTENT_EXPORT PepperGamepadHost :
 
   void GotUserGesture(const ppapi::host::ReplyMessageContext& in_context);
 
-  BrowserPpapiHost* browser_ppapi_host_;
-
   device::GamepadService* gamepad_service_;
 
   bool is_started_;

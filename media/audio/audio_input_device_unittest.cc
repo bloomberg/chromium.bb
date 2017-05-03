@@ -120,9 +120,9 @@ TEST(AudioInputDeviceTest, CreateStream) {
   SyncSocket::TransitDescriptor audio_device_socket_descriptor;
   ASSERT_TRUE(renderer_socket.PrepareTransitDescriptor(
       base::GetCurrentProcessHandle(), &audio_device_socket_descriptor));
-  base::SharedMemoryHandle duplicated_memory_handle;
-  ASSERT_TRUE(shared_memory.ShareToProcess(base::GetCurrentProcessHandle(),
-                                           &duplicated_memory_handle));
+  base::SharedMemoryHandle duplicated_memory_handle =
+      shared_memory.handle().Duplicate();
+  ASSERT_TRUE(duplicated_memory_handle.IsValid());
 
   base::MessageLoopForIO io_loop;
   MockCaptureCallback callback;
@@ -143,6 +143,7 @@ TEST(AudioInputDeviceTest, CreateStream) {
   base::RunLoop().Run();
   device->Stop();
   base::RunLoop().RunUntilIdle();
+  duplicated_memory_handle.Close();
 }
 
 }  // namespace media.

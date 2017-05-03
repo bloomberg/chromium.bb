@@ -129,8 +129,8 @@ class FakeSpeechRecognizer {
     shared_memory_.reset(new base::SharedMemory());
     ASSERT_TRUE(shared_memory_->CreateAndMapAnonymous(kSharedMemorySize));
     memset(shared_memory_->memory(), 0, kSharedMemorySize);
-    ASSERT_TRUE(shared_memory_->ShareToProcess(base::GetCurrentProcessHandle(),
-                                               foreign_memory_handle));
+    *foreign_memory_handle = shared_memory_->handle().Duplicate();
+    ASSERT_TRUE(foreign_memory_handle->IsValid());
 
     // Wrap the shared memory for the audio bus.
     media::AudioInputBuffer* buffer =
