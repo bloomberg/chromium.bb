@@ -78,7 +78,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   // ResourceRequestInfo implementation:
   WebContentsGetter GetWebContentsGetterForRequest() const override;
-  FrameTreeNodeIdGetter GetFrameTreeNodeIdGetterForRequest() const override;
   ResourceContext* GetContext() const override;
   int GetChildID() const override;
   int GetRouteID() const override;
