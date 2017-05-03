@@ -38,10 +38,10 @@ Other section sizes:
     .strtab: 0 bytes
     .symtab: 0 bytes
 
-2 symbols added (+), 1 changed (~), 3 removed (-), 32 unchanged (=)
+2 symbols added (+), 1 changed (~), 3 removed (-), 35 unchanged (=)
 0 object files added, 0 removed
 
-Showing 38 symbols with total pss: 46 bytes
+Showing 41 symbols with total pss: 46 bytes
 .text=82 bytes   .rodata=0 bytes    other=-36 bytes  total=46 bytes
 Number of object files: 9
 
@@ -61,7 +61,16 @@ First columns are: running total, address, pss
 =       82 r@Group      pss=0  padding=0  size_without_padding=0  count=2
                source_path= 	object_path=
                flags={}  name=** merge strings
-=       82 t@Group      pss=0  padding=0  size_without_padding=0  count=2
+=       82 d@0x2ddc608  pss=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               flags={}  name=** symbol gap 3 (end of section)
+=       82 d@0x2dffd88  pss=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               flags={}  name=** symbol gap 3 (end of section)
+=       82 t@Group      pss=0  padding=0  size_without_padding=0  count=3
+               source_path= 	object_path=
+               flags={}  name=** symbol gaps
+=       82 r@Group      pss=0  padding=0  size_without_padding=0  count=2
                source_path= 	object_path=
                flags={}  name=** symbol gaps
 =       82 d@0x2cd84e0  pss=0  padding=0  size_without_padding=0
