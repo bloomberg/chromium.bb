@@ -580,11 +580,41 @@ TEST_P(ArcAppModelBuilderTest, RefreshAllFillsContent) {
   ValidateHaveApps(fake_apps());
 }
 
-TEST_P(ArcAppModelBuilderTest, InstallShortcut) {
+TEST_P(ArcAppModelBuilderTest, InstallUninstallShortcut) {
   ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
 
-  app_instance()->SendInstallShortcuts(fake_shortcuts());
-  ValidateHaveShortcuts(fake_shortcuts());
+  std::vector<arc::mojom::ShortcutInfo> shortcuts = fake_shortcuts();
+  ASSERT_GE(shortcuts.size(), 2U);
+
+  // Adding package is requred to safely call SendPackageUninstalled.
+  arc::mojom::ArcPackageInfo package;
+  package.package_name = shortcuts[1].package_name;
+  package.package_version = 1;
+  package.sync = true;
+  AddPackage(package);
+  app_instance()->SendPackageAdded(package);
+
+  app_instance()->SendInstallShortcuts(shortcuts);
+  ValidateHaveShortcuts(shortcuts);
+
+  // Uninstall first shortcut and validate it was removed.
+  const std::string package_name = shortcuts[0].package_name;
+  const std::string intent_uri = shortcuts[0].intent_uri;
+  shortcuts.erase(shortcuts.begin());
+  app_instance()->SendUninstallShortcut(package_name, intent_uri);
+  ValidateHaveShortcuts(shortcuts);
+
+  // Requests to uninstall non-existing shortcuts should be just ignored.
+  EXPECT_NE(package_name, shortcuts[0].package_name);
+  EXPECT_NE(intent_uri, shortcuts[0].intent_uri);
+  app_instance()->SendUninstallShortcut(package_name, shortcuts[0].intent_uri);
+  app_instance()->SendUninstallShortcut(shortcuts[0].package_name, intent_uri);
+  ValidateHaveShortcuts(shortcuts);
+
+  // Removing package should also remove associated shortcuts.
+  app_instance()->SendPackageUninstalled(shortcuts[0].package_name);
+  shortcuts.erase(shortcuts.begin());
+  ValidateHaveShortcuts(shortcuts);
 }
 
 TEST_P(ArcAppModelBuilderTest, RefreshAllPreservesShortcut) {
