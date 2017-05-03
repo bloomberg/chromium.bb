@@ -1120,6 +1120,9 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
+  if (!render_frame_)
+    return false;
+
   if (!has_been_clicked_ && is_flash_plugin_ &&
       event.GetType() == blink::WebInputEvent::kMouseDown &&
       (event.GetModifiers() & blink::WebInputEvent::kLeftButtonDown)) {
@@ -1132,8 +1135,6 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
   if (throttler_ && throttler_->ConsumeInputEvent(event))
     return true;
 
-  if (!render_frame_)
-    return false;
   if (WebInputEvent::IsMouseEventType(event.GetType())) {
     render_frame_->PepperDidReceiveMouseEvent(this);
   }
@@ -1262,6 +1263,9 @@ void PepperPluginInstanceImpl::ViewChanged(
     const gfx::Rect& window,
     const gfx::Rect& clip,
     const gfx::Rect& unobscured) {
+  if (!render_frame_)
+    return;
+
   // WebKit can give weird (x,y) positions for empty clip rects (since the
   // position technically doesn't matter). But we want to make these
   // consistent since this is given to the plugin, so force everything to 0
@@ -1380,6 +1384,9 @@ void PepperPluginInstanceImpl::ViewInitiatedPaint() {
 
 void PepperPluginInstanceImpl::SetSelectedText(
     const base::string16& selected_text) {
+  if (!render_frame_)
+    return;
+
   selected_text_ = selected_text;
   gfx::Range range(0, selected_text.length());
   render_frame_->SetSelectedText(selected_text, 0, range);
@@ -1390,6 +1397,9 @@ void PepperPluginInstanceImpl::SetLinkUnderCursor(const std::string& url) {
 }
 
 void PepperPluginInstanceImpl::SetTextInputType(ui::TextInputType type) {
+  if (!render_frame_)
+    return;
+
   text_input_type_ = type;
   render_frame_->PepperTextInputTypeChanged(this);
 }
@@ -1685,6 +1695,9 @@ void PepperPluginInstanceImpl::SendAsyncDidChangeView() {
 }
 
 void PepperPluginInstanceImpl::SendDidChangeView() {
+  if (!render_frame_)
+    return;
+
   // An asynchronous view update is scheduled. Skip sending this update.
   if (view_change_weak_ptr_factory_.HasWeakPtrs())
     return;
@@ -2155,8 +2168,10 @@ bool PepperPluginInstanceImpl::PrepareTextureMailbox(
 }
 
 void PepperPluginInstanceImpl::AccessibilityModeChanged() {
-  if (render_frame_->render_accessibility() && LoadPdfInterface())
+  if (render_frame_ && render_frame_->render_accessibility() &&
+      LoadPdfInterface()) {
     plugin_pdf_interface_->EnableAccessibility(pp_instance());
+  }
 }
 
 void PepperPluginInstanceImpl::OnDestruct() {
@@ -2164,6 +2179,9 @@ void PepperPluginInstanceImpl::OnDestruct() {
 }
 
 void PepperPluginInstanceImpl::OnThrottleStateChange() {
+  if (!render_frame_)
+    return;
+
   SendDidChangeView();
 
   bool is_throttled = throttler_->IsThrottled();
