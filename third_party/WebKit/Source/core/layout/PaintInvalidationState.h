@@ -175,17 +175,6 @@ class CORE_EXPORT PaintInvalidationState {
 #if DCHECK_IS_ON()
   bool did_update_for_children_ = false;
 #endif
-
-#if DCHECK_IS_ON() && !defined(NDEBUG)
-// #define CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-#endif
-
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-  void assertFastPathAndSlowPathRectsEqual(
-      const LayoutRect& fastPathRect,
-      const LayoutRect& slowPathRect) const;
-  bool m_canCheckFastPathSlowPathEquality;
-#endif
 };
 
 // This is temporary to adapt legacy PaintInvalidationState to
