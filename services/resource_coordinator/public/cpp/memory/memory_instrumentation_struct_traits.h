@@ -9,13 +9,13 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_totals.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
-#include "services/resource_coordinator/public/cpp/memory/memory_export.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
 namespace mojo {
 
 template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
     EnumTraits<memory_instrumentation::mojom::DumpType,
                base::trace_event::MemoryDumpType> {
   static memory_instrumentation::mojom::DumpType ToMojom(
@@ -25,7 +25,7 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
 };
 
 template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
     EnumTraits<memory_instrumentation::mojom::LevelOfDetail,
                base::trace_event::MemoryDumpLevelOfDetail> {
   static memory_instrumentation::mojom::LevelOfDetail ToMojom(
@@ -35,7 +35,7 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
 };
 
 template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
     StructTraits<memory_instrumentation::mojom::RequestArgsDataView,
                  base::trace_event::MemoryDumpRequestArgs> {
   static uint64_t dump_guid(
@@ -55,7 +55,7 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
 };
 
 template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT StructTraits<
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT StructTraits<
     memory_instrumentation::mojom::PlatformPrivateFootprintDataView,
     base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint> {
   static uint64_t phys_footprint_bytes(
@@ -89,7 +89,7 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT StructTraits<
 };
 
 template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
     StructTraits<memory_instrumentation::mojom::ChromeMemDumpDataView,
                  base::trace_event::MemoryDumpCallbackResult::ChromeMemDump> {
   static uint32_t malloc_total_kb(
@@ -114,7 +114,7 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
 };
 
 template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
     StructTraits<memory_instrumentation::mojom::OSMemDumpDataView,
                  base::trace_event::MemoryDumpCallbackResult::OSMemDump> {
   static uint32_t resident_set_kb(
@@ -131,7 +131,7 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
 };
 
 template <>
-struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT StructTraits<
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT StructTraits<
     memory_instrumentation::mojom::MemoryDumpCallbackResultDataView,
     base::trace_event::MemoryDumpCallbackResult> {
   static base::trace_event::MemoryDumpCallbackResult::OSMemDump os_dump(
