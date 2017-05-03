@@ -39,6 +39,11 @@ public interface VrShell {
     void setWebVrModeEnabled(boolean enabled);
 
     /**
+     * Returns true if we're presenting WebVR content.
+     */
+    boolean getWebVrModeEnabled();
+
+    /**
      * Returns the GVRLayout as a FrameLayout.
      */
     FrameLayout getContainer();

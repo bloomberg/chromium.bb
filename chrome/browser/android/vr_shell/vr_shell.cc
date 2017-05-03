@@ -260,7 +260,7 @@ void VrShell::SetSurface(JNIEnv* env,
 }
 
 void VrShell::SetWebVrMode(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
+                           const JavaParamRef<jobject>& obj,
                            bool enabled) {
   webvr_mode_ = enabled;
   if (metrics_helper_)
@@ -272,6 +272,10 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                        : UiInterface::Mode::STANDARD);
   PostToGlThreadWhenReady(base::Bind(&UiSceneManager::SetWebVRMode,
                                      gl_thread_->GetSceneManager(), enabled));
+}
+
+bool VrShell::GetWebVrMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  return webvr_mode_;
 }
 
 void VrShell::OnLoadProgressChanged(JNIEnv* env,
@@ -549,7 +553,7 @@ void VrShell::RegisterGamepadDataFetcher(
 
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
-           const base::android::JavaParamRef<jobject>& delegate,
+           const JavaParamRef<jobject>& delegate,
            jlong window_android,
            jboolean for_web_vr,
            jlong gvr_api,

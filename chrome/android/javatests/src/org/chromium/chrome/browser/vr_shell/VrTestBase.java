@@ -65,7 +65,7 @@ public class VrTestBase extends ChromeTabbedActivityTestBase {
      * @param testName The name of the test whose file will be retrieved
      * @return The file:// URL to the specified test file
      */
-    protected String getHtmlTestFile(String testName) {
+    protected static String getHtmlTestFile(String testName) {
         return "file://" + UrlUtils.getIsolatedTestFilePath(TEST_DIR) + "/html/" + testName
                 + ".html";
     }
