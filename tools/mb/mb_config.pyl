@@ -1688,7 +1688,7 @@
     },
 
     'edge': {
-      'gn_args': 'sanitizer_coverage_flags="edge"',
+      'gn_args': 'sanitizer_coverage_flags="trace-pc-guard"',
     },
 
     # This mixin is used to force configs that use it to fail. It
