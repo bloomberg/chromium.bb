@@ -224,6 +224,8 @@ source_set("lib") {
     "capabilities.h",
     "chrome/browser_info.cc",
     "chrome/browser_info.h",
+    "chrome/scoped_temp_dir_with_retry.cc",
+    "chrome/scoped_temp_dir_with_retry.h",
     "chrome_launcher.cc",
     "chrome_launcher.h",
     "command.h",

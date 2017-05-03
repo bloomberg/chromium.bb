@@ -11,10 +11,10 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/process/process.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
+#include "chrome/test/chromedriver/chrome/scoped_temp_dir_with_retry.h"
 
 namespace base {
 class TimeDelta;
@@ -94,8 +94,8 @@ class ChromeDesktopImpl : public ChromeImpl {
 
   base::Process process_;
   base::CommandLine command_;
-  base::ScopedTempDir user_data_dir_;
-  base::ScopedTempDir extension_dir_;
+  ScopedTempDirWithRetry user_data_dir_;
+  ScopedTempDirWithRetry extension_dir_;
   bool network_connection_enabled_;
   int network_connection_;
 
