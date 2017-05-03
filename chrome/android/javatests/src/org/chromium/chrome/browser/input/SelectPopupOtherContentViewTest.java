@@ -4,24 +4,15 @@
 
 package org.chromium.chrome.browser.input;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WebContentsFactory;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -35,14 +26,7 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * Test the select popup and how it interacts with another ContentViewCore.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class SelectPopupOtherContentViewTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class SelectPopupOtherContentViewTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String SELECT_URL = UrlUtils.encodeHtmlDataUri(
             "<html><body>"
             + "Which animal is the strongest:<br/>"
@@ -64,10 +48,18 @@ public class SelectPopupOtherContentViewTest {
 
         @Override
         public boolean isSatisfied() {
-            ContentViewCore contentViewCore =
-                    mActivityTestRule.getActivity().getCurrentContentViewCore();
+            ContentViewCore contentViewCore = getActivity().getCurrentContentViewCore();
             return contentViewCore.getSelectPopupForTest() != null;
         }
+    }
+
+    public SelectPopupOtherContentViewTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        // Don't launch activity automatically.
     }
 
     /**
@@ -75,17 +67,15 @@ public class SelectPopupOtherContentViewTest {
      * gets destroyed.
      *
      */
-    @Test
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
     public void testPopupNotClosedByOtherContentView()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.
-        mActivityTestRule.startMainActivityWithURL(SELECT_URL);
+        startMainActivityWithURL(SELECT_URL);
 
-        final ContentViewCore viewCore =
-                mActivityTestRule.getActivity().getCurrentContentViewCore();
+        final ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
 
         // Once clicked, the popup should show up.
         DOMUtils.clickNode(viewCore, "select");
@@ -96,13 +86,10 @@ public class SelectPopupOtherContentViewTest {
             @Override
             public void run() {
                 WebContents webContents = WebContentsFactory.createWebContents(false, false);
-                WindowAndroid windowAndroid =
-                        new ActivityWindowAndroid(mActivityTestRule.getActivity());
+                WindowAndroid windowAndroid = new ActivityWindowAndroid(getActivity());
 
-                ContentViewCore contentViewCore =
-                        new ContentViewCore(mActivityTestRule.getActivity(), "");
-                ContentView cv = ContentView.createContentView(
-                        mActivityTestRule.getActivity(), contentViewCore);
+                ContentViewCore contentViewCore = new ContentViewCore(getActivity(), "");
+                ContentView cv = ContentView.createContentView(getActivity(), contentViewCore);
                 contentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv,
                         webContents, windowAndroid);
                 contentViewCore.destroy();
@@ -110,11 +97,10 @@ public class SelectPopupOtherContentViewTest {
         });
 
         // Process some more events to give a chance to the dialog to hide if it were to.
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
 
         // The popup should still be shown.
-        Assert.assertNotNull(
-                "The select popup got hidden by destroying of unrelated ContentViewCore.",
+        assertNotNull("The select popup got hidden by destroying of unrelated ContentViewCore.",
                 viewCore.getSelectPopupForTest());
     }
 }

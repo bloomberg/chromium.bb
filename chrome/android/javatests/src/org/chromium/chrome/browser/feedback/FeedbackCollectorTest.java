@@ -7,25 +7,15 @@ package org.chromium.chrome.browser.feedback;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.net.ConnectionType;
 
@@ -42,21 +32,18 @@ import javax.annotation.Nullable;
 /**
  * Test for {@link FeedbackCollector}.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class FeedbackCollectorTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int CONNECTIVITY_TASK_TIMEOUT_MS = 10;
 
     private ChromeActivity mActivity;
     private Profile mProfile;
     private TestFeedbackCollector mCollector;
     private TestConnectivityTask mTestConnectivityTask;
+
+    public FeedbackCollectorTest() {
+        super(ChromeActivity.class);
+    }
 
     /**
      * Class for facilitating testing of {@link FeedbackCollector}. All public methods are
@@ -202,10 +189,10 @@ public class FeedbackCollectorTest {
         }
     }
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mActivity = mActivityTestRule.getActivity();
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mActivity = getActivity();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -214,7 +201,11 @@ public class FeedbackCollectorTest {
         });
     }
 
-    @Test
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     @SmallTest
     @Feature({"Feedback"})
     public void testGatheringOfData() {
@@ -227,16 +218,15 @@ public class FeedbackCollectorTest {
         mCollector.setScreenshot(bitmap);
 
         Bundle bundle = mCollector.getBundle();
-        Assert.assertEquals("http://www.example.com/", bundle.getString(FeedbackCollector.URL_KEY));
-        Assert.assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
-        Assert.assertEquals("some description", mCollector.getDescription());
-        Assert.assertEquals("bar", bundle.getString("foo"));
-        Assert.assertEquals(bitmap, mCollector.getScreenshot());
-        Assert.assertEquals("false",
+        assertEquals("http://www.example.com/", bundle.getString(FeedbackCollector.URL_KEY));
+        assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
+        assertEquals("some description", mCollector.getDescription());
+        assertEquals("bar", bundle.getString("foo"));
+        assertEquals(bitmap, mCollector.getScreenshot());
+        assertEquals("false",
                 bundle.getString(DataReductionProxySettings.DATA_REDUCTION_PROXY_ENABLED_KEY));
     }
 
-    @Test
     @SmallTest
     @Feature({"Feedback"})
     public void testGatheringOfDataWithCallback() throws InterruptedException {
@@ -250,29 +240,27 @@ public class FeedbackCollectorTest {
             }
         };
         mCollector = createCollector("http://www.example.com/", callback);
-        Assert.assertFalse("Result should not be ready directly after creation.", hasResult.get());
+        assertFalse("Result should not be ready directly after creation.", hasResult.get());
         ConnectivityTask.FeedbackData feedbackData = createFeedbackData();
         mCollector.onResult(feedbackData);
-        Assert.assertFalse("Result should not be ready after connectivity data.", hasResult.get());
+        assertFalse("Result should not be ready after connectivity data.", hasResult.get());
         mCollector.setDescription("some description");
         mCollector.add("foo", "bar");
         Bitmap bitmap = createBitmap();
         mCollector.onGotBitmap(bitmap);
 
         // Wait until the callback has been called.
-        Assert.assertTrue(
-                "Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
-        Assert.assertTrue("Result should be ready after retrieving all data.", hasResult.get());
+        assertTrue("Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
+        assertTrue("Result should be ready after retrieving all data.", hasResult.get());
 
         Bundle bundle = mCollector.getBundle();
-        Assert.assertEquals("http://www.example.com/", bundle.getString(FeedbackCollector.URL_KEY));
-        Assert.assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
-        Assert.assertEquals("some description", mCollector.getDescription());
-        Assert.assertEquals("bar", bundle.getString("foo"));
-        Assert.assertEquals(bitmap, mCollector.getScreenshot());
+        assertEquals("http://www.example.com/", bundle.getString(FeedbackCollector.URL_KEY));
+        assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
+        assertEquals("some description", mCollector.getDescription());
+        assertEquals("bar", bundle.getString("foo"));
+        assertEquals(bitmap, mCollector.getScreenshot());
     }
 
-    @Test
     @SmallTest
     @Feature({"Feedback"})
     public void testGatheringOfDataTimesOut() throws InterruptedException {
@@ -286,30 +274,28 @@ public class FeedbackCollectorTest {
             }
         };
         mCollector = createCollector(null, callback);
-        Assert.assertFalse("Result should not be ready directly after creation.", hasResult.get());
+        assertFalse("Result should not be ready directly after creation.", hasResult.get());
         ConnectivityTask.FeedbackData feedbackData = createFeedbackData();
         // Set the feedback data on the connectivity task instead of through callback.
         mTestConnectivityTask.setFeedbackData(feedbackData);
-        Assert.assertFalse("Result should not be ready after connectivity data.", hasResult.get());
+        assertFalse("Result should not be ready after connectivity data.", hasResult.get());
         Bitmap bitmap = createBitmap();
         mCollector.onGotBitmap(bitmap);
 
         // This timeout task should trigger the callback.
         mCollector.setTimedOut(true);
         mCollector.maybePostResult();
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
+        UiUtils.settleDownUI(getInstrumentation());
 
         // Wait until the callback has been called.
-        Assert.assertTrue(
-                "Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
-        Assert.assertTrue("Result should be ready after retrieving all data.", hasResult.get());
+        assertTrue("Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
+        assertTrue("Result should be ready after retrieving all data.", hasResult.get());
 
         Bundle bundle = mCollector.getBundle();
-        Assert.assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
-        Assert.assertEquals(bitmap, mCollector.getScreenshot());
+        assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
+        assertEquals(bitmap, mCollector.getScreenshot());
     }
 
-    @Test
     @SmallTest
     @Feature({"Feedback"})
     public void testGatheringOfDataAlwaysWaitForScreenshot() throws InterruptedException {
@@ -323,30 +309,29 @@ public class FeedbackCollectorTest {
             }
         };
         mCollector = createCollector(null, callback);
-        Assert.assertFalse("Result should not be ready directly after creation.", hasResult.get());
+        assertFalse("Result should not be ready directly after creation.", hasResult.get());
         ConnectivityTask.FeedbackData feedbackData = createFeedbackData();
         mCollector.onResult(feedbackData);
-        Assert.assertFalse("Result should not be ready after connectivity data.", hasResult.get());
+        assertFalse("Result should not be ready after connectivity data.", hasResult.get());
 
         // This timeout task should not trigger the callback.
         mCollector.setTimedOut(true);
         mCollector.maybePostResult();
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        Assert.assertFalse("Result should not be ready after timeout.", hasResult.get());
+        UiUtils.settleDownUI(getInstrumentation());
+        assertFalse("Result should not be ready after timeout.", hasResult.get());
 
         // Trigger callback by finishing taking the screenshot.
         Bitmap bitmap = createBitmap();
         mCollector.onGotBitmap(bitmap);
 
         // Wait until the callback has been called.
-        Assert.assertTrue(
-                "Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
-        Assert.assertTrue("Result should be ready after retrieving all data.", hasResult.get());
+        assertTrue("Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
+        assertTrue("Result should be ready after retrieving all data.", hasResult.get());
 
         Bundle bundle = mCollector.getBundle();
         // The FeedbackData should have been gathered from the ConnectivityTask directly.
-        Assert.assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
-        Assert.assertEquals(bitmap, mCollector.getScreenshot());
+        assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
+        assertEquals(bitmap, mCollector.getScreenshot());
     }
 
     private static ConnectivityTask.FeedbackData createFeedbackData() {

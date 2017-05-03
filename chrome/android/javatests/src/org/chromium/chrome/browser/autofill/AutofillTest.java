@@ -4,27 +4,18 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.graphics.Color;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.components.autofill.AutofillSuggestion;
@@ -42,26 +33,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests the Autofill's java code for creating the AutofillPopup object, opening and selecting
  * popups.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class AutofillTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private AutofillPopup mAutofillPopup;
     private WindowAndroid mWindowAndroid;
     private MockAutofillCallback mMockAutofillCallback;
 
-    @Before
+    public AutofillTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     @SuppressFBWarnings("URF_UNREAD_FIELD")
+    @Override
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
+        super.setUp();
 
         mMockAutofillCallback = new MockAutofillCallback();
-        final ChromeActivity activity = mActivityTestRule.getActivity();
+        final ChromeActivity activity = getActivity();
         final ViewAndroidDelegate viewDelegate =
                 ViewAndroidDelegate.createBasicDelegate(
                         activity.getCurrentContentViewCore().getContainerView());
@@ -160,28 +154,26 @@ public class AutofillTest {
         });
     }
 
-    @Test
     @SmallTest
     @Feature({"autofill"})
     public void testAutofillWithDifferentNumberSuggestions() throws Exception {
         openAutofillPopupAndWaitUntilReady(createTwoAutofillSuggestionArray());
-        Assert.assertEquals(2, mAutofillPopup.getListView().getCount());
+        assertEquals(2, mAutofillPopup.getListView().getCount());
 
         openAutofillPopupAndWaitUntilReady(createFiveAutofillSuggestionArray());
-        Assert.assertEquals(5, mAutofillPopup.getListView().getCount());
+        assertEquals(5, mAutofillPopup.getListView().getCount());
     }
 
-    @Test
     @SmallTest
     @Feature({"autofill"})
     public void testAutofillClickFirstSuggestion() throws Exception {
         AutofillSuggestion[] suggestions = createTwoAutofillSuggestionArray();
         openAutofillPopupAndWaitUntilReady(suggestions);
-        Assert.assertEquals(2, mAutofillPopup.getListView().getCount());
+        assertEquals(2, mAutofillPopup.getListView().getCount());
 
         TouchCommon.singleClickView(mAutofillPopup.getListView().getChildAt(0));
         mMockAutofillCallback.waitForCallback();
 
-        Assert.assertEquals(0, mMockAutofillCallback.mListIndex);
+        assertEquals(0, mMockAutofillCallback.mListIndex);
     }
 }

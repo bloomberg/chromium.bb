@@ -7,24 +7,14 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.TestContentProvider;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -36,35 +26,30 @@ import java.io.InputStream;
 import java.util.concurrent.Callable;
 
 /** Test suite for different Android URL schemes. */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class UrlSchemeTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String SIMPLE_SRC = "simple.html";
     private static final String SIMPLE_IMAGE = "google.png";
 
     private EmbeddedTestServer mTestServer;
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityFromLauncher();
-        TestContentProvider.resetResourceRequestCounts(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        TestContentProvider.setDataFilePath(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                UrlUtils.getTestFilePath(""));
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+    public UrlSchemeTest() {
+        super(ChromeActivity.class);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        TestContentProvider.resetResourceRequestCounts(getInstrumentation().getTargetContext());
+        TestContentProvider.setDataFilePath(getInstrumentation().getTargetContext(),
+                UrlUtils.getTestFilePath(""));
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /**
@@ -72,7 +57,6 @@ public class UrlSchemeTest {
      * This is to make sure that attempts to access the content provider
      * will be detected.
      */
-    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testContentProviderResourceRequestCount() throws IOException {
@@ -80,11 +64,11 @@ public class UrlSchemeTest {
         ensureResourceRequestCountInContentProvider(resource, 0);
         // Make a request to the content provider.
         Uri uri = Uri.parse(createContentUrl(resource));
-        Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        Context context = getInstrumentation().getContext();
         InputStream inputStream = null;
         try {
             inputStream = context.getContentResolver().openInputStream(uri);
-            Assert.assertNotNull(inputStream);
+            assertNotNull(inputStream);
         } finally {
             if (inputStream != null) inputStream.close();
         }
@@ -94,12 +78,11 @@ public class UrlSchemeTest {
     /**
      * Make sure content URL access works.
      */
-    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlAccess() throws InterruptedException {
         String resource = SIMPLE_SRC;
-        mActivityTestRule.loadUrl(createContentUrl(resource));
+        loadUrl(createContentUrl(resource));
         ensureResourceRequestCountInContentProviderNotLessThan(resource, 1);
     }
 
@@ -107,7 +90,6 @@ public class UrlSchemeTest {
      * Make sure a Content url *CANNOT* access the contents of an iframe that is loaded as a
      * content URL.
      */
-    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlIframeAccessFromContentUrl() throws Throwable {
@@ -122,25 +104,24 @@ public class UrlSchemeTest {
                 + "  document.title = 'fail';"
                 + "}";
 
-        mActivityTestRule.loadUrl(createContentUrl(resource));
+        loadUrl(createContentUrl(resource));
 
         // Make sure iframe is really loaded by verifying the title
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getActivityTab().getTitle().equals(
-                        "iframe loaded");
+                return getActivity().getActivityTab().getTitle().equals("iframe loaded");
             }
         });
         // Make sure that content provider was asked to provide the content.
         ensureResourceRequestCountInContentProviderNotLessThan(iframe, 1);
-        mActivityTestRule.runJavaScriptCodeInCurrentTab(script);
+        runJavaScriptCodeInCurrentTab(script);
 
         // Make sure content access failed by verifying that title is set to fail.
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getActivityTab().getTitle().equals("fail");
+                return getActivity().getActivityTab().getTitle().equals("fail");
             }
         });
     }
@@ -148,7 +129,6 @@ public class UrlSchemeTest {
     /**
      * Test that a content URL is *ALLOWED* to access an image provided by a content URL.
      */
-    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlImageFromContentUrl() throws Throwable {
@@ -158,7 +138,6 @@ public class UrlSchemeTest {
     /**
      * Test that a HTTP URL is *NOT ALLOWED* to access an image provided by a content URL.
      */
-    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlImageFromHttpUrl() throws Throwable {
@@ -175,14 +154,13 @@ public class UrlSchemeTest {
                 + "  img.onload = function() { document.title = 'success' };"
                 + "  img.src = '" + createContentUrl(resource) + "';"
                 + "  document.body.appendChild(img);";
-        mActivityTestRule.loadUrl(url);
-        mActivityTestRule.runJavaScriptCodeInCurrentTab(script);
+        loadUrl(url);
+        runJavaScriptCodeInCurrentTab(script);
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getActivityTab().getTitle().equals(
-                        expectedTitle);
+                return getActivity().getActivityTab().getTitle().equals(expectedTitle);
             }
         });
         ensureResourceRequestCountInContentProviderNotLessThan(resource, expectedLoadCount);
@@ -191,20 +169,18 @@ public class UrlSchemeTest {
     /**
      * Test that a content URL is not allowed within a data URL.
      */
-    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlFromData() throws InterruptedException {
         final String target = SIMPLE_IMAGE;
-        mActivityTestRule.loadUrl(
-                UrlUtils.encodeHtmlDataUri("<img src=\"" + createContentUrl(target) + "\">"));
+        loadUrl(UrlUtils.encodeHtmlDataUri(
+                "<img src=\"" + createContentUrl(target) + "\">"));
         ensureResourceRequestCountInContentProvider(target, 0);
     }
 
     /**
      * Test that a content URL is not allowed within a local file.
      */
-    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testContentUrlFromFile() throws InterruptedException, IOException {
@@ -213,7 +189,7 @@ public class UrlSchemeTest {
         try {
             TestFileUtil.createNewHtmlFile(
                     file, target, "<img src=\"" + createContentUrl(target) + "\">");
-            mActivityTestRule.loadUrl("file:///" + file.getAbsolutePath());
+            loadUrl("file:///" + file.getAbsolutePath());
             ensureResourceRequestCountInContentProvider(target, 0);
         } finally {
             TestFileUtil.deleteFile(file);
@@ -224,7 +200,7 @@ public class UrlSchemeTest {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return mActivityTestRule.getActivity().getActivityTab().getTitle();
+                return getActivity().getActivityTab().getTitle();
             }
         });
     }
@@ -232,7 +208,6 @@ public class UrlSchemeTest {
     /**
      * Test that the browser can be navigated to a file URL.
      */
-    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testFileUrlNavigation() throws InterruptedException, IOException {
@@ -241,8 +216,8 @@ public class UrlSchemeTest {
 
         try {
             TestFileUtil.createNewHtmlFile(file, "File", null);
-            mActivityTestRule.loadUrl("file://" + file.getAbsolutePath());
-            Assert.assertEquals("File", getTitleOnUiThread());
+            loadUrl("file://" + file.getAbsolutePath());
+            assertEquals("File", getTitleOnUiThread());
         } finally {
             TestFileUtil.deleteFile(file);
         }
@@ -254,9 +229,9 @@ public class UrlSchemeTest {
      * @param expectedCount Expected resource requests count
      */
     private void ensureResourceRequestCountInContentProvider(String resource, int expectedCount) {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = getInstrumentation().getTargetContext();
         int actualCount = TestContentProvider.getResourceRequestCount(context, resource);
-        Assert.assertEquals(expectedCount, actualCount);
+        assertEquals(expectedCount, actualCount);
     }
 
     /**
@@ -266,13 +241,18 @@ public class UrlSchemeTest {
      */
     private void ensureResourceRequestCountInContentProviderNotLessThan(
             String resource, int expectedMinimalCount) {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = getInstrumentation().getTargetContext();
         int actualCount = TestContentProvider.getResourceRequestCount(context, resource);
-        Assert.assertTrue("Minimal expected: " + expectedMinimalCount + ", actual: " + actualCount,
+        assertTrue("Minimal expected: " + expectedMinimalCount + ", actual: " + actualCount,
                 actualCount >= expectedMinimalCount);
     }
 
     private String createContentUrl(final String target) {
         return TestContentProvider.createContentUrl(target);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityFromLauncher();
     }
 }

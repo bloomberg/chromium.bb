@@ -6,24 +6,14 @@ package org.chromium.chrome.browser.media.ui;
 
 import android.content.Intent;
 import android.media.AudioManager;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -35,29 +25,25 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for checking whether the media are paused when unplugging the headset
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS,
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class PauseOnHeadsetUnplugTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+@CommandLineFlags.Add(MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS)
+public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PATH =
             "/content/test/data/media/session/media-session.html";
     private static final String VIDEO_ID = "long-video";
 
     private EmbeddedTestServer mTestServer;
 
-    @Test
+    public PauseOnHeadsetUnplugTest() {
+        super(ChromeActivity.class);
+    }
+
     @SmallTest
     @RetryOnFailure
     public void testPause()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        Tab tab = getActivity().getActivityTab();
 
-        Assert.assertTrue(DOMUtils.isMediaPaused(tab.getWebContents(), VIDEO_ID));
+        assertTrue(DOMUtils.isMediaPaused(tab.getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(tab.getWebContents(), VIDEO_ID);
         DOMUtils.waitForMediaPlay(tab.getWebContents(), VIDEO_ID);
         waitForNotificationReady();
@@ -66,16 +52,21 @@ public class PauseOnHeadsetUnplugTest {
         DOMUtils.waitForMediaPauseBeforeEnd(tab.getWebContents(), VIDEO_ID);
     }
 
-    @Before
-    public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
-        mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PATH));
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityWithURL(mTestServer.getURL(TEST_PATH));
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     private void waitForNotificationReady() {
@@ -89,10 +80,10 @@ public class PauseOnHeadsetUnplugTest {
     }
 
     private void simulateHeadsetUnplug() {
-        Intent i = new Intent(InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                MediaNotificationManager.PlaybackListenerService.class);
+        Intent i = new Intent(getInstrumentation().getTargetContext(),
+                              MediaNotificationManager.PlaybackListenerService.class);
         i.setAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
 
-        InstrumentationRegistry.getInstrumentation().getContext().startService(i);
+        getInstrumentation().getContext().startService(i);
     }
 }

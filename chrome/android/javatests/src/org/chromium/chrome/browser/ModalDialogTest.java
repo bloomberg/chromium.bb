@@ -13,20 +13,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -39,15 +31,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test suite for displaying and functioning of modal dialogs.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class ModalDialogTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TAG = "ModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
@@ -56,16 +41,19 @@ public class ModalDialogTest {
                     + "return 'Are you sure?';"
                     + "};</script></head></html>");
 
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityWithURL(EMPTY_PAGE);
+    public ModalDialogTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityWithURL(EMPTY_PAGE);
     }
 
     /**
      * Verifies modal alert-dialog appearance and that JavaScript execution is
      * able to continue after dismissal.
      */
-    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testAlertModalDialog()
@@ -74,17 +62,16 @@ public class ModalDialogTest {
                 executeJavaScriptAndWaitForDialog("alert('Hello Android!');");
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
 
         clickOk(jsDialog);
-        Assert.assertTrue("JavaScript execution should continue after closing prompt.",
+        assertTrue("JavaScript execution should continue after closing prompt.",
                 scriptEvent.waitUntilHasValue());
     }
 
     /**
      * Verifies that clicking on a button twice doesn't crash.
      */
-    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testAlertModalDialogWithTwoClicks()
@@ -92,12 +79,12 @@ public class ModalDialogTest {
         OnEvaluateJavaScriptResultHelper scriptEvent =
                 executeJavaScriptAndWaitForDialog("alert('Hello Android');");
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
 
         clickOk(jsDialog);
         clickOk(jsDialog);
 
-        Assert.assertTrue("JavaScript execution should continue after closing prompt.",
+        assertTrue("JavaScript execution should continue after closing prompt.",
                 scriptEvent.waitUntilHasValue());
     }
 
@@ -105,7 +92,6 @@ public class ModalDialogTest {
      * Verifies that modal confirm-dialogs display, two buttons are visible and
      * the return value of [Ok] equals true, [Cancel] equals false.
      */
-    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testConfirmModalDialog()
@@ -114,43 +100,41 @@ public class ModalDialogTest {
                 executeJavaScriptAndWaitForDialog("confirm('Android');");
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
 
         Button[] buttons = getAlertDialogButtons(jsDialog.getDialogForTest());
-        Assert.assertNotNull("No cancel button in confirm dialog.", buttons[0]);
-        Assert.assertEquals(
-                "Cancel button is not visible.", View.VISIBLE, buttons[0].getVisibility());
+        assertNotNull("No cancel button in confirm dialog.", buttons[0]);
+        assertEquals("Cancel button is not visible.", View.VISIBLE, buttons[0].getVisibility());
         if (buttons[1] != null) {
-            Assert.assertNotSame("Neutral button visible when it should not.", View.VISIBLE,
-                    buttons[1].getVisibility());
+            assertNotSame("Neutral button visible when it should not.",
+                    View.VISIBLE, buttons[1].getVisibility());
         }
-        Assert.assertNotNull("No OK button in confirm dialog.", buttons[2]);
-        Assert.assertEquals("OK button is not visible.", View.VISIBLE, buttons[2].getVisibility());
+        assertNotNull("No OK button in confirm dialog.", buttons[2]);
+        assertEquals("OK button is not visible.", View.VISIBLE, buttons[2].getVisibility());
 
         clickOk(jsDialog);
-        Assert.assertTrue("JavaScript execution should continue after closing dialog.",
+        assertTrue("JavaScript execution should continue after closing dialog.",
                 scriptEvent.waitUntilHasValue());
 
         String resultString = scriptEvent.getJsonResultAndClear();
-        Assert.assertEquals("Invalid return value.", "true", resultString);
+        assertEquals("Invalid return value.", "true", resultString);
 
         // Try again, pressing cancel this time.
         scriptEvent = executeJavaScriptAndWaitForDialog("confirm('Android');");
         jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
 
         clickCancel(jsDialog);
-        Assert.assertTrue("JavaScript execution should continue after closing dialog.",
+        assertTrue("JavaScript execution should continue after closing dialog.",
                 scriptEvent.waitUntilHasValue());
 
         resultString = scriptEvent.getJsonResultAndClear();
-        Assert.assertEquals("Invalid return value.", "false", resultString);
+        assertEquals("Invalid return value.", "false", resultString);
     }
 
     /**
      * Verifies that modal prompt-dialogs display and the result is returned.
      */
-    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testPromptModalDialog()
@@ -160,7 +144,7 @@ public class ModalDialogTest {
                 executeJavaScriptAndWaitForDialog("prompt('Android', 'default');");
 
         final JavascriptAppModalDialog jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
 
         // Set the text in the prompt field of the dialog.
         boolean result = ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
@@ -173,42 +157,38 @@ public class ModalDialogTest {
                 return true;
             }
         });
-        Assert.assertTrue("Failed to find prompt view in prompt dialog.", result);
+        assertTrue("Failed to find prompt view in prompt dialog.", result);
 
         clickOk(jsDialog);
-        Assert.assertTrue("JavaScript execution should continue after closing prompt.",
+        assertTrue("JavaScript execution should continue after closing prompt.",
                 scriptEvent.waitUntilHasValue());
 
         String resultString = scriptEvent.getJsonResultAndClear();
-        Assert.assertEquals("Invalid return value.", '"' + promptText + '"', resultString);
+        assertEquals("Invalid return value.", '"' + promptText + '"', resultString);
     }
 
     /**
      * Verifies beforeunload dialogs are shown and they block/allow navigation
      * as appropriate.
      */
-    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testBeforeUnloadDialog()
             throws InterruptedException, TimeoutException, ExecutionException {
-        mActivityTestRule.loadUrl(BEFORE_UNLOAD_URL);
+        loadUrl(BEFORE_UNLOAD_URL);
         executeJavaScriptAndWaitForDialog("history.back();");
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
         checkButtonPresenceVisibilityText(jsDialog, 0, R.string.cancel, "Cancel");
         clickCancel(jsDialog);
 
-        Assert.assertEquals(BEFORE_UNLOAD_URL,
-                mActivityTestRule.getActivity()
-                        .getCurrentContentViewCore()
-                        .getWebContents()
-                        .getUrl());
+        assertEquals(BEFORE_UNLOAD_URL, getActivity().getCurrentContentViewCore()
+                .getWebContents().getUrl());
         executeJavaScriptAndWaitForDialog("history.back();");
 
         jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
         checkButtonPresenceVisibilityText(jsDialog, 2, R.string.leave, "Leave");
 
         final TestCallbackHelperContainer.OnPageFinishedHelper onPageLoaded =
@@ -216,26 +196,22 @@ public class ModalDialogTest {
         int callCount = onPageLoaded.getCallCount();
         clickOk(jsDialog);
         onPageLoaded.waitForCallback(callCount);
-        Assert.assertEquals(EMPTY_PAGE,
-                mActivityTestRule.getActivity()
-                        .getCurrentContentViewCore()
-                        .getWebContents()
-                        .getUrl());
+        assertEquals(EMPTY_PAGE, getActivity().getCurrentContentViewCore()
+                .getWebContents().getUrl());
     }
 
     /**
      * Verifies that when showing a beforeunload dialogs as a result of a page
      * reload, the correct UI strings are used.
      */
-    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testBeforeUnloadOnReloadDialog() throws InterruptedException, ExecutionException {
-        mActivityTestRule.loadUrl(BEFORE_UNLOAD_URL);
+        loadUrl(BEFORE_UNLOAD_URL);
         executeJavaScriptAndWaitForDialog("window.location.reload();");
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
 
         checkButtonPresenceVisibilityText(jsDialog, 0, R.string.cancel, "Cancel");
         checkButtonPresenceVisibilityText(jsDialog, 2, R.string.reload, "Reload");
@@ -245,7 +221,6 @@ public class ModalDialogTest {
      * Verifies that repeated dialogs give the option to disable dialogs
      * altogether and then that disabling them works.
      */
-    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testDisableRepeatedDialogs()
@@ -255,7 +230,7 @@ public class ModalDialogTest {
 
         // Show a dialog once.
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
 
         clickCancel(jsDialog);
         scriptEvent.waitUntilHasValue();
@@ -263,7 +238,7 @@ public class ModalDialogTest {
         // Show it again, it should have the option to suppress subsequent dialogs.
         scriptEvent = executeJavaScriptAndWaitForDialog("alert('Android');");
         jsDialog = getCurrentDialog();
-        Assert.assertNotNull("No dialog showing.", jsDialog);
+        assertNotNull("No dialog showing.", jsDialog);
         final AlertDialog dialog = jsDialog.getDialogForTest();
         String errorMessage = ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
@@ -278,15 +253,14 @@ public class ModalDialogTest {
                 return null;
             }
         });
-        Assert.assertNull(errorMessage, errorMessage);
+        assertNull(errorMessage, errorMessage);
         clickCancel(jsDialog);
         scriptEvent.waitUntilHasValue();
 
         scriptEvent.evaluateJavaScriptForTests(
-                mActivityTestRule.getActivity().getCurrentContentViewCore().getWebContents(),
+                getActivity().getCurrentContentViewCore().getWebContents(),
                 "alert('Android');");
-        Assert.assertTrue(
-                "No further dialog boxes should be shown.", scriptEvent.waitUntilHasValue());
+        assertTrue("No further dialog boxes should be shown.", scriptEvent.waitUntilHasValue());
     }
 
     /**
@@ -294,7 +268,6 @@ public class ModalDialogTest {
      * to accept the dialog. Verifies that the dialog is dismissed when the tab
      * is closed.
      */
-    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testDialogDismissedAfterClosingTab() {
@@ -303,7 +276,7 @@ public class ModalDialogTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeActivity activity = mActivityTestRule.getActivity();
+                ChromeActivity activity = getActivity();
                 activity.getCurrentTabModel().closeTab(activity.getActivityTab());
             }
         });
@@ -328,7 +301,7 @@ public class ModalDialogTest {
     private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(
             final OnEvaluateJavaScriptResultHelper helper, String script) {
         helper.evaluateJavaScriptForTests(
-                mActivityTestRule.getActivity().getCurrentContentViewCore().getWebContents(),
+                getActivity().getCurrentContentViewCore().getWebContents(),
                 script);
         CriteriaHelper.pollInstrumentationThread(new JavascriptAppModalDialogShownCriteria(
                 "Could not spawn or locate a modal dialog.", true));
@@ -420,16 +393,16 @@ public class ModalDialogTest {
             int expectedTextResourceId, String readableName) throws ExecutionException {
         final Button[] buttons = getAlertDialogButtons(jsDialog.getDialogForTest());
         final Button button = buttons[buttonIndex];
-        Assert.assertNotNull("No '" + readableName + "' button in confirm dialog.", button);
-        Assert.assertEquals("'" + readableName + "' button is not visible.", View.VISIBLE,
+        assertNotNull("No '" + readableName + "' button in confirm dialog.", button);
+        assertEquals("'" + readableName + "' button is not visible.",
+                View.VISIBLE,
                 button.getVisibility());
-        Assert.assertEquals("'" + readableName + "' button has wrong text",
-                mActivityTestRule.getActivity().getResources().getString(expectedTextResourceId),
+        assertEquals("'" + readableName + "' button has wrong text",
+                getActivity().getResources().getString(expectedTextResourceId),
                 button.getText().toString());
     }
 
     private TestCallbackHelperContainer getActiveTabTestCallbackHelperContainer() {
-        return new TestCallbackHelperContainer(
-                mActivityTestRule.getActivity().getCurrentContentViewCore());
+        return new TestCallbackHelperContainer(getActivity().getCurrentContentViewCore());
     }
 }

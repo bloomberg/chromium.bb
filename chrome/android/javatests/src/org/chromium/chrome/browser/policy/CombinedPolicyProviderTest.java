@@ -6,56 +6,42 @@ package org.chromium.chrome.browser.policy;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.PolicyProvider;
 
 /** Instrumentation tests for {@link CombinedPolicyProvider} */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class CombinedPolicyProviderTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class CombinedPolicyProviderTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String DATA_URI = "data:text/plain;charset=utf-8;base64,dGVzdA==";
 
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    public CombinedPolicyProviderTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     /**
      * Checks that the {@link CombinedPolicyProvider} properly notifies tabs when incognito mode is
      * disabled.
      */
-    @Test
-    @Feature({"Policy"})
+    @Feature({"Policy" })
     @SmallTest
     @RetryOnFailure
     public void testTerminateIncognitoSon() throws InterruptedException {
         final boolean incognitoMode = true;
 
-        TabModel incognitoTabModel =
-                mActivityTestRule.getActivity().getTabModelSelector().getModel(incognitoMode);
-        mActivityTestRule.loadUrlInNewTab(DATA_URI, incognitoMode);
-        mActivityTestRule.loadUrlInNewTab(DATA_URI, incognitoMode);
-        Assert.assertEquals(2, incognitoTabModel.getCount());
+        TabModel incognitoTabModel = getActivity().getTabModelSelector().getModel(incognitoMode);
+        loadUrlInNewTab(DATA_URI, incognitoMode);
+        loadUrlInNewTab(DATA_URI, incognitoMode);
+        assertEquals(2, incognitoTabModel.getCount());
 
         final CombinedPolicyProvider provider = CombinedPolicyProvider.get();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -70,6 +56,6 @@ public class CombinedPolicyProviderTest {
             }
         });
 
-        Assert.assertEquals(0, incognitoTabModel.getCount());
+        assertEquals(0, incognitoTabModel.getCount());
     }
 }

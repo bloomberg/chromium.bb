@@ -8,24 +8,15 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.test.filters.MediumTest;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge.OnClearBrowsingDataListener;
 import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -41,14 +32,7 @@ import java.util.Map;
  * those backends that live in the Java code, it is not possible to test whether deletions were
  * successful in its own unit tests. This test can do so.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class BrowsingDataRemoverIntegrationTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private boolean mCallbackCalled;
 
     private class CallbackCriteria extends Criteria {
@@ -66,9 +50,13 @@ public class BrowsingDataRemoverIntegrationTest {
         }
     }
 
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    public BrowsingDataRemoverIntegrationTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     private void registerWebapp(final String webappId, final String webappUrl) throws Exception {
@@ -91,7 +79,6 @@ public class BrowsingDataRemoverIntegrationTest {
      * TODO(msramek): Expose more granular datatypes to the Java code, so we can directly test
      * BrowsingDataRemover::RemoveDataMask::REMOVE_WEBAPP_DATA instead of BrowsingDataType.COOKIES.
      */
-    @Test
     @MediumTest
     @RetryOnFailure
     public void testUnregisteringWebapps() throws Exception {
@@ -104,7 +91,7 @@ public class BrowsingDataRemoverIntegrationTest {
         for (final Map.Entry<String, String> app : apps.entrySet()) {
             registerWebapp(app.getKey(), app.getValue());
         }
-        Assert.assertEquals(apps.keySet(), WebappRegistry.getRegisteredWebappIdsForTesting());
+        assertEquals(apps.keySet(), WebappRegistry.getRegisteredWebappIdsForTesting());
 
         // Clear cookies and site data excluding the registrable domain "google.com".
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -128,7 +115,7 @@ public class BrowsingDataRemoverIntegrationTest {
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // The last two webapps should have been unregistered.
-        Assert.assertEquals(new HashSet<String>(Arrays.asList("webapp1")),
+        assertEquals(new HashSet<String>(Arrays.asList("webapp1")),
                 WebappRegistry.getRegisteredWebappIdsForTesting());
 
         // Clear cookies and site data with no url filter.
@@ -149,6 +136,6 @@ public class BrowsingDataRemoverIntegrationTest {
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // All webapps should have been unregistered.
-        Assert.assertTrue(WebappRegistry.getRegisteredWebappIdsForTesting().isEmpty());
+        assertTrue(WebappRegistry.getRegisteredWebappIdsForTesting().isEmpty());
     }
 }
