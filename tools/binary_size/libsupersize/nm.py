@@ -4,13 +4,17 @@
 
 """Functions that rely on parsing output of "nm" tool."""
 
+import atexit
 import collections
+import errno
 import logging
 import os
 import subprocess
 import sys
 
 import concurrent
+
+_active_subprocesses = None
 
 
 def CollectAliasesByAddress(elf_path, tool_prefix):
@@ -168,6 +172,11 @@ class _BulkObjectFileAnalyzerWorker(object):
     return self._result
 
 
+def _TerminateSubprocesses():
+  for proc in _active_subprocesses:
+    proc.kill()
+
+
 class _BulkObjectFileAnalyzerMaster(object):
   """Runs BulkObjectFileAnalyzer in a subprocess."""
 
@@ -177,11 +186,16 @@ class _BulkObjectFileAnalyzerMaster(object):
     self._output_directory = output_directory
 
   def _Spawn(self):
+    global _active_subprocesses
     log_level = str(logging.getLogger().getEffectiveLevel())
     args = [sys.executable, __file__, log_level, self._tool_prefix,
             self._output_directory]
     self._process = subprocess.Popen(
         args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    if _active_subprocesses is None:
+      _active_subprocesses = []
+      atexit.register(_TerminateSubprocesses)
+    _active_subprocesses.append(self._process)
 
   def AnalyzePaths(self, paths):
     if self._process is None:
@@ -195,6 +209,7 @@ class _BulkObjectFileAnalyzerMaster(object):
   def Close(self):
     assert not self._process.stdin.closed
     self._process.stdin.close()
+    _active_subprocesses.remove(self._process)
 
   def Get(self):
     assert self._process.stdin.closed
@@ -212,8 +227,9 @@ if concurrent.DISABLE_ASYNC:
 
 
 def _SubMain(log_level, tool_prefix, output_directory):
-  logging.basicConfig(level=int(log_level),
-                      format='%(levelname).1s %(relativeCreated)6d %(message)s')
+  logging.basicConfig(
+      level=int(log_level),
+      format='nm: %(levelname).1s %(relativeCreated)6d %(message)s')
   bulk_analyzer = _BulkObjectFileAnalyzerWorker(tool_prefix, output_directory)
   while True:
     payload_len = int(sys.stdin.read(8) or '0', 16)
@@ -226,9 +242,15 @@ def _SubMain(log_level, tool_prefix, output_directory):
   bulk_analyzer.Close()
   paths_by_name = bulk_analyzer.Get()
   encoded_keys, encoded_values = concurrent.EncodeDictOfLists(paths_by_name)
-  sys.stdout.write('%08x' % len(encoded_keys))
-  sys.stdout.write(encoded_keys)
-  sys.stdout.write(encoded_values)
+  try:
+    sys.stdout.write('%08x' % len(encoded_keys))
+    sys.stdout.write(encoded_keys)
+    sys.stdout.write(encoded_values)
+  except IOError, e:
+    # Parent process exited.
+    if e.errno == errno.EPIPE:
+      sys.exit(1)
+
   logging.debug('nm bulk subprocess finished.')
 
 

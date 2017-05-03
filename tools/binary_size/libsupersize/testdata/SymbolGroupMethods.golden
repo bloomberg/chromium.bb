@@ -1,85 +1,85 @@
 GroupByNamespace()
-Showing 10 symbols with total pss: 4036054 bytes
-.text=0 bytes    .rodata=0 bytes    other=3.85mb     total=3.85mb
+Showing 10 symbols with total pss: 44309900 bytes
+.text=0 bytes    .rodata=0 bytes    other=42.3mb     total=42.3mb
 Number of object files: 5
 
 First columns are: running total, address, pss
- 3245548 *@Group      3245548 {no path}
-             {global} (count=28)
- 4035476 *@Group      789928  {no path}
+43519394 *@Group      43519394 {no path}
+             {global} (count=33)
+44309322 *@Group      789928  {no path}
              chrome::mojom (count=2)
- 4035676 *@Group      200     third_party/icu/ucnv_ext.c
+44309522 *@Group      200     third_party/icu/ucnv_ext.c
              SaveHistogram (count=1)
- 4035836 *@Group      160     third_party/container.c
+44309682 *@Group      160     third_party/container.c
              base::android (count=3)
- 4035930 *@Group      94      third_party/container.c
+44309776 *@Group      94      third_party/container.c
              blink::PaintChunker (count=1)
- 4035986 *@Group      56      {no path}
+44309832 *@Group      56      {no path}
              blink::ContiguousContainerBase (count=3)
- 4036018 *@Group      32      third_party/container.c
+44309864 *@Group      32      third_party/container.c
              chrome::mojom::FilePatcher (count=1)
- 4036042 *@Group      24      base/page_allocator.cc
+44309888 *@Group      24      base/page_allocator.cc
              mojo (count=1)
- 4036050 *@Group      8       {no path}
+44309896 *@Group      8       {no path}
              google::protobuf::internal (count=2)
- 4036054 *@Group      4       third_party/paint.cc
+44309900 *@Group      4       third_party/paint.cc
              blink::CSSValueKeywordsHash::findValueImpl (count=1)
 GroupByNamespace(depth=1)
-Showing 7 symbols with total pss: 4036054 bytes
-.text=0 bytes    .rodata=0 bytes    other=3.85mb     total=3.85mb
+Showing 7 symbols with total pss: 44309900 bytes
+.text=0 bytes    .rodata=0 bytes    other=42.3mb     total=42.3mb
 Number of object files: 4
 
 First columns are: running total, address, pss
- 3245548 *@Group      3245548 {no path}
-             {global} (count=28)
- 4035508 *@Group      789960  {no path}
+43519394 *@Group      43519394 {no path}
+             {global} (count=33)
+44309354 *@Group      789960  {no path}
              chrome (count=3)
- 4035708 *@Group      200     third_party/icu/ucnv_ext.c
+44309554 *@Group      200     third_party/icu/ucnv_ext.c
              SaveHistogram (count=1)
- 4035862 *@Group      154     {no path}
+44309708 *@Group      154     {no path}
              blink (count=5)
- 4036022 *@Group      160     third_party/container.c
+44309868 *@Group      160     third_party/container.c
              base (count=3)
- 4036046 *@Group      24      base/page_allocator.cc
+44309892 *@Group      24      base/page_allocator.cc
              mojo (count=1)
- 4036054 *@Group      8       {no path}
+44309900 *@Group      8       {no path}
              google (count=2)
 GroupByNamespace(depth=1, fallback=None)
-Showing 7 symbols with total pss: 4036054 bytes
-.text=0 bytes    .rodata=0 bytes    other=3.85mb     total=3.85mb
+Showing 7 symbols with total pss: 44309900 bytes
+.text=0 bytes    .rodata=0 bytes    other=42.3mb     total=42.3mb
 Number of object files: 4
 
 First columns are: running total, address, pss
- 3245548 *@Group      3245548 {no path}
- 4035508 *@Group      789960  {no path}
+43519394 *@Group      43519394 {no path}
+44309354 *@Group      789960  {no path}
              chrome (count=3)
- 4035708 *@Group      200     third_party/icu/ucnv_ext.c
+44309554 *@Group      200     third_party/icu/ucnv_ext.c
              SaveHistogram (count=1)
- 4035862 *@Group      154     {no path}
+44309708 *@Group      154     {no path}
              blink (count=5)
- 4036022 *@Group      160     third_party/container.c
+44309868 *@Group      160     third_party/container.c
              base (count=3)
- 4036046 *@Group      24      base/page_allocator.cc
+44309892 *@Group      24      base/page_allocator.cc
              mojo (count=1)
- 4036054 *@Group      8       {no path}
+44309900 *@Group      8       {no path}
              google (count=2)
 GroupByNamespace(depth=1, min_count=2)
-Showing 7 symbols with total pss: 4036054 bytes
-.text=0 bytes    .rodata=0 bytes    other=3.85mb     total=3.85mb
+Showing 7 symbols with total pss: 44309900 bytes
+.text=0 bytes    .rodata=0 bytes    other=42.3mb     total=42.3mb
 Number of object files: 4
 
 First columns are: running total, address, pss
- 3245548 *@Group      3245548 {no path}
-             {global} (count=28)
- 4035508 *@Group      789960  {no path}
+43519394 *@Group      43519394 {no path}
+             {global} (count=33)
+44309354 *@Group      789960  {no path}
              chrome (count=3)
- 4035662 *@Group      154     {no path}
+44309508 *@Group      154     {no path}
              blink (count=5)
- 4035822 *@Group      160     third_party/container.c
+44309668 *@Group      160     third_party/container.c
              base (count=3)
- 4035846 d@0x2cd8538  24      base/page_allocator.cc
+44309692 d@0x2cd8538  24      base/page_allocator.cc
              mojo::MessageReceiver [vtable]
- 4035854 *@Group      8       {no path}
+44309700 *@Group      8       {no path}
              google (count=2)
- 4035854 b@0x2dffe80  200     third_party/icu/ucnv_ext.c
+44309700 b@0x2dffe80  200     third_party/icu/ucnv_ext.c
              SaveHistogram::atomic_histogram_pointer

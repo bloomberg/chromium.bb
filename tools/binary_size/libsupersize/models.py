@@ -360,7 +360,7 @@ class SymbolGroup(BaseSymbol):
   def pss(self):
     if self._pss is None:
       if self.IsBss():
-        self._pss = self.size
+        self._pss = float(self.size)
       else:
         self._pss = sum(s.pss for s in self)
     return self._pss

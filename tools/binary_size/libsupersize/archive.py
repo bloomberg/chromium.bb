@@ -437,6 +437,7 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
       bulk_analyzer = nm.BulkObjectFileAnalyzer(tool_prefix, output_directory)
       bulk_analyzer.AnalyzePaths(elf_object_paths)
 
+  logging.info('Parsing Linker Map')
   with _OpenMaybeGz(map_path) as map_file:
     section_sizes, raw_symbols = (
         linker_map_parser.MapFileParser().Parse(map_file))
