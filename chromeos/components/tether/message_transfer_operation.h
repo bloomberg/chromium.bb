@@ -76,6 +76,7 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
 
  private:
   friend class ConnectTetheringOperationTest;
+  friend class DisconnectTetheringOperationTest;
   friend class HostScannerOperationTest;
   friend class MessageTransferOperationTest;
 
