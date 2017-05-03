@@ -28,11 +28,6 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
     protected final MinidumpUploaderDelegate mDelegate;
 
     /**
-     * Manages the set of pending and failed local minidump files.
-     */
-    private final CrashFileManager mFileManager;
-
-    /**
      * Whether the current job has been canceled. This is written to from the main thread, and read
      * from the worker thread.
      */
@@ -49,10 +44,6 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
     @VisibleForTesting
     public MinidumpUploaderImpl(MinidumpUploaderDelegate delegate) {
         mDelegate = delegate;
-        mFileManager = createCrashFileManager(mDelegate.getCrashParentDir());
-        if (!mFileManager.ensureCrashDirExists()) {
-            Log.e(TAG, "Crash directory doesn't exist!");
-        }
     }
 
     /**
@@ -89,12 +80,29 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
 
         @Override
         public void run() {
-            File[] minidumps = mFileManager.getAllMinidumpFiles(MAX_UPLOAD_TRIES_ALLOWED);
+            // If the directory in where we store minidumps doesn't exist - then early out because
+            // there are no minidumps to upload.
+            File crashParentDir = mDelegate.getCrashParentDir();
+            if (!crashParentDir.isDirectory()) {
+                Log.e(TAG, "Parent crash directory doesn't exist!");
+                mUploadsFinishedCallback.uploadsFinished(false /* reschedule */);
+                return;
+            }
+
+            final CrashFileManager fileManager = createCrashFileManager(crashParentDir);
+            if (!fileManager.crashDirectoryExists()) {
+                Log.e(TAG, "Crash directory doesn't exist!");
+                mUploadsFinishedCallback.uploadsFinished(false /* reschedule */);
+                return;
+            }
+
+            File[] minidumps = fileManager.getAllMinidumpFiles(MAX_UPLOAD_TRIES_ALLOWED);
+
             Log.i(TAG, "Attempting to upload %d minidumps.", minidumps.length);
             for (File minidump : minidumps) {
                 Log.i(TAG, "Attempting to upload " + minidump.getName());
-                MinidumpUploadCallable uploadCallable = createMinidumpUploadCallable(
-                        minidump, mFileManager.getCrashUploadLogFile());
+                MinidumpUploadCallable uploadCallable =
+                        createMinidumpUploadCallable(minidump, fileManager.getCrashUploadLogFile());
                 int uploadResult = uploadCallable.call();
 
                 // Record metrics about the upload.
@@ -137,11 +145,11 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
 
             // Clean out old/uploaded minidumps. Note that this clean-up method is more strict than
             // our copying mechanism in the sense that it keeps fewer minidumps.
-            mFileManager.cleanOutAllNonFreshMinidumpFiles();
+            fileManager.cleanOutAllNonFreshMinidumpFiles();
 
             // Reschedule if there are still minidumps to upload.
             boolean reschedule =
-                    mFileManager.getAllMinidumpFiles(MAX_UPLOAD_TRIES_ALLOWED).length > 0;
+                    fileManager.getAllMinidumpFiles(MAX_UPLOAD_TRIES_ALLOWED).length > 0;
             mUploadsFinishedCallback.uploadsFinished(reschedule);
         }
     }
@@ -182,8 +190,13 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
     public boolean cancelUploads() {
         mCancelUpload = true;
 
-        // Reschedule if there are still minidumps to upload.
-        return mFileManager.getAllMinidumpFiles(MAX_UPLOAD_TRIES_ALLOWED).length > 0;
+        // We always return true here to reschedule the job even in cases where the are no minidumps
+        // left to upload. We choose to allow this minor inconsistency to avoid blocking the
+        // UI-thread on IO operations. The unnecessary rescheduling only happens if we cancel the
+        // job after it has attempted to upload all minidumps but before the job finishes.
+        // If a job is rescheduled unnecessarily, the next time it starts it will have no minidumps
+        // to upload and thus finish without yet another rescheduling.
+        return true;
     }
 
     @VisibleForTesting

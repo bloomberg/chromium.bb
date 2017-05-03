@@ -296,11 +296,18 @@ public class CrashFileManager {
      * Create the crash directory for this file manager unless it exists already.
      * @return true iff the crash directory exists when this method returns.
      */
-    public boolean ensureCrashDirExists() {
+    private boolean ensureCrashDirExists() {
         File crashDir = getCrashDirectory();
         // Call mkdir before isDirectory to ensure that if another thread created the directory
         // just before the call to mkdir, the current thread fails mkdir, but passes isDirectory.
         return crashDir.mkdir() || crashDir.isDirectory();
+    }
+
+    /**
+     * @return whether the crash directory already exists.
+     */
+    public boolean crashDirectoryExists() {
+        return getCrashDirectory().isDirectory();
     }
 
     /**
