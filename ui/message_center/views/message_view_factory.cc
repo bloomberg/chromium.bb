@@ -56,7 +56,7 @@ MessageView* MessageViewFactory::Create(MessageCenterController* controller,
   }
 #endif  // OS_WIN
 
-  notification_view->CreateShadowBorder();
+  notification_view->SetIsNested();
   return notification_view;
 }
 
