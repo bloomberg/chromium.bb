@@ -39,6 +39,9 @@ TEST_F(PaintLayerCompositorTest, AdvancingToCompositingInputsClean) {
   EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
             GetDocument().Lifecycle().GetState());
   EXPECT_FALSE(box_layer->NeedsCompositingInputsUpdate());
+
+  GetDocument().View()->SetNeedsLayout();
+  EXPECT_TRUE(GetDocument().View()->NeedsLayout());
 }
 
 TEST_F(PaintLayerCompositorTest,
