@@ -59,19 +59,17 @@ namespace {
 
 // Expose the |backing_pref_store| through the prefs service.
 scoped_refptr<::PrefStore> CreateRegisteredPrefStore(
-    service_manager::Connector* connector,
+    prefs::mojom::PrefStoreRegistry* registry,
     scoped_refptr<::PrefStore> backing_pref_store,
     PrefValueStore::PrefStoreType type) {
   // If we're testing or if the prefs service feature flag is off we don't
   // register.
-  if (!connector || !backing_pref_store)
+  if (!registry || !backing_pref_store)
     return backing_pref_store;
 
-  prefs::mojom::PrefStoreRegistryPtr registry_ptr;
-  connector->BindInterface(prefs::mojom::kServiceName, &registry_ptr);
   return make_scoped_refptr(new prefs::PrefStoreAdapter(
-      backing_pref_store, prefs::PrefStoreImpl::Create(
-                              registry_ptr.get(), backing_pref_store, type)));
+      backing_pref_store,
+      prefs::PrefStoreImpl::Create(registry, backing_pref_store, type)));
 }
 
 }  // namespace
@@ -82,19 +80,23 @@ std::unique_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
   TRACE_EVENT0("browser", "PrefServiceSyncableFactory::CreateSyncable");
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
 
+  prefs::mojom::PrefStoreRegistryPtr registry;
+  if (connector)
+    connector->BindInterface(prefs::mojom::kServiceName, &registry);
+
   // Expose all read-only stores through the prefs service.
-  auto managed = CreateRegisteredPrefStore(connector, managed_prefs_,
+  auto managed = CreateRegisteredPrefStore(registry.get(), managed_prefs_,
                                            PrefValueStore::MANAGED_STORE);
-  auto supervised = CreateRegisteredPrefStore(
-      connector, supervised_user_prefs_, PrefValueStore::SUPERVISED_USER_STORE);
-  auto extension = CreateRegisteredPrefStore(connector, extension_prefs_,
+  auto supervised =
+      CreateRegisteredPrefStore(registry.get(), supervised_user_prefs_,
+                                PrefValueStore::SUPERVISED_USER_STORE);
+  auto extension = CreateRegisteredPrefStore(registry.get(), extension_prefs_,
                                              PrefValueStore::EXTENSION_STORE);
   auto command_line = CreateRegisteredPrefStore(
-      connector, command_line_prefs_, PrefValueStore::COMMAND_LINE_STORE);
+      registry.get(), command_line_prefs_, PrefValueStore::COMMAND_LINE_STORE);
   auto recommended = CreateRegisteredPrefStore(
-      connector, recommended_prefs_, PrefValueStore::RECOMMENDED_STORE);
+      registry.get(), recommended_prefs_, PrefValueStore::RECOMMENDED_STORE);
 
-  // TODO(sammc): Register Mojo user pref store once implemented.
   std::unique_ptr<PrefServiceSyncable> pref_service(new PrefServiceSyncable(
       pref_notifier,
       new PrefValueStore(managed.get(), supervised.get(), extension.get(),
