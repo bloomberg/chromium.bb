@@ -519,10 +519,8 @@ void FakeBluetoothDeviceClient::ConnectProfile(
   }
 
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .MayBlock(),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&SimulatedProfileSocket, fds[0]));
 
   base::ScopedFD fd(fds[1]);

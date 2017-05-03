@@ -66,11 +66,8 @@ std::unique_ptr<UsbService> UsbService::Create(
 scoped_refptr<base::SequencedTaskRunner>
 UsbService::CreateBlockingTaskRunner() {
   return base::CreateSequencedTaskRunnerWithTraits(
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::USER_VISIBLE)
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 }
 
 UsbService::~UsbService() {

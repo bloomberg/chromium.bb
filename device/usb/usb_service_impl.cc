@@ -225,11 +225,8 @@ UsbServiceImpl::UsbServiceImpl()
       weak_factory_(this) {
   base::PostTaskWithTraits(
       FROM_HERE,
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::USER_VISIBLE)
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&InitializeUsbContextOnBlockingThread, task_runner(),
                  base::Bind(&UsbServiceImpl::OnUsbContext,
                             weak_factory_.GetWeakPtr())));
@@ -329,17 +326,13 @@ void UsbServiceImpl::RefreshDevices() {
     pending_path_enumerations_.pop();
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::USER_VISIBLE)
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
-      base::Bind(&GetDeviceListOnBlockingThread, device_path, context_,
-                 task_runner(),
-                 base::Bind(&UsbServiceImpl::OnDeviceList,
-                            weak_factory_.GetWeakPtr())));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                           base::Bind(&GetDeviceListOnBlockingThread,
+                                      device_path, context_, task_runner(),
+                                      base::Bind(&UsbServiceImpl::OnDeviceList,
+                                                 weak_factory_.GetWeakPtr())));
 }
 
 void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
