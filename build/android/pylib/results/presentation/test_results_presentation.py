@@ -117,6 +117,8 @@ def code_search(test, cs_base_url):
 
 def status_class(status):
   """Returns HTML class for test status."""
+  if not status:
+    return 'failure unknwon'
   status = status.lower()
   if status not in ('success', 'skipped'):
     return 'failure %s' % status
@@ -151,7 +153,8 @@ def create_test_table(results_dict, cs_base_url):
         test_run = []
 
       test_run.extend([
-          cell(data=result['status'],             # status
+          cell(data=result['status'] or 'UNKNOWN',
+                                                  # status
                html_class=('center %s' %
                   status_class(result['status']))),
           cell(data=result['elapsed_time_ms']),   # elapsed_time_ms
