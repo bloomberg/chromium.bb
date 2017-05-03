@@ -182,7 +182,6 @@ void SearchIPCRouter::FocusOmnibox(int page_seq_no, OmniboxFocusState state) {
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessFocusOmnibox(is_active_tab_))
     return;
 
@@ -193,7 +192,6 @@ void SearchIPCRouter::DeleteMostVisitedItem(int page_seq_no, const GURL& url) {
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessDeleteMostVisitedItem())
     return;
 
@@ -205,7 +203,6 @@ void SearchIPCRouter::UndoMostVisitedDeletion(int page_seq_no,
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessUndoMostVisitedDeletion())
     return;
 
@@ -216,7 +213,6 @@ void SearchIPCRouter::UndoAllMostVisitedDeletions(int page_seq_no) {
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessUndoAllMostVisitedDeletions())
     return;
 
@@ -229,7 +225,6 @@ void SearchIPCRouter::LogEvent(int page_seq_no,
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessLogEvent())
     return;
 
@@ -244,7 +239,6 @@ void SearchIPCRouter::LogMostVisitedImpression(
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   // Logging impressions is controlled by the same policy as logging events.
   if (!policy_->ShouldProcessLogEvent())
     return;
@@ -260,7 +254,6 @@ void SearchIPCRouter::LogMostVisitedNavigation(
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   // Logging navigations is controlled by the same policy as logging events.
   if (!policy_->ShouldProcessLogEvent())
     return;
@@ -273,7 +266,6 @@ void SearchIPCRouter::PasteAndOpenDropdown(int page_seq_no,
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessPasteIntoOmnibox(is_active_tab_))
     return;
 
@@ -285,7 +277,6 @@ void SearchIPCRouter::ChromeIdentityCheck(int page_seq_no,
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessChromeIdentityCheck())
     return;
 
@@ -296,7 +287,6 @@ void SearchIPCRouter::HistorySyncCheck(int page_seq_no) {
   if (page_seq_no != commit_counter_)
     return;
 
-  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessHistorySyncCheck())
     return;
 

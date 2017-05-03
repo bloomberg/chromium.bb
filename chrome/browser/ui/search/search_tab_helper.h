@@ -38,10 +38,9 @@ class SearchIPCRouterTest;
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
 // search UI model.
 //
-// When the page is finished loading, SearchTabHelper determines the instant
-// support for the page. When a navigation entry is committed (except for
-// in-page navigations), SearchTabHelper resets the instant support state to
-// INSTANT_SUPPORT_UNKNOWN and cause support to be determined again.
+// When a navigation is committed and when the page is finished loading,
+// SearchTabHelper determines the instant support for the page, i.e. whether
+// the page is rendered in the instant process.
 class SearchTabHelper : public content::WebContentsObserver,
                         public content::WebContentsUserData<SearchTabHelper>,
                         public InstantServiceObserver,
@@ -134,7 +133,6 @@ class SearchTabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& load_details) override;
 
   // Overridden from SearchIPCRouter::Delegate:
-  void OnInstantSupportDetermined(bool supports_instant) override;
   void FocusOmnibox(OmniboxFocusState state) override;
   void OnDeleteMostVisitedItem(const GURL& url) override;
   void OnUndoMostVisitedDeletion(const GURL& url) override;

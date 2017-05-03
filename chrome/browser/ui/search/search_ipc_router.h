@@ -37,11 +37,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // the page.
   class Delegate {
    public:
-    // Called upon determination of Instant API support in response to the page
-    // load event.
-    // TODO(treib): Remove this. crbug.com/627747
-    virtual void OnInstantSupportDetermined(bool supports_instant) = 0;
-
     // Called when the page wants the omnibox to be focused. |state| specifies
     // the omnibox focus state.
     virtual void FocusOmnibox(OmniboxFocusState state) = 0;
