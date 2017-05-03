@@ -17,13 +17,13 @@ function test()
 
     function checkReverseMapping(compiledLineNumber, compiledColumnNumber, sourceURL, sourceLineNumber, mapping)
     {
-        var mappings = mapping.mappingsForLine(sourceURL, sourceLineNumber);
-        if (!mappings.length) {
+        var entry = mapping.firstSourceLineMapping(sourceURL, sourceLineNumber);
+        if (!entry) {
             InspectorTest.addResult("source line " + sourceLineNumber + " has no mappings.");
             return;
         }
-        InspectorTest.addResult(compiledLineNumber + " === " + mappings[0].lineNumber);
-        InspectorTest.addResult(compiledColumnNumber + " === " + mappings[0].columnNumber);
+        InspectorTest.addResult(compiledLineNumber + " === " + entry.lineNumber);
+        InspectorTest.addResult(compiledColumnNumber + " === " + entry.columnNumber);
     }
 
     InspectorTest.runTestSuite([
