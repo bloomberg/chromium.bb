@@ -18,6 +18,11 @@ public interface PastePopupMenu {
         void paste();
 
         /**
+         * Called to initiate a paste as plain text after the popup has been tapped.
+         */
+        void pasteAsPlainText();
+
+        /**
          * @return Whether clipboard is nonempty.
          */
         boolean canPaste();
@@ -31,6 +36,11 @@ public interface PastePopupMenu {
          * @return Whether the select all option should be shown.
          */
         boolean canSelectAll();
+
+        /**
+         * @return Whether paste as plain text is needed.
+         */
+        boolean canPasteAsPlainText();
     }
 
     /**

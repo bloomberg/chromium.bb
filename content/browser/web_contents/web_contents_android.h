@@ -64,6 +64,8 @@ class CONTENT_EXPORT WebContentsAndroid
   void Cut(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void Copy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void Paste(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void PasteAsPlainText(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
   void Replace(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
                const base::android::JavaParamRef<jstring>& jstr);

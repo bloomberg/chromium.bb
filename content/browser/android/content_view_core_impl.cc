@@ -594,11 +594,15 @@ bool ContentViewCoreImpl::ShowPastePopup(const ContextMenuParams& params) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
+
   const bool can_select_all =
       !!(params.edit_flags & WebContextMenuData::kCanSelectAll);
+  const bool can_edit_richly =
+      !!(params.edit_flags & blink::WebContextMenuData::kCanEditRichly);
+
   Java_ContentViewCore_showPastePopup(env, obj, params.selection_start.x(),
                                       params.selection_start.y(),
-                                      can_select_all);
+                                      can_select_all, can_edit_richly);
   return true;
 }
 

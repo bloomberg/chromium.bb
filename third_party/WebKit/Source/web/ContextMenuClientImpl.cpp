@@ -155,6 +155,8 @@ int ContextMenuClientImpl::ComputeEditFlags(Document& selected_document,
     edit_flags |= WebContextMenuData::kCanPaste;
   if (editor.CanDelete())
     edit_flags |= WebContextMenuData::kCanDelete;
+  if (editor.CanEditRichly())
+    edit_flags |= WebContextMenuData::kCanEditRichly;
   if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
     edit_flags |= WebContextMenuData::kCanSelectAll;
   return edit_flags;

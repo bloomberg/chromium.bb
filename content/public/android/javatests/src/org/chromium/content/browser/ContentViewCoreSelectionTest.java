@@ -17,6 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -50,6 +51,7 @@ public class ContentViewCoreSelectionTest {
             + "<br/><p><span id=\"plain_text_1\">SamplePlainTextOne</span></p>"
             + "<br/><p><span id=\"plain_text_2\">SamplePlainTextTwo</span></p>"
             + "<br/><input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
+            + "<br/><div id=\"rich_div\" contentEditable=\"true\" >Rich Editor</div>"
             + "</form></body></html>");
     private ContentViewCore mContentViewCore;
     private SelectionPopupController mSelectionPopupController;
@@ -240,6 +242,54 @@ public class ContentViewCoreSelectionTest {
         waitForPastePopupStatus(true);
         waitForInsertion(true);
         Assert.assertTrue(mSelectionPopupController.canSelectAll());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupPasteAsPlainTextPlainTextRichEditor() throws Throwable {
+        if (!BuildInfo.isAtLeastO()) return;
+        copyStringToClipboard("SampleTextToCopy");
+        DOMUtils.longPressNode(mContentViewCore, "rich_div");
+        waitForPastePopupStatus(true);
+        waitForInsertion(true);
+        Assert.assertFalse(mSelectionPopupController.canPasteAsPlainText());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupPasteAsPlainTextPlainTextNormalEditor() throws Throwable {
+        if (!BuildInfo.isAtLeastO()) return;
+        copyStringToClipboard("SampleTextToCopy");
+        DOMUtils.longPressNode(mContentViewCore, "empty_input_text");
+        waitForPastePopupStatus(true);
+        waitForInsertion(true);
+        Assert.assertFalse(mSelectionPopupController.canPasteAsPlainText());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupPasteAsPlainTextHtmlTextRichEditor() throws Throwable {
+        if (!BuildInfo.isAtLeastO()) return;
+        copyHtmlToClipboard("SampleTextToCopy", "<span style=\"color: red;\">HTML</span>");
+        DOMUtils.longPressNode(mContentViewCore, "rich_div");
+        waitForPastePopupStatus(true);
+        waitForInsertion(true);
+        Assert.assertTrue(mSelectionPopupController.canPasteAsPlainText());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupPasteAsPlainTextHtmlTextNormalEditor() throws Throwable {
+        if (!BuildInfo.isAtLeastO()) return;
+        copyHtmlToClipboard("SampleTextToCopy", "<span style=\"color: red;\">HTML</span>");
+        DOMUtils.longPressNode(mContentViewCore, "empty_input_text");
+        waitForPastePopupStatus(true);
+        waitForInsertion(true);
+        Assert.assertFalse(mSelectionPopupController.canPasteAsPlainText());
     }
 
     /*
@@ -785,6 +835,20 @@ public class ContentViewCoreSelectionTest {
                         (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
                                 Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("test", string);
+                clipboardManager.setPrimaryClip(clip);
+            }
+        });
+    }
+
+    private void copyHtmlToClipboard(final String plainText, final String htmlText)
+            throws Throwable {
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ClipboardManager clipboardManager =
+                        (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
+                                Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newHtmlText("html", plainText, htmlText);
                 clipboardManager.setPrimaryClip(clip);
             }
         });

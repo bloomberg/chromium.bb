@@ -109,6 +109,15 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
             SelectionPopupController.initializeMenu(mContext, mode, menu);
             if (!mDelegate.canPaste()) menu.removeItem(R.id.select_action_menu_paste);
             if (!mDelegate.canSelectAll()) menu.removeItem(R.id.select_action_menu_select_all);
+            if (!mDelegate.canPasteAsPlainText()) {
+                menu.removeItem(R.id.select_action_menu_paste_as_plain_text);
+            }
+            // TODO(ctzsm): Remove runtime title set after O SDK rolls.
+            MenuItem item = menu.findItem(R.id.select_action_menu_paste_as_plain_text);
+            if (item != null) {
+                item.setTitle(mContext.getResources().getIdentifier(
+                        "paste_as_plain_text", "string", "android"));
+            }
             menu.removeItem(R.id.select_action_menu_cut);
             menu.removeItem(R.id.select_action_menu_copy);
             menu.removeItem(R.id.select_action_menu_share);
@@ -122,11 +131,16 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            if (item.getItemId() == R.id.select_action_menu_paste) {
+            int id = item.getItemId();
+            if (id == R.id.select_action_menu_paste) {
                 mDelegate.paste();
                 mode.finish();
             }
-            if (item.getItemId() == R.id.select_action_menu_select_all) {
+            if (id == R.id.select_action_menu_paste_as_plain_text) {
+                mDelegate.pasteAsPlainText();
+                mode.finish();
+            }
+            if (id == R.id.select_action_menu_select_all) {
                 mDelegate.selectAll();
                 mode.finish();
             }
