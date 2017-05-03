@@ -19,7 +19,8 @@ namespace {
 
 // Translates DevTools log level strings into Log::Level.
 bool ConsoleLevelToLogLevel(const std::string& name, Log::Level *out_level) {
-  if (name == "debug")
+  // TODO(gmanikpure): Delete debug level once we stop supporting Chrome 57.
+  if (name =="debug" || name == "verbose")
     *out_level = Log::kDebug;
   else if (name == "log" || name == "info")
     *out_level = Log::kInfo;
