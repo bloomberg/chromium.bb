@@ -309,6 +309,14 @@ public class WebappActivity extends FullScreenActivity {
         }
     }
 
+    @Override
+    protected void recordIntentToCreationTime(long timeMs) {
+        super.recordIntentToCreationTime(timeMs);
+
+        RecordHistogram.recordTimesHistogram(
+                "MobileStartup.IntentToCreationTime.WebApp", timeMs, TimeUnit.MILLISECONDS);
+    }
+
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
         updateStorage(storage);
     }
