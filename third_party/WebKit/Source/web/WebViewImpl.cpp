@@ -3998,8 +3998,13 @@ void WebViewImpl::InitializeLayerTreeView() {
     dev_tools->LayerTreeViewChanged(layer_tree_view_);
 
   page_->GetSettings().SetAcceleratedCompositingEnabled(layer_tree_view_);
-  if (layer_tree_view_)
+  if (layer_tree_view_) {
     page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
+    // We don't yet have a page loaded at this point of the initialization of
+    // WebViewImpl, so don't allow cc to commit any frames Blink might
+    // try to create in the meantime.
+    layer_tree_view_->SetDeferCommits(true);
+  }
 
   // FIXME: only unittests, click to play, Android printing, and printing (for
   // headers and footers) make this assert necessary. We should make them not
