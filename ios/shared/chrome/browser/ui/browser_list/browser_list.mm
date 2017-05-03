@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser_list_observer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -58,12 +59,25 @@ int BrowserList::GetIndexOfBrowser(const Browser* browser) const {
 
 Browser* BrowserList::CreateNewBrowser() {
   browsers_.push_back(base::MakeUnique<Browser>(browser_state_));
-  return browsers_.back().get();
+  Browser* browser_created = browsers_.back().get();
+  for (BrowserListObserver& observer : observers_)
+    observer.OnBrowserCreated(this, browser_created);
+  return browser_created;
 }
 
 void BrowserList::CloseBrowserAtIndex(int index) {
-  DCHECK(ContainsIndex(index));
+  Browser* browser_removed = GetBrowserAtIndex(index);
+  for (BrowserListObserver& observer : observers_)
+    observer.OnBrowserRemoved(this, browser_removed);
   browsers_.erase(browsers_.begin() + index);
+}
+
+void BrowserList::AddObserver(BrowserListObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void BrowserList::RemoveObserver(BrowserListObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 const int BrowserList::kInvalidIndex;

@@ -8,6 +8,8 @@ source_set("browser_list") {
     "browser.mm",
     "browser_list.h",
     "browser_list.mm",
+    "browser_list_observer.h",
+    "browser_list_observer.mm",
     "browser_web_state_list_delegate.h",
     "browser_web_state_list_delegate.mm",
   ]

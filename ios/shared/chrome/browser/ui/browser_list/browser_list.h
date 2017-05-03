@@ -9,8 +9,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "ios/shared/chrome/browser/ui/browser_list/browser.h"
+
+class BrowserListObserver;
 
 namespace ios {
 class ChromeBrowserState;
@@ -42,12 +45,17 @@ class BrowserList : public base::SupportsUserData::Data {
   // Closes the Browser at the specified index.
   void CloseBrowserAtIndex(int index);
 
+  // Adds/removes |observer| from the list of observers.
+  void AddObserver(BrowserListObserver* observer);
+  void RemoveObserver(BrowserListObserver* observer);
+
   // Invalid index.
   static const int kInvalidIndex = -1;
 
  private:
   ios::ChromeBrowserState* browser_state_;
   std::vector<std::unique_ptr<Browser>> browsers_;
+  base::ObserverList<BrowserListObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserList);
 };
