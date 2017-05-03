@@ -42,3 +42,25 @@ source_set("tab_ui") {
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "tab_coordinator_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":tab",
+    ":tab_ui",
+    "//base",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/shared/chrome/browser/ui/coordinators",
+    "//ios/shared/chrome/browser/ui/toolbar:test_support",
+    "//ios/web:test_support",
+    "//testing/gtest",
+  ]
+}
