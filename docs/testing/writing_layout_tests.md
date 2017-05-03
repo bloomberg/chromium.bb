@@ -93,13 +93,13 @@ alternatives, which will be described in future sections, result in slower and
 less reliable tests.
 
 All new JavaScript tests should be written using the
-[testharness.js](https://github.com/w3c/testharness.js/) testing framework. This
-framework is used by the tests in the
+[testharness.js](https://github.com/w3c/web-platform-tests/tree/master/resources)
+testing framework. This framework is used by the tests in the
 [web-platform-tests](https://github.com/w3c/web-platform-tests) repository,
 which is shared with all the other browser vendors, so `testharness.js` tests
 are more accessible to browser developers.
 
-See the [API documentation](https://github.com/w3c/testharness.js/blob/master/docs/api.md)
+See the [API documentation](http://web-platform-tests.org/writing-tests/testharness-api.html)
 for a thorough introduction to `testharness.js`.
 
 Layout tests should follow the recommendations of the above documentation.
