@@ -369,7 +369,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Tests that signing in, tapping the Settings link on the confirmation screen
 // and closing the Settings correctly leaves the user signed in without any
 // Settings shown.
-- (void)testSignInOpenSettings {
+// TODO(crbug.com/718023): Re-enable test.
+- (void)testSignInOpenSettings_DISABLED {
   ChromeIdentity* identity = GetFakeIdentity1();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
