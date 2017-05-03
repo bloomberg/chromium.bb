@@ -105,6 +105,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -126,6 +127,35 @@ using SyncLoadResultCallback =
     content::ResourceDispatcherHostImpl::SyncLoadResultCallback;
 
 // ----------------------------------------------------------------------------
+
+namespace {
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("resource_dispather_host", R"(
+        semantics {
+          sender: "Resource Dispatcher Host"
+          description:
+            "Navigation-initiated request or renderer process initiated "
+            "request, which includes all resources for normal page loads, "
+            "chrome URLs, resources for installed extensions, as well as "
+            "downloads."
+          trigger:
+            "Navigating to a URL or downloading a file.  A webpage, "
+            "ServiceWorker, chrome:// page, or extension may also initiate "
+            "requests in the background."
+          data: "Anything the initiator wants to send."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user or per-app cookie store"
+          setting: "These requests cannot be disabled."
+          policy_exception_justification:
+            "Not implemented. Without these requests, Chrome will be unable to "
+            "load any webpage."
+        })");
+
+}  // namespace
 
 namespace content {
 
@@ -1207,7 +1237,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   std::unique_ptr<net::URLRequest> new_request = request_context->CreateRequest(
       is_navigation_stream_request ? request_data.resource_body_stream_url
                                    : request_data.url,
-      request_data.priority, nullptr);
+      request_data.priority, nullptr, kTrafficAnnotation);
 
   // Log that this request is a service worker navigation preload request here,
   // since navigation preload machinery has no access to netlog.
@@ -1987,7 +2017,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   std::unique_ptr<net::URLRequest> new_request;
   new_request = request_context->CreateRequest(
-      info.common_params.url, net::HIGHEST, nullptr);
+      info.common_params.url, net::HIGHEST, nullptr, kTrafficAnnotation);
 
   new_request->set_method(info.common_params.method);
   new_request->set_first_party_for_cookies(
