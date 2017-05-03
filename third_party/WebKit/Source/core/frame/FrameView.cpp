@@ -3136,17 +3136,13 @@ void FrameView::UpdateLifecyclePhasesInternal(
         });
       }
 
-      if (target_state == DocumentLifecycle::kCompositingInputsClean) {
-        DCHECK_EQ(Lifecycle().GetState(),
-                  DocumentLifecycle::kCompositingInputsClean);
-        return;
+      if (target_state >= DocumentLifecycle::kCompositingClean) {
+        ScrollContentsIfNeededRecursive();
+
+        frame_->GetPage()
+            ->GlobalRootScrollerController()
+            .DidUpdateCompositing();
       }
-
-      ScrollContentsIfNeededRecursive();
-      DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ||
-             Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
-
-      frame_->GetPage()->GlobalRootScrollerController().DidUpdateCompositing();
 
       if (target_state >= DocumentLifecycle::kPrePaintClean) {
         if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
@@ -3166,12 +3162,11 @@ void FrameView::UpdateLifecyclePhasesInternal(
             ->GetChromeClient()
             .UpdateEventRectsForSubframeIfNecessary(&frame_->LocalFrameRoot());
         UpdateCompositedSelectionIfNeeded();
-      }
 
-      // TODO(pdr): prePaint should be under the "Paint" devtools timeline step
-      // for slimming paint v2.
-      if (target_state >= DocumentLifecycle::kPrePaintClean)
+        // TODO(pdr): prePaint should be under the "Paint" devtools timeline
+        // step for slimming paint v2.
         PrePaint();
+      }
     }
 
     if (target_state == DocumentLifecycle::kPaintClean) {
