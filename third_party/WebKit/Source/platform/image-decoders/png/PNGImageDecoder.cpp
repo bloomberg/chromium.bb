@@ -47,7 +47,7 @@ PNGImageDecoder::PNGImageDecoder(AlphaOption alpha_option,
     : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
       offset_(offset),
       current_frame_(0),
-      // It would be logical to default to cAnimationNone, but BitmapImage uses
+      // It would be logical to default to kCAnimationNone, but BitmapImage uses
       // that as a signal to never check again, meaning the actual count will
       // never be respected.
       repetition_count_(kCAnimationLoopOnce),
@@ -407,9 +407,9 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
       }
     } else {
       // Now, the blend method is ImageFrame::BlendAtopPreviousFrame. Since the
-      // frame data of the previous frame is copied at initFrameBuffer, we can
-      // blend the pixel of this frame, stored in |srcPtr|, over the previous
-      // pixel stored in |dstPixel|.
+      // frame data of the previous frame is copied at InitFrameBuffer, we can
+      // blend the pixel of this frame, stored in |src_ptr|, over the previous
+      // pixel stored in |dst_pixel|.
       if (buffer.PremultiplyAlpha()) {
         for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
              dst_pixel++, src_ptr += 4) {
@@ -475,7 +475,7 @@ bool PNGImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
   DCHECK(!Failed() && reader_);
 
   // For non-animated images, return whether the status of the frame is
-  // ImageFrame::FrameComplete with ImageDecoder::frameIsCompleteAtIndex.
+  // ImageFrame::FrameComplete with ImageDecoder::FrameIsCompleteAtIndex.
   // This matches the behavior of WEBPImageDecoder.
   if (reader_->ParseCompleted() && reader_->FrameCount() == 1)
     return ImageDecoder::FrameIsCompleteAtIndex(index);

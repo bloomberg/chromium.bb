@@ -48,8 +48,8 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other) {
     return *this;
 
   bitmap_ = other.bitmap_;
-  // Be sure to assign this before calling setStatus(), since setStatus() may
-  // call notifyBitmapIfPixelsChanged().
+  // Be sure to assign this before calling SetStatus(), since SetStatus() may
+  // call NotifyBitmapIfPixelsChanged().
   pixels_changed_ = other.pixels_changed_;
   SetMemoryAllocator(other.GetAllocator());
   SetOriginalFrameRect(other.OriginalFrameRect());
@@ -58,7 +58,7 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other) {
   SetDisposalMethod(other.GetDisposalMethod());
   SetAlphaBlendSource(other.GetAlphaBlendSource());
   SetPremultiplyAlpha(other.PremultiplyAlpha());
-  // Be sure that this is called after we've called setStatus(), since we
+  // Be sure that this is called after we've called SetStatus(), since we
   // look at our status to know what to do with the alpha value.
   SetHasAlpha(other.HasAlpha());
   SetRequiredPreviousFrameIndex(other.RequiredPreviousFrameIndex());
@@ -68,9 +68,9 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other) {
 void ImageFrame::ClearPixelData() {
   bitmap_.reset();
   status_ = kFrameEmpty;
-  // NOTE: Do not reset other members here; clearFrameBufferCache()
+  // NOTE: Do not reset other members here; ClearFrameBufferCache()
   // calls this to free the bitmap data, but other functions like
-  // initFrameBuffer() and frameComplete() may still need to read
+  // InitFrameBuffer() and FrameComplete() may still need to read
   // other metadata out of this frame later.
 }
 
@@ -103,7 +103,7 @@ bool ImageFrame::TakeBitmapDataIfWritable(ImageFrame* other) {
 bool ImageFrame::AllocatePixelData(int new_width,
                                    int new_height,
                                    sk_sp<SkColorSpace> color_space) {
-  // allocatePixelData() should only be called once.
+  // AllocatePixelData() should only be called once.
   DCHECK(!Width() && !Height());
 
   bitmap_.setInfo(SkImageInfo::MakeN32(
@@ -136,8 +136,8 @@ void ImageFrame::SetStatus(Status status) {
     // Send pending pixels changed notifications now, because we can't do
     // this after the bitmap has been marked immutable.  We don't set the
     // bitmap immutable here because it would defeat
-    // takeBitmapDataIfWritable().  Instead we let the bitmap stay mutable
-    // until someone calls finalizePixelsAndGetImage() to actually get the
+    // TakeBitmapDataIfWritable().  Instead we let the bitmap stay mutable
+    // until someone calls FinalizePixelsAndGetImage() to actually get the
     // SkImage.
     NotifyBitmapIfPixelsChanged();
   }

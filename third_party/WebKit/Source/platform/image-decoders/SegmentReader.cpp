@@ -99,7 +99,7 @@ class ROBufferSegmentReader final : public SegmentReader {
   sk_sp<SkROBuffer> ro_buffer_;
   // Protects access to mutable fields.
   mutable Mutex read_mutex_;
-  // Position of the first char in the current block of m_iter.
+  // Position of the first char in the current block of iter_.
   mutable size_t position_of_block_;
   mutable SkROBuffer::Iter iter_;
 };

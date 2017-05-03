@@ -61,7 +61,7 @@ const char* FastSharedBufferReader::GetConsecutiveData(size_t data_position,
       data_position + length <= data_position_ + segment_length_)
     return segment_ + data_position - data_position_;
 
-  // Return a pointer into |m_data| if the request doesn't span segments.
+  // Return a pointer into |data_| if the request doesn't span segments.
   GetSomeDataInternal(data_position);
   if (length <= segment_length_)
     return segment_;

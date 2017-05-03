@@ -408,7 +408,7 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
 }
 
 namespace {
-// Needed to exercise ImageDecoder::setMemoryAllocator, but still does the
+// Needed to exercise ImageDecoder::SetMemoryAllocator, but still does the
 // default allocation.
 class Allocator final : public SkBitmap::Allocator {
   bool allocPixelRef(SkBitmap* dst, SkColorTable* ctable) override {
@@ -417,8 +417,8 @@ class Allocator final : public SkBitmap::Allocator {
 };
 }
 
-// Ensure that calling setMemoryAllocator does not short-circuit
-// initializeNewFrame.
+// Ensure that calling SetMemoryAllocator does not short-circuit
+// InitializeNewFrame.
 TEST(GIFImageDecoderTest, externalAllocator) {
   auto data = ReadFile(kLayoutTestResourcesDir, "boston.gif");
   ASSERT_TRUE(data.Get());

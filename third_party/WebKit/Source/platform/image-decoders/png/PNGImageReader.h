@@ -62,7 +62,7 @@ class PLATFORM_EXPORT PNGImageReader final {
   struct FrameInfo {
     // The offset where the frame data of this frame starts.
     size_t start_offset;
-    // The number of bytes that contain frame data, starting at startOffset.
+    // The number of bytes that contain frame data, starting at start_offset.
     size_t byte_length;
     size_t duration;
     IntRect frame_rect;
@@ -134,12 +134,12 @@ class PLATFORM_EXPORT PNGImageReader final {
 
   std::unique_ptr<png_byte[]> interlace_buffer_;
 
-  // Value used for the byteLength of a FrameInfo struct to indicate that it is
-  // the first frame and its byteLength is not yet known. 1 is a safe value
-  // since the byteLength field of a frame is at least 12.
+  // Value used for the byte_length of a FrameInfo struct to indicate that it is
+  // the first frame and its byte_length is not yet known. 1 is a safe value
+  // since the byte_length field of a frame is at least 12.
   static constexpr size_t kFirstFrameIndicator = 1;
 
-  // Stores information about a frame until it can be pushed to |m_frameInfo|
+  // Stores information about a frame until it can be pushed to |frame_info|
   // once all the frame data has been read from the stream.
   FrameInfo new_frame_;
   Vector<FrameInfo, 1> frame_info_;

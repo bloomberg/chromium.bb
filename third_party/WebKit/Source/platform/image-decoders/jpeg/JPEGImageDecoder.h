@@ -66,7 +66,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   void DecodeSize() override { Decode(true); }
   void Decode(size_t) override { Decode(false); }
 
-  // Decodes the image.  If |onlySize| is true, stops decoding after
+  // Decodes the image.  If |only_size| is true, stops decoding after
   // calculating the image size.  If decoding fails but there is no more
   // data coming, sets the "decode failure" flag.
   void Decode(bool only_size);

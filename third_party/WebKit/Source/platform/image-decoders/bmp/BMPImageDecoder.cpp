@@ -65,7 +65,7 @@ void BMPImageDecoder::Decode(bool only_size) {
   if (!DecodeHelper(only_size) && IsAllDataReceived())
     SetFailed();
   // If we're done decoding the image, we don't need the BMPImageReader
-  // anymore.  (If we failed, |m_reader| has already been cleared.)
+  // anymore.  (If we failed, |reader_| has already been cleared.)
   else if (!frame_buffer_cache_.IsEmpty() &&
            (frame_buffer_cache_.front().GetStatus() ==
             ImageFrame::kFrameComplete))
@@ -108,16 +108,16 @@ bool BMPImageDecoder::ProcessFileHeader(size_t& img_data_offset) {
   // See if this is a bitmap filetype we understand.
   enum {
     BMAP = 0x424D,  // "BM"
-                    // The following additional OS/2 2.x header values (see
+    // The following additional OS/2 2.x header values (see
     // http://www.fileformat.info/format/os2bmp/egff.htm ) aren't widely
     // decoded, and are unlikely to be in much use.
     /*
-        ICON = 0x4943,  // "IC"
-        POINTER = 0x5054,  // "PT"
-        COLORICON = 0x4349,  // "CI"
-        COLORPOINTER = 0x4350,  // "CP"
-        BITMAPARRAY = 0x4241,  // "BA"
-        */
+    ICON = 0x4943,  // "IC"
+    POINTER = 0x5054,  // "PT"
+    COLORICON = 0x4349,  // "CI"
+    COLORPOINTER = 0x4350,  // "CP"
+    BITMAPARRAY = 0x4241,  // "BA"
+    */
   };
   return (file_type == BMAP) || SetFailed();
 }

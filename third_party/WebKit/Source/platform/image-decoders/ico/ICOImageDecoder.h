@@ -54,7 +54,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   IntSize FrameSizeAtIndex(size_t) const override;
   bool SetSize(unsigned width, unsigned height) override;
   bool FrameIsCompleteAtIndex(size_t) const override;
-  // CAUTION: setFailed() deletes all readers and decoders.  Be careful to
+  // CAUTION: SetFailed() deletes all readers and decoders.  Be careful to
   // avoid accessing deleted memory, especially when calling this from
   // inside BMPImageReader!
   bool SetFailed() override;
@@ -114,7 +114,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   // If the desired PNGImageDecoder exists, gives it the appropriate data.
   void SetDataForPNGDecoderAtIndex(size_t);
 
-  // Decodes the entry at |index|.  If |onlySize| is true, stops decoding
+  // Decodes the entry at |index|.  If |only_size| is true, stops decoding
   // after calculating the image size.  If decoding fails but there is no
   // more data coming, sets the "decode failure" flag.
   void Decode(size_t index, bool only_size);
@@ -136,7 +136,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   // could be decoded.
   bool ProcessDirectoryEntries();
 
-  // Stores the hot-spot for |index| in |hotSpot| and returns true,
+  // Stores the hot-spot for |index| in |hot_spot| and returns true,
   // or returns false if there is none.
   bool HotSpotAtIndex(size_t index, IntPoint& hot_spot) const;
 
@@ -150,7 +150,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
 
   FastSharedBufferReader fast_reader_;
 
-  // An index into |m_data| representing how much we've already decoded.
+  // An index into |data_| representing how much we've already decoded.
   // Note that this only tracks data _this_ class decodes; once the
   // BMPImageReader takes over this will not be updated further.
   size_t decoded_offset_;
@@ -163,7 +163,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   IconDirectoryEntries dir_entries_;
 
   // Count of directory entries is parsed from header before initializing
-  // m_dirEntries. m_dirEntries is populated only when full header
+  // dir_entries_. dir_entries_ is populated only when full header
   // information including directory entries is available.
   size_t dir_entries_count_;
 

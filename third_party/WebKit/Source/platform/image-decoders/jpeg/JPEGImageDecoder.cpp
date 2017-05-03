@@ -343,8 +343,8 @@ class JPEGImageReader final {
 
     // This is a valid restart position.
     restart_position_ = next_read_position_ - info_.src->bytes_in_buffer;
-    // We updated |next_input_byte|, so we need to update |m_lastByteSet|
-    // so we know not to update |m_restartPosition| again.
+    // We updated |next_input_byte|, so we need to update |last_byte_set_|
+    // so we know not to update |restart_position_| again.
     last_set_byte_ = info_.src->next_input_byte;
   }
 
@@ -386,7 +386,7 @@ class JPEGImageReader final {
       return;
 
     // Otherwise, empty the buffer, and leave the position the same, so
-    // fillBuffer continues reading from the same position in the new
+    // FillBuffer continues reading from the same position in the new
     // SegmentReader.
     next_read_position_ -= info_.src->bytes_in_buffer;
     ClearBuffer();
@@ -481,11 +481,11 @@ class JPEGImageReader final {
           // This exits the function while there is still potentially
           // data in the buffer. Before this function is called again,
           // the SharedBuffer may be collapsed (by a call to
-          // mergeSegmentsIntoBuffer), invalidating the "buffer" (which
+          // MergeSegmentsIntoBuffer), invalidating the "buffer" (which
           // in reality is a pointer into the SharedBuffer's data).
           // Defensively empty the buffer, but first find the latest
           // restart position and signal to restart, so the next call to
-          // fillBuffer will resume from the correct point.
+          // FillBuffer will resume from the correct point.
           needs_restart_ = true;
           UpdateRestartPosition();
           ClearBuffer();
@@ -647,7 +647,7 @@ class JPEGImageReader final {
   RefPtr<SegmentReader> data_;
   JPEGImageDecoder* decoder_;
 
-  // Input reading: True if we need to back up to m_restartPosition.
+  // Input reading: True if we need to back up to restart_position_.
   bool needs_restart_;
   // If libjpeg needed to restart, this is the position to restart from.
   size_t restart_position_;
@@ -773,7 +773,7 @@ unsigned JPEGImageDecoder::DesiredScaleNumerator() const {
 }
 
 bool JPEGImageDecoder::CanDecodeToYUV() {
-  // Calling isSizeAvailable() ensures the reader is created and the output
+  // Calling IsSizeAvailable() ensures the reader is created and the output
   // color space is set.
   return IsSizeAvailable() && reader_->Info()->out_color_space == JCS_YCbCr;
 }
@@ -941,7 +941,7 @@ bool JPEGImageDecoder::OutputScanlines() {
 
     buffer.ZeroFillPixelData();
     // The buffer is transparent outside the decoded area while the image is
-    // loading. The image will be marked fully opaque in complete().
+    // loading. The image will be marked fully opaque in Complete().
     buffer.SetStatus(ImageFrame::kFramePartial);
     buffer.SetHasAlpha(true);
 

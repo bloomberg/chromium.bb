@@ -79,7 +79,7 @@ inline void findBlendRangeAtRow(const blink::IntRect& src,
 
 // alphaBlendPremultiplied and alphaBlendNonPremultiplied are separate methods,
 // even though they only differ by one line. This is done so that the compiler
-// can inline blendSrcOverDstPremultiplied() and blensSrcOverDstRaw() calls.
+// can inline BlendSrcOverDstPremultiplied() and BlensSrcOverDstRaw() calls.
 // For GIF images, this optimization reduces decoding time by 15% for 3MB
 // images.
 void alphaBlendPremultiplied(blink::ImageFrame& src,
@@ -238,7 +238,7 @@ bool WEBPImageDecoder::UpdateDemuxer() {
 }
 
 void WEBPImageDecoder::OnInitFrameBuffer(size_t frame_index) {
-  // ImageDecoder::initFrameBuffer does a DCHECK if |frameIndex| exists.
+  // ImageDecoder::InitFrameBuffer does a DCHECK if |frame_index| exists.
   ImageFrame& buffer = frame_buffer_cache_[frame_index];
 
   const size_t required_previous_frame_index =
@@ -357,7 +357,7 @@ void WEBPImageDecoder::ApplyPostProcessing(size_t frame_index) {
     } else if (prev_disposal_method == ImageFrame::kDisposeOverwriteBgcolor) {
       const IntRect& prev_rect = prev_buffer.OriginalFrameRect();
       // We need to blend a transparent pixel with the starting value (from just
-      // after the initFrame() call). If the pixel belongs to prevRect, the
+      // after the InitFrame() call). If the pixel belongs to prev_rect, the
       // starting value was fully transparent, so this is a no-op. Otherwise, we
       // need to blend against the pixel from the previous canvas.
       for (int y = decoded_height_; y < decoded_height; ++y) {
@@ -378,7 +378,7 @@ void WEBPImageDecoder::ApplyPostProcessing(size_t frame_index) {
 }
 
 size_t WEBPImageDecoder::DecodeFrameCount() {
-  // If updateDemuxer() fails, return the existing number of frames.  This way
+  // If UpdateDemuxer() fails, return the existing number of frames.  This way
   // if we get halfway through the image before decoding fails, we won't
   // suddenly start reporting that the image has zero frames.
   return UpdateDemuxer() ? WebPDemuxGetI(demux_, WEBP_FF_FRAME_COUNT)

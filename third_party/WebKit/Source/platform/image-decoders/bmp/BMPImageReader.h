@@ -58,7 +58,7 @@ class PLATFORM_EXPORT BMPImageReader final {
   }
 
   // |parent| is the decoder that owns us.
-  // |startOffset| points to the start of the BMP within the file.
+  // |start_offset| points to the start of the BMP within the file.
   // |buffer| points at an empty ImageFrame that we'll initialize and
   // fill with decoded data.
   BMPImageReader(ImageDecoder* parent,
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT BMPImageReader final {
     fast_reader_.SetData(data);
   }
 
-  // Does the actual decoding.  If |onlySize| is true, decoding only
+  // Does the actual decoding.  If |only_size| is true, decoding only
   // progresses as far as necessary to get the image size.  Returns
   // whether decoding succeeded.
   bool DecodeBMP(bool only_size);
@@ -80,8 +80,8 @@ class PLATFORM_EXPORT BMPImageReader final {
  private:
   friend class PixelChangedScoper;
 
-  // Helper for decodeBMP() which will call either processRLEData() or
-  // processNonRLEData(), depending on the value of |nonRLE|, call any
+  // Helper for DecodeBMP() which will call either ProcessRLEData() or
+  // ProcessNonRLEData(), depending on the value of |non_rle|, call any
   // appropriate notifications to deal with the result, then return whether
   // decoding succeeded.
   bool DecodePixelData(bool non_rle);
@@ -151,7 +151,7 @@ class PLATFORM_EXPORT BMPImageReader final {
   // be decoded.
   bool ProcessInfoHeader();
 
-  // Helper function for processInfoHeader() which does the actual reading
+  // Helper function for ProcessInfoHeader() which does the actual reading
   // of header values from the byte stream.  Returns false on error.
   bool ReadInfoHeader();
 
@@ -164,17 +164,17 @@ class PLATFORM_EXPORT BMPImageReader final {
   // Returns false if consistency errors are found in the info header.
   bool IsInfoHeaderValid() const;
 
-  // For BI_BITFIELDS images, initializes the m_bitMasks[] and
-  // m_bitOffsets[] arrays.  processInfoHeader() will initialize these for
+  // For BI_BITFIELDS images, initializes the bit_masks_[] and
+  // bit_offsets_[] arrays.  ProcessInfoHeader() will initialize these for
   // other compression types where needed.
   bool ProcessBitmasks();
 
-  // For paletted images, allocates and initializes the m_colorTable[]
+  // For paletted images, allocates and initializes the color_table_[]
   // array.
   bool ProcessColorTable();
 
   // The next two functions return a ProcessingResult instead of a bool so
-  // they can avoid calling m_parent->setFailed(), which could lead to memory
+  // they can avoid calling parent_->SetFailed(), which could lead to memory
   // corruption since that will delete |this| but some callers still want
   // to access member variables after they return.
 
@@ -182,30 +182,30 @@ class PLATFORM_EXPORT BMPImageReader final {
   ProcessingResult ProcessRLEData();
 
   // Processes a set of non-RLE-compressed pixels.  Two cases:
-  //   * inRLE = true: the data is inside an RLE-encoded bitmap.  Tries to
-  //     process |numPixels| pixels on the current row.
-  //   * inRLE = false: the data is inside a non-RLE-encoded bitmap.
-  //     |numPixels| is ignored.  Expects |m_coord| to point at the
+  //   * in_rle = true: the data is inside an RLE-encoded bitmap.  Tries to
+  //     process |num_pixels| pixels on the current row.
+  //   * in_rle = false: the data is inside a non-RLE-encoded bitmap.
+  //     |num_pixels| is ignored.  Expects |coord_| to point at the
   //     beginning of the next row to be decoded.  Tries to process as
   //     many complete rows as possible.  Returns InsufficientData if
   //     there wasn't enough data to decode the whole image.
   ProcessingResult ProcessNonRLEData(bool in_rle, int num_pixels);
 
-  // Returns true if the current y-coordinate plus |numRows| would be past
+  // Returns true if the current y-coordinate plus |num_rows| would be past
   // the end of the image.  Here "plus" means "toward the end of the
-  // image", so downwards for m_isTopDown images and upwards otherwise.
+  // image", so downwards for is_top_down_ images and upwards otherwise.
   inline bool PastEndOfImage(int num_rows) {
     return is_top_down_ ? ((coord_.Y() + num_rows) >= parent_->Size().Height())
                         : ((coord_.Y() - num_rows) < 0);
   }
 
   // Returns the pixel data for the current X coordinate in a uint32_t.
-  // Assumes m_decodedOffset has been set to the beginning of the current
+  // Assumes decoded_offset has been set to the beginning of the current
   // row.
   // NOTE: Only as many bytes of the return value as are needed to hold
   // the pixel data will actually be set.
   inline uint32_t ReadCurrentPixel(int bytes_per_pixel) const {
-    // We need at most 4 bytes, starting at m_decodedOffset + offset.
+    // We need at most 4 bytes, starting at decoded_offset_ + offset.
     char buffer[4];
     const int offset = coord_.X() * bytes_per_pixel;
     const char* encoded_pixel = fast_reader_.GetConsecutiveData(
@@ -246,7 +246,7 @@ class PLATFORM_EXPORT BMPImageReader final {
     return bit_masks_[3] ? GetComponent(pixel, 3) : 0xff;
   }
 
-  // Sets the current pixel to the color given by |colorIndex|.  This also
+  // Sets the current pixel to the color given by |color_index|.  This also
   // increments the relevant local variables to move the current pixel
   // right by one.
   inline void SetI(size_t color_index) {
@@ -255,7 +255,7 @@ class PLATFORM_EXPORT BMPImageReader final {
             color_table_[color_index].rgb_blue, 0xff);
   }
 
-  // Like setI(), but with the individual component values specified.
+  // Like SetI(), but with the individual component values specified.
   inline void SetRGBA(unsigned red,
                       unsigned green,
                       unsigned blue,
@@ -265,9 +265,9 @@ class PLATFORM_EXPORT BMPImageReader final {
   }
 
   // Fills pixels from the current X-coordinate up to, but not including,
-  // |endCoord| with the color given by the individual components.  This
+  // |end_coord| with the color given by the individual components.  This
   // also increments the relevant local variables to move the current
-  // pixel right to |endCoord|.
+  // pixel right to |end_coord|.
   inline void FillRGBA(int end_coord,
                        unsigned red,
                        unsigned green,
@@ -279,7 +279,7 @@ class PLATFORM_EXPORT BMPImageReader final {
 
   // Resets the relevant local variables to start drawing at the left edge
   // of the "next" row, where "next" is above or below the current row
-  // depending on the value of |m_isTopDown|.
+  // depending on the value of |is_top_down_|.
   void MoveBufferToNextRow();
 
   // The decoder that owns us.
@@ -292,7 +292,7 @@ class PLATFORM_EXPORT BMPImageReader final {
   RefPtr<SegmentReader> data_;
   FastSharedBufferReader fast_reader_;
 
-  // An index into |m_data| representing how much we've already decoded.
+  // An index into |data_| representing how much we've already decoded.
   size_t decoded_offset_;
 
   // The file offset at which the BMP info header starts.
@@ -349,7 +349,7 @@ class PLATFORM_EXPORT BMPImageReader final {
   IntPoint coord_;
 
   // Variables that track whether we've seen pixels with alpha values != 0
-  // and == 0, respectively.  See comments in processNonRLEData() on how
+  // and == 0, respectively.  See comments in ProcessNonRLEData() on how
   // these are used.
   bool seen_non_zero_alpha_pixel_;
   bool seen_zero_alpha_pixel_;
@@ -360,7 +360,7 @@ class PLATFORM_EXPORT BMPImageReader final {
 
   // ICOs store a 1bpp "mask" immediately after the main bitmap image data
   // (and, confusingly, add its height to the biHeight value in the info
-  // header, thus doubling it). If |m_isInICO| is true, this variable tracks
+  // header, thus doubling it). If |is_in_ico_| is true, this variable tracks
   // whether we've begun decoding this mask yet.
   bool decoding_and_mask_;
 };

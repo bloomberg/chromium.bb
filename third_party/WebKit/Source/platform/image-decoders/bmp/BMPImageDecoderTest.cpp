@@ -77,7 +77,7 @@ TEST(BMPImageDecoderTest, int32MinHeight) {
   EXPECT_TRUE(decoder->Failed());
 }
 
-// This test verifies that calling SharedBuffer::mergeSegmentsIntoBuffer() does
+// This test verifies that calling SharedBuffer::MergeSegmentsIntoBuffer() does
 // not break BMP decoding at a critical point: in between a call to decode the
 // size (when BMPImageDecoder stops while it may still have input data to
 // read) and a call to do a full decode.
