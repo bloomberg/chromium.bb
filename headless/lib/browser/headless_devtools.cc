@@ -28,19 +28,35 @@ const int kBackLog = 10;
 class TCPServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   explicit TCPServerSocketFactory(const net::IPEndPoint& endpoint)
-      : endpoint_(endpoint) {
+      : endpoint_(endpoint), socket_fd_(0) {
     DCHECK(endpoint_.address().IsValid());
   }
+
+  explicit TCPServerSocketFactory(const size_t socket_fd)
+      : socket_fd_(socket_fd) {}
 
  private:
   // content::DevToolsSocketFactory implementation:
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
-    std::unique_ptr<net::ServerSocket> socket(
+    if (!socket_fd_) {
+      std::unique_ptr<net::ServerSocket> socket(
+          new net::TCPServerSocket(nullptr, net::NetLogSource()));
+      if (socket->Listen(endpoint_, kBackLog) != net::OK)
+        return std::unique_ptr<net::ServerSocket>();
+      return socket;
+    }
+#if defined(OS_POSIX)
+    std::unique_ptr<net::TCPServerSocket> tsock(
         new net::TCPServerSocket(nullptr, net::NetLogSource()));
-    if (socket->Listen(endpoint_, kBackLog) != net::OK)
+    if (tsock->AdoptSocket(socket_fd_) != net::OK) {
+      LOG(ERROR) << "Failed to adopt open socket";
       return std::unique_ptr<net::ServerSocket>();
-
-    return socket;
+    }
+    return std::unique_ptr<net::ServerSocket>(tsock.release());
+#else
+    LOG(ERROR) << "Can't inherit an open socket on non-Posix systems";
+    return std::unique_ptr<net::ServerSocket>();
+#endif
   }
 
   std::unique_ptr<net::ServerSocket> CreateForTethering(
@@ -49,6 +65,7 @@ class TCPServerSocketFactory : public content::DevToolsSocketFactory {
   }
 
   net::IPEndPoint endpoint_;
+  size_t socket_fd_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
@@ -56,9 +73,14 @@ class TCPServerSocketFactory : public content::DevToolsSocketFactory {
 }  // namespace
 
 void StartLocalDevToolsHttpHandler(HeadlessBrowser::Options* options) {
-  const net::IPEndPoint& endpoint = options->devtools_endpoint;
-  std::unique_ptr<content::DevToolsSocketFactory> socket_factory(
-      new TCPServerSocketFactory(endpoint));
+  std::unique_ptr<content::DevToolsSocketFactory> socket_factory;
+  if (options->devtools_socket_fd == 0) {
+    const net::IPEndPoint& endpoint = options->devtools_endpoint;
+    socket_factory.reset(new TCPServerSocketFactory(endpoint));
+  } else {
+    const uint16_t socket_fd = options->devtools_socket_fd;
+    socket_factory.reset(new TCPServerSocketFactory(socket_fd));
+  }
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(socket_factory), std::string(),
       options->user_data_dir,  // TODO(altimin): Figure a proper value for this.

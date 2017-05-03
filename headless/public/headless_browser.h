@@ -108,8 +108,15 @@ struct HeadlessBrowser::Options {
   const char** argv;
 
   // Address at which DevTools should listen for connections. Disabled by
-  // default.
+  // default. Mutually exclusive with devtools_socket_fd.
   net::IPEndPoint devtools_endpoint;
+
+  // The fd of an already-open socket inherited from a parent process. Disabled
+  // by default. Mutually exclusive with devtools_endpoint.
+  size_t devtools_socket_fd;
+
+  // A single way to test whether the devtools server has been requested.
+  bool DevtoolsServerEnabled();
 
   // Optional message pump that overrides the default. Must outlive the browser.
   base::MessagePump* message_pump;
@@ -187,6 +194,7 @@ class HeadlessBrowser::Options::Builder {
   // Browser-wide settings.
 
   Builder& EnableDevToolsServer(const net::IPEndPoint& endpoint);
+  Builder& EnableDevToolsServer(const size_t socket_fd);
   Builder& SetMessagePump(base::MessagePump* message_pump);
   Builder& SetSingleProcessMode(bool single_process_mode);
   Builder& SetDisableSandbox(bool disable_sandbox);

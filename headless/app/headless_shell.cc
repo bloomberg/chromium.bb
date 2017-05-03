@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell.h"
 #include "headless/app/headless_shell_switches.h"
+#include "headless/lib/browser/headless_devtools.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/util/deterministic_http_protocol_handler.h"
 #include "net/base/io_buffer.h"
@@ -450,15 +451,29 @@ void HeadlessShell::OnFileClosed(base::File::Error error_code) {
 bool HeadlessShell::RemoteDebuggingEnabled() const {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kRemoteDebuggingPort);
+  return (command_line.HasSwitch(switches::kRemoteDebuggingPort) ||
+          command_line.HasSwitch(switches::kRemoteDebuggingSocketFd));
 }
 
 bool ValidateCommandLine(const base::CommandLine& command_line) {
-  if (!command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+#if !defined(OS_POSIX)
+  if (command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
+    LOG(ERROR) << "Remote-debugging-socket can't be set on non-Posix systems";
+    return false;
+  }
+#endif
+  if (command_line.HasSwitch(switches::kRemoteDebuggingPort) &&
+      command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
+    LOG(ERROR) << "Remote-debugging-port and remote-debugging-socket "
+               << "can't both be set.";
+    return false;
+  }
+  if (!command_line.HasSwitch(switches::kRemoteDebuggingPort) &&
+      !command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
     if (command_line.GetArgs().size() <= 1)
       return true;
-    LOG(ERROR) << "Open multiple tabs is only supported when the "
-               << "remote debug port is set.";
+    LOG(ERROR) << "Open multiple tabs is only supported when "
+               << "remote debugging is enabled.";
     return false;
   }
   if (command_line.HasSwitch(switches::kDefaultBackgroundColor)) {
@@ -504,7 +519,6 @@ int HeadlessShellMain(int argc, const char** argv) {
   HeadlessShell shell;
   HeadlessBrowser::Options::Builder builder(argc, argv);
 
-  // Enable devtools if requested.
   const base::CommandLine& command_line(
       *base::CommandLine::ForCurrentProcess());
   if (!ValidateCommandLine(command_line))
@@ -517,6 +531,8 @@ int HeadlessShellMain(int argc, const char** argv) {
         command_line.GetSwitchValuePath(switches::kCrashDumpsDir));
   }
 
+  // Enable devtools if requested, either by specifying a port (and optional
+  // address), or by specifying the fd of an already-open socket.
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
     std::string address = kDevToolsHttpServerAddress;
     if (command_line.HasSwitch(switches::kRemoteDebuggingAddress)) {
@@ -539,8 +555,19 @@ int HeadlessShellMain(int argc, const char** argv) {
     net::IPAddress devtools_address;
     bool result = devtools_address.AssignFromIPLiteral(address);
     DCHECK(result);
-    builder.EnableDevToolsServer(net::IPEndPoint(
-        devtools_address, base::checked_cast<uint16_t>(parsed_port)));
+    const net::IPEndPoint endpoint(devtools_address,
+                                   base::checked_cast<uint16_t>(parsed_port));
+    builder.EnableDevToolsServer(endpoint);
+  } else if (command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
+    int parsed_fd;
+    std::string fd_str =
+        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingSocketFd);
+    if (!base::StringToInt(fd_str, &parsed_fd) ||
+        !base::IsValueInRangeForNumericType<size_t>(parsed_fd)) {
+      LOG(ERROR) << "Invalid devtools server socket fd";
+      return EXIT_FAILURE;
+    }
+    builder.EnableDevToolsServer(base::checked_cast<size_t>(parsed_fd));
   }
 
   if (command_line.HasSwitch(switches::kProxyServer)) {
