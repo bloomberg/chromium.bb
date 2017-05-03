@@ -4,23 +4,13 @@
 
 package org.chromium.chrome.browser.video;
 
-import android.support.test.InstrumentationRegistry;
 import android.view.KeyEvent;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.KeyUtils;
@@ -30,14 +20,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 /**
  * Test suite for fullscreen video implementation.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class FullscreenVideoTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int TEST_TIMEOUT = 3000;
     private boolean mIsTabFullscreen = false;
 
@@ -48,9 +31,13 @@ public class FullscreenVideoTest {
         }
     }
 
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    public FullscreenVideoTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     /**
@@ -59,29 +46,27 @@ public class FullscreenVideoTest {
      *
      * @MediumTest
      */
-    @Test
     @FlakyTest(message = "crbug.com/458368")
     public void testExitFullscreenNotifiesTabObservers() throws InterruptedException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+                getInstrumentation().getContext());
         try {
             String url = testServer.getURL(
                     "/chrome/test/data/android/media/video-fullscreen.html");
-            mActivityTestRule.loadUrl(url);
-            Tab tab = mActivityTestRule.getActivity().getActivityTab();
+            loadUrl(url);
+            Tab tab = getActivity().getActivityTab();
             FullscreenTabObserver observer = new FullscreenTabObserver();
             tab.addObserver(observer);
 
-            TestTouchUtils.singleClickView(
-                    InstrumentationRegistry.getInstrumentation(), tab.getView(), 500, 500);
+            TestTouchUtils.singleClickView(getInstrumentation(), tab.getView(), 500, 500);
             waitForVideoToEnterFullscreen();
             // Key events have to be dispached on UI thread.
-            KeyUtils.singleKeyEventActivity(InstrumentationRegistry.getInstrumentation(),
-                    mActivityTestRule.getActivity(), KeyEvent.KEYCODE_BACK);
+            KeyUtils.singleKeyEventActivity(
+                    getInstrumentation(), getActivity(), KeyEvent.KEYCODE_BACK);
 
             waitForTabToExitFullscreen();
-            Assert.assertEquals("URL mismatch after exiting fullscreen video", url,
-                    mActivityTestRule.getActivity().getActivityTab().getUrl());
+            assertEquals("URL mismatch after exiting fullscreen video",
+                    url, getActivity().getActivityTab().getUrl());
         } finally {
             testServer.stopAndDestroyServer();
         }

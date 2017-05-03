@@ -4,27 +4,17 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.net.NetworkChangeNotifier;
@@ -40,15 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Unit tests for {@link OfflinePageBridge}. */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"enable-features=OfflineBookmarks",
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class OfflinePageBridgeTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+@CommandLineFlags.Add("enable-features=OfflineBookmarks")
+public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
     private static final long POLLING_INTERVAL = 100;
@@ -58,6 +41,10 @@ public class OfflinePageBridgeTest {
     private OfflinePageBridge mOfflinePageBridge;
     private EmbeddedTestServer mTestServer;
     private String mTestPage;
+
+    public OfflinePageBridgeTest() {
+        super(ChromeActivity.class);
+    }
 
     private void initializeBridgeForProfile(final boolean incognitoProfile)
             throws InterruptedException {
@@ -84,12 +71,12 @@ public class OfflinePageBridgeTest {
                 });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -104,34 +91,37 @@ public class OfflinePageBridgeTest {
 
         initializeBridgeForProfile(false);
 
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
-    @Test
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     @SmallTest
     @RetryOnFailure
     public void testLoadOfflinePagesWhenEmpty() throws Exception {
         List<OfflinePageItem> offlinePages = getAllPages();
-        Assert.assertEquals("Offline pages count incorrect.", 0, offlinePages.size());
+        assertEquals("Offline pages count incorrect.", 0, offlinePages.size());
     }
 
-    @Test
     @SmallTest
     @RetryOnFailure
     public void testAddOfflinePageAndLoad() throws Exception {
-        mActivityTestRule.loadUrl(mTestPage);
+        loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
         List<OfflinePageItem> allPages = getAllPages();
         OfflinePageItem offlinePage = allPages.get(0);
-        Assert.assertEquals("Offline pages count incorrect.", 1, allPages.size());
-        Assert.assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
+        assertEquals("Offline pages count incorrect.", 1, allPages.size());
+        assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
 
         // We don't care about the exact file size of the mhtml file:
         // - exact file size is not something that the end user sees or cares about
@@ -143,36 +133,33 @@ public class OfflinePageBridgeTest {
         // OTOH, it still seems useful to assert that the file is not empty and that its size is in
         // the right ballpark.
         long size = offlinePage.getFileSize();
-        Assert.assertTrue("Offline page item size is incorrect: " + size, 600 < size && size < 800);
+        assertTrue("Offline page item size is incorrect: " + size, 600 < size && size < 800);
     }
 
-    @Test
     @SmallTest
     @RetryOnFailure
     public void testGetPageByBookmarkId() throws Exception {
-        mActivityTestRule.loadUrl(mTestPage);
+        loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
         OfflinePageItem offlinePage = getPageByClientId(BOOKMARK_ID);
-        Assert.assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
-        Assert.assertNull("Offline page is not supposed to exist",
+        assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
+        assertNull("Offline page is not supposed to exist",
                 getPageByClientId(new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, "-42")));
     }
 
-    @Test
     @SmallTest
     @RetryOnFailure
     public void testDeleteOfflinePage() throws Exception {
         deletePage(BOOKMARK_ID, DeletePageResult.SUCCESS);
-        mActivityTestRule.loadUrl(mTestPage);
+        loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
-        Assert.assertNotNull(
+        assertNotNull(
                 "Offline page should be available, but it is not.", getPageByClientId(BOOKMARK_ID));
         deletePage(BOOKMARK_ID, DeletePageResult.SUCCESS);
-        Assert.assertNull("Offline page should be gone, but it is available.",
+        assertNull("Offline page should be gone, but it is available.",
                 getPageByClientId(BOOKMARK_ID));
     }
 
-    @Test
     @CommandLineFlags.Add("disable-features=OfflinePagesSharing")
     @SmallTest
     @RetryOnFailure
@@ -180,19 +167,17 @@ public class OfflinePageBridgeTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Assert.assertFalse(
-                        "If offline page sharing is off, we should see the feature disabled",
+                assertFalse("If offline page sharing is off, we should see the feature disabled",
                         OfflinePageBridge.isPageSharingEnabled());
             }
         });
     }
 
-    @Test
     @SmallTest
     @RetryOnFailure
     public void testCheckPagesExistOffline() throws Exception {
         // If we save a page, then it should exist in the result.
-        mActivityTestRule.loadUrl(mTestPage);
+        loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
         Set<String> testCases = new HashSet<>();
         testCases.add(mTestPage);
@@ -202,14 +187,13 @@ public class OfflinePageBridgeTest {
 
         Set<String> pages = checkPagesExistOffline(testCases);
 
-        Assert.assertEquals(
+        assertEquals(
                 "We only saved one page and queried for it, so the result should be one string.", 1,
                 pages.size());
-        Assert.assertTrue("The only page returned should be the page that was actually saved.",
+        assertTrue("The only page returned should be the page that was actually saved.",
                 pages.contains(mTestPage));
     }
 
-    @Test
     @SmallTest
     @RetryOnFailure
     public void testGetRequestsInQueue() throws Exception {
@@ -217,15 +201,15 @@ public class OfflinePageBridgeTest {
         String namespace = "custom_tabs";
         savePageLater(url, namespace);
         SavePageRequest[] requests = getRequestsInQueue();
-        Assert.assertEquals(1, requests.length);
-        Assert.assertEquals(namespace, requests[0].getClientId().getNamespace());
-        Assert.assertEquals(url, requests[0].getUrl());
+        assertEquals(1, requests.length);
+        assertEquals(namespace, requests[0].getClientId().getNamespace());
+        assertEquals(url, requests[0].getUrl());
 
         String url2 = "https://mail.google.com/";
         String namespace2 = "last_n";
         savePageLater(url2, namespace2);
         requests = getRequestsInQueue();
-        Assert.assertEquals(2, requests.length);
+        assertEquals(2, requests.length);
 
         HashSet<String> expectedUrls = new HashSet<>();
         expectedUrls.add(url);
@@ -236,22 +220,20 @@ public class OfflinePageBridgeTest {
         expectedNamespaces.add(namespace2);
 
         for (SavePageRequest request : requests) {
-            Assert.assertTrue(expectedNamespaces.contains(request.getClientId().getNamespace()));
+            assertTrue(expectedNamespaces.contains(request.getClientId().getNamespace()));
             expectedNamespaces.remove(request.getClientId().getNamespace());
-            Assert.assertTrue(expectedUrls.contains(request.getUrl()));
+            assertTrue(expectedUrls.contains(request.getUrl()));
             expectedUrls.remove(request.getUrl());
         }
     }
 
-    @Test
     @SmallTest
     @RetryOnFailure
     public void testOfflinePageBridgeDisabledInIncognito() throws Exception {
         initializeBridgeForProfile(true);
-        Assert.assertEquals(null, mOfflinePageBridge);
+        assertEquals(null, mOfflinePageBridge);
     }
 
-    @Test
     @SmallTest
     @RetryOnFailure
     public void testRemoveRequestsFromQueue() throws Exception {
@@ -264,23 +246,22 @@ public class OfflinePageBridgeTest {
         savePageLater(url2, namespace2);
 
         SavePageRequest[] requests = getRequestsInQueue();
-        Assert.assertEquals(2, requests.length);
+        assertEquals(2, requests.length);
 
         List<Long> requestsToRemove = new ArrayList<>();
         requestsToRemove.add(Long.valueOf(requests[1].getRequestId()));
 
         List<OfflinePageBridge.RequestRemovedResult> removed =
                 removeRequestsFromQueue(requestsToRemove);
-        Assert.assertEquals(requests[1].getRequestId(), removed.get(0).getRequestId());
-        Assert.assertEquals(
-                org.chromium.components.offlinepages.background.UpdateRequestResult.SUCCESS,
+        assertEquals(requests[1].getRequestId(), removed.get(0).getRequestId());
+        assertEquals(org.chromium.components.offlinepages.background.UpdateRequestResult.SUCCESS,
                 removed.get(0).getUpdateRequestResult());
 
         SavePageRequest[] remaining = getRequestsInQueue();
-        Assert.assertEquals(1, remaining.length);
+        assertEquals(1, remaining.length);
 
-        Assert.assertEquals(requests[0].getRequestId(), remaining[0].getRequestId());
-        Assert.assertEquals(requests[0].getUrl(), remaining[0].getUrl());
+        assertEquals(requests[0].getRequestId(), remaining[0].getRequestId());
+        assertEquals(requests[0].getUrl(), remaining[0].getUrl());
     }
 
     private void savePage(final int expectedResult, final String expectedUrl)
@@ -289,29 +270,27 @@ public class OfflinePageBridgeTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Assert.assertNotNull(
-                        "Tab is null", mActivityTestRule.getActivity().getActivityTab());
-                Assert.assertEquals("URL does not match requested.", expectedUrl,
-                        mActivityTestRule.getActivity().getActivityTab().getUrl());
-                Assert.assertNotNull("WebContents is null",
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents());
+                assertNotNull("Tab is null", getActivity().getActivityTab());
+                assertEquals("URL does not match requested.", expectedUrl,
+                        getActivity().getActivityTab().getUrl());
+                assertNotNull("WebContents is null",
+                        getActivity().getActivityTab().getWebContents());
 
-                mOfflinePageBridge.savePage(
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                mOfflinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
                         BOOKMARK_ID, new SavePageCallback() {
                             @Override
                             public void onSavePageDone(
                                     int savePageResult, String url, long offlineId) {
-                                Assert.assertEquals(
+                                assertEquals(
                                         "Requested and returned URLs differ.", expectedUrl, url);
-                                Assert.assertEquals(
+                                assertEquals(
                                         "Save result incorrect.", expectedResult, savePageResult);
                                 semaphore.release();
                             }
                         });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deletePage(final ClientId bookmarkId, final int expectedResult)
@@ -330,8 +309,8 @@ public class OfflinePageBridgeTest {
                 });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        Assert.assertEquals("Delete result incorrect.", expectedResult, deletePageResultRef.get());
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertEquals("Delete result incorrect.", expectedResult, deletePageResultRef.get());
     }
 
     private List<OfflinePageItem> getAllPages() throws InterruptedException {
@@ -349,7 +328,7 @@ public class OfflinePageBridgeTest {
                 });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return result;
     }
 
@@ -383,7 +362,7 @@ public class OfflinePageBridgeTest {
                         });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return result[0];
     }
 
@@ -403,7 +382,7 @@ public class OfflinePageBridgeTest {
                 });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return result;
     }
 
@@ -432,7 +411,7 @@ public class OfflinePageBridgeTest {
                 });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return ref.get();
     }
 
@@ -455,7 +434,7 @@ public class OfflinePageBridgeTest {
                         });
             }
         });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return ref.get();
     }
 }

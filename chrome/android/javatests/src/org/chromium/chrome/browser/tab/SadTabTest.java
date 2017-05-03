@@ -7,66 +7,53 @@ package org.chromium.chrome.browser.tab;
 import android.support.test.filters.SmallTest;
 import android.widget.Button;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
 /**
  * Tests related to the sad tab logic.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class SadTabTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class SadTabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    public SadTabTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     /**
      * Verify that the sad tab is shown when the renderer crashes.
      */
-    @Test
     @SmallTest
     @Feature({"SadTab"})
     public void testSadTabShownWhenRendererProcessKilled() {
-        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final Tab tab = getActivity().getActivityTab();
 
-        Assert.assertFalse(tab.isShowingSadTab());
+        assertFalse(tab.isShowingSadTab());
         simulateRendererKilled(tab, true);
-        Assert.assertTrue(tab.isShowingSadTab());
+        assertTrue(tab.isShowingSadTab());
     }
 
     /**
      * Verify that the sad tab is not shown when the renderer crashes in the background or the
      * renderer was killed by the OS out-of-memory killer.
      */
-    @Test
     @SmallTest
     @Feature({"SadTab"})
     public void testSadTabNotShownWhenRendererProcessKilledInBackround() {
-        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final Tab tab = getActivity().getActivityTab();
 
-        Assert.assertFalse(tab.isShowingSadTab());
+        assertFalse(tab.isShowingSadTab());
         simulateRendererKilled(tab, false);
-        Assert.assertFalse(tab.isShowingSadTab());
+        assertFalse(tab.isShowingSadTab());
     }
 
     /**
@@ -76,39 +63,32 @@ public class SadTabTest {
      * @throws InterruptedException
      * @throws IllegalArgumentException
      */
-    @Test
     @SmallTest
     @Feature({"SadTab"})
     public void testSadTabPageButtonText() throws IllegalArgumentException, InterruptedException {
-        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final Tab tab = getActivity().getActivityTab();
 
-        Assert.assertFalse(tab.isShowingSadTab());
+        assertFalse(tab.isShowingSadTab());
         simulateRendererKilled(tab, true);
-        Assert.assertTrue(tab.isShowingSadTab());
+        assertTrue(tab.isShowingSadTab());
         String actualText = getSadTabButton(tab).getText().toString();
-        Assert.assertEquals("Expected the sad tab button to have the reload label",
-                mActivityTestRule.getActivity().getString(R.string.sad_tab_reload_label),
-                actualText);
+        assertEquals("Expected the sad tab button to have the reload label",
+                getActivity().getString(R.string.sad_tab_reload_label), actualText);
 
         reloadSadTab(tab);
-        Assert.assertTrue(tab.isShowingSadTab());
+        assertTrue(tab.isShowingSadTab());
         actualText = getSadTabButton(tab).getText().toString();
-        Assert.assertEquals(
+        assertEquals(
                 "Expected the sad tab button to have the feedback label after the tab button "
-                        + "crashes twice in a row.",
-                mActivityTestRule.getActivity().getString(R.string.sad_tab_send_feedback_label),
-                actualText);
-        mActivityTestRule.loadUrl("about:blank");
-        Assert.assertFalse(
-                "Expected about:blank to destroy the sad tab however the sad tab is still in "
-                        + "view",
-                tab.isShowingSadTab());
+                + "crashes twice in a row.",
+                getActivity().getString(R.string.sad_tab_send_feedback_label), actualText);
+        loadUrl("about:blank");
+        assertFalse("Expected about:blank to destroy the sad tab however the sad tab is still in "
+                + "view", tab.isShowingSadTab());
         simulateRendererKilled(tab, true);
         actualText = getSadTabButton(tab).getText().toString();
-        Assert.assertEquals(
-                "Expected the sad tab button to have the reload label after a successful load",
-                mActivityTestRule.getActivity().getString(R.string.sad_tab_reload_label),
-                actualText);
+        assertEquals("Expected the sad tab button to have the reload label after a successful load",
+                getActivity().getString(R.string.sad_tab_reload_label), actualText);
     }
 
     /**

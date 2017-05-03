@@ -9,21 +9,12 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.input.ChromiumBaseInputConnection;
@@ -44,14 +35,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests for the AutofillPopup.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class AutofillPopupTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String FIRST_NAME = "John";
     private static final String LAST_NAME = "Smith";
@@ -137,8 +122,18 @@ public class AutofillPopupTest {
     private AutofillTestHelper mHelper;
     private List<AutofillLogger.LogEntry> mAutofillLoggedEntries;
 
-    @Before
+    public AutofillPopupTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        // Don't launch activity automatically.
+    }
+
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
         mAutofillLoggedEntries = new ArrayList<AutofillLogger.LogEntry>();
         AutofillLogger.setLoggerForTesting(
                 new AutofillLogger.Logger() {
@@ -153,13 +148,12 @@ public class AutofillPopupTest {
     private void loadAndFillForm(
             final String formDataUrl, final String inputText)
             throws InterruptedException, ExecutionException, TimeoutException {
-        mActivityTestRule.startMainActivityWithURL(formDataUrl);
+        startMainActivityWithURL(formDataUrl);
         mHelper = new AutofillTestHelper();
 
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
         // brought up.
-        final ContentViewCore viewCore =
-                mActivityTestRule.getActivity().getCurrentContentViewCore();
+        final ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
         final WebContents webContents = viewCore.getWebContents();
         final ViewGroup view = viewCore.getContainerView();
         final TestInputMethodManagerWrapper immw =
@@ -174,7 +168,7 @@ public class AutofillPopupTest {
                 ZIP_CODE, SORTING_CODE, COUNTRY, PHONE_NUMBER, EMAIL,
                 LANGUAGE_CODE);
         mHelper.setProfile(profile);
-        Assert.assertEquals(1, mHelper.getNumberOfProfilesToSuggest());
+        assertEquals(1, mHelper.getNumberOfProfilesToSuggest());
 
         // Click the input field for the first name.
         DOMUtils.waitForNonZeroNodeBounds(webContents, "fn");
@@ -194,7 +188,7 @@ public class AutofillPopupTest {
         waitForAnchorViewAdd(view);
         View anchorView = view.findViewById(R.id.dropdown_popup_window);
 
-        Assert.assertTrue(anchorView.getTag() instanceof AutofillPopup);
+        assertTrue(anchorView.getTag() instanceof AutofillPopup);
         final AutofillPopup popup = (AutofillPopup) anchorView.getTag();
 
         waitForAutofillPopopShow(popup);
@@ -208,39 +202,39 @@ public class AutofillPopupTest {
      * Tests that bringing up an Autofill and clicking on the first entry fills out the expected
      * Autofill information.
      */
-    @Test
     @MediumTest
     @Feature({"autofill"})
     public void testClickAutofillPopupSuggestion()
             throws InterruptedException, ExecutionException, TimeoutException {
         loadAndFillForm(BASIC_PAGE_DATA, "J");
-        final ContentViewCore viewCore =
-                mActivityTestRule.getActivity().getCurrentContentViewCore();
+        final ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
         final WebContents webContents = viewCore.getWebContents();
 
-        Assert.assertEquals(
-                "First name did not match", FIRST_NAME, DOMUtils.getNodeValue(webContents, "fn"));
-        Assert.assertEquals(
-                "Last name did not match", LAST_NAME, DOMUtils.getNodeValue(webContents, "ln"));
-        Assert.assertEquals("Street address (textarea) did not match", STREET_ADDRESS_TEXTAREA,
-                DOMUtils.getNodeValue(webContents, "sa"));
-        Assert.assertEquals("Address line 1 did not match", ADDRESS_LINE1,
-                DOMUtils.getNodeValue(webContents, "a1"));
-        Assert.assertEquals("Address line 2 did not match", ADDRESS_LINE2,
-                DOMUtils.getNodeValue(webContents, "a2"));
-        Assert.assertEquals("City did not match", CITY, DOMUtils.getNodeValue(webContents, "ct"));
-        Assert.assertEquals(
-                "Zip code did not match", ZIP_CODE, DOMUtils.getNodeValue(webContents, "zc"));
-        Assert.assertEquals(
-                "Country did not match", COUNTRY, DOMUtils.getNodeValue(webContents, "co"));
-        Assert.assertEquals("Email did not match", EMAIL, DOMUtils.getNodeValue(webContents, "em"));
-        Assert.assertEquals("Phone number did not match", PHONE_NUMBER,
-                DOMUtils.getNodeValue(webContents, "ph"));
+        assertEquals("First name did not match",
+                FIRST_NAME, DOMUtils.getNodeValue(webContents, "fn"));
+        assertEquals("Last name did not match",
+                LAST_NAME, DOMUtils.getNodeValue(webContents, "ln"));
+        assertEquals("Street address (textarea) did not match",
+                STREET_ADDRESS_TEXTAREA, DOMUtils.getNodeValue(webContents, "sa"));
+        assertEquals("Address line 1 did not match",
+                ADDRESS_LINE1, DOMUtils.getNodeValue(webContents, "a1"));
+        assertEquals("Address line 2 did not match",
+                ADDRESS_LINE2, DOMUtils.getNodeValue(webContents, "a2"));
+        assertEquals("City did not match",
+                CITY, DOMUtils.getNodeValue(webContents, "ct"));
+        assertEquals("Zip code did not match",
+                ZIP_CODE, DOMUtils.getNodeValue(webContents, "zc"));
+        assertEquals("Country did not match",
+                COUNTRY, DOMUtils.getNodeValue(webContents, "co"));
+        assertEquals("Email did not match",
+                EMAIL, DOMUtils.getNodeValue(webContents, "em"));
+        assertEquals("Phone number did not match",
+                PHONE_NUMBER, DOMUtils.getNodeValue(webContents, "ph"));
 
         final String profileFullName = FIRST_NAME + " " + LAST_NAME;
         final int loggedEntries = 10;
-        Assert.assertEquals("Mismatched number of logged entries", loggedEntries,
-                mAutofillLoggedEntries.size());
+        assertEquals("Mismatched number of logged entries",
+                loggedEntries, mAutofillLoggedEntries.size());
         assertLogged(FIRST_NAME, profileFullName);
         assertLogged(LAST_NAME, profileFullName);
         assertLogged(STREET_ADDRESS_TEXTAREA, profileFullName);
@@ -257,7 +251,6 @@ public class AutofillPopupTest {
      * Tests that bringing up an Autofill and clicking on the partially filled first
      * element will still fill the entire form (including the initiating element itself).
      */
-    @Test
     @MediumTest
     @Feature({"autofill"})
     public void testLoggingInitiatedElementFilled()
@@ -265,8 +258,8 @@ public class AutofillPopupTest {
         loadAndFillForm(INITIATING_ELEMENT_FILLED, "o");
         final String profileFullName = FIRST_NAME + " " + LAST_NAME;
         final int loggedEntries = 4;
-        Assert.assertEquals("Mismatched number of logged entries", loggedEntries,
-                mAutofillLoggedEntries.size());
+        assertEquals("Mismatched number of logged entries",
+                loggedEntries, mAutofillLoggedEntries.size());
         assertLogged(FIRST_NAME, profileFullName);
         assertLogged(LAST_NAME, profileFullName);
         assertLogged(EMAIL, profileFullName);
@@ -277,7 +270,6 @@ public class AutofillPopupTest {
      * Tests that bringing up an Autofill and clicking on the empty first element
      * will fill the all other elements except the previously filled email.
      */
-    @Test
     @MediumTest
     @Feature({"autofill"})
     public void testLoggingAnotherElementFilled()
@@ -285,8 +277,8 @@ public class AutofillPopupTest {
         loadAndFillForm(ANOTHER_ELEMENT_FILLED, "J");
         final String profileFullName = FIRST_NAME + " " + LAST_NAME;
         final int loggedEntries = 3;
-        Assert.assertEquals("Mismatched number of logged entries", loggedEntries,
-                mAutofillLoggedEntries.size());
+        assertEquals("Mismatched number of logged entries",
+                loggedEntries, mAutofillLoggedEntries.size());
         assertLogged(FIRST_NAME, profileFullName);
         assertLogged(LAST_NAME, profileFullName);
         assertLogged(COUNTRY, profileFullName);
@@ -296,7 +288,6 @@ public class AutofillPopupTest {
     /**
      * Tests that selecting a value not present in <option> will not be filled.
      */
-    @Test
     @MediumTest
     @Feature({"autofill"})
     public void testNotLoggingInvalidOption()
@@ -304,8 +295,8 @@ public class AutofillPopupTest {
         loadAndFillForm(INVALID_OPTION, "o");
         final String profileFullName = FIRST_NAME + " " + LAST_NAME;
         final int loggedEntries = 3;
-        Assert.assertEquals("Mismatched number of logged entries", loggedEntries,
-                mAutofillLoggedEntries.size());
+        assertEquals("Mismatched number of logged entries",
+                loggedEntries, mAutofillLoggedEntries.size());
         assertLogged(FIRST_NAME, profileFullName);
         assertLogged(LAST_NAME, profileFullName);
         assertLogged(EMAIL, profileFullName);
@@ -371,6 +362,6 @@ public class AutofillPopupTest {
                 return;
             }
         }
-        Assert.fail("Logged entry not found [" + autofilledValue + "," + profileFullName + "]");
+        fail("Logged entry not found [" + autofilledValue + "," + profileFullName + "]");
     }
 }

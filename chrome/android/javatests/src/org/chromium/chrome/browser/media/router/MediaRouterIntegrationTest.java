@@ -8,17 +8,10 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.app.Dialog;
 import android.os.StrictMode;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.view.View;
 
 import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -26,10 +19,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.RouterTestUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -47,14 +38,8 @@ import java.util.concurrent.TimeoutException;
  *
  * TODO(jbudorick): Remove this when media_router_integration_browsertest runs on Android.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_PRESENTATION,
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class MediaRouterIntegrationTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+@CommandLineFlags.Add(ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_PRESENTATION)
+public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEST_PAGE =
             "/chrome/test/media_router/resources/basic_test.html?__is_android__=true";
@@ -85,10 +70,13 @@ public class MediaRouterIntegrationTest {
 
     private EmbeddedTestServer mTestServer;
 
-    @Before
+    public MediaRouterIntegrationTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
     public void setUp() throws Exception {
-        ChromeMediaRouter.setRouteProviderBuilderForTest(new MockMediaRouteProvider.Builder());
-        mActivityTestRule.startMainActivityOnBlankPage();
+        super.setUp();
         // Temporary until support library is updated, see http://crbug.com/576393.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -96,11 +84,10 @@ public class MediaRouterIntegrationTest {
                 mOldPolicy = StrictMode.allowThreadDiskWrites();
             }
         });
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
-    @After
+    @Override
     public void tearDown() throws Exception {
         // Temporary until support library is updated, see http://crbug.com/576393.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -110,6 +97,7 @@ public class MediaRouterIntegrationTest {
             }
         });
         mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     // TODO(zqzhang): Move this to a util class?
@@ -181,11 +169,11 @@ public class MediaRouterIntegrationTest {
             String unescapedResult = unescapeString(JavaScriptUtils
                     .executeJavaScriptAndWaitForResult(webContents, GET_RESULT_SCRIPT));
             JSONObject jsonResult = new JSONObject(unescapedResult);
-            Assert.assertTrue(
-                    jsonResult.getString("errorMessage"), jsonResult.getBoolean("passed"));
+            assertTrue(jsonResult.getString("errorMessage"),
+                    jsonResult.getBoolean("passed"));
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail("caught exception while executing javascript:" + script);
+            fail("caught exception while executing javascript:" + script);
         }
     }
 
@@ -199,7 +187,7 @@ public class MediaRouterIntegrationTest {
             return result;
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
             return null;
         }
     }
@@ -209,174 +197,163 @@ public class MediaRouterIntegrationTest {
         executeJavaScriptApi(webContents, script);
     }
 
-    @Test
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        ChromeMediaRouter.setRouteProviderBuilderForTest(new MockMediaRouteProvider.Builder());
+        startMainActivityOnBlankPage();
+    }
+
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testBasic() throws InterruptedException, TimeoutException {
-        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        loadUrl(mTestServer.getURL(TEST_PAGE));
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
-                mActivityTestRule.getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-        ClickUtils.mouseSingleClickView(
-                InstrumentationRegistry.getInstrumentation(), testRouteButton);
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
-        Assert.assertFalse(sessionId.length() == 0);
+        assertFalse(sessionId.length() == 0);
         String defaultRequestSessionId = getJavaScriptVariable(
                 webContents, "defaultRequestSessionId");
-        Assert.assertEquals(sessionId, defaultRequestSessionId);
+        assertEquals(sessionId, defaultRequestSessionId);
         executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
     }
 
-    @Test
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testSendAndOnMessage() throws InterruptedException, TimeoutException {
-        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        loadUrl(mTestServer.getURL(TEST_PAGE));
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
-                mActivityTestRule.getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-        ClickUtils.mouseSingleClickView(
-                InstrumentationRegistry.getInstrumentation(), testRouteButton);
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
-        Assert.assertFalse(sessionId.length() == 0);
+        assertFalse(sessionId.length() == 0);
         executeJavaScriptApi(webContents,
                 String.format(SEND_MESSAGE_AND_EXPECT_RESPONSE_SCRIPT, "foo"));
     }
 
-    @Test
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
     public void testOnClose() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Builder.sProvider.setCloseRouteWithErrorOnSend(true);
-        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        loadUrl(mTestServer.getURL(TEST_PAGE));
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
-                mActivityTestRule.getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-        ClickUtils.mouseSingleClickView(
-                InstrumentationRegistry.getInstrumentation(), testRouteButton);
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
-        Assert.assertFalse(sessionId.length() == 0);
+        assertFalse(sessionId.length() == 0);
         executeJavaScriptApi(webContents,
                 SEND_MESSAGE_AND_EXPECT_CONNECTION_CLOSE_ON_ERROR_SCRIPT);
     }
 
-    @Test
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
     public void testFailNoProvider() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Builder.sProvider.setIsSupportsSource(false);
-        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        loadUrl(mTestServer.getURL(TEST_PAGE));
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
-                mActivityTestRule.getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-        ClickUtils.mouseSingleClickView(
-                InstrumentationRegistry.getInstrumentation(), testRouteButton);
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         checkStartFailed(
                 webContents, "UnknownError", "No provider supports createRoute with source");
     }
 
-    @Test
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testFailCreateRoute() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Builder.sProvider.setCreateRouteErrorMessage("Unknown sink");
-        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        loadUrl(mTestServer.getURL(TEST_PAGE));
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
-                mActivityTestRule.getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-        ClickUtils.mouseSingleClickView(
-                InstrumentationRegistry.getInstrumentation(), testRouteButton);
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         checkStartFailed(
                 webContents, "UnknownError", "Unknown sink");
     }
 
-    @Test
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
     public void testReconnectSession() throws InterruptedException, TimeoutException {
-        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        loadUrl(mTestServer.getURL(TEST_PAGE));
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
-                mActivityTestRule.getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-        ClickUtils.mouseSingleClickView(
-                InstrumentationRegistry.getInstrumentation(), testRouteButton);
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
 
-        mActivityTestRule.loadUrlInNewTab(mTestServer.getURL(TEST_PAGE));
-        WebContents newWebContents =
-                mActivityTestRule.getActivity().getActivityTab().getWebContents();
-        Assert.assertTrue(webContents != newWebContents);
+        loadUrlInNewTab(mTestServer.getURL(TEST_PAGE));
+        WebContents newWebContents = getActivity().getActivityTab().getWebContents();
+        assertTrue(webContents != newWebContents);
         executeJavaScriptApi(newWebContents, String.format("reconnectSession(\'%s\');", sessionId));
         String reconnectedSessionId =
                 getJavaScriptVariable(newWebContents, "reconnectedSession.id");
-        Assert.assertEquals(sessionId, reconnectedSessionId);
+        assertEquals(sessionId, reconnectedSessionId);
         executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
     }
 
-    @Test
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
     public void testFailReconnectSession() throws InterruptedException, TimeoutException {
-        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        loadUrl(mTestServer.getURL(TEST_PAGE));
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
-                mActivityTestRule.getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-        ClickUtils.mouseSingleClickView(
-                InstrumentationRegistry.getInstrumentation(), testRouteButton);
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        ClickUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
 
         MockMediaRouteProvider.Builder.sProvider.setJoinRouteErrorMessage("Unknown route");
-        mActivityTestRule.loadUrlInNewTab(mTestServer.getURL(TEST_PAGE_RECONNECT_FAIL));
-        WebContents newWebContents =
-                mActivityTestRule.getActivity().getActivityTab().getWebContents();
-        Assert.assertTrue(webContents != newWebContents);
+        loadUrlInNewTab(mTestServer.getURL(TEST_PAGE_RECONNECT_FAIL));
+        WebContents newWebContents = getActivity().getActivityTab().getWebContents();
+        assertTrue(webContents != newWebContents);
         executeJavaScriptApi(newWebContents,
                 String.format("checkReconnectSessionFails('%s');", sessionId));
     }
 
-    @Test
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
     public void testFailStartCancelled() throws InterruptedException, TimeoutException {
-        mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        loadUrl(mTestServer.getURL(TEST_PAGE));
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         final Dialog routeSelectionDialog = RouterTestUtils.waitForDialog(
-                mActivityTestRule.getActivity(), VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-        Assert.assertNotNull(routeSelectionDialog);
+                getActivity(), VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        assertNotNull(routeSelectionDialog);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {

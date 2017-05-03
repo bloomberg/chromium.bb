@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -14,24 +13,15 @@ import android.view.View;
 import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -41,15 +31,8 @@ import java.util.concurrent.Callable;
 /**
  * Tests AppMenu popup
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class AppMenuTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
+public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
 
     private AppMenu mAppMenu;
@@ -76,10 +59,19 @@ public class AppMenuTest {
         }
     }
 
-    @Before
-    public void setUp() throws Exception {
+    public AppMenuTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityWithURL(TEST_URL);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
         // We need list selection; ensure we are not in touch mode.
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
+        getInstrumentation().setInTouchMode(false);
 
         ChromeActivity.setAppMenuHandlerFactoryForTesting(
                 new ChromeActivity.AppMenuHandlerFactory() {
@@ -92,10 +84,10 @@ public class AppMenuTest {
                     }
                 });
 
-        mActivityTestRule.startMainActivityWithURL(TEST_URL);
+        super.setUp();
 
         showAppMenuAndAssertMenuShown();
-        mAppMenu = mActivityTestRule.getActivity().getAppMenuHandler().getAppMenu();
+        mAppMenu = getActivity().getAppMenuHandler().getAppMenu();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -108,21 +100,19 @@ public class AppMenuTest {
                 return getCurrentFocusedRow();
             }
         }));
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
     }
 
     /**
      * Verify opening a new tab from the menu.
      */
-    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
     public void testMenuNewTab() throws InterruptedException {
-        final int tabCountBefore = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
-        ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                (ChromeTabbedActivity) mActivityTestRule.getActivity());
-        final int tabCountAfter = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
-        Assert.assertTrue("Expected: " + (tabCountBefore + 1) + " Got: " + tabCountAfter,
+        final int tabCountBefore = getActivity().getCurrentTabModel().getCount();
+        ChromeTabUtils.newTabFromMenu(getInstrumentation(), (ChromeTabbedActivity) getActivity());
+        final int tabCountAfter = getActivity().getCurrentTabModel().getCount();
+        assertTrue("Expected: " + (tabCountBefore + 1) + " Got: " + tabCountAfter,
                 tabCountBefore + 1 == tabCountAfter);
     }
 
@@ -130,22 +120,20 @@ public class AppMenuTest {
      * Test bounds when accessing the menu through the keyboard.
      * Make sure that the menu stays open when trying to move past the first and last items.
      */
-    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
     public void testKeyboardMenuBoundaries() {
         moveToBoundary(false, true);
-        Assert.assertEquals(getCount() - 1, getCurrentFocusedRow());
+        assertEquals(getCount() - 1, getCurrentFocusedRow());
         moveToBoundary(true, true);
-        Assert.assertEquals(0, getCurrentFocusedRow());
+        assertEquals(0, getCurrentFocusedRow());
         moveToBoundary(false, true);
-        Assert.assertEquals(getCount() - 1, getCurrentFocusedRow());
+        assertEquals(getCount() - 1, getCurrentFocusedRow());
     }
 
     /**
      * Test that typing ENTER immediately opening the menu works.
      */
-    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
     public void testKeyboardMenuEnterOnOpen() {
@@ -155,12 +143,11 @@ public class AppMenuTest {
     /**
      * Test that hitting ENTER past the top item doesn't crash Chrome.
      */
-    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
     public void testKeyboardEnterAfterMovePastTopItem() {
         moveToBoundary(true, true);
-        Assert.assertEquals(0, getCurrentFocusedRow());
+        assertEquals(0, getCurrentFocusedRow());
         hitEnterAndAssertAppMenuDismissed();
     }
 
@@ -168,12 +155,11 @@ public class AppMenuTest {
      * Test that hitting ENTER past the bottom item doesn't crash Chrome.
      * Catches regressions for http://crbug.com/181067
      */
-    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
     public void testKeyboardEnterAfterMovePastBottomItem() {
         moveToBoundary(false, true);
-        Assert.assertEquals(getCount() - 1, getCurrentFocusedRow());
+        assertEquals(getCount() - 1, getCurrentFocusedRow());
         hitEnterAndAssertAppMenuDismissed();
     }
 
@@ -181,30 +167,26 @@ public class AppMenuTest {
      * Test that hitting ENTER on the top item actually triggers the top item.
      * Catches regressions for https://crbug.com/191239 for shrunken menus.
      */
-    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
     public void testKeyboardMenuEnterOnTopItemLandscape() {
-        mActivityTestRule.getActivity().setRequestedOrientation(
-                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         showAppMenuAndAssertMenuShown();
         moveToBoundary(true, false);
-        Assert.assertEquals(0, getCurrentFocusedRow());
+        assertEquals(0, getCurrentFocusedRow());
         hitEnterAndAssertAppMenuDismissed();
     }
 
     /**
      * Test that hitting ENTER on the top item doesn't crash Chrome.
      */
-    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
     public void testKeyboardMenuEnterOnTopItemPortrait() {
-        mActivityTestRule.getActivity().setRequestedOrientation(
-                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         showAppMenuAndAssertMenuShown();
         moveToBoundary(true, false);
-        Assert.assertEquals(0, getCurrentFocusedRow());
+        assertEquals(0, getCurrentFocusedRow());
         hitEnterAndAssertAppMenuDismissed();
     }
 
@@ -215,14 +197,11 @@ public class AppMenuTest {
     @SmallTest
     @Feature({"Browser", "Main"})
     */
-    @Test
     @DisabledTest(message = "crbug.com/458193")
     public void testChangingOrientationHidesMenu() {
-        mActivityTestRule.getActivity().setRequestedOrientation(
-                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         showAppMenuAndAssertMenuShown();
-        mActivityTestRule.getActivity().setRequestedOrientation(
-                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not dismiss") {
             @Override
             public boolean isSatisfied() {
@@ -247,7 +226,7 @@ public class AppMenuTest {
     }
 
     private void hitEnterAndAssertAppMenuDismissed() {
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
         pressKey(KeyEvent.KEYCODE_ENTER);
         CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not dismiss") {
             @Override
@@ -285,7 +264,7 @@ public class AppMenuTest {
         }
 
         // The menu should stay open.
-        Assert.assertTrue(mAppMenu.isShowing());
+        assertTrue(mAppMenu.isShowing());
     }
 
     private void pressKey(final int keycode) {
@@ -297,7 +276,7 @@ public class AppMenuTest {
                 view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
             }
         });
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForIdleSync();
     }
 
     private int getCurrentFocusedRow() {

@@ -10,21 +10,12 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.TextView;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content_public.common.Referrer;
 
 import java.util.ArrayList;
@@ -36,13 +27,10 @@ import java.util.concurrent.ExecutionException;
  * A class to checkout the TabularContextMenuUi. This confirms the the UI represents items and
  * groups.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-public class TabularContextMenuUiTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+public class TabularContextMenuUiTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+    public TabularContextMenuUiTest() {
+        super(ChromeActivity.class);
+    }
 
     private static class MockMenuParams extends ContextMenuParams {
         private String mUrl = "";
@@ -65,12 +53,11 @@ public class TabularContextMenuUiTest {
         }
     }
 
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
-    @Test
     @SmallTest
     @Feature({"CustomContextMenu"})
     public void testViewDisplaysSingleItemProperly() throws ExecutionException {
@@ -84,16 +71,14 @@ public class TabularContextMenuUiTest {
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
-                return dialog.createPagerView(
-                        mActivityTestRule.getActivity(), new MockMenuParams(url), itemGroups);
+                return dialog.createPagerView(getActivity(), new MockMenuParams(url), itemGroups);
             }
         });
 
         TabLayout layout = (TabLayout) view.findViewById(R.id.tab_layout);
-        Assert.assertEquals(layout.getVisibility(), View.GONE);
+        assertEquals(layout.getVisibility(), View.GONE);
     }
 
-    @Test
     @SmallTest
     @Feature({"CustomContextMenu"})
     public void testViewDisplaysViewPagerForMultipleItems() throws ExecutionException {
@@ -108,16 +93,14 @@ public class TabularContextMenuUiTest {
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
-                return dialog.createPagerView(
-                        mActivityTestRule.getActivity(), new MockMenuParams(url), itemGroups);
+                return dialog.createPagerView(getActivity(), new MockMenuParams(url), itemGroups);
             }
         });
 
         TabLayout layout = (TabLayout) view.findViewById(R.id.tab_layout);
-        Assert.assertEquals(layout.getVisibility(), View.VISIBLE);
+        assertEquals(layout.getVisibility(), View.VISIBLE);
     }
 
-    @Test
     @SmallTest
     @Feature({"CustomContextMenu"})
     public void testURLIsShownOnContextMenu() throws ExecutionException {
@@ -129,16 +112,15 @@ public class TabularContextMenuUiTest {
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
-                return dialog.createContextMenuPageUi(mActivityTestRule.getActivity(),
-                        new MockMenuParams(expectedUrl), item, false, item.size());
+                return dialog.createContextMenuPageUi(
+                        getActivity(), new MockMenuParams(expectedUrl), item, false, item.size());
             }
         });
 
         TextView textView = (TextView) view.findViewById(R.id.context_header_text);
-        Assert.assertEquals(expectedUrl, String.valueOf(textView.getText()));
+        assertEquals(expectedUrl, String.valueOf(textView.getText()));
     }
 
-    @Test
     @SmallTest
     @Feature({"CustomContextMenu"})
     public void testHeaderIsNotShownWhenThereIsNoParams() throws ExecutionException {
@@ -149,16 +131,15 @@ public class TabularContextMenuUiTest {
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
-                return dialog.createContextMenuPageUi(mActivityTestRule.getActivity(),
-                        new MockMenuParams(""), item, false, item.size());
+                return dialog.createContextMenuPageUi(
+                        getActivity(), new MockMenuParams(""), item, false, item.size());
             }
         });
 
-        Assert.assertEquals(view.findViewById(R.id.context_header_text).getVisibility(), View.GONE);
-        Assert.assertEquals(view.findViewById(R.id.context_divider).getVisibility(), View.GONE);
+        assertEquals(view.findViewById(R.id.context_header_text).getVisibility(), View.GONE);
+        assertEquals(view.findViewById(R.id.context_divider).getVisibility(), View.GONE);
     }
 
-    @Test
     @SmallTest
     @Feature({"CustomContextMenu"})
     public void testLinkShowsMultipleLinesWhenClicked() throws ExecutionException {
@@ -169,7 +150,7 @@ public class TabularContextMenuUiTest {
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
-                return dialog.createContextMenuPageUi(mActivityTestRule.getActivity(),
+                return dialog.createContextMenuPageUi(getActivity(),
                         new MockMenuParams("http://google.com"), item, false, item.size());
             }
         });
@@ -177,8 +158,8 @@ public class TabularContextMenuUiTest {
         final TextView headerTextView = (TextView) view.findViewById(R.id.context_header_text);
         int expectedMaxLines = 1;
         int actualMaxLines = headerTextView.getMaxLines();
-        Assert.assertEquals("Expected a different number of default maximum lines.",
-                expectedMaxLines, actualMaxLines);
+        assertEquals("Expected a different number of default maximum lines.", expectedMaxLines,
+                actualMaxLines);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -189,8 +170,7 @@ public class TabularContextMenuUiTest {
 
         expectedMaxLines = Integer.MAX_VALUE;
         actualMaxLines = headerTextView.getMaxLines();
-        Assert.assertEquals(
-                "Expected a different number of maximum lines when the header is clicked.",
+        assertEquals("Expected a different number of maximum lines when the header is clicked.",
                 expectedMaxLines, actualMaxLines);
     }
 }
