@@ -6,6 +6,7 @@
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_FAKE_SAFE_BROWSING_DATABASE_MANAGER_H_
 
 #include <map>
+#include <set>
 
 #include "base/macros.h"
 #include "components/safe_browsing_db/test_database_manager.h"
@@ -41,7 +42,10 @@ class FakeSafeBrowsingDatabaseManager
                          Client* client) override;
 
  private:
+  void OnCheckUrlForSubresourceFilterComplete(Client* client, const GURL& url);
+
   std::map<GURL, safe_browsing::SBThreatType> url_to_threat_type_;
+  std::set<Client*> checks_;
   bool simulate_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);

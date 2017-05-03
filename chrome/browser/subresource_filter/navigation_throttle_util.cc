@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 
 content::NavigationThrottle* MaybeCreateSubresourceFilterNavigationThrottle(
@@ -20,7 +21,10 @@ content::NavigationThrottle* MaybeCreateSubresourceFilterNavigationThrottle(
           safe_browsing::V4FeatureList::V4UsageStatus::V4_ONLY) {
     return new subresource_filter::
         SubresourceFilterSafeBrowsingActivationThrottle(
-            navigation_handle, safe_browsing_service->database_manager());
+            navigation_handle,
+            content::BrowserThread::GetTaskRunnerForThread(
+                content::BrowserThread::IO),
+            safe_browsing_service->database_manager());
   }
   return nullptr;
 }
