@@ -363,7 +363,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // displayed tab is.
   //
   // This may refer to an item in the entries_ list if the pending_entry_index_
-  // == -1, or it may be its own entry that should be deleted. Be careful with
+  // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
   NavigationEntryImpl* pending_entry_;
 
