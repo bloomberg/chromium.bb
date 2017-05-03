@@ -644,12 +644,12 @@ shared_library("chrome") {
         [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
   }
 
-  if (is_android && use_order_profiling) {
+  if (use_order_profiling) {
     deps += [ "//tools/cygprofile" ]
   }
 
-  # See crbug.com/705088 for more info.
-  if (is_android && target_cpu == "arm" && is_asan) {
+  # See crbug.com/705088, crbug.com/717815.
+  if (target_cpu == "arm" && (is_asan || use_order_profiling)) {
     ldflags = [ "-Wl,--long-plt" ]
   }
 
