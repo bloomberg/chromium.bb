@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
-#include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -40,6 +39,10 @@
 #include "ppapi/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/android_theme_resources.h"
+#endif
 
 using content::SSLStatus;
 using testing::_;
@@ -359,6 +362,13 @@ TEST_F(PageInfoTest, HTTPSConnection) {
   EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 
+// Define some dummy constants for Android-only resources.
+#if !defined(OS_ANDROID)
+#define IDR_PAGEINFO_WARNING_MINOR 0
+#define IDR_PAGEINFO_BAD 0
+#define IDR_PAGEINFO_GOOD 0
+#endif
+
 TEST_F(PageInfoTest, InsecureContent) {
   struct TestCase {
     security_state::SecurityLevel security_level;
@@ -524,9 +534,11 @@ TEST_F(PageInfoTest, InsecureContent) {
               page_info()->site_connection_status());
     EXPECT_EQ(test.expected_site_identity_status,
               page_info()->site_identity_status());
+#if defined(OS_ANDROID)
     EXPECT_EQ(
         test.expected_connection_icon_id,
         PageInfoUI::GetConnectionIconID(page_info()->site_connection_status()));
+#endif
     EXPECT_EQ(base::string16(), page_info()->organization_name());
   }
 }
@@ -638,8 +650,10 @@ TEST_F(PageInfoTest, HTTPSSHA1) {
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
             page_info()->site_identity_status());
   EXPECT_EQ(base::string16(), page_info()->organization_name());
+#if defined(OS_ANDROID)
   EXPECT_EQ(IDR_PAGEINFO_WARNING_MINOR,
             PageInfoUI::GetIdentityIconID(page_info()->site_identity_status()));
+#endif
 }
 
 #if !defined(OS_ANDROID)

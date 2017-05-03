@@ -186,20 +186,13 @@ class PageInfoUI {
   static const gfx::Image& GetChosenObjectIcon(const ChosenObjectInfo& info,
                                                bool deleted);
 
+#if defined(OS_ANDROID)
   // Returns the identity icon ID for the given identity |status|.
   static int GetIdentityIconID(PageInfo::SiteIdentityStatus status);
 
-  // Returns the identity icon for the given identity |status|.
-  static const gfx::Image& GetIdentityIcon(PageInfo::SiteIdentityStatus status);
-
   // Returns the connection icon ID for the given connection |status|.
   static int GetConnectionIconID(PageInfo::SiteConnectionStatus status);
-
-  // Returns the connection icon for the given connection |status|.
-  static const gfx::Image& GetConnectionIcon(
-      PageInfo::SiteConnectionStatus status);
-
-#if !defined(OS_ANDROID)
+#else
   // Returns the icon for the Certificate area.
   static const gfx::ImageSkia GetCertificateIcon();
 #endif
