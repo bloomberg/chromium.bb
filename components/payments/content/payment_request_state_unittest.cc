@@ -55,8 +55,8 @@ class PaymentRequestStateTest : public testing::Test,
       std::vector<mojom::PaymentMethodDataPtr> method_data) {
     // The spec will be based on the |options| and |details| passed in.
     spec_ = base::MakeUnique<PaymentRequestSpec>(
-        std::move(options), std::move(details), std::move(method_data), nullptr,
-        "en-US");
+        std::move(options), std::move(details), std::move(method_data),
+        /*observer=*/nullptr, "en-US");
     state_ = base::MakeUnique<PaymentRequestState>(
         spec_.get(), this, "en-US", &test_personal_data_manager_,
         &test_payment_request_delegate_);
@@ -275,7 +275,7 @@ TEST_F(PaymentRequestStateTest, SelectedShippingAddressMessage_Normalized) {
 
   // Make the normalization not be instantaneous.
   test_payment_request_delegate()
-      ->GetTestAddressNormalizer()
+      ->test_address_normalizer()
       ->DelayNormalization();
 
   EXPECT_EQ(0, num_on_selected_information_changed_called());
@@ -288,7 +288,7 @@ TEST_F(PaymentRequestStateTest, SelectedShippingAddressMessage_Normalized) {
 
   // Complete the normalization.
   test_payment_request_delegate()
-      ->GetTestAddressNormalizer()
+      ->test_address_normalizer()
       ->CompleteAddressNormalization();
   EXPECT_EQ(1, num_on_selected_information_changed_called());
   EXPECT_FALSE(state()->is_ready_to_pay());
