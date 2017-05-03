@@ -35,6 +35,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSite = kSectionIdentifierEnumZero,
   SectionIdentifierUsername,
   SectionIdentifierPassword,
+  SectionIdentifierDelete,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -175,8 +176,10 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
       toSectionWithIdentifier:SectionIdentifierPassword];
   [model addItem:[self passwordCopyButtonItem]
       toSectionWithIdentifier:SectionIdentifierPassword];
+
+  [model addSectionWithIdentifier:SectionIdentifierDelete];
   [model addItem:[self deletePasswordButtonItem]
-      toSectionWithIdentifier:SectionIdentifierPassword];
+      toSectionWithIdentifier:SectionIdentifierDelete];
 }
 
 - (void)dealloc {
