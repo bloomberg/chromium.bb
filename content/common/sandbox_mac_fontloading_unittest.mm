@@ -66,9 +66,9 @@ bool FontLoadingTestCase::BeforeSandboxInit() {
 }
 
 bool FontLoadingTestCase::SandboxedTest() {
-  base::SharedMemoryHandle shmem_handle;
-  if (!font_shmem_->ShareToProcess(base::kNullProcessHandle, &shmem_handle)) {
-    LOG(ERROR) << "SharedMemory::ShareToProcess failed";
+  base::SharedMemoryHandle shmem_handle = font_shmem_->handle().Duplicate();
+  if (!shmem_handle.IsValid()) {
+    LOG(ERROR) << "SharedMemory handle duplication failed";
     return false;
   }
 

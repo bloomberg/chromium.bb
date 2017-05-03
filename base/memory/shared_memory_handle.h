@@ -56,7 +56,9 @@ class BASE_EXPORT SharedMemoryHandle {
   // Whether the underlying OS resource is valid.
   bool IsValid() const;
 
-  // Duplicates the underlying OS resource.
+  // Duplicates the underlying OS resource. Using the return value as a
+  // parameter to an IPC message will cause the IPC subsystem to consume the OS
+  // resource.
   SharedMemoryHandle Duplicate() const;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

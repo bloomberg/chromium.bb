@@ -49,8 +49,9 @@ void PepperSharedMemoryMessageFilter::OnHostMsgCreateSharedMemory(
   if (!shm.get())
     return;
 
-  base::SharedMemoryHandle host_shm_handle;
-  shm->ShareToProcess(base::GetCurrentProcessHandle(), &host_shm_handle);
+  // TODO(erikchen): This appears to sometimes leak the SharedMemoryHandle.
+  // https://crbug.com/640840.
+  base::SharedMemoryHandle host_shm_handle = shm->handle().Duplicate();
   *host_handle_id =
       content::PepperPluginInstance::Get(instance)
           ->GetVarTracker()

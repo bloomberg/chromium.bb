@@ -215,17 +215,6 @@ class BASE_EXPORT SharedMemory {
   // failure.
   SharedMemoryHandle GetReadOnlyHandle();
 
-  // Shares the shared memory to another process.  Attempts
-  // to create a platform-specific new_handle which can be
-  // used in a remote process to access the shared memory
-  // file.  new_handle is an output parameter to receive
-  // the handle for use in the remote process.
-  // Returns true on success, false otherwise.
-  bool ShareToProcess(ProcessHandle process,
-                      SharedMemoryHandle* new_handle) {
-    return ShareToProcessCommon(process, new_handle);
-  }
-
 #if defined(OS_POSIX) && (!defined(OS_MACOSX) || defined(OS_IOS)) && \
     !defined(OS_NACL)
   using UniqueId = std::pair<dev_t, ino_t>;
@@ -246,13 +235,6 @@ class BASE_EXPORT SharedMemory {
     (!defined(OS_MACOSX) || defined(OS_IOS))
   bool FilePathForMemoryName(const std::string& mem_name, FilePath* path);
 #endif
-
-#if defined(OS_MACOSX)
-  bool Share(SharedMemoryHandle* new_handle);
-#endif
-
-  bool ShareToProcessCommon(ProcessHandle process,
-                            SharedMemoryHandle* new_handle);
 
 #if defined(OS_WIN)
   // If true indicates this came from an external source so needs extra checks

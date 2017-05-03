@@ -67,10 +67,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   // while a consumer is active.
   void RegisterForUserGesture(const base::Closure& closure);
 
-  // Returns the shared memory handle of the gamepad data duplicated into the
-  // given process.
-  base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
-      base::ProcessHandle handle);
+  // Returns a duplicate of the shared memory handle of the gamepad data.
+  base::SharedMemoryHandle DuplicateSharedMemoryHandle();
 
   // Returns a new mojo::ScopedSharedBuffer handle of the gamepad data.
   mojo::ScopedSharedBufferHandle GetSharedBufferHandle();

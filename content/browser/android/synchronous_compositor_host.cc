@@ -289,12 +289,9 @@ void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
 
   SyncCompositorSetSharedMemoryParams set_shm_params;
   set_shm_params.buffer_size = buffer_size;
-  base::ProcessHandle renderer_process_handle =
-      rwhva_->GetRenderWidgetHost()->GetProcess()->GetHandle();
-  if (!software_draw_shm->shm.ShareToProcess(renderer_process_handle,
-                                             &set_shm_params.shm_handle)) {
+  set_shm_params.shm_handle = software_draw_shm->shm.handle().Duplicate();
+  if (!set_shm_params.shm_handle.IsValid())
     return;
-  }
 
   bool success = false;
   SyncCompositorCommonRendererParams common_renderer_params;

@@ -178,11 +178,10 @@ void PepperPlatformAudioOutputDev::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     int length) {
-#if defined(OS_WIN)
   DCHECK(handle.IsValid());
+#if defined(OS_WIN)
   DCHECK(socket_handle);
 #else
-  DCHECK(base::SharedMemory::IsHandleValid(handle));
   DCHECK_NE(-1, socket_handle);
 #endif
   DCHECK(length);

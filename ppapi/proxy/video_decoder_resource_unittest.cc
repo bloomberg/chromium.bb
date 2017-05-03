@@ -147,14 +147,12 @@ class VideoDecoderResourceTest : public PluginProxyTest {
         &sink(), PpapiHostMsg_VideoDecoder_GetShm::ID, PP_OK, shm_msg_reply);
     sink().AddFilter(&shm_msg_handler);
 
-    std::unique_ptr<base::SharedMemoryHandle> shm_handle;
     std::unique_ptr<SerializedHandle> serialized_handle;
     base::SharedMemory shm;
     if (expected_shm_msg) {
       shm.CreateAnonymous(kShmSize);
-      shm_handle.reset(new base::SharedMemoryHandle());
-      shm.ShareToProcess(base::GetCurrentProcessHandle(), shm_handle.get());
-      serialized_handle.reset(new SerializedHandle(*shm_handle, kShmSize));
+      base::SharedMemoryHandle shm_handle = shm.handle().Duplicate();
+      serialized_handle.reset(new SerializedHandle(shm_handle, kShmSize));
       shm_msg_handler.set_serialized_handle(serialized_handle.get());
     }
 

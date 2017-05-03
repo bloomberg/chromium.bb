@@ -277,16 +277,4 @@ SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
   return new_handle;
 }
 
-bool SharedMemory::Share(SharedMemoryHandle* new_handle) {
-  DCHECK(shm_.IsValid());
-  *new_handle = shm_.Duplicate();
-  return new_handle->IsValid();
-}
-
-bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
-                                        SharedMemoryHandle* new_handle) {
-  bool success = Share(new_handle);
-  return success;
-}
-
 }  // namespace base
