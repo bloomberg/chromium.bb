@@ -641,17 +641,10 @@ def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map,
     # For each set of dimensions it is only triggered on one of the devices
     swarming_dimensions = []
     for dimension in tester_config['swarming_dimensions']:
-      device_affinity = None
-      if benchmark_sharding_map:
-        sharding_map = benchmark_sharding_map.get(str(num_shards), None)
-        if not sharding_map:
-          raise Exception('Invalid number of shards, generate new sharding map')
-        device_affinity = sharding_map.get(benchmark.Name(), None)
-      else:
-        # No sharding map was provided, default to legacy device
-        # affinity algorithm
-        device_affinity = bot_utils.GetDeviceAffinity(
-          num_shards, benchmark.Name())
+      sharding_map = benchmark_sharding_map.get(str(num_shards), None)
+      if not sharding_map:
+        raise Exception('Invalid number of shards, generate new sharding map')
+      device_affinity = sharding_map.get(benchmark.Name(), None)
       if device_affinity is None:
         raise Exception('Device affinity for benchmark %s not found'
           % benchmark.Name())
