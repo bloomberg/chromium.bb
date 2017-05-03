@@ -82,7 +82,9 @@ const int kPasswordSection = 2;
 const int kPasswordItem = 0;
 const int kShowHideButtonItem = 1;
 const int kCopyPasswordButtonItem = 2;
-const int kDeleteButtonItem = 3;
+
+const int kDeleteSection = 3;
+const int kDeleteButtonItem = 0;
 
 class PasswordDetailsCollectionViewControllerTest
     : public CollectionViewControllerTest {
@@ -125,7 +127,7 @@ class PasswordDetailsCollectionViewControllerTest
 TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
   CreateController();
   CheckController();
-  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(4, NumberOfSections());
   // Site section
   EXPECT_EQ(2, NumberOfItemsInSection(kUsernameSection));
   CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_SITE, kSiteSection);
@@ -146,7 +148,7 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
   CheckTextCellTitleWithId(IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON,
                            kUsernameSection, kCopyUsernameButtonItem);
   // Password section
-  EXPECT_EQ(4, NumberOfItemsInSection(kPasswordSection));
+  EXPECT_EQ(3, NumberOfItemsInSection(kPasswordSection));
   CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD,
                            kPasswordSection);
   PasswordDetailsItem* passwordItem =
@@ -157,8 +159,10 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
                            kPasswordSection, kShowHideButtonItem);
   CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON,
                            kPasswordSection, kCopyPasswordButtonItem);
+  // Delete section
+  EXPECT_EQ(1, NumberOfItemsInSection(kDeleteSection));
   CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON,
-                           kPasswordSection, kDeleteButtonItem);
+                           kDeleteSection, kDeleteButtonItem);
 }
 
 struct SimplifyOriginTestData {
@@ -251,7 +255,7 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, DeletePassword) {
   CreateController();
   [controller() collectionView:[controller() collectionView]
       didSelectItemAtIndexPath:[NSIndexPath indexPathForRow:kDeleteButtonItem
-                                                  inSection:kPasswordSection]];
+                                                  inSection:kDeleteSection]];
   EXPECT_EQ(1, delegate_.numberOfCallsToDeletePassword);
 }
 
