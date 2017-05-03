@@ -5,61 +5,84 @@
 package org.chromium.chrome.browser.engagement;
 
 import android.support.test.filters.SmallTest;
-import android.test.UiThreadTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Test for the Site Engagement Service Java binding.
  */
-public class SiteEngagementServiceTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-
-    public SiteEngagementServiceTest() {
-        super(ChromeActivity.class);
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class SiteEngagementServiceTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     /**
      * Verify that setting the engagement score for a URL and reading it back it works.
      */
+    @Test
     @SmallTest
-    @UiThreadTest
     @Feature({"Engagement"})
-    public void testSettingAndRetrievingScore() {
-        final String url = "https://www.google.com";
-        SiteEngagementService service = SiteEngagementService.getForProfile(
-                getActivity().getActivityTab().getProfile());
+    public void testSettingAndRetrievingScore() throws Throwable {
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final String url = "https://www.google.com";
+                SiteEngagementService service = SiteEngagementService.getForProfile(
+                        mActivityTestRule.getActivity().getActivityTab().getProfile());
 
-        assertEquals(0.0, service.getScore(url));
-        service.resetBaseScoreForUrl(url, 5.0);
-        assertEquals(5.0, service.getScore(url));
+                Assert.assertEquals(0.0, service.getScore(url), 0);
+                service.resetBaseScoreForUrl(url, 5.0);
+                Assert.assertEquals(5.0, service.getScore(url), 0);
 
-        service.resetBaseScoreForUrl(url, 2.0);
-        assertEquals(2.0, service.getScore(url));
+                service.resetBaseScoreForUrl(url, 2.0);
+                Assert.assertEquals(2.0, service.getScore(url), 0);
+            }
+        });
     }
 
     /**
      * Verify that repeatedly fetching and throwing away the SiteEngagementService works.
      */
+    @Test
     @SmallTest
-    @UiThreadTest
     @Feature({"Engagement"})
-    public void testRepeatedlyGettingService() {
-        final String url = "https://www.google.com";
-        Profile profile = getActivity().getActivityTab().getProfile();
+    public void testRepeatedlyGettingService() throws Throwable {
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final String url = "https://www.google.com";
+                Profile profile = mActivityTestRule.getActivity().getActivityTab().getProfile();
 
-        assertEquals(0.0, SiteEngagementService.getForProfile(profile).getScore(url));
-        SiteEngagementService.getForProfile(profile).resetBaseScoreForUrl(url, 5.0);
-        assertEquals(5.0, SiteEngagementService.getForProfile(profile).getScore(url));
+                Assert.assertEquals(
+                        0.0, SiteEngagementService.getForProfile(profile).getScore(url), 0);
+                SiteEngagementService.getForProfile(profile).resetBaseScoreForUrl(url, 5.0);
+                Assert.assertEquals(
+                        5.0, SiteEngagementService.getForProfile(profile).getScore(url), 0);
 
-        SiteEngagementService.getForProfile(profile).resetBaseScoreForUrl(url, 2.0);
-        assertEquals(2.0, SiteEngagementService.getForProfile(profile).getScore(url));
+                SiteEngagementService.getForProfile(profile).resetBaseScoreForUrl(url, 2.0);
+                Assert.assertEquals(
+                        2.0, SiteEngagementService.getForProfile(profile).getScore(url), 0);
+            }
+        });
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 }

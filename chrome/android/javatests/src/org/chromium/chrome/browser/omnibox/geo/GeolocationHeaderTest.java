@@ -10,22 +10,37 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Tests for GeolocationHeader and GeolocationTracker.
  */
-public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class GeolocationHeaderTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String SEARCH_URL_1 = "https://www.google.com/search?q=potatoes";
     private static final String SEARCH_URL_2 = "https://www.google.co.jp/webhp?#q=dinosaurs";
     private static final String ENABLE_CONSISTENT_GEOLOCATION_FEATURE =
@@ -34,13 +49,9 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
             "disable-features=ConsistentOmniboxGeolocation";
     private static final String GOOGLE_BASE_URL_SWITCH = "google-base-url=https://www.google.com";
 
-    public GeolocationHeaderTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -49,6 +60,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add(DISABLE_CONSISTENT_GEOLOCATION_FEATURE)
@@ -73,6 +85,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         assertNullHeader("http://www.google.com/webhp?#q=dinosaurs", false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({ENABLE_CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH})
@@ -99,6 +112,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         assertNullHeader("http://www.google.com/webhp?#q=dinosaurs", false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add(DISABLE_CONSISTENT_GEOLOCATION_FEATURE)
@@ -111,6 +125,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         checkHeaderWithPermissions(ContentSetting.BLOCK, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({ENABLE_CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH})
@@ -125,6 +140,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         checkHeaderWithPermissionAndSetting(ContentSetting.BLOCK, false, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add(DISABLE_CONSISTENT_GEOLOCATION_FEATURE)
@@ -152,7 +168,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
                 infoHttps.setContentSetting(httpsPermission);
                 String header = GeolocationHeader.getGeoHeader(
                         "https://www.google.de/search?q=kartoffelsalat",
-                        getActivity().getActivityTab());
+                        mActivityTestRule.getActivity().getActivityTab());
                 assertHeaderState(header, shouldBeNull);
             }
         });
@@ -168,7 +184,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
                 infoHttps.setContentSetting(httpsPermission);
                 WebsitePreferenceBridge.setDSEGeolocationSetting(settingValue);
                 String header = GeolocationHeader.getGeoHeader(
-                        SEARCH_URL_1, getActivity().getActivityTab());
+                        SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());
                 assertHeaderState(header, shouldBeNull);
             }
         });
@@ -180,8 +196,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
             @Override
             public void run() {
                 setMockLocation(latitute, longitude, time);
-                String header = GeolocationHeader.getGeoHeader(SEARCH_URL_1,
-                        getActivity().getActivityTab());
+                String header = GeolocationHeader.getGeoHeader(
+                        SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());
                 assertHeaderState(header, shouldBeNull);
             }
         });
@@ -189,9 +205,9 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     private void assertHeaderState(String header, boolean shouldBeNull) {
         if (shouldBeNull) {
-            assertNull(header);
+            Assert.assertNull(header);
         } else {
-            assertNotNull(header);
+            Assert.assertNotNull(header);
         }
     }
 
@@ -210,34 +226,29 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     private void assertNullHeader(final String url, final boolean isIncognito) {
         try {
-            final Tab tab = loadUrlInNewTab("about:blank", isIncognito);
+            final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    assertNull(GeolocationHeader.getGeoHeader(url, tab));
+                    Assert.assertNull(GeolocationHeader.getGeoHeader(url, tab));
                 }
             });
         } catch (InterruptedException e) {
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
     }
 
     private void assertNonNullHeader(final String url, final boolean isIncognito) {
         try {
-            final Tab tab = loadUrlInNewTab("about:blank", isIncognito);
+            final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    assertNotNull(GeolocationHeader.getGeoHeader(url, tab));
+                    Assert.assertNotNull(GeolocationHeader.getGeoHeader(url, tab));
                 }
             });
         } catch (InterruptedException e) {
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 }
