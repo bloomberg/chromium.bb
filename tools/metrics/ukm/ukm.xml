@@ -197,6 +197,13 @@ along with a detailed description for each metric.
   </metric>
 </event>
 
+<event name="Plugins.FlashInstance">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Recorded when a Flash object instance is created.
+  </summary>
+</event>
+
 <event name="Translate">
   <owner>hamelphi@chromium.org</owner>
   <summary>
