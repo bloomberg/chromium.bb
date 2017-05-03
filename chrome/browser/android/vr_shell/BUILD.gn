@@ -82,6 +82,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       ":vr_shell_jni_headers",
       "//base",
       "//cc",
+      "//chrome:resources",
       "//components/omnibox/browser",
       "//components/rappor",
       "//components/security_state/core",
