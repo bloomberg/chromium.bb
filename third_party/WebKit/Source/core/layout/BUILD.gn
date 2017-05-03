@@ -29,7 +29,6 @@ blink_core_sources("layout") {
     "FragmentainerIterator.cpp",
     "FragmentainerIterator.h",
     "FragmentationContext.h",
-    "GapRects.h",
     "GeneratedChildren.h",
     "Grid.cpp",
     "Grid.h",
