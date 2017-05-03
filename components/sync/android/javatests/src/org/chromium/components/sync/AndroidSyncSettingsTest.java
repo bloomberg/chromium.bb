@@ -13,6 +13,7 @@ import android.test.InstrumentationTestCase;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -152,8 +153,9 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         });
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    // @SmallTest
+    // @Feature({"Sync"})
+    @DisabledTest(message = "crbug.com/717960")
     public void testAccountInitialization() throws InterruptedException, TimeoutException {
         // mAccount was set to be syncable and not have periodic syncs.
         assertEquals(1, mSyncContentResolverDelegate.mSetIsSyncableCalls);
@@ -365,8 +367,9 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
                 mSyncSettingsObserver.receivedNotification());
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    // @SmallTest
+    // @Feature({"Sync"})
+    @DisabledTest(message = "crbug.com/717960")
     public void testIsSyncableOnSigninAndNotOnSignout()
             throws InterruptedException, TimeoutException {
         assertTrue(mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority) == 1);
