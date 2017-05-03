@@ -690,14 +690,27 @@ IN_PROC_BROWSER_TEST_F(RestartTest, SessionStorage) {
   CheckReloadedPageRestored();
 }
 
-IN_PROC_BROWSER_TEST_F(RestartTest, PRE_LocalStorageClearedOnExit) {
+// TODO(crbug.com/717740): This test is flaky on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_PRE_LocalStorageClearedOnExit \
+  DISABLED_PRE_LocalStorageClearedOnExit
+#else
+#define MAYBE_PRE_LocalStorageClearedOnExit PRE_LocalStorageClearedOnExit
+#endif
+IN_PROC_BROWSER_TEST_F(RestartTest, MAYBE_PRE_LocalStorageClearedOnExit) {
   StoreDataWithPage("local_storage.html");
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   Restart();
 }
 
-IN_PROC_BROWSER_TEST_F(RestartTest, LocalStorageClearedOnExit) {
+// TODO(crbug.com/717740): This test is flaky on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_LocalStorageClearedOnExit DISABLED_LocalStorageClearedOnExit
+#else
+#define MAYBE_LocalStorageClearedOnExit LocalStorageClearedOnExit
+#endif
+IN_PROC_BROWSER_TEST_F(RestartTest, MAYBE_LocalStorageClearedOnExit) {
   CheckReloadedPageRestored();
 }
 
