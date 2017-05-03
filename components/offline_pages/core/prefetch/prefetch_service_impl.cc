@@ -23,6 +23,15 @@ void PrefetchServiceImpl::RemovePrefetchURLsByClientId(
   NOTIMPLEMENTED();
 }
 
+void PrefetchServiceImpl::BeginBackgroundTask(
+    std::unique_ptr<ScopedBackgroundTask> task) {
+  NOTIMPLEMENTED();
+}
+
+void PrefetchServiceImpl::StopBackgroundTask(ScopedBackgroundTask* task) {
+  NOTIMPLEMENTED();
+}
+
 void PrefetchServiceImpl::Shutdown() {}
 
 }  // namespace offline_pages

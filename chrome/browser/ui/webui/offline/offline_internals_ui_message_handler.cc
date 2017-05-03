@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/prefetch/prefetch_background_task.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -210,6 +211,7 @@ void OfflineInternalsUIMessageHandler::HandleGetStoredPages(
 
 void OfflineInternalsUIMessageHandler::HandleSetRecordPageModel(
     const base::ListValue* args) {
+  AllowJavascript();
   bool should_record;
   CHECK(args->GetBoolean(0, &should_record));
   if (offline_page_model_)
@@ -218,6 +220,7 @@ void OfflineInternalsUIMessageHandler::HandleSetRecordPageModel(
 
 void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
     const base::ListValue* args) {
+  AllowJavascript();
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
@@ -227,8 +230,31 @@ void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
                                                           : "Online"));
 }
 
+void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  offline_pages::PrefetchBackgroundTask::Schedule();
+
+  ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
+}
+
+void OfflineInternalsUIMessageHandler::HandleCancelNwake(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  offline_pages::PrefetchBackgroundTask::Cancel();
+
+  ResolveJavascriptCallback(*callback_id, base::Value("Cancelled."));
+}
+
 void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(
     const base::ListValue* args) {
+  AllowJavascript();
   bool should_record;
   CHECK(args->GetBoolean(0, &should_record));
   if (request_coordinator_)
@@ -339,6 +365,14 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getNetworkStatus",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleGetNetworkStatus,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "scheduleNwake",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleScheduleNwake,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "cancelNwake",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleCancelNwake,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Get the offline page model associated with this web ui.

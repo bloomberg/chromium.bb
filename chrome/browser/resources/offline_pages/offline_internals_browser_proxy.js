@@ -112,6 +112,18 @@ cr.define('offlineInternals', function() {
      *     is retrieved.
      */
     getNetworkStatus: function() {},
+
+    /**
+     * Schedules the default NWake task.
+     * @return {!Promise} A promise firing when the task has been scheduled.
+     */
+    scheduleNwake: function() {},
+
+    /**
+     * Cancels NWake task.
+     * @return {!Promise} A promise firing when the task has been cancelled.
+     */
+    cancelNwake: function() {},
   };
 
   /**
@@ -170,6 +182,16 @@ cr.define('offlineInternals', function() {
     /** @override */
     getNetworkStatus: function() {
       return cr.sendWithPromise('getNetworkStatus');
+    },
+
+    /** @override */
+    scheduleNwake: function() {
+      return cr.sendWithPromise('scheduleNwake');
+    },
+
+    /** @override */
+    cancelNwake: function() {
+      return cr.sendWithPromise('cancelNwake');
     },
   };
 
