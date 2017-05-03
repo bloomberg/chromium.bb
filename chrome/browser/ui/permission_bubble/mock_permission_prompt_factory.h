@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 
 class MockPermissionPrompt;
@@ -51,7 +52,9 @@ class MockPermissionPromptFactory {
   // Number of requests seen by the last |Show|.
   int request_count() { return requests_count_; }
   // Number of requests seen.
-  int total_request_count() { return total_requests_count_; }
+  int TotalRequestCount();
+  // Whether the specified permission was shown in a prompt.
+  bool RequestTypeSeen(PermissionRequestType type);
 
   void WaitForPermissionBubble();
 
@@ -70,7 +73,8 @@ class MockPermissionPromptFactory {
   bool can_update_ui_;
   int show_count_;
   int requests_count_;
-  int total_requests_count_;
+  std::vector<PermissionRequestType> request_types_seen_;
+
   std::vector<MockPermissionPrompt*> prompts_;
   PermissionRequestManager::AutoResponseType response_type_;
 

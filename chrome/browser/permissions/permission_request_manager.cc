@@ -341,6 +341,7 @@ void PermissionRequestManager::Accept() {
 }
 
 void PermissionRequestManager::Deny() {
+  DCHECK_EQ(1u, requests_.size());
   PermissionUmaUtil::PermissionPromptDenied(requests_);
 
   std::vector<PermissionRequest*>::iterator requests_iter;
@@ -524,7 +525,14 @@ void PermissionRequestManager::DoAutoResponseForTesting() {
       Accept();
       break;
     case DENY_ALL:
-      Deny();
+      // Deny() assumes there is only 1 request.
+      if (accept_states_.size() == 1) {
+        Deny();
+      } else {
+        for (size_t i = 0; i < accept_states_.size(); ++i)
+          accept_states_[i] = false;
+        Accept();
+      }
       break;
     case DISMISS:
       Closing();

@@ -18,7 +18,10 @@ void MockPermissionPrompt::Show(const std::vector<PermissionRequest*>& requests,
   factory_->ShowView(this);
   factory_->show_count_++;
   factory_->requests_count_ = manager_->requests_.size();
-  factory_->total_requests_count_ += manager_->requests_.size();
+  for (const PermissionRequest* request : manager_->requests_) {
+    factory_->request_types_seen_.push_back(
+        request->GetPermissionRequestType());
+  }
   factory_->UpdateResponseType();
   is_visible_ = true;
 }

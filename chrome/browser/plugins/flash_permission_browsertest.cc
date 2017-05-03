@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, SucceedsInPopupWindow) {
       base::MakeUnique<MockPermissionPromptFactory>(manager);
   manager->DisplayPendingRequests();
 
-  EXPECT_EQ(0, popup_prompt_factory->total_request_count());
+  EXPECT_EQ(0, popup_prompt_factory->TotalRequestCount());
   popup_prompt_factory->set_response_type(PermissionRequestManager::ACCEPT_ALL);
   // FlashPermissionContext::UpdateTabContext will reload the page, we'll have
   // to wait until it is ready.
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, SucceedsInPopupWindow) {
   EXPECT_TRUE(reload_waiter.Wait());
 
   EXPECT_TRUE(FeatureUsageSucceeds());
-  EXPECT_EQ(1, popup_prompt_factory->total_request_count());
+  EXPECT_EQ(1, popup_prompt_factory->TotalRequestCount());
 
   // Shut down the popup window tab, as the normal test teardown assumes there
   // is only one test tab.
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, SucceedsInPopupWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, TriggerPromptViaNewWindow) {
-  EXPECT_EQ(0, prompt_factory()->total_request_count());
+  EXPECT_EQ(0, prompt_factory()->TotalRequestCount());
   prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
   // FlashPermissionContext::UpdateTabContext will reload the page, we'll have
   // to wait until it is ready.
@@ -155,12 +155,12 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, TriggerPromptViaNewWindow) {
   EXPECT_TRUE(reload_waiter.Wait());
 
   EXPECT_TRUE(FeatureUsageSucceeds());
-  EXPECT_EQ(1, prompt_factory()->total_request_count());
+  EXPECT_EQ(1, prompt_factory()->TotalRequestCount());
 }
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
                        TriggerPromptViaPluginPlaceholder) {
-  EXPECT_EQ(0, prompt_factory()->total_request_count());
+  EXPECT_EQ(0, prompt_factory()->TotalRequestCount());
   EXPECT_FALSE(FeatureUsageSucceeds());
   prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
   // We need to simulate a mouse click to trigger the placeholder to prompt.
@@ -172,12 +172,12 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
   EXPECT_TRUE(reload_waiter.Wait());
 
   EXPECT_TRUE(FeatureUsageSucceeds());
-  EXPECT_EQ(1, prompt_factory()->total_request_count());
+  EXPECT_EQ(1, prompt_factory()->TotalRequestCount());
 }
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
                        TriggerPromptViaMainFrameNavigationWithoutUserGesture) {
-  EXPECT_EQ(0, prompt_factory()->total_request_count());
+  EXPECT_EQ(0, prompt_factory()->TotalRequestCount());
   EXPECT_FALSE(FeatureUsageSucceeds());
   prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
 
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
   EXPECT_TRUE(reload_waiter.Wait());
 
   EXPECT_TRUE(FeatureUsageSucceeds());
-  EXPECT_EQ(1, prompt_factory()->total_request_count());
+  EXPECT_EQ(1, prompt_factory()->TotalRequestCount());
 }
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, AllowFileURL) {
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, AllowFileURL) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("file://" + test_path.AsUTF8Unsafe() + test_url()));
   CommonSucceedsIfAllowed();
-  EXPECT_EQ(1, prompt_factory()->total_request_count());
+  EXPECT_EQ(1, prompt_factory()->TotalRequestCount());
 
   // Navigate to a second URL to verify it's allowed on all file: URLs.
   ui_test_utils::NavigateToURL(
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, BlockFileURL) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("file://" + test_path.AsUTF8Unsafe() + test_url()));
   CommonFailsIfBlocked();
-  EXPECT_EQ(1, prompt_factory()->total_request_count());
+  EXPECT_EQ(1, prompt_factory()->TotalRequestCount());
 
   // Navigate to a second URL to verify it's blocked on all file: URLs.
   ui_test_utils::NavigateToURL(
