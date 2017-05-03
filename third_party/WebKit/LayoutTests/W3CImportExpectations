@@ -35,7 +35,8 @@ external/wpt/annotation-model [ Skip ]
 external/wpt/annotation-protocol [ Skip ]
 external/wpt/annotation-vocab [ Skip ]
 external/wpt/app-uri [ Skip ]
-external/wpt/battery-status [ Skip ]
+## Owners: timvolodine@chromium.org
+# external/wpt/battery-status [ Pass ]
 ## Owners: ortuno@chromium.org,scheib@chromium.org
 # external/wpt/bluetooth [ Pass ]
 ## Owners: none; No tests in the directory.
@@ -267,7 +268,8 @@ external/wpt/fonts/math [ Skip ]
 # external/wpt/fullscreen [ Pass ]
 ## Owners: bajones@chromium.org
 # external/wpt/gamepad [ Pass ]
-external/wpt/generic-sensor [ Skip ]
+## Owners: alexander.shalamov@intel.com,mikhail.pozdnyakov@intel.com,rijubrata.bhaumik@intel.com,timvolodine@chromium.org
+# external/wpt/generic-sensor [ Pass ]
 external/wpt/geolocation-API [ Skip ]
 ## Owners: jsbell@chromium.org
 # external/wpt/hr-time [ Pass ]
