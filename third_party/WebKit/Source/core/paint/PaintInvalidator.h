@@ -13,13 +13,9 @@
 namespace blink {
 
 struct PaintInvalidatorContext {
-  PaintInvalidatorContext(
-      const PaintPropertyTreeBuilderContext* tree_builder_context)
-      : parent_context(nullptr), tree_builder_context_(tree_builder_context) {}
+  PaintInvalidatorContext() : parent_context(nullptr) {}
 
-  PaintInvalidatorContext(
-      const PaintPropertyTreeBuilderContext* tree_builder_context,
-      const PaintInvalidatorContext& parent_context)
+  PaintInvalidatorContext(const PaintInvalidatorContext& parent_context)
       : parent_context(&parent_context),
         forced_subtree_invalidation_flags(
             parent_context.forced_subtree_invalidation_flags),
@@ -27,8 +23,7 @@ struct PaintInvalidatorContext {
             parent_context.paint_invalidation_container),
         paint_invalidation_container_for_stacked_contents(
             parent_context.paint_invalidation_container_for_stacked_contents),
-        painting_layer(parent_context.painting_layer),
-        tree_builder_context_(tree_builder_context) {}
+        painting_layer(parent_context.painting_layer) {}
 
   // This method is virtual temporarily to adapt PaintInvalidatorContext and the
   // legacy PaintInvalidationState for code shared by old code and new code.
@@ -106,9 +101,12 @@ struct PaintInvalidatorContext {
 
  private:
   friend class PaintInvalidator;
-  const PaintPropertyTreeBuilderContext* tree_builder_context_;
+  const PaintPropertyTreeBuilderFragmentContext* tree_builder_context_ =
+      nullptr;
 
 #if DCHECK_IS_ON()
+  bool tree_builder_context_actually_needed_ = false;
+  friend class FindVisualRectNeedingUpdateScope;
   friend class FindVisualRectNeedingUpdateScopeBase;
   mutable bool force_visual_rect_update_for_checking_ = false;
 #endif
@@ -116,8 +114,12 @@ struct PaintInvalidatorContext {
 
 class PaintInvalidator {
  public:
-  void InvalidatePaint(FrameView&, PaintInvalidatorContext&);
-  void InvalidatePaint(const LayoutObject&, PaintInvalidatorContext&);
+  void InvalidatePaint(FrameView&,
+                       const PaintPropertyTreeBuilderContext*,
+                       PaintInvalidatorContext&);
+  void InvalidatePaint(const LayoutObject&,
+                       const PaintPropertyTreeBuilderContext*,
+                       PaintInvalidatorContext&);
 
   // Process objects needing paint invalidation on the next frame.
   // See the definition of PaintInvalidationDelayedFull for more details.
@@ -140,8 +142,10 @@ class PaintInvalidator {
                                          PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdatePaintInvalidationContainer(const LayoutObject&,
                                                       PaintInvalidatorContext&);
-  ALWAYS_INLINE void UpdateVisualRectIfNeeded(const LayoutObject&,
-                                              PaintInvalidatorContext&);
+  ALWAYS_INLINE void UpdateVisualRectIfNeeded(
+      const LayoutObject&,
+      const PaintPropertyTreeBuilderContext*,
+      PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdateVisualRect(const LayoutObject&,
                                       PaintInvalidatorContext&);
 
