@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -525,15 +526,19 @@ NetworkListView::UpdateNetworkListEntries() {
   // Keep an index where the next child should be inserted.
   int index = 0;
 
-  bool show_connection_warning =
+  // Show a warning that the connection might be monitored if connected to a VPN
+  // or if the default network has a proxy installed.
+  const bool using_vpn =
       !!NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
           NetworkTypePattern::VPN());
-  show_connection_warning =
-      show_connection_warning || NetworkHandler::Get()
-                                     ->ui_proxy_config_service()
-                                     ->HasDefaultNetworkProxyConfigured();
-
-  if (show_connection_warning) {
+  // TODO(jamescook): Eliminate the null check by creating UIProxyConfigService
+  // under mash. This will require the mojo pref service to work with prefs in
+  // Local State. http://crbug.com/718072
+  const bool using_proxy = NetworkHandler::Get()->ui_proxy_config_service() &&
+                           NetworkHandler::Get()
+                               ->ui_proxy_config_service()
+                               ->HasDefaultNetworkProxyConfigured();
+  if (using_vpn || using_proxy) {
     if (!connection_warning_)
       connection_warning_ = CreateConnectionWarning();
     PlaceViewAtIndex(connection_warning_, index++);

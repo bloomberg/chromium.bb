@@ -106,6 +106,12 @@ class WindowManagerApplication : public service_manager::Service {
 
   const Config ash_config_;
 
+  // Whether this class initialized NetworkHandler and needs to clean it up.
+  bool network_handler_initialized_ = false;
+
+  // Whether this class initialized DBusThreadManager and needs to clean it up.
+  bool dbus_thread_manager_initialized_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };
 
