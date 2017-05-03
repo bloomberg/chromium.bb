@@ -96,11 +96,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // frame of the specified name exists in the page.
   RenderFrameHost* TargetFrame();
 
-  // A helper function for TargetFrame; adds a frame to the specified set if its
-  // name matches |frame_name_|.
-  void AddToSetIfFrameNameMatches(std::set<RenderFrameHost*>* frame_set,
-                                  RenderFrameHost* host);
-
   // Called internally and by the owned MainFrameNavigationObserver.
   void DisallowJavascriptOnAllHandlers();
 

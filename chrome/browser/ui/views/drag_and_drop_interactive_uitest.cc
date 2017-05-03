@@ -702,21 +702,8 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   }
 
   content::RenderFrameHost* GetFrameByName(const std::string& name_to_find) {
-    content::RenderFrameHost* result = nullptr;
-    for (content::RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
-      if (rfh->GetFrameName() == name_to_find) {
-        if (result) {
-          ADD_FAILURE() << "More than one frame named "
-                        << "'" << name_to_find << "'";
-          return nullptr;
-        }
-        result = rfh;
-      }
-    }
-
-    EXPECT_TRUE(result) << "Couldn't find a frame named "
-                        << "'" << name_to_find << "'";
-    return result;
+    return content::FrameMatchingPredicate(
+        web_contents(), base::Bind(&content::FrameMatchesName, name_to_find));
   }
 
   void AssertTestPageIsLoaded() {
