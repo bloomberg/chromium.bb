@@ -27,11 +27,6 @@ def _check_call(argv, **kwargs):
   subprocess.check_call(argv, **kwargs)
 
 
-def get_os_bitness():
-  """Returns bitness of operating system as int."""
-  return 64 if platform.machine().endswith('64') else 32
-
-
 def get_target_git_version():
   """Returns git version that should be installed."""
   if os.path.exists(os.path.join(ROOT_DIR, '.git_bleeding_edge')):
@@ -53,24 +48,18 @@ def clean_up_old_git_installations(git_directory):
 
 def cipd_install(args, dest_directory, package, version):
   """Installs CIPD |package| at |version| into |dest_directory|."""
-  manifest_file = tempfile.mktemp()
-  try:
-    with open(manifest_file, 'w') as f:
-      f.write('%s %s\n' % (package, version))
-
-    cipd_args = [
-      args.cipd_client,
-      'ensure',
-      '-list', manifest_file,
-      '-root', dest_directory,
-    ]
-    if args.cipd_cache_directory:
-      cipd_args.extend(['-cache-dir', args.cipd_cache_directory])
-    if args.verbose:
-      cipd_args.append('-verbose')
-    _check_call(cipd_args)
-  finally:
-    os.remove(manifest_file)
+  cipd_args = [
+    'cipd.bat',
+    'ensure',
+    '-ensure-file', '-',
+    '-root', dest_directory,
+  ]
+  if args.verbose:
+    cipd_args.append('-verbose')
+  p = subprocess.Popen(cipd_args, stdin=subprocess.PIPE)
+  p.communicate('%s %s\n' % (package, version))
+  if p.wait() != 0:
+    raise subprocess.CalledProcessError(p.returncode, cipd_args)
 
 
 def need_to_install_git(args, git_directory):
@@ -98,9 +87,9 @@ def need_to_install_git(args, git_directory):
   return False
 
 
-def install_git(args, git_version, git_directory):
+def install_git(args, bits, git_version, git_directory):
   """Installs |git_version| into |git_directory|."""
-  cipd_platform = 'windows-%s' % ('amd64' if args.bits == 64 else '386')
+  cipd_platform = 'windows-%s' % ('amd64' if bits == 64 else '386')
   temp_dir = tempfile.mkdtemp()
   try:
     cipd_install(args,
@@ -154,14 +143,6 @@ def install_git(args, git_version, git_directory):
 
 def main(argv):
   parser = argparse.ArgumentParser()
-  parser.add_argument('--bits', type=int, choices=(32,64),
-                      help='Bitness of the client to install. Default on this'
-                      ' system: %(default)s', default=get_os_bitness())
-  parser.add_argument('--cipd-client',
-                      help='Path to CIPD client binary. default: %(default)s',
-                      default=os.path.join(ROOT_DIR, 'cipd'+BAT_EXT))
-  parser.add_argument('--cipd-cache-directory',
-                      help='Path to CIPD cache directory.')
   parser.add_argument('--force', action='store_true',
                       help='Always re-install git.')
   parser.add_argument('--verbose', action='store_true')
@@ -172,16 +153,18 @@ def main(argv):
 
   logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
 
+  bits = 64 if platform.machine().endswith('64') else 32
+
   git_version = get_target_git_version()
   git_directory = os.path.join(
-      ROOT_DIR, 'git-%s-%s_bin' % (git_version, args.bits))
+      ROOT_DIR, 'git-%s-%s_bin' % (git_version, bits))
   git_docs_dir = os.path.join(
-      git_directory, 'mingw%s' % args.bits, 'share', 'doc', 'git-doc')
+      git_directory, 'mingw%s' % bits, 'share', 'doc', 'git-doc')
 
   clean_up_old_git_installations(git_directory)
 
   if need_to_install_git(args, git_directory):
-    install_git(args, git_version, git_directory)
+    install_git(args, bits, git_version, git_directory)
 
   # Update depot_tools files for "git help <command>"
   docsrc = os.path.join(ROOT_DIR, 'man', 'html')
