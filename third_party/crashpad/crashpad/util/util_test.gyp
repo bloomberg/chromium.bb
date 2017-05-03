@@ -39,6 +39,7 @@
         'file/file_io_test.cc',
         'file/file_reader_test.cc',
         'file/string_file_test.cc',
+        'linux/memory_map_test.cc',
         'linux/process_memory_test.cc',
         'linux/scoped_ptrace_attach_test.cc',
         'mac/launchd_test.mm',
@@ -62,6 +63,7 @@
         'mach/task_memory_test.cc',
         'misc/arraysize_unsafe_test.cc',
         'misc/clock_test.cc',
+        'misc/from_pointer_cast_test.cc',
         'misc/initialization_state_dcheck_test.cc',
         'misc/initialization_state_test.cc',
         'misc/paths_test.cc',
@@ -133,12 +135,6 @@
           # Things not yet ported to Android
           'sources/' : [
             ['exclude', '^net/http_transport_test\\.cc$'],
-          ]
-        }],
-        ['OS=="android" or OS=="linux"' , {
-          # Things not yet ported to Android or Linux
-          'sources/' : [
-            ['exclude', '^numeric/checked_address_range_test\\.cc$'],
           ]
         }],
       ],
