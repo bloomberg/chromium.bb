@@ -124,6 +124,8 @@ const char kProductLogoPath[] = "product-logo.png";
 content::WebUIDataSource* CreateOobeUIDataSource(
     const base::DictionaryValue& localized_strings,
     const std::string& display_type) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOobeHost);
   source->AddLocalizedStrings(localized_strings);
@@ -148,8 +150,13 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     source->AddResourcePath(kCustomElementsUserPodHTMLPath,
                             IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   } else {
-    source->SetDefaultResource(IDR_LOGIN_HTML);
-    source->AddResourcePath(kLoginJSPath, IDR_LOGIN_JS);
+    if (command_line->HasSwitch(chromeos::switches::kShowMdLogin)) {
+      source->SetDefaultResource(IDR_MD_LOGIN_HTML);
+      source->AddResourcePath(kLoginJSPath, IDR_MD_LOGIN_JS);
+    } else {
+      source->SetDefaultResource(IDR_LOGIN_HTML);
+      source->AddResourcePath(kLoginJSPath, IDR_LOGIN_JS);
+    }
     source->AddResourcePath(kCustomElementsHTMLPath,
                             IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
     source->AddResourcePath(kCustomElementsJSPath,
@@ -181,7 +188,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kEnrollmentJSPath, IDR_OOBE_ENROLLMENT_JS);
 
   // Only add a filter when runing as test.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
                                command_line->HasSwitch(::switches::kTestType);
   if (is_running_test)
