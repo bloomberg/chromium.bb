@@ -22,7 +22,7 @@ namespace test_runner {
 class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
  public:
   MockCredentialManagerClient();
-  virtual ~MockCredentialManagerClient();
+  ~MockCredentialManagerClient() override;
 
   // We take ownership of the |credential|.
   void SetResponse(blink::WebCredential* credential);

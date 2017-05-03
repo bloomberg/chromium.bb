@@ -36,6 +36,9 @@ class WebCredentialManagerClient {
                            bool include_passwords,
                            const WebVector<WebURL>& federations,
                            RequestCallbacks*) {}
+
+ protected:
+  virtual ~WebCredentialManagerClient() {}
 };
 
 }  // namespace blink
