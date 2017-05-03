@@ -89,69 +89,65 @@ std::string GetSuffixForList(const ActivationList& type) {
 
 struct ActivationListTestData {
   ActivationDecision expected_activation_decision;
-  const char* const activation_list;
+  ActivationList activation_list;
   safe_browsing::SBThreatType threat_type;
   safe_browsing::ThreatPatternType threat_type_metadata;
 };
 
 const ActivationListTestData kActivationListTestData[] = {
-    {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED, "",
+    {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED, ActivationList::NONE,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+     ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::NONE},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+     ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::MALWARE_LANDING},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+     ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::MALWARE_DISTRIBUTION},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListPhishingInterstitial,
+     ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_API_ABUSE,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListPhishingInterstitial,
+     ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListPhishingInterstitial,
+     ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListPhishingInterstitial,
+     ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_BINARY_MALWARE_URL,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListPhishingInterstitial,
+     ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListPhishingInterstitial,
+     ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListPhishingInterstitial,
+     ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     subresource_filter::kActivationListPhishingInterstitial,
-     safe_browsing::SB_THREAT_TYPE_SAFE,
+     ActivationList::PHISHING_INTERSTITIAL, safe_browsing::SB_THREAT_TYPE_SAFE,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-    {ActivationDecision::ACTIVATED,
-     subresource_filter::kActivationListPhishingInterstitial,
+    {ActivationDecision::ACTIVATED, ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::NONE},
-    {ActivationDecision::ACTIVATED,
-     subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+    {ActivationDecision::ACTIVATED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-    {ActivationDecision::ACTIVATED,
-     subresource_filter::kActivationListPhishingInterstitial,
+    {ActivationDecision::ACTIVATED, ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
 };
@@ -159,31 +155,31 @@ const ActivationListTestData kActivationListTestData[] = {
 struct ActivationScopeTestData {
   ActivationDecision expected_activation_decision;
   bool url_matches_activation_list;
-  const char* const activation_scope;
+  ActivationScope activation_scope;
 };
 
 const ActivationScopeTestData kActivationScopeTestData[] = {
     {ActivationDecision::ACTIVATED, false /* url_matches_activation_list */,
-     kActivationScopeAllSites},
+     ActivationScope::ALL_SITES},
     {ActivationDecision::ACTIVATED, true /* url_matches_activation_list */,
-     kActivationScopeAllSites},
+     ActivationScope::ALL_SITES},
     {ActivationDecision::ACTIVATION_DISABLED,
-     true /* url_matches_activation_list */, kActivationScopeNoSites},
+     true /* url_matches_activation_list */, ActivationScope::NO_SITES},
     {ActivationDecision::ACTIVATED, true /* url_matches_activation_list */,
-     kActivationScopeActivationList},
+     ActivationScope::ACTIVATION_LIST},
     {ActivationDecision::ACTIVATION_LIST_NOT_MATCHED,
-     false /* url_matches_activation_list */, kActivationScopeActivationList},
+     false /* url_matches_activation_list */, ActivationScope::ACTIVATION_LIST},
 };
 
 struct ActivationLevelTestData {
   ActivationDecision expected_activation_decision;
-  const char* const activation_level;
+  ActivationLevel activation_level;
 };
 
 const ActivationLevelTestData kActivationLevelTestData[] = {
-    {ActivationDecision::ACTIVATED, kActivationLevelDryRun},
-    {ActivationDecision::ACTIVATED, kActivationLevelEnabled},
-    {ActivationDecision::ACTIVATION_DISABLED, kActivationLevelDisabled},
+    {ActivationDecision::ACTIVATED, ActivationLevel::DRYRUN},
+    {ActivationDecision::ACTIVATED, ActivationLevel::ENABLED},
+    {ActivationDecision::ACTIVATION_DISABLED, ActivationLevel::DISABLED},
 };
 
 class MockSubresourceFilterClient : public SubresourceFilterClient {
@@ -243,6 +239,7 @@ class ContentSubresourceFilterDriverFactoryTest
     client_ = new MockSubresourceFilterClient(ruleset_dealer_.get());
     ContentSubresourceFilterDriverFactory::CreateForWebContents(
         RenderViewHostTestHarness::web_contents(), base::WrapUnique(client()));
+    ResetConfigurationToEnableFilteringOnSocialEngineeringSites();
 
     // Add a subframe.
     content::RenderFrameHostTester* rfh_tester =
@@ -257,6 +254,21 @@ class ContentSubresourceFilterDriverFactoryTest
     ruleset_dealer_.reset();
     base::RunLoop().RunUntilIdle();
     RenderViewHostTestHarness::TearDown();
+  }
+
+  void ResetConfiguration(Configuration config) {
+    scoped_configuration_.ResetConfiguration(std::move(config));
+  }
+
+  void ResetConfigurationToEnableFilteringOnAllSites() {
+    ResetConfiguration(
+        Configuration(ActivationLevel::ENABLED, ActivationScope::ALL_SITES));
+  }
+
+  void ResetConfigurationToEnableFilteringOnSocialEngineeringSites() {
+    ResetConfiguration(Configuration(
+        ActivationLevel::ENABLED, ActivationScope::ACTIVATION_LIST,
+        ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
   }
 
   ContentSubresourceFilterDriverFactory* factory() {
@@ -477,6 +489,7 @@ class ContentSubresourceFilterDriverFactoryTest
     return rate == 1;
   }
 
+  testing::ScopedSubresourceFilterConfigurator scoped_configuration_;
   testing::TestRulesetCreator test_ruleset_creator_;
   testing::TestRulesetPair test_ruleset_pair_;
 
@@ -524,14 +537,13 @@ class ContentSubresourceFilterDriverFactoryActivationLevelTest
 };
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
-       ActivateForFrameHostDisabledFeature) {
-  // Activation scope is set to NONE => no activation should happen even if URL
-  // which is visited was a SB hit.
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeAllSites,
-      kActivationListSocialEngineeringAdsInterstitial);
+       NoActivationWhenActivationLevelIsDisabled) {
+  Configuration config(ActivationLevel::DISABLED,
+                       ActivationScope::ACTIVATION_LIST,
+                       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
+  config.activation_level = ActivationLevel::DISABLED;
+  ResetConfiguration(std::move(config));
+
   const GURL url(kExampleUrlWithParams);
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               ActivationDecision::ACTIVATION_DISABLED);
@@ -541,11 +553,6 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, NoActivationWhenNoMatch) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeActivationList,
-      kActivationListSocialEngineeringAdsInterstitial);
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
                               ActivationDecision::ACTIVATION_LIST_NOT_MATCHED);
 }
@@ -554,42 +561,31 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
        SpecialCaseNavigationAllSitesEnabled) {
   // Check that when the experiment is enabled for all site, the activation
   // signal is always sent.
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeAllSites);
+  ResetConfigurationToEnableFilteringOnAllSites();
   EmulateInPageNavigation({false}, EMPTY, ActivationDecision::ACTIVATED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
        SpecialCaseNavigationActivationListEnabled) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeActivationList,
-      kActivationListSocialEngineeringAdsInterstitial);
   EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
                           ActivationDecision::ACTIVATED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
        SpecialCaseNavigationActivationListEnabledWithPerformanceMeasurement) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeActivationList,
-      kActivationListSocialEngineeringAdsInterstitial,
-      "1" /* performance_measurement_rate */);
+  Configuration config(ActivationLevel::ENABLED,
+                       ActivationScope::ACTIVATION_LIST,
+                       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
+  config.performance_measurement_rate = 1.0;
+  ResetConfiguration(std::move(config));
+
   EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
                           ActivationDecision::ACTIVATED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, FailedNavigation) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeAllSites);
   const GURL url(kExampleUrl);
+  ResetConfigurationToEnableFilteringOnAllSites();
   NavigateAndExpectActivation({false}, {url}, EMPTY,
                               ActivationDecision::ACTIVATED);
   EmulateFailedNavigationAndExpectNoActivation(url);
@@ -598,11 +594,6 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, FailedNavigation) {
 // TODO(melandory): refactor the test so it no longer require the current
 // activation list to be matching.
 TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeActivationList,
-      kActivationListSocialEngineeringAdsInterstitial);
   struct RedirectRedirectChainMatchPatternTestData {
     std::vector<bool> blacklisted_urls;
     std::vector<GURL> navigation_chain;
@@ -692,10 +683,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, NotificationVisibility) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeAllSites);
+  ResetConfigurationToEnableFilteringOnAllSites();
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
                               ActivationDecision::ACTIVATED);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(1);
@@ -705,12 +693,9 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, NotificationVisibility) {
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
        SuppressNotificationVisibility) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeAllSites, "" /* activation_lists */,
-      "" /* performance_measurement_rate */,
-      "true" /* suppress_notifications */);
+  Configuration config(ActivationLevel::ENABLED, ActivationScope::ALL_SITES);
+  config.should_suppress_notifications = true;
+  ResetConfiguration(std::move(config));
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
                               ActivationDecision::ACTIVATED);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
@@ -721,6 +706,8 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
        InactiveMainFrame_SubframeNotFiltered) {
   GURL url(kExampleUrl);
+  Configuration config(ActivationLevel::DISABLED, ActivationScope::ALL_SITES);
+  ResetConfiguration(std::move(config));
   NavigateAndExpectActivation({false}, {url}, EMPTY,
                               ActivationDecision::ACTIVATION_DISABLED);
   NavigateSubframeAndExpectCheckResult(url, false /* expect_cancelled */);
@@ -746,12 +733,9 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, WhitelistSiteOnReload) {
                  << test_case.referrer.url << "\""
                  << " transition = \"" << test_case.transition << "\"");
 
-    base::FieldTrialList field_trial_list(nullptr);
-    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-        kActivationScopeAllSites, "" /* activation_lists */,
-        "" /* performance_measurement_rate */, "" /* suppress_notifications */,
-        "true" /* whitelist_site_on_reload */);
+    Configuration config(ActivationLevel::ENABLED, ActivationScope::ALL_SITES);
+    config.should_whitelist_site_on_reload = true;
+    ResetConfiguration(std::move(config));
 
     NavigateAndExpectActivation(
         {false}, {GURL(kExampleUrl)},
@@ -769,11 +753,9 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, WhitelistSiteOnReload) {
 TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
        ActivateForFrameState) {
   const ActivationLevelTestData& test_data = GetParam();
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, test_data.activation_level,
-      kActivationScopeActivationList,
-      kActivationListSocialEngineeringAdsInterstitial);
+  ResetConfiguration(Configuration(
+      test_data.activation_level, ActivationScope::ACTIVATION_LIST,
+      ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
 
   const GURL url(kExampleUrlWithParams);
   NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
@@ -792,10 +774,9 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,
   // Sets up the experiment in a way that the activation decision depends on the
   // list for which the Safe Browsing hit has happened.
   const ActivationListTestData& test_data = GetParam();
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      kActivationScopeActivationList, test_data.activation_list);
+  ResetConfiguration(Configuration(ActivationLevel::ENABLED,
+                                   ActivationScope::ACTIVATION_LIST,
+                                   test_data.activation_list));
 
   const GURL test_url("https://example.com/nonsoceng?q=engsocnon");
   std::vector<GURL> navigation_chain;
@@ -814,11 +795,9 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,
 TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
        ActivateForScopeType) {
   const ActivationScopeTestData& test_data = GetParam();
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      test_data.activation_scope,
-      kActivationListSocialEngineeringAdsInterstitial);
+  ResetConfiguration(
+      Configuration(ActivationLevel::ENABLED, test_data.activation_scope,
+                    ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
 
   const GURL test_url(kExampleUrlWithParams);
 
@@ -844,11 +823,9 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
 TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
        ActivateForSupportedUrlScheme) {
   const ActivationScopeTestData& test_data = GetParam();
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-      test_data.activation_scope,
-      kActivationListSocialEngineeringAdsInterstitial);
+  ResetConfiguration(
+      Configuration(ActivationLevel::ENABLED, test_data.activation_scope,
+                    ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
 
   // data URLs are also not supported, but not listed here, as it's not possible
   // for a page to redirect to them after https://crbug.com/594215 is fixed.

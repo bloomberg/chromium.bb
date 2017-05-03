@@ -15,6 +15,9 @@
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/subresource_filter/core/common/activation_level.h"
+#include "components/subresource_filter/core/common/activation_list.h"
+#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -109,10 +112,9 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
 
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
-    scoped_feature_toggle_.reset(
-        new testing::ScopedSubresourceFilterFeatureToggle(
-            base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-            kActivationScopeActivationList, kActivationListSubresourceFilter));
+    scoped_configuration_.ResetConfiguration(Configuration(
+        ActivationLevel::ENABLED, ActivationScope::ACTIVATION_LIST,
+        ActivationList::SUBRESOURCE_FILTER));
     // Note: Using NiceMock to allow uninteresting calls and suppress warnings.
     auto client =
         base::MakeUnique<::testing::NiceMock<MockSubresourceFilterClient>>();
@@ -175,8 +177,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
 
  private:
   base::FieldTrialList field_trial_list_;
-  std::unique_ptr<testing::ScopedSubresourceFilterFeatureToggle>
-      scoped_feature_toggle_;
+  testing::ScopedSubresourceFilterConfigurator scoped_configuration_;
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
   base::HistogramTester tester_;

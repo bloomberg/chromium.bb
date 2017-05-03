@@ -173,7 +173,7 @@ GURL GetURLWithFragment(const GURL& url, base::StringPiece fragment) {
 
 namespace subresource_filter {
 
-using subresource_filter::testing::ScopedSubresourceFilterFeatureToggle;
+using subresource_filter::testing::ScopedSubresourceFilterConfigurator;
 using subresource_filter::testing::TestRulesetPublisher;
 using subresource_filter::testing::TestRulesetCreator;
 using subresource_filter::testing::TestRulesetPair;
@@ -207,26 +207,12 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterDisabledByDefaultBrowserTest,
 
 // SubresourceFilterBrowserTest -----------------------------------------------
 
-class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
+class SubresourceFilterBrowserTest : public InProcessBrowserTest {
  public:
-  explicit SubresourceFilterBrowserTestImpl(bool measure_performance,
-                                            bool whitelist_site_on_reload)
-      : measure_performance_(measure_performance),
-        whitelist_site_on_reload_(whitelist_site_on_reload) {}
-
-  ~SubresourceFilterBrowserTestImpl() override {}
+  SubresourceFilterBrowserTest() {}
+  ~SubresourceFilterBrowserTest() override {}
 
  protected:
-  // It would be too late to enable the feature in SetUpOnMainThread(), as it is
-  // called after ChromeBrowserMainParts::PreBrowserStart(), which instantiates
-  // the RulesetService.
-  //
-  // On the other hand, setting up field trials in this method would be too
-  // early, as it is called before BrowserMain, which expects no FieldTrialList
-  // singleton to exist. There are no other hooks we could use either.
-  //
-  // As a workaround, enable the feature here, then enable the feature once
-  // again + set up the field trials later.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kEnableFeatures,
@@ -268,7 +254,6 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    SetUpActivationFeature();
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
@@ -276,14 +261,7 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
-  }
-
-  virtual void SetUpActivationFeature() {
-    ToggleFeatures(base::MakeUnique<ScopedSubresourceFilterFeatureToggle>(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-        kActivationScopeActivationList, kActivationListPhishingInterstitial,
-        measure_performance_ ? "1" : "0", "" /* suppress_notifications */,
-        whitelist_site_on_reload_ ? "true" : "false"));
+    ResetConfigurationToEnableOnPhishingSites();
   }
 
   GURL GetTestUrl(const std::string& relative_url) {
@@ -381,18 +359,26 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
         test_ruleset_publisher_.SetRuleset(test_ruleset_pair.unindexed));
   }
 
-  void ToggleFeatures(
-      std::unique_ptr<ScopedSubresourceFilterFeatureToggle> features) {
-    scoped_feature_toggle_ = std::move(features);
+  void ResetConfiguration(Configuration config) {
+    scoped_configuration_.ResetConfiguration(std::move(config));
+  }
+
+  void ResetConfigurationToEnableOnPhishingSites(
+      bool measure_performance = false,
+      bool whitelist_site_on_reload = false) {
+    Configuration config(
+        subresource_filter::ActivationLevel::ENABLED,
+        subresource_filter::ActivationScope::ACTIVATION_LIST,
+        subresource_filter::ActivationList::PHISHING_INTERSTITIAL);
+    config.performance_measurement_rate = measure_performance ? 1.0 : 0.0;
+    config.should_whitelist_site_on_reload = whitelist_site_on_reload;
+    ResetConfiguration(std::move(config));
   }
 
  private:
   TestRulesetCreator ruleset_creator_;
-
-  std::unique_ptr<ScopedSubresourceFilterFeatureToggle> scoped_feature_toggle_;
+  ScopedSubresourceFilterConfigurator scoped_configuration_;
   TestRulesetPublisher test_ruleset_publisher_;
-  const bool measure_performance_;
-  const bool whitelist_site_on_reload_;
 
   std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory> sb_factory_;
   // Owned by the V4Database.
@@ -400,32 +386,7 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
   // Owned by the V4GetHashProtocolManager.
   safe_browsing::TestV4GetHashProtocolManagerFactory* v4_get_hash_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTestImpl);
-};
-
-class SubresourceFilterBrowserTest : public SubresourceFilterBrowserTestImpl {
- public:
-  SubresourceFilterBrowserTest()
-      : SubresourceFilterBrowserTestImpl(false, false) {}
-};
-
-// TODO(pkalinnikov): It should be possible to have only one fixture, i.e.,
-// SubresourceFilterBrowserTest, unsetting |measure_performance| by default, and
-// providing a method to switch it on. However, the current implementation of
-// ScopedSubresourceFilterFeatureToggle in use pollutes the global
-// FieldTrialList in such a way that variation parameters can not be reassigned.
-class SubresourceFilterWithPerformanceMeasurementBrowserTest
-    : public SubresourceFilterBrowserTestImpl {
- public:
-  SubresourceFilterWithPerformanceMeasurementBrowserTest()
-      : SubresourceFilterBrowserTestImpl(true, false) {}
-};
-
-class SubresourceFilterWhitelistSiteOnReloadBrowserTest
-    : public SubresourceFilterBrowserTestImpl {
- public:
-  SubresourceFilterWhitelistSiteOnReloadBrowserTest()
-      : SubresourceFilterBrowserTestImpl(false, true) {}
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTest);
 };
 
 enum WebSocketCreationPolicy {
@@ -433,14 +394,13 @@ enum WebSocketCreationPolicy {
   IN_WORKER,
 };
 class SubresourceFilterWebSocketBrowserTest
-    : public SubresourceFilterBrowserTestImpl,
+    : public SubresourceFilterBrowserTest,
       public ::testing::WithParamInterface<WebSocketCreationPolicy> {
  public:
-  SubresourceFilterWebSocketBrowserTest()
-      : SubresourceFilterBrowserTestImpl(false, false) {}
+  SubresourceFilterWebSocketBrowserTest() {}
 
   void SetUpOnMainThread() override {
-    SubresourceFilterBrowserTestImpl::SetUpOnMainThread();
+    SubresourceFilterBrowserTest::SetUpOnMainThread();
     websocket_test_server_ = base::MakeUnique<net::SpawnedTestServer>(
         net::SpawnedTestServer::TYPE_WS, net::SpawnedTestServer::kLocalhost,
         net::GetWebSocketTestDataDirectory());
@@ -471,21 +431,6 @@ class SubresourceFilterWebSocketBrowserTest
   std::unique_ptr<net::SpawnedTestServer> websocket_test_server_;
 };
 
-#if defined(GOOGLE_CHROME_BUILD)
-class SubresourceFilterListBrowserTest
-    : public SubresourceFilterBrowserTestImpl {
- public:
-  SubresourceFilterListBrowserTest()
-      : SubresourceFilterBrowserTestImpl(false, false) {}
-
-  void SetUpActivationFeature() override {
-    ToggleFeatures(base::MakeUnique<ScopedSubresourceFilterFeatureToggle>(
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
-        kActivationScopeActivationList, kActivationListSubresourceFilter, "0",
-        "" /* suppress_notifications */, "false"));
-  }
-};
-#endif
 
 // Tests -----------------------------------------------------------------------
 
@@ -509,11 +454,18 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
-IN_PROC_BROWSER_TEST_F(SubresourceFilterListBrowserTest, MainFrameActivation) {
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       MainFrameActivation_SubresourceFilterList) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsSubresourceFilterOnlyURL(url);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
+
+  Configuration config(subresource_filter::ActivationLevel::ENABLED,
+                       subresource_filter::ActivationScope::ACTIVATION_LIST,
+                       subresource_filter::ActivationList::SUBRESOURCE_FILTER);
+  ResetConfiguration(std::move(config));
+
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
@@ -1181,10 +1133,12 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   tester.ExpectTotalCount(internal::kHistogramSubresourceFilterCount, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SubresourceFilterWithPerformanceMeasurementBrowserTest,
-                       ExpectHistogramsAreRecorded) {
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       ExpectPerformanceHistogramsAreRecorded) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ResetConfigurationToEnableOnPhishingSites(
+      true /* measure_performance */, false /* whitelist_site_on_reload */);
   const GURL url = GetTestUrl(kTestFrameSetPath);
   ConfigureAsPhishingURL(url);
 
@@ -1268,13 +1222,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       static_cast<int>(ActivationDecision::ACTIVATED), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
-                       ActivationDisabledOnReload) {
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       WhiteliseSiteOnReload_ActivationDisabledOnReload) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-
+  ResetConfigurationToEnableOnPhishingSites(
+      false /* measure_performance */, true /* whitelist_site_on_reload */);
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
@@ -1302,13 +1257,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
       static_cast<int>(ActivationDecision::URL_WHITELISTED), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
-                       ActivationDisabledOnReloadFromScript) {
+IN_PROC_BROWSER_TEST_F(
+    SubresourceFilterBrowserTest,
+    WhiteliseSiteOnReload_ActivationDisabledOnReloadFromScript) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-
+  ResetConfigurationToEnableOnPhishingSites(
+      false /* measure_performance */, true /* whitelist_site_on_reload */);
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
@@ -1338,13 +1295,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
       static_cast<int>(ActivationDecision::URL_WHITELISTED), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
-                       ActivationDisabledOnNavigationToSameURL) {
+IN_PROC_BROWSER_TEST_F(
+    SubresourceFilterBrowserTest,
+    WhiteliseSiteOnReload_ActivationDisabledOnNavigationToSameURL) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-
+  ResetConfigurationToEnableOnPhishingSites(
+      false /* measure_performance */, true /* whitelist_site_on_reload */);
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
@@ -1375,8 +1334,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
-// This test is only enabled when GOOGLE_CHROME_BUILD is true because the store
-// that this test uses is only populated on GOOGLE_CHROME_BUILD builds.
+// These tests are only enabled when GOOGLE_CHROME_BUILD is true because the
+// store that this test uses is only populated on GOOGLE_CHROME_BUILD builds.
 IN_PROC_BROWSER_TEST_F(
     SubresourceFilterBrowserTest,
     ExpectRedirectPatternHistogramsAreRecordedForSubresourceFilterOnlyMatch) {

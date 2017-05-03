@@ -62,6 +62,9 @@
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/subresource_filter/core/common/activation_level.h"
+#include "components/subresource_filter/core/common/activation_list.h"
+#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -904,12 +907,11 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SubresourceFilterEndToEndTest) {
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          subresource_filter::kActivationLevelEnabled,
-          subresource_filter::kActivationScopeActivationList,
-          subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
+  subresource_filter::testing::ScopedSubresourceFilterConfigurator
+      scoped_configuration(subresource_filter::Configuration(
+          subresource_filter::ActivationLevel::ENABLED,
+          subresource_filter::ActivationScope::ACTIVATION_LIST,
+          subresource_filter::ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
 
   subresource_filter::testing::TestRulesetCreator ruleset_creator;
   subresource_filter::testing::TestRulesetPair test_ruleset_pair;
@@ -1981,12 +1983,11 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
                        SubresourceFilterEndToEndTest) {
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          subresource_filter::kActivationLevelEnabled,
-          subresource_filter::kActivationScopeActivationList,
-          subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
+  subresource_filter::testing::ScopedSubresourceFilterConfigurator
+      scoped_configuration(subresource_filter::Configuration(
+          subresource_filter::ActivationLevel::ENABLED,
+          subresource_filter::ActivationScope::ACTIVATION_LIST,
+          subresource_filter::ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
 
   subresource_filter::testing::TestRulesetCreator ruleset_creator;
   subresource_filter::testing::TestRulesetPair test_ruleset_pair;

@@ -18,8 +18,11 @@ namespace subresource_filter {
 // should operate.
 struct Configuration {
   Configuration();
-  ~Configuration();
+  Configuration(ActivationLevel activation_level,
+                ActivationScope activation_scope,
+                ActivationList activation_list = ActivationList::NONE);
   Configuration(Configuration&&);
+  ~Configuration();
   Configuration& operator=(Configuration&&);
 
   // The maximum degree to which subresource filtering should be activated on
@@ -47,8 +50,8 @@ struct Configuration {
   // be suppressed in the UI.
   bool should_suppress_notifications = false;
 
-  // The ruleset flavor to download through the component updater, or the empty
-  // string if the default ruleset should be used.
+  // The ruleset flavor to download through the component updater. This or the
+  // empty string if the default ruleset should be used.
   std::string ruleset_flavor;
 
   // Whether to whitelist a site when a page loaded from that site is reloaded.
@@ -75,15 +78,16 @@ class ConfigurationList : public base::RefCountedThreadSafe<ConfigurationList> {
 // Retrieves all currently enabled subresource filtering configurations. The
 // configurations are parsed on first access and then the result is cached.
 //
-// In tests, however, the config may change in-between navigations, so callers
-// should not hold on to the result for long.
+// In tests, however, the config may be altered in-between navigations, so
+// callers should not hold on to the result for long.
 scoped_refptr<ConfigurationList> GetActiveConfigurations();
 
 namespace testing {
 
-// Clears the cached active ConfigurationList so that it will be recomputed on
-// next access. Used in tests when the variation parameters are altered.
-void ClearCachedActiveConfigurations();
+// Returns the currently cached active ConfigurationList, if any, and replaces
+// it with |new_configs|, which may be nullptr to clear the cache.
+scoped_refptr<ConfigurationList> GetAndSetActivateConfigurations(
+    scoped_refptr<ConfigurationList> new_configs);
 
 }  // namespace testing
 

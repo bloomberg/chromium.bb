@@ -5,37 +5,51 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_TEST_SUPPORT_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_TEST_SUPPORT_H_
 
-#include <map>
-#include <string>
-
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 
 namespace subresource_filter {
 namespace testing {
 
-// Helper to override the state of the |kSafeBrowsingSubresourceFilter| feature,
-// and its variation parameters, e.g., maximum activation level and activation
-// scope. Expects a pre-existing global base::FieldTrialList singleton.
+// Helper class to override the active subresource filtering configuration to be
+// used in tests while the instance is in scope.
+//
+// Configuration overrides can be nested, and will take effect regardless of
+// field trial, feature, and/or variation parameter states.
+class ScopedSubresourceFilterConfigurator {
+ public:
+  explicit ScopedSubresourceFilterConfigurator(
+      scoped_refptr<ConfigurationList> configs = nullptr);
+  explicit ScopedSubresourceFilterConfigurator(Configuration config);
+  ~ScopedSubresourceFilterConfigurator();
+
+  void ResetConfiguration(Configuration config);
+
+ private:
+  scoped_refptr<ConfigurationList> original_config_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSubresourceFilterConfigurator);
+};
+
+// Helper class to override the state of the |kSafeBrowsingSubresourceFilter|
+// feature.
+//
+// Clears the active subresource filtering configuration override, upon
+// construction, if any, and restores it on destruction. So while the instance
+// is in scope, calls to GetActiveConfigurations() will default to returning the
+// hard-coded configuration corresponding to the forced feature state. Tests
+// that need to toggle both the feature and override the active configuration
+// should therefore do so in that order.
 class ScopedSubresourceFilterFeatureToggle {
  public:
-  ScopedSubresourceFilterFeatureToggle(
-      base::FeatureList::OverrideState feature_state,
-      const std::string& maximum_activation_level,
-      const std::string& activation_scope,
-      const std::string& activation_lists = std::string(),
-      const std::string& performance_measurement_rate = std::string(),
-      const std::string& suppress_notifications = std::string(),
-      const std::string& whitelist_site_on_reload = std::string());
-
-  ScopedSubresourceFilterFeatureToggle(
-      base::FeatureList::OverrideState feature_state,
-      std::map<std::string, std::string> variation_params);
-
+  explicit ScopedSubresourceFilterFeatureToggle(
+      base::FeatureList::OverrideState subresource_filter_state);
   ~ScopedSubresourceFilterFeatureToggle();
 
  private:
+  ScopedSubresourceFilterConfigurator scoped_configuration_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSubresourceFilterFeatureToggle);

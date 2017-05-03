@@ -153,8 +153,14 @@ const char kSuppressNotificationsParameterName[] = "suppress_notifications";
 const char kWhitelistSiteOnReloadParameterName[] = "whitelist_site_on_reload";
 
 Configuration::Configuration() = default;
-Configuration::~Configuration() = default;
+Configuration::Configuration(ActivationLevel activation_level,
+                             ActivationScope activation_scope,
+                             ActivationList activation_list)
+    : activation_level(activation_level),
+      activation_scope(activation_scope),
+      activation_list(activation_list) {}
 Configuration::Configuration(Configuration&&) = default;
+Configuration::~Configuration() = default;
 Configuration& Configuration::operator=(Configuration&&) = default;
 
 ConfigurationList::ConfigurationList(Configuration config)
@@ -172,9 +178,12 @@ scoped_refptr<ConfigurationList> GetActiveConfigurations() {
 
 namespace testing {
 
-void ClearCachedActiveConfigurations() {
+scoped_refptr<ConfigurationList> GetAndSetActivateConfigurations(
+    scoped_refptr<ConfigurationList> new_configs) {
   base::AutoLock lock(g_active_configurations_lock.Get());
-  g_active_configurations.Get() = nullptr;
+  auto old_configs = std::move(g_active_configurations.Get());
+  g_active_configurations.Get() = std::move(new_configs);
+  return old_configs;
 }
 
 }  // namespace testing

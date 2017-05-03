@@ -9,7 +9,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -36,11 +35,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+namespace {
+using subresource_filter::testing::ScopedSubresourceFilterConfigurator;
+}  // namespace
+
 // End to end unit test harness of (most of) the browser process portions of the
 // subresource filtering code.
 class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
  public:
-  SubresourceFilterTest() : field_trial_list_(nullptr) {}
+  SubresourceFilterTest() {}
   ~SubresourceFilterTest() override {}
 
   // ChromeRenderViewHostTestHarness:
@@ -50,12 +53,11 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
 
     // Ensure correct features.
     scoped_feature_list_.InitFromCommandLine("SafeBrowsingV4OnlyEnabled", "");
-    scoped_feature_toggle_.reset(
-        new subresource_filter::testing::ScopedSubresourceFilterFeatureToggle(
-            base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-            subresource_filter::kActivationLevelEnabled,
-            subresource_filter::kActivationScopeActivationList,
-            subresource_filter::kActivationListSubresourceFilter));
+    scoped_configuration_.ResetConfiguration(subresource_filter::Configuration(
+        subresource_filter::ActivationLevel::ENABLED,
+        subresource_filter::ActivationScope::ACTIVATION_LIST,
+        subresource_filter::ActivationList::SUBRESOURCE_FILTER));
+
     NavigateAndCommit(GURL("https://example.first"));
 
     // Set up safe browsing service with the fake database manager.
@@ -155,12 +157,9 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
 
  private:
   base::ScopedTempDir ruleset_service_dir_;
-  base::FieldTrialList field_trial_list_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<
-      subresource_filter::testing::ScopedSubresourceFilterFeatureToggle>
-      scoped_feature_toggle_;
   TestingPrefServiceSimple pref_service_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  ScopedSubresourceFilterConfigurator scoped_configuration_;
 
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
 
