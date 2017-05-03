@@ -15592,8 +15592,6 @@ crbug.com/591099 http/tests/serviceworker/chromium/sandboxed-iframe-fetch-event.
 crbug.com/591099 http/tests/serviceworker/chromium/service-worker-gc.html [ Failure ]
 crbug.com/591099 http/tests/serviceworker/chromium/window-close-during-registration.html [ Failure ]
 crbug.com/591099 http/tests/serviceworker/chromium.fetch-event-headers.html [ Crash ]
-crbug.com/591099 http/tests/serviceworker/fetch-frame-resource.html [ Crash ]
-crbug.com/591099 http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Crash ]
 crbug.com/591099 http/tests/serviceworker/fetch-request-fallback.html [ Crash Pass ]
 crbug.com/591099 http/tests/serviceworker/fetch-request-xhr.html [ Failure Pass ]
 crbug.com/591099 http/tests/serviceworker/fetch-response-taint.html [ Crash Pass ]
