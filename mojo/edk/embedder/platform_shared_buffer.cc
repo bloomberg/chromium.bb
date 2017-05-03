@@ -234,12 +234,10 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
   DCHECK(!shared_memory_);
 
 #if defined(OS_WIN)
-  base::SharedMemoryHandle handle(platform_handle.release().handle,
-                                  base::GetCurrentProcId());
+  base::SharedMemoryHandle handle(platform_handle.release().handle);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   base::SharedMemoryHandle handle;
-  handle = base::SharedMemoryHandle(platform_handle.release().port, num_bytes_,
-                                    base::GetCurrentProcId());
+  handle = base::SharedMemoryHandle(platform_handle.release().port, num_bytes_);
 #else
   base::SharedMemoryHandle handle(
       base::FileDescriptor(platform_handle.release().handle, false));
@@ -258,10 +256,8 @@ bool PlatformSharedBuffer::InitFromPlatformHandlePair(
 #else  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-  base::SharedMemoryHandle handle(rw_platform_handle.release().handle,
-                                  base::GetCurrentProcId());
-  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle,
-                                     base::GetCurrentProcId());
+  base::SharedMemoryHandle handle(rw_platform_handle.release().handle);
+  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle);
 #else  // defined(OS_WIN)
   base::SharedMemoryHandle handle(
       base::FileDescriptor(rw_platform_handle.release().handle, false));

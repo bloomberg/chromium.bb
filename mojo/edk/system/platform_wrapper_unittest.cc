@@ -164,8 +164,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer, PlatformWrapperTest,
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      static_cast<mach_port_t>(os_buffer.value), size,
-      base::GetCurrentProcId());
+      static_cast<mach_port_t>(os_buffer.value), size);
 #elif defined(OS_POSIX)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
@@ -173,7 +172,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer, PlatformWrapperTest,
 #elif defined(OS_WIN)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      reinterpret_cast<HANDLE>(os_buffer.value), base::GetCurrentProcId());
+      reinterpret_cast<HANDLE>(os_buffer.value));
 #endif
 
   base::SharedMemory memory(memory_handle, read_only);

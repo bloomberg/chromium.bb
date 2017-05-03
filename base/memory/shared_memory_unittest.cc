@@ -605,7 +605,7 @@ TEST(SharedMemoryTest, UnsafeImageSection) {
   EXPECT_EQ(nullptr, shared_memory_open.memory());
 
   SharedMemory shared_memory_handle_local(
-      SharedMemoryHandle(section_handle.Take(), ::GetCurrentProcessId()), true);
+      SharedMemoryHandle(section_handle.Take()), true);
   EXPECT_FALSE(shared_memory_handle_local.Map(1));
   EXPECT_EQ(nullptr, shared_memory_handle_local.memory());
 
@@ -620,7 +620,7 @@ TEST(SharedMemoryTest, UnsafeImageSection) {
       ::GetCurrentProcess(), shared_memory_handle_dummy.handle().GetHandle(),
       ::GetCurrentProcess(), &handle_no_query, FILE_MAP_READ, FALSE, 0));
   SharedMemory shared_memory_handle_no_query(
-      SharedMemoryHandle(handle_no_query, ::GetCurrentProcessId()), true);
+      SharedMemoryHandle(handle_no_query), true);
   EXPECT_FALSE(shared_memory_handle_no_query.Map(1));
   EXPECT_EQ(nullptr, shared_memory_handle_no_query.memory());
 }

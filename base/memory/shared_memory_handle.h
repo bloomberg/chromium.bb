@@ -83,10 +83,8 @@ class BASE_EXPORT SharedMemoryHandle {
   explicit SharedMemoryHandle(mach_vm_size_t size);
 
   // Makes a Mach-based SharedMemoryHandle from |memory_object|, a named entry
-  // in the task with process id |pid|. The memory region has size |size|.
-  SharedMemoryHandle(mach_port_t memory_object,
-                     mach_vm_size_t size,
-                     base::ProcessId pid);
+  // in the current task. The memory region has size |size|.
+  SharedMemoryHandle(mach_port_t memory_object, mach_vm_size_t size);
 
   // Exposed so that the SharedMemoryHandle can be transported between
   // processes.
@@ -102,17 +100,9 @@ class BASE_EXPORT SharedMemoryHandle {
   // mapped memory.
   bool MapAt(off_t offset, size_t bytes, void** memory, bool read_only);
 #elif defined(OS_WIN)
-  SharedMemoryHandle(HANDLE h, base::ProcessId pid);
-
-  // Whether |pid_| is the same as the current process's id.
-  bool BelongsToCurrentProcess() const;
-
-  // Whether handle_ needs to be duplicated into the destination process when
-  // an instance of this class is passed over a Chrome IPC channel.
-  bool NeedsBrokering() const;
+  SharedMemoryHandle(HANDLE h);
 
   HANDLE GetHandle() const;
-  base::ProcessId GetPID() const;
 #else
   // This constructor is deprecated, as it fails to propagate the GUID, which
   // will be added in the near future.
@@ -156,10 +146,6 @@ class BASE_EXPORT SharedMemoryHandle {
       // relevant if |memory_object_| is not |MACH_PORT_NULL|.
       mach_vm_size_t size_;
 
-      // The pid of the process in which |memory_object_| is usable. Only
-      // relevant if |memory_object_| is not |MACH_PORT_NULL|.
-      base::ProcessId pid_;
-
       // Whether passing this object as a parameter to an IPC message passes
       // ownership of |memory_object_| to the IPC stack. This is meant to mimic
       // the behavior of the |auto_close| parameter of FileDescriptor.
@@ -169,10 +155,6 @@ class BASE_EXPORT SharedMemoryHandle {
   };
 #elif defined(OS_WIN)
   HANDLE handle_;
-
-  // The process in which |handle_| is valid and can be used. If |handle_| is
-  // invalid, this will be kNullProcessId.
-  base::ProcessId pid_;
 
   // Whether passing this object as a parameter to an IPC message passes
   // ownership of |handle_| to the IPC stack. This is meant to mimic the

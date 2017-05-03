@@ -315,8 +315,7 @@ int DispatchCall(int argc, wchar_t **argv) {
     base::StringToUint(argv[4], reinterpret_cast<unsigned int*>(&raw_handle));
     if (raw_handle == nullptr)
       return SBOX_TEST_INVALID_PARAMETER;
-    base::SharedMemoryHandle shared_handle(raw_handle,
-                                           base::GetCurrentProcId());
+    base::SharedMemoryHandle shared_handle(raw_handle);
     base::SharedMemory read_only_view(shared_handle, true);
     if (!read_only_view.Map(0))
       return SBOX_TEST_INVALID_PARAMETER;

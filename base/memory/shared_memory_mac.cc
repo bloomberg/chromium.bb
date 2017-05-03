@@ -74,7 +74,7 @@ bool MakeMachSharedMemoryHandleReadOnly(SharedMemoryHandle* new_handle,
   if (kr != KERN_SUCCESS)
     return false;
 
-  *new_handle = SharedMemoryHandle(named_right, size, base::GetCurrentProcId());
+  *new_handle = SharedMemoryHandle(named_right, size);
   return true;
 }
 
