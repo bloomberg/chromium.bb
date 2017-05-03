@@ -95,43 +95,6 @@ class MEDIA_EXPORT AudioManager {
   // like src/chrome.
   static AudioManager* Get();
 
-  // Returns true if the OS reports existence of audio devices. This does not
-  // guarantee that the existing devices support all formats and sample rates.
-  virtual bool HasAudioOutputDevices() = 0;
-
-  // Returns true if the OS reports existence of audio recording devices. This
-  // does not guarantee that the existing devices support all formats and
-  // sample rates.
-  virtual bool HasAudioInputDevices() = 0;
-
-  // Returns a human readable string for the model/make of the active audio
-  // input device for this computer.
-  virtual base::string16 GetAudioInputDeviceModel() = 0;
-
-  // Opens the platform default audio input settings UI.
-  // Note: This could invoke an external application/preferences pane, so
-  // ideally must not be called from the UI thread or other time sensitive
-  // threads to avoid blocking the rest of the application.
-  virtual void ShowAudioInputSettings() = 0;
-
-  // Appends a list of available input devices to |device_descriptions|,
-  // which must initially be empty. It is not guaranteed that all the
-  // devices in the list support all formats and sample rates for
-  // recording.
-  //
-  // Not threadsafe; in production this should only be called from the
-  // Audio worker thread (see GetTaskRunner()).
-  virtual void GetAudioInputDeviceDescriptions(
-      AudioDeviceDescriptions* device_descriptions) = 0;
-
-  // Appends a list of available output devices to |device_descriptions|,
-  // which must initially be empty.
-  //
-  // Not threadsafe; in production this should only be called from the
-  // Audio worker thread (see GetTaskRunner()).
-  virtual void GetAudioOutputDeviceDescriptions(
-      AudioDeviceDescriptions* device_descriptions) = 0;
-
   // Log callback used for sending log messages from a stream to the object
   // that manages the stream.
   using LogCallback = base::Callback<void(const std::string&)>;
@@ -213,6 +176,76 @@ class MEDIA_EXPORT AudioManager {
   virtual void RemoveOutputDeviceChangeListener(
       AudioDeviceListener* listener) = 0;
 
+  // Create a new AudioLog object for tracking the behavior for one or more
+  // instances of the given component.  See AudioLogFactory for more details.
+  virtual std::unique_ptr<AudioLog> CreateAudioLog(
+      AudioLogFactory::AudioComponent component) = 0;
+
+  // Enable output debug recording. InitializeOutputDebugRecording() must be
+  // called before this function.
+  // TODO(grunell): Control input debug recording via these functions too.
+  virtual void EnableOutputDebugRecording(
+      const base::FilePath& base_file_name) = 0;
+
+  // Disable output debug recording.
+  virtual void DisableOutputDebugRecording() = 0;
+
+  // Gets the name of the audio manager (e.g., Windows, Mac, PulseAudio).
+  virtual const char* GetName() = 0;
+
+  // Limits the number of streams that can be created for testing purposes.
+  virtual void SetMaxStreamCountForTesting(int max_input, int max_output);
+
+ protected:
+  FRIEND_TEST_ALL_PREFIXES(AudioManagerTest, AudioDebugRecording);
+  friend class AudioDeviceInfoAccessorForTests;
+
+  AudioManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+               scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner);
+  virtual ~AudioManager();
+
+  // Initializes output debug recording. Can be called on any thread; will post
+  // to the audio thread if not called on it.
+  virtual void InitializeOutputDebugRecording(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) = 0;
+
+  // Returns true if the OS reports existence of audio devices. This does not
+  // guarantee that the existing devices support all formats and sample rates.
+  virtual bool HasAudioOutputDevices() = 0;
+
+  // Returns true if the OS reports existence of audio recording devices. This
+  // does not guarantee that the existing devices support all formats and
+  // sample rates.
+  virtual bool HasAudioInputDevices() = 0;
+
+  // Returns a human readable string for the model/make of the active audio
+  // input device for this computer.
+  virtual base::string16 GetAudioInputDeviceModel() = 0;
+
+  // Opens the platform default audio input settings UI.
+  // Note: This could invoke an external application/preferences pane, so
+  // ideally must not be called from the UI thread or other time sensitive
+  // threads to avoid blocking the rest of the application.
+  virtual void ShowAudioInputSettings() = 0;
+
+  // Appends a list of available input devices to |device_descriptions|,
+  // which must initially be empty. It is not guaranteed that all the
+  // devices in the list support all formats and sample rates for
+  // recording.
+  //
+  // Not threadsafe; in production this should only be called from the
+  // Audio worker thread (see GetTaskRunner()).
+  virtual void GetAudioInputDeviceDescriptions(
+      AudioDeviceDescriptions* device_descriptions) = 0;
+
+  // Appends a list of available output devices to |device_descriptions|,
+  // which must initially be empty.
+  //
+  // Not threadsafe; in production this should only be called from the
+  // Audio worker thread (see GetTaskRunner()).
+  virtual void GetAudioOutputDeviceDescriptions(
+      AudioDeviceDescriptions* device_descriptions) = 0;
+
   // Returns the default output hardware audio parameters for opening output
   // streams. It is a convenience interface to
   // AudioManagerBase::GetPreferredOutputStreamParameters and each AudioManager
@@ -240,41 +273,10 @@ class MEDIA_EXPORT AudioManager {
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) = 0;
 
-  // Create a new AudioLog object for tracking the behavior for one or more
-  // instances of the given component.  See AudioLogFactory for more details.
-  virtual std::unique_ptr<AudioLog> CreateAudioLog(
-      AudioLogFactory::AudioComponent component) = 0;
-
-  // Enable output debug recording. InitializeOutputDebugRecording() must be
-  // called before this function.
-  // TODO(grunell): Control input debug recording via these functions too.
-  virtual void EnableOutputDebugRecording(
-      const base::FilePath& base_file_name) = 0;
-
-  // Disable output debug recording.
-  virtual void DisableOutputDebugRecording() = 0;
-
-  // Gets the name of the audio manager (e.g., Windows, Mac, PulseAudio).
-  virtual const char* GetName() = 0;
-
-  // Limits the number of streams that can be created for testing purposes.
-  virtual void SetMaxStreamCountForTesting(int max_input, int max_output);
-
- protected:
-  FRIEND_TEST_ALL_PREFIXES(AudioManagerTest, AudioDebugRecording);
-
-  AudioManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-               scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner);
-  virtual ~AudioManager();
-
-  // Initializes output debug recording. Can be called on any thread; will post
-  // to the audio thread if not called on it.
-  virtual void InitializeOutputDebugRecording(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) = 0;
-
  private:
   friend class base::DeleteHelper<AudioManager>;
   friend class AudioManagerDeleter;
+  friend class AudioSystemImpl;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;

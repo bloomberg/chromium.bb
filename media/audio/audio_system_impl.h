@@ -51,6 +51,23 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
  private:
   AudioManager* const audio_manager_;
 
+  static AudioParameters GetInputParametersOnDeviceThread(
+      AudioManager* audio_manager,
+      const std::string& device_id);
+
+  static AudioParameters GetOutputParametersOnDeviceThread(
+      AudioManager* audio_manager,
+      const std::string& device_id);
+
+  static AudioDeviceDescriptions GetDeviceDescriptionsOnDeviceThread(
+      AudioManager* audio_manager,
+      bool for_input);
+
+  static void GetInputDeviceInfoOnDeviceThread(
+      AudioManager* audio_manager,
+      const std::string& input_device_id,
+      AudioSystem::OnInputDeviceInfoCallback on_input_device_info_cb);
+
   DISALLOW_COPY_AND_ASSIGN(AudioSystemImpl);
 };
 

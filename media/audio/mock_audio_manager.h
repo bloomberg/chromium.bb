@@ -32,20 +32,6 @@ class MockAudioManager : public AudioManager {
   explicit MockAudioManager(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  bool HasAudioOutputDevices() override;
-
-  bool HasAudioInputDevices() override;
-
-  base::string16 GetAudioInputDeviceModel() override;
-
-  void ShowAudioInputSettings() override;
-
-  void GetAudioInputDeviceDescriptions(
-      media::AudioDeviceDescriptions* device_descriptions) override;
-
-  void GetAudioOutputDeviceDescriptions(
-      media::AudioDeviceDescriptions* device_descriptions) override;
-
   AudioOutputStream* MakeAudioOutputStream(
       const media::AudioParameters& params,
       const std::string& device_id,
@@ -62,14 +48,6 @@ class MockAudioManager : public AudioManager {
 
   void AddOutputDeviceChangeListener(AudioDeviceListener* listener) override;
   void RemoveOutputDeviceChangeListener(AudioDeviceListener* listener) override;
-
-  AudioParameters GetDefaultOutputStreamParameters() override;
-  AudioParameters GetOutputStreamParameters(
-      const std::string& device_id) override;
-  AudioParameters GetInputStreamParameters(
-      const std::string& device_id) override;
-  std::string GetAssociatedOutputDeviceID(
-      const std::string& input_device_id) override;
 
   std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
@@ -97,6 +75,28 @@ class MockAudioManager : public AudioManager {
 
  protected:
   ~MockAudioManager() override;
+
+  bool HasAudioOutputDevices() override;
+
+  bool HasAudioInputDevices() override;
+
+  base::string16 GetAudioInputDeviceModel() override;
+
+  void ShowAudioInputSettings() override;
+
+  void GetAudioInputDeviceDescriptions(
+      media::AudioDeviceDescriptions* device_descriptions) override;
+
+  void GetAudioOutputDeviceDescriptions(
+      media::AudioDeviceDescriptions* device_descriptions) override;
+
+  AudioParameters GetDefaultOutputStreamParameters() override;
+  AudioParameters GetOutputStreamParameters(
+      const std::string& device_id) override;
+  AudioParameters GetInputStreamParameters(
+      const std::string& device_id) override;
+  std::string GetAssociatedOutputDeviceID(
+      const std::string& input_device_id) override;
 
  private:
   friend class base::DeleteHelper<MockAudioManager>;

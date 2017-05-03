@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
@@ -63,7 +64,8 @@ class AudioInputTest : public testing::Test {
 
  protected:
   bool InputDevicesAvailable() {
-    return audio_manager_->HasAudioInputDevices();
+    return AudioDeviceInfoAccessorForTests(audio_manager_.get())
+        .HasAudioInputDevices();
   }
 
   void MakeAudioInputStreamOnAudioThread() {
@@ -107,8 +109,9 @@ class AudioInputTest : public testing::Test {
 
   void MakeAudioInputStream() {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
-    AudioParameters params = audio_manager_->GetInputStreamParameters(
-        AudioDeviceDescription::kDefaultDeviceId);
+    AudioParameters params =
+        AudioDeviceInfoAccessorForTests(audio_manager_.get())
+            .GetInputStreamParameters(AudioDeviceDescription::kDefaultDeviceId);
     audio_input_stream_ = audio_manager_->MakeAudioInputStream(
         params, AudioDeviceDescription::kDefaultDeviceId,
         base::Bind(&AudioInputTest::OnLogMessage, base::Unretained(this)));

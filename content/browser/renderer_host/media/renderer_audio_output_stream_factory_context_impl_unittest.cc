@@ -115,10 +115,6 @@ class MockAudioManager : public media::AudioManagerBase {
 
   ~MockAudioManager() override { Shutdown(); }
 
-  MOCK_METHOD0(HasAudioOutputDevices, bool());
-  MOCK_METHOD0(HasAudioInputDevices, bool());
-  MOCK_METHOD0(GetName, const char*());
-
   MOCK_METHOD2(MakeLinearOutputStream,
                media::AudioOutputStream*(const media::AudioParameters& params,
                                          const LogCallback& log_callback));
@@ -134,9 +130,16 @@ class MockAudioManager : public media::AudioManagerBase {
                media::AudioInputStream*(const media::AudioParameters& params,
                                         const std::string& device_id,
                                         const LogCallback& log_callback));
-  MOCK_METHOD2(GetPreferredOutputStreamParameters,
-               media::AudioParameters(const std::string& device_id,
-                                      const media::AudioParameters& params));
+
+ protected:
+  MOCK_METHOD0(HasAudioOutputDevices, bool());
+  MOCK_METHOD0(HasAudioInputDevices, bool());
+  MOCK_METHOD0(GetName, const char*());
+  media::AudioParameters GetPreferredOutputStreamParameters(
+      const std::string& device_id,
+      const media::AudioParameters& params) {
+    return GetTestAudioParameters();
+  }
 };
 
 class MockAudioOutputStream : public media::AudioOutputStream,
@@ -338,9 +341,6 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   EXPECT_CALL(*static_cast<MockAudioManager*>(audio_manager_.get()),
               MakeLowLatencyOutputStream(_, "", _))
       .WillOnce(Return(stream));
-  EXPECT_CALL(*static_cast<MockAudioManager*>(audio_manager_.get()),
-              GetPreferredOutputStreamParameters(_, _))
-      .WillRepeatedly(Return(GetTestAudioParameters()));
 
   AudioOutputStreamFactoryPtr factory_ptr;
   BrowserThread::PostTask(

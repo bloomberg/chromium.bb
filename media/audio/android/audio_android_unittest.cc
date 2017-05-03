@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "media/audio/android/audio_manager_android.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
@@ -423,6 +424,7 @@ class AudioAndroidOutputTest : public testing::Test {
   AudioAndroidOutputTest()
       : loop_(new base::MessageLoopForUI()),
         audio_manager_(AudioManager::CreateForTesting(loop_->task_runner())),
+        audio_manager_device_info_(audio_manager_.get()),
         audio_output_stream_(NULL) {
     // Flush the message loop to ensure that AudioManager is fully initialized.
     base::RunLoop().RunUntilIdle();
@@ -435,6 +437,9 @@ class AudioAndroidOutputTest : public testing::Test {
 
  protected:
   AudioManager* audio_manager() { return audio_manager_.get(); }
+  AudioDeviceInfoAccessorForTests* audio_manager_device_info() {
+    return &audio_manager_device_info_;
+  }
   const AudioParameters& audio_output_parameters() {
     return audio_output_parameters_;
   }
@@ -545,7 +550,7 @@ class AudioAndroidOutputTest : public testing::Test {
   void GetDefaultOutputStreamParameters() {
     DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
     audio_output_parameters_ =
-        audio_manager()->GetDefaultOutputStreamParameters();
+        audio_manager_device_info()->GetDefaultOutputStreamParameters();
     EXPECT_TRUE(audio_output_parameters_.IsValid());
   }
 
@@ -578,6 +583,7 @@ class AudioAndroidOutputTest : public testing::Test {
 
   std::unique_ptr<base::MessageLoopForUI> loop_;
   ScopedAudioManagerPtr audio_manager_;
+  AudioDeviceInfoAccessorForTests audio_manager_device_info_;
   AudioParameters audio_output_parameters_;
   AudioOutputStream* audio_output_stream_;
   base::TimeTicks start_time_;
@@ -686,8 +692,9 @@ class AudioAndroidInputTest : public AudioAndroidOutputTest,
 
   void GetDefaultInputStreamParameters() {
     DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
-    audio_input_parameters_ = audio_manager()->GetInputStreamParameters(
-        AudioDeviceDescription::kDefaultDeviceId);
+    audio_input_parameters_ =
+        audio_manager_device_info()->GetInputStreamParameters(
+            AudioDeviceDescription::kDefaultDeviceId);
   }
 
   void MakeInputStream(const AudioParameters& params) {
@@ -742,19 +749,21 @@ TEST_F(AudioAndroidOutputTest, GetDefaultOutputStreamParameters) {
 
 // Verify input device enumeration.
 TEST_F(AudioAndroidInputTest, GetAudioInputDeviceDescriptions) {
-  ABORT_AUDIO_TEST_IF_NOT(audio_manager()->HasAudioInputDevices());
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info()->HasAudioInputDevices());
   AudioDeviceDescriptions devices;
-  RunOnAudioThread(base::Bind(&AudioManager::GetAudioInputDeviceDescriptions,
-                              base::Unretained(audio_manager()), &devices));
+  RunOnAudioThread(base::Bind(
+      &AudioDeviceInfoAccessorForTests::GetAudioInputDeviceDescriptions,
+      base::Unretained(audio_manager_device_info()), &devices));
   CheckDeviceDescriptions(devices);
 }
 
 // Verify output device enumeration.
 TEST_F(AudioAndroidOutputTest, GetAudioOutputDeviceDescriptions) {
-  ABORT_AUDIO_TEST_IF_NOT(audio_manager()->HasAudioOutputDevices());
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info()->HasAudioOutputDevices());
   AudioDeviceDescriptions devices;
-  RunOnAudioThread(base::Bind(&AudioManager::GetAudioOutputDeviceDescriptions,
-                              base::Unretained(audio_manager()), &devices));
+  RunOnAudioThread(base::Bind(
+      &AudioDeviceInfoAccessorForTests::GetAudioOutputDeviceDescriptions,
+      base::Unretained(audio_manager_device_info()), &devices));
   CheckDeviceDescriptions(devices);
 }
 

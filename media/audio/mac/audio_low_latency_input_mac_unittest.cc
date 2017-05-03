@@ -13,6 +13,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_unittest_util.h"
@@ -123,7 +124,8 @@ class MacAudioInputTest : public testing::Test {
   }
 
   bool InputDevicesAvailable() {
-    return audio_manager_->HasAudioInputDevices();
+    return AudioDeviceInfoAccessorForTests(audio_manager_.get())
+        .HasAudioInputDevices();
   }
 
   // Convenience method which creates a default AudioInputStream object using
