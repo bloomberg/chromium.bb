@@ -410,6 +410,7 @@ void CommandBufferProxyImpl::SetGetBuffer(int32_t shm_id) {
 
   Send(new GpuCommandBufferMsg_SetGetBuffer(route_id_, shm_id));
   last_put_offset_ = -1;
+  last_barrier_put_offset_ = -1;
 }
 
 scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
