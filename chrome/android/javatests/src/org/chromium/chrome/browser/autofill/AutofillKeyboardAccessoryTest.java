@@ -10,6 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -20,7 +25,8 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -36,9 +42,16 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Integration tests for autofill keyboard accessory.
  */
-@CommandLineFlags.Add({ChromeSwitches.ENABLE_AUTOFILL_KEYBOARD_ACCESSORY})
+@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@CommandLineFlags.Add({ChromeSwitches.ENABLE_AUTOFILL_KEYBOARD_ACCESSORY,
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class AutofillKeyboardAccessoryTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private final AtomicReference<ContentViewCore> mViewCoreRef =
             new AtomicReference<ContentViewCore>();
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<WebContents>();
@@ -46,18 +59,10 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     private final AtomicReference<ViewGroup> mKeyboardAccessoryRef =
             new AtomicReference<ViewGroup>();
 
-    public AutofillKeyboardAccessoryTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {}
-
     private void loadTestPage(boolean isRtl) throws InterruptedException, ExecutionException,
             TimeoutException {
-        startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html"
-                + (isRtl ? " dir=\"rtl\"" : "")
-                + "><head>"
+        mActivityTestRule.startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html"
+                + (isRtl ? " dir=\"rtl\"" : "") + "><head>"
                 + "<meta name=\"viewport\""
                 + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
                 + "<body><form method=\"POST\">"
@@ -90,11 +95,12 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mViewCoreRef.set(getActivity().getCurrentContentViewCore());
+                mViewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
                 mWebContentsRef.set(mViewCoreRef.get().getWebContents());
                 mContainerRef.set(mViewCoreRef.get().getContainerView());
-                mKeyboardAccessoryRef.set(
-                        getActivity().getWindowAndroid().getKeyboardAccessoryView());
+                mKeyboardAccessoryRef.set(mActivityTestRule.getActivity()
+                                                  .getWindowAndroid()
+                                                  .getKeyboardAccessoryView());
             }
         });
         DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), "fn");
@@ -103,42 +109,49 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     /**
      * Autofocused fields should not show a keyboard accessory.
      */
+    @Test
     @MediumTest
     @Feature({"keyboard-accessory"})
-    public void testAutofocusedFieldDoesNotShowKeyboardAccessory() throws InterruptedException,
-           ExecutionException, TimeoutException {
+    public void testAutofocusedFieldDoesNotShowKeyboardAccessory()
+            throws InterruptedException, ExecutionException, TimeoutException {
         loadTestPage(false);
-        assertTrue("Keyboard accessory should be hidden.",
-                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() {
-                        return mKeyboardAccessoryRef.get().getVisibility() == View.GONE;
-                    }
-                }).booleanValue());
+        Assert.assertTrue("Keyboard accessory should be hidden.",
+                ThreadUtils
+                        .runOnUiThreadBlocking(new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() {
+                                return mKeyboardAccessoryRef.get().getVisibility() == View.GONE;
+                            }
+                        })
+                        .booleanValue());
     }
 
     /**
      * Tapping on an input field should show a keyboard and its keyboard accessory.
      */
+    @Test
     @MediumTest
     @Feature({"keyboard-accessory"})
-    public void testTapInputFieldShowsKeyboardAccessory() throws ExecutionException,
-             InterruptedException, TimeoutException {
+    public void testTapInputFieldShowsKeyboardAccessory()
+            throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(mViewCoreRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
+                return UiUtils.isKeyboardShowing(
+                        mActivityTestRule.getActivity(), mContainerRef.get());
             }
         });
-        assertTrue("Keyboard accessory should be showing.",
-                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() {
-                        return mKeyboardAccessoryRef.get().getVisibility() == View.VISIBLE;
-                    }
-                }).booleanValue());
+        Assert.assertTrue("Keyboard accessory should be showing.",
+                ThreadUtils
+                        .runOnUiThreadBlocking(new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() {
+                                return mKeyboardAccessoryRef.get().getVisibility() == View.VISIBLE;
+                            }
+                        })
+                        .booleanValue());
     }
 
     /**
@@ -148,15 +161,17 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
     @MediumTest
     @Feature({"keyboard-accessory"})
     */
+    @Test
     @FlakyTest(message = "https://crbug.com/563640")
-    public void testSwitchFieldsRescrollsKeyboardAccessory() throws ExecutionException,
-             InterruptedException, TimeoutException {
+    public void testSwitchFieldsRescrollsKeyboardAccessory()
+            throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(mViewCoreRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
+                return UiUtils.isKeyboardShowing(
+                        mActivityTestRule.getActivity(), mContainerRef.get());
             }
         });
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -197,17 +212,19 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
      * RTL is only supported on Jelly Bean MR 1+.
      * http://android-developers.blogspot.com/2013/03/native-rtl-support-in-android-42.html
      */
+    @Test
     @MediumTest
     @Feature({"keyboard-accessory"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public void testSwitchFieldsRescrollsKeyboardAccessoryRtl() throws ExecutionException,
-             InterruptedException, TimeoutException {
+    public void testSwitchFieldsRescrollsKeyboardAccessoryRtl()
+            throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(true);
         DOMUtils.clickNode(mViewCoreRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
+                return UiUtils.isKeyboardShowing(
+                        mActivityTestRule.getActivity(), mContainerRef.get());
             }
         });
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -251,16 +268,18 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
      * Selecting a keyboard accessory suggestion should hide the keyboard and its keyboard
      * accessory.
      */
+    @Test
     @MediumTest
     @Feature({"keyboard-accessory"})
-    public void testSelectSuggestionHidesKeyboardAccessory() throws ExecutionException,
-             InterruptedException, TimeoutException {
+    public void testSelectSuggestionHidesKeyboardAccessory()
+            throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(mViewCoreRef.get(), "fn");
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
+                return UiUtils.isKeyboardShowing(
+                        mActivityTestRule.getActivity(), mContainerRef.get());
             }
         });
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -275,16 +294,19 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
         CriteriaHelper.pollUiThread(new Criteria("Keyboard should be hidden.") {
             @Override
             public boolean isSatisfied() {
-                return !UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
+                return !UiUtils.isKeyboardShowing(
+                        mActivityTestRule.getActivity(), mContainerRef.get());
             }
         });
-        assertTrue("Keyboard accessory should be hidden.",
-                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() {
-                        return mKeyboardAccessoryRef.get().getVisibility() == View.GONE;
-                    }
-                }).booleanValue());
+        Assert.assertTrue("Keyboard accessory should be hidden.",
+                ThreadUtils
+                        .runOnUiThreadBlocking(new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() {
+                                return mKeyboardAccessoryRef.get().getVisibility() == View.GONE;
+                            }
+                        })
+                        .booleanValue());
     }
 
     private View getSuggestionAt(int index) {

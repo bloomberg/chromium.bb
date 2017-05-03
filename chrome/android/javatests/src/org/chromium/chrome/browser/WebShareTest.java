@@ -7,8 +7,16 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.app.AlertDialog;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -16,11 +24,20 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /** Test suite for Web Share (navigator.share) functionality. */
-public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class WebShareTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String TEST_FILE = "/content/test/data/android/webshare.html";
 
     private EmbeddedTestServer mTestServer;
@@ -43,7 +60,7 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         @Override
         public void onTitleUpdated(Tab tab) {
-            String title = getActivity().getActivityTab().getTitle();
+            String title = mActivityTestRule.getActivity().getActivityTab().getTitle();
             // Wait until the title indicates either success or failure.
             if (!title.equals("Success") && !title.startsWith("Fail:")) return;
             mStatus = title;
@@ -56,27 +73,24 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         }
     }
 
-    public WebShareTest() {
-        super(ChromeActivity.class);
-    }
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
 
         mUrl = mTestServer.getURL(TEST_FILE);
 
-        mTab = getActivity().getActivityTab();
+        mTab = mActivityTestRule.getActivity().getActivityTab();
         mUpdateWaiter = new WebShareUpdateWaiter();
         mTab.addObserver(mUpdateWaiter);
 
         mReceivedIntent = null;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTab.removeObserver(mUpdateWaiter);
         mTestServer.stopAndDestroyServer();
 
@@ -84,32 +98,33 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         ShareHelper.setForceCustomChooserForTesting(false);
         ShareHelper.setFakeIntentReceiverForTesting(null);
 
-        super.tearDown();
     }
 
     /**
      * Verify that WebShare is missing by default (without a flag).
      * @throws Exception
      */
+    @Test
     @MediumTest
     @Feature({"WebShare"})
     public void testWebShareMissingWithoutFlag() throws Exception {
-        loadUrl(mUrl);
-        runJavaScriptCodeInCurrentTab("initiate_share()");
-        assertEquals("Fail: navigator.share === undefined", mUpdateWaiter.waitForUpdate());
+        mActivityTestRule.loadUrl(mUrl);
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("initiate_share()");
+        Assert.assertEquals("Fail: navigator.share === undefined", mUpdateWaiter.waitForUpdate());
     }
 
     /**
      * Verify that WebShare fails if called without a user gesture.
      * @throws Exception
      */
+    @Test
     @MediumTest
     @CommandLineFlags.Add("enable-blink-features=WebShare")
     @Feature({"WebShare"})
     public void testWebShareNoUserGesture() throws Exception {
-        loadUrl(mUrl);
-        runJavaScriptCodeInCurrentTab("initiate_share()");
-        assertEquals(
+        mActivityTestRule.loadUrl(mUrl);
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("initiate_share()");
+        Assert.assertEquals(
                 "Fail: SecurityError: Must be handling a user gesture to perform a share request.",
                 mUpdateWaiter.waitForUpdate());
     }
@@ -118,20 +133,23 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * Verify that WebShare fails if the origin trial is disabled.
      * @throws Exception
      */
+    @Test
     @MediumTest
-    @CommandLineFlags.Add({
-            "enable-blink-features=WebShare", "origin-trial-disabled-features=WebShare"})
+    @CommandLineFlags.Add({"enable-blink-features=WebShare",
+            "origin-trial-disabled-features=WebShare"})
     @Feature({"WebShare"})
     public void testWebShareOriginTrialDisabled() throws Exception {
-        loadUrl(mUrl);
-        singleClickView(mTab.getView());
-        assertEquals("Fail: SecurityError: WebShare is disabled.", mUpdateWaiter.waitForUpdate());
+        mActivityTestRule.loadUrl(mUrl);
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals(
+                "Fail: SecurityError: WebShare is disabled.", mUpdateWaiter.waitForUpdate());
     }
 
     /**
      * Verify WebShare fails if share is called from a user gesture, and canceled.
      * @throws Exception
      */
+    @Test
     @MediumTest
     @CommandLineFlags.Add("enable-blink-features=WebShare")
     @Feature({"WebShare"})
@@ -150,20 +168,21 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 // Click again to start another share. This is necessary to work around
                 // https://crbug.com/636274 (callback is not canceled until next share is
                 // initiated). This also serves as a regression test for https://crbug.com/640324.
-                singleClickView(mTab.getView());
+                TouchCommon.singleClickView(mTab.getView());
             }
         });
 
-        loadUrl(mUrl);
+        mActivityTestRule.loadUrl(mUrl);
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
-        singleClickView(mTab.getView());
-        assertEquals("Fail: AbortError: Share canceled", mUpdateWaiter.waitForUpdate());
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals("Fail: AbortError: Share canceled", mUpdateWaiter.waitForUpdate());
     }
 
     /**
      * Verify WebShare succeeds if share is called from a user gesture, and app chosen.
      * @throws Exception
      */
+    @Test
     @MediumTest
     @CommandLineFlags.Add("enable-blink-features=WebShare")
     @Feature({"WebShare"})
@@ -193,22 +212,23 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
 
-        loadUrl(mUrl);
+        mActivityTestRule.loadUrl(mUrl);
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
-        singleClickView(mTab.getView());
-        assertEquals("Success", mUpdateWaiter.waitForUpdate());
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
 
         // The actual intent to be delivered to the target is in the EXTRA_INTENT of the chooser
         // intent.
-        assertNotNull(mReceivedIntent);
-        assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_INTENT));
+        Assert.assertNotNull(mReceivedIntent);
+        Assert.assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_INTENT));
         Intent innerIntent = mReceivedIntent.getParcelableExtra(Intent.EXTRA_INTENT);
-        assertNotNull(innerIntent);
-        assertEquals(Intent.ACTION_SEND, innerIntent.getAction());
-        assertTrue(innerIntent.hasExtra(Intent.EXTRA_SUBJECT));
-        assertEquals("Test Title", innerIntent.getStringExtra(Intent.EXTRA_SUBJECT));
-        assertTrue(innerIntent.hasExtra(Intent.EXTRA_TEXT));
-        assertEquals("Test Text https://test.url/", innerIntent.getStringExtra(Intent.EXTRA_TEXT));
+        Assert.assertNotNull(innerIntent);
+        Assert.assertEquals(Intent.ACTION_SEND, innerIntent.getAction());
+        Assert.assertTrue(innerIntent.hasExtra(Intent.EXTRA_SUBJECT));
+        Assert.assertEquals("Test Title", innerIntent.getStringExtra(Intent.EXTRA_SUBJECT));
+        Assert.assertTrue(innerIntent.hasExtra(Intent.EXTRA_TEXT));
+        Assert.assertEquals(
+                "Test Text https://test.url/", innerIntent.getStringExtra(Intent.EXTRA_TEXT));
     }
 
     /**
@@ -218,6 +238,7 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      *
      * @throws Exception
      */
+    @Test
     @MediumTest
     @CommandLineFlags.Add("enable-blink-features=WebShare")
     @Feature({"WebShare"})
@@ -235,10 +256,10 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         ShareHelper.setForceCustomChooserForTesting(true);
 
-        loadUrl(mUrl);
+        mActivityTestRule.loadUrl(mUrl);
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
-        singleClickView(mTab.getView());
-        assertEquals("Fail: AbortError: Share canceled", mUpdateWaiter.waitForUpdate());
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals("Fail: AbortError: Share canceled", mUpdateWaiter.waitForUpdate());
     }
 
     /**
@@ -248,6 +269,7 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      *
      * @throws Exception
      */
+    @Test
     @MediumTest
     @CommandLineFlags.Add("enable-blink-features=WebShare")
     @Feature({"WebShare"})
@@ -270,22 +292,17 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         ShareHelper.setForceCustomChooserForTesting(true);
 
-        loadUrl(mUrl);
+        mActivityTestRule.loadUrl(mUrl);
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
-        singleClickView(mTab.getView());
-        assertEquals("Success", mUpdateWaiter.waitForUpdate());
+        TouchCommon.singleClickView(mTab.getView());
+        Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
 
-        assertNotNull(mReceivedIntent);
-        assertEquals(Intent.ACTION_SEND, mReceivedIntent.getAction());
-        assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_SUBJECT));
-        assertEquals("Test Title", mReceivedIntent.getStringExtra(Intent.EXTRA_SUBJECT));
-        assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_TEXT));
-        assertEquals("Test Text https://test.url/",
-                     mReceivedIntent.getStringExtra(Intent.EXTRA_TEXT));
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+        Assert.assertNotNull(mReceivedIntent);
+        Assert.assertEquals(Intent.ACTION_SEND, mReceivedIntent.getAction());
+        Assert.assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_SUBJECT));
+        Assert.assertEquals("Test Title", mReceivedIntent.getStringExtra(Intent.EXTRA_SUBJECT));
+        Assert.assertTrue(mReceivedIntent.hasExtra(Intent.EXTRA_TEXT));
+        Assert.assertEquals(
+                "Test Text https://test.url/", mReceivedIntent.getStringExtra(Intent.EXTRA_TEXT));
     }
 }

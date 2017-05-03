@@ -13,13 +13,22 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -32,22 +41,20 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests for launching Chrome.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class LauncherActivityTest {
     private Context mContext;
     private static final long DEVICE_STARTUP_TIMEOUT_MS = scaleTimeout(15000);
 
-    public LauncherActivityTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        mContext = getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
     }
 
+    @Test
     @SmallTest
     public void testLaunchWithUrlNoScheme() {
         // Prepare intent
@@ -58,9 +65,10 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
 
         final Activity startedActivity = tryLaunchingChrome(intent);
         final Intent activityIntent = startedActivity.getIntent();
-        assertEquals(intentUrl, activityIntent.getDataString());
+        Assert.assertEquals(intentUrl, activityIntent.getDataString());
     }
 
+    @Test
     @SmallTest
     public void testDoesNotCrashWithBadParcel() {
         // Prepare bad intent
@@ -77,8 +85,9 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
 
         final Activity startedActivity = tryLaunchingChrome(intent);
         final Intent activityIntent = startedActivity.getIntent();
-        assertEquals("Data was not preserved", intent.getData(), activityIntent.getData());
-        assertEquals("Action was not preserved", intent.getAction(), activityIntent.getAction());
+        Assert.assertEquals("Data was not preserved", intent.getData(), activityIntent.getData());
+        Assert.assertEquals(
+                "Action was not preserved", intent.getAction(), activityIntent.getAction());
     }
 
     private Activity tryLaunchingChrome(final Intent intent) {
@@ -107,10 +116,6 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
                     }
                 }, DEVICE_STARTUP_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         return launchedActivity.get();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
     }
 
     /**
