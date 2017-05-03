@@ -4900,7 +4900,7 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
     // With ref-mv, clearing unused global motion models here is
     // unsafe, and we need to rely on the recode loop to do it
     // instead. See av1_find_mv_refs for details.
-    if (!cpi->global_motion_used[frame]) {
+    if (!cpi->td.rd_counts.global_motion_used[frame]) {
       set_default_warp_params(&cm->global_motion[frame]);
     }
 #endif

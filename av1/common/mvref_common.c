@@ -869,13 +869,15 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       find_mv_refs_sync sync, void *const data,
                       int16_t *mode_context) {
   int_mv zeromv[2];
+#if CONFIG_GLOBAL_MOTION
+  BLOCK_SIZE bsize = mi->mbmi.sb_type;
+#endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_REF_MV
   int idx, all_zero = 1;
 #if CONFIG_GLOBAL_MOTION
   MV_REFERENCE_FRAME rf[2];
-  BLOCK_SIZE bsize = mi->mbmi.sb_type;
-#endif
-#endif
+#endif  // CONFIG_GLOBAL_MOTION
+#endif  // CONFIG_REF_MV
 #if CONFIG_EXT_INTER
   av1_update_mv_context(cm, xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col,
 #if CONFIG_REF_MV
