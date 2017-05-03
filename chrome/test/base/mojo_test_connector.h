@@ -62,7 +62,8 @@ class MojoTestConnector {
 
   std::unique_ptr<content::TestState> PrepareForTest(
       base::CommandLine* command_line,
-      base::TestLauncher::LaunchOptions* test_launch_options);
+      base::TestLauncher::LaunchOptions* test_launch_options,
+      base::OnceClosure on_process_launched);
 
   void StartService(const std::string& service_name);
 

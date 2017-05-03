@@ -44,18 +44,18 @@ const char kMusTestRunnerName[] = "mus_browser_tests";
 class MojoTestState : public content::TestState {
  public:
   explicit MojoTestState(
-      service_manager::BackgroundServiceManager* background_service_manager)
+      service_manager::BackgroundServiceManager* background_service_manager,
+      base::CommandLine* command_line,
+      base::TestLauncher::LaunchOptions* test_launch_options,
+      const std::string& mus_config_switch,
+      base::OnceClosure on_process_launched)
       : background_service_manager_(background_service_manager),
-        weak_factory_(this) {}
-  ~MojoTestState() override {}
-
-  void Init(base::CommandLine* command_line,
-            base::TestLauncher::LaunchOptions* test_launch_options,
-            const std::string& mus_config_switch) {
+        platform_channel_(base::MakeUnique<mojo::edk::PlatformChannelPair>()),
+        main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        on_process_launched_(std::move(on_process_launched)),
+        weak_factory_(this) {
     command_line->AppendSwitch(MojoTestConnector::kTestSwitch);
     command_line->AppendSwitchASCII(switches::kMusConfig, mus_config_switch);
-
-    platform_channel_ = base::MakeUnique<mojo::edk::PlatformChannelPair>();
 
     platform_channel_->PrepareToPassClientHandleToChildProcess(
         command_line, &handle_passing_info_);
@@ -75,11 +75,9 @@ class MojoTestState : public content::TestState {
     // command line.
     service_ = service_manager::PassServiceRequestOnCommandLine(
         &process_connection_, command_line);
-
-    // ChildProcessLaunched may be called on an arbitrary thread, so track the
-    // current TaskRunner and post back to it when we want to send the PID.
-    main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
+
+  ~MojoTestState() override {}
 
  private:
   // content::TestState:
@@ -109,6 +107,8 @@ class MojoTestState : public content::TestState {
     DCHECK(pid_receiver_.is_bound());
     pid_receiver_->SetPID(pid);
     pid_receiver_.reset();
+
+    std::move(on_process_launched_).Run();
   }
 
   mojo::edk::PendingProcessConnection process_connection_;
@@ -125,7 +125,8 @@ class MojoTestState : public content::TestState {
 
   std::unique_ptr<mojo::edk::PlatformChannelPair> platform_channel_;
   service_manager::mojom::PIDReceiverPtr pid_receiver_;
-  scoped_refptr<base::TaskRunner> main_task_runner_ = nullptr;
+  const scoped_refptr<base::TaskRunner> main_task_runner_;
+  base::OnceClosure on_process_launched_;
 
   base::WeakPtrFactory<MojoTestState> weak_factory_;
 
@@ -236,13 +237,13 @@ MojoTestConnector::~MojoTestConnector() {}
 
 std::unique_ptr<content::TestState> MojoTestConnector::PrepareForTest(
     base::CommandLine* command_line,
-    base::TestLauncher::LaunchOptions* test_launch_options) {
-  auto test_state =
-      base::MakeUnique<MojoTestState>(background_service_manager_.get());
-  test_state->Init(command_line, test_launch_options,
-                   config_ == MojoTestConnector::Config::MASH ? switches::kMash
-                                                              : switches::kMus);
-  return test_state;
+    base::TestLauncher::LaunchOptions* test_launch_options,
+    base::OnceClosure on_process_launched) {
+  return base::MakeUnique<MojoTestState>(
+      background_service_manager_.get(), command_line, test_launch_options,
+      config_ == MojoTestConnector::Config::MASH ? switches::kMash
+                                                 : switches::kMus,
+      std::move(on_process_launched));
 }
 
 void MojoTestConnector::StartService(const std::string& service_name) {
