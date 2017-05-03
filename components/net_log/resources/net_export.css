@@ -19,8 +19,8 @@ button {
   font-size: 110%;
   font-weight: bold;
   margin: 10px auto;
-  min-height: 48px;
-  width: 200px;
+  padding: 1em;
+  width: 14em;
 }
 
 h2 {
