@@ -265,8 +265,7 @@ void ImageLoader::LoadImagesAsync(
     const ImageLoaderImageCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(LoadImagesBlocking, info_list,
                  LoadResourceBitmaps(extension, info_list)),
       base::Bind(&ImageLoader::ReplyBack, weak_ptr_factory_.GetWeakPtr(),
@@ -279,8 +278,7 @@ void ImageLoader::LoadImageFamilyAsync(
     const ImageLoaderImageFamilyCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(LoadImagesBlocking, info_list,
                  LoadResourceBitmaps(extension, info_list)),
       base::Bind(&ImageLoader::ReplyBackWithImageFamily,

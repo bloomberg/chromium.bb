@@ -74,7 +74,7 @@ void OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted(
   std::string* const mime_type_from_extension_ptr =
       mime_type_from_extension.get();
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock(),
+      FROM_HERE, {base::MayBlock()},
       base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
                  mime_type_from_extension_ptr),
       base::Bind(&OnGetMimeTypeFromFileForNonNativeLocalPathCompleted,
@@ -116,7 +116,7 @@ void OnGetMimeTypeFromFileForNativeLocalPathCompleted(
       new std::string(kMimeTypeApplicationOctetStream));
   std::string* const sniffed_mime_type_ptr = sniffed_mime_type.get();
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock(),
+      FROM_HERE, {base::MayBlock()},
       base::Bind(&SniffMimeType, local_path, sniffed_mime_type_ptr),
       base::Bind(&OnSniffMimeTypeForNativeLocalPathCompleted,
                  base::Passed(&sniffed_mime_type), callback));
@@ -148,7 +148,7 @@ void GetMimeTypeForLocalPath(
   std::string* const mime_type_from_extension_ptr =
       mime_type_from_extension.get();
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock(),
+      FROM_HERE, {base::MayBlock()},
       base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
                  mime_type_from_extension_ptr),
       base::Bind(&OnGetMimeTypeFromFileForNativeLocalPathCompleted, local_path,

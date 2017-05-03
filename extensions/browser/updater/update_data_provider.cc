@@ -60,8 +60,7 @@ void UpdateDataProvider::RunInstallCallback(const std::string& extension_id,
                                             const base::FilePath& temp_dir) {
   if (!context_) {
     base::PostTaskWithTraits(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(base::IgnoreResult(&base::DeleteFile), temp_dir, false));
     return;
   } else {

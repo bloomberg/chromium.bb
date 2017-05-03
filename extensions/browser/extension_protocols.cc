@@ -181,11 +181,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
             network_delegate,
             base::FilePath(),
             base::CreateTaskRunnerWithTraits(
-                base::TaskTraits()
-                    .MayBlock()
-                    .WithPriority(base::TaskPriority::BACKGROUND)
-                    .WithShutdownBehavior(
-                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))),
+                {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         verify_job_(verify_job),
         seek_position_(0),
         bytes_read_(0),
@@ -212,7 +209,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
 
     // Inherit task priority from the calling context.
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock(),
+        FROM_HERE, {base::MayBlock()},
         base::Bind(&ReadResourceFilePathAndLastModifiedTime, resource_,
                    directory_path_, base::Unretained(read_file_path),
                    base::Unretained(last_modified_time)),
