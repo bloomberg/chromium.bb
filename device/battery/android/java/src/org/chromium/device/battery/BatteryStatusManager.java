@@ -4,7 +4,6 @@
 
 package org.chromium.device.battery;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -59,7 +58,7 @@ class BatteryStatusManager {
             mBatteryManager = batteryManager;
         }
 
-        @SuppressLint("NewApi")
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         public int getIntProperty(int id) {
             return mBatteryManager.getIntProperty(id);
         }
@@ -164,7 +163,6 @@ class BatteryStatusManager {
         mCallback.onBatteryStatusChanged(batteryStatus);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void updateBatteryStatusForLollipop(BatteryStatus batteryStatus) {
         assert mAndroidBatteryManager != null;
 
