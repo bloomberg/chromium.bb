@@ -467,7 +467,6 @@ component("platform") {
     "audio/VectorMath.h",
     "audio/android/FFTFrameOpenMAXDLAndroid.cpp",
     "audio/ffmpeg/FFTFrameFFMPEG.cpp",
-    "audio/ipp/FFTFrameIPP.cpp",
     "audio/mac/FFTFrameMac.cpp",
     "bindings/ActiveScriptWrappable.cpp",
     "bindings/ActiveScriptWrappable.h",
