@@ -26,7 +26,7 @@ from itertools import chain
 ALIGNMENT_ORDER = [
     'double',
     'FillLayer', 'BorderData',  # Aligns like a void * (can be 32 or 64 bits)
-    'LengthBox', 'Length', 'float',
+    'LengthBox', 'LengthSize', 'Length', 'float',
     'StyleColor', 'Color', 'unsigned', 'int',
     'short',
     'char',

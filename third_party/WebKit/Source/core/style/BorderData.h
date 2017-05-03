@@ -38,11 +38,7 @@ class BorderData {
   friend class ComputedStyle;
 
  public:
-  BorderData()
-      : top_left_(Length(0, kFixed), Length(0, kFixed)),
-        top_right_(Length(0, kFixed), Length(0, kFixed)),
-        bottom_left_(Length(0, kFixed), Length(0, kFixed)),
-        bottom_right_(Length(0, kFixed), Length(0, kFixed)) {}
+  BorderData() {}
 
   bool HasBorder() const {
     return left_.NonZero() || right_.NonZero() || top_.NonZero() ||
@@ -50,18 +46,6 @@ class BorderData {
   }
 
   bool HasBorderFill() const { return image_.HasImage() && image_.Fill(); }
-
-  bool HasBorderRadius() const {
-    if (!top_left_.Width().IsZero())
-      return true;
-    if (!top_right_.Width().IsZero())
-      return true;
-    if (!bottom_left_.Width().IsZero())
-      return true;
-    if (!bottom_right_.Width().IsZero())
-      return true;
-    return false;
-  }
 
   bool HasBorderColorReferencingCurrentColor() const {
     return (left_.NonZero() && left_.GetColor().IsCurrentColor()) ||
@@ -99,13 +83,13 @@ class BorderData {
 
   bool operator==(const BorderData& o) const {
     return left_ == o.left_ && right_ == o.right_ && top_ == o.top_ &&
-           bottom_ == o.bottom_ && image_ == o.image_ && RadiiEqual(o);
+           bottom_ == o.bottom_ && image_ == o.image_;
   }
 
   bool VisuallyEqual(const BorderData& o) const {
     return left_.VisuallyEqual(o.left_) && right_.VisuallyEqual(o.right_) &&
            top_.VisuallyEqual(o.top_) && bottom_.VisuallyEqual(o.bottom_) &&
-           image_ == o.image_ && RadiiEqual(o);
+           image_ == o.image_;
   }
 
   bool VisualOverflowEqual(const BorderData& o) const {
@@ -121,22 +105,12 @@ class BorderData {
            BorderBottomWidth() == o.BorderBottomWidth();
   }
 
-  bool RadiiEqual(const BorderData& o) const {
-    return top_left_ == o.top_left_ && top_right_ == o.top_right_ &&
-           bottom_left_ == o.bottom_left_ && bottom_right_ == o.bottom_right_;
-  }
-
   const BorderValue& Left() const { return left_; }
   const BorderValue& Right() const { return right_; }
   const BorderValue& Top() const { return top_; }
   const BorderValue& Bottom() const { return bottom_; }
 
   const NinePieceImage& GetImage() const { return image_; }
-
-  const LengthSize& TopLeft() const { return top_left_; }
-  const LengthSize& TopRight() const { return top_right_; }
-  const LengthSize& BottomLeft() const { return bottom_left_; }
-  const LengthSize& BottomRight() const { return bottom_right_; }
 
  private:
   BorderValue left_;
@@ -145,11 +119,6 @@ class BorderData {
   BorderValue bottom_;
 
   NinePieceImage image_;
-
-  LengthSize top_left_;
-  LengthSize top_right_;
-  LengthSize bottom_left_;
-  LengthSize bottom_right_;
 };
 
 }  // namespace blink
