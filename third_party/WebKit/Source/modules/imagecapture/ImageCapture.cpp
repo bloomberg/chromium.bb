@@ -225,8 +225,7 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
 
   // Create |m_frameGrabber| the first time.
   if (!frame_grabber_) {
-    frame_grabber_ =
-        WTF::WrapUnique(Platform::Current()->CreateImageCaptureFrameGrabber());
+    frame_grabber_ = Platform::Current()->CreateImageCaptureFrameGrabber();
   }
 
   if (!frame_grabber_) {

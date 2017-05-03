@@ -31,6 +31,7 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
+#include "third_party/WebKit/public/platform/WebRTCCertificateGenerator.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -51,7 +52,6 @@
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/renderer/media/rtc_certificate.h"
-#include "third_party/WebKit/public/platform/WebRTCCertificateGenerator.h"
 #include "third_party/webrtc/base/rtccertificate.h"  // nogncheck
 #endif
 
@@ -268,12 +268,12 @@ blink::WebCompositorSupport* TestBlinkWebUnitTestSupport::CompositorSupport() {
   return &compositor_support_;
 }
 
-blink::WebGestureCurve* TestBlinkWebUnitTestSupport::CreateFlingAnimationCurve(
+std::unique_ptr<blink::WebGestureCurve>
+TestBlinkWebUnitTestSupport::CreateFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
-  // Caller will retain and release.
-  return new WebGestureCurveMock(velocity, cumulative_scroll);
+  return base::MakeUnique<WebGestureCurveMock>(velocity, cumulative_scroll);
 }
 
 blink::WebURLLoaderMockFactory*
@@ -329,10 +329,10 @@ class TestWebRTCCertificateGenerator
 }  // namespace
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
-blink::WebRTCCertificateGenerator*
+std::unique_ptr<blink::WebRTCCertificateGenerator>
 TestBlinkWebUnitTestSupport::CreateRTCCertificateGenerator() {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return new TestWebRTCCertificateGenerator();
+  return base::MakeUnique<TestWebRTCCertificateGenerator>();
 #else
   return nullptr;
 #endif

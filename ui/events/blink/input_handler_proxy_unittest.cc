@@ -296,11 +296,11 @@ class MockInputHandlerProxyClient
     DispatchNonBlockingEventToMainThread_(*event.get());
   }
 
-  blink::WebGestureCurve* CreateFlingAnimationCurve(
+  std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
       WebGestureDevice deviceSource,
       const WebFloatPoint& velocity,
       const WebSize& cumulative_scroll) override {
-    return new FakeWebGestureCurve(
+    return base::MakeUnique<FakeWebGestureCurve>(
         blink::WebFloatSize(velocity.x, velocity.y),
         blink::WebFloatSize(cumulative_scroll.width, cumulative_scroll.height));
   }

@@ -46,8 +46,7 @@ class FIFOClient {
   FIFOClient(PushPullFIFO* fifo, size_t bus_length, size_t jitter_range_ms)
       : fifo_(fifo),
         bus_(AudioBus::Create(fifo->NumberOfChannels(), bus_length)),
-        client_thread_(WTF::WrapUnique(
-            Platform::Current()->CreateThread("client thread"))),
+        client_thread_(Platform::Current()->CreateThread("client thread")),
         jitter_range_ms_(jitter_range_ms) {}
 
   void Start(double duration_ms, double interval_ms) {

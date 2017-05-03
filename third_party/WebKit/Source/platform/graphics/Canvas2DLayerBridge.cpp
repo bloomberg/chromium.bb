@@ -866,8 +866,8 @@ bool Canvas2DLayerBridge::RestoreSurface() {
 
   gpu::gles2::GLES2Interface* shared_gl = nullptr;
   layer_->ClearTexture();
-  context_provider_ = WTF::WrapUnique(
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider());
+  context_provider_ =
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
   if (context_provider_)
     shared_gl = context_provider_->ContextGL();
 

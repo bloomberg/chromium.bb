@@ -470,8 +470,8 @@ class ThreadedTesterBase {
   static void Test(ThreadedTesterBase* tester) {
     Vector<std::unique_ptr<WebThread>, kNumberOfThreads> threads;
     for (int i = 0; i < kNumberOfThreads; i++) {
-      threads.push_back(WTF::WrapUnique(
-          Platform::Current()->CreateThread("blink gc testing thread")));
+      threads.push_back(
+          Platform::Current()->CreateThread("blink gc testing thread"));
       threads.back()->GetWebTaskRunner()->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(ThreadFunc, CrossThreadUnretained(tester)));
@@ -5432,8 +5432,8 @@ class ThreadedStrongificationTester {
     IntWrapper::destructor_calls_ = 0;
 
     MutexLocker locker(MainThreadMutex());
-    std::unique_ptr<WebThread> worker_thread = WTF::WrapUnique(
-        Platform::Current()->CreateThread("Test Worker Thread"));
+    std::unique_ptr<WebThread> worker_thread =
+        Platform::Current()->CreateThread("Test Worker Thread");
     worker_thread->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE, CrossThreadBind(WorkerThreadMain));
 
@@ -5531,8 +5531,8 @@ class MemberSameThreadCheckTester {
     IntWrapper::destructor_calls_ = 0;
 
     MutexLocker locker(MainThreadMutex());
-    std::unique_ptr<WebThread> worker_thread = WTF::WrapUnique(
-        Platform::Current()->CreateThread("Test Worker Thread"));
+    std::unique_ptr<WebThread> worker_thread =
+        Platform::Current()->CreateThread("Test Worker Thread");
     worker_thread->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&MemberSameThreadCheckTester::WorkerThreadMain,
@@ -5574,8 +5574,8 @@ class PersistentSameThreadCheckTester {
     IntWrapper::destructor_calls_ = 0;
 
     MutexLocker locker(MainThreadMutex());
-    std::unique_ptr<WebThread> worker_thread = WTF::WrapUnique(
-        Platform::Current()->CreateThread("Test Worker Thread"));
+    std::unique_ptr<WebThread> worker_thread =
+        Platform::Current()->CreateThread("Test Worker Thread");
     worker_thread->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&PersistentSameThreadCheckTester::WorkerThreadMain,
@@ -5617,8 +5617,8 @@ class MarkingSameThreadCheckTester {
     IntWrapper::destructor_calls_ = 0;
 
     MutexLocker locker(MainThreadMutex());
-    std::unique_ptr<WebThread> worker_thread = WTF::WrapUnique(
-        Platform::Current()->CreateThread("Test Worker Thread"));
+    std::unique_ptr<WebThread> worker_thread =
+        Platform::Current()->CreateThread("Test Worker Thread");
     Persistent<MainThreadObject> main_thread_object = new MainThreadObject();
     worker_thread->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
@@ -6405,7 +6405,7 @@ TEST(HeapTest, CrossThreadWeakPersistent) {
   // the worker thread.
   MutexLocker main_thread_mutex_locker(MainThreadMutex());
   std::unique_ptr<WebThread> worker_thread =
-      WTF::WrapUnique(Platform::Current()->CreateThread("Test Worker Thread"));
+      Platform::Current()->CreateThread("Test Worker Thread");
   DestructorLockingObject* object = nullptr;
   worker_thread->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,

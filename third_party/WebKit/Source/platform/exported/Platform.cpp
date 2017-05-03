@@ -43,7 +43,20 @@
 #include "platform/instrumentation/tracing/MemoryCacheDumpProvider.h"
 #include "platform/wtf/HashMap.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/WebCanvasCaptureHandler.h"
+#include "public/platform/WebFeaturePolicy.h"
+#include "public/platform/WebGestureCurve.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "public/platform/WebImageCaptureFrameGrabber.h"
+#include "public/platform/WebMediaRecorderHandler.h"
+#include "public/platform/WebMediaStreamCenter.h"
 #include "public/platform/WebPrerenderingSupport.h"
+#include "public/platform/WebRTCCertificateGenerator.h"
+#include "public/platform/WebRTCPeerConnectionHandler.h"
+#include "public/platform/WebStorageNamespace.h"
+#include "public/platform/WebThread.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
+#include "public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace blink {
@@ -146,6 +159,91 @@ service_manager::Connector* Platform::GetConnector() {
 
 InterfaceProvider* Platform::GetInterfaceProvider() {
   return InterfaceProvider::GetEmptyInterfaceProvider();
+}
+
+std::unique_ptr<WebMIDIAccessor> Platform::CreateMIDIAccessor(
+    WebMIDIAccessorClient*) {
+  return nullptr;
+}
+
+std::unique_ptr<WebStorageNamespace> Platform::CreateLocalStorageNamespace() {
+  return nullptr;
+}
+
+std::unique_ptr<WebServiceWorkerCacheStorage> Platform::CreateCacheStorage(
+    const WebSecurityOrigin&) {
+  return nullptr;
+}
+
+std::unique_ptr<WebThread> Platform::CreateThread(const char* name) {
+  return nullptr;
+}
+
+std::unique_ptr<WebGraphicsContext3DProvider>
+Platform::CreateOffscreenGraphicsContext3DProvider(
+    const Platform::ContextAttributes&,
+    const WebURL& top_document_url,
+    WebGraphicsContext3DProvider* share_context,
+    Platform::GraphicsInfo*) {
+  return nullptr;
+};
+
+std::unique_ptr<WebGraphicsContext3DProvider>
+Platform::CreateSharedOffscreenGraphicsContext3DProvider() {
+  return nullptr;
+}
+
+std::unique_ptr<WebGestureCurve> Platform::CreateFlingAnimationCurve(
+    WebGestureDevice device_source,
+    const WebFloatPoint& velocity,
+    const WebSize& cumulative_scroll) {
+  return nullptr;
+}
+
+std::unique_ptr<WebRTCPeerConnectionHandler>
+Platform::CreateRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*) {
+  return nullptr;
+}
+
+std::unique_ptr<WebMediaRecorderHandler>
+Platform::CreateMediaRecorderHandler() {
+  return nullptr;
+}
+
+std::unique_ptr<WebRTCCertificateGenerator>
+Platform::CreateRTCCertificateGenerator() {
+  return nullptr;
+}
+
+std::unique_ptr<WebMediaStreamCenter> Platform::CreateMediaStreamCenter(
+    WebMediaStreamCenterClient*) {
+  return nullptr;
+}
+
+std::unique_ptr<WebCanvasCaptureHandler> Platform::CreateCanvasCaptureHandler(
+    const WebSize&,
+    double,
+    WebMediaStreamTrack*) {
+  return nullptr;
+}
+
+std::unique_ptr<WebImageCaptureFrameGrabber>
+Platform::CreateImageCaptureFrameGrabber() {
+  return nullptr;
+}
+
+std::unique_ptr<WebFeaturePolicy> Platform::CreateFeaturePolicy(
+    const WebFeaturePolicy* parent_policy,
+    const WebParsedFeaturePolicy& container_policy,
+    const WebParsedFeaturePolicy& policy_header,
+    const WebSecurityOrigin&) {
+  return nullptr;
+}
+
+std::unique_ptr<WebFeaturePolicy> Platform::DuplicateFeaturePolicyWithOrigin(
+    const WebFeaturePolicy&,
+    const WebSecurityOrigin&) {
+  return nullptr;
 }
 
 }  // namespace blink
