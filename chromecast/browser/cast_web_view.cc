@@ -69,8 +69,8 @@ CastWebView::CastWebView(Delegate* delegate,
       browser_context_(browser_context),
       site_instance_(std::move(site_instance)),
       transparent_(transparent),
-      window_(shell::CastContentWindow::Create(delegate)),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
+      window_(shell::CastContentWindow::Create(delegate)),
       did_start_navigation_(false),
       weak_factory_(this) {
   DCHECK(delegate_);
@@ -113,6 +113,7 @@ void CastWebView::DelayedCloseContents() {
   // We want to delete the surface before we start the next app because
   // the next app could be an external one whose Start() function would
   // destroy the primary gfx plane.
+  window_.reset();  // Window destructor requires live web_contents on Android.
   web_contents_.reset();
   delegate_->OnPageStopped(net::OK);
 }

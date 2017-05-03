@@ -101,8 +101,8 @@ class CastWebView : content::WebContentsObserver, content::WebContentsDelegate {
   content::BrowserContext* const browser_context_;
   const scoped_refptr<content::SiteInstance> site_instance_;
   const bool transparent_;
-  const std::unique_ptr<shell::CastContentWindow> window_;
   std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<shell::CastContentWindow> window_;
   bool did_start_navigation_;
 
   base::WeakPtrFactory<CastWebView> weak_factory_;
