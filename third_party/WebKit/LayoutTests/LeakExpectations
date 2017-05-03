@@ -140,6 +140,8 @@ crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Crash ]
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Pass Crash ]
 
+# Sheriff: Commit causing leak found but non-trivial to revert
+crbug.com/718114 [ Linux ] external/wpt/html/semantics/scripting-1/the-script-element/module/crossorigin.html [ Leak Failure ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
