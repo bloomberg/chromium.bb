@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_LINUX_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_LINUX_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

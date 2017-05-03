@@ -4,11 +4,12 @@
 
 #include "chrome/browser/notifications/notification_platform_bridge_linux.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "chrome/browser/notifications/notification.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -32,6 +33,7 @@ ACTION_P(RegisterSignalCallback, callback_addr) {
 class NotificationPlatformBridgeLinuxTest : public testing::Test {
  public:
   NotificationPlatformBridgeLinuxTest() = default;
+  ~NotificationPlatformBridgeLinuxTest() override = default;
 
   void SetUp() override {
     mock_bus_ = new dbus::MockBus(dbus::Bus::Options());
@@ -54,8 +56,8 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
                                 "NotificationClosed", testing::_, testing::_))
         .WillOnce(RegisterSignalCallback(&notification_closed_callback_));
 
-    notification_bridge_linux_.reset(
-        new NotificationPlatformBridgeLinux(mock_bus_));
+    notification_bridge_linux_ =
+        base::WrapUnique(new NotificationPlatformBridgeLinux(mock_bus_));
   }
 
   void TearDown() override {
