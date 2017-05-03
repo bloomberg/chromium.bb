@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 18
+// Next MinVersion: 19
 
 module arc.mojom;
 
@@ -75,7 +75,7 @@ enum ShowPackageInfoPage {
   MANAGE_LINKS = 1,
 };
 
-// Next method ID: 16
+// Next method ID: 17
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
@@ -148,6 +148,11 @@ interface AppHost {
   // Notifies that task requested orientation lock.
   [MinVersion=12] OnTaskOrientationLockRequested@12(int32 task_id,
                                                     OrientationLock lock);
+
+  // Notifies that an application shortcut needs to be deleted. Shortcut is
+  // defined by its |intent_uri| and |package_name|.
+  [MinVersion=18] OnUninstallShortcut@16(string package_name,
+                                         string intent_uri);
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.

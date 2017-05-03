@@ -264,7 +264,9 @@ class ArcAppListPrefs
   void OnPackageAppListRefreshed(
       const std::string& package_name,
       std::vector<arc::mojom::AppInfoPtr> apps) override;
-  void OnInstallShortcut(arc::mojom::ShortcutInfoPtr app) override;
+  void OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) override;
+  void OnUninstallShortcut(const std::string& package_name,
+                           const std::string& intent_uri) override;
   void OnPackageRemoved(const std::string& package_name) override;
   void OnAppIcon(const std::string& package_name,
                  const std::string& activity,

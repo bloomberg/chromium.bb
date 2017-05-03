@@ -1086,6 +1086,37 @@ void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
                     arc::mojom::OrientationLock::NONE);
 }
 
+void ArcAppListPrefs::OnUninstallShortcut(const std::string& package_name,
+                                          const std::string& intent_uri) {
+  std::vector<std::string> shortcuts_to_remove;
+  const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
+  for (base::DictionaryValue::Iterator app_it(*apps); !app_it.IsAtEnd();
+       app_it.Advance()) {
+    const base::Value* value = &app_it.value();
+    const base::DictionaryValue* app;
+    bool shortcut;
+    std::string installed_package_name;
+    std::string installed_intent_uri;
+    if (!value->GetAsDictionary(&app) ||
+        !app->GetBoolean(kShortcut, &shortcut) ||
+        !app->GetString(kPackageName, &installed_package_name) ||
+        !app->GetString(kIntentUri, &installed_intent_uri)) {
+      VLOG(2) << "Failed to extract information for " << app_it.key() << ".";
+      continue;
+    }
+
+    if (!shortcut || installed_package_name != package_name ||
+        installed_intent_uri != intent_uri) {
+      continue;
+    }
+
+    shortcuts_to_remove.push_back(app_it.key());
+  }
+
+  for (const auto& shortcut_id : shortcuts_to_remove)
+    RemoveApp(shortcut_id);
+}
+
 std::unordered_set<std::string> ArcAppListPrefs::GetAppsForPackage(
     const std::string& package_name) const {
   std::unordered_set<std::string> app_set;
