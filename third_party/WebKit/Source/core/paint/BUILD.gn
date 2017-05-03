@@ -7,6 +7,8 @@ import("//third_party/WebKit/Source/core/core.gni")
 blink_core_sources("paint") {
   split_count = 2
   sources = [
+    "AppliedDecorationPainter.cpp",
+    "AppliedDecorationPainter.h",
     "BackgroundImageGeometry.cpp",
     "BackgroundImageGeometry.h",
     "BlockFlowPaintInvalidator.cpp",
@@ -35,6 +37,7 @@ blink_core_sources("paint") {
     "ClipRect.h",
     "ClipRects.h",
     "ClipRectsCache.h",
+    "DecorationInfo.h",
     "DetailsMarkerPainter.cpp",
     "DetailsMarkerPainter.h",
     "EllipsisBoxPainter.cpp",
