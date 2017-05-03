@@ -354,10 +354,6 @@ void AshTestHelper::CreateMashWindowManager() {
     int next_x = 0;
     CreateRootWindowController("800x600", &next_x);
   }
-
-  // Make sure the NetworkHandler didn't get turned on, see above comment as to
-  // why the NetworkHandler should not be running.
-  CHECK(!chromeos::NetworkHandler::IsInitialized());
 }
 
 void AshTestHelper::CreateShell() {
