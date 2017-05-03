@@ -34,8 +34,8 @@ interface SVGGraphicsElement : SVGElement {
     [Measure] readonly attribute SVGAnimatedTransformList transform;
 
     [ImplementedAs=getBBoxFromJavascript] SVGRect getBBox();
-    [ImplementedAs=getCTMFromJavascript] SVGMatrix getCTM();
-    [ImplementedAs=getScreenCTMFromJavascript] SVGMatrix getScreenCTM();
+    SVGMatrix getCTM();
+    SVGMatrix getScreenCTM();
 
     // TODO(foolip): The following two properties existed on SVGLocatable in SVG
     // 1.1, but were removed in SVG2. https://crbug.com/695981

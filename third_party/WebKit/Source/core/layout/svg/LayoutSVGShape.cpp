@@ -228,8 +228,7 @@ Path* LayoutSVGShape::NonScalingStrokePath(
 
 AffineTransform LayoutSVGShape::NonScalingStrokeTransform() const {
   AffineTransform t =
-      ToSVGGraphicsElement(GetElement())
-          ->GetScreenCTM(SVGGraphicsElement::kDisallowStyleUpdate);
+      ToSVGGraphicsElement(GetElement())->ComputeCTM(SVGElement::kScreenScope);
   // Width of non-scaling stroke is independent of translation, so zero it out
   // here.
   t.SetE(0);
