@@ -147,7 +147,6 @@ class BackgroundHTMLParser {
   int pending_csp_meta_token_index_;
 
   bool starting_script_;
-  double last_bytes_received_time_;
   bool should_coalesce_chunks_;
 };
 
