@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/android/android_overlay.h"
 #include "media/base/surface_manager.h"
+#include "media/gpu/media_gpu_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 
@@ -24,9 +25,11 @@ namespace media {
 // While you may send a reference to this to other threads, be sure that it
 // doesn't drop the reference there without creating another one.  This has to
 // be destroyed on the gpu main thread.
-class AVDASurfaceBundle : public base::RefCountedThreadSafe<AVDASurfaceBundle> {
+struct MEDIA_GPU_EXPORT AVDASurfaceBundle
+    : public base::RefCountedThreadSafe<AVDASurfaceBundle> {
  public:
-  explicit AVDASurfaceBundle(int surface_id);
+  // |overlay| is the overlay that we'll use, or nullptr for SurfaceTexture.
+  explicit AVDASurfaceBundle(std::unique_ptr<AndroidOverlay> overlay);
 
   // The surface that MediaCodec is configured to output to.  This can be either
   // a SurfaceTexture or other Surface provider.
@@ -39,23 +42,14 @@ class AVDASurfaceBundle : public base::RefCountedThreadSafe<AVDASurfaceBundle> {
       return surface_texture_surface.j_surface();
   }
 
-  int surface_id = SurfaceManager::kNoSurfaceID;
-
-  // The surface onto which the codec is writing.
-  // TODO(liberato): this isn't true if we have an overlay.  the overlay keeps
-  // the java surface.
-  // gl::ScopedJavaSurface surface;
-
-  // If |overlay| is non-null, then |overlay| owns |surface|.
+  // If |overlay| is non-null, then |overlay| owns j_surface().
   std::unique_ptr<AndroidOverlay> overlay;
 
-  // The SurfaceTexture attached to |surface|, or nullptr if |surface| is
+  // The SurfaceTexture attached to |surface()|, or nullptr if j_surface() is
   // SurfaceView backed.
   scoped_refptr<gl::SurfaceTexture> surface_texture;
 
   // If |surface_texture| is not null, then this is the surface for it.
-  // TODO(liberato): |surface| is the same thing, since overlays own their own
-  // surfaces anyway.
   gl::ScopedJavaSurface surface_texture_surface;
 
  private:

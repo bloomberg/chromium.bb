@@ -180,6 +180,9 @@ component("gpu") {
     sources += [
       "android_video_decode_accelerator.cc",
       "android_video_decode_accelerator.h",
+      "android_video_surface_chooser.h",
+      "android_video_surface_chooser_impl.cc",
+      "android_video_surface_chooser_impl.h",
       "avda_codec_allocator.cc",
       "avda_codec_allocator.h",
       "avda_codec_image.cc",
@@ -195,6 +198,8 @@ component("gpu") {
       "content_video_view_overlay.h",
       "content_video_view_overlay_allocator.cc",
       "content_video_view_overlay_allocator.h",
+      "content_video_view_overlay_factory.cc",
+      "content_video_view_overlay_factory.h",
       "surface_texture_gl_owner.cc",
       "surface_texture_gl_owner.h",
     ]
@@ -444,6 +449,7 @@ source_set("android_video_decode_accelerator_unittests") {
     testonly = true
     sources = [
       "android_video_decode_accelerator_unittest.cc",
+      "android_video_surface_chooser_impl_unittest.cc",
       "avda_codec_allocator_unittest.cc",
       "content_video_view_overlay_allocator_unittest.cc",
       "surface_texture_gl_owner_unittest.cc",
@@ -456,6 +462,7 @@ source_set("android_video_decode_accelerator_unittests") {
       "//base/test:test_support",
       "//gpu:test_support",
       "//media",
+      "//media/base/android:test_support",
       "//testing/gmock",
       "//testing/gtest",
     ]

@@ -29,6 +29,7 @@
 #endif
 #elif defined(OS_ANDROID)
 #include "media/gpu/android_video_decode_accelerator.h"
+#include "media/gpu/android_video_surface_chooser_impl.h"
 #include "media/gpu/avda_codec_allocator.h"
 #endif
 
@@ -249,8 +250,10 @@ GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA(
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   decoder.reset(new AndroidVideoDecodeAccelerator(
-      AVDACodecAllocator::GetInstance(), make_context_current_cb_,
-      get_gles2_decoder_cb_));
+      AVDACodecAllocator::GetInstance(),
+      base::MakeUnique<AndroidVideoSurfaceChooserImpl>(),
+      make_context_current_cb_, get_gles2_decoder_cb_,
+      AndroidVideoDecodeAccelerator::PlatformConfig::CreateDefault()));
   return decoder;
 }
 #endif

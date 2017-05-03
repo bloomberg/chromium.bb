@@ -21,6 +21,7 @@
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/content_decryption_module.h"
+#include "media/gpu/android_video_surface_chooser.h"
 #include "media/gpu/avda_codec_allocator.h"
 #include "media/gpu/avda_picture_buffer_manager.h"
 #include "media/gpu/avda_state_provider.h"
@@ -34,7 +35,7 @@ namespace media {
 class SharedMemoryRegion;
 
 // A VideoDecodeAccelerator implementation for Android. This class decodes the
-// encded input stream using Android's MediaCodec. It handles the work of
+// encoded input stream using Android's MediaCodec. It handles the work of
 // transferring data to and from MediaCodec, and delegates attaching MediaCodec
 // output buffers to PictureBuffers to AVDAPictureBufferManager.
 class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
@@ -45,10 +46,27 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   static VideoDecodeAccelerator::Capabilities GetCapabilities(
       const gpu::GpuPreferences& gpu_preferences);
 
+  // Various things that we normally ask the platform for, mostly for testing.
+  struct PlatformConfig {
+    int sdk_int = base::android::SDK_VERSION_MARSHMALLOW;
+
+    // Is SetSurface supported?  This is not the same as >= M, since we
+    // blacklist some devices.
+    bool allow_setsurface = true;
+
+    // For testing.
+    bool force_deferred_surface_creation = false;
+
+    // Create a default value that's appropriate for use in production.
+    static PlatformConfig CreateDefault();
+  };
+
   AndroidVideoDecodeAccelerator(
       AVDACodecAllocator* codec_allocator,
+      std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
       const MakeGLContextCurrentCallback& make_context_current_cb,
-      const GetGLES2DecoderCallback& get_gles2_decoder_cb);
+      const GetGLES2DecoderCallback& get_gles2_decoder_cb,
+      const PlatformConfig& platform_config);
 
   ~AndroidVideoDecodeAccelerator() override;
 
@@ -86,11 +104,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   enum State {
     NO_ERROR,
     ERROR,
-    // We have requested a surface, but haven't allocated it yet.  When the
-    // surface arrives, we'll transition to WAITING_FOR_CODEC, NO_ERROR, or
-    // ERROR.  This is also the initial state, before we've even requested a
-    // surface, just because it's convenient.
-    WAITING_FOR_SURFACE,
+    // We haven't initialized |surface_chooser_| yet, so we don't have a surface
+    // or a codec.  After we initialize |surface_chooser_|, we'll transition to
+    // WAITING_FOR_CODEC, NO_ERROR, or ERROR.
+    BEFORE_OVERLAY_INIT,
     // Set when we are asynchronously constructing the codec.  Will transition
     // to NO_ERROR or ERROR depending on success.
     WAITING_FOR_CODEC,
@@ -107,24 +124,21 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     DRAIN_FOR_DESTROY,
   };
 
-  // Entry point for configuring / reconfiguring a codec with a new surface.
-  // Start surface creation by trying to allocate the surface id.  Will either
-  // InitializePictureBufferManager if the surface is available immediately, or
-  // will wait for OnOverlayReady to do it.  This will transition |state_|
-  // to WAITING_FOR_SURFACE or WAITING_FOR_CODEC, as needed (or NO_ERROR if it
-  // gets the surface and the codec without waiting).
-  // Note that this requires that you create a new |incoming_bundle_| with the
-  // appropriate surface id.
-  void StartSurfaceCreation();
+  // Called once before (possibly deferred) initialization succeeds, to set up
+  // |surface_chooser_| with our initial factory from VDA::Config.
+  void StartSurfaceChooser();
 
-  // Called by AndroidOverlay when a surface becomes available.
-  void OnOverlayReady(AndroidOverlay* overlay);
+  // Start a transition to an overlay, or, if |!overlay|, SurfaceTexture.  The
+  // transition doesn't have to be immediate; we'll favor not dropping frames.
+  void OnSurfaceTransition(std::unique_ptr<AndroidOverlay> overlay);
 
-  // Called by AndroidOverlay when the overlay will not call OnOverlayReady.
-  void OnOverlayFailed(AndroidOverlay* overlay);
-
-  // Called by AndroidOverlay when a surface is lost.
-  void OnSurfaceDestroyed(AndroidOverlay* overlay);
+  // Called by AndroidOverlay when a surface is lost.  We will discard pending
+  // frames, as needed, to switch away from |overlay| if we're using it.  Before
+  // we return, we will have either dropped |overlay| if we own it, or posted
+  // it for async release with the codec that's using it.  We also handle the
+  // case where we're not using |overlay| at all, since that can happen too
+  // while async codec release is pending.
+  void OnStopUsingOverlayImmediately(AndroidOverlay* overlay);
 
   // Initializes the picture buffer manager to use the current surface, once
   // it is available.  This is not normally called directly, but rather via
@@ -247,15 +261,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // |picture_buffer_manager_|.
   void ReleaseCodec();
 
-  // Returns the surface ID from the incoming bundle, if we have one, or
-  // the current surface bundle if not.  The reasoning is that, if we have an
-  // incoming bundle, then the current (outgoing) one has already been returned
-  // to the codec allocator via DeallocateSurface.  The only place this happens
-  // is UpdateSurface, which handles it specially.
-  int surface_id() const {
-    return incoming_bundle_ ? incoming_bundle_->surface_id
-                            : codec_config_->surface_bundle->surface_id;
-  }
+  // ReleaseCodec(), and also drop our ref to it's surface bundle.  This is the
+  // right thing to do unless you're planning to re-use the bundle with another
+  // codec.  Normally, one doesn't.
+  void ReleaseCodecAndBundle();
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
@@ -379,6 +388,14 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // we're going to SetSurface, then the current codec will depend on the
   // current bundle until then.
   scoped_refptr<AVDASurfaceBundle> incoming_bundle_;
+
+  // If we have been given an overlay to use, then this is it.  If we've been
+  // told to move to SurfaceTexture, then this will be value() == nullptr.
+  base::Optional<std::unique_ptr<AndroidOverlay>> incoming_overlay_;
+
+  std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser_;
+
+  PlatformConfig platform_config_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;
