@@ -48,11 +48,12 @@ var StereoPannerTest = (function () {
    * @param {Object} options.description Test description
    * @param {Object} options.numberOfInputChannels Number of input channels
    */
-  function Test(options) {
+  function Test(should, options) {
 
     // Primary test flag.
     this.success = true;
 
+    this.should = should;
     this.context = null;
     this.prefix = options.prefix;
     this.numberOfInputChannels = (options.numberOfInputChannels || 1);
@@ -177,46 +178,36 @@ var StereoPannerTest = (function () {
 
 
   Test.prototype.showResult = function () {
-    Should(this.prefix + "Number of impulses found", this.impulseIndex)
+    this.should(this.impulseIndex, this.prefix + "Number of impulses found")
       .beEqualTo(gNodesToCreate);
 
-    Should(this.prefix + "Number of impulse at the wrong offset", this.errors.length)
+    this.should(this.errors.length, this.prefix + "Number of impulse at the wrong offset")
       .beEqualTo(0);
 
-    Should(this.prefix + "Left channel error magnitude", this.maxErrorL)
+    this.should(this.maxErrorL, this.prefix + "Left channel error magnitude")
       .beLessThanOrEqualTo(this.maxAllowedError);
 
-    Should(this.prefix + "Right channel error magnitude", this.maxErrorR)
+    this.should(this.maxErrorR, this.prefix + "Right channel error magnitude")
       .beLessThanOrEqualTo(this.maxAllowedError);
   };
 
-
-  Test.prototype.finish = function () {
-    Should(this.description, this.success)
-      .summarize('passed', 'failed');
-  };
-
-
-  Test.prototype.run = function (done) {
+  Test.prototype.run = function () {
 
     this.init();
     this.prepare();
-    this.context.oncomplete = function (event) {
-      this.renderedBufferL = event.renderedBuffer.getChannelData(0);
-      this.renderedBufferR = event.renderedBuffer.getChannelData(1);
-      this.verify();
-      this.showResult();
-      this.finish();
-      done();
-    }.bind(this);
-    this.context.startRendering();
 
+    return this.context.startRendering()
+      .then(renderedBuffer => {
+        this.renderedBufferL = renderedBuffer.getChannelData(0);
+        this.renderedBufferR = renderedBuffer.getChannelData(1);
+        this.verify();
+        this.showResult();
+      });
   };
 
-
   return {
-    create: function (options) {
-      return new Test(options);
+    create: function (should, options) {
+      return new Test(should, options);
     }
   };
 
