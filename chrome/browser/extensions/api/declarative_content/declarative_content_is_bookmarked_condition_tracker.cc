@@ -10,9 +10,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/api/declarative/declarative_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {

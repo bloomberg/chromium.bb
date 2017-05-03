@@ -333,6 +333,14 @@ bool APIBindingHooks::CreateCustomEvent(v8::Local<v8::Context> context,
          delegate_->CreateCustomEvent(context, run_js_, event_name, event_out);
 }
 
+void APIBindingHooks::InitializeTemplate(
+    v8::Isolate* isolate,
+    v8::Local<v8::ObjectTemplate> object_template,
+    const APITypeReferenceMap& type_refs) {
+  if (delegate_)
+    delegate_->InitializeTemplate(isolate, object_template, type_refs);
+}
+
 void APIBindingHooks::SetDelegate(
     std::unique_ptr<APIBindingHooksDelegate> delegate) {
   delegate_ = std::move(delegate);

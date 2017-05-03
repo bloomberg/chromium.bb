@@ -7,14 +7,42 @@
 var binding =
     apiBridge || require('binding').Binding.create('declarativeContent');
 
-var utils = require('utils');
-var validate = require('schemaUtils').validate;
-var canonicalizeCompoundSelector =
-    requireNative('css_natives').CanonicalizeCompoundSelector;
+if (!apiBridge) {
+  var utils = require('utils');
+  var validate = require('schemaUtils').validate;
+  var canonicalizeCompoundSelector =
+      requireNative('css_natives').CanonicalizeCompoundSelector;
+}
+
 var setIcon = require('setIcon').setIcon;
 
 binding.registerCustomHook(function(api) {
   var declarativeContent = api.compiledApi;
+
+  if (apiBridge) {
+    // Validation for most types is done in the native C++ with native bindings,
+    // but setIcon is funny (and sadly broken). Ideally, we can move this
+    // validation entirely into the native code, and this whole file can go
+    // away.
+    var nativeSetIcon = declarativeContent.SetIcon;
+    declarativeContent.SetIcon = function(parameters) {
+      // TODO(devlin): This is very, very wrong. setIcon() is potentially
+      // asynchronous (in the case of a path being specified), which means this
+      // becomes an "asynchronous constructor". Errors can be thrown *after* the
+      // `new declarativeContent.SetIcon(...)` call, and in the async cases,
+      // this wouldn't work when we immediately add the action via an API call
+      // (e.g.,
+      //   chrome.declarativeContent.onPageChange.addRules(
+      //       [{conditions: ..., actions: [ new SetIcon(...) ]}]);
+      // ). Some of this is tracked in http://crbug.com/415315.
+      setIcon(parameters, $Function.bind(function(data) {
+        // Fake calling the original function as a constructor.
+        $Object.setPrototypeOf(this, nativeSetIcon.prototype);
+        $Function.apply(nativeSetIcon, this, [data]);
+      }, this));
+    };
+    return;
+  }
 
   // Returns the schema definition of type |typeId| defined in |namespace|.
   function getSchema(typeId) {
@@ -35,16 +63,8 @@ binding.registerCustomHook(function(api) {
       }
     }
     instance.instanceType = 'declarativeContent.' + typeId;
-    // TODO(devlin): This is wrong. It means we don't validate the construction
-    // of the instance (which really only matters for PageStateMatcher).
-    // Currently, we don't pass the schema to JS with native bindings because
-    // validation should be done natively. We'll need to fix this by either
-    // allowing some validation to occur in JS, or by moving the instantiation
-    // of these types to native code.
-    if (!apiBridge) {
-      var schema = getSchema(typeId);
-      validate([instance], [schema]);
-    }
+    var schema = getSchema(typeId);
+    validate([instance], [schema]);
   }
 
   function canonicalizeCssSelectors(selectors) {
@@ -75,10 +95,11 @@ binding.registerCustomHook(function(api) {
   };
   // TODO(rockot): Do not expose this in M39 stable. Making this restriction
   // possible will take some extra work. See http://crbug.com/415315
+  // Note: See also the SetIcon wrapper above for more issues.
   declarativeContent.SetIcon = function(parameters) {
-    setIcon(parameters, function (data) {
+    setIcon(parameters, $Function.bind(function(data) {
       setupInstance(this, data, 'SetIcon');
-    }.bind(this));
+    }, this));
   };
 });
 

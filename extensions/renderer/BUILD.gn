@@ -66,6 +66,8 @@ source_set("renderer") {
     "context_menus_custom_bindings.h",
     "css_native_handler.cc",
     "css_native_handler.h",
+    "declarative_content_hooks_delegate.cc",
+    "declarative_content_hooks_delegate.h",
     "declarative_event.cc",
     "declarative_event.h",
     "dispatcher.cc",

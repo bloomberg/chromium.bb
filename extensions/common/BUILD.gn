@@ -47,6 +47,8 @@ if (enable_extensions) {
       "api/bluetooth/bluetooth_manifest_handler.h",
       "api/bluetooth/bluetooth_manifest_permission.cc",
       "api/bluetooth/bluetooth_manifest_permission.h",
+      "api/declarative/declarative_constants.cc",
+      "api/declarative/declarative_constants.h",
       "api/declarative/declarative_manifest_data.cc",
       "api/declarative/declarative_manifest_data.h",
       "api/declarative/declarative_manifest_handler.cc",

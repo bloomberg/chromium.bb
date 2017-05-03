@@ -34,11 +34,17 @@ class APIBindingHooksTestDelegate : public APIBindingHooksDelegate {
       std::vector<v8::Local<v8::Value>>*,
       const APITypeReferenceMap&)>;
 
+  using TemplateInitializer = base::Callback<void(v8::Isolate*,
+                                                  v8::Local<v8::ObjectTemplate>,
+                                                  const APITypeReferenceMap&)>;
+
   // Adds a custom |handler| for the method with the given |name|.
   void AddHandler(base::StringPiece name, const RequestHandler& handler);
 
   // Creates events with the given factory.
   void SetCustomEvent(const CustomEventFactory& custom_event);
+
+  void SetTemplateInitializer(const TemplateInitializer& initializer);
 
   // APIBindingHooksDelegate:
   bool CreateCustomEvent(v8::Local<v8::Context> context,
@@ -51,10 +57,14 @@ class APIBindingHooksTestDelegate : public APIBindingHooksDelegate {
       v8::Local<v8::Context> context,
       std::vector<v8::Local<v8::Value>>* arguments,
       const APITypeReferenceMap& refs) override;
+  void InitializeTemplate(v8::Isolate* isolate,
+                          v8::Local<v8::ObjectTemplate> object_template,
+                          const APITypeReferenceMap& type_refs) override;
 
  private:
   std::map<std::string, RequestHandler> request_handlers_;
   CustomEventFactory custom_event_;
+  TemplateInitializer template_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingHooksTestDelegate);
 };

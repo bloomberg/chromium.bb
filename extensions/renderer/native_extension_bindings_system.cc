@@ -19,6 +19,7 @@
 #include "extensions/renderer/chrome_setting.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/content_setting.h"
+#include "extensions/renderer/declarative_content_hooks_delegate.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -356,6 +357,8 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
       base::Bind(&ContentSetting::Create, base::Bind(&CallJsFunction)));
   api_system_.GetHooksForAPI("webRequest")
       ->SetDelegate(base::MakeUnique<WebRequestHooks>());
+  api_system_.GetHooksForAPI("declarativeContent")
+      ->SetDelegate(base::MakeUnique<DeclarativeContentHooksDelegate>());
 }
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}

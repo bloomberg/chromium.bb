@@ -133,8 +133,6 @@ static_library("extensions") {
     "api/declarative_content/content_action.h",
     "api/declarative_content/content_condition.cc",
     "api/declarative_content/content_condition.h",
-    "api/declarative_content/content_constants.cc",
-    "api/declarative_content/content_constants.h",
     "api/declarative_content/content_predicate.cc",
     "api/declarative_content/content_predicate.h",
     "api/declarative_content/content_predicate_evaluator.cc",

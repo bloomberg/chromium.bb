@@ -376,6 +376,10 @@ void APIBinding::InitializeTemplate(v8::Isolate* isolate) {
                                    *property_definitions_);
   }
 
+  // Allow custom bindings a chance to tweak the template, such as to add
+  // additional properties or types.
+  binding_hooks_->InitializeTemplate(isolate, object_template, *type_refs_);
+
   object_template_.Set(isolate, object_template);
 }
 
