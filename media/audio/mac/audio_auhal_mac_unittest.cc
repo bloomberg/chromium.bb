@@ -8,6 +8,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
@@ -38,7 +39,8 @@ class AUHALStreamTest : public testing::Test {
   AUHALStreamTest()
       : message_loop_(base::MessageLoop::TYPE_UI),
         manager_(AudioManager::CreateForTesting(
-            base::ThreadTaskRunnerHandle::Get())) {
+            base::ThreadTaskRunnerHandle::Get())),
+        manager_device_info_(manager_.get()) {
     // Wait for the AudioManager to finish any initialization on the audio loop.
     base::RunLoop().RunUntilIdle();
   }
@@ -47,12 +49,12 @@ class AUHALStreamTest : public testing::Test {
 
   AudioOutputStream* Create() {
     return manager_->MakeAudioOutputStream(
-        manager_->GetDefaultOutputStreamParameters(), "",
+        manager_device_info_.GetDefaultOutputStreamParameters(), "",
         base::Bind(&AUHALStreamTest::OnLogMessage, base::Unretained(this)));
   }
 
   bool OutputDevicesAvailable() {
-    return manager_->HasAudioOutputDevices();
+    return manager_device_info_.HasAudioOutputDevices();
   }
 
   void OnLogMessage(const std::string& message) { log_message_ = message; }
@@ -60,6 +62,7 @@ class AUHALStreamTest : public testing::Test {
  protected:
   base::TestMessageLoop message_loop_;
   ScopedAudioManagerPtr manager_;
+  AudioDeviceInfoAccessorForTests manager_device_info_;
   MockAudioSourceCallback source_;
   std::string log_message_;
 
@@ -70,7 +73,7 @@ class AUHALStreamTest : public testing::Test {
 TEST_F(AUHALStreamTest, HardwareSampleRate) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
   const AudioParameters preferred_params =
-      manager_->GetDefaultOutputStreamParameters();
+      manager_device_info_.GetDefaultOutputStreamParameters();
   EXPECT_GE(preferred_params.sample_rate(), 16000);
   EXPECT_LE(preferred_params.sample_rate(), 192000);
 }

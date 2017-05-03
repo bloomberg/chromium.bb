@@ -22,6 +22,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
@@ -159,7 +160,8 @@ static bool HasCoreAudioAndInputDevices(AudioManager* audio_man) {
   // The low-latency (WASAPI-based) version requires Windows Vista or higher.
   // TODO(henrika): note that we use Wave today to query the number of
   // existing input devices.
-  return CoreAudioUtil::IsSupported() && audio_man->HasAudioInputDevices();
+  return CoreAudioUtil::IsSupported() &&
+         AudioDeviceInfoAccessorForTests(audio_man).HasAudioInputDevices();
 }
 
 // Convenience method which creates a default AudioInputStream object but
@@ -279,7 +281,8 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
 
   // Retrieve a list of all available input devices.
   media::AudioDeviceDescriptions device_descriptions;
-  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
+  AudioDeviceInfoAccessorForTests(audio_manager_.get())
+      .GetAudioInputDeviceDescriptions(&device_descriptions);
 
   // Scan all available input devices and repeat the same test for all of them.
   for (const auto& device : device_descriptions) {
@@ -443,15 +446,15 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
 
 // Test that we can capture a stream in loopback.
 TEST_F(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
-  ABORT_AUDIO_TEST_IF_NOT(audio_manager_->HasAudioOutputDevices() &&
+  AudioDeviceInfoAccessorForTests device_info_accessor(audio_manager_.get());
+  ABORT_AUDIO_TEST_IF_NOT(device_info_accessor.HasAudioOutputDevices() &&
                           CoreAudioUtil::IsSupported());
-
-  AudioParameters params = audio_manager_->GetInputStreamParameters(
+  AudioParameters params = device_info_accessor.GetInputStreamParameters(
       AudioDeviceDescription::kLoopbackInputDeviceId);
   EXPECT_EQ(params.effects(), 0);
 
   AudioParameters output_params =
-      audio_manager_->GetOutputStreamParameters(std::string());
+      device_info_accessor.GetOutputStreamParameters(std::string());
   EXPECT_EQ(params.sample_rate(), output_params.sample_rate());
   EXPECT_EQ(params.channel_layout(), output_params.channel_layout());
 

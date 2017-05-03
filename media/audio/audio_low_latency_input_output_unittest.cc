@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -286,8 +287,8 @@ class AudioInputStreamTraits {
 
   static AudioParameters GetDefaultAudioStreamParameters(
       AudioManager* audio_manager) {
-    return audio_manager->GetInputStreamParameters(
-        AudioDeviceDescription::kDefaultDeviceId);
+    return AudioDeviceInfoAccessorForTests(audio_manager)
+        .GetInputStreamParameters(AudioDeviceDescription::kDefaultDeviceId);
   }
 
   static StreamType* CreateStream(AudioManager* audio_manager,
@@ -304,7 +305,8 @@ class AudioOutputStreamTraits {
 
   static AudioParameters GetDefaultAudioStreamParameters(
       AudioManager* audio_manager) {
-    return audio_manager->GetDefaultOutputStreamParameters();
+    return AudioDeviceInfoAccessorForTests(audio_manager)
+        .GetDefaultOutputStreamParameters();
   }
 
   static StreamType* CreateStream(AudioManager* audio_manager,
@@ -390,8 +392,9 @@ typedef StreamWrapper<AudioOutputStreamTraits> AudioOutputStreamWrapper;
 //   ylabel('delay [msec]')
 //   title('Full-duplex audio delay measurement');
 TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
-  ABORT_AUDIO_TEST_IF_NOT(audio_manager()->HasAudioInputDevices() &&
-                          audio_manager()->HasAudioOutputDevices());
+  AudioDeviceInfoAccessorForTests device_info_accessor(audio_manager());
+  ABORT_AUDIO_TEST_IF_NOT(device_info_accessor.HasAudioInputDevices() &&
+                          device_info_accessor.HasAudioOutputDevices());
 
   AudioInputStreamWrapper aisw(audio_manager());
   AudioInputStream* ais = aisw.Create();

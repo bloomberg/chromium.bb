@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
@@ -158,7 +159,8 @@ static bool HasCoreAudioAndOutputDevices(AudioManager* audio_man) {
   // The low-latency (WASAPI-based) version requires Windows Vista or higher.
   // TODO(henrika): note that we use Wave today to query the number of
   // existing output devices.
-  return CoreAudioUtil::IsSupported() && audio_man->HasAudioOutputDevices();
+  return CoreAudioUtil::IsSupported() &&
+         AudioDeviceInfoAccessorForTests(audio_man).HasAudioOutputDevices();
 }
 
 // Convenience method which creates a default AudioOutputStream object but
