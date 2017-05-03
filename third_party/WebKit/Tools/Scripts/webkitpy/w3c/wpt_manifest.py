@@ -105,6 +105,9 @@ class WPTManifest(object):
         wpt_path = manifest_path = finder.path_from_layout_tests('external', 'wpt')
         WPTManifest.generate_manifest(host, wpt_path)
 
+        # Adding this log line to diagnose https://crbug.com/714503
+        _log.debug('Manifest generation completed.')
+
     @staticmethod
     def generate_manifest(host, dest_path):
         """Generates MANIFEST.json on the specified directory."""
