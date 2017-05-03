@@ -81,12 +81,6 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
     commands.emplace_back("system_files", command);
   }
 
-  // Track the list of plugged-in USB devices.
-  command = base::CommandLine(base::FilePath("/bin/sh"));
-  command.AppendArg("-c");
-  command.AppendArg("/usr/bin/lsusb -t");
-  commands.emplace_back("usb_devices", command);
-
   // Get disk space usage information
   command = base::CommandLine(base::FilePath("/bin/df"));
   commands.emplace_back("disk_usage", command);
