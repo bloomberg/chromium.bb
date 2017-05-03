@@ -39,6 +39,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/tether_constants.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -345,6 +349,17 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
   if (session_manager::SessionManager::Get()->IsScreenLocked())
     return;
 
+  DCHECK(chromeos::NetworkHandler::IsInitialized());
+  const chromeos::NetworkState* network_state =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->GetNetworkStateFromGuid(network_id);
+  if (network_state && network_state->type() == chromeos::kTypeTether &&
+      !network_state->tether_has_connected_to_host()) {
+    ShowNetworkSettingsHelper(network_id, true /* show_configure */);
+    return;
+  }
+
   // Dialog will default to the primary display.
   chromeos::NetworkConfigView::ShowForNetworkId(network_id,
                                                 nullptr /* parent */);
@@ -377,6 +392,11 @@ void SystemTrayClient::ShowThirdPartyVpnCreate(
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {
+  ShowNetworkSettingsHelper(network_id, false /* show_configure */);
+}
+
+void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
+                                                 bool show_configure) {
   if (!LoginState::Get()->IsUserLoggedIn() ||
       session_manager::SessionManager::Get()->IsInSecondaryLoginScreen()) {
     return;
@@ -387,6 +407,8 @@ void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {
     if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings))
       page = chrome::kNetworkDetailSubPage;
     page += "?guid=" + net::EscapeUrlEncodedData(network_id, true);
+    if (show_configure)
+      page += "&showConfigure=true";
   }
   base::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
   ShowSettingsSubPageForActiveUser(page);

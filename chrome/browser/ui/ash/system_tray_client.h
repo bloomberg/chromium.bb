@@ -85,6 +85,10 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void RequestRestartForUpdate() override;
 
  private:
+  // Helper function shared by ShowNetworkSettings() and ShowNetworkConfigure().
+  void ShowNetworkSettingsHelper(const std::string& network_id,
+                                 bool show_configure);
+
   // Requests that ash show the update available icon.
   void HandleUpdateAvailable();
 

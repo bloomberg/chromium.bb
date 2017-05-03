@@ -404,7 +404,7 @@ Polymer({
       params.append('guid', properties.GUID);
       params.append('type', properties.Type);
       params.append('name', CrOnc.getNetworkName(properties));
-      params.append('showTetherDialog', true.toString());
+      params.append('showConfigure', true.toString());
 
       settings.navigateTo(settings.Route.NETWORK_DETAIL, params);
       return;
