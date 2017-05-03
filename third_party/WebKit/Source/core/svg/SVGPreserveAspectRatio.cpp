@@ -287,12 +287,13 @@ void SVGPreserveAspectRatio::TransformRect(FloatRect& dest_rect,
   }
 }
 
-AffineTransform SVGPreserveAspectRatio::GetCTM(float logical_x,
-                                               float logical_y,
-                                               float logical_width,
-                                               float logical_height,
-                                               float physical_width,
-                                               float physical_height) const {
+AffineTransform SVGPreserveAspectRatio::ComputeTransform(
+    float logical_x,
+    float logical_y,
+    float logical_width,
+    float logical_height,
+    float physical_width,
+    float physical_height) const {
   DCHECK(logical_width);
   DCHECK(logical_height);
   DCHECK(physical_width);

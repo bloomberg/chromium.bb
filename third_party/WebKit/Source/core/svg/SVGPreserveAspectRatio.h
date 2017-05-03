@@ -76,12 +76,12 @@ class SVGPreserveAspectRatio final
 
   void TransformRect(FloatRect& dest_rect, FloatRect& src_rect);
 
-  AffineTransform GetCTM(float logic_x,
-                         float logic_y,
-                         float logic_width,
-                         float logic_height,
-                         float phys_width,
-                         float phys_height) const;
+  AffineTransform ComputeTransform(float logical_x,
+                                   float logical_y,
+                                   float logical_width,
+                                   float logical_height,
+                                   float physical_width,
+                                   float physical_height) const;
 
   String ValueAsString() const override;
   SVGParsingError SetValueAsString(const String&);
