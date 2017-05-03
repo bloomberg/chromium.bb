@@ -127,14 +127,25 @@ class NotificationPlatformBridgeLinuxImpl
       public content::NotificationObserver,
       public base::RefCountedThreadSafe<NotificationPlatformBridgeLinuxImpl> {
  public:
-  NotificationPlatformBridgeLinuxImpl()
-      : task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-            base::TaskTraits().MayBlock().WithPriority(
-                base::TaskPriority::USER_BLOCKING))) {
+  explicit NotificationPlatformBridgeLinuxImpl(scoped_refptr<dbus::Bus> bus)
+      : bus_(bus) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
+        base::TaskTraits().MayBlock().WithPriority(
+            base::TaskPriority::USER_BLOCKING));
     registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                    content::NotificationService::AllSources());
-    PostTaskToTaskRunnerThread(
-        base::BindOnce(&NotificationPlatformBridgeLinuxImpl::Init, this));
+  }
+
+  // InitOnTaskRunner() cannot be posted from within the constructor
+  // because of a race condition.  The reference count for |this|
+  // starts out as 0.  Posting the Init task would increment the count
+  // to 1.  If the task finishes before the constructor returns, the
+  // count will go to 0 and the object would be prematurely
+  // destructed.
+  void Init() {
+    PostTaskToTaskRunnerThread(base::BindOnce(
+        &NotificationPlatformBridgeLinuxImpl::InitOnTaskRunner, this));
   }
 
   void Display(NotificationCommon::Type notification_type,
@@ -188,6 +199,12 @@ class NotificationPlatformBridgeLinuxImpl
     }
   }
 
+  void CleanUp() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    PostTaskToTaskRunnerThread(base::BindOnce(
+        &NotificationPlatformBridgeLinuxImpl::CleanUpOnTaskRunner, this));
+  }
+
  private:
   friend class base::RefCountedThreadSafe<NotificationPlatformBridgeLinuxImpl>;
 
@@ -239,6 +256,7 @@ class NotificationPlatformBridgeLinuxImpl
 
   ~NotificationPlatformBridgeLinuxImpl() override {
     DCHECK(!bus_);
+    DCHECK(!notification_proxy_);
     DCHECK(notifications_.empty());
   }
 
@@ -267,13 +285,16 @@ class NotificationPlatformBridgeLinuxImpl
   }
 
   // Sets up the D-Bus connection.
-  void Init() {
+  void InitOnTaskRunner() {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    dbus::Bus::Options bus_options;
-    bus_options.bus_type = dbus::Bus::SESSION;
-    bus_options.connection_type = dbus::Bus::PRIVATE;
-    bus_options.dbus_task_runner = task_runner_;
-    bus_ = make_scoped_refptr(new dbus::Bus(bus_options));
+    // |bus_| may be non-null in unit testing where a fake bus is used.
+    if (!bus_) {
+      dbus::Bus::Options bus_options;
+      bus_options.bus_type = dbus::Bus::SESSION;
+      bus_options.connection_type = dbus::Bus::PRIVATE;
+      bus_options.dbus_task_runner = task_runner_;
+      bus_ = make_scoped_refptr(new dbus::Bus(bus_options));
+    }
 
     notification_proxy_ =
         bus_->GetObjectProxy(kFreedesktopNotificationsName,
@@ -300,18 +321,10 @@ class NotificationPlatformBridgeLinuxImpl
                    this));
   }
 
-  void CleanUp() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (cleanup_posted_)
-      return;
-    PostTaskToTaskRunnerThread(base::BindOnce(
-        &NotificationPlatformBridgeLinuxImpl::CleanUpOnTaskRunner, this));
-    cleanup_posted_ = true;
-  }
-
   void CleanUpOnTaskRunner() {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    bus_->ShutdownAndBlock();
+    if (bus_)
+      bus_->ShutdownAndBlock();
     bus_ = nullptr;
     notification_proxy_ = nullptr;
     notifications_.clear();
@@ -586,8 +599,6 @@ class NotificationPlatformBridgeLinuxImpl
   base::Optional<bool> connected_;
   std::vector<NotificationBridgeReadyCallback> on_connected_callbacks_;
 
-  bool cleanup_posted_ = false;
-
   //////////////////////////////////////////////////////////////////////////////
   // Members used only on the task runner thread.
 
@@ -609,7 +620,13 @@ class NotificationPlatformBridgeLinuxImpl
 };
 
 NotificationPlatformBridgeLinux::NotificationPlatformBridgeLinux()
-    : impl_(new NotificationPlatformBridgeLinuxImpl()) {}
+    : NotificationPlatformBridgeLinux(nullptr) {}
+
+NotificationPlatformBridgeLinux::NotificationPlatformBridgeLinux(
+    scoped_refptr<dbus::Bus> bus)
+    : impl_(new NotificationPlatformBridgeLinuxImpl(bus)) {
+  impl_->Init();
+}
 
 NotificationPlatformBridgeLinux::~NotificationPlatformBridgeLinux() = default;
 
@@ -639,4 +656,8 @@ void NotificationPlatformBridgeLinux::GetDisplayed(
 void NotificationPlatformBridgeLinux::SetReadyCallback(
     NotificationBridgeReadyCallback callback) {
   impl_->SetReadyCallback(std::move(callback));
+}
+
+void NotificationPlatformBridgeLinux::CleanUp() {
+  impl_->CleanUp();
 }
