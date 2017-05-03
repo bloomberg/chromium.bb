@@ -309,6 +309,7 @@ source_set("test_support") {
   sources = [
     "passphrase_collection_view_controller_test.h",
     "passphrase_collection_view_controller_test.mm",
+    "password_details_collection_view_controller_for_testing.h",
     "personal_data_manager_data_changed_observer.cc",
     "personal_data_manager_data_changed_observer.h",
   ]
@@ -445,6 +446,7 @@ source_set("eg_tests") {
     "autofill_settings_egtest.mm",
     "block_popups_egtest.mm",
     "clear_browsing_data_egtest.mm",
+    "passwords_settings_egtest.mm",
     "settings_egtest.mm",
     "translate_ui_egtest.mm",
   ]
@@ -452,9 +454,12 @@ source_set("eg_tests") {
   deps = [
     ":settings",
     "//base",
+    "//components/autofill/core/common",
     "//components/browsing_data/core",
     "//components/content_settings/core/browser",
+    "//components/keyed_service/core",
     "//components/metrics",
+    "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/prefs",
     "//components/search_engines",
@@ -466,10 +471,13 @@ source_set("eg_tests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/passwords:passwords",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/settings:test_support",
     "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/browser/ui/util:util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",

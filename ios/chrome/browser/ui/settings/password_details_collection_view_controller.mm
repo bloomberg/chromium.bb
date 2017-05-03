@@ -293,6 +293,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 }
 
 - (void)showCopyPasswordResultToast:(NSString*)message {
+  // TODO(crbug.com/159166): Route this through some delegate API to be able
+  // to mock it in the unittest, and avoid having an EGTest just for that?
   MDCSnackbarMessage* copyPasswordResultMessage =
       [MDCSnackbarMessage messageWithText:message];
   [MDCSnackbarManager showMessage:copyPasswordResultMessage];
@@ -343,6 +345,13 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
     default:
       return MDCCellDefaultOneLineHeight;
   }
+}
+
+#pragma mark - ForTesting
+
+- (void)setReauthenticationModule:
+    (id<ReauthenticationProtocol>)reauthenticationModule {
+  _weakReauthenticationModule = reauthenticationModule;
 }
 
 @end
