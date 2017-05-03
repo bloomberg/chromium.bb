@@ -30,7 +30,9 @@ bool StructTraits<arc::mojom::ArcBitmapDataView, SkBitmap>::
   }
 
   // Copy the pixels with converting color type.
-  return bitmap.copyTo(out, kN32_SkColorType);
+  SkImageInfo image_info = info.makeColorType(kN32_SkColorType);
+  return out->tryAllocPixels(image_info) &&
+         bitmap.readPixels(image_info, out->getPixels(), out->rowBytes(), 0, 0);
 }
 
 }  // namespace mojo

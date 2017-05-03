@@ -42,7 +42,10 @@ class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
     url_ = url;
     if (bitmap) {
       success_ = true;
-      bitmap->deepCopyTo(&bitmap_);
+      if (bitmap_.tryAllocPixels(bitmap->info())) {
+        bitmap->readPixels(bitmap_.info(), bitmap_.getPixels(),
+                           bitmap_.rowBytes(), 0, 0);
+      }
     }
     // For async calls, we need to quit the run loop so the test can continue.
     if (async_)

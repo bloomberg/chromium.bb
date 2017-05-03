@@ -416,7 +416,11 @@ void BookmarkAppHelper::GenerateIcon(
   gfx::ImageSkia icon_image(
       new GeneratedIconImageSource(letter, color, output_size),
       gfx::Size(output_size, output_size));
-  icon_image.bitmap()->deepCopyTo(&(*bitmaps)[output_size].bitmap);
+  SkBitmap& dst = (*bitmaps)[output_size].bitmap;
+  if (dst.tryAllocPixels(icon_image.bitmap()->info())) {
+    icon_image.bitmap()->readPixels(dst.info(), dst.getPixels(), dst.rowBytes(),
+                                    0, 0);
+  }
 }
 
 // static

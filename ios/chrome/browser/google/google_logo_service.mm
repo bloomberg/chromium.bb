@@ -121,7 +121,10 @@ void GoogleLogoService::SetCachedLogo(const search_provider_logos::Logo* logo) {
     if (cached_metadata_.fingerprint == logo->metadata.fingerprint) {
       return;
     }
-    logo->image.deepCopyTo(&cached_image_);
+    if (cached_image_.tryAllocPixels(logo->image.info())) {
+      logo->image.readPixels(cached_image_.info(), cached_image_.getPixels(),
+                             cached_image_.rowBytes(), 0, 0);
+    }
     cached_metadata_ = logo->metadata;
   } else {
     cached_image_ = SkBitmap();

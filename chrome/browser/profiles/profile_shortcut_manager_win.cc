@@ -675,7 +675,9 @@ SkBitmap GetSkBitmapCopy(const gfx::Image& image) {
   DCHECK(!image.IsEmpty());
   const SkBitmap* image_bitmap = image.ToSkBitmap();
   SkBitmap bitmap_copy;
-  image_bitmap->deepCopyTo(&bitmap_copy);
+  if (bitmap_copy.tryAllocPixels(image_bitmap->info()))
+    image_bitmap->readPixels(bitmap_copy.info(), bitmap_copy.getPixels(),
+                             bitmap_copy.rowBytes(), 0, 0);
   return bitmap_copy;
 }
 

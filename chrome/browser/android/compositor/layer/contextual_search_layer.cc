@@ -704,7 +704,10 @@ void ContextualSearchLayer::SetThumbnail(const SkBitmap* thumbnail) {
   if (thumbnail->isImmutable()) {
     thumbnail_copy = *thumbnail;
   } else {
-    thumbnail->copyTo(&thumbnail_copy);
+    if (thumbnail_copy.tryAllocPixels(thumbnail->info())) {
+      thumbnail->readPixels(thumbnail_copy.info(), thumbnail_copy.getPixels(),
+                            thumbnail_copy.rowBytes(), 0, 0);
+    }
     thumbnail_copy.setImmutable();
   }
 

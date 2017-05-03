@@ -131,7 +131,10 @@ void CaptureCallback::DidCompositeAndReadback(const SkBitmap& bitmap) {
     return;
   }
   if (main_bitmap_.isNull()) {
-    bitmap.deepCopyTo(&main_bitmap_);
+    if (main_bitmap_.tryAllocPixels(bitmap.info())) {
+      bitmap.readPixels(main_bitmap_.info(), main_bitmap_.getPixels(),
+                        main_bitmap_.rowBytes(), 0, 0);
+    }
     return;
   }
   SkCanvas canvas(main_bitmap_);

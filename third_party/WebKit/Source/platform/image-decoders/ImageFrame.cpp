@@ -83,7 +83,10 @@ bool ImageFrame::CopyBitmapData(const ImageFrame& other) {
   DCHECK_NE(this, &other);
   has_alpha_ = other.has_alpha_;
   bitmap_.reset();
-  return other.bitmap_.copyTo(&bitmap_, other.bitmap_.colorType());
+  SkImageInfo info = other.bitmap_.info();
+  return bitmap_.tryAllocPixels(info) &&
+         other.bitmap_.readPixels(info, bitmap_.getPixels(), bitmap_.rowBytes(),
+                                  0, 0);
 }
 
 bool ImageFrame::TakeBitmapDataIfWritable(ImageFrame* other) {
