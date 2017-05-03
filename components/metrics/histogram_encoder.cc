@@ -31,7 +31,7 @@ void EncodeHistogramDelta(const std::string& histogram_name,
   for (std::unique_ptr<SampleCountIterator> it = snapshot.Iterator();
        !it->Done(); it->Next()) {
     base::Histogram::Sample min;
-    base::Histogram::Sample max;
+    int64_t max;
     base::Histogram::Count count;
     it->Get(&min, &max, &count);
     HistogramEventProto::Bucket* bucket = histogram_proto->add_bucket();

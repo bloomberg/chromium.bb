@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,14 +31,18 @@ std::unique_ptr<base::Value> SnapshotHistogramToValue(
   std::unique_ptr<base::SampleCountIterator> iterator = samples->Iterator();
   while (!iterator->Done()) {
     base::HistogramBase::Sample min;
-    base::HistogramBase::Sample max;
+    int64_t max;
     base::HistogramBase::Count count;
     iterator->Get(&min, &max, &count);
 
     std::unique_ptr<base::DictionaryValue> bucket =
         base::MakeUnique<base::DictionaryValue>();
     bucket->SetInteger("min", min);
-    bucket->SetInteger("max", max);
+    // Note: DictionaryValue does not support 64-bit integer values. The checked
+    // cast below is OK in this case because none of the histograms passed to
+    // this function should be logging MaxInt32 as a sparse histogram bucket,
+    // which is the only case max will exceed 32-bit range.
+    bucket->SetInteger("max", base::checked_cast<int>(max));
     bucket->SetInteger("count", count);
 
     values->Append(std::move(bucket));

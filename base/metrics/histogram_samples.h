@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <memory>
 
 #include "base/atomicops.h"
@@ -198,10 +199,16 @@ class BASE_EXPORT SampleCountIterator {
 
   // Get the sample and count at current position.
   // |min| |max| and |count| can be NULL if the value is not of interest.
+  // Note: |max| is int64_t because histograms support logged values in the
+  // full int32_t range and bucket max is exclusive, so it needs to support
+  // values up to MAXINT32+1.
   // Requires: !Done();
   virtual void Get(HistogramBase::Sample* min,
-                   HistogramBase::Sample* max,
+                   int64_t* max,
                    HistogramBase::Count* count) const = 0;
+  static_assert(std::numeric_limits<HistogramBase::Sample>::max() <
+                    std::numeric_limits<int64_t>::max(),
+                "Get() |max| must be able to hold Histogram::Sample max + 1");
 
   // Get the index of current histogram bucket.
   // For histograms that don't use predefined buckets, it returns false.
@@ -212,10 +219,10 @@ class BASE_EXPORT SampleCountIterator {
 class BASE_EXPORT SingleSampleIterator : public SampleCountIterator {
  public:
   SingleSampleIterator(HistogramBase::Sample min,
-                       HistogramBase::Sample max,
+                       int64_t max,
                        HistogramBase::Count count);
   SingleSampleIterator(HistogramBase::Sample min,
-                       HistogramBase::Sample max,
+                       int64_t max,
                        HistogramBase::Count count,
                        size_t bucket_index);
   ~SingleSampleIterator() override;
@@ -224,7 +231,7 @@ class BASE_EXPORT SingleSampleIterator : public SampleCountIterator {
   bool Done() const override;
   void Next() override;
   void Get(HistogramBase::Sample* min,
-           HistogramBase::Sample* max,
+           int64_t* max,
            HistogramBase::Count* count) const override;
 
   // SampleVector uses predefined buckets so iterator can return bucket index.
@@ -233,7 +240,7 @@ class BASE_EXPORT SingleSampleIterator : public SampleCountIterator {
  private:
   // Information about the single value to return.
   const HistogramBase::Sample min_;
-  const HistogramBase::Sample max_;
+  const int64_t max_;
   const size_t bucket_index_;
   HistogramBase::Count count_;
 };

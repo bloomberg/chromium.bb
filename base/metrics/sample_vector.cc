@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 
@@ -61,7 +62,7 @@ void SampleVectorBase::Accumulate(Sample value, Count count) {
 
   // Handle the multi-sample case.
   subtle::NoBarrier_AtomicIncrement(&counts()[bucket_index], count);
-  IncreaseSumAndCount(static_cast<int64_t>(count) * value, count);
+  IncreaseSumAndCount(strict_cast<int64_t>(count) * value, count);
 }
 
 Count SampleVectorBase::GetCount(Sample value) const {
@@ -132,7 +133,7 @@ bool SampleVectorBase::AddSubtractImpl(SampleCountIterator* iter,
 
   // Get the first value and its index.
   HistogramBase::Sample min;
-  HistogramBase::Sample max;
+  int64_t max;
   HistogramBase::Count count;
   iter->Get(&min, &max, &count);
   size_t dest_index = GetBucketIndex(min);
@@ -392,13 +393,13 @@ void SampleVectorIterator::Next() {
 }
 
 void SampleVectorIterator::Get(HistogramBase::Sample* min,
-                               HistogramBase::Sample* max,
+                               int64_t* max,
                                HistogramBase::Count* count) const {
   DCHECK(!Done());
   if (min != NULL)
     *min = bucket_ranges_->range(index_);
   if (max != NULL)
-    *max = bucket_ranges_->range(index_ + 1);
+    *max = strict_cast<int64_t>(bucket_ranges_->range(index_ + 1));
   if (count != NULL)
     *count = subtle::NoBarrier_Load(&counts_[index_]);
 }

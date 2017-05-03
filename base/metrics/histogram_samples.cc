@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/compiler_specific.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/pickle.h"
 
@@ -31,14 +32,14 @@ class SampleCountPickleIterator : public SampleCountIterator {
   bool Done() const override;
   void Next() override;
   void Get(HistogramBase::Sample* min,
-           HistogramBase::Sample* max,
+           int64_t* max,
            HistogramBase::Count* count) const override;
 
  private:
   PickleIterator* const iter_;
 
   HistogramBase::Sample min_;
-  HistogramBase::Sample max_;
+  int64_t max_;
   HistogramBase::Count count_;
   bool is_done_;
 };
@@ -55,14 +56,14 @@ bool SampleCountPickleIterator::Done() const {
 
 void SampleCountPickleIterator::Next() {
   DCHECK(!Done());
-  if (!iter_->ReadInt(&min_) ||
-      !iter_->ReadInt(&max_) ||
-      !iter_->ReadInt(&count_))
+  if (!iter_->ReadInt(&min_) || !iter_->ReadInt64(&max_) ||
+      !iter_->ReadInt(&count_)) {
     is_done_ = true;
+  }
 }
 
 void SampleCountPickleIterator::Get(HistogramBase::Sample* min,
-                                    HistogramBase::Sample* max,
+                                    int64_t* max,
                                     HistogramBase::Count* count) const {
   DCHECK(!Done());
   *min = min_;
@@ -220,15 +221,15 @@ bool HistogramSamples::Serialize(Pickle* pickle) const {
     return false;
 
   HistogramBase::Sample min;
-  HistogramBase::Sample max;
+  int64_t max;
   HistogramBase::Count count;
   for (std::unique_ptr<SampleCountIterator> it = Iterator(); !it->Done();
        it->Next()) {
     it->Get(&min, &max, &count);
-    if (!pickle->WriteInt(min) ||
-        !pickle->WriteInt(max) ||
-        !pickle->WriteInt(count))
+    if (!pickle->WriteInt(min) || !pickle->WriteInt64(max) ||
+        !pickle->WriteInt(count)) {
       return false;
+    }
   }
   return true;
 }
@@ -238,7 +239,7 @@ bool HistogramSamples::AccumulateSingleSample(HistogramBase::Sample value,
                                               size_t bucket) {
   if (single_sample().Accumulate(bucket, count)) {
     // Success. Update the (separate) sum and redundant-count.
-    IncreaseSumAndCount(static_cast<int64_t>(value) * count, count);
+    IncreaseSumAndCount(strict_cast<int64_t>(value) * count, count);
     return true;
   }
   return false;
@@ -262,12 +263,12 @@ bool SampleCountIterator::GetBucketIndex(size_t* index) const {
 }
 
 SingleSampleIterator::SingleSampleIterator(HistogramBase::Sample min,
-                                           HistogramBase::Sample max,
+                                           int64_t max,
                                            HistogramBase::Count count)
     : SingleSampleIterator(min, max, count, kSizeMax) {}
 
 SingleSampleIterator::SingleSampleIterator(HistogramBase::Sample min,
-                                           HistogramBase::Sample max,
+                                           int64_t max,
                                            HistogramBase::Count count,
                                            size_t bucket_index)
     : min_(min), max_(max), bucket_index_(bucket_index), count_(count) {}
@@ -284,7 +285,7 @@ void SingleSampleIterator::Next() {
 }
 
 void SingleSampleIterator::Get(HistogramBase::Sample* min,
-                               HistogramBase::Sample* max,
+                               int64_t* max,
                                HistogramBase::Count* count) const {
   DCHECK(!Done());
   if (min != nullptr)
