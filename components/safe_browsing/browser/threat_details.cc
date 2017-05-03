@@ -4,7 +4,7 @@
 //
 // Implementation of the ThreatDetails class.
 
-#include "chrome/browser/safe_browsing/threat_details.h"
+#include "components/safe_browsing/browser/threat_details.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,10 +13,10 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/safe_browsing/threat_details_cache.h"
-#include "chrome/browser/safe_browsing/threat_details_history.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/browser/threat_details_cache.h"
+#include "components/safe_browsing/browser/threat_details_history.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -52,8 +52,8 @@ struct WhitelistedHttpsHeadersTraits
         base::internal::DestructorAtExitLazyInstanceTraits<StringSet>::New(
             instance);
     headers->insert({"google-creative-id", "google-lineitem-id", "referer",
-        "content-type", "content-length", "date", "server", "cache-control",
-        "pragma", "expires"});
+                     "content-type", "content-length", "date", "server",
+                     "cache-control", "pragma", "expires"});
     return headers;
   }
 };
@@ -91,10 +91,10 @@ void ClearHttpsResource(ClientSafeBrowsingReportRequest::Resource* resource) {
   // Clear the request headers and copy over any whitelisted ones.
   resource->clear_request();
   for (int i = 0; i < orig_resource.request().headers_size(); ++i) {
-    ClientSafeBrowsingReportRequest::HTTPHeader* orig_header = orig_resource
-        .mutable_request()->mutable_headers(i);
+    ClientSafeBrowsingReportRequest::HTTPHeader* orig_header =
+        orig_resource.mutable_request()->mutable_headers(i);
     if (g_https_headers_whitelist.Get().count(
-        base::ToLowerASCII(orig_header->name())) > 0) {
+            base::ToLowerASCII(orig_header->name())) > 0) {
       resource->mutable_request()->add_headers()->Swap(orig_header);
     }
   }
@@ -107,10 +107,10 @@ void ClearHttpsResource(ClientSafeBrowsingReportRequest::Resource* resource) {
   // ...repeat for response headers.
   resource->clear_response();
   for (int i = 0; i < orig_resource.response().headers_size(); ++i) {
-    ClientSafeBrowsingReportRequest::HTTPHeader* orig_header = orig_resource
-        .mutable_response()->mutable_headers(i);
+    ClientSafeBrowsingReportRequest::HTTPHeader* orig_header =
+        orig_resource.mutable_response()->mutable_headers(i);
     if (g_https_headers_whitelist.Get().count(
-        base::ToLowerASCII(orig_header->name())) > 0) {
+            base::ToLowerASCII(orig_header->name())) > 0) {
       resource->mutable_response()->add_headers()->Swap(orig_header);
     }
   }

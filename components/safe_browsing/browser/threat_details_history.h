@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_HISTORY_H_
-#define CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_HISTORY_H_
+#ifndef COMPONENTS_SAFE_BROWSING_BROWSER_THREAT_DETAILS_HISTORY_H_
+#define COMPONENTS_SAFE_BROWSING_BROWSER_THREAT_DETAILS_HISTORY_H_
 
 // This class gets redirect chain for urls from the history service.
 
@@ -91,4 +91,4 @@ class ThreatDetailsRedirectsCollector
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_HISTORY_H_
+#endif  // COMPONENTS_SAFE_BROWSING_BROWSER_THREAT_DETAILS_HISTORY_H_
