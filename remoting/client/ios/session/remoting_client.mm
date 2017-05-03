@@ -9,17 +9,33 @@
 #import "remoting/client/ios/session/remoting_client.h"
 
 #import "base/mac/bind_objc_block.h"
+#import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
+#import "remoting/client/ios/display/gl_display_handler.h"
+#import "remoting/client/ios/domain/client_session_details.h"
+#import "remoting/client/ios/domain/host_info.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/connect_to_host_info.h"
 #include "remoting/client/ios/session/remoting_client_session_delegate.h"
+#include "remoting/protocol/session.h"
 #include "remoting/protocol/video_renderer.h"
+
+NSString* const kHostSessionStatusChanged = @"kHostSessionStatusChanged";
+NSString* const kHostSessionPinProvided = @"kHostSessionPinProvided";
+
+NSString* const kSessionDetails = @"kSessionDetails";
+NSString* const kSessonStateErrorCode = @"kSessonStateErrorCode";
+NSString* const kHostSessionPin = @"kHostSessionPin";
 
 @interface RemotingClient () {
   remoting::ChromotingClientRuntime* _runtime;
   std::unique_ptr<remoting::ChromotingSession> _session;
   remoting::RemotingClientSessonDelegate* _sessonDelegate;
+  ClientSessionDetails* _sessionDetails;
+  // Call _secretFetchedCallback on the network thread.
+  remoting::protocol::SecretFetchedCallback _secretFetchedCallback;
 }
 @end
 
@@ -32,12 +48,44 @@
   if (self) {
     _runtime = remoting::ChromotingClientRuntime::GetInstance();
     _sessonDelegate = new remoting::RemotingClientSessonDelegate(self);
+    _sessionDetails = [[ClientSessionDetails alloc] init];
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(hostSessionPinProvided:)
+               name:kHostSessionPinProvided
+             object:nil];
   }
   return self;
 }
 
-- (void)connectToHost:(const remoting::ConnectToHostInfo&)info {
-  remoting::ConnectToHostInfo hostInfo(info);
+- (void)connectToHost:(HostInfo*)hostInfo
+             username:(NSString*)username
+          accessToken:(NSString*)accessToken {
+  DCHECK(hostInfo);
+  DCHECK(hostInfo.jabberId);
+  DCHECK(hostInfo.hostId);
+  DCHECK(hostInfo.publicKey);
+
+  _sessionDetails.hostInfo = hostInfo;
+
+  remoting::ConnectToHostInfo info;
+  info.username = base::SysNSStringToUTF8(username);
+  info.auth_token = base::SysNSStringToUTF8(accessToken);
+  info.host_jid = base::SysNSStringToUTF8(hostInfo.jabberId);
+  info.host_id = base::SysNSStringToUTF8(hostInfo.hostId);
+  info.host_pubkey = base::SysNSStringToUTF8(hostInfo.publicKey);
+  // TODO(nicholss): If iOS supports pairing, pull the stored data and
+  // insert it here.
+  info.pairing_id = "";
+  info.pairing_secret = "";
+
+  // TODO(nicholss): I am not sure about the following fields yet.
+  // info.capabilities =
+  // info.flags =
+  // info.host_version =
+  // info.host_os =
+  // info.host_os_version =
 
   remoting::protocol::ClientAuthenticationConfig client_auth_config;
   client_auth_config.host_id = info.host_id;
@@ -46,9 +94,14 @@
   client_auth_config.fetch_secret_callback = base::BindBlockArc(
       ^(bool pairing_supported, const remoting::protocol::SecretFetchedCallback&
                                     secret_fetched_callback) {
-        NSLog(@"TODO(nicholss): Implement the FetchSecretCallback.");
-        // TODO(nicholss): For now we pass back a junk number.
-        secret_fetched_callback.Run("000000");
+        _secretFetchedCallback = secret_fetched_callback;
+        _sessionDetails.state = SessionPinPrompt;
+        [[NSNotificationCenter defaultCenter]
+            postNotificationName:kHostSessionStatusChanged
+                          object:self
+                        userInfo:[NSDictionary
+                                     dictionaryWithObject:_sessionDetails
+                                                   forKey:kSessionDetails]];
       });
 
   // TODO(nicholss): Add audio support to iOS.
@@ -61,18 +114,69 @@
         _session.reset(new remoting::ChromotingSession(
             _sessonDelegate->GetWeakPtr(),
             [_displayHandler CreateCursorShapeStub],
-            [_displayHandler CreateVideoRenderer], audioPlayer, hostInfo,
+            [_displayHandler CreateVideoRenderer], audioPlayer, info,
             client_auth_config));
         _session->Connect();
       }));
+}
+
+#pragma mark - Eventing
+
+- (void)hostSessionPinProvided:(NSNotification*)notification {
+  NSString* pin = [[notification userInfo] objectForKey:kHostSessionPin];
+  if (_secretFetchedCallback) {
+    _runtime->network_task_runner()->PostTask(
+        FROM_HERE, base::BindBlockArc(^{
+          _secretFetchedCallback.Run(base::SysNSStringToUTF8(pin));
+        }));
+  }
+}
+
+#pragma mark - Properties
+
+- (HostInfo*)hostInfo {
+  return _sessionDetails.hostInfo;
 }
 
 #pragma mark - ChromotingSession::Delegate
 
 - (void)onConnectionState:(remoting::protocol::ConnectionToHost::State)state
                     error:(remoting::protocol::ErrorCode)error {
-  NSLog(@"TODO(nicholss): implement this, onConnectionState: %d %d.", state,
-        error);
+  switch (state) {
+    case remoting::protocol::ConnectionToHost::INITIALIZING:
+      NSLog(@"State --> INITIALIZING");
+      _sessionDetails.state = SessionInitializing;
+      break;
+    case remoting::protocol::ConnectionToHost::CONNECTING:
+      NSLog(@"State --> CONNECTING");
+      _sessionDetails.state = SessionConnecting;
+      break;
+    case remoting::protocol::ConnectionToHost::AUTHENTICATED:
+      NSLog(@"State --> AUTHENTICATED");
+      _sessionDetails.state = SessionAuthenticated;
+      break;
+    case remoting::protocol::ConnectionToHost::CONNECTED:
+      NSLog(@"State --> CONNECTED");
+      _sessionDetails.state = SessionConnected;
+      break;
+    case remoting::protocol::ConnectionToHost::FAILED:
+      NSLog(@"State --> FAILED");
+      _sessionDetails.state = SessionFailed;
+      break;
+    case remoting::protocol::ConnectionToHost::CLOSED:
+      NSLog(@"State --> CLOSED");
+      _sessionDetails.state = SessionClosed;
+      break;
+    default:
+      LOG(ERROR) << "onConnectionState, unknown state: " << state;
+  }
+
+  // TODO(nicholss): Send along the error code when we know what to do about it.
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kHostSessionStatusChanged
+                    object:self
+                  userInfo:[NSDictionary dictionaryWithObject:_sessionDetails
+                                                       forKey:kSessionDetails]];
 }
 
 - (void)commitPairingCredentialsForHost:(NSString*)host
