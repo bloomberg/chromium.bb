@@ -148,6 +148,12 @@ void WebViewPlugin::UpdateAllLifecyclePhases() {
   web_view()->UpdateAllLifecyclePhases();
 }
 
+bool WebViewPlugin::IsErrorPlaceholder() {
+  if (!delegate_)
+    return false;
+  return delegate_->IsErrorPlaceholder();
+}
+
 void WebViewPlugin::Paint(WebCanvas* canvas, const WebRect& rect) {
   gfx::Rect paint_rect = gfx::IntersectRects(rect_, rect);
   if (paint_rect.IsEmpty())

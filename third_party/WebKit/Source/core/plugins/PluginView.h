@@ -59,6 +59,7 @@ class CORE_EXPORT PluginView : public FrameOrPlugin {
   virtual void HandleEvent(Event*) = 0;
   virtual void EventListenersRemoved() = 0;
   virtual bool IsPluginContainer() const { return false; }
+  virtual bool IsErrorplaceholder() { return false; }
 
   virtual WebLayer* PlatformLayer() const { return 0; }
   virtual v8::Local<v8::Object> ScriptableObject(v8::Isolate*) {

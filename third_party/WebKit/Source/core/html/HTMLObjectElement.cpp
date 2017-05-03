@@ -327,6 +327,9 @@ void HTMLObjectElement::UpdatePluginInternal() {
       DispatchErrorEvent();
     if (HasFallbackContent())
       RenderFallbackContent();
+  } else {
+    if (IsErrorplaceholder())
+      DispatchErrorEvent();
   }
 }
 

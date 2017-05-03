@@ -190,6 +190,12 @@ void WebPluginContainerImpl::SetFocused(bool focused, WebFocusType focus_type) {
   web_plugin_->UpdateFocus(focused, focus_type);
 }
 
+bool WebPluginContainerImpl::IsErrorplaceholder() {
+  if (!web_plugin_)
+    return false;
+  return web_plugin_->IsErrorPlaceholder();
+}
+
 void WebPluginContainerImpl::Show() {
   self_visible_ = true;
   web_plugin_->UpdateVisibility(true);

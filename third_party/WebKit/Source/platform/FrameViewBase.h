@@ -47,6 +47,7 @@ class PLATFORM_EXPORT FrameViewBase : public GarbageCollectedMixin {
 
   virtual bool IsFrameView() const { return false; }
   virtual bool IsRemoteFrameView() const { return false; }
+  virtual bool IsErrorplaceholder() { return false; }
 
   virtual void SetParent(FrameViewBase*) = 0;
   virtual FrameViewBase* Parent() const = 0;
