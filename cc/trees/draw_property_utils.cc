@@ -662,9 +662,10 @@ static void SetSurfaceDrawTransform(const PropertyTrees* property_trees,
 
 static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
                                   LayerImpl* layer) {
+  const EffectNode* effect_node =
+      property_trees->effect_tree.Node(layer->effect_tree_index());
   int effect_ancestor_with_copy_request =
-      property_trees->effect_tree.ClosestAncestorWithCopyRequest(
-          layer->effect_tree_index());
+      effect_node->closest_ancestor_with_copy_request_id;
   bool non_root_copy_request =
       effect_ancestor_with_copy_request > EffectTree::kContentsRootNodeId;
   gfx::Rect layer_content_rect = gfx::Rect(layer->bounds());

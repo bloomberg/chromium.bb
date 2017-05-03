@@ -39,6 +39,7 @@ struct DataForRecursion {
   int clip_tree_parent;
   int effect_tree_parent;
   int scroll_tree_parent;
+  int closest_ancestor_with_copy_request;
   const LayerType* page_scale_layer;
   const LayerType* inner_viewport_scroll_layer;
   const LayerType* outer_viewport_scroll_layer;
@@ -912,34 +913,40 @@ bool AddEffectNodeIfNeeded(
     return false;
   }
 
-  EffectNode node;
-  node.owning_layer_id = layer->id();
+  EffectTree& effect_tree = data_for_children->property_trees->effect_tree;
+  int node_id = effect_tree.Insert(EffectNode(), parent_id);
+  EffectNode* node = effect_tree.back();
+
+  node->owning_layer_id = layer->id();
   if (AlwaysUseActiveTreeOpacity(layer)) {
     data_for_children->property_trees->always_use_active_tree_opacity_effect_ids
-        .push_back(node.owning_layer_id);
+        .push_back(node->owning_layer_id);
   }
 
-  node.opacity = Opacity(layer);
-  node.blend_mode = BlendMode(layer);
-  node.unscaled_mask_target_size = layer->bounds();
-  node.has_render_surface = should_create_render_surface;
-  node.has_copy_request = HasCopyRequest(layer);
-  node.filters = Filters(layer);
-  node.background_filters = BackgroundFilters(layer);
-  node.filters_origin = FiltersOrigin(layer);
-  node.has_potential_opacity_animation = has_potential_opacity_animation;
-  node.has_potential_filter_animation = has_potential_filter_animation;
-  node.double_sided = DoubleSided(layer);
-  node.subtree_hidden = HideLayerAndSubtree(layer);
-  node.is_currently_animating_opacity = OpacityIsAnimating(layer);
-  node.is_currently_animating_filter = FilterIsAnimating(layer);
-  node.effect_changed = PropertyChanged(layer);
-  node.subtree_has_copy_request = SubtreeHasCopyRequest(layer);
+  node->opacity = Opacity(layer);
+  node->blend_mode = BlendMode(layer);
+  node->unscaled_mask_target_size = layer->bounds();
+  node->has_render_surface = should_create_render_surface;
+  node->has_copy_request = HasCopyRequest(layer);
+  node->filters = Filters(layer);
+  node->background_filters = BackgroundFilters(layer);
+  node->filters_origin = FiltersOrigin(layer);
+  node->has_potential_opacity_animation = has_potential_opacity_animation;
+  node->has_potential_filter_animation = has_potential_filter_animation;
+  node->double_sided = DoubleSided(layer);
+  node->subtree_hidden = HideLayerAndSubtree(layer);
+  node->is_currently_animating_opacity = OpacityIsAnimating(layer);
+  node->is_currently_animating_filter = FilterIsAnimating(layer);
+  node->effect_changed = PropertyChanged(layer);
+  node->subtree_has_copy_request = SubtreeHasCopyRequest(layer);
+  node->closest_ancestor_with_copy_request_id =
+      HasCopyRequest(layer)
+          ? node_id
+          : data_from_ancestor.closest_ancestor_with_copy_request;
 
-  EffectTree& effect_tree = data_for_children->property_trees->effect_tree;
   if (MaskLayer(layer)) {
-    node.mask_layer_id = MaskLayer(layer)->id();
-    effect_tree.AddMaskLayerId(node.mask_layer_id);
+    node->mask_layer_id = MaskLayer(layer)->id();
+    effect_tree.AddMaskLayerId(node->mask_layer_id);
   }
 
   if (!is_root) {
@@ -950,19 +957,21 @@ bool AddEffectNodeIfNeeded(
       // In this case, we will create a transform node, so it's safe to use the
       // next available id from the transform tree as this effect node's
       // transform id.
-      node.transform_id =
+      node->transform_id =
           data_from_ancestor.property_trees->transform_tree.next_available_id();
     }
-    node.clip_id = data_from_ancestor.clip_tree_parent;
+    node->clip_id = data_from_ancestor.clip_tree_parent;
   } else {
     // Root render surface acts the unbounded and untransformed to draw content
     // into. Transform node created from root layer (includes device scale
     // factor) and clip node created from root layer (include viewports) applies
     // to root render surface's content, but not root render surface itself.
-    node.transform_id = TransformTree::kRootNodeId;
-    node.clip_id = ClipTree::kViewportNodeId;
+    node->transform_id = TransformTree::kRootNodeId;
+    node->clip_id = ClipTree::kViewportNodeId;
   }
-  int node_id = effect_tree.Insert(node, parent_id);
+
+  data_for_children->closest_ancestor_with_copy_request =
+      node->closest_ancestor_with_copy_request_id;
   data_for_children->effect_tree_parent = node_id;
   layer->SetEffectTreeIndex(node_id);
   data_for_children->property_trees->effect_tree.SetOwningLayerIdForNode(
@@ -1255,6 +1264,8 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.clip_tree_parent = ClipTree::kRootNodeId;
   data_for_recursion.effect_tree_parent = EffectTree::kInvalidNodeId;
   data_for_recursion.scroll_tree_parent = ScrollTree::kRootNodeId;
+  data_for_recursion.closest_ancestor_with_copy_request =
+      EffectTree::kInvalidNodeId;
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
   data_for_recursion.outer_viewport_scroll_layer = outer_viewport_scroll_layer;

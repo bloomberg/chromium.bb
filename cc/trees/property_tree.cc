@@ -978,28 +978,13 @@ void EffectTree::ClearCopyRequests() {
   for (auto& node : nodes()) {
     node.subtree_has_copy_request = false;
     node.has_copy_request = false;
+    node.closest_ancestor_with_copy_request_id = EffectTree::kInvalidNodeId;
   }
 
   // Any copy requests that are still left will be aborted (sending an empty
   // result) on destruction.
   copy_requests_.clear();
   set_needs_update(true);
-}
-
-int EffectTree::ClosestAncestorWithCopyRequest(int id) const {
-  DCHECK_GE(id, EffectTree::kRootNodeId);
-  const EffectNode* node = Node(id);
-  while (node->id > EffectTree::kContentsRootNodeId) {
-    if (node->has_copy_request)
-      return node->id;
-
-    node = parent(node);
-  }
-
-  if (node->has_copy_request)
-    return node->id;
-  else
-    return EffectTree::kInvalidNodeId;
 }
 
 int EffectTree::LowestCommonAncestorWithRenderSurface(int id_1,

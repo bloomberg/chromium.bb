@@ -31,7 +31,8 @@ EffectNode::EffectNode()
       transform_id(0),
       clip_id(0),
       target_id(1),
-      mask_layer_id(-1) {}
+      mask_layer_id(-1),
+      closest_ancestor_with_copy_request_id(-1) {}
 
 EffectNode::EffectNode(const EffectNode& other) = default;
 
@@ -60,7 +61,9 @@ bool EffectNode::operator==(const EffectNode& other) const {
          effect_changed == other.effect_changed &&
          subtree_has_copy_request == other.subtree_has_copy_request &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
-         target_id == other.target_id && mask_layer_id == other.mask_layer_id;
+         target_id == other.target_id && mask_layer_id == other.mask_layer_id &&
+         closest_ancestor_with_copy_request_id ==
+             other.closest_ancestor_with_copy_request_id;
 }
 
 void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
@@ -82,6 +85,8 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("clip_id", clip_id);
   value->SetInteger("target_id", target_id);
   value->SetInteger("mask_layer_id", mask_layer_id);
+  value->SetInteger("closest_ancestor_with_copy_request_id",
+                    closest_ancestor_with_copy_request_id);
 }
 
 }  // namespace cc
