@@ -216,10 +216,8 @@ int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
   iov.iov_base = buf->data();
   iov.iov_len = buf_len;
   size_t bytes_read = Readv(&iov, 1);
-  // If no more body bytes and trailers are to be delivered, return
-  // ERR_IO_PENDING now because onDataAvailable() will be called after trailers.
-  if (bytes_read == 0 && !FinishedReadingTrailers())
-    return ERR_IO_PENDING;
+  // Since HasBytesToRead is true, Readv() must of read some data.
+  DCHECK_NE(0u, bytes_read);
   return bytes_read;
 }
 
