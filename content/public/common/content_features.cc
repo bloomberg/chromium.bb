@@ -256,6 +256,10 @@ const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// The JavaScript API for payments on the web.
+const base::Feature kWebPayments{"WebPayments",
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).
 const base::Feature kWebRtcEcdsaDefault {"WebRTC-EnableWebRtcEcdsa",
@@ -319,19 +323,9 @@ const base::Feature kServiceWorkerPaymentApps{
     "ServiceWorkerPaymentApps",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// The JavaScript API for payments on the web.
-const base::Feature kWebPayments{"WebPayments",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if !defined(OS_ANDROID)
-// The JavaScript API for payments on the web.
-const base::Feature kWebPayments{"WebPayments",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_WIN)
