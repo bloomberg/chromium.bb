@@ -461,37 +461,6 @@ TEST_F(LayerTreeImplTest, HitTestingSiblings) {
   EXPECT_EQ(3, result_layer->id());
 }
 
-TEST_F(LayerTreeImplTest, HitTestingPointOutsideMaxTextureSize) {
-  gfx::Transform identity_matrix;
-  int max_texture_size =
-      host_impl().active_tree()->resource_provider()->max_texture_size();
-  gfx::Size bounds(max_texture_size + 100, max_texture_size + 100);
-
-  LayerImpl* root = root_layer();
-  root->SetBounds(bounds);
-
-  std::unique_ptr<LayerImpl> surface =
-      LayerImpl::Create(host_impl().active_tree(), 2);
-  surface->SetBounds(bounds);
-  surface->SetMasksToBounds(true);
-  surface->SetDrawsContent(true);
-  surface->test_properties()->force_render_surface = true;
-
-  root->test_properties()->AddChild(std::move(surface));
-  host_impl().SetViewportSize(root->bounds());
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
-
-  gfx::PointF test_point(max_texture_size - 50, max_texture_size - 50);
-  LayerImpl* result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  EXPECT_TRUE(result_layer);
-
-  test_point = gfx::PointF(max_texture_size + 50, max_texture_size + 50);
-  result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  EXPECT_FALSE(result_layer);
-}
-
 TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
   // perspective_projection_about_center * translation_by_z is designed so that
   // the 100 x 100 layer becomes 50 x 50, and remains centered at (50, 50).
