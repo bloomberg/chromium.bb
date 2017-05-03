@@ -21,6 +21,8 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
   void UpdateBlockLayout(bool relayout_children) override;
   NGBlockNode* BoxForTesting() const { return box_.Get(); }
 
+  const char* GetName() const override { return "LayoutNGBlockFlow"; }
+
   NGInlineNodeData& GetNGInlineNodeData() const;
   void ResetNGInlineNodeData();
 

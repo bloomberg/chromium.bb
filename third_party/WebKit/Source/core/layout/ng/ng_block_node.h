@@ -34,7 +34,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   RefPtr<NGLayoutResult> Layout(NGConstraintSpace* constraint_space,
                                 NGBreakToken* break_token = nullptr) override;
   NGLayoutInputNode* NextSibling() override;
-  LayoutObject* GetLayoutObject() override;
+  LayoutObject* GetLayoutObject() const override;
 
   // Computes the value of min-content and max-content for this box.
   // If the underlying layout algorithm's ComputeMinMaxContentSize returns
@@ -62,6 +62,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void SaveStaticOffsetForLegacy(const NGLogicalOffset&);
 
   bool CanUseNewLayout() const;
+
+  String ToString() const override;
 
  private:
   // After we run the layout algorithm, this function copies back the geometry

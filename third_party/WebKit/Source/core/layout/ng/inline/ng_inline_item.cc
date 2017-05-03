@@ -4,10 +4,22 @@
 
 #include "core/layout/ng/inline/ng_inline_item.h"
 
+#include "core/layout/LayoutObject.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
 
 namespace blink {
+namespace {
+
+const char* kNGInlineItemTypeStrings[] = {
+    "Text",     "AtomicInline",        "OpenTag",    "CloseTag",
+    "Floating", "OutOfFlowPositioned", "BidiControl"};
+
+}  // namespace
+
+const char* NGInlineItem::NGInlineItemTypeToString(int val) const {
+  return kNGInlineItemTypeStrings[val];
+}
 
 // Set bidi level to a list of NGInlineItem from |index| to the item that ends
 // with |end_offset|.
@@ -37,6 +49,12 @@ unsigned NGInlineItem::SetBidiLevel(Vector<NGInlineItem>& items,
   }
 
   return index + 1;
+}
+
+String NGInlineItem::ToString() const {
+  return String::Format("NGInlineItem. Type: '%s'. LayoutObject: '%s'",
+                        NGInlineItemTypeToString(Type()),
+                        GetLayoutObject()->DebugName().Ascii().data());
 }
 
 // Split |items[index]| to 2 items at |offset|.

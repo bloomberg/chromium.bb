@@ -64,6 +64,7 @@ class NGInlineItem {
   }
 
   NGInlineItemType Type() const { return static_cast<NGInlineItemType>(type_); }
+  const char* NGInlineItemTypeToString(int val) const;
 
   NGLayoutInlineShapeOptions ShapeOptions() const {
     return static_cast<NGLayoutInlineShapeOptions>(shape_options_);
@@ -98,6 +99,8 @@ class NGInlineItem {
 
   void AssertOffset(unsigned offset) const;
   void AssertEndOffset(unsigned offset) const;
+
+  String ToString() const;
 
  private:
   unsigned start_offset_;
