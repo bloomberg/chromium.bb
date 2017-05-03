@@ -144,11 +144,6 @@ class PageInfoUI {
   // Returns the UI string for the given permission |type|.
   static base::string16 PermissionTypeToUIString(ContentSettingsType type);
 
-  // Returns the UI string for the given permission |value|, used in the
-  // permission-changing menu. Generally this will be a verb in the imperative
-  // form, e.g. "ask", "allow", "block".
-  static base::string16 PermissionValueToUIString(ContentSetting value);
-
   // Returns the UI string describing the action taken for a permission,
   // including why that action was taken. E.g. "Allowed by you",
   // "Blocked by default". If |setting| is default, specify the actual default

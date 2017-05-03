@@ -5,7 +5,7 @@
 #include "chrome/browser/android/vr_shell/textures/insecure_content_permanent_texture.h"
 
 #include "cc/paint/skia_paint_canvas.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"

@@ -1174,11 +1174,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         You can help make Chrome safer and easier to use by automatically sending some system information and page content to Google to help detect dangerous apps and sites.
       </message>
 
-      <!-- Page Information Window -->
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_VERIFIED" desc="The text of the identity section when the page is secure and uses a valid certificate.">
-        Chrome verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
-      </message>
-
       <!-- Desktop Capture -->
       <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB" desc="Text for the button on the window picker dialog, clicking which takes one to tab sharing">
         Chrome Tab

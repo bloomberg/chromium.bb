@@ -9,6 +9,7 @@
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/common/origin_util.h"
 #include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"

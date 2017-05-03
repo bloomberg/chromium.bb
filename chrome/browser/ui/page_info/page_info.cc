@@ -45,8 +45,6 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -209,17 +207,17 @@ void GetSiteIdentityByMaliciousContentStatus(
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_MALWARE:
       *status = PageInfo::SITE_IDENTITY_STATUS_MALWARE;
-      *details = l10n_util::GetStringUTF16(IDS_PAGEINFO_MALWARE_DETAILS);
+      *details = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MALWARE_DETAILS);
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING:
       *status = PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING;
       *details =
-          l10n_util::GetStringUTF16(IDS_PAGEINFO_SOCIAL_ENGINEERING_DETAILS);
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE:
       *status = PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
       *details =
-          l10n_util::GetStringUTF16(IDS_PAGEINFO_UNWANTED_SOFTWARE_DETAILS);
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
       break;
   }
 }
@@ -499,13 +497,13 @@ void PageInfo::Init(const GURL& url,
         base::string16 locality;
         if (!certificate_->subject().state_or_province_name.empty()) {
           locality = l10n_util::GetStringFUTF16(
-              IDS_PAGEINFO_ADDRESS,
+              IDS_PAGE_INFO_ADDRESS,
               UTF8ToUTF16(certificate_->subject().locality_name),
               UTF8ToUTF16(certificate_->subject().state_or_province_name),
               UTF8ToUTF16(certificate_->subject().country_name));
         } else {
           locality = l10n_util::GetStringFUTF16(
-              IDS_PAGEINFO_PARTIAL_ADDRESS,
+              IDS_PAGE_INFO_PARTIAL_ADDRESS,
               UTF8ToUTF16(certificate_->subject().locality_name),
               UTF8ToUTF16(certificate_->subject().country_name));
         }

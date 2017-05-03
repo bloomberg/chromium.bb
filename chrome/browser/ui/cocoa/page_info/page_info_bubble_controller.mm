@@ -855,14 +855,14 @@ bool IsInternalURL(const GURL& url) {
                 atPoint:NSMakePoint(kSectionHorizontalPadding, 0)];
       [resetDecisionsField_
           setStringValue:l10n_util::GetNSString(
-                             IDS_PAGEINFO_INVALID_CERTIFICATE_DESCRIPTION)];
+                             IDS_PAGE_INFO_INVALID_CERTIFICATE_DESCRIPTION)];
       [self sizeTextFieldHeightToFit:resetDecisionsField_];
 
-      resetDecisionsButton_ =
-          [self addLinkButtonWithText:
-                    l10n_util::GetNSString(
-                        IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON)
-                               toView:securitySectionView_];
+      resetDecisionsButton_ = [self
+          addLinkButtonWithText:
+              l10n_util::GetNSString(
+                  IDS_PAGE_INFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON)
+                         toView:securitySectionView_];
       [resetDecisionsButton_ setTarget:self];
       [resetDecisionsButton_ setAction:@selector(resetCertificateDecisions:)];
     }
