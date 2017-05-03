@@ -31,6 +31,7 @@ void TestAddressNormalizer::DelayNormalization() {
 }
 
 void TestAddressNormalizer::CompleteAddressNormalization() {
+  DCHECK(instantaneous_normalization_ == false);
   requester_->OnAddressNormalized(profile_);
 }
 

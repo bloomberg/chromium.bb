@@ -32,7 +32,9 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   AddressNormalizer* GetAddressNormalizer() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
 
-  TestAddressNormalizer* GetTestAddressNormalizer();
+  TestAddressNormalizer* test_address_normalizer();
+  void DelayFullCardRequestCompletion();
+  void CompleteFullCardRequest();
 
  private:
   autofill::PersonalDataManager* personal_data_manager_;
@@ -43,6 +45,8 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   autofill::CreditCard full_card_request_card_;
   base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
       full_card_result_delegate_;
+
+  bool instantaneous_full_card_request_result_ = true;
   DISALLOW_COPY_AND_ASSIGN(TestPaymentRequestDelegate);
 };
 

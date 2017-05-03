@@ -41,20 +41,36 @@ void TestPaymentRequestDelegate::DoFullCardRequest(
     const autofill::CreditCard& credit_card,
     base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
         result_delegate) {
-  result_delegate->OnFullCardRequestSucceeded(credit_card,
-                                              base::ASCIIToUTF16("123"));
+  if (instantaneous_full_card_request_result_) {
+    result_delegate->OnFullCardRequestSucceeded(credit_card,
+                                                base::ASCIIToUTF16("123"));
+    return;
+  }
+
+  full_card_request_card_ = credit_card;
+  full_card_result_delegate_ = result_delegate;
 }
 
 AddressNormalizer* TestPaymentRequestDelegate::GetAddressNormalizer() {
   return &address_normalizer_;
 }
 
-TestAddressNormalizer* TestPaymentRequestDelegate::GetTestAddressNormalizer() {
+autofill::RegionDataLoader* TestPaymentRequestDelegate::GetRegionDataLoader() {
+  return nullptr;
+}
+
+TestAddressNormalizer* TestPaymentRequestDelegate::test_address_normalizer() {
   return &address_normalizer_;
 }
 
-autofill::RegionDataLoader* TestPaymentRequestDelegate::GetRegionDataLoader() {
-  return nullptr;
+void TestPaymentRequestDelegate::DelayFullCardRequestCompletion() {
+  instantaneous_full_card_request_result_ = false;
+}
+
+void TestPaymentRequestDelegate::CompleteFullCardRequest() {
+  DCHECK(instantaneous_full_card_request_result_ == false);
+  full_card_result_delegate_->OnFullCardRequestSucceeded(
+      full_card_request_card_, base::ASCIIToUTF16("123"));
 }
 
 }  // namespace payments
