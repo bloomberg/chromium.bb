@@ -13,17 +13,13 @@
 
 using std::tr1::tuple;
 using std::tr1::make_tuple;
-using std::vector;
-using libaom_test::ACMRandom;
-using libaom_test::AV1WarpFilter::AV1WarpFilterTest;
-using libaom_test::AV1WarpFilter::WarpTestParam;
-#if CONFIG_HIGHBITDEPTH
-using libaom_test::AV1HighbdWarpFilter::AV1HighbdWarpFilterTest;
-using libaom_test::AV1HighbdWarpFilter::HighbdWarpTestParam;
-#endif
 
-::testing::internal::ParamGenerator<WarpTestParam>
-libaom_test::AV1WarpFilter::BuildParams(warp_affine_func filter) {
+namespace libaom_test {
+
+namespace AV1WarpFilter {
+
+::testing::internal::ParamGenerator<WarpTestParam> BuildParams(
+    warp_affine_func filter) {
   const WarpTestParam params[] = {
     make_tuple(4, 4, 50000, filter),  make_tuple(8, 8, 50000, filter),
     make_tuple(64, 64, 1000, filter), make_tuple(4, 16, 20000, filter),
@@ -136,10 +132,12 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   delete[] output;
   delete[] output2;
 }
+}  // namespace AV1WarpFilter
 
 #if CONFIG_HIGHBITDEPTH
-::testing::internal::ParamGenerator<HighbdWarpTestParam>
-libaom_test::AV1HighbdWarpFilter::GetDefaultParams() {
+namespace AV1HighbdWarpFilter {
+
+::testing::internal::ParamGenerator<HighbdWarpTestParam> GetDefaultParams() {
   const HighbdWarpTestParam defaultParams[] = {
     make_tuple(4, 4, 50000, 8),   make_tuple(8, 8, 50000, 8),
     make_tuple(64, 64, 1000, 8),  make_tuple(4, 16, 20000, 8),
@@ -265,4 +263,6 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
   delete[] output;
   delete[] output2;
 }
+}  // namespace AV1HighbdWarpFilter
 #endif  // CONFIG_HIGHBITDEPTH
+}  // namespace libaom_test
