@@ -112,6 +112,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
                        bool& use_fallback);
 
   void DispatchErrorEvent();
+  bool IsErrorplaceholder();
   void LazyReattachIfNeeded();
 
   String service_type_;

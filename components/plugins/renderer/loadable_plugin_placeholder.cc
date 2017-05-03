@@ -179,6 +179,10 @@ v8::Local<v8::Object> LoadablePluginPlaceholder::GetV8ScriptableObject(
   return v8::Local<v8::Object>();
 }
 
+bool LoadablePluginPlaceholder::IsErrorPlaceholder() {
+  return !allow_loading_;
+}
+
 void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
     const gfx::Rect& unobscured_rect) {
   DCHECK(content::RenderThread::Get());

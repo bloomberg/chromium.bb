@@ -91,6 +91,7 @@ class WEB_EXPORT WebPluginContainerImpl final
   void FrameRectsChanged() override;
   void GeometryMayHaveChanged() override;
   bool IsPluginContainer() const override { return true; }
+  bool IsErrorplaceholder() override;
   void EventListenersRemoved() override;
 
   // FrameOrPlugin methods

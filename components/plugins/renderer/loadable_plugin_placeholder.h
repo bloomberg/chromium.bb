@@ -91,6 +91,7 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   v8::Local<v8::Object> GetV8ScriptableObject(
       v8::Isolate* isolate) const override;
   void OnUnobscuredRectUpdate(const gfx::Rect& unobscured_rect) override;
+  bool IsErrorPlaceholder() override;
 
   // RenderFrameObserver methods:
   void WasShown() override;

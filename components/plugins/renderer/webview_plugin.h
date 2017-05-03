@@ -55,6 +55,8 @@ class WebViewPlugin : public blink::WebPlugin,
 
     // Called when the unobscured rect of the plugin is updated.
     virtual void OnUnobscuredRectUpdate(const gfx::Rect& unobscured_rect) {}
+
+    virtual bool IsErrorPlaceholder() = 0;
   };
 
   // Convenience method to set up a new WebViewPlugin using |preferences|
@@ -83,6 +85,8 @@ class WebViewPlugin : public blink::WebPlugin,
   void Destroy() override;
 
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate) override;
+
+  bool IsErrorPlaceholder() override;
 
   void UpdateAllLifecyclePhases() override;
   void Paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override;

@@ -483,6 +483,13 @@ bool HTMLPlugInElement::IsPluginElement() const {
   return true;
 }
 
+bool HTMLPlugInElement::IsErrorplaceholder() {
+  if (PluginWidget() && PluginWidget()->IsPluginContainer() &&
+      PluginWidget()->IsErrorplaceholder())
+    return true;
+  return false;
+}
+
 void HTMLPlugInElement::DisconnectContentFrame() {
   HTMLFrameOwnerElement::DisconnectContentFrame();
   SetPersistedPlugin(nullptr);

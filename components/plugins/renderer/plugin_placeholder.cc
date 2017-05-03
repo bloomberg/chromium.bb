@@ -138,6 +138,10 @@ v8::Local<v8::Value> PluginPlaceholder::GetV8Handle(v8::Isolate* isolate) {
   return gin::CreateHandle(isolate, this).ToV8();
 }
 
+bool PluginPlaceholderBase::IsErrorPlaceholder() {
+  return false;
+}
+
 gin::ObjectTemplateBuilder PluginPlaceholder::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<PluginPlaceholder>::GetObjectTemplateBuilder(isolate)
