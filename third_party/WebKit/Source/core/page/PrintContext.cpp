@@ -28,6 +28,8 @@
 
 namespace blink {
 
+namespace {
+
 // By shrinking to a width of 75% (1.333f) we will render the correct physical
 // dimensions in paged media (i.e. cm, pt,). The shrinkage used
 // to be 80% (1.25f) to match other browsers - they have since moved on.
@@ -41,12 +43,26 @@ const float kPrintingMinimumShrinkFactor = 1.33333333f;
 // TODO(rhogan): Decide if this quirk is still required.
 const float kPrintingMaximumShrinkFactor = 2;
 
+LayoutBoxModelObject* EnclosingBoxModelObject(LayoutObject* object) {
+  while (object && !object->IsBoxModelObject())
+    object = object->Parent();
+  if (!object)
+    return nullptr;
+  return ToLayoutBoxModelObject(object);
+}
+
+bool IsCoordinateInPage(int top, int left, const IntRect& page) {
+  return page.X() <= left && left < page.MaxX() && page.Y() <= top &&
+         top < page.MaxY();
+}
+
+}  // namespace
+
 PrintContext::PrintContext(LocalFrame* frame)
     : frame_(frame), is_printing_(false), linked_destinations_valid_(false) {}
 
 PrintContext::~PrintContext() {
-  if (is_printing_)
-    EndPrintMode();
+  DCHECK(!is_printing_);
 }
 
 void PrintContext::ComputePageRects(const FloatRect& print_rect,
@@ -57,8 +73,7 @@ void PrintContext::ComputePageRects(const FloatRect& print_rect,
   page_rects_.clear();
   out_page_height = 0;
 
-  if (!frame_->GetDocument() || !frame_->View() ||
-      frame_->GetDocument()->GetLayoutViewItem().IsNull())
+  if (!IsFrameValid())
     return;
 
   if (user_scale_factor <= 0) {
@@ -95,8 +110,7 @@ void PrintContext::ComputePageRectsWithPageSize(
 
 void PrintContext::ComputePageRectsWithPageSizeInternal(
     const FloatSize& page_size_in_pixels) {
-  if (!frame_->GetDocument() || !frame_->View() ||
-      frame_->GetDocument()->GetLayoutViewItem().IsNull())
+  if (!IsFrameValid())
     return;
 
   LayoutViewItem view = frame_->GetDocument()->GetLayoutViewItem();
@@ -186,27 +200,21 @@ void PrintContext::BeginPrintMode(float width, float height) {
 void PrintContext::EndPrintMode() {
   ASSERT(is_printing_);
   is_printing_ = false;
-  frame_->SetPrinting(false, FloatSize(), FloatSize(), 0);
+  if (IsFrameValid())
+    frame_->SetPrinting(false, FloatSize(), FloatSize(), 0);
   linked_destinations_.clear();
   linked_destinations_valid_ = false;
 }
 
-static LayoutBoxModelObject* EnclosingBoxModelObject(LayoutObject* object) {
-  while (object && !object->IsBoxModelObject())
-    object = object->Parent();
-  if (!object)
-    return nullptr;
-  return ToLayoutBoxModelObject(object);
-}
-
+// static
 int PrintContext::PageNumberForElement(Element* element,
                                        const FloatSize& page_size_in_pixels) {
   element->GetDocument().UpdateStyleAndLayout();
 
   LocalFrame* frame = element->GetDocument().GetFrame();
   FloatRect page_rect(FloatPoint(0, 0), page_size_in_pixels);
-  PrintContext print_context(frame);
-  print_context.BeginPrintMode(page_rect.Width(), page_rect.Height());
+  ScopedPrintContext print_context(frame);
+  print_context->BeginPrintMode(page_rect.Width(), page_rect.Height());
 
   LayoutBoxModelObject* box =
       EnclosingBoxModelObject(element->GetLayoutObject());
@@ -216,15 +224,13 @@ int PrintContext::PageNumberForElement(Element* element,
   FloatSize scaled_page_size = page_size_in_pixels;
   scaled_page_size.Scale(frame->View()->ContentsSize().Width() /
                          page_rect.Width());
-  print_context.ComputePageRectsWithPageSize(scaled_page_size);
+  print_context->ComputePageRectsWithPageSize(scaled_page_size);
 
   int top = box->PixelSnappedOffsetTop(box->OffsetParent());
   int left = box->PixelSnappedOffsetLeft(box->OffsetParent());
-  size_t page_number = 0;
-  for (; page_number < print_context.PageCount(); page_number++) {
-    const IntRect& page = print_context.PageRect(page_number);
-    if (page.X() <= left && left < page.MaxX() && page.Y() <= top &&
-        top < page.MaxY())
+  for (size_t page_number = 0; page_number < print_context->PageCount();
+       ++page_number) {
+    if (IsCoordinateInPage(top, left, print_context->PageRect(page_number)))
       return page_number;
   }
   return -1;
@@ -277,15 +283,16 @@ void PrintContext::OutputLinkedDestinations(GraphicsContext& context,
   }
 }
 
+// static
 String PrintContext::PageProperty(LocalFrame* frame,
                                   const char* property_name,
                                   int page_number) {
   Document* document = frame->GetDocument();
-  PrintContext print_context(frame);
+  ScopedPrintContext print_context(frame);
   // Any non-zero size is OK here. We don't care about actual layout. We just
   // want to collect @page rules and figure out what declarations apply on a
   // given page (that may or may not exist).
-  print_context.BeginPrintMode(800, 1000);
+  print_context->BeginPrintMode(800, 1000);
   RefPtr<ComputedStyle> style = document->StyleForPage(page_number);
 
   // Implement formatters for properties we care about.
@@ -330,24 +337,37 @@ String PrintContext::PageSizeAndMarginsInPixels(LocalFrame* frame,
          String::Number(margin_bottom) + ' ' + String::Number(margin_left);
 }
 
+// static
 int PrintContext::NumberOfPages(LocalFrame* frame,
                                 const FloatSize& page_size_in_pixels) {
   frame->GetDocument()->UpdateStyleAndLayout();
 
   FloatRect page_rect(FloatPoint(0, 0), page_size_in_pixels);
-  PrintContext print_context(frame);
-  print_context.BeginPrintMode(page_rect.Width(), page_rect.Height());
+  ScopedPrintContext print_context(frame);
+  print_context->BeginPrintMode(page_rect.Width(), page_rect.Height());
   // Account for shrink-to-fit.
   FloatSize scaled_page_size = page_size_in_pixels;
   scaled_page_size.Scale(frame->View()->ContentsSize().Width() /
                          page_rect.Width());
-  print_context.ComputePageRectsWithPageSize(scaled_page_size);
-  return print_context.PageCount();
+  print_context->ComputePageRectsWithPageSize(scaled_page_size);
+  return print_context->PageCount();
+}
+
+bool PrintContext::IsFrameValid() const {
+  return frame_->View() && frame_->GetDocument() &&
+         !frame_->GetDocument()->GetLayoutViewItem().IsNull();
 }
 
 DEFINE_TRACE(PrintContext) {
   visitor->Trace(frame_);
   visitor->Trace(linked_destinations_);
+}
+
+ScopedPrintContext::ScopedPrintContext(LocalFrame* frame)
+    : context_(new PrintContext(frame)) {}
+
+ScopedPrintContext::~ScopedPrintContext() {
+  context_->EndPrintMode();
 }
 
 }  // namespace blink

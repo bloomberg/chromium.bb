@@ -274,7 +274,7 @@ class ChromePrintContext : public PrintContext {
   WTF_MAKE_NONCOPYABLE(ChromePrintContext);
 
  public:
-  ChromePrintContext(LocalFrame* frame)
+  explicit ChromePrintContext(LocalFrame* frame)
       : PrintContext(frame), printed_page_width_(0) {}
 
   ~ChromePrintContext() override {}
@@ -555,6 +555,9 @@ void WebLocalFrameImpl::Close() {
     dev_tools_agent_.Clear();
 
   self_keep_alive_.Clear();
+
+  if (print_context_)
+    PrintEnd();
 }
 
 WebString WebLocalFrameImpl::AssignedName() const {
