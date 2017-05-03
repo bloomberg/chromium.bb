@@ -166,6 +166,8 @@ ScopedStyleContext GetStyleContextFromCss(const std::string& css_selector);
 
 SkColor GetFgColorFromStyleContext(GtkStyleContext* context);
 
+SkColor GetBgColorFromStyleContext(GtkStyleContext* context);
+
 // Overrides properties on |context| and all its parents with those
 // provided by |css|.
 void ApplyCssToContext(GtkStyleContext* context, const std::string& css);

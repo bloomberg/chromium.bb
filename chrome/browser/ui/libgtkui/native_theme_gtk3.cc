@@ -38,6 +38,12 @@ std::string GetGtkSettingsStringProperty(GtkSettings* settings,
   return prop_value;
 }
 
+ScopedStyleContext GetTooltipContext() {
+  return AppendCssNodeToStyleContext(
+      nullptr, GtkVersionCheck(3, 20) ? "#tooltip.background"
+                                      : "GtkWindow#window.background.tooltip");
+}
+
 SkBitmap GetWidgetBitmap(const gfx::Size& size,
                          GtkStyleContext* context,
                          BackgroundRenderMode bg_mode,
@@ -240,9 +246,12 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Tooltips
     case ui::NativeTheme::kColorId_TooltipBackground:
-      return GetBgColor("GtkTooltip#tooltip");
-    case ui::NativeTheme::kColorId_TooltipText:
-      return GetFgColor("GtkTooltip#tooltip GtkLabel");
+      return GetBgColorFromStyleContext(GetTooltipContext());
+    case ui::NativeTheme::kColorId_TooltipText: {
+      auto context = GetTooltipContext();
+      context = AppendCssNodeToStyleContext(context, "GtkLabel");
+      return GetFgColorFromStyleContext(context);
+    }
 
     // Trees and Tables (implemented on GTK using the same class)
     case ui::NativeTheme::kColorId_TableBackground:
@@ -406,7 +415,6 @@ NativeThemeGtk3::NativeThemeGtk3() {
   g_type_class_unref(g_type_class_ref(gtk_separator_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_spinner_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_text_view_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_tooltip_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_tree_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
 
