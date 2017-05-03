@@ -27,12 +27,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Placeholder "experiment" flag. Change this to YES to have the toolbar at the
-// bottom.
-const BOOL kUseBottomToolbar = NO;
-}  // namespace
-
 @interface TabCoordinator ()<CRWWebStateObserver,
                              TabCommands,
                              UIViewControllerTransitioningDelegate>
@@ -99,6 +93,9 @@ const BOOL kUseBottomToolbar = NO;
 
 - (void)stop {
   [super stop];
+  for (BrowserCoordinator* child in self.children) {
+    [self removeChildCoordinator:child];
+  }
   _webStateObserver.reset();
   [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
@@ -133,11 +130,18 @@ const BOOL kUseBottomToolbar = NO;
 
 #pragma mark - Experiment support
 
-// Create and return a new view controller for use as a tab container;
+- (BOOL)usesBottomToolbar {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSString* bottomToolbarPreference =
+      [defaults stringForKey:@"EnableBottomToolbar"];
+  return [bottomToolbarPreference isEqualToString:@"Enabled"];
+}
+
+// Creates and returns a new view controller for use as a tab container;
 // experimental configurations determine which subclass of
 // TabContainerViewController to return.
 - (TabContainerViewController*)newTabContainer {
-  if (kUseBottomToolbar) {
+  if ([self usesBottomToolbar]) {
     return [[BottomToolbarTabViewController alloc] init];
   }
   return [[TopToolbarTabViewController alloc] init];
