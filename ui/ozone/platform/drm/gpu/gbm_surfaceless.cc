@@ -128,10 +128,7 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
-      base::TaskTraits()
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-          .MayBlock(),
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       fence_wait_task, fence_retired_callback);
 }
 

@@ -64,10 +64,7 @@ void DeviceManagerManual::InitiateScanDevices() {
   std::vector<base::FilePath>* result = new std::vector<base::FilePath>();
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
-      base::TaskTraits()
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-          .MayBlock(),
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&ScanDevicesOnWorkerThread, result),
       base::Bind(&DeviceManagerManual::OnDevicesScanned,
                  weak_ptr_factory_.GetWeakPtr(), base::Owned(result)));

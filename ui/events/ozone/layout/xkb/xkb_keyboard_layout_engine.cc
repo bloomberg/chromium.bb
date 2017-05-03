@@ -686,10 +686,8 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
   LoadKeymapCallback reply_callback = base::Bind(
       &XkbKeyboardLayoutEngine::OnKeymapLoaded, weak_ptr_factory_.GetWeakPtr());
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .MayBlock(),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&LoadKeymap, layout_name, base::ThreadTaskRunnerHandle::Get(),
                  reply_callback));
 #else
