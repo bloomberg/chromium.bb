@@ -123,12 +123,11 @@ class WTF_EXPORT ScopedLogger {
 #define CRASH() IMMEDIATE_CRASH()
 #endif
 
-// ASSERT and ASSERT_NOT_REACHED
+// ASSERT
 //  These macros are compiled out of release builds.
 //  Expressions inside them are evaluated in debug builds only.
-//  They are deprecated. We should use:
+//  This is deprecated. We should use:
 //    - DCHECK() for ASSERT()
-//    - NOTREACHED() for ASSERT_NOT_REACHED()
 #if OS(WIN)
 // FIXME: Change to use something other than ASSERT to avoid this conflict with
 // the underlying platform.
@@ -141,10 +140,8 @@ class WTF_EXPORT ScopedLogger {
 
 #if DCHECK_IS_ON()
 #define ASSERT(assertion) DCHECK(assertion)
-#define ASSERT_NOT_REACHED() NOTREACHED()
 #else
 #define ASSERT(assertion) ((void)0)
-#define ASSERT_NOT_REACHED() ((void)0)
 #endif
 
 // Users must test "#if ENABLE(SECURITY_ASSERT)", which helps ensure
