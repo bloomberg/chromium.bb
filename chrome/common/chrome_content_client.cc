@@ -71,7 +71,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/common/extensions/extension_process_policy.h"
 #include "extensions/common/features/feature_util.h"
 #endif
 
@@ -689,7 +688,7 @@ bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
 
 bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  return extensions::IsIsolateExtensionsEnabled();
+  return true;
 #else
   return false;
 #endif

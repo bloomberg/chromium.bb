@@ -633,35 +633,10 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnSuspendUseStorageApi) {
 // TODO: background page with timer.
 // TODO: background page that interacts with popup.
 
-// Test class to allow test cases to run in --isolate-extensions mode.
-class LazyBackgroundPageIsolatedExtensionsApiTest
-    : public LazyBackgroundPageApiTest {
- public:
-  LazyBackgroundPageIsolatedExtensionsApiTest() {}
-  ~LazyBackgroundPageIsolatedExtensionsApiTest() override {}
-
-  void SetUpOnMainThread() override {
-    LazyBackgroundPageApiTest::SetUpOnMainThread();
-
-    // This is needed to allow example.com to actually resolve and load in
-    // tests.
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    LazyBackgroundPageApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kIsolateExtensions);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LazyBackgroundPageIsolatedExtensionsApiTest);
-};
-
 // Ensure that the events page of an extension is properly torn down and the
-// process does not linger around when running in --isolate-extensions mode.
+// process does not linger around.
 // See https://crbug.com/612668.
-IN_PROC_BROWSER_TEST_F(LazyBackgroundPageIsolatedExtensionsApiTest,
-                       EventProcessCleanup) {
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventProcessCleanup) {
   ASSERT_TRUE(LoadExtensionAndWait("event_page_with_web_iframe"));
 
   // Lazy Background Page doesn't exist anymore.

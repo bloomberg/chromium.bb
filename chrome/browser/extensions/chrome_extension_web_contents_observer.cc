@@ -82,8 +82,6 @@ void ChromeExtensionWebContentsObserver::RenderViewCreated(
 void ChromeExtensionWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   ExtensionWebContentsObserver::DidFinishNavigation(navigation_handle);
-  if (navigation_handle->HasCommitted())
-    SetExtensionIsolationTrial(navigation_handle->GetRenderFrameHost());
 }
 
 bool ChromeExtensionWebContentsObserver::OnMessageReceived(
@@ -151,80 +149,6 @@ void ChromeExtensionWebContentsObserver::ReloadIfTerminated(
   if (registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED)) {
     ExtensionSystem::Get(browser_context())->
         extension_service()->ReloadExtension(extension_id);
-  }
-}
-
-void ChromeExtensionWebContentsObserver::SetExtensionIsolationTrial(
-    content::RenderFrameHost* render_frame_host) {
-  content::RenderFrameHost* parent = render_frame_host->GetParent();
-  if (!parent)
-    return;
-
-  GURL frame_url = render_frame_host->GetLastCommittedURL();
-  GURL parent_url = parent->GetLastCommittedURL();
-
-  content::BrowserContext* browser_context =
-      render_frame_host->GetSiteInstance()->GetBrowserContext();
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(browser_context);
-
-  bool frame_is_extension = false;
-  if (frame_url.SchemeIs(extensions::kExtensionScheme)) {
-    const extensions::Extension* frame_extension =
-        registry->enabled_extensions().GetExtensionOrAppByURL(frame_url);
-    if (frame_extension && !frame_extension->is_hosted_app())
-      frame_is_extension = true;
-  }
-
-  bool parent_is_extension = false;
-  if (parent_url.SchemeIs(extensions::kExtensionScheme)) {
-    const extensions::Extension* parent_extension =
-        registry->enabled_extensions().GetExtensionOrAppByURL(parent_url);
-    if (parent_extension && !parent_extension->is_hosted_app())
-      parent_is_extension = true;
-  }
-
-  // If this is a case where an out-of-process iframe would be possible, then
-  // create a synthetic field trial for this client. The trial will indicate
-  // whether the client is manually using a flag to create OOPIFs
-  // (--site-per-process or --isolate-extensions), whether a field trial made
-  // OOPIFs possible, or whether they are in default mode and will not have an
-  // OOPIF.
-  if (parent_is_extension != frame_is_extension) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kSitePerProcess)) {
-      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-          "SiteIsolationExtensionsActive", "SitePerProcessFlag");
-    } else if (extensions::IsIsolateExtensionsEnabled()) {
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kIsolateExtensions)) {
-        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-            "SiteIsolationExtensionsActive", "IsolateExtensionsFlag");
-      } else {
-        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-            "SiteIsolationExtensionsActive", "FieldTrial");
-      }
-    } else {
-      if (!base::FieldTrialList::FindFullName("SiteIsolationExtensions")
-               .empty()) {
-        // The field trial is active, but we are in a control group with oopifs
-        // disabled.
-        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-            "SiteIsolationExtensionsActive", "Control");
-      } else {
-        // The field trial is not active for this version.
-        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-            "SiteIsolationExtensionsActive", "Default");
-      }
-    }
-
-    if (rappor::RapporServiceImpl* rappor =
-            g_browser_process->rappor_service()) {
-      const std::string& extension_id =
-          parent_is_extension ? parent_url.host() : frame_url.host();
-      rappor->RecordSampleString("Extensions.AffectedByIsolateExtensions",
-                                 rappor::UMA_RAPPOR_TYPE, extension_id);
-    }
   }
 }
 

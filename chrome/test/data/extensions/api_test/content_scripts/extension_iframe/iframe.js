@@ -9,7 +9,6 @@ chrome.test.getConfig(function(config) {
   'use strict';
 
   let success = true;
-  let areExtensionsIsolated = config.isolateExtensions;
 
   // chrome.storage should exist, since the extension has the permission, and
   // the storage api is allowed in content scripts.
@@ -19,17 +18,11 @@ chrome.test.getConfig(function(config) {
   }
 
   let checkPrivilegedApi = function(api, name) {
-    if (api && !areExtensionsIsolated) {
-      console.log("Error: " + name +
-                  " exists, but shouldn't without isolated extensions.");
-      return false;
-    }
-    if (!api && areExtensionsIsolated) {
-      console.log("Error: " + name +
-                  " doesn't exist, but should with isolated extensions.");
-      return false;
-    }
-    return true;
+    if (api)
+      return true;
+
+    console.log('Error: ' + name + ' doesn\'t exist, but should.');
+    return false;
   };
 
   // For other permissions, they should only be available if this is a trusted

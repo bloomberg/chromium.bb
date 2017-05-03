@@ -24,7 +24,6 @@ extern const char kErrorConsole[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsOnChromeURLs[];
 extern const char kForceDevModeHighlighting[];
-extern const char kIsolateExtensions[];
 extern const char kLoadApps[];
 extern const char kScriptsRequireAction[];
 extern const char kEnableScriptsRequireAction[];

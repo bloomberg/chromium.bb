@@ -326,11 +326,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest,
 
   // Verify that the navigation transferred the contents to another renderer
   // process.
-  if (extensions::IsIsolateExtensionsEnabled()) {
-    content::RenderProcessHost* new_process_host =
-        web_contents->GetMainFrame()->GetProcess();
-    EXPECT_NE(old_process_host, new_process_host);
-  }
+  content::RenderProcessHost* new_process_host =
+      web_contents->GetMainFrame()->GetProcess();
+  EXPECT_NE(old_process_host, new_process_host);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebStoreProcessTest,
@@ -366,21 +364,12 @@ IN_PROC_BROWSER_TEST_F(ChromeWebStoreProcessTest,
   // Store gallery URL (which will commit into a chrome-extension://cws-app-id).
   bool ignored_script_result = false;
   content::TestNavigationObserver nav_observer(web_contents, 1);
-  content::RenderProcessHostWatcher crash_observer(
-      web_contents->GetMainFrame()->GetProcess(),
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents, navigation_starting_script, &ignored_script_result));
 
-  // When --isolate-extensions is enabled, the expectation is that the store
-  // will be properly put in its own process, otherwise the renderer process
-  // is going to be terminated.
-  if (!extensions::IsIsolateExtensionsEnabled()) {
-    crash_observer.Wait();
-    return;
-  }
-
+  // The expectation is that the store will be properly put in its own process,
+  // otherwise the renderer process is going to be terminated.
   // Verify that the navigation succeeded.
   nav_observer.Wait();
   EXPECT_EQ(cws_web_url, web_contents->GetLastCommittedURL());

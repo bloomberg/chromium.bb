@@ -323,27 +323,23 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
 bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  if (IsIsolateExtensionsEnabled()) {
-    const Extension* extension =
-        ExtensionRegistry::Get(browser_context)
-            ->enabled_extensions()
-            .GetExtensionOrAppByURL(effective_site_url);
-    if (extension) {
-      // Always isolate Chrome Web Store.
-      if (extension->id() == kWebStoreAppId)
-        return true;
+  const Extension* extension = ExtensionRegistry::Get(browser_context)
+                                   ->enabled_extensions()
+                                   .GetExtensionOrAppByURL(effective_site_url);
+  if (!extension)
+    return false;
 
-      // --isolate-extensions should isolate extensions, except for hosted
-      // apps. Isolating hosted apps is a good idea, but ought to be a separate
-      // knob.
-      if (extension->is_hosted_app())
-        return false;
+  // Always isolate Chrome Web Store.
+  if (extension->id() == kWebStoreAppId)
+    return true;
 
-      // Isolate all extensions.
-      return true;
-    }
-  }
-  return false;
+  // Extensions should be isolated, except for hosted apps. Isolating hosted
+  // apps is a good idea, but ought to be a separate knob.
+  if (extension->is_hosted_app())
+    return false;
+
+  // Isolate all extensions.
+  return true;
 }
 
 // static
@@ -363,8 +359,8 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
 
     // http://crbug.com/600441 workaround: Extension process reuse, implemented
     // in ShouldTryToUseExistingProcessHost(), means that extension processes
-    // aren't always actually dedicated to a single origin, even in
-    // --isolate-extensions. TODO(nick): Fix this.
+    // aren't always actually dedicated to a single origin.
+    // TODO(nick): Fix this.
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             ::switches::kSitePerProcess))
       return false;

@@ -77,8 +77,7 @@ bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
 
     // We want to compare against the URL that determines the type of
     // process.  Use the URL of the opener's local frame root, which will
-    // correctly handle any site isolation modes (--site-per-process and
-    // --isolate-extensions).
+    // correctly handle any site isolation modes (e.g. --site-per-process).
     blink::WebLocalFrame* local_root = opener_frame->LocalRoot();
     old_url = local_root->GetDocument().Url();
 

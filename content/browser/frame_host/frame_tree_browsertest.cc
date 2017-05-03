@@ -699,8 +699,8 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
 }
 
 // FrameTreeBrowserTest variant where we isolate http://*.is, Iceland's top
-// level domain. This is an analogue to --isolate-extensions that we use inside
-// of content_browsertests, where extensions don't exist. Iceland, like an
+// level domain. This is an analogue to isolating extensions, which we can use
+// inside content_browsertests, where extensions don't exist. Iceland, like an
 // extension process, is a special place with magical powers; we want to protect
 // it from outsiders.
 class IsolateIcelandFrameTreeBrowserTest : public ContentBrowserTest {

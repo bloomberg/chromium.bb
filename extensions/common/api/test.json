@@ -58,10 +58,6 @@
                     "description": "The port on which the test WebSocket server is listening.",
                     "minimum": 0,
                     "maximum": 65535
-                  },
-                  "isolateExtensions": {
-                    "type": "boolean",
-                    "description": "Whether or not extensions are running in site isolation mode."
                   }
                 }
               }

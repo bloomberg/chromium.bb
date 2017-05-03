@@ -59,10 +59,6 @@ class ChromeExtensionWebContentsObserver
   // Reloads an extension if it is on the terminated list.
   void ReloadIfTerminated(content::RenderViewHost* render_view_host);
 
-  // Determines which bucket of a synthetic field trial this client belongs
-  // to and sets it.
-  void SetExtensionIsolationTrial(content::RenderFrameHost* render_frame_host);
-
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionWebContentsObserver);
 };
 

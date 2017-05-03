@@ -53,7 +53,6 @@ const char kUserAgentRedirectResponsePath[] = "/detect-user-agent";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestServerPort[] = "testServer.port";
 const char kTestWebSocketPort[] = "testWebSocketPort";
-const char kIsolateExtensions[] = "isolateExtensions";
 
 // Handles |request| by serving a redirect response if the |User-Agent| is
 // foobar.
@@ -189,11 +188,6 @@ void WebViewAPITest::SetUpOnMainThread() {
   TestGetConfigFunction::set_test_config_state(&test_config_);
   base::FilePath test_data_dir;
   test_config_.SetInteger(kTestWebSocketPort, 0);
-  bool isolate_extensions = base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                ::switches::kSitePerProcess) ||
-                            base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                extensions::switches::kIsolateExtensions);
-  test_config_.SetBoolean(kIsolateExtensions, isolate_extensions);
 }
 
 void WebViewAPITest::StartTestServer(const std::string& app_location) {

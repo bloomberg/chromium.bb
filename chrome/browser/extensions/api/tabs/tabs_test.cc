@@ -2147,7 +2147,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
 
 // Window created by chrome.windows.create should be in the same SiteInstance
 // and BrowsingInstance as the opener - this is a regression test for
-// hangouts-vs-isolate-extensions-trouble (see also https://crbug.com/597750).
+// https://crbug.com/597750.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreateVsSiteInstance) {
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("../simple_with_file"));

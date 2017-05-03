@@ -12,7 +12,6 @@ onload = function() {
         return url.replace(/PORT/g, config.testServer.port);
       };
       URL_TEST = fixPort(URL_TEST);
-      let areExtensionsIsolated = config.isolateExtensions;
 
       chrome.test.runTests([
         // Navigates to a different site, but then modifies the reference
@@ -155,7 +154,7 @@ onload = function() {
             { label: "b-onCommitted",
               event: "onCommitted",
               details: { frameId: 1,
-                         processId: (areExtensionsIsolated ? 1 : 0),
+                         processId: 1,
                          tabId: 0,
                          timeStamp: 0,
                          transitionQualifiers: [],
@@ -164,14 +163,14 @@ onload = function() {
             { label: "b-onDOMContentLoaded",
               event: "onDOMContentLoaded",
               details: { frameId: 1,
-                         processId: (areExtensionsIsolated ? 1 : 0),
+                         processId: 1,
                          tabId: 0,
                          timeStamp: 0,
                          url: URL_TEST + "4" }},
             { label: "b-onCompleted",
               event: "onCompleted",
               details: { frameId: 1,
-                         processId: (areExtensionsIsolated ? 1 : 0),
+                         processId: 1,
                          tabId: 0,
                          timeStamp: 0,
                          url: URL_TEST + "4" }}],

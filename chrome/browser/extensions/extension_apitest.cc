@@ -41,7 +41,6 @@ namespace {
 const char kTestCustomArg[] = "customArg";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
-const char kIsolateExtensions[] = "isolateExtensions";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kEmbeddedTestServerPort[] = "testServer.port";
 
@@ -158,8 +157,6 @@ void ExtensionApiTest::SetUpOnMainThread() {
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
   test_config_->SetInteger(kTestWebSocketPort, 0);
-  bool isolate_extensions = extensions::IsIsolateExtensionsEnabled();
-  test_config_->SetBoolean(kIsolateExtensions, isolate_extensions);
   extensions::TestGetConfigFunction::set_test_config_state(
       test_config_.get());
 }

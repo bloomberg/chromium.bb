@@ -1890,7 +1890,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kEnableEmbeddedExtensionOptions,
       extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kExtensionsOnChromeURLs,
-      extensions::switches::kIsolateExtensions,
       extensions::switches::kNativeCrxBindings,
       extensions::switches::kWhitelistedExtensionID,
       extensions::switches::kYieldBetweenContentScriptRuns,
