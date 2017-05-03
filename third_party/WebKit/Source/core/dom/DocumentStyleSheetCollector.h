@@ -27,8 +27,8 @@
 #ifndef DocumentStyleSheetCollector_h
 #define DocumentStyleSheetCollector_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/css/ActiveStyleSheets.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Vector.h"

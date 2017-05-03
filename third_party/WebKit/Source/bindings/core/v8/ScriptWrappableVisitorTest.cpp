@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/testing/DeathAwareScriptWrappable.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

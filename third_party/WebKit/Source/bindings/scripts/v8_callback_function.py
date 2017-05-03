@@ -13,7 +13,7 @@ import v8_utilities  # pylint: disable=W0403
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
     'bindings/core/v8/NativeValueTraits.h',
     'platform/bindings/ScriptWrappable.h',
-    'bindings/core/v8/TraceWrapperV8Reference.h',
+    'platform/bindings/TraceWrapperV8Reference.h',
     'platform/heap/Handle.h',
     'platform/wtf/text/WTFString.h',
 ])

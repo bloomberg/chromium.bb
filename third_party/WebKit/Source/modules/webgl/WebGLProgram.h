@@ -26,9 +26,9 @@
 #ifndef WebGLProgram_h
 #define WebGLProgram_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "modules/webgl/WebGLShader.h"
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/Vector.h"
 

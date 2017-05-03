@@ -23,7 +23,6 @@
 #define ElementRareData_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/AccessibleNode.h"
@@ -39,6 +38,7 @@
 #include "core/dom/custom/V0CustomElementDefinition.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 

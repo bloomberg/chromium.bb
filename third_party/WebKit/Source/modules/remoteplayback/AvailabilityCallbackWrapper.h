@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Functional.h"

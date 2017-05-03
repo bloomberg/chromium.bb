@@ -6,10 +6,10 @@
 #define ModulatorImpl_h
 
 #include "bindings/core/v8/ScriptModule.h"
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/Modulator.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

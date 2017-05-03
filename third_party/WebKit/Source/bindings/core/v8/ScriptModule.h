@@ -5,9 +5,9 @@
 #ifndef ScriptModule_h
 #define ScriptModule_h
 
-#include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/SharedPersistent.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"

@@ -24,9 +24,9 @@
 #ifndef HTMLPlugInElement_h
 #define HTMLPlugInElement_h
 
-#include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "platform/bindings/SharedPersistent.h"
 #include "v8/include/v8.h"
 
 namespace blink {

@@ -5,11 +5,11 @@
 #ifndef TrackListBase_h
 #define TrackListBase_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TrackEvent.h"
 #include "core/html/track/TrackEventInit.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 

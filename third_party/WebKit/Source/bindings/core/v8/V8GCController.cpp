@@ -34,7 +34,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "bindings/core/v8/RetainedDOMInfo.h"
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Node.h"
@@ -48,6 +47,7 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/allocator/Partitions.h"

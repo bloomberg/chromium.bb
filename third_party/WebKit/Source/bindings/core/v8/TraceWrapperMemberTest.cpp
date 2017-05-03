@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/TraceWrapperMember.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 #include "core/testing/DeathAwareScriptWrappable.h"
 #include "testing/gtest/include/gtest/gtest.h"

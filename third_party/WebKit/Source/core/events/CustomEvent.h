@@ -26,11 +26,11 @@
 #ifndef CustomEvent_h
 #define CustomEvent_h
 
-#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
 #include "core/events/CustomEventInit.h"
 #include "core/events/Event.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 
 namespace blink {
 

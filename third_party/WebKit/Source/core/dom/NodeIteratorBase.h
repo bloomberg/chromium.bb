@@ -25,7 +25,7 @@
 #ifndef NodeIteratorBase_h
 #define NodeIteratorBase_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

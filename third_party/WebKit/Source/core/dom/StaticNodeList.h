@@ -29,8 +29,8 @@
 #ifndef StaticNodeList_h
 #define StaticNodeList_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/NodeList.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

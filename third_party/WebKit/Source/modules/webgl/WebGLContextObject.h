@@ -26,8 +26,8 @@
 #ifndef WebGLContextObject_h
 #define WebGLContextObject_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "modules/webgl/WebGLObject.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 

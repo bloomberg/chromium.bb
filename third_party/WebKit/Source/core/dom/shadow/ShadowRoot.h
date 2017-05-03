@@ -27,13 +27,13 @@
 #ifndef ShadowRoot_h
 #define ShadowRoot_h
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "core/css/StyleSheetList.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
 #include "core/dom/TreeScope.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 
 namespace blink {
 

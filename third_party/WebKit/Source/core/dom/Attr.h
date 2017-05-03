@@ -26,10 +26,10 @@
 #ifndef Attr_h
 #define Attr_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/dom/QualifiedName.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 

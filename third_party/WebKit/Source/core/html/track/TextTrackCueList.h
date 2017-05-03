@@ -26,9 +26,9 @@
 #ifndef TextTrackCueList_h
 #define TextTrackCueList_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/html/track/TextTrackCue.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

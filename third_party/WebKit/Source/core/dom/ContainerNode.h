@@ -26,10 +26,10 @@
 #define ContainerNode_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/html/CollectionType.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebFocusType.h"
 

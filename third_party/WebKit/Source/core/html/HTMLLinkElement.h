@@ -24,7 +24,7 @@
 #ifndef HTMLLinkElement_h
 #define HTMLLinkElement_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
@@ -36,7 +36,7 @@
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
 #include "platform/WebTaskRunner.h"
-#include <memory>
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 

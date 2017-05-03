@@ -25,7 +25,6 @@
 
 #include <memory>
 #include "bindings/core/v8/ScriptString.h"
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/DocumentParserClient.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/SuspendableObject.h"
@@ -34,6 +33,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/EncodedFormData.h"
