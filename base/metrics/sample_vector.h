@@ -162,7 +162,7 @@ class BASE_EXPORT SampleVectorIterator : public SampleCountIterator {
   bool Done() const override;
   void Next() override;
   void Get(HistogramBase::Sample* min,
-           HistogramBase::Sample* max,
+           int64_t* max,
            HistogramBase::Count* count) const override;
 
   // SampleVector uses predefined buckets, so iterator can return bucket index.

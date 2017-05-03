@@ -109,7 +109,7 @@ class MetricsRecorder {
     for (std::unique_ptr<SampleCountIterator> i = samples_->Iterator();
          !i->Done(); i->Next()) {
       HistogramBase::Sample min;
-      HistogramBase::Sample max;
+      int64_t max;
       HistogramBase::Count count;
       i->Get(&min, &max, &count);
       if (min <= value && value <= max && count >= 1)

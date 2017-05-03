@@ -202,7 +202,7 @@ void ChildTraceMessageFilter::OnSetUMACallback(
 
   while (!sample_iterator->Done()) {
     base::HistogramBase::Sample min;
-    base::HistogramBase::Sample max;
+    int64_t max;
     base::HistogramBase::Count count;
     sample_iterator->Get(&min, &max, &count);
 
