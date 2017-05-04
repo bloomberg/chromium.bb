@@ -8,6 +8,12 @@ hd-iron-icon.oobe-icon {
   --iron-icon-fill-color: var(--google-blue-500);
 }
 
+iron-icon.oobe-icon {
+  --iron-icon-height: 32px;
+  --iron-icon-width: 32px;
+  color: var(--google-blue-500);
+}
+
 oobe-dialog .header {
   color: rgba(0, 0, 0, 0.87);
   font-family: Roboto, sans-serif;

@@ -3,36 +3,38 @@
  * found in the LICENSE file. */
 
 .bottom-buttons {
-  width: 100%
+  width: 100%;
 }
 
 .reset-popup {
   background: white;
-  border: 1px solid var(--google-grey-300);
-  border-radius: 2px;
-  box-shadow: 0 5px 80px #505050;
-  min-height: 180px;
+  box-shadow: 0 0 16px rgba(0, 0, 0, .12), 0 16px 16px rgba(0, 0, 0, .24);
+  min-height: 158px;
   position: relative;
-  width: 460px;
-  z-index: 10;
+  width: 512px;
 }
 
 .reset-popup h1 {
-  -webkit-padding-end: 24px;
-  background: linear-gradient(white, #F8F8F8);
-  color: var(--google-blue-500);
-  font-size: 105%;
-  font-weight: bold;
-  margin: 0;
-  padding: 10px 15px 8px 15px;
-  text-shadow: white 0 1px 2px;
-  user-select: none;
+  -webkit-margin-after: 0;
+  -webkit-margin-before: 0;
+  color: var(--google-grey-900);
+  font: 15px Roboto, sans-serif;
+  padding: 16px 20px;
 }
 
 .reset-popup-content-area {
-  padding: 20px 20px 30px 20px;
+  color: rgba(0, 0, 0, .54);
+  font: 13px Roboto, sans-serif;
+  line-height: 20px;
+  padding: 0 20px 20.5px;
 }
 
-#cancel-button {
-  -webkit-margin-end: 22px;
+oobe-text-button {
+  -webkit-margin-end: 16px;
+  -webkit-margin-after: 16px;
+  color: #5a5a5a;
+}
+
+#cancelButton {
+  -webkit-margin-end: 4px;
 }
