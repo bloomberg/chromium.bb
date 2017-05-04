@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_watcher/postmortem_report_extractor.h"
+#include "components/browser_watcher/stability_report_extractor.h"
 
 #include <memory>
 #include <string>
