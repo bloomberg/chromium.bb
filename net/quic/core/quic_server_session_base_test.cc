@@ -80,8 +80,6 @@ class TestServerSession : public QuicServerSessionBase {
   ~TestServerSession() override { delete connection(); };
 
  protected:
-  // TODO(ckrasic) - for two below, remove when
-  // quic_reloadable_flag_quic_refactor_stream_creation is deprecated.
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override {
     if (!ShouldCreateIncomingDynamicStream(id)) {
       return nullptr;
@@ -102,10 +100,6 @@ class TestServerSession : public QuicServerSessionBase {
     stream->SetPriority(priority);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
-  }
-
-  std::unique_ptr<QuicStream> CreateStream(QuicStreamId id) override {
-    return QuicMakeUnique<QuicSimpleServerStream>(id, this, response_cache_);
   }
 
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
@@ -157,14 +151,6 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<QuicVersion> {
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
   }
 
-  QuicStreamId GetNthClientInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session_, n);
-  }
-
-  QuicStreamId GetNthServerInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(*session_, n);
-  }
-
   StrictMock<MockQuicSessionVisitor> owner_;
   StrictMock<MockQuicCryptoServerStreamHelper> stream_helper_;
   MockQuicConnectionHelper helper_;
@@ -212,17 +198,16 @@ TEST_P(QuicServerSessionBaseTest, ServerPushDisabledByDefault) {
 TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
-  QuicStreamFrame data1(GetNthClientInitiatedId(0), false, 0,
-                        QuicStringPiece("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, QuicStringPiece("HT"));
   session_->OnStreamFrame(data1);
   EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
 
   // Send a reset (and expect the peer to send a RST in response).
-  QuicRstStreamFrame rst1(GetNthClientInitiatedId(0),
-                          QUIC_ERROR_PROCESSING_STREAM, 0);
+  QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM,
+                          0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT, 0));
+  EXPECT_CALL(*connection_,
+              SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
@@ -236,17 +221,16 @@ TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
 
 TEST_P(QuicServerSessionBaseTest, NeverOpenStreamDueToReset) {
   // Send a reset (and expect the peer to send a RST in response).
-  QuicRstStreamFrame rst1(GetNthClientInitiatedId(0),
-                          QUIC_ERROR_PROCESSING_STREAM, 0);
+  QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM,
+                          0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT, 0));
+  EXPECT_CALL(*connection_,
+              SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
   // Send two bytes of payload.
-  QuicStreamFrame data1(GetNthClientInitiatedId(0), false, 0,
-                        QuicStringPiece("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, QuicStringPiece("HT"));
   visitor_->OnStreamFrame(data1);
 
   // The stream should never be opened, now that the reset is received.
@@ -256,29 +240,26 @@ TEST_P(QuicServerSessionBaseTest, NeverOpenStreamDueToReset) {
 
 TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
   // Send (empty) compressed headers followed by two bytes of data.
-  QuicStreamFrame frame1(GetNthClientInitiatedId(0), false, 0,
+  QuicStreamFrame frame1(kClientDataStreamId1, false, 0,
                          QuicStringPiece("\1\0\0\0\0\0\0\0HT"));
-  QuicStreamFrame frame2(GetNthClientInitiatedId(1), false, 0,
+  QuicStreamFrame frame2(kClientDataStreamId2, false, 0,
                          QuicStringPiece("\2\0\0\0\0\0\0\0HT"));
   visitor_->OnStreamFrame(frame1);
   visitor_->OnStreamFrame(frame2);
   EXPECT_EQ(2u, session_->GetNumOpenIncomingStreams());
 
   // Send a reset (and expect the peer to send a RST in response).
-  QuicRstStreamFrame rst(GetNthClientInitiatedId(0),
-                         QUIC_ERROR_PROCESSING_STREAM, 0);
+  QuicRstStreamFrame rst(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT, 0));
+  EXPECT_CALL(*connection_,
+              SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst);
 
   // If we were tracking, we'd probably want to reject this because it's data
   // past the reset point of stream 3.  As it's a closed stream we just drop the
   // data on the floor, but accept the packet because it has data for stream 5.
-  QuicStreamFrame frame3(GetNthClientInitiatedId(0), false, 2,
-                         QuicStringPiece("TP"));
-  QuicStreamFrame frame4(GetNthClientInitiatedId(1), false, 2,
-                         QuicStringPiece("TP"));
+  QuicStreamFrame frame3(kClientDataStreamId1, false, 2, QuicStringPiece("TP"));
+  QuicStreamFrame frame4(kClientDataStreamId2, false, 2, QuicStringPiece("TP"));
   visitor_->OnStreamFrame(frame3);
   visitor_->OnStreamFrame(frame4);
   // The stream should never be opened, now that the reset is received.
@@ -300,23 +281,23 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
   EXPECT_EQ(kMaxStreamsForTest + kMaxStreamsMinimumIncrement,
             session_->max_open_incoming_streams());
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
-  QuicStreamId stream_id = GetNthClientInitiatedId(0);
+  QuicStreamId stream_id = kClientDataStreamId1;
   // Open the max configured number of streams, should be no problem.
   for (size_t i = 0; i < kMaxStreamsForTest; ++i) {
     EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
         session_.get(), stream_id));
-    stream_id += QuicSpdySessionPeer::NextStreamId(*session_);
+    stream_id += 2;
   }
 
   // Open more streams: server should accept slightly more than the limit.
   for (size_t i = 0; i < kMaxStreamsMinimumIncrement; ++i) {
     EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
         session_.get(), stream_id));
-    stream_id += QuicSpdySessionPeer::NextStreamId(*session_);
+    stream_id += 2;
   }
 
   // Now violate the server's internal stream limit.
-  stream_id += QuicSpdySessionPeer::NextStreamId(*session_);
+  stream_id += 2;
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   EXPECT_CALL(*connection_, SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0));
   // Even if the connection remains open, the stream creation should fail.
@@ -340,12 +321,11 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableStreams) {
 
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
   EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
-      session_.get(), GetNthClientInitiatedId(0)));
+      session_.get(), kClientDataStreamId1));
 
   // Establish available streams up to the server's limit.
-  QuicStreamId next_id = QuicSpdySessionPeer::NextStreamId(*session_);
   const int kLimitingStreamId =
-      GetNthClientInitiatedId(kAvailableStreamLimit + 1);
+      kClientDataStreamId1 + (kAvailableStreamLimit)*2 + 2;
   EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
       session_.get(), kLimitingStreamId));
 
@@ -355,7 +335,7 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableStreams) {
   // This forces stream kLimitingStreamId + 2 to become available, which
   // violates the quota.
   EXPECT_FALSE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
-      session_.get(), kLimitingStreamId + 2 * next_id));
+      session_.get(), kLimitingStreamId + 4));
 }
 
 // TODO(ckrasic): remove this when
@@ -375,21 +355,15 @@ TEST_P(QuicServerSessionBaseTest, GetEvenIncomingError) {
   // Incoming streams on the server session must be odd.
   EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
   EXPECT_EQ(nullptr, QuicServerSessionBasePeer::GetOrCreateDynamicStream(
-                         session_.get(), GetNthServerInitiatedId(0)));
+                         session_.get(), 4));
 }
 
 TEST_P(QuicServerSessionBaseTest, GetStreamDisconnected) {
   // Don't create new streams if the connection is disconnected.
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
-  if (FLAGS_quic_reloadable_flag_quic_refactor_stream_creation) {
-    EXPECT_EQ(nullptr, QuicServerSessionBasePeer::GetOrCreateDynamicStream(
-                           session_.get(), GetNthClientInitiatedId(0)));
-  } else {
-    EXPECT_QUIC_BUG(
-        QuicServerSessionBasePeer::GetOrCreateDynamicStream(
-            session_.get(), GetNthClientInitiatedId(0)),
-        "ShouldCreateIncomingDynamicStream called when disconnected");
-  }
+  EXPECT_QUIC_BUG(
+      QuicServerSessionBasePeer::GetOrCreateDynamicStream(session_.get(), 5),
+      "ShouldCreateIncomingDynamicStream called when disconnected");
 }
 
 class MockQuicCryptoServerStream : public QuicCryptoServerStream {
