@@ -637,8 +637,8 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
           .Times(1)
           .RetiresOnSaturation();
     }
-
-    if (!enable_es3 && !strstr(extensions, "GL_EXT_color_buffer_half_float")) {
+    if (!enable_es3 && !strstr(extensions, "GL_EXT_color_buffer_half_float") &&
+        (gl_info.is_es || gl_info.IsAtLeastGL(3, 0))) {
       EXPECT_CALL(
           *gl,
           TexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width, 0, GL_RED, _, _))
