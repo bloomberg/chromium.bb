@@ -143,9 +143,11 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
   // incorrect when another frame is targeting this frame. Need to refine this
   // logic after the true initiator details are added to NavigationHandle
   // (https://crbug.com/651895).
+  int current_process_id =
+      navigation_handle->GetStartingSiteInstance()->GetProcess()->GetID();
   content::RenderFrameHost* current_frame_host =
       navigation_handle->GetWebContents()->FindFrameByFrameTreeNodeId(
-          nav_event->frame_id);
+          nav_event->frame_id, current_process_id);
   // For browser initiated navigation (e.g. from address bar or bookmark), we
   // don't fill the source_url to prevent attributing navigation to the last
   // committed navigation.

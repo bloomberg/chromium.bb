@@ -82,9 +82,10 @@ class CONTENT_EXPORT NavigationHandle {
   // stays constant for the lifetime of the frame.
   virtual int GetFrameTreeNodeId() = 0;
 
-  // Returns the FrameTreeNode ID for the parent frame. If this navigation is
-  // taking place in the main frame, the value returned is -1.
-  virtual int GetParentFrameTreeNodeId() = 0;
+  // Returns the RenderFrameHost for the parent frame, or nullptr if this
+  // navigation is taking place in the main frame. This value will not change
+  // during a navigation.
+  virtual RenderFrameHost* GetParentFrame() = 0;
 
   // The WebContents the navigation is taking place in.
   WebContents* GetWebContents();
