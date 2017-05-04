@@ -9,6 +9,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -55,8 +56,57 @@ bool TranslateURLFetcher::Request(
   if (request_context_getter == nullptr)
     return false;
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("translate_url_fetcher", R"(
+        semantics {
+          sender: "Translate"
+          description:
+            "Chrome can provide translations for the web sites visited by the "
+            "user. If this feature is enabled, Chrome sends network requests "
+            "to download the list of supported languages, a library to perform "
+            "translations, and a predictive model to know when to offer "
+            "translation."
+          trigger:
+            "When Chrome starts, it downloads the list of supported langagues "
+            "for translation, and a predictive model to infer whether a "
+            "translation from the detected language to some other language "
+            "would be useful/accepted by the user. The model is cached and the "
+            "link to the latest model is provided by field study. If the "
+            "latest model is already cached, it is not fetched. The first time "
+            "the model decides to offer translation of a web site, it triggers "
+            "a popup to ask if user wants a translation and if user approves, "
+            "translation library is downloaded. The library is cached for a "
+            "day and is not fetched if it is available and fresh."
+          data:
+            "Current locale is sent to fetch the list of supported lanaguges. "
+            "Translation library that is obtained via this interface would "
+            "perform actual translation, and it will send words and phrases in "
+            "the site to the server to translate it, but this request doesn't "
+            "send any words."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable/disable this feature by toggling 'Offer to "
+            "translate pages that aren't in a language you read.' in Chrome "
+            "settings under Languages. The list of supported languages is "
+            "downloaded regardless of the settings."
+          chrome_policy {
+            TranslateEnabled {
+              policy_options {mode: MANDATORY}
+              TranslateEnabled: false
+            }
+          }
+          policy_exception_justification:
+            "There is no policy for disabling download of the list of "
+            "supported languages. It is considered not required as the list is "
+            "needed for rendering user interfaces, and Chrome does not send "
+            "privacy/security sensitive data to the server on downloading it."
+        })");
   // Create and initialize the URL fetcher.
-  fetcher_ = net::URLFetcher::Create(id_, url_, net::URLFetcher::GET, this);
+  fetcher_ = net::URLFetcher::Create(id_, url_, net::URLFetcher::GET, this,
+                                     traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::TRANSLATE);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
