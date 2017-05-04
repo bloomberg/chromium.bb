@@ -5087,13 +5087,13 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-  // We should have one render surface and two layers. The child
-  // layer should be included even though it is transparent.
+  // We should have one render surface and one layer. The child
+  // layer should not be included as its transparent.
   ASSERT_EQ(1u, render_surface_list.size());
-  ASSERT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, root_layer->GetRenderSurface()->num_contributors());
 
-  // If the root itself is hidden, the child should not be drawn even if it has
-  // an animating opacity.
+  // If the root itself is hidden, the child should not be drawn and should not
+  // raster even if it has an animating opacity.
   root_layer->test_properties()->opacity = 0.0f;
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   RenderSurfaceList render_surface_list2;
@@ -5103,13 +5103,11 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs2);
 
   LayerImpl* child_ptr = root_layer->layer_tree_impl()->LayerById(2);
-  EffectTree& tree =
-      root_layer->layer_tree_impl()->property_trees()->effect_tree;
-  EffectNode* node = tree.Node(child_ptr->effect_tree_index());
-  EXPECT_FALSE(node->is_drawn);
+  EXPECT_FALSE(child_ptr->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_ptr->raster_even_if_not_in_rsll());
 
-  // A layer should be drawn and it should contribute to drawn surface when
-  // it has animating opacity even if it has opacity 0.
+  // The child layer should not be drawn as its transparent but should raster
+  // as its opacity is animating.
   root_layer->test_properties()->opacity = 1.0f;
   child_ptr->test_properties()->opacity = 0.0f;
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -5120,27 +5118,19 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs3);
 
   child_ptr = root_layer->layer_tree_impl()->LayerById(2);
-  tree = root_layer->layer_tree_impl()->property_trees()->effect_tree;
-  node = tree.Node(child_ptr->effect_tree_index());
-  EXPECT_TRUE(node->is_drawn);
-  EXPECT_TRUE(tree.ContributesToDrawnSurface(child_ptr->effect_tree_index()));
+  EXPECT_FALSE(child_ptr->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child_ptr->raster_even_if_not_in_rsll());
 
-  // But if the opacity of the layer remains 0 after activation, it should not
-  // be drawn.
+  // The child layer should not be drawn as its transparent but should raster
+  // as its opacity is animating even after activation.
   host_impl.ActivateSyncTree();
   LayerImpl* active_root = host_impl.active_tree()->LayerById(root_layer->id());
   LayerImpl* active_child = host_impl.active_tree()->LayerById(child_ptr->id());
 
-  EffectTree& active_effect_tree =
-      host_impl.active_tree()->property_trees()->effect_tree;
-  EXPECT_TRUE(active_effect_tree.needs_update());
-
   ExecuteCalculateDrawProperties(active_root);
 
-  node = active_effect_tree.Node(active_child->effect_tree_index());
-  EXPECT_FALSE(node->is_drawn);
-  EXPECT_FALSE(active_effect_tree.ContributesToDrawnSurface(
-      active_child->effect_tree_index()));
+  EXPECT_FALSE(active_child->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(active_child->raster_even_if_not_in_rsll());
 }
 
 using LCDTextTestParam = std::tr1::tuple<bool, bool, bool>;
