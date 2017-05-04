@@ -484,6 +484,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
         updateAssistMenuItem(descriptor);
 
+        // TODO(ctzsm): Remove "paste as plain text" for now, need to add it back when
+        // crrev.com/2785853002 landed.
+        descriptor.removeItem(R.id.select_action_menu_paste_as_plain_text);
+
         if (!isSelectionEditable() || !canPaste()) {
             descriptor.removeItem(R.id.select_action_menu_paste);
         }
