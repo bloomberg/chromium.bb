@@ -12,4 +12,8 @@ source_set("app_current_window_internal") {
     "//content/public/browser",
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

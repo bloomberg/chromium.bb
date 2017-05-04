@@ -25,4 +25,8 @@ source_set("file_handlers") {
     "//net",
     "//storage/browser",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

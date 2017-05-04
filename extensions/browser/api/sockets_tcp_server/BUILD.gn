@@ -15,4 +15,8 @@ source_set("sockets_tcp_server") {
     "//content/public/common",
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

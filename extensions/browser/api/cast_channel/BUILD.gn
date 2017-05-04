@@ -28,4 +28,8 @@ source_set("cast_channel") {
     "//extensions/common/api/cast_channel:cast_channel_proto",
     "//net",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

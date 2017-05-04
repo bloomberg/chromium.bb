@@ -16,4 +16,8 @@ source_set("serial") {
     "//device/serial",
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

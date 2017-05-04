@@ -23,4 +23,8 @@ source_set("declarative_webrequest") {
     "//extensions/common/api",
     "//third_party/re2",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

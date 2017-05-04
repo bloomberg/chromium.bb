@@ -18,4 +18,8 @@ source_set("sockets_udp") {
   deps = [
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

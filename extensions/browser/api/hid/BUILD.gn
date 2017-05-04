@@ -22,4 +22,8 @@ source_set("hid") {
     "//content/public/common",
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }
