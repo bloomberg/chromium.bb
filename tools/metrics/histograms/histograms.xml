@@ -58416,7 +58416,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     time spent on running tasks.
 
     This metric is emitted when the renderer main thread task is completed or
-    renderer is backgrounded or foregrounded, at most once per second per
+    renderer is backgrounded or foregrounded, at most once per minute per
     renderer amortized.
   </summary>
 </histogram>
@@ -58437,7 +58437,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     time spent on running tasks.
 
     This metric is emitted when the renderer main thread task is completed or
-    renderer is backgrounded or foregrounded, at most once per second per
+    renderer is backgrounded or foregrounded, at most once per minute per
     renderer amortized.
   </summary>
 </histogram>
