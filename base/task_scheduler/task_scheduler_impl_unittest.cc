@@ -26,7 +26,17 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_POSIX)
+#include <unistd.h>
+
+#include "base/debug/leak_annotations.h"
+#include "base/files/file_descriptor_watcher_posix.h"
+#include "base/files/file_util.h"
+#include "base/posix/eintr_wrapper.h"
+#endif  // defined(OS_POSIX)
 
 #if defined(OS_WIN)
 #include <objbase.h>
@@ -446,6 +456,75 @@ TEST_F(TaskSchedulerImplTest, COMSTATaskRunnersRunWithCOMSTA) {
   task_ran.Wait();
 }
 #endif  // defined(OS_WIN)
+
+TEST_F(TaskSchedulerImplTest, DelayedTasksNotRunAfterShutdown) {
+  StartTaskScheduler();
+  // As with delayed tasks in general, this is racy. If the task does happen to
+  // run after Shutdown within the timeout, it will fail this test.
+  //
+  // The timeout should be set sufficiently long enough to ensure that the
+  // delayed task did not run. 2x is generally good enough.
+  //
+  // A non-racy way to do this would be to post two sequenced tasks:
+  // 1) Regular Post Task: A WaitableEvent.Wait
+  // 2) Delayed Task: ADD_FAILURE()
+  // and signalling the WaitableEvent after Shutdown() on a different thread
+  // since Shutdown() will block. However, the cost of managing this extra
+  // thread was deemed to be too great for the unlikely race.
+  scheduler_.PostDelayedTaskWithTraits(FROM_HERE, TaskTraits(),
+                                       BindOnce([]() { ADD_FAILURE(); }),
+                                       TestTimeouts::tiny_timeout());
+  scheduler_.Shutdown();
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout() * 2);
+}
+
+#if defined(OS_POSIX)
+
+TEST_F(TaskSchedulerImplTest, FileDescriptorWatcherNoOpsAfterShutdown) {
+  StartTaskScheduler();
+
+  int pipes[2];
+  ASSERT_EQ(0, pipe(pipes));
+
+  scoped_refptr<TaskRunner> blocking_task_runner =
+      scheduler_.CreateSequencedTaskRunnerWithTraits(
+          TaskTraits().WithShutdownBehavior(
+              TaskShutdownBehavior::BLOCK_SHUTDOWN));
+  blocking_task_runner->PostTask(
+      FROM_HERE,
+      BindOnce(
+          [](int read_fd) {
+            std::unique_ptr<FileDescriptorWatcher::Controller> controller =
+                FileDescriptorWatcher::WatchReadable(
+                    read_fd, BindRepeating([]() { NOTREACHED(); }));
+
+            // This test is for components that intentionally leak their
+            // watchers at shutdown. We can't clean |controller| up because its
+            // destructor will assert that it's being called from the correct
+            // sequence. After the task scheduler is shutdown, it is not
+            // possible to run tasks on this sequence.
+            //
+            // Note: Do not inline the controller.release() call into the
+            //       ANNOTATE_LEAKING_OBJECT_PTR as the annotation is removed
+            //       by the preprocessor in non-LEAK_SANITIZER builds,
+            //       effectively breaking this test.
+            ANNOTATE_LEAKING_OBJECT_PTR(controller.get());
+            controller.release();
+          },
+          pipes[0]));
+
+  scheduler_.Shutdown();
+
+  constexpr char kByte = '!';
+  ASSERT_TRUE(WriteFileDescriptor(pipes[1], &kByte, sizeof(kByte)));
+
+  // Give a chance for the file watcher to fire before closing the handles.
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  EXPECT_EQ(0, IGNORE_EINTR(close(pipes[0])));
+  EXPECT_EQ(0, IGNORE_EINTR(close(pipes[1])));
+}
+#endif  // defined(OS_POSIX)
 
 }  // namespace internal
 }  // namespace base
