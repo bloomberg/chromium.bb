@@ -197,8 +197,7 @@ class TestHelper {
       const UniformMap* const expected_uniform_map,
       const VaryingMap* const expected_varying_map,
       const InterfaceBlockMap* const expected_interface_block_map,
-      const OutputVariableList* const expected_output_variable_list,
-      const NameMap* const expected_name_map);
+      const OutputVariableList* const expected_output_variable_list);
 
   static void SetShaderStates(::gl::MockGLInterface* gl,
                               Shader* shader,

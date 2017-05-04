@@ -1123,8 +1123,7 @@ void TestHelper::SetShaderStates(
     const UniformMap* const expected_uniform_map,
     const VaryingMap* const expected_varying_map,
     const InterfaceBlockMap* const expected_interface_block_map,
-    const OutputVariableList* const expected_output_variable_list,
-    const NameMap* const expected_name_map) {
+    const OutputVariableList* const expected_output_variable_list) {
   const std::string empty_log_info;
   const std::string* log_info = (expected_log_info && !expected_valid) ?
       expected_log_info : &empty_log_info;
@@ -1153,9 +1152,6 @@ void TestHelper::SetShaderStates(
       (expected_output_variable_list && expected_valid)
           ? expected_output_variable_list
           : &empty_output_variable_list;
-  const NameMap empty_name_map;
-  const NameMap* name_map = (expected_name_map && expected_valid) ?
-      expected_name_map : &empty_name_map;
 
   MockShaderTranslator* mock_translator = new MockShaderTranslator;
   scoped_refptr<ShaderTranslatorInterface> translator(mock_translator);
@@ -1167,8 +1163,7 @@ void TestHelper::SetShaderStates(
                                           NotNull(),   // uniform_map
                                           NotNull(),   // varying_map
                                           NotNull(),   // interface_block_map
-                                          NotNull(),   // output_variable_list
-                                          NotNull()))  // name_map
+                                          NotNull()))  // output_variable_list
       .WillOnce(DoAll(SetArgumentPointee<1>(*log_info),
                       SetArgumentPointee<2>(*translated_source),
                       SetArgumentPointee<3>(*shader_version),
@@ -1177,7 +1172,7 @@ void TestHelper::SetShaderStates(
                       SetArgumentPointee<6>(*varying_map),
                       SetArgumentPointee<7>(*interface_block_map),
                       SetArgumentPointee<8>(*output_variable_list),
-                      SetArgumentPointee<9>(*name_map), Return(expected_valid)))
+                      Return(expected_valid)))
       .RetiresOnSaturation();
   if (expected_valid) {
     EXPECT_CALL(*gl, ShaderSource(shader->service_id(), 1, _, NULL))
@@ -1201,7 +1196,7 @@ void TestHelper::SetShaderStates(::gl::MockGLInterface* gl,
                                  Shader* shader,
                                  bool valid) {
   SetShaderStates(gl, shader, valid, nullptr, nullptr, nullptr, nullptr,
-                  nullptr, nullptr, nullptr, nullptr, nullptr);
+                  nullptr, nullptr, nullptr, nullptr);
 }
 
 // static

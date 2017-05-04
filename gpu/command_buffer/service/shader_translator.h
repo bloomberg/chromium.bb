@@ -27,8 +27,6 @@ typedef std::vector<sh::OutputVariable> OutputVariableList;
 typedef base::hash_map<std::string, sh::Uniform> UniformMap;
 typedef base::hash_map<std::string, sh::Varying> VaryingMap;
 typedef base::hash_map<std::string, sh::InterfaceBlock> InterfaceBlockMap;
-// Mapping between hashed name and original name.
-typedef base::hash_map<std::string, std::string> NameMap;
 
 // Translates a GLSL ES 2.0 shader to desktop GLSL shader, or just
 // validates GLSL ES 2.0 shaders on a true GLSL ES implementation.
@@ -59,8 +57,7 @@ class ShaderTranslatorInterface
                          UniformMap* uniform_map,
                          VaryingMap* varying_map,
                          InterfaceBlockMap* interface_block_map,
-                         OutputVariableList* output_variable_list,
-                         NameMap* name_map) const = 0;
+                         OutputVariableList* output_variable_list) const = 0;
 
   // Return a string that is unique for a specfic set of options that would
   // possibly affect compilation.
@@ -112,8 +109,7 @@ class GPU_EXPORT ShaderTranslator
                  UniformMap* uniform_map,
                  VaryingMap* varying_map,
                  InterfaceBlockMap* interface_block_map,
-                 OutputVariableList* output_variable_list,
-                 NameMap* name_map) const override;
+                 OutputVariableList* output_variable_list) const override;
 
   std::string GetStringForOptionsThatWouldAffectCompilation() const override;
 
