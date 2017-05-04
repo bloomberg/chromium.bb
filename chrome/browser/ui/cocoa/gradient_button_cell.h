@@ -64,7 +64,6 @@ typedef enum {
   base::scoped_nsobject<NSGradient> gradient_;
   gradient_button_cell::PulseState pulseState_;
   CGFloat outerStrokeAlphaMult_;  // For pulsing.
-  base::scoped_nsobject<NSImage> overlayImage_;
 }
 
 // Turn off theming.  Temporary work-around.
@@ -122,10 +121,6 @@ typedef enum {
 - (BOOL)isMaterialDesignButtonType;
 
 @property(assign, nonatomic) CGFloat hoverAlpha;
-
-// An image that will be drawn after the normal content of the button cell,
-// overlaying it.  Never themed.
-@property(retain, nonatomic) NSImage* overlayImage;
 
 @end
 

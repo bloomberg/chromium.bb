@@ -285,15 +285,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   shouldTheme_ = shouldTheme;
 }
 
-- (NSImage*)overlayImage {
-  return overlayImage_.get();
-}
-
-- (void)setOverlayImage:(NSImage*)image {
-  overlayImage_.reset([image retain]);
-  [[self controlView] setNeedsDisplay:YES];
-}
-
 - (NSBackgroundStyle)interiorBackgroundStyle {
   // Never lower the interior, since that just leads to a weird shadow which can
   // often interact badly with the theme.
@@ -681,17 +672,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     // positioning of the control in the xib.
     [super drawInteriorWithFrame:NSOffsetRect(cellFrame, 0, lineWidth)
                           inView:controlView];
-  }
-
-  if (overlayImage_) {
-    NSRect imageRect = NSZeroRect;
-    imageRect.size = [overlayImage_ size];
-    [overlayImage_ drawInRect:[self imageRectForBounds:cellFrame]
-                     fromRect:imageRect
-                    operation:NSCompositeSourceOver
-                     fraction:[self isEnabled] ? 1.0 : 0.5
-               respectFlipped:YES
-                        hints:nil];
   }
 }
 
