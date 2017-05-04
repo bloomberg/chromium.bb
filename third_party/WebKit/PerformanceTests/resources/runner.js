@@ -145,7 +145,7 @@ if (window.testRunner) {
     };
 
     function start(test, scheduler, runner) {
-        if (!test) {
+        if (!test || !runner) {
             PerfTestRunner.logFatalError("Got a bad test object.");
             return;
         }
@@ -170,24 +170,36 @@ if (window.testRunner) {
         if (test.doNotIgnoreInitialRun)
             completedIterations++;
 
-        if (runner && test.tracingCategories && window.testRunner &&
-            window.testRunner.supportTracing) {
-            window.testRunner.startTracing(test.tracingCategories, function() {
+        if (!test.tracingCategories) {
+            scheduleNextRun(scheduler, runner);
+            return;
+        }
+
+        if (window.testRunner && window.testRunner.supportTracing) {
+            testRunner.startTracing(test.tracingCategories, function() {
                 scheduleNextRun(scheduler, runner);
             });
-        } else if (runner) {
-            if (test.tracingCategories && !(window.testRuner &&
-                  window.testRunner.supportTracing)) {
-                PerfTestRunner.log("Tracing based metrics are specified but " +
-                    "tracing is not supported on this platform. To get those " +
-                    "metrics from this test, you can run the test using " +
-                    "tools/perf/run_benchmarks script.");
-            }
-            scheduleNextRun(scheduler, runner);
+            return;
         }
+
+        PerfTestRunner.log("Tracing based metrics are specified but " +
+            "tracing is not supported on this platform. To get those " +
+            "metrics from this test, you can run the test using " +
+            "tools/perf/run_benchmarks script.");
+        scheduleNextRun(scheduler, runner);
     }
 
     function scheduleNextRun(scheduler, runner) {
+        if (!scheduler) {
+            // This is an async measurement test which has its own scheduler.
+            try {
+                runner();
+            } catch (exception) {
+                PerfTestRunner.logFatalError("Got an exception while running test.run with name=" + exception.name + ", message=" + exception.message);
+            }
+            return;
+        }
+
         scheduler(function () {
             // This will be used by tools/perf/benchmarks/blink_perf.py to find
             // traces during the measured runs.
@@ -264,9 +276,9 @@ if (window.testRunner) {
         }
     }
 
-    PerfTestRunner.prepareToMeasureValuesAsync = function (test) {
+    PerfTestRunner.startMeasureValuesAsync = function (test) {
         PerfTestRunner.unit = test.unit;
-        start(test);
+        start(test, undefined, function() { test.run() });
     }
 
     PerfTestRunner.measureValueAsync = function (measuredValue) {

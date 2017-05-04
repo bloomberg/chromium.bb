@@ -9,26 +9,29 @@ iframe.style.display = "none";  // Prevent creation of the rendering tree, so we
 iframe.sandbox = '';  // Prevent external script loads which could cause write() to return before completing the parse.
 document.body.appendChild(iframe);
 
-PerfTestRunner.prepareToMeasureValuesAsync({
-    description: "Measures performance of the threaded HTML parser (if available).",
-    done: onCompletedRun,
-    unit: 'ms'
-});
-
-iframe.onload = function() {
-    var now = PerfTestRunner.now();
-    PerfTestRunner.measureValueAsync(now - then);
-    then = now;
-    iframe.src = specURL;
-}
-var then = PerfTestRunner.now();
-iframe.src = specURL;
-
 function onCompletedRun() {
     iframe.onload = null;
     // FIXME: This should probably remove the iframe, but that currently
     // causes the threaded-parser to never send the load event for the main page.
     // document.body.removeChild(iframe);
 }
+
+
+PerfTestRunner.startMeasureValuesAsync({
+    description: "Measures performance of the threaded HTML parser (if available).",
+    done: onCompletedRun,
+    unit: 'ms',
+    run: function() {
+        iframe.onload = function() {
+            var now = PerfTestRunner.now();
+            PerfTestRunner.measureValueAsync(now - then);
+            then = now;
+            iframe.src = specURL;
+        }
+        var then = PerfTestRunner.now();
+        iframe.src = specURL;
+    }
+});
+
 </script>
 </body>

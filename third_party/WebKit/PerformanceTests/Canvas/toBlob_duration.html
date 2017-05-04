@@ -39,14 +39,16 @@ function runTest(myCanvas) {
 
 window.onload = function () {
     canvas_idle = createCanvas4kBy4k("canvas_idle");
-    PerfTestRunner.prepareToMeasureValuesAsync({
+    PerfTestRunner.startMeasureValuesAsync({
         unit: 'ms',
         done: function () {
             isDone = true;
         },
-        description: "Measures performance of canvas." 
+        run: function() {
+            runTest(canvas_idle);
+        },
+        description: "Measures performance of canvas."
     });
-    runTest(canvas_idle);
 };
 </script>
 </body>

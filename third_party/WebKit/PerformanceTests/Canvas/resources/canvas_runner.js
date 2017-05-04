@@ -9,14 +9,18 @@
     var CanvasRunner = {};
 
     CanvasRunner.start = function (test) {
-        PerfTestRunner.prepareToMeasureValuesAsync({unit: 'runs/s',
-            description: test.description, done: testDone});
-        if (!test.doRun) {
-            CanvasRunner.logFatalError("doRun must be set.");
-            return;
-        }
-        currentTest = test;
-        runTest();
+        PerfTestRunner.startMeasureValuesAsync({
+            unit: 'runs/s',
+            description: test.description,
+            done: testDone,
+            run: function() {
+                if (!test.doRun) {
+                    CanvasRunner.logFatalError("doRun must be set.");
+                    return;
+                }
+                currentTest = test;
+                runTest();
+            }});
     }
 
     function runTest() {

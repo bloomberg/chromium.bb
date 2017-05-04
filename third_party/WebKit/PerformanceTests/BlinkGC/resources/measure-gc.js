@@ -14,9 +14,11 @@ if (!window.GCController && !window.gc)
             test.unit = 'ms';
         if (!test.warmUpCount)
             test.warmUpCount = warmUpCount;
+        if (!test.run)
+            test.run = function() {};
 
         completedIterations = 0;
-        PerfTestRunner.prepareToMeasureValuesAsync(test);
+        PerfTestRunner.startMeasureValuesAsync(test);
 
         // Force a V8 GC before running Blink GC test to avoid measuring marking from stale V8 wrappers.
         if (window.GCController)
