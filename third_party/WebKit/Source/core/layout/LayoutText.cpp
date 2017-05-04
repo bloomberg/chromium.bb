@@ -485,8 +485,7 @@ void LayoutText::AbsoluteQuads(Vector<FloatQuad>& quads,
 
 void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
                                        unsigned start,
-                                       unsigned end,
-                                       bool use_selection_height) const {
+                                       unsigned end) const {
   // Work around signed/unsigned issues. This function takes unsigneds, and is
   // often passed UINT_MAX to mean "all the way to the end". InlineTextBox
   // coordinates are unsigneds, so changing this function to take ints causes
@@ -517,16 +516,6 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     // past it
     if (start <= box->Start() && box->end() < end) {
       LayoutRect r(box->FrameRect());
-      if (use_selection_height) {
-        LayoutRect selection_rect = box->LocalSelectionRect(start, end);
-        if (box->IsHorizontal()) {
-          r.SetHeight(selection_rect.Height());
-          r.SetY(selection_rect.Y());
-        } else {
-          r.SetWidth(selection_rect.Width());
-          r.SetX(selection_rect.X());
-        }
-      }
       if (!has_checked_box_in_range) {
         has_checked_box_in_range = true;
         quads.clear();
@@ -534,8 +523,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       quads.push_back(LocalToAbsoluteQuad(FloatRect(r)));
     } else if ((box->Start() <= start && start <= box->end()) ||
                (box->Start() < end && end <= box->end())) {
-      FloatRect rect =
-          LocalQuadForTextBox(box, start, end, use_selection_height);
+      FloatRect rect = LocalQuadForTextBox(box, start, end, false);
       if (!rect.IsZero()) {
         if (!has_checked_box_in_range) {
           has_checked_box_in_range = true;
@@ -546,8 +534,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     } else if (!has_checked_box_in_range) {
       // consider when the offset of range is area of leading or trailing
       // whitespace
-      FloatRect rect =
-          LocalQuadForTextBox(box, start, end, use_selection_height);
+      FloatRect rect = LocalQuadForTextBox(box, start, end, false);
       if (!rect.IsZero())
         quads.push_back(LocalToAbsoluteQuad(rect).EnclosingBoundingBox());
     }

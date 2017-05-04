@@ -1485,8 +1485,7 @@ IntRect Range::BoundingBox() const {
   return result;
 }
 
-void Range::TextQuads(Vector<FloatQuad>& quads,
-                      bool use_selection_height) const {
+void Range::TextQuads(Vector<FloatQuad>& quads) const {
   Node* start_container = &start_.Container();
   DCHECK(start_container);
   Node* end_container = &end_.Container();
@@ -1503,8 +1502,7 @@ void Range::TextQuads(Vector<FloatQuad>& quads,
     unsigned end_offset = node == end_container
                               ? end_.Offset()
                               : std::numeric_limits<unsigned>::max();
-    layout_text->AbsoluteQuadsForRange(quads, start_offset, end_offset,
-                                       use_selection_height);
+    layout_text->AbsoluteQuadsForRange(quads, start_offset, end_offset);
   }
 }
 
