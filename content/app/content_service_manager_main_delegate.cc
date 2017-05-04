@@ -9,6 +9,7 @@
 #include "content/public/app/content_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "services/service_manager/runner/common/client_util.h"
 
 namespace content {
 
@@ -49,6 +50,16 @@ void ContentServiceManagerMainDelegate::ShutDownEmbedderProcess() {
 service_manager::ProcessType
 ContentServiceManagerMainDelegate::OverrideProcessType() {
   return content_main_params_.delegate->OverrideProcessType();
+}
+
+void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
+    mojo::edk::Configuration* config) {
+  // If this is the browser process and there's no remote service manager, we
+  // will serve as the global Mojo broker.
+  if (!service_manager::ServiceManagerIsRemote() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kProcessType))
+    config->is_broker_process = true;
 }
 
 std::unique_ptr<base::Value>

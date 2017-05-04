@@ -14,4 +14,5 @@ include_rules = [
   "+gin/v8_initializer.h",
   "+mojo/android/system/mojo_jni_registrar.h",
   "+services/service_manager/embedder",
+  "+services/service_manager/runner/common",
 ]

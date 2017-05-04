@@ -12,8 +12,14 @@ namespace mojo {
 namespace edk {
 
 PendingProcessConnection::PendingProcessConnection()
-    : process_token_(GenerateRandomToken()) {
+    : PendingProcessConnection(Type::kBrokerIntroduction) {}
+
+PendingProcessConnection::PendingProcessConnection(Type type)
+    : type_(type), process_token_(GenerateRandomToken()) {
   DCHECK(internal::g_core);
+
+  // TODO(rockot): Support other process connection types.
+  DCHECK_EQ(Type::kBrokerIntroduction, type_);
 }
 
 PendingProcessConnection::~PendingProcessConnection() {
@@ -27,8 +33,16 @@ ScopedMessagePipeHandle PendingProcessConnection::CreateMessagePipe(
     std::string* token) {
   has_message_pipes_ = true;
   DCHECK(internal::g_core);
+  DCHECK_EQ(Type::kBrokerIntroduction, type_);
   *token = GenerateRandomToken();
   return internal::g_core->CreateParentMessagePipe(*token, process_token_);
+}
+
+ScopedMessagePipeHandle PendingProcessConnection::CreateMessagePipe(
+    const std::string& name) {
+  // TODO(rockot): Implement this.
+  NOTREACHED();
+  return ScopedMessagePipeHandle();
 }
 
 void PendingProcessConnection::Connect(

@@ -11,52 +11,34 @@
 namespace mojo {
 namespace edk {
 
-// A set of constants that the Mojo system internally uses. These values should
-// be consistent across all processes on the same system.
+// A set of configuration parameters that the Mojo system uses internally. The
+// configuration used can be overridden from the default by passing a
+// Configuration into |mojo::edk::Init()|. See embedder.h.
 //
-// In general, there should be no need to change these values from their
-// defaults. However, if you do change them, you must do so before
-// initialization.
+// NOTE: Please ensure that this type remains a simple aggregate of POD fields.
 struct Configuration {
-  // Maximum number of open (Mojo) handles. The default is 1,000,000.
+  // Indicates whether this process should act as the sole broker process within
+  // its graph of interconnected Mojo-embedder processes. This setting is only
+  // relevant in multiprocess environments.
+  bool is_broker_process = false;
+
+  // If |true|, this process will always attempt to allocate shared memory
+  // directly rather than synchronously delegating to a broker process where
+  // applicable.
   //
-  // TODO(vtl): This doesn't count "live" handles, some of which may live in
-  // messages.
-  size_t max_handle_table_size;
+  // This is useful to set in processes which are not acting as the broker but
+  // which are otherwise sufficiently privileged to allocate named shared memory
+  // objects.
+  bool force_direct_shared_memory_allocation = false;
 
-  // Maximum number of active memory mappings. The default is 1,000,000.
-  size_t max_mapping_table_sze;
+  // Maximum number of active memory mappings.
+  size_t max_mapping_table_size = 1000000;
 
-  // Maximum data size of messages sent over message pipes, in bytes. The
-  // default is 4MB.
-  size_t max_message_num_bytes;
+  // Maximum data size of messages sent over message pipes, in bytes.
+  size_t max_message_num_bytes = 256 * 1024 * 1024;
 
-  // Maximum number of handles that can be attached to messages sent over
-  // message pipes. The default is 10,000.
-  size_t max_message_num_handles;
-
-  // Maximum capacity of a data pipe, in bytes. The default is 256MB. This value
-  // must fit into a |uint32_t|. WARNING: If you bump it closer to 2^32, you
-  // must audit all the code to check that we don't overflow (2^31 would
-  // definitely be risky; up to 2^30 is probably okay).
-  size_t max_data_pipe_capacity_bytes;
-
-  // Default data pipe capacity, if not specified explicitly in the creation
-  // options. The default is 1MB.
-  size_t default_data_pipe_capacity_bytes;
-
-  // Alignment for the "start" of the data buffer used by data pipes. (The
-  // alignment of elements will depend on this and the element size.)  The
-  // default is 16 bytes.
-  size_t data_pipe_buffer_alignment_bytes;
-
-  // Maximum size of a single shared memory segment, in bytes. The default is
-  // 1GB.
-  //
-  // TODO(vtl): Set this hard limit appropriately (e.g., higher on 64-bit).
-  // (This will also entail some auditing to make sure I'm not messing up my
-  // checks anywhere.)
-  size_t max_shared_memory_num_bytes;
+  // Maximum size of a single shared memory segment, in bytes.
+  size_t max_shared_memory_num_bytes = 1024 * 1024 * 1024;
 };
 
 }  // namespace edk

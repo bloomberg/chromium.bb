@@ -14,7 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/process/process_handle.h"
+#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
+#include "mojo/edk/system/configuration.h"
+#include "mojo/edk/system/core.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mach_logging.h"
@@ -49,7 +52,6 @@ static_assert(offsetof(Channel::Message::LegacyHeader, message_type) ==
 
 const size_t kReadBufferSize = 4096;
 const size_t kMaxUnusedReadBufferCapacity = 4096;
-const size_t kMaxChannelMessageSize = 256 * 1024 * 1024;
 const size_t kMaxAttachedHandles = 128;
 
 Channel::Message::Message(size_t payload_size, size_t max_handles)
@@ -587,8 +589,9 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
         reinterpret_cast<const Message::LegacyHeader*>(
             read_buffer_->occupied_bytes());
 
+    const size_t kMaxMessageSize = GetConfiguration().max_message_num_bytes;
     if (legacy_header->num_bytes < sizeof(Message::LegacyHeader) ||
-        legacy_header->num_bytes > kMaxChannelMessageSize) {
+        legacy_header->num_bytes > kMaxMessageSize) {
       LOG(ERROR) << "Invalid message size: " << legacy_header->num_bytes;
       return false;
     }

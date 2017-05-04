@@ -23,6 +23,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/broker_host.h"
+#include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/ports_message.h"
 #include "mojo/edk/system/request_context.h"
@@ -233,6 +234,7 @@ void NodeController::ClosePeerConnection(const std::string& peer_token) {
 }
 
 void NodeController::ConnectToParent(ConnectionParams connection_params) {
+  DCHECK(!GetConfiguration().is_broker_process);
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI)
   // Use the bootstrap channel for the broker and receive the node's channel
   // synchronously as the first message from the broker.
@@ -363,12 +365,9 @@ scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI)
   // Shared buffer creation failure is fatal, so always use the broker when we
-  // have one. This does mean that a non-root process that has children will use
-  // the broker for shared buffer creation even though that process is
-  // privileged.
-  if (broker_) {
+  // have one; unless of course the embedder forces us not to.
+  if (!GetConfiguration().force_direct_shared_memory_allocation && broker_)
     return broker_->GetSharedBuffer(num_bytes);
-  }
 #endif
   return PlatformSharedBuffer::Create(num_bytes);
 }
@@ -516,6 +515,9 @@ scoped_refptr<NodeChannel> NodeController::GetParentChannel() {
 }
 
 scoped_refptr<NodeChannel> NodeController::GetBrokerChannel() {
+  if (GetConfiguration().is_broker_process)
+    return nullptr;
+
   ports::NodeName broker_name;
   {
     base::AutoLock lock(broker_lock_);
@@ -657,7 +659,7 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
     // the broker to relay for us.
     scoped_refptr<NodeChannel> broker = GetBrokerChannel();
     if (!peer || !peer->HasRemoteProcessHandle()) {
-      if (broker) {
+      if (!GetConfiguration().is_broker_process && broker) {
         broker->RelayPortsMessage(name, std::move(channel_message));
       } else {
         base::AutoLock lock(broker_lock_);
@@ -671,11 +673,12 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
     // Messages containing Mach ports are always routed through the broker, even
     // if the broker process is the intended recipient.
     bool use_broker = false;
-    {
+    if (!GetConfiguration().is_broker_process) {
       base::AutoLock lock(parent_lock_);
       use_broker = (bootstrap_parent_channel_ ||
                     parent_name_ != ports::kInvalidNodeName);
     }
+
     if (use_broker) {
       scoped_refptr<NodeChannel> broker = GetBrokerChannel();
       if (broker) {
@@ -1051,6 +1054,8 @@ void NodeController::OnBrokerClientAdded(const ports::NodeName& from_node,
 void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
                                           const ports::NodeName& broker_name,
                                           ScopedPlatformHandle broker_channel) {
+  DCHECK(!GetConfiguration().is_broker_process);
+
   // This node should already have a parent in bootstrap mode.
   ports::NodeName parent_name;
   scoped_refptr<NodeChannel> parent;

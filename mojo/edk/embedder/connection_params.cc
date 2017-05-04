@@ -6,17 +6,28 @@
 
 #include <utility>
 
+#include "base/logging.h"
+
 namespace mojo {
 namespace edk {
 
 ConnectionParams::ConnectionParams(ScopedPlatformHandle channel)
-    : channel_(std::move(channel)) {}
+    : ConnectionParams(TransportProtocol::kLegacy, std::move(channel)) {}
 
-ConnectionParams::ConnectionParams(ConnectionParams&& param)
-    : channel_(std::move(param.channel_)) {}
+ConnectionParams::ConnectionParams(TransportProtocol protocol,
+                                   ScopedPlatformHandle channel)
+    : protocol_(protocol), channel_(std::move(channel)) {
+  // TODO(rockot): Support other protocols.
+  DCHECK_EQ(TransportProtocol::kLegacy, protocol);
+}
 
-ConnectionParams& ConnectionParams::operator=(ConnectionParams&& param) {
-  channel_ = std::move(param.channel_);
+ConnectionParams::ConnectionParams(ConnectionParams&& params) {
+  *this = std::move(params);
+}
+
+ConnectionParams& ConnectionParams::operator=(ConnectionParams&& params) {
+  protocol_ = params.protocol_;
+  channel_ = std::move(params.channel_);
   return *this;
 }
 

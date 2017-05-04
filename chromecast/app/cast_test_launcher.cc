@@ -43,7 +43,6 @@ class CastTestLauncherDelegate : public content::TestLauncherDelegate {
 int main(int argc, char** argv) {
   int default_jobs = std::max(1, base::SysInfo::NumberOfProcessors() / 2);
   chromecast::shell::CastTestLauncherDelegate launcher_delegate;
-  mojo::edk::SetMaxMessageSize(IPC::Channel::kMaximumMessageSize);
   mojo::edk::Init();
   return content::LaunchTests(&launcher_delegate, default_jobs, argc, argv);
 }

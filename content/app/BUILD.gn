@@ -30,6 +30,7 @@ template("implement_content_app") {
     "//crypto",
     "//services/service_manager/embedder",
     "//services/service_manager/public/interfaces",
+    "//services/service_manager/runner/common",
     "//mojo/edk/system",
     "//ppapi/features",
     "//ui/base",

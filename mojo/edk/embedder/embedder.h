@@ -16,6 +16,8 @@
 #include "base/memory/shared_memory_handle.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
+#include "mojo/edk/embedder/configuration.h"
+#include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/pending_process_connection.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -30,53 +32,29 @@ namespace edk {
 
 // Basic configuration/initialization ------------------------------------------
 
-// |Init()| sets up the basic Mojo system environment, making the |Mojo...()|
-// functions available and functional. This is never shut down (except in tests
-// -- see test_embedder.h).
-
-// Allows changing the default max message size. Must be called before Init.
-MOJO_SYSTEM_IMPL_EXPORT void SetMaxMessageSize(size_t bytes);
-
-// Should be called as early as possible in a child process with a handle to the
-// other end of a pipe provided in the parent to
-// PendingProcessConnection::Connect.
-MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(ScopedPlatformHandle pipe);
-
-// Same as above but extracts the pipe handle from the command line. See
-// PlatformChannelPair for details.
-MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandleFromCommandLine();
-
-// Called to connect to a peer process. This should be called only if there
-// is no common ancestor for the processes involved within this mojo system.
-// Both processes must call this function, each passing one end of a platform
-// channel. This returns one end of a message pipe to each process.
-MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-ConnectToPeerProcess(ScopedPlatformHandle pipe);
-
-// Called to connect to a peer process. This should be called only if there
-// is no common ancestor for the processes involved within this mojo system.
-// Both processes must call this function, each passing one end of a platform
-// channel. This returns one end of a message pipe to each process. |peer_token|
-// may be passed to ClosePeerConnection() to close the connection.
-MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-ConnectToPeerProcess(ScopedPlatformHandle pipe, const std::string& peer_token);
-
-// Closes a connection to a peer process created by ConnectToPeerProcess()
-// where the same |peer_token| was used.
-MOJO_SYSTEM_IMPL_EXPORT void ClosePeerConnection(const std::string& peer_token);
-
 // Must be called first, or just after setting configuration parameters, to
-// initialize the (global, singleton) system.
+// initialize the (global, singleton) system state. There is no corresponding
+// shutdown operation: once the EDK is initialized, public Mojo C API calls
+// remain available for the remainder of the process's lifetime.
+MOJO_SYSTEM_IMPL_EXPORT void Init(const Configuration& configuration);
+
+// Like above but uses a default Configuration.
 MOJO_SYSTEM_IMPL_EXPORT void Init();
 
 // Sets a default callback to invoke when an internal error is reported but
-// cannot be associated with a specific child process.
+// cannot be associated with a specific child process. Calling this is optional.
 MOJO_SYSTEM_IMPL_EXPORT void SetDefaultProcessErrorCallback(
     const ProcessErrorCallback& callback);
 
-// Basic functions -------------------------------------------------------------
+// Generates a random ASCII token string for use with various APIs that expect
+// a globally unique token string. May be called at any time on any thread.
+MOJO_SYSTEM_IMPL_EXPORT std::string GenerateRandomToken();
 
-// The functions in this section are available once |Init()| has been called.
+// Basic functions -------------------------------------------------------------
+//
+// The functions in this section are available once |Init()| has been called and
+// provide the embedder with some extra capabilities not exposed by public Mojo
+// C APIs.
 
 // Creates a |MojoHandle| that wraps the given |PlatformHandle| (taking
 // ownership of it). This |MojoHandle| can then, e.g., be passed through message
@@ -118,11 +96,20 @@ PassSharedMemoryHandle(MojoHandle mojo_handle,
                        size_t* num_bytes,
                        bool* read_only);
 
+// Sets system properties that can be read by the MojoGetProperty() API. See the
+// documentation for MojoPropertyType for supported property types and their
+// corresponding value type.
+//
+// Default property values:
+//   |MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED| - true
+MOJO_SYSTEM_IMPL_EXPORT MojoResult SetProperty(MojoPropertyType type,
+                                               const void* value);
+
 // Initialialization/shutdown for interprocess communication (IPC) -------------
 
 // |InitIPCSupport()| sets up the subsystem for interprocess communication,
 // making the IPC functions (in the following section) available and functional.
-// (This may only be done after |Init()|.)
+// This may only be done after |Init()|.
 //
 // This subsystem may be shut down using |ShutdownIPCSupport()|. None of the IPC
 // functions may be called after this is called.
@@ -144,28 +131,56 @@ MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport(const base::Closure& callback);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Set the |base::PortProvider| for this process. Can be called on any thread,
 // but must be set in the root process before any Mach ports can be transferred.
+//
+// If called at all, this must be called after |InitIPCSupport()| and before the
+// creation of any PendingProcessConnection instances.
 MOJO_SYSTEM_IMPL_EXPORT void SetMachPortProvider(
     base::PortProvider* port_provider);
 #endif
+
+// Legacy IPC Helpers ----------------------------------------------------------
+//
+// Functions in this section are used to help connect processes together via the
+// legacy transport protocol. All functions in this section should be considered
+// DEPRECATED.
+//
+// Use PendingProcessConnection to establish connections to other Mojo
+// embedder processes in the system. See the documentation in
+// pending_process_connection.h for details.
+
+// Should be called as early as possible in a child process with a handle to the
+// other end of a pipe provided in the parent to
+// PendingProcessConnection::Connect.
+MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(ScopedPlatformHandle pipe);
+
+// Same as above but extracts the pipe handle from the command line. See
+// PlatformChannelPair for details.
+MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandleFromCommandLine();
+
+// Called to connect to a peer process. This should be called only if there
+// is no common ancestor for the processes involved within this mojo system.
+// Both processes must call this function, each passing one end of a platform
+// channel. This returns one end of a message pipe to each process.
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+ConnectToPeerProcess(ScopedPlatformHandle pipe);
+
+// Called to connect to a peer process. This should be called only if there
+// is no common ancestor for the processes involved within this mojo system.
+// Both processes must call this function, each passing one end of a platform
+// channel. This returns one end of a message pipe to each process. |peer_token|
+// may be passed to ClosePeerConnection() to close the connection.
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
+ConnectToPeerProcess(ScopedPlatformHandle pipe, const std::string& peer_token);
+
+// Closes a connection to a peer process created by ConnectToPeerProcess()
+// where the same |peer_token| was used.
+MOJO_SYSTEM_IMPL_EXPORT void ClosePeerConnection(const std::string& peer_token);
 
 // Creates a message pipe from a token in a child process. This token must have
 // been acquired by a corresponding call to
 // PendingProcessConnection::CreateMessagePipe.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateChildMessagePipe(const std::string& token);
-
-// Generates a random ASCII token string for use with various APIs that expect
-// a globally unique token string.
-MOJO_SYSTEM_IMPL_EXPORT std::string GenerateRandomToken();
-
-// Sets system properties that can be read by the MojoGetProperty() API. See the
-// documentation for MojoPropertyType for supported property types and their
-// corresponding value type.
-//
-// Default property values:
-//   |MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED| - true
-MOJO_SYSTEM_IMPL_EXPORT MojoResult SetProperty(MojoPropertyType type,
-                                               const void* value);
 
 }  // namespace edk
 }  // namespace mojo
