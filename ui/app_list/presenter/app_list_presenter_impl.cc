@@ -75,6 +75,7 @@ void AppListPresenterImpl::Show(int64_t display_id) {
     SetView(view);
   }
   presenter_delegate_->OnShown(display_id);
+  base::RecordAction(base::UserMetricsAction("Launcher_Show"));
 }
 
 void AppListPresenterImpl::Dismiss() {
