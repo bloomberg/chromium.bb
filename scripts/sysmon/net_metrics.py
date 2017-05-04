@@ -75,10 +75,7 @@ _net_io_metrics = (
 
 def _collect_net_io_counters():
   """Collect metrics for network IO counters."""
-  nics = psutil.net_io_counters(pernic=True)
-  for nic, counters in nics.iteritems():
-    if _is_virtual_netif(nic):
-      continue
+  for nic, counters in _net_io_iter():
     fields = {'interface': nic}
     for metric, counter_name in _net_io_metrics:
       try:
@@ -88,6 +85,15 @@ def _collect_net_io_counters():
         # driver module is reloaded, so log an error and continue
         # instead of raising an exception.
         logger.warning(str(ex))
+
+
+def _net_io_iter():
+  """Generate network IO information."""
+  nics = psutil.net_io_counters(pernic=True)
+  for nic, counters in nics.iteritems():
+    if _is_virtual_netif(nic):
+      continue
+    yield nic, counters
 
 
 _net_if_metrics = (
