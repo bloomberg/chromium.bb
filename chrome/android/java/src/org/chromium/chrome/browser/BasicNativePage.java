@@ -36,6 +36,11 @@ public abstract class BasicNativePage implements NativePage {
 
         Resources res = mActivity.getResources();
 
+        if (activity instanceof ChromeActivity
+                && ((ChromeActivity) activity).getBottomSheet() != null) {
+            return;
+        }
+
         LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT);
         layoutParams.setMargins(0,

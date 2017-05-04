@@ -63,7 +63,7 @@ public class NativePageFactory {
             return new HistoryPage(activity, new TabShim(tab));
         }
 
-        protected NativePage buildRecentTabsPage(Activity activity, Tab tab) {
+        protected NativePage buildRecentTabsPage(ChromeActivity activity, Tab tab) {
             RecentTabsManager recentTabsManager =
                     new RecentTabsManager(tab, tab.getProfile(), activity);
             return new RecentTabsPage(activity, recentTabsManager);
