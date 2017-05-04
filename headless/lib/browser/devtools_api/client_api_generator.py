@@ -444,25 +444,6 @@ def EnsureCommandsHaveParametersAndReturnTypes(json_api):
         event['parameters'] = []
 
 
-def Generate(jinja_env, output_dirname, json_api,
-             class_name, file_types, file_name=None):
-  if file_name is None:
-    file_name = class_name
-  EnsureDirectoryExists(output_dirname)
-  template_context = {
-      'api': json_api,
-      'join_arrays': JoinArrays,
-      'resolve_type': ResolveType,
-      'type_definition': TypeDefinition,
-  }
-  for file_type in file_types:
-    template = jinja_env.get_template('/%s_%s.template' % (
-        class_name, file_type))
-    output_file = '%s/%s.%s' % (output_dirname, file_name, file_type)
-    with open(output_file, 'w') as f:
-      f.write(template.render(template_context))
-
-
 def GeneratePerDomain(jinja_env, output_dirname, json_api, class_name,
                     file_types, domain_name_to_file_name_func):
   EnsureDirectoryExists(output_dirname)
@@ -488,12 +469,6 @@ def GenerateDomains(jinja_env, output_dirname, json_api):
       'domain', ['cc', 'h'],
       lambda domain_name: domain_name)
 
-  # TODO(altimin): Remove this in 2017.
-  # Generate DOMAIN.h in the old directory for backwards compatibility.
-  GeneratePerDomain(
-      jinja_env, os.path.join(output_dirname, 'domains'), json_api,
-      'deprecated_domain', ['h'], lambda domain_name: domain_name)
-
 
 def GenerateTypes(jinja_env, output_dirname, json_api):
   # Generate forward declarations for types.
@@ -507,11 +482,6 @@ def GenerateTypes(jinja_env, output_dirname, json_api):
       json_api, 'domain_types', ['h', 'cc'],
       lambda domain_name: 'types_%s' % (domain_name, ))
 
-  # TODO(altimin): Remove this in 2017.
-  # Generate types.h for backwards compatibility.
-  Generate(jinja_env, os.path.join(output_dirname, 'domains'), json_api,
-           'deprecated_types', ['h'], 'types')
-
 
 def GenerateTypeConversions(jinja_env, output_dirname, json_api):
   # Generate type conversions on per-domain basis.
@@ -519,11 +489,6 @@ def GenerateTypeConversions(jinja_env, output_dirname, json_api):
       jinja_env, os.path.join(output_dirname, 'devtools', 'internal'),
       json_api, 'domain_type_conversions', ['h'],
       lambda domain_name: 'type_conversions_%s' % (domain_name, ))
-
-  # TODO(altimin): Remove this in 2017.
-  # Generate type_conversions.h for backwards compatibility.
-  Generate(jinja_env, os.path.join(output_dirname, 'domains'), json_api,
-           'deprecated_type_conversions', ['h'], 'type_conversions')
 
 
 if __name__ == '__main__':

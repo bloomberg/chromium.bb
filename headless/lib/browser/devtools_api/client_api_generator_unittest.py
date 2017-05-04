@@ -514,8 +514,7 @@ class ClientApiGeneratorTest(unittest.TestCase):
       dirname = tempfile.mkdtemp()
       jinja_env = client_api_generator.InitializeJinjaEnv(dirname)
       client_api_generator.CreateTypeDefinitions(json_api)
-      client_api_generator.Generate(jinja_env, dirname, json_api,
-                                    'deprecated_types', ['h'])
+      client_api_generator.GenerateDomains(jinja_env, dirname, json_api)
       # This is just a smoke test; we don't actually verify the generated output
       # here.
     finally:
