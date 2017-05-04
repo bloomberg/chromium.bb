@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/panner-formulas.js"></script>
     <title>Test Automation of PannerNode Positions</title>
   </head>
@@ -79,21 +79,22 @@
       for (var k = 0; k < testConfigs.length; ++k) {
         var config = testConfigs[k];
         var tester = function (c, channelCount) {
-          return function (done) {
-            runTest(c, channelCount).then(done);
+          return (task, should) => {
+            runTest(should, c, channelCount)
+              .then(() => task.done());
           }
         };
 
         var baseTestName = config.distanceModel.model + " rolloff: " + config.distanceModel.rolloff;
 
         // Define tasks for both 1-channel and 2-channel
-        audit.defineTask(k + ": 1-channel " + baseTestName, tester(config, 1));
-        audit.defineTask(k + ": 2-channel " + baseTestName, tester(config, 2));
+        audit.define(k + ": 1-channel " + baseTestName, tester(config, 1));
+        audit.define(k + ": 2-channel " + baseTestName, tester(config, 2));
       }
 
-      audit.runTasks();
+      audit.run();
 
-      function runTest(options, channelCount) {
+      function runTest(should, options, channelCount) {
         // Output has 5 channels: channels 0 and 1 are for the stereo output of the panner node.
         // Channels 2-5 are the for automation of the x,y,z coordinate so that we have actual
         // coordinates used for the panner automation.
@@ -244,14 +245,14 @@
             if (options.errorThreshold)
                errorThreshold = options.errorThreshold[channelCount - 1]
 
-            Should(prefix + "distanceModel: " + info + ", left channel", data0, {
-                precision: 5
-              })
-              .beCloseToArray(expected0, errorThreshold);
-            Should(prefix + "distanceModel: " + info + ", right channel", data1, {
-                precision: 5
-              })
-              .beCloseToArray(expected1, errorThreshold);
+            should(data0, prefix + "distanceModel: " + info + ", left channel")
+              .beCloseToArray(expected0, {
+                absoluteThreshold: errorThreshold
+              });
+            should(data1, prefix + "distanceModel: " + info + ", right channel")
+              .beCloseToArray(expected1, {
+                absoluteThreshold: errorThreshold
+              });
           });
       }
     </script>
