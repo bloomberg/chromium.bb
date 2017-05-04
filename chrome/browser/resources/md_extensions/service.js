@@ -50,14 +50,7 @@ cr.define('extensions', function() {
         for (let extension of extensions)
           this.manager_.addItem(extension);
 
-        var id = new URLSearchParams(location.search).get('id');
-        if (id) {
-          var data = this.extensions_.find(function(e) {
-            return e.id == id;
-          });
-          if (data)
-            this.manager_.showItemDetails(data);
-        }
+        this.manager_.initPage();
       }.bind(this));
       chrome.developerPrivate.getProfileConfiguration(
           this.onProfileStateChanged_.bind(this));
@@ -257,14 +250,16 @@ cr.define('extensions', function() {
 
     /** @override */
     showItemOptionsPage: function(id) {
-      var extension = this.extensions_.find(function(extension) {
-        return extension.id == id;
+      var extension = this.extensions_.find(function(e) {
+        return e.id == id;
       });
       assert(extension && extension.optionsPage);
-      if (extension.optionsPage.openInTab)
+      if (extension.optionsPage.openInTab) {
         chrome.developerPrivate.showOptions(id);
-      else
-        this.manager_.optionsDialog.show(extension);
+      } else {
+        this.manager_.changePage(
+            {page: Page.DETAILS, subpage: Dialog.OPTIONS, extensionId: id});
+      }
     },
 
     /** @override */

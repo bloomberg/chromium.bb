@@ -21,6 +21,10 @@ cr.define('extensions', function() {
       data_: Object,
     },
 
+    get open() {
+      return this.$$('dialog').open;
+    },
+
     /** @param {chrome.developerPrivate.ExtensionInfo} data */
     show: function(data) {
       this.data_ = data;
