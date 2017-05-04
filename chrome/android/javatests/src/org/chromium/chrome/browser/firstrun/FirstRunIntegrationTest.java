@@ -27,7 +27,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -241,9 +240,8 @@ public class FirstRunIntegrationTest {
         runSearchEnginePromptTest(LocaleManager.SEARCH_ENGINE_PROMO_DONT_SHOW);
     }
 
-    // @Test
-    // @MediumTest
-    @DisabledTest // crbug.com/718461
+    @Test
+    @MediumTest
     public void testDefaultSearchEngine_ShowExisting() throws Exception {
         runSearchEnginePromptTest(LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING);
     }
@@ -311,6 +309,13 @@ public class FirstRunIntegrationTest {
             int jumpCallCount = mTestObserver.jumpToPageCallback.getCallCount();
 
             // Click on the first search engine option available.
+            CriteriaHelper.pollUiThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    ViewGroup options = (ViewGroup) mActivity.findViewById(R.id.engine_controls);
+                    return options.getChildCount() > 0;
+                }
+            });
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
