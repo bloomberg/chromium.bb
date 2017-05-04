@@ -5,7 +5,7 @@
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 
 #include <memory>
-#include "bindings/core/v8/V8Binding.h"
+#include "platform/bindings/V8Binding.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/StringHash.h"

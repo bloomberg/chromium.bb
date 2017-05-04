@@ -10,12 +10,12 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/streams/ReadableStreamOperations.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8BindingMacros.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"

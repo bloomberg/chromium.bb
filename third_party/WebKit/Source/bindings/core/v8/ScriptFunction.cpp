@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 
-#include "bindings/core/v8/V8Binding.h"
+#include "platform/bindings/V8Binding.h"
 
 namespace blink {
 

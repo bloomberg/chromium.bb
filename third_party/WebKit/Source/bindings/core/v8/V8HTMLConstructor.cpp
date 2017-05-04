@@ -7,8 +7,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptCustomElementDefinition.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8BindingMacros.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8HTMLElement.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -19,6 +17,8 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/V8BindingMacros.h"
+#include "platform/bindings/V8DOMWrapper.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {

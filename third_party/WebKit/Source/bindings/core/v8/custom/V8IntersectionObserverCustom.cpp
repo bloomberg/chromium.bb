@@ -7,11 +7,11 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IntersectionObserverCallback.h"
 #include "bindings/core/v8/V8IntersectionObserverInit.h"
 #include "core/dom/Element.h"
+#include "platform/bindings/V8DOMWrapper.h"
 
 namespace blink {
 

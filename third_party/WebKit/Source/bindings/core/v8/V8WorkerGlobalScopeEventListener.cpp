@@ -31,7 +31,6 @@
 #include "bindings/core/v8/V8WorkerGlobalScopeEventListener.h"
 
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8GCController.h"
@@ -41,6 +40,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/bindings/V8DOMWrapper.h"
 
 namespace blink {
 

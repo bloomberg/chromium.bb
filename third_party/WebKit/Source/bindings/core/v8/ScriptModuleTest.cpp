@@ -6,12 +6,12 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/dom/ScriptModuleResolver.h"
 #include "core/frame/LocalFrame.h"
 #include "core/testing/DummyModulator.h"
+#include "platform/bindings/V8Binding.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"

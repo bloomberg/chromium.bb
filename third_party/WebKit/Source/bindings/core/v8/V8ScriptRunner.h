@@ -29,10 +29,10 @@
 #include <stdint.h>
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8BindingMacros.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/TextPosition.h"
