@@ -24,13 +24,16 @@ SubresourceFilterSafeBrowsingActivationThrottle::
         scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
             database_manager)
     : NavigationThrottle(handle),
-      database_manager_(std::move(database_manager)),
-      io_task_runner_(io_task_runner),
-      database_client_(new SubresourceFilterSafeBrowsingClient(
-                           database_manager_,
-                           AsWeakPtr(),
-                           io_task_runner,
-                           base::ThreadTaskRunnerHandle::Get()),
+      io_task_runner_(std::move(io_task_runner)),
+      // The throttle can be created without a valid database manager. If so, it
+      // becomes a pass-through throttle and should never defer.
+      database_client_(database_manager
+                           ? new SubresourceFilterSafeBrowsingClient(
+                                 std::move(database_manager),
+                                 AsWeakPtr(),
+                                 io_task_runner_,
+                                 base::ThreadTaskRunnerHandle::Get())
+                           : nullptr,
                        base::OnTaskRunnerDeleter(io_task_runner_)) {}
 
 SubresourceFilterSafeBrowsingActivationThrottle::
@@ -52,6 +55,9 @@ SubresourceFilterSafeBrowsingActivationThrottle::WillRedirectRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillProcessResponse() {
+  if (!database_client_)
+    return content::NavigationThrottle::PROCEED;
+
   // No need to defer the navigation if the check already happened.
   if (check_results_.back().finished) {
     NotifyResult();
@@ -82,6 +88,8 @@ void SubresourceFilterSafeBrowsingActivationThrottle::OnCheckUrlResultOnUI(
 }
 
 void SubresourceFilterSafeBrowsingActivationThrottle::CheckCurrentUrl() {
+  if (!database_client_)
+    return;
   check_results_.emplace_back();
   size_t id = check_results_.size() - 1;
   io_task_runner_->PostTask(

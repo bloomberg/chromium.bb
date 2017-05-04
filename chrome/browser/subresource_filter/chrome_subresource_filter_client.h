@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_SUBRESOURCE_FILTER_CHROME_SUBRESOURCE_FILTER_CLIENT_H_
 #define CHROME_BROWSER_SUBRESOURCE_FILTER_CHROME_SUBRESOURCE_FILTER_CLIENT_H_
 
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -17,6 +19,7 @@ class GURL;
 
 namespace content {
 class NavigationHandle;
+class NavigationThrottle;
 class WebContents;
 }  // namespace content
 
@@ -70,6 +73,10 @@ class ChromeSubresourceFilterClient
  public:
   explicit ChromeSubresourceFilterClient(content::WebContents* web_contents);
   ~ChromeSubresourceFilterClient() override;
+
+  void MaybeAppendNavigationThrottles(
+      content::NavigationHandle* navigation_handle,
+      std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles);
 
   // SubresourceFilterClient:
   void ToggleNotificationVisibility(bool visibility) override;

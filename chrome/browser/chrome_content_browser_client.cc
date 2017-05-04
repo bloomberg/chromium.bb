@@ -84,7 +84,7 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
-#include "chrome/browser/subresource_filter/navigation_throttle_util.h"
+#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
@@ -3472,22 +3472,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (delay_navigation_throttle)
     throttles.push_back(std::move(delay_navigation_throttle));
 
-  content::NavigationThrottle* subresource_filter_activation_throttle =
-      MaybeCreateSubresourceFilterNavigationThrottle(
-          handle, g_browser_process->safe_browsing_service());
-  if (subresource_filter_activation_throttle) {
-    throttles.push_back(
-        base::WrapUnique(subresource_filter_activation_throttle));
-  }
-
-  // These throttles must come after the
-  // SubresourceFilterSafeBrowsingActivationThrottle.
   content::WebContents* web_contents = handle->GetWebContents();
-  if (auto* factory =
-          subresource_filter::ContentSubresourceFilterDriverFactory::
-              FromWebContents(web_contents)) {
-    factory->throttle_manager()->MaybeAppendNavigationThrottles(handle,
-                                                                &throttles);
+  if (auto* subresource_filter_client =
+          ChromeSubresourceFilterClient::FromWebContents(web_contents)) {
+    subresource_filter_client->MaybeAppendNavigationThrottles(handle,
+                                                              &throttles);
   }
 
   return throttles;
