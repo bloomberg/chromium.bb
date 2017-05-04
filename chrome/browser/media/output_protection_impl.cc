@@ -14,6 +14,7 @@
 // static
 void OutputProtectionImpl::Create(
     content::RenderFrameHost* render_frame_host,
+    const service_manager::BindSourceInfo& source_info,
     media::mojom::OutputProtectionRequest request) {
   DVLOG(2) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

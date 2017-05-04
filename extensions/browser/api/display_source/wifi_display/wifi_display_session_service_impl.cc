@@ -37,7 +37,8 @@ WiFiDisplaySessionServiceImpl::~WiFiDisplaySessionServiceImpl() {
 // static
 void WiFiDisplaySessionServiceImpl::BindToRequest(
     content::BrowserContext* browser_context,
-    mojo::InterfaceRequest<WiFiDisplaySessionService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    WiFiDisplaySessionServiceRequest request) {
   DisplaySourceConnectionDelegate* delegate =
       DisplaySourceConnectionDelegateFactory::GetForBrowserContext(
           browser_context);

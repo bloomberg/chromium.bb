@@ -72,7 +72,8 @@ class FilePatcherImpl : public chrome::mojom::FilePatcher {
   FilePatcherImpl() = default;
   ~FilePatcherImpl() override = default;
 
-  static void Create(chrome::mojom::FilePatcherRequest request) {
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     chrome::mojom::FilePatcherRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<FilePatcherImpl>(),
                             std::move(request));
   }
@@ -114,7 +115,8 @@ class ZipFileCreatorImpl : public chrome::mojom::ZipFileCreator {
   ZipFileCreatorImpl() = default;
   ~ZipFileCreatorImpl() override = default;
 
-  static void Create(chrome::mojom::ZipFileCreatorRequest request) {
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     chrome::mojom::ZipFileCreatorRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<ZipFileCreatorImpl>(),
                             std::move(request));
   }
@@ -148,7 +150,8 @@ class SafeArchiveAnalyzerImpl : public chrome::mojom::SafeArchiveAnalyzer {
   SafeArchiveAnalyzerImpl() = default;
   ~SafeArchiveAnalyzerImpl() override = default;
 
-  static void Create(chrome::mojom::SafeArchiveAnalyzerRequest request) {
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     chrome::mojom::SafeArchiveAnalyzerRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<SafeArchiveAnalyzerImpl>(),
                             std::move(request));
   }
@@ -185,6 +188,7 @@ class SafeArchiveAnalyzerImpl : public chrome::mojom::SafeArchiveAnalyzer {
 
 #if !defined(OS_ANDROID)
 void CreateProxyResolverFactory(
+    const service_manager::BindSourceInfo& source_info,
     net::interfaces::ProxyResolverFactoryRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<net::MojoProxyResolverFactoryImpl>(),
                           std::move(request));
@@ -212,7 +216,8 @@ class ResourceUsageReporterImpl : public chrome::mojom::ResourceUsageReporter {
 };
 
 void CreateResourceUsageReporter(
-    mojo::InterfaceRequest<chrome::mojom::ResourceUsageReporter> request) {
+    const service_manager::BindSourceInfo& source_info,
+    chrome::mojom::ResourceUsageReporterRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<ResourceUsageReporterImpl>(),
                           std::move(request));
 }

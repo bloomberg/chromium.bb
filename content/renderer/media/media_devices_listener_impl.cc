@@ -16,6 +16,7 @@ namespace content {
 // static
 void MediaDevicesListenerImpl::Create(
     int render_frame_id,
+    const service_manager::BindSourceInfo& source_info,
     ::mojom::MediaDevicesListenerRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<MediaDevicesListenerImpl>(render_frame_id),

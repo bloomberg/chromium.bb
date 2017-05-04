@@ -9,6 +9,10 @@
 #include "content/public/common/network_service_test.mojom.h"
 #include "content/public/utility/content_utility_client.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 
 class ShellContentUtilityClient : public ContentUtilityClient {
@@ -23,7 +27,9 @@ class ShellContentUtilityClient : public ContentUtilityClient {
       service_manager::BinderRegistry* registry) override;
 
  private:
-  void Create(mojom::NetworkServiceTestRequest request);
+  void BindNetworkServiceTestRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::NetworkServiceTestRequest request);
 
   std::unique_ptr<mojom::NetworkServiceTest> network_service_test_;
 

@@ -19,6 +19,7 @@ namespace {
 
 void OnImageDecoderRequest(
     service_manager::ServiceContextRefFactory* ref_factory,
+    const service_manager::BindSourceInfo& source_info,
     mojom::ImageDecoderRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<ImageDecoderImpl>(ref_factory->CreateRef()),

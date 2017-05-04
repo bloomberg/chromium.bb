@@ -21,6 +21,10 @@ class WebEmbeddedWorker;
 
 }  // namespace blink
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 
 class EmbeddedWorkerDevToolsAgent;
@@ -31,8 +35,8 @@ class ServiceWorkerContextClient;
 class EmbeddedWorkerInstanceClientImpl
     : public mojom::EmbeddedWorkerInstanceClient {
  public:
-  static void Create(
-      mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request);
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     mojom::EmbeddedWorkerInstanceClientRequest request);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 

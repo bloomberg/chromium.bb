@@ -39,7 +39,7 @@ ProcessLocalDumpManagerImpl::ProcessLocalDumpManagerImpl(const Config& config)
   } else {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     config.coordinator()->BindCoordinatorRequest(
-        mojo::MakeRequest(&coordinator_));
+        service_manager::BindSourceInfo(), mojo::MakeRequest(&coordinator_));
   }
   coordinator_->RegisterProcessLocalDumpManager(
       binding_.CreateInterfacePtrAndBind());

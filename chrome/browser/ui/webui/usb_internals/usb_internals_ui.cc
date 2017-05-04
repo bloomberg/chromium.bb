@@ -31,6 +31,7 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
 UsbInternalsUI::~UsbInternalsUI() {}
 
 void UsbInternalsUI::BindUIHandler(
+    const service_manager::BindSourceInfo& source_info,
     mojom::UsbInternalsPageHandlerRequest request) {
   page_handler_.reset(new UsbInternalsPageHandler(std::move(request)));
 }

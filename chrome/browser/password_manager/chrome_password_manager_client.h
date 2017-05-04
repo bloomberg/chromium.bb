@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "ui/gfx/geometry/rect.h"
 
 class Profile;
@@ -120,6 +121,7 @@ class ChromePasswordManagerClient
 
   static void BindCredentialManager(
       content::RenderFrameHost* render_frame_host,
+      const service_manager::BindSourceInfo& source_info,
       password_manager::mojom::CredentialManagerRequest request);
 
   // A helper method to determine whether a save/update bubble can be shown

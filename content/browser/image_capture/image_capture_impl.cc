@@ -128,7 +128,9 @@ ImageCaptureImpl::ImageCaptureImpl() {}
 ImageCaptureImpl::~ImageCaptureImpl() {}
 
 // static
-void ImageCaptureImpl::Create(media::mojom::ImageCaptureRequest request) {
+void ImageCaptureImpl::Create(
+    const service_manager::BindSourceInfo& source_info,
+    media::mojom::ImageCaptureRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<ImageCaptureImpl>(),
                           std::move(request));
 }

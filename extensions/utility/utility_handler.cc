@@ -17,6 +17,7 @@
 #include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/utility/unpacker.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,7 +32,8 @@ class ExtensionUnpackerImpl : public extensions::mojom::ExtensionUnpacker {
   ExtensionUnpackerImpl() = default;
   ~ExtensionUnpackerImpl() override = default;
 
-  static void Create(extensions::mojom::ExtensionUnpackerRequest request) {
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     extensions::mojom::ExtensionUnpackerRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<ExtensionUnpackerImpl>(),
                             std::move(request));
   }
@@ -104,7 +106,8 @@ class ManifestParserImpl : public extensions::mojom::ManifestParser {
   ManifestParserImpl() = default;
   ~ManifestParserImpl() override = default;
 
-  static void Create(extensions::mojom::ManifestParserRequest request) {
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     extensions::mojom::ManifestParserRequest request) {
     mojo::MakeStrongBinding(base::MakeUnique<ManifestParserImpl>(),
                             std::move(request));
   }

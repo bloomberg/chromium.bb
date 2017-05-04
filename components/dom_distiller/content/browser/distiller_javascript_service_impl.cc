@@ -43,7 +43,8 @@ void DistillerJavaScriptServiceImpl::HandleDistillerOpenSettingsCall() {
 void CreateDistillerJavaScriptService(
     content::RenderFrameHost* render_frame_host,
     DistillerUIHandle* distiller_ui_handle,
-    mojo::InterfaceRequest<mojom::DistillerJavaScriptService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::DistillerJavaScriptServiceRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<DistillerJavaScriptServiceImpl>(
                               render_frame_host, distiller_ui_handle),
                           std::move(request));

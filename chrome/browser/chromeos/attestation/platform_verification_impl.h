@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "content/public/browser/render_frame_host.h"
 #include "media/mojo/interfaces/platform_verification.mojom.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace chromeos {
 namespace attestation {
@@ -21,9 +22,9 @@ namespace attestation {
 // PlatformVerificationFlow lives on the UI thread.
 class PlatformVerificationImpl : public media::mojom::PlatformVerification {
  public:
-  static void Create(
-      content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<media::mojom::PlatformVerification> request);
+  static void Create(content::RenderFrameHost* render_frame_host,
+                     const service_manager::BindSourceInfo& source_info,
+                     media::mojom::PlatformVerificationRequest request);
 
   explicit PlatformVerificationImpl(
       content::RenderFrameHost* render_frame_host);

@@ -91,7 +91,8 @@ class TestServiceImpl : public mojom::TestService {
   DISALLOW_COPY_AND_ASSIGN(TestServiceImpl);
 };
 
-void CreateTestService(mojom::TestServiceRequest request) {
+void CreateTestService(const service_manager::BindSourceInfo& source_info,
+                       mojom::TestServiceRequest request) {
   // Owns itself.
   new TestServiceImpl(std::move(request));
 }

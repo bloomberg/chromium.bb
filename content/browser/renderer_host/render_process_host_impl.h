@@ -31,6 +31,7 @@
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -77,10 +78,6 @@ class RenderWidgetHostImpl;
 class ResourceMessageFilter;
 class StoragePartition;
 class StoragePartitionImpl;
-
-namespace mojom {
-class StoragePartitionService;
-}  // namespace mojom
 
 typedef base::Thread* (*RendererMainThreadFactoryFunction)(
     const InProcessChildThreadParams& params);
@@ -347,12 +344,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
 
-  void CreateMusGpuRequest(ui::mojom::GpuRequest request);
+  void CreateMusGpuRequest(const service_manager::BindSourceInfo& source_info,
+                           ui::mojom::GpuRequest request);
   void CreateOffscreenCanvasProvider(
+      const service_manager::BindSourceInfo& source_info,
       blink::mojom::OffscreenCanvasProviderRequest request);
-  void BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
+  void BindFrameSinkProvider(const service_manager::BindSourceInfo& source_info,
+                             mojom::FrameSinkProviderRequest request);
   void CreateStoragePartitionService(
-      mojo::InterfaceRequest<mojom::StoragePartitionService> request);
+      const service_manager::BindSourceInfo& source_info,
+      mojom::StoragePartitionServiceRequest request);
 
   // Control message handlers.
   void OnShutdownRequest();
@@ -405,7 +406,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   template <typename InterfaceType>
   using AddInterfaceCallback =
-      base::Callback<void(mojo::InterfaceRequest<InterfaceType>)>;
+      base::Callback<void(const service_manager::BindSourceInfo&,
+                          mojo::InterfaceRequest<InterfaceType>)>;
 
   template <typename CallbackType>
   struct InterfaceGetter;
@@ -415,10 +417,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
     static void GetInterfaceOnUIThread(
         base::WeakPtr<RenderProcessHostImpl> weak_host,
         const AddInterfaceCallback<InterfaceType>& callback,
+        const service_manager::BindSourceInfo& source_info,
         mojo::InterfaceRequest<InterfaceType> request) {
       if (!weak_host)
         return;
-      callback.Run(std::move(request));
+      callback.Run(source_info, std::move(request));
     }
   };
 

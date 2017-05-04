@@ -9,6 +9,10 @@
 #include "content/renderer/image_downloader/image_downloader_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 
 class ImageDownloaderImpl : public mojom::ImageDownloader,
@@ -16,8 +20,10 @@ class ImageDownloaderImpl : public mojom::ImageDownloader,
  public:
   ~ImageDownloaderImpl() override;
 
-  static void CreateMojoService(RenderFrame* render_frame,
-                                mojom::ImageDownloaderRequest request);
+  static void CreateMojoService(
+      RenderFrame* render_frame,
+      const service_manager::BindSourceInfo& source_info,
+      mojom::ImageDownloaderRequest request);
 
  private:
   ImageDownloaderImpl(RenderFrame* render_frame,

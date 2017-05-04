@@ -19,8 +19,8 @@ class SiteEngagementUI
  private:
   // MojoWebUIController overrides:
   void BindUIHandler(
-      mojo::InterfaceRequest<mojom::SiteEngagementDetailsProvider> request)
-      override;
+      const service_manager::BindSourceInfo& source_info,
+      mojom::SiteEngagementDetailsProviderRequest request) override;
 
   std::unique_ptr<mojom::SiteEngagementDetailsProvider> ui_handler_;
 

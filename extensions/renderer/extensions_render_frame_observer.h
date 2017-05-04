@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "extensions/common/mojo/app_window.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace extensions {
 
@@ -24,7 +25,8 @@ class ExtensionsRenderFrameObserver : public content::RenderFrameObserver,
   ~ExtensionsRenderFrameObserver() override;
 
  private:
-  void BindAppWindowRequest(mojom::AppWindowRequest request);
+  void BindAppWindowRequest(const service_manager::BindSourceInfo& source_info,
+                            mojom::AppWindowRequest request);
 
   // Toggles visual muting of the render view area. This is on when a
   // constrained window is showing.

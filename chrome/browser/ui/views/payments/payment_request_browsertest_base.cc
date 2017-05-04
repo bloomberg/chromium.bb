@@ -33,6 +33,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
@@ -390,7 +391,8 @@ void PaymentRequestBrowserTestBase::AddCreditCard(
 
 void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
     content::WebContents* web_contents,
-    mojo::InterfaceRequest<payments::mojom::PaymentRequest> request) {
+    const service_manager::BindSourceInfo& source_info,
+    payments::mojom::PaymentRequestRequest request) {
   DCHECK(web_contents);
   std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
       base::MakeUnique<TestChromePaymentRequestDelegate>(

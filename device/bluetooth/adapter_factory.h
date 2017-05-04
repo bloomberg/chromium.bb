@@ -9,6 +9,10 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/public/interfaces/adapter.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace bluetooth {
 
 // Implementation of Mojo AdapterFactory located in
@@ -22,7 +26,8 @@ class AdapterFactory : public mojom::AdapterFactory {
   ~AdapterFactory() override;
 
   // Creates an AdapterFactory with a strong Mojo binding to |request|.
-  static void Create(mojom::AdapterFactoryRequest request);
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     mojom::AdapterFactoryRequest request);
 
   // mojom::AdapterFactory overrides:
   void GetAdapter(const GetAdapterCallback& callback) override;

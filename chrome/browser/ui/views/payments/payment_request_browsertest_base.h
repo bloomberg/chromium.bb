@@ -34,6 +34,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace views {
 class Widget;
 }
@@ -136,7 +140,8 @@ class PaymentRequestBrowserTestBase
 
   void CreatePaymentRequestForTest(
       content::WebContents* web_contents,
-      mojo::InterfaceRequest<payments::mojom::PaymentRequest> request);
+      const service_manager::BindSourceInfo& source_info,
+      payments::mojom::PaymentRequestRequest request);
 
   // Click on a view from within the dialog and waits for an observed event
   // to be observed.

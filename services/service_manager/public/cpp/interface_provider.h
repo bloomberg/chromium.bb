@@ -10,6 +10,8 @@
 
 namespace service_manager {
 
+struct BindSourceInfo;
+
 // Encapsulates a mojom::InterfaceProviderPtr implemented in a remote
 // application. Provides two main features:
 // - a typesafe GetInterface() method for binding InterfacePtrs.
@@ -81,19 +83,23 @@ class InterfaceProvider {
                     mojo::ScopedMessagePipeHandle request_handle);
 
   // Returns a callback to GetInterface<Interface>(). This can be passed to
-  // InterfaceRegistry::AddInterface() to forward requests.
+  // BinderRegistry::AddInterface() to forward requests.
   template <typename Interface>
-  base::Callback<void(mojo::InterfaceRequest<Interface>)>
+  base::Callback<void(const BindSourceInfo&, mojo::InterfaceRequest<Interface>)>
   CreateInterfaceFactory() {
-    // InterfaceProvider::GetInterface() is overloaded, so static_cast to select
-    // the overload that takes an mojo::InterfaceRequest<Interface>.
-    return base::Bind(static_cast<void (InterfaceProvider::*)(
-                          mojo::InterfaceRequest<Interface>)>(
-                          &InterfaceProvider::GetInterface<Interface>),
-                      GetWeakPtr());
+    return base::Bind(
+        &InterfaceProvider::BindInterfaceRequestFromSource<Interface>,
+        GetWeakPtr());
   }
 
  private:
+  template <typename Interface>
+  void BindInterfaceRequestFromSource(
+      const BindSourceInfo& source_info,
+      mojo::InterfaceRequest<Interface> request) {
+    GetInterface<Interface>(std::move(request));
+  }
+
   void SetBinderForName(
       const std::string& name,
       const base::Callback<void(mojo::ScopedMessagePipeHandle)>& binder) {

@@ -19,6 +19,7 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/features/features.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
 #include "url/gurl.h"
 
@@ -105,6 +106,7 @@ class ContentSettingsObserver
   void SetAllowRunningInsecureContent() override;
 
   void OnInsecureContentRendererRequest(
+      const service_manager::BindSourceInfo& source_info,
       chrome::mojom::InsecureContentRendererRequest request);
 
   // Message handlers.

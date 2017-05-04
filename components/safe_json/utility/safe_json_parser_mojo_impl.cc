@@ -20,7 +20,8 @@ SafeJsonParserMojoImpl::~SafeJsonParserMojoImpl() = default;
 
 // static
 void SafeJsonParserMojoImpl::Create(
-    mojo::InterfaceRequest<mojom::SafeJsonParser> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::SafeJsonParserRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<SafeJsonParserMojoImpl>(),
                           std::move(request));
 }

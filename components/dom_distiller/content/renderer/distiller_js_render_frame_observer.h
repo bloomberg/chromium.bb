@@ -11,6 +11,7 @@
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
@@ -40,7 +41,8 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
 
  private:
   void CreateDistillerPageNotifierService(
-      mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request);
+      const service_manager::BindSourceInfo& source_info,
+      mojom::DistillerPageNotifierServiceRequest request);
 
   // RenderFrameObserver implementation.
   void OnDestruct() override;

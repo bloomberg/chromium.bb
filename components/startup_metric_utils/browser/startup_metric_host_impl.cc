@@ -15,7 +15,9 @@ StartupMetricHostImpl::StartupMetricHostImpl() = default;
 StartupMetricHostImpl::~StartupMetricHostImpl() = default;
 
 // static
-void StartupMetricHostImpl::Create(mojom::StartupMetricHostRequest request) {
+void StartupMetricHostImpl::Create(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::StartupMetricHostRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<StartupMetricHostImpl>(),
                           std::move(request));
 }

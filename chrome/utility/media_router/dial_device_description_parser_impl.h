@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/common/media_router/mojo/dial_device_description_parser.mojom.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace media_router {
 
@@ -19,7 +20,8 @@ class DialDeviceDescriptionParserImpl
   DialDeviceDescriptionParserImpl();
   ~DialDeviceDescriptionParserImpl() override;
 
-  static void Create(chrome::mojom::DialDeviceDescriptionParserRequest request);
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     chrome::mojom::DialDeviceDescriptionParserRequest request);
 
  private:
   friend class DialDeviceDescriptionParserImplTest;

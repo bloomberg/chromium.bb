@@ -44,12 +44,14 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
+#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -70,12 +72,6 @@ struct FrameHostMsg_ShowPopup_Params;
 
 namespace base {
 class ListValue;
-}
-
-namespace blink {
-namespace mojom {
-class WebBluetoothService;
-}
 }
 
 namespace gfx {
@@ -903,7 +899,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Creates Web Bluetooth Service owned by the frame. Returns a raw pointer
   // to it.
   WebBluetoothServiceImpl* CreateWebBluetoothService(
-      mojo::InterfaceRequest<blink::mojom::WebBluetoothService> request);
+      const service_manager::BindSourceInfo& source_info,
+      blink::mojom::WebBluetoothServiceRequest request);
 
   // Deletes the Web Bluetooth Service owned by the frame.
   void DeleteWebBluetoothService(
@@ -915,6 +912,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();
+
+  void BindWakeLockServiceRequest(
+      const service_manager::BindSourceInfo& source_info,
+      device::mojom::WakeLockServiceRequest request);
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,

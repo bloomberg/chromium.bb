@@ -31,7 +31,8 @@ EmbeddedWorkerInstanceClientImpl::WorkerWrapper::~WorkerWrapper() = default;
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
-    mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::EmbeddedWorkerInstanceClientRequest request) {
   // This won't be leaked because the lifetime will be managed internally.
   new EmbeddedWorkerInstanceClientImpl(std::move(request));
 }

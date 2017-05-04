@@ -165,7 +165,9 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
 
 AutofillAgent::~AutofillAgent() {}
 
-void AutofillAgent::BindRequest(mojom::AutofillAgentRequest request) {
+void AutofillAgent::BindRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::AutofillAgentRequest request) {
   binding_.Bind(std::move(request));
 }
 

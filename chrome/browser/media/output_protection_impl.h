@@ -7,6 +7,7 @@
 
 #include "content/public/browser/render_frame_host.h"
 #include "media/mojo/interfaces/output_protection.mojom.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace chrome {
 class OutputProtectionProxy;
@@ -18,6 +19,7 @@ class OutputProtectionProxy;
 class OutputProtectionImpl : public media::mojom::OutputProtection {
  public:
   static void Create(content::RenderFrameHost* render_frame_host,
+                     const service_manager::BindSourceInfo& source_info,
                      media::mojom::OutputProtectionRequest request);
 
   OutputProtectionImpl(int render_process_id, int render_frame_id);

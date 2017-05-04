@@ -47,6 +47,7 @@ CoordinatorImpl::~CoordinatorImpl() {
 }
 
 void CoordinatorImpl::BindCoordinatorRequest(
+    const service_manager::BindSourceInfo& source_info,
     mojom::CoordinatorRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bindings_.AddBinding(this, std::move(request));

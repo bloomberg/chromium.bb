@@ -9,6 +9,7 @@
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/common/distiller_javascript_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace dom_distiller {
 
@@ -39,7 +40,8 @@ class DistillerJavaScriptServiceImpl
 void CreateDistillerJavaScriptService(
     content::RenderFrameHost* render_frame_host,
     DistillerUIHandle* distiller_ui_handle,
-    mojo::InterfaceRequest<mojom::DistillerJavaScriptService> request);
+    const service_manager::BindSourceInfo& source_info,
+    mojom::DistillerJavaScriptServiceRequest request);
 
 }  // namespace dom_distiller
 

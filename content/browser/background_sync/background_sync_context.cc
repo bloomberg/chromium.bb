@@ -44,7 +44,8 @@ void BackgroundSyncContext::Shutdown() {
 }
 
 void BackgroundSyncContext::CreateService(
-    mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    blink::mojom::BackgroundSyncServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(

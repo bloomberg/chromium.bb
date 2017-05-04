@@ -12,6 +12,7 @@
 #include "components/visitedlink/common/visitedlink_common.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace visitedlink {
 
@@ -23,7 +24,8 @@ class VisitedLinkSlave : public VisitedLinkCommon,
   VisitedLinkSlave();
   ~VisitedLinkSlave() override;
 
-  base::Callback<void(mojom::VisitedLinkNotificationSinkRequest)>
+  base::Callback<void(const service_manager::BindSourceInfo&,
+                      mojom::VisitedLinkNotificationSinkRequest)>
   GetBindCallback();
 
   // mojom::VisitedLinkNotificationSink overrides.
@@ -35,7 +37,8 @@ class VisitedLinkSlave : public VisitedLinkCommon,
  private:
   void FreeTable();
 
-  void Bind(mojom::VisitedLinkNotificationSinkRequest request);
+  void Bind(const service_manager::BindSourceInfo& source_info,
+            mojom::VisitedLinkNotificationSinkRequest request);
 
   mojo::ScopedSharedBufferMapping table_mapping_;
 

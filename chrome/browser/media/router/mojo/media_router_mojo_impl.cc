@@ -81,7 +81,8 @@ MediaRouterMojoImpl::~MediaRouterMojoImpl() {
 void MediaRouterMojoImpl::BindToRequest(
     const extensions::Extension* extension,
     content::BrowserContext* context,
-    mojo::InterfaceRequest<mojom::MediaRouter> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::MediaRouterRequest request) {
   MediaRouterMojoImpl* impl = static_cast<MediaRouterMojoImpl*>(
       MediaRouterFactory::GetApiForBrowserContext(context));
   DCHECK(impl);

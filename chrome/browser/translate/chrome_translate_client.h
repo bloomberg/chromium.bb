@@ -16,6 +16,7 @@
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class BrowserContext;
@@ -72,6 +73,7 @@ class ChromeTranslateClient
 
   static void BindContentTranslateDriver(
       content::RenderFrameHost* render_frame_host,
+      const service_manager::BindSourceInfo& source_info,
       translate::mojom::ContentTranslateDriverRequest request);
 
   // Gets the associated TranslateManager.

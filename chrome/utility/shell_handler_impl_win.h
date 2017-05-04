@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/common/shell_handler_win.mojom.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 // Implements the ShellHandler mojo interface.
 class ShellHandlerImpl : public chrome::mojom::ShellHandler {
@@ -14,7 +15,8 @@ class ShellHandlerImpl : public chrome::mojom::ShellHandler {
   ShellHandlerImpl();
   ~ShellHandlerImpl() override;
 
-  static void Create(chrome::mojom::ShellHandlerRequest request);
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     chrome::mojom::ShellHandlerRequest request);
 
  private:
   // chrome::mojom::ShellHandler:

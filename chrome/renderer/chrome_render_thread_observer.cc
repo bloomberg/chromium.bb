@@ -234,7 +234,8 @@ class ResourceUsageReporterImpl : public chrome::mojom::ResourceUsageReporter {
 
 void CreateResourceUsageReporter(
     base::WeakPtr<ChromeRenderThreadObserver> observer,
-    mojo::InterfaceRequest<chrome::mojom::ResourceUsageReporter> request) {
+    const service_manager::BindSourceInfo& source_info,
+    chrome::mojom::ResourceUsageReporterRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<ResourceUsageReporterImpl>(observer),
                           std::move(request));
 }

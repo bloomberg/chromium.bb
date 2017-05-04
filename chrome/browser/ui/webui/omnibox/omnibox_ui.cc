@@ -30,7 +30,8 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
 OmniboxUI::~OmniboxUI() {}
 
 void OmniboxUI::BindUIHandler(
-    mojo::InterfaceRequest<mojom::OmniboxPageHandler> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::OmniboxPageHandlerRequest request) {
   omnibox_handler_.reset(
       new OmniboxPageHandler(Profile::FromWebUI(web_ui()), std::move(request)));
 }

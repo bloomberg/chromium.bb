@@ -76,7 +76,8 @@ PresentationServiceImpl::~PresentationServiceImpl() {
 // static
 void PresentationServiceImpl::CreateMojoService(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<blink::mojom::PresentationService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    blink::mojom::PresentationServiceRequest request) {
   DVLOG(2) << "CreateMojoService";
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
@@ -101,7 +102,7 @@ void PresentationServiceImpl::CreateMojoService(
 }
 
 void PresentationServiceImpl::Bind(
-    mojo::InterfaceRequest<blink::mojom::PresentationService> request) {
+    blink::mojom::PresentationServiceRequest request) {
   binding_.reset(new mojo::Binding<blink::mojom::PresentationService>(
       this, std::move(request)));
 }

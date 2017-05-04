@@ -14,6 +14,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/gpu/gpu_arc_video_service.h"
+
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 #endif
 
 class ChromeContentGpuClient : public content::ContentGpuClient {
@@ -30,6 +35,7 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
  private:
 #if defined(OS_CHROMEOS)
   void CreateArcVideoAcceleratorService(
+      const service_manager::BindSourceInfo& source_info,
       ::arc::mojom::VideoAcceleratorServiceRequest request);
 #endif
 

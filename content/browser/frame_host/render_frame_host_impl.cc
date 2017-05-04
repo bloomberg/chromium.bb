@@ -235,7 +235,9 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   RemoterFactoryImpl(int process_id, int routing_id)
       : process_id_(process_id), routing_id_(routing_id) {}
 
-  static void Bind(int process_id, int routing_id,
+  static void Bind(int process_id,
+                   int routing_id,
+                   const service_manager::BindSourceInfo& source_info,
                    media::mojom::RemoterFactoryRequest request) {
     mojo::MakeStrongBinding(
         base::MakeUnique<RemoterFactoryImpl>(process_id, routing_id),
@@ -259,7 +261,8 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
 template <typename Interface>
-void IgnoreInterfaceRequest(mojo::InterfaceRequest<Interface> request) {
+void IgnoreInterfaceRequest(const service_manager::BindSourceInfo& source_info,
+                            mojo::InterfaceRequest<Interface> request) {
   // Intentionally ignore the interface request.
 }
 
@@ -323,7 +326,8 @@ void RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView() {
 
 void CreateMediaPlayerRenderer(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<media::mojom::Renderer> request) {
+    const service_manager::BindSourceInfo& source_info,
+    media::mojom::RendererRequest request) {
   std::unique_ptr<MediaPlayerRenderer> renderer =
       base::MakeUnique<MediaPlayerRenderer>(render_frame_host);
 
@@ -2672,16 +2676,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(geolocation_service_context)));
   }
 
-  device::mojom::WakeLockContext* wake_lock_service_context =
-      delegate_ ? delegate_->GetWakeLockServiceContext() : nullptr;
-  if (wake_lock_service_context) {
-    // WakeLockServiceContext is owned by WebContentsImpl so it will outlive
-    // this RenderFrameHostImpl, hence a raw pointer can be bound to service
-    // factory callback.
-    GetInterfaceRegistry()->AddInterface<device::mojom::WakeLockService>(
-        base::Bind(&device::mojom::WakeLockContext::GetWakeLock,
-                   base::Unretained(wake_lock_service_context)));
-  }
+  GetInterfaceRegistry()->AddInterface<device::mojom::WakeLockService>(
+      base::Bind(&RenderFrameHostImpl::BindWakeLockServiceRequest,
+                 base::Unretained(this)));
 
   if (!permission_service_context_)
     permission_service_context_.reset(new PermissionServiceContext(this));
@@ -3670,6 +3667,7 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
 }
 
 WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
+    const service_manager::BindSourceInfo& source_info,
     blink::mojom::WebBluetoothServiceRequest request) {
   // RFHI owns |web_bluetooth_services_| and |web_bluetooth_service| owns the
   // |binding_| which may run the error handler. |binding_| can't run the error
@@ -3718,6 +3716,15 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
   DCHECK(media_interface_proxy_);
   media_interface_proxy_.reset();
+}
+
+void RenderFrameHostImpl::BindWakeLockServiceRequest(
+    const service_manager::BindSourceInfo& source_info,
+    device::mojom::WakeLockServiceRequest request) {
+  device::mojom::WakeLockContext* wake_lock_service_context =
+      delegate_ ? delegate_->GetWakeLockServiceContext() : nullptr;
+  if (wake_lock_service_context)
+    wake_lock_service_context->GetWakeLock(std::move(request));
 }
 
 void RenderFrameHostImpl::GetInterface(

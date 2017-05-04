@@ -74,6 +74,10 @@
 using content::BrowserThread;
 using content::ResourceType;
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace android_webview {
 namespace {
 
@@ -164,6 +168,7 @@ AwLocaleManager* g_locale_manager = NULL;
 
 // A dummy binder for mojo interface autofill::mojom::PasswordManagerDriver.
 void DummyBindPasswordManagerDriver(
+    const service_manager::BindSourceInfo& source_info,
     autofill::mojom::PasswordManagerDriverRequest request) {}
 
 }  // anonymous namespace

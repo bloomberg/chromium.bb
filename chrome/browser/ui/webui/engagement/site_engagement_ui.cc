@@ -93,7 +93,8 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
 SiteEngagementUI::~SiteEngagementUI() {}
 
 void SiteEngagementUI::BindUIHandler(
-    mojo::InterfaceRequest<mojom::SiteEngagementDetailsProvider> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::SiteEngagementDetailsProviderRequest request) {
   ui_handler_.reset(new SiteEngagementDetailsProviderImpl(
       Profile::FromWebUI(web_ui()), std::move(request)));
 }

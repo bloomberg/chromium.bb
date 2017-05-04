@@ -17,7 +17,9 @@ MimeRegistryImpl::MimeRegistryImpl() = default;
 MimeRegistryImpl::~MimeRegistryImpl() = default;
 
 // static
-void MimeRegistryImpl::Create(blink::mojom::MimeRegistryRequest request) {
+void MimeRegistryImpl::Create(
+    const service_manager::BindSourceInfo& source_info,
+    blink::mojom::MimeRegistryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   mojo::MakeStrongBinding(base::MakeUnique<MimeRegistryImpl>(),
                           std::move(request));

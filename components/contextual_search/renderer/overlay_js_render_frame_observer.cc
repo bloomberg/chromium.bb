@@ -37,7 +37,8 @@ void OverlayJsRenderFrameObserver::RegisterMojoInterface() {
 }
 
 void OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService(
-    mojo::InterfaceRequest<mojom::OverlayPageNotifierService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::OverlayPageNotifierServiceRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<OverlayPageNotifierServiceImpl>(
           weak_factory_.GetWeakPtr()),

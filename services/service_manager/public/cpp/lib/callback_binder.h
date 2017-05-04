@@ -15,49 +15,10 @@ namespace service_manager {
 namespace internal {
 
 template <typename Interface>
-class CallbackBinderWithSourceInfo : public InterfaceBinder {
+class CallbackBinder : public InterfaceBinder {
  public:
   using BindCallback = base::Callback<void(const BindSourceInfo&,
                                            mojo::InterfaceRequest<Interface>)>;
-
-  CallbackBinderWithSourceInfo(
-      const BindCallback& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-      : callback_(callback), task_runner_(task_runner) {}
-  ~CallbackBinderWithSourceInfo() override {}
-
- private:
-  // InterfaceBinder:
-  void BindInterface(const BindSourceInfo& source_info,
-                     const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle handle) override {
-    mojo::InterfaceRequest<Interface> request =
-        mojo::MakeRequest<Interface>(std::move(handle));
-    if (task_runner_) {
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&CallbackBinderWithSourceInfo::RunCallback, callback_,
-                     source_info, base::Passed(&request)));
-    } else {
-      RunCallback(callback_, source_info, std::move(request));
-    }
-  }
-
-  static void RunCallback(const BindCallback& callback,
-                          const BindSourceInfo& source_info,
-                          mojo::InterfaceRequest<Interface> request) {
-    callback.Run(source_info, std::move(request));
-  }
-
-  const BindCallback callback_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  DISALLOW_COPY_AND_ASSIGN(CallbackBinderWithSourceInfo);
-};
-
-template <typename Interface>
-class CallbackBinder : public InterfaceBinder {
- public:
-  using BindCallback = base::Callback<void(mojo::InterfaceRequest<Interface>)>;
 
   CallbackBinder(const BindCallback& callback,
                  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
@@ -74,15 +35,16 @@ class CallbackBinder : public InterfaceBinder {
     if (task_runner_) {
       task_runner_->PostTask(FROM_HERE,
                              base::Bind(&CallbackBinder::RunCallback, callback_,
-                                        base::Passed(&request)));
+                                        source_info, base::Passed(&request)));
     } else {
-      RunCallback(callback_, std::move(request));
+      RunCallback(callback_, source_info, std::move(request));
     }
   }
 
   static void RunCallback(const BindCallback& callback,
+                          const BindSourceInfo& source_info,
                           mojo::InterfaceRequest<Interface> request) {
-    callback.Run(std::move(request));
+    callback.Run(source_info, std::move(request));
   }
 
   const BindCallback callback_;

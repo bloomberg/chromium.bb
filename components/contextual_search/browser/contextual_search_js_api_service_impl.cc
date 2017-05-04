@@ -27,7 +27,8 @@ void ContextualSearchJsApiServiceImpl::HandleSetCaption(
 // static
 void CreateContextualSearchJsApiService(
     ContextualSearchJsApiHandler* contextual_search_js_api_handler,
-    mojo::InterfaceRequest<mojom::ContextualSearchJsApiService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::ContextualSearchJsApiServiceRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<ContextualSearchJsApiServiceImpl>(
                               contextual_search_js_api_handler),
                           std::move(request));

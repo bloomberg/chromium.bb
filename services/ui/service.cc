@@ -414,7 +414,7 @@ void Service::BindWindowTreeHostFactoryRequest(
 void Service::BindDiscardableSharedMemoryManagerRequest(
     const service_manager::BindSourceInfo& source_info,
     discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
-  discardable_shared_memory_manager_->Bind(std::move(request));
+  discardable_shared_memory_manager_->Bind(source_info, std::move(request));
 }
 
 void Service::BindWindowServerTestRequest(
