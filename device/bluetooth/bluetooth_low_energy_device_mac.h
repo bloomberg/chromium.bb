@@ -110,7 +110,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   friend class BluetoothTestMac;
   friend class BluetoothRemoteGattServiceMac;
 
-  // Calls the macOS to discover primary services.
+  // Called by the adapter when the device is connected.
+  void DidConnectPeripheral();
+
+  // Calls macOS to discover primary services.
   void DiscoverPrimaryServices();
 
   // Sends notification if this device is ready with all services discovered.
@@ -139,6 +142,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // Objective-C delegate for the CBPeripheral.
   base::scoped_nsobject<BluetoothLowEnergyPeripheralDelegate>
       peripheral_delegate_;
+
+  // Whether the device is connected.
+  bool connected_;
 
   // The peripheral's identifier, as returned by [CBPeripheral identifier].
   std::string identifier_;
