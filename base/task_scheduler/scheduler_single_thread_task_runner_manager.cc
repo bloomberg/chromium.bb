@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -284,6 +285,11 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
 
  private:
   ~SchedulerSingleThreadTaskRunner() override {
+    // Note: This will crash if SchedulerSingleThreadTaskRunnerManager is
+    // incorrectly destroyed first in tests (in production the TaskScheduler and
+    // all of its state are intentionally leaked after
+    // TaskScheduler::Shutdown(). See ~SchedulerSingleThreadTaskRunnerManager()
+    // for more details.
     outer_->UnregisterSchedulerWorker(worker_);
   }
 
@@ -325,10 +331,29 @@ SchedulerSingleThreadTaskRunnerManager::
 #if DCHECK_IS_ON()
   size_t workers_unregistered_during_join =
       subtle::NoBarrier_Load(&workers_unregistered_during_join_);
-  DCHECK_EQ(workers_unregistered_during_join, workers_.size())
-      << "There cannot be outstanding SingleThreadTaskRunners upon destruction "
-         "of SchedulerSingleThreadTaskRunnerManager or the Task Scheduler";
-#endif
+  // Log an ERROR instead of DCHECK'ing as it's often useful to have both the
+  // stack trace of this call and the crash stack trace of the upcoming
+  // out-of-order ~SchedulerSingleThreadTaskRunner() call to know what to flip.
+  DLOG_IF(ERROR, workers_unregistered_during_join != workers_.size())
+      << "Expect incoming crash in ~SchedulerSingleThreadTaskRunner()!!! There "
+         "cannot be outstanding SingleThreadTaskRunners upon destruction "
+         "of SchedulerSingleThreadTaskRunnerManager in tests "
+      << workers_.size() - workers_unregistered_during_join << " outstanding). "
+      << "Hint 1: If you're hitting this it's most likely because your test "
+         "fixture is destroying its TaskScheduler too early (e.g. via "
+         "base::test::~ScopedTaskEnvironment() or "
+         "content::~TestBrowserThreadBundle()). Refer to the following stack "
+         "trace to know what caused this destruction as well as to the "
+         "upcoming crash in ~SchedulerSingleThreadTaskRunner() to know what "
+         "should have happened before. "
+         "Hint 2: base::test::ScopedTaskEnvironment et al. should typically "
+         "be the first member in a test fixture to ensure it's initialized "
+         "first and destroyed last.\n"
+#if !defined(OS_NACL)  // We don't build base/debug/stack_trace.cc for NaCl.
+      << base::debug::StackTrace().ToString()
+#endif  // !defined(OS_NACL)
+      ;
+#endif  // DCHECK_IS_ON()
 }
 
 void SchedulerSingleThreadTaskRunnerManager::Start() {
