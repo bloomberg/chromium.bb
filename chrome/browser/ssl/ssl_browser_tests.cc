@@ -889,15 +889,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_DontProceed) {
       security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
 }
 
-// http://crbug.com/91745
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestOKHTTPS DISABLED_TestOKHTTPS
-#else
-#define MAYBE_TestOKHTTPS TestOKHTTPS
-#endif
-
 // Visits a page over OK https:
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestOKHTTPS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
   ASSERT_TRUE(https_server_.Start());
 
   ui_test_utils::NavigateToURL(browser(),
