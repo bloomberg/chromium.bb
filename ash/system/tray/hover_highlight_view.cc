@@ -31,6 +31,7 @@ HoverHighlightView::~HoverHighlightView() {}
 
 void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
                                       int icon_size) {
+  DCHECK(is_populated_);
   DCHECK(!right_view_);
 
   views::ImageView* right_icon = TrayPopupUtils::CreateMainImageView();
@@ -39,6 +40,7 @@ void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
 }
 
 void HoverHighlightView::AddRightView(views::View* view) {
+  DCHECK(is_populated_);
   DCHECK(!right_view_);
 
   right_view_ = view;
@@ -48,6 +50,7 @@ void HoverHighlightView::AddRightView(views::View* view) {
 }
 
 void HoverHighlightView::SetRightViewVisible(bool visible) {
+  DCHECK(is_populated_);
   if (!right_view_)
     return;
 
@@ -56,6 +59,7 @@ void HoverHighlightView::SetRightViewVisible(bool visible) {
 }
 
 void HoverHighlightView::SetSubText(const base::string16& sub_text) {
+  DCHECK(is_populated_);
   DCHECK(text_label_);
   DCHECK(!sub_text.empty());
 
@@ -103,6 +107,9 @@ void HoverHighlightView::DoAddIconAndLabels(
     const base::string16& text,
     TrayPopupItemStyle::FontStyle font_style,
     const base::string16& sub_text) {
+  DCHECK(!is_populated_);
+  is_populated_ = true;
+
   SetLayoutManager(new views::FillLayout);
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
   AddChildView(tri_view_);
@@ -128,6 +135,9 @@ void HoverHighlightView::DoAddIconAndLabels(
 }
 
 void HoverHighlightView::AddLabelRow(const base::string16& text) {
+  DCHECK(!is_populated_);
+  is_populated_ = true;
+
   SetLayoutManager(new views::FillLayout);
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
   AddChildView(tri_view_);
@@ -154,6 +164,16 @@ void HoverHighlightView::SetAccessiblityState(
   accessibility_state_ = accessibility_state;
   if (accessibility_state_ != AccessibilityState::DEFAULT)
     NotifyAccessibilityEvent(ui::AX_EVENT_CHECKED_STATE_CHANGED, true);
+}
+
+void HoverHighlightView::Reset() {
+  RemoveAllChildViews(true);
+  text_label_ = nullptr;
+  sub_text_label_ = nullptr;
+  left_icon_ = nullptr;
+  right_view_ = nullptr;
+  tri_view_ = nullptr;
+  is_populated_ = false;
 }
 
 bool HoverHighlightView::PerformAction(const ui::Event& event) {

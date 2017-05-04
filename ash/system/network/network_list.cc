@@ -696,7 +696,7 @@ void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
   } else {
     network_view = found->second;
     if (NeedUpdateViewForNetwork(*info)) {
-      network_view->RemoveAllChildViews(true);
+      network_view->Reset();
       UpdateViewForNetwork(network_view, *info);
       network_view->Layout();
       network_view->SchedulePaint();
