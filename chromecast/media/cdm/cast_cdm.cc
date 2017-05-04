@@ -125,6 +125,22 @@ void CastCdm::OnSessionClosed(const std::string& session_id) {
 void CastCdm::OnSessionKeysChange(const std::string& session_id,
                                   bool newly_usable_keys,
                                   ::media::CdmKeysInfo keys_info) {
+  logging::LogMessage log_message(__FILE__, __LINE__, logging::LOG_INFO);
+  log_message.stream() << "keystatuseschange ";
+  int status_count[::media::CdmKeyInformation::KEY_STATUS_MAX] = {0};
+  for (const auto* key_info : keys_info) {
+    status_count[key_info->status]++;
+  }
+  for (int i = 0; i != ::media::CdmKeyInformation::KEY_STATUS_MAX; ++i) {
+    if (status_count[i] == 0)
+      continue;
+    log_message.stream()
+        << status_count[i] << " "
+        << ::media::CdmKeyInformation::KeyStatusToString(
+               static_cast<::media::CdmKeyInformation::KeyStatus>(i))
+        << " ";
+  }
+
   session_keys_change_cb_.Run(session_id, newly_usable_keys,
                               std::move(keys_info));
 
