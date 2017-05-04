@@ -92,6 +92,59 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
             request->state()->selected_instrument());
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
+                       EnterConfirmsValidData) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  InvokePaymentRequestUI();
+
+  // No instruments are available.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(0U, request->state()->available_instruments().size());
+  EXPECT_EQ(nullptr, request->state()->selected_instrument());
+
+  OpenCreditCardEditorScreen();
+
+  SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Jones"),
+                          autofill::CREDIT_CARD_NAME_FULL);
+  SetEditorTextfieldValue(base::ASCIIToUTF16("4111111111111111"),
+                          autofill::CREDIT_CARD_NUMBER);
+  SetComboboxValue(base::ASCIIToUTF16("05"), autofill::CREDIT_CARD_EXP_MONTH);
+  SetComboboxValue(base::ASCIIToUTF16("2026"),
+                   autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  views::View* editor_sheet = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::CREDIT_CARD_EDITOR_SHEET));
+  editor_sheet->AcceleratorPressed(
+      ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  data_loop.Run();
+
+  EXPECT_EQ(1u, personal_data_manager->GetCreditCards().size());
+  autofill::CreditCard* credit_card =
+      personal_data_manager->GetCreditCards()[0];
+  EXPECT_EQ(5, credit_card->expiration_month());
+  EXPECT_EQ(2026, credit_card->expiration_year());
+  EXPECT_EQ(base::ASCIIToUTF16("1111"), credit_card->LastFourDigits());
+  EXPECT_EQ(base::ASCIIToUTF16("Bob Jones"),
+            credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+
+  // One instrument is available and selected.
+  EXPECT_EQ(1U, request->state()->available_instruments().size());
+  EXPECT_EQ(request->state()->available_instruments().back().get(),
+            request->state()->selected_instrument());
+}
+
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, CancelFromEditor) {
   InvokePaymentRequestUI();
 

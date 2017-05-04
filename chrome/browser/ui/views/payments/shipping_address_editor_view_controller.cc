@@ -372,6 +372,11 @@ void ShippingAddressEditorViewController::OnComboboxModelChanged(
   }
 }
 
+bool ShippingAddressEditorViewController::GetSheetId(DialogViewID* sheet_id) {
+  *sheet_id = DialogViewID::SHIPPING_ADDRESS_EDITOR_SHEET;
+  return true;
+}
+
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ShippingAddressValidationDelegate(
         ShippingAddressEditorViewController* controller,

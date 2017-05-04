@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 
 namespace payments {
@@ -44,6 +45,24 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
 
   // Now pay for real.
   PayWithCreditCardAndWait(base::ASCIIToUTF16("012"));
+  ExpectBodyContains({"\"cardSecurityCode\": \"012\""});
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
+                       EnterAcceleratorConfirmsCvc) {
+  AddCreditCard(autofill::test::GetCreditCard());  // Visa.
+
+  InvokePaymentRequestUI();
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  OpenCVCPromptWithCVC(base::ASCIIToUTF16("012"));
+
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  views::View* cvc_sheet = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::CVC_UNMASK_SHEET));
+  cvc_sheet->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  WaitForAnimation();
+  WaitForObservedEvent();
+
   ExpectBodyContains({"\"cardSecurityCode\": \"012\""});
 }
 

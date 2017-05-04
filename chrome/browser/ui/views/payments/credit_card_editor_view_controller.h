@@ -88,6 +88,8 @@ class CreditCardEditorViewController : public EditorViewController {
     DISALLOW_COPY_AND_ASSIGN(CreditCardValidationDelegate);
   };
 
+  bool GetSheetId(DialogViewID* sheet_id) override;
+
   // Called when |credit_card_to_edit_| was successfully edited.
   base::OnceClosure on_edited_;
   // Called when a new card was added. The const reference is short-lived, and

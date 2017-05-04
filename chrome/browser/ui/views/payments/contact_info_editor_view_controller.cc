@@ -131,6 +131,11 @@ void ContactInfoEditorViewController::PopulateProfile(
   profile->set_origin(autofill::kSettingsOrigin);
 }
 
+bool ContactInfoEditorViewController::GetSheetId(DialogViewID* sheet_id) {
+  *sheet_id = DialogViewID::CONTACT_INFO_EDITOR_SHEET;
+  return true;
+}
+
 ContactInfoEditorViewController::ContactInfoValidationDelegate::
     ContactInfoValidationDelegate(const EditorField& field,
                                   const std::string& locale,

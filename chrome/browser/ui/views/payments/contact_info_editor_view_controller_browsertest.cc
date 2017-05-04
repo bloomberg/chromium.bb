@@ -72,6 +72,46 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
                              GetLocale()));
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+                       EnterAcceleratorHappyPath) {
+  InvokePaymentRequestUI();
+  OpenContactInfoEditorScreen();
+
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kNameFull), autofill::NAME_FULL);
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kPhoneNumber),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kEmailAddress),
+                          autofill::EMAIL_ADDRESS);
+
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  views::View* editor_sheet = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::CONTACT_INFO_EDITOR_SHEET));
+  editor_sheet->AcceleratorPressed(
+      ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  data_loop.Run();
+
+  ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
+  autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
+  DCHECK(profile);
+
+  EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
+            profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                             GetLocale()));
+  EXPECT_EQ(base::ASCIIToUTF16(kPhoneNumber),
+            profile->GetInfo(
+                autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                GetLocale()));
+  EXPECT_EQ(base::ASCIIToUTF16(kEmailAddress),
+            profile->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
+                             GetLocale()));
+}
+
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, Validation) {
   InvokePaymentRequestUI();
   OpenContactInfoEditorScreen();

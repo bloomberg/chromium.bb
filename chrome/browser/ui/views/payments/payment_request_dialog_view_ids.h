@@ -68,6 +68,12 @@ enum class DialogViewID : int {
 
   // The CVC text field in the unmask sheet.
   CVC_PROMPT_TEXT_FIELD,
+
+  // The following are the ids for the individual sheets.
+  CONTACT_INFO_EDITOR_SHEET,
+  CREDIT_CARD_EDITOR_SHEET,
+  CVC_UNMASK_SHEET,
+  SHIPPING_ADDRESS_EDITOR_SHEET,
 };
 
 }  // namespace payments
