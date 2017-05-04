@@ -123,7 +123,7 @@ static_library("test_support") {
     "//mojo/edk/system",
     "//services/catalog:lib",
     "//services/service_manager/background:lib",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/ui/common:mus_common",
     "//testing/gtest",
     "//ui/aura",

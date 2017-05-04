@@ -354,7 +354,7 @@ source_set("unit_tests") {
     "//components/variations",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//testing/gtest",
     "//third_party/zlib:compression_utils",
     "//ui/gfx/geometry",

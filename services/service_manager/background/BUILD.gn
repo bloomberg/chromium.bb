@@ -19,7 +19,7 @@ source_set("lib") {
     "//services/catalog:constants",
     "//services/catalog:lib",
     "//services/service_manager",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/host:lib",
     "//services/service_manager/standalone",

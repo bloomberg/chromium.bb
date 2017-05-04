@@ -17,8 +17,8 @@ source_set("connect") {
     ":interfaces",
     "//base",
     "//base/test:test_support",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/tests:util",
   ]
@@ -65,7 +65,7 @@ service("connect_test_package") {
     ":interfaces",
     "//base",
     "//mojo/common:common_base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
 }
@@ -88,7 +88,7 @@ service("connect_test_app") {
     ":interfaces",
     "//base",
     "//mojo/common:common_base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
 }
@@ -107,7 +107,7 @@ service("connect_test_class_app") {
     ":interfaces",
     "//base",
     "//mojo/common:common_base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
 }
@@ -125,7 +125,7 @@ service("connect_test_singleton_app") {
   deps = [
     "//base",
     "//mojo/common:common_base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
   ]
 }
 

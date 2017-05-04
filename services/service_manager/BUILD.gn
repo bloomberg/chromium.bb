@@ -36,7 +36,7 @@ source_set("service_manager") {
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/interfaces:constants",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner/host:lib",
   ]

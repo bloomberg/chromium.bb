@@ -114,7 +114,7 @@ source_set("gbm") {
     "//base",
     "//ipc",
     "//mojo/common:common_base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces:constants",
     "//skia",
     "//third_party/libdrm",

@@ -18,7 +18,7 @@ source_set("lib") {
     "//mash/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/interfaces",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//ui/resources",
     "//ui/views",
@@ -36,7 +36,7 @@ service("task_viewer") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//ui/views/mus:for_mojo_application",
   ]

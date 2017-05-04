@@ -18,7 +18,7 @@ source_set("unittests") {
     ":test_service_interfaces",
     "//base",
     "//services/service_manager/background:lib",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//testing/gtest",
     "//url",
   ]
@@ -42,7 +42,7 @@ service("background_service_manager_test_service") {
   deps = [
     ":test_service_interfaces",
     "//base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
 }

@@ -56,7 +56,7 @@ source_set("util") {
     "//base",
     "//base:base_static",
     "//mojo/edk/system",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner/common",
   ]

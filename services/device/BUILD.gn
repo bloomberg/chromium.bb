@@ -134,8 +134,8 @@ source_set("test_support") {
     "//base/test:test_support",
     "//mojo/public/cpp/bindings",
     "//services/device/public/interfaces:constants",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp:sources",
   ]
 }
 
