@@ -235,8 +235,16 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   const std::string* GetUniformMappedName(
       const std::string& original_name) const;
 
-  // If the hashed name is not found, return NULL.
+  // If the hashed name name is not found, return NULL.
+  // Use this only when one of the more specific Get*Info methods can't be used.
   const std::string* GetOriginalNameFromHashedName(
+      const std::string& hashed_name) const;
+
+  // If the hashed name is not found, return NULL.
+  const sh::Varying* GetVaryingInfo(const std::string& hashed_name) const;
+
+  // If the hashed name is not found, return NULL.
+  const sh::InterfaceBlock* GetInterfaceBlockInfo(
       const std::string& hashed_name) const;
 
   const FragmentInputInfo* GetFragmentInputInfoByFakeLocation(

@@ -75,7 +75,7 @@ void Shader::DoCompile() {
     bool success = translator->Translate(
         last_compiled_source_, &log_info_, &translated_source_,
         &shader_version_, &attrib_map_, &uniform_map_, &varying_map_,
-        &interface_block_map_, &output_variable_list_, &name_map_);
+        &interface_block_map_, &output_variable_list_);
     if (!success) {
       return;
     }

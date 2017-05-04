@@ -196,7 +196,7 @@ TEST_F(ShaderManagerTest, DoCompile) {
       kOutputVariable1StaticUse, kOutputVariable1Name));
   TestHelper::SetShaderStates(
       gl_.get(), shader1, true, &kLog, &kTranslatedSource, nullptr, &attrib_map,
-      &uniform_map, &varying_map, nullptr, &output_variable_list, nullptr);
+      &uniform_map, &varying_map, nullptr, &output_variable_list);
   EXPECT_TRUE(shader1->valid());
   // When compilation succeeds, no log is recorded.
   EXPECT_STREQ("", shader1->log_info().c_str());
@@ -214,6 +214,8 @@ TEST_F(ShaderManagerTest, DoCompile) {
     EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
+    EXPECT_STREQ(it->second.name.c_str(),
+                 shader1->GetOriginalNameFromHashedName(it->first)->c_str());
   }
   // Check uniform infos got copied.
   EXPECT_EQ(uniform_map.size(), shader1->uniform_map().size());
@@ -226,6 +228,8 @@ TEST_F(ShaderManagerTest, DoCompile) {
     EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
+    EXPECT_STREQ(it->second.name.c_str(),
+                 shader1->GetOriginalNameFromHashedName(it->first)->c_str());
   }
   // Check varying infos got copied.
   EXPECT_EQ(varying_map.size(), shader1->varying_map().size());
@@ -238,7 +242,10 @@ TEST_F(ShaderManagerTest, DoCompile) {
     EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_STREQ(it->second.name.c_str(), variable_info->name.c_str());
+    EXPECT_STREQ(it->second.name.c_str(),
+                 shader1->GetOriginalNameFromHashedName(it->first)->c_str());
   }
+  // TODO(kainino): Check interface block infos got copied.
   // Check output variable infos got copied.
   EXPECT_EQ(output_variable_list.size(),
             shader1->output_variable_list().size());
@@ -252,13 +259,15 @@ TEST_F(ShaderManagerTest, DoCompile) {
     EXPECT_EQ(it->precision, variable_info->precision);
     EXPECT_EQ(it->staticUse, variable_info->staticUse);
     EXPECT_STREQ(it->name.c_str(), variable_info->name.c_str());
+    EXPECT_STREQ(
+        it->name.c_str(),
+        shader1->GetOriginalNameFromHashedName(it->mappedName)->c_str());
   }
 
   // Compile failure case.
-  TestHelper::SetShaderStates(gl_.get(), shader1, false, &kLog,
-                              &kTranslatedSource, nullptr, &attrib_map,
-                              &uniform_map, &varying_map, nullptr,
-                              &output_variable_list, nullptr);
+  TestHelper::SetShaderStates(
+      gl_.get(), shader1, false, &kLog, &kTranslatedSource, nullptr,
+      &attrib_map, &uniform_map, &varying_map, nullptr, &output_variable_list);
   EXPECT_FALSE(shader1->valid());
   EXPECT_STREQ(kLog.c_str(), shader1->log_info().c_str());
   EXPECT_STREQ("", shader1->translated_source().c_str());
