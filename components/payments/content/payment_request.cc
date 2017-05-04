@@ -26,7 +26,10 @@ PaymentRequest::PaymentRequest(
       delegate_(std::move(delegate)),
       manager_(manager),
       binding_(this, std::move(request)),
-      observer_for_testing_(observer_for_testing) {
+      observer_for_testing_(observer_for_testing),
+      journey_logger_(delegate_->IsIncognito(),
+                      web_contents_->GetLastCommittedURL(),
+                      delegate_->GetUkmService()) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
@@ -104,6 +107,7 @@ void PaymentRequest::Show() {
     return;
   }
 
+  journey_logger_.SetShowCalled();
   delegate_->ShowDialog(this);
 }
 
@@ -121,6 +125,9 @@ void PaymentRequest::Abort() {
   // The API user has decided to abort. We return a successful abort message to
   // the renderer, which closes the Mojo message pipe, which triggers
   // PaymentRequest::OnConnectionTerminated, which destroys this object.
+  // TODO(crbug.com/716546): Add a merchant abort metric,
+  journey_logger_.RecordJourneyStatsHistograms(
+      JourneyLogger::COMPLETION_STATUS_OTHER_ABORTED);
   if (client_.is_bound())
     client_->OnAbort(true /* aborted_successfully */);
 }
@@ -132,6 +139,8 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
   if (result != mojom::PaymentComplete::SUCCESS) {
     delegate_->ShowErrorMessage();
   } else {
+    journey_logger_.RecordJourneyStatsHistograms(
+        JourneyLogger::COMPLETION_STATUS_COMPLETED);
     // When the renderer closes the connection,
     // PaymentRequest::OnConnectionTerminated will be called.
     client_->OnComplete();
@@ -145,6 +154,8 @@ void PaymentRequest::CanMakePayment() {
       delegate_->IsIncognito() || state()->CanMakePayment()
           ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
           : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
+  journey_logger_.SetCanMakePaymentValue(delegate_->IsIncognito() ||
+                                         state()->CanMakePayment());
   if (observer_for_testing_)
     observer_for_testing_->OnCanMakePaymentCalled();
 }
@@ -169,6 +180,9 @@ void PaymentRequest::UserCancelled() {
   // a result of a renderer event.
   if (!client_.is_bound())
     return;
+
+  journey_logger_.RecordJourneyStatsHistograms(
+      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
 
   // This sends an error to the renderer, which informs the API user.
   client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);

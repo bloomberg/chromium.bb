@@ -19,6 +19,10 @@ class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
 
+namespace ukm {
+class UkmService;
+}  // namespace ukm
+
 namespace payments {
 
 class AddressNormalizer;
@@ -67,6 +71,9 @@ class PaymentRequestDelegate {
 
   // Creates a new region data loader that will self delete, or a test mock.
   virtual autofill::RegionDataLoader* GetRegionDataLoader() = 0;
+
+  // Returns a pointer to the UKM service.
+  virtual ukm::UkmService* GetUkmService() = 0;
 };
 
 }  // namespace payments

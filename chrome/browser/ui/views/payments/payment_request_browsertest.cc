@@ -53,8 +53,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateTo404) {
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/non-existent.html"));
+  NavigateTo("/non-existent.html");
 
   WaitForObservedEvent();
 }
@@ -64,9 +63,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateToSame) {
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
 
-  ui_test_utils::NavigateToURL(
-      browser(),
-      https_server()->GetURL("/payment_request_no_shipping_test.html"));
+  NavigateTo("/payment_request_no_shipping_test.html");
 
   WaitForObservedEvent();
 }

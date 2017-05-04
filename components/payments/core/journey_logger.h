@@ -66,7 +66,7 @@ class JourneyLogger {
     EVENT_PAY_CLICKED = 1 << 1,
     EVENT_RECEIVED_INSTRUMENT_DETAILS = 1 << 2,
     EVENT_SKIPPED_SHOW = 1 << 3,
-    EVENT_MAX = 16,
+    EVENT_ENUM_MAX = 16,
   };
 
   // Used to mesure the impact of the CanMakePayment return value on whether the
@@ -157,9 +157,10 @@ class JourneyLogger {
   void RecordUrlKeyedMetrics(CompletionStatus completion_status);
 
   SectionStats sections_[NUMBER_OF_SECTIONS];
-  bool was_can_make_payments_used_;
-  bool could_make_payment_;
-  bool was_show_called_;
+  bool has_recorded_ = false;
+  bool was_can_make_payments_used_ = false;
+  bool could_make_payment_ = false;
+  bool was_show_called_ = false;
   bool is_incognito_;
 
   // Accumulates the many events that have happened during the Payment Request.

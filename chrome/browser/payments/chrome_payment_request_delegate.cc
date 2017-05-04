@@ -184,4 +184,8 @@ AddressNormalizer* ChromePaymentRequestDelegate::GetAddressNormalizer() {
   return &address_normalizer_;
 }
 
+ukm::UkmService* ChromePaymentRequestDelegate::GetUkmService() {
+  return g_browser_process->ukm_service();
+}
+
 }  // namespace payments

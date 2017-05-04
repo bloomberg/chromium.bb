@@ -47,6 +47,97 @@ class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
   bool on_instrument_details_error_called_ = false;
 };
 
+class FakeAddressNormalizer : public AddressNormalizer {
+ public:
+  FakeAddressNormalizer() {}
+
+  void LoadRulesForRegion(const std::string& region_code) override {}
+
+  bool AreRulesLoadedForRegion(const std::string& region_code) override {
+    return true;
+  }
+
+  void StartAddressNormalization(
+      const autofill::AutofillProfile& profile,
+      const std::string& region_code,
+      int timeout_seconds,
+      AddressNormalizer::Delegate* requester) override {
+    profile_ = profile;
+    requester_ = requester;
+  }
+
+  void OnAddressValidationRulesLoaded(const std::string& region_code,
+                                      bool success) override {}
+
+  void CompleteAddressNormalization() {
+    requester_->OnAddressNormalized(profile_);
+  }
+
+ private:
+  autofill::AutofillProfile profile_;
+  AddressNormalizer::Delegate* requester_;
+};
+
+class FakePaymentRequestDelegate : public PaymentRequestDelegate {
+ public:
+  FakePaymentRequestDelegate()
+      : locale_("en-US"), last_committed_url_("https://shop.com") {}
+  void ShowDialog(PaymentRequest* request) override {}
+
+  void CloseDialog() override {}
+
+  void ShowErrorMessage() override {}
+
+  autofill::PersonalDataManager* GetPersonalDataManager() override {
+    return nullptr;
+  }
+
+  const std::string& GetApplicationLocale() const override { return locale_; }
+
+  bool IsIncognito() const override { return false; }
+
+  bool IsSslCertificateValid() override { return true; }
+
+  const GURL& GetLastCommittedURL() const override {
+    return last_committed_url_;
+  }
+
+  void DoFullCardRequest(
+      const autofill::CreditCard& credit_card,
+      base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
+          result_delegate) override {
+    full_card_request_card_ = credit_card;
+    full_card_result_delegate_ = result_delegate;
+  }
+
+  AddressNormalizer* GetAddressNormalizer() override {
+    return &address_normalizer_;
+  }
+
+  FakeAddressNormalizer* GetTestAddressNormalizer() {
+    return &address_normalizer_;
+  }
+
+  void CompleteFullCardRequest() {
+    full_card_result_delegate_->OnFullCardRequestSucceeded(
+        full_card_request_card_, base::ASCIIToUTF16("123"));
+  }
+
+  autofill::RegionDataLoader* GetRegionDataLoader() override { return nullptr; }
+
+  ukm::UkmService* GetUkmService() override { return nullptr; }
+
+ private:
+  std::string locale_;
+  const GURL last_committed_url_;
+  FakeAddressNormalizer address_normalizer_;
+
+  autofill::CreditCard full_card_request_card_;
+  base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
+      full_card_result_delegate_;
+  DISALLOW_COPY_AND_ASSIGN(FakePaymentRequestDelegate);
+};
+
 }  // namespace
 
 class AutofillPaymentInstrumentTest : public testing::Test {
