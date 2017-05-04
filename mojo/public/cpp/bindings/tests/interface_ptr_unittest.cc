@@ -704,15 +704,15 @@ class PingTestImpl : public sample::PingTest {
 
 // Tests that FuseProxy does what it's supposed to do.
 TEST_F(InterfacePtrTest, Fusion) {
-  sample::PingTestPtr proxy;
-  PingTestImpl impl(MakeRequest(&proxy));
+  sample::PingTestPtrInfo proxy_info;
+  PingTestImpl impl(MakeRequest(&proxy_info));
 
   // Create another PingTest pipe.
   sample::PingTestPtr ptr;
   sample::PingTestRequest request(&ptr);
 
   // Fuse the new pipe to the one hanging off |impl|.
-  EXPECT_TRUE(FuseInterface(std::move(request), proxy.PassInterface()));
+  EXPECT_TRUE(FuseInterface(std::move(request), std::move(proxy_info)));
 
   // Ping!
   bool called = false;

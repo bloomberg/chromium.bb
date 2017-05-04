@@ -31,10 +31,10 @@ namespace mojo {
 // to a message pipe. All calls to this class or the proxy should be from the
 // same thread that bound it. If you need to move the proxy to a different
 // thread, extract the InterfacePtrInfo (containing just the message pipe and
-// any version information) using PassInterface(), pass it to a different
-// thread, and create and bind a new InterfacePtr from that thread. If an
-// InterfacePtr is not bound to a message pipe, it may be bound or destroyed on
-// any thread.
+// any version information) using PassInterface() on the original thread, pass
+// it to a different thread, and create and bind a new InterfacePtr from that
+// thread. If an InterfacePtr is not bound to a message pipe, it may be bound or
+// destroyed on any thread.
 template <typename Interface>
 class InterfacePtr {
  public:
