@@ -92,7 +92,7 @@ includes `R.java`).
 * If you ever need to reset it: `rm -r ~/.AndroidStudio*/`
 * Import Android style settings:
     * Help -&gt; Find Action -&gt; "Code Style" (settings) -&gt; Java -&gt;
-      Manage -&gt; Import
+      Manage -&gt; Import -&gt; select "Intellij IDEA code style XML" -&gt; OK
         * Select `tools/android/android_studio/ChromiumStyle.xml`
 * Turn on automatic import:
     * Help -&gt; Find Action -&gt; "Auto Import"
