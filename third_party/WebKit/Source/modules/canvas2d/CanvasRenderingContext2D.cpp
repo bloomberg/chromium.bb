@@ -586,19 +586,19 @@ void CanvasRenderingContext2D::ResourceElementChanged() {
 }
 
 bool CanvasRenderingContext2D::OriginClean() const {
-  return canvas()->OriginClean();
+  return host()->OriginClean();
 }
 
 void CanvasRenderingContext2D::SetOriginTainted() {
-  return canvas()->SetOriginTainted();
+  return host()->SetOriginTainted();
 }
 
 int CanvasRenderingContext2D::Width() const {
-  return canvas()->width();
+  return host()->Size().Width();
 }
 
 int CanvasRenderingContext2D::Height() const {
-  return canvas()->height();
+  return host()->Size().Height();
 }
 
 bool CanvasRenderingContext2D::HasImageBuffer() const {

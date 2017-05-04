@@ -275,7 +275,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   ListHashSet<String> font_lru_list_;
 };
 
-// TODO(fserb): remove this?
 DEFINE_TYPE_CASTS(CanvasRenderingContext2D,
                   CanvasRenderingContext,
                   context,
