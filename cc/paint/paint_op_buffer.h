@@ -92,6 +92,9 @@ struct CC_PAINT_EXPORT PaintOp {
   int CountSlowPaths() const { return 0; }
   int CountSlowPathsFromFlags() const { return 0; }
 
+  bool HasDiscardableImages() const { return false; }
+  bool HasDiscardableImagesFromFlags() const { return false; }
+
   // Returns the number of bytes used by this op in referenced sub records
   // and display lists.  This doesn't count other objects like paths or blobs.
   size_t AdditionalBytesUsed() const { return 0; }
@@ -107,6 +110,14 @@ struct CC_PAINT_EXPORT PaintOpWithFlags : PaintOp {
   explicit PaintOpWithFlags(const PaintFlags& flags) : flags(flags) {}
 
   int CountSlowPathsFromFlags() const { return flags.getPathEffect() ? 1 : 0; }
+  bool HasDiscardableImagesFromFlags() const {
+    if (!IsDrawOp())
+      return false;
+
+    SkShader* shader = flags.getShader();
+    SkImage* image = shader ? shader->isAImage(nullptr, nullptr) : nullptr;
+    return image && image->isLazyGenerated();
+  }
 
   // Subclasses should provide a static RasterWithFlags() method which is called
   // from the Raster() method. The RasterWithFlags() should use the PaintFlags
@@ -364,6 +375,7 @@ struct CC_PAINT_EXPORT DrawDisplayItemListOp final : PaintOp {
                      SkCanvas* canvas,
                      const SkMatrix& original_ctm);
   size_t AdditionalBytesUsed() const;
+  bool HasDiscardableImages() const;
   // TODO(enne): DisplayItemList should know number of slow paths.
 
   scoped_refptr<DisplayItemList> list;
@@ -409,6 +421,7 @@ struct CC_PAINT_EXPORT DrawImageOp final : PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const SkMatrix& original_ctm);
+  bool HasDiscardableImages() const;
 
   PaintImage image;
   SkScalar left;
@@ -434,6 +447,7 @@ struct CC_PAINT_EXPORT DrawImageRectOp final : PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const SkMatrix& original_ctm);
+  bool HasDiscardableImages() const;
 
   PaintImage image;
   SkRect src;
@@ -558,6 +572,7 @@ struct CC_PAINT_EXPORT DrawRecordOp final : PaintOp {
                      SkCanvas* canvas,
                      const SkMatrix& original_ctm);
   size_t AdditionalBytesUsed() const;
+  bool HasDiscardableImages() const;
 
   sk_sp<const PaintRecord> record;
 };
@@ -771,6 +786,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     return sizeof(*this) + reserved_ + subrecord_bytes_used_;
   }
   int numSlowPaths() const { return num_slow_paths_; }
+  bool HasDiscardableImages() const { return has_discardable_images_; }
 
   // Resize the PaintOpBuffer to exactly fit the current amount of used space.
   void ShrinkToFit();
@@ -933,6 +949,9 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     num_slow_paths_ += op->CountSlowPathsFromFlags();
     num_slow_paths_ += op->CountSlowPaths();
 
+    has_discardable_images_ |= op->HasDiscardableImages();
+    has_discardable_images_ |= op->HasDiscardableImagesFromFlags();
+
     subrecord_bytes_used_ += op->AdditionalBytesUsed();
   }
 
@@ -948,6 +967,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   int num_slow_paths_ = 0;
   // Record additional bytes used by referenced sub-records and display lists.
   size_t subrecord_bytes_used_ = 0;
+  bool has_discardable_images_ = false;
   SkRect cull_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintOpBuffer);

@@ -18,6 +18,7 @@
 #include "cc/base/rtree.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/paint/display_item.h"
+#include "cc/paint/drawing_display_item.h"
 #include "cc/paint/image_id.h"
 #include "cc/paint/paint_export.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -119,7 +120,10 @@ class CC_PAINT_EXPORT DisplayItemList
     visual_rects_.push_back(visual_rect);
     GrowCurrentBeginItemVisualRect(visual_rect);
 
-    return AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
+    const auto& item =
+        AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
+    has_discardable_images_ |= item.picture->HasDiscardableImages();
+    return item;
   }
 
   // Called after all items are appended, to process the items and, if
@@ -160,6 +164,8 @@ class CC_PAINT_EXPORT DisplayItemList
     return items_.end();
   }
 
+  bool has_discardable_images() const { return has_discardable_images_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoItems);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithItems);
@@ -198,6 +204,7 @@ class CC_PAINT_EXPORT DisplayItemList
   // For testing purposes only. Whether to keep visual rects across calls to
   // Finalize().
   bool retain_visual_rects_ = false;
+  bool has_discardable_images_ = false;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, ApproximateMemoryUsage);

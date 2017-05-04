@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/display_item_list.h"
+#include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -415,6 +417,62 @@ TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleNonDrawOp) {
 
   EXPECT_EQ(1, canvas.save_count_);
   EXPECT_EQ(1, canvas.restore_count_);
+}
+
+TEST(PaintOpBufferTest, DiscardableImagesTracking_EmptyBuffer) {
+  PaintOpBuffer buffer;
+  EXPECT_FALSE(buffer.HasDiscardableImages());
+}
+
+TEST(PaintOpBufferTest, DiscardableImagesTracking_NoImageOp) {
+  PaintOpBuffer buffer;
+  PaintFlags flags;
+  buffer.push<DrawRectOp>(SkRect::MakeWH(100, 100), flags);
+  EXPECT_FALSE(buffer.HasDiscardableImages());
+}
+
+TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImage) {
+  PaintOpBuffer buffer;
+  PaintImage image = PaintImage(CreateDiscardableImage(gfx::Size(100, 100)));
+  buffer.push<DrawImageOp>(image, SkIntToScalar(0), SkIntToScalar(0), nullptr);
+  EXPECT_TRUE(buffer.HasDiscardableImages());
+}
+
+TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImageRect) {
+  PaintOpBuffer buffer;
+  PaintImage image = PaintImage(CreateDiscardableImage(gfx::Size(100, 100)));
+  buffer.push<DrawImageRectOp>(
+      image, SkRect::MakeWH(100, 100), SkRect::MakeWH(100, 100), nullptr,
+      PaintCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
+  EXPECT_TRUE(buffer.HasDiscardableImages());
+}
+
+TEST(PaintOpBufferTest, DiscardableImagesTracking_NestedDrawOp) {
+  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+  PaintImage image = PaintImage(CreateDiscardableImage(gfx::Size(100, 100)));
+  record->push<DrawImageOp>(image, SkIntToScalar(0), SkIntToScalar(0), nullptr);
+
+  PaintOpBuffer buffer;
+  buffer.push<DrawRecordOp>(record);
+  EXPECT_TRUE(buffer.HasDiscardableImages());
+
+  scoped_refptr<DisplayItemList> list = new DisplayItemList;
+  list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
+      gfx::Rect(0, 0, 100, 100), record);
+  list->Finalize();
+  PaintOpBuffer new_buffer;
+  new_buffer.push<DrawDisplayItemListOp>(list);
+  EXPECT_TRUE(new_buffer.HasDiscardableImages());
+}
+
+TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
+  PaintOpBuffer buffer;
+  PaintFlags flags;
+  sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(100, 100));
+  flags.setShader(
+      image->makeShader(SkShader::kClamp_TileMode, SkShader::kClamp_TileMode));
+  buffer.push<DrawRectOp>(SkRect::MakeWH(100, 100), flags);
+  EXPECT_TRUE(buffer.HasDiscardableImages());
 }
 
 }  // namespace cc
