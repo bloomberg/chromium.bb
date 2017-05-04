@@ -636,6 +636,15 @@ source_set("blink_headers") {
 
   deps = [
     ":generate_mojo_bindings",
+    "//base:base",
+    "//cc:cc",
+    "//cc/paint:paint",
+    "//cc/surfaces:surface_id",
+    "//device/screen_orientation/public/interfaces:interfaces_shared_cpp_sources",
+    "//media/midi:mojo_shared_cpp_sources",
+    "//mojo/public/cpp/bindings:bindings",
+    "//mojo/public/cpp/system:system",
+    "//v8:v8_headers",
   ]
 }
 
@@ -803,6 +812,8 @@ source_set("shared_typemap_traits") {
     "web/ConsoleMessageStructTraits.h",
   ]
   deps = [
+    ":blink_headers",
     ":mojo_bindings_shared__generator",
+    "//mojo/public/cpp/bindings:struct_traits",
   ]
 }
