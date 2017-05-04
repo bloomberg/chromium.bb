@@ -3669,7 +3669,7 @@ static void drmFoldDuplicatedDevices(drmDevicePtr local_devices[], int count)
 
     for (i = 0; i < count; i++) {
         for (j = i + 1; j < count; j++) {
-            if (drmCompareDevices(local_devices[i], local_devices[j])) {
+            if (drmDevicesEqual(local_devices[i], local_devices[j])) {
                 local_devices[i]->available_nodes |= local_devices[j]->available_nodes;
                 node_type = log2(local_devices[j]->available_nodes);
                 memcpy(local_devices[i]->nodes[node_type],
