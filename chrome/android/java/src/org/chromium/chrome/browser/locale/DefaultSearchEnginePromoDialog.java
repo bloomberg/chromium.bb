@@ -80,6 +80,8 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
         super.onCreate(savedInstanceState);
 
         Button okButton = (Button) findViewById(R.id.button_primary);
+        okButton.setEnabled(false);
+
         RadioButtonLayout radioButtons = new RadioButtonLayout(getContext());
         addControl(radioButtons);
 

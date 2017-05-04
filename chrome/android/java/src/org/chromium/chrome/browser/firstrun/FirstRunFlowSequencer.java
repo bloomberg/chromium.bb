@@ -22,6 +22,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
@@ -139,6 +140,13 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     @VisibleForTesting
+    protected boolean shouldShowSearchEnginePage() {
+        int searchPromoType = LocaleManager.getInstance().getSearchEnginePromoShowType();
+        return searchPromoType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_NEW
+                || searchPromoType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING;
+    }
+
+    @VisibleForTesting
     protected void setDefaultMetricsAndCrashReporting() {
         PrivacyPreferencesManager.getInstance().setUsageAndCrashReporting(
                 FirstRunActivity.DEFAULT_METRICS_AND_CRASH_REPORTING);
@@ -230,6 +238,8 @@ public abstract class FirstRunFlowSequencer  {
 
         freProperties.putBoolean(
                 FirstRunActivity.SHOW_DATA_REDUCTION_PAGE, shouldShowDataReductionPage());
+        freProperties.putBoolean(
+                FirstRunActivity.SHOW_SEARCH_ENGINE_PAGE, shouldShowSearchEnginePage());
         freProperties.remove(FirstRunActivity.POST_NATIVE_SETUP_NEEDED);
     }
 
