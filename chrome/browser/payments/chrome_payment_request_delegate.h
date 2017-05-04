@@ -40,6 +40,7 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
           result_delegate) override;
   AddressNormalizer* GetAddressNormalizer() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
+  ukm::UkmService* GetUkmService() override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "components/payments/mojom/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -101,6 +102,8 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // May be null, must outlive this object.
   ObserverForTest* observer_for_testing_;
+
+  JourneyLogger journey_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

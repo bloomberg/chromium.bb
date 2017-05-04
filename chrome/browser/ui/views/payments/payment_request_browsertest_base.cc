@@ -59,14 +59,14 @@ PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase(
 PaymentRequestBrowserTestBase::~PaymentRequestBrowserTestBase() {}
 
 void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
+  // Setup the https server.
   https_server_ = base::MakeUnique<net::EmbeddedTestServer>(
       net::EmbeddedTestServer::TYPE_HTTPS);
   ASSERT_TRUE(https_server_->InitializeAndListen());
   https_server_->ServeFilesFromSourceDirectory("chrome/test/data/payments");
   https_server_->StartAcceptingConnections();
 
-  GURL url = https_server()->GetURL(test_file_path_);
-  ui_test_utils::NavigateToURL(browser(), url);
+  NavigateTo(test_file_path_);
 
   // Starting now, PaymentRequest Mojo messages sent by the renderer will
   // create PaymentRequest objects via this test's CreatePaymentRequestForTest,
@@ -78,6 +78,10 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   registry->AddInterface(
       base::Bind(&PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
                  base::Unretained(this), web_contents));
+}
+
+void PaymentRequestBrowserTestBase::NavigateTo(const std::string& file_path) {
+  ui_test_utils::NavigateToURL(browser(), https_server()->GetURL(file_path));
 }
 
 void PaymentRequestBrowserTestBase::SetIncognito() {
@@ -330,6 +334,12 @@ void PaymentRequestBrowserTestBase::ClickOnBackArrow() {
   ResetEventObserver(DialogEvent::BACK_NAVIGATION);
 
   ClickOnDialogViewAndWait(DialogViewID::BACK_BUTTON);
+}
+
+void PaymentRequestBrowserTestBase::ClickOnCancel() {
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+
+  ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON, false);
 }
 
 content::WebContents* PaymentRequestBrowserTestBase::GetActiveWebContents() {

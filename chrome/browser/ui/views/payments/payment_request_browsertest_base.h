@@ -74,6 +74,8 @@ class PaymentRequestBrowserTestBase
 
   void SetUpOnMainThread() override;
 
+  void NavigateTo(const std::string& file_path);
+
   void SetIncognito();
   void SetInvalidSsl();
 
@@ -121,6 +123,7 @@ class PaymentRequestBrowserTestBase
   void OpenShippingAddressEditorScreen();
   void OpenContactInfoEditorScreen();
   void ClickOnBackArrow();
+  void ClickOnCancel();
 
   content::WebContents* GetActiveWebContents();
 

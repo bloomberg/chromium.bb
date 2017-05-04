@@ -67,10 +67,7 @@ std::string GetHistogramNameSuffix(
 JourneyLogger::JourneyLogger(bool is_incognito,
                              const GURL& url,
                              ukm::UkmService* ukm_service)
-    : was_can_make_payments_used_(false),
-      could_make_payment_(false),
-      was_show_called_(false),
-      is_incognito_(is_incognito),
+    : is_incognito_(is_incognito),
       events_(EVENT_INITIATED),
       url_(url),
       ukm_service_(ukm_service) {}
@@ -113,6 +110,9 @@ void JourneyLogger::SetEventOccurred(Event event) {
 
 void JourneyLogger::RecordJourneyStatsHistograms(
     CompletionStatus completion_status) {
+  DCHECK(!has_recorded_);
+  has_recorded_ = true;
+
   RecordSectionSpecificStats(completion_status);
 
   // Record the CanMakePayment metrics based on whether the transaction was

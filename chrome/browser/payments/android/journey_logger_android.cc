@@ -94,7 +94,7 @@ void JourneyLoggerAndroid::SetEventOccurred(
     const base::android::JavaParamRef<jobject>& jcaller,
     jint jevent) {
   DCHECK_GE(jevent, 0);
-  DCHECK_LT(jevent, JourneyLogger::Event::EVENT_MAX);
+  DCHECK_LT(jevent, JourneyLogger::Event::EVENT_ENUM_MAX);
   journey_logger_.SetEventOccurred(static_cast<JourneyLogger::Event>(jevent));
 }
 
