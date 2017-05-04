@@ -185,9 +185,6 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // App id to associate with the jump list.
   std::wstring app_id_;
 
-  // The directory which contains JumpList icons.
-  base::FilePath icon_dir_;
-
   // Timer for requesting delayed updates of the jumplist.
   base::OneShotTimer timer_;
 
