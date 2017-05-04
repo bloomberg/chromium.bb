@@ -26,8 +26,11 @@
 namespace content {
 
 VideoCaptureGpuJpegDecoder::VideoCaptureGpuJpegDecoder(
-    const DecodeDoneCB& decode_done_cb)
-    : decode_done_cb_(decode_done_cb),
+    DecodeDoneCB decode_done_cb,
+    base::Callback<void(const std::string&)> send_log_message_cb)
+    : decode_done_cb_(std::move(decode_done_cb)),
+      send_log_message_cb_(std::move(send_log_message_cb)),
+      has_received_decoded_frame_(false),
       next_bitstream_buffer_id_(0),
       in_buffer_id_(media::JpegDecodeAccelerator::kInvalidBitstreamBufferId),
       decoder_status_(INIT_PENDING) {}
@@ -176,6 +179,10 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
 void VideoCaptureGpuJpegDecoder::VideoFrameReady(int32_t bitstream_buffer_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT0("jpeg", "VideoCaptureGpuJpegDecoder::VideoFrameReady");
+  if (!has_received_decoded_frame_) {
+    send_log_message_cb_.Run("Received decoded frame from Gpu Jpeg decoder");
+    has_received_decoded_frame_ = true;
+  }
   base::AutoLock lock(lock_);
 
   if (!IsDecoding_Locked()) {
@@ -203,7 +210,7 @@ void VideoCaptureGpuJpegDecoder::NotifyError(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LOG(ERROR) << "Decode error, bitstream_buffer_id=" << bitstream_buffer_id
              << ", error=" << error;
-
+  send_log_message_cb_.Run("Gpu Jpeg decoder failed");
   base::AutoLock lock(lock_);
   decode_done_closure_.Reset();
   decoder_status_ = FAILED;

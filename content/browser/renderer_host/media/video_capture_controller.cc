@@ -447,6 +447,7 @@ void VideoCaptureController::OnFrameReadyInBuffer(
       }
     }
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate", frame_rate);
+    OnLog("First frame received at VideoCaptureController");
     has_received_frames_ = true;
   }
 }
@@ -484,6 +485,8 @@ void VideoCaptureController::OnStarted() {
 }
 
 void VideoCaptureController::OnStartedUsingGpuDecode() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  OnLog("StartedUsingGpuDecode");
   PerformForClientsWithOpenSession(base::Bind(&CallOnStartedUsingGpuDecode));
 }
 

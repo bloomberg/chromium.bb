@@ -35,8 +35,10 @@
 namespace {
 
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
-    const media::VideoCaptureJpegDecoder::DecodeDoneCB& decode_done_cb) {
-  return base::MakeUnique<content::VideoCaptureGpuJpegDecoder>(decode_done_cb);
+    media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
+    base::Callback<void(const std::string&)> send_log_message_cb) {
+  return base::MakeUnique<content::VideoCaptureGpuJpegDecoder>(
+      std::move(decode_done_cb), std::move(send_log_message_cb));
 }
 
 // The maximum number of video frame buffers in-flight at any one time. This
@@ -148,7 +150,8 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
       std::move(buffer_pool),
       base::Bind(&CreateGpuJpegDecoder,
                  base::Bind(&media::VideoFrameReceiver::OnFrameReadyInBuffer,
-                            receiver)));
+                            receiver),
+                 base::Bind(&media::VideoFrameReceiver::OnLog, receiver)));
 }
 
 void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(

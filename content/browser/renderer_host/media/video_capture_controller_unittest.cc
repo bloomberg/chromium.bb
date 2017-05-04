@@ -47,8 +47,9 @@ using ::testing::SaveArg;
 namespace content {
 
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
-    const media::VideoCaptureJpegDecoder::DecodeDoneCB& decode_done_cb) {
-  return base::MakeUnique<content::VideoCaptureGpuJpegDecoder>(decode_done_cb);
+    media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb) {
+  return base::MakeUnique<content::VideoCaptureGpuJpegDecoder>(
+      std::move(decode_done_cb), base::Bind([](const std::string&) {}));
 }
 
 class MockVideoCaptureControllerEventHandler
