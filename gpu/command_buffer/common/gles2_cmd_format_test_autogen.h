@@ -4707,13 +4707,13 @@ TEST_F(GLES2FormatTest, ScheduleDCLayerCHROMIUM) {
   cmds::ScheduleDCLayerCHROMIUM& cmd =
       *GetBufferAs<cmds::ScheduleDCLayerCHROMIUM>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+      cmd.Set(&cmd, static_cast<GLsizei>(11), static_cast<GLuint>(12),
               static_cast<GLuint>(13), static_cast<GLuint>(14),
               static_cast<GLuint>(15), static_cast<GLuint>(16));
   EXPECT_EQ(static_cast<uint32_t>(cmds::ScheduleDCLayerCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.contents_texture_id);
+  EXPECT_EQ(static_cast<GLsizei>(11), cmd.num_textures);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.background_color);
   EXPECT_EQ(static_cast<GLuint>(13), cmd.edge_aa_mask);
   EXPECT_EQ(static_cast<GLuint>(14), cmd.filter);

@@ -26,7 +26,7 @@ struct GL_EXPORT DCRendererLayerParams {
                         const gfx::Rect clip_rect,
                         int z_order,
                         const gfx::Transform& transform,
-                        gl::GLImage* image,
+                        std::vector<scoped_refptr<gl::GLImage>> image,
                         const gfx::RectF& contents_rect,
                         const gfx::Rect& rect,
                         unsigned background_color,
@@ -40,7 +40,7 @@ struct GL_EXPORT DCRendererLayerParams {
   const gfx::Rect clip_rect;
   int z_order;
   const gfx::Transform transform;
-  scoped_refptr<gl::GLImage> image;
+  std::vector<scoped_refptr<gl::GLImage>> image;
   const gfx::RectF contents_rect;
   const gfx::Rect rect;
   unsigned background_color;

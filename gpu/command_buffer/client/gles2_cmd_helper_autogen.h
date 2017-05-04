@@ -2836,7 +2836,7 @@ void ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
   }
 }
 
-void ScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
+void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                              GLuint background_color,
                              GLuint edge_aa_mask,
                              GLuint filter,
@@ -2845,7 +2845,7 @@ void ScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
   gles2::cmds::ScheduleDCLayerCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ScheduleDCLayerCHROMIUM>();
   if (c) {
-    c->Init(contents_texture_id, background_color, edge_aa_mask, filter, shm_id,
+    c->Init(num_textures, background_color, edge_aa_mask, filter, shm_id,
             shm_offset);
   }
 }

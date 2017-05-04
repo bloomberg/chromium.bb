@@ -1070,7 +1070,8 @@ void ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
                                         GLint z_order,
                                         const GLfloat* transform) override;
 
-void ScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
+void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
+                             const GLuint* contents_texture_ids,
                              const GLfloat* contents_rect,
                              GLuint background_color,
                              GLuint edge_aa_mask,
