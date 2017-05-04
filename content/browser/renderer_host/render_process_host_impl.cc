@@ -1233,15 +1233,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(), GetGlobalJavaInterfaces()
                           ->CreateInterfaceFactory<
                               shape_detection::mojom::FaceDetectionProvider>());
-  AddUIThreadInterface(
-      registry.get(),
-      GetGlobalJavaInterfaces()
-          ->CreateInterfaceFactory<shape_detection::mojom::BarcodeDetection>());
-  AddUIThreadInterface(
-      registry.get(),
-      GetGlobalJavaInterfaces()
-          ->CreateInterfaceFactory<shape_detection::mojom::TextDetection>());
 #else
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&ForwardShapeDetectionRequest<
+                 shape_detection::mojom::FaceDetectionProviderRequest>));
+#endif
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&ForwardShapeDetectionRequest<
@@ -1249,12 +1246,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&ForwardShapeDetectionRequest<
-                 shape_detection::mojom::FaceDetectionProviderRequest>));
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&ForwardShapeDetectionRequest<
                  shape_detection::mojom::TextDetectionRequest>));
-#endif
+
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&PermissionServiceContext::CreateService,

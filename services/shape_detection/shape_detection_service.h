@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
@@ -27,8 +28,16 @@ class ShapeDetectionService : public service_manager::Service {
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
-
  private:
+#if defined(OS_ANDROID)
+  // Binds |java_interface_provider_| to an interface registry that exposes
+  // factories for the interfaces that are provided via Java on Android.
+  service_manager::InterfaceProvider* GetJavaInterfaces();
+
+  // InterfaceProvider that is bound to the Java-side interface registry.
+  std::unique_ptr<service_manager::InterfaceProvider> java_interface_provider_;
+#endif
+
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
 
