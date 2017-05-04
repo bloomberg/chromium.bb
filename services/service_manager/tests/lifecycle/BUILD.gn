@@ -17,8 +17,8 @@ source_set("lifecycle") {
     ":interfaces",
     "//base",
     "//base/test:test_support",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner/common",
     "//services/service_manager/tests:util",
@@ -61,7 +61,7 @@ source_set("app_client") {
   deps = [
     ":interfaces",
     "//base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
 }
@@ -75,7 +75,7 @@ service("lifecycle_unittest_package") {
     ":app_client",
     ":interfaces",
     "//base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
 }
@@ -98,7 +98,7 @@ service("lifecycle_unittest_app") {
     ":app_client",
     ":interfaces",
     "//base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -115,7 +115,7 @@ service("lifecycle_unittest_parent") {
   deps = [
     ":interfaces",
     "//base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -134,7 +134,7 @@ executable("lifecycle_unittest_exe") {
     "//base",
     "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/standalone_service:main",
   ]
 }

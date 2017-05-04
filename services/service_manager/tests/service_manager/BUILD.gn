@@ -20,8 +20,8 @@ source_set("service_manager") {
     "//base/test:test_config",
     "//mojo/common:common_base",
     "//mojo/edk/system",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner/common",
   ]

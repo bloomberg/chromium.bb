@@ -24,7 +24,7 @@ service("ui") {
 
   deps = [
     ":lib",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
   ]
 
   data_deps = [

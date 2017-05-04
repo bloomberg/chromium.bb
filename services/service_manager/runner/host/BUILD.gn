@@ -16,7 +16,7 @@ source_set("lib") {
   deps = [
     "//base:base_static",
     "//base:i18n",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/standalone_service",
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/common",

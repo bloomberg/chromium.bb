@@ -22,7 +22,7 @@ source_set("lib") {
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//ui/aura",
@@ -45,7 +45,7 @@ service("accessibility_autoclick") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//ui/views/mus:for_mojo_application",
   ]
 

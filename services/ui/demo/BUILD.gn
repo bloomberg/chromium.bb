@@ -30,7 +30,7 @@ source_set("lib") {
   }
 
   public_deps = [
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//skia",
   ]
 

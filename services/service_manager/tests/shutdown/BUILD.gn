@@ -20,8 +20,8 @@ source_set("shutdown") {
     ":shutdown_service",
     "//base",
     "//base/test:test_config",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
   ]
 
@@ -55,7 +55,7 @@ service("shutdown_service") {
   deps = [
     ":interfaces",
     "//base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
 }
@@ -73,7 +73,7 @@ service("shutdown_client") {
   deps = [
     ":interfaces",
     "//base",
-    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
 }

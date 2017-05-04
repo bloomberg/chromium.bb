@@ -42,8 +42,8 @@ service_test("mus_ime_unittests") {
   deps = [
     "//base",
     "//mojo/common",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp:sources",
     "//services/ui/public/interfaces",
   ]
 
