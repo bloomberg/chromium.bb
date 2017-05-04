@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.shapedetection;
+package org.chromium.shape_detection;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,13 +10,13 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.SparseArray;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.gfx.mojom.PointF;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
@@ -45,8 +45,8 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
     @Override
     public void detect(
             SharedBufferHandle frameData, int width, int height, DetectResponse callback) {
-        if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(
-                    mContext, new UserRecoverableErrorHandler.Silent())) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(mContext)
+                != ConnectionResult.SUCCESS) {
             Log.e(TAG, "Google Play Services not available");
             callback.call(new BarcodeDetectionResult[0]);
             return;
