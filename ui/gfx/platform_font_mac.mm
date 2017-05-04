@@ -133,7 +133,20 @@ int PlatformFontMac::GetCapHeight() {
 }
 
 int PlatformFontMac::GetExpectedTextWidth(int length) {
-  return length * average_width_;
+  if (!average_width_ && native_font_) {
+    // -[NSFont boundingRectForGlyph:] seems to always return the largest
+    // bounding rect that could be needed, which produces very wide expected
+    // widths for strings. Instead, compute the actual width of a string
+    // containing all the lowercase characters to find a reasonable guess at the
+    // average.
+    base::scoped_nsobject<NSAttributedString> attr_string(
+        [[NSAttributedString alloc]
+            initWithString:@"abcdefghijklmnopqrstuvwxyz"
+                attributes:@{NSFontAttributeName : native_font_.get()}]);
+    average_width_ = [attr_string size].width / [attr_string length];
+    DCHECK_NE(0, average_width_);
+  }
+  return ceil(length * average_width_);
 }
 
 int PlatformFontMac::GetStyle() const {
@@ -202,7 +215,6 @@ void PlatformFontMac::CalculateMetricsAndInitRenderParams() {
     height_ = 0;
     ascent_ = 0;
     cap_height_ = 0;
-    average_width_ = 0;
     return;
   }
 
@@ -217,9 +229,6 @@ void PlatformFontMac::CalculateMetricsAndInitRenderParams() {
   // simply be added, so do that. Note this uses the already-rounded |ascent_|
   // to ensure GetBaseline() + descender fits within GetHeight() during layout.
   height_ = ceil(ascent_ + std::abs([font descender]) + [font leading]);
-
-  average_width_ =
-      NSWidth([font boundingRectForGlyph:[font glyphWithName:@"x"]]);
 
   FontRenderParamsQuery query;
   query.families.push_back(font_name_);

@@ -70,7 +70,9 @@ class PlatformFontMac : public PlatformFont {
   int height_;
   int ascent_;
   int cap_height_;
-  int average_width_;
+
+  // Cached average width, generated in GetExpectedTextWidth().
+  float average_width_ = 0.0;
 
   // Details about how the font should be rendered.
   FontRenderParams render_params_;
