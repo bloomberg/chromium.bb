@@ -319,14 +319,16 @@ public class ScreenCapture extends Fragment {
             if (mMediaProjection != null && mCaptureState == CaptureState.STARTED) {
                 mMediaProjection.stop();
                 changeCaptureStateAndNotify(CaptureState.STOPPING);
-            }
 
-            while (mCaptureState != CaptureState.STOPPED) {
-                try {
-                    mCaptureStateLock.wait();
-                } catch (InterruptedException ex) {
-                    Log.e(TAG, "ScreenCaptureEvent: " + ex);
+                while (mCaptureState != CaptureState.STOPPED) {
+                    try {
+                        mCaptureStateLock.wait();
+                    } catch (InterruptedException ex) {
+                        Log.e(TAG, "ScreenCaptureEvent: " + ex);
+                    }
                 }
+            } else {
+                changeCaptureStateAndNotify(CaptureState.STOPPED);
             }
         }
     }
