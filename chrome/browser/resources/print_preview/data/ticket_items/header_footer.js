@@ -82,7 +82,7 @@ cr.define('print_preview.ticket_items', function() {
         return false;
       }
       if (this.marginsType_.getValue() ==
-          print_preview.ticket_items.MarginsType.Value.NO_MARGINS) {
+          print_preview.ticket_items.MarginsTypeValue.NO_MARGINS) {
         return false;
       }
       var microns = this.landscape_.getValue() ?
@@ -94,12 +94,12 @@ cr.define('print_preview.ticket_items', function() {
         return false;
       }
       if (this.marginsType_.getValue() ==
-          print_preview.ticket_items.MarginsType.Value.MINIMUM) {
+          print_preview.ticket_items.MarginsTypeValue.MINIMUM) {
         return true;
       }
       var margins;
       if (this.marginsType_.getValue() ==
-          print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+          print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
         if (!this.customMargins_.isValid()) {
           return false;
         }

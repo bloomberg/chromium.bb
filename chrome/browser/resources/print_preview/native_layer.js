@@ -326,7 +326,7 @@ cr.define('print_preview', function() {
 
       if (printTicketStore.marginsType.isCapabilityAvailable() &&
           printTicketStore.marginsType.getValue() ==
-              print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+              print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
         var customMargins = printTicketStore.customMargins.getValue();
         var orientationEnum =
             print_preview.ticket_items.CustomMargins.Orientation;
@@ -408,7 +408,7 @@ cr.define('print_preview', function() {
 
       if (printTicketStore.marginsType.isCapabilityAvailable() &&
           printTicketStore.marginsType.isValueEqual(
-              print_preview.ticket_items.MarginsType.Value.CUSTOM)) {
+              print_preview.ticket_items.MarginsTypeValue.CUSTOM)) {
         var customMargins = printTicketStore.customMargins.getValue();
         var orientationEnum =
             print_preview.ticket_items.CustomMargins.Orientation;

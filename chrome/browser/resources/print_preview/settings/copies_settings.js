@@ -51,7 +51,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.inputField_ = null;
-  };
+  }
 
   /**
    * Delay in milliseconds before processing the textfield.
@@ -85,7 +85,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     enterDocument: function() {
-      this.inputField_ = this.getChildElement('input.user-value');
+      this.inputField_ = assert(this.getChildElement('input.user-value'));
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
           this.inputField_,
@@ -100,7 +100,7 @@ cr.define('print_preview', function() {
           'blur',
           this.onTextfieldBlur_.bind(this));
       this.tracker.add(
-          this.getChildElement('input.collate'),
+          assert(this.getChildElement('input.collate')),
           'click',
           this.onCollateCheckboxClick_.bind(this));
       this.tracker.add(

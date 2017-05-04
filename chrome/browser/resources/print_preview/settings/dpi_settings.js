@@ -14,7 +14,7 @@ cr.define('print_preview', function() {
    */
   function DpiSettings(ticketItem) {
     print_preview.SettingsSectionSelect.call(this, ticketItem);
-  };
+  }
 
   DpiSettings.prototype = {
     __proto__: print_preview.SettingsSectionSelect.prototype,

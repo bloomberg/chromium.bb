@@ -37,7 +37,7 @@ cr.define('print_preview', function() {
      * @private {!print_preview.PrintSettingsUiMetricsContext}
      */
     this.metrics_ = new print_preview.PrintSettingsUiMetricsContext();
-  };
+  }
 
   /**
    * Which settings are visible to the user.

@@ -18,7 +18,7 @@ cr.define('print_preview', function() {
 
     /** @private {!print_preview.ticket_items.TicketItem} */
     this.ticketItem_ = ticketItem;
-  };
+  }
 
   SettingsSectionSelect.prototype = {
     __proto__: print_preview.SettingsSection.prototype,
@@ -89,7 +89,7 @@ cr.define('print_preview', function() {
       }
       // Try to select current ticket item.
       var valueToSelect = JSON.stringify(this.ticketItem_.getValue());
-      for (var i = 0, option; option = select.options[i]; i++) {
+      for (var i = 0, option; (option = select.options[i]); i++) {
         if (option.value == valueToSelect) {
           indexToSelect = i;
           break;

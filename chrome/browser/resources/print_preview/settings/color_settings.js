@@ -8,7 +8,7 @@ cr.define('print_preview', function() {
   /**
    * Creates a ColorSettings object. This object encapsulates all settings and
    * logic related to color selection (color/bw).
-   * @param {!print_preview.ticket_item.Color} colorTicketItem Used for writing
+   * @param {!print_preview.ticket_items.Color} colorTicketItem Used for writing
    *     and reading color value.
    * @constructor
    * @extends {print_preview.SettingsSection}
@@ -22,7 +22,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.colorTicketItem_ = colorTicketItem;
-  };
+  }
 
   ColorSettings.prototype = {
     __proto__: print_preview.SettingsSection.prototype,
@@ -46,7 +46,7 @@ cr.define('print_preview', function() {
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
-          this.select_, 'change', this.onSelectChange_.bind(this));
+          assert(this.select_), 'change', this.onSelectChange_.bind(this));
       this.tracker.add(
           this.colorTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -69,7 +69,8 @@ cr.define('print_preview', function() {
      * @private
      */
     get select_() {
-      return this.getChildElement('.color-settings-select');
+      return /** @type {HTMLSelectElement} */(
+          this.getChildElement('.color-settings-select'));
     },
 
     /**

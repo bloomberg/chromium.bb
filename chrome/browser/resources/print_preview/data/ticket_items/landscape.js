@@ -103,7 +103,7 @@ cr.define('print_preview.ticket_items', function() {
       if (updateMargins) {
         // Reset the user set margins when page orientation changes.
         this.marginsType_.updateValue(
-          print_preview.ticket_items.MarginsType.Value.DEFAULT);
+          print_preview.ticket_items.MarginsTypeValue.DEFAULT);
         this.customMargins_.updateValue(null);
       }
     },

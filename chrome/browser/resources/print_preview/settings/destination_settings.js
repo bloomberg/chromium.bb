@@ -32,7 +32,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.iconClass_ = null;
-  };
+  }
 
   /**
    * Event types dispatched by the component.
@@ -150,9 +150,9 @@ cr.define('print_preview', function() {
       }
 
       setIsVisible(
-          this.getChildElement('.throbber-container'),
+          assert(this.getChildElement('.throbber-container')),
           this.destinationStore_.isAutoSelectDestinationInProgress);
-      setIsVisible(destinationSettingsBoxEl, !!destination);
+      setIsVisible(assert(destinationSettingsBoxEl), !!destination);
     },
 
     onSelectedDestinationNameSet_: function() {

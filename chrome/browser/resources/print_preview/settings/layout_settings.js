@@ -22,7 +22,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.landscapeTicketItem_ = landscapeTicketItem;
-  };
+  }
 
   LayoutSettings.prototype = {
     __proto__: print_preview.SettingsSection.prototype,
@@ -46,7 +46,7 @@ cr.define('print_preview', function() {
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
-          this.select_, 'change', this.onSelectChange_.bind(this));
+          assert(this.select_), 'change', this.onSelectChange_.bind(this));
       this.tracker.add(
           this.landscapeTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -70,7 +70,8 @@ cr.define('print_preview', function() {
      * @private
      */
     get select_() {
-      return this.getChildElement('.layout-settings-select');
+      return /** @type {HTMLSelectElement} */(
+          this.getChildElement('.layout-settings-select'));
     },
 
     /**

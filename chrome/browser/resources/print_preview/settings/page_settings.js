@@ -57,7 +57,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.customHintEl_ = null;
-  };
+  }
 
   /**
    * CSS classes used by the page settings.
@@ -101,18 +101,29 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
+      var customInput = assert(this.customInput_);
       this.tracker.add(
-          this.allRadio_, 'click', this.onAllRadioClick_.bind(this));
+          assert(this.allRadio_), 'click', this.onAllRadioClick_.bind(this));
       this.tracker.add(
-          this.customRadio_, 'click', this.onCustomRadioClick_.bind(this));
+          assert(this.customRadio_),
+          'click',
+          this.onCustomRadioClick_.bind(this));
       this.tracker.add(
-          this.customInput_, 'blur', this.onCustomInputBlur_.bind(this));
+          customInput,
+          'blur',
+          this.onCustomInputBlur_.bind(this));
       this.tracker.add(
-          this.customInput_, 'focus', this.onCustomInputFocus_.bind(this));
+          customInput,
+          'focus',
+          this.onCustomInputFocus_.bind(this));
       this.tracker.add(
-          this.customInput_, 'keydown', this.onCustomInputKeyDown_.bind(this));
+          customInput,
+          'keydown',
+          this.onCustomInputKeyDown_.bind(this));
       this.tracker.add(
-          this.customInput_, 'input', this.onCustomInputChange_.bind(this));
+          customInput,
+          'input',
+          this.onCustomInputChange_.bind(this));
       this.tracker.add(
           this.pageRangeTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,

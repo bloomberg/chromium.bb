@@ -22,7 +22,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.marginsTypeTicketItem_ = marginsTypeTicketItem;
-  };
+  }
 
   /**
    * CSS classes used by the margin settings component.
@@ -55,7 +55,7 @@ cr.define('print_preview', function() {
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
-          this.select_, 'change', this.onSelectChange_.bind(this));
+          assert(this.select_), 'change', this.onSelectChange_.bind(this));
       this.tracker.add(
           this.marginsTypeTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -79,7 +79,7 @@ cr.define('print_preview', function() {
     onSelectChange_: function() {
       var select = this.select_;
       var marginsType =
-          /** @type {!print_preview.ticket_items.MarginsType.Value} */ (
+          /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (
               select.selectedIndex);
       this.marginsTypeTicketItem_.updateValue(marginsType);
     },
@@ -92,9 +92,11 @@ cr.define('print_preview', function() {
     onMarginsTypeTicketItemChange_: function() {
       if (this.isAvailable()) {
         var select = this.select_;
-        var marginsType = this.marginsTypeTicketItem_.getValue();
+        var marginsType =
+            /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (
+                this.marginsTypeTicketItem_.getValue());
         var selectedMarginsType =
-            /** @type {!print_preview.ticket_items.MarginsType.Value} */ (
+            /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (
                 select.selectedIndex);
         if (marginsType != selectedMarginsType) {
           select.options[selectedMarginsType].selected = false;

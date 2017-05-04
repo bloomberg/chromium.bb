@@ -1,6 +1,10 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/**
+ * @typedef {Object|number|boolean|string}
+ */
+print_preview.ValueType;
 
 cr.define('print_preview.ticket_items', function() {
   'use strict';
@@ -100,7 +104,7 @@ cr.define('print_preview.ticket_items', function() {
       throw Error('Abstract method not overridden');
     },
 
-    /** @return {!Object} The value of the ticket item. */
+    /** @return {print_preview.ValueType} The value of the ticket item. */
     getValue: function() {
       if (this.isCapabilityAvailable()) {
         if (this.value_ == null) {

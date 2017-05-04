@@ -37,7 +37,7 @@ cr.define('print_preview', function() {
 
     /** @private {!Array<!print_preview.AdvancedSettingsItem>} */
     this.items_ = [];
-  };
+  }
 
   /**
    * CSS classes used by the component.
@@ -70,24 +70,24 @@ cr.define('print_preview', function() {
       print_preview.Overlay.prototype.enterDocument.call(this);
 
       this.tracker.add(
-          this.getChildElement('.button-strip .cancel-button'),
+          assert(this.getChildElement('.button-strip .cancel-button')),
           'click',
           this.cancel.bind(this));
 
       this.tracker.add(
-          this.getChildElement('.button-strip .done-button'),
+          assert(this.getChildElement('.button-strip .done-button')),
           'click',
           this.onApplySettings_.bind(this));
 
       this.tracker.add(
-          this.searchBox_,
+          assert(this.searchBox_),
           print_preview.SearchBox.EventType.SEARCH,
           this.onSearch_.bind(this));
     },
 
     /** @override */
     decorateInternal: function() {
-      this.searchBox_.render(this.getChildElement('.search-box-area'));
+      this.searchBox_.render(assert(this.getChildElement('.search-box-area')));
     },
 
     /** @override */
@@ -131,7 +131,7 @@ cr.define('print_preview', function() {
 
     /**
      * Filters displayed settings with the given query.
-     * @param {?string} query Query to filter settings by.
+     * @param {?RegExp} query Query to filter settings by.
      * @private
      */
     filterLists_: function(query) {
@@ -145,9 +145,11 @@ cr.define('print_preview', function() {
           lastVisibleItemWithBubble = item;
       });
       setIsVisible(
-          this.getChildElement('.no-settings-match-hint'), !atLeastOneMatch);
+          assert(this.getChildElement('.no-settings-match-hint')),
+          !atLeastOneMatch);
       setIsVisible(
-          this.getChildElement('.' + AdvancedSettings.Classes_.EXTRA_PADDING),
+          assert(this.getChildElement(
+              '.' + AdvancedSettings.Classes_.EXTRA_PADDING)),
           !!lastVisibleItemWithBubble);
     },
 
@@ -187,16 +189,17 @@ cr.define('print_preview', function() {
 
       vendorCapabilities.forEach(function(capability) {
         var item = new print_preview.AdvancedSettingsItem(
-            this.eventTarget_, this.printTicketStore_, capability);
+            this.printTicketStore_, capability);
         this.addChild(item);
-        item.render(settingsEl);
+        item.render(assert(settingsEl));
         this.items_.push(item);
       }.bind(this));
 
+      var searchBoxArea = assert(this.getChildElement('.search-box-area'));
       if (this.items_.length <= 1) {
-        setIsVisible(this.getChildElement('.search-box-area'), false);
+        setIsVisible(searchBoxArea, false);
       } else {
-        setIsVisible(this.getChildElement('.search-box-area'), true);
+        setIsVisible(searchBoxArea, true);
         this.searchBox_.focus();
       }
 
