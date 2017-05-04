@@ -445,6 +445,7 @@ public class LocationBarLayout extends FrameLayout
     public class OmniboxSuggestionsList extends ListView {
         private final int mSuggestionHeight;
         private final int mSuggestionAnswerHeight;
+        private final int mSuggestionDefinitionHeight;
         private final View mAnchorView;
 
         private final int[] mTempPosition = new int[2];
@@ -469,6 +470,8 @@ public class LocationBarLayout extends FrameLayout
                     R.dimen.omnibox_suggestion_height);
             mSuggestionAnswerHeight = context.getResources().getDimensionPixelOffset(
                     R.dimen.omnibox_suggestion_answer_height);
+            mSuggestionDefinitionHeight = context.getResources().getDimensionPixelOffset(
+                    R.dimen.omnibox_suggestion_definition_height);
 
             int paddingTop = context.getResources().getDimensionPixelOffset(
                     R.dimen.omnibox_suggestion_list_padding_top);
@@ -606,7 +609,7 @@ public class LocationBarLayout extends FrameLayout
                     int num = SuggestionView.parseNumAnswerLines(
                             item.getSuggestion().getAnswer().getSecondLine().getTextFields());
                     if (num > 1) {
-                        idealListSize += mSuggestionAnswerHeight * 2;
+                        idealListSize += mSuggestionDefinitionHeight;
                     } else {
                         idealListSize += mSuggestionAnswerHeight;
                     }
