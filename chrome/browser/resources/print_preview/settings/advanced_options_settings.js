@@ -7,7 +7,7 @@ cr.define('print_preview', function() {
 
   /**
    * Print options section to control printer advanced options.
-   * @param {!print_preview.ticket_item.VendorItems} ticketItem Ticket item to
+   * @param {!print_preview.ticket_items.VendorItems} ticketItem Ticket item to
    *     check settings availability.
    * @param {!print_preview.DestinationStore} destinationStore Used to determine
    *     the selected destination.
@@ -28,7 +28,7 @@ cr.define('print_preview', function() {
      * @private {!print_preview.DestinationStore}
      */
     this.destinationStore_ = destinationStore;
-  };
+  }
 
   /**
    * Event types dispatched by the component.
@@ -77,11 +77,11 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {HTMLElement}
+     * @return {!HTMLElement}
      * @private
      */
     getButton_: function() {
-      return this.getChildElement('.advanced-options-settings-button');
+      return assert(this.getChildElement('.advanced-options-settings-button'));
     },
 
     /**

@@ -186,7 +186,7 @@ cr.define('print_preview', function() {
     /** Shows the margin controls if the need to be shown. */
     showMarginControlsIfNeeded: function() {
       if (this.marginsTypeTicketItem_.getValue() ==
-          print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+          print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
         this.setIsMarginControlsVisible_(true);
       }
     },
@@ -381,7 +381,7 @@ cr.define('print_preview', function() {
       }
       if (this.marginsTypeTicketItem_.isCapabilityAvailable() &&
           this.marginsTypeTicketItem_.getValue() ==
-              print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+              print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
         this.setIsMarginControlsVisible_(true);
       }
     },
@@ -429,7 +429,7 @@ cr.define('print_preview', function() {
       }
       this.updateClippingMask(this.clippingSize_);
       if (this.marginsTypeTicketItem_.getValue() !=
-          print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+          print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
         this.setIsMarginControlsVisible_(false);
       }
     },

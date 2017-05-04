@@ -7,9 +7,9 @@ cr.define('print_preview', function() {
 
   /**
    * Component that renders the scaling settings UI.
-   * @param {!print_preview.ticket_items.scalingTicketItem} scalingTicketItem
+   * @param {!print_preview.ticket_items.Scaling} scalingTicketItem
    *     Used to read and write the scaling value.
-   * @param {!print_preview.ticket_items.fitToPageticketItem}
+   * @param {!print_preview.ticket_items.FitToPage}
    *     fitToPageTicketItem Used to read the fit to page value.
    * @constructor
    * @extends {print_preview.SettingsSection}
@@ -53,7 +53,7 @@ cr.define('print_preview', function() {
      */
     this.inputField_ = null;
 
-  };
+  }
 
   /**
    * Delay in milliseconds before processing the textfield.
@@ -85,7 +85,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     enterDocument: function() {
-      this.inputField_ = this.getChildElement('input.user-value');
+      this.inputField_ = assert(this.getChildElement('input.user-value'));
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
           this.inputField_,
@@ -115,7 +115,7 @@ cr.define('print_preview', function() {
      */
     isFitToPageSelected: function() {
       return this.fitToPageTicketItem_.isCapabilityAvailable() &&
-             this.fitToPageTicketItem_.getValue();
+             !!this.fitToPageTicketItem_.getValue();
     },
 
     /**

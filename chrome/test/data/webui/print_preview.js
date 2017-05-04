@@ -771,7 +771,7 @@ TEST_F('PrintPreviewWebUITest', 'CustomMarginsControlsCheck', function() {
   this.setCapabilities(getCddTemplate("FooDevice"));
 
   printPreview.printTicketStore_.marginsType.updateValue(
-      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+      print_preview.ticket_items.MarginsTypeValue.CUSTOM);
 
   ['left', 'top', 'right', 'bottom'].forEach(function(margin) {
     var control = $('preview-area').querySelector('.margin-control-' + margin);
@@ -803,7 +803,7 @@ TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
   checkElementDisplayed(headerFooter, true);
 
   printPreview.printTicketStore_.marginsType.updateValue(
-      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+      print_preview.ticket_items.MarginsTypeValue.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 0, 0, 0));
 
@@ -832,7 +832,7 @@ TEST_F('PrintPreviewWebUITest', 'PageLayoutHasMarginsShowHeaderFooter',
   checkElementDisplayed(headerFooter, true);
 
   printPreview.printTicketStore_.marginsType.updateValue(
-      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+      print_preview.ticket_items.MarginsTypeValue.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(36, 36, 36, 36));
 
@@ -862,7 +862,7 @@ TEST_F('PrintPreviewWebUITest',
   checkElementDisplayed(headerFooter, true);
 
   printPreview.printTicketStore_.marginsType.updateValue(
-      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+      print_preview.ticket_items.MarginsTypeValue.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 36, 0, 36));
 
@@ -893,7 +893,7 @@ TEST_F('PrintPreviewWebUITest',
   checkElementDisplayed(headerFooter, true);
 
   printPreview.printTicketStore_.marginsType.updateValue(
-      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+      print_preview.ticket_items.MarginsTypeValue.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 36, 36, 36));
 

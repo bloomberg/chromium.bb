@@ -434,7 +434,7 @@ cr.define('print_preview', function() {
     isTicketValidForPreview: function() {
       return (!this.marginsType_.isCapabilityAvailable() ||
               !this.marginsType_.isValueEqual(
-                  print_preview.ticket_items.MarginsType.Value.CUSTOM) ||
+                  print_preview.ticket_items.MarginsTypeValue.CUSTOM) ||
               this.customMargins_.isValid());
     },
 
@@ -559,9 +559,9 @@ cr.define('print_preview', function() {
       if (this.capabilitiesHolder_.get() != null) {
         this.customMargins_.updateValue(null);
         if (this.marginsType_.getValue() ==
-            print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+            print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
           this.marginsType_.updateValue(
-              print_preview.ticket_items.MarginsType.Value.DEFAULT);
+              print_preview.ticket_items.MarginsTypeValue.DEFAULT);
         }
         this.vendorItems_.updateValue({});
       }

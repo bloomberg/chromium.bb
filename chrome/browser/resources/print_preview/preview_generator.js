@@ -109,10 +109,10 @@ cr.define('print_preview', function() {
 
     /**
      * Margins type used to generate the last preview.
-     * @type {!print_preview.ticket_items.MarginsType.Value}
+     * @type {!print_preview.ticket_items.MarginsTypeValue}
      * @private
      */
-    this.marginsType_ = print_preview.ticket_items.MarginsType.Value.DEFAULT;
+    this.marginsType_ = print_preview.ticket_items.MarginsTypeValue.DEFAULT;
 
     /**
      * Whether the document should have element CSS backgrounds printed.
@@ -291,9 +291,9 @@ cr.define('print_preview', function() {
                           this.pageRanges_) ||
           (!ticketStore.marginsType.isValueEqual(this.marginsType_) &&
               !ticketStore.marginsType.isValueEqual(
-                  print_preview.ticket_items.MarginsType.Value.CUSTOM)) ||
+                  print_preview.ticket_items.MarginsTypeValue.CUSTOM)) ||
           (ticketStore.marginsType.isValueEqual(
-              print_preview.ticket_items.MarginsType.Value.CUSTOM) &&
+              print_preview.ticket_items.MarginsTypeValue.CUSTOM) &&
               !ticketStore.customMargins.isValueEqual(
                   this.documentInfo_.margins)) ||
           !ticketStore.cssBackground.isValueEqual(

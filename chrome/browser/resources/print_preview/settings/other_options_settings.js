@@ -45,7 +45,7 @@ cr.define('print_preview', function() {
      * @private {HTMLElement}
      */
     this.checkbox_ = null;
-  };
+  }
 
   CheckboxTicketItemElement.prototype = {
 
@@ -69,8 +69,10 @@ cr.define('print_preview', function() {
 
     /** Initializes container and checkbox */
     decorate: function() {
-      this.container_ = document.getElementById(this.cssId_);
-      this.checkbox_ = this.container_.querySelector('.checkbox');
+      this.container_ = /** @type {HTMLElement} */(
+          document.getElementById(this.cssId_));
+      this.checkbox_ = /** @type {HTMLElement} */(
+          this.container_.querySelector('.checkbox'));
     },
 
     /** Resets container and checkbox. */
@@ -86,7 +88,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when the ticket item changes. Updates the UI state.
-     * @param {!print_preview.SettingsSection.OtherOptionsSettings}
+     * @param {!print_preview.OtherOptionsSettings}
      *     otherOptionsSettings The settings section that this element is part
      *     of.
      */
@@ -111,7 +113,7 @@ cr.define('print_preview', function() {
      *     collapsed.
      */
     setVisibility: function(collapseContent) {
-      setIsVisible(this.container_, this.isVisible(collapseContent));
+      setIsVisible(assert(this.container_), this.isVisible(collapseContent));
     },
 
   };
@@ -164,7 +166,7 @@ cr.define('print_preview', function() {
                             new CheckboxTicketItemElement(rasterize, true,
                                 'rasterize-container'));
     }
-  };
+  }
 
   OtherOptionsSettings.prototype = {
     __proto__: print_preview.SettingsSection.prototype,
@@ -198,7 +200,7 @@ cr.define('print_preview', function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.elements_.forEach(function(element) {
         this.tracker.add(
-            element.checkbox,
+            assert(element.checkbox),
             'click',
             element.onCheckboxClick.bind(element));
         this.tracker.add(

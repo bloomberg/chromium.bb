@@ -25,7 +25,7 @@ cr.define('print_preview', function() {
      * @private {boolean}
      */
     this.collapseContent_ = true;
-  };
+  }
 
   /**
    * Event types dispatched by this class.
