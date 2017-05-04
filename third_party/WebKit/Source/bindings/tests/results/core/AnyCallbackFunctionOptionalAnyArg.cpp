@@ -30,7 +30,7 @@ AnyCallbackFunctionOptionalAnyArg* AnyCallbackFunctionOptionalAnyArg::Create(Scr
 }
 
 AnyCallbackFunctionOptionalAnyArg::AnyCallbackFunctionOptionalAnyArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    : m_scriptState(scriptState),
+    : script_state_(scriptState),
     m_callback(scriptState->GetIsolate(), this, callback) {
   DCHECK(!m_callback.IsEmpty());
 }
@@ -43,10 +43,10 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
   if (m_callback.IsEmpty())
     return false;
 
-  if (!m_scriptState->ContextIsValid())
+  if (!script_state_->ContextIsValid())
     return false;
 
-  ExecutionContext* context = ExecutionContext::From(m_scriptState.Get());
+  ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
@@ -54,12 +54,12 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
-  ScriptState::Scope scope(m_scriptState.Get());
-  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Isolate* isolate = script_state_->GetIsolate();
 
   v8::Local<v8::Value> thisValue = ToV8(
       scriptWrappable,
-      m_scriptState->GetContext()->Global(),
+      script_state_->GetContext()->Global(),
       isolate);
 
   v8::Local<v8::Value> optionalAnyArgArgument = optionalAnyArg.V8Value();
@@ -77,7 +77,7 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
     return false;
   }
 
-  ScriptValue cppValue = ScriptValue(ScriptState::Current(m_scriptState->GetIsolate()), v8ReturnValue);
+  ScriptValue cppValue = ScriptValue(ScriptState::Current(script_state_->GetIsolate()), v8ReturnValue);
   returnValue = cppValue;
   return true;
 }

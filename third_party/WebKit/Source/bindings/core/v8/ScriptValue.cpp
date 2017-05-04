@@ -45,7 +45,7 @@ v8::Local<v8::Value> ScriptValue::V8Value() const {
   // This is a check to validate that you don't return a ScriptValue to a world
   // different from the world that created the ScriptValue.
   // Probably this could be:
-  //   if (&m_scriptState->world() == &DOMWrapperWorld::current(isolate()))
+  //   if (&script_state_->world() == &DOMWrapperWorld::current(isolate()))
   //       return v8::Local<v8::Value>();
   // instead of triggering RELEASE_ASSERT.
   CHECK_EQ(&script_state_->World(), &DOMWrapperWorld::Current(GetIsolate()));

@@ -31,7 +31,7 @@ LongCallbackFunction* LongCallbackFunction::Create(ScriptState* scriptState, v8:
 }
 
 LongCallbackFunction::LongCallbackFunction(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    : m_scriptState(scriptState),
+    : script_state_(scriptState),
     m_callback(scriptState->GetIsolate(), this, callback) {
   DCHECK(!m_callback.IsEmpty());
 }
@@ -44,10 +44,10 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
   if (m_callback.IsEmpty())
     return false;
 
-  if (!m_scriptState->ContextIsValid())
+  if (!script_state_->ContextIsValid())
     return false;
 
-  ExecutionContext* context = ExecutionContext::From(m_scriptState.Get());
+  ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
@@ -55,16 +55,16 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
-  ScriptState::Scope scope(m_scriptState.Get());
-  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Isolate* isolate = script_state_->GetIsolate();
 
   v8::Local<v8::Value> thisValue = ToV8(
       scriptWrappable,
-      m_scriptState->GetContext()->Global(),
+      script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> num1Argument = v8::Integer::New(m_scriptState->GetIsolate(), num1);
-  v8::Local<v8::Value> num2Argument = v8::Integer::New(m_scriptState->GetIsolate(), num2);
+  v8::Local<v8::Value> num1Argument = v8::Integer::New(script_state_->GetIsolate(), num1);
+  v8::Local<v8::Value> num2Argument = v8::Integer::New(script_state_->GetIsolate(), num2);
   v8::Local<v8::Value> argv[] = { num1Argument, num2Argument };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
@@ -79,7 +79,7 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
     return false;
   }
 
-  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(m_scriptState->GetIsolate(), v8ReturnValue, exceptionState, kNormalConversion);
+  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(script_state_->GetIsolate(), v8ReturnValue, exceptionState, kNormalConversion);
   if (exceptionState.HadException())
     return false;
   returnValue = cppValue;

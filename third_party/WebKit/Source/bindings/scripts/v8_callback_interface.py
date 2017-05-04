@@ -138,8 +138,8 @@ def arguments_context(arguments, call_with_this_handle):
         return {
             'handle': '%sHandle' % argument.name,
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
-                argument.name, isolate='m_scriptState->GetIsolate()',
-                creation_context='m_scriptState->GetContext()->Global()'),
+                argument.name, isolate='script_state_->GetIsolate()',
+                creation_context='script_state_->GetContext()->Global()'),
         }
 
     argument_declarations = ['ScriptValue thisValue'] if call_with_this_handle else []

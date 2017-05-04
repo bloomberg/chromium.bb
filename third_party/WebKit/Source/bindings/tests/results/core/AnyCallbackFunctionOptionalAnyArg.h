@@ -42,7 +42,7 @@ class CORE_EXPORT AnyCallbackFunctionOptionalAnyArg final : public GarbageCollec
  private:
   AnyCallbackFunctionOptionalAnyArg(ScriptState*, v8::Local<v8::Function>);
 
-  RefPtr<ScriptState> m_scriptState;
+  RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Function> m_callback;
 };
 

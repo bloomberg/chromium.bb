@@ -30,7 +30,7 @@ VoidCallbackFunctionInterfaceArg* VoidCallbackFunctionInterfaceArg::Create(Scrip
 }
 
 VoidCallbackFunctionInterfaceArg::VoidCallbackFunctionInterfaceArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    : m_scriptState(scriptState),
+    : script_state_(scriptState),
     m_callback(scriptState->GetIsolate(), this, callback) {
   DCHECK(!m_callback.IsEmpty());
 }
@@ -43,10 +43,10 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
   if (m_callback.IsEmpty())
     return false;
 
-  if (!m_scriptState->ContextIsValid())
+  if (!script_state_->ContextIsValid())
     return false;
 
-  ExecutionContext* context = ExecutionContext::From(m_scriptState.Get());
+  ExecutionContext* context = ExecutionContext::From(script_state_.Get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
@@ -54,15 +54,15 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
-  ScriptState::Scope scope(m_scriptState.Get());
-  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Isolate* isolate = script_state_->GetIsolate();
 
   v8::Local<v8::Value> thisValue = ToV8(
       scriptWrappable,
-      m_scriptState->GetContext()->Global(),
+      script_state_->GetContext()->Global(),
       isolate);
 
-  v8::Local<v8::Value> divElementArgument = ToV8(divElement, m_scriptState->GetContext()->Global(), m_scriptState->GetIsolate());
+  v8::Local<v8::Value> divElementArgument = ToV8(divElement, script_state_->GetContext()->Global(), script_state_->GetIsolate());
   v8::Local<v8::Value> argv[] = { divElementArgument };
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
