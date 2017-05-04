@@ -100,7 +100,9 @@ bool BluetoothLowEnergyDeviceMac::IsGattConnected() const {
 }
 
 bool BluetoothLowEnergyDeviceMac::IsConnectable() const {
-  return connectable_;
+  // Only available for Chrome OS.
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool BluetoothLowEnergyDeviceMac::IsConnecting() const {

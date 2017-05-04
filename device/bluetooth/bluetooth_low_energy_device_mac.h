@@ -140,9 +140,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   base::scoped_nsobject<BluetoothLowEnergyPeripheralDelegate>
       peripheral_delegate_;
 
-  // Whether the device is connectable.
-  bool connectable_;
-
   // The peripheral's identifier, as returned by [CBPeripheral identifier].
   std::string identifier_;
 
