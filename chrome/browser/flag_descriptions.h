@@ -3352,6 +3352,23 @@ extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 // for current URL.
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+// Name of the flag that forces Network Quality Estimator (NQE) to always
+// return the specified effective connection type.
+extern const char kForceEffectiveConnectionTypeName[];
+
+// Description of the flag that forces Network Quality Estimator (NQE) to always
+// return the specified effective connection type.
+extern const char kForceEffectiveConnectionTypeDescription[];
+
+// Description of the various effective connection type choices that can be
+// set using kForceEffectiveConnectionTypeName flag.
+extern const char kEffectiveConnectionTypeUnknownDescription[];
+extern const char kEffectiveConnectionTypeOfflineDescription[];
+extern const char kEffectiveConnectionTypeSlow2GDescription[];
+extern const char kEffectiveConnectionType2GDescription[];
+extern const char kEffectiveConnectionType3GDescription[];
+extern const char kEffectiveConnectionType4GDescription[];
+
 // Name & description for the heap profiling flag.
 extern const char kEnableHeapProfilingName[];
 extern const char kEnableHeapProfilingDescription[];

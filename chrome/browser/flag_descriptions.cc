@@ -3086,6 +3086,20 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kForceEffectiveConnectionTypeName[] =
+    "Override effective connection type";
+
+const char kForceEffectiveConnectionTypeDescription[] =
+    "Overrides the effective connection type of the current connection "
+    "returned by the network quality estimator.";
+
+const char kEffectiveConnectionTypeUnknownDescription[] = "Unknown";
+const char kEffectiveConnectionTypeOfflineDescription[] = "Offline";
+const char kEffectiveConnectionTypeSlow2GDescription[] = "Slow 2G";
+const char kEffectiveConnectionType2GDescription[] = "2G";
+const char kEffectiveConnectionType3GDescription[] = "3G";
+const char kEffectiveConnectionType4GDescription[] = "4G";
+
 const char kEnableHeapProfilingName[] = "Heap profiling";
 
 const char kEnableHeapProfilingDescription[] = "Enables heap profiling.";

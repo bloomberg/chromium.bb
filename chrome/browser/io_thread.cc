@@ -91,6 +91,7 @@
 #include "net/net_features.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
@@ -559,6 +560,19 @@ void IOThread::Init() {
   std::map<std::string, std::string> network_quality_estimator_params;
   variations::GetVariationParams(kNetworkQualityEstimatorFieldTrialName,
                                  &network_quality_estimator_params);
+
+  if (command_line.HasSwitch(switches::kForceEffectiveConnectionType)) {
+    const std::string force_ect_value =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kForceEffectiveConnectionType);
+
+    if (!force_ect_value.empty()) {
+      // If the effective connection type is forced using command line switch,
+      // it overrides the one set by field trial.
+      network_quality_estimator_params[net::kForceEffectiveConnectionType] =
+          force_ect_value;
+    }
+  }
 
   std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider;
 #if defined(OS_ANDROID)

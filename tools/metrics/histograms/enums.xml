@@ -20970,6 +20970,7 @@ from previous Chrome versions.
   <int value="-741806604" label="DownloadsUi:disabled"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
+  <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714710496" label="VideoFullscreenOrientationLock:disabled"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-709058455" label="ui-slow-animations"/>

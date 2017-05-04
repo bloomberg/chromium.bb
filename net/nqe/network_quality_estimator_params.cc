@@ -79,27 +79,6 @@ double GetWeightMultiplierPerSecond(
   return pow(0.5, 1.0 / half_life_seconds);
 }
 
-base::Optional<net::EffectiveConnectionType> GetForcedEffectiveConnectionType(
-    const std::map<std::string, std::string>& params) {
-  std::string forced_value = GetStringValueForVariationParamWithDefaultValue(
-      params, "force_effective_connection_type", "");
-  if (forced_value.empty())
-    return base::Optional<net::EffectiveConnectionType>();
-
-  net::EffectiveConnectionType forced_effective_connection_type =
-      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-
-  bool effective_connection_type_available = GetEffectiveConnectionTypeForName(
-      forced_value, &forced_effective_connection_type);
-
-  DCHECK(effective_connection_type_available);
-
-  // Silence unused variable warning in release builds.
-  (void)effective_connection_type_available;
-
-  return forced_effective_connection_type;
-}
-
 bool GetPersistentCacheReadingEnabled(
     const std::map<std::string, std::string>& params) {
   if (GetStringValueForVariationParamWithDefaultValue(
@@ -119,6 +98,33 @@ base::TimeDelta GetMinSocketWatcherNotificationInterval(
 }  // namespace
 
 namespace net {
+
+const char kForceEffectiveConnectionType[] = "force_effective_connection_type";
+
+namespace {
+
+base::Optional<EffectiveConnectionType> GetForcedEffectiveConnectionType(
+    const std::map<std::string, std::string>& params) {
+  std::string forced_value = GetStringValueForVariationParamWithDefaultValue(
+      params, kForceEffectiveConnectionType, "");
+  if (forced_value.empty())
+    return base::Optional<EffectiveConnectionType>();
+
+  EffectiveConnectionType forced_effective_connection_type =
+      EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  bool effective_connection_type_available = GetEffectiveConnectionTypeForName(
+      forced_value, &forced_effective_connection_type);
+
+  DCHECK(effective_connection_type_available);
+
+  // Silence unused variable warning in release builds.
+  (void)effective_connection_type_available;
+
+  return forced_effective_connection_type;
+}
+
+}  // namespace
 
 namespace nqe {
 

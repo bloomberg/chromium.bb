@@ -4,6 +4,9 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <string>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -29,6 +32,8 @@
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_network_session.h"
+#include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/quic/chromium/quic_stream_factory.h"
 #include "net/quic/core/quic_tag.h"
 #include "net/quic/core/quic_versions.h"
@@ -82,6 +87,12 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
     EXPECT_EQ(expected, http_auth_preferences->NegotiateEnablePort());
   }
 
+  void CheckEffectiveConnectionType(net::EffectiveConnectionType expected) {
+    ASSERT_EQ(expected,
+              io_thread_->globals()
+                  ->network_quality_estimator->GetEffectiveConnectionType());
+  }
+
 #if defined(OS_ANDROID)
   void CheckAuthAndroidNegoitateAccountType(std::string expected) {
     auto* http_auth_preferences =
@@ -127,6 +138,9 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
 #endif
+  }
+
+  void CreateThreads() {
     // The IOThread constructor registers the IOThread object with as the
     // BrowserThreadDelegate for the io thread.
     io_thread_.reset(new IOThread(&pref_service_, &policy_service_, nullptr,
@@ -153,6 +167,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
     chromeos::DBusThreadManager::Shutdown();
 #endif
   }
+
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
 
   void RunOnIOThreadBlocking(const base::Closure& task) {
@@ -185,6 +200,7 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateNegotiateDisableCnameLookup) {
   // the HttpAuthPreferences are correctly initialized and running on the
   // IO thread. The other preferences are tested by the HttpAuthPreferences
   // unit tests.
+  CreateThreads();
   pref_service()->SetBoolean(prefs::kDisableAuthNegotiateCnameLookup, false);
   RunOnIOThreadBlocking(
       base::Bind(&IOThreadTestWithIOThreadObject::CheckCnameLookup,
@@ -196,6 +212,7 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateNegotiateDisableCnameLookup) {
 }
 
 TEST_F(IOThreadTestWithIOThreadObject, UpdateEnableAuthNegotiatePort) {
+  CreateThreads();
   pref_service()->SetBoolean(prefs::kEnableAuthNegotiatePort, false);
   RunOnIOThreadBlocking(
       base::Bind(&IOThreadTestWithIOThreadObject::CheckNegotiateEnablePort,
@@ -207,6 +224,7 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateEnableAuthNegotiatePort) {
 }
 
 TEST_F(IOThreadTestWithIOThreadObject, UpdateServerWhitelist) {
+  CreateThreads();
   GURL url("http://test.example.com");
 
   pref_service()->SetString(prefs::kAuthServerWhitelist, "xxx");
@@ -221,6 +239,7 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateServerWhitelist) {
 }
 
 TEST_F(IOThreadTestWithIOThreadObject, UpdateDelegateWhitelist) {
+  CreateThreads();
   GURL url("http://test.example.com");
 
   pref_service()->SetString(prefs::kAuthNegotiateDelegateWhitelist, "");
@@ -237,6 +256,7 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateDelegateWhitelist) {
 #if defined(OS_ANDROID)
 // AuthAndroidNegotiateAccountType is only used on Android.
 TEST_F(IOThreadTestWithIOThreadObject, UpdateAuthAndroidNegotiateAccountType) {
+  CreateThreads();
   pref_service()->SetString(prefs::kAuthAndroidNegotiateAccountType, "acc1");
   RunOnIOThreadBlocking(base::Bind(
       &IOThreadTestWithIOThreadObject::CheckAuthAndroidNegoitateAccountType,
@@ -247,6 +267,63 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateAuthAndroidNegotiateAccountType) {
       base::Unretained(this), "acc2"));
 }
 #endif
+
+TEST_F(IOThreadTestWithIOThreadObject, ForceECTFromCommandLine) {
+  CreateThreads();
+  base::CommandLine::Init(0, nullptr);
+  ASSERT_TRUE(base::CommandLine::InitializedForCurrentProcess());
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--force-effective-connection-type", "Slow-2G");
+
+  RunOnIOThreadBlocking(base::Bind(
+      &IOThreadTestWithIOThreadObject::CheckEffectiveConnectionType,
+      base::Unretained(this), net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
+}
+
+TEST_F(IOThreadTestWithIOThreadObject, ForceECTUsingFieldTrial) {
+  base::CommandLine::Init(0, nullptr);
+  ASSERT_TRUE(base::CommandLine::InitializedForCurrentProcess());
+
+  variations::testing::ClearAllVariationParams();
+  std::map<std::string, std::string> variation_params;
+  variation_params["force_effective_connection_type"] = "2G";
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      "NetworkQualityEstimator", "Enabled", variation_params));
+
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("NetworkQualityEstimator",
+                                                     "Enabled"));
+
+  // Create threads after the field trial has been set.
+  CreateThreads();
+
+  RunOnIOThreadBlocking(
+      base::Bind(&IOThreadTestWithIOThreadObject::CheckEffectiveConnectionType,
+                 base::Unretained(this), net::EFFECTIVE_CONNECTION_TYPE_2G));
+}
+
+TEST_F(IOThreadTestWithIOThreadObject, ECTFromCommandLineOverridesFieldTrial) {
+  base::CommandLine::Init(0, nullptr);
+  ASSERT_TRUE(base::CommandLine::InitializedForCurrentProcess());
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--force-effective-connection-type", "Slow-2G");
+
+  variations::testing::ClearAllVariationParams();
+  std::map<std::string, std::string> variation_params;
+  variation_params["force_effective_connection_type"] = "2G";
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      "NetworkQualityEstimator", "Enabled", variation_params));
+
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("NetworkQualityEstimator",
+                                                     "Enabled"));
+
+  // Create threads after the field trial has been set.
+  CreateThreads();
+  RunOnIOThreadBlocking(base::Bind(
+      &IOThreadTestWithIOThreadObject::CheckEffectiveConnectionType,
+      base::Unretained(this), net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
+}
 
 class ConfigureParamsFromFieldTrialsAndCommandLineTest
     : public ::testing::Test {

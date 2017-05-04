@@ -11,11 +11,16 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality.h"
 
 namespace net {
+
+// Forces NQE to return a specific effective connection type. Set using the
+// |params| provided to the NetworkQualityEstimatorParams constructor.
+NET_EXPORT extern const char kForceEffectiveConnectionType[];
 
 namespace nqe {
 
