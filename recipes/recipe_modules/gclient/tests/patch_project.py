@@ -18,7 +18,13 @@ PROPERTIES = {
 
 
 def RunSteps(api, patch_project):
-  api.gclient.set_config('chromium')
+  src_cfg = api.gclient.make_config(CACHE_DIR='[ROOT]/git_cache')
+  soln = src_cfg.solutions.add()
+  soln.name = 'src'
+  soln.url = 'https://chromium.googlesource.com/chromium/src.git'
+  src_cfg.patch_projects['v8'] = ('src/v8', 'HEAD')
+  src_cfg.patch_projects['v8/v8'] = ('src/v8', 'HEAD')
+  api.gclient.c = src_cfg
 
   patch_root = api.gclient.calculate_patch_root(patch_project)
 

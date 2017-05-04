@@ -102,83 +102,12 @@ config_ctx = config_item_context(BaseConfig)
 def ChromiumGitURL(_c, *pieces):
   return '/'.join(('https://chromium.googlesource.com',) + pieces)
 
-def ChromiumSrcURL(c):
-  return ChromiumGitURL(c, 'chromium', 'src.git')
-
 # TODO(phajdan.jr): Move to proper repo and add coverage.
 def ChromeInternalGitURL(_c, *pieces):  # pragma: no cover
   return '/'.join(('https://chrome-internal.googlesource.com',) + pieces)
 
 def ChromeInternalSrcURL(c):
   return ChromeInternalGitURL(c, 'chrome', 'src-internal.git')
-
-def mirror_only(c, obj, default=None):
-  return obj if c.USE_MIRROR else (default or obj.__class__())
-
-@config_ctx()
-def chromium_bare(c):
-  s = c.solutions.add()
-  s.name = 'src'
-  s.url = ChromiumSrcURL(c)
-  s.custom_vars = {}
-  m = c.got_revision_reverse_mapping
-  m['got_revision'] = 'src'
-  m['got_nacl_revision'] = 'src/native_client'
-  m['got_swarming_client_revision'] = 'src/tools/swarming_client'
-  m['got_v8_revision'] = 'src/v8'
-  m['got_angle_revision'] = 'src/third_party/angle'
-  m['got_webrtc_revision'] = 'src/third_party/webrtc'
-  m['got_buildtools_revision'] = 'src/buildtools'
-
-  p = c.parent_got_revision_mapping
-  p['parent_got_revision'] = None
-  p['parent_got_angle_revision'] = 'angle_revision'
-  p['parent_got_nacl_revision'] = 'nacl_revision'
-  p['parent_got_swarming_client_revision'] = 'swarming_revision'
-  p['parent_got_v8_revision'] = 'v8_revision'
-  p['parent_got_webrtc_revision'] = 'webrtc_revision'
-
-  p = c.patch_projects
-  p['angle/angle'] = ('src/third_party/angle', None)
-  p['blink'] = ('src/third_party/WebKit', None)
-  p['buildtools'] = ('src/buildtools', 'HEAD')
-  p['catapult'] = ('src/third_party/catapult', 'HEAD')
-  p['flac'] = ('src/third_party/flac', 'HEAD')
-  p['icu'] = ('src/third_party/icu', 'HEAD')
-  p['pdfium'] = ('src/third_party/pdfium', 'HEAD')
-  p['skia'] = ('src/third_party/skia', 'HEAD')
-  p['v8'] = ('src/v8', 'HEAD')
-  p['v8/v8'] = ('src/v8', 'HEAD')
-  p['webrtc'] = ('src/third_party/webrtc', 'HEAD')
-
-@config_ctx(includes=['chromium_bare'])
-def chromium_empty(c):
-  c.solutions[0].deps_file = ''  # pragma: no cover
-
-@config_ctx(includes=['chromium_bare'])
-def chromium(c):
-  s = c.solutions[0]
-  s.custom_deps = mirror_only(c, {})
-
-@config_ctx(includes=['chromium'])
-def chromium_lkcr(c):
-  s = c.solutions[0]
-  s.revision = 'origin/lkcr'
-
-@config_ctx(includes=['chromium'])
-def chromium_lkgr(c):
-  s = c.solutions[0]
-  s.revision = 'origin/lkgr'
-
-@config_ctx(includes=['chromium_bare'])
-def android_bare(c):
-  # We inherit from chromium_bare to get the got_revision mapping.
-  # NOTE: We don't set a specific got_revision mapping for src/repo.
-  del c.solutions[0]
-  c.got_revision_reverse_mapping['got_src_revision'] = 'src'
-  del c.got_revision_reverse_mapping['got_revision']
-  s = c.solutions.add()
-  s.deps_file = '.DEPS.git'
 
 # TODO(iannucci,vadimsh): Switch this to src-limited
 @config_ctx()
@@ -211,47 +140,9 @@ def chrome_internal(c):
     "src/webkit/data/xbm_decoder":None,
   }
 
-@config_ctx(includes=['chromium'])
-def blink(c):
-  c.solutions[0].revision = 'HEAD'
-  del c.solutions[0].custom_deps
-  c.revisions['src/third_party/WebKit'] = 'HEAD'
-
-# TODO(phajdan.jr): Move to proper repo and add coverage.
-@config_ctx(includes=['chromium'])
-def blink_merged(c):  # pragma: no cover
-  c.solutions[0].url = \
-      'https://chromium.googlesource.com/playground/chromium-blink-merge.git'
-
 @config_ctx()
 def android(c):
   c.target_os.add('android')
-
-@config_ctx(includes=['chromium', 'chrome_internal'])
-def ios(c):
-  c.target_os.add('ios')
-
-@config_ctx(includes=['chromium'])
-def show_v8_revision(c):
-  # Have the V8 revision appear in the web UI instead of Chromium's.
-  c.got_revision_reverse_mapping['got_cr_revision'] = 'src'
-  c.got_revision_reverse_mapping['got_revision'] = 'src/v8'
-  # TODO(machenbach): Retain old behavior for now  and switch in separate CL.
-  del c.got_revision_reverse_mapping['got_v8_revision']
-  # Needed to get the testers to properly sync the right revision.
-  c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
-
-@config_ctx(includes=['chromium'])
-def v8_bleeding_edge_git(c):
-  c.solutions[0].revision = 'HEAD'
-  # TODO(machenbach): If bot_update is activated for all v8-chromium bots
-  # and there's no gclient fallback, then the following line can be removed.
-  c.solutions[0].custom_vars['v8_branch'] = 'branches/bleeding_edge'
-  c.revisions['src/v8'] = 'HEAD'
-
-@config_ctx()
-def v8_canary(c):
-  c.revisions['src/v8'] = 'origin/canary'
 
 @config_ctx()
 def nacl(c):
@@ -366,76 +257,6 @@ def internal_deps(c):
   s.url = ('https://chrome-internal.googlesource.com/'
            'chrome/tools/build/internal.DEPS.git')
   c.got_revision_mapping['build_internal/internal.DEPS'] = 'got_revision'
-
-@config_ctx(includes=['chromium', 'chrome_internal'])
-def perf(c):
-  s = c.solutions[0]
-  s.managed = False
-  needed_components_internal = [
-    "src/data/page_cycler",
-  ]
-  for key in needed_components_internal:
-    del c.solutions[1].custom_deps[key]
-  c.solutions[1].managed = False
-
-@config_ctx(includes=['chromium', 'chrome_internal'])
-def chromium_perf(c):
-  pass
-
-@config_ctx(includes=['chromium_perf', 'android'])
-def chromium_perf_android(c):
-  pass
-
-@config_ctx(includes=['chromium'])
-def chromium_skia(c):
-  c.solutions[0].revision = 'HEAD'
-  del c.solutions[0].custom_deps
-  c.revisions['src/third_party/skia'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
-  c.got_revision_reverse_mapping['got_chromium_revision'] = 'src'
-  c.got_revision_reverse_mapping['got_revision'] = 'src/third_party/skia'
-  c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
-
-@config_ctx(includes=['chromium'])
-def chromium_webrtc(c):
-  c.got_revision_reverse_mapping['got_libvpx_revision'] = (
-      'src/third_party/libvpx/source')
-
-@config_ctx(includes=['chromium_webrtc'])
-def chromium_webrtc_tot(c):
-  """Configures WebRTC ToT revision for Chromium src/third_party/webrtc.
-
-  Sets up ToT instead of the DEPS-pinned revision for WebRTC.
-  This is used for some bots to provide data about which revisions are green to
-  roll into Chromium.
-  """
-  c.revisions['src'] = 'HEAD'
-  c.revisions['src/third_party/webrtc'] = 'HEAD'
-
-  # Have the WebRTC revision appear in the web UI instead of Chromium's.
-  # This is also important for set_component_rev to work, since got_revision
-  # will become a WebRTC revision instead of Chromium.
-  c.got_revision_reverse_mapping['got_cr_revision'] = 'src'
-  c.got_revision_reverse_mapping['got_revision'] = 'src/third_party/webrtc'
-  # TODO(machenbach): Retain old behavior for now and switch in separate CL.
-  del c.got_revision_reverse_mapping['got_webrtc_revision']
-
-  # Needed to get the testers to properly sync the right revision.
-  c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
-  c.parent_got_revision_mapping['parent_got_webrtc_revision'] = (
-      'got_webrtc_revision')
-
-@config_ctx()
-def webrtc_test_resources(c):
-  """Add webrtc.DEPS solution for test resources and tools.
-
-  The webrtc.DEPS solution pulls in additional resources needed for running
-  WebRTC-specific test setups in Chromium.
-  """
-  s = c.solutions.add()
-  s.name = 'webrtc.DEPS'
-  s.url = ChromiumGitURL(c, 'chromium', 'deps', 'webrtc', 'webrtc.DEPS')
-  s.deps_file = 'DEPS'
 
 @config_ctx()
 def pdfium(c):
@@ -596,13 +417,6 @@ def valgrind(c):  # pragma: no cover
   """Add Valgrind binaries to the gclient solution."""
   c.solutions[0].custom_deps['src/third_party/valgrind'] = \
     ChromiumGitURL(c, 'chromium', 'deps', 'valgrind', 'binaries')
-
-@config_ctx(includes=['chromium'])
-def chromedriver(c):
-  """Add Selenium Java tests to the gclient solution."""
-  c.solutions[0].custom_deps[
-      'src/chrome/test/chromedriver/third_party/java_tests'] = (
-          ChromiumGitURL(c, 'chromium', 'deps', 'webdriver'))
 
 @config_ctx()
 def ndk_next(c):
