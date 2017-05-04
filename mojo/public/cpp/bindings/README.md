@@ -849,14 +849,14 @@ class LoggerImpl : public sample::mojom::Logger {
 };
 
 db::mojom::LoggerPtr logger;
-mojo::MakeStrongBinding(base::MakeUnique<DatabaseImpl>(),
+mojo::MakeStrongBinding(base::MakeUnique<LoggerImpl>(),
                         mojo::MakeRequest(&logger));
 
 logger->Log("NOM NOM NOM MESSAGES");
 ```
 
 Now as long as `logger` remains open somewhere in the system, the bound
-`DatabaseImpl` on the other end will remain alive.
+`LoggerImpl` on the other end will remain alive.
 
 ### Binding Sets
 
