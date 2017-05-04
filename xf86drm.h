@@ -851,6 +851,8 @@ extern void drmFreeDevices(drmDevicePtr devices[], int count);
 extern int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device);
 extern int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices);
 
+extern int drmDevicesEqual(drmDevicePtr a, drmDevicePtr b);
+
 #if defined(__cplusplus)
 }
 #endif

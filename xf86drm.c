@@ -3029,32 +3029,32 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
 #endif
 }
 
-static int drmCompareBusInfo(drmDevicePtr a, drmDevicePtr b)
+int drmDevicesEqual(drmDevicePtr a, drmDevicePtr b)
 {
     if (a == NULL || b == NULL)
-        return -1;
+        return 0;
 
     if (a->bustype != b->bustype)
-        return -1;
+        return 0;
 
     switch (a->bustype) {
     case DRM_BUS_PCI:
-        return memcmp(a->businfo.pci, b->businfo.pci, sizeof(drmPciBusInfo));
+        return memcmp(a->businfo.pci, b->businfo.pci, sizeof(drmPciBusInfo)) == 0;
 
     case DRM_BUS_USB:
-        return memcmp(a->businfo.usb, b->businfo.usb, sizeof(drmUsbBusInfo));
+        return memcmp(a->businfo.usb, b->businfo.usb, sizeof(drmUsbBusInfo)) == 0;
 
     case DRM_BUS_PLATFORM:
-        return memcmp(a->businfo.platform, b->businfo.platform, sizeof(drmPlatformBusInfo));
+        return memcmp(a->businfo.platform, b->businfo.platform, sizeof(drmPlatformBusInfo)) == 0;
 
     case DRM_BUS_HOST1X:
-        return memcmp(a->businfo.host1x, b->businfo.host1x, sizeof(drmHost1xBusInfo));
+        return memcmp(a->businfo.host1x, b->businfo.host1x, sizeof(drmHost1xBusInfo)) == 0;
 
     default:
         break;
     }
 
-    return -1;
+    return 0;
 }
 
 static int drmGetNodeType(const char *name)
@@ -3669,7 +3669,7 @@ static void drmFoldDuplicatedDevices(drmDevicePtr local_devices[], int count)
 
     for (i = 0; i < count; i++) {
         for (j = i + 1; j < count; j++) {
-            if (drmCompareBusInfo(local_devices[i], local_devices[j]) == 0) {
+            if (drmCompareDevices(local_devices[i], local_devices[j])) {
                 local_devices[i]->available_nodes |= local_devices[j]->available_nodes;
                 node_type = log2(local_devices[j]->available_nodes);
                 memcpy(local_devices[i]->nodes[node_type],
