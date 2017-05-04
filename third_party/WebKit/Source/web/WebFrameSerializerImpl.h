@@ -31,6 +31,7 @@
 #ifndef WebFrameSerializerImpl_h
 #define WebFrameSerializerImpl_h
 
+#include "platform/text/WebEntities.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
@@ -41,7 +42,6 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebFrameSerializer.h"
 #include "public/web/WebFrameSerializerClient.h"
-#include "web/WebEntities.h"
 
 namespace WTF {
 class TextEncoding;
