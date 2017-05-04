@@ -260,6 +260,17 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForSubSelector(
       dynamic_pseudo != kPseudoIdNone &&
       (scrollbar_ || dynamic_pseudo == kPseudoIdScrollbarCorner ||
        dynamic_pseudo == kPseudoIdResizer);
+
+  // Only match pseudo classes following scrollbar pseudo elements while
+  // actually computing style for scrollbar pseudo elements. This is to
+  // avoid incorrectly setting affected-by flags on actual elements for
+  // cases like: div::-webkit-scrollbar-thumb:hover { }
+  if (context.in_rightmost_compound && dynamic_pseudo != kPseudoIdNone &&
+      dynamic_pseudo != kPseudoIdSelection &&
+      !next_context.has_scrollbar_pseudo) {
+    return kSelectorFailsCompletely;
+  }
+
   next_context.has_selection_pseudo = dynamic_pseudo == kPseudoIdSelection;
   next_context.is_sub_selector = true;
   return MatchSelector(next_context, result);
