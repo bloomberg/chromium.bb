@@ -161,6 +161,13 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
         sTimeoutDurationMs = duration;
     }
 
+    /**
+     * @return Whether we are pending action for a received main intent.
+     */
+    public boolean getPendingActionRecordForMainIntent() {
+        return mPendingActionRecordForMainIntent;
+    }
+
     private String getHistogramNameForBehavior(@MainIntentActionType int behavior) {
         switch (behavior) {
             case CONTINUATION:
