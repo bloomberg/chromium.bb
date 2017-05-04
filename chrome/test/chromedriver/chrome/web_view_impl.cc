@@ -206,6 +206,23 @@ Status WebViewImpl::Reload(const Timeout* timeout) {
   return client_->SendCommandWithTimeout("Page.reload", params, timeout);
 }
 
+Status WebViewImpl::SendCommand(const std::string& cmd,
+                                const base::DictionaryValue& params) {
+  return client_->SendCommand(cmd, params);
+}
+
+Status WebViewImpl::SendCommandAndGetResult(
+        const std::string& cmd,
+        const base::DictionaryValue& params,
+        std::unique_ptr<base::Value>* value) {
+  std::unique_ptr<base::DictionaryValue> result;
+  Status status = client_->SendCommandAndGetResult(cmd, params, &result);
+  if (status.IsError())
+    return status;
+  *value = std::move(result);
+  return Status(kOk);
+}
+
 Status WebViewImpl::TraverseHistory(int delta, const Timeout* timeout) {
   base::DictionaryValue params;
   std::unique_ptr<base::DictionaryValue> result;

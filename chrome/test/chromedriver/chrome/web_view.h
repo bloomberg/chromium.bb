@@ -53,6 +53,16 @@ class WebView {
   // Reload the current page.
   virtual Status Reload(const Timeout* timeout) = 0;
 
+  // Send a command to the DevTools debugger
+  virtual Status SendCommand(const std::string& cmd,
+                             const base::DictionaryValue& params) = 0;
+
+  // Send a command to the DevTools debugger and wait for the result
+  virtual Status SendCommandAndGetResult(
+          const std::string& cmd,
+          const base::DictionaryValue& params,
+          std::unique_ptr<base::Value>* value) = 0;
+
   // Navigate |delta| steps forward in the browser history. A negative value
   // will navigate back in the history. If the delta exceeds the number of items
   // in the browser history, stay on the current page.

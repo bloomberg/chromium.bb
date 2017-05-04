@@ -25,6 +25,11 @@ class StubWebView : public WebView {
   Status GetUrl(std::string* url) override;
   Status Load(const std::string& url, const Timeout* timeout) override;
   Status Reload(const Timeout* timeout) override;
+  Status SendCommand(const std::string& cmd,
+                     const base::DictionaryValue& params) override;
+  Status SendCommandAndGetResult(const std::string& cmd,
+                                 const base::DictionaryValue& params,
+                                 std::unique_ptr<base::Value>* value) override;
   Status TraverseHistory(int delta, const Timeout* timeout) override;
   Status EvaluateScript(const std::string& frame,
                         const std::string& function,

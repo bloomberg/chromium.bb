@@ -32,6 +32,7 @@ class WebDriverLog : public Log {
   static const char kBrowserType[];
   static const char kDriverType[];
   static const char kPerformanceType[];
+  static const char kDevToolsType[];
 
   // Converts WD wire protocol level name -> Level, false on bad name.
   static bool NameToLevel(const std::string& name, Level* out_level);

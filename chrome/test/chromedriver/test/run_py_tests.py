@@ -175,7 +175,7 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
-        'PerformanceLoggerTest.testPerformanceLogger',
+        'ChromeLoggingCapabilityTest.testPerformanceLogger',
         'ChromeDriverTest.testShadowDom*',
         # WebView doesn't support emulating network conditions.
         'ChromeDriverTest.testEmulateNetworkConditions',
@@ -1061,6 +1061,25 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # we have to explicitly wait for this to change. We can't rely on the
     # navigation tracker to block the call to Load() above.
     self.WaitForCondition(lambda: 'is not available' in self._driver.GetTitle())
+
+  def testSendCommand(self):
+    """Sends a custom command to the DevTools debugger"""
+    params = {}
+    res = self._driver.SendCommandAndGetResult('CSS.enable', params)
+    self.assertEqual({}, res)
+
+  def testSendCommandNoParams(self):
+    """Sends a custom command to the DevTools debugger without params"""
+    self.assertRaisesRegexp(
+            chromedriver.UnknownError, "params not passed",
+            self._driver.SendCommandAndGetResult, 'CSS.enable', None)
+
+  def testSendCommandAndGetResult(self):
+    """Sends a custom command to the DevTools debugger and gets the result"""
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    params = {}
+    document = self._driver.SendCommandAndGetResult('DOM.getDocument', params)
+    self.assertTrue('root' in document)
 
   def testShadowDomFindElementWithSlashDeep(self):
     """Checks that chromedriver can find elements in a shadow DOM using /deep/
@@ -2217,7 +2236,7 @@ class ChromeDriverLogTest(ChromeDriverBaseTest):
       self.assertNotIn('bosco', f.read())
 
 
-class PerformanceLoggerTest(ChromeDriverBaseTest):
+class ChromeLoggingCapabilityTest(ChromeDriverBaseTest):
   """Tests chromedriver tracing support and Inspector event collection."""
 
   def testPerformanceLogger(self):
@@ -2252,6 +2271,18 @@ class PerformanceLoggerTest(ChromeDriverBaseTest):
     self.assertEquals({'Network', 'Page', 'Tracing'},
                       set(seen_log_domains.keys()))
 
+  def testDevToolsEventsLogger(self):
+    """Tests that the correct event type (and no other) is logged"""
+    event = 'Page.loadEventFired'
+    driver = self.CreateDriver(
+        devtools_events_to_log=[event], logging_prefs={'devtools':'ALL'})
+    driver.Load('about:blank')
+    logs = driver.GetLog('devtools')
+    for entry in logs:
+      devtools_message = json.loads(entry['message'])
+      method = devtools_message['method']
+      self.assertTrue('params' in devtools_message)
+      self.assertEquals(event, method)
 
 class SessionHandlingTest(ChromeDriverBaseTest):
   """Tests for session operations."""

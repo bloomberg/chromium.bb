@@ -152,6 +152,10 @@ class Command(object):
   STATUS = (_Method.GET, '/status')
   SET_NETWORK_CONNECTION = (
       _Method.POST, '/session/:sessionId/network_connection')
+  SEND_COMMAND = (
+      _Method.POST, '/session/:sessionId/chromium/send_command')
+  SEND_COMMAND_AND_GET_RESULT = (
+      _Method.POST, '/session/:sessionId/chromium/send_command_and_get_result')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

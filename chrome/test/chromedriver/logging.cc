@@ -23,6 +23,7 @@
 #include "chrome/test/chromedriver/chrome/console_logger.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_listener_proxy.h"
+#include "chrome/test/chromedriver/devtools_events_logger.h"
 #include "chrome/test/chromedriver/performance_logger.h"
 #include "chrome/test/chromedriver/session.h"
 
@@ -131,6 +132,7 @@ bool HandleLogMessage(int severity,
 const char WebDriverLog::kBrowserType[] = "browser";
 const char WebDriverLog::kDriverType[] = "driver";
 const char WebDriverLog::kPerformanceType[] = "performance";
+const char WebDriverLog::kDevToolsType[] = "devtools";
 
 bool WebDriverLog::NameToLevel(const std::string& name, Log::Level* out_level) {
   for (size_t i = 0; i < arraysize(kNameToLevel); ++i) {
@@ -304,6 +306,12 @@ Status CreateLogs(
         command_listeners.push_back(
             base::MakeUnique<CommandListenerProxy>(perf_log));
       }
+    } else if (type == WebDriverLog::kDevToolsType) {
+      logs.push_back(base::MakeUnique<WebDriverLog>(type, Log::kAll));
+      devtools_listeners.push_back(
+          base::MakeUnique<DevToolsEventsLogger>(
+            logs.back().get(),
+            capabilities.devtools_events_logging_prefs.get()));
     } else if (type == WebDriverLog::kBrowserType) {
       browser_log_level = level;
     } else if (type != WebDriverLog::kDriverType) {
