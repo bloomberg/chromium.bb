@@ -23,7 +23,7 @@ bool InterfaceProviderSpec::operator==(
 bool InterfaceProviderSpec::operator<(
     const InterfaceProviderSpec& other) const {
   return std::tie(provides, requires) <
-      std::tie(other.provides, other.requires);
+         std::tie(other.provides, other.requires);
 }
 
 bool GetInterfaceProviderSpec(const std::string& spec_name,

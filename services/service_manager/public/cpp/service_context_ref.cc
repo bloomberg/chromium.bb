@@ -17,8 +17,7 @@ class ServiceContextRefImpl : public ServiceContextRef {
   ServiceContextRefImpl(
       base::WeakPtr<ServiceContextRefFactory> factory,
       scoped_refptr<base::SingleThreadTaskRunner> service_task_runner)
-      : factory_(factory),
-        service_task_runner_(service_task_runner) {
+      : factory_(factory), service_task_runner_(service_task_runner) {
     // This object is not thread-safe but may be used exclusively on a different
     // thread from the one which constructed it.
     thread_checker_.DetachFromThread();
@@ -31,8 +30,7 @@ class ServiceContextRefImpl : public ServiceContextRef {
       factory_->Release();
     } else {
       service_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&ServiceContextRefFactory::Release, factory_));
+          FROM_HERE, base::Bind(&ServiceContextRefFactory::Release, factory_));
     }
   }
 
@@ -45,8 +43,7 @@ class ServiceContextRefImpl : public ServiceContextRef {
       factory_->AddRef();
     } else {
       service_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&ServiceContextRefFactory::AddRef, factory_));
+          FROM_HERE, base::Bind(&ServiceContextRefFactory::AddRef, factory_));
     }
 
     return base::MakeUnique<ServiceContextRefImpl>(factory_,

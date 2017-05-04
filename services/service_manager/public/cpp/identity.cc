@@ -17,11 +17,10 @@ Identity::Identity(const std::string& name)
 Identity::Identity(const std::string& name, const std::string& user_id)
     : Identity(name, user_id, "") {}
 
-Identity::Identity(const std::string& name, const std::string& user_id,
+Identity::Identity(const std::string& name,
+                   const std::string& user_id,
                    const std::string& instance)
-    : name_(name),
-      user_id_(user_id),
-      instance_(instance) {
+    : name_(name), user_id_(user_id), instance_(instance) {
   DCHECK(!user_id.empty());
   DCHECK(base::IsValidGUID(user_id));
 }

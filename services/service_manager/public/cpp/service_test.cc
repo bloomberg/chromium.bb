@@ -67,8 +67,8 @@ void ServiceTest::SetUp() {
   DCHECK(!init_edk_);
 
   background_service_manager_ =
-      base::MakeUnique<service_manager::BackgroundServiceManager>(
-          nullptr, nullptr);
+      base::MakeUnique<service_manager::BackgroundServiceManager>(nullptr,
+                                                                  nullptr);
 
   // Create the service manager connection. We don't proceed until we get our
   // Service's OnStart() method is called.

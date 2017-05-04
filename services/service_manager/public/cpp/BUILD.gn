@@ -11,28 +11,28 @@ group("cpp") {
 # TODO(rockot): Rename this to "cpp".
 static_library("sources") {
   sources = [
+    "bind_source_info.cc",
     "bind_source_info.h",
+    "binder_registry.cc",
     "binder_registry.h",
     "connect.h",
     "connector.cc",
     "connector.h",
+    "identity.cc",
     "identity.h",
     "interface_binder.cc",
     "interface_binder.h",
+    "interface_provider.cc",
     "interface_provider.h",
+    "interface_provider_spec.cc",
     "interface_provider_spec.h",
-    "lib/bind_source_info.cc",
-    "lib/binder_registry.cc",
-    "lib/identity.cc",
-    "lib/interface_provider.cc",
-    "lib/interface_provider_spec.cc",
-    "lib/service.cc",
-    "lib/service_context.cc",
-    "lib/service_context_ref.cc",
-    "lib/service_runner.cc",
+    "service.cc",
     "service.h",
+    "service_context.cc",
     "service_context.h",
+    "service_context_ref.cc",
     "service_context_ref.h",
+    "service_runner.cc",
     "service_runner.h",
   ]
 
@@ -49,7 +49,7 @@ if (!is_ios) {
   static_library("service_test_support") {
     testonly = true
     sources = [
-      "lib/service_test.cc",
+      "service_test.cc",
       "service_test.h",
     ]
 
