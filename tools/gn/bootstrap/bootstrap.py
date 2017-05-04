@@ -629,6 +629,7 @@ def write_gn_ninja(path, root_gen_dir, options):
         'tool': 'cxx',
     }
     static_libraries['base']['sources'].extend([
+        'base/memory/shared_memory_handle_posix.cc',
         'base/memory/shared_memory_posix.cc',
         'base/memory/shared_memory_tracker.cc',
         'base/nix/xdg_util.cc',
