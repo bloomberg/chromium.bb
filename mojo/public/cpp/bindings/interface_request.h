@@ -46,6 +46,15 @@ class InterfaceRequest {
     Bind(std::move(pipe.handle1));
   }
 
+  // Similar to the constructor above, but binds one end of the message pipe to
+  // an InterfacePtrInfo instance.
+  explicit InterfaceRequest(InterfacePtrInfo<Interface>* ptr_info) {
+    MessagePipe pipe;
+    ptr_info->set_handle(std::move(pipe.handle0));
+    ptr_info->set_version(0u);
+    Bind(std::move(pipe.handle1));
+  }
+
   // Takes the message pipe from another InterfaceRequest.
   InterfaceRequest(InterfaceRequest&& other) {
     handle_ = std::move(other.handle_);
@@ -161,6 +170,13 @@ InterfaceRequest<Interface> MakeRequest(
     scoped_refptr<base::SingleThreadTaskRunner> runner =
         base::ThreadTaskRunnerHandle::Get()) {
   return InterfaceRequest<Interface>(ptr, runner);
+}
+
+// Similar to the constructor above, but binds one end of the message pipe to
+// an InterfacePtrInfo instance.
+template <typename Interface>
+InterfaceRequest<Interface> MakeRequest(InterfacePtrInfo<Interface>* ptr_info) {
+  return InterfaceRequest<Interface>(ptr_info);
 }
 
 // Fuses an InterfaceRequest<T> endpoint with an InterfacePtrInfo<T> endpoint.
