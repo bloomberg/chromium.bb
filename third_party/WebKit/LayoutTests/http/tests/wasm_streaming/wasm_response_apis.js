@@ -2,13 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const incrementer_url = '../wasm/incrementer.wasm';
+const incrementer_url = '../wasm/resources/load-wasm.php';
 
 function TestStreamedCompile() {
   return fetch(incrementer_url)
     .then(WebAssembly.compile)
     .then(m => new WebAssembly.Instance(m))
     .then(i => assert_equals(5, i.exports.increment(4)));
+}
+
+function TestCompileMimeTypeIsChecked() {
+  return fetch('../wasm/resources/incrementer.wasm')
+    .then(WebAssembly.compile)
+    .catch(e => e instanceof TypeError);
+}
+
+function TestInstantiateMimeTypeIsChecked() {
+  return fetch('../wasm/resources/incrementer.wasm')
+    .then(WebAssembly.instantiate)
+    .catch(e => e instanceof TypeError);
 }
 
 function TestShortFormStreamedCompile() {
@@ -38,7 +50,7 @@ function InstantiateBlankResponse() {
 function CompileFromArrayBuffer() {
   return fetch(incrementer_url)
     .then(r => r.arrayBuffer())
-    .then(arr => new Response(arr))
+    .then(arr => new Response(arr, {headers:{"Content-Type":"application/wasm"}}))
     .then(WebAssembly.compile)
     .then(m => new WebAssembly.Instance(m))
     .then(i => assert_equals(6, i.exports.increment(5)));
