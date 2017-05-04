@@ -895,7 +895,9 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceWithNoFilter) {
   EXPECT_EQ(2, observer.device_added_count());
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }
+#endif  // defined(OS_MACOSX)
 
+#if defined(OS_MACOSX)
 // Simulate two devices being connected before calling
 // RetrieveGattConnectedDevicesWithDiscoveryFilter() with one service filter.
 TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceWithFilter) {
@@ -927,7 +929,9 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceWithFilter) {
   EXPECT_EQ(1, observer.device_added_count());
   EXPECT_EQ(1u, adapter_->GetDevices().size());
 }
+#endif  // defined(OS_MACOSX)
 
+#if defined(OS_MACOSX)
 // Simulate two devices being connected before calling
 // RetrieveGattConnectedDevicesWithDiscoveryFilter() with one service filter
 // that doesn't match.
@@ -954,7 +958,9 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceWithWrongFilter) {
   EXPECT_EQ(0, observer.device_added_count());
   EXPECT_EQ(0u, adapter_->GetDevices().size());
 }
+#endif  // defined(OS_MACOSX)
 
+#if defined(OS_MACOSX)
 // Simulate two devices being connected before calling
 // RetrieveGattConnectedDevicesWithDiscoveryFilter() with two service filters
 // that both match.
@@ -999,7 +1005,9 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceWithTwoFilters) {
   EXPECT_EQ(2, observer.device_added_count());
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }
+#endif  // defined(OS_MACOSX)
 
+#if defined(OS_MACOSX)
 // Simulate two devices being connected before calling
 // RetrieveGattConnectedDevicesWithDiscoveryFilter() with one service filter
 // that one match device, and then
