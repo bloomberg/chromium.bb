@@ -48,7 +48,7 @@ class WorkQueueTest : public testing::Test {
   scoped_refptr<TaskQueueImpl> task_queue_;
   std::unique_ptr<WorkQueue> work_queue_;
   std::unique_ptr<WorkQueueSets> work_queue_sets_;
-  std::unique_ptr<WTF::Deque<TaskQueueImpl::Task>> incoming_queue_;
+  std::unique_ptr<TaskQueueImpl::TaskDeque> incoming_queue_;
 };
 
 TEST_F(WorkQueueTest, Empty) {
