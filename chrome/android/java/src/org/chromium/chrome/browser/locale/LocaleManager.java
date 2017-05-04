@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchEnginePreference;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -268,6 +269,20 @@ public class LocaleManager {
             return SEARCH_ENGINE_PROMO_DONT_SHOW;
         }
         return SEARCH_ENGINE_PROMO_SHOW_SOGOU;
+    }
+
+    /**
+     * To be called after the user has made a selection from a search engine promo dialog.
+     * @param type The type of search engine promo dialog that was shown.
+     * @param keyword The keyword for the search engine chosen.
+     */
+    protected void onUserSearchEngineChoiceFromPromoDialog(
+            @SearchEnginePromoType int type, String keyword) {
+        TemplateUrlService.getInstance().setSearchEngine(keyword);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putInt(KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN)
+                .apply();
     }
 
     private SpecialLocaleHandler getSpecialLocaleHandler() {
