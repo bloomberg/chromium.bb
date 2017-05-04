@@ -187,6 +187,8 @@ extern const base::Feature kQuickUnlockFingerprint;
 extern const base::Feature kEHVInputOnImeMenu;
 
 extern const base::Feature kCrosCompUpdates;
+
+extern const base::Feature kCrOSComponent;
 #endif  // defined(OS_CHROMEOS)
 
 bool PrefServiceEnabled();

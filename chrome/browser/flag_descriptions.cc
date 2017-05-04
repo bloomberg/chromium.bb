@@ -2332,6 +2332,12 @@ const char kEnableZipArchiverOnFileManagerName[] =
 const char kEnableZipArchiverOnFileManagerDescription[] =
     "Enable the ability to archive and unpack files on Drive in the Files app";
 
+const char kCrOSComponentName[] = "Chrome OS Component";
+
+const char kCrOSComponentDescription[] =
+    "Enable the use of Chrome OS Component to download Chrome OS features "
+    "on-demand as components.";
+
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

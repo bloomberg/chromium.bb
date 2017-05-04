@@ -20609,6 +20609,7 @@ from previous Chrome versions.
   <int value="-2047832738" label="enable-system-timezone-automatic-detection"/>
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
+  <int value="-2040471724" label="CrOSComponent:disabled"/>
   <int value="-2040115518" label="load-media-router-component-extension"/>
   <int value="-2029912304" label="StaleWhileRevalidate2:enabled"/>
   <int value="-2025367104" label="enable-material-design-ntp"/>
@@ -21253,6 +21254,7 @@ from previous Chrome versions.
   <int value="458410433" label="disable-views-rect-based-targeting"/>
   <int value="460136092" label="MidiManagerAndroid:disabled"/>
   <int value="460475728" label="wake-on-wifi-packet"/>
+  <int value="464226051" label="CrOSComponent:enabled"/>
   <int value="466248382" label="disable-push-api-background-mode"/>
   <int value="468959230"
       label="enable-non-validating-reload-on-refresh-content"/>
