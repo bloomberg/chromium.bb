@@ -138,6 +138,10 @@ class AutoUpdateVerifyError(ChromiumOSUpdateError):
   """Raised for verification failures after auto-update."""
 
 
+class DevserverCannotStartError(ChromiumOSUpdateError):
+  """Raised when devserver cannot restart after stateful update."""
+
+
 class BaseUpdater(object):
   """The base updater class."""
   def __init__(self, device, payload_dir):
@@ -247,20 +251,25 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     """Check whether to restore stateful."""
     logging.debug('Checking whether to restore stateful...')
     restore_stateful = False
-    if not self._CanRunDevserver() and self._do_rootfs_update:
-      msg = ('Cannot start devserver! The stateful partition may be '
-             'corrupted.')
-      prompt = 'Attempt to restore the stateful partition?'
-      restore_stateful = self._yes or cros_build_lib.BooleanPrompt(
-          prompt=prompt, default=False, prolog=msg)
-      if not restore_stateful:
-        raise ChromiumOSUpdateError('Cannot continue to perform rootfs update!')
+    try:
+      self._CheckDevserverCanRun()
+      return restore_stateful
+    except DevserverCannotStartError as e:
+      if self._do_rootfs_update:
+        msg = ('Cannot start devserver! The stateful partition may be '
+               'corrupted: %s' % e)
+        prompt = 'Attempt to restore the stateful partition?'
+        restore_stateful = self._yes or cros_build_lib.BooleanPrompt(
+            prompt=prompt, default=False, prolog=msg)
+        if not restore_stateful:
+          raise ChromiumOSUpdateError(
+              'Cannot continue to perform rootfs update!')
 
     logging.debug('Restore stateful partition is%s required.',
                   ('' if restore_stateful else ' not'))
     return restore_stateful
 
-  def _CanRunDevserver(self):
+  def _CheckDevserverCanRun(self):
     """We can run devserver on |device|.
 
     If the stateful partition is corrupted, Python or other packages
@@ -270,15 +279,14 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     device if it looks like that's causing problems, which is necessary
     for base images.
 
-    Returns:
-      True if we can start devserver; False otherwise.
+    Raise DevserverCannotStartError if devserver cannot start.
     """
     # Try to capture the output from the command so we can dump it in the case
     # of errors. Note that this will not work if we were requested to redirect
     # logs to a |log_file|.
     cmd_kwargs = dict(self._cmd_kwargs)
     cmd_kwargs['capture_output'] = True
-    cmd_kwargs['combine_stdout_stderr'] = True
+    cmd_kwargs['combine_stdout_stderr'] = False
     logging.info('Checking if we can run devserver on the device...')
     devserver_bin = os.path.join(self.device_dev_dir,
                                  self.REMOTE_DEVSERVER_FILENAME)
@@ -287,7 +295,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       self.device.RunCommand(devserver_check_command, **cmd_kwargs)
     except cros_build_lib.RunCommandError as e:
       logging.warning('Cannot start devserver:')
-      logging.warning(e)
+      logging.warning(e.result.error)
       if ERROR_MSG_IN_LOADING_LIB in str(e):
         logging.info('Attempting to correct device library paths...')
         try:
@@ -295,14 +303,13 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           self.device.RunCommand(devserver_check_command,
                                  **cmd_kwargs)
           logging.info('Library path correction successful.')
-          return True
+          return
         except cros_build_lib.RunCommandError as e2:
           logging.warning('Library path correction failed:')
-          logging.warning(e2)
+          logging.warning(e2.result.error)
 
-      return False
-
-    return True
+      error_msg = e.result.error.splitlines()[-1]
+      raise DevserverCannotStartError(error_msg)
 
   # pylint: disable=unbalanced-tuple-unpacking
   @classmethod
@@ -437,6 +444,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       source_python_dir: The source python directory that is used to copy from.
       dest_temp_dir: The dest temp directory that is used to copy to.
     """
+    logging.debug('Copy from %s to %s', source_python_dir, dest_temp_dir)
     shutil.copytree(
         source_python_dir, dest_temp_dir,
         ignore=shutil.ignore_patterns('*.pyc', 'tmp*', '.*', 'static',
@@ -578,10 +586,12 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     logging.warning('Restoring the stateful partition')
     self.RunUpdateStateful()
     self.device.Reboot()
-    if self._CanRunDevserver():
+    try:
+      self._CheckDevserverCanRun()
       logging.info('Stateful partition restored.')
-    else:
-      raise ChromiumOSUpdateError('Unable to restore stateful partition.')
+    except DevserverCannotStartError as e:
+      raise ChromiumOSUpdateError(
+          'Unable to restore stateful partition: %s', e)
 
   def ResetStatefulPartition(self):
     """Clear any pending stateful update request."""
@@ -1173,6 +1183,16 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       logging.warning('Failed to verify whether packages still exist: %s', e)
       return False
 
+  def _CheckDevserverCanRun(self):
+    """Check if devserver can successfully run for ChromiumOSUpdater."""
+    self._IfDevserverPackageInstalled()
+    super(ChromiumOSUpdater, self)._CheckDevserverCanRun()
+
+  def CheckDevserverRun(self):
+    """Check whether devserver can start."""
+    self._CheckDevserverCanRun()
+    logging.info('Devserver successfully start.')
+
   def RestoreStateful(self):
     """Restore stateful partition for device."""
     logging.warning('Restoring the stateful partition')
@@ -1180,10 +1200,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     use_original_build = bool(self.original_payload_dir)
     self.UpdateStateful(use_original_build=use_original_build)
     self.PostCheckStatefulUpdate()
-    if self._IfDevserverPackageInstalled() and self._CanRunDevserver():
-      logging.info('Stateful partition restored.')
-    else:
-      raise ChromiumOSUpdateError('Unable to restore stateful partition.')
+    self.CheckDevserverRun()
 
   def PostCheckRootfsUpdate(self):
     """Post-check for rootfs update for CrOS host."""

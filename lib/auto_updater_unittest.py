@@ -71,7 +71,7 @@ class ChromiumOSTransferMock(partial_mock.PartialCmdMock):
 class ChromiumOSPreCheckMock(partial_mock.PartialCmdMock):
   """Mock out Precheck function in ChromiumOSFlashUpdater."""
   TARGET = 'chromite.lib.auto_updater.ChromiumOSFlashUpdater'
-  ATTRS = ('CheckRestoreStateful', '_CanRunDevserver')
+  ATTRS = ('CheckRestoreStateful', '_CheckDevserverCanRun')
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
@@ -79,8 +79,8 @@ class ChromiumOSPreCheckMock(partial_mock.PartialCmdMock):
   def CheckRestoreStateful(self, _inst, *_args, **_kwargs):
     """Mock out CheckRestoreStateful."""
 
-  def _CanRunDevserver(self, _inst, *_args, **_kwargs):
-    """Mock out _CanRunDevserve."""
+  def _CheckDevserverCanRun(self, _inst, *_args, **_kwargs):
+    """Mock out _CheckDevserverCanRun."""
 
 
 class ChromiumOSFlashUpdaterBaseTest(cros_test_lib.MockTestCase):
@@ -150,8 +150,9 @@ class ChromiumOSUpdatePreCheckTest(ChromiumOSFlashUpdaterBaseTest):
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_AU = auto_updater.ChromiumOSFlashUpdater(device, self.payload_dir)
       self.PatchObject(cros_build_lib, 'BooleanPrompt', return_value=False)
-      self.PatchObject(auto_updater.ChromiumOSFlashUpdater, '_CanRunDevserver',
-                       return_value=False)
+      self.PatchObject(auto_updater.ChromiumOSFlashUpdater,
+                       '_CheckDevserverCanRun',
+                       side_effect=auto_updater.DevserverCannotStartError())
       self.assertRaises(auto_updater.ChromiumOSUpdateError, CrOS_AU.RunUpdate)
 
   def testNoPomptWithYes(self):
@@ -272,8 +273,9 @@ class ChromiumOSFlashUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.PatchObject(auto_updater.ChromiumOSFlashUpdater,
                        'CheckRestoreStateful',
                        return_value=True)
-      self.PatchObject(auto_updater.ChromiumOSFlashUpdater, '_CanRunDevserver',
-                       return_value=False)
+      self.PatchObject(auto_updater.ChromiumOSFlashUpdater,
+                       '_CheckDevserverCanRun',
+                       side_effect=auto_updater.DevserverCannotStartError())
       self.assertRaises(auto_updater.ChromiumOSUpdateError, CrOS_AU.RunUpdate)
 
   def testSetupRootfsUpdateError(self):
