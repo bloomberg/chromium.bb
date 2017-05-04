@@ -12944,6 +12944,9 @@
           "dimension_sets": [
             {
               "os": "Windows-10-10586"
+            },
+            {
+              "os": "Windows-7-SP1"
             }
           ],
           "shards": 1
