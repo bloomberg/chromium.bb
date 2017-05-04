@@ -223,7 +223,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
         self.assertEqual(self.tool.executive.calls, [])
 
         self.command.tree_status = lambda: 'open'
-        self.tool.executive.calls = []
+        self.tool.executive.full_calls = []
         self._execute_with_mock_options()
 
         self.assertEqual(self.tool.executive.calls, [
@@ -322,7 +322,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
         self.command.SECONDS_BEFORE_GIVING_UP = 0
         self.command.tree_status = lambda: 'open'
         self.tool.executive = MockExecutive()
-        self.tool.executive.calls = []
+        self.tool.executive.full_calls = []
         self._execute_with_mock_options()
 
         self.assertEqual(self.tool.executive.calls, [
