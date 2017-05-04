@@ -369,14 +369,12 @@ static void resize_multistep(const uint8_t *const input, int length,
   const int steps = get_down2_steps(length, olength);
 
   if (steps > 0) {
-    int s;
     uint8_t *out = NULL;
-    uint8_t *otmp2;
     int filteredlength = length;
 
     assert(otmp != NULL);
-    otmp2 = otmp + get_down2_length(length, 1);
-    for (s = 0; s < steps; ++s) {
+    uint8_t *otmp2 = otmp + get_down2_length(length, 1);
+    for (int s = 0; s < steps; ++s) {
       const int proj_filteredlength = get_down2_length(filteredlength, 1);
       const uint8_t *const in = (s == 0 ? input : out);
       if (s == steps - 1 && proj_filteredlength == olength)
@@ -640,22 +638,19 @@ static void highbd_down2_symodd(const uint16_t *const input, int length,
 static void highbd_resize_multistep(const uint16_t *const input, int length,
                                     uint16_t *output, int olength,
                                     uint16_t *otmp, int bd) {
-  int steps;
   if (length == olength) {
     memcpy(output, input, sizeof(output[0]) * length);
     return;
   }
-  steps = get_down2_steps(length, olength);
+  const int steps = get_down2_steps(length, olength);
 
   if (steps > 0) {
-    int s;
     uint16_t *out = NULL;
-    uint16_t *otmp2;
     int filteredlength = length;
 
     assert(otmp != NULL);
-    otmp2 = otmp + get_down2_length(length, 1);
-    for (s = 0; s < steps; ++s) {
+    uint16_t *otmp2 = otmp + get_down2_length(length, 1);
+    for (int s = 0; s < steps; ++s) {
       const int proj_filteredlength = get_down2_length(filteredlength, 1);
       const uint16_t *const in = (s == 0 ? input : out);
       if (s == steps - 1 && proj_filteredlength == olength)
