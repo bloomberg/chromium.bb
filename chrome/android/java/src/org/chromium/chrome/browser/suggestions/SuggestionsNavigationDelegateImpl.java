@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import android.app.Activity;
-
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
@@ -39,13 +38,13 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     private static final String NEW_TAB_URL_HELP =
             "https://support.google.com/chrome/?p=new_tab";
 
-    private final Activity mActivity;
+    private final ChromeActivity mActivity;
     private final Profile mProfile;
 
     private final NativePageHost mHost;
     private final TabModelSelector mTabModelSelector;
 
-    public SuggestionsNavigationDelegateImpl(Activity activity, Profile profile,
+    public SuggestionsNavigationDelegateImpl(ChromeActivity activity, Profile profile,
             NativePageHost host, TabModelSelector tabModelSelector) {
         mActivity = activity;
         mProfile = profile;

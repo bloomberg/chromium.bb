@@ -4,11 +4,12 @@
 
 package org.chromium.chrome.browser.history;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
@@ -38,16 +39,22 @@ public class HistoryManagerUtils {
     }
 
     /**
-    * Opens the browsing history manager.
-    */
-    public static void showHistoryManager(Activity activity, Tab tab) {
+     * Opens the browsing history manager.
+     *
+     * @param activity The {@link ChromeActivity} that owns the {@link HistoryManager}.
+     * @param tab The {@link Tab} to used to display the native page version of the
+     *            {@link HistoryManager}.
+     */
+    public static void showHistoryManager(ChromeActivity activity, Tab tab) {
         if (!isAndroidHistoryManagerEnabled()) {
             tab.loadUrl(new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));
             return;
         }
 
         Context appContext = ContextUtils.getApplicationContext();
-        if (DeviceFormFactor.isTablet(appContext)) {
+        if (activity.getBottomSheet() != null) {
+            activity.getBottomSheetContentController().showContentAndOpenSheet(R.id.action_history);
+        } else if (DeviceFormFactor.isTablet(appContext)) {
             // History shows up as a tab on tablets.
             LoadUrlParams params = new LoadUrlParams(UrlConstants.NATIVE_HISTORY_URL);
             tab.loadUrl(params);

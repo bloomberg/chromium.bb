@@ -30,6 +30,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
@@ -117,7 +118,12 @@ public class DownloadUtils {
         }
 
         Context appContext = ContextUtils.getApplicationContext();
-        if (DeviceFormFactor.isTablet(appContext)) {
+        if (activity instanceof ChromeActivity
+                && ((ChromeActivity) activity).getBottomSheet() != null) {
+            ((ChromeActivity) activity)
+                    .getBottomSheetContentController()
+                    .showContentAndOpenSheet(R.id.action_downloads);
+        } else if (DeviceFormFactor.isTablet(appContext)) {
             // Download Home shows up as a tab on tablets.
             LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
             if (tab == null || !tab.isInitialized()) {

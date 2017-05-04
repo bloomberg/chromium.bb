@@ -10,6 +10,7 @@ import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -18,6 +19,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 
 /**
@@ -27,6 +29,70 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
 public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBase {
+    /** A handle to the sheet's observer. */
+    protected TestBottomSheetObserver mObserver;
+
+    /** An observer used to record events that occur with respect to the bottom sheet. */
+    protected static class TestBottomSheetObserver extends EmptyBottomSheetObserver {
+        /** A {@link CallbackHelper} that can wait for the bottom sheet to be closed. */
+        public final CallbackHelper mClosedCallbackHelper = new CallbackHelper();
+
+        /** A {@link CallbackHelper} that can wait for the bottom sheet to be opened. */
+        public final CallbackHelper mOpenedCallbackHelper = new CallbackHelper();
+
+        /** A {@link CallbackHelper} that can wait for the onTransitionPeekToHalf event. */
+        public final CallbackHelper mPeekToHalfCallbackHelper = new CallbackHelper();
+
+        /** A {@link CallbackHelper} that can wait for the onOffsetChanged event. */
+        public final CallbackHelper mOffsetChangedCallbackHelper = new CallbackHelper();
+
+        /** A {@link CallbackHelper} that can wait for the onSheetContentChanged event. */
+        public final CallbackHelper mContentChangedCallbackHelper = new CallbackHelper();
+
+        /** The last value that the onTransitionPeekToHalf event sent. */
+        private float mLastPeekToHalfValue;
+
+        /** The last value that the onOffsetChanged event sent. */
+        private float mLastOffsetChangedValue;
+
+        @Override
+        public void onTransitionPeekToHalf(float fraction) {
+            mLastPeekToHalfValue = fraction;
+            mPeekToHalfCallbackHelper.notifyCalled();
+        }
+
+        @Override
+        public void onSheetOffsetChanged(float heightFraction) {
+            mLastOffsetChangedValue = heightFraction;
+            mOffsetChangedCallbackHelper.notifyCalled();
+        }
+
+        @Override
+        public void onSheetOpened() {
+            mOpenedCallbackHelper.notifyCalled();
+        }
+
+        @Override
+        public void onSheetClosed() {
+            mClosedCallbackHelper.notifyCalled();
+        }
+
+        @Override
+        public void onSheetContentChanged(BottomSheetContent newContent) {
+            mContentChangedCallbackHelper.notifyCalled();
+        }
+
+        /** @return The last value passed in to {@link #onTransitionPeekToHalf(float)}. */
+        public float getLastPeekToHalfValue() {
+            return mLastPeekToHalfValue;
+        }
+
+        /** @return The last value passed in to {@link #onSheetOffsetChanged(float)}. */
+        public float getLastOffsetChangedValue() {
+            return mLastOffsetChangedValue;
+        }
+    }
+
     /** A handle to the bottom sheet. */
     protected BottomSheet mBottomSheet;
 
@@ -60,6 +126,9 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
 
         mBottomSheet = getActivity().getBottomSheet();
         mBottomSheetContentController = getActivity().getBottomSheetContentController();
+
+        mObserver = new TestBottomSheetObserver();
+        mBottomSheet.addObserver(mObserver);
     }
 
     @Override
@@ -112,7 +181,7 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mBottomSheetContentController.selectItemForTests(itemId);
+                mBottomSheetContentController.selectItem(itemId);
             }
         });
     }

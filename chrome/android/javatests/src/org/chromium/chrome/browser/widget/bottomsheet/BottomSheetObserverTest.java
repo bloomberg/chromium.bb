@@ -13,84 +13,12 @@ import org.chromium.chrome.browser.download.DownloadSheetContent;
 import org.chromium.chrome.browser.history.HistorySheetContent;
 import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.test.BottomSheetTestCaseBase;
 
 import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheetObserver}. */
 public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
-    /** A handle to the sheet's observer. */
-    private TestBottomSheetObserver mObserver;
-
-    /** An observer used to record events that occur with respect to the bottom sheet. */
-    private static class TestBottomSheetObserver implements BottomSheetObserver {
-        /** A {@link CallbackHelper} that can wait for the bottom sheet to be closed. */
-        private final CallbackHelper mClosedCallbackHelper = new CallbackHelper();
-
-        /** A {@link CallbackHelper} that can wait for the bottom sheet to be opened. */
-        private final CallbackHelper mOpenedCallbackHelper = new CallbackHelper();
-
-        /** A {@link CallbackHelper} that can wait for the onTransitionPeekToHalf event. */
-        private final CallbackHelper mPeekToHalfCallbackHelper = new CallbackHelper();
-
-        /** A {@link CallbackHelper} that can wait for the onOffsetChanged event. */
-        private final CallbackHelper mOffsetChangedCallbackHelper = new CallbackHelper();
-
-        /** A {@link CallbackHelper} that can wait for the onSheetContentChanged event. */
-        private final CallbackHelper mContentChangedCallbackHelper = new CallbackHelper();
-
-        /** The last value that the onTransitionPeekToHalf event sent. */
-        private float mLastPeekToHalfValue;
-
-        /** The last value that the onOffsetChanged event sent. */
-        private float mLastOffsetChangedValue;
-
-        @Override
-        public void onTransitionPeekToHalf(float fraction) {
-            mLastPeekToHalfValue = fraction;
-            mPeekToHalfCallbackHelper.notifyCalled();
-        }
-
-        @Override
-        public void onSheetOffsetChanged(float heightFraction) {
-            mLastOffsetChangedValue = heightFraction;
-            mOffsetChangedCallbackHelper.notifyCalled();
-        }
-
-        @Override
-        public void onSheetOpened() {
-            mOpenedCallbackHelper.notifyCalled();
-        }
-
-        @Override
-        public void onSheetClosed() {
-            mClosedCallbackHelper.notifyCalled();
-        }
-
-        @Override
-        public void onSheetReleased() {}
-
-        @Override
-        public void onLoadUrl(String url) {}
-
-        @Override
-        public void onSheetStateChanged(int newState) {}
-
-        @Override
-        public void onSheetContentChanged(BottomSheetContent newContent) {
-            mContentChangedCallbackHelper.notifyCalled();
-        }
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        mObserver = new TestBottomSheetObserver();
-        mBottomSheet.addObserver(mObserver);
-    }
-
     /**
      * Test that the onSheetClosed event is triggered if the sheet is closed without animation.
      */
@@ -180,19 +108,19 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         int callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(peekHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0f, mObserver.mLastOffsetChangedValue, MathUtils.EPSILON);
+        assertEquals(0f, mObserver.getLastOffsetChangedValue(), MathUtils.EPSILON);
 
         // When in the full state, the transition value should be 1.
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(fullHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(1f, mObserver.mLastOffsetChangedValue, MathUtils.EPSILON);
+        assertEquals(1f, mObserver.getLastOffsetChangedValue(), MathUtils.EPSILON);
 
         // Halfway between peek and full should send 0.5.
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(midPeekFull);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0.5f, mObserver.mLastOffsetChangedValue, MathUtils.EPSILON);
+        assertEquals(0.5f, mObserver.getLastOffsetChangedValue(), MathUtils.EPSILON);
     }
 
     /**
@@ -213,20 +141,20 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         int callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(peekHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
+        assertEquals(0f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
 
         // When in between peek and half states, the transition value should be 0.5.
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(midPeekHalf);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0.5f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
+        assertEquals(0.5f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
 
         // After jumping to the full state (skipping the half state), the event should have
         // triggered once more with a max value of 1.
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(fullHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(1f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
+        assertEquals(1f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
 
         // Moving from full to somewhere between half and full should not trigger the event.
         callbackCount = callbackHelper.getCallCount();
@@ -237,13 +165,13 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(midPeekHalf);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0.5f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
+        assertEquals(0.5f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
 
         // At the half state the event should send 1.
         callbackCount = callbackHelper.getCallCount();
         setSheetOffsetFromBottom(halfHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(1f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
+        assertEquals(1f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
     }
 
     /**
