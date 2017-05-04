@@ -41,7 +41,9 @@ async function test()
       InspectorTest.addResult("Mapped locations:");
       for (var rawLocation of rawLocations) {
         var uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
-        InspectorTest.addResult(`${rawLocation.lineNumber}:${rawLocation.columnNumber} -> ${uiLocation.lineNumber}:${uiLocation.columnNumber}`);
+        var reverseRawLocation = Bindings.cssWorkspaceBinding.uiLocationToRawLocations(uiLocation)[0];
+        InspectorTest.addResult(`${rawLocation.lineNumber}:${rawLocation.columnNumber} -> ${uiLocation.lineNumber}:${uiLocation.columnNumber} ` +
+            `-> ${reverseRawLocation.lineNumber}:${reverseRawLocation.columnNumber}`);
       }
       InspectorTest.addResult(`Live locations (updated: ${locationUpdateCount}):`);
       for (var liveLocation of liveLocations) {
