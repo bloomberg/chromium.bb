@@ -158,8 +158,8 @@ bool ShelfViewTestAPI::IsRippedOffFromShelf() {
   return shelf_view_->dragged_off_shelf_;
 }
 
-bool ShelfViewTestAPI::DraggedItemFromOverflowToShelf() {
-  return shelf_view_->dragged_off_from_overflow_to_shelf_;
+bool ShelfViewTestAPI::DraggedItemToAnotherShelf() {
+  return shelf_view_->dragged_to_another_shelf_;
 }
 
 ShelfButtonPressedMetricTracker*

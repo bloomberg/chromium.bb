@@ -728,8 +728,7 @@ void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
     bool visible = i >= first_visible_index_ && i <= last_visible_index_;
     // To track the dragging of |drag_view_| continuously, its visibility
     // should be always true regardless of its position.
-    if (dragged_off_from_overflow_to_shelf_ &&
-        view_model_->view_at(i) == drag_view_)
+    if (dragged_to_another_shelf_ && view_model_->view_at(i) == drag_view_)
       view_model_->view_at(i)->SetVisible(true);
     else
       view_model_->view_at(i)->SetVisible(visible);
@@ -1034,6 +1033,15 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   bounds_animator_->StopAnimatingView(drag_view_);
 }
 
+void ShelfView::EndDragOnOtherShelf(bool cancel) {
+  if (is_overflow_mode()) {
+    main_shelf_->EndDrag(cancel);
+  } else {
+    DCHECK(overflow_bubble_->IsShowing());
+    overflow_bubble_->shelf_view()->EndDrag(cancel);
+  }
+}
+
 bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
@@ -1051,17 +1059,18 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     // If the shelf/overflow bubble bounds contains |screen_location| we insert
     // the item back into the shelf.
     if (GetBoundsForDragInsertInScreen().Contains(screen_location)) {
-      if (dragged_off_from_overflow_to_shelf_) {
+      if (dragged_to_another_shelf_) {
         // During the dragging an item from Shelf to Overflow, it can enter here
-        // directly because both are located very closly.
-        main_shelf_->EndDrag(true);
+        // directly because both are located very closely.
+        EndDragOnOtherShelf(true /* cancel */);
+
         // Stops the animation of |drag_view_| and sets its bounds explicitly
-        // becase ContinueDrag() stops its animation. Without this, unexpected
+        // because ContinueDrag() stops its animation. Without this, unexpected
         // bounds will be set.
         bounds_animator_->StopAnimatingView(drag_view_);
         int drag_view_index = view_model_->GetIndexOfView(drag_view_);
         drag_view_->SetBoundsRect(view_model_->ideal_bounds(drag_view_index));
-        dragged_off_from_overflow_to_shelf_ = false;
+        dragged_to_another_shelf_ = false;
       }
       // Destroy our proxy view item.
       DestroyDragIconProxy();
@@ -1077,18 +1086,42 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     } else if (is_overflow_mode() &&
                main_shelf_->GetBoundsForDragInsertInScreen().Contains(
                    screen_location)) {
-      if (!dragged_off_from_overflow_to_shelf_) {
-        dragged_off_from_overflow_to_shelf_ = true;
+      // The item was dragged from the overflow shelf to the main shelf.
+      if (!dragged_to_another_shelf_) {
+        dragged_to_another_shelf_ = true;
         drag_image_->SetOpacity(1.0f);
         main_shelf_->StartDrag(dragged_app_id, screen_location);
       } else {
         main_shelf_->Drag(screen_location);
       }
-    } else if (dragged_off_from_overflow_to_shelf_) {
+    } else if (!is_overflow_mode() && overflow_bubble_ &&
+               overflow_bubble_->IsShowing() &&
+               overflow_bubble_->shelf_view()
+                   ->GetBoundsForDragInsertInScreen()
+                   .Contains(screen_location)) {
+      // The item was dragged from the main shelf to the overflow shelf.
+      if (!dragged_to_another_shelf_) {
+        dragged_to_another_shelf_ = true;
+        drag_image_->SetOpacity(1.0f);
+        overflow_bubble_->shelf_view()->StartDrag(dragged_app_id,
+                                                  screen_location);
+      } else {
+        overflow_bubble_->shelf_view()->Drag(screen_location);
+      }
+    } else if (dragged_to_another_shelf_) {
       // Makes the |drag_image_| partially disappear again.
-      dragged_off_from_overflow_to_shelf_ = false;
+      dragged_to_another_shelf_ = false;
       drag_image_->SetOpacity(kDraggedImageOpacity);
-      main_shelf_->EndDrag(true);
+
+      EndDragOnOtherShelf(true /* cancel */);
+      if (!is_overflow_mode()) {
+        // During dragging, the position of the dragged item is moved to the
+        // back. If the overflow bubble is showing, a copy of the dragged item
+        // will appear at the end of the overflow shelf. Decrement the last
+        // visible index of the overflow shelf to hide this copy.
+        overflow_bubble_->shelf_view()->last_visible_index_--;
+      }
+
       bounds_animator_->StopAnimatingView(drag_view_);
       int drag_view_index = view_model_->GetIndexOfView(drag_view_);
       drag_view_->SetBoundsRect(view_model_->ideal_bounds(drag_view_index));
@@ -1114,6 +1147,13 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       if (current_index != model_->FirstPanelIndex() - 1) {
         model_->Move(current_index, model_->FirstPanelIndex() - 1);
         StartFadeInLastVisibleItem();
+
+        // During dragging, the position of the dragged item is moved to the
+        // back. If the overflow bubble is showing, a copy of the dragged item
+        // will appear at the end of the overflow shelf. Decrement the last
+        // visible index of the overflow shelf to hide this copy.
+        if (overflow_bubble_ && overflow_bubble_->IsShowing())
+          overflow_bubble_->shelf_view()->last_visible_index_--;
       } else if (is_overflow_mode()) {
         // Overflow bubble should be shrunk when an item is ripped off.
         PreferredSizeChanged();
@@ -1148,9 +1188,9 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
   bool snap_back = false;
   // Items which cannot be dragged off will be handled as a cancel.
   if (!cancel) {
-    if (dragged_off_from_overflow_to_shelf_) {
-      dragged_off_from_overflow_to_shelf_ = false;
-      main_shelf_->EndDrag(false);
+    if (dragged_to_another_shelf_) {
+      dragged_to_another_shelf_ = false;
+      EndDragOnOtherShelf(false /* cancel */);
       drag_view_->layer()->SetOpacity(1.0f);
     } else if (RemovableByRipOff(current_index) != REMOVABLE) {
       // Make sure we do not try to remove un-removable items like items which
@@ -1166,10 +1206,10 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
     }
   }
   if (cancel || snap_back) {
-    if (dragged_off_from_overflow_to_shelf_) {
-      dragged_off_from_overflow_to_shelf_ = false;
-      // Main shelf handles revert of dragged item.
-      main_shelf_->EndDrag(true);
+    if (dragged_to_another_shelf_) {
+      dragged_to_another_shelf_ = false;
+      // Other shelf handles revert of dragged item.
+      EndDragOnOtherShelf(false /* true */);
       drag_view_->layer()->SetOpacity(1.0f);
     } else if (!cancelling_drag_model_changed_) {
       // Only do something if the change did not come through a model change.
@@ -1378,10 +1418,9 @@ gfx::Size ShelfView::GetPreferredSize() const {
   // When an item is dragged off from the overflow bubble, it is moved to last
   // position and and changed to invisible. Overflow bubble size should be
   // shrunk to fit only for visible items.
-  // If |dragged_off_from_overflow_to_shelf_| is set, there will be no invisible
-  // items in the shelf.
-  if (is_overflow_mode() && dragged_off_shelf_ &&
-      !dragged_off_from_overflow_to_shelf_ &&
+  // If |dragged_to_another_shelf_| is set, there will be no
+  // invisible items in the shelf.
+  if (is_overflow_mode() && dragged_off_shelf_ && !dragged_to_another_shelf_ &&
       RemovableByRipOff(view_model_->GetIndexOfView(drag_view_)) == REMOVABLE)
     last_button_index--;
 
