@@ -56,9 +56,6 @@ class PointerDelegate {
                                const gfx::Vector2dF& offset,
                                bool discrete) = 0;
 
-  // Called when a current kinetic scroll should be canceled.
-  virtual void OnPointerScrollCancel(base::TimeTicks time_stamp) = 0;
-
   // Called when pointer scroll has stopped and a fling is happening (e.g.
   // lifting the fingers from the touchpad after scrolling quickly)
   virtual void OnPointerScrollStop(base::TimeTicks time_stamp) = 0;
