@@ -415,6 +415,19 @@
     'device_bluetooth': {
       'filepath': 'device/.*bluetooth'
     },
+    'device_chooser': {
+      'filepath': 'chrome/browser/chooser_controller/|'\
+                  'chrome/browser/ui/android/bluetooth_chooser_.*|'\
+                  'chrome/browser/ui/android/usb_chooser_.*|'\
+                  'chrome/browser/ui/bluetooth/|'\
+                  'chrome/browser/ui/cocoa/device_chooser_.*|'\
+                  'chrome/browser/ui/cocoa/extensions/chooser_dialog_.*|'\
+                  'chrome/browser/ui/cocoa/permission_bubble/chooser_bubble_.*|'\
+                  'chrome/browser/ui/views/device_chooser_.*|'\
+                  'chrome/browser/ui/views/extensions/chooser_dialog_.*|'\
+                  'chrome/browser/ui/views/permission_bubble/chooser_bubble_.*|'\
+                  'chrome/browser/usb/usb_chooser_.*',
+    },
     'device_sensors': {
       'filepath': 'content/browser/device_sensors/|'\
                   'content/common/device_sensors/|'\
@@ -1594,7 +1607,8 @@
                           'pkotwicz+watch@chromium.org',
                           'zpeng+watch@chromium.org'],
     'android_crash_reporting': ['asvitkine+watch@chromium.org'],
-    'android_item_chooser_dialogs': ['ortuno+watch@chromium.org'],
+    'android_item_chooser_dialogs': ['juncai+watch@chromium.org',
+                                     'ortuno+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['agrieve+watch@chromium.org',
@@ -1957,6 +1971,7 @@
     'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_bluetooth': ['ortuno+watch@chromium.org',
                          'scheib+watch@chromium.org'],
+    'device_chooser': ['juncai+watch@chromium.org'],
     'device_sensors': ['mlamouri+watch-sensors@chromium.org',
                        'rijubrata.bhaumik@intel.com',
                        'timvolodine@chromium.org'],
