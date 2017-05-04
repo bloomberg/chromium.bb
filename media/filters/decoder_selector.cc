@@ -20,7 +20,7 @@
 #include "media/filters/decoder_stream_traits.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 
-#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if !defined(OS_ANDROID)
 #include "media/filters/decrypting_audio_decoder.h"
 #include "media/filters/decrypting_video_decoder.h"
 #endif
@@ -96,7 +96,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
   // When there is a CDM attached, always try the decrypting decoder or
   // demuxer-stream first.
   if (cdm_context_) {
-#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if !defined(OS_ANDROID)
     InitializeDecryptingDecoder();
 #else
     InitializeDecryptingDemuxerStream();
@@ -112,7 +112,7 @@ void DecoderSelector<StreamType>::SelectDecoder(
   InitializeDecoder();
 }
 
-#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if !defined(OS_ANDROID)
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
   DVLOG(2) << __func__;
@@ -145,7 +145,7 @@ void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
   // DecryptingDemuxerStream to do decrypt-only.
   InitializeDecryptingDemuxerStream();
 }
-#endif  // !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#endif  // !defined(OS_ANDROID)
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::InitializeDecryptingDemuxerStream() {
