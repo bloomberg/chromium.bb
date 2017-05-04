@@ -53,6 +53,25 @@
 
 namespace blink {
 
+static bool HasOverflowClip(
+    const PaintLayer& layer) {
+  if (!layer.GetLayoutObject().IsBox())
+    return false;
+  const LayoutBox& box = ToLayoutBox(layer.GetLayoutObject());
+  return box.ShouldClipOverflow();
+}
+
+bool ClipRectsContext::ShouldRespectRootLayerClip() const {
+  if (respect_overflow_clip == kIgnoreOverflowClip)
+    return false;
+
+  if (root_layer->IsRootLayer() &&
+      respect_overflow_clip_for_viewport == kIgnoreOverflowClip)
+    return false;
+
+  return true;
+}
+
 static void AdjustClipRectsForChildren(
     const LayoutBoxModelObject& layout_object,
     ClipRects& clip_rects) {
@@ -386,6 +405,13 @@ void PaintLayerClipper::CalculateClipRects(const ClipRectsContext& context,
 
   bool is_clipping_root = &layer_ == context.root_layer;
 
+  if (is_clipping_root && !context.ShouldRespectRootLayerClip()) {
+    clip_rects.Reset(LayoutRect(LayoutRect::InfiniteIntRect()));
+    if (layout_object.StyleRef().GetPosition() == EPosition::kFixed)
+      clip_rects.SetFixed(true);
+    return;
+  }
+
   // For transformed layers, the root layer was shifted to be us, so there is no
   // need to examine the parent. We want to cache clip rects with us as the
   // root.
@@ -401,7 +427,9 @@ void PaintLayerClipper::CalculateClipRects(const ClipRectsContext& context,
 
   AdjustClipRectsForChildren(layout_object, clip_rects);
 
-  if (ShouldClipOverflow(context) || layout_object.HasClip()) {
+  // Computing paint offset is expensive, skip the computation if the object
+  // is known to have no clip. This check is redundant otherwise.
+  if (HasOverflowClip(layer_) || layout_object.HasClip()) {
     // This offset cannot use convertToLayerCoords, because sometimes our
     // rootLayer may be across some transformed layer boundary, for example, in
     // the PaintLayerCompositor overlapMap, where clipRects are needed in view
@@ -428,22 +456,17 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
     const ClipRectsContext& context,
     ClipRect& output) const {
   DCHECK(use_geometry_mapper_);
+
+  bool is_clipping_root = &layer_ == context.root_layer;
+  if (is_clipping_root && !context.ShouldRespectRootLayerClip()) {
+    output.SetRect(FloatClipRect());
+    return;
+  }
+
   PropertyTreeState source_property_tree_state(nullptr, nullptr, nullptr);
   PropertyTreeState destination_property_tree_state(nullptr, nullptr, nullptr);
   InitializeCommonClipRectState(context, source_property_tree_state,
                                 destination_property_tree_state);
-
-  if (&layer_ != context.root_layer) {
-    auto* ancestor_properties =
-        context.root_layer->GetLayoutObject().PaintProperties();
-    const auto* ancestor_overflow_clip =
-        ancestor_properties ? ancestor_properties->OverflowClip() : nullptr;
-    // Set the clip of |destinationPropertyTreeState| to be inside the
-    // ancestor's overflow clip, so that that clip is not applied.
-    if (context.respect_overflow_clip == kIgnoreOverflowClip &&
-        ancestor_overflow_clip)
-      destination_property_tree_state.SetClip(ancestor_overflow_clip);
-  }
 
   // The background rect applies all clips *above* m_layer, but not the overflow
   // clip of m_layer. It also applies a clip to the total painting bounds
@@ -457,7 +480,7 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
   // of transforms. Tight results are required for most use cases of these
   // rects, so we should add methods to GeometryMapper that guarantee there
   // are tight results, or else signal an error.
-  if (ShouldClipOverflow(context)) {
+  if (HasOverflowClip(layer_)) {
     FloatClipRect clip_rect((FloatRect(LocalVisualRect())));
     clip_rect.MoveBy(FloatPoint(layer_.GetLayoutObject().PaintOffset()));
     GeometryMapper::SourceToDestinationVisualRect(
@@ -478,23 +501,34 @@ void PaintLayerClipper::InitializeCommonClipRectState(
     PropertyTreeState& source_property_tree_state,
     PropertyTreeState& destination_property_tree_state) const {
   DCHECK(use_geometry_mapper_);
-  DCHECK(layer_.GetLayoutObject().LocalBorderBoxProperties());
 
+  DCHECK(layer_.GetLayoutObject().LocalBorderBoxProperties());
   source_property_tree_state =
       *layer_.GetLayoutObject().LocalBorderBoxProperties();
+
   DCHECK(context.root_layer->GetLayoutObject().LocalBorderBoxProperties());
   destination_property_tree_state =
       *context.root_layer->GetLayoutObject().LocalBorderBoxProperties();
 
   auto* ancestor_properties =
       context.root_layer->GetLayoutObject().PaintProperties();
-  const auto* ancestor_css_clip =
-      ancestor_properties ? ancestor_properties->CssClip() : nullptr;
-  // CSS clip of the root is always applied.
-  if (ancestor_css_clip) {
-    DCHECK(destination_property_tree_state.Clip() ==
-           ancestor_properties->CssClip());
-    destination_property_tree_state.SetClip(ancestor_css_clip->Parent());
+  if (!ancestor_properties)
+    return;
+
+  if (context.ShouldRespectRootLayerClip()) {
+    const auto* ancestor_css_clip = ancestor_properties->CssClip();
+    if (ancestor_css_clip) {
+      DCHECK_EQ(destination_property_tree_state.Clip(),
+                ancestor_css_clip);
+      destination_property_tree_state.SetClip(ancestor_css_clip->Parent());
+    }
+  } else {
+    const auto* ancestor_overflow_clip = ancestor_properties->OverflowClip();
+    if (ancestor_overflow_clip) {
+      DCHECK_EQ(destination_property_tree_state.Clip(),
+                ancestor_overflow_clip->Parent());
+      destination_property_tree_state.SetClip(ancestor_overflow_clip);
+    }
   }
 }
 
@@ -572,29 +606,9 @@ void PaintLayerClipper::GetOrCalculateClipRects(const ClipRectsContext& context,
 
 bool PaintLayerClipper::ShouldClipOverflow(
     const ClipRectsContext& context) const {
-  if (!layer_.GetLayoutObject().IsBox())
+  if (&layer_ == context.root_layer && !context.ShouldRespectRootLayerClip())
     return false;
-  const LayoutBox& box = ToLayoutBox(layer_.GetLayoutObject());
-
-  if (!ShouldRespectOverflowClip(context))
-    return false;
-
-  return box.ShouldClipOverflow();
-}
-
-bool PaintLayerClipper::ShouldRespectOverflowClip(
-    const ClipRectsContext& context) const {
-  if (&layer_ != context.root_layer)
-    return true;
-
-  if (context.respect_overflow_clip == kIgnoreOverflowClip)
-    return false;
-
-  if (layer_.IsRootLayer() &&
-      context.respect_overflow_clip_for_viewport == kIgnoreOverflowClip)
-    return false;
-
-  return true;
+  return HasOverflowClip(layer_);
 }
 
 ClipRects& PaintLayerClipper::PaintingClipRects(
