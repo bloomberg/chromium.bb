@@ -518,6 +518,10 @@ post_process_cmdline() {
     enabled ext_delta_q && soft_enable delta_q
     enabled txk_sel && soft_enable lv_map
     enabled compound_round && soft_enable convolve_round
+    if ! enabled delta_q && enabled ext_delta_q; then
+      log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
+      disable_feature ext_delta_q
+    fi
     if enabled rawbits && ! enabled daala_ec; then
       log_echo "rawbits requires daala_ec, so disabling rawbits"
       disable_feature rawbits
