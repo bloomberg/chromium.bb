@@ -935,9 +935,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
   maximize_mode_controller_ = base::MakeUnique<MaximizeModeController>();
 
-  if (config == Config::CLASSIC) {
-    // Not applicable to mus/mash as events are already routed to InputMethod
-    // first.
+  if (config == Config::CLASSIC || config == Config::MUS) {
+    // Not applicable to mash as events are already routed to InputMethod first.
     AddPreTargetHandler(
         window_tree_host_manager_->input_method_event_handler());
   }

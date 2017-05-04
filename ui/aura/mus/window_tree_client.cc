@@ -1283,18 +1283,6 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
 
   WindowMus* window = GetWindowByServerId(window_id);  // May be null.
 
-  if (event->IsKeyEvent()) {
-    DCHECK(!matches_pointer_watcher);  // PointerWatcher isn't for key events.
-    if (!window || !window->GetWindow()->GetHost()) {
-      tree_->OnWindowInputEventAck(event_id, ui::mojom::EventResult::UNHANDLED);
-      return;
-    }
-    InputMethodMus* input_method = GetWindowTreeHostMus(window)->input_method();
-    input_method->DispatchKeyEvent(event->AsKeyEvent(),
-                                   CreateEventResultCallback(event_id));
-    return;
-  }
-
   if (matches_pointer_watcher && has_pointer_watcher_) {
     DCHECK(event->IsPointerEvent());
     std::unique_ptr<ui::Event> event_in_dip(ui::Event::Clone(*event));
@@ -1317,6 +1305,15 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
     }
     tree_->OnWindowInputEventAck(event_id, ui::mojom::EventResult::UNHANDLED);
     return;
+  }
+
+  if (event->IsKeyEvent()) {
+    InputMethodMus* input_method = GetWindowTreeHostMus(window)->input_method();
+    if (input_method) {
+      input_method->DispatchKeyEvent(event->AsKeyEvent(),
+                                     CreateEventResultCallback(event_id));
+      return;
+    }
   }
 
   EventAckHandler ack_handler(CreateEventResultCallback(event_id));
