@@ -23,8 +23,17 @@ public abstract class PromoDialog
         extends Dialog implements View.OnClickListener, DialogInterface.OnDismissListener {
     /** Parameters that can be used to create a new PromoDialog. */
     public static class DialogParams {
-        /** Optional: Resource ID of the Drawable to use for the promo illustration. */
+        /**
+         * Optional: Resource ID of the Drawable to use for the promo illustration.
+         * This parameter and {@link #vectorDrawableResource} are mutually exclusive.
+         */
         public int drawableResource;
+
+        /**
+         * Optional: Resource ID of the VectorDrawable to use for the promo illustration.
+         * This parameter and {@link #drawableResource} are mutually exclusive.
+         */
+        public int vectorDrawableResource;
 
         /** Resource ID of the String to show as the promo title. */
         public int headerStringResource;

@@ -102,9 +102,9 @@ public class PromoDialogTest {
     public void testBasic_Visibility() throws Exception {
         // Create a full dialog.
         DialogParams dialogParams = new DialogParams();
-        dialogParams.drawableResource = R.drawable.search_sogou;
-        dialogParams.headerStringResource = R.string.search_with_sogou;
-        dialogParams.subheaderStringResource = R.string.sogou_explanation;
+        dialogParams.drawableResource = R.drawable.data_reduction_illustration;
+        dialogParams.headerStringResource = R.string.data_reduction_promo_title;
+        dialogParams.subheaderStringResource = R.string.data_reduction_promo_summary;
         dialogParams.primaryButtonStringResource = R.string.ok;
         dialogParams.secondaryButtonStringResource = R.string.cancel;
         dialogParams.footerStringResource = R.string.learn_more;
@@ -112,7 +112,7 @@ public class PromoDialogTest {
 
         // Create a minimal dialog.
         dialogParams = new DialogParams();
-        dialogParams.headerStringResource = R.string.search_with_sogou;
+        dialogParams.headerStringResource = R.string.data_reduction_promo_title;
         dialogParams.primaryButtonStringResource = R.string.ok;
         checkDialogControlVisibility(dialogParams);
     }
@@ -154,9 +154,9 @@ public class PromoDialogTest {
     @SmallTest
     public void testBasic_Orientation() throws Exception {
         DialogParams dialogParams = new DialogParams();
-        dialogParams.drawableResource = R.drawable.search_sogou;
-        dialogParams.headerStringResource = R.string.search_with_sogou;
-        dialogParams.subheaderStringResource = R.string.sogou_explanation;
+        dialogParams.drawableResource = R.drawable.data_reduction_illustration;
+        dialogParams.headerStringResource = R.string.data_reduction_promo_title;
+        dialogParams.subheaderStringResource = R.string.data_reduction_promo_summary;
         dialogParams.primaryButtonStringResource = R.string.ok;
         dialogParams.secondaryButtonStringResource = R.string.cancel;
         dialogParams.footerStringResource = R.string.learn_more;
@@ -253,7 +253,28 @@ public class PromoDialogTest {
         // With an illustration, the header View is part of the scrollable content.
         {
             DialogParams dialogParams = new DialogParams();
-            dialogParams.drawableResource = R.drawable.search_sogou;
+            dialogParams.drawableResource = R.drawable.data_reduction_illustration;
+            dialogParams.headerStringResource = R.string.data_reduction_promo_title;
+            dialogParams.primaryButtonStringResource = R.string.data_reduction_enable_button;
+
+            PromoDialogWrapper wrapper = new PromoDialogWrapper(dialogParams);
+            PromoDialogLayout promoDialogLayout =
+                    (PromoDialogLayout) wrapper.dialog.getWindow().getDecorView().findViewById(
+                            R.id.promo_dialog_layout);
+            ViewGroup scrollableLayout =
+                    (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
+
+            View header = promoDialogLayout.findViewById(R.id.header);
+            MarginLayoutParams headerParams = (MarginLayoutParams) header.getLayoutParams();
+            Assert.assertEquals(scrollableLayout.getChildAt(0), header);
+            Assert.assertEquals(0, ApiCompatibilityUtils.getMarginStart(headerParams));
+            Assert.assertEquals(0, ApiCompatibilityUtils.getMarginEnd(headerParams));
+        }
+
+        // With a vector illustration, the header View is part of the scrollable content.
+        {
+            DialogParams dialogParams = new DialogParams();
+            dialogParams.vectorDrawableResource = R.drawable.search_sogou;
             dialogParams.headerStringResource = R.string.search_with_sogou;
             dialogParams.primaryButtonStringResource = R.string.ok;
 
