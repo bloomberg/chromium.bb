@@ -526,6 +526,8 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
 void DisplayItemList::GenerateDiscardableImagesMetadata() {
   // This should be only called once.
   DCHECK(image_map_.empty());
+  if (!has_discardable_images_)
+    return;
 
   gfx::Rect bounds = rtree_.GetBounds();
   DiscardableImageMap::ScopedMetadataGenerator generator(

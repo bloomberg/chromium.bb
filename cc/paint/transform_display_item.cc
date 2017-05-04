@@ -8,7 +8,11 @@ namespace cc {
 
 TransformDisplayItem::TransformDisplayItem(const gfx::Transform& transform)
 
-    : DisplayItem(TRANSFORM), transform(transform) {}
+    : DisplayItem(TRANSFORM), transform(transform) {
+  // The underlying SkMatrix in gfx::Transform is not thread-safe, unless
+  // getType() has been called.
+  this->transform.matrix().getType();
+}
 
 TransformDisplayItem::~TransformDisplayItem() = default;
 

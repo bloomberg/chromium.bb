@@ -502,6 +502,10 @@ size_t DrawDisplayItemListOp::AdditionalBytesUsed() const {
   return list->ApproximateMemoryUsage();
 }
 
+bool DrawDisplayItemListOp::HasDiscardableImages() const {
+  return list->has_discardable_images();
+}
+
 DrawDisplayItemListOp::DrawDisplayItemListOp(const DrawDisplayItemListOp& op) =
     default;
 
@@ -519,6 +523,12 @@ DrawImageOp::DrawImageOp(const PaintImage& image,
       left(left),
       top(top) {}
 
+bool DrawImageOp::HasDiscardableImages() const {
+  // TODO(khushalsagar): Callers should not be able to change the lazy generated
+  // state for a PaintImage.
+  return image.sk_image()->isLazyGenerated();
+}
+
 DrawImageOp::~DrawImageOp() = default;
 
 DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
@@ -531,6 +541,10 @@ DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
       src(src),
       dst(dst),
       constraint(constraint) {}
+
+bool DrawImageRectOp::HasDiscardableImages() const {
+  return image.sk_image()->isLazyGenerated();
+}
 
 DrawImageRectOp::~DrawImageRectOp() = default;
 
@@ -548,6 +562,10 @@ DrawRecordOp::~DrawRecordOp() = default;
 
 size_t DrawRecordOp::AdditionalBytesUsed() const {
   return record->approximateBytesUsed();
+}
+
+bool DrawRecordOp::HasDiscardableImages() const {
+  return record->HasDiscardableImages();
 }
 
 DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
