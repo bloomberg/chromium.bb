@@ -70,7 +70,8 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
   static std::unique_ptr<GpuVideoDecodeAcceleratorFactory> CreateWithNoGL();
 
   static gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilities(
-      const gpu::GpuPreferences& gpu_preferences);
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& workarounds);
 
   std::unique_ptr<VideoDecodeAccelerator> CreateVDA(
       VideoDecodeAccelerator::Client* client,

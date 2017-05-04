@@ -188,9 +188,10 @@ GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
 // static
 gpu::VideoDecodeAcceleratorCapabilities
 GpuVideoDecodeAccelerator::GetCapabilities(
-    const gpu::GpuPreferences& gpu_preferences) {
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& workarounds) {
   return GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
-      gpu_preferences);
+      gpu_preferences, workarounds);
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {

@@ -68,7 +68,8 @@ GpuVideoDecodeAcceleratorFactory::CreateWithNoGL() {
 // static
 MEDIA_GPU_EXPORT gpu::VideoDecodeAcceleratorCapabilities
 GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
-    const gpu::GpuPreferences& gpu_preferences) {
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& workarounds) {
   VideoDecodeAccelerator::Capabilities capabilities;
   if (gpu_preferences.disable_accelerated_video_decode)
     return gpu::VideoDecodeAcceleratorCapabilities();
@@ -82,7 +83,8 @@ GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
 // resolutions and other supported profile parameters.
 #if defined(OS_WIN)
   capabilities.supported_profiles =
-      DXVAVideoDecodeAccelerator::GetSupportedProfiles(gpu_preferences);
+      DXVAVideoDecodeAccelerator::GetSupportedProfiles(gpu_preferences,
+                                                       workarounds);
 #elif defined(OS_CHROMEOS)
   VideoDecodeAccelerator::SupportedProfiles vda_profiles;
 #if defined(USE_V4L2_CODEC)
