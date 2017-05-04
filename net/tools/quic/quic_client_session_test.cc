@@ -54,22 +54,11 @@ class TestQuicClientSession : public QuicClientSession {
                                                     this);
   }
 
-  std::unique_ptr<QuicStream> CreateStream(QuicStreamId id) override {
-    return QuicMakeUnique<MockQuicSpdyClientStream>(id, this);
-  }
-
   MockQuicSpdyClientStream* CreateIncomingDynamicStream(
       QuicStreamId id) override {
     MockQuicSpdyClientStream* stream = new MockQuicSpdyClientStream(id, this);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
-  }
-
-  QuicSpdyClientStream* CreateOutgoingDynamicStream(
-      SpdyPriority priority) override {
-    return FLAGS_quic_reloadable_flag_quic_refactor_stream_creation
-               ? MaybeCreateOutgoingDynamicStream(priority)
-               : QuicClientSession::CreateOutgoingDynamicStream(priority);
   }
 };
 
@@ -77,8 +66,8 @@ class QuicClientSessionTest : public QuicTestWithParam<QuicVersion> {
  protected:
   QuicClientSessionTest()
       : crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
-        promised_stream_id_(kInvalidStreamId),
-        associated_stream_id_(kInvalidStreamId) {
+        promised_stream_id_(kServerDataStreamId1),
+        associated_stream_id_(kClientDataStreamId1) {
     Initialize();
     // Advance the time, because timers do not like uninitialized times.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
@@ -105,10 +94,6 @@ class QuicClientSessionTest : public QuicTestWithParam<QuicVersion> {
     push_promise_[":method"] = "GET";
     push_promise_[":scheme"] = "https";
     promise_url_ = SpdyUtils::GetUrlFromHeaderBlock(push_promise_);
-    promised_stream_id_ =
-        QuicSpdySessionPeer::GetNthServerInitiatedStreamId(*session_, 0);
-    associated_stream_id_ =
-        QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session_, 0);
   }
 
   void CompleteCryptoHandshake() {
@@ -174,12 +159,8 @@ TEST_P(QuicClientSessionTest, NoEncryptionAfterInitialEncryption) {
             QuicPacketCreatorPeer::GetEncryptionLevel(
                 QuicConnectionPeer::GetPacketCreator(connection_)));
   // Verify that no new streams may be created.
-  if (FLAGS_quic_reloadable_flag_quic_refactor_stream_creation) {
-    EXPECT_EQ(nullptr, session_->CreateOutgoingDynamicStream(kDefaultPriority));
-  } else {
-    EXPECT_TRUE(session_->CreateOutgoingDynamicStream(kDefaultPriority) ==
-                nullptr);
-  }
+  EXPECT_TRUE(session_->CreateOutgoingDynamicStream(kDefaultPriority) ==
+              nullptr);
   // Verify that no data may be send on existing streams.
   char data[] = "hello world";
   struct iovec iov = {data, arraysize(data)};

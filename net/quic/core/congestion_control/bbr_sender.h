@@ -216,8 +216,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   void CalculateCongestionWindow(QuicByteCount bytes_acked);
   // Determines the approriate window that constrains the in-flight during
   // recovery.
-  void CalculateRecoveryWindow(QuicByteCount bytes_acked,
-                               QuicByteCount bytes_lost);
+  void CalculateRecoveryWindow(QuicByteCount bytes_acked);
 
   const RttStats* rtt_stats_;
   const QuicUnackedPacketMap* unacked_packets_;

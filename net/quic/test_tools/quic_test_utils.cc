@@ -836,18 +836,8 @@ void CreateServerSessionForTest(
   (*server_connection)->AdvanceTime(connection_start_time);
 }
 
-QuicStreamId NextStreamId(QuicVersion version) {
-  // TODO(ckrasic) - when version for http stream pairs re-lands, this
-  // will be conditional.
-  return 2;
-}
-
-QuicStreamId GetNthClientInitiatedStreamId(QuicVersion version, int n) {
-  return 5 + NextStreamId(version) * n;
-}
-
-QuicStreamId GetNthServerInitiatedStreamId(QuicVersion version, int n) {
-  return 2 + NextStreamId(version) * n;
+QuicStreamId QuicClientDataStreamId(int i) {
+  return kClientDataStreamId1 + 2 * i;
 }
 
 }  // namespace test

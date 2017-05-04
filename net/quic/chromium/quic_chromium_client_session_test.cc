@@ -156,14 +156,6 @@ class QuicChromiumClientSessionTest
     return writer.release();
   }
 
-  QuicStreamId GetNthClientInitiatedStreamId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session_, n);
-  }
-
-  QuicStreamId GetNthServerInitiatedStreamId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(*session_, n);
-  }
-
   QuicCryptoClientConfig crypto_config_;
   TestNetLog net_log_;
   BoundTestNetLog bound_test_net_log_;
@@ -275,8 +267,8 @@ TEST_P(QuicChromiumClientSessionTest, StreamRequestBeforeConfirmation) {
 TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
   MockQuicData quic_data;
   quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  quic_data.AddWrite(client_maker_.MakeRstPacket(
-      2, true, GetNthClientInitiatedStreamId(0), QUIC_STREAM_CANCELLED));
+  quic_data.AddWrite(client_maker_.MakeRstPacket(2, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -299,8 +291,8 @@ TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
 TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  quic_data.AddWrite(client_maker_.MakeRstPacket(
-      2, true, GetNthClientInitiatedStreamId(0), QUIC_RST_ACKNOWLEDGEMENT));
+  quic_data.AddWrite(client_maker_.MakeRstPacket(2, true, kClientDataStreamId1,
+                                                 QUIC_RST_ACKNOWLEDGEMENT));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -323,8 +315,7 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
   ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
 
   // Close a stream and ensure the stream request completes.
-  QuicRstStreamFrame rst(GetNthClientInitiatedStreamId(0),
-                         QUIC_STREAM_CANCELLED, 0);
+  QuicRstStreamFrame rst(kClientDataStreamId1, QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
   ASSERT_TRUE(callback.have_result());
   EXPECT_THAT(callback.WaitForResult(), IsOk());
@@ -338,8 +329,8 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
 TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  quic_data.AddWrite(client_maker_.MakeRstPacket(
-      2, true, GetNthClientInitiatedStreamId(0), QUIC_RST_ACKNOWLEDGEMENT));
+  quic_data.AddWrite(client_maker_.MakeRstPacket(2, true, kClientDataStreamId1,
+                                                 QUIC_RST_ACKNOWLEDGEMENT));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);  // EOF
   quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -365,8 +356,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
   stream_request.reset();
 
   // Close a stream and ensure that no new stream is created.
-  QuicRstStreamFrame rst(GetNthClientInitiatedStreamId(0),
-                         QUIC_STREAM_CANCELLED, 0);
+  QuicRstStreamFrame rst(kClientDataStreamId1, QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
   EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
 
@@ -463,7 +453,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthClientInitiatedStreamId(0), QUIC_RST_ACKNOWLEDGEMENT));
+      2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
@@ -502,7 +492,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthServerInitiatedStreamId(0), QUIC_PUSH_STREAM_TIMED_OUT));
+      2, true, kServerDataStreamId1, QUIC_PUSH_STREAM_TIMED_OUT));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
@@ -529,11 +519,11 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
   promise_headers[":path"] = "/pushed.jpg";
 
   // Receive a PUSH PROMISE from the server.
-  EXPECT_TRUE(session_->HandlePromised(
-      stream->id(), GetNthServerInitiatedStreamId(0), promise_headers));
+  EXPECT_TRUE(session_->HandlePromised(stream->id(), kServerDataStreamId1,
+                                       promise_headers));
 
   QuicClientPromisedInfo* promised =
-      session_->GetPromisedById(GetNthServerInitiatedStreamId(0));
+      session_->GetPromisedById(kServerDataStreamId1);
   EXPECT_TRUE(promised);
   // Fire alarm to time out the push stream.
   alarm_factory_.FireAlarm(QuicClientPromisedInfoPeer::GetAlarm(promised));
@@ -551,7 +541,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthServerInitiatedStreamId(0), QUIC_PUSH_STREAM_TIMED_OUT));
+      2, true, kServerDataStreamId1, QUIC_PUSH_STREAM_TIMED_OUT));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
@@ -577,19 +567,17 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
   promise_headers[":scheme"] = "https";
   promise_headers[":path"] = "/pushed.jpg";
 
-  session_->GetOrCreateStream(GetNthServerInitiatedStreamId(0));
+  session_->GetOrCreateStream(kServerDataStreamId1);
   // Receive a PUSH PROMISE from the server.
-  EXPECT_TRUE(session_->HandlePromised(
-      stream->id(), GetNthServerInitiatedStreamId(0), promise_headers));
-  session_->OnInitialHeadersComplete(GetNthServerInitiatedStreamId(0),
-                                     SpdyHeaderBlock());
+  EXPECT_TRUE(session_->HandlePromised(stream->id(), kServerDataStreamId1,
+                                       promise_headers));
+  session_->OnInitialHeadersComplete(kServerDataStreamId1, SpdyHeaderBlock());
   // Read data on the pushed stream.
-  QuicStreamFrame data(GetNthServerInitiatedStreamId(0), false, 0,
-                       QuicStringPiece("SP"));
+  QuicStreamFrame data(kServerDataStreamId1, false, 0, QuicStringPiece("SP"));
   session_->OnStreamFrame(data);
 
   QuicClientPromisedInfo* promised =
-      session_->GetPromisedById(GetNthServerInitiatedStreamId(0));
+      session_->GetPromisedById(kServerDataStreamId1);
   EXPECT_TRUE(promised);
   // Fire alarm to time out the push stream.
   alarm_factory_.FireAlarm(QuicClientPromisedInfoPeer::GetAlarm(promised));
@@ -604,7 +592,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthClientInitiatedStreamId(0), QUIC_RST_ACKNOWLEDGEMENT));
+      2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
 
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
@@ -632,11 +620,11 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   promise_headers[":path"] = "/pushed.jpg";
 
   // Receive a PUSH PROMISE from the server.
-  EXPECT_TRUE(session_->HandlePromised(
-      stream->id(), GetNthServerInitiatedStreamId(0), promise_headers));
+  EXPECT_TRUE(session_->HandlePromised(stream->id(), kServerDataStreamId1,
+                                       promise_headers));
 
   QuicClientPromisedInfo* promised =
-      session_->GetPromisedById(GetNthServerInitiatedStreamId(0));
+      session_->GetPromisedById(kServerDataStreamId1);
   EXPECT_TRUE(promised);
 
   // Initiate rendezvous.
@@ -650,7 +638,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   EXPECT_TRUE(session_->GetPromisedByUrl(pushed_url.spec()));
 
   // Reset the stream now before tear down.
-  session_->CloseStream(GetNthClientInitiatedStreamId(0));
+  session_->CloseStream(kClientDataStreamId1);
 }
 
 TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
@@ -659,7 +647,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthServerInitiatedStreamId(0), QUIC_STREAM_CANCELLED));
+      2, true, kServerDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
@@ -686,11 +674,11 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
   promise_headers[":path"] = "/pushed.jpg";
 
   // Receive a PUSH PROMISE from the server.
-  EXPECT_TRUE(session_->HandlePromised(
-      stream->id(), GetNthServerInitiatedStreamId(0), promise_headers));
+  EXPECT_TRUE(session_->HandlePromised(stream->id(), kServerDataStreamId1,
+                                       promise_headers));
 
   QuicClientPromisedInfo* promised =
-      session_->GetPromisedById(GetNthServerInitiatedStreamId(0));
+      session_->GetPromisedById(kServerDataStreamId1);
   EXPECT_TRUE(promised);
   // Cancel the push before receiving the response to the pushed request.
   GURL pushed_url("https://www.example.org/pushed.jpg");
@@ -709,7 +697,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthServerInitiatedStreamId(0), QUIC_STREAM_CANCELLED));
+      2, true, kServerDataStreamId1, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
@@ -735,19 +723,17 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   promise_headers[":scheme"] = "https";
   promise_headers[":path"] = "/pushed.jpg";
 
-  session_->GetOrCreateStream(GetNthServerInitiatedStreamId(0));
+  session_->GetOrCreateStream(kServerDataStreamId1);
   // Receive a PUSH PROMISE from the server.
-  EXPECT_TRUE(session_->HandlePromised(
-      stream->id(), GetNthServerInitiatedStreamId(0), promise_headers));
-  session_->OnInitialHeadersComplete(GetNthServerInitiatedStreamId(0),
-                                     SpdyHeaderBlock());
+  EXPECT_TRUE(session_->HandlePromised(stream->id(), kServerDataStreamId1,
+                                       promise_headers));
+  session_->OnInitialHeadersComplete(kServerDataStreamId1, SpdyHeaderBlock());
   // Read data on the pushed stream.
-  QuicStreamFrame data(GetNthServerInitiatedStreamId(0), false, 0,
-                       QuicStringPiece("SP"));
+  QuicStreamFrame data(kServerDataStreamId1, false, 0, QuicStringPiece("SP"));
   session_->OnStreamFrame(data);
 
   QuicClientPromisedInfo* promised =
-      session_->GetPromisedById(GetNthServerInitiatedStreamId(0));
+      session_->GetPromisedById(kServerDataStreamId1);
   EXPECT_TRUE(promised);
   // Cancel the push after receiving data on the push stream.
   GURL pushed_url("https://www.example.org/pushed.jpg");
@@ -765,7 +751,7 @@ TEST_P(QuicChromiumClientSessionTest, Priority) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthClientInitiatedStreamId(0), QUIC_RST_ACKNOWLEDGEMENT));
+      2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
@@ -793,7 +779,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
   std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthClientInitiatedStreamId(0), QUIC_RST_ACKNOWLEDGEMENT));
+      2, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
   MockWrite writes[] = {
       MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
       MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};

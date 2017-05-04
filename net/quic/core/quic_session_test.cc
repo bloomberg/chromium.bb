@@ -72,10 +72,6 @@ class TestCryptoStream : public QuicCryptoStream {
     session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
   }
 
-  void set_encryption_established(bool value) {
-    encryption_established_ = value;
-  }
-
   MOCK_METHOD0(OnCanWrite, void());
 };
 
@@ -162,15 +158,6 @@ class TestSession : public QuicSpdySession {
   }
 
   bool ShouldCreateOutgoingDynamicStream() override { return true; }
-
-  TestStream* MaybeCreateOutgoingDynamicStream(SpdyPriority priority) override {
-    return static_cast<TestStream*>(
-        QuicSpdySession::MaybeCreateOutgoingDynamicStream(priority));
-  }
-
-  std::unique_ptr<QuicStream> CreateStream(QuicStreamId id) override {
-    return QuicMakeUnique<TestStream>(id, this);
-  }
 
   bool IsClosedStream(QuicStreamId id) {
     return QuicSession::IsClosedStream(id);
@@ -276,9 +263,6 @@ class QuicSessionTestBase : public QuicTestWithParam<QuicVersion> {
         "EFFlEYHsBQ98rXImL8ySDycdLEFvBPdtctPmWCfTxwmoSMLHU2SCVDhbqMWU5b0yr"
         "JBCScs_ejbKaqBDoB7ZGxTvqlrB__2ZmnHHjCr8RgMRtKNtIeuZAo ";
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
-    if (FLAGS_quic_reloadable_flag_quic_refactor_stream_creation) {
-      session_.GetMutableCryptoStream()->set_encryption_established(true);
-    }
   }
 
   void CheckClosedStreams() {
@@ -298,16 +282,6 @@ class QuicSessionTestBase : public QuicTestWithParam<QuicVersion> {
   }
 
   QuicVersion version() const { return connection_->version(); }
-
-  QuicStreamId GetNthClientInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, n);
-  }
-
-  QuicStreamId GetNthServerInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(session_, n);
-  }
-
-  QuicStreamId NextId() { return QuicSpdySessionPeer::NextStreamId(session_); }
 
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
@@ -356,21 +330,20 @@ TEST_P(QuicSessionTestServer, AvailableStreams) {
 
 TEST_P(QuicSessionTestServer, IsClosedStreamLocallyCreated) {
   TestStream* stream2 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
-  EXPECT_EQ(GetNthServerInitiatedId(0), stream2->id());
-  QuicSpdyStream* stream4 =
-      session_.CreateOutgoingDynamicStream(kDefaultPriority);
-  EXPECT_EQ(GetNthServerInitiatedId(1), stream4->id());
+  EXPECT_EQ(2u, stream2->id());
+  TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
+  EXPECT_EQ(4u, stream4->id());
 
   CheckClosedStreams();
-  CloseStream(GetNthServerInitiatedId(0));
+  CloseStream(4);
   CheckClosedStreams();
-  CloseStream(GetNthServerInitiatedId(1));
+  CloseStream(2);
   CheckClosedStreams();
 }
 
 TEST_P(QuicSessionTestServer, IsClosedStreamPeerCreated) {
-  QuicStreamId stream_id1 = GetNthClientInitiatedId(0);
-  QuicStreamId stream_id2 = GetNthClientInitiatedId(1);
+  QuicStreamId stream_id1 = kClientDataStreamId1;
+  QuicStreamId stream_id2 = kClientDataStreamId2;
   session_.GetOrCreateDynamicStream(stream_id1);
   session_.GetOrCreateDynamicStream(stream_id2);
 
@@ -387,7 +360,7 @@ TEST_P(QuicSessionTestServer, IsClosedStreamPeerCreated) {
 }
 
 TEST_P(QuicSessionTestServer, MaximumAvailableOpenedStreams) {
-  QuicStreamId stream_id = GetNthClientInitiatedId(0);
+  QuicStreamId stream_id = kClientDataStreamId1;
   session_.GetOrCreateDynamicStream(stream_id);
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   EXPECT_NE(nullptr,
@@ -396,11 +369,11 @@ TEST_P(QuicSessionTestServer, MaximumAvailableOpenedStreams) {
 }
 
 TEST_P(QuicSessionTestServer, TooManyAvailableStreams) {
-  QuicStreamId stream_id1 = GetNthClientInitiatedId(0);
+  QuicStreamId stream_id1 = kClientDataStreamId1;
   QuicStreamId stream_id2;
   EXPECT_NE(nullptr, session_.GetOrCreateDynamicStream(stream_id1));
   // A stream ID which is too large to create.
-  stream_id2 = GetNthClientInitiatedId(2 * session_.MaxAvailableStreams() + 4);
+  stream_id2 = stream_id1 + 2 * session_.MaxAvailableStreams() + 4;
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS, _, _));
   EXPECT_EQ(nullptr, session_.GetOrCreateDynamicStream(stream_id2));
@@ -410,7 +383,7 @@ TEST_P(QuicSessionTestServer, ManyAvailableStreams) {
   // When max_open_streams_ is 200, should be able to create 200 streams
   // out-of-order, that is, creating the one with the largest stream ID first.
   QuicSessionPeer::SetMaxOpenIncomingStreams(&session_, 200);
-  QuicStreamId stream_id = GetNthClientInitiatedId(0);
+  QuicStreamId stream_id = kClientDataStreamId1;
   // Create one stream.
   session_.GetOrCreateDynamicStream(stream_id);
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
@@ -424,10 +397,8 @@ TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
   // Close the stream.
   EXPECT_CALL(*connection_, SendRstStream(closed_stream_id, _, _));
   stream2->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-  string msg =
-      QuicStrCat("Marking unknown stream ", closed_stream_id, " blocked.");
   EXPECT_QUIC_BUG(session_.MarkConnectionLevelWriteBlocked(closed_stream_id),
-                  msg);
+                  "Marking unknown stream 2 blocked.");
 }
 
 TEST_P(QuicSessionTestServer, OnCanWrite) {
@@ -829,14 +800,13 @@ TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {
 
 TEST_P(QuicSessionTestServer, RstStreamBeforeHeadersDecompressed) {
   // Send two bytes of payload.
-  QuicStreamFrame data1(GetNthClientInitiatedId(0), false, 0,
-                        QuicStringPiece("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, QuicStringPiece("HT"));
   session_.OnStreamFrame(data1);
   EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());
 
-  EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0), _, _));
-  QuicRstStreamFrame rst1(GetNthClientInitiatedId(0),
-                          QUIC_ERROR_PROCESSING_STREAM, 0);
+  EXPECT_CALL(*connection_, SendRstStream(kClientDataStreamId1, _, _));
+  QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM,
+                          0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
   // Connection should remain alive.
@@ -1185,12 +1155,12 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
   // with a FIN or RST then we send an RST to refuse streams.
   const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenIncomingStreams(&session_, kMaxStreams);
-  const QuicStreamId kFirstStreamId = GetNthClientInitiatedId(0);
-  const QuicStreamId kFinalStreamId = GetNthClientInitiatedId(kMaxStreams);
+  const QuicStreamId kFirstStreamId = kClientDataStreamId1;
+  const QuicStreamId kFinalStreamId = kClientDataStreamId1 + 2 * kMaxStreams;
+
   // Create kMaxStreams data streams, and close them all without receiving a
   // FIN or a RST_STREAM from the client.
-  const QuicStreamId kNextId = QuicSpdySessionPeer::NextStreamId(session_);
-  for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += kNextId) {
+  for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += 2) {
     QuicStreamFrame data1(i, false, 0, QuicStringPiece("HT"));
     session_.OnStreamFrame(data1);
     // EXPECT_EQ(1u, session_.GetNumOpenStreams());
@@ -1219,10 +1189,10 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
   QuicSessionPeer::SetMaxOpenIncomingStreams(&session_, kMaxStreams);
 
   // Create kMaxStreams + 1 data streams, and mark them draining.
-  const QuicStreamId kFirstStreamId = GetNthClientInitiatedId(0);
+  const QuicStreamId kFirstStreamId = kClientDataStreamId1;
   const QuicStreamId kFinalStreamId =
-      GetNthClientInitiatedId(2 * kMaxStreams + 1);
-  for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += NextId()) {
+      kClientDataStreamId1 + 2 * kMaxStreams + 1;
+  for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += 2) {
     QuicStreamFrame data1(i, true, 0, QuicStringPiece("HT"));
     session_.OnStreamFrame(data1);
     EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());

@@ -603,16 +603,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     stream_factory_ = factory;
   }
 
-  QuicStreamId GetNthClientInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(
-        *client_->client()->session(), n);
-  }
-
-  QuicStreamId GetNthServerInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(
-        *client_->client()->session(), n);
-  }
-
   bool initialized_;
   QuicSocketAddress server_address_;
   string server_hostname_;
@@ -1207,8 +1197,7 @@ TEST_P(EndToEndTest, InvalidStream) {
 
   // Force the client to write with a stream ID belonging to a nonexistent
   // server-side stream.
-  QuicSpdySession* session = client_->client()->session();
-  QuicSessionPeer::SetNextOutgoingStreamId(session, GetNthServerInitiatedId(0));
+  QuicSessionPeer::SetNextOutgoingStreamId(client_->client()->session(), 2);
 
   client_->SendCustomSynchronousRequest(headers, body);
   EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
@@ -1299,7 +1288,8 @@ TEST_P(EndToEndTest, MaxIncomingDynamicStreamsLimitRespected) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   // Make the client misbehave after negotiation.
-  const int kServerMaxStreams = kMaxStreamsMinimumIncrement + 1;
+  const int kServerMaxStreams =
+      kMaxStreamsMinimumIncrement + kServerMaxIncomingDynamicStreams;
   QuicSessionPeer::SetMaxOpenOutgoingStreams(client_->client()->session(),
                                              kServerMaxStreams + 1);
 
@@ -1553,7 +1543,7 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
   client_->client()->WaitForEvents();
   // Transmit the cancel, and ensure the connection is torn down properly.
   SetPacketLossPercentage(0);
-  QuicStreamId stream_id = GetNthClientInitiatedId(0);
+  QuicStreamId stream_id = kClientDataStreamId1;
   session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED, 0);
 
   // WaitForEvents waits 50ms and returns true if there are outstanding
@@ -2427,9 +2417,6 @@ class ClientSessionThatDropsBody : public QuicClientSession {
     return QuicMakeUnique<ClientStreamThatDropsBody>(GetNextOutgoingStreamId(),
                                                      this);
   }
-  std::unique_ptr<QuicStream> CreateStream(QuicStreamId id) override {
-    return QuicMakeUnique<ClientStreamThatDropsBody>(id, this);
-  }
 };
 
 class MockableQuicClientThatDropsBody : public MockableQuicClient {
@@ -2467,9 +2454,8 @@ class QuicTestClientThatDropsBody : public QuicTestClient {
                        config,
                        supported_versions) {
     set_client(new MockableQuicClientThatDropsBody(
-        server_address,
-        QuicServerId(server_hostname, server_address.port(),
-                     PRIVACY_MODE_DISABLED),
+        server_address, QuicServerId(server_hostname, server_address.port(),
+                                     PRIVACY_MODE_DISABLED),
         config, supported_versions, epoll_server()));
   }
   ~QuicTestClientThatDropsBody() override {}
@@ -2580,8 +2566,8 @@ TEST_P(EndToEndTest, LargePostEarlyResponse) {
   EXPECT_EQ("500", client_->response_headers()->find(":status")->second);
 
   // Receive the reset stream from server on early response.
-  QuicStream* stream = client_->client()->session()->GetOrCreateStream(
-      GetNthClientInitiatedId(0));
+  QuicStream* stream =
+      client_->client()->session()->GetOrCreateStream(kClientDataStreamId1);
   // The stream is reset by server's reset stream.
   EXPECT_EQ(stream, nullptr);
 }

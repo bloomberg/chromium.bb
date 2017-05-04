@@ -186,6 +186,12 @@ QUIC_FLAG(bool,
 // reordering window for every spurious retransmit.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 
+// In QUIC BBR, keep sending at the max bandwidth observed in the previous 2
+// RTTs for another SRTT.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr_keep_sending_at_recent_rate,
+          false)
+
 // Base CWND on SRTT instead of min_rtt for QUIC BBR.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_base_cwnd_on_srtt, false)
 
@@ -214,9 +220,3 @@ QUIC_FLAG(bool,
 
 // Fix the algorithm used by packet conservation.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_conservation, false)
-
-// If enabled, use refactored stream creation methods.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_refactor_stream_creation, false)
-
-// A second take on fixing QUIC BBR packet conservation.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_conservation2, false)
