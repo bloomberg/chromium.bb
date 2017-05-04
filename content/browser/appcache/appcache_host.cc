@@ -11,6 +11,7 @@
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_policy.h"
+#include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -312,29 +313,29 @@ AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
 }
 
 std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
-    net::URLRequest* request,
+    std::unique_ptr<AppCacheRequest> request,
     ResourceType resource_type,
     bool should_reset_appcache) {
   if (is_for_dedicated_worker()) {
     AppCacheHost* parent_host = GetParentAppCacheHost();
     if (parent_host)
       return parent_host->CreateRequestHandler(
-          request, resource_type, should_reset_appcache);
+          std::move(request), resource_type, should_reset_appcache);
     return NULL;
   }
 
   if (AppCacheRequestHandler::IsMainResourceType(resource_type)) {
     // Store the first party origin so that it can be used later in SelectCache
     // for checking whether the creation of the appcache is allowed.
-    first_party_url_ = request->first_party_for_cookies();
-    return base::WrapUnique(
-        new AppCacheRequestHandler(this, resource_type, should_reset_appcache));
+    first_party_url_ = request->GetFirstPartyForCookies();
+    return base::WrapUnique(new AppCacheRequestHandler(
+        this, resource_type, should_reset_appcache, std::move(request)));
   }
 
   if ((associated_cache() && associated_cache()->is_complete()) ||
       is_selection_pending()) {
-    return base::WrapUnique(
-        new AppCacheRequestHandler(this, resource_type, should_reset_appcache));
+    return base::WrapUnique(new AppCacheRequestHandler(
+        this, resource_type, should_reset_appcache, std::move(request)));
   }
   return NULL;
 }

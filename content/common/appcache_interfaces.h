@@ -173,8 +173,6 @@ CONTENT_EXPORT extern const char kEnableExecutableHandlers[];
 CONTENT_EXPORT bool IsSchemeSupportedForAppCache(const GURL& url);
 CONTENT_EXPORT bool IsMethodSupportedForAppCache(
     const std::string& method);
-CONTENT_EXPORT bool IsSchemeAndMethodSupportedForAppCache(
-    const net::URLRequest* request);
 
 CONTENT_EXPORT extern const base::FilePath::CharType
     kAppCacheDatabaseName[];

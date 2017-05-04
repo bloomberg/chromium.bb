@@ -9,7 +9,6 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/url_constants.h"
-#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -136,11 +135,6 @@ bool IsSchemeSupportedForAppCache(const GURL& url) {
 
 bool IsMethodSupportedForAppCache(const std::string& method) {
   return (method == kHttpGETMethod) || (method == kHttpHEADMethod);
-}
-
-bool IsSchemeAndMethodSupportedForAppCache(const net::URLRequest* request) {
-  return IsSchemeSupportedForAppCache(request->url()) &&
-         IsMethodSupportedForAppCache(request->method());
 }
 
 }  // namespace content
