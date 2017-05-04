@@ -116,10 +116,12 @@ ModuleEventSinkImpl::ModuleEventSinkImpl(base::ProcessHandle process,
 ModuleEventSinkImpl::~ModuleEventSinkImpl() = default;
 
 // static
-void ModuleEventSinkImpl::Create(GetProcessHandleCallback get_process_handle,
-                                 content::ProcessType process_type,
-                                 ModuleDatabase* module_database,
-                                 mojom::ModuleEventSinkRequest request) {
+void ModuleEventSinkImpl::Create(
+    GetProcessHandleCallback get_process_handle,
+    content::ProcessType process_type,
+    ModuleDatabase* module_database,
+    const service_manager::BindSourceInfo& source_info,
+    mojom::ModuleEventSinkRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::ProcessHandle process = get_process_handle.Run();
   auto module_event_sink_impl = base::MakeUnique<ModuleEventSinkImpl>(

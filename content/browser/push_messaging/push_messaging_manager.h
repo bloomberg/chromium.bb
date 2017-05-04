@@ -20,6 +20,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "url/gurl.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 
 class PushMessagingService;
@@ -35,7 +39,8 @@ class PushMessagingManager : public mojom::PushMessaging {
   PushMessagingManager(int render_process_id,
                        ServiceWorkerContextWrapper* service_worker_context);
 
-  void BindRequest(mojom::PushMessagingRequest request);
+  void BindRequest(const service_manager::BindSourceInfo& source_info,
+                   mojom::PushMessagingRequest request);
 
   // mojom::PushMessaging impl, run on IO thread.
   void Subscribe(int32_t render_frame_id,

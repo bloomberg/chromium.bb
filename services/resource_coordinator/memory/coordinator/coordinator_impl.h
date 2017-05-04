@@ -27,7 +27,9 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   explicit CoordinatorImpl(bool initialize_memory_dump_manager);
 
   // Coordinator
-  void BindCoordinatorRequest(mojom::CoordinatorRequest) override;
+  void BindCoordinatorRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::CoordinatorRequest) override;
 
   bool initialize_memory_dump_manager() const {
     return initialize_memory_dump_manager_;

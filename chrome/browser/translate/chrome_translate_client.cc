@@ -172,6 +172,7 @@ void ChromeTranslateClient::GetTranslateLanguages(
 // static
 void ChromeTranslateClient::BindContentTranslateDriver(
     content::RenderFrameHost* render_frame_host,
+    const service_manager::BindSourceInfo& source_info,
     translate::mojom::ContentTranslateDriverRequest request) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);

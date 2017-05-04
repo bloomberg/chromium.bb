@@ -7,12 +7,18 @@
 
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace memory_instrumentation {
 
 class Coordinator {
  public:
   // Binds a CoordinatorRequest to this Coordinator instance.
-  virtual void BindCoordinatorRequest(mojom::CoordinatorRequest) = 0;
+  virtual void BindCoordinatorRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::CoordinatorRequest) = 0;
 };
 
 }  // namespace memory_instrumentation

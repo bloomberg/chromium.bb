@@ -268,7 +268,9 @@ PushMessagingManager::PushMessagingManager(
 
 PushMessagingManager::~PushMessagingManager() {}
 
-void PushMessagingManager::BindRequest(mojom::PushMessagingRequest request) {
+void PushMessagingManager::BindRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::PushMessagingRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

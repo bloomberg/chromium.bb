@@ -28,27 +28,15 @@ class BinderRegistry {
   BinderRegistry();
   ~BinderRegistry();
 
-  // Provide a callback to be run when a request to bind |Interface| is received
-  // by this registry.
-  template <typename Interface>
-  void AddInterface(
-      const base::Callback<void(mojo::InterfaceRequest<Interface>)>& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner =
-          nullptr) {
-    SetInterfaceBinder(Interface::Name_,
-                       base::MakeUnique<internal::CallbackBinder<Interface>>(
-                           callback, task_runner));
-  }
   template <typename Interface>
   void AddInterface(
       const base::Callback<void(const BindSourceInfo&,
                                 mojo::InterfaceRequest<Interface>)>& callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner =
           nullptr) {
-    SetInterfaceBinder(
-        Interface::Name_,
-        base::MakeUnique<internal::CallbackBinderWithSourceInfo<Interface>>(
-            callback, task_runner));
+    SetInterfaceBinder(Interface::Name_,
+                       base::MakeUnique<internal::CallbackBinder<Interface>>(
+                           callback, task_runner));
   }
   void AddInterface(
       const std::string& interface_name,

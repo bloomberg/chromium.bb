@@ -7,6 +7,7 @@
 
 #include "components/payments/mojom/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class WebContents;
@@ -19,7 +20,8 @@ namespace payments {
 // created.
 void CreatePaymentRequestForWebContents(
     content::WebContents* web_contents,
-    mojo::InterfaceRequest<payments::mojom::PaymentRequest> request);
+    const service_manager::BindSourceInfo& source_info,
+    payments::mojom::PaymentRequestRequest request);
 
 }  // namespace payments
 

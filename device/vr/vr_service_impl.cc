@@ -25,7 +25,8 @@ VRServiceImpl::~VRServiceImpl() {
   VRDeviceManager::GetInstance()->RemoveService(this);
 }
 
-void VRServiceImpl::Create(mojo::InterfaceRequest<mojom::VRService> request) {
+void VRServiceImpl::Create(const service_manager::BindSourceInfo& source_info,
+                           mojom::VRServiceRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<VRServiceImpl>(),
                           std::move(request));
 }

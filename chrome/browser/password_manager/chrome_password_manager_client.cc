@@ -682,6 +682,7 @@ const password_manager::LogManager* ChromePasswordManagerClient::GetLogManager()
 // static
 void ChromePasswordManagerClient::BindCredentialManager(
     content::RenderFrameHost* render_frame_host,
+    const service_manager::BindSourceInfo& source_info,
     password_manager::mojom::CredentialManagerRequest request) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);

@@ -17,7 +17,8 @@ namespace payments {
 
 void CreatePaymentRequestForWebContents(
     content::WebContents* web_contents,
-    mojo::InterfaceRequest<payments::mojom::PaymentRequest> request) {
+    const service_manager::BindSourceInfo& source_info,
+    payments::mojom::PaymentRequestRequest request) {
   DCHECK(web_contents);
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(

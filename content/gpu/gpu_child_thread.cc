@@ -296,6 +296,7 @@ void GpuChildThread::CreateFrameSinkManager(
 }
 
 void GpuChildThread::BindServiceFactoryRequest(
+    const service_manager::BindSourceInfo& source_info,
     service_manager::mojom::ServiceFactoryRequest request) {
   DVLOG(1) << "GPU: Binding service_manager::mojom::ServiceFactoryRequest";
   DCHECK(service_factory_);

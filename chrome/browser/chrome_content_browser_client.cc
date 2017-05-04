@@ -885,9 +885,9 @@ AppLoadedInTabSource ClassifyAppLoadedInTabSource(
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-void CreateUsbDeviceManager(
-    RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::mojom::UsbDeviceManager> request) {
+void CreateUsbDeviceManager(RenderFrameHost* render_frame_host,
+                            const service_manager::BindSourceInfo& source_info,
+                            device::mojom::UsbDeviceManagerRequest request) {
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents) {
@@ -902,7 +902,8 @@ void CreateUsbDeviceManager(
 
 void CreateWebUsbChooserService(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::mojom::UsbChooserService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    device::mojom::UsbChooserServiceRequest request) {
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents) {
@@ -1675,6 +1676,7 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
 #if defined(OS_ANDROID)
 void ForwardInstalledAppProviderRequest(
     base::WeakPtr<service_manager::InterfaceProvider> interface_provider,
+    const service_manager::BindSourceInfo& source_info,
     blink::mojom::InstalledAppProviderRequest request) {
   if (!interface_provider ||
       ChromeOriginTrialPolicy().IsFeatureDisabled("InstalledApp")) {
@@ -1685,6 +1687,7 @@ void ForwardInstalledAppProviderRequest(
 
 void ForwardShareServiceRequest(
     base::WeakPtr<service_manager::InterfaceProvider> interface_provider,
+    const service_manager::BindSourceInfo& source_info,
     blink::mojom::ShareServiceRequest request) {
   if (!interface_provider ||
       ChromeOriginTrialPolicy().IsFeatureDisabled("WebShare")) {

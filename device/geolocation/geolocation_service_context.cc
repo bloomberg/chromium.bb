@@ -16,7 +16,8 @@ GeolocationServiceContext::GeolocationServiceContext() {}
 GeolocationServiceContext::~GeolocationServiceContext() {}
 
 void GeolocationServiceContext::CreateService(
-    mojo::InterfaceRequest<mojom::GeolocationService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::GeolocationServiceRequest request) {
   GeolocationServiceImpl* service =
       new GeolocationServiceImpl(std::move(request), this);
   services_.push_back(base::WrapUnique<GeolocationServiceImpl>(service));

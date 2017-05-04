@@ -60,7 +60,8 @@ void DistillerJsRenderFrameObserver::RegisterMojoInterface() {
 }
 
 void DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService(
-    mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::DistillerPageNotifierServiceRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<DistillerPageNotifierServiceImpl>(this),
       std::move(request));

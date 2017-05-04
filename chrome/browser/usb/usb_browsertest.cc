@@ -21,6 +21,7 @@
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/webusb_descriptors.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 using content::RenderFrameHost;
@@ -61,6 +62,7 @@ class FakeChooserView : public ChooserController::View {
 class FakeChooserService : public device::mojom::UsbChooserService {
  public:
   static void Create(RenderFrameHost* render_frame_host,
+                     const service_manager::BindSourceInfo& source_info,
                      device::mojom::UsbChooserServiceRequest request) {
     mojo::MakeStrongBinding(
         base::MakeUnique<FakeChooserService>(render_frame_host),

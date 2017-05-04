@@ -331,7 +331,8 @@ class GpuSandboxedProcessLauncherDelegate
 
 #if defined(OS_ANDROID)
 template <typename Interface>
-void BindJavaInterface(mojo::InterfaceRequest<Interface> request) {
+void BindJavaInterface(const service_manager::BindSourceInfo& source_info,
+                       mojo::InterfaceRequest<Interface> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::GetGlobalJavaInterfaces()->GetInterface(std::move(request));
 }

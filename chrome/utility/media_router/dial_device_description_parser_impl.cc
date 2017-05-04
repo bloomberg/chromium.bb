@@ -55,6 +55,7 @@ DialDeviceDescriptionParserImpl::~DialDeviceDescriptionParserImpl() {
 
 // static
 void DialDeviceDescriptionParserImpl::Create(
+    const service_manager::BindSourceInfo& source_info,
     chrome::mojom::DialDeviceDescriptionParserRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<DialDeviceDescriptionParserImpl>(),
                           std::move(request));

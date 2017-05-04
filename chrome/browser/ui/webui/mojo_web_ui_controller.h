@@ -15,6 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "mojo/public/cpp/system/core.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 class MojoWebUIControllerBase : public content::WebUIController {
@@ -58,7 +59,8 @@ class MojoWebUIController : public MojoWebUIControllerBase {
 
  protected:
   // Invoked to create the specific bindings implementation.
-  virtual void BindUIHandler(mojo::InterfaceRequest<Interface> request) = 0;
+  virtual void BindUIHandler(const service_manager::BindSourceInfo& source_info,
+                             mojo::InterfaceRequest<Interface> request) = 0;
 
  private:
   base::WeakPtrFactory<MojoWebUIController> weak_factory_;

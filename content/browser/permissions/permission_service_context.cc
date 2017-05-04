@@ -72,7 +72,8 @@ PermissionServiceContext::~PermissionServiceContext() {
 }
 
 void PermissionServiceContext::CreateService(
-    mojo::InterfaceRequest<blink::mojom::PermissionService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    blink::mojom::PermissionServiceRequest request) {
   services_.push_back(
       base::MakeUnique<PermissionServiceImpl>(this, std::move(request)));
 }

@@ -9,6 +9,10 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/WebKit/public/platform/modules/hyphenation/hyphenation.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace hyphenation {
 
 class HyphenationImpl : public blink::mojom::Hyphenation {
@@ -16,7 +20,8 @@ class HyphenationImpl : public blink::mojom::Hyphenation {
   HyphenationImpl();
   ~HyphenationImpl() override;
 
-  static void Create(blink::mojom::HyphenationRequest);
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     blink::mojom::HyphenationRequest);
 
   // Hyphenation:
   void OpenDictionary(const std::string& locale,

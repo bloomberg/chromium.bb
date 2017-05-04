@@ -8,6 +8,10 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/field_trial_recorder.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 
 class FieldTrialRecorder : public mojom::FieldTrialRecorder {
@@ -15,7 +19,8 @@ class FieldTrialRecorder : public mojom::FieldTrialRecorder {
   FieldTrialRecorder();
   ~FieldTrialRecorder() override;
 
-  static void Create(mojom::FieldTrialRecorderRequest request);
+  static void Create(const service_manager::BindSourceInfo& source_info,
+                     mojom::FieldTrialRecorderRequest request);
 
  private:
   // content::mojom::FieldTrialRecorder:

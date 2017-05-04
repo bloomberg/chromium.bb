@@ -128,6 +128,7 @@ void UtilityThreadImpl::OnBatchModeFinished() {
 }
 
 void UtilityThreadImpl::BindServiceFactoryRequest(
+    const service_manager::BindSourceInfo& source_info,
     service_manager::mojom::ServiceFactoryRequest request) {
   DCHECK(service_factory_);
   service_factory_bindings_.AddBinding(service_factory_.get(),

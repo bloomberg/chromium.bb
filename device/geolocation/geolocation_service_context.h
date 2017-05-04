@@ -12,6 +12,10 @@
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/public/interfaces/geolocation.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace device {
 
 class GeolocationServiceImpl;
@@ -26,7 +30,8 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationServiceContext {
   virtual ~GeolocationServiceContext();
 
   // Creates a GeolocationServiceImpl that is weakly bound to |request|.
-  void CreateService(mojo::InterfaceRequest<mojom::GeolocationService> request);
+  void CreateService(const service_manager::BindSourceInfo& source_info,
+                     mojom::GeolocationServiceRequest request);
 
   // Called when a service has a connection error. After this call, it is no
   // longer safe to access |service|.

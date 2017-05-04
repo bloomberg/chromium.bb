@@ -20,7 +20,8 @@ class UsbInternalsUI
 
  private:
   // MojoWebUIController overrides:
-  void BindUIHandler(mojom::UsbInternalsPageHandlerRequest request) override;
+  void BindUIHandler(const service_manager::BindSourceInfo& source_info,
+                     mojom::UsbInternalsPageHandlerRequest request) override;
 
   std::unique_ptr<UsbInternalsPageHandler> page_handler_;
 

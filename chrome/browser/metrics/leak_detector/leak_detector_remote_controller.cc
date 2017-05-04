@@ -25,7 +25,9 @@ LeakDetectorRemoteController::LocalController* g_local_controller = nullptr;
 LeakDetectorRemoteController::~LeakDetectorRemoteController() {}
 
 // static
-void LeakDetectorRemoteController::Create(mojom::LeakDetectorRequest request) {
+void LeakDetectorRemoteController::Create(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::LeakDetectorRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<LeakDetectorRemoteController> controller =
       base::WrapUnique(new LeakDetectorRemoteController);

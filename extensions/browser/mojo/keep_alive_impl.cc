@@ -15,6 +15,7 @@ namespace extensions {
 // static
 void KeepAliveImpl::Create(content::BrowserContext* context,
                            const Extension* extension,
+                           const service_manager::BindSourceInfo& source_info,
                            KeepAliveRequest request) {
   // Owns itself.
   new KeepAliveImpl(context, extension, std::move(request));

@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 class RenderFrameHost;
@@ -36,8 +37,10 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
   static ContentAutofillDriverFactory* FromWebContents(
       content::WebContents* contents);
-  static void BindAutofillDriver(content::RenderFrameHost* render_frame_host,
-                                 mojom::AutofillDriverRequest request);
+  static void BindAutofillDriver(
+      content::RenderFrameHost* render_frame_host,
+      const service_manager::BindSourceInfo& source_info,
+      mojom::AutofillDriverRequest request);
 
   // Gets the |ContentAutofillDriver| associated with |render_frame_host|.
   // |render_frame_host| must be owned by |web_contents()|.

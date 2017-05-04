@@ -11,6 +11,10 @@
 #include "content/common/media/media_devices.h"
 #include "content/common/media/media_devices.mojom.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 
 // This class implements a Mojo object that receives notifications about changes
@@ -19,6 +23,7 @@ class CONTENT_EXPORT MediaDevicesListenerImpl
     : public ::mojom::MediaDevicesListener {
  public:
   static void Create(int render_frame_id,
+                     const service_manager::BindSourceInfo& source_info,
                      ::mojom::MediaDevicesListenerRequest request);
   explicit MediaDevicesListenerImpl(int render_frame_id);
   ~MediaDevicesListenerImpl() override;

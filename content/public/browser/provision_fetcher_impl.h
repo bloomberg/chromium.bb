@@ -18,6 +18,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 
 // A media::mojom::ProvisionFetcher implementation based on
@@ -26,6 +30,7 @@ class CONTENT_EXPORT ProvisionFetcherImpl
     : NON_EXPORTED_BASE(public media::mojom::ProvisionFetcher) {
  public:
   static void Create(net::URLRequestContextGetter* context_getter,
+                     const service_manager::BindSourceInfo& source_info,
                      media::mojom::ProvisionFetcherRequest request);
 
   explicit ProvisionFetcherImpl(

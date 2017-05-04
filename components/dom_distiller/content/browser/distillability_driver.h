@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace dom_distiller {
 
@@ -21,7 +22,8 @@ class DistillabilityDriver
  public:
   ~DistillabilityDriver() override;
   void CreateDistillabilityService(
-      mojo::InterfaceRequest<mojom::DistillabilityService> request);
+      const service_manager::BindSourceInfo& source_info,
+      mojom::DistillabilityServiceRequest request);
 
   void SetDelegate(const base::Callback<void(bool, bool)>& delegate);
 

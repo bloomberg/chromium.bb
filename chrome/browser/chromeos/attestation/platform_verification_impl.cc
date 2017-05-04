@@ -19,7 +19,8 @@ using media::mojom::PlatformVerification;
 // static
 void PlatformVerificationImpl::Create(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<PlatformVerification> request) {
+    const service_manager::BindSourceInfo& source_info,
+    media::mojom::PlatformVerificationRequest request) {
   DVLOG(2) << __FUNCTION__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(render_frame_host);

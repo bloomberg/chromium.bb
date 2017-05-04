@@ -60,7 +60,8 @@ HyphenationImpl::HyphenationImpl() {}
 HyphenationImpl::~HyphenationImpl() {}
 
 // static
-void HyphenationImpl::Create(blink::mojom::HyphenationRequest request) {
+void HyphenationImpl::Create(const service_manager::BindSourceInfo& source_info,
+                             blink::mojom::HyphenationRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<HyphenationImpl>(),
                           std::move(request));
 }

@@ -13,6 +13,10 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace chromecast {
 namespace media {
 
@@ -24,7 +28,8 @@ class MediaCapsImpl : public mojom::MediaCaps {
   ~MediaCapsImpl() override;
 
   void Initialize();
-  void AddBinding(mojom::MediaCapsRequest request);
+  void AddBinding(const service_manager::BindSourceInfo& source_info,
+                  mojom::MediaCapsRequest request);
 
   void SetSupportedHdmiSinkCodecs(unsigned int supported_codecs_bitmask);
   void ScreenResolutionChanged(unsigned width, unsigned height);

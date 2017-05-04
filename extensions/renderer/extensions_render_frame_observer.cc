@@ -90,6 +90,7 @@ ExtensionsRenderFrameObserver::~ExtensionsRenderFrameObserver() {
 }
 
 void ExtensionsRenderFrameObserver::BindAppWindowRequest(
+    const service_manager::BindSourceInfo& source_info,
     mojom::AppWindowRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

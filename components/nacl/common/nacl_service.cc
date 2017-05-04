@@ -54,6 +54,7 @@ service_manager::mojom::ServiceRequest ConnectToServiceManager() {
 }
 
 void ConnectBootstrapChannel(IPC::mojom::ChannelBootstrapPtrInfo ptr,
+                             const service_manager::BindSourceInfo& source_info,
                              IPC::mojom::ChannelBootstrapRequest request) {
   mojo::FuseInterface(std::move(request), std::move(ptr));
 }

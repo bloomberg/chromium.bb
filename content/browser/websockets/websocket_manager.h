@@ -16,6 +16,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"
 
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 namespace content {
 class StoragePartition;
 
@@ -28,8 +32,11 @@ class CONTENT_EXPORT WebSocketManager
       NON_EXPORTED_BASE(public net::URLRequestContextGetterObserver) {
  public:
   // Called on the UI thread:
-  static void CreateWebSocket(int process_id, int frame_id,
-                              blink::mojom::WebSocketRequest request);
+  static void CreateWebSocket(
+      int process_id,
+      int frame_id,
+      const service_manager::BindSourceInfo& source_info,
+      blink::mojom::WebSocketRequest request);
 
   // net::URLRequestContextGetterObserver implementation.
   void OnContextShuttingDown() override;

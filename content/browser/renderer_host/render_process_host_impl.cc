@@ -451,6 +451,7 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
 
 void CreateMemoryCoordinatorHandle(
     int render_process_id,
+    const service_manager::BindSourceInfo& source_info,
     mojom::MemoryCoordinatorHandleRequest request) {
   MemoryCoordinatorImpl::GetInstance()->CreateHandle(render_process_id,
                                                      std::move(request));
@@ -459,7 +460,9 @@ void CreateMemoryCoordinatorHandle(
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on is own.
 template <typename R>
-void ForwardShapeDetectionRequest(R request) {
+void ForwardShapeDetectionRequest(const service_manager::BindSourceInfo&,
+                                  R request) {
+  // TODO(beng): This should really be using the per-profile connector.
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->BindInterface(shape_detection::mojom::kServiceName,
@@ -473,6 +476,7 @@ class WorkerURLLoaderFactoryProviderImpl
       int render_process_id,
       scoped_refptr<ResourceMessageFilter> resource_message_filter,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      const service_manager::BindSourceInfo& source_info,
       mojom::WorkerURLLoaderFactoryProviderRequest request) {
     DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
     mojo::MakeStrongBinding(
@@ -1336,9 +1340,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   // This is to support usage of WebSockets in cases in which there is no
   // associated RenderFrame (e.g., Shared Workers).
-  AddUIThreadInterface(
-      registry.get(), base::Bind(&WebSocketManager::CreateWebSocket, GetID(),
-                                 MSG_ROUTING_NONE));
+  AddUIThreadInterface(registry.get(),
+                       base::Bind(&WebSocketManager::CreateWebSocket, GetID(),
+                                  MSG_ROUTING_NONE));
 
   // Chrome browser process only provides DiscardableSharedMemory service when
   // Chrome is not running in mus+ash.
@@ -1401,7 +1405,9 @@ void RenderProcessHostImpl::GetAssociatedInterface(
     listener->OnAssociatedInterfaceRequest(name, request.PassHandle());
 }
 
-void RenderProcessHostImpl::CreateMusGpuRequest(ui::mojom::GpuRequest request) {
+void RenderProcessHostImpl::CreateMusGpuRequest(
+    const service_manager::BindSourceInfo& source_info,
+    ui::mojom::GpuRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!gpu_client_)
     gpu_client_.reset(new GpuClient(GetID()));
@@ -1409,6 +1415,7 @@ void RenderProcessHostImpl::CreateMusGpuRequest(ui::mojom::GpuRequest request) {
 }
 
 void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
+    const service_manager::BindSourceInfo& source_info,
     blink::mojom::OffscreenCanvasProviderRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!offscreen_canvas_provider_) {
@@ -1421,12 +1428,14 @@ void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
 }
 
 void RenderProcessHostImpl::BindFrameSinkProvider(
+    const service_manager::BindSourceInfo& source_info,
     mojom::FrameSinkProviderRequest request) {
   frame_sink_provider_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
-    mojo::InterfaceRequest<mojom::StoragePartitionService> request) {
+    const service_manager::BindSourceInfo& source_info,
+    mojom::StoragePartitionServiceRequest request) {
   // DO NOT REMOVE THIS COMMAND LINE CHECK WITHOUT SECURITY REVIEW!
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMojoLocalStorage)) {

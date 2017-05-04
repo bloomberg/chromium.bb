@@ -569,7 +569,7 @@ TEST_F(ChromePasswordManagerClientTest, BindCredentialManager_MissingInstance) {
 
   // This call should not crash.
   ChromePasswordManagerClient::BindCredentialManager(
-      web_contents->GetMainFrame(),
+      web_contents->GetMainFrame(), service_manager::BindSourceInfo(),
       password_manager::mojom::CredentialManagerRequest());
 }
 

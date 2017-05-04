@@ -24,7 +24,9 @@ namespace memory_instrumentation {
 
 class MockCoordinator : public Coordinator, public mojom::Coordinator {
  public:
-  void BindCoordinatorRequest(mojom::CoordinatorRequest request) override {
+  void BindCoordinatorRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::CoordinatorRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
