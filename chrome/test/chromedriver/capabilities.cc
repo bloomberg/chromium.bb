@@ -400,6 +400,18 @@ Status ParsePerfLoggingPrefs(const base::Value& option,
   return Status(kOk);
 }
 
+Status ParseDevToolsEventsLoggingPrefs(const base::Value& option,
+                                       Capabilities* capabilities) {
+  const base::ListValue* devtools_events_logging_prefs = nullptr;
+  if (!option.GetAsList(&devtools_events_logging_prefs))
+    return Status(kUnknownError, "must be a list");
+  if (devtools_events_logging_prefs->empty())
+    return Status(kUnknownError, "list must contain values");
+  capabilities->devtools_events_logging_prefs.reset(
+      devtools_events_logging_prefs->DeepCopy());
+  return Status(kOk);
+}
+
 Status ParseWindowTypes(const base::Value& option, Capabilities* capabilities) {
   const base::ListValue* window_types = NULL;
   if (!option.GetAsList(&window_types))
@@ -438,6 +450,8 @@ Status ParseChromeOptions(
   parser_map["extensions"] = base::Bind(&IgnoreCapability);
 
   parser_map["perfLoggingPrefs"] = base::Bind(&ParsePerfLoggingPrefs);
+  parser_map["devToolsEventsToLog"] = base::Bind(
+          &ParseDevToolsEventsLoggingPrefs);
   parser_map["windowTypes"] = base::Bind(&ParseWindowTypes);
   // Compliance is read when session is initialized and correct response is
   // sent if not parsed correctly.
@@ -664,6 +678,17 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
         chrome_options->HasKey("perfLoggingPrefs")) {
       return Status(kUnknownError, "perfLoggingPrefs specified, "
                     "but performance logging was not enabled");
+    }
+  }
+  LoggingPrefs::const_iterator dt_events_logging_iter = logging_prefs.find(
+      WebDriverLog::kDevToolsType);
+  if (dt_events_logging_iter == logging_prefs.end()
+      || dt_events_logging_iter->second == Log::kOff) {
+    const base::DictionaryValue* chrome_options = NULL;
+    if (desired_caps.GetDictionary("chromeOptions", &chrome_options) &&
+        chrome_options->HasKey("devToolsEventsToLog")) {
+      return Status(kUnknownError, "devToolsEventsToLog specified, "
+                    "but devtools events logging was not enabled");
     }
   }
   return Status(kOk);

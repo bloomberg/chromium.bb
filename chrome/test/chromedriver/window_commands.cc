@@ -715,6 +715,38 @@ Status ExecuteTouchPinch(Session* session,
   return web_view->SynthesizePinchGesture(location.x, location.y, scale_factor);
 }
 
+Status ExecuteSendCommand(Session* session,
+                          WebView* web_view,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value,
+                          Timeout* timeout) {
+  std::string cmd;
+  if (!params.GetString("cmd", &cmd)) {
+    return Status(kUnknownError, "command not passed");
+  }
+  const base::DictionaryValue* cmdParams;
+  if (!params.GetDictionary("params", &cmdParams)) {
+    return Status(kUnknownError, "params not passed");
+  }
+  return web_view->SendCommand(cmd, *cmdParams);
+}
+
+Status ExecuteSendCommandAndGetResult(Session* session,
+                                      WebView* web_view,
+                                      const base::DictionaryValue& params,
+                                      std::unique_ptr<base::Value>* value,
+                                      Timeout* timeout) {
+  std::string cmd;
+  if (!params.GetString("cmd", &cmd)) {
+    return Status(kUnknownError, "command not passed");
+  }
+  const base::DictionaryValue* cmdParams;
+  if (!params.GetDictionary("params", &cmdParams)) {
+    return Status(kUnknownError, "params not passed");
+  }
+  return web_view->SendCommandAndGetResult(cmd, *cmdParams, value);
+}
+
 Status ExecuteGetActiveElement(Session* session,
                                WebView* web_view,
                                const base::DictionaryValue& params,

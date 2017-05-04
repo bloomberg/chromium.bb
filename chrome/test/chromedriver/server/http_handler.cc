@@ -612,6 +612,15 @@ HttpHandler::HttpHandler(
                      "session/:sessionId/touch/pinch",
                      WrapToCommand("TouchPinch",
                                    base::Bind(&ExecuteTouchPinch))),
+      CommandMapping(kPost,
+                     "session/:sessionId/chromium/send_command",
+                     WrapToCommand("SendCommand",
+                                   base::Bind(&ExecuteSendCommand))),
+      CommandMapping(
+              kPost,
+              "session/:sessionId/chromium/send_command_and_get_result",
+              WrapToCommand("SendCommandAndGetResult",
+                  base::Bind(&ExecuteSendCommandAndGetResult))),
   };
   command_map_.reset(
       new CommandMap(commands, commands + arraysize(commands)));

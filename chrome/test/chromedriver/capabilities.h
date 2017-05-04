@@ -24,6 +24,7 @@
 namespace base {
 class CommandLine;
 class DictionaryValue;
+class ListValue;
 }
 
 class Status;
@@ -149,6 +150,8 @@ struct Capabilities {
   bool network_emulation_enabled;
 
   PerfLoggingPrefs perf_logging_prefs;
+
+  std::unique_ptr<base::ListValue> devtools_events_logging_prefs;
 
   std::unique_ptr<base::DictionaryValue> prefs;
 
