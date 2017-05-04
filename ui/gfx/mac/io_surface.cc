@@ -164,6 +164,11 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
   }
 
   IOSurfaceRef surface = IOSurfaceCreate(properties);
+  if (!surface) {
+    LOG(ERROR) << "Failed to allocate IOSurface of size " << size.ToString()
+               << ".";
+    return nullptr;
+  }
 
   // For unknown reasons, triggering this lock on OS X 10.9, on certain GPUs,
   // causes PDFs to render incorrectly. Hopefully this check can be removed once
