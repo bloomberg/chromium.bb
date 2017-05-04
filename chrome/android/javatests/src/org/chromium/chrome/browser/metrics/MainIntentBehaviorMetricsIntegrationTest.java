@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.metrics;
 
+import android.content.Intent;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -120,6 +122,15 @@ public class MainIntentBehaviorMetricsIntegrationTest {
             MainIntentBehaviorMetrics.setTimeoutDurationMsForTesting(
                     MainIntentBehaviorMetrics.TIMEOUT_DURATION_MS);
         }
+    }
+
+    @MediumTest
+    @Test
+    public void testMainIntentWithLauncherCategory() throws InterruptedException {
+        mActivityTestRule.startMainActivityFromIntent(new Intent(Intent.ACTION_MAIN), null);
+        assertMainIntentBehavior(null);
+        Assert.assertFalse(mActivityTestRule.getActivity().getMainIntentBehaviorMetricsForTesting()
+                .getPendingActionRecordForMainIntent());
     }
 
     private void assertMainIntentBehavior(Integer expected) {
