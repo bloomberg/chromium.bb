@@ -9,8 +9,40 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+
+namespace {
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("headless_url_request", R"(
+        semantics {
+          sender: "Headless"
+          description:
+            "Headless Chromium allows running Chromium in a headless/server "
+            "environment. Expected use cases include loading web pages, "
+            "extracting metadata (e.g., the DOM) and generating bitmaps "
+            "from page contents, using all the modern web platform features "
+            "provided by Chromium and Blink."
+          trigger:
+            "User running Chrome in headless mode, please refer to https://"
+            "chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md "
+            "for more information."
+          data: "Any data based on given request."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store:
+            "Various, but cookies stores are deleted when session ends."
+          setting:
+            "This feature cannot be disabled by settings, but it is used only "
+            "if user enters the Headless mode."
+          policy_exception_justification: "Not implemented."
+        })");
+
+}  // namespace
 
 namespace headless {
 
@@ -67,7 +99,8 @@ HttpURLFetcher::Delegate::Delegate(
       buf_(new net::IOBuffer(kBufSize)),
       request_(url_request_context->CreateRequest(rewritten_url,
                                                   net::DEFAULT_PRIORITY,
-                                                  this)),
+                                                  this,
+                                                  kTrafficAnnotation)),
       result_listener_(result_listener) {
   request_->set_method(method);
 
