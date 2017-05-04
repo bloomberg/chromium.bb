@@ -491,6 +491,13 @@ std::unique_ptr<StreamParser> StreamParserFactory::Create(
       UMA_HISTOGRAM_ENUMERATION("Media.MSE.VideoCodec",
                                 video_codecs[i],
                                 CodecInfo::HISTOGRAM_MAX + 1);
+      if (type == "video/mp4") {
+        UMA_HISTOGRAM_ENUMERATION("Media.MSE.VideoCodec.MP4", video_codecs[i],
+                                  CodecInfo::HISTOGRAM_MAX + 1);
+      } else if (type == "video/webm") {
+        UMA_HISTOGRAM_ENUMERATION("Media.MSE.VideoCodec.WebM", video_codecs[i],
+                                  CodecInfo::HISTOGRAM_MAX + 1);
+      }
     }
 
     stream_parser.reset(factory_function(codecs, media_log));

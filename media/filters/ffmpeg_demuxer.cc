@@ -58,9 +58,10 @@ void SetAVStreamDiscard(AVStream* stream, AVDiscard discard) {
 
 }  // namespace
 
-static base::Time ExtractTimelineOffset(AVFormatContext* format_context) {
-  if (strstr(format_context->iformat->name, "webm") ||
-      strstr(format_context->iformat->name, "matroska")) {
+static base::Time ExtractTimelineOffset(
+    container_names::MediaContainerName container,
+    const AVFormatContext* format_context) {
+  if (container == container_names::CONTAINER_WEBM) {
     const AVDictionaryEntry* entry =
         av_dict_get(format_context->metadata, "creation_time", NULL, 0);
 
@@ -160,14 +161,24 @@ static void RecordAudioCodecStats(const AudioDecoderConfig& audio_config) {
 }
 
 // Record video decoder config UMA stats corresponding to a src= playback.
-static void RecordVideoCodecStats(const VideoDecoderConfig& video_config,
+static void RecordVideoCodecStats(container_names::MediaContainerName container,
+                                  const VideoDecoderConfig& video_config,
                                   AVColorRange color_range,
                                   MediaLog* media_log) {
   media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.SRC.VideoCodec." +
                                             GetCodecName(video_config.codec()));
 
+  // TODO(xhwang): Fix these misleading metric names. They should be something
+  // like "Media.SRC.Xxxx". See http://crbug.com/716183.
   UMA_HISTOGRAM_ENUMERATION("Media.VideoCodec", video_config.codec(),
                             kVideoCodecMax + 1);
+  if (container == container_names::CONTAINER_MOV) {
+    UMA_HISTOGRAM_ENUMERATION("Media.SRC.VideoCodec.MP4", video_config.codec(),
+                              kVideoCodecMax + 1);
+  } else if (container == container_names::CONTAINER_WEBM) {
+    UMA_HISTOGRAM_ENUMERATION("Media.SRC.VideoCodec.WebM", video_config.codec(),
+                              kVideoCodecMax + 1);
+  }
 
   // Drop UNKNOWN because U_H_E() uses one bucket for all values less than 1.
   if (video_config.profile() >= 0) {
@@ -1342,8 +1353,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     std::string track_language = streams_[i]->GetMetadata("language");
 
     // Some metadata is named differently in FFmpeg for webm files.
-    if (strstr(format_context->iformat->name, "webm") ||
-        strstr(format_context->iformat->name, "matroska")) {
+    if (glue_->container() == container_names::CONTAINER_WEBM) {
       // TODO(servolk): FFmpeg doesn't set stream->id correctly for webm files.
       // Need to fix that and use it as track id. crbug.com/323183
       track_id =
@@ -1385,8 +1395,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       VideoDecoderConfig video_config = streams_[i]->video_decoder_config();
 
-      RecordVideoCodecStats(video_config, stream->codecpar->color_range,
-                            media_log_);
+      RecordVideoCodecStats(glue_->container(), video_config,
+                            stream->codecpar->color_range, media_log_);
 
       media_track = media_tracks->AddVideoTrack(video_config, track_id, "main",
                                                 track_label, track_language);
@@ -1454,7 +1464,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     const AVStream* audio_stream = stream->av_stream();
     DCHECK(audio_stream);
     if (audio_stream->codecpar->codec_id == AV_CODEC_ID_OPUS ||
-        (strcmp(format_context->iformat->name, "ogg") == 0 &&
+        (glue_->container() == container_names::CONTAINER_OGG &&
          audio_stream->codecpar->codec_id == AV_CODEC_ID_VORBIS)) {
       for (size_t i = 0; i < streams_.size(); ++i) {
         if (!streams_[i])
@@ -1478,12 +1488,14 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
   // MPEG-4 B-frames cause grief for a simple container like AVI. Enable PTS
   // generation so we always get timestamps, see http://crbug.com/169570
-  if (strcmp(format_context->iformat->name, "avi") == 0)
+  if (glue_->container() == container_names::CONTAINER_AVI)
     format_context->flags |= AVFMT_FLAG_GENPTS;
 
   // For testing purposes, don't overwrite the timeline offset if set already.
-  if (timeline_offset_.is_null())
-    timeline_offset_ = ExtractTimelineOffset(format_context);
+  if (timeline_offset_.is_null()) {
+    timeline_offset_ =
+        ExtractTimelineOffset(glue_->container(), format_context);
+  }
 
   // Since we're shifting the externally visible start time to zero, we need to
   // adjust the timeline offset to compensate.
