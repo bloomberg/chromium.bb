@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -42,7 +42,8 @@ using URLToActivationListsMap =
 // WebContents and is responsible for sending the activation signal to all the
 // per-frame SubresourceFilterAgents on the renderer side.
 class ContentSubresourceFilterDriverFactory
-    : public base::SupportsUserData::Data,
+    : public content::WebContentsUserData<
+          ContentSubresourceFilterDriverFactory>,
       public content::WebContentsObserver,
       public ContentSubresourceFilterThrottleManager::Delegate {
  public:
@@ -72,11 +73,8 @@ class ContentSubresourceFilterDriverFactory
     ACTIVATION_DECISION_MAX
   };
 
-  static void CreateForWebContents(
-      content::WebContents* web_contents,
-      std::unique_ptr<SubresourceFilterClient> client);
-  static ContentSubresourceFilterDriverFactory* FromWebContents(
-      content::WebContents* web_contents);
+  static void CreateForWebContents(content::WebContents* web_contents,
+                                   SubresourceFilterClient* client);
 
   // Whether the |url|, |referrer|, and |transition| are considered to be
   // associated with a page reload.
@@ -86,7 +84,7 @@ class ContentSubresourceFilterDriverFactory
 
   explicit ContentSubresourceFilterDriverFactory(
       content::WebContents* web_contents,
-      std::unique_ptr<SubresourceFilterClient> client);
+      SubresourceFilterClient* client);
   ~ContentSubresourceFilterDriverFactory() override;
 
   // Called when Safe Browsing detects that the |url| corresponding to the load
@@ -119,7 +117,7 @@ class ContentSubresourceFilterDriverFactory
     return throttle_manager_.get();
   }
 
-  SubresourceFilterClient* client() { return client_.get(); }
+  SubresourceFilterClient* client() { return client_; }
 
  private:
   friend class ContentSubresourceFilterDriverFactoryTest;
@@ -149,7 +147,8 @@ class ContentSubresourceFilterDriverFactory
   void RecordRedirectChainMatchPatternForList(
       ActivationList activation_list) const;
 
-  std::unique_ptr<SubresourceFilterClient> client_;
+  // Must outlive this class.
+  SubresourceFilterClient* client_;
 
   std::unique_ptr<ContentSubresourceFilterThrottleManager> throttle_manager_;
 

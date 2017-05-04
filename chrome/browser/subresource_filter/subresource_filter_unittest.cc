@@ -23,7 +23,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -102,13 +101,8 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
     // Set up the tab helpers.
     InfoBarService::CreateForWebContents(web_contents());
     TabSpecificContentSettings::CreateForWebContents(web_contents());
+    ChromeSubresourceFilterClient::CreateForWebContents(web_contents());
 
-    std::unique_ptr<ChromeSubresourceFilterClient> subresource_filter_client(
-        new ChromeSubresourceFilterClient(web_contents()));
-    client_ = subresource_filter_client.get();
-    subresource_filter::ContentSubresourceFilterDriverFactory::
-        CreateForWebContents(web_contents(),
-                             std::move(subresource_filter_client));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -153,7 +147,9 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
         url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER);
   }
 
-  ChromeSubresourceFilterClient* client() { return client_; }
+  ChromeSubresourceFilterClient* client() {
+    return ChromeSubresourceFilterClient::FromWebContents(web_contents());
+  }
 
  private:
   base::ScopedTempDir ruleset_service_dir_;
@@ -162,8 +158,6 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
   ScopedSubresourceFilterConfigurator scoped_configuration_;
 
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
-
-  ChromeSubresourceFilterClient* client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterTest);
 };

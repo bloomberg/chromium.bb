@@ -174,6 +174,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
+  ChromeSubresourceFilterClient::CreateForWebContents(web_contents);
   ChromeTranslateClient::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
@@ -204,10 +205,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())
     SiteEngagementService::Helper::CreateForWebContents(web_contents);
-  std::unique_ptr<ChromeSubresourceFilterClient> subresource_filter_client(
-      new ChromeSubresourceFilterClient(web_contents));
-  subresource_filter::ContentSubresourceFilterDriverFactory::
-      CreateForWebContents(web_contents, std::move(subresource_filter_client));
   sync_sessions::SyncSessionsRouterTabHelper::CreateForWebContents(
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(

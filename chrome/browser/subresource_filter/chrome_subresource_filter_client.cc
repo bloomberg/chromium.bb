@@ -17,7 +17,10 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "content/public/browser/navigation_handle.h"
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSubresourceFilterClient);
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
@@ -25,6 +28,9 @@ ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
   DCHECK(web_contents);
   SubresourceFilterProfileContextFactory::EnsureForProfile(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+
+  subresource_filter::ContentSubresourceFilterDriverFactory::
+      CreateForWebContents(web_contents, this);
 }
 
 ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() {}
