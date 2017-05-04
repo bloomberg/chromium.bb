@@ -105,15 +105,16 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyUsage) {
   this->RunTest("intermediate-lacks-signing-key-usage/main.test");
   this->RunTest("target-has-keycertsign-but-not-ca/main.test");
 
-  this->RunTest("serverauth-ec-ku-decipheronly/main.test");
-  this->RunTest("serverauth-ec-ku-digitalsignature/main.test");
-  this->RunTest("serverauth-ec-ku-keyagreement/main.test");
-  this->RunTest("serverauth-ec-ku-keyencipherment/main.test");
+  this->RunTest("target-serverauth-various-keyusages/rsa-decipherOnly.test");
+  this->RunTest(
+      "target-serverauth-various-keyusages/rsa-digitalSignature.test");
+  this->RunTest("target-serverauth-various-keyusages/rsa-keyAgreement.test");
+  this->RunTest("target-serverauth-various-keyusages/rsa-keyEncipherment.test");
 
-  this->RunTest("serverauth-rsa-ku-decipheronly/main.test");
-  this->RunTest("serverauth-rsa-ku-digitalsignature/main.test");
-  this->RunTest("serverauth-rsa-ku-keyagreement/main.test");
-  this->RunTest("serverauth-rsa-ku-keyencipherment/main.test");
+  this->RunTest("target-serverauth-various-keyusages/ec-decipherOnly.test");
+  this->RunTest("target-serverauth-various-keyusages/ec-digitalSignature.test");
+  this->RunTest("target-serverauth-various-keyusages/ec-keyAgreement.test");
+  this->RunTest("target-serverauth-various-keyusages/ec-keyEncipherment.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExtendedKeyUsage) {
