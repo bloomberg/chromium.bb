@@ -107,59 +107,6 @@ PaymentRequestSheetController::PaymentRequestSheetController(
 PaymentRequestSheetController::~PaymentRequestSheetController() {}
 
 std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
-  std::unique_ptr<views::View> view = CreatePaymentView();
-  UpdateContentView();
-  return view;
-}
-
-void PaymentRequestSheetController::UpdateContentView() {
-  content_view_->RemoveAllChildViews(true);
-  FillContentView(content_view_);
-  content_view_->Layout();
-  pane_->SizeToPreferredSize();
-  // Now that the content and its surrounding pane are updated, force a Layout
-  // on the ScrollView so that it updates its scroll bars now.
-  scroll_->Layout();
-}
-
-std::unique_ptr<views::Button>
-PaymentRequestSheetController::CreatePrimaryButton() {
-  return nullptr;
-}
-
-base::string16 PaymentRequestSheetController::GetSecondaryButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_CANCEL);
-}
-
-bool PaymentRequestSheetController::ShouldShowHeaderBackArrow() {
-  return true;
-}
-
-std::unique_ptr<views::View>
-PaymentRequestSheetController::CreateExtraFooterView() {
-  return nullptr;
-}
-
-void PaymentRequestSheetController::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
-  switch (static_cast<PaymentRequestCommonTags>(sender->tag())) {
-    case PaymentRequestCommonTags::CLOSE_BUTTON_TAG:
-      dialog()->CloseDialog();
-      break;
-    case PaymentRequestCommonTags::BACK_BUTTON_TAG:
-      dialog()->GoBack();
-      break;
-    case PaymentRequestCommonTags::PAY_BUTTON_TAG:
-      dialog()->Pay();
-      break;
-    case PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX:
-      NOTREACHED();
-      break;
-  }
-}
-
-std::unique_ptr<views::View>
-PaymentRequestSheetController::CreatePaymentView() {
   // Create the footer now so that it's known if there's a primary button or not
   // before creating the sheet view. This way, it's possible to determine
   // whether there's something to do when the user hits enter.
@@ -223,9 +170,56 @@ PaymentRequestSheetController::CreatePaymentView() {
   layout->StartRow(0, 0);
   layout->AddView(footer.release());
 
-  view->SetFirstFocusableView(GetFirstFocusedView());
+  UpdateContentView();
 
+  view->SetFirstFocusableView(GetFirstFocusedView());
   return std::move(view);
+}
+
+void PaymentRequestSheetController::UpdateContentView() {
+  content_view_->RemoveAllChildViews(true);
+  FillContentView(content_view_);
+  content_view_->Layout();
+  pane_->SizeToPreferredSize();
+  // Now that the content and its surrounding pane are updated, force a Layout
+  // on the ScrollView so that it updates its scroll bars now.
+  scroll_->Layout();
+}
+
+std::unique_ptr<views::Button>
+PaymentRequestSheetController::CreatePrimaryButton() {
+  return nullptr;
+}
+
+base::string16 PaymentRequestSheetController::GetSecondaryButtonLabel() {
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
+}
+
+bool PaymentRequestSheetController::ShouldShowHeaderBackArrow() {
+  return true;
+}
+
+std::unique_ptr<views::View>
+PaymentRequestSheetController::CreateExtraFooterView() {
+  return nullptr;
+}
+
+void PaymentRequestSheetController::ButtonPressed(views::Button* sender,
+                                                  const ui::Event& event) {
+  switch (static_cast<PaymentRequestCommonTags>(sender->tag())) {
+    case PaymentRequestCommonTags::CLOSE_BUTTON_TAG:
+      dialog()->CloseDialog();
+      break;
+    case PaymentRequestCommonTags::BACK_BUTTON_TAG:
+      dialog()->GoBack();
+      break;
+    case PaymentRequestCommonTags::PAY_BUTTON_TAG:
+      dialog()->Pay();
+      break;
+    case PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX:
+      NOTREACHED();
+      break;
+  }
 }
 
 std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {

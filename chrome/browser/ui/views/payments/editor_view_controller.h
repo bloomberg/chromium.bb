@@ -134,6 +134,7 @@ class EditorViewController : public PaymentRequestSheetController,
  private:
   // PaymentRequestSheetController:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  views::View* GetFirstFocusedView() override;
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -157,6 +158,9 @@ class EditorViewController : public PaymentRequestSheetController,
   ComboboxMap comboboxes_;
   // Tracks the relationship between a field and its error label.
   ErrorLabelMap error_labels_;
+
+  // The first label in the editor, used to set the initial focus.
+  views::View* first_field_view_;
 
   DISALLOW_COPY_AND_ASSIGN(EditorViewController);
 };
