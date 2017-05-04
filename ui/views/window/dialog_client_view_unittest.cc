@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/test_views.h"
@@ -389,11 +390,20 @@ TEST_F(DialogClientViewTest, LinkedWidths) {
   EXPECT_EQ(ok_button_only_width, client_view()->ok_button()->width());
   md_test_api.SetSecondaryUiMaterial(true);
 
-  // The extra view should also match, if it's a button.
+  // The extra view should also match, if it's a matching button type.
   LabelButton* extra_button = new LabelButton(nullptr, base::string16());
   SetExtraView(extra_button);
   CheckContentsIsSetToPreferredSize();
   EXPECT_EQ(cancel_button_width, extra_button->width());
+
+  // Remove |extra_button| from the View hierarchy so that it can be replaced.
+  delete extra_button;
+
+  // Checkbox extends LabelButton, but it should not participate in linking.
+  extra_button = new Checkbox(base::string16());
+  SetExtraView(extra_button);
+  CheckContentsIsSetToPreferredSize();
+  EXPECT_NE(cancel_button_width, extra_button->width());
 
   // Remove |extra_button| from the View hierarchy so that it can be replaced.
   delete extra_button;
