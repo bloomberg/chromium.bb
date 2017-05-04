@@ -47,6 +47,7 @@ PASS Invalid basic card parameters should not throw even when method name is "ba
 PASS Android Pay parameters for network token without environment key should not throw. 
 PASS Invalid Android Pay parameters should not throw when method name is not "https://android.com/pay". 
 PASS Invalid Android Pay parameters should not throw even when method name is "https://android.com/pay". 
+PASS Array value for payment method specific data parameter should not throw 
 PASS abort() without show() should reject with error 
 PASS PaymentRequest constructor should throw for incorrect parameter types. 
 PASS PaymentRequest constructor should throw for undefined required parameters. 
@@ -60,7 +61,6 @@ PASS Null supportedMethods in modifiers should throw TypeError.
 PASS Undefined supportedMethods in modifiers should throw TypeError. 
 PASS Empty supportedMethods in modifiers should throw TypeError. 
 PASS Absence of supportedMethods in modifiers should throw TypeError. 
-PASS Empty modifiers should throw TypeError. 
 PASS Empty details should throw 
 PASS Null items should throw 
 PASS Null shipping options should throw 
@@ -69,7 +69,6 @@ PASS Null for shppingType should throw a TypeError
 PASS Array value for shppingType should throw a TypeError 
 PASS Object value for shppingType should throw a TypeError 
 PASS Numeric value for shppingType should throw a TypeError 
-PASS Array value for payment method specific data parameter should throw 
 PASS String value for payment method specific data parameter should throw 
 PASS Numeric value for payment method specific data parameter should throw 
 PASS Infinite JSON value for one of the payment method specific data pieces should throw 

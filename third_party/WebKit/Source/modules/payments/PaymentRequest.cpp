@@ -136,47 +136,44 @@ static const int kCompleteTimeoutSeconds = 60;
 // fields, except for "id", which is present only in ShippingOption.
 template <typename T>
 void ValidateShippingOptionOrPaymentItem(const T& item,
+                                         const String& item_name,
+                                         ExecutionContext& execution_context,
                                          ExceptionState& exception_state) {
-  if (!item.hasLabel() || item.label().IsEmpty()) {
-    exception_state.ThrowTypeError("Item label required");
-    return;
-  }
-
-  if (!item.hasAmount()) {
-    exception_state.ThrowTypeError("Currency amount required");
-    return;
-  }
-
-  if (!item.amount().hasCurrency()) {
-    exception_state.ThrowTypeError("Currency code required");
-    return;
-  }
-
-  if (!item.amount().hasValue()) {
-    exception_state.ThrowTypeError("Currency value required");
-    return;
-  }
+  DCHECK(item.hasLabel());
+  DCHECK(item.hasAmount());
+  DCHECK(item.amount().hasValue());
+  DCHECK(item.amount().hasCurrency());
 
   String error_message;
+  if (!PaymentsValidators::IsValidAmountFormat(item.amount().value(), item_name,
+                                               &error_message)) {
+    exception_state.ThrowTypeError(error_message);
+    return;
+  }
+
+  if (item.label().IsEmpty()) {
+    execution_context.AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel,
+        "Empty " + item_name + " label may be confusing the user"));
+    return;
+  }
+
   if (!PaymentsValidators::IsValidCurrencyCodeFormat(
           item.amount().currency(), item.amount().currencySystem(),
           &error_message)) {
     exception_state.ThrowTypeError(error_message);
     return;
   }
-
-  if (!PaymentsValidators::IsValidAmountFormat(item.amount().value(),
-                                               &error_message)) {
-    exception_state.ThrowTypeError(error_message);
-    return;
-  }
 }
 
 void ValidateAndConvertDisplayItems(const HeapVector<PaymentItem>& input,
+                                    const String& item_names,
                                     Vector<PaymentItemPtr>& output,
+                                    ExecutionContext& execution_context,
                                     ExceptionState& exception_state) {
   for (const PaymentItem& item : input) {
-    ValidateShippingOptionOrPaymentItem(item, exception_state);
+    ValidateShippingOptionOrPaymentItem(item, item_names, execution_context,
+                                        exception_state);
     if (exception_state.HadException())
       return;
     output.push_back(payments::mojom::blink::PaymentItem::From(item));
@@ -191,12 +188,21 @@ void ValidateAndConvertDisplayItems(const HeapVector<PaymentItem>& input,
 void ValidateAndConvertShippingOptions(
     const HeapVector<PaymentShippingOption>& input,
     Vector<PaymentShippingOptionPtr>& output,
+    String& shipping_option_output,
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
   HashSet<String> unique_ids;
   for (const PaymentShippingOption& option : input) {
-    if (!option.hasId() || option.id().IsEmpty()) {
-      exception_state.ThrowTypeError("ShippingOption id required");
+    ValidateShippingOptionOrPaymentItem(option, "shippingOptions",
+                                        execution_context, exception_state);
+    if (exception_state.HadException())
+      return;
+
+    DCHECK(option.hasId());
+    if (option.id().IsEmpty()) {
+      execution_context.AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel,
+          "Empty shipping option ID may be hard to debug"));
       return;
     }
 
@@ -207,14 +213,14 @@ void ValidateAndConvertShippingOptions(
               "' is treated as an invalid address indicator."));
       // Clear |output| instead of throwing an exception.
       output.clear();
+      shipping_option_output = String();
       return;
     }
 
-    unique_ids.insert(option.id());
+    if (option.selected())
+      shipping_option_output = option.id();
 
-    ValidateShippingOptionOrPaymentItem(option, exception_state);
-    if (exception_state.HadException())
-      return;
+    unique_ids.insert(option.id());
 
     output.push_back(
         payments::mojom::blink::PaymentShippingOption::From(option));
@@ -222,9 +228,12 @@ void ValidateAndConvertShippingOptions(
 }
 
 void ValidateAndConvertTotal(const PaymentItem& input,
+                             const String& item_name,
                              PaymentItemPtr& output,
+                             ExecutionContext& execution_context,
                              ExceptionState& exception_state) {
-  ValidateShippingOptionOrPaymentItem(input, exception_state);
+  ValidateShippingOptionOrPaymentItem(input, item_name, execution_context,
+                                      exception_state);
   if (exception_state.HadException())
     return;
 
@@ -398,16 +407,12 @@ void StringifyAndParseMethodSpecificData(
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
   DCHECK(!input.IsEmpty());
-  if (!input.V8Value()->IsObject() || input.V8Value()->IsArray()) {
-    exception_state.ThrowTypeError("Data should be a JSON-serializable object");
-    return;
-  }
-
   v8::Local<v8::String> value;
-  if (!v8::JSON::Stringify(input.GetContext(), input.V8Value().As<v8::Object>())
+  if (!input.V8Value()->IsObject() ||
+      !v8::JSON::Stringify(input.GetContext(), input.V8Value().As<v8::Object>())
            .ToLocal(&value)) {
     exception_state.ThrowTypeError(
-        "Unable to parse payment method specific data");
+        "Payment method data should be a JSON-serializable object");
     return;
   }
 
@@ -436,16 +441,11 @@ void ValidateAndConvertPaymentDetailsModifiers(
     Vector<PaymentDetailsModifierPtr>& output,
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
-  if (input.IsEmpty()) {
-    exception_state.ThrowTypeError(
-        "Must specify at least one payment details modifier");
-    return;
-  }
-
   for (const PaymentDetailsModifier& modifier : input) {
     output.push_back(payments::mojom::blink::PaymentDetailsModifier::New());
     if (modifier.hasTotal()) {
-      ValidateAndConvertTotal(modifier.total(), output.back()->total,
+      ValidateAndConvertTotal(modifier.total(), "modifier total",
+                              output.back()->total, execution_context,
                               exception_state);
       if (exception_state.HadException())
         return;
@@ -453,8 +453,9 @@ void ValidateAndConvertPaymentDetailsModifiers(
 
     if (modifier.hasAdditionalDisplayItems()) {
       ValidateAndConvertDisplayItems(modifier.additionalDisplayItems(),
+                                     "additional display items in modifier",
                                      output.back()->additional_display_items,
-                                     exception_state);
+                                     execution_context, exception_state);
       if (exception_state.HadException())
         return;
     }
@@ -479,38 +480,28 @@ void ValidateAndConvertPaymentDetailsModifiers(
   }
 }
 
-String GetSelectedShippingOption(
-    const Vector<PaymentShippingOptionPtr>& shipping_options) {
-  String result;
-  for (const PaymentShippingOptionPtr& shipping_option : shipping_options) {
-    if (shipping_option->selected)
-      result = shipping_option->id;
-  }
-  return result;
-}
-
 void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase& input,
-                                          bool request_shipping,
                                           PaymentDetailsPtr& output,
                                           String& shipping_option_output,
                                           ExecutionContext& execution_context,
                                           ExceptionState& exception_state) {
   if (input.hasDisplayItems()) {
-    ValidateAndConvertDisplayItems(input.displayItems(), output->display_items,
+    ValidateAndConvertDisplayItems(input.displayItems(), "display items",
+                                   output->display_items, execution_context,
                                    exception_state);
     if (exception_state.HadException())
       return;
   }
 
-  if (input.hasShippingOptions() && request_shipping) {
-    ValidateAndConvertShippingOptions(input.shippingOptions(),
-                                      output->shipping_options,
-                                      execution_context, exception_state);
+  if (input.hasShippingOptions()) {
+    ValidateAndConvertShippingOptions(
+        input.shippingOptions(), output->shipping_options,
+        shipping_option_output, execution_context, exception_state);
     if (exception_state.HadException())
       return;
+  } else {
+    shipping_option_output = String();
   }
-
-  shipping_option_output = GetSelectedShippingOption(output->shipping_options);
 
   if (input.hasModifiers()) {
     ValidateAndConvertPaymentDetailsModifiers(
@@ -522,44 +513,35 @@ void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase& input,
 }
 
 void ValidateAndConvertPaymentDetailsInit(const PaymentDetailsInit& input,
-                                          bool request_shipping,
                                           PaymentDetailsPtr& output,
                                           String& shipping_option_output,
                                           ExecutionContext& execution_context,
                                           ExceptionState& exception_state) {
-  ValidateAndConvertPaymentDetailsBase(input, request_shipping, output,
-                                       shipping_option_output,
-                                       execution_context, exception_state);
+  DCHECK(input.hasTotal());
+  ValidateAndConvertTotal(input.total(), "total", output->total,
+                          execution_context, exception_state);
   if (exception_state.HadException())
     return;
 
-  if (!input.hasTotal()) {
-    exception_state.ThrowTypeError("Must specify total");
+  ValidateAndConvertPaymentDetailsBase(input, output, shipping_option_output,
+                                       execution_context, exception_state);
+  if (exception_state.HadException())
     return;
-  }
-
-  if (input.hasId())
-    output->id = input.id();
-  else
-    output->id = CreateCanonicalUUIDString();
-
-  ValidateAndConvertTotal(input.total(), output->total, exception_state);
 }
 
 void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
-                                            bool request_shipping,
                                             PaymentDetailsPtr& output,
                                             String& shipping_option_output,
                                             ExecutionContext& execution_context,
                                             ExceptionState& exception_state) {
-  ValidateAndConvertPaymentDetailsBase(input, request_shipping, output,
-                                       shipping_option_output,
+  ValidateAndConvertPaymentDetailsBase(input, output, shipping_option_output,
                                        execution_context, exception_state);
   if (exception_state.HadException())
     return;
 
   if (input.hasTotal()) {
-    ValidateAndConvertTotal(input.total(), output->total, exception_state);
+    ValidateAndConvertTotal(input.total(), "total", output->total,
+                            execution_context, exception_state);
     if (exception_state.HadException())
       return;
   }
@@ -583,15 +565,15 @@ void ValidateAndConvertPaymentMethodData(
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
   if (input.IsEmpty()) {
-    exception_state.ThrowTypeError(
-        "Must specify at least one payment method identifier");
+    exception_state.ThrowTypeError("At least one payment method is required");
     return;
   }
 
   for (const PaymentMethodData payment_method_data : input) {
     if (payment_method_data.supportedMethods().IsEmpty()) {
       exception_state.ThrowTypeError(
-          "Must specify at least one payment method identifier");
+          "Each payment method needs to include at least one payment method "
+          "identifier");
       return;
     }
 
@@ -607,17 +589,6 @@ void ValidateAndConvertPaymentMethodData(
       output.back()->stringified_data = "";
     }
   }
-}
-
-String GetValidShippingType(const String& shipping_type) {
-  static const char* const kValidValues[] = {
-      "shipping", "delivery", "pickup",
-  };
-  for (size_t i = 0; i < arraysize(kValidValues); i++) {
-    if (shipping_type == kValidValues[i])
-      return shipping_type;
-  }
-  return kValidValues[0];
 }
 
 bool AllowedToUsePaymentRequest(const Frame* frame) {
@@ -813,14 +784,17 @@ void PaymentRequest::OnUpdatePaymentDetails(
   PaymentDetailsPtr validated_details =
       payments::mojom::blink::PaymentDetails::New();
   ValidateAndConvertPaymentDetailsUpdate(
-      details, options_.requestShipping(), validated_details, shipping_option_,
-      *GetExecutionContext(), exception_state);
+      details, validated_details, shipping_option_, *GetExecutionContext(),
+      exception_state);
   if (exception_state.HadException()) {
     show_resolver_->Reject(
         DOMException::Create(kSyntaxError, exception_state.Message()));
     ClearResolversAndCloseMojoConnection();
     return;
   }
+
+  if (!options_.requestShipping())
+    validated_details->shipping_options.clear();
 
   payment_provider_->UpdateWith(std::move(validated_details));
 }
@@ -861,12 +835,6 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
           TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetFrame()),
           this,
           &PaymentRequest::OnCompleteTimeout) {
-  Vector<payments::mojom::blink::PaymentMethodDataPtr> validated_method_data;
-  ValidateAndConvertPaymentMethodData(method_data, validated_method_data,
-                                      *GetExecutionContext(), exception_state);
-  if (exception_state.HadException())
-    return;
-
   if (!GetExecutionContext()->IsSecureContext()) {
     exception_state.ThrowSecurityError("Must be in a secure context");
     return;
@@ -881,16 +849,28 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
 
   PaymentDetailsPtr validated_details =
       payments::mojom::blink::PaymentDetails::New();
-  ValidateAndConvertPaymentDetailsInit(details, options_.requestShipping(),
-                                       validated_details, shipping_option_,
-                                       *GetExecutionContext(), exception_state);
+  validated_details->id = id_ =
+      details.hasId() ? details.id() : CreateCanonicalUUIDString();
+
+  Vector<payments::mojom::blink::PaymentMethodDataPtr> validated_method_data;
+  ValidateAndConvertPaymentMethodData(method_data, validated_method_data,
+                                      *GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
-  id_ = validated_details->id;
+  ValidateAndConvertPaymentDetailsInit(details, validated_details,
+                                       shipping_option_, *GetExecutionContext(),
+                                       exception_state);
+  if (exception_state.HadException())
+    return;
 
   if (options_.requestShipping())
-    shipping_type_ = GetValidShippingType(options_.shippingType());
+    shipping_type_ = options_.shippingType();
+  else
+    validated_details->shipping_options.clear();
+
+  DCHECK(shipping_type_.IsNull() || shipping_type_ == "shipping" ||
+         shipping_type_ == "delivery" || shipping_type_ == "pickup");
 
   GetFrame()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&payment_provider_));

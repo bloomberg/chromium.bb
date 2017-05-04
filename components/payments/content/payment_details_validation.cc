@@ -20,11 +20,6 @@ bool validateShippingOptionOrPaymentItem(
     const T& item,
     const payments::mojom::PaymentItemPtr& total,
     std::string* error_message) {
-  if (item->label.empty()) {
-    *error_message = "Item label required";
-    return false;
-  }
-
   if (!item->amount) {
     *error_message = "Currency amount required";
     return false;

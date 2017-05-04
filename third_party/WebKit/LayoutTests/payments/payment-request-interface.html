@@ -272,6 +272,10 @@ test(function() {
     new PaymentRequest([{'supportedMethods': ['https://android.com/pay'], 'data': {'allowedCardNetworks': 0}}], buildDetails());
 }, 'Invalid Android Pay parameters should not throw even when method name is "https://android.com/pay".');
 
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['foo'], 'data': []}], buildDetails());
+}, 'Array value for payment method specific data parameter should not throw');
+
 promise_test(function(t) {
     return promise_rejects(t, null, new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails()).abort());
 }, 'abort() without show() should reject with error');
@@ -313,9 +317,6 @@ generate_tests(assert_throws, [
     ['Absence of supportedMethods in modifiers should throw TypeError.', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'total': buildItem()}]})
     }],
-    ['Empty modifiers should throw TypeError.', null, function() {
-        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': []})
-    }],
     ['Empty details should throw', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {})
     }],
@@ -342,9 +343,6 @@ generate_tests(assert_throws, [
     }],
 
     // Payment method specific data should be a JSON-serializable object.
-    ['Array value for payment method specific data parameter should throw', null, function() {
-        new PaymentRequest([{'supportedMethods': ['foo'], 'data': []}], buildDetails(), {})
-    }],
     ['String value for payment method specific data parameter should throw', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo'], 'data': 'foo'}], buildDetails(), {})
     }],
