@@ -8,7 +8,7 @@
 // This enum backs a UMA histogram and must be treated as append-only.
 enum class InstallabilityCheckStatus {
   NOT_STARTED,
-  STOPPED_BEFORE_COMPLETION,
+  NOT_COMPLETED,
   IN_PROGRESS_NON_PROGRESSIVE_WEB_APP,
   IN_PROGRESS_PROGRESSIVE_WEB_APP,
   COMPLETE_NON_PROGRESSIVE_WEB_APP,
