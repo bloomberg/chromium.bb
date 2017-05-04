@@ -767,7 +767,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 1200,
+          "hard_timeout": 1500,
           "output_links": [
             {
               "link": [
@@ -778,7 +778,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 6
         },
         "test": "android_webview_test_apk"
       },
@@ -1108,7 +1108,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 960,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -1119,7 +1119,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -1145,7 +1145,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 960,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -1155,7 +1155,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "content_shell_test_apk"
       },
