@@ -30,6 +30,11 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
     return primary_surface_info_;
   }
 
+  // A fallback Surface is a Surface that is already known to exist in the
+  // display compositor. If surface synchronization is enabled, the display
+  // compositor will use the fallback if the primary surface is unavailable
+  // at the time of surface aggregation. If surface synchronization is not
+  // enabled, then a fallback surface will not be specified.
   void SetFallbackSurfaceInfo(const SurfaceInfo& surface_info);
   const SurfaceInfo& fallback_surface_info() const {
     return fallback_surface_info_;
@@ -51,7 +56,6 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
       RenderPass* render_pass,
       SurfaceDrawQuadType surface_draw_quad_type,
       const SurfaceInfo& surface_info,
-      std::vector<SurfaceId>* embedded_surfaces,
       SharedQuadState** common_shared_quad_state);
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
