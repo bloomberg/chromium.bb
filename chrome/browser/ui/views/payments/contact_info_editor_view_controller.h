@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_CONTACT_INFO_EDITOR_VIEW_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -50,6 +51,8 @@ class ContactInfoEditorViewController : public EditorViewController {
   // Uses the values in the UI fields to populate the corresponding values in
   // |profile|.
   void PopulateProfile(autofill::AutofillProfile* profile);
+
+  bool GetSheetId(DialogViewID* sheet_id) override;
 
   autofill::AutofillProfile* profile_to_edit_;
 

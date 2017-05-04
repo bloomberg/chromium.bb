@@ -328,4 +328,9 @@ bool CreditCardEditorViewController::CreditCardValidationDelegate::
   return is_required_valid;
 }
 
+bool CreditCardEditorViewController::GetSheetId(DialogViewID* sheet_id) {
+  *sheet_id = DialogViewID::CREDIT_CARD_EDITOR_SHEET;
+  return true;
+}
+
 }  // namespace payments

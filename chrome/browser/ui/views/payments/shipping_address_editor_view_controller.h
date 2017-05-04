@@ -58,6 +58,8 @@ class ShippingAddressEditorViewController : public EditorViewController {
   base::string16 GetSheetTitle() override;
 
  private:
+  bool GetSheetId(DialogViewID* sheet_id) override;
+
   class ShippingAddressValidationDelegate : public ValidationDelegate {
    public:
     ShippingAddressValidationDelegate(
