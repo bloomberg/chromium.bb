@@ -28,7 +28,7 @@ class {{v8_class}} final : public {{cpp_class}} {
   {{exported}}{{v8_class}}(v8::Local<v8::Function>, ScriptState*);
 
   ScopedPersistent<v8::Function> m_callback;
-  RefPtr<ScriptState> m_scriptState;
+  RefPtr<ScriptState> script_state_;
 };
 
 }

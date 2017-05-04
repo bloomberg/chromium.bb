@@ -34,21 +34,21 @@ class ScriptValue;
 //
 // class SomeObject {
 //   void someMethod(ScriptState* scriptState) {
-//     m_scriptState = scriptState; // Record the ScriptState.
+//     script_state_ = scriptState; // Record the ScriptState.
 //     ...;
 //   }
 //
 //   void asynchronousMethod() {
-//     if (!m_scriptState->contextIsValid()) {
+//     if (!script_state_->contextIsValid()) {
 //       // It's possible that the context is already gone.
 //       return;
 //     }
 //     // Enter the ScriptState.
-//     ScriptState::Scope scope(m_scriptState.get());
+//     ScriptState::Scope scope(script_state_.get());
 //     // Do V8 related things.
 //     ToV8(...);
 //   }
-//   RefPtr<ScriptState> m_scriptState;
+//   RefPtr<ScriptState> script_state_;
 // };
 //
 // You should not store ScriptState on a C++ object that can be accessed
