@@ -1118,6 +1118,13 @@ void ArcAppListPrefs::OnUninstallShortcut(const std::string& package_name,
 
 std::unordered_set<std::string> ArcAppListPrefs::GetAppsForPackage(
     const std::string& package_name) const {
+  return GetAppsAndShortcutsForPackage(package_name,
+                                       false /* include_shortcuts */);
+}
+
+std::unordered_set<std::string> ArcAppListPrefs::GetAppsAndShortcutsForPackage(
+    const std::string& package_name,
+    bool include_shortcuts) const {
   std::unordered_set<std::string> app_set;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   for (base::DictionaryValue::Iterator app_it(*apps); !app_it.IsAtEnd();
@@ -1138,6 +1145,12 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsForPackage(
     if (package_name != app_package)
       continue;
 
+    if (!include_shortcuts) {
+      bool shortcut = false;
+      if (app->GetBoolean(kShortcut, &shortcut) && shortcut)
+        continue;
+    }
+
     app_set.insert(app_it.key());
   }
 
@@ -1146,7 +1159,7 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsForPackage(
 
 void ArcAppListPrefs::HandlePackageRemoved(const std::string& package_name) {
   const std::unordered_set<std::string> apps_to_remove =
-      GetAppsForPackage(package_name);
+      GetAppsAndShortcutsForPackage(package_name, true /* include_shortcuts */);
   for (const auto& app_id : apps_to_remove)
     RemoveApp(app_id);
 
