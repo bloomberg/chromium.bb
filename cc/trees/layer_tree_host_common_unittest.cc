@@ -747,8 +747,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
   ExecuteCalculateDrawProperties(root);
 
   // Render surface should have been created now.
-  ASSERT_TRUE(child->GetRenderSurface());
-  ASSERT_EQ(child->GetRenderSurface(), child->render_target());
+  ASSERT_TRUE(GetRenderSurface(child));
+  ASSERT_EQ(GetRenderSurface(child), child->render_target());
 
   // The child layer's draw transform should refer to its new render surface.
   // The screen-space transform, however, should still refer to the root.
@@ -932,33 +932,33 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
 
   // Only layers that are associated with render surfaces should have an actual
   // RenderSurface() value.
-  ASSERT_TRUE(root->GetRenderSurface());
-  ASSERT_FALSE(child_of_root->GetRenderSurface());
-  ASSERT_FALSE(grand_child_of_root->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(root));
+  ASSERT_FALSE(GetRenderSurface(child_of_root));
+  ASSERT_FALSE(GetRenderSurface(grand_child_of_root));
 
-  ASSERT_TRUE(render_surface1->GetRenderSurface());
-  ASSERT_FALSE(child_of_rs1->GetRenderSurface());
-  ASSERT_FALSE(grand_child_of_rs1->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface1));
+  ASSERT_FALSE(GetRenderSurface(child_of_rs1));
+  ASSERT_FALSE(GetRenderSurface(grand_child_of_rs1));
 
-  ASSERT_TRUE(render_surface2->GetRenderSurface());
-  ASSERT_FALSE(child_of_rs2->GetRenderSurface());
-  ASSERT_FALSE(grand_child_of_rs2->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface2));
+  ASSERT_FALSE(GetRenderSurface(child_of_rs2));
+  ASSERT_FALSE(GetRenderSurface(grand_child_of_rs2));
 
   // Verify all render target accessors
-  EXPECT_EQ(root->GetRenderSurface(), parent->render_target());
-  EXPECT_EQ(root->GetRenderSurface(), child_of_root->render_target());
-  EXPECT_EQ(root->GetRenderSurface(), grand_child_of_root->render_target());
+  EXPECT_EQ(GetRenderSurface(root), parent->render_target());
+  EXPECT_EQ(GetRenderSurface(root), child_of_root->render_target());
+  EXPECT_EQ(GetRenderSurface(root), grand_child_of_root->render_target());
 
-  EXPECT_EQ(render_surface1->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface1),
             render_surface1->render_target());
-  EXPECT_EQ(render_surface1->GetRenderSurface(), child_of_rs1->render_target());
-  EXPECT_EQ(render_surface1->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface1), child_of_rs1->render_target());
+  EXPECT_EQ(GetRenderSurface(render_surface1),
             grand_child_of_rs1->render_target());
 
-  EXPECT_EQ(render_surface2->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface2),
             render_surface2->render_target());
-  EXPECT_EQ(render_surface2->GetRenderSurface(), child_of_rs2->render_target());
-  EXPECT_EQ(render_surface2->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface2), child_of_rs2->render_target());
+  EXPECT_EQ(GetRenderSurface(render_surface2),
             grand_child_of_rs2->render_target());
 
   // Verify layer draw transforms note that draw transforms are described with
@@ -1004,17 +1004,16 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   //
   // Draw transform of render surface 1 is described with respect to root.
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      A * A * S1, render_surface1->GetRenderSurface()->draw_transform());
+      A * A * S1, GetRenderSurface(render_surface1)->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      A * A * S1,
-      render_surface1->GetRenderSurface()->screen_space_transform());
+      A * A * S1, GetRenderSurface(render_surface1)->screen_space_transform());
   // Draw transform of render surface 2 is described with respect to render
   // surface 1.
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      SS1 * A * S2, render_surface2->GetRenderSurface()->draw_transform());
+      SS1 * A * S2, GetRenderSurface(render_surface2)->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       A * A * A * S2,
-      render_surface2->GetRenderSurface()->screen_space_transform());
+      GetRenderSurface(render_surface2)->screen_space_transform());
 
   // Sanity check. If these fail there is probably a bug in the test itself.  It
   // is expected that we correctly set up transforms so that the y-component of
@@ -1085,12 +1084,12 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
   ExecuteCalculateDrawProperties(root);
 
   // The child's draw transform should have been taken by its surface.
-  ASSERT_TRUE(child->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(child));
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_draw_transform,
-                                  child->GetRenderSurface()->draw_transform());
+                                  GetRenderSurface(child)->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_child_screen_space_transform,
-      child->GetRenderSurface()->screen_space_transform());
+      GetRenderSurface(child)->screen_space_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_screen_space_transform,
                                   child->ScreenSpaceTransform());
@@ -1166,10 +1165,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
   grand_child->SetBounds(gfx::Size(10, 10));
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(child->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(child));
   // This is the real test, the rest are sanity checks.
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                  child->GetRenderSurface()->draw_transform());
+                                  GetRenderSurface(child)->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
                                   grand_child->DrawTransform());
@@ -1236,7 +1235,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         translate, child->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                    root->GetRenderSurface()->draw_transform());
+                                    GetRenderSurface(root)->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(translate, child->ScreenSpaceTransform());
     EXPECT_EQ(gfx::Rect(50, 50, 100, 100), child->clip_rect());
   }
@@ -1254,7 +1253,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         scale, child->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                    root->GetRenderSurface()->draw_transform());
+                                    GetRenderSurface(root)->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(scale, child->ScreenSpaceTransform());
     EXPECT_EQ(gfx::Rect(0, 0, 200, 200), child->clip_rect());
   }
@@ -1272,7 +1271,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         rotate, child->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                    root->GetRenderSurface()->draw_transform());
+                                    GetRenderSurface(root)->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(rotate, child->ScreenSpaceTransform());
     EXPECT_EQ(gfx::Rect(-4, 0, 104, 104), child->clip_rect());
   }
@@ -1292,7 +1291,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         composite, child->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                    root->GetRenderSurface()->draw_transform());
+                                    GetRenderSurface(root)->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(composite, child->ScreenSpaceTransform());
     EXPECT_EQ(gfx::Rect(89, 103, 208, 208), child->clip_rect());
   }
@@ -1316,7 +1315,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
         device_scaled_translate,
         child->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                    root->GetRenderSurface()->draw_transform());
+                                    GetRenderSurface(root)->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(device_scaled_translate,
                                     child->ScreenSpaceTransform());
     EXPECT_EQ(gfx::Rect(50, 50, 150, 150), child->clip_rect());
@@ -1340,7 +1339,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         page_scaled_translate, child->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                    root->GetRenderSurface()->draw_transform());
+                                    GetRenderSurface(root)->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(page_scaled_translate,
                                     child->ScreenSpaceTransform());
     EXPECT_EQ(gfx::Rect(50, 50, 200, 200), child->clip_rect());
@@ -1362,7 +1361,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         compositeSquared, child->draw_properties().target_space_transform);
     EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                    root->GetRenderSurface()->draw_transform());
+                                    GetRenderSurface(root)->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(compositeSquared,
                                     child->ScreenSpaceTransform());
     EXPECT_EQ(gfx::Rect(254, 316, 428, 428), child->clip_rect());
@@ -1389,7 +1388,7 @@ TEST_F(LayerTreeHostCommonTest,
   // forced to be created. Render surfaces without children or visible content
   // are unexpected at draw time (e.g. we might try to create a content texture
   // of size 0).
-  ASSERT_TRUE(root->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(root));
   EXPECT_EQ(1U, render_surface_list_impl()->size());
 }
 
@@ -1413,8 +1412,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   // Since the layer is transparent, render_surface1->GetRenderSurface() should
   // not have gotten added anywhere.  Also, the drawable content rect should not
   // have been extended by the children.
-  ASSERT_TRUE(root->GetRenderSurface());
-  EXPECT_EQ(0, root->GetRenderSurface()->num_contributors());
+  ASSERT_TRUE(GetRenderSurface(root));
+  EXPECT_EQ(0, GetRenderSurface(root)->num_contributors());
   EXPECT_EQ(1U, render_surface_list.size());
   EXPECT_EQ(root->id(), render_surface_list.at(0)->id());
   EXPECT_EQ(gfx::Rect(), root->drawable_content_rect());
@@ -1448,10 +1447,10 @@ TEST_F(LayerTreeHostCommonTest,
   }
   // The layer is fully transparent, but has a background filter, so it
   // shouldn't be skipped and should be drawn.
-  ASSERT_TRUE(root->GetRenderSurface());
-  EXPECT_EQ(1, root->GetRenderSurface()->num_contributors());
+  ASSERT_TRUE(GetRenderSurface(root));
+  EXPECT_EQ(1, GetRenderSurface(root)->num_contributors());
   EXPECT_EQ(gfx::RectF(0, 0, 10, 10),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
   EffectTree& effect_tree =
       root->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(render_surface1->effect_tree_index());
@@ -1504,15 +1503,15 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-  ASSERT_TRUE(parent->GetRenderSurface());
-  EXPECT_EQ(2, parent->GetRenderSurface()->num_contributors());
+  ASSERT_TRUE(GetRenderSurface(parent));
+  EXPECT_EQ(2, GetRenderSurface(parent)->num_contributors());
   EXPECT_EQ(4U, render_surface_list.size());
 
   // The rectangle enclosing child1 and child2 (0,0 50x50), expanded for the
   // blur (-30,-30 110x110), and then scaled by the scale matrix
   // (-60,-60 220x220).
   EXPECT_EQ(gfx::RectF(-60, -60, 220, 220),
-            parent->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(parent)->DrawableContentRect());
 }
 
 TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilter) {
@@ -1532,9 +1531,9 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilter) {
   // The render surface's size should be unaffected by the offset image filter;
   // it need only have a drawable content rect large enough to contain the
   // contents (at the new offset).
-  ASSERT_TRUE(child->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(child));
   EXPECT_EQ(gfx::RectF(50, 50, 25, 25),
-            child->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(child)->DrawableContentRect());
 }
 
 TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilterHighDpi) {
@@ -1559,9 +1558,9 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilterHighDpi) {
   // it need only have a drawable content rect large enough to contain the
   // contents (at the new offset). All coordinates should be scaled by 2,
   // corresponding to the device scale factor.
-  ASSERT_TRUE(child->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(child));
   EXPECT_EQ(gfx::RectF(100, 100, 50, 50),
-            child->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(child)->DrawableContentRect());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
@@ -1578,10 +1577,10 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
 
   // Since the child layer has a blend mode other than normal, it should get
   // its own render surface.
-  ASSERT_TRUE(child->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(child));
   EXPECT_EQ(1.0f, child->draw_opacity());
-  EXPECT_EQ(0.5f, child->GetRenderSurface()->draw_opacity());
-  EXPECT_EQ(SkBlendMode::kMultiply, child->GetRenderSurface()->BlendMode());
+  EXPECT_EQ(0.5f, GetRenderSurface(child)->draw_opacity());
+  EXPECT_EQ(SkBlendMode::kMultiply, GetRenderSurface(child)->BlendMode());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceDrawOpacity) {
@@ -1603,13 +1602,13 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceDrawOpacity) {
   surface2->test_properties()->force_render_surface = true;
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(surface1->GetRenderSurface());
-  ASSERT_FALSE(not_surface->GetRenderSurface());
-  ASSERT_TRUE(surface2->GetRenderSurface());
-  EXPECT_EQ(0.5f, surface1->GetRenderSurface()->draw_opacity());
+  ASSERT_TRUE(GetRenderSurface(surface1));
+  ASSERT_FALSE(GetRenderSurface(not_surface));
+  ASSERT_TRUE(GetRenderSurface(surface2));
+  EXPECT_EQ(0.5f, GetRenderSurface(surface1)->draw_opacity());
   // surface2's draw opacity should include the opacity of not-surface and
   // itself, but not the opacity of surface1.
-  EXPECT_EQ(0.25f, surface2->GetRenderSurface()->draw_opacity());
+  EXPECT_EQ(0.25f, GetRenderSurface(surface2)->draw_opacity());
 }
 
 TEST_F(LayerTreeHostCommonTest, DrawOpacityWhenCannotRenderToSeparateSurface) {
@@ -1687,16 +1686,16 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
     ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
     // The root layer always creates a render surface
-    EXPECT_TRUE(root->GetRenderSurface());
-    EXPECT_TRUE(render_surface1->GetRenderSurface());
+    EXPECT_TRUE(GetRenderSurface(root));
+    EXPECT_TRUE(GetRenderSurface(render_surface1));
   }
 
   {
     render_surface1->test_properties()->force_render_surface = false;
     render_surface1->layer_tree_impl()->property_trees()->needs_rebuild = true;
     ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
-    EXPECT_TRUE(root->GetRenderSurface());
-    EXPECT_FALSE(render_surface1->GetRenderSurface());
+    EXPECT_TRUE(GetRenderSurface(root));
+    EXPECT_FALSE(GetRenderSurface(render_surface1));
   }
 }
 
@@ -1722,9 +1721,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
   grand_child->test_properties()->should_flatten_transform = false;
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(parent->GetRenderSurface());
-  EXPECT_FALSE(child->GetRenderSurface());
-  EXPECT_FALSE(grand_child->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(parent));
+  EXPECT_FALSE(GetRenderSurface(child));
+  EXPECT_FALSE(GetRenderSurface(grand_child));
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(), child->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
@@ -1862,15 +1861,15 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
   // Case 1: nothing is clipped except the root render surface.
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(root->GetRenderSurface());
-  ASSERT_TRUE(child2->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(root));
+  ASSERT_TRUE(GetRenderSurface(child2));
 
   EXPECT_FALSE(root->is_clipped());
-  EXPECT_TRUE(root->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(GetRenderSurface(root)->is_clipped());
   EXPECT_FALSE(parent->is_clipped());
   EXPECT_FALSE(child1->is_clipped());
   EXPECT_FALSE(child2->is_clipped());
-  EXPECT_FALSE(child2->GetRenderSurface()->is_clipped());
+  EXPECT_FALSE(GetRenderSurface(child2)->is_clipped());
   EXPECT_FALSE(grand_child->is_clipped());
   EXPECT_FALSE(leaf_node1->is_clipped());
   EXPECT_FALSE(leaf_node2->is_clipped());
@@ -1884,15 +1883,15 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
 
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(root->GetRenderSurface());
-  ASSERT_TRUE(child2->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(root));
+  ASSERT_TRUE(GetRenderSurface(child2));
 
   EXPECT_FALSE(root->is_clipped());
-  EXPECT_TRUE(root->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(GetRenderSurface(root)->is_clipped());
   EXPECT_TRUE(parent->is_clipped());
   EXPECT_TRUE(child1->is_clipped());
   EXPECT_FALSE(child2->is_clipped());
-  EXPECT_TRUE(child2->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(GetRenderSurface(child2)->is_clipped());
   EXPECT_TRUE(grand_child->is_clipped());
   EXPECT_TRUE(leaf_node1->is_clipped());
   EXPECT_FALSE(leaf_node2->is_clipped());
@@ -1906,15 +1905,15 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
 
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(root->GetRenderSurface());
-  ASSERT_TRUE(child2->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(root));
+  ASSERT_TRUE(GetRenderSurface(child2));
 
   EXPECT_FALSE(root->is_clipped());
-  EXPECT_TRUE(root->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(GetRenderSurface(root)->is_clipped());
   EXPECT_FALSE(parent->is_clipped());
   EXPECT_FALSE(child1->is_clipped());
   EXPECT_TRUE(child2->is_clipped());
-  EXPECT_FALSE(child2->GetRenderSurface()->is_clipped());
+  EXPECT_FALSE(GetRenderSurface(child2)->is_clipped());
   EXPECT_FALSE(grand_child->is_clipped());
   EXPECT_FALSE(leaf_node1->is_clipped());
   EXPECT_TRUE(leaf_node2->is_clipped());
@@ -2197,18 +2196,18 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
   leaf_node4->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(parent);
 
-  ASSERT_TRUE(grand_child1->GetRenderSurface());
-  ASSERT_TRUE(grand_child2->GetRenderSurface());
-  ASSERT_TRUE(grand_child3->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(grand_child1));
+  ASSERT_TRUE(GetRenderSurface(grand_child2));
+  ASSERT_TRUE(GetRenderSurface(grand_child3));
 
   // Surfaces are clipped by their parent, but un-affected by the owning layer's
   // MasksToBounds.
   EXPECT_EQ(gfx::Rect(0, 0, 20, 20),
-            grand_child1->GetRenderSurface()->clip_rect());
+            GetRenderSurface(grand_child1)->clip_rect());
   EXPECT_EQ(gfx::Rect(0, 0, 20, 20),
-            grand_child2->GetRenderSurface()->clip_rect());
+            GetRenderSurface(grand_child2)->clip_rect());
   EXPECT_EQ(gfx::Rect(0, 0, 20, 20),
-            grand_child3->GetRenderSurface()->clip_rect());
+            GetRenderSurface(grand_child3)->clip_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
@@ -2254,13 +2253,13 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   // bounds in target space. The only thing that changes when surfaces are
   // disabled is that target space is always screen space.
   ExecuteCalculateDrawProperties(root);
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_FALSE(parent->GetRenderSurface());
-  EXPECT_TRUE(child1->GetRenderSurface());
-  EXPECT_FALSE(child2->GetRenderSurface());
-  EXPECT_TRUE(grand_child->GetRenderSurface());
-  EXPECT_FALSE(leaf_node1->GetRenderSurface());
-  EXPECT_FALSE(leaf_node2->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_FALSE(GetRenderSurface(parent));
+  EXPECT_TRUE(GetRenderSurface(child1));
+  EXPECT_FALSE(GetRenderSurface(child2));
+  EXPECT_TRUE(GetRenderSurface(grand_child));
+  EXPECT_FALSE(GetRenderSurface(leaf_node1));
+  EXPECT_FALSE(GetRenderSurface(leaf_node2));
   EXPECT_FALSE(root->is_clipped());
   EXPECT_FALSE(parent->is_clipped());
   EXPECT_FALSE(child1->is_clipped());
@@ -2268,10 +2267,10 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   EXPECT_FALSE(grand_child->is_clipped());
   EXPECT_FALSE(leaf_node1->is_clipped());
   EXPECT_FALSE(leaf_node2->is_clipped());
-  EXPECT_TRUE(root->GetRenderSurface()->is_clipped());
-  EXPECT_FALSE(child1->GetRenderSurface()->is_clipped());
-  EXPECT_FALSE(grand_child->GetRenderSurface()->is_clipped());
-  EXPECT_EQ(gfx::Rect(100, 100), root->GetRenderSurface()->clip_rect());
+  EXPECT_TRUE(GetRenderSurface(root)->is_clipped());
+  EXPECT_FALSE(GetRenderSurface(child1)->is_clipped());
+  EXPECT_FALSE(GetRenderSurface(grand_child)->is_clipped());
+  EXPECT_EQ(gfx::Rect(100, 100), GetRenderSurface(root)->clip_rect());
 
   ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
   EXPECT_FALSE(root->is_clipped());
@@ -2281,8 +2280,8 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   EXPECT_FALSE(grand_child->is_clipped());
   EXPECT_FALSE(leaf_node1->is_clipped());
   EXPECT_FALSE(leaf_node2->is_clipped());
-  EXPECT_TRUE(root->GetRenderSurface()->is_clipped());
-  EXPECT_EQ(gfx::Rect(100, 100), root->GetRenderSurface()->clip_rect());
+  EXPECT_TRUE(GetRenderSurface(root)->is_clipped());
+  EXPECT_EQ(gfx::Rect(100, 100), GetRenderSurface(root)->clip_rect());
 
   // Case 2: The root is clipped. In this case, layers that draw into the root
   // render surface are clipped by the root's bounds.
@@ -2292,25 +2291,25 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   child1->test_properties()->force_render_surface = true;
   grand_child->test_properties()->force_render_surface = true;
   ExecuteCalculateDrawProperties(root);
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_FALSE(parent->GetRenderSurface());
-  EXPECT_TRUE(child1->GetRenderSurface());
-  EXPECT_FALSE(child2->GetRenderSurface());
-  EXPECT_TRUE(grand_child->GetRenderSurface());
-  EXPECT_FALSE(leaf_node1->GetRenderSurface());
-  EXPECT_FALSE(leaf_node2->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_FALSE(GetRenderSurface(parent));
+  EXPECT_TRUE(GetRenderSurface(child1));
+  EXPECT_FALSE(GetRenderSurface(child2));
+  EXPECT_TRUE(GetRenderSurface(grand_child));
+  EXPECT_FALSE(GetRenderSurface(leaf_node1));
+  EXPECT_FALSE(GetRenderSurface(leaf_node2));
   EXPECT_TRUE(root->is_clipped());
   EXPECT_TRUE(parent->is_clipped());
   EXPECT_FALSE(child1->is_clipped());
-  EXPECT_TRUE(child1->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(GetRenderSurface(child1)->is_clipped());
   EXPECT_TRUE(child2->is_clipped());
   EXPECT_FALSE(grand_child->is_clipped());
-  EXPECT_FALSE(grand_child->GetRenderSurface()->is_clipped());
+  EXPECT_FALSE(GetRenderSurface(grand_child)->is_clipped());
   EXPECT_FALSE(leaf_node1->is_clipped());
   EXPECT_TRUE(leaf_node2->is_clipped());
   EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
   EXPECT_EQ(gfx::Rect(100, 100), parent->clip_rect());
-  EXPECT_EQ(gfx::Rect(100, 100), child1->GetRenderSurface()->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), GetRenderSurface(child1)->clip_rect());
   EXPECT_EQ(gfx::Rect(100, 100), child2->clip_rect());
   EXPECT_EQ(gfx::Rect(100, 100), leaf_node2->clip_rect());
 
@@ -2345,39 +2344,39 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   child1->test_properties()->force_render_surface = true;
   grand_child->test_properties()->force_render_surface = true;
   ExecuteCalculateDrawProperties(root);
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_FALSE(parent->GetRenderSurface());
-  EXPECT_TRUE(child1->GetRenderSurface());
-  EXPECT_FALSE(child2->GetRenderSurface());
-  EXPECT_TRUE(grand_child->GetRenderSurface());
-  EXPECT_FALSE(leaf_node1->GetRenderSurface());
-  EXPECT_FALSE(leaf_node2->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_FALSE(GetRenderSurface(parent));
+  EXPECT_TRUE(GetRenderSurface(child1));
+  EXPECT_FALSE(GetRenderSurface(child2));
+  EXPECT_TRUE(GetRenderSurface(grand_child));
+  EXPECT_FALSE(GetRenderSurface(leaf_node1));
+  EXPECT_FALSE(GetRenderSurface(leaf_node2));
   EXPECT_FALSE(root->is_clipped());
-  EXPECT_TRUE(root->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(GetRenderSurface(root)->is_clipped());
   EXPECT_TRUE(parent->is_clipped());
   EXPECT_TRUE(child1->is_clipped());
   EXPECT_TRUE(child2->is_clipped());
   EXPECT_FALSE(grand_child->is_clipped());
-  EXPECT_TRUE(grand_child->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(GetRenderSurface(grand_child)->is_clipped());
   EXPECT_FALSE(leaf_node1->is_clipped());
   EXPECT_TRUE(leaf_node2->is_clipped());
-  EXPECT_EQ(gfx::Rect(100, 100), root->GetRenderSurface()->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), GetRenderSurface(root)->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
   EXPECT_EQ(gfx::Rect(800, 800), child1->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), child2->clip_rect());
-  EXPECT_EQ(gfx::Rect(800, 800), grand_child->GetRenderSurface()->clip_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), GetRenderSurface(grand_child)->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), leaf_node2->clip_rect());
 
   ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
   EXPECT_FALSE(root->is_clipped());
-  EXPECT_TRUE(root->GetRenderSurface()->is_clipped());
+  EXPECT_TRUE(GetRenderSurface(root)->is_clipped());
   EXPECT_TRUE(parent->is_clipped());
   EXPECT_TRUE(child1->is_clipped());
   EXPECT_TRUE(child2->is_clipped());
   EXPECT_TRUE(grand_child->is_clipped());
   EXPECT_TRUE(leaf_node1->is_clipped());
   EXPECT_TRUE(leaf_node2->is_clipped());
-  EXPECT_EQ(gfx::Rect(100, 100), root->GetRenderSurface()->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), GetRenderSurface(root)->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
   EXPECT_EQ(gfx::Rect(6, 6, 396, 396), child1->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), child2->clip_rect());
@@ -2577,33 +2576,33 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
 
   // Only layers that are associated with render surfaces should have an actual
   // RenderSurface() value.
-  ASSERT_TRUE(root->GetRenderSurface());
-  ASSERT_FALSE(child_of_root->GetRenderSurface());
-  ASSERT_FALSE(grand_child_of_root->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(root));
+  ASSERT_FALSE(GetRenderSurface(child_of_root));
+  ASSERT_FALSE(GetRenderSurface(grand_child_of_root));
 
-  ASSERT_TRUE(render_surface1->GetRenderSurface());
-  ASSERT_FALSE(child_of_rs1->GetRenderSurface());
-  ASSERT_FALSE(grand_child_of_rs1->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface1));
+  ASSERT_FALSE(GetRenderSurface(child_of_rs1));
+  ASSERT_FALSE(GetRenderSurface(grand_child_of_rs1));
 
-  ASSERT_TRUE(render_surface2->GetRenderSurface());
-  ASSERT_FALSE(child_of_rs2->GetRenderSurface());
-  ASSERT_FALSE(grand_child_of_rs2->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface2));
+  ASSERT_FALSE(GetRenderSurface(child_of_rs2));
+  ASSERT_FALSE(GetRenderSurface(grand_child_of_rs2));
 
   // Verify all render target accessors
-  EXPECT_EQ(root->GetRenderSurface(), root->render_target());
-  EXPECT_EQ(root->GetRenderSurface(), child_of_root->render_target());
-  EXPECT_EQ(root->GetRenderSurface(), grand_child_of_root->render_target());
+  EXPECT_EQ(GetRenderSurface(root), root->render_target());
+  EXPECT_EQ(GetRenderSurface(root), child_of_root->render_target());
+  EXPECT_EQ(GetRenderSurface(root), grand_child_of_root->render_target());
 
-  EXPECT_EQ(render_surface1->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface1),
             render_surface1->render_target());
-  EXPECT_EQ(render_surface1->GetRenderSurface(), child_of_rs1->render_target());
-  EXPECT_EQ(render_surface1->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface1), child_of_rs1->render_target());
+  EXPECT_EQ(GetRenderSurface(render_surface1),
             grand_child_of_rs1->render_target());
 
-  EXPECT_EQ(render_surface2->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface2),
             render_surface2->render_target());
-  EXPECT_EQ(render_surface2->GetRenderSurface(), child_of_rs2->render_target());
-  EXPECT_EQ(render_surface2->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface2), child_of_rs2->render_target());
+  EXPECT_EQ(GetRenderSurface(render_surface2),
             grand_child_of_rs2->render_target());
 
   // Verify screen_space_transform_is_animating values
@@ -3027,7 +3026,7 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::RectF(100.f, 100.f),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
   // In target space, not clipped.
   EXPECT_EQ(gfx::Rect(60, 70, 100, 100), root->drawable_content_rect());
   // In layer space, clipped.
@@ -3052,7 +3051,7 @@ TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsForSimpleLayers) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::RectF(100.f, 100.f),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
 
   // Layers that do not draw content should have empty visible_layer_rects.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), root->visible_layer_rect());
@@ -3091,7 +3090,7 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::RectF(100.f, 100.f),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
 
   // Layers that do not draw content should have empty visible content rects.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), root->visible_layer_rect());
@@ -3148,7 +3147,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithClippingAndFilters) {
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(50, 50, 10, 10), filter_child->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(10, 10), filter->GetRenderSurface()->content_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), GetRenderSurface(filter)->content_rect());
 
   FilterOperations blur_filter;
   blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
@@ -3159,7 +3158,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithClippingAndFilters) {
 
   EXPECT_EQ(gfx::Rect(38, 38, 34, 34), filter_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(-12, -12, 34, 34),
-            filter->GetRenderSurface()->content_rect());
+            GetRenderSurface(filter)->content_rect());
 
   gfx::Transform vertical_flip;
   vertical_flip.Scale(1, -1);
@@ -3176,7 +3175,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithClippingAndFilters) {
 
   EXPECT_EQ(gfx::Rect(50, 40, 10, 20), filter_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, -10, 10, 20),
-            filter->GetRenderSurface()->content_rect());
+            GetRenderSurface(filter)->content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleRectWithScalingClippingAndFilters) {
@@ -3201,7 +3200,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithScalingClippingAndFilters) {
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(50, 50, 10, 10), filter_child->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(30, 30), filter->GetRenderSurface()->content_rect());
+  EXPECT_EQ(gfx::Rect(30, 30), GetRenderSurface(filter)->content_rect());
 
   FilterOperations blur_filter;
   blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
@@ -3212,7 +3211,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithScalingClippingAndFilters) {
 
   EXPECT_EQ(gfx::Rect(38, 38, 34, 34), filter_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(-36, -36, 102, 102),
-            filter->GetRenderSurface()->content_rect());
+            GetRenderSurface(filter)->content_rect());
 
   gfx::Transform vertical_flip;
   vertical_flip.Scale(1, -1);
@@ -3229,7 +3228,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithScalingClippingAndFilters) {
 
   EXPECT_EQ(gfx::Rect(50, 40, 10, 20), filter_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(0, -30, 30, 60),
-            filter->GetRenderSurface()->content_rect());
+            GetRenderSurface(filter)->content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipRectWithClipParentAndFilters) {
@@ -3327,10 +3326,10 @@ TEST_F(LayerTreeHostCommonTest,
   child3->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(render_surface->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface));
 
   EXPECT_EQ(gfx::RectF(100.f, 100.f),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
 
   // Layers that do not draw content should have empty visible content rects.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), root->visible_layer_rect());
@@ -3339,7 +3338,7 @@ TEST_F(LayerTreeHostCommonTest,
   // An unclipped surface grows its DrawableContentRect to include all drawable
   // regions of the subtree.
   EXPECT_EQ(gfx::RectF(5.f, 5.f, 170.f, 170.f),
-            render_surface->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface)->DrawableContentRect());
 
   // All layers that draw content into the unclipped surface are also unclipped.
   // Only the viewport clip should apply
@@ -3554,12 +3553,12 @@ TEST_F(LayerTreeHostCommonTest,
       root, gfx::Size(), &render_surface_list_impl);
 
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-  ASSERT_TRUE(root->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(root));
   EXPECT_FALSE(root->is_clipped());
 
   gfx::Rect empty;
-  EXPECT_EQ(empty, root->GetRenderSurface()->clip_rect());
-  EXPECT_TRUE(root->GetRenderSurface()->is_clipped());
+  EXPECT_EQ(empty, GetRenderSurface(root)->clip_rect());
+  EXPECT_TRUE(GetRenderSurface(root)->is_clipped());
 
   // Visible content rect calculation will check if the target surface is
   // clipped or not. An empty clip rect does not indicate the render surface
@@ -3713,11 +3712,11 @@ TEST_F(LayerTreeHostCommonTest, OcclusionBySiblingOfTarget) {
   host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      surface_ptr->GetRenderSurface()->draw_transform(), translate);
+      GetRenderSurface(surface_ptr)->draw_transform(), translate);
   // surface_sibling draws into the root render surface and occludes
   // surface_child's contents.
   Occlusion actual_occlusion =
-      surface_child_ptr->GetRenderSurface()->occlusion_in_content_space();
+      GetRenderSurface(surface_child_ptr)->occlusion_in_content_space();
   Occlusion expected_occlusion(translate, SimpleEnclosedRegion(gfx::Rect()),
                                SimpleEnclosedRegion(gfx::Rect(200, 200)));
   EXPECT_TRUE(expected_occlusion.IsEqual(actual_occlusion));
@@ -3870,10 +3869,10 @@ TEST_F(LayerTreeHostCommonTest,
   child3->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(render_surface->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface));
 
   EXPECT_EQ(gfx::RectF(100.f, 100.f),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
 
   // Layers that do not draw content should have empty visible content rects.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), root->visible_layer_rect());
@@ -3882,7 +3881,7 @@ TEST_F(LayerTreeHostCommonTest,
   // A clipped surface grows its DrawableContentRect to include all drawable
   // regions of the subtree, but also gets clamped by the ancestor's clip.
   EXPECT_EQ(gfx::RectF(5.f, 5.f, 95.f, 95.f),
-            render_surface->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface)->DrawableContentRect());
 
   // All layers that draw content into the surface have their visible content
   // rect clipped by the surface clip rect.
@@ -3923,11 +3922,11 @@ TEST_F(LayerTreeHostCommonTest,
   child3->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(render_surface1->GetRenderSurface());
-  ASSERT_TRUE(render_surface2->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface1));
+  ASSERT_TRUE(GetRenderSurface(render_surface2));
 
   EXPECT_EQ(gfx::RectF(100.f, 100.f),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
 
   // Layers that do not draw content should have empty visible content rects.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), root->visible_layer_rect());
@@ -3937,13 +3936,13 @@ TEST_F(LayerTreeHostCommonTest,
   // A clipped surface grows its DrawableContentRect to include all drawable
   // regions of the subtree, but also gets clamped by the ancestor's clip.
   EXPECT_EQ(gfx::RectF(5.f, 5.f, 95.f, 95.f),
-            render_surface1->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface1)->DrawableContentRect());
 
   // render_surface1 lives in the "unclipped universe" of render_surface1, and
   // is only implicitly clipped by render_surface1's content rect. So,
   // render_surface2 grows to enclose all drawable content of its subtree.
   EXPECT_EQ(gfx::RectF(5.f, 5.f, 170.f, 170.f),
-            render_surface2->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface2)->DrawableContentRect());
 
   // All layers that draw content into render_surface2 think they are unclipped
   // by the surface. So, only the viewport clip applies.
@@ -4054,12 +4053,11 @@ TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
 
   float device_scale_factor = 1.f;
   ExecuteCalculateDrawProperties(root, device_scale_factor);
-  EXPECT_EQ(gfx::Rect(50, 50),
-            render_surface2->GetRenderSurface()->clip_rect());
+  EXPECT_EQ(gfx::Rect(50, 50), GetRenderSurface(render_surface2)->clip_rect());
   device_scale_factor = 2.f;
   ExecuteCalculateDrawProperties(root, device_scale_factor);
   EXPECT_EQ(gfx::Rect(100, 100),
-            render_surface2->GetRenderSurface()->clip_rect());
+            GetRenderSurface(render_surface2)->clip_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWhenLayerNotDrawn) {
@@ -4075,11 +4073,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWhenLayerNotDrawn) {
   test_layer->SetBounds(gfx::Size(150, 150));
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(100, 100), surface->GetRenderSurface()->content_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), GetRenderSurface(surface)->content_rect());
 
   test_layer->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(150, 150), surface->GetRenderSurface()->content_rect());
+  EXPECT_EQ(gfx::Rect(150, 150), GetRenderSurface(surface)->content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleRectsMultipleSurfaces) {
@@ -4187,10 +4185,10 @@ TEST_F(LayerTreeHostCommonTest,
   child1->test_properties()->transform_origin = gfx::Point3F(25.f, 25.f, 0.f);
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(render_surface->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface));
 
   EXPECT_EQ(gfx::RectF(100.f, 100.f),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
 
   // Layers that do not draw content should have empty visible content rects.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), root->visible_layer_rect());
@@ -4205,7 +4203,7 @@ TEST_F(LayerTreeHostCommonTest,
                 diagonal_radius * 2,
                 diagonal_radius * 2);
   EXPECT_EQ(gfx::RectF(expected_surface_drawable_content),
-            render_surface->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface)->DrawableContentRect());
 
   // All layers that draw content into the unclipped surface are also unclipped.
   EXPECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visible_layer_rect());
@@ -4234,7 +4232,7 @@ TEST_F(LayerTreeHostCommonTest,
   child1->test_properties()->transform_origin = gfx::Point3F(25.f, 25.f, 0.f);
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(render_surface->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface));
 
   // The clipped surface clamps the DrawableContentRect that encloses the
   // rotated layer.
@@ -4246,7 +4244,7 @@ TEST_F(LayerTreeHostCommonTest,
   gfx::RectF expected_surface_drawable_content(
       gfx::IntersectRects(unclipped_surface_content, gfx::Rect(50, 50)));
   EXPECT_EQ(expected_surface_drawable_content,
-            render_surface->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface)->DrawableContentRect());
 
   // On the clipped surface, only a quarter  of the child1 is visible, but when
   // rotating it back to  child1's content space, the actual enclosing rect ends
@@ -4292,20 +4290,20 @@ TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsInHighDPI) {
   float device_scale_factor = 2.f;
   ExecuteCalculateDrawProperties(root, device_scale_factor);
 
-  ASSERT_TRUE(render_surface1->GetRenderSurface());
-  ASSERT_TRUE(render_surface2->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(render_surface1));
+  ASSERT_TRUE(GetRenderSurface(render_surface2));
 
   // drawable_content_rects for all layers and surfaces are scaled by
   // device_scale_factor.
   EXPECT_EQ(gfx::RectF(200.f, 200.f),
-            root->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(root)->DrawableContentRect());
   EXPECT_EQ(gfx::RectF(10.f, 10.f, 190.f, 190.f),
-            render_surface1->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface1)->DrawableContentRect());
 
   // render_surface2 lives in the "unclipped universe" of render_surface1, and
   // is only implicitly clipped by render_surface1.
   EXPECT_EQ(gfx::RectF(10.f, 10.f, 350.f, 350.f),
-            render_surface2->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface2)->DrawableContentRect());
 
   EXPECT_EQ(gfx::Rect(10, 10, 100, 100), child1->drawable_content_rect());
   EXPECT_EQ(gfx::Rect(150, 150, 100, 100), child2->drawable_content_rect());
@@ -4397,14 +4395,14 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created.
-  EXPECT_FALSE(front_facing_child->GetRenderSurface());
-  EXPECT_FALSE(back_facing_child->GetRenderSurface());
-  EXPECT_TRUE(front_facing_surface->GetRenderSurface());
-  EXPECT_TRUE(back_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(front_facing_child_of_front_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(back_facing_child_of_front_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(front_facing_child_of_back_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(back_facing_child_of_back_facing_surface->GetRenderSurface());
+  EXPECT_FALSE(GetRenderSurface(front_facing_child));
+  EXPECT_FALSE(GetRenderSurface(back_facing_child));
+  EXPECT_TRUE(GetRenderSurface(front_facing_surface));
+  EXPECT_TRUE(GetRenderSurface(back_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(front_facing_child_of_front_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(back_facing_child_of_front_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(front_facing_child_of_back_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(back_facing_child_of_back_facing_surface));
 
   EXPECT_EQ(3u, update_layer_list_impl()->size());
   EXPECT_TRUE(UpdateLayerListImplContains(front_facing_child->id()));
@@ -4505,15 +4503,15 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created and used.
-  EXPECT_FALSE(front_facing_child->GetRenderSurface());
-  EXPECT_FALSE(back_facing_child->GetRenderSurface());
-  EXPECT_TRUE(front_facing_surface->GetRenderSurface());
+  EXPECT_FALSE(GetRenderSurface(front_facing_child));
+  EXPECT_FALSE(GetRenderSurface(back_facing_child));
+  EXPECT_TRUE(GetRenderSurface(front_facing_surface));
   // We expect that a has_render_surface was created but not used.
-  EXPECT_TRUE(back_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(front_facing_child_of_front_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(back_facing_child_of_front_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(front_facing_child_of_back_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(back_facing_child_of_back_facing_surface->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(back_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(front_facing_child_of_front_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(back_facing_child_of_front_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(front_facing_child_of_back_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(back_facing_child_of_back_facing_surface));
 
   EXPECT_EQ(3u, update_layer_list_impl()->size());
 
@@ -4579,11 +4577,11 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
-  EXPECT_FALSE(child->GetRenderSurface());
-  EXPECT_TRUE(animating_surface->GetRenderSurface());
-  EXPECT_FALSE(child_of_animating_surface->GetRenderSurface());
-  EXPECT_FALSE(animating_child->GetRenderSurface());
-  EXPECT_FALSE(child2->GetRenderSurface());
+  EXPECT_FALSE(GetRenderSurface(child));
+  EXPECT_TRUE(GetRenderSurface(animating_surface));
+  EXPECT_FALSE(GetRenderSurface(child_of_animating_surface));
+  EXPECT_FALSE(GetRenderSurface(animating_child));
+  EXPECT_FALSE(GetRenderSurface(child2));
 
   EXPECT_EQ(1u, update_layer_list_impl()->size());
 
@@ -4639,12 +4637,12 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created and used.
-  EXPECT_TRUE(front_facing_surface->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(front_facing_surface));
 
   // We expect the render surface to have been created, but remain unused.
-  EXPECT_TRUE(back_facing_surface->GetRenderSurface());
-  EXPECT_FALSE(child1->GetRenderSurface());
-  EXPECT_FALSE(child2->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(back_facing_surface));
+  EXPECT_FALSE(GetRenderSurface(child1));
+  EXPECT_FALSE(GetRenderSurface(child2));
 
   EXPECT_EQ(2u, update_layer_list_impl()->size());
   EXPECT_TRUE(UpdateLayerListImplContains(front_facing_surface->id()));
@@ -4828,7 +4826,7 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
       device_scale_factor * page_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_perspective_surface_draw_transform,
-      perspective_surface->GetRenderSurface()->draw_transform());
+      GetRenderSurface(perspective_surface)->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_perspective_surface_layer_draw_transform,
       perspective_surface->DrawTransform());
@@ -4971,20 +4969,20 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
       device_scale_factor * child->position().x(),
       device_scale_factor * child->position().y());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_render_surface_draw_transform,
-                                  child->GetRenderSurface()->draw_transform());
+                                  GetRenderSurface(child)->draw_transform());
 
   gfx::Transform expected_surface_draw_transform;
   expected_surface_draw_transform.Translate(device_scale_factor * 2.f,
                                             device_scale_factor * 2.f);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_surface_draw_transform,
-                                  child->GetRenderSurface()->draw_transform());
+                                  GetRenderSurface(child)->draw_transform());
 
   gfx::Transform expected_surface_screen_space_transform;
   expected_surface_screen_space_transform.Translate(device_scale_factor * 2.f,
                                                     device_scale_factor * 2.f);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_surface_screen_space_transform,
-      child->GetRenderSurface()->screen_space_transform());
+      GetRenderSurface(child)->screen_space_transform());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -5006,11 +5004,11 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(2u, render_surface_list_impl()->size());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                  child->GetRenderSurface()->draw_transform());
+                                  GetRenderSurface(child)->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
-                                  child->GetRenderSurface()->draw_transform());
+                                  GetRenderSurface(child)->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(), child->GetRenderSurface()->screen_space_transform());
+      gfx::Transform(), GetRenderSurface(child)->screen_space_transform());
 }
 
 TEST_F(LayerTreeHostCommonTest, LayerSearch) {
@@ -5044,7 +5042,7 @@ TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
   grand_child->SetBounds(gfx::Size(10, 10));
   grand_child->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(root);
-  EXPECT_FALSE(child->GetRenderSurface());
+  EXPECT_FALSE(GetRenderSurface(child));
 }
 
 TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
@@ -5090,7 +5088,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   // We should have one render surface and one layer. The child
   // layer should not be included as its transparent.
   ASSERT_EQ(1u, render_surface_list.size());
-  ASSERT_EQ(1, root_layer->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer)->num_contributors());
 
   // If the root itself is hidden, the child should not be drawn and should not
   // raster even if it has an animating opacity.
@@ -5392,7 +5390,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   // We should have one render surface and two layers. The grand child has
   // hidden itself.
   ASSERT_EQ(1u, render_surface_list.size());
-  ASSERT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(2, GetRenderSurface(root_layer)->num_contributors());
   EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
   EXPECT_TRUE(child_layer->contributes_to_drawn_render_surface());
   EXPECT_FALSE(grand_child_layer->contributes_to_drawn_render_surface());
@@ -5436,7 +5434,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   // We should have one render surface and one layer. The child has
   // hidden itself and the grand child.
   ASSERT_EQ(1u, render_surface_list.size());
-  ASSERT_EQ(1, root_layer->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer)->num_contributors());
   EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
   EXPECT_FALSE(child_layer->contributes_to_drawn_render_surface());
   EXPECT_FALSE(grand_child_layer->contributes_to_drawn_render_surface());
@@ -5546,7 +5544,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   EXPECT_EQ(copy_layer->id(), render_surface_list.at(3)->id());
 
   // The root render surface should have 2 contributing layers.
-  EXPECT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
+  EXPECT_EQ(2, GetRenderSurface(root_layer)->num_contributors());
   EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
   EXPECT_FALSE(copy_grand_parent_layer->contributes_to_drawn_render_surface());
   EXPECT_FALSE(copy_grand_parent_sibling_before_layer
@@ -5556,11 +5554,11 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
 
   // Nothing actually draws into the copy parent, so only the copy_layer will
   // appear in its list, since it needs to be drawn for the copy request.
-  ASSERT_EQ(1, copy_parent_layer->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(copy_parent_layer)->num_contributors());
   EXPECT_FALSE(copy_parent_layer->contributes_to_drawn_render_surface());
 
   // The copy layer's render surface should have 2 contributing layers.
-  ASSERT_EQ(2, copy_layer->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(2, GetRenderSurface(copy_layer)->num_contributors());
   EXPECT_TRUE(copy_layer->contributes_to_drawn_render_surface());
   EXPECT_TRUE(copy_child_layer->contributes_to_drawn_render_surface());
   EXPECT_FALSE(copy_grand_child_layer->contributes_to_drawn_render_surface());
@@ -5584,7 +5582,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
 
   // Though copy_layer is drawn, it shouldn't contribute to drawn surface as its
   // actually hidden.
-  EXPECT_FALSE(copy_layer->GetRenderSurface()->contributes_to_drawn_surface());
+  EXPECT_FALSE(GetRenderSurface(copy_layer)->contributes_to_drawn_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
@@ -5635,7 +5633,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
 
   // The root render surface should have only 2 contributing layer, since the
   // other layers are clipped away.
-  ASSERT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(2, GetRenderSurface(root_layer)->num_contributors());
   EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
 }
 
@@ -5800,8 +5798,8 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
   clip_child->SetBounds(gfx::Size(10, 10));
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_TRUE(root->GetRenderSurface());
-  ASSERT_TRUE(render_surface->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(root));
+  ASSERT_TRUE(GetRenderSurface(render_surface));
 
   // Ensure that we've inherited our clip parent's clip and weren't affected
   // by the intervening clip layer.
@@ -5812,14 +5810,14 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
   // Ensure that the render surface reports a content rect that has been grown
   // to accomodate for the clip child.
   ASSERT_EQ(gfx::Rect(1, 1, 20, 20),
-            render_surface->GetRenderSurface()->content_rect());
+            GetRenderSurface(render_surface)->content_rect());
 
   // The above check implies the two below, but they nicely demonstrate that
   // we've grown, despite the intervening layer's clip.
   ASSERT_TRUE(clip_parent->clip_rect().Contains(
-      render_surface->GetRenderSurface()->content_rect()));
+      GetRenderSurface(render_surface)->content_rect()));
   ASSERT_FALSE(intervening->clip_rect().Contains(
-      render_surface->GetRenderSurface()->content_rect()));
+      GetRenderSurface(render_surface)->content_rect()));
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
@@ -5865,16 +5863,16 @@ TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
   clip_child->SetBounds(gfx::Size(60, 60));
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_TRUE(render_surface1->GetRenderSurface());
-  EXPECT_TRUE(render_surface2->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_TRUE(GetRenderSurface(render_surface1));
+  EXPECT_TRUE(GetRenderSurface(render_surface2));
 
   // render_surface1 should apply the clip from clip_parent. Though there is a
   // clip child, render_surface1 can apply the clip as there are no clips
   // between the clip parent and render_surface1
   EXPECT_EQ(gfx::Rect(1, 1, 40, 40),
-            render_surface1->GetRenderSurface()->clip_rect());
-  EXPECT_TRUE(render_surface1->GetRenderSurface()->is_clipped());
+            GetRenderSurface(render_surface1)->clip_rect());
+  EXPECT_TRUE(GetRenderSurface(render_surface1)->is_clipped());
   EXPECT_EQ(gfx::Rect(), render_surface1->clip_rect());
   EXPECT_FALSE(render_surface1->is_clipped());
 
@@ -5883,8 +5881,8 @@ TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
   // So, it should not be clipped (their bounds would no longer be reliable).
   // We should resort to layer clipping in this case.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
-            render_surface2->GetRenderSurface()->clip_rect());
-  EXPECT_FALSE(render_surface2->GetRenderSurface()->is_clipped());
+            GetRenderSurface(render_surface2)->clip_rect());
+  EXPECT_FALSE(GetRenderSurface(render_surface2)->is_clipped());
 
   // This value is inherited from the clipping ancestor layer, 'intervening'.
   EXPECT_EQ(gfx::Rect(0, 0, 5, 5), render_surface2->clip_rect());
@@ -5893,9 +5891,9 @@ TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
   // The content rects of render_surface2 should have expanded to contain the
   // clip child.
   EXPECT_EQ(gfx::Rect(0, 0, 40, 40),
-            render_surface1->GetRenderSurface()->content_rect());
+            GetRenderSurface(render_surface1)->content_rect());
   EXPECT_EQ(gfx::Rect(-10, -10, 60, 60),
-            render_surface2->GetRenderSurface()->content_rect());
+            GetRenderSurface(render_surface2)->content_rect());
 
   // The clip child should have inherited the clip parent's clip (projected to
   // the right space, of course), but as render_surface1 already applies that
@@ -5951,16 +5949,16 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   clip_child->SetBounds(gfx::Size(60, 60));
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_TRUE(render_surface1->GetRenderSurface());
-  EXPECT_TRUE(render_surface2->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_TRUE(GetRenderSurface(render_surface1));
+  EXPECT_TRUE(GetRenderSurface(render_surface2));
 
   // render_surface1 should apply the clip from clip_parent. Though there is a
   // clip child, render_surface1 can apply the clip as there are no clips
   // between the clip parent and render_surface1
   EXPECT_EQ(gfx::Rect(3, 3, 40, 40),
-            render_surface1->GetRenderSurface()->clip_rect());
-  EXPECT_TRUE(render_surface1->GetRenderSurface()->is_clipped());
+            GetRenderSurface(render_surface1)->clip_rect());
+  EXPECT_TRUE(GetRenderSurface(render_surface1)->is_clipped());
   EXPECT_EQ(gfx::Rect(), render_surface1->clip_rect());
   EXPECT_FALSE(render_surface1->is_clipped());
 
@@ -5969,8 +5967,8 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   // So, it should not be clipped (their bounds would no longer be reliable).
   // We should resort to layer clipping in this case.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
-            render_surface2->GetRenderSurface()->clip_rect());
-  EXPECT_FALSE(render_surface2->GetRenderSurface()->is_clipped());
+            GetRenderSurface(render_surface2)->clip_rect());
+  EXPECT_FALSE(GetRenderSurface(render_surface2)->is_clipped());
   // This value is inherited from the clipping ancestor layer, 'intervening'.
   EXPECT_EQ(gfx::Rect(0, 0, 5, 5), render_surface2->clip_rect());
   EXPECT_TRUE(render_surface2->is_clipped());
@@ -5978,9 +5976,9 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   // The content rects of render_surface2 should have expanded to contain the
   // clip child.
   EXPECT_EQ(gfx::Rect(0, 0, 40, 40),
-            render_surface1->GetRenderSurface()->content_rect());
+            GetRenderSurface(render_surface1)->content_rect());
   EXPECT_EQ(gfx::Rect(-10, -10, 60, 60),
-            render_surface2->GetRenderSurface()->content_rect());
+            GetRenderSurface(render_surface2)->content_rect());
 
   // The clip child should have inherited the clip parent's clip (projected to
   // the right space, of course), but as render_surface1 already applies that
@@ -6022,7 +6020,7 @@ TEST_F(LayerTreeHostCommonTest, DescendantsOfClipChildren) {
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
 
   // Neither the clip child nor its descendant should have inherited the clip
   // from |intervening|.
@@ -6081,9 +6079,9 @@ TEST_F(LayerTreeHostCommonTest,
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_TRUE(render_surface1->GetRenderSurface());
-  EXPECT_TRUE(render_surface2->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_TRUE(GetRenderSurface(render_surface1));
+  EXPECT_TRUE(GetRenderSurface(render_surface2));
 
   EXPECT_EQ(gfx::Rect(-5, -5, 10, 10), render_surface1->clip_rect());
   EXPECT_TRUE(render_surface1->is_clipped());
@@ -6091,23 +6089,23 @@ TEST_F(LayerTreeHostCommonTest,
   // The render surface should not clip (it has unclipped descendants), instead
   // it should rely on layer clipping.
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
-            render_surface1->GetRenderSurface()->clip_rect());
-  EXPECT_FALSE(render_surface1->GetRenderSurface()->is_clipped());
+            GetRenderSurface(render_surface1)->clip_rect());
+  EXPECT_FALSE(GetRenderSurface(render_surface1)->is_clipped());
 
   // That said, it should have grown to accomodate the unclipped descendant and
   // its own size.
   EXPECT_EQ(gfx::Rect(-1, 0, 6, 5),
-            render_surface1->GetRenderSurface()->content_rect());
+            GetRenderSurface(render_surface1)->content_rect());
 
   // This render surface should clip. It has no unclipped descendants.
   EXPECT_EQ(gfx::Rect(0, 0, 10, 10),
-            render_surface2->GetRenderSurface()->clip_rect());
-  EXPECT_TRUE(render_surface2->GetRenderSurface()->is_clipped());
+            GetRenderSurface(render_surface2)->clip_rect());
+  EXPECT_TRUE(GetRenderSurface(render_surface2)->is_clipped());
   EXPECT_FALSE(render_surface2->is_clipped());
 
   // It also shouldn't have grown to accomodate the clip child.
   EXPECT_EQ(gfx::Rect(0, 0, 5, 5),
-            render_surface2->GetRenderSurface()->content_rect());
+            GetRenderSurface(render_surface2)->content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -6136,10 +6134,10 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created.
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_FALSE(child1->GetRenderSurface());
-  EXPECT_TRUE(child2->GetRenderSurface());
-  EXPECT_FALSE(child3->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_FALSE(GetRenderSurface(child1));
+  EXPECT_TRUE(GetRenderSurface(child2));
+  EXPECT_FALSE(GetRenderSurface(child3));
 }
 
 TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
@@ -6462,7 +6460,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   scroll_child->SetBounds(gfx::Size(50, 50));
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
 
   EXPECT_EQ(gfx::Rect(0, 0, 30, 30), scroll_child->clip_rect());
   EXPECT_TRUE(scroll_child->is_clipped());
@@ -6589,7 +6587,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
 
   EXPECT_EQ(gfx::Rect(0, 0, 30, 30), scroll_child->clip_rect());
   EXPECT_TRUE(scroll_child->is_clipped());
@@ -6647,14 +6645,14 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
 
   EXPECT_EQ(gfx::Rect(0, 0, 20, 20), scroll_child->clip_rect());
   EXPECT_TRUE(scroll_child->is_clipped());
 
   // Despite the fact that we visited the above layers out of order to get the
   // correct clip, the layer lists should be unaffected.
-  EXPECT_EQ(3, root->GetRenderSurface()->num_contributors());
+  EXPECT_EQ(3, GetRenderSurface(root)->num_contributors());
   EXPECT_TRUE(scroll_child->contributes_to_drawn_render_surface());
   EXPECT_TRUE(scroll_parent->contributes_to_drawn_render_surface());
   EXPECT_TRUE(scroll_grandparent->contributes_to_drawn_render_surface());
@@ -6724,7 +6722,7 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
 
   EXPECT_EQ(gfx::Rect(0, 0, 20, 20), scroll_child->clip_rect());
   EXPECT_TRUE(scroll_child->is_clipped());
@@ -6732,10 +6730,10 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   // Despite the fact that we had to process the layers out of order to get the
   // right clip, our render_surface_list's order should be unaffected.
   EXPECT_EQ(3u, render_surface_list_impl()->size());
-  EXPECT_EQ(root->GetRenderSurface(), render_surface_list_impl()->at(0));
-  EXPECT_EQ(render_surface2->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(root), render_surface_list_impl()->at(0));
+  EXPECT_EQ(GetRenderSurface(render_surface2),
             render_surface_list_impl()->at(1));
-  EXPECT_EQ(render_surface1->GetRenderSurface(),
+  EXPECT_EQ(GetRenderSurface(render_surface1),
             render_surface_list_impl()->at(2));
 }
 
@@ -9117,9 +9115,9 @@ TEST_F(LayerTreeHostCommonTest, AnimatedOpacityCreatesRenderSurface) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(1.f, child->Opacity());
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_TRUE(child->GetRenderSurface());
-  EXPECT_FALSE(grandchild->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_TRUE(GetRenderSurface(child));
+  EXPECT_FALSE(GetRenderSurface(grandchild));
 }
 
 // Verify that having an animated filter (but no current filter, as these
@@ -9138,12 +9136,12 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
                                        10.0, 0.1f, 0.2f);
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_TRUE(child->GetRenderSurface());
-  EXPECT_FALSE(grandchild->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_TRUE(GetRenderSurface(child));
+  EXPECT_FALSE(GetRenderSurface(grandchild));
 
-  EXPECT_TRUE(root->GetRenderSurface()->Filters().IsEmpty());
-  EXPECT_TRUE(child->GetRenderSurface()->Filters().IsEmpty());
+  EXPECT_TRUE(GetRenderSurface(root)->Filters().IsEmpty());
+  EXPECT_TRUE(GetRenderSurface(child)->Filters().IsEmpty());
 
   EXPECT_FALSE(root->FilterIsAnimating());
   EXPECT_TRUE(child->FilterIsAnimating());
@@ -9182,12 +9180,12 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
                                   std::move(animation));
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_TRUE(child->GetRenderSurface());
-  EXPECT_FALSE(grandchild->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_TRUE(GetRenderSurface(child));
+  EXPECT_FALSE(GetRenderSurface(grandchild));
 
-  EXPECT_TRUE(root->GetRenderSurface()->Filters().IsEmpty());
-  EXPECT_TRUE(child->GetRenderSurface()->Filters().IsEmpty());
+  EXPECT_TRUE(GetRenderSurface(root)->Filters().IsEmpty());
+  EXPECT_TRUE(GetRenderSurface(child)->Filters().IsEmpty());
 
   EXPECT_FALSE(root->FilterIsAnimating());
   EXPECT_FALSE(root->HasPotentiallyRunningFilterAnimation());
@@ -9894,11 +9892,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
       transform_tree.Node(significant_transform->transform_tree_index());
   EXPECT_EQ(transform_node->owning_layer_id, significant_transform->id());
 
-  EXPECT_TRUE(root->GetRenderSurface());
-  EXPECT_FALSE(significant_transform->GetRenderSurface());
-  EXPECT_TRUE(layer_clips_subtree->GetRenderSurface());
-  EXPECT_TRUE(render_surface->GetRenderSurface());
-  EXPECT_FALSE(test_layer->GetRenderSurface());
+  EXPECT_TRUE(GetRenderSurface(root));
+  EXPECT_FALSE(GetRenderSurface(significant_transform));
+  EXPECT_TRUE(GetRenderSurface(layer_clips_subtree));
+  EXPECT_TRUE(GetRenderSurface(render_surface));
+  EXPECT_FALSE(GetRenderSurface(test_layer));
 
   EXPECT_EQ(gfx::Rect(30, 20), test_layer->visible_layer_rect());
 }
@@ -10104,13 +10102,13 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(50, 50),
-            unclipped_surface->GetRenderSurface()->content_rect());
+            GetRenderSurface(unclipped_surface)->content_rect());
   EXPECT_EQ(gfx::Rect(50, 50),
-            unclipped_desc_surface->GetRenderSurface()->content_rect());
+            GetRenderSurface(unclipped_desc_surface)->content_rect());
   EXPECT_EQ(gfx::Rect(60, 60),
-            unclipped_desc_surface2->GetRenderSurface()->content_rect());
+            GetRenderSurface(unclipped_desc_surface2)->content_rect());
   EXPECT_EQ(gfx::Rect(50, 50),
-            clipped_surface->GetRenderSurface()->content_rect());
+            GetRenderSurface(clipped_surface)->content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipBetweenClipChildTargetAndClipParentTarget) {
@@ -10152,7 +10150,7 @@ TEST_F(LayerTreeHostCommonTest, ClipBetweenClipChildTargetAndClipParentTarget) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::Rect(10, 10),
-            unclipped_desc_surface->GetRenderSurface()->content_rect());
+            GetRenderSurface(unclipped_desc_surface)->content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleRectForDescendantOfScaledSurface) {
@@ -10316,13 +10314,13 @@ TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(0.f,
-            test->GetRenderSurface()->OwningEffectNode()->screen_space_opacity);
+            GetRenderSurface(test)->OwningEffectNode()->screen_space_opacity);
 
   hidden->test_properties()->hide_layer_and_subtree = false;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(1.f,
-            test->GetRenderSurface()->OwningEffectNode()->screen_space_opacity);
+            GetRenderSurface(test)->OwningEffectNode()->screen_space_opacity);
 }
 
 TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
@@ -10510,7 +10508,7 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::RectF(),
-            render_surface1->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface1)->DrawableContentRect());
 
   bool is_inf_or_nan = std::isinf(child->DrawTransform().matrix().get(0, 0)) ||
                        std::isnan(child->DrawTransform().matrix().get(0, 0));
@@ -10522,7 +10520,7 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
 
   // The root layer should be in the RenderSurfaceList.
   const auto* rsl = render_surface_list_impl();
-  EXPECT_NE(std::find(rsl->begin(), rsl->end(), root->GetRenderSurface()),
+  EXPECT_NE(std::find(rsl->begin(), rsl->end(), GetRenderSurface(root)),
             rsl->end());
 }
 
@@ -10900,10 +10898,10 @@ TEST_F(LayerTreeHostCommonTest, CanAdjustRasterScaleTest) {
 
   // Check surface draw properties.
   EXPECT_EQ(gfx::Rect(10, 10),
-            render_surface->GetRenderSurface()->content_rect());
-  EXPECT_EQ(transform, render_surface->GetRenderSurface()->draw_transform());
+            GetRenderSurface(render_surface)->content_rect());
+  EXPECT_EQ(transform, GetRenderSurface(render_surface)->draw_transform());
   EXPECT_EQ(gfx::RectF(50.0f, 50.0f),
-            render_surface->GetRenderSurface()->DrawableContentRect());
+            GetRenderSurface(render_surface)->DrawableContentRect());
 
   // Check child layer draw properties.
   EXPECT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());

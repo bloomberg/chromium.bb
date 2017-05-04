@@ -215,11 +215,6 @@ class CC_EXPORT LayerImpl {
 
   bool ShowDebugBorders(DebugBorderType type) const;
 
-  // TODO(http://crbug.com/557160): Currently SPv2 creates dummy layers for the
-  // sole purpose of representing a render surface. Once that dependency is
-  // removed, also remove dummy layers from PaintArtifactCompositor.
-  RenderSurfaceImpl* GetRenderSurface() const;
-
   // The render surface which this layer draws into. This can be either owned by
   // the same layer or an ancestor of this layer.
   RenderSurfaceImpl* render_target();

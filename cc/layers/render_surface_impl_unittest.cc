@@ -29,8 +29,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
 
   impl.CalcDrawProps(viewport_size);
 
-  RenderSurfaceImpl* render_surface_impl =
-      owning_layer_impl->GetRenderSurface();
+  RenderSurfaceImpl* render_surface_impl = GetRenderSurface(owning_layer_impl);
   ASSERT_TRUE(render_surface_impl);
 
   {
@@ -110,7 +109,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
                                ->root_layer_for_testing()
                                ->test_properties()
                                ->children[0];
-  RenderSurfaceImpl* render_surface_impl = surface_raw->GetRenderSurface();
+  RenderSurfaceImpl* render_surface_impl = GetRenderSurface(surface_raw);
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData append_quads_data;
   render_surface_impl->AppendQuads(render_pass.get(), &append_quads_data);

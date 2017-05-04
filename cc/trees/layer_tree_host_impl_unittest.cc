@@ -3910,8 +3910,8 @@ TEST_F(LayerTreeHostImplTest, DidDrawCalledOnAllLayers) {
   EXPECT_TRUE(layer1->did_draw_called());
   EXPECT_TRUE(layer2->did_draw_called());
 
-  EXPECT_NE(root->GetRenderSurface(), layer1->GetRenderSurface());
-  EXPECT_TRUE(layer1->GetRenderSurface());
+  EXPECT_NE(GetRenderSurface(root), GetRenderSurface(layer1));
+  EXPECT_TRUE(GetRenderSurface(layer1));
 }
 
 class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
@@ -7249,7 +7249,7 @@ class BlendStateCheckLayer : public LayerImpl {
                                     gfx::Size(1, 1), false, false);
     test_blending_draw_quad->visible_rect = quad_visible_rect_;
     EXPECT_EQ(blend_, test_blending_draw_quad->ShouldDrawWithBlending());
-    EXPECT_EQ(has_render_surface_, !!GetRenderSurface());
+    EXPECT_EQ(has_render_surface_, !!GetRenderSurface(this));
   }
 
   void SetExpectation(bool blend, bool has_render_surface) {

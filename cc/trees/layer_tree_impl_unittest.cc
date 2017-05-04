@@ -131,7 +131,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
 
   // Hit testing for a point outside the layer should return a null pointer.
   gfx::PointF test_point(101.f, 101.f);
@@ -200,7 +200,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayerAndHud) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(2, root_layer()->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(2, GetRenderSurface(root_layer())->num_contributors());
 
   // Hit testing for a point inside HUD, but outside root should return null
   gfx::PointF test_point(101.f, 101.f);
@@ -245,7 +245,7 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
   ASSERT_FALSE(root_layer()->ScreenSpaceTransform().IsInvertible());
 
   // Hit testing any point should not hit the layer. If the invertible matrix is
@@ -300,7 +300,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePositionedLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
 
   // Hit testing for a point outside the layer should return a null pointer.
   gfx::PointF test_point(49.f, 49.f);
@@ -345,7 +345,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
 
   // Hit testing for points outside the layer.
   // These corners would have been inside the un-transformed layer, but they
@@ -482,7 +482,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
 
   // Hit testing for points outside the layer.
   // These corners would have been inside the un-transformed layer, but they
@@ -540,7 +540,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSimpleClippedLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
   LayerImpl* child_layer = host_impl().active_tree()->LayerById(456);
   EXPECT_TRUE(child_layer->contributes_to_drawn_render_surface());
 
@@ -718,7 +718,7 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root_layer())->num_contributors());
   LayerImpl* child_layer = host_impl().active_tree()->LayerById(456);
   EXPECT_TRUE(child_layer->contributes_to_drawn_render_surface());
 
@@ -800,7 +800,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
   ASSERT_TRUE(grand_child1);
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
 
-  RenderSurfaceImpl* root_render_surface = root->GetRenderSurface();
+  RenderSurfaceImpl* root_render_surface = GetRenderSurface(root);
   ASSERT_EQ(4, root_render_surface->num_contributors());
   EXPECT_TRUE(root_layer()->contributes_to_drawn_render_surface());
   EXPECT_TRUE(child1->contributes_to_drawn_render_surface());
@@ -1147,17 +1147,17 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
   ASSERT_TRUE(child1);
   ASSERT_TRUE(child2);
   ASSERT_TRUE(grand_child1);
-  ASSERT_TRUE(child1->GetRenderSurface());
-  ASSERT_TRUE(child2->GetRenderSurface());
-  ASSERT_TRUE(grand_child1->GetRenderSurface());
+  ASSERT_TRUE(GetRenderSurface(child1));
+  ASSERT_TRUE(GetRenderSurface(child2));
+  ASSERT_TRUE(GetRenderSurface(grand_child1));
   ASSERT_EQ(4u, GetRenderSurfaceList().size());
   // The root surface has the root layer, and child1's and child2's render
   // surfaces.
-  ASSERT_EQ(3, root->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(3, GetRenderSurface(root)->num_contributors());
   // The child1 surface has the child1 layer and grand_child1's render surface.
-  ASSERT_EQ(2, child1->GetRenderSurface()->num_contributors());
-  ASSERT_EQ(1, child2->GetRenderSurface()->num_contributors());
-  ASSERT_EQ(1, grand_child1->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(2, GetRenderSurface(child1)->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(child2)->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(grand_child1)->num_contributors());
   EXPECT_TRUE(root_layer()->contributes_to_drawn_render_surface());
   EXPECT_TRUE(child1->contributes_to_drawn_render_surface());
   EXPECT_TRUE(grand_child1->contributes_to_drawn_render_surface());
@@ -1223,7 +1223,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root)->num_contributors());
 
   // Hit checking for any point should return a null pointer for a layer without
   // any touch event handler regions.
@@ -1300,7 +1300,7 @@ TEST_F(LayerTreeImplTest,
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root)->num_contributors());
   ASSERT_FALSE(root->ScreenSpaceTransform().IsInvertible());
 
   // Hit checking any point should not hit the touch handler region on the
@@ -1367,7 +1367,7 @@ TEST_F(LayerTreeImplTest,
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root)->num_contributors());
 
   // Hit checking for a point outside the layer should return a null pointer.
   gfx::PointF test_point(49.f, 49.f);
@@ -1452,7 +1452,7 @@ TEST_F(LayerTreeImplTest,
   // its layout size is 50x50, positioned at 25x25.
   LayerImpl* test_layer = root->test_properties()->children[0];
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root)->num_contributors());
 
   // Check whether the child layer fits into the root after scaled.
   EXPECT_EQ(gfx::Rect(test_layer->bounds()), test_layer->visible_layer_rect());
@@ -1579,7 +1579,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root)->num_contributors());
   LayerImpl* child_layer = host_impl().active_tree()->LayerById(456);
   EXPECT_TRUE(child_layer->contributes_to_drawn_render_surface());
 
@@ -1733,7 +1733,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(2, root->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(2, GetRenderSurface(root)->num_contributors());
   LayerImpl* touch_layer = host_impl().active_tree()->LayerById(123);
   LayerImpl* notouch_layer = host_impl().active_tree()->LayerById(1234);
   EXPECT_TRUE(touch_layer->contributes_to_drawn_render_surface());
@@ -1851,7 +1851,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  ASSERT_EQ(1, root->GetRenderSurface()->num_contributors());
+  ASSERT_EQ(1, GetRenderSurface(root)->num_contributors());
 
   LayerSelection input;
 

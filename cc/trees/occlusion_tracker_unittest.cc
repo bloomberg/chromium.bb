@@ -19,6 +19,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/test_occlusion_tracker.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -77,7 +78,7 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker {
 
   gfx::Rect UnoccludedSurfaceContentRect(const LayerImpl* layer,
                                          const gfx::Rect& content_rect) const {
-    RenderSurfaceImpl* surface = layer->GetRenderSurface();
+    const RenderSurfaceImpl* surface = GetRenderSurface(layer);
     return this->GetCurrentOcclusionForContributingSurface(
                      surface->draw_transform())
         .GetUnoccludedContentRect(content_rect);
@@ -247,7 +248,7 @@ class OcclusionTrackerTest : public testing::Test {
 
   void EnterContributingSurface(LayerImpl* layer, OcclusionTracker* occlusion) {
     ASSERT_EQ(layer_iterator_->target_render_surface(),
-              layer->GetRenderSurface());
+              GetRenderSurface(layer));
     ASSERT_TRUE(layer_iterator_->state() ==
                 EffectTreeLayerListIterator::State::TARGET_SURFACE);
     occlusion->EnterLayer(*layer_iterator_);
@@ -260,7 +261,7 @@ class OcclusionTrackerTest : public testing::Test {
 
   void LeaveContributingSurface(LayerImpl* layer, OcclusionTracker* occlusion) {
     ASSERT_EQ(layer_iterator_->current_render_surface(),
-              layer->GetRenderSurface());
+              GetRenderSurface(layer));
     ASSERT_TRUE(layer_iterator_->state() ==
                 EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE);
     occlusion->LeaveLayer(*layer_iterator_);
