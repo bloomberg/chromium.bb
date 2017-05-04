@@ -18,9 +18,11 @@ from pylib.base import base_test_result
 from pylib.instrumentation import instrumentation_test_instance
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
+from pylib.utils import google_storage_helper
 from pylib.utils import logdog_helper
 from py_trace_event import trace_event
 from py_utils import contextlib_ext
+from py_utils import tempfile_ext
 import tombstones
 
 _TAG = 'test_runner_py'
@@ -36,6 +38,7 @@ TIMEOUT_ANNOTATIONS = [
 ]
 
 LOGCAT_FILTERS = ['*:e', 'chromium:v', 'cr_*:v']
+
 
 # TODO(jbudorick): Make this private once the instrumentation test_runner is
 # deprecated.
@@ -316,7 +319,7 @@ class LocalDeviceInstrumentationTestRun(
 
       stream_name = 'logcat_%s_%s_%s' % (
           test_name.replace('#', '.'),
-          time.strftime('%Y%m%dT%H%M%S', time.localtime()),
+          time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
           device.serial)
       logmon = logdog_logcat_monitor.LogdogLogcatMonitor(
           device.adb, stream_name, filter_specs=LOGCAT_FILTERS)
@@ -377,15 +380,29 @@ class LocalDeviceInstrumentationTestRun(
     if any(r.GetType() not in (base_test_result.ResultType.PASS,
                                base_test_result.ResultType.SKIP)
            for r in results):
-      if self._test_instance.screenshot_dir:
-        file_name = '%s-%s.png' % (
-            test_display_name,
-            time.strftime('%Y%m%dT%H%M%S', time.localtime()))
-        saved_dir = device.TakeScreenshot(
-            os.path.join(self._test_instance.screenshot_dir, file_name))
-        logging.info(
-            'Saved screenshot for %s to %s.',
-            test_display_name, saved_dir)
+      with contextlib_ext.Optional(
+          tempfile_ext.NamedTemporaryDirectory(),
+          self._test_instance.screenshot_dir is None and
+              self._test_instance.gs_results_bucket) as screenshot_host_dir:
+        screenshot_host_dir = (
+            self._test_instance.screenshot_dir or screenshot_host_dir)
+        if screenshot_host_dir:
+          file_name = '%s-%s.png' % (
+              test_display_name,
+              time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
+          screenshot_file = device.TakeScreenshot(
+              os.path.join(screenshot_host_dir, file_name))
+          logging.info(
+              'Saved screenshot for %s to %s.',
+              test_display_name, screenshot_file)
+          if self._test_instance.gs_results_bucket:
+            link = google_storage_helper.upload(
+                google_storage_helper.unique_name('screenshot', device=device),
+                screenshot_file,
+                bucket=self._test_instance.gs_results_bucket + '/screenshots')
+            for result in results:
+              result.SetLink('post_test_screenshot', link)
+
       logging.info('detected failure in %s. raw output:', test_display_name)
       for l in output:
         logging.info('  %s', l)
@@ -397,7 +414,6 @@ class LocalDeviceInstrumentationTestRun(
             else None)
         device.ClearApplicationState(self._test_instance.package_info.package,
                                      permissions=permissions)
-
     else:
       logging.debug('raw output from %s:', test_display_name)
       for l in output:
@@ -419,7 +435,7 @@ class LocalDeviceInstrumentationTestRun(
                 include_stack_symbols=False,
                 wipe_tombstones=True)
             stream_name = 'tombstones_%s_%s' % (
-                time.strftime('%Y%m%dT%H%M%S', time.localtime()),
+                time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
                 device.serial)
             tombstones_url = logdog_helper.text(
                 stream_name, '\n'.join(resolved_tombstones))
