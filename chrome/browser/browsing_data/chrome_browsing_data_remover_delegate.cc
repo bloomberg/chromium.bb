@@ -74,6 +74,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/reporting/reporting_browsing_data_remover.h"
+#include "net/reporting/reporting_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/url_util.h"
@@ -236,6 +238,18 @@ void ClearHttpAuthCacheOnIOThread(
   http_session->CloseAllConnections();
 }
 
+void ClearReportingCacheOnIOThread(
+    net::URLRequestContextGetter* context,
+    int data_type_mask,
+    const base::Callback<bool(const GURL&)>& origin_filter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  net::ReportingService* service =
+      context->GetURLRequestContext()->reporting_service();
+  if (service)
+    service->RemoveBrowsingData(data_type_mask, origin_filter);
+}
+
 // Returned by ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher().
 bool DoesOriginMatchEmbedderMask(int origin_type_mask,
                                  const GURL& origin,
@@ -326,6 +340,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       clear_webrtc_logs_(sub_task_forward_callback_),
 #endif
       clear_auto_sign_in_(sub_task_forward_callback_),
+      clear_reporting_cache_(sub_task_forward_callback_),
 #if BUILDFLAG(ENABLE_PLUGINS)
       flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context)),
 #endif
@@ -1006,6 +1021,26 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
   }
 
+  if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) ||
+      (remove_mask & DATA_TYPE_HISTORY)) {
+    scoped_refptr<net::URLRequestContextGetter> context =
+        profile_->GetRequestContext();
+
+    int data_type_mask = 0;
+    if (remove_mask & DATA_TYPE_HISTORY)
+      data_type_mask |= net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS;
+    if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES)
+      data_type_mask |= net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS;
+
+    clear_reporting_cache_.Start();
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ClearReportingCacheOnIOThread,
+                   base::RetainedRef(std::move(context)), data_type_mask,
+                   filter),
+        UIThreadTrampoline(clear_reporting_cache_.GetCompletionCallback()));
+  }
+
 //////////////////////////////////////////////////////////////////////////////
 // DATA_TYPE_WEB_APP_DATA
 #if defined(OS_ANDROID)
@@ -1055,7 +1090,7 @@ bool ChromeBrowsingDataRemoverDelegate::AllDone() {
          !clear_webrtc_logs_.is_pending() &&
 #endif
          !clear_auto_sign_in_.is_pending() &&
-         !clear_plugin_data_count_;
+         !clear_reporting_cache_.is_pending() && !clear_plugin_data_count_;
 }
 
 #if defined(OS_ANDROID)

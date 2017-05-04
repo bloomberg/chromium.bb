@@ -287,6 +287,7 @@ class ChromeBrowsingDataRemoverDelegate
   SubTask clear_webrtc_logs_;
 #endif
   SubTask clear_auto_sign_in_;
+  SubTask clear_reporting_cache_;
   // Counts the number of plugin data tasks. Should be the number of LSO cookies
   // to be deleted, or 1 while we're fetching LSO cookies or deleting in bulk.
   int clear_plugin_data_count_ = 0;
