@@ -5,12 +5,14 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
-#include "ui/display/mojo/display_struct_traits_test.mojom.h"
+#include "ui/display/mojo/display_layout_struct_traits.h"
+#include "ui/display/mojo/display_mode_struct_traits.h"
+#include "ui/display/mojo/display_snapshot_mojo_struct_traits.h"
+#include "ui/display/mojo/display_struct_traits.h"
+#include "ui/display/mojo/gamma_ramp_rgb_entry_struct_traits.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot_mojo.h"
@@ -24,62 +26,6 @@ namespace {
 constexpr int64_t kDisplayId1 = 123;
 constexpr int64_t kDisplayId2 = 456;
 constexpr int64_t kDisplayId3 = 789;
-
-class DisplayStructTraitsTest : public testing::Test,
-                                public mojom::DisplayStructTraitsTest {
- public:
-  DisplayStructTraitsTest() {}
-
- protected:
-  mojom::DisplayStructTraitsTestPtr GetTraitsTestProxy() {
-    return traits_test_bindings_.CreateInterfacePtrAndBind(this);
-  }
-
- private:
-  // mojom::DisplayStructTraitsTest:
-  void EchoDisplay(const Display& in,
-                   const EchoDisplayCallback& callback) override {
-    callback.Run(in);
-  }
-
-  void EchoDisplayMode(std::unique_ptr<DisplayMode> in,
-                       const EchoDisplayModeCallback& callback) override {
-    callback.Run(std::move(in));
-  }
-
-  void EchoDisplaySnapshotMojo(
-      std::unique_ptr<DisplaySnapshotMojo> in,
-      const EchoDisplaySnapshotMojoCallback& callback) override {
-    callback.Run(std::move(in));
-  }
-
-  void EchoDisplayPlacement(
-      const DisplayPlacement& in,
-      const EchoDisplayPlacementCallback& callback) override {
-    callback.Run(in);
-  }
-
-  void EchoDisplayLayout(std::unique_ptr<display::DisplayLayout> in,
-                         const EchoDisplayLayoutCallback& callback) override {
-    callback.Run(std::move(in));
-  }
-
-  void EchoHDCPState(display::HDCPState in,
-                     const EchoHDCPStateCallback& callback) override {
-    callback.Run(in);
-  }
-
-  void EchoGammaRampRGBEntry(
-      const GammaRampRGBEntry& in,
-      const EchoGammaRampRGBEntryCallback& callback) override {
-    callback.Run(in);
-  }
-
-  base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.
-  mojo::BindingSet<mojom::DisplayStructTraitsTest> traits_test_bindings_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayStructTraitsTest);
-};
 
 void CheckDisplaysEqual(const Display& input, const Display& output) {
   EXPECT_NE(&input, &output);  // Make sure they aren't the same object.
@@ -144,18 +90,31 @@ void CheckDisplaySnapShotMojoEqual(const DisplaySnapshotMojo& input,
   EXPECT_EQ(input.maximum_cursor_size(), output.maximum_cursor_size());
 }
 
+// Test StructTrait serialization and deserialization for copyable type. |input|
+// will be serialized and then deserialized into |output|.
+template <class MojomType, class Type>
+void SerializeAndDeserialize(const Type& input, Type* output) {
+  MojomType::Deserialize(MojomType::Serialize(&input), output);
+}
+
+// Test StructTrait serialization and deserialization for move only type.
+// |input| will be serialized and then deserialized into |output|.
+template <class MojomType, class Type>
+void SerializeAndDeserialize(Type&& input, Type* output) {
+  MojomType::Deserialize(MojomType::Serialize(&input), output);
+}
 }  // namespace
 
-TEST_F(DisplayStructTraitsTest, DefaultDisplayValues) {
+TEST(DisplayStructTraitsTest, DefaultDisplayValues) {
   Display input(5);
 
   Display output;
-  GetTraitsTestProxy()->EchoDisplay(input, &output);
+  SerializeAndDeserialize<mojom::Display>(input, &output);
 
   CheckDisplaysEqual(input, output);
 }
 
-TEST_F(DisplayStructTraitsTest, SetAllDisplayValues) {
+TEST(DisplayStructTraitsTest, SetAllDisplayValues) {
   const gfx::Rect bounds(100, 200, 500, 600);
   const gfx::Rect work_area(150, 250, 400, 500);
   const gfx::Size maximum_cursor_size(64, 64);
@@ -168,19 +127,17 @@ TEST_F(DisplayStructTraitsTest, SetAllDisplayValues) {
   input.set_maximum_cursor_size(maximum_cursor_size);
 
   Display output;
-  GetTraitsTestProxy()->EchoDisplay(input, &output);
+  SerializeAndDeserialize<mojom::Display>(input, &output);
 
   CheckDisplaysEqual(input, output);
 }
 
-TEST_F(DisplayStructTraitsTest, DefaultDisplayMode) {
+TEST(DisplayStructTraitsTest, DefaultDisplayMode) {
   std::unique_ptr<DisplayMode> input =
       base::MakeUnique<DisplayMode>(gfx::Size(1024, 768), true, 61.0);
 
-  mojom::DisplayStructTraitsTestPtr proxy = GetTraitsTestProxy();
   std::unique_ptr<DisplayMode> output;
-
-  proxy->EchoDisplayMode(input->Clone(), &output);
+  SerializeAndDeserialize<mojom::DisplayMode>(input->Clone(), &output);
 
   // We want to test each component individually to make sure each data member
   // was correctly serialized and deserialized.
@@ -189,7 +146,7 @@ TEST_F(DisplayStructTraitsTest, DefaultDisplayMode) {
   EXPECT_EQ(input->refresh_rate(), output->refresh_rate());
 }
 
-TEST_F(DisplayStructTraitsTest, DisplayPlacementFlushAtTop) {
+TEST(DisplayStructTraitsTest, DisplayPlacementFlushAtTop) {
   DisplayPlacement input;
   input.display_id = kDisplayId1;
   input.parent_display_id = kDisplayId2;
@@ -198,12 +155,12 @@ TEST_F(DisplayStructTraitsTest, DisplayPlacementFlushAtTop) {
   input.offset_reference = DisplayPlacement::TOP_LEFT;
 
   DisplayPlacement output;
-  GetTraitsTestProxy()->EchoDisplayPlacement(input, &output);
+  SerializeAndDeserialize<mojom::DisplayPlacement>(input, &output);
 
   EXPECT_EQ(input, output);
 }
 
-TEST_F(DisplayStructTraitsTest, DisplayPlacementWithOffset) {
+TEST(DisplayStructTraitsTest, DisplayPlacementWithOffset) {
   DisplayPlacement input;
   input.display_id = kDisplayId1;
   input.parent_display_id = kDisplayId2;
@@ -212,12 +169,12 @@ TEST_F(DisplayStructTraitsTest, DisplayPlacementWithOffset) {
   input.offset_reference = DisplayPlacement::BOTTOM_RIGHT;
 
   DisplayPlacement output;
-  GetTraitsTestProxy()->EchoDisplayPlacement(input, &output);
+  SerializeAndDeserialize<mojom::DisplayPlacement>(input, &output);
 
   EXPECT_EQ(input, output);
 }
 
-TEST_F(DisplayStructTraitsTest, DisplayLayoutTwoExtended) {
+TEST(DisplayStructTraitsTest, DisplayLayoutTwoExtended) {
   DisplayPlacement placement;
   placement.display_id = kDisplayId1;
   placement.parent_display_id = kDisplayId2;
@@ -232,12 +189,12 @@ TEST_F(DisplayStructTraitsTest, DisplayLayoutTwoExtended) {
   input->default_unified = true;
 
   std::unique_ptr<DisplayLayout> output;
-  GetTraitsTestProxy()->EchoDisplayLayout(input->Copy(), &output);
+  SerializeAndDeserialize<mojom::DisplayLayout>(input->Copy(), &output);
 
   CheckDisplayLayoutsEqual(*input, *output);
 }
 
-TEST_F(DisplayStructTraitsTest, DisplayLayoutThreeExtended) {
+TEST(DisplayStructTraitsTest, DisplayLayoutThreeExtended) {
   DisplayPlacement placement1;
   placement1.display_id = kDisplayId2;
   placement1.parent_display_id = kDisplayId1;
@@ -260,12 +217,12 @@ TEST_F(DisplayStructTraitsTest, DisplayLayoutThreeExtended) {
   input->default_unified = false;
 
   std::unique_ptr<DisplayLayout> output;
-  GetTraitsTestProxy()->EchoDisplayLayout(input->Copy(), &output);
+  SerializeAndDeserialize<mojom::DisplayLayout>(input->Copy(), &output);
 
   CheckDisplayLayoutsEqual(*input, *output);
 }
 
-TEST_F(DisplayStructTraitsTest, DisplayLayoutTwoMirrored) {
+TEST(DisplayStructTraitsTest, DisplayLayoutTwoMirrored) {
   DisplayPlacement placement;
   placement.display_id = kDisplayId1;
   placement.parent_display_id = kDisplayId2;
@@ -280,16 +237,16 @@ TEST_F(DisplayStructTraitsTest, DisplayLayoutTwoMirrored) {
   input->default_unified = true;
 
   std::unique_ptr<DisplayLayout> output;
-  GetTraitsTestProxy()->EchoDisplayLayout(input->Copy(), &output);
+  SerializeAndDeserialize<mojom::DisplayLayout>(input->Copy(), &output);
 
   CheckDisplayLayoutsEqual(*input, *output);
 }
 
-TEST_F(DisplayStructTraitsTest, BasicGammaRampRGBEntry) {
+TEST(DisplayStructTraitsTest, BasicGammaRampRGBEntry) {
   const GammaRampRGBEntry input{259, 81, 16};
 
   GammaRampRGBEntry output;
-  GetTraitsTestProxy()->EchoGammaRampRGBEntry(input, &output);
+  SerializeAndDeserialize<mojom::GammaRampRGBEntry>(input, &output);
 
   EXPECT_EQ(input.r, output.r);
   EXPECT_EQ(input.g, output.g);
@@ -297,7 +254,7 @@ TEST_F(DisplayStructTraitsTest, BasicGammaRampRGBEntry) {
 }
 
 // One display mode, current and native mode nullptr.
-TEST_F(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
+TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
   // Prepare sample input with random values.
   const int64_t display_id = 7;
   const gfx::Point origin(1, 2);
@@ -329,14 +286,14 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
           maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshotMojo> output;
-  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(
+  SerializeAndDeserialize<mojom::DisplaySnapshotMojo>(
       DisplaySnapshotMojo::CreateFrom(*input), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
 
 // One display mode that is the native mode and no current mode.
-TEST_F(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
+TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
   // Prepare sample input with random values.
   const int64_t display_id = 6;
   const gfx::Point origin(11, 32);
@@ -367,14 +324,14 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
           maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshotMojo> output;
-  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(
+  SerializeAndDeserialize<mojom::DisplaySnapshotMojo>(
       DisplaySnapshotMojo::CreateFrom(*input), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
 
 // Multiple display modes, both native and current mode set.
-TEST_F(DisplayStructTraitsTest, DisplaySnapshotExternal) {
+TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   // Prepare sample input from external display.
   const int64_t display_id = 9834293210466051;
   const gfx::Point origin(0, 1760);
@@ -409,13 +366,13 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotExternal) {
           maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshotMojo> output;
-  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(
+  SerializeAndDeserialize<mojom::DisplaySnapshotMojo>(
       DisplaySnapshotMojo::CreateFrom(*input), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
 
-TEST_F(DisplayStructTraitsTest, DisplaySnapshotInternal) {
+TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   // Prepare sample input from Pixel's internal display.
   const int64_t display_id = 13761487533244416;
   const gfx::Point origin(0, 0);
@@ -446,17 +403,10 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotInternal) {
           maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshotMojo> output;
-  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(
+  SerializeAndDeserialize<mojom::DisplaySnapshotMojo>(
       DisplaySnapshotMojo::CreateFrom(*input), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
-}
-
-TEST_F(DisplayStructTraitsTest, HDCPStateBasic) {
-  const display::HDCPState input(HDCP_STATE_ENABLED);
-  display::HDCPState output;
-  GetTraitsTestProxy()->EchoHDCPState(input, &output);
-  EXPECT_EQ(input, output);
 }
 
 }  // namespace display

@@ -4,11 +4,7 @@
 
 #include "ui/display/mojo/display_snapshot_mojo_struct_traits.h"
 
-#include "ipc/ipc_message_utils.h"
-#include "ui/display/mojo/display_constants_struct_traits.h"
-#include "ui/display/mojo/display_mode_struct_traits.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mojo {

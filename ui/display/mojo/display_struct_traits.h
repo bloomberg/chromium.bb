@@ -7,6 +7,7 @@
 
 #include "ui/display/display.h"
 #include "ui/display/mojo/display.mojom.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
 
