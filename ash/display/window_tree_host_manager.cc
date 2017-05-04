@@ -20,6 +20,7 @@
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -823,9 +824,10 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   AshWindowTreeHost* ash_host =
       AshWindowTreeHost::Create(params_with_bounds).release();
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  // TODO: Config::MUS should not install an InputMethod.
-  // http://crbug.com/706913
-  if (!host->has_input_method()) {
+  // In mash input method is hosted by the browser process, so we don't need to
+  // create and set it here.
+  if (Shell::GetAshConfig() != Config::MASH) {
+    DCHECK(!host->has_input_method());
     if (!input_method_) {  // Singleton input method instance for Ash.
       input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
       // Makes sure the input method is focused by default when created, because

@@ -489,6 +489,7 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
       window_manager_->window_manager_client()->CreateInitParamsForNewDisplay();
   aura_init_params.display_id = init_params.display_id;
   aura_init_params.display_init_params = std::move(display_params);
+  aura_init_params.use_classic_ime = true;
   return base::MakeUnique<AshWindowTreeHostMus>(std::move(aura_init_params));
 }
 

@@ -65,6 +65,10 @@ struct AURA_EXPORT WindowTreeHostMusInitParams {
   // Used when the WindowTreeHostMus corresponds to a new display manually
   // created by the window manager.
   std::unique_ptr<DisplayInitParams> display_init_params;
+
+  // Use classic IME (i.e. InputMethodChromeOS) instead of servicified IME
+  // (i.e. InputMethodMus).
+  bool use_classic_ime = false;
 };
 
 // Creates a WindowTreeHostMusInitParams that is used when creating a top-level

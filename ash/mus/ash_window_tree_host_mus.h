@@ -36,6 +36,8 @@ class AshWindowTreeHostMus : public AshWindowTreeHost,
   gfx::Transform GetInverseRootTransform() const override;
   void UpdateRootWindowSizeInPixels(
       const gfx::Size& host_size_in_pixels) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override;
 
  private:
   std::unique_ptr<TransformerHelper> transformer_helper_;

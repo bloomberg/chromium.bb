@@ -84,9 +84,11 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   SetPlatformWindow(base::MakeUnique<ui::StubWindow>(
       this, use_default_accelerated_widget, bounds_in_pixels));
 
-  input_method_ = base::MakeUnique<InputMethodMus>(this, window());
-  input_method_->Init(init_params.window_tree_client->connector());
-  SetSharedInputMethod(input_method_.get());
+  if (!init_params.use_classic_ime) {
+    input_method_ = base::MakeUnique<InputMethodMus>(this, window());
+    input_method_->Init(init_params.window_tree_client->connector());
+    SetSharedInputMethod(input_method_.get());
+  }
 
   compositor()->SetHostHasTransparentBackground(true);
 
