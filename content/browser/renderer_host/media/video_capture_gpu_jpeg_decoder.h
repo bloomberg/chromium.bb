@@ -43,7 +43,9 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   // |decode_done_cb| is called on the IO thread when decode succeed. This can
   // be on any thread. |decode_done_cb| is never called after
   // VideoCaptureGpuJpegDecoder is destroyed.
-  explicit VideoCaptureGpuJpegDecoder(const DecodeDoneCB& decode_done_cb);
+  VideoCaptureGpuJpegDecoder(
+      DecodeDoneCB decode_done_cb,
+      base::Callback<void(const std::string&)> send_log_message_cb);
   ~VideoCaptureGpuJpegDecoder() override;
 
   // Implementation of VideoCaptureJpegDecoder:
@@ -90,6 +92,9 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
 
   // The callback to run when decode succeeds.
   const DecodeDoneCB decode_done_cb_;
+
+  const base::Callback<void(const std::string&)> send_log_message_cb_;
+  bool has_received_decoded_frame_;
 
   // Guards |decode_done_closure_| and |decoder_status_|.
   mutable base::Lock lock_;
