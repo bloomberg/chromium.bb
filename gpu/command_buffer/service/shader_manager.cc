@@ -224,19 +224,22 @@ const std::string* Shader::GetOutputVariableMappedName(
 
 const std::string* Shader::GetOriginalNameFromHashedName(
     const std::string& hashed_name) const {
-  NameMap::const_iterator it = name_map_.find(hashed_name);
-  if (it != name_map_.end())
-    return &(it->second);
-  return NULL;
-}
-
-const std::string* Shader::GetMappedName(
-    const std::string& original_name) const {
-  for (const auto& key_value : name_map_) {
-    if (key_value.second == original_name)
-      return &(key_value.first);
+  if (const auto* info = GetAttribInfo(hashed_name)) {
+    return &info->name;
   }
-  return NULL;
+  if (const auto* info = GetUniformInfo(hashed_name)) {
+    return &info->name;
+  }
+  if (const auto* info = GetVaryingInfo(hashed_name)) {
+    return &info->name;
+  }
+  if (const auto* info = GetInterfaceBlockInfo(hashed_name)) {
+    return &info->name;
+  }
+  if (const auto* info = GetOutputVariableInfo(hashed_name)) {
+    return &info->name;
+  }
+  return nullptr;
 }
 
 const sh::Uniform* Shader::GetUniformInfo(const std::string& name) const {
