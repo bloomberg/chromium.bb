@@ -570,6 +570,12 @@ ChromeMetricsServiceClient::GetMetricsReportingDefaultState() {
       g_browser_process->local_state());
 }
 
+// static
+bool ChromeMetricsServiceClient::IsMetricsReportingForceEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceEnableMetricsReporting);
+}
+
 void ChromeMetricsServiceClient::Initialize() {
   PrefService* local_state = g_browser_process->local_state();
 
@@ -585,7 +591,8 @@ void ChromeMetricsServiceClient::Initialize() {
 
   RegisterMetricsServiceProviders();
 
-  if (base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
+  if (IsMetricsReportingForceEnabled() ||
+      base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
     ukm_service_.reset(new ukm::UkmService(local_state, this));
     RegisterUKMProviders();
   }

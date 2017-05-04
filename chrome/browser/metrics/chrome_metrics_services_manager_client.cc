@@ -288,3 +288,7 @@ ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
   }
   return metrics_state_manager_.get();
 }
+
+bool ChromeMetricsServicesManagerClient::IsMetricsReportingForceEnabled() {
+  return ChromeMetricsServiceClient::IsMetricsReportingForceEnabled();
+}
