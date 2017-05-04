@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "chromeos/components/tether/active_host.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
@@ -39,6 +40,7 @@ class WifiHotspotConnector : public NetworkStateHandlerObserver {
   // will begin.
   virtual void ConnectToWifiHotspot(const std::string& ssid,
                                     const std::string& password,
+                                    const std::string& tether_network_guid,
                                     const WifiConnectionCallback& callback);
 
   // NetworkStateHandlerObserver:
@@ -65,7 +67,8 @@ class WifiHotspotConnector : public NetworkStateHandlerObserver {
 
   std::string ssid_;
   std::string password_;
-  std::string wifi_guid_;
+  std::string tether_network_guid_;
+  std::string wifi_network_guid_;
   WifiConnectionCallback callback_;
 
   base::WeakPtrFactory<WifiHotspotConnector> weak_ptr_factory_;

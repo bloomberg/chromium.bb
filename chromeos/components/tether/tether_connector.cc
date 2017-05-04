@@ -139,7 +139,7 @@ void TetherConnector::OnSuccessfulConnectTetheringResponse(
   connect_tethering_operation_.reset();
 
   wifi_hotspot_connector_->ConnectToWifiHotspot(
-      ssid_copy, password_copy,
+      ssid_copy, password_copy, active_host_->GetTetherNetworkGuid(),
       base::Bind(&TetherConnector::OnWifiConnection,
                  weak_ptr_factory_.GetWeakPtr(), remote_device_id));
 }
@@ -253,23 +253,6 @@ void TetherConnector::OnWifiConnection(const std::string& device_id,
 
     SetConnectionFailed(NetworkConnectionHandler::kErrorConnectFailed);
     return;
-  }
-
-  bool successful_association =
-      network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
-          device_id, wifi_network_guid);
-  if (successful_association) {
-    PA_LOG(INFO) << "Successfully connected to host device with ID "
-                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
-                 << ". Tether network ID: \"" << device_id
-                 << "\", Wi-Fi network ID: \"" << wifi_network_guid << "\"";
-  } else {
-    PA_LOG(WARNING) << "Successfully connected to host device with ID "
-                    << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
-                           device_id)
-                    << ", but failed to associate tether network with ID \""
-                    << device_id << "\" to Wi-Fi network with ID \""
-                    << wifi_network_guid << "\".";
   }
 
   SetConnectionSucceeded(device_id, wifi_network_guid);

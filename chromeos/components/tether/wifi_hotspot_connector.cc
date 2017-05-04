@@ -36,6 +36,7 @@ WifiHotspotConnector::~WifiHotspotConnector() {
 void WifiHotspotConnector::ConnectToWifiHotspot(
     const std::string& ssid,
     const std::string& password,
+    const std::string& tether_network_guid,
     const WifiConnectionCallback& callback) {
   DCHECK(!ssid.empty());
   // Note: |password| can be empty in some cases.
@@ -44,14 +45,29 @@ void WifiHotspotConnector::ConnectToWifiHotspot(
     DCHECK(timer_->IsRunning());
 
     // If another connection attempt was underway but had not yet completed,
-    // call the callback, passing an empty string to signal that the connection
-    // did not complete successfully.
+    // disassociate that network from the Tether network and call the callback,
+    // passing an empty string to signal that the connection did not complete
+    // successfully.
+    bool successful_disassociation =
+        network_state_handler_->DisassociateTetherNetworkStateFromWifiNetwork(
+            tether_network_guid_);
+    if (successful_disassociation) {
+      PA_LOG(INFO) << "Wifi network with ID " << wifi_network_guid_
+                   << " successfully disassociated from Tether network with ID "
+                   << tether_network_guid_ << ".";
+    } else {
+      PA_LOG(INFO) << "Wifi network with ID " << wifi_network_guid_
+                   << " failed to disassociate from Tether network with ID "
+                   << tether_network_guid_ << ".";
+    }
+
     InvokeWifiConnectionCallback(std::string());
   }
 
   ssid_ = ssid;
   password_ = password;
-  wifi_guid_ = base::GenerateGUID();
+  tether_network_guid_ = tether_network_guid;
+  wifi_network_guid_ = base::GenerateGUID();
   callback_ = callback;
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kConnectionTimeoutSeconds),
@@ -65,21 +81,41 @@ void WifiHotspotConnector::ConnectToWifiHotspot(
 
 void WifiHotspotConnector::NetworkPropertiesUpdated(
     const NetworkState* network) {
-  if (network->guid() != wifi_guid_) {
+  if (network->guid() != wifi_network_guid_) {
     // If a different network has been connected, return early and wait for the
-    // network with ID |wifi_guid_| is updated.
+    // network with ID |wifi_network_guid_| is updated.
     return;
   }
 
   if (network->IsConnectedState()) {
     // If a connection occurred, notify observers and exit early.
-    InvokeWifiConnectionCallback(wifi_guid_);
+    InvokeWifiConnectionCallback(wifi_network_guid_);
     return;
   }
 
   if (network->connectable()) {
-    // If the network is now connectable, initiate a connection to it.
-    network_connect_->ConnectToNetworkId(wifi_guid_);
+    // If the network is now connectable, associate it with a Tether network
+    // ASAP so that the correct icon will be displayed in the tray while the
+    // network is connecting.
+    bool successful_association =
+        network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+            tether_network_guid_, wifi_network_guid_);
+    if (successful_association) {
+      PA_LOG(INFO) << "Wifi network with ID " << wifi_network_guid_
+                   << " is connectable, and successfully associated "
+                      "with Tether network. Tether network ID: \""
+                   << tether_network_guid_ << "\", Wi-Fi network ID: \""
+                   << wifi_network_guid_ << "\"";
+    } else {
+      PA_LOG(INFO) << "Wifi network with ID " << wifi_network_guid_
+                   << " is connectable, but failed to associate tether network "
+                      "with ID \""
+                   << tether_network_guid_ << "\" to Wi-Fi network with ID: \""
+                   << wifi_network_guid_ << "\"";
+    }
+
+    // Initiate a connection to the network.
+    network_connect_->ConnectToNetworkId(wifi_network_guid_);
   }
 }
 
@@ -87,17 +123,17 @@ void WifiHotspotConnector::InvokeWifiConnectionCallback(
     const std::string& wifi_guid) {
   DCHECK(!callback_.is_null());
 
-  // |wifi_guid| may be a reference to |wifi_guid_|, so make a copy of it first
-  // before clearing it below.
-  std::string wifi_guid_copy = wifi_guid;
+  // |wifi_guid| may be a reference to |wifi_network_guid_|, so make a copy of
+  // it first before clearing it below.
+  std::string wifi_network_guid_copy = wifi_guid;
 
   ssid_.clear();
   password_.clear();
-  wifi_guid_.clear();
+  wifi_network_guid_.clear();
 
   timer_->Stop();
 
-  callback_.Run(wifi_guid_copy);
+  callback_.Run(wifi_network_guid_copy);
   callback_.Reset();
 }
 
@@ -107,12 +143,13 @@ base::DictionaryValue WifiHotspotConnector::CreateWifiPropertyDictionary(
   PA_LOG(INFO) << "Creating network configuration. "
                << "SSID: " << ssid << ", "
                << "Password: " << password << ", "
-               << "Wi-Fi network GUID: " << wifi_guid_;
+               << "Wi-Fi network GUID: " << wifi_network_guid_;
 
   base::DictionaryValue properties;
 
   shill_property_util::SetSSID(ssid, &properties);
-  properties.SetStringWithoutPathExpansion(shill::kGuidProperty, wifi_guid_);
+  properties.SetStringWithoutPathExpansion(shill::kGuidProperty,
+                                           wifi_network_guid_);
   properties.SetBooleanWithoutPathExpansion(shill::kAutoConnectProperty, false);
   properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
                                            shill::kTypeWifi);

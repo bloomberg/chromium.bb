@@ -240,6 +240,12 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // function does nothing. Returns whether the network was actually removed.
   bool RemoveTetherNetworkState(const std::string& guid);
 
+  // Disassociates the Tether network specified by |tether_network_guid| from
+  // its associated Wi-Fi network. Returns whether the networkd were
+  // successfully disassociated.
+  bool DisassociateTetherNetworkStateFromWifiNetwork(
+      const std::string& tether_network_guid);
+
   // Inform NetworkStateHandler that the provided Tether network with the
   // provided guid |tether_network_guid| is associated with the Wi-Fi network
   // with the provided guid |wifi_network_guid|. This Wi-Fi network can now be

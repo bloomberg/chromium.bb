@@ -181,19 +181,6 @@ class TetherConnectorTest : public NetworkStateTest {
     fake_wifi_hotspot_connector_->CallMostRecentCallback(kWifiNetworkGuid);
   }
 
-  void VerifyTetherAndWifiNetworkAssociation(
-      const std::string& tether_network_guid) {
-    const NetworkState* tether_network_state =
-        network_state_handler()->GetNetworkStateFromGuid(tether_network_guid);
-    EXPECT_TRUE(tether_network_state);
-    EXPECT_EQ(kWifiNetworkGuid, tether_network_state->tether_guid());
-
-    const NetworkState* wifi_network_state =
-        network_state_handler()->GetNetworkStateFromGuid(kWifiNetworkGuid);
-    EXPECT_TRUE(wifi_network_state);
-    EXPECT_EQ(tether_network_guid, wifi_network_state->tether_guid());
-  }
-
   void SuccessCallback() { result_ = kSuccessResult; }
 
   void ErrorCallback(const std::string& error_name) { result_ = error_name; }
@@ -329,6 +316,8 @@ TEST_F(TetherConnectorTest, TestConnectingToWifiFails) {
   // connect.
   EXPECT_EQ(kSsid, fake_wifi_hotspot_connector_->most_recent_ssid());
   EXPECT_EQ(kPassword, fake_wifi_hotspot_connector_->most_recent_password());
+  EXPECT_EQ(fake_active_host_->GetTetherNetworkGuid(),
+            fake_wifi_hotspot_connector_->most_recent_tether_network_guid());
   fake_wifi_hotspot_connector_->CallMostRecentCallback("");
 
   // The failure should have resulted in the host being disconnected.
@@ -389,10 +378,11 @@ TEST_F(TetherConnectorTest, TestSuccessfulConnection) {
   // Wi-Fi network.
   EXPECT_EQ(kSsid, fake_wifi_hotspot_connector_->most_recent_ssid());
   EXPECT_EQ(kPassword, fake_wifi_hotspot_connector_->most_recent_password());
+  EXPECT_EQ(fake_active_host_->GetTetherNetworkGuid(),
+            fake_wifi_hotspot_connector_->most_recent_tether_network_guid());
   SuccessfullyJoinWifiNetwork();
 
-  // The active host should now be connected, and the tether and Wi-Fi networks
-  // should be associated.
+  // The active host should now be connected.
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTED,
             fake_active_host_->GetActiveHostStatus());
   EXPECT_EQ(test_devices_[0].GetDeviceId(),
@@ -400,8 +390,7 @@ TEST_F(TetherConnectorTest, TestSuccessfulConnection) {
   EXPECT_EQ(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()),
             fake_active_host_->GetTetherNetworkGuid());
   EXPECT_EQ(kWifiNetworkGuid, fake_active_host_->GetWifiNetworkGuid());
-  VerifyTetherAndWifiNetworkAssociation(
-      GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
+
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 }
 
@@ -465,6 +454,8 @@ TEST_F(TetherConnectorTest,
   // No connection should have been started.
   EXPECT_TRUE(fake_wifi_hotspot_connector_->most_recent_ssid().empty());
   EXPECT_TRUE(fake_wifi_hotspot_connector_->most_recent_password().empty());
+  EXPECT_TRUE(
+      fake_wifi_hotspot_connector_->most_recent_tether_network_guid().empty());
 
   // The second operation replies successfully, and this response should
   // result in a Wi-Fi connection attempt.
@@ -472,6 +463,8 @@ TEST_F(TetherConnectorTest,
       kSsid, kPassword);
   EXPECT_EQ(kSsid, fake_wifi_hotspot_connector_->most_recent_ssid());
   EXPECT_EQ(kPassword, fake_wifi_hotspot_connector_->most_recent_password());
+  EXPECT_EQ(fake_active_host_->GetTetherNetworkGuid(),
+            fake_wifi_hotspot_connector_->most_recent_tether_network_guid());
 }
 
 TEST_F(TetherConnectorTest,
@@ -491,6 +484,8 @@ TEST_F(TetherConnectorTest,
             fake_active_host_->GetActiveHostStatus());
   EXPECT_EQ(kSsid, fake_wifi_hotspot_connector_->most_recent_ssid());
   EXPECT_EQ(kPassword, fake_wifi_hotspot_connector_->most_recent_password());
+  EXPECT_EQ(fake_active_host_->GetTetherNetworkGuid(),
+            fake_wifi_hotspot_connector_->most_recent_tether_network_guid());
 
   // While the connection to the Wi-Fi network is in progress, start a new
   // connection attempt.
