@@ -13,6 +13,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_recorder.h"
+#include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/solid_color_content_layer_client.h"
@@ -147,6 +148,63 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   RunPixelResourceTest(
       background,
       base::FilePath(FILE_PATH_LITERAL("mask_of_clipped_layer.png")));
+}
+
+TEST_P(LayerTreeHostMasksPixelTest, MaskOfLargerLayer) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+
+  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
+      gfx::Rect(0, 0, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+  background->AddChild(green);
+
+  gfx::Size mask_bounds(50, 50);
+  MaskContentLayerClient client(mask_bounds);
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetLayerMaskType(mask_type_);
+  green->SetMaskLayer(mask.get());
+
+  if (raster_buffer_provider_type_ == RASTER_BUFFER_PROVIDER_TYPE_BITMAP) {
+    // Bitmap produces a sharper (but equivalent sized) mask.
+    float percentage_pixels_large_error = 40.0f;
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 65.0f;
+    int large_error_allowed = 120;
+    int small_error_allowed = 0;
+    pixel_comparator_.reset(new FuzzyPixelComparator(
+        true,  // discard_alpha
+        percentage_pixels_large_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed));
+  }
+
+  RunPixelResourceTest(
+      background,
+      base::FilePath(FILE_PATH_LITERAL("mask_of_larger_layer.png")));
+}
+
+TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerNonExactTextureSize) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+
+  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
+      gfx::Rect(0, 0, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+  background->AddChild(green);
+
+  gfx::Size mask_bounds(100, 100);
+  MaskContentLayerClient client(mask_bounds);
+  scoped_refptr<FakePictureLayer> mask = FakePictureLayer::Create(&client);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetLayerMaskType(mask_type_);
+  mask->set_fixed_tile_size(gfx::Size(173, 135));
+  green->SetMaskLayer(mask.get());
+
+  RunPixelResourceTest(background,
+                       base::FilePath(FILE_PATH_LITERAL(
+                           "mask_with_non_exact_texture_size.png")));
 }
 
 class CheckerContentLayerClient : public ContentLayerClient {

@@ -19,13 +19,19 @@ class FakeMaskLayerImpl : public PictureLayerImpl {
       Layer::LayerMaskType mask_type);
 
   void GetContentsResourceId(ResourceId* resource_id,
-                             gfx::Size* resource_size) const override;
+                             gfx::Size* resource_size,
+                             gfx::SizeF* mask_uv_size) const override;
+  void set_resource_size(gfx::Size resource_size) {
+    resource_size_ = resource_size;
+  }
 
  private:
   FakeMaskLayerImpl(LayerTreeImpl* tree_impl,
                     int id,
                     scoped_refptr<RasterSource> raster_source,
                     Layer::LayerMaskType mask_type);
+
+  gfx::Size resource_size_;
 };
 
 }  // namespace cc

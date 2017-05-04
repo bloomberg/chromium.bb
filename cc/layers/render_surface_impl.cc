@@ -414,15 +414,18 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
       TileMaskLayer(render_pass, shared_quad_state, visible_layer_rect);
       return;
     }
-    mask_layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+    gfx::SizeF mask_uv_size;
+    mask_layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size,
+                                      &mask_uv_size);
     gfx::SizeF unclipped_mask_target_size = gfx::ScaleSize(
         gfx::SizeF(OwningEffectNode()->unscaled_mask_target_size),
         surface_contents_scale.x(), surface_contents_scale.y());
-    // Convert content_rect from target space to normalized space.
-    // Where unclipped_mask_target_size maps to gfx::Size(1, 1).
-    mask_uv_rect = gfx::ScaleRect(gfx::RectF(content_rect()),
-                                  1.0f / unclipped_mask_target_size.width(),
-                                  1.0f / unclipped_mask_target_size.height());
+    // Convert content_rect from target space to normalized mask UV space.
+    // Where |unclipped_mask_target_size| maps to |mask_uv_size|.
+    mask_uv_rect = gfx::ScaleRect(
+        gfx::RectF(content_rect()),
+        mask_uv_size.width() / unclipped_mask_target_size.width(),
+        mask_uv_size.height() / unclipped_mask_target_size.height());
   }
 
   gfx::RectF tex_coord_rect(gfx::Rect(content_rect().size()));

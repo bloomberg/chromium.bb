@@ -143,7 +143,8 @@ class CC_EXPORT LayerImpl {
   }
 
   virtual void GetContentsResourceId(ResourceId* resource_id,
-                                     gfx::Size* resource_size) const;
+                                     gfx::Size* resource_size,
+                                     gfx::SizeF* resource_uv_size) const;
 
   virtual void NotifyTileStateChanged(const Tile* tile) {}
 

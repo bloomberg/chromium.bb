@@ -1230,9 +1230,12 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   // The mask resource exists.
   ResourceId mask_resource_id;
   gfx::Size mask_texture_size;
-  active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  gfx::SizeF mask_uv_size;
+  active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size,
+                                     &mask_uv_size);
   EXPECT_NE(0u, mask_resource_id);
   EXPECT_EQ(active_mask->bounds(), mask_texture_size);
+  EXPECT_EQ(gfx::SizeF(1.0f, 1.0f), mask_uv_size);
 
   // Drop resources and recreate them, still the same.
   pending_mask->ReleaseTileResources();
@@ -1243,8 +1246,6 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
                                     false);
   active_mask->HighResTiling()->CreateAllTilesForTesting();
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
-  EXPECT_NE(0u, mask_resource_id);
-  EXPECT_EQ(active_mask->bounds(), mask_texture_size);
 
   // Resize larger than the max texture size.
   int max_texture_size = host_impl()->resource_provider()->max_texture_size();
@@ -1271,11 +1272,13 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   // Mask layers have a tiling with a single tile in it.
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
   // The mask resource exists.
-  active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size,
+                                     &mask_uv_size);
   EXPECT_NE(0u, mask_resource_id);
   gfx::Size expected_size = active_mask->bounds();
   expected_size.SetToMin(gfx::Size(max_texture_size, max_texture_size));
   EXPECT_EQ(expected_size, mask_texture_size);
+  EXPECT_EQ(gfx::SizeF(1.0f, 1.0f), mask_uv_size);
 
   // Drop resources and recreate them, still the same.
   pending_mask->ReleaseTileResources();
@@ -1293,9 +1296,11 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   SetupPendingTree(huge_raster_source);
   ActivateTree();
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
-  active_layer()->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  active_layer()->GetContentsResourceId(&mask_resource_id, &mask_texture_size,
+                                        &mask_uv_size);
   EXPECT_EQ(expected_size, mask_texture_size);
   EXPECT_EQ(0u, mask_resource_id);
+  EXPECT_EQ(gfx::SizeF(1.0f, 1.0f), mask_uv_size);
 
   // Resize even larger, so that the scale would be smaller than the minimum
   // contents scale. Then the layer should no longer have any tiling.
@@ -1360,11 +1365,14 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   // The mask resource exists.
   ResourceId mask_resource_id;
   gfx::Size mask_texture_size;
-  active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  gfx::SizeF mask_uv_size;
+  active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size,
+                                     &mask_uv_size);
   EXPECT_NE(0u, mask_resource_id);
   gfx::Size expected_mask_texture_size =
       gfx::ScaleToCeiledSize(active_mask->bounds(), 1.3f);
   EXPECT_EQ(mask_texture_size, expected_mask_texture_size);
+  EXPECT_EQ(gfx::SizeF(1.0f, 1.0f), mask_uv_size);
 }
 
 TEST_F(PictureLayerImplTest, ReleaseTileResources) {

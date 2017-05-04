@@ -260,7 +260,8 @@ void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
 }
 
 void LayerImpl::GetContentsResourceId(ResourceId* resource_id,
-                                      gfx::Size* resource_size) const {
+                                      gfx::Size* resource_size,
+                                      gfx::SizeF* resource_uv_size) const {
   NOTREACHED();
   *resource_id = 0;
 }

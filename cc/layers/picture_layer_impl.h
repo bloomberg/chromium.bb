@@ -77,7 +77,8 @@ class CC_EXPORT PictureLayerImpl
 
   // Mask-related functions.
   void GetContentsResourceId(ResourceId* resource_id,
-                             gfx::Size* resource_size) const override;
+                             gfx::Size* resource_size,
+                             gfx::SizeF* resource_uv_size) const override;
 
   void SetNearestNeighbor(bool nearest_neighbor);
 

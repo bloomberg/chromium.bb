@@ -851,8 +851,10 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   return gfx::Size(tile_width, tile_height);
 }
 
-void PictureLayerImpl::GetContentsResourceId(ResourceId* resource_id,
-                                             gfx::Size* resource_size) const {
+void PictureLayerImpl::GetContentsResourceId(
+    ResourceId* resource_id,
+    gfx::Size* resource_size,
+    gfx::SizeF* resource_uv_size) const {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
   DCHECK(raster_source_->GetSize().IsEmpty() ||
@@ -885,6 +887,18 @@ void PictureLayerImpl::GetContentsResourceId(ResourceId* resource_id,
 
   *resource_id = draw_info.resource_id();
   *resource_size = draw_info.resource_size();
+  // |resource_uv_size| represents the range of UV coordinates that map to the
+  // content being drawn. Typically, we draw to the entire texture, so these
+  // coordinates are (1.0f, 1.0f). However, if we are rasterizing to an
+  // over-large texture, this size will be smaller, mapping to the subset of the
+  // texture being used.
+  gfx::SizeF requested_tile_size =
+      gfx::SizeF(iter->tiling()->tiling_data()->tiling_size());
+  DCHECK_LE(requested_tile_size.width(), draw_info.resource_size().width());
+  DCHECK_LE(requested_tile_size.height(), draw_info.resource_size().height());
+  *resource_uv_size = gfx::SizeF(
+      requested_tile_size.width() / draw_info.resource_size().width(),
+      requested_tile_size.height() / draw_info.resource_size().height());
 }
 
 void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
