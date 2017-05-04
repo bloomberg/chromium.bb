@@ -87,7 +87,6 @@ import org.chromium.chrome.browser.ntp.ChromeHomeNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -98,6 +97,7 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoS
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
+import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -522,9 +522,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mLocaleManager.startObservingPhoneChanges();
 
         if (isWarmOnResume()) {
-            SnippetsBridge.notifySchedulerAboutWarmResume();
+            SuggestionsEventReporterBridge.onActivityWarmResumed();
         } else {
-            SnippetsBridge.notifySchedulerAboutColdStart();
+            SuggestionsEventReporterBridge.onColdStart();
         }
     }
 

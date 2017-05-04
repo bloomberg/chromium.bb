@@ -24,7 +24,8 @@ import java.util.List;
 public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
     private final List<DestructionObserver> mDestructionObservers = new ArrayList<>();
     private final SuggestionsSource mSuggestionsSource;
-    private final SuggestionsMetricsReporter mSuggestionsMetricsReporter;
+    private final SuggestionsRanker mSuggestionsRanker;
+    private final SuggestionsEventReporter mSuggestionsEventReporter;
     private final SuggestionsNavigationDelegate mSuggestionsNavigationDelegate;
 
     private final Profile mProfile;
@@ -37,11 +38,12 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
     private boolean mIsDestroyed;
 
     public SuggestionsUiDelegateImpl(SuggestionsSource suggestionsSource,
-            SuggestionsMetricsReporter metricsReporter,
+            SuggestionsEventReporter eventReporter,
             SuggestionsNavigationDelegate navigationDelegate, Profile profile,
             NativePageHost host) {
         mSuggestionsSource = suggestionsSource;
-        mSuggestionsMetricsReporter = metricsReporter;
+        mSuggestionsRanker = new SuggestionsRanker();
+        mSuggestionsEventReporter = eventReporter;
         mSuggestionsNavigationDelegate = navigationDelegate;
 
         mProfile = profile;
@@ -77,10 +79,15 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
         return mSuggestionsSource;
     }
 
+    @Override
+    public SuggestionsRanker getSuggestionsRanker() {
+        return mSuggestionsRanker;
+    }
+
     @Nullable
     @Override
-    public SuggestionsMetricsReporter getMetricsReporter() {
-        return mSuggestionsMetricsReporter;
+    public SuggestionsEventReporter getEventReporter() {
+        return mSuggestionsEventReporter;
     }
 
     @Nullable

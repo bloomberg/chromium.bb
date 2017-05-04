@@ -24,8 +24,9 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
-import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
+import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
@@ -33,7 +34,7 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
-import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsMetricsReporter;
+import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 
 import java.io.IOException;
@@ -193,8 +194,9 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
      * A SuggestionsUiDelegate to initialize our Adapter.
      */
     private class MockUiDelegate implements SuggestionsUiDelegate {
-        private SuggestionsMetricsReporter mSuggestionsMetricsReporter =
-                new DummySuggestionsMetricsReporter();
+        private SuggestionsEventReporter mSuggestionsEventReporter =
+                new DummySuggestionsEventReporter();
+        private SuggestionsRanker mSuggestionsRanker = new SuggestionsRanker();
 
         @Override
         public void getLocalFaviconImageForURL(
@@ -229,6 +231,11 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
+        public SuggestionsRanker getSuggestionsRanker() {
+            return mSuggestionsRanker;
+        }
+
+        @Override
         public void addDestructionObserver(DestructionObserver destructionObserver) {}
 
         @Override
@@ -237,8 +244,8 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public SuggestionsMetricsReporter getMetricsReporter() {
-            return mSuggestionsMetricsReporter;
+        public SuggestionsEventReporter getEventReporter() {
+            return mSuggestionsEventReporter;
         }
 
         @Override

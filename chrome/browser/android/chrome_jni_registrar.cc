@@ -73,6 +73,7 @@
 #include "chrome/browser/android/ntp/most_visited_sites_bridge.h"
 #include "chrome/browser/android/ntp/ntp_snippets_bridge.h"
 #include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
+#include "chrome/browser/android/ntp/suggestions_event_reporter_bridge.h"
 #include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_download_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
@@ -414,6 +415,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      chrome::android::RegisterSSLClientCertificateRequestAndroid},
     {"StartupMetricUtils", chrome::android::RegisterStartupMetricUtils},
     {"StaticTabSceneLayer", RegisterStaticTabSceneLayer},
+    {"SuggestionsEventReporterBridge", RegisterSuggestionsEventReporterBridge},
     {"SupervisedUserContentProvider", SupervisedUserContentProvider::Register},
     {"Sync", syncer::RegisterSyncJni},
     {"SyncSessionsMetrics", SyncSessionsMetricsAndroid::Register},

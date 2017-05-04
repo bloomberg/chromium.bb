@@ -17,7 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.test.BottomSheetTestCaseBase;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
-import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsMetricsReporter;
+import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 
@@ -32,15 +32,15 @@ public class SuggestionsBottomSheetTest extends BottomSheetTestCaseBase {
         mSuggestionsSource = new FakeSuggestionsSource();
         registerCategory(mSuggestionsSource, /* category = */ 42, /* count = */ 5);
         SuggestionsBottomSheetContent.setSuggestionsSourceForTesting(mSuggestionsSource);
-        SuggestionsBottomSheetContent.setMetricsReporterForTesting(
-                new DummySuggestionsMetricsReporter());
+        SuggestionsBottomSheetContent.setEventReporterForTesting(
+                new DummySuggestionsEventReporter());
         super.setUp();
     }
 
     @Override
     protected void tearDown() throws Exception {
         SuggestionsBottomSheetContent.setSuggestionsSourceForTesting(null);
-        SuggestionsBottomSheetContent.setMetricsReporterForTesting(null);
+        SuggestionsBottomSheetContent.setEventReporterForTesting(null);
         super.tearDown();
     }
 

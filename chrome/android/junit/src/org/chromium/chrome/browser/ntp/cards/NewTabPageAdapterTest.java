@@ -65,7 +65,8 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
-import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
@@ -214,7 +215,8 @@ public class NewTabPageAdapterTest {
                 TEST_CATEGORY, new CategoryInfoBuilder(TEST_CATEGORY).showIfEmpty().build());
 
         when(mUiDelegate.getSuggestionsSource()).thenReturn(mSource);
-        when(mUiDelegate.getMetricsReporter()).thenReturn(mock(SuggestionsMetricsReporter.class));
+        when(mUiDelegate.getEventReporter()).thenReturn(mock(SuggestionsEventReporter.class));
+        when(mUiDelegate.getSuggestionsRanker()).thenReturn(mock(SuggestionsRanker.class));
 
         reloadNtp();
     }

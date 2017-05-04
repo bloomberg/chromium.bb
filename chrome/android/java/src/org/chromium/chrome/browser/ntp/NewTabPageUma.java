@@ -12,8 +12,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -384,7 +384,7 @@ public final class NewTabPageUma {
             if (removeObserverFromTab != null) removeObserverFromTab.removeObserver(this);
             RecordUserAction.record("MobileNTP.Snippets.VisitEnd");
             long visitTimeMs = SystemClock.elapsedRealtime() - mStartTimeMs;
-            SnippetsBridge.onSuggestionTargetVisited(mCategory, visitTimeMs);
+            SuggestionsEventReporterBridge.onSuggestionTargetVisited(mCategory, visitTimeMs);
         }
     }
 }

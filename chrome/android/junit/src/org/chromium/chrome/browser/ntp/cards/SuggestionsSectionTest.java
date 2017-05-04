@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
-import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -769,7 +769,7 @@ public class SuggestionsSectionTest {
         SuggestionsNavigationDelegate navDelegate = mock(SuggestionsNavigationDelegate.class);
         when(manager.getSuggestionsSource()).thenReturn(suggestionsSource);
         when(manager.getNavigationDelegate()).thenReturn(navDelegate);
-        when(manager.getMetricsReporter()).thenReturn(mock(SuggestionsMetricsReporter.class));
+        when(manager.getEventReporter()).thenReturn(mock(SuggestionsEventReporter.class));
 
         if (action != ContentSuggestionsAdditionalAction.NONE) {
             section.getActionItemForTesting().performAction(manager);

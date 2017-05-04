@@ -40,13 +40,10 @@ public class SectionList
     private final Set<Integer> mBlacklistedCategories = new HashSet<>();
     private final SuggestionsUiDelegate mUiDelegate;
     private final OfflinePageBridge mOfflinePageBridge;
-    private final SuggestionsRanker mSuggestionsRanker;
 
     public SectionList(SuggestionsUiDelegate uiDelegate, OfflinePageBridge offlinePageBridge) {
-        mSuggestionsRanker = new SuggestionsRanker();
         mUiDelegate = uiDelegate;
         mUiDelegate.getSuggestionsSource().setObserver(this);
-        mUiDelegate.getMetricsReporter().setRanker(mSuggestionsRanker);
         mOfflinePageBridge = offlinePageBridge;
 
         mUiDelegate.addDestructionObserver(new DestructionObserver() {
@@ -83,7 +80,7 @@ public class SectionList
         }
 
         maybeHideArticlesHeader();
-        mUiDelegate.getMetricsReporter().onPageShown(categories, suggestionsPerCategory);
+        mUiDelegate.getEventReporter().onPageShown(categories, suggestionsPerCategory);
     }
 
     /**
@@ -115,10 +112,11 @@ public class SectionList
 
         // Create the section if needed.
         if (section == null) {
+            SuggestionsRanker suggestionsRanker = mUiDelegate.getSuggestionsRanker();
             section = new SuggestionsSection(
-                    this, mUiDelegate, mSuggestionsRanker, mOfflinePageBridge, info);
+                    this, mUiDelegate, suggestionsRanker, mOfflinePageBridge, info);
             mSections.put(category, section);
-            mSuggestionsRanker.registerCategory(category);
+            suggestionsRanker.registerCategory(category);
             addChild(section);
         } else {
             section.clearData();

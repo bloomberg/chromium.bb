@@ -45,7 +45,8 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
-import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
@@ -76,7 +77,7 @@ public class SectionListTest {
     @Mock
     private OfflinePageBridge mOfflinePageBridge;
     @Mock
-    private SuggestionsMetricsReporter mMetricsReporter;
+    private SuggestionsEventReporter mEventReporter;
     private FakeSuggestionsSource mSuggestionSource;
 
     @Before
@@ -86,7 +87,8 @@ public class SectionListTest {
         mSuggestionSource = spy(new FakeSuggestionsSource());
 
         when(mUiDelegate.getSuggestionsSource()).thenReturn(mSuggestionSource);
-        when(mUiDelegate.getMetricsReporter()).thenReturn(mMetricsReporter);
+        when(mUiDelegate.getEventReporter()).thenReturn(mEventReporter);
+        when(mUiDelegate.getSuggestionsRanker()).thenReturn(new SuggestionsRanker());
     }
 
     @After

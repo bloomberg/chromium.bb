@@ -41,13 +41,13 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  */
 public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetContent {
     private static SuggestionsSource sSuggestionsSourceForTesting;
-    private static SuggestionsMetricsReporter sMetricsReporterForTesting;
+    private static SuggestionsEventReporter sEventReporterForTesting;
 
     private final View mView;
     private final FadingShadowView mShadowView;
     private final SuggestionsRecyclerView mRecyclerView;
     private final ContextMenuManager mContextMenuManager;
-    private final SuggestionsUiDelegateImpl mSuggestionsManager;
+    private final SuggestionsUiDelegateImpl mSuggestionsUiDelegate;
     private final TileGroup.Delegate mTileGroupDelegate;
     private final BottomSheet mBottomSheet;
     private final BottomSheetObserver mBottomSheetObserver;
@@ -59,7 +59,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 new SuggestionsNavigationDelegateImpl(activity, profile, sheet, tabModelSelector);
         mTileGroupDelegate = new TileGroupDelegateImpl(
                 activity, profile, tabModelSelector, navigationDelegate, snackbarManager);
-        mSuggestionsManager = createSuggestionsDelegate(profile, navigationDelegate, sheet);
+        mSuggestionsUiDelegate = createSuggestionsDelegate(profile, navigationDelegate, sheet);
 
         mView = LayoutInflater.from(activity).inflate(
                 R.layout.suggestions_bottom_sheet_content, null);
@@ -74,7 +74,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mContextMenuManager =
                 new ContextMenuManager(activity, navigationDelegate, touchEnabledDelegate);
         activity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
-        mSuggestionsManager.addDestructionObserver(new DestructionObserver() {
+        mSuggestionsUiDelegate.addDestructionObserver(new DestructionObserver() {
             @Override
             public void onDestroy() {
                 activity.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
@@ -83,12 +83,11 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         UiConfig uiConfig = new UiConfig(mRecyclerView);
 
-        final NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager,
+        final NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsUiDelegate,
                 /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),
                 mContextMenuManager, mTileGroupDelegate);
         mRecyclerView.init(uiConfig, mContextMenuManager, adapter);
 
-        final SuggestionsSource suggestionsSource = mSuggestionsManager.getSuggestionsSource();
         mBottomSheetObserver = new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened() {
@@ -97,13 +96,13 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 // TODO(https://crbug.com/689962) Ensure this call does not discard all suggestions
                 // every time the sheet is opened.
                 adapter.refreshSuggestions();
-                suggestionsSource.onNtpInitialized();
+                mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
             }
         };
         mBottomSheet = activity.getBottomSheet();
         mBottomSheet.addObserver(mBottomSheetObserver);
         adapter.refreshSuggestions();
-        suggestionsSource.onNtpInitialized();
+        mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
 
         mShadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
         mShadowView.init(
@@ -156,7 +155,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     @Override
     public void destroy() {
         mBottomSheet.removeObserver(mBottomSheetObserver);
-        mSuggestionsManager.onDestroy();
+        mSuggestionsUiDelegate.onDestroy();
         mTileGroupDelegate.destroy();
     }
 
@@ -169,15 +168,15 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         sSuggestionsSourceForTesting = suggestionsSource;
     }
 
-    public static void setMetricsReporterForTesting(SuggestionsMetricsReporter metricsReporter) {
-        sMetricsReporterForTesting = metricsReporter;
+    public static void setEventReporterForTesting(SuggestionsEventReporter eventReporter) {
+        sEventReporterForTesting = eventReporter;
     }
 
     private static SuggestionsUiDelegateImpl createSuggestionsDelegate(Profile profile,
             SuggestionsNavigationDelegate navigationDelegate, NativePageHost host) {
         SnippetsBridge snippetsBridge = null;
         SuggestionsSource suggestionsSource;
-        SuggestionsMetricsReporter metricsReporter;
+        SuggestionsEventReporter eventReporter;
 
         if (sSuggestionsSourceForTesting == null) {
             snippetsBridge = new SnippetsBridge(profile);
@@ -186,15 +185,14 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             suggestionsSource = sSuggestionsSourceForTesting;
         }
 
-        if (sMetricsReporterForTesting == null) {
-            if (snippetsBridge == null) snippetsBridge = new SnippetsBridge(profile);
-            metricsReporter = snippetsBridge;
+        if (sEventReporterForTesting == null) {
+            eventReporter = new SuggestionsEventReporterBridge();
         } else {
-            metricsReporter = sMetricsReporterForTesting;
+            eventReporter = sEventReporterForTesting;
         }
 
         SuggestionsUiDelegateImpl delegate = new SuggestionsUiDelegateImpl(
-                suggestionsSource, metricsReporter, navigationDelegate, profile, host);
+                suggestionsSource, eventReporter, navigationDelegate, profile, host);
         if (snippetsBridge != null) delegate.addDestructionObserver(snippetsBridge);
 
         return delegate;
