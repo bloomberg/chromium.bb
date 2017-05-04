@@ -25,7 +25,6 @@ class CC_EXPORT RendererSettings {
   bool partial_swap_enabled = false;
   bool finish_rendering_on_resize = false;
   bool should_clear_root_render_pass = true;
-  bool disable_display_vsync = false;
   bool release_overlay_resources_after_gpu_query = false;
   bool gl_composited_texture_quad_border = false;
   bool show_overdraw_feedback = false;

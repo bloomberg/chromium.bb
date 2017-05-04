@@ -346,11 +346,12 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
             *base::CommandLine::ForCurrentProcess(), deps, 1.f, false,
             dummy_screen_info);
 
+    constexpr bool disable_display_vsync = false;
     auto compositor_frame_sink = base::MakeUnique<cc::TestCompositorFrameSink>(
         std::move(compositor_context_provider),
         std::move(worker_context_provider), nullptr /* shared_bitmap_manager */,
         gpu_memory_buffer_manager, settings.renderer_settings, task_runner,
-        synchronous_composite);
+        synchronous_composite, disable_display_vsync);
     compositor_frame_sink->SetClient(this);
     compositor_frame_sinks_[routing_id] = compositor_frame_sink.get();
     return std::move(compositor_frame_sink);

@@ -23,6 +23,7 @@
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/paths.h"
+#include "cc/test/test_compositor_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/perf/perf_test.h"
 
@@ -45,12 +46,18 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
         measure_commit_cost_(false) {
   }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // LayerTreeTests give the Display's BeginFrameSource directly to the
-    // LayerTreeHost like we do in the Browser process via
-    // TestDelegatingOutputSurface, so setting disable_display_vsync here
-    // unthrottles both the DisplayScheduler and the Scheduler.
-    settings->renderer_settings.disable_display_vsync = true;
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider) override {
+    constexpr bool disable_display_vsync = true;
+    bool synchronous_composite =
+        !HasImplThread() &&
+        !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
+    return base::MakeUnique<TestCompositorFrameSink>(
+        compositor_context_provider, std::move(worker_context_provider),
+        shared_bitmap_manager(), gpu_memory_buffer_manager(),
+        layer_tree_host()->GetSettings().renderer_settings,
+        ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync);
   }
 
   void BeginTest() override {

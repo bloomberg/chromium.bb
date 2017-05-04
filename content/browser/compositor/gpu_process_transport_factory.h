@@ -128,6 +128,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   scoped_refptr<ui::ContextProviderCommandBuffer>
       shared_worker_context_provider_;
 
+  bool disable_display_vsync_ = false;
   bool shared_vulkan_context_provider_initialized_ = false;
   scoped_refptr<cc::VulkanInProcessContextProvider>
       shared_vulkan_context_provider_;
