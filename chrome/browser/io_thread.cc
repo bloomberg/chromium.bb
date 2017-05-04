@@ -902,35 +902,34 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
     const net::HttpNetworkSession::Params& params,
     net::NetLog* net_log) {
   net::URLRequestContext* context = new SystemURLRequestContext;
+
+  context->set_network_quality_estimator(
+      globals->network_quality_estimator.get());
+  context->set_enable_brotli(globals->enable_brotli);
+  context->set_name("system");
+
+  context->set_http_user_agent_settings(
+      globals->http_user_agent_settings.get());
+  context->set_network_delegate(globals->system_network_delegate.get());
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
-  context->set_cert_verifier(globals->cert_verifier.get());
-  context->set_transport_security_state(
-      globals->transport_security_state.get());
-  context->set_cert_transparency_verifier(
-      globals->cert_transparency_verifier.get());
-  context->set_ct_policy_enforcer(globals->ct_policy_enforcer.get());
+  context->set_proxy_service(globals->system_proxy_service.get());
   context->set_ssl_config_service(globals->ssl_config_service.get());
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());
-  context->set_proxy_service(globals->system_proxy_service.get());
-
-  globals->system_url_request_job_factory.reset(
-      new net::URLRequestJobFactoryImpl());
-  context->set_job_factory(globals->system_url_request_job_factory.get());
 
   context->set_cookie_store(globals->system_cookie_store.get());
   context->set_channel_id_service(
       globals->system_channel_id_service.get());
-  context->set_network_delegate(globals->system_network_delegate.get());
-  context->set_http_user_agent_settings(
-      globals->http_user_agent_settings.get());
-  context->set_network_quality_estimator(
-      globals->network_quality_estimator.get());
+  context->set_transport_security_state(
+      globals->transport_security_state.get());
 
   context->set_http_server_properties(globals->http_server_properties.get());
 
-  context->set_enable_brotli(globals->enable_brotli);
+  context->set_cert_verifier(globals->cert_verifier.get());
+  context->set_cert_transparency_verifier(
+      globals->cert_transparency_verifier.get());
+  context->set_ct_policy_enforcer(globals->ct_policy_enforcer.get());
 
   net::HttpNetworkSession::Params system_params(params);
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
@@ -940,9 +939,13 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
       new net::HttpNetworkSession(system_params));
   globals->system_http_transaction_factory.reset(
       new net::HttpNetworkLayer(globals->system_http_network_session.get()));
-  context->set_name("system");
+
   context->set_http_transaction_factory(
       globals->system_http_transaction_factory.get());
+
+  globals->system_url_request_job_factory.reset(
+      new net::URLRequestJobFactoryImpl());
+  context->set_job_factory(globals->system_url_request_job_factory.get());
 
   return context;
 }

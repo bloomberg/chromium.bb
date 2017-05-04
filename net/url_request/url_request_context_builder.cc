@@ -199,7 +199,10 @@ URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
 
 URLRequestContextBuilder::URLRequestContextBuilder()
-    : data_enabled_(false),
+    : name_(nullptr),
+      enable_brotli_(false),
+      network_quality_estimator_(nullptr),
+      data_enabled_(false),
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
       file_enabled_(false),
 #endif
@@ -300,6 +303,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   std::unique_ptr<ContainerURLRequestContext> context(
       new ContainerURLRequestContext(file_task_runner_));
   URLRequestContextStorage* storage = context->storage();
+
+  context->set_name(name_);
+  context->set_enable_brotli(enable_brotli_);
+  context->set_network_quality_estimator(network_quality_estimator_);
 
   storage->set_http_user_agent_settings(
       base::MakeUnique<StaticHttpUserAgentSettings>(accept_language_,
