@@ -106,7 +106,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                         dequant_val_type_nuq *dq_val,
 #endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
-                        const qm_val_t *iqm[2][TX_SIZES],
+                        const qm_val_t *iqm[2][TX_SIZES_ALL],
 #endif  // CONFIG_AOM_QM
                         int ctx, const int16_t *scan, const int16_t *nb,
                         int16_t *max_scan_line, aom_reader *r) {
@@ -151,9 +151,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const tran_low_t *dqv_val = &dq_val[0][0];
 #endif  // CONFIG_NEW_QUANT
   (void)tx_type;
-#if CONFIG_AOM_QM
-  (void)iqmatrix;
-#endif  // CONFIG_AOM_QM
 
   if (counts) {
 #if !(CONFIG_DAALA_EC || CONFIG_ANS) || !CONFIG_EC_ADAPT

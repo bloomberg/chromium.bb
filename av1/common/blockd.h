@@ -541,16 +541,14 @@ typedef struct macroblockd_plane {
   uint8_t width, height;
 
 #if CONFIG_AOM_QM
-  const qm_val_t *seg_iqmatrix[MAX_SEGMENTS][2][TX_SIZES];
+  const qm_val_t *seg_iqmatrix[MAX_SEGMENTS][2][TX_SIZES_ALL];
+  const qm_val_t *seg_qmatrix[MAX_SEGMENTS][2][TX_SIZES_ALL];
 #endif
   // encoder
   const int16_t *dequant;
 #if CONFIG_NEW_QUANT
   const dequant_val_type_nuq *dequant_val_nuq[QUANT_PROFILES];
 #endif  // CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-  const qm_val_t *seg_qmatrix[MAX_SEGMENTS][2][TX_SIZES];
-#endif
 
 #if CONFIG_PVQ || CONFIG_DAALA_DIST
   DECLARE_ALIGNED(16, int16_t, pred[MAX_SB_SQUARE]);
