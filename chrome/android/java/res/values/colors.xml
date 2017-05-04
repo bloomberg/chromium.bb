@@ -143,7 +143,7 @@
     <color name="progress_bar_background_white">@color/black_alpha_30</color>
 
     <!-- Theme colors. Also used for toolbar background -->
-    <color name="incognito_primary_color">#424242</color>
+    <color name="incognito_primary_color">#505050</color>
 
     <!-- LocationBar colors -->
     <color name="locationbar_dark_hint_text">#969696</color>
