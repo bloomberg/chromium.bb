@@ -53,7 +53,7 @@ ninja -C out/Release chrome
 ```
 2.  Generate the compilation database
 ```
-ninja -C out/Release -t compdb objcxx cxx > compile_commands.json
+tools/clang/scripts/generate_compdb.py -p out/Release > compile_commands.json
 ```
 3.  Enter the build directory.
 ```
