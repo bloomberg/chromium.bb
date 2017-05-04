@@ -22,12 +22,13 @@ const StructuredClonePerfTestRunner = (function() {
   return {
     measureTimeAsync(test) {
       let isDone = false;
-      PerfTestRunner.prepareToMeasureValuesAsync({
+      PerfTestRunner.startMeasureValuesAsync({
         description: test.description,
         unit: 'ms',
         warmUpCount: test.warmUpCount || 10,
         iterationCount: test.iterationCount || 250,
         done() { isDone = true; },
+        run: pingPongUntilDone,
       });
 
       function pingPongUntilDone() {
@@ -40,7 +41,6 @@ const StructuredClonePerfTestRunner = (function() {
           if (!isDone) pingPongUntilDone();
         });
       }
-      pingPongUntilDone();
     },
   };
 })();

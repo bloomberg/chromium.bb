@@ -4,38 +4,39 @@
 
          setup: function(testName) {
              var ITERATION_COUNT = 5;
-             PerfTestRunner.prepareToMeasureValuesAsync({
+             PerfTestRunner.startMeasureValuesAsync({
                  iterationCount: ITERATION_COUNT,
                  doNotMeasureMemoryUsage: true,
                  doNotIgnoreInitialRun: true,
-                 unit: 'runs/s'
+                 unit: 'runs/s',
+                 run: function() {
+                     var iframe = document.createElement("iframe");
+                     var url = DRT.baseURL + "?" + testName + '&numTests=' + ITERATION_COUNT;
+                     iframe.setAttribute("src", url);
+                     document.body.insertBefore(iframe, document.body.firstChild);
+                     iframe.addEventListener(
+                         "load", function() {
+                             DRT.targetDocument = iframe.contentDocument;
+                             DRT.targetWindow = iframe.contentDocument.defaultView;
+                         });
+
+                     window.addEventListener(
+                         "message",
+                         function(event) {
+                             switch(event.data.name) {
+                             case "dromaeo:ready":
+                                 DRT.start();
+                                 break;
+                             case "dromaeo:progress":
+                                 DRT.progress(event.data);
+                                 break;
+                             case "dromaeo:alldone":
+                                 DRT.teardown(event.data);
+                                 break;
+                             }
+                         });
+                   }
              });
-
-             var iframe = document.createElement("iframe");
-             var url = DRT.baseURL + "?" + testName + '&numTests=' + ITERATION_COUNT;
-             iframe.setAttribute("src", url);
-             document.body.insertBefore(iframe, document.body.firstChild);
-             iframe.addEventListener(
-                 "load", function() {
-                     DRT.targetDocument = iframe.contentDocument;
-                     DRT.targetWindow = iframe.contentDocument.defaultView;
-                 });
-
-             window.addEventListener(
-                 "message",
-                 function(event) {
-                     switch(event.data.name) {
-                     case "dromaeo:ready":
-                         DRT.start();
-                         break;
-                     case "dromaeo:progress":
-                         DRT.progress(event.data);
-                         break;
-                     case "dromaeo:alldone":
-                         DRT.teardown(event.data);
-                         break;
-                     }
-                 });
          },
 
          start: function() {

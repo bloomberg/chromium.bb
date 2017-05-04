@@ -27,12 +27,12 @@ function testDone() {
 }
 
 window.onload = function () {
-    PerfTestRunner.prepareToMeasureValuesAsync({
+    PerfTestRunner.startMeasureValuesAsync({
         description: "Measures time to run 1000 postMessage round trips in serial.",
         unit: 'ms',
+        run: runTest,
         done: testDone,
     });
-    runTest();
 };
 </script>
 <div id="log"></div>
