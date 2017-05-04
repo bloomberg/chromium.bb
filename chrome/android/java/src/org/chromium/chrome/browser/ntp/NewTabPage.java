@@ -39,7 +39,8 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
-import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
@@ -174,10 +175,10 @@ public class NewTabPage
     private class NewTabPageManagerImpl
             extends SuggestionsUiDelegateImpl implements NewTabPageManager {
         public NewTabPageManagerImpl(SuggestionsSource suggestionsSource,
-                SuggestionsMetricsReporter metricsReporter,
+                SuggestionsEventReporter eventReporter,
                 SuggestionsNavigationDelegate navigationDelegate, Profile profile,
                 NativePageHost nativePageHost) {
-            super(suggestionsSource, metricsReporter, navigationDelegate, profile, nativePageHost);
+            super(suggestionsSource, eventReporter, navigationDelegate, profile, nativePageHost);
         }
 
         @Override
@@ -315,12 +316,13 @@ public class NewTabPage
         Profile profile = mTab.getProfile();
 
         mSnippetsBridge = new SnippetsBridge(profile);
+        SuggestionsEventReporter eventReporter = new SuggestionsEventReporterBridge();
 
         SuggestionsNavigationDelegateImpl navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(
                         activity, profile, nativePageHost, tabModelSelector);
         mNewTabPageManager = new NewTabPageManagerImpl(
-                mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, nativePageHost);
+                mSnippetsBridge, eventReporter, navigationDelegate, profile, nativePageHost);
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(
                 activity, profile, tabModelSelector, navigationDelegate);
 
@@ -375,9 +377,7 @@ public class NewTabPage
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo, getScrollPositionFromNavigationEntry());
 
-        if (mSnippetsBridge != null) {
-            mSnippetsBridge.onNtpInitialized();
-        }
+        eventReporter.onSurfaceOpened();
 
         DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
                 /*isOffRecord=*/false);

@@ -9,9 +9,15 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
- * Exposes UMA related methods.
+ * Exposes methods to report suggestions related events, for UMA or Fetch scheduling purposes.
  */
-public interface SuggestionsMetricsReporter {
+public interface SuggestionsEventReporter {
+    /**
+     * Notifies about new suggestions surfaces being opened: the bottom sheet opening or a NTP being
+     * created.
+     */
+    void onSurfaceOpened();
+
     /**
      * Tracks per-page-load metrics for content suggestions.
      * @param categories The categories of content suggestions.
@@ -30,8 +36,10 @@ public interface SuggestionsMetricsReporter {
      * @param suggestion The content suggestion that the user opened.
      * @param windowOpenDisposition How the suggestion was opened (current tab, new tab,
      *                              new window etc).
+     * @param suggestionsRanker The ranker used to get extra information about that suggestion.
      */
-    void onSuggestionOpened(SnippetArticle suggestion, int windowOpenDisposition);
+    void onSuggestionOpened(SnippetArticle suggestion, int windowOpenDisposition,
+            SuggestionsRanker suggestionsRanker);
 
     /**
      * Tracks impression metrics for the long-press menu for a content suggestion.
@@ -50,7 +58,4 @@ public interface SuggestionsMetricsReporter {
      * @param category The action button that was clicked.
      */
     void onMoreButtonClicked(@CategoryInt ActionItem category);
-
-    /** Sets the ranker to use to compute some of the reported metrics. */
-    void setRanker(SuggestionsRanker suggestionsRanker);
 }

@@ -95,56 +95,6 @@ class NTPSnippetsBridge
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void OnPageShown(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jintArray>& jcategories,
-      const base::android::JavaParamRef<jintArray>& jsuggestions_per_category);
-
-  void OnSuggestionShown(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj,
-                         jint global_position,
-                         jint j_category_id,
-                         jint position_in_category,
-                         jlong publish_timestamp_ms,
-                         jfloat score,
-                         jlong fetch_timestamp_ms);
-
-  void OnSuggestionOpened(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj,
-                          jint global_position,
-                          jint j_category_id,
-                          jint category_index,
-                          jint position_in_category,
-                          jlong publish_timestamp_ms,
-                          jfloat score,
-                          int windowOpenDisposition);
-
-  void OnSuggestionMenuOpened(JNIEnv* env,
-                              const base::android::JavaParamRef<jobject>& obj,
-                              jint global_position,
-                              jint j_category_id,
-                              jint position_in_category,
-                              jlong publish_timestamp_ms,
-                              jfloat score);
-
-  void OnMoreButtonShown(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj,
-                         jint j_category_id,
-                         jint position);
-
-  void OnMoreButtonClicked(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           jint j_category_id,
-                           jint position);
-
-  void OnNTPInitialized(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj);
-  void OnColdStart(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj);
-  void OnActivityWarmResumed(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
-
   static bool Register(JNIEnv* env);
 
  private:

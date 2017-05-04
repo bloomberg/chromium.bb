@@ -140,7 +140,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     @Override
     public void onImpression() {
         if (mArticle != null && mArticle.trackImpression()) {
-            mUiDelegate.getMetricsReporter().onSuggestionShown(mArticle);
+            mUiDelegate.getEventReporter().onSuggestionShown(mArticle);
             mRecyclerView.onSnippetImpression();
         }
     }
@@ -148,13 +148,15 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     @Override
     public void onCardTapped() {
         int windowDisposition = WindowOpenDisposition.CURRENT_TAB;
-        mUiDelegate.getMetricsReporter().onSuggestionOpened(mArticle, windowDisposition);
+        mUiDelegate.getEventReporter().onSuggestionOpened(
+                mArticle, windowDisposition, mUiDelegate.getSuggestionsRanker());
         mUiDelegate.getNavigationDelegate().openSnippet(windowDisposition, mArticle);
     }
 
     @Override
     public void openItem(int windowDisposition) {
-        mUiDelegate.getMetricsReporter().onSuggestionOpened(mArticle, windowDisposition);
+        mUiDelegate.getEventReporter().onSuggestionOpened(
+                mArticle, windowDisposition, mUiDelegate.getSuggestionsRanker());
         mUiDelegate.getNavigationDelegate().openSnippet(windowDisposition, mArticle);
     }
 
@@ -173,7 +175,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
     @Override
     public void onContextMenuCreated() {
-        mUiDelegate.getMetricsReporter().onSuggestionMenuOpened(mArticle);
+        mUiDelegate.getEventReporter().onSuggestionMenuOpened(mArticle);
     }
 
     /**

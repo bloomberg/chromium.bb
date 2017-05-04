@@ -61,7 +61,7 @@ public class ActionItem extends OptionalLeaf {
 
     @VisibleForTesting
     void performAction(SuggestionsUiDelegate uiDelegate) {
-        uiDelegate.getMetricsReporter().onMoreButtonClicked(this);
+        uiDelegate.getEventReporter().onMoreButtonClicked(this);
 
         switch (mCategoryInfo.getAdditionalAction()) {
             case ContentSuggestionsAdditionalAction.VIEW_ALL:
@@ -101,7 +101,7 @@ public class ActionItem extends OptionalLeaf {
                 public void onImpression() {
                     if (mActionListItem != null && !mActionListItem.mImpressionTracked) {
                         mActionListItem.mImpressionTracked = true;
-                        uiDelegate.getMetricsReporter().onMoreButtonShown(mActionListItem);
+                        uiDelegate.getEventReporter().onMoreButtonShown(mActionListItem);
                     }
                 }
             });

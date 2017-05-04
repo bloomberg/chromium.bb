@@ -20,8 +20,11 @@ public interface SuggestionsUiDelegate {
     /** Convenience method to access the {@link SuggestionsSource}. */
     SuggestionsSource getSuggestionsSource();
 
-    /** Convenience method to access the {@link SuggestionsMetricsReporter}. */
-    SuggestionsMetricsReporter getMetricsReporter();
+    /** Convenience method to access the {@link SuggestionsRanker}. */
+    SuggestionsRanker getSuggestionsRanker();
+
+    /** Convenience method to access the {@link SuggestionsEventReporter}. */
+    SuggestionsEventReporter getEventReporter();
 
     /** Convenience method to access the {@link SuggestionsNavigationDelegate}. */
     SuggestionsNavigationDelegate getNavigationDelegate();
