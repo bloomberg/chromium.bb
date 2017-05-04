@@ -75,8 +75,6 @@ suite('URL preload', function() {
     window.history.replaceState({}, '', url);
 
     chrome.bookmarks.getTree = function(callback) {
-      console.log('getTree');
-      console.log(window.location.href);
       callback([
         createFolder(
             '0',
@@ -115,5 +113,14 @@ suite('URL preload', function() {
     var state = bookmarks.Store.getInstance().data;
     assertEquals('2', state.selectedFolder);
     assertDeepEquals(['21'], bookmarks.util.getDisplayedList(state));
+  });
+
+  test('loading an invalid folder URL selects the Bookmarks Bar', function() {
+    setupWithUrl('/?id=42');
+    var state = bookmarks.Store.getInstance().data;
+    assertEquals('1', state.selectedFolder);
+    return Promise.resolve().then(function() {
+      assertEquals('chrome://bookmarks/?id=1', window.location.href);
+    });
   });
 });

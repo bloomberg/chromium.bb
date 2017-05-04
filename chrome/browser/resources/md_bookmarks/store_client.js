@@ -62,10 +62,19 @@ cr.define('bookmarks', function() {
     /**
      * Helper to dispatch an action to the store, which will update the store
      * data and then (possibly) flow through to the UI.
-     * @param {Action} action
+     * @param {?Action} action
      */
     dispatch: function(action) {
-      bookmarks.Store.getInstance().handleAction(action);
+      bookmarks.Store.getInstance().dispatch(action);
+    },
+
+    /**
+     * Helper to dispatch a DeferredAction to the store, which will
+     * asynchronously perform updates to the store data and UI.
+     * @param {DeferredAction} action
+     */
+    dispatchAsync: function(action) {
+      bookmarks.Store.getInstance().dispatchAsync(action);
     },
 
     /** @param {string} newState */

@@ -10,7 +10,7 @@
 cr.define('bookmarks.ApiListener', function() {
   /** @param {Action} action */
   function dispatch(action) {
-    bookmarks.Store.getInstance().handleAction(action);
+    bookmarks.Store.getInstance().dispatch(action);
   }
 
   /**

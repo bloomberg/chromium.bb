@@ -62,6 +62,9 @@ var BookmarksPageState;
 /** @typedef {{name: string}} */
 var Action;
 
+/** @typedef {function(function(?Action))} */
+var DeferredAction;
+
 /** @typedef {{element: BookmarkElement, position: DropPosition}} */
 var DropDestination;
 

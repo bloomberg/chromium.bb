@@ -213,7 +213,8 @@ Polymer({
 
   /** @private */
   selectFolder_: function() {
-    this.dispatch(bookmarks.actions.selectFolder(this.item_.id));
+    this.dispatch(
+        bookmarks.actions.selectFolder(this.item_.id, this.getState().nodes));
   },
 
   /**
