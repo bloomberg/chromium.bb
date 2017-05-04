@@ -574,6 +574,8 @@ void JumpList::AddWindow(const sessions::TabRestoreService::Window& window,
 void JumpList::StartLoadingFavicon() {
   DCHECK(CalledOnValidThread());
 
+  base::ElapsedTimer timer;
+
   GURL url;
   bool waiting_for_icons = true;
   {
@@ -601,11 +603,17 @@ void JumpList::StartLoadingFavicon() {
       url,
       base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)),
       &cancelable_task_tracker_);
+
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/717236
+  UMA_HISTOGRAM_TIMES("WinJumplist.StartLoadingFaviconDuration",
+                      timer.Elapsed());
 }
 
 void JumpList::OnFaviconDataAvailable(
     const favicon_base::FaviconImageResult& image_result) {
   DCHECK(CalledOnValidThread());
+
+  base::ElapsedTimer timer;
 
   // If there is currently a favicon request in progress, it is now outdated,
   // as we have received another, so nullify the handle from the old request.
@@ -628,6 +636,11 @@ void JumpList::OnFaviconDataAvailable(
     if (!data->icon_urls_.empty())
       data->icon_urls_.pop_front();
   }
+
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/717236
+  UMA_HISTOGRAM_TIMES("WinJumplist.OnFaviconDataAvailableDuration",
+                      timer.Elapsed());
+
   // Check whether we need to load more favicons.
   StartLoadingFavicon();
 }
