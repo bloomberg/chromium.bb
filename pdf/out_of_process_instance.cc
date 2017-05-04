@@ -299,11 +299,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       top_toolbar_height_(0),
       accessibility_state_(ACCESSIBILITY_STATE_OFF),
       is_print_preview_(false) {
-  loader_factory_.Initialize(this);
-  timer_factory_.Initialize(this);
-  form_factory_.Initialize(this);
-  print_callback_factory_.Initialize(this);
-  engine_.reset(PDFEngine::Create(this));
+  callback_factory_.Initialize(this);
+  engine_ = PDFEngine::Create(this);
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
 
@@ -384,7 +381,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   if (IsPrintPreview())
     return true;
 
-  LoadUrl(stream_url);
+  LoadUrl(stream_url, /*is_print_preview=*/false);
   url_ = original_url;
   pp::PDF::SetCrashData(GetPluginInstance(), original_url, top_level_url);
   return engine_->New(original_url, headers);
@@ -535,9 +532,9 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     preview_pages_info_ = std::queue<PreviewPageInfo>();
     preview_document_load_state_ = LOAD_STATE_COMPLETE;
     document_load_state_ = LOAD_STATE_LOADING;
-    LoadUrl(url_);
+    LoadUrl(url_, /*is_print_preview=*/false);
     preview_engine_.reset();
-    engine_.reset(PDFEngine::Create(this));
+    engine_ = PDFEngine::Create(this);
     engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
     engine_->New(url_.c_str(), nullptr /* empty header */);
 
@@ -718,7 +715,7 @@ void OutOfProcessInstance::LoadAccessibility() {
   SendAccessibilityViewportInfo();
 
   // Schedule loading the first page.
-  pp::CompletionCallback callback = timer_factory_.NewCallback(
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
       &OutOfProcessInstance::SendNextAccessibilityPage);
   pp::Module::Get()->core()->CallOnMainThread(kAccessibilityPageDelayMs,
                                               callback, 0);
@@ -784,7 +781,7 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
                                     text_runs.data(), chars.data());
 
   // Schedule loading the next page.
-  pp::CompletionCallback callback = timer_factory_.NewCallback(
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
       &OutOfProcessInstance::SendNextAccessibilityPage);
   pp::Module::Get()->core()->CallOnMainThread(kAccessibilityPageDelayMs,
                                               callback, page_index + 1);
@@ -958,7 +955,7 @@ void OutOfProcessInstance::DidOpen(int32_t result) {
 void OutOfProcessInstance::DidOpenPreview(int32_t result) {
   if (result == PP_OK) {
     preview_client_ = base::MakeUnique<PreviewModeClient>(this);
-    preview_engine_.reset(PDFEngine::Create(preview_client_.get()));
+    preview_engine_ = PDFEngine::Create(preview_client_.get());
     preview_engine_->HandleDocumentLoad(embed_preview_loader_);
   } else {
     NOTREACHED();
@@ -1126,7 +1123,7 @@ void OutOfProcessInstance::NotifyNumberOfFindResultsChanged(int total,
   NumberOfFindResultsChanged(total, final_result);
   SetTickmarks(tickmarks_);
   recently_sent_find_update_ = true;
-  pp::CompletionCallback callback = timer_factory_.NewCallback(
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
       &OutOfProcessInstance::ResetRecentlySentFindUpdate);
   pp::Module::Get()->core()->CallOnMainThread(kFindResultCooldownMs, callback,
                                               0);
@@ -1198,7 +1195,7 @@ void OutOfProcessInstance::Print() {
   }
 
   pp::CompletionCallback callback =
-      print_callback_factory_.NewCallback(&OutOfProcessInstance::OnPrint);
+      callback_factory_.NewCallback(&OutOfProcessInstance::OnPrint);
   pp::Module::Get()->core()->CallOnMainThread(0, callback);
 }
 
@@ -1215,7 +1212,7 @@ void OutOfProcessInstance::SubmitForm(const std::string& url,
   request.AppendDataToBody(reinterpret_cast<const char*>(data), length);
 
   pp::CompletionCallback callback =
-      form_factory_.NewCallback(&OutOfProcessInstance::FormDidOpen);
+      callback_factory_.NewCallback(&OutOfProcessInstance::FormDidOpen);
   form_loader_ = CreateURLLoaderInternal();
   int rv = form_loader_.Open(request, callback);
   if (rv != PP_OK_COMPLETIONPENDING)
@@ -1255,7 +1252,7 @@ pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
 
 void OutOfProcessInstance::ScheduleCallback(int id, int delay_in_ms) {
   pp::CompletionCallback callback =
-      timer_factory_.NewCallback(&OutOfProcessInstance::OnClientTimerFired);
+      callback_factory_.NewCallback(&OutOfProcessInstance::OnClientTimerFired);
   pp::Module::Get()->core()->CallOnMainThread(delay_in_ms, callback, id);
 }
 
@@ -1364,15 +1361,15 @@ void OutOfProcessInstance::PreviewDocumentLoadComplete() {
 
   preview_document_load_state_ = LOAD_STATE_COMPLETE;
 
+  const std::string& url = preview_pages_info_.front().first;
   int dest_page_index = preview_pages_info_.front().second;
-  int src_page_index =
-      ExtractPrintPreviewPageIndex(preview_pages_info_.front().first);
-  if (src_page_index > 0 && dest_page_index > -1 && preview_engine_.get())
+  int src_page_index = ExtractPrintPreviewPageIndex(url);
+  if (src_page_index > 0 && dest_page_index > -1 && preview_engine_)
     engine_->AppendPage(preview_engine_.get(), dest_page_index);
 
   preview_pages_info_.pop();
   // |print_preview_page_count_| is not updated yet. Do not load any
-  // other preview pages till we get this information.
+  // other preview pages until this information is available.
   if (print_preview_page_count_ == 0)
     return;
 
@@ -1472,7 +1469,7 @@ void OutOfProcessInstance::DocumentLoadProgress(uint32_t available,
 }
 
 void OutOfProcessInstance::FormTextFieldFocusChange(bool in_focus) {
-  if (!text_input_.get())
+  if (!text_input_)
     return;
 
   pp::VarDictionary message;
@@ -1516,26 +1513,19 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
     SendAccessibilityViewportInfo();
 }
 
-void OutOfProcessInstance::LoadUrl(const std::string& url) {
-  LoadUrlInternal(url, &embed_loader_, &OutOfProcessInstance::DidOpen);
-}
-
-void OutOfProcessInstance::LoadPreviewUrl(const std::string& url) {
-  LoadUrlInternal(url, &embed_preview_loader_,
-                  &OutOfProcessInstance::DidOpenPreview);
-}
-
-void OutOfProcessInstance::LoadUrlInternal(
-    const std::string& url,
-    pp::URLLoader* loader,
-    void (OutOfProcessInstance::*method)(int32_t)) {
+void OutOfProcessInstance::LoadUrl(const std::string& url,
+                                   bool is_print_preview) {
   pp::URLRequestInfo request(this);
   request.SetURL(url);
   request.SetMethod("GET");
   request.SetFollowRedirects(false);
 
+  pp::URLLoader* loader =
+      is_print_preview ? &embed_preview_loader_ : &embed_loader_;
   *loader = CreateURLLoaderInternal();
-  pp::CompletionCallback callback = loader_factory_.NewCallback(method);
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
+      is_print_preview ? &OutOfProcessInstance::DidOpenPreview
+                       : &OutOfProcessInstance::DidOpen);
   int rv = loader->Open(request, callback);
   if (rv != PP_OK_COMPLETIONPENDING)
     callback.Run(rv);
@@ -1600,7 +1590,7 @@ void OutOfProcessInstance::LoadAvailablePreviewPage() {
     return;
   }
 
-  std::string url = preview_pages_info_.front().first;
+  const std::string& url = preview_pages_info_.front().first;
   int dst_page_index = preview_pages_info_.front().second;
   int src_page_index = ExtractPrintPreviewPageIndex(url);
   if (src_page_index < 1 || dst_page_index >= print_preview_page_count_ ||
@@ -1609,7 +1599,7 @@ void OutOfProcessInstance::LoadAvailablePreviewPage() {
   }
 
   preview_document_load_state_ = LOAD_STATE_LOADING;
-  LoadPreviewUrl(url);
+  LoadUrl(url, /*is_print_preview=*/true);
 }
 
 void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {

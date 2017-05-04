@@ -13,6 +13,7 @@
 #include <windows.h>
 #endif
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -189,7 +190,7 @@ class PDFEngine {
   };
 
   // Factory method to create an instance of the PDF Engine.
-  static PDFEngine* Create(Client* client);
+  static std::unique_ptr<PDFEngine> Create(Client* client);
 
   virtual ~PDFEngine() {}
 

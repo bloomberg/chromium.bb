@@ -659,8 +659,8 @@ void ShutdownSDK() {
   TearDownV8();
 }
 
-PDFEngine* PDFEngine::Create(PDFEngine::Client* client) {
-  return new PDFiumEngine(client);
+std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client) {
+  return base::MakeUnique<PDFiumEngine>(client);
 }
 
 PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
