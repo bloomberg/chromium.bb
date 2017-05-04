@@ -145,6 +145,8 @@ void InstallableManager::GetData(const InstallableParams& params,
     return;
 
   is_active_ = true;
+  if (page_status_ == InstallabilityCheckStatus::NOT_STARTED)
+    page_status_ = InstallabilityCheckStatus::NOT_COMPLETED;
   StartNextTask();
 }
 
@@ -165,11 +167,17 @@ void InstallableManager::RecordMenuItemAddToHomescreenHistogram() {
 void InstallableManager::RecordQueuedMetricsOnTaskCompletion(
     const InstallableParams& params,
     bool check_passed) {
-  // Don't do anything if we've already finished the PWA check or if this check
-  // was not for the full PWA params. Once a full check is completed, metrics
-  // will be directly recorded in Record*Histogram since
-  // |is_pwa_check_complete_| will be true.
-  if (is_pwa_check_complete_ || !IsParamsForPwaCheck(params))
+  // Don't do anything if we've:
+  //  - already finished the PWA check, or
+  //  - we passed the check AND it was not for the full PWA params.
+  // In the latter case (i.e. the check passed but we weren't checking
+  // everything), we don't yet know if the site is installable. However, if the
+  // check didn't pass, we know for sure the site isn't installable, regardless
+  // of how much we checked.
+  //
+  // Once a full check is completed, metrics will be directly recorded in
+  // Record*Histogram since |is_pwa_check_complete_| will be true.
+  if (is_pwa_check_complete_ || (check_passed && !IsParamsForPwaCheck(params)))
     return;
 
   is_pwa_check_complete_ = true;
@@ -295,22 +303,20 @@ void InstallableManager::Reset() {
   icons_.clear();
 
   // We may have reset prior to completion, in which case |menu_open_count_| or
-  // |menu_item_add_to_homescreen_count_| will be nonzero. If we completed, then
-  // these values cannot be anything except 0.
-  page_status_ = InstallabilityCheckStatus::NOT_STARTED;
+  // |menu_item_add_to_homescreen_count_| might be nonzero and |page_status_| is
+  // one of NOT_STARTED or NOT_COMPLETED. If we completed, then these values
+  // cannot be anything except 0.
   is_pwa_check_complete_ = false;
 
-  for (; menu_open_count_ > 0; --menu_open_count_) {
-    InstallableMetrics::RecordMenuOpenHistogram(
-        InstallabilityCheckStatus::STOPPED_BEFORE_COMPLETION);
-  }
+  for (; menu_open_count_ > 0; --menu_open_count_)
+    InstallableMetrics::RecordMenuOpenHistogram(page_status_);
 
   for (; menu_item_add_to_homescreen_count_ > 0;
        --menu_item_add_to_homescreen_count_) {
-    InstallableMetrics::RecordMenuItemAddToHomescreenHistogram(
-        InstallabilityCheckStatus::STOPPED_BEFORE_COMPLETION);
+    InstallableMetrics::RecordMenuItemAddToHomescreenHistogram(page_status_);
   }
 
+  page_status_ = InstallabilityCheckStatus::NOT_STARTED;
   manifest_.reset(new ManifestProperty());
   installable_.reset(new InstallableProperty());
 
