@@ -519,9 +519,6 @@ void ProcessRootCertificate(
       break;
     case CertificateTrustType::DISTRUSTED:
       // Chains to an actively distrusted certificate.
-      //
-      // TODO(eroman): There are not currently any verification or path building
-      //               tests for the distrusted case.
       errors->AddError(kCertIsDistrusted);
       break;
     case CertificateTrustType::TRUSTED_ANCHOR:

@@ -81,6 +81,11 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, WrongSignature) {
   this->RunTest("incorrect-trust-anchor/main.test");
 }
 
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, LastCertificateNotTrusted) {
+  this->RunTest("target-and-intermediate/distrusted-root.test");
+  this->RunTest("target-and-intermediate/unspecified-trust-root.test");
+}
+
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetSignedBy512bitRsa) {
   this->RunTest("target-signed-by-512bit-rsa/main.test");
 }
@@ -156,6 +161,7 @@ REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
                            UnknownExtension,
                            Md5,
                            WrongSignature,
+                           LastCertificateNotTrusted,
                            TargetSignedBy512bitRsa,
                            TargetSignedUsingEcdsa,
                            Expired,
