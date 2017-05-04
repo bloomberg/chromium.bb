@@ -86,6 +86,7 @@ class CvcUnmaskViewController
   void CvcConfirmed();
 
   bool GetSheetId(DialogViewID* sheet_id) override;
+  views::View* GetFirstFocusedView() override;
 
   views::Textfield* cvc_field_;  // owned by the view hierarchy, outlives this.
   autofill::CreditCard credit_card_;

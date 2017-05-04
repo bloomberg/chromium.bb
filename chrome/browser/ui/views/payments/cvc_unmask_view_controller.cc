@@ -211,4 +211,8 @@ bool CvcUnmaskViewController::GetSheetId(DialogViewID* sheet_id) {
   return true;
 }
 
+views::View* CvcUnmaskViewController::GetFirstFocusedView() {
+  return cvc_field_;
+}
+
 }  // namespace payments

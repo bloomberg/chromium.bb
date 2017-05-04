@@ -49,7 +49,8 @@ constexpr int kNumCharactersInLongField = 20;
 EditorViewController::EditorViewController(PaymentRequestSpec* spec,
                                            PaymentRequestState* state,
                                            PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(spec, state, dialog) {}
+    : PaymentRequestSheetController(spec, state, dialog),
+      first_field_view_(nullptr) {}
 
 EditorViewController::~EditorViewController() {}
 
@@ -130,6 +131,12 @@ void EditorViewController::ButtonPressed(views::Button* sender,
       PaymentRequestSheetController::ButtonPressed(sender, event);
       break;
   }
+}
+
+views::View* EditorViewController::GetFirstFocusedView() {
+  if (first_field_view_)
+    return first_field_view_;
+  return PaymentRequestSheetController::GetFirstFocusedView();
 }
 
 void EditorViewController::ContentsChanged(views::Textfield* sender,
@@ -214,6 +221,12 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
             : kNumCharactersInLongField);
 
     text_fields_.insert(std::make_pair(text_field, field));
+
+    // TODO(crbug.com/718582): Make the initial focus the first incomplete/empty
+    // field.
+    if (!first_field_view_)
+      first_field_view_ = text_field;
+
     // |text_field| will now be owned by |row|.
     layout->AddView(text_field);
   } else if (field.control_type == EditorField::ControlType::COMBOBOX) {
@@ -224,6 +237,10 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
     combobox->set_id(static_cast<int>(field.type));
     combobox->set_listener(this);
     comboboxes_.insert(std::make_pair(combobox, field));
+
+    if (!first_field_view_)
+      first_field_view_ = combobox;
+
     // |combobox| will now be owned by |row|.
     layout->AddView(combobox);
   } else {
