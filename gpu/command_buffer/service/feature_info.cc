@@ -1414,7 +1414,7 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
         enable_texture_float_linear = true;
       }
 
-      if (enable_ext_color_buffer_float || gl_version_info_->is_angle) {
+      if (enable_ext_color_buffer_float) {
         may_enable_chromium_color_buffer_float = true;
       }
     }
@@ -1451,7 +1451,25 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     }
   }
 
-  if (may_enable_chromium_color_buffer_float) {
+  bool had_native_chromium_color_buffer_float_ext = false;
+  if (extensions.Contains("GL_CHROMIUM_color_buffer_float_rgb")) {
+    had_native_chromium_color_buffer_float_ext = true;
+    feature_flags_.chromium_color_buffer_float_rgb = true;
+    if (!disallowed_features_.chromium_color_buffer_float_rgb) {
+      EnableCHROMIUMColorBufferFloatRGB();
+    }
+  }
+
+  if (extensions.Contains("GL_CHROMIUM_color_buffer_float_rgba")) {
+    had_native_chromium_color_buffer_float_ext = true;
+    feature_flags_.chromium_color_buffer_float_rgba = true;
+    if (!disallowed_features_.chromium_color_buffer_float_rgba) {
+      EnableCHROMIUMColorBufferFloatRGBA();
+    }
+  }
+
+  if (may_enable_chromium_color_buffer_float &&
+      !had_native_chromium_color_buffer_float_ext) {
     static_assert(GL_RGBA32F_ARB == GL_RGBA32F &&
                       GL_RGBA32F_EXT == GL_RGBA32F &&
                       GL_RGB32F_ARB == GL_RGB32F && GL_RGB32F_EXT == GL_RGB32F,
