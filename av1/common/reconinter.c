@@ -2591,6 +2591,9 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
       break;
 
     case II_D135_PRED:
+#if CONFIG_ALT_INTRA
+    case II_SMOOTH_PRED:
+#endif
       for (i = 0; i < bh; ++i) {
         for (j = 0; j < bw; ++j) {
           int scale = ii_weights1d[(i < j ? i : j) * size_scale];
@@ -2707,6 +2710,9 @@ static void combine_interintra_highbd(
       break;
 
     case II_D135_PRED:
+#if CONFIG_ALT_INTRA
+    case II_SMOOTH_PRED:
+#endif
       for (i = 0; i < bh; ++i) {
         for (j = 0; j < bw; ++j) {
           int scale = ii_weights1d[(i < j ? i : j) * size_scale];
