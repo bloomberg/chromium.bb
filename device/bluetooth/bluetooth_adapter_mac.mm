@@ -670,8 +670,7 @@ void BluetoothAdapterMac::DidConnectPeripheral(CBPeripheral* peripheral) {
     [low_energy_central_manager_ cancelPeripheralConnection:peripheral];
     return;
   }
-  device_mac->DidConnectGatt();
-  device_mac->DiscoverPrimaryServices();
+  device_mac->DidConnectPeripheral();
 }
 
 void BluetoothAdapterMac::DidFailToConnectPeripheral(CBPeripheral* peripheral,

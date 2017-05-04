@@ -1027,6 +1027,7 @@ TEST_F(BluetoothTest,
     return;
   }
   InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
 
@@ -1039,6 +1040,16 @@ TEST_F(BluetoothTest,
   SimulateGattConnection(device);
   base::RunLoop().RunUntilIdle();
 
+#if defined(OS_ANDROID)
+  // Android incorrectly starts second discovery for devices that are already
+  // connected.
+  // TODO(crbug.com/718168): Remove once Android is fixed.
+  EXPECT_EQ(2, gatt_discovery_attempts_);
+  EXPECT_EQ(2, observer.device_changed_count());
+#else   // !defined(OS_ANDROID)
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+  EXPECT_EQ(1, observer.device_changed_count());
+#endif  // defined(OS_ANDROID)
   EXPECT_EQ(1, gatt_connection_attempts_);
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
