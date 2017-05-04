@@ -136,6 +136,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
                                            SizeType,
                                            const Length& size);
   TransformedWritingMode GetTransformedWritingMode() const;
+  StyleContentAlignmentData ResolvedJustifyContent() const;
+  StyleContentAlignmentData ResolvedAlignContent() const;
   LayoutUnit FlowAwareBorderStart() const;
   LayoutUnit FlowAwareBorderEnd() const;
   LayoutUnit FlowAwareBorderBefore() const;

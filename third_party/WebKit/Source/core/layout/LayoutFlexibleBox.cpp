@@ -637,6 +637,32 @@ LayoutFlexibleBox::GetTransformedWritingMode() const {
   return TransformedWritingMode::kTopToBottomWritingMode;
 }
 
+StyleContentAlignmentData LayoutFlexibleBox::ResolvedJustifyContent() const {
+  ContentPosition position = StyleRef().ResolvedJustifyContentPosition(
+      ContentAlignmentNormalBehavior());
+  ContentDistributionType distribution =
+      StyleRef().ResolvedJustifyContentDistribution(
+          ContentAlignmentNormalBehavior());
+  OverflowAlignment overflow = StyleRef().JustifyContentOverflowAlignment();
+  // For flex, justify-content: stretch behaves as flex-start:
+  // https://drafts.csswg.org/css-align/#distribution-flex
+  if (distribution == kContentDistributionStretch) {
+    position = kContentPositionFlexStart;
+    distribution = kContentDistributionDefault;
+  }
+  return StyleContentAlignmentData(position, distribution, overflow);
+}
+
+StyleContentAlignmentData LayoutFlexibleBox::ResolvedAlignContent() const {
+  ContentPosition position =
+      StyleRef().ResolvedAlignContentPosition(ContentAlignmentNormalBehavior());
+  ContentDistributionType distribution =
+      StyleRef().ResolvedAlignContentDistribution(
+          ContentAlignmentNormalBehavior());
+  OverflowAlignment overflow = StyleRef().AlignContentOverflowAlignment();
+  return StyleContentAlignmentData(position, distribution, overflow);
+}
+
 LayoutUnit LayoutFlexibleBox::FlowAwareBorderStart() const {
   if (IsHorizontalFlow())
     return IsLeftToRightFlow() ? BorderLeft() : BorderRight();
@@ -1499,33 +1525,33 @@ bool LayoutFlexibleBox::ResolveFlexibleLengths(
   return !total_violation;
 }
 
-static LayoutUnit InitialJustifyContentOffset(
+static LayoutUnit InitialContentPositionOffset(
     LayoutUnit available_free_space,
-    ContentPosition justify_content,
-    ContentDistributionType justify_content_distribution,
-    unsigned number_of_children) {
-  if (justify_content == kContentPositionFlexEnd)
+    const StyleContentAlignmentData& data,
+    unsigned number_of_items) {
+  if (data.GetPosition() == kContentPositionFlexEnd)
     return available_free_space;
-  if (justify_content == kContentPositionCenter)
+  if (data.GetPosition() == kContentPositionCenter)
     return available_free_space / 2;
-  if (justify_content_distribution == kContentDistributionSpaceAround) {
-    if (available_free_space > 0 && number_of_children)
-      return available_free_space / (2 * number_of_children);
+  if (data.Distribution() == kContentDistributionSpaceAround) {
+    if (available_free_space > 0 && number_of_items)
+      return available_free_space / (2 * number_of_items);
 
     return available_free_space / 2;
   }
   return LayoutUnit();
 }
 
-static LayoutUnit JustifyContentSpaceBetweenChildren(
+static LayoutUnit ContentDistributionSpaceBetweenChildren(
     LayoutUnit available_free_space,
-    ContentDistributionType justify_content_distribution,
-    unsigned number_of_children) {
-  if (available_free_space > 0 && number_of_children > 1) {
-    if (justify_content_distribution == kContentDistributionSpaceBetween)
-      return available_free_space / (number_of_children - 1);
-    if (justify_content_distribution == kContentDistributionSpaceAround)
-      return available_free_space / number_of_children;
+    const StyleContentAlignmentData& data,
+    unsigned number_of_items) {
+  if (available_free_space > 0 && number_of_items > 1) {
+    if (data.Distribution() == kContentDistributionSpaceBetween)
+      return available_free_space / (number_of_items - 1);
+    if (data.Distribution() == kContentDistributionSpaceAround ||
+        data.Distribution() == kContentDistributionStretch)
+      return available_free_space / number_of_items;
   }
   return LayoutUnit();
 }
@@ -1592,13 +1618,8 @@ LayoutUnit LayoutFlexibleBox::StaticMainAxisPositionForPositionedChild(
       MainAxisContentExtent(ContentLogicalHeight()) -
       MainAxisExtentForChild(child);
 
-  ContentPosition position = StyleRef().ResolvedJustifyContentPosition(
-      ContentAlignmentNormalBehavior());
-  ContentDistributionType distribution =
-      StyleRef().ResolvedJustifyContentDistribution(
-          ContentAlignmentNormalBehavior());
-  LayoutUnit offset =
-      InitialJustifyContentOffset(available_space, position, distribution, 1);
+  LayoutUnit offset = InitialContentPositionOffset(available_space,
+                                                   ResolvedJustifyContent(), 1);
   if (StyleRef().FlexDirection() == kFlowRowReverse ||
       StyleRef().FlexDirection() == kFlowColumnReverse)
     offset = available_space - offset;
@@ -1770,18 +1791,14 @@ void LayoutFlexibleBox::LayoutAndPlaceChildren(
     bool relayout_children,
     SubtreeLayoutScope& layout_scope,
     Vector<LineContext>& line_contexts) {
-  ContentPosition position = StyleRef().ResolvedJustifyContentPosition(
-      ContentAlignmentNormalBehavior());
-  ContentDistributionType distribution =
-      StyleRef().ResolvedJustifyContentDistribution(
-          ContentAlignmentNormalBehavior());
+  const StyleContentAlignmentData justify_content = ResolvedJustifyContent();
 
   LayoutUnit auto_margin_offset =
       AutoMarginOffsetInMainAxis(children, available_free_space);
   LayoutUnit main_axis_offset =
       FlowAwareBorderStart() + FlowAwarePaddingStart();
-  main_axis_offset += InitialJustifyContentOffset(
-      available_free_space, position, distribution, children.size());
+  main_axis_offset += InitialContentPositionOffset(
+      available_free_space, justify_content, children.size());
   if (Style()->FlexDirection() == kFlowRowReverse &&
       ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     main_axis_offset += IsHorizontalFlow() ? VerticalScrollbarWidth()
@@ -1878,8 +1895,8 @@ void LayoutFlexibleBox::LayoutAndPlaceChildren(
 
     if (i != children.size() - 1) {
       // The last item does not get extra space added.
-      main_axis_offset += JustifyContentSpaceBetweenChildren(
-          available_free_space, distribution, children.size());
+      main_axis_offset += ContentDistributionSpaceBetweenChildren(
+          available_free_space, justify_content, children.size());
     }
 
     if (is_paginated)
@@ -1910,19 +1927,15 @@ void LayoutFlexibleBox::LayoutAndPlaceChildren(
 void LayoutFlexibleBox::LayoutColumnReverse(const Vector<FlexItem>& children,
                                             LayoutUnit cross_axis_offset,
                                             LayoutUnit available_free_space) {
-  ContentPosition position = StyleRef().ResolvedJustifyContentPosition(
-      ContentAlignmentNormalBehavior());
-  ContentDistributionType distribution =
-      StyleRef().ResolvedJustifyContentDistribution(
-          ContentAlignmentNormalBehavior());
+  const StyleContentAlignmentData justify_content = ResolvedJustifyContent();
 
   // This is similar to the logic in layoutAndPlaceChildren, except we place
   // the children starting from the end of the flexbox. We also don't need to
   // layout anything since we're just moving the children to a new position.
   LayoutUnit main_axis_offset =
       LogicalHeight() - FlowAwareBorderEnd() - FlowAwarePaddingEnd();
-  main_axis_offset -= InitialJustifyContentOffset(
-      available_free_space, position, distribution, children.size());
+  main_axis_offset -= InitialContentPositionOffset(
+      available_free_space, justify_content, children.size());
   main_axis_offset -= IsHorizontalFlow() ? VerticalScrollbarWidth()
                                          : HorizontalScrollbarHeight();
 
@@ -1941,51 +1954,13 @@ void LayoutFlexibleBox::LayoutColumnReverse(const Vector<FlexItem>& children,
 
     main_axis_offset -= FlowAwareMarginStartForChild(*child);
 
-    main_axis_offset -= JustifyContentSpaceBetweenChildren(
-        available_free_space, distribution, children.size());
+    main_axis_offset -= ContentDistributionSpaceBetweenChildren(
+        available_free_space, justify_content, children.size());
   }
-}
-
-static LayoutUnit InitialAlignContentOffset(
-    LayoutUnit available_free_space,
-    ContentPosition align_content,
-    ContentDistributionType align_content_distribution,
-    unsigned number_of_lines) {
-  if (number_of_lines <= 1)
-    return LayoutUnit();
-  if (align_content == kContentPositionFlexEnd)
-    return available_free_space;
-  if (align_content == kContentPositionCenter)
-    return available_free_space / 2;
-  if (align_content_distribution == kContentDistributionSpaceAround) {
-    if (available_free_space > 0 && number_of_lines)
-      return available_free_space / (2 * number_of_lines);
-    if (available_free_space < 0)
-      return available_free_space / 2;
-  }
-  return LayoutUnit();
-}
-
-static LayoutUnit AlignContentSpaceBetweenChildren(
-    LayoutUnit available_free_space,
-    ContentDistributionType align_content_distribution,
-    unsigned number_of_lines) {
-  if (available_free_space > 0 && number_of_lines > 1) {
-    if (align_content_distribution == kContentDistributionSpaceBetween)
-      return available_free_space / (number_of_lines - 1);
-    if (align_content_distribution == kContentDistributionSpaceAround ||
-        align_content_distribution == kContentDistributionStretch)
-      return available_free_space / number_of_lines;
-  }
-  return LayoutUnit();
 }
 
 void LayoutFlexibleBox::AlignFlexLines(Vector<LineContext>& line_contexts) {
-  ContentPosition position =
-      StyleRef().ResolvedAlignContentPosition(ContentAlignmentNormalBehavior());
-  ContentDistributionType distribution =
-      StyleRef().ResolvedAlignContentDistribution(
-          ContentAlignmentNormalBehavior());
+  const StyleContentAlignmentData align_content = ResolvedAlignContent();
 
   // If we have a single line flexbox or a multiline line flexbox with only one
   // flex line, the line height is all the available space. For
@@ -1996,15 +1971,18 @@ void LayoutFlexibleBox::AlignFlexLines(Vector<LineContext>& line_contexts) {
     return;
   }
 
-  if (position == kContentPositionFlexStart)
+  if (align_content.GetPosition() == kContentPositionFlexStart)
     return;
 
   LayoutUnit available_cross_axis_space = CrossAxisContentExtent();
   for (size_t i = 0; i < line_contexts.size(); ++i)
     available_cross_axis_space -= line_contexts[i].cross_axis_extent;
 
-  LayoutUnit line_offset = InitialAlignContentOffset(
-      available_cross_axis_space, position, distribution, line_contexts.size());
+  LayoutUnit line_offset;
+  if (line_contexts.size() > 1) {
+    line_offset = InitialContentPositionOffset(
+        available_cross_axis_space, align_content, line_contexts.size());
+  }
   for (unsigned line_number = 0; line_number < line_contexts.size();
        ++line_number) {
     LineContext& line_context = line_contexts[line_number];
@@ -2015,14 +1993,14 @@ void LayoutFlexibleBox::AlignFlexLines(Vector<LineContext>& line_contexts) {
       AdjustAlignmentForChild(*flex_item.box, line_offset);
     }
 
-    if (distribution == kContentDistributionStretch &&
+    if (align_content.Distribution() == kContentDistributionStretch &&
         available_cross_axis_space > 0)
       line_contexts[line_number].cross_axis_extent +=
           available_cross_axis_space /
           static_cast<unsigned>(line_contexts.size());
 
-    line_offset += AlignContentSpaceBetweenChildren(
-        available_cross_axis_space, distribution, line_contexts.size());
+    line_offset += ContentDistributionSpaceBetweenChildren(
+        available_cross_axis_space, align_content, line_contexts.size());
   }
 }
 
