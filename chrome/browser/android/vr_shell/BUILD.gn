@@ -118,39 +118,36 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
   }
 }
 
-if (enable_vr) {
-  test("vr_shell_unittests") {
-    sources = [
-      "fps_meter_unittest.cc",
-      "gltf_parser_unittest.cc",
-      "test/paths.cc",
-      "test/paths.h",
-      "ui_elements/ui_element_unittest.cc",
-      "ui_scene_manager_unittest.cc",
-      "ui_scene_unittest.cc",
-    ]
+test("vr_shell_unittests") {
+  sources = [
+    "fps_meter_unittest.cc",
+    "gltf_parser_unittest.cc",
+    "test/paths.cc",
+    "test/paths.h",
+    "ui_elements/ui_element_unittest.cc",
+    "ui_scene_manager_unittest.cc",
+    "ui_scene_unittest.cc",
+  ]
 
-    deps = [
-      ":vr_common",
-      "//base/test:run_all_unittests",
-      "//base/test:test_support",
-      "//chrome/browser",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/WebKit/public:blink",
-      "//ui/gfx/geometry",
-    ]
+  deps = [
+    ":vr_common",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//chrome/browser",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/public:blink",
+    "//ui/gfx/geometry",
+  ]
 
-    # Ensure libgvr static library appears before gcc library in linking order.
-    # See https://crbug.com/704305 for details.
-    libs =
-        [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
+  # Ensure libgvr static library appears before gcc library in linking order.
+  # See https://crbug.com/704305 for details.
+  libs = [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
 
-    data = [
-      "test/data/sample_inline.gltf",
-      "test/data/sample_external.gltf",
-      "test/data/sample.bin",
-      "test/data/sample.glb",
-    ]
-  }
+  data = [
+    "test/data/sample_inline.gltf",
+    "test/data/sample_external.gltf",
+    "test/data/sample.bin",
+    "test/data/sample.glb",
+  ]
 }
