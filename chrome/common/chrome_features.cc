@@ -43,7 +43,7 @@ const base::Feature kAssetDownloadSuggestionsFeature{
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Enables auto-dismissing JavaScript dialogs.
 const base::Feature kAutoDismissingDialogs{"AutoDismissingDialogs",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
