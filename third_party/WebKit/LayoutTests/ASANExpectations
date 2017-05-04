@@ -110,3 +110,6 @@ crbug.com/572723 [ Linux ] inspector/sources/debugger/debugger-completions-on-ca
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
 
 crbug.com/624712 [ Linux ] virtual/threaded/fast/compositorworker/compositor-attribute-change-worker.html [ Timeout ]
+
+crbug.com/717019 [ Linux ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
+crbug.com/717019 [ Linux ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Crash ]
