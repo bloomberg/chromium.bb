@@ -623,7 +623,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     denial_menu_button_ = new views::MenuButton(
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON),
         this, true);
-    denial_menu_button_->SetStyle(views::Button::STYLE_BUTTON);
+    denial_menu_button_->SetStyleDeprecated(views::Button::STYLE_BUTTON);
     layout->AddView(denial_menu_button_);
   } else {
     std::vector<base::string16> items(

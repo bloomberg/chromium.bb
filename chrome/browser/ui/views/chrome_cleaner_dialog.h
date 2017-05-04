@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
@@ -64,8 +63,6 @@ class ChromeCleanerDialog : public views::DialogDelegateView,
   // The pointer will be set to nullptr once the controller has been notified of
   // user interaction since the controller can delete itself after that point.
   safe_browsing::ChromeCleanerDialogController* controller_;
-
-  views::LabelButton* advanced_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialog);
 };

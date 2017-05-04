@@ -63,7 +63,7 @@ class LabelButtonTest : public test::WidgetTest {
   TestLabelButton* AddStyledButton(const char* label, bool is_default) {
     TestLabelButton* button = new TestLabelButton;
     button->SetText(ASCIIToUTF16(label));
-    button->SetStyle(CustomButton::STYLE_BUTTON);
+    button->SetStyleDeprecated(CustomButton::STYLE_BUTTON);
     if (is_default)
       button->SetIsDefault(true);
     button_->GetWidget()->GetContentsView()->AddChildView(button);

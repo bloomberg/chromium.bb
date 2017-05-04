@@ -30,7 +30,7 @@ TEST_F(BlueButtonTest, Border) {
   EXPECT_TRUE(button->focus_painter());
 
   // Switch to the same style as BlueButton for a more compelling comparison.
-  button->SetStyle(Button::STYLE_BUTTON);
+  button->SetStyleDeprecated(Button::STYLE_BUTTON);
   EXPECT_EQ(Button::STYLE_BUTTON, button->style());
   EXPECT_FALSE(button->focus_painter());
 

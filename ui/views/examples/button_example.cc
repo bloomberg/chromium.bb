@@ -49,11 +49,11 @@ void ButtonExample::CreateExampleView(View* container) {
   container->AddChildView(label_button_);
 
   styled_button_ = new LabelButton(this, ASCIIToUTF16("Styled Button"));
-  styled_button_->SetStyle(Button::STYLE_BUTTON);
+  styled_button_->SetStyleDeprecated(Button::STYLE_BUTTON);
   container->AddChildView(styled_button_);
 
   disabled_button_ = new LabelButton(this, ASCIIToUTF16("Disabled Button"));
-  disabled_button_->SetStyle(Button::STYLE_BUTTON);
+  disabled_button_->SetStyleDeprecated(Button::STYLE_BUTTON);
   disabled_button_->SetState(Button::STATE_DISABLED);
   container->AddChildView(disabled_button_);
 
@@ -108,7 +108,7 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
           ? label_button_->SetFocusBehavior(View::FocusBehavior::NEVER)
           : label_button_->SetFocusForPlatform();
     } else {
-      label_button->SetStyle(static_cast<Button::ButtonStyle>(
+      label_button->SetStyleDeprecated(static_cast<Button::ButtonStyle>(
           (label_button->style() + 1) % Button::STYLE_COUNT));
     }
   } else if (event.IsAltDown()) {
