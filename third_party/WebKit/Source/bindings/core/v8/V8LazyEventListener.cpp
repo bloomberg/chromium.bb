@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8HTMLFormElement.h"
 #include "bindings/core/v8/V8Node.h"
@@ -48,6 +47,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "platform/bindings/V8DOMWrapper.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {

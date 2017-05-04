@@ -17,12 +17,12 @@
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/NameNodeList.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/html/LabelsNodeList.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 

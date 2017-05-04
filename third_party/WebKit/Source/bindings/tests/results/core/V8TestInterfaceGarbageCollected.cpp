@@ -17,11 +17,11 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8Iterator.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 

@@ -17,13 +17,13 @@
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/modules/v8/BooleanOrString.h"
 #include "bindings/tests/idls/modules/TestInterface5Implementation.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/V8DOMWrapper.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

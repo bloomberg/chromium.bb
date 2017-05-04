@@ -31,8 +31,8 @@
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/V8DOMWrapper.h"
 #include "v8/include/v8.h"
 
 namespace blink {

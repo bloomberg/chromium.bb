@@ -10,9 +10,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/workers/WorkerBackingThread.h"
@@ -23,6 +21,8 @@
 #include "modules/webaudio/AudioWorkletProcessorDefinition.h"
 #include "modules/webaudio/AudioWorkletThread.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8BindingMacros.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

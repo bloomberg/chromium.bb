@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -15,6 +14,7 @@
 #include "core/inspector/ThreadDebugger.h"
 #include "core/inspector/V8InspectorString.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/V8BindingMacros.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/wtf/PtrUtil.h"
 

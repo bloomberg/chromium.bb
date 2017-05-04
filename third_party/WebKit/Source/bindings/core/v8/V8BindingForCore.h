@@ -37,8 +37,6 @@
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8StringResource.h"
@@ -51,6 +49,8 @@
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/V8Binding.h"
+#include "platform/bindings/V8BindingMacros.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/StringView.h"
@@ -59,7 +59,7 @@
 namespace blink {
 
 // This file contains core-specific bindings utility functions. For functions
-// that are core independent, see bindings/core/v8/V8Binding.h. When adding a
+// that are core independent, see platform/bindings/V8Binding.h. When adding a
 // new utility function, consider adding it to V8Binding.h instead unless it has
 // dependencies to core/.
 

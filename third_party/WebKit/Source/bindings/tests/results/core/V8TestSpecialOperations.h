@@ -17,11 +17,11 @@
 #include "bindings/core/v8/NodeOrNodeList.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/tests/idls/core/TestSpecialOperations.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/V8DOMWrapper.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

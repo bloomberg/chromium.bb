@@ -5,9 +5,9 @@
 #include "bindings/core/v8/DocumentWriteEvaluator.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/frame/Location.h"
+#include "platform/bindings/V8BindingMacros.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "v8/include/v8.h"

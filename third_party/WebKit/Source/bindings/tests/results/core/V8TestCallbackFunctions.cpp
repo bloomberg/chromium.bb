@@ -17,10 +17,10 @@
 #include "bindings/core/v8/LongCallbackFunction.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/VoidCallbackFunction.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 

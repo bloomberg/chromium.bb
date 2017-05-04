@@ -28,8 +28,8 @@
 
 #include "bindings/core/v8/V8DOMConfiguration.h"
 
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PerContextData.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {

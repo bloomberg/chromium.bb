@@ -6,8 +6,8 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8Binding.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/bindings/V8Binding.h"
 #include "platform/heap/Persistent.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"

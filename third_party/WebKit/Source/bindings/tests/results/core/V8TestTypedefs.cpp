@@ -18,7 +18,6 @@
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestCallbackInterface.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
@@ -30,6 +29,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/LabelsNodeList.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 

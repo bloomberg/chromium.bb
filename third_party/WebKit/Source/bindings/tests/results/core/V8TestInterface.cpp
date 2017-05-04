@@ -21,7 +21,6 @@
 #include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8Node.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterface2.h"
@@ -37,6 +36,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 
