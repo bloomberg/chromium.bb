@@ -27,12 +27,14 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& renderer_settings,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool synchronous_composite)
+    bool synchronous_composite,
+    bool disable_display_vsync)
     : CompositorFrameSink(std::move(compositor_context_provider),
                           std::move(worker_context_provider),
                           gpu_memory_buffer_manager,
                           shared_bitmap_manager),
       synchronous_composite_(synchronous_composite),
+      disable_display_vsync_(disable_display_vsync),
       renderer_settings_(renderer_settings),
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kCompositorFrameSinkId),
@@ -65,7 +67,7 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
 
   std::unique_ptr<DisplayScheduler> scheduler;
   if (!synchronous_composite_) {
-    if (renderer_settings_.disable_display_vsync) {
+    if (disable_display_vsync_) {
       begin_frame_source_.reset(new BackToBackBeginFrameSource(
           base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
     } else {

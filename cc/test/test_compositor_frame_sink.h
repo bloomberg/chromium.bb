@@ -57,7 +57,8 @@ class TestCompositorFrameSink : public CompositorFrameSink,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const RendererSettings& renderer_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      bool synchronous_composite);
+      bool synchronous_composite,
+      bool disable_display_vsync);
   ~TestCompositorFrameSink() override;
 
   // This client must be set before BindToClient() happens.
@@ -101,6 +102,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   void SendCompositorFrameAckToClient();
 
   const bool synchronous_composite_;
+  const bool disable_display_vsync_;
   const RendererSettings renderer_settings_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

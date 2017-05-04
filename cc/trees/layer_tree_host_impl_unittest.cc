@@ -8757,10 +8757,12 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
       TestContextProvider::Create();
   FrameSinkClient test_client_(context_provider);
 
+  constexpr bool synchronous_composite = true;
+  constexpr bool disable_display_vsync = false;
   auto compositor_frame_sink = base::MakeUnique<TestCompositorFrameSink>(
       context_provider, TestContextProvider::CreateWorker(), nullptr, nullptr,
       RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
-      true /* synchronous_composite */);
+      synchronous_composite, disable_display_vsync);
   compositor_frame_sink->SetClient(&test_client_);
 
   CreateHostImpl(DefaultSettings(), std::move(compositor_frame_sink));

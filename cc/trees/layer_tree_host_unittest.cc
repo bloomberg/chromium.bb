@@ -3089,7 +3089,8 @@ class OnDrawCompositorFrameSink : public TestCompositorFrameSink {
                                 gpu_memory_buffer_manager,
                                 renderer_settings,
                                 task_runner,
-                                synchronous_composite),
+                                synchronous_composite,
+                                false /* disable_display_vsync */),
         invalidate_callback_(std::move(invalidate_callback)) {}
 
   // TestCompositorFrameSink overrides.
@@ -5738,6 +5739,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
+    constexpr bool disable_display_vsync = false;
     bool synchronous_composite =
         !HasImplThread() &&
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
@@ -5745,7 +5747,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
         compositor_context_provider, std::move(worker_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
-        ImplThreadTaskRunner(), synchronous_composite);
+        ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync);
   }
 
   void BeginTest() override {

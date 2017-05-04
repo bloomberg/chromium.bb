@@ -199,6 +199,18 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
   frame_sink_manager_host_ = base::MakeUnique<FrameSinkManagerHost>();
   frame_sink_manager_host_->ConnectToFrameSinkManager();
 
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableGpuVsync)) {
+    std::string display_vsync_string =
+        command_line->GetSwitchValueASCII(switches::kDisableGpuVsync);
+    // See comments in gl_switches about this flag.  The browser compositor
+    // is only unthrottled when "gpu" or no switch value is passed, as it
+    // is driven directly by the display compositor.
+    if (display_vsync_string != "beginframe") {
+      disable_display_vsync_ = true;
+    }
+  }
+
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());
 #if defined(OS_WIN)
@@ -551,7 +563,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   std::unique_ptr<GpuVSyncBeginFrameSource> gpu_vsync_begin_frame_source;
 
   if (!begin_frame_source) {
-    if (!compositor->GetRendererSettings().disable_display_vsync) {
+    if (!disable_display_vsync_) {
       if (gpu_vsync_control && IsGpuVSyncSignalSupported()) {
         gpu_vsync_begin_frame_source =
             base::MakeUnique<GpuVSyncBeginFrameSource>(gpu_vsync_control);

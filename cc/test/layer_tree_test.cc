@@ -860,6 +860,7 @@ std::unique_ptr<TestCompositorFrameSink>
 LayerTreeTest::CreateCompositorFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider) {
+  constexpr bool disable_display_vsync = false;
   bool synchronous_composite =
       !HasImplThread() &&
       !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
@@ -867,7 +868,7 @@ LayerTreeTest::CreateCompositorFrameSink(
       compositor_context_provider, std::move(worker_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(),
       layer_tree_host()->GetSettings().renderer_settings, impl_task_runner_,
-      synchronous_composite);
+      synchronous_composite, disable_display_vsync);
 }
 
 std::unique_ptr<OutputSurface>
