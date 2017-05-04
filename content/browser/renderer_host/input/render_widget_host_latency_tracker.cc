@@ -281,8 +281,6 @@ void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
   DCHECK(latencies);
   for (LatencyInfo& latency : *latencies) {
     AddLatencyInfoComponentIds(&latency, latency_component_id_);
-    latency.AddLatencyNumber(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, 0,
-                             0);
   }
 }
 
