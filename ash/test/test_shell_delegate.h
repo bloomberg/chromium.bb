@@ -12,7 +12,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "base/macros.h"
 
-class TestingPrefServiceSimple;
+class PrefService;
 
 namespace keyboard {
 class KeyboardUI;
@@ -30,6 +30,10 @@ class TestShellDelegate : public ShellDelegate {
 
   void set_multi_profiles_enabled(bool multi_profiles_enabled) {
     multi_profiles_enabled_ = multi_profiles_enabled;
+  }
+
+  void set_active_user_pref_service(PrefService* pref_service) {
+    active_user_pref_service_ = pref_service;
   }
 
   // Overridden from ShellDelegate:
@@ -74,7 +78,7 @@ class TestShellDelegate : public ShellDelegate {
   bool force_maximize_on_first_run_;
   bool touchscreen_enabled_in_local_pref_;
   std::unique_ptr<ShelfInitializer> shelf_initializer_;
-  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  PrefService* active_user_pref_service_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };
