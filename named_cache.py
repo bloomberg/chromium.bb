@@ -196,11 +196,15 @@ class CacheManager(object):
     If min_free_space is None, disk free space is not checked.
 
     Requires NamedCache to be open.
+
+    Returns:
+      Number of caches deleted.
     """
     self._lock.assert_locked()
     if not os.path.isdir(self.root_dir):
-      return
+      return 0
 
+    total = 0
     free_space = 0
     if min_free_space:
       free_space = file_path.get_free_space(self.root_dir)
@@ -212,7 +216,7 @@ class CacheManager(object):
       try:
         name, (path, _) = self._lru.get_oldest()
       except KeyError:
-        return
+        return total
       named_dir = self._get_named_path(name)
       if fs.islink(named_dir):
         fs.unlink(named_dir)
@@ -223,6 +227,8 @@ class CacheManager(object):
       if min_free_space:
         free_space = file_path.get_free_space(self.root_dir)
       self._lru.pop(name)
+      total += 1
+    return total
 
   _DIR_ALPHABET = string.ascii_letters + string.digits
 

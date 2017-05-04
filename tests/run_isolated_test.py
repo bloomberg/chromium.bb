@@ -9,6 +9,7 @@ import StringIO
 import base64
 import contextlib
 import functools
+import hashlib
 import json
 import logging
 import os
@@ -24,6 +25,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 import cipd
 import isolated_format
 import isolateserver
+import named_cache
 import run_isolated
 from depot_tools import auto_stub
 from depot_tools import fix_encoding
@@ -39,6 +41,9 @@ import isolateserver_mock
 import cipdserver_mock
 
 
+ALGO = hashlib.sha1
+
+
 def write_content(filepath, content):
   with open(filepath, 'wb') as f:
     f.write(content)
@@ -46,6 +51,19 @@ def write_content(filepath, content):
 
 def json_dumps(data):
   return json.dumps(data, sort_keys=True, separators=(',', ':'))
+
+
+def genTree(path):
+  """Returns a dict with {filepath: content}."""
+  if not os.path.isdir(path):
+    return None
+  out = {}
+  for root, _, filenames in os.walk(path):
+    for filename in filenames:
+      p = os.path.join(root, filename)
+      with open(p, 'rb') as f:
+        out[os.path.relpath(p, path)] = f.read()
+  return out
 
 
 @contextlib.contextmanager
@@ -92,9 +110,10 @@ class RunIsolatedTestBase(auto_stub.TestCase):
     self.cipd_server = cipdserver_mock.MockCipdServer()
 
   def tearDown(self):
+    # Remove mocks.
+    super(RunIsolatedTestBase, self).tearDown()
     file_path.rmtree(self.tempdir)
     self.cipd_server.close()
-    super(RunIsolatedTestBase, self).tearDown()
 
   @property
   def run_test_temp_dir(self):
@@ -557,6 +576,103 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [([u'/bin/echo', u'hello', u'world'], {'detached': True})],
         self.popen_calls)
+
+  def test_clean_caches(self):
+    # Create an isolated cache and a named cache each with 2 items. Ensure that
+    # one item from each is removed.
+    fake_time = 1
+    fake_free_space = [102400]
+    np = self.temp_join('named_cache')
+    ip = self.temp_join('isolated_cache')
+    args = [
+      '--named-cache-root', np, '--cache', ip, '--clean',
+      '--min-free-space', '10240',
+    ]
+    self.mock(file_path, 'get_free_space', lambda _: fake_free_space[0])
+    parser, options, _ = run_isolated.parse_args(args)
+    isolate_cache = isolateserver.process_cache_options(
+        options, trim=False, time_fn=lambda: fake_time)
+    self.assertIsInstance(isolate_cache, isolateserver.DiskCache)
+    named_cache_manager = named_cache.process_named_cache_options(
+        parser, options)
+    self.assertIsInstance(named_cache_manager, named_cache.CacheManager)
+
+    # Add items to these caches.
+    small = '0123456789'
+    big = small * 1014
+    small_digest = unicode(ALGO(small).hexdigest())
+    big_digest = unicode(ALGO(big).hexdigest())
+    with isolate_cache:
+      fake_time = 1
+      isolate_cache.write(big_digest, [big])
+      fake_time = 2
+      isolate_cache.write(small_digest, [small])
+    with named_cache_manager.open(time_fn=lambda: fake_time):
+      fake_time = 1
+      p = named_cache_manager.request('first')
+      with open(os.path.join(p, 'big'), 'wb') as f:
+        f.write(big)
+      fake_time = 3
+      p = named_cache_manager.request('second')
+      with open(os.path.join(p, 'small'), 'wb') as f:
+        f.write(small)
+
+    # Ensures the cache contain the expected data.
+    actual = genTree(np)
+    # Figure out the cache path names.
+    cache_small = [
+        os.path.dirname(n) for n in actual if os.path.basename(n) == 'small'][0]
+    cache_big = [
+        os.path.dirname(n) for n in actual if os.path.basename(n) == 'big'][0]
+    expected = {
+      os.path.join(cache_small, u'small'): small,
+      os.path.join(cache_big, u'big'): big,
+      u'state.json':
+          '{"items":[["first",["%s",1]],["second",["%s",3]]],"version":2}' % (
+          cache_big, cache_small),
+    }
+    self.assertEqual(expected, actual)
+    expected = {
+      big_digest: big,
+      small_digest: small,
+      u'state.json':
+          '{"items":[["%s",[10140,1]],["%s",[10,2]]],"version":2}' % (
+          big_digest, small_digest),
+    }
+    self.assertEqual(expected, genTree(ip))
+
+    # Request triming.
+    fake_free_space[0] = 1020
+    # Abuse the fact that named cache is trimed after isolated cache.
+    def rmtree(p):
+      self.assertEqual(os.path.join(np, cache_big), p)
+      fake_free_space[0] += 10240
+      return old_rmtree(p)
+    old_rmtree = self.mock(file_path, 'rmtree', rmtree)
+    isolate_cache = isolateserver.process_cache_options(options, trim=False)
+    named_cache_manager = named_cache.process_named_cache_options(
+        parser, options)
+    actual = run_isolated.clean_caches(
+        options, isolate_cache, named_cache_manager)
+    self.assertEqual(2, actual)
+    # One of each entry should have been cleaned up. This only happen to work
+    # because:
+    # - file_path.get_free_space() is mocked
+    # - DiskCache.trim() keeps its own internal counter while deleting files so
+    #   it ignores get_free_space() output while deleting files.
+    actual = genTree(np)
+    expected = {
+      os.path.join(cache_small, u'small'): small,
+      u'state.json':
+          '{"items":[["second",["%s",3]]],"version":2}' % cache_small,
+    }
+    self.assertEqual(expected, actual)
+    expected = {
+      small_digest: small,
+      u'state.json':
+          '{"items":[["%s",[10,2]]],"version":2}' % small_digest,
+    }
+    self.assertEqual(expected, genTree(ip))
 
 
 class RunIsolatedTestRun(RunIsolatedTestBase):

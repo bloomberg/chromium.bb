@@ -409,7 +409,8 @@ def get_client(service_url, package_name, version, cache_dir, timeout=None):
     version_cache = isolateserver.DiskCache(
         unicode(os.path.join(cache_dir, 'versions')),
         isolateserver.CachePolicies(0, 0, 300),
-        hashlib.sha1)
+        hashlib.sha1,
+        trim=True)
     with version_cache:
       version_cache.cleanup()
       # Convert |version| to a string that may be used as a filename in disk
@@ -431,7 +432,8 @@ def get_client(service_url, package_name, version, cache_dir, timeout=None):
   instance_cache = isolateserver.DiskCache(
       unicode(os.path.join(cache_dir, 'clients')),
       isolateserver.CachePolicies(0, 0, 5),
-      hashlib.sha1)
+      hashlib.sha1,
+      trim=True)
   with instance_cache:
     instance_cache.cleanup()
     if instance_id not in instance_cache:

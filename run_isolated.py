@@ -824,8 +824,13 @@ def install_client_and_packages(
 
 
 def clean_caches(options, isolate_cache, named_cache_manager):
-  """Trims isolated and named caches."""
-  # Which cache to trim first? Which of caches was used least recently?
+  """Trims isolated and named caches.
+
+  The goal here is to coherently trim both caches, deleting older items
+  independent of which container they belong to.
+  """
+  # TODO(maruel): Trim CIPD cache the same way.
+  total = 0
   with named_cache_manager.open():
     oldest_isolated = isolate_cache.get_oldest()
     oldest_named = named_cache_manager.get_oldest()
@@ -840,9 +845,13 @@ def clean_caches(options, isolate_cache, named_cache_manager):
       ),
     ]
     trimmers.sort(key=lambda (_, ts): ts)
+    # TODO(maruel): This is incorrect, we want to trim 'items' that are strictly
+    # the oldest independent of in which cache they live in. Right now, the
+    # cache with the oldest item pays the price.
     for trim, _ in trimmers:
-      trim()
+      total += trim()
   isolate_cache.cleanup()
+  return total
 
 
 def create_option_parser():
