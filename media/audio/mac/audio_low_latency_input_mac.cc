@@ -577,6 +577,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
 
 void AUAudioInputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  deferred_start_cb_.Cancel();
   DVLOG(1) << "Stop";
   StopAgc();
   if (check_alive_timer_ != nullptr) {
