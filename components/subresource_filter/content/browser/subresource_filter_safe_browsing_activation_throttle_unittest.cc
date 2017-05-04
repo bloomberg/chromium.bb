@@ -130,10 +130,10 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
         ActivationList::SUBRESOURCE_FILTER));
     test_io_task_runner_ = new base::TestMockTimeTaskRunner();
     // Note: Using NiceMock to allow uninteresting calls and suppress warnings.
-    auto client =
+    client_ =
         base::MakeUnique<::testing::NiceMock<MockSubresourceFilterClient>>();
     ContentSubresourceFilterDriverFactory::CreateForWebContents(
-        RenderViewHostTestHarness::web_contents(), std::move(client));
+        RenderViewHostTestHarness::web_contents(), client_.get());
     fake_safe_browsing_database_ = new FakeSafeBrowsingDatabaseManager();
     NavigateAndCommit(GURL("https://test.com"));
     Observe(RenderViewHostTestHarness::web_contents());
@@ -235,6 +235,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
   testing::ScopedSubresourceFilterConfigurator scoped_configuration_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_io_task_runner_;
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
+  std::unique_ptr<SubresourceFilterClient> client_;
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
   base::HistogramTester tester_;
 

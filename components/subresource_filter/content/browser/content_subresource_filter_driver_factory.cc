@@ -20,12 +20,12 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(
+    subresource_filter::ContentSubresourceFilterDriverFactory);
+
 namespace subresource_filter {
 
 namespace {
-
-const char kWebContentsUserDataKey[] =
-    "web_contents_subresource_filter_driver_factory";
 
 std::string DistillURLToHostAndPath(const GURL& url) {
   return url.host() + url.path();
@@ -57,21 +57,12 @@ bool ShouldMeasurePerformanceForPageLoad(double performance_measurement_rate) {
 // static
 void ContentSubresourceFilterDriverFactory::CreateForWebContents(
     content::WebContents* web_contents,
-    std::unique_ptr<SubresourceFilterClient> client) {
+    SubresourceFilterClient* client) {
   if (FromWebContents(web_contents))
     return;
   web_contents->SetUserData(
-      kWebContentsUserDataKey,
-      base::MakeUnique<ContentSubresourceFilterDriverFactory>(
-          web_contents, std::move(client)));
-}
-
-// static
-ContentSubresourceFilterDriverFactory*
-ContentSubresourceFilterDriverFactory::FromWebContents(
-    content::WebContents* web_contents) {
-  return static_cast<ContentSubresourceFilterDriverFactory*>(
-      web_contents->GetUserData(kWebContentsUserDataKey));
+      UserDataKey(), base::MakeUnique<ContentSubresourceFilterDriverFactory>(
+                         web_contents, client));
 }
 
 // static
@@ -86,9 +77,9 @@ bool ContentSubresourceFilterDriverFactory::NavigationIsPageReload(
 
 ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
     content::WebContents* web_contents,
-    std::unique_ptr<SubresourceFilterClient> client)
+    SubresourceFilterClient* client)
     : content::WebContentsObserver(web_contents),
-      client_(std::move(client)),
+      client_(client),
       throttle_manager_(
           base::MakeUnique<ContentSubresourceFilterThrottleManager>(
               this,

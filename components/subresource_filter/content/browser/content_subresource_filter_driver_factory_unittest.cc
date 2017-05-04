@@ -236,9 +236,10 @@ class ContentSubresourceFilterDriverFactoryTest
         base::MessageLoop::current()->task_runner());
     ruleset_dealer_->SetRulesetFile(
         testing::TestRuleset::Open(test_ruleset_pair_.indexed));
-    client_ = new MockSubresourceFilterClient(ruleset_dealer_.get());
+    client_ =
+        base::MakeUnique<MockSubresourceFilterClient>(ruleset_dealer_.get());
     ContentSubresourceFilterDriverFactory::CreateForWebContents(
-        RenderViewHostTestHarness::web_contents(), base::WrapUnique(client()));
+        RenderViewHostTestHarness::web_contents(), client());
     ResetConfigurationToEnableFilteringOnSocialEngineeringSites();
 
     // Add a subframe.
@@ -276,7 +277,7 @@ class ContentSubresourceFilterDriverFactoryTest
         RenderViewHostTestHarness::web_contents());
   }
 
-  MockSubresourceFilterClient* client() { return client_; }
+  MockSubresourceFilterClient* client() { return client_.get(); }
 
   content::RenderFrameHost* GetSubframeRFH() {
     for (content::RenderFrameHost* rfh :
@@ -493,9 +494,7 @@ class ContentSubresourceFilterDriverFactoryTest
   testing::TestRulesetCreator test_ruleset_creator_;
   testing::TestRulesetPair test_ruleset_pair_;
 
-  // Owned by the factory.
-  MockSubresourceFilterClient* client_;
-
+  std::unique_ptr<MockSubresourceFilterClient> client_;
   std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactoryTest);

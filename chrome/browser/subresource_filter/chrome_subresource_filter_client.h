@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class GURL;
 
@@ -61,8 +62,11 @@ enum SubresourceFilterAction {
 };
 
 // Chrome implementation of SubresourceFilterClient.
+// TODO(csharrison): Make this a WebContentsObserver and own the throttle
+// manager directly.
 class ChromeSubresourceFilterClient
-    : public subresource_filter::SubresourceFilterClient {
+    : public content::WebContentsUserData<ChromeSubresourceFilterClient>,
+      public subresource_filter::SubresourceFilterClient {
  public:
   explicit ChromeSubresourceFilterClient(content::WebContents* web_contents);
   ~ChromeSubresourceFilterClient() override;
