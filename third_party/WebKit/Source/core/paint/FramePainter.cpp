@@ -206,8 +206,10 @@ void FramePainter::PaintScrollbars(GraphicsContext& context,
       !GetFrameView().LayerForVerticalScrollbar())
     PaintScrollbar(context, *GetFrameView().VerticalScrollbar(), rect);
 
-  if (GetFrameView().LayerForScrollCorner())
+  if (GetFrameView().LayerForScrollCorner() ||
+      !GetFrameView().IsScrollCornerVisible()) {
     return;
+  }
 
   PaintScrollCorner(context, GetFrameView().ScrollCornerRect());
 }
