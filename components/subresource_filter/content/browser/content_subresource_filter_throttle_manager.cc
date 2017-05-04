@@ -248,8 +248,7 @@ AsyncDocumentSubresourceFilter*
 ContentSubresourceFilterThrottleManager::GetParentFrameFilter(
     content::NavigationHandle* child_frame_navigation) {
   DCHECK(!child_frame_navigation->IsInMainFrame());
-  content::RenderFrameHost* parent = web_contents()->FindFrameByFrameTreeNodeId(
-      child_frame_navigation->GetParentFrameTreeNodeId());
+  content::RenderFrameHost* parent = child_frame_navigation->GetParentFrame();
   DCHECK(parent);
   auto it = activated_frame_hosts_.find(parent);
   return it == activated_frame_hosts_.end() ? nullptr : it->second.get();

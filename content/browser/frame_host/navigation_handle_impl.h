@@ -120,7 +120,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool WasServerRedirect() override;
   const std::vector<GURL>& GetRedirectChain() override;
   int GetFrameTreeNodeId() override;
-  int GetParentFrameTreeNodeId() override;
+  RenderFrameHostImpl* GetParentFrame() override;
   const base::TimeTicks& NavigationStart() override;
   bool IsPost() override;
   const Referrer& GetReferrer() override;

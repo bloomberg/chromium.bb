@@ -82,9 +82,7 @@ ActivationStateComputingNavigationThrottle::WillProcessResponse() {
   params.document_url = navigation_handle()->GetURL();
   params.parent_activation_state = parent_activation_state_.value();
   if (!navigation_handle()->IsInMainFrame()) {
-    content::RenderFrameHost* parent =
-        navigation_handle()->GetWebContents()->FindFrameByFrameTreeNodeId(
-            navigation_handle()->GetParentFrameTreeNodeId());
+    content::RenderFrameHost* parent = navigation_handle()->GetParentFrame();
     DCHECK(parent);
     params.parent_document_origin = parent->GetLastCommittedOrigin();
   }

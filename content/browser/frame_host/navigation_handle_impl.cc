@@ -230,11 +230,11 @@ int NavigationHandleImpl::GetFrameTreeNodeId() {
   return frame_tree_node_->frame_tree_node_id();
 }
 
-int NavigationHandleImpl::GetParentFrameTreeNodeId() {
+RenderFrameHostImpl* NavigationHandleImpl::GetParentFrame() {
   if (frame_tree_node_->IsMainFrame())
-    return FrameTreeNode::kFrameTreeNodeInvalidId;
+    return nullptr;
 
-  return frame_tree_node_->parent()->frame_tree_node_id();
+  return frame_tree_node_->parent()->current_frame_host();
 }
 
 const base::TimeTicks& NavigationHandleImpl::NavigationStart() {

@@ -128,7 +128,7 @@ int ExtensionApiFrameIdMap::GetParentFrameId(
   if (navigation_handle->IsParentMainFrame())
     return kTopFrameId;
 
-  return navigation_handle->GetParentFrameTreeNodeId();
+  return navigation_handle->GetParentFrame()->GetFrameTreeNodeId();
 }
 
 // static
@@ -148,7 +148,12 @@ content::RenderFrameHost* ExtensionApiFrameIdMap::GetRenderFrameHostById(
     return web_contents->GetMainFrame();
 
   DCHECK_GE(frame_id, 1);
-  return web_contents->FindFrameByFrameTreeNodeId(frame_id);
+
+  // Unfortunately, extension APIs do not know which process to expect for a
+  // given frame ID, so we must use an unsafe API here that could return a
+  // different RenderFrameHost than the caller may have expected (e.g., one that
+  // changed after a cross-process navigation).
+  return web_contents->UnsafeFindFrameByFrameTreeNodeId(frame_id);
 }
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
