@@ -8,17 +8,18 @@
 
 namespace ui {
 
-DCRendererLayerParams::DCRendererLayerParams(bool is_clipped,
-                                             const gfx::Rect clip_rect,
-                                             int z_order,
-                                             const gfx::Transform& transform,
-                                             gl::GLImage* image,
-                                             const gfx::RectF& contents_rect,
-                                             const gfx::Rect& rect,
-                                             unsigned background_color,
-                                             unsigned edge_aa_mask,
-                                             float opacity,
-                                             unsigned filter)
+DCRendererLayerParams::DCRendererLayerParams(
+    bool is_clipped,
+    const gfx::Rect clip_rect,
+    int z_order,
+    const gfx::Transform& transform,
+    std::vector<scoped_refptr<gl::GLImage>> image,
+    const gfx::RectF& contents_rect,
+    const gfx::Rect& rect,
+    unsigned background_color,
+    unsigned edge_aa_mask,
+    float opacity,
+    unsigned filter)
     : is_clipped(is_clipped),
       clip_rect(clip_rect),
       z_order(z_order),

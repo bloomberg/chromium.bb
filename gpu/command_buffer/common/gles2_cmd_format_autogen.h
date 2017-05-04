@@ -13937,14 +13937,14 @@ struct ScheduleDCLayerCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint _contents_texture_id,
+  void Init(GLsizei _num_textures,
             GLuint _background_color,
             GLuint _edge_aa_mask,
             GLuint _filter,
             GLuint _shm_id,
             GLuint _shm_offset) {
     SetHeader();
-    contents_texture_id = _contents_texture_id;
+    num_textures = _num_textures;
     background_color = _background_color;
     edge_aa_mask = _edge_aa_mask;
     filter = _filter;
@@ -13953,20 +13953,20 @@ struct ScheduleDCLayerCHROMIUM {
   }
 
   void* Set(void* cmd,
-            GLuint _contents_texture_id,
+            GLsizei _num_textures,
             GLuint _background_color,
             GLuint _edge_aa_mask,
             GLuint _filter,
             GLuint _shm_id,
             GLuint _shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_contents_texture_id, _background_color,
+    static_cast<ValueType*>(cmd)->Init(_num_textures, _background_color,
                                        _edge_aa_mask, _filter, _shm_id,
                                        _shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
-  uint32_t contents_texture_id;
+  int32_t num_textures;
   uint32_t background_color;
   uint32_t edge_aa_mask;
   uint32_t filter;
@@ -13978,9 +13978,8 @@ static_assert(sizeof(ScheduleDCLayerCHROMIUM) == 28,
               "size of ScheduleDCLayerCHROMIUM should be 28");
 static_assert(offsetof(ScheduleDCLayerCHROMIUM, header) == 0,
               "offset of ScheduleDCLayerCHROMIUM header should be 0");
-static_assert(
-    offsetof(ScheduleDCLayerCHROMIUM, contents_texture_id) == 4,
-    "offset of ScheduleDCLayerCHROMIUM contents_texture_id should be 4");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, num_textures) == 4,
+              "offset of ScheduleDCLayerCHROMIUM num_textures should be 4");
 static_assert(offsetof(ScheduleDCLayerCHROMIUM, background_color) == 8,
               "offset of ScheduleDCLayerCHROMIUM background_color should be 8");
 static_assert(offsetof(ScheduleDCLayerCHROMIUM, edge_aa_mask) == 12,

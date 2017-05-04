@@ -4998,13 +4998,17 @@ void GLES2Implementation::ScheduleDCLayerSharedStateCHROMIUM(
                                               buffer.shm_id(), buffer.offset());
 }
 
-void GLES2Implementation::ScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
-                                                  const GLfloat* contents_rect,
-                                                  GLuint background_color,
-                                                  GLuint edge_aa_mask,
-                                                  const GLfloat* bounds_rect,
-                                                  GLuint filter) {
-  size_t shm_size = 8 * sizeof(GLfloat);
+void GLES2Implementation::ScheduleDCLayerCHROMIUM(
+    GLsizei num_textures,
+    const GLuint* contents_texture_ids,
+    const GLfloat* contents_rect,
+    GLuint background_color,
+    GLuint edge_aa_mask,
+    const GLfloat* bounds_rect,
+    GLuint filter) {
+  const size_t kRectsSize = 8 * sizeof(GLfloat);
+  size_t textures_size = num_textures * sizeof(GLuint);
+  size_t shm_size = kRectsSize + textures_size;
   ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
   if (!buffer.valid() || buffer.size() < shm_size) {
     SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleDCLayerCHROMIUM",
@@ -5014,9 +5018,10 @@ void GLES2Implementation::ScheduleDCLayerCHROMIUM(GLuint contents_texture_id,
   GLfloat* mem = static_cast<GLfloat*>(buffer.address());
   memcpy(mem + 0, contents_rect, 4 * sizeof(GLfloat));
   memcpy(mem + 4, bounds_rect, 4 * sizeof(GLfloat));
-  helper_->ScheduleDCLayerCHROMIUM(contents_texture_id, background_color,
-                                   edge_aa_mask, filter, buffer.shm_id(),
-                                   buffer.offset());
+  memcpy(static_cast<char*>(buffer.address()) + kRectsSize,
+         contents_texture_ids, textures_size);
+  helper_->ScheduleDCLayerCHROMIUM(num_textures, background_color, edge_aa_mask,
+                                   filter, buffer.shm_id(), buffer.offset());
 }
 
 void GLES2Implementation::CommitOverlayPlanesCHROMIUM() {

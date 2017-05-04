@@ -3232,15 +3232,19 @@ void GLRenderer::ScheduleDCLayers() {
        current_frame()->dc_layer_overlay_list) {
     DCHECK(!dc_layer_overlay.rpdq);
 
-    unsigned texture_id = 0;
+    int i = 0;
+    unsigned texture_ids[DrawQuad::Resources::kMaxResourceIdCount] = {};
+    int ids_to_send = 0;
+
     for (const auto& contents_resource_id : dc_layer_overlay.resources) {
       if (contents_resource_id) {
         pending_overlay_resources_.push_back(
             base::MakeUnique<ResourceProvider::ScopedReadLockGL>(
                 resource_provider_, contents_resource_id));
-        if (!texture_id)
-          texture_id = pending_overlay_resources_.back()->texture_id();
+        texture_ids[i] = pending_overlay_resources_.back()->texture_id();
+        ids_to_send = i + 1;
       }
+      i++;
     }
     GLfloat contents_rect[4] = {
         dc_layer_overlay.contents_rect.x(), dc_layer_overlay.contents_rect.y(),
@@ -3268,9 +3272,10 @@ void GLRenderer::ScheduleDCLayers() {
           dc_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
           z_order, transform);
     }
-    gl_->ScheduleDCLayerCHROMIUM(
-        texture_id, contents_rect, dc_layer_overlay.background_color,
-        dc_layer_overlay.edge_aa_mask, bounds_rect, filter);
+    gl_->ScheduleDCLayerCHROMIUM(ids_to_send, texture_ids, contents_rect,
+                                 dc_layer_overlay.background_color,
+                                 dc_layer_overlay.edge_aa_mask, bounds_rect,
+                                 filter);
   }
 
   // Take the number of copied render passes in this frame, and use 3 times that

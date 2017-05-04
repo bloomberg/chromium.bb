@@ -4404,7 +4404,7 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'impl_func': False,
     'client_test': False,
-    'cmd_args': 'GLuint contents_texture_id, GLuint background_color, '
+    'cmd_args': 'GLsizei num_textures, GLuint background_color, '
                 'GLuint edge_aa_mask, GLuint filter, GLuint shm_id, '
                 'GLuint shm_offset',
     'extension': 'CHROMIUM_schedule_ca_layer',

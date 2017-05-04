@@ -309,10 +309,11 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
       new gl::GLImageDXGI(texture_size, nullptr));
   image_dxgi->SetTexture(texture, 0);
 
-  ui::DCRendererLayerParams params(false, gfx::Rect(), 1, gfx::Transform(),
-                                   image_dxgi.get(),
-                                   gfx::RectF(gfx::Rect(texture_size)),
-                                   gfx::Rect(window_size), 0, 0, 1.0, 0);
+  ui::DCRendererLayerParams params(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
+      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0,
+      0);
   surface->ScheduleDCLayer(params);
 
   base::win::ScopedComPtr<IDXGISwapChain1> swap_chain =
@@ -343,10 +344,11 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   EXPECT_EQ(2u, last_present_count);
 
   // The size of the swapchain changed, so it should be recreated.
-  ui::DCRendererLayerParams params2(false, gfx::Rect(), 1, gfx::Transform(),
-                                    image_dxgi.get(),
-                                    gfx::RectF(gfx::Rect(texture_size)),
-                                    gfx::Rect(0, 0, 25, 25), 0, 0, 1.0, 0);
+  ui::DCRendererLayerParams params2(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
+      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(0, 0, 25, 25), 0, 0, 1.0,
+      0);
   surface->ScheduleDCLayer(params2);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());
@@ -483,10 +485,11 @@ TEST_F(DirectCompositionPixelTest, VideoSwapchain) {
       new gl::GLImageDXGI(texture_size, nullptr));
   image_dxgi->SetTexture(texture, 0);
 
-  ui::DCRendererLayerParams params(false, gfx::Rect(), 1, gfx::Transform(),
-                                   image_dxgi.get(),
-                                   gfx::RectF(gfx::Rect(texture_size)),
-                                   gfx::Rect(window_size), 0, 0, 1.0, 0);
+  ui::DCRendererLayerParams params(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
+      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0,
+      0);
   surface_->ScheduleDCLayer(params);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface_->SwapBuffers());

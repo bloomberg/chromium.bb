@@ -1811,19 +1811,26 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
   const volatile gles2::cmds::ScheduleDCLayerCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::ScheduleDCLayerCHROMIUM*>(
           cmd_data);
-  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
-                                                         8 * sizeof(GLfloat));
+  unsigned int size;
+  const GLfloat* mem = GetSharedMemoryAndSizeAs<const GLfloat*>(
+      c.shm_id, c.shm_offset, 8 * sizeof(GLfloat), &size);
   if (!mem) {
     return error::kOutOfBounds;
   }
-  GLuint contents_texture_id = static_cast<GLint>(c.contents_texture_id);
+  const GLsizei num_textures = c.num_textures;
+  if (num_textures < 0 || (size - 8 * sizeof(GLfloat)) / sizeof(GLuint) <
+                              static_cast<GLuint>(num_textures)) {
+    return error::kOutOfBounds;
+  }
+  const volatile GLuint* contents_texture_ids =
+      reinterpret_cast<const volatile GLuint*>(mem + 8);
   const GLfloat* contents_rect = mem;
   GLuint background_color = static_cast<GLuint>(c.background_color);
   GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
   const GLfloat* bounds_rect = mem + 4;
-  error::Error error =
-      DoScheduleDCLayerCHROMIUM(contents_texture_id, contents_rect,
-                                background_color, edge_aa_mask, bounds_rect);
+  error::Error error = DoScheduleDCLayerCHROMIUM(
+      num_textures, contents_texture_ids, contents_rect, background_color,
+      edge_aa_mask, bounds_rect);
   if (error != error::kNoError) {
     return error;
   }

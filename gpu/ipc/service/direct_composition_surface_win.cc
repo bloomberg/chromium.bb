@@ -395,7 +395,7 @@ bool DCLayerTree::SwapChainPresenter::ShouldBeYUY2() {
 void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     const ui::DCRendererLayerParams& params) {
   gl::GLImageDXGI* image_dxgi =
-      gl::GLImageDXGI::FromGLImage(params.image.get());
+      gl::GLImageDXGI::FromGLImage(params.image[0].get());
   DCHECK(image_dxgi);
 
   // Swap chain size is the minimum of the on-screen size and the source
@@ -779,7 +779,8 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
   // Add an overlay with z-order 0 representing the main plane.
   gfx::Size surface_size = surface_->GetSize();
   pending_overlays_.push_back(base::MakeUnique<ui::DCRendererLayerParams>(
-      false, gfx::Rect(), 0, gfx::Transform(), nullptr,
+      false, gfx::Rect(), 0, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>(),
       gfx::RectF(gfx::SizeF(surface_size)), gfx::Rect(surface_size), 0, 0, 1.0,
       0));
 
@@ -808,10 +809,10 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
     VisualInfo* visual_info = &visual_info_[i];
 
     InitVisual(i);
-    if (params.image &&
-        params.image->GetType() == gl::GLImage::Type::DXGI_IMAGE) {
+    if (params.image.size() > 0 && params.image[0] &&
+        params.image[0]->GetType() == gl::GLImage::Type::DXGI_IMAGE) {
       UpdateVisualForVideo(visual_info, params);
-    } else if (!params.image) {
+    } else if (params.image.empty()) {
       UpdateVisualForBackbuffer(visual_info, params);
     } else {
       CHECK(false);

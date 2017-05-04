@@ -2222,16 +2222,17 @@ void GLES2TraceImplementation::ScheduleDCLayerSharedStateCHROMIUM(
 }
 
 void GLES2TraceImplementation::ScheduleDCLayerCHROMIUM(
-    GLuint contents_texture_id,
+    GLsizei num_textures,
+    const GLuint* contents_texture_ids,
     const GLfloat* contents_rect,
     GLuint background_color,
     GLuint edge_aa_mask,
     const GLfloat* bounds_rect,
     GLuint filter) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ScheduleDCLayerCHROMIUM");
-  gl_->ScheduleDCLayerCHROMIUM(contents_texture_id, contents_rect,
-                               background_color, edge_aa_mask, bounds_rect,
-                               filter);
+  gl_->ScheduleDCLayerCHROMIUM(num_textures, contents_texture_ids,
+                               contents_rect, background_color, edge_aa_mask,
+                               bounds_rect, filter);
 }
 
 void GLES2TraceImplementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
