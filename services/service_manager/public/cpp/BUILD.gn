@@ -47,21 +47,6 @@ static_library("sources") {
 }
 
 if (!is_ios) {
-  # This cannot be a static library because it needs to export the symbols from
-  # initialize_base_and_icu.cc.
-  source_set("application_support") {
-    sources = [
-      "lib/init_commandline.cc",
-      "lib/initialize_base_and_icu.cc",
-    ]
-
-    deps = [
-      "//base",
-      "//base:i18n",
-      "//mojo/public/c/system",
-    ]
-  }
-
   static_library("service_test_support") {
     testonly = true
     sources = [
