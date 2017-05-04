@@ -226,8 +226,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['sierra'], bug=705865)
 
     # Fails on all GPU types.
-    self.Flaky('conformance/context/context-release-upon-reload.html',
-        ['mac'], bug=713829)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
         ['mac'], bug=709351)
     self.Fail('conformance2/rendering/' +
