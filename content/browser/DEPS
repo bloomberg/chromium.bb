@@ -7,6 +7,7 @@ include_rules = [
   "+components/filesystem",
   "+components/leveldb",
   "+components/link_header_util",
+  "+components/metrics",
   "+components/mime_util",
   "+components/payments",
   "+components/profile_service",

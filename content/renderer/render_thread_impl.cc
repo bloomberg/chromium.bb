@@ -51,6 +51,8 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
+#include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
+#include "components/metrics/single_sample_metrics.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
@@ -393,6 +395,23 @@ bool IsRunningInMash() {
   return cmdline->HasSwitch(switches::kIsRunningInMash);
 }
 
+// Hook that allows single-sample metric code from //components/metrics to
+// connect from the renderer process to the browser process.
+void CreateSingleSampleMetricsProvider(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    service_manager::Connector* connector,
+    metrics::mojom::SingleSampleMetricsProviderRequest request) {
+  if (task_runner->BelongsToCurrentThread()) {
+    connector->BindInterface(mojom::kBrowserServiceName, std::move(request));
+    return;
+  }
+
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&CreateSingleSampleMetricsProvider, std::move(task_runner),
+                 connector, base::Passed(&request)));
+}
+
 }  // namespace
 
 // For measuring memory usage after each task. Behind a command line flag.
@@ -613,6 +632,10 @@ void RenderThreadImpl::Init(
 
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
+
+  metrics::InitializeSingleSampleMetricsFactory(
+      base::BindRepeating(&CreateSingleSampleMetricsProvider,
+                          message_loop()->task_runner(), GetConnector()));
 
   gpu_ = ui::Gpu::Create(
       GetConnector(),

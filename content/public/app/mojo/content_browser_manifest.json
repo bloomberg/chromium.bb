@@ -38,6 +38,7 @@
           "media::mojom::ImageCapture",
           "memory_coordinator::mojom::MemoryCoordinatorHandle",
           "memory_instrumentation::mojom::Coordinator",
+          "metrics::mojom::SingleSampleMetricsProvider",
           "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",
