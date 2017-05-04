@@ -28,8 +28,11 @@ std::unique_ptr<FakeMaskLayerImpl> FakeMaskLayerImpl::Create(
 }
 
 void FakeMaskLayerImpl::GetContentsResourceId(ResourceId* resource_id,
-                                              gfx::Size* resource_size) const {
+                                              gfx::Size* resource_size,
+                                              gfx::SizeF* mask_uv_size) const {
   *resource_id = 0;
+  *resource_size = resource_size_;
+  *mask_uv_size = gfx::SizeF(1.0f, 1.0f);
 }
 
 }  // namespace cc

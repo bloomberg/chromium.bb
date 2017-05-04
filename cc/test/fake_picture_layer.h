@@ -42,6 +42,10 @@ class FakePictureLayer : public PictureLayer {
     force_unsuitable_for_gpu_rasterization_ = flag;
   }
 
+  void set_fixed_tile_size(gfx::Size fixed_tile_size) {
+    fixed_tile_size_ = fixed_tile_size;
+  }
+
  private:
   explicit FakePictureLayer(ContentLayerClient* client);
   FakePictureLayer(ContentLayerClient* client,
@@ -52,6 +56,7 @@ class FakePictureLayer : public PictureLayer {
   bool always_update_resources_;
 
   bool force_unsuitable_for_gpu_rasterization_;
+  gfx::Size fixed_tile_size_;
 };
 
 }  // namespace cc
