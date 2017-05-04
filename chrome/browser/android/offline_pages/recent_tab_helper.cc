@@ -212,10 +212,22 @@ void RecentTabHelper::DidFinishNavigation(
         downloads_ongoing_snapshot_info_.get(), false);
   }
 
-  // If the previous page was saved, delete it now.
-  if (last_n_latest_saved_snapshot_info_) {
+  // If currently loading an offline page get a pointer to it. It will be null
+  // otherwise.
+  const OfflinePageItem* current_offline_page =
+      OfflinePageUtils::GetOfflinePageFromWebContents(web_contents());
+
+  // If the previous page was saved, delete it now unless we are currently
+  // loading that very snapshot.
+  if (last_n_latest_saved_snapshot_info_ &&
+      (!current_offline_page ||
+       current_offline_page->offline_id !=
+           last_n_latest_saved_snapshot_info_->request_id)) {
+    DVLOG(1) << " - Deleting previous last_n snapshot with offline_id "
+             << last_n_latest_saved_snapshot_info_->request_id;
     std::vector<int64_t> id{last_n_latest_saved_snapshot_info_->request_id};
     page_model_->DeletePagesByOfflineId(id, DeletePageCallback());
+    last_n_latest_saved_snapshot_info_.reset();
   }
 
   // Cancel any and all in flight snapshot tasks from the previous page.
@@ -234,9 +246,13 @@ void RecentTabHelper::DidFinishNavigation(
   bool can_save =
       !navigation_handle->IsErrorPage() && !navigation_handle->IsPost() &&
       OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL()) &&
-      OfflinePageUtils::GetOfflinePageFromWebContents(web_contents()) ==
-          nullptr;
-  DVLOG_IF(1, !can_save) << " - Page can not be saved for offline usage";
+      current_offline_page == nullptr;
+  DVLOG_IF(1, !can_save)
+      << " - Page can not be saved for offline usage (reasons: "
+      << !navigation_handle->IsErrorPage() << ", "
+      << !navigation_handle->IsPost() << ", "
+      << OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL())
+      << ", " << (current_offline_page == nullptr) << ")";
 
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
 
@@ -310,6 +326,7 @@ void RecentTabHelper::WasHidden() {
       base::Bind(&RecentTabHelper::ContinueSnapshotWithIdsToPurge,
                  weak_ptr_factory_.GetWeakPtr(),
                  last_n_ongoing_snapshot_info_.get()));
+  last_n_latest_saved_snapshot_info_.reset();
 }
 
 void RecentTabHelper::WasShown() {
@@ -507,7 +524,6 @@ void RecentTabHelper::CancelInFlightSnapshots() {
   downloads_ongoing_snapshot_info_.reset();
   downloads_latest_saved_snapshot_info_.reset();
   last_n_ongoing_snapshot_info_.reset();
-  last_n_latest_saved_snapshot_info_.reset();
 }
 
 }  // namespace offline_pages

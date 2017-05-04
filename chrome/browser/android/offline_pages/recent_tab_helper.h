@@ -133,11 +133,13 @@ class RecentTabHelper
   std::unique_ptr<SnapshotProgressInfo> downloads_latest_saved_snapshot_info_;
 
   // Snapshot progress information for a last_n triggered request. Null if
-  // last_n is not currently capturing the current page.
+  // last_n is not currently capturing the current page. It is cleared upon non
+  // ignored navigations.
   std::unique_ptr<SnapshotProgressInfo> last_n_ongoing_snapshot_info_;
 
   // Snapshot information for the last successful snapshot requested by
   // last_n. Null if no successful one has ever completed for the current page.
+  // It is cleared when the referenced snapshot is deleted.
   std::unique_ptr<SnapshotProgressInfo> last_n_latest_saved_snapshot_info_;
 
   // If empty, the tab does not have AndroidId and can not capture pages.
