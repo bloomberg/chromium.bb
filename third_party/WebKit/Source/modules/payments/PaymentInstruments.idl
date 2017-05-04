@@ -10,7 +10,7 @@
 ] interface PaymentInstruments {
     [CallWith=ScriptState, ImplementedAs=deleteInstrument] Promise<boolean> delete(DOMString instrumentKey);
     [CallWith=ScriptState] Promise<PaymentInstrument> get(DOMString instrumentKey);
-    Promise<sequence<DOMString>> keys();
+    [CallWith=ScriptState] Promise<sequence<DOMString>> keys();
     [CallWith=ScriptState] Promise<boolean> has(DOMString instrumentKey);
     [CallWith=ScriptState, RaisesException] Promise<void> set(DOMString instrumentKey, PaymentInstrument details);
 };

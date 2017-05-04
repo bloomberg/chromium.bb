@@ -50,6 +50,14 @@ void SetPaymentInstrumentCallback(PaymentHandlerStatus* out_status,
   *out_status = status;
 }
 
+void KeysOfPaymentInstrumentsCallback(std::vector<std::string>* out_keys,
+                                      PaymentHandlerStatus* out_status,
+                                      const std::vector<std::string>& keys,
+                                      PaymentHandlerStatus status) {
+  *out_keys = keys;
+  *out_status = status;
+}
+
 void HasPaymentInstrumentCallback(PaymentHandlerStatus* out_status,
                                   PaymentHandlerStatus status) {
   *out_status = status;
@@ -89,6 +97,13 @@ class PaymentManagerTest : public PaymentAppContentUnitTestBase {
     manager_->SetPaymentInstrument(
         instrument_key, std::move(instrument),
         base::Bind(&SetPaymentInstrumentCallback, out_status));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void KeysOfPaymentInstruments(std::vector<std::string>* out_keys,
+                                PaymentHandlerStatus* out_status) {
+    manager_->KeysOfPaymentInstruments(
+        base::Bind(&KeysOfPaymentInstrumentsCallback, out_keys, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -245,6 +260,38 @@ TEST_F(PaymentManagerTest, HasPaymentInstrument) {
 
   HasPaymentInstrument("unstored_test_key", &has_status);
   ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, has_status);
+}
+
+TEST_F(PaymentManagerTest, KeysOfPaymentInstruments) {
+  PaymentHandlerStatus keys_status = PaymentHandlerStatus::NOT_FOUND;
+  std::vector<std::string> keys;
+  KeysOfPaymentInstruments(&keys, &keys_status);
+  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, keys_status);
+  ASSERT_EQ(0U, keys.size());
+
+  {
+    PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
+    SetPaymentInstrument("test_key1", PaymentInstrument::New(), &write_status);
+    ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+  }
+  {
+    PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
+    SetPaymentInstrument("test_key3", PaymentInstrument::New(), &write_status);
+    ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+  }
+  {
+    PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
+    SetPaymentInstrument("test_key2", PaymentInstrument::New(), &write_status);
+    ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+  }
+
+  keys_status = PaymentHandlerStatus::NOT_FOUND;
+  KeysOfPaymentInstruments(&keys, &keys_status);
+  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, keys_status);
+  ASSERT_EQ(3U, keys.size());
+  ASSERT_EQ("test_key1", keys[0]);
+  ASSERT_EQ("test_key3", keys[1]);
+  ASSERT_EQ("test_key2", keys[2]);
 }
 
 }  // namespace content

@@ -4,10 +4,12 @@
 
 #include "content/browser/payments/payment_app_database.h"
 
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "content/browser/payments/payment_app.pb.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -22,10 +24,16 @@ using ::payments::mojom::PaymentInstrument;
 using ::payments::mojom::PaymentInstrumentPtr;
 
 const char kPaymentAppManifestDataKey[] = "PaymentAppManifestData";
-const char kPaymentInstrumentKeyPrefix[] = "PaymentInstrument:";
+const char kPaymentInstrumentPrefix[] = "PaymentInstrument:";
+const char kPaymentInstrumentKeyInfoPrefix[] = "PaymentInstrumentKeyInfo:";
 
 std::string CreatePaymentInstrumentKey(const std::string& instrument_key) {
-  return kPaymentInstrumentKeyPrefix + instrument_key;
+  return kPaymentInstrumentPrefix + instrument_key;
+}
+
+std::string CreatePaymentInstrumentKeyInfoKey(
+    const std::string& instrument_key) {
+  return kPaymentInstrumentKeyInfoPrefix + instrument_key;
 }
 
 payments::mojom::PaymentAppManifestPtr DeserializePaymentAppManifest(
@@ -52,6 +60,21 @@ payments::mojom::PaymentAppManifestPtr DeserializePaymentAppManifest(
   }
 
   return manifest;
+}
+
+std::map<uint64_t, std::string> DeserializePaymentInstrumentKeyInfo(
+    const std::vector<std::string>& inputs) {
+  std::map<uint64_t, std::string> key_info;
+  for (const auto& input : inputs) {
+    PaymentInstrumentKeyInfoProto key_info_proto;
+    if (!key_info_proto.ParseFromString(input))
+      return std::map<uint64_t, std::string>();
+
+    key_info.insert(std::pair<uint64_t, std::string>(
+        key_info_proto.insertion_order(), key_info_proto.key()));
+  }
+
+  return key_info;
 }
 
 PaymentInstrumentPtr DeserializePaymentInstrument(const std::string& input) {
@@ -138,6 +161,17 @@ void PaymentAppDatabase::ReadPaymentInstrument(
           &PaymentAppDatabase::DidFindRegistrationToReadPaymentInstrument,
           weak_ptr_factory_.GetWeakPtr(), instrument_key,
           base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::KeysOfPaymentInstruments(
+    const GURL& scope,
+    KeysOfPaymentInstrumentsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->FindReadyRegistrationForPattern(
+      scope, base::Bind(&PaymentAppDatabase::DidFindRegistrationToGetKeys,
+                        weak_ptr_factory_.GetWeakPtr(),
+                        base::Passed(std::move(callback))));
 }
 
 void PaymentAppDatabase::HasPaymentInstrument(
@@ -312,7 +346,9 @@ void PaymentAppDatabase::DidFindPaymentInstrument(
   }
 
   service_worker_context_->ClearRegistrationUserData(
-      registration_id, {CreatePaymentInstrumentKey(instrument_key)},
+      registration_id,
+      {CreatePaymentInstrumentKey(instrument_key),
+       CreatePaymentInstrumentKeyInfoKey(instrument_key)},
       base::Bind(&PaymentAppDatabase::DidDeletePaymentInstrument,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback))));
@@ -365,6 +401,43 @@ void PaymentAppDatabase::DidReadPaymentInstrument(
   }
 
   std::move(callback).Run(std::move(instrument), PaymentHandlerStatus::SUCCESS);
+}
+
+void PaymentAppDatabase::DidFindRegistrationToGetKeys(
+    KeysOfPaymentInstrumentsCallback callback,
+    ServiceWorkerStatusCode status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(std::vector<std::string>(),
+                            PaymentHandlerStatus::NO_ACTIVE_WORKER);
+    return;
+  }
+
+  service_worker_context_->GetRegistrationUserDataByKeyPrefix(
+      registration->id(), {kPaymentInstrumentKeyInfoPrefix},
+      base::Bind(&PaymentAppDatabase::DidGetKeysOfPaymentInstruments,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::DidGetKeysOfPaymentInstruments(
+    KeysOfPaymentInstrumentsCallback callback,
+    const std::vector<std::string>& data,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(std::vector<std::string>(),
+                            PaymentHandlerStatus::NOT_FOUND);
+    return;
+  }
+
+  std::vector<std::string> keys;
+  for (const auto& key_info : DeserializePaymentInstrumentKeyInfo(data)) {
+    keys.push_back(key_info.second);
+  }
+
+  std::move(callback).Run(keys, PaymentHandlerStatus::SUCCESS);
 }
 
 void PaymentAppDatabase::DidFindRegistrationToHasPaymentInstrument(
@@ -420,13 +493,23 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
   instrument_proto.set_stringified_capabilities(
       instrument->stringified_capabilities);
 
-  std::string serialized;
-  bool success = instrument_proto.SerializeToString(&serialized);
+  std::string serialized_instrument;
+  bool success = instrument_proto.SerializeToString(&serialized_instrument);
+  DCHECK(success);
+
+  PaymentInstrumentKeyInfoProto key_info_proto;
+  key_info_proto.set_key(instrument_key);
+  key_info_proto.set_insertion_order(base::Time::Now().ToInternalValue());
+
+  std::string serialized_key_info;
+  success = key_info_proto.SerializeToString(&serialized_key_info);
   DCHECK(success);
 
   service_worker_context_->StoreRegistrationUserData(
       registration->id(), registration->pattern().GetOrigin(),
-      {{CreatePaymentInstrumentKey(instrument_key), serialized}},
+      {{CreatePaymentInstrumentKey(instrument_key), serialized_instrument},
+       {CreatePaymentInstrumentKeyInfoKey(instrument_key),
+        serialized_key_info}},
       base::Bind(&PaymentAppDatabase::DidWritePaymentInstrument,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback))));
