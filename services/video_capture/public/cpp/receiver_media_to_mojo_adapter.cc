@@ -109,4 +109,12 @@ void ReceiverMediaToMojoAdapter::OnLog(const std::string& message) {
   receiver_->OnLog(message);
 }
 
+void ReceiverMediaToMojoAdapter::OnStarted() {
+  receiver_->OnStarted();
+}
+
+void ReceiverMediaToMojoAdapter::OnStartedUsingGpuDecode() {
+  receiver_->OnStartedUsingGpuDecode();
+}
+
 }  // namespace video_capture

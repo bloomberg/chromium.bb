@@ -16,6 +16,8 @@ InProcessVideoCaptureProvider::InProcessVideoCaptureProvider(
 
 InProcessVideoCaptureProvider::~InProcessVideoCaptureProvider() = default;
 
+void InProcessVideoCaptureProvider::Uninitialize() {}
+
 void InProcessVideoCaptureProvider::GetDeviceInfosAsync(
     const base::Callback<void(
         const std::vector<media::VideoCaptureDeviceInfo>&)>& result_callback) {
