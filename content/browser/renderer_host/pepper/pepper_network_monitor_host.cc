@@ -87,8 +87,7 @@ void PepperNetworkMonitorHost::GetAndSendNetworkList() {
 
   // Call GetNetworkList() on a thread that allows blocking IO.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&GetNetworkList),
       base::Bind(&PepperNetworkMonitorHost::SendNetworkList,
                  weak_factory_.GetWeakPtr()));

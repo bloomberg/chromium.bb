@@ -74,8 +74,7 @@ class CONTENT_EXPORT BrowserThread {
     // DEPRECATED: prefer base/task_scheduler/post_task.h for new classes
     // requiring a background file I/O task runner, i.e.:
     //   base::CreateSequencedTaskRunnerWithTraits(
-    //       base::TaskTraits().MayBlock()
-    //           .WithPriority(base::TaskPriority::BACKGROUND))
+    //       {base::MayBlock(), base::TaskPriority::BACKGROUND})
     //   Note: You can use base::TaskPriority::USER_VISIBLE instead of
     //         base::TaskPriority::BACKGROUND if the latency of this operation
     //         is visible but non-blocking to the user.
@@ -86,8 +85,7 @@ class CONTENT_EXPORT BrowserThread {
     // DEPRECATED: prefer base/task_scheduler/post_task.h for new classes
     // requiring a user-blocking file I/O task runner, i.e.:
     //   base::CreateSequencedTaskRunnerWithTraits(
-    //       base::TaskTraits().MayBlock()
-    //           .WithPriority(base::TaskPriority::USER_BLOCKING))
+    //       {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
     FILE_USER_BLOCKING,
 
     // Used to launch and terminate Chrome processes.
@@ -224,7 +222,7 @@ class CONTENT_EXPORT BrowserThread {
   //       base::SequencedWorkerPool::GetSequenceToken())
   //  =>
   //   base::CreateSequencedTaskRunnerWithTraits(
-  //       base::TaskTraits().MayBlock()...).
+  //       {base::MayBlock()}).
   static base::SequencedWorkerPool* GetBlockingPool() WARN_UNUSED_RESULT;
 
   // Callable on any thread.  Returns whether the given well-known thread is

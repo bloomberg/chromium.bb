@@ -95,11 +95,9 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
     // believed to be blocking synchronous IPCs from the renderers:
     // http://crbug.com/665588 (yes we want to fix that bug, but are taking it
     // as an opportunity to experiment with the scheduler).
-    base::TaskTraits dom_storage_traits =
-        base::TaskTraits()
-            .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN)
-            .MayBlock()
-            .WithPriority(base::TaskPriority::USER_BLOCKING);
+    base::TaskTraits dom_storage_traits = {
+        base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+        base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
     primary_sequence =
         base::CreateSequencedTaskRunnerWithTraits(dom_storage_traits);
     commit_sequence =

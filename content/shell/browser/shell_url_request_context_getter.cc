@@ -258,11 +258,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         url::kFileScheme,
         base::MakeUnique<net::FileProtocolHandler>(
             base::CreateTaskRunnerWithTraits(
-                base::TaskTraits()
-                    .MayBlock()
-                    .WithPriority(base::TaskPriority::USER_VISIBLE)
-                    .WithShutdownBehavior(
-                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
+                {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
     DCHECK(set_protocol);
 #endif
 
