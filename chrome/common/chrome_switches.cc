@@ -480,6 +480,10 @@ const char kForceAppMode[]                  = "force-app-mode";
 // is triggered.
 const char kForceDesktopIOSPromotion[] = "force-desktop-ios-promotion";
 
+// Forces Network Quality Estimator (NQE) to return a specific effective
+// connection type.
+const char kForceEffectiveConnectionType[] = "force-effective-connection-type";
+
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";

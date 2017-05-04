@@ -85,6 +85,7 @@
 #include "media/media_features.h"
 #include "media/midi/midi_switches.h"
 #include "net/cert/cert_verify_proc_android.h"
+#include "net/nqe/effective_connection_type.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/device/public/cpp/device_features.h"
@@ -714,6 +715,36 @@ const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
      switches::autoplay::kCrossOriginUserGestureRequiredPolicy},
 #endif
 };
+
+const FeatureEntry::Choice kForceEffectiveConnectionTypeChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kEffectiveConnectionTypeUnknownDescription,
+     switches::kForceEffectiveConnectionType,
+     net::kEffectiveConnectionTypeUnknown},
+    {flag_descriptions::kEffectiveConnectionTypeOfflineDescription,
+     switches::kForceEffectiveConnectionType,
+     net::kEffectiveConnectionTypeOffline},
+    {flag_descriptions::kEffectiveConnectionTypeSlow2GDescription,
+     switches::kForceEffectiveConnectionType,
+     net::kEffectiveConnectionTypeSlow2G},
+    {flag_descriptions::kEffectiveConnectionType2GDescription,
+     switches::kForceEffectiveConnectionType, net::kEffectiveConnectionType2G},
+    {flag_descriptions::kEffectiveConnectionType3GDescription,
+     switches::kForceEffectiveConnectionType, net::kEffectiveConnectionType3G},
+    {flag_descriptions::kEffectiveConnectionType4GDescription,
+     switches::kForceEffectiveConnectionType, net::kEffectiveConnectionType4G},
+};
+
+// Ensure that all effective connection types returned by Network Quality
+// Estimator (NQE) are also exposed via flags.
+static_assert(net::EFFECTIVE_CONNECTION_TYPE_LAST + 1 ==
+                  arraysize(kForceEffectiveConnectionTypeChoices),
+              "ECT enum value is not handled.");
+static_assert(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN == 0,
+              "ECT enum value is not handled.");
+static_assert(net::EFFECTIVE_CONNECTION_TYPE_4G + 1 ==
+                  net::EFFECTIVE_CONNECTION_TYPE_LAST,
+              "ECT enum value is not handled.");
 
 const FeatureEntry::FeatureParam kNoStatePrefetchEnabled[] = {
     {prerender::kNoStatePrefetchFeatureModeParameterName,
@@ -2781,6 +2812,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"autoplay-policy", flag_descriptions::kAutoplayPolicyName,
      flag_descriptions::kAutoplayPolicyDescription, kOsAll,
      MULTI_VALUE_TYPE(kAutoplayPolicyChoices)},
+
+    {"force-effective-connection-type",
+     flag_descriptions::kForceEffectiveConnectionTypeName,
+     flag_descriptions::kForceEffectiveConnectionTypeDescription, kOsAll,
+     MULTI_VALUE_TYPE(kForceEffectiveConnectionTypeChoices)},
 
     {"enable-heap-profiling", flag_descriptions::kEnableHeapProfilingName,
      flag_descriptions::kEnableHeapProfilingDescription, kOsAll,
