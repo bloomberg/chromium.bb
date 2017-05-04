@@ -196,7 +196,7 @@ void LabelButton::SetIsDefault(bool is_default) {
   UpdateStyleToIndicateDefaultStatus();
 }
 
-void LabelButton::SetStyle(ButtonStyle style) {
+void LabelButton::SetStyleDeprecated(ButtonStyle style) {
   // All callers currently pass STYLE_BUTTON, and should only call this once, to
   // change from the default style.
   DCHECK_EQ(style, STYLE_BUTTON);

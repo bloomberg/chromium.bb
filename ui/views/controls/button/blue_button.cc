@@ -21,7 +21,7 @@ const char BlueButton::kViewClassName[] = "views/BlueButton";
 BlueButton::BlueButton(ButtonListener* listener, const base::string16& text)
     : LabelButton(listener, text) {
   // Inherit STYLE_BUTTON insets, minimum size, alignment, etc.
-  SetStyle(STYLE_BUTTON);
+  SetStyleDeprecated(STYLE_BUTTON);
   UpdateThemedBorder();
 }
 

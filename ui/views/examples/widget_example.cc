@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -55,9 +55,8 @@ base::string16 DialogExample::GetWindowTitle() const {
 }
 
 View* DialogExample::CreateExtraView() {
-  LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Extra button!"));
-  button->SetStyle(Button::STYLE_BUTTON);
-  return button;
+  return MdTextButton::CreateSecondaryUiButton(nullptr,
+                                               ASCIIToUTF16("Extra button!"));
 }
 
 View* DialogExample::CreateFootnoteView() {

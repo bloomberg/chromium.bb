@@ -76,8 +76,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void SetIsDefault(bool is_default);
 
   // Gets or sets the button's overall style; the default is |STYLE_TEXTBUTTON|.
+  // DEPRECATED: ButtonStyle is deprecated. Use MdTextButton in place of
+  // |STYLE_BUTTON|.
   ButtonStyle style() const { return style_; }
-  void SetStyle(ButtonStyle style);
+  void SetStyleDeprecated(ButtonStyle style);
 
   // Sets the spacing between the image and the text. Shrinking the spacing
   // will not shrink the overall button size, as it is monotonically increasing.
