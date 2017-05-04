@@ -366,13 +366,13 @@ void ImageResource::Finish(double load_finish_time) {
   Resource::Finish(load_finish_time);
 }
 
-void ImageResource::GetError(const ResourceError& error) {
+void ImageResource::FinishAsError(const ResourceError& error) {
   if (multipart_parser_)
     multipart_parser_->Cancel();
   // TODO(hiroshige): Move setEncodedSize() call to Resource::error() if it
   // is really needed, or remove it otherwise.
   SetEncodedSize(0);
-  Resource::GetError(error);
+  Resource::FinishAsError(error);
   UpdateImage(nullptr, ImageResourceContent::kClearImageAndNotifyObservers,
               true);
 }

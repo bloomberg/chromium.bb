@@ -143,7 +143,7 @@ TEST_F(CSSPreloadScannerTest, DontReadFromClearedData) {
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   resource->AppendData(data, strlen(data));
   ResourceError error(kErrorDomainBlinkInternal, 0, url.GetString(), "");
-  resource->GetError(error);
+  resource->FinishAsError(error);
 
   // Should not crash.
   PreloadRecordingCSSPreloaderResourceClient* resource_client =

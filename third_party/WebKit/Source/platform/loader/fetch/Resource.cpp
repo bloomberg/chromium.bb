@@ -413,7 +413,7 @@ void Resource::SetDataBufferingPolicy(
   SetEncodedSize(0);
 }
 
-void Resource::GetError(const ResourceError& error) {
+void Resource::FinishAsError(const ResourceError& error) {
   DCHECK(!error.IsNull());
   error_ = error;
   is_revalidating_ = false;
