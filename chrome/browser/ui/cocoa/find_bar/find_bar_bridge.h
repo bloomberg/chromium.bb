@@ -76,6 +76,7 @@ class FindBarBridge : public FindBar,
   base::string16 GetFindSelectedText() override;
   base::string16 GetMatchCountText() override;
   int GetWidth() override;
+  size_t GetAudibleAlertCount() override;
 
   // Used to disable find bar animations when testing.
   static bool disable_animations_during_testing_;
@@ -87,6 +88,9 @@ class FindBarBridge : public FindBar,
 
   // Pointer back to the owning controller.
   FindBarController* find_bar_controller_;  // weak, owns us
+
+  // Number of audible alerts generated, for testing.
+  size_t audible_alerts_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarBridge);
 };

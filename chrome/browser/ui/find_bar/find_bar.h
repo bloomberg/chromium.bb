@@ -111,6 +111,9 @@ class FindBarTesting {
 
   // Gets the pixel width of the FindBar.
   virtual int GetWidth() = 0;
+
+  // Gets the number of audible alerts that have been issued by this bar.
+  virtual size_t GetAudibleAlertCount() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_H_
