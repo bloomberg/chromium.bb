@@ -1,5 +1,5 @@
 {% from 'macros.tmpl' import license %}
-{% from 'fields/field.tmpl' import getter_expression, setter_expression, fieldwise_copy %}
+{% from 'fields/field.tmpl' import getter_expression, setter_expression, fieldwise_copy, fieldwise_diff %}
 {{license()}}
 
 #include "core/ComputedStyleBase.h"
@@ -46,6 +46,25 @@ void ComputedStyleBase::PropagateIndependentInheritedProperties(
   if ({{field.is_inherited_method_name}}())
     {{setter_expression(field)}} = parentStyle.{{getter_expression(field)}};
   {% endfor %}
+}
+
+bool ComputedStyleBase::ScrollAnchorDisablingPropertyChanged(
+    const ComputedStyleBase& other,
+    const StyleDifference& diff) const {
+  {{fieldwise_diff(computed_style, computed_style.all_fields
+      |selectattr("property_name", "in", ["margin-top", "margin-left", "margin-right", "margin-bottom", "left", "right", "top", "bottom", "padding-top", "padding-left", "padding-right", "padding-bottom"])
+      |list
+    )|indent(2)}}
+  return false;
+}
+
+bool ComputedStyleBase::DiffNeedsFullLayoutAndPaintInvalidation(
+    const ComputedStyleBase& other) const {
+  {{fieldwise_diff(computed_style, computed_style.all_fields
+      |selectattr("property_name", "in", ["padding-top", "padding-left", "padding-right", "padding-bottom"])
+      |list
+    )|indent(2)}}
+  return false;
 }
 
 } // namespace blink
