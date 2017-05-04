@@ -6,7 +6,7 @@
 // or ".data" files. The input format is described here:
 // mojo/public/cpp/bindings/tests/validation_test_input_parser.h
 
-define([
+define("mojo/resources/validation_test_input_parser", [
     "mojo/public/js/buffer"
   ], function(buffer) {
 
@@ -14,6 +14,7 @@ define([
   // or ".data" file.
 
   function InputError(message, line) {
+    this.name = "InputError";
     this.message = message;
     this.line = line;
   }

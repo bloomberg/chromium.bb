@@ -82,10 +82,7 @@ group("tests") {
   testonly = true
 
   data = [
-    "//mojo/public/interfaces/bindings/tests/data/validation/",
     "tests/core_unittest.js",
-    "tests/validation_test_input_parser.js",
-    "tests/validation_unittest.js",
   ]
 
   public_deps = [
