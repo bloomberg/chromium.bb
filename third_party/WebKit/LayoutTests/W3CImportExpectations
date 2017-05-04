@@ -380,7 +380,8 @@ external/wpt/wai-aria [ Skip ]
 # external/wpt/web-animations [ Pass ]
 ## Owners: hongchan@chromium.org, rtoy@chromium.org
 # external/wpt/webaudio [ Pass ]
-external/wpt/webauthn [ Skip ]
+## Owners: kpaulhamus@chromium.org
+# external/wpt/webauthn [ Pass ]
 external/wpt/webdriver [ Skip ]
 external/wpt/webgl [ Skip ]
 ## Owners: mek@chromium.org
