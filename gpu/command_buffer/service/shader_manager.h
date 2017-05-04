@@ -124,9 +124,6 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   const std::string* GetOriginalNameFromHashedName(
       const std::string& hashed_name) const;
 
-  const std::string* GetMappedName(
-      const std::string& original_name) const;
-
   const std::string& log_info() const {
     return log_info_;
   }
