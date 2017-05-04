@@ -986,6 +986,9 @@ static int ransac(const int *matched_points, int npoints,
 
   double *cnp1, *cnp2;
 
+  for (i = 0; i < num_desired_motions; ++i) {
+    num_inliers_by_motion[i] = 0;
+  }
   if (npoints < minpts * MINPTS_MULTIPLIER || npoints == 0) {
     return 1;
   }
