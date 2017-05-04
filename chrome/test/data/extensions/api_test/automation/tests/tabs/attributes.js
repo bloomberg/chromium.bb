@@ -300,6 +300,14 @@ var allTests = [
 
     chrome.test.succeed();
   },
+
+  function testHtmlTagAttribute() {
+    var figure = rootNode.find({ attributes: { htmlTag: 'figure' } });
+    assertTrue(Boolean(figure));
+    assertEq(figure.htmlTag, 'figure');
+
+    chrome.test.succeed();
+  }
 ];
 
 setUpAndRunTests(allTests, 'attributes.html');

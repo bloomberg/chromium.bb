@@ -704,6 +704,7 @@ var stringAttributes = [
     'containerLiveStatus',
     'description',
     'display',
+    'htmlTag',
     'imageDataUrl',
     'language',
     'liveRelevant',
