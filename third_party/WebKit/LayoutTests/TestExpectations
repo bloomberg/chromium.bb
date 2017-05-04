@@ -2329,7 +2329,6 @@ crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/errorhandling.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/imports.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/execorder.html [ Pass Timeout ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-1.html [ Failure Crash ]
 
 # This test has a failure console message with specific performance
 # numbers so a consistent baseline cannot be added. This test could be
