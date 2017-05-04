@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
+import android.os.AsyncTask;
 
 import org.chromium.base.Log;
 import org.chromium.gfx.mojom.RectF;
@@ -36,8 +37,8 @@ public class FaceDetectionImpl implements FaceDetection {
     }
 
     @Override
-    public void detect(
-            SharedBufferHandle frameData, int width, int height, DetectResponse callback) {
+    public void detect(SharedBufferHandle frameData, final int width, final int height,
+            final DetectResponse callback) {
         final long numPixels = (long) width * height;
         // TODO(xianglu): https://crbug.com/670028 homogeneize overflow checking.
         if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
@@ -74,33 +75,40 @@ public class FaceDetectionImpl implements FaceDetection {
         // http://androidxref.com/7.0.0_r1/xref/frameworks/base/graphics/java/android/graphics/Bitmap.java#538
         int[] pixels = new int[width * height];
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-        Bitmap unPremultipliedBitmap =
+        final Bitmap unPremultipliedBitmap =
                 Bitmap.createBitmap(pixels, width, height, Bitmap.Config.RGB_565);
 
-        FaceDetector detector = new FaceDetector(width, height, mMaxFaces);
-        Face[] detectedFaces = new Face[mMaxFaces];
-        // findFaces() will stop at |mMaxFaces|.
-        final int numberOfFaces = detector.findFaces(unPremultipliedBitmap, detectedFaces);
+        // FaceDetector creation and findFaces() might take a long time and trigger a
+        // "StrictMode policy violation": they should happen in a background thread.
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                final FaceDetector detector = new FaceDetector(width, height, mMaxFaces);
+                Face[] detectedFaces = new Face[mMaxFaces];
+                // findFaces() will stop at |mMaxFaces|.
+                final int numberOfFaces = detector.findFaces(unPremultipliedBitmap, detectedFaces);
 
-        FaceDetectionResult faceDetectionResult = new FaceDetectionResult();
-        faceDetectionResult.boundingBoxes = new RectF[numberOfFaces];
-        for (int i = 0; i < numberOfFaces; i++) {
-            final Face face = detectedFaces[i];
-            final PointF midPoint = new PointF();
-            face.getMidPoint(midPoint);
-            final float eyesDistance = face.eyesDistance();
+                FaceDetectionResult faceDetectionResult = new FaceDetectionResult();
+                faceDetectionResult.boundingBoxes = new RectF[numberOfFaces];
+                for (int i = 0; i < numberOfFaces; i++) {
+                    final Face face = detectedFaces[i];
+                    final PointF midPoint = new PointF();
+                    face.getMidPoint(midPoint);
+                    final float eyesDistance = face.eyesDistance();
 
-            RectF boundingBox = new RectF();
-            boundingBox.x = midPoint.x - eyesDistance;
-            boundingBox.y = midPoint.y - eyesDistance;
-            boundingBox.width = 2 * eyesDistance;
-            boundingBox.height = 2 * eyesDistance;
+                    RectF boundingBox = new RectF();
+                    boundingBox.x = midPoint.x - eyesDistance;
+                    boundingBox.y = midPoint.y - eyesDistance;
+                    boundingBox.width = 2 * eyesDistance;
+                    boundingBox.height = 2 * eyesDistance;
 
-            // TODO(xianglu): Consider adding Face.confidence and Face.pose.
-            faceDetectionResult.boundingBoxes[i] = boundingBox;
-        }
+                    // TODO(xianglu): Consider adding Face.confidence and Face.pose.
+                    faceDetectionResult.boundingBoxes[i] = boundingBox;
+                }
 
-        callback.call(faceDetectionResult);
+                callback.call(faceDetectionResult);
+            }
+        });
     }
 
     @Override
