@@ -53,6 +53,24 @@
 //
 // DONT_CREATE_THREADS should only be used when the options specify at least
 // one real thread other than the main thread.
+//
+// Basic usage:
+//
+//   class MyTestFixture : public testing::Test {
+//    public:
+//     (...)
+//
+//    protected:
+//     // Must be the first member (or at least before any member that cares
+//     // about tasks) to be initialized first and destroyed last. protected
+//     // instead of private visibility will allow controlling the task
+//     // environment (e.g. clock) once such features are added (see
+//     // base::test::ScopedTaskEnvironment for details), until then it at least
+//     // doesn't hurt :).
+//     content::TestBrowserThreadBundle test_browser_thread_bundle_;
+//
+//     // Other members go here (or further below in private section.)
+//   };
 
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 #define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_

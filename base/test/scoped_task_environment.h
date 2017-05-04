@@ -28,6 +28,23 @@ namespace test {
 // Tasks posted through base/task_scheduler/post_task.h run on dedicated threads
 // as they are posted.
 //
+// Usage:
+//
+//   class MyTestFixture : public testing::Test {
+//    public:
+//     (...)
+//
+//    protected:
+//     // Must be the first member (or at least before any member that cares
+//     // about tasks) to be initialized first and destroyed last. protected
+//     // instead of private visibility will allow controlling the task
+//     // environment (e.g. clock) once such features are added (see design doc
+//     // below for details), until then it at least doesn't hurt :).
+//     base::test::ScopedTaskEnvironment scoped_task_environment_;
+//
+//     // Other members go here (or further below in private section.)
+//   };
+//
 // Design and future improvements documented in
 // https://docs.google.com/document/d/1QabRo8c7D9LsYY3cEcaPQbOCLo8Tu-6VLykYXyl3Pkk/edit
 class ScopedTaskEnvironment {
