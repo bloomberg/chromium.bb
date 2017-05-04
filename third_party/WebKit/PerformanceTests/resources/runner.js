@@ -358,11 +358,11 @@ if (window.testRunner) {
         // Force gc before measuring time to avoid interference between tests.
         PerfTestRunner.gc();
 
-        var start = PerfTestRunner.now();
         addRunTestStartMarker();
+        var start = PerfTestRunner.now();
         var returnValue = currentTest.run();
-        addRunTestEndMarker();
         var end = PerfTestRunner.now();
+        addRunTestEndMarker();
 
         if (returnValue - 0 === returnValue) {
             if (returnValue < 0)
