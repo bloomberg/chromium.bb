@@ -80,7 +80,6 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 
 import java.io.File;
@@ -120,7 +119,7 @@ public class AwContents implements SmartClipProvider {
     private static final boolean FORCE_AUXILIARY_BITMAP_RENDERING =
             "goldfish".equals(Build.HARDWARE) || "ranchu".equals(Build.HARDWARE);
 
-    private static final double MIN_SCREEN_PERCENTAGE_FOR_INTERSTITIAL = 0.7;
+    private static final double MIN_SCREEN_HEIGHT_PERCENTAGE_FOR_INTERSTITIAL = 0.7;
 
     /**
      * WebKit hit test related data structure. These are used to implement
@@ -2917,16 +2916,25 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * Determine if at least one edge of the WebView extends over the edge of the device screen.
+     * Determine if at least one edge of the WebView extends over the edge of the window.
      */
-    private boolean extendsOffDeviceScreen() {
+    private boolean extendsOutOfWindow() {
         int loc[] = new int[2];
         mContainerView.getLocationOnScreen(loc);
         int x = loc[0];
         int y = loc[1];
-        DisplayAndroid displayAndroid = mWindowAndroid.getWindowAndroid().getDisplay();
-        if (x < 0 || y < 0 || x + mContainerView.getWidth() > displayAndroid.getDisplayWidth()
-                || y + mContainerView.getHeight() > displayAndroid.getDisplayHeight()) {
+        mContainerView.getRootView().getLocationOnScreen(loc);
+        int rootX = loc[0];
+        int rootY = loc[1];
+
+        // Get the position of the current view, relative to its root view
+        int relativeX = x - rootX;
+        int relativeY = y - rootY;
+
+        if (relativeX < 0 || relativeY < 0
+                || relativeX + mContainerView.getWidth() > mContainerView.getRootView().getWidth()
+                || relativeY + mContainerView.getHeight()
+                        > mContainerView.getRootView().getHeight()) {
             return true;
         }
         return false;
@@ -2953,15 +2961,14 @@ public class AwContents implements SmartClipProvider {
     @CalledByNative
     protected boolean canShowBigInterstitial() {
         if (!canShowInterstitial()) return false;
-        if (extendsOffDeviceScreen()) return false;
+        if (extendsOutOfWindow()) return false;
 
-        DisplayAndroid displayAndroid = mWindowAndroid.getWindowAndroid().getDisplay();
         double percentOfScreenHeight =
-                (double) mContainerView.getHeight() / displayAndroid.getDisplayHeight();
+                (double) mContainerView.getHeight() / mContainerView.getRootView().getHeight();
 
-        // If the WebView is full width and most of the height, it's probably the main UI.
-        return mContainerView.getWidth() == displayAndroid.getDisplayWidth()
-                && percentOfScreenHeight >= MIN_SCREEN_PERCENTAGE_FOR_INTERSTITIAL;
+        // Make a guess as to whether the WebView is the predominant part of the UI
+        return mContainerView.getWidth() == mContainerView.getRootView().getWidth()
+                && percentOfScreenHeight >= MIN_SCREEN_HEIGHT_PERCENTAGE_FOR_INTERSTITIAL;
     }
 
     @VisibleForTesting
