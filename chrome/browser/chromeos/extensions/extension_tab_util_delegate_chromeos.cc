@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "url/gurl.h"
@@ -21,7 +22,9 @@ void ExtensionTabUtilDelegateChromeOS::ScrubTabForExtension(
     const Extension* extension,
     content::WebContents* contents,
     api::tabs::Tab* tab) {
-  if (!profiles::IsPublicSession() || !tab->url) {
+  if (!profiles::IsPublicSession() || !tab->url ||
+      chromeos::DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
+          extension->id())) {
     return;
   }
   // Scrub URL down to the origin (security reasons inside Public Sessions).

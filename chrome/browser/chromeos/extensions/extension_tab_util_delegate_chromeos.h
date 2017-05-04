@@ -24,7 +24,8 @@ class Extension;
 // In Public Sessions, apps and extensions are force-installed by admin policy
 // so the user does not get a chance to review the permissions for these apps.
 // This is not acceptable from a security standpoint, so we scrub the URL
-// returned by chrome.tabs API down to the origin.
+// returned by chrome.tabs API down to the origin unless the extension ID is
+// whitelisted.
 class ExtensionTabUtilDelegateChromeOS : public ExtensionTabUtil::Delegate {
  public:
   ExtensionTabUtilDelegateChromeOS();

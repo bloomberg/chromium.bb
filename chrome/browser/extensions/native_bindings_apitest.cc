@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, DeclarativeEvents) {
   // And the extension should be notified of the click.
   ExtensionTestMessageListener clicked_listener("clicked and removed", false);
   ExtensionActionAPI::Get(profile())->DispatchExtensionActionClicked(
-      *page_action, web_contents);
+      *page_action, web_contents, extension);
   ASSERT_TRUE(clicked_listener.WaitUntilSatisfied());
 }
 
