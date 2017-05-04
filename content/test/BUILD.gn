@@ -1364,6 +1364,7 @@ test("content_unittests") {
     "../common/webplugininfo_unittest.cc",
     "../network/url_loader_unittest.cc",
     "../public/test/referrer_unittest.cc",
+    "../public/test/test_browser_thread_bundle_unittest.cc",
     "../renderer/android/disambiguation_popup_helper_unittest.cc",
     "../renderer/bmp_image_decoder_unittest.cc",
     "../renderer/categorized_worker_pool_unittest.cc",
