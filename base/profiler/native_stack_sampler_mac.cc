@@ -166,8 +166,11 @@ const char* LibSystemKernelName() {
   dladdr(reinterpret_cast<void*>(_exit), &info);
   strncpy(path, info.dli_fname, PATH_MAX);
   name = path;
+
+#if !defined(ADDRESS_SANITIZER)
   DCHECK_EQ(std::string(name),
             std::string("/usr/lib/system/libsystem_kernel.dylib"));
+#endif
   return name;
 }
 
