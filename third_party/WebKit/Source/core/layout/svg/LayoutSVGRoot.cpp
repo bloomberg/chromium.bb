@@ -26,6 +26,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -133,6 +134,13 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
   if (IsEmbeddedThroughFrameContainingSVGDocument())
     return ContainingBlock()->AvailableLogicalHeight(
         kIncludeMarginBorderPadding);
+
+  const Length& logical_height = Style()->LogicalHeight();
+  if (IsDocumentElement() && logical_height.IsPercentOrCalc()) {
+    return ValueForLength(
+        logical_height,
+        GetDocument().GetLayoutView()->ViewLogicalHeightForPercentages());
+  }
 
   return LayoutReplaced::ComputeReplacedLogicalHeight(estimated_used_width);
 }
