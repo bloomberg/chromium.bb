@@ -163,11 +163,7 @@ class OutOfProcessInstance : public pp::Instance,
   // Draws a rectangle with the specified dimensions and color in our buffer.
   void FillRect(const pp::Rect& rect, uint32_t color);
 
-  void LoadUrl(const std::string& url);
-  void LoadPreviewUrl(const std::string& url);
-  void LoadUrlInternal(const std::string& url,
-                       pp::URLLoader* loader,
-                       void (OutOfProcessInstance::*method)(int32_t));
+  void LoadUrl(const std::string& url, bool is_print_preview);
 
   // Creates a URL loader and allows it to access all urls, i.e. not just the
   // frame's origin.
@@ -217,13 +213,10 @@ class OutOfProcessInstance : public pp::Instance,
   pp::ImageData image_data_;
   // Used when the plugin is embedded in a page and we have to create the loader
   // ourself.
-  pp::CompletionCallbackFactory<OutOfProcessInstance> loader_factory_;
   pp::URLLoader embed_loader_;
   pp::URLLoader embed_preview_loader_;
 
   PP_CursorType_Dev cursor_;  // The current cursor.
-
-  pp::CompletionCallbackFactory<OutOfProcessInstance> timer_factory_;
 
   // Size, in pixels, of plugin rectangle.
   pp::Size plugin_size_;
@@ -301,11 +294,9 @@ class OutOfProcessInstance : public pp::Instance,
   std::string url_;
 
   // Used for submitting forms.
-  pp::CompletionCallbackFactory<OutOfProcessInstance> form_factory_;
   pp::URLLoader form_loader_;
 
-  // Used for printing without re-entrancy issues.
-  pp::CompletionCallbackFactory<OutOfProcessInstance> print_callback_factory_;
+  pp::CompletionCallbackFactory<OutOfProcessInstance> callback_factory_;
 
   // The callback for receiving the password from the page.
   std::unique_ptr<pp::CompletionCallbackWithOutput<pp::Var>> password_callback_;
