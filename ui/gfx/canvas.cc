@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets_f.h"
@@ -103,46 +104,32 @@ int Canvas::DefaultCanvasTextAlignment() {
   return base::i18n::IsRTL() ? TEXT_ALIGN_RIGHT : TEXT_ALIGN_LEFT;
 }
 
-void Canvas::DrawDashedRect(const RectF& rect, SkColor color) {
-  if (rect.IsEmpty())
+void Canvas::DrawDashedRect(const RectF& inrect, SkColor color) {
+  if (inrect.IsEmpty())
     return;
-  // Create a 2D bitmap containing alternating on/off pixels - we do this
-  // so that you never get two pixels of the same color around the edges
-  // of the focus rect (this may mean that opposing edges of the rect may
-  // have a dot pattern out of phase to each other).
-  static SkColor last_color;
-  static SkBitmap* dots = NULL;
-  if (!dots || last_color != color) {
-    int col_pixels = 32;
-    int row_pixels = 32;
+  RectF rect = inrect;
 
-    delete dots;
-    last_color = color;
-    dots = new SkBitmap;
-    dots->allocN32Pixels(col_pixels, row_pixels);
-    dots->eraseARGB(0, 0, 0, 0);
-
-    uint32_t* dot = dots->getAddr32(0, 0);
-    for (int i = 0; i < row_pixels; i++) {
-      for (int u = 0; u < col_pixels; u++) {
-        if ((u % 2 + i % 2) % 2 != 0) {
-          dot[i * row_pixels + u] = color;
-        }
-      }
-    }
-  }
-
-  // Make a shader for the bitmap with an origin of the box we'll draw.
   cc::PaintFlags flags;
-  flags.setShader(cc::WrapSkShader(SkShader::MakeBitmapShader(
-      *dots, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode)));
+  flags.setColor(color);
+  SkScalar intervals[] = {1.f, 1.f};
+  flags.setStrokeWidth(1.f);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  rect.Inset(gfx::InsetsF(0.5f));
 
-  DrawRect(RectF(rect.x(), rect.y(), rect.width(), 1), flags);
-  DrawRect(RectF(rect.x(), rect.y() + rect.height() - 1, rect.width(), 1),
-           flags);
-  DrawRect(RectF(rect.x(), rect.y(), 1, rect.height()), flags);
-  DrawRect(RectF(rect.x() + rect.width() - 1, rect.y(), 1, rect.height()),
-           flags);
+  flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+
+  // Top-left to top-right.
+  canvas_->drawLine(rect.x() - 0.5f, rect.y(), rect.right() + 0.5f, rect.y(),
+                    flags);
+  // Top-left to bottom-left.
+  canvas_->drawLine(rect.right() + 0.5f, rect.bottom(), rect.x() - 0.5f,
+                    rect.bottom(), flags);
+  // Bottom-right to bottom-left.
+  canvas_->drawLine(rect.x(), rect.y() - 0.5f, rect.x(), rect.bottom() + 0.5f,
+                    flags);
+  // Bottom-right to top-right.
+  canvas_->drawLine(rect.right(), rect.bottom() + 0.5f, rect.right(),
+                    rect.y() - 0.5f, flags);
 }
 
 float Canvas::UndoDeviceScaleFactor() {
