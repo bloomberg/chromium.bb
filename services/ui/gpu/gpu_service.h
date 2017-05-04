@@ -164,6 +164,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
 
   gpu::GpuPreferences gpu_preferences_;
 
+  gpu::GpuDriverBugWorkarounds gpu_workarounds_;
+
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 

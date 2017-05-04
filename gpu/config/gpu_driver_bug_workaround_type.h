@@ -35,6 +35,8 @@
          create_default_gl_context)                          \
   GPU_OP(DECODE_ENCODE_SRGB_FOR_GENERATEMIPMAP,              \
          decode_encode_srgb_for_generatemipmap)              \
+  GPU_OP(DISABLE_ACCELERATED_VPX_DECODE,                     \
+         disable_accelerated_vpx_decode)                     \
   GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
          disable_angle_instanced_arrays)                     \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \

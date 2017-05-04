@@ -504,7 +504,9 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       use_keyed_mutex_(false),
       using_angle_device_(false),
       enable_accelerated_vpx_decode_(
-          gpu_preferences.enable_accelerated_vpx_decode),
+          workarounds.disable_accelerated_vpx_decode
+              ? gpu::GpuPreferences::VpxDecodeVendors::VPX_VENDOR_NONE
+              : gpu_preferences.enable_accelerated_vpx_decode),
       processing_config_changed_(false),
       weak_this_factory_(this) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
@@ -1193,7 +1195,8 @@ GLenum DXVAVideoDecodeAccelerator::GetSurfaceInternalFormat() const {
 // static
 VideoDecodeAccelerator::SupportedProfiles
 DXVAVideoDecodeAccelerator::GetSupportedProfiles(
-    const gpu::GpuPreferences& preferences) {
+    const gpu::GpuPreferences& preferences,
+    const gpu::GpuDriverBugWorkarounds& workarounds) {
   TRACE_EVENT0("gpu,startup",
                "DXVAVideoDecodeAccelerator::GetSupportedProfiles");
 
@@ -1209,7 +1212,8 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
     }
   }
   for (const auto& supported_profile : kSupportedProfiles) {
-    if (!preferences.enable_accelerated_vpx_decode &&
+    if ((!preferences.enable_accelerated_vpx_decode ||
+         workarounds.disable_accelerated_vpx_decode) &&
         (supported_profile >= VP8PROFILE_MIN) &&
         (supported_profile <= VP9PROFILE_MAX)) {
       continue;

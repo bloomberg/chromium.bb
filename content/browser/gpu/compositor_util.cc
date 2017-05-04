@@ -66,12 +66,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
 
-  bool accelerated_vpx_disabled =
-      command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
-#if defined(OS_WIN)
-  accelerated_vpx_disabled |= !gpu_preferences.enable_accelerated_vpx_decode;
-#endif
-
   const GpuFeatureInfo kGpuFeatureInfo[] = {
     {"2d_canvas",
      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
@@ -147,15 +141,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      !gpu::AreNativeGpuMemoryBuffersEnabled(),
      "Native GpuMemoryBuffers have been disabled, either via about:flags"
      " or command line.",
-     true},
-    {"vpx_decode",
-     manager->IsFeatureBlacklisted(
-         gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) ||
-         manager->IsFeatureBlacklisted(
-             gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
-     accelerated_vpx_disabled,
-     "Accelerated VPx video decode has been disabled, either via blacklist"
-     " or the command line.",
      true},
     {kWebGL2FeatureName,
      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2),

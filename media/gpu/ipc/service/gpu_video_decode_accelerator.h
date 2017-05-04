@@ -26,6 +26,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
+class GpuDriverBugWorkarounds;
 struct GpuPreferences;
 }  // namespace gpu
 
@@ -49,7 +50,8 @@ class GpuVideoDecodeAccelerator
   // This query calls the appropriate platform-specific version.  The returned
   // capabilities will not contain duplicate supported profile entries.
   static gpu::VideoDecodeAcceleratorCapabilities GetCapabilities(
-      const gpu::GpuPreferences& gpu_preferences);
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuDriverBugWorkarounds& workarounds);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

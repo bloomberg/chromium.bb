@@ -44,8 +44,6 @@ std::unique_ptr<GpuBlacklist> GpuBlacklist::Create(
   list->AddSupportedFeature("panel_fitting", GPU_FEATURE_TYPE_PANEL_FITTING);
   list->AddSupportedFeature("gpu_rasterization",
                             GPU_FEATURE_TYPE_GPU_RASTERIZATION);
-  list->AddSupportedFeature("accelerated_vpx_decode",
-                            GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE);
   list->AddSupportedFeature("webgl2", GPU_FEATURE_TYPE_WEBGL2);
   return list;
 }
