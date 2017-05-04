@@ -360,15 +360,12 @@ void NetworkScreen::StopWaitingForConnection(const base::string16& network_id) {
     view_->ShowConnectingStatus(false, network_id_);
 
   GetContextEditor().SetBoolean(kContextKeyContinueButtonEnabled, is_connected);
+
+  // Automatically continue if we are using Hands-Off Enrollment.
   if (is_connected && continue_attempts_ == 0 &&
       policy::DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode() ==
           policy::ZeroTouchEnrollmentMode::HANDS_OFF) {
-    // Call OnContinueButtonPressed after 3 minutes.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&NetworkScreen::OnContinueButtonPressed,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMinutes(3));
+    OnContinueButtonPressed();
   }
 }
 
