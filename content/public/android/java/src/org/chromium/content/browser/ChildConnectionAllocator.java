@@ -18,6 +18,7 @@ import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -191,8 +192,9 @@ public class ChildConnectionAllocator {
         }
         int slot = mFreeConnectionIndices.remove(0);
         assert mChildProcessConnections[slot] == null;
-        mChildProcessConnections[slot] = mConnectionFactory.create(spawnData.getContext(), slot,
-                mInSandbox, deathCallback, mChildClassName, childProcessCommonParameters,
+        String serviceClassName = mChildClassName + slot;
+        mChildProcessConnections[slot] = mConnectionFactory.create(spawnData.getContext(),
+                mInSandbox, deathCallback, serviceClassName, childProcessCommonParameters,
                 spawnData.getCreationParams());
         Log.d(TAG, "Allocator allocated a connection, sandbox: %b, slot: %d", mInSandbox, slot);
         return mChildProcessConnections[slot];
@@ -201,15 +203,11 @@ public class ChildConnectionAllocator {
     // Also return the first ChildSpawnData in the pending queue, if any.
     public ChildSpawnData free(BaseChildProcessConnection connection) {
         assert LauncherThread.runningOnLauncherThread();
-        int slot = connection.getServiceNumber();
-        if (mChildProcessConnections[slot] != connection) {
-            int occupier = mChildProcessConnections[slot] == null
-                    ? -1
-                    : mChildProcessConnections[slot].getServiceNumber();
-            Log.e(TAG,
-                    "Unable to find connection to free in slot: %d "
-                            + "already occupied by service: %d",
-                    slot, occupier);
+        // mChildProcessConnections is relatively short (20 items at max at this point).
+        // We are better of iterating than caching in a map.
+        int slot = Arrays.asList(mChildProcessConnections).indexOf(connection);
+        if (slot == -1) {
+            Log.e(TAG, "Unable to find connection to free.");
             assert false;
         } else {
             mChildProcessConnections[slot] = null;

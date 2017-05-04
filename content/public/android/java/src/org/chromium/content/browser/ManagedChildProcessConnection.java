@@ -21,11 +21,11 @@ public class ManagedChildProcessConnection extends BaseChildProcessConnection {
 
     public static final Factory FACTORY = new BaseChildProcessConnection.Factory() {
         @Override
-        public BaseChildProcessConnection create(Context context, int number, boolean sandboxed,
+        public BaseChildProcessConnection create(Context context, boolean sandboxed,
                 DeathCallback deathCallback, String serviceClassName,
                 Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
             assert LauncherThread.runningOnLauncherThread();
-            return new ManagedChildProcessConnection(context, number, sandboxed, deathCallback,
+            return new ManagedChildProcessConnection(context, sandboxed, deathCallback,
                     serviceClassName, childProcessCommonParameters, creationParams);
         }
     };
@@ -60,11 +60,11 @@ public class ManagedChildProcessConnection extends BaseChildProcessConnection {
     private boolean mUnbound;
 
     @VisibleForTesting
-    ManagedChildProcessConnection(Context context, int number, boolean sandboxed,
-            DeathCallback deathCallback, String serviceClassName,
-            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
-        super(context, number, sandboxed, deathCallback, serviceClassName,
-                childProcessCommonParameters, creationParams);
+    ManagedChildProcessConnection(Context context, boolean sandboxed, DeathCallback deathCallback,
+            String serviceClassName, Bundle childProcessCommonParameters,
+            ChildProcessCreationParams creationParams) {
+        super(context, sandboxed, deathCallback, serviceClassName, childProcessCommonParameters,
+                creationParams);
 
         int initialFlags = Context.BIND_AUTO_CREATE;
         int extraBindFlags = shouldBindAsExportedService() ? Context.BIND_EXTERNAL_SERVICE : 0;

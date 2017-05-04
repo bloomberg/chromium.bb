@@ -491,7 +491,8 @@ public class ChildProcessLauncher {
             String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped,
             final IBinder childProcessCallback, final LaunchCallback launchCallback) {
         assert LauncherThread.runningOnLauncherThread();
-        Log.d(TAG, "Setting up connection to process: slot=%d", connection.getServiceNumber());
+        Log.d(TAG, "Setting up connection to process, connection name=%s",
+                connection.getServiceName());
         BaseChildProcessConnection.ConnectionCallback connectionCallback =
                 new BaseChildProcessConnection.ConnectionCallback() {
                     @Override

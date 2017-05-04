@@ -67,9 +67,8 @@ public class BindingManagerImplTest {
          * connection is established: with initial binding bound and no strong binding.
          */
         private TestChildProcessConnection(int pid) {
-            super(null /* context */, pid /* number */, true /* sandboxed */,
-                    null /* deathCallback */, null /* serviceClassName */,
-                    null /* childProcessCommonParameters */,
+            super(null /* context */, true /* sandboxed */, null /* deathCallback */,
+                    "TestService" /* serviceClassName */, null /* childProcessCommonParameters */,
                     new ChildProcessCreationParams("org.chromium.test",
                             false /* isExternalService */, 0 /* libraryProcessType */,
                             false /* bindToCallerCheck */));
@@ -566,7 +565,7 @@ public class BindingManagerImplTest {
             }
 
             app.onTrimMemory(pair.first);
-            // Verify that some of moderate bindings drop.
+            // Verify that some of the moderate bindings have been dropped.
             for (int i = 0; i < connections.length; i++) {
                 Assert.assertEquals(
                         message, i >= pair.second, connections[i].isModerateBindingBound());
