@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
@@ -22,34 +21,28 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_view.h"
-#include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/vector2d.h"
 
 namespace {
 
@@ -79,8 +72,7 @@ bool SwitchToFrench() {
 
 // A test class that sets up local_ntp_browsertest.html (which is mostly a copy
 // of the real local_ntp.html) as the NTP URL.
-class LocalNTPTest : public InProcessBrowserTest,
-                     public InstantTestBase {
+class LocalNTPTest : public InProcessBrowserTest, public InstantTestBase {
  public:
   LocalNTPTest() {}
 
@@ -100,28 +92,33 @@ class LocalNTPTest : public InProcessBrowserTest,
 // This runs a bunch of pure JS-side tests, i.e. those that don't require any
 // interaction from the native side.
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, SimpleJavascriptTests) {
+  if (content::AreAllSitesIsolatedForTesting()) {
+    LOG(ERROR) << "LocalNTPTest.SimpleJavascriptTests doesn't work in "
+                  "--site-per-process mode yet, see crbug.com/695221.";
+    return;
+  }
+
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
 
   content::WebContents* active_tab = OpenNewTab(browser(), ntp_url());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   bool success = false;
-  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!runSimpleTests()", &success));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!runSimpleTests()", &success));
   EXPECT_TRUE(success);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
 
   // Open an NTP.
   content::WebContents* active_tab = OpenNewTab(browser(), ntp_url());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // Check that the embeddedSearch API is available.
   bool result = false;
-  ASSERT_TRUE(
-      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.chrome.embeddedSearch", &result));
   EXPECT_TRUE(result);
 
   // Navigate somewhere else in the same tab.
@@ -130,8 +127,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
   // Now the embeddedSearch API should have gone away.
-  ASSERT_TRUE(
-      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.chrome.embeddedSearch", &result));
   EXPECT_FALSE(result);
 
   // Navigate back to the NTP.
@@ -139,8 +136,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back_observer.Wait();
   // The API should be back.
-  ASSERT_TRUE(
-      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.chrome.embeddedSearch", &result));
   EXPECT_TRUE(result);
 
   // Navigate forward to the non-NTP page.
@@ -148,8 +145,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
   fwd_observer.Wait();
   // The API should be gone.
-  ASSERT_TRUE(
-      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.chrome.embeddedSearch", &result));
   EXPECT_FALSE(result);
 
   // Navigate to a new NTP instance.
@@ -158,78 +155,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // Now the API should be available again.
-  ASSERT_TRUE(
-      GetBoolFromJS(active_tab, "!!window.chrome.embeddedSearch", &result));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.chrome.embeddedSearch", &result));
   EXPECT_TRUE(result);
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, FakeboxRedirectsToOmnibox) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
-
-  content::WebContents* active_tab = OpenNewTab(browser(), ntp_url());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  // This is required to make the mouse events we send below arrive at the right
-  // place. It *should* be the default for all interactive_ui_tests anyway, but
-  // on Mac it isn't; see crbug.com/641969.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  bool result = false;
-  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!setupAdvancedTest()", &result));
-  ASSERT_TRUE(result);
-
-  // Get the position of the fakebox on the page.
-  double fakebox_x = 0;
-  ASSERT_TRUE(GetDoubleFromJS(active_tab, "getFakeboxPositionX()", &fakebox_x));
-  double fakebox_y = 0;
-  ASSERT_TRUE(GetDoubleFromJS(active_tab, "getFakeboxPositionY()", &fakebox_y));
-
-  // Move the mouse over the fakebox.
-  gfx::Vector2d fakebox_pos(static_cast<int>(std::ceil(fakebox_x)),
-                            static_cast<int>(std::ceil(fakebox_y)));
-  gfx::Point origin = active_tab->GetContainerBounds().origin();
-  ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(origin + fakebox_pos +
-                                               gfx::Vector2d(1, 1)));
-
-  // Click on the fakebox, and wait for the omnibox to receive invisible focus.
-  // Note that simply waiting for the first OMNIBOX_FOCUS_CHANGED notification
-  // is not sufficient: If the omnibox had focus before, it will first lose the
-  // focus before gaining invisible focus.
-  ASSERT_NE(OMNIBOX_FOCUS_INVISIBLE, omnibox()->model()->focus_state());
-  content::WindowedNotificationObserver focus_observer(
-      chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
-      base::Bind(
-          [](const OmniboxEditModel* omnibox_model) {
-            return omnibox_model->focus_state() == OMNIBOX_FOCUS_INVISIBLE;
-          },
-          omnibox()->model()));
-
-  ASSERT_TRUE(
-      ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::DOWN));
-  ASSERT_TRUE(
-      ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::UP));
-
-  focus_observer.Wait();
-  EXPECT_EQ(OMNIBOX_FOCUS_INVISIBLE, omnibox()->model()->focus_state());
-
-  // The fakebox should now also have focus.
-  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!fakeboxIsFocused()", &result));
-  EXPECT_TRUE(result);
-
-  // Type "a".
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::KeyboardCode::VKEY_A,
-      /*control=*/false, /*shift=*/false, /*alt=*/false, /*command=*/false));
-
-  // The omnibox should have received visible focus.
-  EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox()->model()->focus_state());
-  // ...and the typed text should have arrived there.
-  EXPECT_EQ("a", GetOmniboxText());
-
-  // On the JS side, the fakebox should have been hidden.
-  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!fakeboxIsVisible()", &result));
-  EXPECT_FALSE(result);
 }
 
 namespace {
@@ -250,8 +178,13 @@ content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
+  if (content::AreAllSitesIsolatedForTesting()) {
+    LOG(ERROR) << "LocalNTPTest.LoadsIframe doesn't work in "
+                  "--site-per-process mode yet, see crbug.com/695221.";
+    return;
+  }
+
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
 
   content::WebContents* active_tab = OpenNewTab(browser(), ntp_url());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
@@ -259,7 +192,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
   content::DOMMessageQueue msg_queue;
 
   bool result = false;
-  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!setupAdvancedTest(true)", &result));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!setupAdvancedTest(true)", &result));
   ASSERT_TRUE(result);
 
   // Wait for the MV iframe to load.
@@ -276,16 +210,16 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
 
   // Get the total number of (non-empty) tiles from the iframe.
   int total_thumbs = 0;
-  ASSERT_TRUE(GetIntFromJS(
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       iframe, "document.querySelectorAll('.mv-thumb').length", &total_thumbs));
   // Also get how many of the tiles succeeded and failed in loading their
   // thumbnail images.
   int succeeded_imgs = 0;
-  ASSERT_TRUE(GetIntFromJS(iframe,
-                           "document.querySelectorAll('.mv-thumb img').length",
-                           &succeeded_imgs));
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.mv-thumb img').length",
+      &succeeded_imgs));
   int failed_imgs = 0;
-  ASSERT_TRUE(GetIntFromJS(
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       iframe, "document.querySelectorAll('.mv-thumb.failed-img').length",
       &failed_imgs));
 
@@ -327,7 +261,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
 
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
 
   // Open a new tab.
   content::WebContents* active_tab =
@@ -446,10 +379,7 @@ class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
   base::Optional<OneGoogleBarData> one_google_bar_data_;
 };
 
-// TODO(treib): This inherits from InstantTestBase only for GetBoolFromJS, which
-// should just be a global helper somewhere.
-class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest,
-                                      public InstantTestBase {
+class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
  public:
   LocalNTPOneGoogleBarSmokeTest() {}
 
@@ -544,10 +474,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
   EXPECT_EQ("ogb-done", console_observer.message());
 
   bool in_head_ran = false;
-  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!window.inHeadRan", &in_head_ran));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.inHeadRan", &in_head_ran));
   EXPECT_TRUE(in_head_ran);
   bool after_bar_ran = false;
-  ASSERT_TRUE(
-      GetBoolFromJS(active_tab, "!!window.afterBarRan", &after_bar_ran));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.afterBarRan", &after_bar_ran));
   EXPECT_TRUE(after_bar_ran);
 }
