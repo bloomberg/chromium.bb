@@ -18,7 +18,7 @@
 void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
                           int height, int stride, uint8_t *pred, int p_col,
                           int p_row, int p_width, int p_height, int p_stride,
-                          int subsampling_x, int subsampling_y, int ref_frm,
+                          int subsampling_x, int subsampling_y, int comp_avg,
                           int16_t alpha, int16_t beta, int16_t gamma,
                           int16_t delta) {
   __m128i tmp[15];
@@ -296,13 +296,13 @@ void av1_warp_affine_sse2(const int32_t *mat, const uint8_t *ref, int width,
         // to only output 4 pixels at this point, to avoid encode/decode
         // mismatches when encoding with multiple threads.
         if (p_width == 4) {
-          if (ref_frm) {
+          if (comp_avg) {
             const __m128i orig = _mm_cvtsi32_si128(*(uint32_t *)p);
             res_8bit = _mm_avg_epu8(res_8bit, orig);
           }
           *(uint32_t *)p = _mm_cvtsi128_si32(res_8bit);
         } else {
-          if (ref_frm) res_8bit = _mm_avg_epu8(res_8bit, _mm_loadl_epi64(p));
+          if (comp_avg) res_8bit = _mm_avg_epu8(res_8bit, _mm_loadl_epi64(p));
           _mm_storel_epi64(p, res_8bit);
         }
       }

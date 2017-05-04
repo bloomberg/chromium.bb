@@ -20,7 +20,7 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
                                   uint16_t *pred, int p_col, int p_row,
                                   int p_width, int p_height, int p_stride,
                                   int subsampling_x, int subsampling_y, int bd,
-                                  int ref_frm, int16_t alpha, int16_t beta,
+                                  int comp_avg, int16_t alpha, int16_t beta,
                                   int16_t gamma, int16_t delta) {
 #if HORSHEAR_REDUCE_PREC_BITS >= 5
   __m128i tmp[15];
@@ -304,10 +304,12 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
         // to only output 4 pixels at this point, to avoid encode/decode
         // mismatches when encoding with multiple threads.
         if (p_width == 4) {
-          if (ref_frm) res_16bit = _mm_avg_epu16(res_16bit, _mm_loadl_epi64(p));
+          if (comp_avg)
+            res_16bit = _mm_avg_epu16(res_16bit, _mm_loadl_epi64(p));
           _mm_storel_epi64(p, res_16bit);
         } else {
-          if (ref_frm) res_16bit = _mm_avg_epu16(res_16bit, _mm_loadu_si128(p));
+          if (comp_avg)
+            res_16bit = _mm_avg_epu16(res_16bit, _mm_loadu_si128(p));
           _mm_storeu_si128(p, res_16bit);
         }
       }

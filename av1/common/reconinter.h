@@ -415,13 +415,19 @@ static INLINE void av1_make_inter_predictor(
   if (do_warp) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
+#if CONFIG_EXT_INTER
+    int compute_avg =
+        ref && mi->mbmi.interinter_compound_type == COMPOUND_AVERAGE;
+#else
+    int compute_avg = ref;
+#endif  // CONFIG_EXT_INTER
     av1_warp_plane(&final_warp_params,
 #if CONFIG_HIGHBITDEPTH
                    xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_HIGHBITDEPTH
                    pre_buf->buf0, pre_buf->width, pre_buf->height,
                    pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
-                   pd->subsampling_x, pd->subsampling_y, xs, ys, ref);
+                   pd->subsampling_x, pd->subsampling_y, xs, ys, compute_avg);
     return;
   }
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
