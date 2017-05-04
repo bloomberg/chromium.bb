@@ -31,7 +31,7 @@ class MODULES_EXPORT PaymentInstruments final
 
   ScriptPromise deleteInstrument(ScriptState*, const String& instrument_key);
   ScriptPromise get(ScriptState*, const String& instrument_key);
-  ScriptPromise keys();
+  ScriptPromise keys(ScriptState*);
   ScriptPromise has(ScriptState*, const String& instrument_key);
   ScriptPromise set(ScriptState*,
                     const String& instrument_key,
@@ -46,6 +46,9 @@ class MODULES_EXPORT PaymentInstruments final
   void onGetPaymentInstrument(ScriptPromiseResolver*,
                               payments::mojom::blink::PaymentInstrumentPtr,
                               payments::mojom::blink::PaymentHandlerStatus);
+  void onKeysOfPaymentInstruments(ScriptPromiseResolver*,
+                                  const Vector<String>&,
+                                  payments::mojom::blink::PaymentHandlerStatus);
   void onHasPaymentInstrument(ScriptPromiseResolver*,
                               payments::mojom::blink::PaymentHandlerStatus);
   void onSetPaymentInstrument(ScriptPromiseResolver*,
