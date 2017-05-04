@@ -890,8 +890,8 @@ DeviceLocalAccountManagementPolicyProvider::
 
 // static
 bool DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
-    const extensions::Extension* extension) {
-  return ArrayContains(kPublicSessionWhitelist, extension->id());
+    const std::string& extension_id) {
+  return ArrayContains(kPublicSessionWhitelist, extension_id);
 }
 
 std::string DeviceLocalAccountManagementPolicyProvider::
@@ -921,7 +921,7 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
 
     // Allow extension if its specific ID is whitelisted for use in public
     // sessions.
-    if (IsWhitelisted(extension)) {
+    if (IsWhitelisted(extension->id())) {
       return true;
     }
 

@@ -548,6 +548,8 @@ static_library("test_support") {
     "login/auth/mock_auth_status_consumer.h",
     "login/auth/mock_url_fetchers.cc",
     "login/auth/mock_url_fetchers.h",
+    "login/scoped_test_public_session_login_state.cc",
+    "login/scoped_test_public_session_login_state.h",
     "network/fake_network_device_handler.cc",
     "network/fake_network_device_handler.h",
     "network/mock_managed_network_configuration_handler.cc",

@@ -23,7 +23,7 @@ void PermissionsUpdaterDelegateChromeOS::InitializePermissions(
     std::unique_ptr<const PermissionSet>* granted_permissions) {
   if (!profiles::IsPublicSession() ||
       chromeos::DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
-          extension) ||
+          extension->id()) ||
       !(*granted_permissions)
            ->HasAPIPermission(APIPermission::kClipboardRead)) {
     return;

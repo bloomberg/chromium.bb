@@ -614,14 +614,12 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
 
 TEST(DeviceLocalAccountManagementPolicyProviderTest, IsWhitelisted) {
   // Whitelisted extension, Chrome Remote Desktop.
-  auto extension = CreateRegularExtension(kWhitelistedId);
   EXPECT_TRUE(DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
-      extension.get()));
+      kWhitelistedId));
 
   // Bogus extension ID (never true).
-  extension = CreateRegularExtension(kBogusId);
   EXPECT_FALSE(DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
-      extension.get()));
+      kBogusId));
 }
 
 }  // namespace chromeos

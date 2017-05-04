@@ -120,7 +120,8 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
     return ExtensionAction::ACTION_SHOW_POPUP;
 
   ExtensionActionAPI::Get(browser_context_)
-      ->DispatchExtensionActionClicked(*extension_action, web_contents());
+      ->DispatchExtensionActionClicked(*extension_action, web_contents(),
+                                       extension);
   return ExtensionAction::ACTION_NONE;
 }
 

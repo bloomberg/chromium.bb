@@ -25,7 +25,7 @@ class DeviceLocalAccountManagementPolicyProvider
   ~DeviceLocalAccountManagementPolicyProvider() override;
 
   // Used to check whether an extension is explicitly whitelisted.
-  static bool IsWhitelisted(const extensions::Extension* extension);
+  static bool IsWhitelisted(const std::string& extension_id);
 
   // extensions::ManagementPolicy::Provider:
   std::string GetDebugPolicyProviderName() const override;

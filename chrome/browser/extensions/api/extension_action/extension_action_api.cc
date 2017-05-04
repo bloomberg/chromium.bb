@@ -205,7 +205,8 @@ void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
 
 void ExtensionActionAPI::DispatchExtensionActionClicked(
     const ExtensionAction& extension_action,
-    WebContents* web_contents) {
+    WebContents* web_contents,
+    const Extension* extension) {
   events::HistogramValue histogram_value = events::UNKNOWN;
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
@@ -225,7 +226,8 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
 
   if (event_name) {
     std::unique_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(ExtensionTabUtil::CreateTabObject(web_contents)->ToValue());
+    args->Append(
+        ExtensionTabUtil::CreateTabObject(web_contents, extension)->ToValue());
 
     DispatchEventToExtension(web_contents->GetBrowserContext(),
                              extension_action.extension_id(), histogram_value,

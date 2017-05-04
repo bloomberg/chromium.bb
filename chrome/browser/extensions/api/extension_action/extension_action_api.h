@@ -93,7 +93,8 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
 
   // Dispatches the onClicked event for extension that owns the given action.
   void DispatchExtensionActionClicked(const ExtensionAction& extension_action,
-                                      content::WebContents* web_contents);
+                                      content::WebContents* web_contents,
+                                      const Extension* extension);
 
   // Clears the values for all ExtensionActions for the tab associated with the
   // given |web_contents| (and signals that page actions changed).
