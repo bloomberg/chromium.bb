@@ -561,10 +561,12 @@ gfx::Image ChromeShellDelegate::GetDeprecatedAcceleratorImage() const {
 PrefService* ChromeShellDelegate::GetActiveUserPrefService() const {
   const user_manager::User* const user =
       user_manager::UserManager::Get()->GetActiveUser();
-  return user ? chromeos::ProfileHelper::Get()
-                    ->GetProfileByUser(user)
-                    ->GetPrefs()
-              : nullptr;
+  if (!user)
+    return nullptr;
+
+  // The user's profile might not be ready yet, so we must check for that too.
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  return profile ? profile->GetPrefs() : nullptr;
 }
 
 bool ChromeShellDelegate::IsTouchscreenEnabledInPrefs(
