@@ -918,7 +918,11 @@ if (!is_ios) {
     ]
 
     if (is_win) {
-      data += [ "//third_party/apache-win32/" ]
+      data += [
+        "//third_party/apache-win32/",
+        "//third_party/cygwin/",
+        "//third_party/perl/",
+      ]
     }
 
     if (is_android) {
