@@ -1659,8 +1659,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
   }
 
   switch (property) {
-    case CSSPropertyFontFeatureSettings:
-      return CSSPropertyFontUtils::ConsumeFontFeatureSettings(range_);
     case CSSPropertyFontWeight:
       return CSSPropertyFontUtils::ConsumeFontWeight(range_);
     case CSSPropertyMaxWidth:

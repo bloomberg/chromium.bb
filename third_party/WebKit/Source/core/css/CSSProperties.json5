@@ -465,6 +465,8 @@
     },
     {
       name: "font-feature-settings",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "ConvertFontFeatureSettings",
       is_descriptor: true,
       font: true,
