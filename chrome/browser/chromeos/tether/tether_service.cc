@@ -68,7 +68,7 @@ void TetherService::StartTetherIfEnabled() {
 
   auto notification_presenter =
       base::MakeUnique<chromeos::tether::TetherNotificationPresenter>(
-          message_center::MessageCenter::Get(),
+          profile_, message_center::MessageCenter::Get(),
           chromeos::NetworkConnect::Get());
   chromeos::tether::Initializer::Init(
       cryptauth_service_, std::move(notification_presenter),
