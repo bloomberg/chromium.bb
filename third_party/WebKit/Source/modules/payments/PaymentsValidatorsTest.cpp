@@ -106,14 +106,16 @@ class PaymentsAmountValidatorTest : public testing::TestWithParam<TestCase> {};
 
 TEST_P(PaymentsAmountValidatorTest, IsValidAmountFormat) {
   String error_message;
-  EXPECT_EQ(GetParam().expected_valid, PaymentsValidators::IsValidAmountFormat(
-                                           GetParam().input, &error_message))
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidAmountFormat(
+                GetParam().input, "test value", &error_message))
       << error_message;
   EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
       << error_message;
 
   EXPECT_EQ(GetParam().expected_valid,
-            PaymentsValidators::IsValidAmountFormat(GetParam().input, nullptr));
+            PaymentsValidators::IsValidAmountFormat(GetParam().input,
+                                                    "test value", nullptr));
 }
 
 INSTANTIATE_TEST_CASE_P(

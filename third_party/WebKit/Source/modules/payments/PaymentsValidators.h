@@ -30,6 +30,7 @@ class MODULES_EXPORT PaymentsValidators final {
   // Returns true if |amount| is a valid currency code as defined in ISO 20022
   // CurrencyAnd30Amount.
   static bool IsValidAmountFormat(const String& amount,
+                                  const String& item_name,
                                   String* optional_error_message);
 
   // Returns true if |code| is a valid ISO 3166 country code.

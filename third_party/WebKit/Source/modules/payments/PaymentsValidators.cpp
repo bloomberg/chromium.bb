@@ -48,13 +48,16 @@ bool PaymentsValidators::IsValidCurrencyCodeFormat(
 }
 
 bool PaymentsValidators::IsValidAmountFormat(const String& amount,
+                                             const String& item_name,
                                              String* optional_error_message) {
   if (ScriptRegexp("^-?[0-9]+(\\.[0-9]+)?$", kTextCaseSensitive)
           .Match(amount) == 0)
     return true;
 
-  if (optional_error_message)
-    *optional_error_message = "'" + amount + "' is not a valid amount format";
+  if (optional_error_message) {
+    *optional_error_message =
+        "'" + amount + "' is not a valid amount format for " + item_name;
+  }
 
   return false;
 }
