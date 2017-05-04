@@ -86,3 +86,17 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
   {{setter_expression(field)}} = other.{{getter_expression(field)}};
 {% endfor %}
 {% endmacro %}
+
+{% macro fieldwise_diff(group, fields_to_diff) %}
+{% for subgroup in group.subgroups %}
+{% if subgroup.all_fields|select("in", fields_to_diff)|list|length > 0 -%}
+if ({{subgroup.member_name}}.Get() != other.{{subgroup.member_name}}.Get()) {
+{{fieldwise_diff(subgroup, fields_to_diff)|indent(2, true)}}
+}
+{% endif -%}
+{% endfor %}
+{% for field in group.fields|select("in", fields_to_diff) %}
+if ({{getter_expression(field)}} != other.{{getter_expression(field)}})
+  return true;
+{% endfor %}
+{% endmacro %}

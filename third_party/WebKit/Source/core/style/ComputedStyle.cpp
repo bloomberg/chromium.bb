@@ -579,10 +579,8 @@ bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
       return true;
   }
 
-  if (surround_data_.Get() != other.surround_data_.Get()) {
-    if (!MarginEqual(other) || !OffsetEqual(other) || !PaddingEqual(other))
-      return true;
-  }
+  if (ComputedStyleBase::ScrollAnchorDisablingPropertyChanged(other, diff))
+    return true;
 
   if (diff.TransformChanged())
     return true;
@@ -607,10 +605,10 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
         BorderBottomWidth() != other.BorderBottomWidth() ||
         BorderRightWidth() != other.BorderRightWidth())
       return true;
-
-    if (!PaddingEqual(other))
-      return true;
   }
+
+  if (ComputedStyleBase::DiffNeedsFullLayoutAndPaintInvalidation(other))
+    return true;
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
     if (rare_non_inherited_data_->appearance_ !=
