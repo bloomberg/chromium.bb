@@ -559,7 +559,7 @@ void VRDisplay::submitFrame() {
   // as implemented by AcceleratedStaticBitmapImage. Ensure this is
   // the case, don't attempt to render if using an unexpected drawing
   // path.
-  if (!image_ref->IsTextureBacked()) {
+  if (!image_ref.Get() || !image_ref->IsTextureBacked()) {
     NOTREACHED() << "WebVR requires hardware-accelerated rendering to texture";
     return;
   }
