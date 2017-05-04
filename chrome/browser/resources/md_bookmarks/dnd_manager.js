@@ -158,7 +158,7 @@ cr.define('bookmarks', function() {
           return;
 
         var action = bookmarks.actions.changeFolderOpen(itemId, true);
-        store.handleAction(action);
+        store.dispatch(action);
       } else if (
           overElement && isBookmarkFolderNode(overElement) &&
           bookmarks.util.hasChildFolders(itemId, store.data.nodes) &&

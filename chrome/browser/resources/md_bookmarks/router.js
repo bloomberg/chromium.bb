@@ -42,6 +42,7 @@ Polymer({
     this.watch('searchTerm_', function(state) {
       return state.search.term;
     });
+    this.updateFromStore();
   },
 
   /** @private */
@@ -58,7 +59,12 @@ Polymer({
     var selectedId = this.queryParams_.id;
     if (selectedId && selectedId != this.selectedId_) {
       this.selectedId_ = selectedId;
-      this.dispatch(bookmarks.actions.selectFolder(selectedId));
+      // Need to dispatch a deferred action so that during page load
+      // `this.getState()` will only evaluate after the Store is initialized.
+      this.dispatchAsync(function(dispatch) {
+        dispatch(
+            bookmarks.actions.selectFolder(selectedId, this.getState().nodes));
+      }.bind(this));
     }
   },
 

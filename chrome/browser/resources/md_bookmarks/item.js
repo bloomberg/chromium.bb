@@ -125,10 +125,12 @@ Polymer({
    * @private
    */
   onDblClick_: function(e) {
-    if (!this.item_.url)
-      this.dispatch(bookmarks.actions.selectFolder(this.item_.id));
-    else
+    if (!this.item_.url) {
+      this.dispatch(
+          bookmarks.actions.selectFolder(this.item_.id, this.getState().nodes));
+    } else {
       chrome.tabs.create({url: this.item_.url});
+    }
   },
 
   /**

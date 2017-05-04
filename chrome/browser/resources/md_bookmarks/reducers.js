@@ -313,7 +313,6 @@ cr.define('bookmarks', function() {
       selectedFolder, action, nodes) {
     switch (action.name) {
       case 'select-folder':
-        // TODO(tsergeant): It should not be possible to select a non-folder.
         return action.id;
       case 'change-folder-open':
         // When hiding the selected folder by closing its ancestor, select

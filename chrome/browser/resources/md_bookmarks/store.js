@@ -15,7 +15,7 @@ cr.define('bookmarks', function() {
     this.data_ = bookmarks.util.createEmptyState();
     /** @type {boolean} */
     this.initialized_ = false;
-    /** @type {!Array<!Action>} */
+    /** @type {!Array<DeferredAction>} */
     this.queuedActions_ = [];
     /** @type {!Array<!StoreObserver>} */
     this.observers_ = [];
@@ -29,7 +29,7 @@ cr.define('bookmarks', function() {
       this.data_ = initialState;
 
       this.queuedActions_.forEach(function(action) {
-        this.reduce_(action);
+        this.dispatchInternal_(action);
       }.bind(this));
 
       this.initialized_ = true;
@@ -58,27 +58,54 @@ cr.define('bookmarks', function() {
     },
 
     /**
-     * Transition to a new UI state based on the supplied |action|, and notify
-     * observers of the change. If the Store has not yet been initialized, the
-     * action will be queued and performed upon initialization.
-     * @param {Action} action
+     * Handles a 'deferred' action, which can asynchronously dispatch actions
+     * to the Store in order to reach a new UI state. DeferredActions have the
+     * form `dispatchAsync(function(dispatch) { ... })`). Inside that function,
+     * the |dispatch| callback can be called asynchronously to dispatch Actions
+     * directly to the Store.
+     * @param {DeferredAction} action
      */
-    handleAction: function(action) {
+    dispatchAsync: function(action) {
       if (!this.initialized_) {
         this.queuedActions_.push(action);
         return;
       }
 
-      this.reduce_(action);
-      this.notifyObservers_(this.data_);
+      this.dispatchInternal_(action);
     },
 
     /**
-     * @param {Action} action
+     * Transition to a new UI state based on the supplied |action|, and notify
+     * observers of the change. If the Store has not yet been initialized, the
+     * action will be queued and performed upon initialization.
+     * @param {?Action} action
+     */
+    dispatch: function(action) {
+      this.dispatchAsync(function(dispatch) {
+        dispatch(action);
+      });
+    },
+
+    /**
+     * @param {DeferredAction} action
+     */
+    dispatchInternal_: function(action) {
+      action(this.reduce_.bind(this));
+    },
+
+    /**
+     * @param {?Action} action
      * @private
      */
     reduce_: function(action) {
+      if (!action)
+        return;
+
       this.data_ = bookmarks.reduceAction(this.data_, action);
+      // Batch notifications until after all initialization queuedActions are
+      // resolved.
+      if (this.isInitialized())
+        this.notifyObservers_(this.data_);
     },
 
     /**

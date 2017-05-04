@@ -97,10 +97,15 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {string} id
-   * @return {!Action}
+   * @param {NodeMap} nodes Current node state. Can be ommitted in tests.
+   * @return {?Action}
    */
-  function selectFolder(id) {
-    assert(id != '0', 'Cannot select root folder');
+  function selectFolder(id, nodes) {
+    if (nodes && (id == ROOT_NODE_ID || !nodes[id] || nodes[id].url)) {
+      console.warn('Tried to select invalid folder: ' + id);
+      return null;
+    }
+
     return {
       name: 'select-folder',
       id: id,

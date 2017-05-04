@@ -74,3 +74,22 @@ suite('selectItem', function() {
     assertDeepEquals(['8'], action.items);
   });
 });
+
+test('selectFolder prevents selecting invalid nodes', function() {
+  var nodes = testTree(createFolder('1', [
+    createItem('2'),
+  ]));
+
+  var action = bookmarks.actions.selectFolder(ROOT_NODE_ID, nodes);
+  assertEquals(null, action);
+
+  action = bookmarks.actions.selectFolder('2', nodes);
+  assertEquals(null, action);
+
+  action = bookmarks.actions.selectFolder('42', nodes);
+  assertEquals(null, action);
+
+  action = bookmarks.actions.selectFolder('1', nodes);
+  assertEquals('select-folder', action.name);
+  assertEquals('1', action.id);
+});
