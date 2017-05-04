@@ -37,13 +37,15 @@ enum class DialogViewID : int {
   PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON,
   PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON,
 
-  // The following are Label objects.
+  // The following are StyledLabel objects.
   ORDER_SUMMARY_TOTAL_AMOUNT_LABEL,
   ORDER_SUMMARY_LINE_ITEM_1,
   ORDER_SUMMARY_LINE_ITEM_2,
   ORDER_SUMMARY_LINE_ITEM_3,
+  // The following are Label objects.
   SHIPPING_OPTION_DESCRIPTION,
   SHIPPING_OPTION_AMOUNT,
+  SHIPPING_ADDRESS_OPTION_ERROR,
 
   // Used in profile labels to annotate each line of the grouping.
   PROFILE_LABEL_LINE_1,

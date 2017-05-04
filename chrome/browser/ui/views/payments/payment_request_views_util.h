@@ -78,12 +78,24 @@ std::unique_ptr<views::View> CreateProductLogoFooterView();
 enum class AddressStyleType { SUMMARY, DETAILED };
 
 // Extracts and formats descriptive text from the given |profile| to represent
-// the address in the context specified by |type|.
-std::unique_ptr<views::View> GetShippingAddressLabel(
+// the address in the context specified by |type|. If |error| is specified,
+// this will display it as the last item in an error state. |disabled_state|
+// will make the various label lines look disabled.
+std::unique_ptr<views::View> GetShippingAddressLabelWithError(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
-    const PaymentOptionsProvider& options,
+    const base::string16& error,
+    bool disabled_state);
+
+// Extracts and formats descriptive text from the given |profile| to represent
+// the address in the context specified by |type|. The missing information will
+// be computed using |comp| and displayed as the last line in an informative
+// manner.
+std::unique_ptr<views::View> GetShippingAddressLabelWithMissingInfo(
+    AddressStyleType type,
+    const std::string& locale,
+    const autofill::AutofillProfile& profile,
     const PaymentsProfileComparator& comp);
 
 // Extracts and formats descriptive text from the given |profile| to represent

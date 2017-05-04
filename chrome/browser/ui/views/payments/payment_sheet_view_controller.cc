@@ -625,14 +625,24 @@ PaymentSheetViewController::CreateShippingSectionContent() {
   if (current_update_reason_ ==
       PaymentRequestSpec::UpdateReason::SHIPPING_ADDRESS) {
     return CreateCheckingSpinnerView();
-  } else {
-    auto* profile = state()->selected_shipping_profile();
+  }
 
-    return profile
-               ? GetShippingAddressLabel(
-                     AddressStyleType::SUMMARY, state()->GetApplicationLocale(),
-                     *profile, *spec(), *(state()->profile_comparator()))
-               : base::MakeUnique<views::Label>(base::string16());
+  autofill::AutofillProfile* profile = state()->selected_shipping_profile();
+  if (!profile)
+    return base::MakeUnique<views::Label>(base::string16());
+
+  // If there is a shipping option error related to the selected address,
+  // display it (without disabling the row because the user should feel like
+  // they can click on it to correct the problem). Otherwise, display the
+  // address possibly with the missing information to make it complete.
+  if (!spec()->selected_shipping_option_error().empty()) {
+    return GetShippingAddressLabelWithError(
+        AddressStyleType::SUMMARY, state()->GetApplicationLocale(), *profile,
+        spec()->selected_shipping_option_error(), /*disabled_state=*/false);
+  } else {
+    return GetShippingAddressLabelWithMissingInfo(
+        AddressStyleType::SUMMARY, state()->GetApplicationLocale(), *profile,
+        *(state()->profile_comparator()));
   }
 }
 

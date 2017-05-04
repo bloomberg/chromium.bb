@@ -7,8 +7,11 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace payments {
 
@@ -166,6 +169,7 @@ void PaymentRequestSpec::UpdateSelectedShippingOption() {
   if (!request_shipping())
     return;
 
+  selected_shipping_option_error_.clear();
   // As per the spec, the selected shipping option should initially be the last
   // one in the array that has its selected field set to true.
   auto selected_shipping_option_it = std::find_if(
@@ -177,7 +181,12 @@ void PaymentRequestSpec::UpdateSelectedShippingOption() {
     selected_shipping_option_ = selected_shipping_option_it->get();
   } else {
     // It's possible that there is no selected shipping option.
-    // TODO(crbug.com/710004): Show an error in this case.
+    if (!details().error.empty()) {
+      selected_shipping_option_error_ = base::UTF8ToUTF16(details().error);
+    } else {
+      selected_shipping_option_error_ =
+          l10n_util::GetStringUTF16(IDS_PAYMENTS_UNSUPPORTED_SHIPPING_ADDRESS);
+    }
     selected_shipping_option_ = nullptr;
   }
 }

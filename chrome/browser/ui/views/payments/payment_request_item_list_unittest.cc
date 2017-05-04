@@ -31,7 +31,9 @@ class TestListItem : public PaymentRequestItemList::Item {
     return base::MakeUnique<views::View>();
   }
 
-  bool CanBeSelected() const override { return true; }
+  bool IsEnabled() override { return true; }
+
+  bool CanBeSelected() override { return true; }
 
   void PerformSelectionFallback() override {}
 

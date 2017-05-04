@@ -73,7 +73,8 @@ std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
   std::unique_ptr<views::View> content = CreateContentView();
 
   std::unique_ptr<PaymentRequestRowView> row =
-      base::MakeUnique<PaymentRequestRowView>(this, /* clickable= */ true);
+      base::MakeUnique<PaymentRequestRowView>(this,
+                                              /* clickable= */ IsEnabled());
   views::GridLayout* layout = new views::GridLayout(row.get());
   row->SetLayoutManager(layout);
 

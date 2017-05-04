@@ -66,14 +66,13 @@ base::string16 GetAddressFromProfile(const autofill::AutofillProfile& profile,
 }
 
 // |s1|, |s2|, and |s3| are lines identifying the profile. |s1| is the
-// "headline" which may be emphasized depending on |type|. |error| is a
-// message indicating errors that need to be resolved before using this
-// profile.
-std::unique_ptr<views::View> GetProfileLabel(AddressStyleType type,
-                                             const base::string16& s1,
-                                             const base::string16& s2,
-                                             const base::string16& s3,
-                                             const base::string16& error) {
+// "headline" which may be emphasized depending on |type|. If |disabled_state|
+// is true, the labels will look disabled.
+std::unique_ptr<views::View> GetBaseProfileLabel(AddressStyleType type,
+                                                 const base::string16& s1,
+                                                 const base::string16& s2,
+                                                 const base::string16& s3,
+                                                 bool disabled_state = false) {
   std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
   std::unique_ptr<views::BoxLayout> layout =
       base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
@@ -89,6 +88,10 @@ std::unique_ptr<views::View> GetProfileLabel(AddressStyleType type,
     }
     label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    if (disabled_state) {
+      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_LabelDisabledColor));
+    }
     container->AddChildView(label.release());
   }
 
@@ -96,6 +99,10 @@ std::unique_ptr<views::View> GetProfileLabel(AddressStyleType type,
     std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s2);
     label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    if (disabled_state) {
+      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_LabelDisabledColor));
+    }
     container->AddChildView(label.release());
   }
 
@@ -103,19 +110,43 @@ std::unique_ptr<views::View> GetProfileLabel(AddressStyleType type,
     std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s3);
     label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    if (disabled_state) {
+      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_LabelDisabledColor));
+    }
     container->AddChildView(label.release());
   }
-
-  if (!error.empty()) {
-    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(error);
-    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
-    label->SetFontList(label->GetDefaultFontList().DeriveWithSizeDelta(-1));
-    label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_LinkEnabled));
-    container->AddChildView(label.release());
-  }
-
   return container;
+}
+
+// Returns a label representing the |profile| as a shipping address. See
+// GetBaseProfileLabel() for more documentation.
+std::unique_ptr<views::View> GetShippingAddressLabel(
+    AddressStyleType type,
+    const std::string& locale,
+    const autofill::AutofillProfile& profile,
+    bool disabled_state) {
+  base::string16 name =
+      profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale);
+
+  base::string16 address = GetAddressFromProfile(profile, locale);
+
+  base::string16 phone = profile.GetInfo(
+      autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale);
+
+  return GetBaseProfileLabel(type, name, address, phone, disabled_state);
+}
+
+std::unique_ptr<views::Label> GetLabelForMissingInformation(
+    const base::string16& missing_info) {
+  std::unique_ptr<views::Label> label =
+      base::MakeUnique<views::Label>(missing_info);
+  label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
+  label->SetFontList(label->GetDefaultFontList().DeriveWithSizeDelta(-1));
+  // Missing information typically has a nice shade of blue.
+  label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LinkEnabled));
+  return label;
 }
 
 // Paints the gray horizontal line that doesn't span the entire width of the
@@ -243,23 +274,39 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
   return content_view;
 }
 
-std::unique_ptr<views::View> GetShippingAddressLabel(
+std::unique_ptr<views::View> GetShippingAddressLabelWithError(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
-    const PaymentOptionsProvider& options,
+    const base::string16& error,
+    bool disabled_state) {
+  std::unique_ptr<views::View> base_label =
+      GetShippingAddressLabel(type, locale, profile, disabled_state);
+
+  if (!error.empty()) {
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(error);
+    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
+    label->SetFontList(label->GetDefaultFontList().DeriveWithSizeDelta(-1));
+    // Error information is typically in red.
+    label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_AlertSeverityHigh));
+    base_label->AddChildView(label.release());
+  }
+  return base_label;
+}
+
+std::unique_ptr<views::View> GetShippingAddressLabelWithMissingInfo(
+    AddressStyleType type,
+    const std::string& locale,
+    const autofill::AutofillProfile& profile,
     const PaymentsProfileComparator& comp) {
-  base::string16 name =
-      profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale);
+  std::unique_ptr<views::View> base_label =
+      GetShippingAddressLabel(type, locale, profile, /*disabled_state=*/false);
 
-  base::string16 address = GetAddressFromProfile(profile, locale);
-
-  base::string16 phone = profile.GetInfo(
-      autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale);
-
-  base::string16 error = comp.GetStringForMissingShippingFields(profile);
-
-  return GetProfileLabel(type, name, address, phone, error);
+  base_label->AddChildView(GetLabelForMissingInformation(
+                               comp.GetStringForMissingShippingFields(profile))
+                               .release());
+  return base_label;
 }
 
 // TODO(anthonyvd): unit test the label layout.
@@ -287,9 +334,13 @@ std::unique_ptr<views::View> GetContactInfoLabel(
                             locale)
           : base::string16();
 
-  base::string16 error = comp.GetStringForMissingContactFields(profile);
+  std::unique_ptr<views::View> base_label =
+      GetBaseProfileLabel(type, name, phone, email);
 
-  return GetProfileLabel(type, name, phone, email, error);
+  base_label->AddChildView(GetLabelForMissingInformation(
+                               comp.GetStringForMissingContactFields(profile))
+                               .release());
+  return base_label;
 }
 
 std::unique_ptr<views::Border> CreatePaymentRequestRowBorder() {

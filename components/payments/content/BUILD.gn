@@ -22,6 +22,7 @@ static_library("content") {
     "//components/autofill/core/browser",
     "//components/payments/core",
     "//components/payments/mojom",
+    "//components/strings:components_strings_grit",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
     "//third_party/libphonenumber",

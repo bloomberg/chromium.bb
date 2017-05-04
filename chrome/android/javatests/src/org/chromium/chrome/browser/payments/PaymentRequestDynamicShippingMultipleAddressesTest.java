@@ -178,11 +178,9 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
                 AUTOFILL_PROFILES[3].getFullName()));
         clickOnShippingAddressSuggestionOptionAndWait(0, mSelectionChecked);
 
-        // The string should indicate that the shipping address isn't valid.
+        // The string should reflect the error sent from the merchant.
         CharSequence actualString = getShippingAddressOptionRowAtIndex(0).getLabelText();
-        CharSequence expectedString = getInstrumentation().getTargetContext().getString(
-                R.string.payments_unsupported_shipping_address);
-        assertEquals(expectedString, actualString);
+        assertEquals("We do not ship to this address", actualString);
     }
 
     /**
