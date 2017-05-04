@@ -15,9 +15,8 @@ void BinderRegistry::AddInterface(
     const std::string& interface_name,
     const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  SetInterfaceBinder(
-      interface_name,
-      base::MakeUnique<internal::GenericCallbackBinder>(callback, task_runner));
+  SetInterfaceBinder(interface_name, base::MakeUnique<GenericCallbackBinder>(
+                                         callback, task_runner));
 }
 
 void BinderRegistry::RemoveInterface(const std::string& interface_name) {
