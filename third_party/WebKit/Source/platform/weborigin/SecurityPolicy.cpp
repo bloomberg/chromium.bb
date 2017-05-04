@@ -179,8 +179,10 @@ bool SecurityPolicy::IsUrlWhiteListedTrustworthy(const KURL& url) {
 
 bool SecurityPolicy::IsAccessWhiteListed(const SecurityOrigin* active_origin,
                                          const SecurityOrigin* target_origin) {
-  if (OriginAccessWhiteList* list =
-          GetOriginAccessMap().at(active_origin->ToString())) {
+  const OriginAccessMap& map = GetOriginAccessMap();
+  if (map.IsEmpty())
+    return false;
+  if (OriginAccessWhiteList* list = map.at(active_origin->ToString())) {
     for (size_t i = 0; i < list->size(); ++i) {
       if (list->at(i).MatchesOrigin(*target_origin) !=
           OriginAccessEntry::kDoesNotMatchOrigin)
