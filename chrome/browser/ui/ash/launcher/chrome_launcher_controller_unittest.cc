@@ -4083,9 +4083,9 @@ TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
 TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
-  // TODO(crbug.com/709297): Fix this workaround to prevent a TearDown crash.
-  std::vector<std::unique_ptr<AppIconLoader>> no_loaders;
-  launcher_controller_->SetAppIconLoadersForTest(no_loaders);
+
+  // Prevent safe decoding which requires IPC.
+  ArcAppIcon::DisableSafeDecodingForTesting();
 
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
   EnablePlayStore(false);
