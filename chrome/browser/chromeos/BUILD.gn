@@ -1731,6 +1731,7 @@ source_set("unit_tests") {
     "policy/upload_job_unittest.cc",
     "policy/user_cloud_policy_manager_chromeos_unittest.cc",
     "policy/user_cloud_policy_store_chromeos_unittest.cc",
+    "power/cpu_data_collector_unittest.cc",
     "power/extension_event_observer_unittest.cc",
     "power/power_data_collector_unittest.cc",
     "power/power_prefs_unittest.cc",
