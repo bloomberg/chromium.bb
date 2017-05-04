@@ -542,6 +542,7 @@ html element i
 html element iframe
     property align
     property allowFullscreen
+    property allowPaymentRequest
     property contentDocument
     property contentWindow
     property frameBorder
