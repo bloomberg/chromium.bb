@@ -42,6 +42,7 @@
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceResourceTiming.h"
+#include "core/timing/PerformanceServerTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/ResourceResponse.h"
@@ -65,6 +66,7 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
 static const size_t kDefaultResourceTimingBufferSize = 150;
 static const size_t kDefaultFrameTimingBufferSize = 150;
+static const size_t kServerTimingBufferSize = 150;
 
 PerformanceBase::PerformanceBase(double time_origin,
                                  RefPtr<WebTaskRunner> task_runner)
@@ -105,6 +107,8 @@ PerformanceEntryVector PerformanceBase::getEntries() {
     entries.AppendVector(user_timing_->GetMeasures());
   }
 
+  entries.AppendVector(server_timing_buffer_);
+
   std::sort(entries.begin(), entries.end(),
             PerformanceEntry::StartTimeCompareLessThan);
   return entries;
@@ -142,6 +146,9 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
     case PerformanceEntry::kMeasure:
       if (user_timing_)
         entries.AppendVector(user_timing_->GetMeasures());
+      break;
+    case PerformanceEntry::kServer:
+      entries.AppendVector(server_timing_buffer_);
       break;
     // Unsupported for Paint, LongTask, TaskAttribution.
     // Per the spec, these entries can only be accessed via
@@ -199,6 +206,15 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(
       entries.AppendVector(user_timing_->GetMarks(name));
     if (entry_type.IsNull() || type == PerformanceEntry::kMeasure)
       entries.AppendVector(user_timing_->GetMeasures(name));
+  }
+
+  if (entry_type.IsNull() || type == PerformanceEntry::kServer) {
+    // This is inefficient, but this buffer has a max size of
+    // 150 entries (controlled by kServerTimingBufferSize).
+    for (const auto& entry : server_timing_buffer_) {
+      if (entry->name() == name)
+        entries.push_back(entry);
+    }
   }
 
   std::sort(entries.begin(), entries.end(),
@@ -280,6 +296,45 @@ bool PerformanceBase::AllowsTimingRedirect(
   }
 
   return true;
+}
+
+void PerformanceBase::AddServerTiming(const ResourceResponse& response,
+                                      ShouldAddToBuffer shouldAddToBuffer) {
+  if (shouldAddToBuffer == ShouldAddToBuffer::Never &&
+      !HasObserverFor(PerformanceEntry::kServer)) {
+    return;
+  }
+
+  ExecutionContext* context = GetExecutionContext();
+  SecurityOrigin* securityOrigin = GetSecurityOrigin(context);
+  if (!securityOrigin) {
+    return;
+  }
+  bool allowTimingDetails = PassesTimingAllowCheck(
+      response, *securityOrigin,
+      response.HttpHeaderField(HTTPNames::Timing_Allow_Origin), context);
+
+  std::unique_ptr<ServerTimingHeaderVector> headers = ParseServerTimingHeader(
+      response.HttpHeaderField(HTTPNames::Server_Timing));
+  if ((*headers).size() == 0) {
+    return;
+  }
+
+  PerformanceEntryVector entries;
+  for (const auto& header : *headers) {
+    PerformanceEntry* entry = PerformanceServerTiming::create(
+        response.Url().GetString(), header->metric,
+        allowTimingDetails ? header->duration : 0.0,
+        allowTimingDetails ? header->description : "");
+    entries.push_back(*entry);
+  }
+
+  NotifyObserversOfEntries(entries);
+  if (shouldAddToBuffer == ShouldAddToBuffer::Always &&
+      server_timing_buffer_.size() + entries.size() <=
+          kServerTimingBufferSize) {
+    server_timing_buffer_.AppendVector(entries);
+  }
 }
 
 void PerformanceBase::AddResourceTiming(const ResourceTimingInfo& info) {
@@ -460,6 +515,13 @@ void PerformanceBase::NotifyObserversOfEntry(PerformanceEntry& entry) {
   }
 }
 
+void PerformanceBase::NotifyObserversOfEntries(
+    PerformanceEntryVector& entries) {
+  for (const auto& entry : entries) {
+    NotifyObserversOfEntry(*entry.Get());
+  }
+}
+
 bool PerformanceBase::HasObserverFor(
     PerformanceEntry::EntryType filter_type) const {
   return observer_filter_options_ & filter_type;
@@ -536,6 +598,7 @@ DEFINE_TRACE(PerformanceBase) {
   visitor->Trace(resource_timing_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
+  visitor->Trace(server_timing_buffer_);
   visitor->Trace(observers_);
   visitor->Trace(active_observers_);
   visitor->Trace(suspended_observers_);

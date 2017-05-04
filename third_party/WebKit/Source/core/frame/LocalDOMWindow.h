@@ -316,6 +316,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   FloatSize GetViewportSize(IncludeScrollbarsInRect) const;
 
+  void SetHasLoadEventFired() { has_load_event_fired_ = true; }
+  bool HasLoadEventFired() { return has_load_event_fired_; }
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -346,6 +349,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   TaskRunnerTimer<LocalDOMWindow> unused_preloads_timer_;
 
   bool should_print_when_finished_loading_;
+  bool has_load_event_fired_ = false;
 
   mutable Member<Screen> screen_;
   mutable Member<History> history_;

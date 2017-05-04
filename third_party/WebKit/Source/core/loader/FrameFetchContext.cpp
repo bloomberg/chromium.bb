@@ -65,6 +65,7 @@
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
+#include "core/timing/PerformanceBase.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
@@ -370,6 +371,18 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   // It is essential that inspector gets resource response BEFORE console.
   GetFrame()->Console().ReportResourceResponseReceived(document_loader,
                                                        identifier, response);
+
+  // MainResource responses were already added, skip them here.
+  if (RuntimeEnabledFeatures::serverTimingEnabled() &&
+      resource->GetType() != Resource::kMainResource &&
+      GetFrame()->GetDocument() && GetFrame()->GetDocument()->domWindow()) {
+    LocalDOMWindow* localDOMWindow = GetFrame()->GetDocument()->domWindow();
+    DOMWindowPerformance::performance(*localDOMWindow)
+        ->AddServerTiming(response,
+                          localDOMWindow->HasLoadEventFired()
+                              ? PerformanceBase::ShouldAddToBuffer::Never
+                              : PerformanceBase::ShouldAddToBuffer::Always);
+  }
 }
 
 void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,

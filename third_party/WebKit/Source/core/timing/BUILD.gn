@@ -32,6 +32,8 @@ blink_core_sources("timing") {
     "PerformancePaintTiming.h",
     "PerformanceResourceTiming.cpp",
     "PerformanceResourceTiming.h",
+    "PerformanceServerTiming.cpp",
+    "PerformanceServerTiming.h",
     "PerformanceTiming.cpp",
     "PerformanceTiming.h",
     "PerformanceUserTiming.cpp",
