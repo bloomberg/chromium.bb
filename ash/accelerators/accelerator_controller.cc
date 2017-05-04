@@ -16,7 +16,6 @@
 #include "ash/media_controller.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/new_window_controller.h"
-#include "ash/palette_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
@@ -517,14 +516,7 @@ void HandleShowStylusTools() {
 }
 
 bool CanHandleShowStylusTools() {
-  StatusAreaWidget* status_area_widget = Shell::GetWmRootWindowForNewWindows()
-                                             ->GetRootWindowController()
-                                             ->GetShelf()
-                                             ->GetStatusAreaWidget();
-  // Tests (clusterfuzz) can trigger this before the status area is ready.
-  return status_area_widget && status_area_widget->palette_tray() &&
-         Shell::Get()->palette_delegate() &&
-         Shell::Get()->palette_delegate()->ShouldShowPalette();
+  return palette_utils::ShouldShowPalette();
 }
 
 void HandleSuspend() {

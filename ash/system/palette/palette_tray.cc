@@ -27,6 +27,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/gfx/color_palette.h"
@@ -67,6 +68,16 @@ bool IsInUserSession() {
              session_manager::SessionState::ACTIVE &&
          Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
              LoginStatus::KIOSK_APP;
+}
+
+// Returns true if the |palette_tray| is on an internal display or on every
+// display if requested from the command line.
+bool ShouldShowOnDisplay(PaletteTray* palette_tray) {
+  const display::Display& display =
+      WmWindow::Get(palette_tray->GetWidget()->GetNativeWindow())
+          ->GetDisplayNearestWindow();
+  return display.IsInternal() ||
+         palette_utils::IsPaletteEnabledOnEveryDisplay();
 }
 
 class TitleView : public views::View, public views::ButtonListener {
@@ -390,7 +401,7 @@ void PaletteTray::OnPaletteEnabledPrefChanged(bool enabled) {
 
 void PaletteTray::UpdateIconVisibility() {
   SetVisible(is_palette_enabled_ && palette_utils::HasStylusInput() &&
-             IsInUserSession());
+             ShouldShowOnDisplay(this) && IsInUserSession());
 }
 
 }  // namespace ash

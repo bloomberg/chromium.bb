@@ -21194,7 +21194,6 @@ from previous Chrome versions.
   <int value="201343576" label="enable-password-change-support:enabled"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
-  <int value="243557364" label="ash-force-enable-palette"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
@@ -21589,6 +21588,7 @@ from previous Chrome versions.
   <int value="1730236697" label="force-device-scale-factor"/>
   <int value="1730416578" label="NTPCondensedLayout:enabled"/>
   <int value="1731522433" label="enable-offer-store-unmasked-wallet-cards"/>
+  <int value="1733390925" label="force-enable-stylus-tools"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1766676896" label="affiliation-based-matching:disabled"/>

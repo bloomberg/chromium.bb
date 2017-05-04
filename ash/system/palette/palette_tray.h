@@ -33,7 +33,8 @@ class PaletteToolManager;
 
 // The PaletteTray shows the palette in the bottom area of the screen. This
 // class also controls the lifetime for all of the tools available in the
-// palette.
+// palette. PaletteTray has one instance per-display. It is only made visible if
+// the display is primary and if the device has stylus hardware.
 class ASH_EXPORT PaletteTray : public TrayBackgroundView,
                                public SessionObserver,
                                public ShellObserver,

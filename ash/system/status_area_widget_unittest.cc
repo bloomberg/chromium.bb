@@ -41,9 +41,7 @@ TEST_F(StatusAreaWidgetTest, Basics) {
   EXPECT_TRUE(status->logout_button_tray_for_testing());
   EXPECT_TRUE(status->ime_menu_tray());
   EXPECT_TRUE(status->virtual_keyboard_tray_for_testing());
-
-  // Stylus palette is only constructed if hardware supports it.
-  EXPECT_FALSE(status->palette_tray());
+  EXPECT_TRUE(status->palette_tray());
 
   // Needed because WebNotificationTray updates its initial visibility
   // asynchronously.
@@ -69,7 +67,7 @@ class StatusAreaWidgetPaletteTest : public test::AshTestBase {
     // to ui::InputDeviceManager in a mus environment, which it can't.
     if (aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS) {
       base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-      cmd->AppendSwitch(switches::kAshForceEnablePalette);
+      cmd->AppendSwitch(switches::kAshForceEnableStylusTools);
       // It's difficult to write a test that marks the primary display as
       // internal before the status area is constructed. Just force the palette
       // for all displays.
