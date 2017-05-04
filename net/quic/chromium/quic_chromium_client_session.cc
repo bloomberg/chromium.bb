@@ -31,6 +31,7 @@
 #include "net/quic/chromium/quic_stream_factory.h"
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
 #include "net/spdy/chromium/spdy_log_util.h"
@@ -501,6 +502,11 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   UMA_HISTOGRAM_COUNTS(
       "Net.QuicSession.MaxReordering",
       static_cast<base::HistogramBase::Sample>(stats.max_sequence_reordering));
+}
+
+std::unique_ptr<QuicStream> QuicChromiumClientSession::CreateStream(
+    QuicStreamId id) {
+  return QuicMakeUnique<QuicChromiumClientStream>(id, this, net_log_);
 }
 
 void QuicChromiumClientSession::Initialize() {

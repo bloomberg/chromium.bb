@@ -16,9 +16,12 @@
 #include "net/quic/core/quic_client_session_base.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
+#include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 
@@ -58,6 +61,14 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
+};
+
+class TestQuicClientSessionBaseStream : public QuicSpdyStream {
+ public:
+  TestQuicClientSessionBaseStream(QuicStreamId id, QuicSpdySession* session)
+      : QuicSpdyStream(id, session) {}
+
+  void OnDataAvailable() override {}
 };
 
 class MockQuicClientSessionBase : public QuicClientSessionBase {
@@ -128,6 +139,10 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
              const QuicReferenceCountedPointer<QuicAckListenerInterface>&
                  ack_listener));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
+
+  std::unique_ptr<QuicStream> CreateStream(QuicStreamId id) {
+    return QuicMakeUnique<TestQuicClientSessionBaseStream>(id, this);
+  }
 
   using QuicSession::ActivateStream;
 
@@ -244,6 +259,14 @@ class QuicChromiumClientStreamTest
     EXPECT_EQ(headers, delegate_.headers_);
     EXPECT_TRUE(stream_->header_list().empty());
     return h;
+  }
+
+  QuicStreamId GetNthClientInitiatedStreamId(int n) {
+    return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, n);
+  }
+
+  QuicStreamId GetNthServerInitiatedStreamId(int n) {
+    return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(session_, n);
   }
 
   QuicCryptoClientConfig crypto_config_;
@@ -593,7 +616,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersBeforeDelegate) {
   // We don't use stream_ because we want an incoming server push
   // stream.
   QuicChromiumClientStream* stream = new QuicChromiumClientStream(
-      kServerDataStreamId1, &session_, NetLogWithSource());
+      GetNthServerInitiatedStreamId(0), &session_, NetLogWithSource());
   session_.ActivateStream(base::WrapUnique(stream));
 
   InitializeHeaders();
