@@ -218,7 +218,10 @@ static void PopulateTimingInfo(ResourceTimingInfo* info, Resource* resource) {
 
 WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
     Resource::Type type,
+    IsImageSet is_image_set,
     bool is_main_frame) {
+  DCHECK((is_image_set == kImageNotImageSet) ||
+         (type == Resource::kImage && is_image_set == kImageIsImageSet));
   switch (type) {
     case Resource::kMainResource:
       if (!is_main_frame)
@@ -235,6 +238,8 @@ WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
     case Resource::kFont:
       return WebURLRequest::kRequestContextFont;
     case Resource::kImage:
+      if (is_image_set == kImageIsImageSet)
+        return WebURLRequest::kRequestContextImageSet;
       return WebURLRequest::kRequestContextImage;
     case Resource::kRaw:
       return WebURLRequest::kRequestContextSubresource;
@@ -706,8 +711,9 @@ void ResourceFetcher::ResourceTimingReportTimerFired(TimerBase* timer) {
 }
 
 WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
-    Resource::Type type) const {
-  return DetermineRequestContext(type, Context().IsMainFrame());
+    Resource::Type type,
+    IsImageSet is_image_set) const {
+  return DetermineRequestContext(type, is_image_set, Context().IsMainFrame());
 }
 
 void ResourceFetcher::InitializeResourceRequest(
@@ -719,7 +725,7 @@ void ResourceFetcher::InitializeResourceRequest(
         Context().ResourceRequestCachePolicy(request, type, defer));
   }
   if (request.GetRequestContext() == WebURLRequest::kRequestContextUnspecified)
-    request.SetRequestContext(DetermineRequestContext(type));
+    request.SetRequestContext(DetermineRequestContext(type, kImageNotImageSet));
   if (type == Resource::kLinkPrefetch)
     request.SetHTTPHeaderField(HTTPNames::Purpose, "prefetch");
 

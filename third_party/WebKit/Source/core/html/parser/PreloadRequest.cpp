@@ -45,8 +45,8 @@ Resource* PreloadRequest::Start(Document* document) {
       referrer_source_ == kBaseUrlIsReferrer
           ? base_url_.StrippedForUseAsReferrer()
           : document->OutgoingReferrer()));
-  resource_request.SetRequestContext(
-      ResourceFetcher::DetermineRequestContext(resource_type_, false));
+  resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
+      resource_type_, is_image_set_, false));
 
   if (resource_type_ == Resource::kScript)
     MaybeDisallowFetchForDocWrittenScript(resource_request, defer_, *document);

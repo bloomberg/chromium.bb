@@ -130,10 +130,13 @@ class PLATFORM_EXPORT ResourceFetcher
 
   String GetCacheIdentifier() const;
 
+  enum IsImageSet { kImageNotImageSet, kImageIsImageSet };
+
   WARN_UNUSED_RESULT static WebURLRequest::RequestContext
-  DetermineRequestContext(Resource::Type, bool is_main_frame);
+  DetermineRequestContext(Resource::Type, IsImageSet, bool is_main_frame);
   WARN_UNUSED_RESULT WebURLRequest::RequestContext DetermineRequestContext(
-      Resource::Type) const;
+      Resource::Type,
+      IsImageSet) const;
 
   void UpdateAllImageResourcePriorities();
 

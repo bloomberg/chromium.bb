@@ -350,8 +350,8 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
     return nullptr;
   }
   ResourceRequest resource_request(document.CompleteURL(href));
-  resource_request.SetRequestContext(
-      ResourceFetcher::DetermineRequestContext(resource_type.value(), false));
+  resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
+      resource_type.value(), ResourceFetcher::kImageNotImageSet, false));
 
   if (referrer_policy != kReferrerPolicyDefault) {
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
