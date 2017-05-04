@@ -62,6 +62,8 @@
 #include "content/public/test/test_utils.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/reporting/reporting_browsing_data_remover.h"
+#include "net/reporting/reporting_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -853,6 +855,89 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
 
   autofill::PersonalDataManager* personal_data_manager_;
   DISALLOW_COPY_AND_ASSIGN(RemoveAutofillTester);
+};
+
+class MockReportingService : public net::ReportingService {
+ public:
+  MockReportingService() {}
+
+  // net::ReportingService implementation:
+
+  ~MockReportingService() override {}
+
+  void QueueReport(const GURL& url,
+                   const std::string& group,
+                   const std::string& type,
+                   std::unique_ptr<const base::Value> body) override {
+    NOTREACHED();
+  }
+
+  void ProcessHeader(const GURL& url,
+                     const std::string& header_value) override {
+    NOTREACHED();
+  }
+
+  void RemoveBrowsingData(
+      int data_type_mask,
+      base::Callback<bool(const GURL&)> origin_filter) override {
+    ++remove_calls_;
+    last_data_type_mask_ = data_type_mask;
+    last_origin_filter_ = origin_filter;
+  }
+
+  int remove_calls() const { return remove_calls_; }
+  int last_data_type_mask() const { return last_data_type_mask_; }
+  base::Callback<bool(const GURL&)> last_origin_filter() const {
+    return last_origin_filter_;
+  }
+
+ private:
+  int remove_calls_ = 0;
+  int last_data_type_mask_ = 0;
+  base::Callback<bool(const GURL&)> last_origin_filter_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockReportingService);
+};
+
+class ClearReportingCacheTester {
+ public:
+  ClearReportingCacheTester(TestingProfile* profile, bool create_service)
+      : profile_(profile) {
+    if (create_service)
+      service_ = base::MakeUnique<MockReportingService>();
+
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    net::URLRequestContext* request_context =
+        profile_->GetRequestContext()->GetURLRequestContext();
+    old_service_ = request_context->reporting_service();
+    request_context->set_reporting_service(service_.get());
+  }
+
+  ~ClearReportingCacheTester() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    net::URLRequestContext* request_context =
+        profile_->GetRequestContext()->GetURLRequestContext();
+    DCHECK_EQ(service_.get(), request_context->reporting_service());
+    request_context->set_reporting_service(old_service_);
+  }
+
+  void GetMockInfo(int* remove_calls_out,
+                   int* last_data_type_mask_out,
+                   base::Callback<bool(const GURL&)>* last_origin_filter_out) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_NE(nullptr, service_.get());
+
+    *remove_calls_out = service_->remove_calls();
+    *last_data_type_mask_out = service_->last_data_type_mask();
+    *last_origin_filter_out = service_->last_origin_filter();
+  }
+
+ private:
+  TestingProfile* profile_;
+  std::unique_ptr<MockReportingService> service_;
+  net::ReportingService* old_service_;
 };
 
 // Test Class -----------------------------------------------------------------
@@ -2019,4 +2104,157 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, OriginTypeMasksNoPolicy) {
   EXPECT_TRUE(Match(kOriginExt, kExtension, nullptr));
   EXPECT_FALSE(Match(kOriginDevTools, kExtension, nullptr));
 #endif
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, ReportingCache_NoService) {
+  ClearReportingCacheTester tester(GetProfile(), false);
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+      true);
+
+  // Nothing to check, since there's no mock service; we're just making sure
+  // nothing crashes without a service.
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, ReportingCache_Cookies) {
+  ClearReportingCacheTester tester(GetProfile(), true);
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                                true);
+
+  int remove_count;
+  int data_type_mask;
+  base::Callback<bool(const GURL&)> origin_filter;
+  tester.GetMockInfo(&remove_count, &data_type_mask, &origin_filter);
+
+  EXPECT_EQ(1, remove_count);
+  EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS,
+            data_type_mask);
+  EXPECT_TRUE(ProbablySameFilters(BrowsingDataFilterBuilder::BuildNoopFilter(),
+                                  origin_filter));
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       ReportingCache_Cookies_WithFilter) {
+  ClearReportingCacheTester tester(GetProfile(), true);
+
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
+
+  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
+                              content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              builder->Copy());
+
+  int remove_count;
+  int data_type_mask;
+  base::Callback<bool(const GURL&)> origin_filter;
+  tester.GetMockInfo(&remove_count, &data_type_mask, &origin_filter);
+
+  EXPECT_EQ(1, remove_count);
+  EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS,
+            data_type_mask);
+  EXPECT_TRUE(
+      ProbablySameFilters(builder->BuildGeneralFilter(), origin_filter));
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, ReportingCache_History) {
+  ClearReportingCacheTester tester(GetProfile(), true);
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, true);
+
+  int remove_count;
+  int data_type_mask;
+  base::Callback<bool(const GURL&)> origin_filter;
+  tester.GetMockInfo(&remove_count, &data_type_mask, &origin_filter);
+
+  EXPECT_EQ(1, remove_count);
+  EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS,
+            data_type_mask);
+  EXPECT_TRUE(ProbablySameFilters(BrowsingDataFilterBuilder::BuildNoopFilter(),
+                                  origin_filter));
+}
+
+// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// a filterable datatype.
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       DISABLED_ReportingCache_History_WithFilter) {
+  ClearReportingCacheTester tester(GetProfile(), true);
+
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
+
+  BlockUntilOriginDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, builder->Copy());
+
+  int remove_count;
+  int data_type_mask;
+  base::Callback<bool(const GURL&)> origin_filter;
+  tester.GetMockInfo(&remove_count, &data_type_mask, &origin_filter);
+
+  EXPECT_EQ(1, remove_count);
+  EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS,
+            data_type_mask);
+  EXPECT_TRUE(
+      ProbablySameFilters(builder->BuildGeneralFilter(), origin_filter));
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       ReportingCache_CookiesAndHistory) {
+  ClearReportingCacheTester tester(GetProfile(), true);
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+      true);
+
+  int remove_count;
+  int data_type_mask;
+  base::Callback<bool(const GURL&)> origin_filter;
+  tester.GetMockInfo(&remove_count, &data_type_mask, &origin_filter);
+
+  EXPECT_EQ(1, remove_count);
+  EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS |
+                net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS,
+            data_type_mask);
+  EXPECT_TRUE(ProbablySameFilters(BrowsingDataFilterBuilder::BuildNoopFilter(),
+                                  origin_filter));
+}
+
+// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// a filterable datatype.
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       DISABLED_ReportingCache_CookiesAndHistory_WithFilter) {
+  ClearReportingCacheTester tester(GetProfile(), true);
+
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  builder->AddRegisterableDomain(kTestRegisterableDomain1);
+
+  BlockUntilOriginDataRemoved(
+      base::Time(), base::Time::Max(),
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+      builder->Copy());
+
+  int remove_count;
+  int data_type_mask;
+  base::Callback<bool(const GURL&)> origin_filter;
+  tester.GetMockInfo(&remove_count, &data_type_mask, &origin_filter);
+
+  EXPECT_EQ(1, remove_count);
+  EXPECT_EQ(net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS |
+                net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS,
+            data_type_mask);
+  EXPECT_TRUE(
+      ProbablySameFilters(builder->BuildGeneralFilter(), origin_filter));
 }
