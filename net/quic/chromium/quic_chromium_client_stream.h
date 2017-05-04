@@ -50,9 +50,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     // Called when the stream is closed because of an error.
     virtual void OnError(int error) = 0;
 
-    // Returns true if sending of headers has completed.
-    virtual bool HasSendHeadersComplete() = 0;
-
    protected:
     virtual ~Delegate() {}
 
@@ -135,6 +132,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   Delegate* delegate_;
 
   bool headers_delivered_;
+
+  // True when initial headers have been sent.
+  bool initial_headers_sent_;
 
   // Callback to be invoked when WriteStreamData or WritevStreamData completes
   // asynchronously.

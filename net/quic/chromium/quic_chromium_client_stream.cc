@@ -29,6 +29,7 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       net_log_(net_log),
       delegate_(nullptr),
       headers_delivered_(false),
+      initial_headers_sent_(false),
       session_(session),
       can_migrate_(true),
       weak_factory_(this) {}
@@ -133,15 +134,15 @@ size_t QuicChromiumClientStream::WriteHeaders(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
       base::Bind(&QuicRequestNetLogCallback, id(), &header_block,
                  QuicSpdyStream::priority()));
-  return QuicSpdyStream::WriteHeaders(std::move(header_block), fin,
-                                      std::move(ack_listener));
+  size_t len = QuicSpdyStream::WriteHeaders(std::move(header_block), fin,
+                                            std::move(ack_listener));
+  initial_headers_sent_ = true;
+  return len;
 }
 
 SpdyPriority QuicChromiumClientStream::priority() const {
-  if (delegate_ && delegate_->HasSendHeadersComplete()) {
-    return QuicSpdyStream::priority();
-  }
-  return net::kV3HighestPriority;
+  return initial_headers_sent_ ? QuicSpdyStream::priority()
+                               : kV3HighestPriority;
 }
 
 int QuicChromiumClientStream::WriteStreamData(

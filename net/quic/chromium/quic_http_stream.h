@@ -75,7 +75,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void OnDataAvailable() override;
   void OnClose() override;
   void OnError(int error) override;
-  bool HasSendHeadersComplete() override;
 
   // QuicChromiumClientSession::Observer implementation
   void OnCryptoHandshakeConfirmed() override;

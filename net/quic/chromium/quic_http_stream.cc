@@ -514,10 +514,6 @@ void QuicHttpStream::OnError(int error) {
     DoCallback(GetResponseStatus());
 }
 
-bool QuicHttpStream::HasSendHeadersComplete() {
-  return next_state_ > STATE_SEND_HEADERS_COMPLETE;
-}
-
 void QuicHttpStream::OnCryptoHandshakeConfirmed() {
   was_handshake_confirmed_ = true;
 }

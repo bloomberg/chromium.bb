@@ -294,10 +294,6 @@ void BidirectionalStreamQuicImpl::OnError(int error) {
   NotifyError(error);
 }
 
-bool BidirectionalStreamQuicImpl::HasSendHeadersComplete() {
-  return has_sent_headers_;
-}
-
 void BidirectionalStreamQuicImpl::OnCryptoHandshakeConfirmed() {
   was_handshake_confirmed_ = true;
 }

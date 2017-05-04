@@ -73,7 +73,6 @@ class MockStreamDelegate : public QuicChromiumClientStream::Delegate {
   MOCK_METHOD0(OnDataAvailable, void());
   MOCK_METHOD0(OnClose, void());
   MOCK_METHOD1(OnError, void(int));
-  MOCK_METHOD0(HasSendHeadersComplete, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockStreamDelegate);
@@ -775,18 +774,17 @@ TEST_P(QuicChromiumClientSessionTest, Priority) {
 
   Initialize();
   CompleteCryptoHandshake();
+
   for (SpdyPriority priority : {kV3HighestPriority, kV3LowestPriority}) {
     QuicChromiumClientStream* stream =
         session_->CreateOutgoingDynamicStream(priority);
     EXPECT_EQ(kV3HighestPriority, stream->priority());
 
-    MockStreamDelegate delegate;
-    EXPECT_CALL(delegate, HasSendHeadersComplete())
-        .WillOnce(testing::Return(true));
-    stream->SetDelegate(&delegate);
+    SpdyHeaderBlock headers;
+    stream->WriteHeaders(std::move(headers), /*fin*/ true,
+                         /*ack_listener*/ nullptr);
+
     EXPECT_EQ(priority, stream->priority());
-    stream->SetDelegate(nullptr);
-    session_->CloseStream(stream->id());
   }
 }
 
