@@ -147,6 +147,7 @@ class ClientApiGeneratorTest(unittest.TestCase):
     type = json_api['domains'][0]['types'][0]
     resolved = client_api_generator.ResolveType(type)
     self.assertEqual('std::string', resolved['raw_type'])
+    self.assertEqual('const std::string&', resolved['pass_type'])
 
   def test_ObjectType(self):
     json_api = {
