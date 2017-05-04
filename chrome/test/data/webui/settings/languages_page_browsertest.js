@@ -27,6 +27,7 @@ SettingsLanguagesPageBrowserTest.prototype = {
   /** @override */
   preLoad: function() {
     SettingsPageBrowserTest.prototype.preLoad.call(this);
+    settingsHidePagesByDefaultForTest = true;
   },
 };
 
@@ -82,7 +83,11 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     }
 
     suiteSetup(function() {
-      languagesSection = assert(this.getSection(self.basicPage, 'languages'));
+      var page = self.basicPage;
+      page.set('pageVisibility.languages', true);
+      Polymer.dom.flush();
+
+      languagesSection = assert(this.getSection(page, 'languages'));
       languagesPage = assert(
           languagesSection.querySelector('settings-languages-page'));
       languagesCollapse = languagesPage.$.languagesCollapse;

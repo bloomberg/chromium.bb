@@ -48,16 +48,15 @@ Polymer({
     },
 
     /**
-     * Dictionary defining page visibility. Pages are hidden when their entry
-     * is set to *false*. i.e. visibility defaults to true.
-     * @private {!PageVisibility}
+     * Dictionary defining page visibility.
+     * This is only set when in guest mode. All pages are visible when not set
+     * because polymer only notifies after a property is set.
+     * @private {!GuestModePageVisibility}
      */
-    pageVisibility_: {
-      type: Object,
-      value: function() {
-        return {};
-      },
-    },
+    pageVisibility_: Object,
+
+    /** @private */
+    showAndroidApps_: Boolean,
 
     /** @private */
     lastSearchQuery_: {
@@ -157,11 +156,8 @@ Polymer({
       };
     }
 
-// <if expr="chromeos">
-    this.pageVisibility_.androidApps =
-        loadTimeData.valueExists('androidAppsAllowed') &&
+    this.showAndroidApps_ = loadTimeData.valueExists('androidAppsAllowed') &&
         loadTimeData.getBoolean('androidAppsAllowed');
-// </if>
   },
 
   /** @private {?IntersectionObserver} */
