@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
+#include "chrome/browser/ui/search/instant_uitest_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/search/search_types.h"
 #include "chrome/common/url_constants.h"
@@ -41,7 +42,7 @@
 // talk to the external network. All tests in this file should be marked as
 // "MANUAL_" unless they are disabled.
 class InstantExtendedManualTest : public InProcessBrowserTest,
-                                  public InstantTestBase {
+                                  public InstantUITestBase {
  public:
   InstantExtendedManualTest() {
     host_resolver_proc_ = new net::RuleBasedHostResolverProc(NULL);
@@ -78,7 +79,8 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
   bool IsGooglePage(content::WebContents* contents) {
     bool is_google = false;
-    if (!GetBoolFromJS(contents, "!!window.google", &is_google))
+    if (!instant_test_utils::GetBoolFromJS(contents, "!!window.google",
+                                           &is_google))
       return false;
     return is_google;
   }
@@ -113,8 +115,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_SearchesFromFakebox) {
   content::WindowedNotificationObserver focus_observer(
       chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
       content::NotificationService::AllSources());
-  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!document.querySelector('#fkbx')",
-                            &fakebox_is_present));
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!document.querySelector('#fkbx')", &fakebox_is_present));
   ASSERT_TRUE(fakebox_is_present);
   ASSERT_TRUE(content::ExecuteScript(
       active_tab, "document.querySelector('#fkbx').click()"));

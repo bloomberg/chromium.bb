@@ -32,8 +32,11 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
+#include "chrome/browser/ui/search/instant_uitest_base.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -130,7 +133,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 }  // namespace
 
 class InstantExtendedTest : public InProcessBrowserTest,
-                            public InstantTestBase {
+                            public InstantUITestBase {
  public:
   InstantExtendedTest()
       : on_most_visited_change_calls_(0),
@@ -162,21 +165,23 @@ class InstantExtendedTest : public InProcessBrowserTest,
   }
 
   bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {
-    return GetIntFromJS(contents, "onMostVisitedChangedCalls",
-                        &on_most_visited_change_calls_) &&
-           GetIntFromJS(contents, "mostVisitedItemsCount",
-                        &most_visited_items_count_) &&
-           GetIntFromJS(contents, "firstMostVisitedItemId",
-                        &first_most_visited_item_id_) &&
-           GetIntFromJS(contents, "submitCount",
-                        &submit_count_) &&
-           GetStringFromJS(contents, "apiHandle.value",
-                           &query_value_) &&
-           GetIntFromJS(contents, "onFocusChangedCalls",
-                       &on_focus_changed_calls_) &&
-           GetBoolFromJS(contents, "isFocused",
-                         &is_focused_) &&
-           GetStringFromJS(contents, "prefetchQuery", &prefetch_query_value_);
+    return instant_test_utils::GetIntFromJS(contents,
+                                            "onMostVisitedChangedCalls",
+                                            &on_most_visited_change_calls_) &&
+           instant_test_utils::GetIntFromJS(contents, "mostVisitedItemsCount",
+                                            &most_visited_items_count_) &&
+           instant_test_utils::GetIntFromJS(contents, "firstMostVisitedItemId",
+                                            &first_most_visited_item_id_) &&
+           instant_test_utils::GetIntFromJS(contents, "submitCount",
+                                            &submit_count_) &&
+           instant_test_utils::GetStringFromJS(contents, "apiHandle.value",
+                                               &query_value_) &&
+           instant_test_utils::GetIntFromJS(contents, "onFocusChangedCalls",
+                                            &on_focus_changed_calls_) &&
+           instant_test_utils::GetBoolFromJS(contents, "isFocused",
+                                             &is_focused_) &&
+           instant_test_utils::GetStringFromJS(contents, "prefetchQuery",
+                                               &prefetch_query_value_);
   }
 
   const TemplateURL* GetDefaultSearchProviderTemplateURL() {
@@ -265,7 +270,8 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
 // Test class used to verify chrome-search: scheme and access policy from the
 // Instant overlay.  This is a subclass of |ExtensionBrowserTest| because it
 // loads a theme that provides a background image.
-class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
+class InstantPolicyTest : public ExtensionBrowserTest,
+                          public InstantUITestBase {
  public:
   InstantPolicyTest() {}
 
@@ -455,8 +461,8 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
   int on_theme_changed_calls = 0;
-  EXPECT_TRUE(GetIntFromJS(active_tab, "onThemeChangedCalls",
-                           &on_theme_changed_calls));
+  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+      active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
   EXPECT_EQ(1, on_theme_changed_calls);
 
   // Activate the previous tab.
@@ -470,8 +476,8 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
   // Confirm that new tab got no onthemechanged event while switching tabs.
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();
   on_theme_changed_calls = 0;
-  EXPECT_TRUE(GetIntFromJS(active_tab, "onThemeChangedCalls",
-                           &on_theme_changed_calls));
+  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+      active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
   EXPECT_EQ(1, on_theme_changed_calls);
 }
 
@@ -497,8 +503,8 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
   int on_theme_changed_calls = 0;
-  EXPECT_TRUE(GetIntFromJS(active_tab, "onThemeChangedCalls",
-                           &on_theme_changed_calls));
+  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+      active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
   EXPECT_EQ(1, on_theme_changed_calls);
 
   // Install a new theme.
@@ -506,8 +512,8 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
 
   // Confirm that new tab is notified about the theme changed event.
   on_theme_changed_calls = 0;
-  EXPECT_TRUE(GetIntFromJS(active_tab, "onThemeChangedCalls",
-                           &on_theme_changed_calls));
+  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+      active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
   EXPECT_EQ(2, on_theme_changed_calls);
 }
 
