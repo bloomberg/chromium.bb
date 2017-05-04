@@ -132,6 +132,7 @@ void MetricsServicesManager::UpdateUkmService() {
   if (!ukm)
     return;
   bool sync_enabled =
+      client_->IsMetricsReportingForceEnabled() ||
       metrics_service_client_->IsHistorySyncEnabledOnAllProfiles();
   if (may_record_ && sync_enabled) {
     ukm->EnableRecording();
@@ -146,7 +147,9 @@ void MetricsServicesManager::UpdateUkmService() {
 }
 
 void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {
-  UpdatePermissions(client_->IsMetricsReportingEnabled(), may_upload);
+  UpdatePermissions((client_->IsMetricsReportingForceEnabled() ||
+                     client_->IsMetricsReportingEnabled()),
+                    client_->IsMetricsReportingForceEnabled() || may_upload);
 }
 
 }  // namespace metrics_services_manager

@@ -150,6 +150,7 @@ extern const char kForceAndroidAppMode[];
 extern const char kForceAppMode[];
 extern const char kForceDesktopIOSPromotion[];
 extern const char kForceEffectiveConnectionType[];
+extern const char kForceEnableMetricsReporting[];
 extern const char kForceFirstRun[];
 extern const char kForceLocalNtp[];
 extern const char kForceVariationIds[];

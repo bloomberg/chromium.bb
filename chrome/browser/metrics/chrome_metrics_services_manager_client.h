@@ -79,6 +79,8 @@ class ChromeMetricsServicesManagerClient
   void UpdateRunningServices(bool may_record, bool may_upload) override;
 #endif  // defined(OS_WIN)
 
+  bool IsMetricsReportingForceEnabled() override;
+
   // Gets the MetricsStateManager, creating it if it has not already been
   // created.
   metrics::MetricsStateManager* GetMetricsStateManager();
