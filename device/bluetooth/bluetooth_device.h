@@ -264,7 +264,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   virtual bool IsGattConnected() const = 0;
 
   // Indicates whether the paired device accepts connections initiated from the
-  // adapter. This value is undefined for unpaired devices.
+  // adapter. This value is undefined for unpaired devices. Only available for
+  // Chrome OS.
   virtual bool IsConnectable() const = 0;
 
   // Indicates whether there is a call to Connect() ongoing. For this attribute,
