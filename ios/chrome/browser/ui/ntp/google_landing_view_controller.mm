@@ -512,37 +512,22 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   CGRect hintFrame = CGRectInset([_searchTapTarget bounds], 12, 3);
   const CGFloat kVoiceSearchOffset = 48;
   hintFrame.size.width = searchFieldFrame.size.width - kVoiceSearchOffset;
-  base::scoped_nsobject<UILabel> searchHintLabel(
-      [[UILabel alloc] initWithFrame:hintFrame]);
+  UILabel* searchHintLabel =
+      [[[UILabel alloc] initWithFrame:hintFrame] autorelease];
   [_searchTapTarget addSubview:searchHintLabel];
   [searchHintLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [searchHintLabel
-      addConstraint:[NSLayoutConstraint
-                        constraintWithItem:searchHintLabel
-                                 attribute:NSLayoutAttributeHeight
-                                 relatedBy:NSLayoutRelationEqual
-                                    toItem:nil
-                                 attribute:NSLayoutAttributeNotAnAttribute
-                                multiplier:1
-                                  constant:hintFrame.size.height]];
-  [_searchTapTarget
-      addConstraint:[NSLayoutConstraint
-                        constraintWithItem:searchHintLabel
-                                 attribute:NSLayoutAttributeCenterY
-                                 relatedBy:NSLayoutRelationEqual
-                                    toItem:_searchTapTarget
-                                 attribute:NSLayoutAttributeCenterY
-                                multiplier:1
-                                  constant:0]];
-  _hintLabelLeadingConstraint.reset(
-      [[NSLayoutConstraint constraintWithItem:searchHintLabel
-                                    attribute:NSLayoutAttributeLeading
-                                    relatedBy:NSLayoutRelationEqual
-                                       toItem:_searchTapTarget
-                                    attribute:NSLayoutAttributeLeading
-                                   multiplier:1
-                                     constant:kHintLabelSidePadding] retain]);
-  [_searchTapTarget addConstraint:_hintLabelLeadingConstraint];
+  _hintLabelLeadingConstraint.reset([[searchHintLabel.leadingAnchor
+      constraintEqualToAnchor:[_searchTapTarget leadingAnchor]
+                     constant:kHintLabelSidePadding] retain]);
+
+  [NSLayoutConstraint activateConstraints:@[
+    [searchHintLabel.heightAnchor
+        constraintEqualToConstant:hintFrame.size.height],
+    [searchHintLabel.centerYAnchor
+        constraintEqualToAnchor:[_searchTapTarget centerYAnchor]],
+    _hintLabelLeadingConstraint
+  ]];
+
   [searchHintLabel setText:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
   if (base::i18n::IsRTL()) {
     [searchHintLabel setTextAlignment:NSTextAlignmentRight];
@@ -555,56 +540,26 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
   // Add a voice search button.
   UIImage* micImage = [UIImage imageNamed:@"voice_icon"];
-  base::scoped_nsobject<UIButton> voiceTapTarget(
-      [[UIButton alloc] initWithFrame:CGRectZero]);
+  UIButton* voiceTapTarget =
+      [[[UIButton alloc] initWithFrame:CGRectZero] autorelease];
   [_searchTapTarget addSubview:voiceTapTarget];
 
   [voiceTapTarget setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_searchTapTarget
-      addConstraint:[NSLayoutConstraint
-                        constraintWithItem:voiceTapTarget
-                                 attribute:NSLayoutAttributeCenterY
-                                 relatedBy:NSLayoutRelationEqual
-                                    toItem:_searchTapTarget
-                                 attribute:NSLayoutAttributeCenterY
-                                multiplier:1
-                                  constant:0]];
-  _voiceTapTrailingConstraint.reset(
-      [[NSLayoutConstraint constraintWithItem:voiceTapTarget
-                                    attribute:NSLayoutAttributeTrailing
-                                    relatedBy:NSLayoutRelationEqual
-                                       toItem:_searchTapTarget
-                                    attribute:NSLayoutAttributeTrailing
-                                   multiplier:1
-                                     constant:0] retain]);
-  [_searchTapTarget addConstraint:_voiceTapTrailingConstraint];
-  [voiceTapTarget
-      addConstraint:[NSLayoutConstraint
-                        constraintWithItem:voiceTapTarget
-                                 attribute:NSLayoutAttributeHeight
-                                 relatedBy:NSLayoutRelationEqual
-                                    toItem:nil
-                                 attribute:NSLayoutAttributeNotAnAttribute
-                                multiplier:0
-                                  constant:kVoiceSearchButtonWidth]];
-  [voiceTapTarget
-      addConstraint:[NSLayoutConstraint
-                        constraintWithItem:voiceTapTarget
-                                 attribute:NSLayoutAttributeWidth
-                                 relatedBy:NSLayoutRelationEqual
-                                    toItem:nil
-                                 attribute:NSLayoutAttributeNotAnAttribute
-                                multiplier:0
-                                  constant:kVoiceSearchButtonWidth]];
-  [_searchTapTarget
-      addConstraint:[NSLayoutConstraint
-                        constraintWithItem:searchHintLabel
-                                 attribute:NSLayoutAttributeTrailing
-                                 relatedBy:NSLayoutRelationEqual
-                                    toItem:voiceTapTarget
-                                 attribute:NSLayoutAttributeLeading
-                                multiplier:1
-                                  constant:0]];
+  _voiceTapTrailingConstraint.reset([[voiceTapTarget.trailingAnchor
+      constraintEqualToAnchor:[_searchTapTarget trailingAnchor]] retain]);
+
+  [NSLayoutConstraint activateConstraints:@[
+    [voiceTapTarget.centerYAnchor
+        constraintEqualToAnchor:[_searchTapTarget centerYAnchor]],
+    [voiceTapTarget.widthAnchor
+        constraintEqualToConstant:kVoiceSearchButtonWidth],
+    [voiceTapTarget.heightAnchor
+        constraintEqualToAnchor:voiceTapTarget.widthAnchor],
+    [searchHintLabel.trailingAnchor
+        constraintEqualToAnchor:voiceTapTarget.leadingAnchor],
+    _voiceTapTrailingConstraint
+  ]];
+
   [voiceTapTarget setAdjustsImageWhenHighlighted:NO];
   [voiceTapTarget setImage:micImage forState:UIControlStateNormal];
   [voiceTapTarget setTag:IDC_VOICE_SEARCH];
