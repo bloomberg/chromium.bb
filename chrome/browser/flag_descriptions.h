@@ -1066,6 +1066,12 @@ extern const char kTetherName[];
 // Description for the flag for enabling Instant Tethering.
 extern const char kTetherDescription[];
 
+// Name for the flag for CrOS Component.
+extern const char kCrOSComponentName[];
+
+// Description for the flag for CrOS Component.
+extern const char kCrOSComponentDescription[];
+
 #endif  // defined(OS_CHROMEOS)
 
 // Name of the flag for accelerated video decode where available.

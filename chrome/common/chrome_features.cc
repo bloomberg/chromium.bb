@@ -340,6 +340,10 @@ const base::Feature kEHVInputOnImeMenu{"EmojiHandwritingVoiceInput",
 // Enables or disables flash component updates on Chrome OS.
 const base::Feature kCrosCompUpdates{"CrosCompUpdates",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables Chrome OS Component updates on Chrome OS.
+const base::Feature kCrOSComponent{"CrOSComponent",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 bool PrefServiceEnabled() {
