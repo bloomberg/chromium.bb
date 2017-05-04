@@ -843,6 +843,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturefiltering/3d_formats_09.html',
         ['linux', 'intel'], bug=715881)
 
+    # Intermittently running out of memory.
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_00.html',
+        ['linux', 'intel'], bug=717023)
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_01.html',
+        ['linux', 'intel'], bug=717023)
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_02.html',
+        ['linux', 'intel'], bug=717023)
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_03.html',
+        ['linux', 'intel'], bug=717023)
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_04.html',
+        ['linux', 'intel'], bug=717023)
+
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
