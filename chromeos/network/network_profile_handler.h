@@ -62,7 +62,7 @@ class CHROMEOS_EXPORT NetworkProfileHandler
  protected:
   friend class AutoConnectHandlerTest;
   friend class ClientCertResolverTest;
-  friend class NetworkConnectionHandlerTest;
+  friend class NetworkConnectionHandlerImplTest;
   friend class NetworkHandler;
   friend class ProhibitedTechnologiesHandlerTest;
   NetworkProfileHandler();

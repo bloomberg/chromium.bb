@@ -27,14 +27,11 @@ class NetworkConnectionHandlerTetherDelegate
       TetherDisconnector* tether_disconnector);
   ~NetworkConnectionHandlerTetherDelegate() override;
 
-  // TODO(khorimoto): Add DisconnectFromNetwork to
-  // NetworkConnectionHandler::TetherDelegate and override it here.
+  // NetworkConnectionHandler::TetherDelegate:
   void DisconnectFromNetwork(
       const std::string& tether_network_guid,
       const base::Closure& success_callback,
-      const network_handler::StringResultCallback& error_callback);
-
-  // NetworkConnectionHandler::TetherDelegate:
+      const network_handler::StringResultCallback& error_callback) override;
   void ConnectToNetwork(
       const std::string& tether_network_guid,
       const base::Closure& success_callback,

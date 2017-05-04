@@ -33,6 +33,14 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
                                     error_callback);
   }
 
+  void CallTetherDisconnect(
+      const std::string& tether_network_guid,
+      const base::Closure& success_callback,
+      const network_handler::ErrorCallback& error_callback) {
+    InitiateTetherNetworkDisconnection(tether_network_guid, success_callback,
+                                       error_callback);
+  }
+
   // NetworkConnectionHandler:
   void ConnectToNetwork(const std::string& service_path,
                         const base::Closure& success_callback,
@@ -89,7 +97,7 @@ class MockTetherDisconnector : public TetherDisconnector {
   ~MockTetherDisconnector() override {}
 
   MOCK_METHOD3(
-      DisconnectFomNetwork,
+      DisconnectFromNetwork,
       void(const std::string& tether_network_guid,
            const base::Closure& success_callback,
            const network_handler::StringResultCallback& error_callback));
@@ -97,8 +105,6 @@ class MockTetherDisconnector : public TetherDisconnector {
 
 }  // namespace
 
-// TODO(khorimoto): Also write a test for disconnection. This is part of a
-// follow-up CL.
 class NetworkConnectionHandlerTetherDelegateTest : public testing::Test {
  protected:
   NetworkConnectionHandlerTetherDelegateTest() {}
@@ -131,6 +137,13 @@ TEST_F(NetworkConnectionHandlerTetherDelegateTest, TestConnect) {
   EXPECT_CALL(*mock_tether_connector_, ConnectToNetwork(_, _, _));
 
   test_network_connection_handler_->CallTetherConnect(
+      "tetherNetworkGuid", base::Closure(), network_handler::ErrorCallback());
+}
+
+TEST_F(NetworkConnectionHandlerTetherDelegateTest, TestDisconnect) {
+  EXPECT_CALL(*mock_tether_disconnector_, DisconnectFromNetwork(_, _, _));
+
+  test_network_connection_handler_->CallTetherDisconnect(
       "tetherNetworkGuid", base::Closure(), network_handler::ErrorCallback());
 }
 

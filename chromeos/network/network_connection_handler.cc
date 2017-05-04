@@ -58,9 +58,8 @@ const char NetworkConnectionHandler::kErrorUnmanagedNetwork[] =
 const char NetworkConnectionHandler::kErrorActivateFailed[] = "activate-failed";
 const char NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable[] =
     "not-available";
-const char
-    NetworkConnectionHandler::kErrorTetherConnectionAttemptWithNoDelegate[] =
-        "tether-with-no-delegate";
+const char NetworkConnectionHandler::kErrorTetherAttemptWithNoDelegate[] =
+    "tether-with-no-delegate";
 
 NetworkConnectionHandler::NetworkConnectionHandler()
     : tether_delegate_(nullptr), weak_ptr_factory_(this) {}
@@ -117,4 +116,20 @@ void NetworkConnectionHandler::InitiateTetherNetworkConnection(
                  weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
                  error_callback));
 }
+
+void NetworkConnectionHandler::InitiateTetherNetworkDisconnection(
+    const std::string& tether_network_guid,
+    const base::Closure& success_callback,
+    const network_handler::ErrorCallback& error_callback) {
+  DCHECK(tether_delegate_);
+  tether_delegate_->DisconnectFromNetwork(
+      tether_network_guid,
+      base::Bind(&NetworkConnectionHandler::InvokeConnectSuccessCallback,
+                 weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
+                 success_callback),
+      base::Bind(&NetworkConnectionHandler::InvokeConnectErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
+                 error_callback));
+}
+
 }  // namespace chromeos

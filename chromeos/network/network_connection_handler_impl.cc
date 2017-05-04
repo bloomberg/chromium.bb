@@ -241,7 +241,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
                                         error_callback);
       } else {
         InvokeConnectErrorCallback(service_path, error_callback,
-                                   kErrorTetherConnectionAttemptWithNoDelegate);
+                                   kErrorTetherAttemptWithNoDelegate);
       }
       return;
     }
@@ -303,6 +303,18 @@ void NetworkConnectionHandlerImpl::DisconnectNetwork(
     NET_LOG_ERROR("Disconnect Error: Not Connected", service_path);
     network_handler::RunErrorCallback(error_callback, service_path,
                                       kErrorNotConnected, "");
+    return;
+  }
+  if (NetworkTypePattern::Tether().MatchesType(network->type())) {
+    if (tether_delegate_) {
+      const std::string& tether_network_guid = network->guid();
+      DCHECK(!tether_network_guid.empty());
+      InitiateTetherNetworkDisconnection(tether_network_guid, success_callback,
+                                         error_callback);
+    } else {
+      InvokeConnectErrorCallback(service_path, error_callback,
+                                 kErrorTetherAttemptWithNoDelegate);
+    }
     return;
   }
   pending_requests_.erase(service_path);

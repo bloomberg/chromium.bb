@@ -74,7 +74,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler {
   // connecting.
   static const char kErrorConnectFailed[];
 
-  // An unexpected DBus or Shill error occurred while disconnecting.
+  // An unexpected DBus, Shill, or Tether error occurred while disconnecting.
   static const char kErrorDisconnectFailed[];
 
   // A new network connect request canceled this one.
@@ -95,8 +95,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler {
   // Network was enabled/disabled when it was not available.
   static const char kErrorEnabledOrDisabledWhenNotAvailable[];
 
-  // Connection to Tether network attempted when no tether delegate present.
-  static const char kErrorTetherConnectionAttemptWithNoDelegate[];
+  // Connection or disconnection to Tether network attempted when no tether
+  // delegate present.
+  static const char kErrorTetherAttemptWithNoDelegate[];
 
   class CHROMEOS_EXPORT TetherDelegate {
    public:
@@ -104,6 +105,14 @@ class CHROMEOS_EXPORT NetworkConnectionHandler {
     // success, invokes |success_callback|, and on failure, invokes
     // |error_callback|, passing the relevant error code declared above.
     virtual void ConnectToNetwork(
+        const std::string& tether_network_guid,
+        const base::Closure& success_callback,
+        const network_handler::StringResultCallback& error_callback) = 0;
+
+    // Disconnects from the Tether network with GUID |tether_network_guid|. On
+    // success, invokes |success_callback|, and on failure, invokes
+    // |error_callback|, passing the relevant error code declared above.
+    virtual void DisconnectFromNetwork(
         const std::string& tether_network_guid,
         const base::Closure& success_callback,
         const network_handler::StringResultCallback& error_callback) = 0;
@@ -175,6 +184,12 @@ class CHROMEOS_EXPORT NetworkConnectionHandler {
 
   // Initiates a connection to a Tether network.
   void InitiateTetherNetworkConnection(
+      const std::string& tether_network_guid,
+      const base::Closure& success_callback,
+      const network_handler::ErrorCallback& error_callback);
+
+  // Initiates a disconnection from a Tether network.
+  void InitiateTetherNetworkDisconnection(
       const std::string& tether_network_guid,
       const base::Closure& success_callback,
       const network_handler::ErrorCallback& error_callback);
