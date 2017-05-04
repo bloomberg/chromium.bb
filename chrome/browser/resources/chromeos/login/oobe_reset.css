@@ -7,5 +7,26 @@
 }
 
 oobe-text-button {
-  -webkit-margin-end: 22px;
+  -webkit-margin-end: 16px;
+  color: #5a5a5a;
+}
+
+#cancelButton {
+  -webkit-margin-end: 4px;
+}
+
+a {
+  color: var(--google-blue-500);
+  font-family: 'Roboto';
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.powerwash-warning div {
+  display: inline;
+}
+
+.subtitle {
+  line-height: 20px;
 }
