@@ -224,6 +224,8 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   float surface_scale2 = 2.f;
   gfx::Size surface_size2(400, 400);
   SurfaceInfo fallback_surface_info(surface_id2, surface_scale2, surface_size2);
+  SurfaceInfo fallback_surface_info2(surface_id2, surface_scale1,
+                                     surface_size2);
 
   gfx::Size layer_size(400, 100);
 
@@ -238,18 +240,35 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   impl.CalcDrawProps(viewport_size);
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  AppendQuadsData data;
-  surface_layer_impl->AppendQuads(render_pass.get(), &data);
-  // The the primary SurfaceInfo will be added to embedded_surfaces.
-  EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id1));
+  {
+    AppendQuadsData data;
+    surface_layer_impl->AppendQuads(render_pass.get(), &data);
+    // The the primary SurfaceInfo will be added to embedded_surfaces.
+    EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id1));
+  }
 
-  ASSERT_EQ(2u, render_pass->quad_list.size());
+  // Update the fallback SurfaceInfo and re-emit DrawQuads.
+  {
+    AppendQuadsData data;
+    surface_layer_impl->SetFallbackSurfaceInfo(fallback_surface_info2);
+    surface_layer_impl->AppendQuads(render_pass.get(), &data);
+    // The the primary SurfaceInfo will be added to embedded_surfaces.
+    EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id1));
+  }
+
+  ASSERT_EQ(4u, render_pass->quad_list.size());
   const SurfaceDrawQuad* surface_draw_quad1 =
       SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
   ASSERT_TRUE(surface_draw_quad1);
   const SurfaceDrawQuad* surface_draw_quad2 =
       SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(1));
   ASSERT_TRUE(surface_draw_quad2);
+  const SurfaceDrawQuad* surface_draw_quad3 =
+      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(2));
+  ASSERT_TRUE(surface_draw_quad3);
+  const SurfaceDrawQuad* surface_draw_quad4 =
+      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(3));
+  ASSERT_TRUE(surface_draw_quad4);
 
   EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad1->surface_draw_quad_type);
@@ -258,6 +277,22 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   EXPECT_EQ(SurfaceDrawQuadType::FALLBACK,
             surface_draw_quad2->surface_draw_quad_type);
   EXPECT_EQ(surface_id2, surface_draw_quad2->surface_id);
+  // If the device scale factor of the primary and fallback are different then
+  // they do not share a SharedQuadState.
+  EXPECT_NE(surface_draw_quad1->shared_quad_state,
+            surface_draw_quad2->shared_quad_state);
+
+  EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
+            surface_draw_quad3->surface_draw_quad_type);
+  EXPECT_EQ(surface_id1, surface_draw_quad3->surface_id);
+  EXPECT_EQ(surface_draw_quad4, surface_draw_quad3->fallback_quad);
+  EXPECT_EQ(SurfaceDrawQuadType::FALLBACK,
+            surface_draw_quad4->surface_draw_quad_type);
+  EXPECT_EQ(surface_id2, surface_draw_quad4->surface_id);
+  // If the device scale factor of the primary and fallback are the same then
+  // they share a SharedQuadState.
+  EXPECT_EQ(surface_draw_quad3->shared_quad_state,
+            surface_draw_quad4->shared_quad_state);
 }
 
 // This test verifies that one SurfaceDrawQuad is emitted if a

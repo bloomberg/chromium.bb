@@ -51,7 +51,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
       RenderPass* render_pass,
       SurfaceDrawQuadType surface_draw_quad_type,
       const SurfaceInfo& surface_info,
-      std::vector<SurfaceId>* embedded_surfaces);
+      std::vector<SurfaceId>* embedded_surfaces,
+      SharedQuadState** common_shared_quad_state);
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
   void AppendRainbowDebugBorder(RenderPass* render_pass);
