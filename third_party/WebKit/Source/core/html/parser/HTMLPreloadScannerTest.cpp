@@ -58,6 +58,13 @@ struct NonceTestCase {
   const char* nonce;
 };
 
+struct ContextTestCase {
+  const char* base_url;
+  const char* input_html;
+  const char* preloaded_url;  // Or nullptr if no preload is expected.
+  bool is_image_set;
+};
+
 class MockHTMLResourcePreloader : public ResourcePreloader {
  public:
   void PreloadRequestVerification(Resource::Type type,
@@ -125,6 +132,11 @@ class MockHTMLResourcePreloader : public ResourcePreloader {
       EXPECT_EQ(nonce, preload_request_->Nonce());
     else
       EXPECT_TRUE(preload_request_->Nonce().IsEmpty());
+  }
+
+  void ContextVerification(bool is_image_set) {
+    ASSERT_TRUE(preload_request_.get());
+    EXPECT_EQ(preload_request_->IsImageSetForTestingOnly(), is_image_set);
   }
 
  protected:
@@ -244,6 +256,16 @@ class HTMLPreloadScannerTest : public testing::Test {
     preloader.TakeAndPreload(requests);
 
     preloader.NonceRequestVerification(test_case.nonce);
+  }
+
+  void Test(ContextTestCase test_case) {
+    MockHTMLResourcePreloader preloader;
+    KURL base_url(kParsedURLString, test_case.base_url);
+    scanner_->AppendToEnd(String(test_case.input_html));
+    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    preloader.TakeAndPreload(requests);
+
+    preloader.ContextVerification(test_case.is_image_set);
   }
 
  private:
@@ -636,6 +658,19 @@ TEST_F(HTMLPreloadScannerTest, testPicture) {
        "srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif "
        "500w'></picture>",
        "bla.gif", "http://example.test/", Resource::kImage, 250},
+  };
+
+  for (const auto& test_case : test_cases)
+    Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest, testContext) {
+  ContextTestCase test_cases[] = {
+      {"http://example.test",
+       "<picture><source srcset='srcset_bla.gif'><img src='bla.gif'></picture>",
+       "srcset_bla.gif", true},
+      {"http://example.test", "<img src='bla.gif'>", "bla.gif", false},
+      {"http://example.test", "<img srcset='bla.gif'>", "bla.gif", true},
   };
 
   for (const auto& test_case : test_cases)

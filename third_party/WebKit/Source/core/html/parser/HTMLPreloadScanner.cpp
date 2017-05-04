@@ -236,6 +236,11 @@ class TokenPreloadScanner::StartTagScanner {
       source_size_set = picture_data.source_size_set;
       source_size = picture_data.source_size;
     }
+    ResourceFetcher::IsImageSet is_image_set =
+        (picture_data.picked || !srcset_image_candidate_.IsEmpty())
+            ? ResourceFetcher::kImageIsImageSet
+            : ResourceFetcher::kImageNotImageSet;
+
     if (source_size_set) {
       resource_width.width = source_size;
       resource_width.is_set = true;
@@ -252,7 +257,7 @@ class TokenPreloadScanner::StartTagScanner {
     auto request = PreloadRequest::CreateIfNeeded(
         InitiatorFor(tag_impl_), position, url_to_load_, predicted_base_url,
         type.value(), referrer_policy, PreloadRequest::kDocumentIsReferrer,
-        resource_width, client_hints_preferences, request_type);
+        is_image_set, resource_width, client_hints_preferences, request_type);
     if (!request)
       return nullptr;
 
@@ -805,8 +810,10 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
         in_script_ = false;
         return;
       }
-      if (Match(tag_impl, pictureTag))
+      if (Match(tag_impl, pictureTag)) {
         in_picture_ = false;
+        picture_data_.picked = false;
+      }
       return;
     }
     case HTMLToken::kStartTag: {

@@ -15,7 +15,8 @@ Resource* LinkFetchResource::Fetch(Resource::Type type,
   DCHECK_EQ(type, kLinkPrefetch);
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  params.SetRequestContext(fetcher->DetermineRequestContext(type));
+  params.SetRequestContext(fetcher->DetermineRequestContext(
+      type, ResourceFetcher::kImageNotImageSet));
   return fetcher->RequestResource(params, LinkResourceFactory(type));
 }
 
