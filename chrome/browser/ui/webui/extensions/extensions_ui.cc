@@ -278,6 +278,10 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("item_util.js", IDR_MD_EXTENSIONS_ITEM_UTIL_JS);
   source->AddResourcePath("load_error.html", IDR_MD_EXTENSIONS_LOAD_ERROR_HTML);
   source->AddResourcePath("load_error.js", IDR_MD_EXTENSIONS_LOAD_ERROR_JS);
+  source->AddResourcePath("navigation_helper.html",
+                          IDR_MD_EXTENSIONS_NAVIGATION_HELPER_HTML);
+  source->AddResourcePath("navigation_helper.js",
+                          IDR_MD_EXTENSIONS_NAVIGATION_HELPER_JS);
   source->AddResourcePath("options_dialog.html",
                           IDR_MD_EXTENSIONS_OPTIONS_DIALOG_HTML);
   source->AddResourcePath("options_dialog.js",

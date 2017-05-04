@@ -130,33 +130,33 @@ cr.define('extension_manager_tests', function() {
       test(assert(TestNames.ChangePages), function() {
         // We start on the item list.
         var pages = manager.$.pages;
-        expectEquals(Page.ITEM_LIST, pages.selected);
+        expectEquals(Page.LIST, pages.selected);
 
         // Switch: item list -> keyboard shortcuts.
         MockInteractions.tap(manager.sidebar.$['sections-shortcuts']);
         Polymer.dom.flush();
-        expectEquals(Page.KEYBOARD_SHORTCUTS, pages.selected);
+        expectEquals(Page.SHORTCUTS, pages.selected);
 
         // Switch: keyboard shortcuts -> item list.
         MockInteractions.tap(manager.sidebar.$['sections-apps']);
         Polymer.dom.flush();
-        expectEquals(Page.ITEM_LIST, pages.selected);
+        expectEquals(Page.LIST, pages.selected);
 
         // Switch: item list -> detail view.
         var item = manager.$['items-list'].$$('extensions-item');
         assert(item);
         item.onDetailsTap_();
         Polymer.dom.flush();
-        expectEquals(Page.DETAIL_VIEW, pages.selected);
+        expectEquals(Page.DETAILS, pages.selected);
 
         // Switch: detail view -> keyboard shortcuts.
         MockInteractions.tap(manager.sidebar.$['sections-shortcuts']);
         Polymer.dom.flush();
-        expectEquals(Page.KEYBOARD_SHORTCUTS, pages.selected);
+        expectEquals(Page.SHORTCUTS, pages.selected);
       });
 
       test(assert(TestNames.UrlNavigationToDetails), function() {
-        expectEquals(Page.DETAIL_VIEW, manager.$.pages.selected);
+        expectEquals(Page.DETAILS, manager.$.pages.selected);
         var detailsView = manager.$['details-view'];
         expectEquals('ldnnhddmnhbkjipkidpdiheffobcpfmf', detailsView.data.id);
       });

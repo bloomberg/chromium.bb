@@ -14,6 +14,7 @@
 <link rel="import" href="chrome://extensions/item_list.html">
 <link rel="import" href="chrome://extensions/keyboard_shortcuts.html">
 <link rel="import" href="chrome://extensions/load_error.html">
+<link rel="import" href="chrome://extensions/navigation_helper.html">
 <link rel="import" href="chrome://extensions/options_dialog.html">
 <link rel="import" href="chrome://extensions/pack_dialog.html">
 <link rel="import" href="chrome://extensions/service.html">
@@ -69,7 +70,8 @@
           <extensions-sidebar></extensions-sidebar>
         </div>
       </dialog>
-      <neon-animated-pages id="pages" selected="0">
+      <neon-animated-pages id="pages" attr-for-selected="id"
+          selected="items-list">
         <extensions-item-list id="items-list" items="[[extensions]]"
             delegate="[[itemDelegate]]" in-dev-mode="[[inDevMode]]"
             filter="[[filter]]"

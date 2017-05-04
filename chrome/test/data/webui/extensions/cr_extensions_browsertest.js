@@ -46,6 +46,7 @@ CrExtensionsBrowserTest.prototype = {
     'extension_keyboard_shortcuts_test.js',
     'extension_options_dialog_test.js',
     'extension_pack_dialog_test.js',
+    'extension_navigation_helper_test.js',
     'extension_service_test.js',
     'extension_shortcut_input_test.js',
     'extension_sidebar_test.js',
@@ -340,4 +341,40 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionCodeSectionLayoutTest',
        function() {
   extension_code_section_tests.registerTests();
   mocha.grep(assert(extension_code_section_tests.TestNames.Layout)).run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension Navigation Helper Tests
+
+function CrExtensionsNavigationHelperBrowserTest() {}
+
+// extensions.NavigationHelper observes window.location. In order to test this
+// without the "real" NavigationHelper joining the party, we navigate to
+// navigation_helper.html directly.
+CrExtensionsNavigationHelperBrowserTest.prototype = {
+  __proto__: CrExtensionsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://extensions/navigation_helper.html',
+};
+
+TEST_F('CrExtensionsNavigationHelperBrowserTest',
+       'ExtensionNavigationHelperBasicTest', function() {
+  extension_navigation_helper_tests.registerTests();
+  mocha.grep(assert(extension_navigation_helper_tests.TestNames.Basic)).run();
+});
+
+TEST_F('CrExtensionsNavigationHelperBrowserTest',
+       'ExtensionNavigationHelperConversionTest', function() {
+  extension_navigation_helper_tests.registerTests();
+  mocha.grep(
+      assert(extension_navigation_helper_tests.TestNames.Conversions)).run();
+});
+
+TEST_F('CrExtensionsNavigationHelperBrowserTest',
+       'ExtensionNavigationHelperPushAndReplaceStateTest', function() {
+  extension_navigation_helper_tests.registerTests();
+  mocha.grep(
+      assert(extension_navigation_helper_tests.TestNames.PushAndReplaceState))
+          .run();
 });
