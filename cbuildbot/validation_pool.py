@@ -1838,7 +1838,7 @@ class ValidationPool(object):
       self.RemoveReady(change)
 
   def HandleValidationFailure(self, messages, changes=None, sanity=True,
-                              no_stat=None):
+                              no_stat=None, failed_hwtests=None):
     """Handles a list of validation failure messages from slave builders.
 
     This handler parses a list of failure messages from our list of builders
@@ -1855,7 +1855,11 @@ class ValidationPool(object):
         not sane, none of the changes will have their CommitReady bit modified.
       no_stat: A list of builders which failed prematurely without reporting
         status. If not None, this implies there were infrastructure issues.
+      failed_hwtests: A list of names (strings) of failed hwtests.
     """
+    if failed_hwtests:
+      logging.info('Failed HWTests: %s', failed_hwtests)
+
     if changes is None:
       changes = self.applied
 

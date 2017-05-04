@@ -13,6 +13,7 @@ from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import failure_message_lib
+from chromite.lib import hwtest_results
 
 
 class FakeCIDBConnection(object):
@@ -32,6 +33,7 @@ class FakeCIDBConnection(object):
     self.fake_time = None
     self.fake_keyvals = fake_keyvals or {}
     self.buildMessageTable = {}
+    self.hwTestResultTable = {}
 
   def _TrimStatus(self, status):
     """Trims a build row to keys that should be returned by GetBuildStatus"""
@@ -215,6 +217,26 @@ class FakeCIDBConnection(object):
               'board': board}
     self.buildMessageTable[build_message_id] = values
     return build_message_id
+
+  def InsertHWTestResults(self, hwTestResults):
+    """Insert HWTestResults into the hwTestResultTable.
+
+    Args:
+      hwTestResults: A list of HWTestResult instances.
+
+    Returns:
+      The number of inserted rows.
+    """
+    result_id = len(self.hwTestResultTable)
+    for result in hwTestResults:
+      values = {'id': result_id,
+                'build_id': result.build_id,
+                'test_name': result.test_name,
+                'status': result.status}
+      self.hwTestResultTable[result_id] = values
+      result_id = result_id + 1
+
+    return len(hwTestResults)
 
   def GetBuildMessages(self, build_id):
     """Get the build messages of the given build id.
@@ -424,6 +446,24 @@ class FakeCIDBConnection(object):
                   f_dict, bs_dict, b_dict))
 
     return stage_failures
+
+  def GetHWTestResultsForBuilds(self, build_ids):
+    """Get hwTestResults for builds.
+
+    Args:
+      build_ids: A list of build_id (strings) of build.
+
+    Returns:
+      A list of hwtest_results.HWTestResult instances.
+    """
+    results = []
+    for value in self.hwTestResultTable.values():
+      if value['build_id'] in build_ids:
+        results.append(hwtest_results.HWTestResult(
+            value['id'], value['build_id'], value['test_name'],
+            value['status']))
+
+    return results
 
   def HasFailureMsgForStage(self, build_stage_id):
     """Determine whether a build stage has failure messages in failureTable.

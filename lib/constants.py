@@ -704,6 +704,16 @@ HWTEST_VALID_PRIORITIES = ['Weekly',
 HWTEST_PRIORITIES_MAP = dict(
     (p, i) for i, p in enumerate(HWTEST_VALID_PRIORITIES))
 
+
+# HWTest result statuses
+HWTEST_STATUS_PASS = 'pass'
+HWTEST_STATUS_FAIL = 'fail'
+HWTEST_STATUS_ABORT = 'abort'
+HWTEST_STATUS_OTHER = 'other'
+HWTEST_STATUES_NOT_PASSED = frozenset([HWTEST_STATUS_FAIL,
+                                       HWTEST_STATUS_ABORT,
+                                       HWTEST_STATUS_OTHER])
+
 # Define HWTEST subsystem logic constants.
 SUBSYSTEMS = 'subsystems'
 SUBSYSTEM_PASS = 'subsystem_pass'

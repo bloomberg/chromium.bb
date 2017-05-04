@@ -32,6 +32,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.lib import fake_cidb
+from chromite.lib import hwtest_results
 from chromite.lib import results_lib
 from chromite.lib import patch_unittest
 from chromite.lib import timeout_util
@@ -641,7 +642,7 @@ class BaseCommitQueueCompletionStageTest(
       if handle_failure:
         stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
             mock.ANY, no_stat=set([]), sanity=sane_tot,
-            changes=handlefailure_changes)
+            changes=handlefailure_changes, failed_hwtests=mock.ANY)
 
       if handle_timeout:
         stage.sync_stage.pool.handle_timeout_mock.assert_called_once_with(
@@ -673,6 +674,9 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(MasterCommitQueueCompletionStageTest, self)._Prepare(bot_id, **kwargs)
     self.assertTrue(self._run.config['master'])
+
+  def tearDown(self):
+    cidb.CIDBConnectionFactory.ClearMock()
 
   def testNoInflightBuildersWithInfraFail(self):
     """Test case where there are no inflight builders but are infra failures."""
@@ -832,7 +836,8 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
     stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, [])
     stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-        mock.ANY, sanity=True, no_stat=set(), changes=self.changes)
+        mock.ANY, sanity=True, no_stat=set(), changes=self.changes,
+        failed_hwtests=None)
 
   def testCQMasterHandleFailureWithThrottledTree(self):
     """Test CQMasterHandleFailure with throttled tree."""
@@ -849,7 +854,8 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
     stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, [])
     stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-        mock.ANY, sanity=False, no_stat=set(), changes=self.changes)
+        mock.ANY, sanity=False, no_stat=set(), changes=self.changes,
+        failed_hwtests=None)
 
   def testCQMasterHandleFailureWithClosedTree(self):
     """Test CQMasterHandleFailure with cloased tree."""
@@ -866,7 +872,38 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
     stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, [])
     stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-        mock.ANY, sanity=False, no_stat=set(), changes=self.changes)
+        mock.ANY, sanity=False, no_stat=set(), changes=self.changes,
+        failed_hwtests=None)
+
+  def testCQMasterHandleFailureWithFailedHWtests(self):
+    """Test CQMasterHandleFailure with failed HWtests."""
+    stage = self.ConstructStage()
+
+    master_build_id = stage._run.attrs.metadata.GetValue('build_id')
+    db = fake_cidb.FakeCIDBConnection()
+    slave_build_id = db.InsertBuild(
+        'slave_1', constants.WATERFALL_INTERNAL, 1, 'slave_1', 'bot_hostname',
+        master_build_id=master_build_id, buildbucket_id='123')
+    cidb.CIDBConnectionFactory.SetupMockCidb(db)
+    mock_failed_hwtests = mock.Mock()
+    mock_get_hwtests = self.PatchObject(
+        hwtest_results.HWTestResultManager,
+        'GetFailedHWTestsFromCIDB', return_value=mock_failed_hwtests)
+
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     'SendInfraAlertIfNeeded')
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_ShouldSubmitPartialPool',
+                     return_value=False)
+    self.PatchObject(tree_status, 'SendHealthAlert')
+    self.PatchObject(tree_status, 'WaitForTreeStatus',
+                     return_value=constants.TREE_OPEN)
+
+    stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, ['123'])
+    stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
+        mock.ANY, sanity=True, no_stat=set(), changes=self.changes,
+        failed_hwtests=mock_failed_hwtests)
+    mock_get_hwtests.assert_called_once_with(db, [slave_build_id])
 
 
 class PreCQCompletionStageTest(generic_stages_unittest.AbstractStageTestCase):

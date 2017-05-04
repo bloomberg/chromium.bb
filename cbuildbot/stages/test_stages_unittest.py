@@ -6,23 +6,25 @@
 
 from __future__ import print_function
 
+import json
 import mock
 import os
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
-from chromite.lib import config_lib
-from chromite.lib import constants
-from chromite.lib import failures_lib
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import cgroups
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
+from chromite.lib import fake_cidb
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util
@@ -230,6 +232,9 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.warning_mock.reset_mock()
     self.failure_mock.reset_mock()
 
+    mock_report = self.PatchObject(
+        test_stages.HWTestStage, 'ReportHWTestResults')
+
     to_raise = None
 
     if cmd_fail_mode == None:
@@ -273,6 +278,8 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
       self.warning_mock.assert_called_once()
     else:
       self.assertFalse(self.warning_mock.called)
+
+    mock_report.assert_not_called()
 
   def testRemoteTrybotWithHWTest(self):
     """Test remote trybot with hw test enabled"""
@@ -381,6 +388,68 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # We exit early, so commands.RunHWTestSuite should not have been
     # called.
     self.assertFalse(self.run_suite_mock.called)
+
+  def testReportHWTestResults(self):
+    """Test ReportHWTestResults."""
+    stage = self.ConstructStage()
+    json_str = """
+{
+  "tests":{
+    "Suite job":{
+       "status":"FAIL"
+    },
+    "cheets_CTS.com.android.cts.dram":{
+       "status":"FAIL"
+    },
+    "cheets_ContainerSmokeTest":{
+       "status":"GOOD"
+    },
+    "cheets_DownloadsFilesystem":{
+       "status":"ABORT"
+    },
+    "cheets_KeyboardTest":{
+       "status":"UNKNOWN"
+    }
+  }
+}
+"""
+    json_dump_dict = json.loads(json_str)
+    db = fake_cidb.FakeCIDBConnection()
+    build_id = db.InsertBuild('build_1', constants.WATERFALL_INTERNAL, 1,
+                              'build_1', 'bot_hostname')
+
+    # When json_dump_dict is None
+    self.assertIsNone(stage.ReportHWTestResults(None, build_id, db))
+
+    # When db is None
+    self.assertIsNone(stage.ReportHWTestResults(json_dump_dict, build_id, None))
+
+    # When results are successfully reported
+    stage.ReportHWTestResults(json_dump_dict, build_id, db)
+    results = db.GetHWTestResultsForBuilds([build_id])
+    result_dict = {x.test_name: x.status for x in results}
+
+    expect_dict = {
+        'cheets_DownloadsFilesystem': constants.HWTEST_STATUS_ABORT,
+        'cheets_KeyboardTest': constants.HWTEST_STATUS_OTHER,
+        'Suite job': constants.HWTEST_STATUS_FAIL,
+        'cheets_CTS.com.android.cts.dram': constants.HWTEST_STATUS_FAIL,
+        'cheets_ContainerSmokeTest': constants.HWTEST_STATUS_PASS
+    }
+    self.assertItemsEqual(expect_dict, result_dict)
+    self.assertEqual(len(results), 5)
+
+  def testPerformStageOnCQ(self):
+    """Test PerformStage on CQ."""
+    self._Prepare('lumpy-paladin')
+    stage = self.ConstructStage()
+    mock_report = self.PatchObject(
+        test_stages.HWTestStage, 'ReportHWTestResults')
+    cmd_result = mock.Mock(to_raise=None)
+    self.PatchObject(commands, 'RunHWTestSuite', return_value=cmd_result)
+    stage.PerformStage()
+
+    mock_report.assert_called_once_with(mock.ANY, mock.ANY, mock.ANY)
 
 
 class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,

@@ -21,6 +21,7 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import failure_message_lib
+from chromite.lib import hwtest_results
 from chromite.lib import metrics
 from chromite.lib import results_lib
 from chromite.lib import timeout_util
@@ -771,10 +772,11 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     changes = self.sync_stage.pool.applied
 
+    build_id, db = self._run.GetCIDBHandle()
+
     do_partial_submission = self._ShouldSubmitPartialPool(slave_buildbucket_ids)
 
     if do_partial_submission:
-      build_id, db = self._run.GetCIDBHandle()
       changes_by_config = (
           relevant_changes.RelevantChanges.GetRelevantChangesForSlaves(
               build_id, db, self._run.config, changes, no_stat,
@@ -838,11 +840,21 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
                                                    changes=changes)
       return
 
+    failed_hwtests = None
+    if db is not None:
+      slave_statuses = db.GetSlaveStatuses(
+          build_id, buildbucket_ids=slave_buildbucket_ids)
+      slave_build_ids = [x['id'] for x in slave_statuses]
+      failed_hwtests = (
+          hwtest_results.HWTestResultManager.GetFailedHWTestsFromCIDB(
+              db, slave_build_ids))
+
     # Some builder failed, or some builder did not report stats, or
     # the intersection of both. Let HandleValidationFailure decide
     # what changes to reject.
     self.sync_stage.pool.HandleValidationFailure(
-        messages, sanity=tot_sanity, changes=changes, no_stat=no_stat)
+        messages, sanity=tot_sanity, changes=changes, no_stat=no_stat,
+        failed_hwtests=failed_hwtests)
 
   def _GetInfraFailMessages(self, failing):
     """Returns a list of messages containing infra failures.

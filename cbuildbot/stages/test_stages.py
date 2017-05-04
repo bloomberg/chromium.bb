@@ -12,14 +12,15 @@ import os
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
-from chromite.lib import config_lib
-from chromite.lib import constants
-from chromite.lib import failures_lib
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cgroups
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import gs
+from chromite.lib import hwtest_results
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
@@ -351,6 +352,47 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     pass_subsystems -= fail_subsystems
     return (pass_subsystems, fail_subsystems)
 
+  def ReportHWTestResults(self, json_dump_dict, build_id, db):
+    """Report HWTests results to cidb.
+
+    Args:
+      json_dump_dict: A dict containing the command json dump results.
+      build_id: The build id (string) of this build.
+      db: An instance of cidb.CIDBConnection.
+
+    Returns:
+      How many results are reported to CIDB.
+    """
+    if not json_dump_dict:
+      logging.info('No json dump found, no HWTest results to report')
+      return
+
+    if not db:
+      logging.info('No DB instance found, not reporting HWTest results.')
+      return
+
+    results = []
+    for test_name, value in json_dump_dict.get('tests', dict()).iteritems():
+      status = value.get('status')
+      result = constants.HWTEST_STATUS_OTHER
+      if status == 'GOOD':
+        result = constants.HWTEST_STATUS_PASS
+      elif status == 'FAIL':
+        result = constants.HWTEST_STATUS_FAIL
+      elif status == 'ABORT':
+        result = constants.HWTEST_STATUS_ABORT
+      else:
+        logging.info('Unknown status for test %s:%s', test_name, result)
+
+      results.append(hwtest_results.HWTestResult.FromReport(
+          build_id, test_name, result))
+
+    if results:
+      logging.info('Reporting hwtest results: %s ', results)
+      db.InsertHWTestResults(results)
+
+    return len(results)
+
   def WaitUntilReady(self):
     """Wait until payloads and test artifacts are ready or not."""
     # Wait for UploadHWTestArtifacts to generate and upload the artifacts.
@@ -414,6 +456,10 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         debug=debug, subsystems=subsystems, skip_duts_check=skip_duts_check,
         job_keyvals={constants.DATASTORE_PARENT_KEY:
                      ('Build', build_id, 'BuildStage', self._build_stage_id)})
+
+    if config_lib.IsCQType(self._run.config.build_type):
+      self.ReportHWTestResults(cmd_result.json_dump_result, build_id, db)
+
     subsys_tuple = self.GenerateSubsysResult(cmd_result.json_dump_result,
                                              subsystems)
     if db:
