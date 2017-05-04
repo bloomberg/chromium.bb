@@ -34,17 +34,20 @@ import java.util.List;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class DefaultSearchEngineDialogHelperTest {
-    private class TestDelegate extends DefaultSearchEngineDialogHelper.TemplateUrlServiceDelegate {
+    private class TestDelegate extends DefaultSearchEngineDialogHelper.HelperDelegate {
+        public TestDelegate(int dialogType) {
+            super(dialogType);
+        }
+
         public String chosenKeyword;
 
         @Override
-        protected List<TemplateUrl> getSearchEngines(int dialogType) {
-            Assert.assertEquals(mDialogType, dialogType);
+        protected List<TemplateUrl> getSearchEngines() {
             return mTemplateUrls;
         }
 
         @Override
-        protected void setSearchEngine(String keyword) {
+        protected void onUserSeachEngineChoice(String keyword) {
             chosenKeyword = keyword;
         }
     }
@@ -58,8 +61,8 @@ public class DefaultSearchEngineDialogHelperTest {
         }
 
         @Override
-        protected TemplateUrlServiceDelegate createDelegate() {
-            delegate = new TestDelegate();
+        protected HelperDelegate createDelegate(int dialogType) {
+            delegate = new TestDelegate(mDialogType);
             return delegate;
         }
     }
@@ -80,7 +83,7 @@ public class DefaultSearchEngineDialogHelperTest {
     private final List<TemplateUrl> mTemplateUrls = new ArrayList<>();
 
     private Context mContext;
-    private int mDialogType;
+    private @SearchEnginePromoType int mDialogType;
 
     @Before
     public void setUp() throws Exception {
