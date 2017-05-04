@@ -979,9 +979,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   // If true, then ProcessInput returns after processing a full frame,
   // rather than reading all available input.
   bool process_single_input_frame_ = false;
-
-  // Latched value of FLAGS_chromium_http2_flag_remove_rewritelength.
-  bool skip_rewritelength_ = false;
 };
 
 }  // namespace net
