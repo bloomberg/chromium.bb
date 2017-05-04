@@ -65,6 +65,7 @@ class SafeBrowsingProtocolManagerDelegate;
 class SafeBrowsingServiceFactory;
 class SafeBrowsingUIManager;
 class SafeBrowsingURLRequestContextGetter;
+class TriggerManager;
 struct V4ProtocolConfig;
 
 // Construction needs to happen on the main thread.
@@ -281,6 +282,8 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   void RemovePasswordProtectionService(Profile* profile);
 
+  void CreateTriggerManager();
+
   // The factory used to instantiate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingService.
@@ -355,6 +358,8 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Accessed on UI thread.
   std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
       password_protection_service_map_;
+
+  std::unique_ptr<TriggerManager> trigger_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

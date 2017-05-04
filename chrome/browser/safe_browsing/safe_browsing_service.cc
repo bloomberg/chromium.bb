@@ -39,6 +39,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
+#include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
@@ -328,6 +329,8 @@ void SafeBrowsingService::Initialize() {
 
   services_delegate_->Initialize(v4_enabled_);
   services_delegate_->InitializeCsdService(url_request_context_getter_.get());
+
+  CreateTriggerManager();
 
   // Track profile creation and destruction.
   profiles_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
@@ -776,4 +779,8 @@ void SafeBrowsingService::RemovePasswordProtectionService(Profile* profile) {
     password_protection_service_map_.erase(it);
 }
 
+void SafeBrowsingService::CreateTriggerManager() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  trigger_manager_ = base::MakeUnique<TriggerManager>();
+}
 }  // namespace safe_browsing
