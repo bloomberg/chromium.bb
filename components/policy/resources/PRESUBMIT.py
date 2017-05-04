@@ -77,7 +77,7 @@ def _CheckPolicyTestCases(input_api, output_api, policies):
 def _CheckPolicyHistograms(input_api, output_api, policies):
   root = input_api.change.RepositoryRoot()
   histograms = input_api.os_path.join(
-      root, 'tools', 'metrics', 'histograms', 'histograms.xml')
+      root, 'tools', 'metrics', 'histograms', 'enums.xml')
   with open(histograms) as f:
     tree = xml.dom.minidom.parseString(f.read())
   enums = (tree.getElementsByTagName('histogram-configuration')[0]
@@ -89,9 +89,9 @@ def _CheckPolicyHistograms(input_api, output_api, policies):
                           for e in policy_enum.getElementsByTagName('int')])
 
   error_missing = ('Policy \'%s\' was added to policy_templates.json but not '
-                   'to src/tools/metrics/histograms/histograms.xml. '
+                   'to src/tools/metrics/histograms/enums.xml. '
                    'Please update both files. To regenerate the policy part '
-                   'of histograms.xml, run:\n'
+                   'of enums.xml, run:\n'
                    'python tools/metrics/histograms/update_policies.py')
   results = []
   for policy in policies:

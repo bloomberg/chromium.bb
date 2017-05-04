@@ -154,7 +154,7 @@ def CheckUpdatedNaClSDK(input_api, output_api):
                         warning=True)
 
 # Verify that changes to ppapi/thunk/interfaces_* files have a corresponding
-# change to tools/metrics/histograms/histograms.xml for UMA tracking.
+# change to tools/metrics/histograms/enums.xml for UMA tracking.
 def CheckHistogramXml(input_api, output_api):
   # We can't use input_api.LocalPaths() here because we need to know about
   # changes outside of ppapi/. See tools/depot_tools/presubmit_support.py for
@@ -168,7 +168,7 @@ def CheckHistogramXml(input_api, output_api):
                      'ppapi/thunk/interfaces_ppb_public_dev_channel.h',
                      'ppapi/thunk/interfaces_ppb_public_dev.h',
                      'ppapi/thunk/interfaces_ppb_public_stable.h')
-  HISTOGRAM_XML_FILE = 'tools/metrics/histograms/histograms.xml'
+  HISTOGRAM_XML_FILE = 'tools/metrics/histograms/enums.xml'
   interface_changes = []
   has_histogram_xml_change = False
   for filename in files:
@@ -180,7 +180,7 @@ def CheckHistogramXml(input_api, output_api):
 
   if interface_changes and not has_histogram_xml_change:
     return [output_api.PresubmitNotifyResult(
-        'Missing change to tools/metrics/histograms/histograms.xml.\n' +
+        'Missing change to tools/metrics/histograms/enums.xml.\n' +
         'Run pepper_hash_for_uma to make get values for new interfaces.\n' +
         'Interface changes:\n' + '\n'.join(interface_changes))]
   return []

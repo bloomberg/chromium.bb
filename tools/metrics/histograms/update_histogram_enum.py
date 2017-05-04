@@ -19,9 +19,10 @@ import diff_util
 import path_util
 
 import print_style
+import histogram_paths
 
 
-HISTOGRAMS_PATH = path_util.GetHistogramsFile()
+ENUMS_PATH = histogram_paths.ENUMS_XML
 
 
 class UserError(Exception):
@@ -179,12 +180,12 @@ def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
 
 def _GetOldAndUpdatedXml(histogram_enum_name, source_enum_values,
                          source_enum_path):
-  """Reads old histogram from |histogram_enum_name| from |HISTOGRAMS_PATH|, and
+  """Reads old histogram from |histogram_enum_name| from |ENUMS_PATH|, and
   calculates new histogram from |source_enum_values| from |source_enum_path|,
   and returns both in XML format.
   """
-  Log('Reading existing histograms from "{0}".'.format(HISTOGRAMS_PATH))
-  with open(HISTOGRAMS_PATH, 'rb') as f:
+  Log('Reading existing histograms from "{0}".'.format(ENUMS_PATH))
+  with open(ENUMS_PATH, 'rb') as f:
     histograms_doc = minidom.parse(f)
     f.seek(0)
     xml = f.read()
@@ -252,7 +253,7 @@ def UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
     Log('Cancelled.')
     return
 
-  with open(HISTOGRAMS_PATH, 'wb') as f:
+  with open(ENUMS_PATH, 'wb') as f:
     f.write(new_xml)
 
   Log('Done.')

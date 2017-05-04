@@ -434,7 +434,7 @@ if (!is_android) {
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
       "//third_party/zlib/google/test/data/",
-      "//tools/metrics/histograms/histograms.xml",
+      "//tools/metrics/histograms/enums.xml",
       "//ui/webui/resources/js/",
       "$root_out_dir/pyproto/google/",
       "$root_out_dir/test_case.html",
@@ -2858,10 +2858,10 @@ group("angle_perftests") {
 
 test("unit_tests") {
   sources = [
-    # histograms.xml is analyzed by AboutFlagsHistogramTest, so this
+    # enums.xml is analyzed by AboutFlagsHistogramTest, so this
     # dependency is needed to make commit bots run unit_tests on
-    # histograms.xml changes.
-    "../../tools/metrics/histograms/histograms.xml",
+    # enums.xml changes.
+    "../../tools/metrics/histograms/enums.xml",
 
     # All unittests in browser, common, renderer and service.
     "../browser/about_flags_unittest.cc",
@@ -3297,7 +3297,7 @@ test("unit_tests") {
     "//third_party/pywebsocket/",
     "//third_party/tlslite/",
     "//third_party/zlib/google/test/data/",
-    "//tools/metrics/histograms/histograms.xml",
+    "//tools/metrics/histograms/enums.xml",
     "$root_out_dir/pyproto/google/",
   ]
   if (is_android || is_linux || is_win) {
