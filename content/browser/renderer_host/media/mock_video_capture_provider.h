@@ -15,6 +15,7 @@ class MockVideoCaptureProvider : public VideoCaptureProvider {
   MockVideoCaptureProvider();
   ~MockVideoCaptureProvider() override;
 
+  MOCK_METHOD0(Uninitialize, void());
   MOCK_METHOD1(GetDeviceInfosAsync,
                void(const base::Callback<
                     void(const std::vector<media::VideoCaptureDeviceInfo>&)>&

@@ -20,6 +20,8 @@ class CONTENT_EXPORT InProcessVideoCaptureProvider
       scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
   ~InProcessVideoCaptureProvider() override;
 
+  void Uninitialize() override;
+
   void GetDeviceInfosAsync(
       const base::Callback<void(
           const std::vector<media::VideoCaptureDeviceInfo>&)>& result_callback)
