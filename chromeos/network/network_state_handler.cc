@@ -594,11 +594,42 @@ bool NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
 
       tether_network_list_.erase(iter);
       NotifyNetworkListChanged();
+
       return true;
     }
   }
-
   return false;
+}
+
+bool NetworkStateHandler::DisassociateTetherNetworkStateFromWifiNetwork(
+    const std::string& tether_network_guid) {
+  NetworkState* tether_network =
+      GetModifiableNetworkStateFromGuid(tether_network_guid);
+
+  if (!tether_network) {
+    NET_LOG(ERROR) << "DisassociateTetherNetworkStateWithWifiNetwork(): Tether "
+                   << "network with ID " << tether_network_guid
+                   << " not registered; could not remove association.";
+    return false;
+  }
+
+  std::string wifi_network_guid = tether_network->tether_guid();
+  NetworkState* wifi_network =
+      GetModifiableNetworkStateFromGuid(wifi_network_guid);
+
+  if (!wifi_network) {
+    NET_LOG(ERROR) << "DisassociateTetherNetworkStateWithWifiNetwork(): Wi-Fi "
+                   << "network with ID " << wifi_network_guid
+                   << " not registered; could not remove association.";
+    return false;
+  }
+
+  wifi_network->set_tether_guid(std::string());
+  tether_network->set_tether_guid(std::string());
+
+  NotifyNetworkListChanged();
+
+  return true;
 }
 
 bool NetworkStateHandler::AssociateTetherNetworkStateWithWifiNetwork(

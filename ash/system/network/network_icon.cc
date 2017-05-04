@@ -16,6 +16,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "chromeos/network/tether_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -79,7 +80,9 @@ struct Badges {
 // class used for maintaining a map of network state and images.
 class NetworkIconImpl {
  public:
-  NetworkIconImpl(const std::string& path, IconType icon_type);
+  NetworkIconImpl(const std::string& path,
+                  IconType icon_type,
+                  const std::string& network_type);
 
   // Determines whether or not the associated network might be dirty and if so
   // updates and generates the icon. Does nothing if network no longer exists.
@@ -421,11 +424,29 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
 // Utilities for extracting icon images.
 
 ImageType ImageTypeForNetworkType(const std::string& type) {
-  if (type == shill::kTypeWifi)
+  if (type == shill::kTypeWifi) {
     return ARCS;
-  else if (type == shill::kTypeCellular || type == shill::kTypeWimax)
+  } else if (type == shill::kTypeCellular || type == shill::kTypeWimax ||
+             type == chromeos::kTypeTether) {
     return BARS;
+  }
   return NONE;
+}
+
+// Returns the network type, performing a check to see if Wi-Fi networks
+// have an associated Tether network. Used to display the correct icon.
+std::string GetEffectiveNetworkType(const NetworkState* network,
+                                    IconType icon_type) {
+  if (icon_type == ICON_TYPE_TRAY && network->type() == shill::kTypeWifi &&
+      !network->tether_guid().empty()) {
+    return chromeos::kTypeTether;
+  }
+
+  return network->type();
+}
+
+ImageType ImageTypeForNetwork(const NetworkState* network, IconType icon_type) {
+  return ImageTypeForNetworkType(GetEffectiveNetworkType(network, icon_type));
 }
 
 gfx::ImageSkia GetImageForIndex(ImageType image_type,
@@ -533,9 +554,10 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
     DCHECK_NE(ICON_TYPE_TRAY, icon_type);
     return gfx::CreateVectorIcon(kNetworkEthernetIcon,
                                  GetDefaultColorForIconType(ICON_TYPE_LIST));
-  } else if (network->Matches(NetworkTypePattern::Wireless())) {
+  } else if (network->Matches(NetworkTypePattern::Wireless()) ||
+             network->Matches(NetworkTypePattern::Tether())) {
     DCHECK(strength_index > 0);
-    return GetImageForIndex(ImageTypeForNetworkType(network->type()), icon_type,
+    return GetImageForIndex(ImageTypeForNetwork(network, icon_type), icon_type,
                             strength_index);
   } else if (network->Matches(NetworkTypePattern::VPN())) {
     DCHECK_NE(ICON_TYPE_TRAY, icon_type);
@@ -587,13 +609,15 @@ gfx::ImageSkia GetConnectingImage(IconType icon_type,
 //------------------------------------------------------------------------------
 // NetworkIconImpl
 
-NetworkIconImpl::NetworkIconImpl(const std::string& path, IconType icon_type)
+NetworkIconImpl::NetworkIconImpl(const std::string& path,
+                                 IconType icon_type,
+                                 const std::string& network_type)
     : network_path_(path),
       icon_type_(icon_type),
       strength_index_(-1),
       behind_captive_portal_(false) {
   // Default image
-  image_ = GetBasicImage(false, icon_type, shill::kTypeWifi);
+  image_ = GetBasicImage(false, icon_type, network_type);
 }
 
 void NetworkIconImpl::Update(const NetworkState* network) {
@@ -609,7 +633,8 @@ void NetworkIconImpl::Update(const NetworkState* network) {
 
   dirty |= UpdatePortalState(network);
 
-  if (network->Matches(NetworkTypePattern::Wireless())) {
+  if (network->Matches(NetworkTypePattern::Wireless()) ||
+      network->Matches(NetworkTypePattern::Tether())) {
     dirty |= UpdateWirelessStrengthIndex(network);
   }
 
@@ -733,7 +758,8 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkState* network,
   NetworkIconImpl* icon;
   NetworkIconMap::iterator iter = icon_map->find(network->path());
   if (iter == icon_map->end()) {
-    icon = new NetworkIconImpl(network->path(), icon_type);
+    icon = new NetworkIconImpl(network->path(), icon_type,
+                               GetEffectiveNetworkType(network, icon_type));
     icon_map->insert(std::make_pair(network->path(), icon));
   } else {
     icon = iter->second;
@@ -752,11 +778,13 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkState* network,
 gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
                                   IconType icon_type) {
   DCHECK(network);
+  const std::string network_type = GetEffectiveNetworkType(network, icon_type);
+
   if (!network->visible())
-    return GetBasicImage(false, icon_type, network->type());
+    return GetBasicImage(false /* is_connected */, icon_type, network_type);
 
   if (network->IsConnectingState())
-    return GetConnectingImage(icon_type, network->type());
+    return GetConnectingImage(icon_type, network_type);
 
   NetworkIconImpl* icon = FindAndUpdateImageImpl(network, icon_type);
   return icon->image();

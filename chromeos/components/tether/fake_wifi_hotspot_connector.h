@@ -27,15 +27,21 @@ class FakeWifiHotspotConnector : public WifiHotspotConnector {
 
   std::string most_recent_password() { return most_recent_password_; }
 
+  std::string most_recent_tether_network_guid() {
+    return most_recent_tether_network_guid_;
+  }
+
   // WifiHotspotConnector:
   void ConnectToWifiHotspot(
       const std::string& ssid,
       const std::string& password,
+      const std::string& tether_network_guid,
       const WifiHotspotConnector::WifiConnectionCallback& callback) override;
 
  private:
   std::string most_recent_ssid_;
   std::string most_recent_password_;
+  std::string most_recent_tether_network_guid_;
   WifiHotspotConnector::WifiConnectionCallback most_recent_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWifiHotspotConnector);

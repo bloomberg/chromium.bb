@@ -14,7 +14,8 @@ namespace tether {
 
 FakeWifiHotspotConnector::FakeWifiHotspotConnector(
     NetworkStateHandler* network_state_handler)
-    : WifiHotspotConnector(network_state_handler, nullptr) {}
+    : WifiHotspotConnector(network_state_handler,
+                           nullptr /* network_connect */) {}
 
 FakeWifiHotspotConnector::~FakeWifiHotspotConnector() {}
 
@@ -27,9 +28,11 @@ void FakeWifiHotspotConnector::CallMostRecentCallback(
 void FakeWifiHotspotConnector::ConnectToWifiHotspot(
     const std::string& ssid,
     const std::string& password,
+    const std::string& tether_network_guid,
     const WifiHotspotConnector::WifiConnectionCallback& callback) {
   most_recent_ssid_ = ssid;
   most_recent_password_ = password;
+  most_recent_tether_network_guid_ = tether_network_guid;
   most_recent_callback_ = callback;
 }
 
