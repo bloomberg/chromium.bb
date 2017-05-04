@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/lib/connector_impl.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 
 namespace service_manager {
