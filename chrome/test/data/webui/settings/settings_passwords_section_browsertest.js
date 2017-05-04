@@ -61,13 +61,13 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assert(node);
       var passwordInfo = passwordList[0];
       assertEquals(passwordInfo.loginPair.urls.shown,
-          node.querySelector('#originUrl').textContent.trim());
+          node.$$('#originUrl').textContent.trim());
       assertEquals(passwordInfo.loginPair.urls.link,
-          node.querySelector('#originUrl').href);
+          node.$$('#originUrl').href);
       assertEquals(passwordInfo.loginPair.username,
-          node.querySelector('#username').textContent);
+          node.$$('#username').textContent);
       assertEquals(passwordInfo.numCharactersInPassword,
-          node.querySelector('#password').value.length);
+          node.$$('#password').value.length);
     }
   }
 
@@ -283,7 +283,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       };
 
       // Click the remove button on the first password.
-      MockInteractions.tap(firstNode.querySelector('#passwordMenu'));
+      MockInteractions.tap(firstNode.$$('#passwordMenu'));
       MockInteractions.tap(passwordsSection.$.menuRemovePassword);
     });
 

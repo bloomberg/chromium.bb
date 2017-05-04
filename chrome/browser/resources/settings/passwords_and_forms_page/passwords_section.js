@@ -209,10 +209,14 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /** @private {!PasswordManager.PasswordUiEntry} */
+    lastFocused_: Object,
   },
 
   listeners: {
     'show-password': 'showPassword_',
+    'password-menu-tap': 'onPasswordMenuTap_',
   },
 
   /**
@@ -355,27 +359,17 @@ Polymer({
   },
 
   /**
-   * Creates an empty password of specified length.
-   * @param {number} length
-   * @return {string} password
-   * @private
-   */
-  getEmptyPassword_: function(length) {
-    return ' '.repeat(length);
-  },
-
-  /**
    * Opens the password action menu.
+   * @param {!Event} event
    * @private
    */
-  onPasswordMenuTap_: function(e) {
+  onPasswordMenuTap_: function(event) {
     var menu = /** @type {!CrActionMenuElement} */(this.$.menu);
-    var target = /** @type {!HTMLElement} */(Polymer.dom(e).localTarget);
-    var passwordUiEntryEvent = /** @type {!PasswordUiEntryEvent} */(e);
+    var target = /** @type {!HTMLElement} */ (event.detail.target);
 
     this.activePassword =
         /** @type {!chrome.passwordsPrivate.PasswordUiEntry} */ (
-            passwordUiEntryEvent.model.item);
+            event.detail.item);
     menu.showAt(target);
     this.activeDialogAnchor_ = target;
   },

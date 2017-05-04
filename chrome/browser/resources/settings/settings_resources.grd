@@ -681,6 +681,12 @@
       <structure name="IDR_SETTINGS_ADDRESS_EDIT_DIALOG_JS"
                  file="passwords_and_forms_page/address_edit_dialog.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORD_LIST_ITEM_HTML"
+                 file="passwords_and_forms_page/password_list_item.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORD_LIST_ITEM_JS"
+                 file="passwords_and_forms_page/password_list_item.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORDS_SECTION_HTML"
                  file="passwords_and_forms_page/passwords_section.html"
                  type="chrome_html" />
