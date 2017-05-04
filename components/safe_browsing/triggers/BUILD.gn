@@ -1,0 +1,18 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+source_set("triggers") {
+  if (safe_browsing_mode != 0) {
+    sources = [
+      "trigger_manager.cc",
+      "trigger_manager.h",
+    ]
+
+    deps = [
+      "//base:base",
+    ]
+  }
+}
