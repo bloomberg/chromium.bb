@@ -32,7 +32,7 @@ const libaom_test::TestMode kEncodingModeVectors[] = {
 };
 
 // Encoding speeds
-const int kCpuUsedVectors[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+const int kCpuUsedVectors[] = { 1, 5 };
 
 // MV test modes: 1 - always use maximum MV; 2 - always use minimum MV.
 const int kMVTestModes[] = { MAX_EXTREME_MV, MIN_EXTREME_MV };
@@ -102,7 +102,7 @@ TEST_P(MotionVectorTestLarge, OverallTest) {
 
   testing::internal::scoped_ptr<libaom_test::VideoSource> video;
   video.reset(new libaom_test::YUVVideoSource(
-      "niklas_640_480_30.yuv", AOM_IMG_FMT_I420, width, height, 30, 1, 0, 5));
+      "niklas_640_480_30.yuv", AOM_IMG_FMT_I420, width, height, 30, 1, 0, 3));
 
   ASSERT_TRUE(video.get() != NULL);
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
