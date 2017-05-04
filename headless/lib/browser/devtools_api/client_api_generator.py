@@ -192,7 +192,7 @@ def CreateAnyTypeDefinition():
   }
 
 
-def CreateStringTypeDefinition(domain):
+def CreateStringTypeDefinition():
   return {
       'return_type': 'std::string',
       'pass_type': 'const std::string&',
@@ -211,7 +211,6 @@ def CreatePrimitiveTypeDefinition(type):
       'number': 'double',
       'integer': 'int',
       'boolean': 'bool',
-      'string': 'std::string',
   }
   return {
       'return_type': typedefs[type],
@@ -230,7 +229,7 @@ type_definitions = {}
 type_definitions['number'] = CreatePrimitiveTypeDefinition('number')
 type_definitions['integer'] = CreatePrimitiveTypeDefinition('integer')
 type_definitions['boolean'] = CreatePrimitiveTypeDefinition('boolean')
-type_definitions['string'] = CreatePrimitiveTypeDefinition('string')
+type_definitions['string'] = CreateStringTypeDefinition()
 type_definitions['object'] = CreateObjectTypeDefinition()
 type_definitions['any'] = CreateAnyTypeDefinition()
 
@@ -272,6 +271,9 @@ def CreateTypeDefinitions(json_api):
       elif type['type'] == 'any':
         type_definitions[domain['domain'] + '.' + type['id']] = (
             CreateAnyTypeDefinition())
+      elif type['type'] == 'string':
+        type_definitions[domain['domain'] + '.' + type['id']] = (
+            CreateStringTypeDefinition())
       else:
         type_definitions[domain['domain'] + '.' + type['id']] = (
             CreatePrimitiveTypeDefinition(type['type']))
