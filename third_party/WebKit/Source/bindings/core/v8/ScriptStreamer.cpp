@@ -177,13 +177,12 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   WTF_MAKE_NONCOPYABLE(SourceStream);
 
  public:
-  explicit SourceStream(RefPtr<WebTaskRunner> loading_task_runner)
+  SourceStream()
       : v8::ScriptCompiler::ExternalSourceStream(),
         cancelled_(false),
         finished_(false),
         queue_lead_position_(0),
-        queue_tail_position_(0),
-        loading_task_runner_(std::move(loading_task_runner)) {}
+        queue_tail_position_(0) {}
 
   virtual ~SourceStream() override {}
 
@@ -321,8 +320,6 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   SourceStreamDataQueue data_queue_;  // Thread safe.
   size_t queue_lead_position_;        // Only used by v8 thread.
   size_t queue_tail_position_;  // Used by both threads; guarded by m_mutex.
-
-  RefPtr<WebTaskRunner> loading_task_runner_;
 };
 
 size_t ScriptStreamer::small_script_threshold_ = 30 * 1024;
@@ -467,7 +464,7 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
 
     DCHECK(!stream_);
     DCHECK(!source_);
-    stream_ = new SourceStream(loading_task_runner_.Get());
+    stream_ = new SourceStream;
     // m_source takes ownership of m_stream.
     source_ = WTF::WrapUnique(
         new v8::ScriptCompiler::StreamedSource(stream_, encoding_));
