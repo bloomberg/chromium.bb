@@ -51,10 +51,6 @@ TEST(JSTest, Core) {
   RunTest("core_unittest.js", true);
 }
 
-TEST(JSTest, Validation) {
-  RunTest("validation_unittest.js", true);
-}
-
 }  // namespace
 }  // namespace js
 }  // namespace edk

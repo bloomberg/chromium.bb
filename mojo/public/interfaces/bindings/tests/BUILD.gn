@@ -4,6 +4,44 @@
 
 import("../../../tools/bindings/mojom.gni")
 
+group("tests") {
+  testonly = true
+  deps = [
+    ":test_interfaces",
+  ]
+  data_deps = [
+    ":test_data",
+    ":test_data_list",
+  ]
+}
+
+copy("test_data") {
+  testonly = true
+  sources = [
+    "data/validation",
+  ]
+  outputs = [
+    "$root_gen_dir/layout_test_data/{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
+action_foreach("test_data_list") {
+  testonly = true
+  script = "//mojo/public/tools/bindings/gen_data_files_list.py"
+  sources = [
+    "data/validation",
+  ]
+  outputs = [
+    "$root_gen_dir/layout_test_data/{{source_root_relative_dir}}/{{source_file_part}}_index.txt",
+  ]
+  args = [
+    "-d",
+    rebase_path(sources[0], root_build_dir),
+    "-o",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
 mojom("test_interfaces") {
   testonly = true
   sources = [
