@@ -154,13 +154,7 @@ void NavigatorVR::FocusedFrameChanged() {
 
 void NavigatorVR::DidAddEventListener(LocalDOMWindow* window,
                                       const AtomicString& event_type) {
-  // TODO(mthiesse): Remove fullscreen requirement for presentation. See
-  // crbug.com/687369
-  if (event_type == EventTypeNames::vrdisplayactivate &&
-      GetSupplementable()->GetFrame() &&
-      GetSupplementable()->GetFrame()->GetDocument() &&
-      Fullscreen::FullscreenEnabled(
-          *GetSupplementable()->GetFrame()->GetDocument())) {
+  if (event_type == EventTypeNames::vrdisplayactivate) {
     listening_for_activate_ = true;
     Controller()->SetListeningForActivate(focused_);
   } else if (event_type == EventTypeNames::vrdisplayconnect) {
