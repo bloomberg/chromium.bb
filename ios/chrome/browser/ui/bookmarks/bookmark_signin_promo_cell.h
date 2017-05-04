@@ -9,6 +9,8 @@
 
 @class SigninPromoView;
 
+typedef void (^CloseButtonCallback)(void);
+
 // Sign-in promo cell based on SigninPromoView. This cell invites the user to
 // login without typing their password.
 @interface BookmarkSigninPromoCell : UICollectionViewCell
@@ -17,6 +19,7 @@
 + (NSString*)reuseIdentifier;
 
 @property(nonatomic, readonly) SigninPromoView* signinPromoView;
+@property(nonatomic, copy) CloseButtonCallback closeButtonAction;
 
 @end
 
