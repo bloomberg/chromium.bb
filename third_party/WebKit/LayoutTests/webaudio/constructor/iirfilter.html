@@ -5,8 +5,8 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
-    <script src="audionodeoptions.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
@@ -15,72 +15,58 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("initialize", function (taskDone) {
-        Should("context = new OfflineAudioContext(...)", function () {
-          context = new OfflineAudioContext(1, 1, 48000);
-        }).notThrow();
-
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("invalid constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        success = Should("new IIRFilterNode()", function () {
-          node = new IIRFilterNode();
-        }).throw("TypeError");
-        success = Should("new IIRFilterNode(1)", function () {
-          node = new IIRFilterNode(1) && success;
-        }).throw("TypeError");
-        success = Should("new IIRFilterNode(context, 42)", function () {
-          node = new IIRFilterNode(context, 42) && success;
-        }).throw("TypeError");
-
-        Should("Invalid constructors", success)
-            .summarize(
-                "correctly threw errors",
-                "did not throw errors in all cases");
-
-        taskDone();
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(should, 'IIRFilterNode', context);
+        task.done();
       });
 
-      audit.defineTask("test AudioNodeOptions", function (taskDone) {
-        testAudioNodeOptions(context, "IIRFilterNode", {
-          additionalOptions: {
-            feedforward: [1, 1],
-            feedback: [1, .5]
-          }
+      audit.define('default constructor', (task, should) => {
+        let prefix = 'node0';
+        let node = testDefaultConstructor(should, 'IIRFilterNode', context, {
+          prefix: prefix,
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          channelCount: 2,
+          channelCountMode: 'max',
+          channelInterpretation: 'speakers',
+          constructorOptions: {feedforward: [1], feedback: [1, -.9]}
         });
-        taskDone();
+
+        task.done();
       });
 
-      audit.defineTask("constructor options", function (taskDone) {
+      audit.define('test AudioNodeOptions', (task, should) => {
+        testAudioNodeOptions(
+            should, context, 'IIRFilterNode',
+            {additionalOptions: {feedforward: [1, 1], feedback: [1, .5]}});
+        task.done();
+      });
+
+      audit.define('constructor options', (task, should) => {
         var node;
-        var success = true;
 
-        var options = {
-          feedback: [1, .5]
-        };
-        success = Should("node = new IIRFilterNode(, " + JSON.stringify(options) + ")",
-          function () {
-            node = new IIRFilterNode(context, options);
-          }).throw("TypeError") && success;
+        var options = {feedback: [1, .5]};
+        should(
+            () => {
+              node = new IIRFilterNode(context, options);
+            },
+            'node = new IIRFilterNode(, ' + JSON.stringify(options) + ')')
+            .throw('TypeError');
 
-        options = {
-          feedforward: [1, 0.5]
-        }
-        success = Should("node = new IIRFilterNode(c, " + JSON.stringify(options) + ")",
-          function () {
-            node = new IIRFilterNode(context, options);
-          }).throw("TypeError") && success;
+        options = {feedforward: [1, 0.5]};
+        should(
+            () => {
+              node = new IIRFilterNode(context, options);
+            },
+            'node = new IIRFilterNode(c, ' + JSON.stringify(options) + ')')
+            .throw('TypeError');
 
-        Should("new AnalyserNode() with options", success)
-          .summarize(
-            "constructed with correct attributes",
-            "was not constructed correctly");
-
-        taskDone();
+        task.done();
       });
 
       // Test functionality of constructor.  This is needed because we have no
@@ -89,31 +75,30 @@
 
       // TODO(rtoy): This functionality test should be moved out to a separate
       // file.
-      audit.defineTask("functionality", function (taskDone) {
-        var options = {
-          feedback: [1, .5],
-          feedforward: [1, 1]
-        };
+      audit.define('functionality', (task, should) => {
+        var options = {feedback: [1, .5], feedforward: [1, 1]};
 
         // Create two-channel offline context; sample rate and length are fairly
         // arbitrary.  Channel 0 contains the test output and channel 1 contains
         // the expected output.
         var sampleRate = 48000;
         var renderLength = 0.125;
-        var testContext = new OfflineAudioContext(2, renderLength * sampleRate, sampleRate);
+        var testContext =
+            new OfflineAudioContext(2, renderLength * sampleRate, sampleRate);
 
         // The test node uses the constructor.  The reference node creates the
         // same filter but uses the old factory method.
         var testNode = new IIRFilterNode(testContext, options);
         var refNode = testContext.createIIRFilter(
-          Float32Array.from(options.feedforward),
-          Float32Array.from(options.feedback));
+            Float32Array.from(options.feedforward),
+            Float32Array.from(options.feedback));
 
         var source = testContext.createOscillator();
         source.connect(testNode);
         source.connect(refNode);
 
-        var merger = testContext.createChannelMerger(testContext.destination.channelCount);
+        var merger = testContext.createChannelMerger(
+            testContext.destination.channelCount);
 
         testNode.connect(merger, 0, 0);
         refNode.connect(merger, 0, 1);
@@ -121,18 +106,20 @@
         merger.connect(testContext.destination);
 
         source.start();
-        testContext.startRendering().then(function (resultBuffer) {
-          var actual = resultBuffer.getChannelData(0);
-          var expected = resultBuffer.getChannelData(1);
+        testContext.startRendering()
+            .then(function(resultBuffer) {
+              var actual = resultBuffer.getChannelData(0);
+              var expected = resultBuffer.getChannelData(1);
 
-          // The output from the two channels should be exactly equal because
-          // exactly the same IIR filter should have been created.
-          Should("Output of filter using new IIRFilter(...)", actual)
-            .beEqualToArray(expected);
-        }).then(taskDone);
+              // The output from the two channels should be exactly equal
+              // because exactly the same IIR filter should have been created.
+              should(actual, 'Output of filter using new IIRFilter(...)')
+                  .beEqualToArray(expected);
+            })
+            .then(() => task.done());
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
