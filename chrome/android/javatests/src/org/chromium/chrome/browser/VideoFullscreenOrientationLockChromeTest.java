@@ -12,6 +12,7 @@ import android.view.KeyEvent;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -98,6 +99,7 @@ public class VideoFullscreenOrientationLockChromeTest extends ChromeTabbedActivi
 
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
+    @RetryOnFailure // The final waitForContentsFullscreenState(false) is flaky - crbug.com/711005.
     public void testUnlockWithDownloadViewerActivity() throws Exception {
         if (DeviceFormFactor.isTablet(getInstrumentation().getContext())) return;
 
