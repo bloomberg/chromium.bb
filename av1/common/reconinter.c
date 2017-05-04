@@ -268,9 +268,9 @@ const uint8_t *av1_get_compound_type_mask_inverse(
     uint8_t *mask_buffer, int h, int w, int stride,
 #endif
     BLOCK_SIZE sb_type) {
-  assert(is_masked_compound_type(comp_data->type));
+  assert(is_masked_compound_type(comp_data->interinter_compound_type));
   (void)sb_type;
-  switch (comp_data->type) {
+  switch (comp_data->interinter_compound_type) {
 #if CONFIG_WEDGE
     case COMPOUND_WEDGE:
       return av1_get_contiguous_soft_mask(comp_data->wedge_index,
@@ -286,9 +286,9 @@ const uint8_t *av1_get_compound_type_mask_inverse(
 
 const uint8_t *av1_get_compound_type_mask(
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type) {
-  assert(is_masked_compound_type(comp_data->type));
+  assert(is_masked_compound_type(comp_data->interinter_compound_type));
   (void)sb_type;
-  switch (comp_data->type) {
+  switch (comp_data->interinter_compound_type) {
 #if CONFIG_WEDGE
     case COMPOUND_WEDGE:
       return av1_get_contiguous_soft_mask(comp_data->wedge_index,
@@ -596,7 +596,7 @@ static void build_masked_compound_wedge_extend(
   const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
   const uint8_t *mask;
   size_t mask_stride;
-  switch (comp_data->type) {
+  switch (comp_data->interinter_compound_type) {
     case COMPOUND_WEDGE:
       mask = av1_get_soft_mask(comp_data->wedge_index, comp_data->wedge_sign,
                                sb_type, wedge_offset_x, wedge_offset_y);
@@ -624,7 +624,7 @@ static void build_masked_compound_wedge_extend_highbd(
   const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
   const uint8_t *mask;
   size_t mask_stride;
-  switch (comp_data->type) {
+  switch (comp_data->interinter_compound_type) {
     case COMPOUND_WEDGE:
       mask = av1_get_soft_mask(comp_data->wedge_index, comp_data->wedge_sign,
                                sb_type, wedge_offset_x, wedge_offset_y);
@@ -699,7 +699,17 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      MACROBLOCKD *xd) {
   MODE_INFO *mi = xd->mi[0];
-  INTERINTER_COMPOUND_DATA *comp_data = &mi->mbmi.interinter_compound_data;
+  const INTERINTER_COMPOUND_DATA comp_data = {
+#if CONFIG_WEDGE
+    mi->mbmi.wedge_index,
+    mi->mbmi.wedge_sign,
+#endif  // CONFIG_WEDGE
+#if CONFIG_COMPOUND_SEGMENT
+    mi->mbmi.mask_type,
+    xd->seg_mask,
+#endif  // CONFIG_COMPOUND_SEGMENT
+    mi->mbmi.interinter_compound_type
+  };
 // The prediction filter types used here should be those for
 // the second reference block.
 #if CONFIG_DUAL_FILTER
@@ -726,13 +736,13 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif
                            xs, ys, xd);
 #if CONFIG_COMPOUND_SEGMENT
-  if (!plane && comp_data->type == COMPOUND_SEG) {
+  if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      build_compound_seg_mask_highbd(comp_data->seg_mask, comp_data->mask_type,
+      build_compound_seg_mask_highbd(comp_data.seg_mask, comp_data.mask_type,
                                      dst, dst_stride, tmp_dst, MAX_SB_SIZE,
                                      mi->mbmi.sb_type, h, w, xd->bd);
     else
-      build_compound_seg_mask(comp_data->seg_mask, comp_data->mask_type, dst,
+      build_compound_seg_mask(comp_data.seg_mask, comp_data.mask_type, dst,
                               dst_stride, tmp_dst, MAX_SB_SIZE,
                               mi->mbmi.sb_type, h, w);
   }
@@ -741,20 +751,20 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_SUPERTX
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     build_masked_compound_wedge_extend_highbd(
-        dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE, comp_data,
+        dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE, &comp_data,
         mi->mbmi.sb_type, wedge_offset_x, wedge_offset_y, h, w, xd->bd);
   else
     build_masked_compound_wedge_extend(
-        dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE, comp_data,
+        dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE, &comp_data,
         mi->mbmi.sb_type, wedge_offset_x, wedge_offset_y, h, w);
 #else
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     build_masked_compound_highbd(dst, dst_stride, dst, dst_stride, tmp_dst,
-                                 MAX_SB_SIZE, comp_data, mi->mbmi.sb_type, h, w,
-                                 xd->bd);
+                                 MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type, h,
+                                 w, xd->bd);
   else
     build_masked_compound(dst, dst_stride, dst, dst_stride, tmp_dst,
-                          MAX_SB_SIZE, comp_data, mi->mbmi.sb_type, h, w);
+                          MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type, h, w);
 #endif  // CONFIG_SUPERTX
 
 #else  // CONFIG_HIGHBITDEPTH
@@ -769,18 +779,18 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif
                            xs, ys, xd);
 #if CONFIG_COMPOUND_SEGMENT
-  if (!plane && comp_data->type == COMPOUND_SEG)
-    build_compound_seg_mask(comp_data->seg_mask, comp_data->mask_type, dst,
+  if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG)
+    build_compound_seg_mask(comp_data.seg_mask, comp_data.mask_type, dst,
                             dst_stride, tmp_dst, MAX_SB_SIZE, mi->mbmi.sb_type,
                             h, w);
 #endif  // CONFIG_COMPOUND_SEGMENT
 #if CONFIG_SUPERTX
   build_masked_compound_wedge_extend(dst, dst_stride, dst, dst_stride, tmp_dst,
-                                     MAX_SB_SIZE, comp_data, mi->mbmi.sb_type,
+                                     MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type,
                                      wedge_offset_x, wedge_offset_y, h, w);
 #else
   build_masked_compound(dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE,
-                        comp_data, mi->mbmi.sb_type, h, w);
+                        &comp_data, mi->mbmi.sb_type, h, w);
 #endif  // CONFIG_SUPERTX
 #endif  // CONFIG_HIGHBITDEPTH
 #if CONFIG_COMPOUND_SEGMENT
@@ -987,8 +997,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
                  (scaled_mv.col >> SUBPEL_BITS);
 
 #if CONFIG_EXT_INTER
-          if (ref &&
-              is_masked_compound_type(mi->mbmi.interinter_compound_data.type))
+          if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
             av1_make_masked_inter_predictor(
                 pre, pre_buf->stride, dst, dst_buf->stride, subpel_x, subpel_y,
                 sf, w, h, mi->mbmi.interp_filter, xs, ys,
@@ -1110,8 +1119,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
       conv_params.ref = ref;
 #if CONFIG_EXT_INTER
-      if (ref &&
-          is_masked_compound_type(mi->mbmi.interinter_compound_data.type))
+      if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
         av1_make_masked_inter_predictor(
             pre[ref], pre_buf->stride, dst, dst_buf->stride,
             subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, w, h,
@@ -1868,8 +1876,8 @@ void modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi) {
   if (is_interintra_pred(mbmi)) {
     mbmi->ref_frame[1] = NONE_FRAME;
   } else if (has_second_ref(mbmi) &&
-             is_masked_compound_type(mbmi->interinter_compound_data.type)) {
-    mbmi->interinter_compound_data.type = COMPOUND_AVERAGE;
+             is_masked_compound_type(mbmi->interinter_compound_type)) {
+    mbmi->interinter_compound_type = COMPOUND_AVERAGE;
     mbmi->ref_frame[1] = NONE_FRAME;
   }
 #endif  // CONFIG_EXT_INTER
@@ -2956,16 +2964,25 @@ static void build_wedge_inter_predictor_from_buf(
   MACROBLOCKD_PLANE *const pd = &xd->plane[plane];
   struct buf_2d *const dst_buf = &pd->dst;
   uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
-  INTERINTER_COMPOUND_DATA *comp_data = &mbmi->interinter_compound_data;
+  const INTERINTER_COMPOUND_DATA comp_data = {
+#if CONFIG_WEDGE
+    mbmi->wedge_index,
+    mbmi->wedge_sign,
+#endif  // CONFIG_WEDGE
+#if CONFIG_COMPOUND_SEGMENT
+    mbmi->mask_type,
+    xd->seg_mask,
+#endif  // CONFIG_COMPOUND_SEGMENT
+    mbmi->interinter_compound_type
+  };
 
-  if (is_compound &&
-      is_masked_compound_type(mbmi->interinter_compound_data.type)) {
+  if (is_compound && is_masked_compound_type(mbmi->interinter_compound_type)) {
 #if CONFIG_COMPOUND_SEGMENT
     if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
         build_compound_seg_mask_highbd(
-            comp_data->seg_mask, comp_data->mask_type,
+            comp_data.seg_mask, comp_data.mask_type,
             CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
             CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, mbmi->sb_type, h, w,
             xd->bd);
@@ -2982,26 +2999,26 @@ static void build_wedge_inter_predictor_from_buf(
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       build_masked_compound_wedge_extend_highbd(
           dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
-          CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, comp_data,
+          CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, &comp_data,
           mbmi->sb_type, wedge_offset_x, wedge_offset_y, h, w, xd->bd);
     else
 #endif  // CONFIG_HIGHBITDEPTH
       build_masked_compound_wedge_extend(
           dst, dst_buf->stride, ext_dst0, ext_dst_stride0, ext_dst1,
-          ext_dst_stride1, comp_data, mbmi->sb_type, wedge_offset_x,
+          ext_dst_stride1, &comp_data, mbmi->sb_type, wedge_offset_x,
           wedge_offset_y, h, w);
 #else
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       build_masked_compound_highbd(
           dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
-          CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, comp_data,
+          CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, &comp_data,
           mbmi->sb_type, h, w, xd->bd);
     else
 #endif  // CONFIG_HIGHBITDEPTH
       build_masked_compound(dst, dst_buf->stride, ext_dst0, ext_dst_stride0,
-                            ext_dst1, ext_dst_stride1, comp_data, mbmi->sb_type,
-                            h, w);
+                            ext_dst1, ext_dst_stride1, &comp_data,
+                            mbmi->sb_type, h, w);
 #endif  // CONFIG_SUPERTX
   } else {
 #if CONFIG_HIGHBITDEPTH
