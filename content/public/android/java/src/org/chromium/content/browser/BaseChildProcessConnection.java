@@ -74,7 +74,7 @@ public abstract class BaseChildProcessConnection {
 
     /** Used to create specialization connection instances. */
     interface Factory {
-        BaseChildProcessConnection create(Context context, int number, boolean sandboxed,
+        BaseChildProcessConnection create(Context context, boolean sandboxed,
                 DeathCallback deathCallback, String serviceClassName,
                 Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams);
     }
@@ -162,7 +162,6 @@ public abstract class BaseChildProcessConnection {
     // TODO(mnaganov): Get rid of it after the release of the next Android SDK.
     private static Boolean sNeedsExtrabindFlags[] = new Boolean[2];
     private final Context mContext;
-    private final int mServiceNumber;
     private final boolean mSandboxed;
     private final BaseChildProcessConnection.DeathCallback mDeathCallback;
     private final ComponentName mServiceName;
@@ -216,17 +215,16 @@ public abstract class BaseChildProcessConnection {
     // Process ID of the corresponding child process.
     private int mPid;
 
-    protected BaseChildProcessConnection(Context context, int number, boolean sandboxed,
+    protected BaseChildProcessConnection(Context context, boolean sandboxed,
             DeathCallback deathCallback, String serviceClassName,
             Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
         assert LauncherThread.runningOnLauncherThread();
         mContext = context;
-        mServiceNumber = number;
         mSandboxed = sandboxed;
         mDeathCallback = deathCallback;
         String packageName =
                 creationParams != null ? creationParams.getPackageName() : context.getPackageName();
-        mServiceName = new ComponentName(packageName, serviceClassName + mServiceNumber);
+        mServiceName = new ComponentName(packageName, serviceClassName);
         mChildProcessCommonParameters = childProcessCommonParameters;
         mCreationParams = creationParams;
     }
@@ -234,11 +232,6 @@ public abstract class BaseChildProcessConnection {
     public final Context getContext() {
         assert LauncherThread.runningOnLauncherThread();
         return mContext;
-    }
-
-    public final int getServiceNumber() {
-        assert LauncherThread.runningOnLauncherThread();
-        return mServiceNumber;
     }
 
     public final boolean isSandboxed() {

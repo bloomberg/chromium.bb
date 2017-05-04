@@ -4,12 +4,9 @@
 
 package org.chromium.content.browser;
 
-import android.annotation.TargetApi;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.os.Build;
-import android.util.LruCache;
 import android.util.SparseArray;
 
 import org.chromium.base.Log;
@@ -18,14 +15,14 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
-import java.util.Map;
+import java.util.LinkedList;
 
 /**
  * Manages oom bindings used to bound child services.
  * This object must only be accessed from the launcher thread.
  */
 class BindingManagerImpl implements BindingManager {
-    private static final String TAG = "cr.BindingManager";
+    private static final String TAG = "cr_BindingManager";
 
     // Low reduce ratio of moderate binding.
     private static final float MODERATE_BINDING_LOW_REDUCE_RATIO = 0.25f;
@@ -43,12 +40,15 @@ class BindingManagerImpl implements BindingManager {
     // createBindingManagerForTesting().
     private final boolean mIsLowMemoryDevice;
 
-    private static class ModerateBindingPool
-            extends LruCache<Integer, ManagedConnection> implements ComponentCallbacks2 {
+    private static class ModerateBindingPool implements ComponentCallbacks2 {
+        // Stores the connections in MRU order.
+        private final LinkedList<ManagedConnection> mConnections = new LinkedList<>();
+        private final int mMaxSize;
+
         private Runnable mDelayedClearer;
 
         public ModerateBindingPool(int maxSize) {
-            super(maxSize);
+            mMaxSize = maxSize;
         }
 
         @Override
@@ -57,8 +57,8 @@ class BindingManagerImpl implements BindingManager {
             LauncherThread.post(new Runnable() {
                 @Override
                 public void run() {
-                    Log.i(TAG, "onTrimMemory: level=%d, size=%d", level, size());
-                    if (size() <= 0) {
+                    Log.i(TAG, "onTrimMemory: level=%d, size=%d", level, mConnections.size());
+                    if (mConnections.isEmpty()) {
                         return;
                     }
                     if (level <= TRIM_MEMORY_RUNNING_MODERATE) {
@@ -69,7 +69,7 @@ class BindingManagerImpl implements BindingManager {
                         // This will be handled by |mDelayedClearer|.
                         return;
                     } else {
-                        evictAll();
+                        removeAllConnections();
                     }
                 }
             });
@@ -81,8 +81,8 @@ class BindingManagerImpl implements BindingManager {
             LauncherThread.post(new Runnable() {
                 @Override
                 public void run() {
-                    Log.i(TAG, "onLowMemory: evict %d bindings", size());
-                    evictAll();
+                    Log.i(TAG, "onLowMemory: evict %d bindings", mConnections.size());
+                    removeAllConnections();
                 }
             });
         }
@@ -90,25 +90,12 @@ class BindingManagerImpl implements BindingManager {
         @Override
         public void onConfigurationChanged(Configuration configuration) {}
 
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
         private void reduce(float reduceRatio) {
-            int oldSize = size();
+            int oldSize = mConnections.size();
             int newSize = (int) (oldSize * (1f - reduceRatio));
             Log.i(TAG, "Reduce connections from %d to %d", oldSize, newSize);
-            if (newSize == 0) {
-                evictAll();
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                trimToSize(newSize);
-            } else {
-                // Entries will be removed from the front because snapshot() returns ones ordered
-                // from least recently accessed to most recently accessed.
-                int count = 0;
-                for (Map.Entry<Integer, ManagedConnection> entry : snapshot().entrySet()) {
-                    remove(entry.getKey());
-                    ++count;
-                    if (count == oldSize - newSize) break;
-                }
-            }
+            removeOldConnections(oldSize - newSize);
+            assert mConnections.size() == newSize;
         }
 
         void addConnection(ManagedConnection managedConnection) {
@@ -116,9 +103,9 @@ class BindingManagerImpl implements BindingManager {
             if (connection != null && connection.isSandboxed()) {
                 managedConnection.addModerateBinding();
                 if (connection.isModerateBindingBound()) {
-                    put(connection.getServiceNumber(), managedConnection);
+                    addConnectionImpl(managedConnection);
                 } else {
-                    remove(connection.getServiceNumber());
+                    removeConnectionImpl(managedConnection);
                 }
             }
         }
@@ -126,31 +113,60 @@ class BindingManagerImpl implements BindingManager {
         void removeConnection(ManagedConnection managedConnection) {
             ManagedChildProcessConnection connection = managedConnection.mConnection;
             if (connection != null && connection.isSandboxed()) {
-                remove(connection.getServiceNumber());
+                removeConnectionImpl(managedConnection);
             }
         }
 
-        @Override
-        protected void entryRemoved(boolean evicted, Integer key, ManagedConnection oldValue,
-                ManagedConnection newValue) {
-            if (oldValue != newValue) {
-                oldValue.removeModerateBinding();
+        void removeAllConnections() {
+            removeOldConnections(mConnections.size());
+        }
+
+        int size() {
+            return mConnections.size();
+        }
+
+        private void addConnectionImpl(ManagedConnection managedConnection) {
+            // Note that the size of connections is currently fairly small (20).
+            // If it became bigger we should consider using an alternate data structure so we don't
+            // have to traverse the list every time.
+
+            // Remove the connection if it's already in the list, we'll add it at the head.
+            mConnections.removeFirstOccurrence(managedConnection);
+            if (mConnections.size() == mMaxSize) {
+                // Make room for the connection we are about to add.
+                removeOldConnections(1);
+            }
+            mConnections.add(0, managedConnection);
+            assert mConnections.size() <= mMaxSize;
+        }
+
+        private void removeConnectionImpl(ManagedConnection managedConnection) {
+            int index = mConnections.indexOf(managedConnection);
+            if (index != -1) {
+                ManagedConnection connection = mConnections.remove(index);
+                connection.mConnection.removeModerateBinding();
+            }
+        }
+
+        private void removeOldConnections(int numberOfConnections) {
+            assert numberOfConnections <= mConnections.size();
+            for (int i = 0; i < numberOfConnections; i++) {
+                ManagedConnection connection = mConnections.removeLast();
+                connection.mConnection.removeModerateBinding();
             }
         }
 
         void onSentToBackground(final boolean onTesting) {
-            if (size() == 0) return;
+            if (mConnections.isEmpty()) return;
             mDelayedClearer = new Runnable() {
                 @Override
                 public void run() {
-                    if (mDelayedClearer == null) return;
-                    mDelayedClearer = null;
-                    Log.i(TAG, "Release moderate connections: %d", size());
+                    Log.i(TAG, "Release moderate connections: %d", mConnections.size());
                     if (!onTesting) {
                         RecordHistogram.recordCountHistogram(
-                                "Android.ModerateBindingCount", size());
+                                "Android.ModerateBindingCount", mConnections.size());
                     }
-                    evictAll();
+                    removeAllConnections();
                 }
             };
             LauncherThread.postDelayed(mDelayedClearer, MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS);
@@ -459,7 +475,7 @@ class BindingManagerImpl implements BindingManager {
         assert LauncherThread.runningOnLauncherThread();
         if (mModerateBindingPool != null) {
             Log.i(TAG, "Release all moderate bindings: %d", mModerateBindingPool.size());
-            mModerateBindingPool.evictAll();
+            mModerateBindingPool.removeAllConnections();
         }
     }
 }

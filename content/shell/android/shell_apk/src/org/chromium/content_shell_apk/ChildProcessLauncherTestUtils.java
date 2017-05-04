@@ -79,13 +79,33 @@ public final class ChildProcessLauncherTestUtils {
         });
     }
 
+    // Retrieves the service number of the passed in connection from its service name, or -1 if the
+    // service number could not be determined.
+    public static int getConnectionServiceNumber(final BaseChildProcessConnection connection) {
+        String serviceName = getConnectionServiceName(connection);
+        // The service name ends up with the service number.
+        StringBuilder numberString = new StringBuilder();
+        for (int i = serviceName.length() - 1; i >= 0; i--) {
+            char c = serviceName.charAt(i);
+            if (!Character.isDigit(c)) {
+                break;
+            }
+            numberString.append(c);
+        }
+        try {
+            return Integer.decode(numberString.toString());
+        } catch (NumberFormatException nfe) {
+            return -1;
+        }
+    }
+
     // Retrieves the service number of the passed in connection on the launcher thread as to not
     // assert.
-    public static int getConnectionServiceNumber(final BaseChildProcessConnection connection) {
-        return runOnLauncherAndGetResult(new Callable<Integer>() {
+    public static String getConnectionServiceName(final BaseChildProcessConnection connection) {
+        return runOnLauncherAndGetResult(new Callable<String>() {
             @Override
-            public Integer call() {
-                return connection.getServiceNumber();
+            public String call() {
+                return connection.getServiceName().getClassName();
             }
         });
     }
