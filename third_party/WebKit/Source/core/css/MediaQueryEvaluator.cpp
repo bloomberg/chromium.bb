@@ -235,16 +235,13 @@ static bool ColorIndexMediaFeatureEval(const MediaQueryExpValue& value,
 static bool MonochromeMediaFeatureEval(const MediaQueryExpValue& value,
                                        MediaFeaturePrefix op,
                                        const MediaValues& media_values) {
-  if (!media_values.MonochromeBitsPerComponent()) {
-    if (value.IsValid()) {
-      float number;
-      return NumberValue(value, number) &&
-             CompareValue(0, static_cast<int>(number), op);
-    }
-    return false;
+  float number;
+  int bits_per_component = media_values.MonochromeBitsPerComponent();
+  if (value.IsValid()) {
+    return NumberValue(value, number) &&
+           CompareValue(bits_per_component, static_cast<int>(number), op);
   }
-
-  return ColorMediaFeatureEval(value, op, media_values);
+  return bits_per_component != 0;
 }
 
 static bool DisplayModeMediaFeatureEval(const MediaQueryExpValue& value,
