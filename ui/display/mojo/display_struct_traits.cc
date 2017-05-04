@@ -4,8 +4,6 @@
 
 #include "ui/display/mojo/display_struct_traits.h"
 
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
-
 namespace mojo {
 
 display::mojom::Rotation

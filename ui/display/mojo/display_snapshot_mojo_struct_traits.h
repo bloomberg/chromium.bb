@@ -5,9 +5,13 @@
 #ifndef UI_DISPLAY_MOJO_DISPLAY_SNAPSHOT_MOJO_STRUCT_TRAITS_H_
 #define UI_DISPLAY_MOJO_DISPLAY_SNAPSHOT_MOJO_STRUCT_TRAITS_H_
 
+#include "ipc/ipc_message_utils.h"
+#include "ui/display/mojo/display_constants_struct_traits.h"
+#include "ui/display/mojo/display_mode_struct_traits.h"
 #include "ui/display/mojo/display_snapshot_mojo.mojom.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
 
