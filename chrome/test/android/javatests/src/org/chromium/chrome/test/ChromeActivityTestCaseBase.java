@@ -59,6 +59,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     @Override
     protected void tearDown() throws Exception {
         mTestCommon.tearDown();
+        super.tearDown();
     }
 
     /**
