@@ -2569,11 +2569,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
   // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
 
-  if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
-                               "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
-    std::vector<ui::LatencyInfo>().swap(frame.metadata.latency_info);
-  }
-
   last_frame_metadata_ = frame.metadata.Clone();
 
   latency_tracker_.OnSwapCompositorFrame(&frame.metadata.latency_info);
