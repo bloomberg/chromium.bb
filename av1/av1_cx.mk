@@ -38,6 +38,7 @@ AV1_CX_SRCS-yes += encoder/ethread.h
 AV1_CX_SRCS-yes += encoder/ethread.c
 AV1_CX_SRCS-yes += encoder/extend.c
 AV1_CX_SRCS-yes += encoder/firstpass.c
+AV1_CX_SRCS-yes += encoder/mathutils.h
 AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += ../third_party/fastfeat/fast.h
 AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += ../third_party/fastfeat/nonmax.c
 AV1_CX_SRCS-$(CONFIG_GLOBAL_MOTION) += ../third_party/fastfeat/fast_9.c

@@ -31,6 +31,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/picklpf.h"
 #include "av1/encoder/pickrst.h"
+#include "av1/encoder/mathutils.h"
 
 // When set to RESTORE_WIENER or RESTORE_SGRPROJ only those are allowed.
 // When set to RESTORE_NONE (0) we allow switchable.
@@ -329,8 +330,10 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
 #if CONFIG_HIGHBITDEPTH
     }
 #endif
+    aom_clear_system_state();
     get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
                       bit_depth, flt1, width, flt2, width, exq);
+    aom_clear_system_state();
     encode_xq(exq, exqd);
     err =
         get_pixel_proj_error(src8, width, height, src_stride, dat8, dat_stride,
@@ -559,46 +562,6 @@ static void compute_stats_highbd(uint8_t *dgd8, uint8_t *src8, int h_start,
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
-
-// Solves Ax = b, where x and b are column vectors
-static int linsolve(int n, double *A, int stride, double *b, double *x) {
-  int i, j, k;
-  double c;
-
-  aom_clear_system_state();
-
-  // Forward elimination
-  for (k = 0; k < n - 1; k++) {
-    // Bring the largest magitude to the diagonal position
-    for (i = n - 1; i > k; i--) {
-      if (fabs(A[(i - 1) * stride + k]) < fabs(A[i * stride + k])) {
-        for (j = 0; j < n; j++) {
-          c = A[i * stride + j];
-          A[i * stride + j] = A[(i - 1) * stride + j];
-          A[(i - 1) * stride + j] = c;
-        }
-        c = b[i];
-        b[i] = b[i - 1];
-        b[i - 1] = c;
-      }
-    }
-    for (i = k; i < n - 1; i++) {
-      if (fabs(A[k * stride + k]) < 1e-10) return 0;
-      c = A[(i + 1) * stride + k] / A[k * stride + k];
-      for (j = 0; j < n; j++) A[(i + 1) * stride + j] -= c * A[k * stride + j];
-      b[i + 1] -= c * b[k];
-    }
-  }
-  // Backward substitution
-  for (i = n - 1; i >= 0; i--) {
-    if (fabs(A[i * stride + i]) < 1e-10) return 0;
-    c = 0;
-    for (j = i + 1; j <= n - 1; j++) c += A[i * stride + j] * x[j];
-    x[i] = (b[i] - c) / A[i * stride + i];
-  }
-
-  return 1;
-}
 
 static INLINE int wrap_index(int i) {
   return (i >= WIENER_HALFWIN1 ? WIENER_WIN - 1 - i : i);
@@ -910,6 +873,7 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
       type[tile_idx] = RESTORE_NONE;
       continue;
     }
+    aom_clear_system_state();
 
     rsi[plane].restoration_type[tile_idx] = RESTORE_WIENER;
     err = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
@@ -1052,6 +1016,7 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
       type[tile_idx] = RESTORE_NONE;
       continue;
     }
+    aom_clear_system_state();
 
     rsi->restoration_type[tile_idx] = RESTORE_WIENER;
     err = try_restoration_tile(src, cpi, rsi, 1, partial_frame, tile_idx, 0, 0,
