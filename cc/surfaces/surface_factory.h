@@ -86,8 +86,8 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
   void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDependenciesChanged(
       Surface* surface,
-      const SurfaceDependencies& added_dependencies,
-      const SurfaceDependencies& removed_dependencies) override;
+      const base::flat_set<SurfaceId>& added_dependencies,
+      const base::flat_set<SurfaceId>& removed_dependencies) override;
   void OnSurfaceDiscarded(Surface* surface) override;
 
   std::unique_ptr<Surface> Create(const LocalSurfaceId& local_surface_id);

@@ -159,8 +159,8 @@ void SurfaceDependencyTracker::OnSurfaceActivated(Surface* surface) {
 
 void SurfaceDependencyTracker::OnSurfaceDependenciesChanged(
     Surface* surface,
-    const SurfaceDependencies& added_dependencies,
-    const SurfaceDependencies& removed_dependencies) {
+    const base::flat_set<SurfaceId>& added_dependencies,
+    const base::flat_set<SurfaceId>& removed_dependencies) {
   // Update the |blocked_surfaces_from_dependency_| map with the changes in
   // dependencies.
   for (const SurfaceId& surface_id : added_dependencies)

@@ -11,8 +11,6 @@
 
 namespace cc {
 
-using SurfaceDependencies = base::flat_set<SurfaceId>;
-
 class Surface;
 
 // Clients that wish to observe when the state of a pending CompostiorFrame
@@ -26,8 +24,8 @@ class CC_SURFACES_EXPORT PendingFrameObserver {
   // have changed.
   virtual void OnSurfaceDependenciesChanged(
       Surface* surface,
-      const SurfaceDependencies& added_dependencies,
-      const SurfaceDependencies& removed_dependencies) = 0;
+      const base::flat_set<SurfaceId>& added_dependencies,
+      const base::flat_set<SurfaceId>& removed_dependencies) = 0;
 
   // Called when |surface| is being destroyed.
   virtual void OnSurfaceDiscarded(Surface* surface) = 0;
