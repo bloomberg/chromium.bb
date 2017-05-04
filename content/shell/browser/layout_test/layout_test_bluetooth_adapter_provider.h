@@ -55,15 +55,6 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetPresentAdapter();
 
-  // |NotPresentAdapter|
-  // Inherits from |BaseAdapter|
-  // Devices added:
-  //  None.
-  // Mock Functions:
-  //  - IsPresent: Returns false
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetNotPresentAdapter();
-
   // |PoweredAdapter|
   // Inherits from |PresentAdapter|
   // Devices added:
@@ -72,15 +63,6 @@ class LayoutTestBluetoothAdapterProvider {
   //  - IsPowered: Returns true
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetPoweredAdapter();
-
-  // |NotPoweredAdapter|
-  // Inherits from |PresentAdapter|
-  // Devices added:
-  //  None.
-  // Mock Functions:
-  //  - IsPowered: Returns false
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetNotPoweredAdapter();
 
   // |ScanFilterCheckingAdapter|
   // Inherits from |PoweredAdapter|

@@ -174,10 +174,6 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     const std::string& fake_adapter_name) {
   if (fake_adapter_name == "BaseAdapter")
     return GetBaseAdapter();
-  if (fake_adapter_name == "NotPresentAdapter")
-    return GetNotPresentAdapter();
-  if (fake_adapter_name == "NotPoweredAdapter")
-    return GetNotPoweredAdapter();
   if (fake_adapter_name == "ScanFilterCheckingAdapter")
     return GetScanFilterCheckingAdapter();
   if (fake_adapter_name == "EmptyAdapter")
@@ -301,27 +297,9 @@ LayoutTestBluetoothAdapterProvider::GetPresentAdapter() {
 
 // static
 scoped_refptr<NiceMockBluetoothAdapter>
-LayoutTestBluetoothAdapterProvider::GetNotPresentAdapter() {
-  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetBaseAdapter());
-  ON_CALL(*adapter, IsPresent()).WillByDefault(Return(false));
-
-  return adapter;
-}
-
-// static
-scoped_refptr<NiceMockBluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetPoweredAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPresentAdapter());
   ON_CALL(*adapter, IsPowered()).WillByDefault(Return(true));
-
-  return adapter;
-}
-
-// static
-scoped_refptr<NiceMockBluetoothAdapter>
-LayoutTestBluetoothAdapterProvider::GetNotPoweredAdapter() {
-  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPresentAdapter());
-  ON_CALL(*adapter, IsPowered()).WillByDefault(Return(false));
 
   return adapter;
 }
