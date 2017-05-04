@@ -70,7 +70,7 @@ class TestDumpReaderWin(unittest.TestCase):
         dump_reader = DumpReaderWin(host, build_dir)
 
         self.assertTrue(dump_reader.check_is_functional())
-        host.executive.calls = []
+        host.executive.full_calls = []
         self.assertEqual("MOCK output of child process", dump_reader._get_stack_from_dump(dump_file))
         self.assertEqual(1, len(host.executive.calls))
         cmd_line = " ".join(host.executive.calls[0])

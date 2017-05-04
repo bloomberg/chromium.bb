@@ -157,12 +157,22 @@ class LinuxPort(base.Port):
             _log.critical('Failed to find a free display to start Xvfb.')
             return
 
-        _log.info('Starting Xvfb with display "%s".', display)
+        # Parts of Xvfb use a hard-coded "/tmp" for its temporary directory.
+        # This can cause a failure when those parts expect to hardlink against
+        # files that were created in "TEMPDIR" / "TMPDIR".
+        #
+        # See: https://crbug.com/715848
+        env = self.host.environ.copy()
+        if env.get('TMPDIR') and env['TMPDIR'] != '/tmp':
+            _log.info('Overriding TMPDIR to "/tmp" for Xvfb, was: %s', env['TMPDIR'])
+            env['TMPDIR'] = '/tmp'
+
+        _log.debug('Starting Xvfb with display "%s".', display)
         self._xvfb_stdout = tempfile.NamedTemporaryFile(delete=False)
         self._xvfb_stderr = tempfile.NamedTemporaryFile(delete=False)
         self._xvfb_process = self.host.executive.popen(
             ['Xvfb', display, '-screen', '0', '1280x800x24', '-ac', '-dpi', '96'],
-            stdout=self._xvfb_stdout, stderr=self._xvfb_stderr)
+            stdout=self._xvfb_stdout, stderr=self._xvfb_stderr, env=env)
 
         # By setting DISPLAY here, the individual worker processes will
         # get the right DISPLAY. Note, if this environment could be passed

@@ -136,6 +136,30 @@ class LinuxPortTest(port_testcase.PortTestCase):
         env = port.setup_environ_for_server()
         self.assertEqual(env['DISPLAY'], ':99')
 
+    def test_setup_test_run_starts_xvfb_clears_tmpdir(self):
+        def run_command_fake(args):
+            if args[0] == 'xdpyinfo':
+                if '-display' in args:
+                    return 1
+            return 0
+
+        port = self.make_port()
+        port.host.environ['TMPDIR'] = '/foo/bar'
+        port.host.executive = MockExecutive(
+            run_command_fn=run_command_fake)
+        port.setup_test_run()
+
+        self.assertEqual(
+            port.host.executive.calls,
+            [
+                ['xdpyinfo', '-display', ':99'],
+                ['Xvfb', ':99', '-screen', '0', '1280x800x24', '-ac', '-dpi', '96'],
+                ['xdpyinfo'],
+            ])
+        self.assertEqual(port.host.executive.full_calls[1].env.get('TMPDIR'), '/tmp')
+        env = port.setup_environ_for_server()
+        self.assertEqual(env['DISPLAY'], ':99')
+
     def test_setup_test_runs_finds_free_display(self):
         def run_command_fake(args):
             if args[0] == 'xdpyinfo':

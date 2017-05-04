@@ -1138,9 +1138,9 @@ class MockLineRemovingExecutive(MockExecutive):
                 out = json.dumps({'remove-lines': [{'test': test, 'port_name': port_name}]})
             command_outputs.append([0, out, ''])
 
-        new_calls = self.calls[num_previous_calls:]
-        self.calls = self.calls[:num_previous_calls]
-        self.calls.append(new_calls)
+        new_calls = self.full_calls[num_previous_calls:]
+        self.full_calls = self.full_calls[:num_previous_calls]
+        self.full_calls.append(new_calls)
         return command_outputs
 
 
