@@ -32,6 +32,8 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
  protected:
   ~AwSafeBrowsingUIManager() override;
 
+  void ShowBlockingPageForResource(const UnsafeResource& resource) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AwSafeBrowsingUIManager);
 };
