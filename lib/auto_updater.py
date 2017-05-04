@@ -404,14 +404,6 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       raise RootfsUpdateError('Update engine is not idle. Status: %s' % status)
 
 
-  def _CheckDeviceHasPython2(self):
-    """Check whether |device| has python version >= 2.7."""
-    version_check = self.device.RunCommand(
-        ['python', '-c', '"import sys; print (sys.version_info >= (2,7))"'],
-        capture_output=True, log_output=True).output.strip()
-    return version_check == 'True'
-
-
   def _GetDevicePythonSysPath(self):
     """Get python sys.path of the given |device|."""
     sys_path = self.device.RunCommand(
@@ -454,12 +446,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     """Transfer third-party packages related to devserver package."""
     logging.info('Copying third-party packages to device...')
 
-    # Only transfer third-party package when current python version on host is
-    # older than 2.7.
     try:
-      if self._CheckDeviceHasPython2():
-        return
-
       # Copy third-party packages to pythonX.X/site(dist)-packages
       third_party_host_dir = self._FindDevicePythonPackagesDir()
       package_dir = os.path.join(self.tempdir, 'third_party')
