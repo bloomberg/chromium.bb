@@ -722,10 +722,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
     # Linux NVIDIA
-    # Explicitly specifying GT 610 to avoid conflict with Quadro P400 rule
-    self.Flaky('deqp/functional/gles3/multisample.html',
-        ['linux', ('nvidia', 0x104a)], bug=714207)
-
     # This test is flaky both with and without ANGLE.
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
