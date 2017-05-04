@@ -1,7 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -12,13 +13,12 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
 using namespace HTMLNames;
 
-class AffectedByFocusTest : public ::testing::Test {
+class AffectedByPseudoTest : public ::testing::Test {
  protected:
   struct ElementResult {
     const blink::HTMLQualifiedName tag;
@@ -31,8 +31,8 @@ class AffectedByFocusTest : public ::testing::Test {
   Document& GetDocument() const { return *document_; }
 
   void SetHtmlInnerHTML(const char* html_content);
-
-  void CheckElements(ElementResult expected[], unsigned expected_count) const;
+  void CheckElementsForFocus(ElementResult expected[],
+                             unsigned expected_count) const;
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
@@ -40,19 +40,20 @@ class AffectedByFocusTest : public ::testing::Test {
   Persistent<Document> document_;
 };
 
-void AffectedByFocusTest::SetUp() {
+void AffectedByPseudoTest::SetUp() {
   dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
   document_ = &dummy_page_holder_->GetDocument();
   DCHECK(document_);
 }
 
-void AffectedByFocusTest::SetHtmlInnerHTML(const char* html_content) {
+void AffectedByPseudoTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
-void AffectedByFocusTest::CheckElements(ElementResult expected[],
-                                        unsigned expected_count) const {
+void AffectedByPseudoTest::CheckElementsForFocus(
+    ElementResult expected[],
+    unsigned expected_count) const {
   unsigned i = 0;
   HTMLElement* element = GetDocument().body();
 
@@ -74,7 +75,7 @@ void AffectedByFocusTest::CheckElements(ElementResult expected[],
 // affectedByFocus. Check that all elements in a document with no :focus rules
 // gets the affectedByFocus set on ComputedStyle and not
 // childrenOrSiblingsAffectedByFocus.
-TEST_F(AffectedByFocusTest, UAUniversalFocusRule) {
+TEST_F(AffectedByPseudoTest, UAUniversalFocusRule) {
   ElementResult expected[] = {{bodyTag, true, false},
                               {divTag, true, false},
                               {divTag, true, false},
@@ -87,12 +88,12 @@ TEST_F(AffectedByFocusTest, UAUniversalFocusRule) {
       "<div><span></span></div>"
       "</body>");
 
-  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 // ":focus div" will mark ascendants of all divs with
 // childrenOrSiblingsAffectedByFocus.
-TEST_F(AffectedByFocusTest, FocusedAscendant) {
+TEST_F(AffectedByPseudoTest, FocusedAscendant) {
   ElementResult expected[] = {{bodyTag, true, true},
                               {divTag, true, true},
                               {divTag, true, false},
@@ -108,12 +109,12 @@ TEST_F(AffectedByFocusTest, FocusedAscendant) {
       "<div><span></span></div>"
       "</body>");
 
-  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 // "body:focus div" will mark the body element with
 // childrenOrSiblingsAffectedByFocus.
-TEST_F(AffectedByFocusTest, FocusedAscendantWithType) {
+TEST_F(AffectedByPseudoTest, FocusedAscendantWithType) {
   ElementResult expected[] = {{bodyTag, true, true},
                               {divTag, true, false},
                               {divTag, true, false},
@@ -129,7 +130,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithType) {
       "<div><span></span></div>"
       "</body>");
 
-  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 // ":not(body):focus div" should not mark the body element with
@@ -137,7 +138,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithType) {
 // Note that currently ":focus:not(body)" does not do the same. Then the :focus
 // is checked and the childrenOrSiblingsAffectedByFocus flag set before the
 // negated type selector is found.
-TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType) {
+TEST_F(AffectedByPseudoTest, FocusedAscendantWithNegatedType) {
   ElementResult expected[] = {{bodyTag, true, false},
                               {divTag, true, true},
                               {divTag, true, false},
@@ -153,7 +154,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType) {
       "<div><span></span></div>"
       "</body>");
 
-  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
 // Checking current behavior for ":focus + div", but this is a BUG or at best
@@ -162,7 +163,7 @@ TEST_F(AffectedByFocusTest, FocusedAscendantWithNegatedType) {
 // the whole sub-tree of the focused element will have styles recalculated even
 // though none of the children are affected. There are other mechanisms that
 // makes sure the sibling also gets its styles recalculated.
-TEST_F(AffectedByFocusTest, FocusedSibling) {
+TEST_F(AffectedByPseudoTest, FocusedSibling) {
   ElementResult expected[] = {{bodyTag, true, false},
                               {divTag, true, true},
                               {spanTag, true, false},
@@ -179,10 +180,10 @@ TEST_F(AffectedByFocusTest, FocusedSibling) {
       "<div></div>"
       "</body>");
 
-  CheckElements(expected, sizeof(expected) / sizeof(ElementResult));
+  CheckElementsForFocus(expected, sizeof(expected) / sizeof(ElementResult));
 }
 
-TEST_F(AffectedByFocusTest, AffectedByFocusUpdate) {
+TEST_F(AffectedByPseudoTest, AffectedByFocusUpdate) {
   // Check that when focussing the outer div in the document below, you only
   // get a single element style recalc.
 
@@ -214,7 +215,7 @@ TEST_F(AffectedByFocusTest, AffectedByFocusUpdate) {
   ASSERT_EQ(1U, element_count);
 }
 
-TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
+TEST_F(AffectedByPseudoTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
   // Check that when focussing the outer div in the document below, you get a
   // style recalc for the whole subtree.
 
@@ -246,7 +247,7 @@ TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
   ASSERT_EQ(11U, element_count);
 }
 
-TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate) {
+TEST_F(AffectedByPseudoTest, InvalidationSetFocusUpdate) {
   // Check that when focussing the outer div in the document below, you get a
   // style recalc for the outer div and the class=a div only.
 
@@ -278,7 +279,7 @@ TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate) {
   ASSERT_EQ(2U, element_count);
 }
 
-TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate) {
+TEST_F(AffectedByPseudoTest, NoInvalidationSetFocusUpdate) {
   // Check that when focussing the outer div in the document below, you get a
   // style recalc for the outer div only. The invalidation set for :focus will
   // include 'a', but the id=d div should be affectedByFocus, not
@@ -312,7 +313,7 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate) {
   ASSERT_EQ(1U, element_count);
 }
 
-TEST_F(AffectedByFocusTest, FocusWithinCommonAncestor) {
+TEST_F(AffectedByPseudoTest, FocusWithinCommonAncestor) {
   // Check that when changing the focus between 2 elements we don't need a style
   // recalc for all the ancestors affected by ":focus-within".
 
@@ -348,6 +349,18 @@ TEST_F(AffectedByFocusTest, FocusWithinCommonAncestor) {
   // Only "focusme1" & "focusme2" elements need a recalc thanks to the common
   // ancestor strategy.
   EXPECT_EQ(2U, element_count);
+}
+
+TEST_F(AffectedByPseudoTest, HoverScrollbar) {
+  SetHtmlInnerHTML(
+      "<style>div::-webkit-scrollbar:hover { color: pink; }</style>"
+      "<div id=div1></div>");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument()
+                   .getElementById("div1")
+                   ->GetComputedStyle()
+                   ->AffectedByHover());
 }
 
 }  // namespace blink
