@@ -21,6 +21,7 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -165,7 +166,8 @@ class GenericURLRequestJobTest : public testing::Test {
     json_fetch_reply_map_[url.spec()] = json_reply;
 
     std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, &request_delegate_));
+        url, net::DEFAULT_PRIORITY, &request_delegate_,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
     base::RunLoop().RunUntilIdle();
     return request;
@@ -178,7 +180,8 @@ class GenericURLRequestJobTest : public testing::Test {
     json_fetch_reply_map_[url.spec()] = json_reply;
 
     std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, &request_delegate_));
+        url, net::DEFAULT_PRIORITY, &request_delegate_,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method("POST");
     request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
         base::MakeUnique<net::UploadBytesElementReader>(post_data.data(),
