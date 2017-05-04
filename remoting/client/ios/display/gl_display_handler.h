@@ -11,6 +11,7 @@
 #import "remoting/client/display/sys_opengl.h"
 
 #include "base/memory/ptr_util.h"
+#include "remoting/client/view_matrix.h"
 
 namespace remoting {
 
@@ -24,6 +25,16 @@ class CursorShapeStub;
 }  // namespace protocol
 }  // namespace remoting
 
+// This protocol is for receiving notifications from the renderer when its state
+// changes. Implementations can use this to reposition viewport, process
+// animations, etc.
+@protocol GlDisplayHandlerDelegate<NSObject>
+
+// Notifies the delegate that the size of the desktop image has changed.
+- (void)canvasSizeChanged:(CGSize)size;
+
+@end
+
 @interface GlDisplayHandler : NSObject {
 }
 
@@ -35,10 +46,16 @@ class CursorShapeStub;
 // Called every time the GLKView dimension is initialized or changed.
 - (void)onSurfaceChanged:(const CGRect&)frame;
 
+- (void)onPixelTransformationChanged:(const remoting::ViewMatrix&)matrix;
+
 - (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer;
 - (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub;
 
 - (EAGLContext*)GetEAGLContext;
+
+// This is write-only but @property doesn't support write-only modifier.
+@property id<GlDisplayHandlerDelegate> delegate;
+- (id<GlDisplayHandlerDelegate>)delegate UNAVAILABLE_ATTRIBUTE;
 
 @end
 

@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #import "remoting/client/ios/key_input.h"
 
+@class RemotingClient;
+
 typedef NS_ENUM(NSInteger, HostInputScheme) {
   // Mouse cursor is shown
   // Dragging or Panning, moves the mouse cursor
@@ -42,10 +44,13 @@ typedef NS_ENUM(NSInteger, MouseButton) {
   UIScreenEdgePanGestureRecognizer* _edgeGesture;
   UISwipeGestureRecognizer* _swipeGesture;
 
+  __weak UIView* _view;
+  __weak RemotingClient* _client;
+
   HostInputScheme _inputScheme;
 }
 
-- (instancetype)initWithView:(UIView*)view;
+- (instancetype)initWithView:(UIView*)view client:(RemotingClient*)client;
 
 // Zoom in/out
 - (IBAction)pinchGestureTriggered:(UIPinchGestureRecognizer*)sender;

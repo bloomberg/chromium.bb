@@ -7,10 +7,16 @@
 #endif
 
 #import "remoting/client/ios/client_gestures.h"
+#import "remoting/client/ios/session/remoting_client.h"
+
+#include "remoting/client/gesture_interpreter.h"
 
 @implementation ClientGestures
 
-- (id)initWithView:(UIView*)view {
+- (instancetype)initWithView:(UIView*)view client:(RemotingClient*)client {
+  _view = view;
+  _client = client;
+
   _inputScheme = HostInputSchemeTouch;
 
   _longPressRecognizer = [[UILongPressGestureRecognizer alloc]
@@ -99,11 +105,12 @@
 // Resize the view of the desktop - Zoom in/out.  This can occur during a Pan.
 - (IBAction)pinchGestureTriggered:(UIPinchGestureRecognizer*)sender {
   // LOG_TRACE(INFO) << "pinchGestureTriggered";
-  // if ([sender state] == UIGestureRecognizerStateChanged) {
-  //   [self applySceneChange:CGPointMake(0.0, 0.0) scaleBy:sender.scale];
-  //
-  //   sender.scale = 1.0;  // reset scale so next iteration is a relative ratio
-  // }
+  if ([sender state] == UIGestureRecognizerStateChanged) {
+    CGPoint pivot = [sender locationInView:_view];
+    _client.gestureInterpreter->Pinch(pivot.x, pivot.y, sender.scale);
+
+    sender.scale = 1.0;  // reset scale so next iteration is a relative ratio
+  }
 }
 
 - (IBAction)tapGestureTriggered:(UITapGestureRecognizer*)sender {
@@ -121,7 +128,19 @@
 
 // Change position of scene.  This can occur during a pinch or long press.
 // Or perform a Mouse Wheel Scroll.
+// TODO(yuweih): The comment above doesn't seem right. Non-panning gestures
+//     should be moved out of this method.
 - (IBAction)panGestureTriggered:(UIPanGestureRecognizer*)sender {
+  // TODO(yuweih): Need deceleration animation, probably in another class.
+  if ([sender state] == UIGestureRecognizerStateChanged &&
+      [sender numberOfTouches] == 1) {
+    CGPoint translation = [sender translationInView:_view];
+    _client.gestureInterpreter->Pan(translation.x, translation.y);
+
+    // Reset translation so next iteration is relative
+    [sender setTranslation:CGPointZero inView:_view];
+  }
+
   // LOG_TRACE(INFO) << "panGestureTriggered";
   //   CGPoint translation = [sender translationInView:self.view];
   //   // If we start with 2 touches, and the pinch gesture is not in progress

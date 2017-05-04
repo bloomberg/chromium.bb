@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "remoting/client/ios/display/gl_display_handler.h"
+
 @class RemotingClient;
 
 // We don't inherit it from GLKViewController since it uses its rendering loop,
