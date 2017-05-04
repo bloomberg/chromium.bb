@@ -32,14 +32,6 @@ class NetworkScreenUnitTest : public testing::Test {
  public:
   NetworkScreenUnitTest() {}
 
-  base::ScopedMockTimeMessageLoopTaskRunner* GetTestMessageLoopTaskRunner() {
-    return &runner_;
-  }
-
-  void FastForwardTime(base::TimeDelta time) {
-    runner_.task_runner()->FastForwardBy(time);
-  }
-
   // testing::Test:
   void SetUp() override {
     // Initialize the thread manager.
@@ -83,7 +75,6 @@ class NetworkScreenUnitTest : public testing::Test {
  private:
   // Test versions of core browser infrastructure.
   content::TestBrowserThreadBundle threads_;
-  base::ScopedMockTimeMessageLoopTaskRunner runner_;
 
   // More accessory objects needed by NetworkScreen.
   MockNetworkView mock_view_;
@@ -98,10 +89,6 @@ class NetworkScreenUnitTest : public testing::Test {
 };
 
 TEST_F(NetworkScreenUnitTest, ContinuesAutomatically) {
-  // Verify that we are using the right TaskRunner.
-  EXPECT_EQ(GetTestMessageLoopTaskRunner()->task_runner(),
-            base::MessageLoop::current()->task_runner().get());
-
   // Set expectation that NetworkScreen will finish.
   EXPECT_CALL(mock_base_screen_delegate_,
               OnExit(_, ScreenExitCode::NETWORK_CONNECTED, _))
@@ -113,18 +100,11 @@ TEST_F(NetworkScreenUnitTest, ContinuesAutomatically) {
       .WillRepeatedly((Return(true)));
   network_screen_->UpdateStatus();
 
-  // Fast forward time by 3 minutes.
-  FastForwardTime(base::TimeDelta::FromMinutes(3));
-
   // Check that we continued once
   EXPECT_EQ(1, network_screen_->continue_attempts_);
 }
 
 TEST_F(NetworkScreenUnitTest, ContinuesOnlyOnce) {
-  // Verify that we are using the right TaskRunner.
-  EXPECT_EQ(GetTestMessageLoopTaskRunner()->task_runner(),
-            base::MessageLoop::current()->task_runner().get());
-
   // Set expectation that NetworkScreen will finish.
   EXPECT_CALL(mock_base_screen_delegate_,
               OnExit(_, ScreenExitCode::NETWORK_CONNECTED, _))
@@ -141,17 +121,11 @@ TEST_F(NetworkScreenUnitTest, ContinuesOnlyOnce) {
   // Stop waiting for net0.
   network_screen_->StopWaitingForConnection(base::ASCIIToUTF16("net0"));
 
-  // Fast forward time by 3 minutes.
-  FastForwardTime(base::TimeDelta::FromMinutes(3));
-
   // Check that we have continued exactly once.
   ASSERT_EQ(1, network_screen_->continue_attempts_);
 
   // Stop waiting for another network, net1.
   network_screen_->StopWaitingForConnection(base::ASCIIToUTF16("net1"));
-
-  // Fast forward time by 3 minutes.
-  FastForwardTime(base::TimeDelta::FromMinutes(3));
 
   // Check that we have still continued only once.
   EXPECT_EQ(1, network_screen_->continue_attempts_);
