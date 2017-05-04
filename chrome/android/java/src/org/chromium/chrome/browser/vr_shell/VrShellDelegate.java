@@ -614,7 +614,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private boolean exitWebVRPresent() {
         if (!mInVr) return false;
         mVrShell.setWebVrModeEnabled(false);
-        if (!isVrShellEnabled(mVrSupportLevel)) {
+        if (!isVrShellEnabled(mVrSupportLevel) || !activitySupportsVrBrowsing(mActivity)) {
             shutdownVr(false /* isPausing */, true /* showTransition */);
         }
         return true;
