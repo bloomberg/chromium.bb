@@ -54,7 +54,11 @@ AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
 AC_FUNC_ALLOCA
 
+save_CFLAGS="$CFLAGS"
+export CFLAGS="$CFLAGS -Werror"
 AC_HEADER_MAJOR
+CFLAGS="$save_CFLAGS"
+
 AC_CHECK_HEADERS([sys/sysctl.h sys/select.h])
 
 # Initialize libtool
