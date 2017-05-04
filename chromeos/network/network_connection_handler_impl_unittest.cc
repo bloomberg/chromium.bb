@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_connection_handler_impl.h"
 
 #include <map>
 #include <memory>
@@ -152,7 +152,7 @@ class NetworkConnectionHandlerTest : public NetworkStateTest {
         network_config_handler_.get(), nullptr /* network_device_handler */,
         nullptr /* prohibited_tecnologies_handler */);
 
-    network_connection_handler_.reset(new NetworkConnectionHandler);
+    network_connection_handler_.reset(new NetworkConnectionHandlerImpl());
     network_connection_handler_->Init(network_state_handler(),
                                       network_config_handler_.get(),
                                       managed_config_handler_.get());
@@ -209,9 +209,7 @@ class NetworkConnectionHandlerTest : public NetworkStateTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SuccessCallback() {
-    result_ = kSuccessResult;
-  }
+  void SuccessCallback() { result_ = kSuccessResult; }
 
   void ErrorCallback(const std::string& error_name,
                      std::unique_ptr<base::DictionaryValue> error_data) {
@@ -279,8 +277,7 @@ class NetworkConnectionHandlerTest : public NetworkStateTest {
     } else {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          std::string(),  // no username hash
-                                         *network_configs,
-                                         global_config);
+                                         *network_configs, global_config);
     }
     base::RunLoop().RunUntilIdle();
   }
