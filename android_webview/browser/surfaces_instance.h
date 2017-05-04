@@ -72,7 +72,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
                        const gfx::Rect& damage_rect) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
 
-  void SetEmptyRootFrame();
+  void SetSolidColorRootFrame();
 
   cc::FrameSinkIdAllocator frame_sink_id_allocator_;
 
@@ -89,6 +89,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   // This is owned by |display_|.
   ParentOutputSurface* output_surface_;
+
+  gfx::Size surface_size_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesInstance);
 };
