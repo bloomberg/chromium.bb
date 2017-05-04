@@ -10636,7 +10636,7 @@
   },
   "Linux Clang Analyzer": {
     "additional_compile_targets": [
-      "all"
+      "chrome"
     ]
   },
   "Linux Trusty": {
