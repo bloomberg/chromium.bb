@@ -65,15 +65,23 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   AppendRainbowDebugBorder(render_pass);
+  SharedQuadState* common_shared_quad_state = nullptr;
   auto* primary = CreateSurfaceDrawQuad(
       render_pass, SurfaceDrawQuadType::PRIMARY, primary_surface_info_,
-      &append_quads_data->embedded_surfaces);
+      &append_quads_data->embedded_surfaces, &common_shared_quad_state);
   // Emitting a fallback SurfaceDrawQuad is unnecessary if the primary and
   // fallback surface Ids match.
   if (primary && fallback_surface_info_.id() != primary_surface_info_.id()) {
+    // We can use the same SharedQuadState as the primary SurfaceDrawQuad if
+    // we don't need a different transform on the fallback.
+    bool use_common_shared_quad_state =
+        !stretch_content_to_fill_bounds_ &&
+        primary_surface_info_.device_scale_factor() ==
+            fallback_surface_info_.device_scale_factor();
     primary->fallback_quad = CreateSurfaceDrawQuad(
         render_pass, SurfaceDrawQuadType::FALLBACK, fallback_surface_info_,
-        nullptr /* embedded_surfaces */);
+        nullptr /* embedded_surfaces */,
+        use_common_shared_quad_state ? &common_shared_quad_state : nullptr);
   }
 }
 
@@ -81,7 +89,8 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     RenderPass* render_pass,
     SurfaceDrawQuadType surface_draw_quad_type,
     const SurfaceInfo& surface_info,
-    std::vector<SurfaceId>* embedded_surfaces) {
+    std::vector<SurfaceId>* embedded_surfaces,
+    SharedQuadState** common_shared_quad_state) {
   if (!surface_info.is_valid())
     return nullptr;
 
@@ -112,10 +121,19 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
   if (visible_quad_rect.IsEmpty())
     return nullptr;
 
+  // If a |common_shared_quad_state| is provided then use that. Otherwise,
+  // allocate a new SharedQuadState. Assign the new SharedQuadState to
+  // *|common_shared_quad_state| so that it may be reused by another emitted
+  // SurfaceDrawQuad.
   SharedQuadState* shared_quad_state =
-      render_pass->CreateAndAppendSharedQuadState();
-  PopulateScaledSharedQuadState(shared_quad_state, layer_to_content_scale_x,
-                                layer_to_content_scale_y);
+      common_shared_quad_state ? *common_shared_quad_state : nullptr;
+  if (!shared_quad_state) {
+    shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
+    PopulateScaledSharedQuadState(shared_quad_state, layer_to_content_scale_x,
+                                  layer_to_content_scale_y);
+  }
+  if (common_shared_quad_state)
+    *common_shared_quad_state = shared_quad_state;
 
   SurfaceDrawQuad* surface_draw_quad =
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
