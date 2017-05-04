@@ -244,8 +244,10 @@ Polymer({
     // Update the detail page title.
     this.parentNode.pageTitle = CrOnc.getNetworkName(this.networkProperties);
 
-    // Focus a button once the initial state is set.
-    if (!this.didSetFocus_) {
+    Polymer.dom.flush();
+
+    if (this.didSetFocus_) {
+      // Focus a button once the initial state is set.
       this.didSetFocus_ = true;
       var button = this.$$('#buttonDiv .primary-button:not([hidden])');
       if (!button)
@@ -993,17 +995,6 @@ Polymer({
       return false;
     }
     return networkProperties.Cellular.Family == 'GSM';
-  },
-
-  /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @return {boolean}
-   * @private
-   */
-  showIpConfig_: function(networkProperties) {
-    if (!this.isRememberedOrConnected_(networkProperties))
-      return false;
-    return !!networkProperties.IPAddressConfigType;
   },
 
   /**

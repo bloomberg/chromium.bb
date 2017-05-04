@@ -42,12 +42,15 @@ Polymer({
     /**
      * The currently visible IP Config property dictionary. The 'RoutingPrefix'
      * property is a human-readable mask instead of a prefix length.
-     * @private {!{
+     * @private {?{
      *   ipv4: !CrOnc.IPConfigUIProperties,
      *   ipv6: !CrOnc.IPConfigUIProperties
-     * }|undefined}
+     * }}
      */
-    ipConfig_: Object,
+    ipConfig_: {
+      type: Object,
+      value: null,
+    },
 
     /**
      * Array of properties to pass to the property list.
@@ -171,7 +174,7 @@ Polymer({
    * @private
    */
   getIPEditFields_: function() {
-    if (!this.editable || this.automatic__)
+    if (!this.editable || this.automatic_)
       return {};
     return {
       'ipv4.IPAddress': 'String',
