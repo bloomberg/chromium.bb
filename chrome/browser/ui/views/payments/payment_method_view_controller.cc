@@ -110,7 +110,12 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     }
   }
 
-  bool CanBeSelected() const override {
+  bool IsEnabled() override {
+    // All items are enabled.
+    return true;
+  }
+
+  bool CanBeSelected() override {
     // If an instrument can't be selected, PerformSelectionFallback is called,
     // where the instrument can be made complete.
     return instrument_->IsCompleteForPayment();

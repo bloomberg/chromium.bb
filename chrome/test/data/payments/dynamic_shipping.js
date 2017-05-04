@@ -83,6 +83,7 @@ function updateDetails(details, addr) {
     details.shippingOptions = [shippingOption];
   } else {
     delete details.shippingOptions;
+    details.error = 'We do not ship to this address';
   }
   return details;
 }

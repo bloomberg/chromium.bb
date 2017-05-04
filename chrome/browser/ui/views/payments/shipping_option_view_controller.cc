@@ -43,7 +43,12 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
     }
   }
 
-  bool CanBeSelected() const override {
+  bool IsEnabled() override {
+    // Shipping options are vetted by the website; none are disabled.
+    return true;
+  }
+
+  bool CanBeSelected() override {
     // Shipping options are vetted by the website; they're all OK to select.
     return true;
   }

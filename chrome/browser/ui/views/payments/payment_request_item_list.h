@@ -76,10 +76,14 @@ class PaymentRequestItemList {
     // item's view, such as the credit card icon.
     virtual std::unique_ptr<views::View> CreateExtraView();
 
+    // Whether the item should be enabled (if disabled, the user will not be
+    // able to click on the item).
+    virtual bool IsEnabled() = 0;
+
     // Returns whether this item is complete/valid and can be selected by the
     // user. If this returns false when the user attempts to select this item,
     // PerformSelectionFallback will be called instead.
-    virtual bool CanBeSelected() const = 0;
+    virtual bool CanBeSelected() = 0;
 
     // Performs the action that replaces selection when CanBeSelected returns
     // false. This will usually be to display an editor.

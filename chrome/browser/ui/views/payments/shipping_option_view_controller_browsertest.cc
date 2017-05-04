@@ -26,7 +26,7 @@ class PaymentRequestShippingOptionViewControllerTest
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
-                       OrderSummaryReflectsShippingOption) {
+                       SelectingVariousShippingOptions) {
   // In MI state, shipping is $5.00.
   autofill::AutofillProfile michigan = autofill::test::GetFullProfile2();
   michigan.set_use_count(100U);
@@ -80,6 +80,18 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
   // available for Canada.
   EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
+
+  // There is now an appropriate error that is shown in the shipping address
+  // section of the Payment Sheet. The string is returned by the merchant.
+  EXPECT_EQ(base::ASCIIToUTF16("We do not ship to this address"),
+            GetProfileLabelValues(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION)
+                .back());
+
+  // Go to the address selector and see this error as well.
+  OpenShippingAddressSectionScreen();
+  EXPECT_EQ(base::ASCIIToUTF16("We do not ship to this address"),
+            GetLabelText(DialogViewID::SHIPPING_ADDRESS_OPTION_ERROR));
 }
 
 }  // namespace payments

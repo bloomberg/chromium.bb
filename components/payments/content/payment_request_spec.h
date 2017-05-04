@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/mojom/payment_request.mojom.h"
@@ -94,6 +95,11 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   mojom::PaymentShippingOption* selected_shipping_option() const {
     return selected_shipping_option_;
   }
+  // if |selected_shipping_option()| is nullptr, this may contain a non-empty
+  // error returned by the merchant.
+  const base::string16& selected_shipping_option_error() const {
+    return selected_shipping_option_error_;
+  }
 
   const mojom::PaymentDetails& details() const { return *details_.get(); }
 
@@ -132,6 +138,7 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   const std::string app_locale_;
   // The currently shipping option as specified by the merchant.
   mojom::PaymentShippingOption* selected_shipping_option_;
+  base::string16 selected_shipping_option_error_;
 
   std::unique_ptr<CurrencyFormatter> currency_formatter_;
 

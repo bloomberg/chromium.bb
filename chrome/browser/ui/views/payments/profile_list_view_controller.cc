@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
@@ -15,6 +16,9 @@
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -75,12 +79,19 @@ class ProfileItem : public PaymentRequestItemList::Item {
     }
   }
 
-  bool CanBeSelected() const override {
-    return parent_view_->IsValidProfile(*profile_);
+  bool IsEnabled() override { return parent_view_->IsEnabled(profile_); }
+
+  bool CanBeSelected() override {
+    // In order to be selectable, a profile entry needs to be enabled, and the
+    // profile valid according to the controller. If either condition is false,
+    // PerformSelectionFallback() is called.
+    return IsEnabled() && parent_view_->IsValidProfile(*profile_);
   }
 
   void PerformSelectionFallback() override {
-    parent_view_->ShowEditor(profile_);
+    // If enabled, the editor is opened to complete the invalid profile.
+    if (IsEnabled())
+      parent_view_->ShowEditor(profile_);
   }
 
   ProfileListViewController* parent_view_;
@@ -106,9 +117,16 @@ class ShippingProfileViewController : public ProfileListViewController {
   // ProfileListViewController:
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
-    return GetShippingAddressLabel(AddressStyleType::DETAILED,
-                                   state()->GetApplicationLocale(), *profile,
-                                   *spec(), *(state()->profile_comparator()));
+    if (!IsEnabled(profile)) {
+      // The error is not shown in the label itself on this screen, but the
+      // entry is disabled.
+      return GetShippingAddressLabelWithError(
+          AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
+          /*error=*/base::string16(), /*disabled_state=*/true);
+    }
+    return GetShippingAddressLabelWithMissingInfo(
+        AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
+        *(state()->profile_comparator()));
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {
@@ -127,7 +145,10 @@ class ShippingProfileViewController : public ProfileListViewController {
   }
 
   autofill::AutofillProfile* GetSelectedProfile() override {
-    return state()->selected_shipping_profile();
+    // If there are no errors with the currently selected profile, return it.
+    return spec()->selected_shipping_option_error().empty()
+               ? state()->selected_shipping_profile()
+               : nullptr;
   }
 
   bool IsValidProfile(const autofill::AutofillProfile& profile) override {
@@ -140,6 +161,42 @@ class ShippingProfileViewController : public ProfileListViewController {
 
   DialogViewID GetDialogViewId() override {
     return DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW;
+  }
+
+  std::unique_ptr<views::View> CreateHeaderView() override {
+    if (spec()->selected_shipping_option_error().empty())
+      return nullptr;
+
+    std::unique_ptr<views::View> header_view = base::MakeUnique<views::View>();
+    // 8 pixels between the warning icon view and the text.
+    constexpr int kRowHorizontalSpacing = 8;
+    views::BoxLayout* layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal,
+        payments::kPaymentRequestRowHorizontalInsets, 0, kRowHorizontalSpacing);
+    layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+    header_view->SetLayoutManager(layout);
+
+    std::unique_ptr<views::ImageView> warning_icon =
+        base::MakeUnique<views::ImageView>();
+    warning_icon->set_can_process_events_within_subtree(false);
+    warning_icon->SetImage(gfx::CreateVectorIcon(
+        ui::kWarningIcon, 16,
+        warning_icon->GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_AlertSeverityHigh)));
+    header_view->AddChildView(warning_icon.release());
+
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
+        spec()->selected_shipping_option_error());
+    label->set_id(
+        static_cast<int>(DialogViewID::SHIPPING_ADDRESS_OPTION_ERROR));
+    label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_AlertSeverityHigh));
+    label->SetMultiLine(true);
+    header_view->AddChildView(label.release());
+    return header_view;
   }
 
   base::string16 GetSheetTitle() override {
@@ -256,6 +313,21 @@ ProfileListViewController::ProfileListViewController(
 
 ProfileListViewController::~ProfileListViewController() {}
 
+bool ProfileListViewController::IsEnabled(autofill::AutofillProfile* profile) {
+  // If selected_shipping_option_error() is not empty, it means the current
+  // selected_shipping_profile() is not supported by this merchant and should be
+  // shown in a disabled state. Therefore, |profile| is enabled in cases where
+  // (1) it's not the selected_shipping_profile
+  // OR
+  // (2) if it is, there is no shipping option error reported by the merchant.
+  return profile != state()->selected_shipping_profile() ||
+         spec()->selected_shipping_option_error().empty();
+}
+
+std::unique_ptr<views::View> ProfileListViewController::CreateHeaderView() {
+  return nullptr;
+}
+
 void ProfileListViewController::PopulateList() {
   autofill::AutofillProfile* selected_profile = GetSelectedProfile();
 
@@ -269,7 +341,15 @@ void ProfileListViewController::PopulateList() {
 }
 
 void ProfileListViewController::FillContentView(views::View* content_view) {
-  content_view->SetLayoutManager(new views::FillLayout);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  content_view->SetLayoutManager(layout);
+  std::unique_ptr<views::View> header_view = CreateHeaderView();
+  if (header_view)
+    content_view->AddChildView(header_view.release());
   std::unique_ptr<views::View> list_view = list_.CreateListView();
   list_view->set_id(static_cast<int>(GetDialogViewId()));
   content_view->AddChildView(list_view.release());

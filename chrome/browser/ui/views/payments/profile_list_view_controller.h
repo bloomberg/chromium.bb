@@ -67,6 +67,9 @@ class ProfileListViewController : public PaymentRequestSheetController {
 
   virtual bool IsValidProfile(const autofill::AutofillProfile& profile) = 0;
 
+  // Whether |profile| should be displayed in an enabled state and selectable.
+  bool IsEnabled(autofill::AutofillProfile* profile);
+
  protected:
   // Does not take ownership of the arguments, which should outlive this object.
   ProfileListViewController(PaymentRequestSpec* spec,
@@ -78,6 +81,10 @@ class ProfileListViewController : public PaymentRequestSheetController {
   virtual std::vector<autofill::AutofillProfile*> GetProfiles() = 0;
 
   virtual DialogViewID GetDialogViewId() = 0;
+
+  // Subclasses may choose to provide a header view to go on top of the item
+  // list view.
+  virtual std::unique_ptr<views::View> CreateHeaderView();
 
   void PopulateList();
 

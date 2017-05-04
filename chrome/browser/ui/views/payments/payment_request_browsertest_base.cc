@@ -588,6 +588,13 @@ void PaymentRequestBrowserTestBase::WaitForAnimation() {
   }
 }
 
+const base::string16& PaymentRequestBrowserTestBase::GetLabelText(
+    DialogViewID view_id) {
+  views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
+  DCHECK(view);
+  return static_cast<views::Label*>(view)->text();
+}
+
 const base::string16& PaymentRequestBrowserTestBase::GetStyledLabelText(
     DialogViewID view_id) {
   views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
