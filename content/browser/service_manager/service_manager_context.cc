@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/service_manager/common_browser_interfaces.h"
 #include "content/browser/service_manager/merge_dictionary.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
@@ -275,6 +276,7 @@ ServiceManagerContext::ServiceManagerContext() {
   ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
       mojo::MakeRequest(&root_browser_service),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+  auto* browser_connection = ServiceManagerConnection::GetForProcess();
 
   service_manager::mojom::PIDReceiverPtr pid_receiver;
   packaged_services_connection_->GetConnector()->StartService(
@@ -313,8 +315,7 @@ ServiceManagerContext::ServiceManagerContext() {
   // This is safe to assign directly from any thread, because
   // ServiceManagerContext must be constructed before anyone can call
   // GetConnectorForIOThread().
-  g_io_thread_connector.Get() =
-      ServiceManagerConnection::GetForProcess()->GetConnector()->Clone();
+  g_io_thread_connector.Get() = browser_connection->GetConnector()->Clone();
 
   ContentBrowserClient::OutOfProcessServiceMap sandboxed_services;
   GetContentClient()
@@ -360,12 +361,14 @@ ServiceManagerContext::ServiceManagerContext() {
                  shape_detection::mojom::kServiceName));
 
   packaged_services_connection_->Start();
-  ServiceManagerConnection::GetForProcess()->Start();
+
+  RegisterCommonBrowserInterfaces(browser_connection);
+  browser_connection->Start();
 
   if (network_service_enabled) {
     // Start the network service process as soon as possible, since it is
     // critical to start up performance.
-    ServiceManagerConnection::GetForProcess()->GetConnector()->StartService(
+    browser_connection->GetConnector()->StartService(
         mojom::kNetworkServiceName);
   }
 }

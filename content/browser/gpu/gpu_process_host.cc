@@ -346,12 +346,6 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
     auto task_runner = BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
     registry_.AddInterface(base::Bind(&FieldTrialRecorder::Create),
                            task_runner);
-    registry_.AddInterface(
-        base::Bind(
-            &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
-            base::Unretained(
-                memory_instrumentation::CoordinatorImpl::GetInstance())),
-        task_runner);
 #if defined(OS_ANDROID)
     registry_.AddInterface(
         base::Bind(&BindJavaInterface<media::mojom::AndroidOverlayProvider>),
