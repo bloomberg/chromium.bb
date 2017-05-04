@@ -1033,14 +1033,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK([NSThread isMainThread]);
   DCHECK(_isBeingDestroyed);  // 'close' must have been called already.
   DCHECK(!_webView);
-  // TODO(crbug.com/662860): Don't set the delegate to nil.
-  [_containerView setDelegate:nil];
-  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
-    [self.nativeController setDelegate:nil];
-  }
-  _touchTrackingRecognizer.get().touchTrackingDelegate = nil;
-  [[_webViewProxy scrollViewProxy] removeObserver:self];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -1216,6 +1208,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self removeWebViewAllowingCachedReconstruction:NO];
 
   _webStateImpl = nullptr;
+
+  DCHECK(!_webView);
+  // TODO(crbug.com/662860): Don't set the delegate to nil.
+  [_containerView setDelegate:nil];
+  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
+    [self.nativeController setDelegate:nil];
+  }
+  _touchTrackingRecognizer.get().touchTrackingDelegate = nil;
+  [[_webViewProxy scrollViewProxy] removeObserver:self];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 // TODO(shreyasv): This code is shared with SnapshotManager. Remove this and add
