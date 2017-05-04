@@ -797,13 +797,12 @@ void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
   // 1) Nodes that contribute to copy requests, whether hidden or not, must be
   //    drawn.
   // 2) Nodes that have a background filter.
-  // 3) Nodes with animating screen space opacity on main thread or pending tree
-  //    are drawn if their parent is drawn irrespective of their opacity.
+  // 3) Nodes with animating screen space opacity are drawn if their parent is
+  //    drawn irrespective of their opacity.
   if (node->has_copy_request)
     node->is_drawn = true;
   else if (EffectiveOpacity(node) == 0.f &&
-           (!node->has_potential_opacity_animation ||
-            property_trees()->is_active) &&
+           !node->has_potential_opacity_animation &&
            node->background_filters.IsEmpty())
     node->is_drawn = false;
   else if (parent_node)

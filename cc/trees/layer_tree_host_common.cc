@@ -378,11 +378,22 @@ static void ComputeInitialRenderSurfaceList(
 
     bool skip_for_invertibility = SkipForInvertibility(layer, property_trees);
 
-    bool skip_layer = !is_root && (skip_draw_properties_computation ||
-                                   skip_for_invertibility);
+    const EffectNode* effect_node =
+        property_trees->effect_tree.Node(layer->effect_tree_index());
+    bool has_animating_opacity_and_hidden =
+        effect_node->has_potential_opacity_animation &&
+        property_trees->effect_tree.EffectiveOpacity(effect_node) == 0.f &&
+        !effect_node->has_copy_request;
 
-    layer->set_raster_even_if_not_in_rsll(skip_for_invertibility &&
-                                          !skip_draw_properties_computation);
+    bool skip_layer = !is_root && (skip_draw_properties_computation ||
+                                   skip_for_invertibility ||
+                                   has_animating_opacity_and_hidden);
+
+    bool raster_even_if_not_in_rsll =
+        skip_draw_properties_computation
+            ? false
+            : has_animating_opacity_and_hidden || skip_for_invertibility;
+    layer->set_raster_even_if_not_in_rsll(raster_even_if_not_in_rsll);
     if (skip_layer)
       continue;
 

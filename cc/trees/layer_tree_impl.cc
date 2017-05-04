@@ -372,11 +372,6 @@ void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
   property_trees_.is_main_thread = false;
   property_trees_.is_active = IsActiveTree();
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
-  // The value of some effect node properties (like is_drawn) depends on
-  // whether we are on the active tree or not. So, we need to update the
-  // effect tree.
-  if (IsActiveTree())
-    property_trees_.effect_tree.set_needs_update(true);
 }
 
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
