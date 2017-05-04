@@ -168,6 +168,17 @@ void CompileFromResponseCallback(
   }
 
   Response* response = V8Response::toImpl(v8::Local<v8::Object>::Cast(args[0]));
+  if (response->MimeType() != "application/wasm") {
+    V8SetReturnValue(
+        args,
+        ScriptPromise::Reject(
+            script_state,
+            V8ThrowException::CreateTypeError(
+                script_state->GetIsolate(),
+                "Incorrect response MIME type. Expected 'application/wasm'."))
+            .V8Value());
+    return;
+  }
   ScriptPromise promise;
   if (response->IsBodyLocked() || response->bodyUsed()) {
     promise = ScriptPromise::Reject(

@@ -6,6 +6,8 @@
 <script src="../wasm/resources/wasm-module-builder.js"></script>
 <script>
   promise_test(TestStreamedCompile, "test streamed compile");
+  promise_test(TestCompileMimeTypeIsChecked, "test MIME type is verified (compile)");
+  promise_test(TestInstantiateMimeTypeIsChecked, "test MIME type is verified (instantiate)");
   promise_test(TestShortFormStreamedCompile, "test streamed compile with promise parameter");
   promise_test(NegativeTestStreamedCompilePromise, "promise must produce a Response");
   promise_test(CompileBlankResponse, "compile blank response");
