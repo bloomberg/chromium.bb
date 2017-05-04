@@ -2609,7 +2609,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"force-enable-stylus-tools",
      flag_descriptions::kForceEnableStylusToolsName,
      flag_descriptions::kForceEnableStylusToolsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshForceEnablePalette)},
+     SINGLE_VALUE_TYPE(ash::switches::kAshForceEnableStylusTools)},
 #endif // defined(OS_CHROMEOS)
 
     {"enable-midi-manager-dynamic-instantiation",

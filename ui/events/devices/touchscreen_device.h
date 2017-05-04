@@ -28,6 +28,8 @@ struct EVENTS_DEVICES_EXPORT TouchscreenDevice : public InputDevice {
                     const gfx::Size& size,
                     int touch_points);
 
+  ~TouchscreenDevice() override;
+
   gfx::Size size;    // Size of the touch screen area.
   int touch_points;  // The number of touch points this device supports (0 if
                      // unknown).

@@ -12,8 +12,10 @@ namespace ui {
 const int InputDevice::kInvalidId = 0;
 
 InputDevice::InputDevice()
-    : id(kInvalidId), type(InputDeviceType::INPUT_DEVICE_UNKNOWN) {
-}
+    : id(kInvalidId),
+      type(InputDeviceType::INPUT_DEVICE_UNKNOWN),
+      vendor_id(0),
+      product_id(0) {}
 
 InputDevice::InputDevice(int id, InputDeviceType type, const std::string& name)
     : id(id), type(type), name(name), vendor_id(0), product_id(0) {

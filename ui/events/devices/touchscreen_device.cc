@@ -10,8 +10,7 @@
 
 namespace ui {
 
-TouchscreenDevice::TouchscreenDevice() : touch_points(0) {
-}
+TouchscreenDevice::TouchscreenDevice() : touch_points(0), is_stylus(false) {}
 
 TouchscreenDevice::TouchscreenDevice(int id,
                                      InputDeviceType type,
@@ -32,5 +31,7 @@ TouchscreenDevice::TouchscreenDevice(const InputDevice& input_device,
       touch_points(touch_points),
       is_stylus(false) {
 }
+
+TouchscreenDevice::~TouchscreenDevice() {}
 
 }  // namespace ui

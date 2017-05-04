@@ -67,8 +67,8 @@ const char kAshDisableSmoothScreenRotation[] =
 const char kAshEstimatedPresentationDelay[] =
     "ash-estimated-presentation-delay";
 
-// Enables the palette next to the status area.
-const char kAshForceEnablePalette[] = "ash-force-enable-palette";
+// Enables the stylus tools next to the status area.
+const char kAshForceEnableStylusTools[] = "force-enable-stylus-tools";
 
 // Enables required things for the selected UI mode, regardless of whether the
 // Chromebook is currently in the selected UI mode.

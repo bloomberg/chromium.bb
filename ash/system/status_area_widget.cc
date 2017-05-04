@@ -4,6 +4,7 @@
 
 #include "ash/system/status_area_widget.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
@@ -21,6 +22,7 @@
 #include "ash/wm_window.h"
 #include "base/i18n/time_formatting.h"
 #include "ui/display/display.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 
 namespace ash {
@@ -196,16 +198,8 @@ void StatusAreaWidget::AddLogoutButtonTray() {
 }
 
 void StatusAreaWidget::AddPaletteTray() {
-  const display::Display& display =
-      WmWindow::Get(this->GetNativeWindow())->GetDisplayNearestWindow();
-
-  // Create the palette only on the internal display, where the stylus is
-  // available. We also create a palette on every display if requested from the
-  // command line.
-  if (display.IsInternal() || palette_utils::IsPaletteEnabledOnEveryDisplay()) {
-    palette_tray_ = new PaletteTray(wm_shelf_);
-    status_area_widget_delegate_->AddTray(palette_tray_);
-  }
+  palette_tray_ = new PaletteTray(wm_shelf_);
+  status_area_widget_delegate_->AddTray(palette_tray_);
 }
 
 void StatusAreaWidget::AddVirtualKeyboardTray() {
