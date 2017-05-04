@@ -2,12 +2,14 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../resources/mojo-helpers.js"></script>
+<script src="../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
 'use strict';
 promise_test(() => {
   setBluetoothManualChooser(true);
   let requestDevicePromise =
-    setBluetoothFakeAdapter('NotPoweredAdapter')
+    navigator.bluetooth.test.simulateCentral({state: 'powered-off'})
       .then(() => requestDeviceWithKeyDown({
         filters: [{services: ['generic_access']}]}));
   return getBluetoothManualChooserEvents(2)
@@ -23,5 +25,5 @@ promise_test(() => {
                          'NotFoundError'),
         'Bluetooth adapter is not powered.');
     });
-}, 'Reject with NotFoundError if the adapter is off.');
+}, 'Reject with NotFoundError if the BT radio is off.');
 </script>

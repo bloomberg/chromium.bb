@@ -1,0 +1,161 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "device/bluetooth/test/fake_central.h"
+
+#include <memory>
+#include <string>
+#include <utility>
+
+#include "device/bluetooth/bluetooth_discovery_filter.h"
+#include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
+
+namespace bluetooth {
+
+FakeCentral::FakeCentral(mojom::CentralState state,
+                         mojom::FakeCentralRequest request)
+    : state_(state), binding_(this, std::move(request)) {}
+
+FakeCentral::~FakeCentral() {}
+
+std::string FakeCentral::GetAddress() const {
+  NOTREACHED();
+  return std::string();
+}
+
+std::string FakeCentral::GetName() const {
+  NOTREACHED();
+  return std::string();
+}
+
+void FakeCentral::SetName(const std::string& name,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+bool FakeCentral::IsInitialized() const {
+  return true;
+}
+
+bool FakeCentral::IsPresent() const {
+  switch (state_) {
+    case mojom::CentralState::ABSENT:
+      return false;
+    case mojom::CentralState::POWERED_OFF:
+    case mojom::CentralState::POWERED_ON:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool FakeCentral::IsPowered() const {
+  switch (state_) {
+    case mojom::CentralState::POWERED_OFF:
+      return false;
+    case mojom::CentralState::POWERED_ON:
+      return true;
+    case mojom::CentralState::ABSENT:
+      // Clients shouldn't call IsPowered() when the adapter is not present.
+      NOTREACHED();
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+void FakeCentral::SetPowered(bool powered,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+bool FakeCentral::IsDiscoverable() const {
+  NOTREACHED();
+  return false;
+}
+
+void FakeCentral::SetDiscoverable(bool discoverable,
+                                  const base::Closure& callback,
+                                  const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+bool FakeCentral::IsDiscovering() const {
+  NOTREACHED();
+  return false;
+}
+
+FakeCentral::UUIDList FakeCentral::GetUUIDs() const {
+  NOTREACHED();
+  return UUIDList();
+}
+
+void FakeCentral::CreateRfcommService(
+    const device::BluetoothUUID& uuid,
+    const ServiceOptions& options,
+    const CreateServiceCallback& callback,
+    const CreateServiceErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void FakeCentral::CreateL2capService(
+    const device::BluetoothUUID& uuid,
+    const ServiceOptions& options,
+    const CreateServiceCallback& callback,
+    const CreateServiceErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void FakeCentral::RegisterAdvertisement(
+    std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
+    const CreateAdvertisementCallback& callback,
+    const AdvertisementErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+void FakeCentral::SetAdvertisingInterval(
+    const base::TimeDelta& min,
+    const base::TimeDelta& max,
+    const base::Closure& callback,
+    const AdvertisementErrorCallback& error_callback) {
+  NOTREACHED();
+}
+#endif
+
+device::BluetoothLocalGattService* FakeCentral::GetGattService(
+    const std::string& identifier) const {
+  NOTREACHED();
+  return nullptr;
+}
+
+void FakeCentral::AddDiscoverySession(
+    device::BluetoothDiscoveryFilter* discovery_filter,
+    const base::Closure& callback,
+    const DiscoverySessionErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void FakeCentral::RemoveDiscoverySession(
+    device::BluetoothDiscoveryFilter* discovery_filter,
+    const base::Closure& callback,
+    const DiscoverySessionErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void FakeCentral::SetDiscoveryFilter(
+    std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+    const base::Closure& callback,
+    const DiscoverySessionErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
+void FakeCentral::RemovePairingDelegateInternal(
+    device::BluetoothDevice::PairingDelegate* pairing_delegate) {
+  NOTREACHED();
+}
+
+}  // namespace bluetooth
