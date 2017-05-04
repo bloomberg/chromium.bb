@@ -112,24 +112,6 @@
             ]
         }
     ],
-    "AutoDismissingDialogs": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutoDismissingDialogs"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutodetectEncoding": [
         {
             "platforms": [
