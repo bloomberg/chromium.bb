@@ -14,6 +14,7 @@
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
+#include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_client_session.h"
 
@@ -63,7 +64,9 @@ class QuicSpdyClientStreamTest : public QuicTest {
     headers_[":status"] = "200";
     headers_["content-length"] = "11";
 
-    stream_.reset(new QuicSpdyClientStream(kClientDataStreamId1, &session_));
+    stream_.reset(new QuicSpdyClientStream(
+        QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
+        &session_));
     stream_visitor_.reset(new StreamVisitor());
     stream_->set_visitor(stream_visitor_.get());
   }
@@ -155,7 +158,9 @@ TEST_F(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
   if (FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming) {
     return;
   }
-  QuicStreamFrame frame(kClientDataStreamId1, false, 3, QuicStringPiece("asd"));
+  QuicStreamFrame frame(
+      QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0), false, 3,
+      QuicStringPiece("asd"));
 
   EXPECT_FALSE(stream_->write_side_closed());
   stream_->OnStreamFrame(frame);

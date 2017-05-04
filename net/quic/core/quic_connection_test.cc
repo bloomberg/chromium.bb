@@ -58,6 +58,9 @@ namespace net {
 namespace test {
 namespace {
 
+const QuicStreamId kClientDataStreamId1 = kHeadersStreamId + 2;
+const QuicStreamId kClientDataStreamId2 = kClientDataStreamId1 + 2;
+
 const char data1[] = "foo";
 const char data2[] = "bar";
 

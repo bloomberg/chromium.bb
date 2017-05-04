@@ -164,6 +164,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       NetLog* net_log);
   ~QuicChromiumClientSession() override;
 
+  std::unique_ptr<QuicStream> CreateStream(QuicStreamId id) override;
+
   void Initialize() override;
 
   void AddObserver(Observer* observer);
