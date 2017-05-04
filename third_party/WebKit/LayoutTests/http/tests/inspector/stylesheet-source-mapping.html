@@ -45,10 +45,14 @@ function test()
         InspectorTest.waitForUISourceCode(sourceURL).then(scssUISourceCodeAdded);
     }
 
-    function rawLocationToUILocation(line, column)
-    {
+    function testAndDumpLocation(uiSourceCode, expectedLine, expectedColumn, line, column) {
         var header = cssModel.styleSheetHeaderForId(styleSheetId);
-        return Bindings.cssWorkspaceBinding.rawLocationToUILocation(new SDK.CSSLocation(header, line, column));
+        var uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(new SDK.CSSLocation(header, line, column));
+        InspectorTest.assertEquals(uiSourceCode, uiLocation.uiSourceCode,
+            `Incorrect uiSourceCode, expected ${uiSourceCode.url()}, but got ${location.uiSourceCode ? location.uiSourceCode.url() : null}`);
+        var reverseRaw = Bindings.cssWorkspaceBinding.uiLocationToRawLocations(uiLocation)[0];
+        InspectorTest.addResult(`${line}:${column} ${uiLocation.lineNumber}:${uiLocation.columnNumber}` +
+             `(expected: ${expectedLine}:${expectedColumn}) -> ${reverseRaw.lineNumber}:${reverseRaw.columnNumber}`);
     }
 
     function scssUISourceCodeAdded(uiSourceCode)
@@ -57,17 +61,17 @@ function test()
         var cssUISourceCode = Workspace.workspace.uiSourceCodeForURL(styleSheetURL);
         var scssUISourceCode = Workspace.workspace.uiSourceCodeForURL(sourceURL);
 
-        InspectorTest.checkUILocation(cssUISourceCode, 0, 3, rawLocationToUILocation(0, 3));
-        InspectorTest.checkUILocation(scssUISourceCode, 1, 0, rawLocationToUILocation(1, 0));
-        InspectorTest.checkUILocation(scssUISourceCode, 2, 2, rawLocationToUILocation(2, 4));
-        InspectorTest.checkUILocation(scssUISourceCode, 2, 5, rawLocationToUILocation(2, 6));
-        InspectorTest.checkUILocation(scssUISourceCode, 2, 7, rawLocationToUILocation(2, 9));
-        InspectorTest.checkUILocation(scssUISourceCode, 2, 10, rawLocationToUILocation(3, 7));
-        InspectorTest.checkUILocation(scssUISourceCode, 4, 2, rawLocationToUILocation(4, 8));
-        InspectorTest.checkUILocation(scssUISourceCode, 4, 2, rawLocationToUILocation(4, 10));
-        InspectorTest.checkUILocation(scssUISourceCode, 4, 11, rawLocationToUILocation(4, 11));
-        InspectorTest.checkUILocation(scssUISourceCode, 4, 13, rawLocationToUILocation(4, 15));
-        InspectorTest.checkUILocation(scssUISourceCode, 4, 17, rawLocationToUILocation(4, 20));
+        testAndDumpLocation(cssUISourceCode, 0, 3, 0, 3);
+        testAndDumpLocation(scssUISourceCode, 1, 0, 1, 0);
+        testAndDumpLocation(scssUISourceCode, 2, 2, 2, 4);
+        testAndDumpLocation(scssUISourceCode, 2, 5, 2, 6);
+        testAndDumpLocation(scssUISourceCode, 2, 7, 2, 9);
+        testAndDumpLocation(scssUISourceCode, 2, 10, 3, 7);
+        testAndDumpLocation(scssUISourceCode, 4, 2, 4, 8);
+        testAndDumpLocation(scssUISourceCode, 4, 2, 4, 10);
+        testAndDumpLocation(scssUISourceCode, 4, 11, 4, 11);
+        testAndDumpLocation(scssUISourceCode, 4, 13, 4, 15);
+        testAndDumpLocation(scssUISourceCode, 4, 17, 4, 20);
         scssUISourceCode.requestContent().then(didRequestContent);
 
         function didRequestContent(content, contentEncoded, mimeType)

@@ -34,7 +34,9 @@ async function test()
       for (var position of positions) {
         var rawLocation = InspectorTest.debuggerModel.createRawLocation(script, position.lineNumber, position.columnNumber);
         var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
-        InspectorTest.addResult(`${rawLocation.lineNumber}:${rawLocation.columnNumber} -> ${uiLocation.lineNumber}:${uiLocation.columnNumber}`);
+        var reverseRawLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
+        InspectorTest.addResult(`${rawLocation.lineNumber}:${rawLocation.columnNumber} -> ${uiLocation.lineNumber}:${uiLocation.columnNumber}` +
+            ` -> ${reverseRawLocation.lineNumber}:${reverseRawLocation.columnNumber}`);
       }
     }
 }
