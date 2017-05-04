@@ -140,20 +140,19 @@ get_token_bit_costs(unsigned int token_costs[2][COEFF_CONTEXTS][ENTROPY_TOKENS],
 
 #if USE_GREEDY_OPTIMIZE_B
 
-typedef struct av1_token_state {
+typedef struct av1_token_state_greedy {
   int16_t token;
   tran_low_t qc;
   tran_low_t dqc;
-} av1_token_state;
+} av1_token_state_greedy;
 
-int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
-                   TX_SIZE tx_size, int ctx) {
-#if !CONFIG_PVQ
+static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
+                             int block, TX_SIZE tx_size, int ctx) {
   MACROBLOCKD *const xd = &mb->e_mbd;
   struct macroblock_plane *const p = &mb->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
-  av1_token_state tokens[MAX_TX_SQUARE + 1][2];
+  av1_token_state_greedy tokens[MAX_TX_SQUARE + 1][2];
   uint8_t token_cache[MAX_TX_SQUARE];
   const tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
@@ -189,21 +188,12 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
       mb->token_costs[txsize_sqr_map[tx_size]][plane_type][ref];
   const int default_eob = tx_size_2d[tx_size];
 
-  assert((mb->qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
+  assert(mb->qindex > 0);
 
   assert((!plane_type && !plane) || (plane_type && plane));
   assert(eob <= default_eob);
 
   int64_t rdmult = (mb->rdmult * plane_rd_mult[ref][plane_type]) >> 1;
-/* CpuSpeedTest uses "--min-q=0 --max-q=0" and expects 100dB psnr
-* This creates conflict with search for a better EOB position
-* The line below is to make sure EOB search is disabled at this corner case.
-*/
-#if !CONFIG_NEW_QUANT && !CONFIG_AOM_QM
-  if (dq_step[1] <= 4) {
-    rdmult = 1;
-  }
-#endif
 
   int64_t rate0, rate1;
   for (i = 0; i < eob; i++) {
@@ -479,19 +469,11 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
 
   mb->plane[plane].eobs[block] = final_eob;
   return final_eob;
-
-#else   // !CONFIG_PVQ
-  (void)cm;
-  (void)tx_size;
-  (void)ctx;
-  struct macroblock_plane *const p = &mb->plane[plane];
-  return p->eobs[block];
-#endif  // !CONFIG_PVQ
 }
 
 #else  // USE_GREEDY_OPTIMIZE_B
 
-typedef struct av1_token_state {
+typedef struct av1_token_state_org {
   int64_t error;
   int rate;
   int16_t next;
@@ -499,16 +481,15 @@ typedef struct av1_token_state {
   tran_low_t qc;
   tran_low_t dqc;
   uint8_t best_index;
-} av1_token_state;
+} av1_token_state_org;
 
-int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
-                   TX_SIZE tx_size, int ctx) {
-#if !CONFIG_PVQ
+static int optimize_b_org(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
+                          int block, TX_SIZE tx_size, int ctx) {
   MACROBLOCKD *const xd = &mb->e_mbd;
   struct macroblock_plane *const p = &mb->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
-  av1_token_state tokens[MAX_TX_SQUARE + 1][2];
+  av1_token_state_org tokens[MAX_TX_SQUARE + 1][2];
   uint8_t token_cache[MAX_TX_SQUARE];
   const tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
@@ -558,11 +539,10 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
                          ? av1_get_qindex(&cm->seg, xd->mi[0]->mbmi.segment_id,
                                           cm->base_qindex)
                          : cm->base_qindex;
-  if (qindex == 0) {
-    assert((qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
-  }
+  assert(qindex > 0);
+  (void)qindex;
 #else
-  assert((mb->qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
+  assert(mb->qindex > 0);
 #endif
 
   token_costs += band;
@@ -850,16 +830,31 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   mb->plane[plane].eobs[block] = final_eob;
   assert(final_eob <= default_eob);
   return final_eob;
-#else   // !CONFIG_PVQ
-  (void)cm;
-  (void)tx_size;
-  (void)ctx;
-  struct macroblock_plane *const p = &mb->plane[plane];
-  return p->eobs[block];
-#endif  // !CONFIG_PVQ
 }
 
 #endif  // USE_GREEDY_OPTIMIZE_B
+
+int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
+                   TX_SIZE tx_size, int ctx) {
+  MACROBLOCKD *const xd = &mb->e_mbd;
+  struct macroblock_plane *const p = &mb->plane[plane];
+  const int eob = p->eobs[block];
+  assert((mb->qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
+  if (eob == 0) return eob;
+  if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return eob;
+#if CONFIG_PVQ
+  (void)cm;
+  (void)tx_size;
+  (void)ctx;
+  return eob;
+#endif
+
+#if USE_GREEDY_OPTIMIZE_B
+  return optimize_b_greedy(cm, mb, plane, block, tx_size, ctx);
+#else   // USE_GREEDY_OPTIMIZE_B
+  return optimize_b_org(cm, mb, plane, block, tx_size, ctx);
+#endif  // USE_GREEDY_OPTIMIZE_B
+}
 
 #if !CONFIG_PVQ
 #if CONFIG_HIGHBITDEPTH
@@ -1150,8 +1145,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 #endif
 
 #if !CONFIG_PVQ
-  if (p->eobs[block] && !xd->lossless[xd->mi[0]->mbmi.segment_id])
-    av1_optimize_b(cm, x, plane, block, tx_size, ctx);
+  av1_optimize_b(cm, x, plane, block, tx_size, ctx);
 
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
@@ -1450,9 +1444,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   if (args->enable_optimize_b) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
-    if (p->eobs[block]) {
-      av1_optimize_b(cm, x, plane, block, tx_size, ctx);
-    }
+    av1_optimize_b(cm, x, plane, block, tx_size, ctx);
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_B);

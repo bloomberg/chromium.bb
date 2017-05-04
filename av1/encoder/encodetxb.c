@@ -749,8 +749,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     av1_invalid_rd_stats(&this_rd_stats);
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     coeff_ctx, AV1_XFORM_QUANT_FP);
-    if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
-      av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
+    av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
                    &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS);
@@ -771,8 +770,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // copy the best result in the above tx_type search for loop
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
-  if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
-    av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
+  av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
   if (!is_inter_block(mbmi)) {
     // intra mode needs decoded result such that the next transform block
     // can use it for prediction.

@@ -1542,8 +1542,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   const int coeff_ctx = combine_entropy_contexts(*a, *l);
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
-  if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
-    av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
+  av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
 
   if (!is_inter_block(mbmi)) {
     struct macroblock_plane *const p = &x->plane[plane];
@@ -2897,9 +2896,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #endif  // CONFIG_CB4X4
                         BLOCK_8X8, tx_size, coeff_ctx, xform_quant);
 
-        if (!is_lossless) {
-          av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
-        }
+        av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
 
         ratey +=
             av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order, tempa + idx,
@@ -5206,8 +5203,7 @@ static int64_t encode_inter_mb_segment_sub8x8(
       coeff_ctx = combine_entropy_contexts(*(ta + (k & 1)), *(tl + (k >> 1)));
       av1_xform_quant(cm, x, 0, block, idy + (i >> 1), idx + (i & 0x01),
                       BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
-      if (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0)
-        av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
+      av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
       av1_dist_block(cpi, x, 0, BLOCK_8X8, block, idy + (i >> 1),
                      idx + (i & 0x1), tx_size, &dist, &ssz,
                      OUTPUT_HAS_PREDICTED_PIXELS);
@@ -6569,8 +6565,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
             dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
             av1_xform_quant(cm, x, 0, block, idy + idy_, idx + idx_, BLOCK_8X8,
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
-            if (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0)
-              av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
+            av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
 
             eob = p->eobs[block];
             av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size,
