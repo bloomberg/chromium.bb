@@ -13,7 +13,7 @@
 bool FindBarBridge::disable_animations_during_testing_ = false;
 
 FindBarBridge::FindBarBridge(Browser* browser)
-    : find_bar_controller_(NULL) {
+    : find_bar_controller_(NULL), audible_alerts_(0) {
   cocoa_controller_ = [[FindBarCocoaController alloc] initWithBrowser:browser];
   [cocoa_controller_ setFindBarBridge:this];
 }
@@ -75,6 +75,7 @@ void FindBarBridge::UpdateUIForFindResult(const FindNotificationDetails& result,
 
 void FindBarBridge::AudibleAlert() {
   // Beep beep, beep beep, Yeah!
+  ++audible_alerts_;
   NSBeep();
 }
 
@@ -132,4 +133,8 @@ base::string16 FindBarBridge::GetMatchCountText() {
 
 int FindBarBridge::GetWidth() {
   return [cocoa_controller_ findBarWidth];
+}
+
+size_t FindBarBridge::GetAudibleAlertCount() {
+  return audible_alerts_;
 }

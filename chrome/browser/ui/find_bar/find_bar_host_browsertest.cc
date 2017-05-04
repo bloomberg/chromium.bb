@@ -128,6 +128,12 @@ class FindInPageControllerTest : public InProcessBrowserTest {
     return find_bar->GetWidth();
   }
 
+  size_t GetFindBarAudibleAlertsForBrowser(Browser* browser) {
+    FindBarTesting* find_bar =
+        browser->GetFindBarController()->find_bar()->GetFindBarTesting();
+    return find_bar->GetAudibleAlertCount();
+  }
+
   void EnsureFindBoxOpenForBrowser(Browser* browser) {
     chrome::ShowFindBar(browser);
     gfx::Point position;
@@ -214,6 +220,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFrames) {
   int ordinal = 0;
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(0u, GetFindBarAudibleAlertsForBrowser(browser()));
+
   EXPECT_EQ(18, FindInPageASCII(web_contents, "g",
                                 kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
@@ -232,9 +240,24 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFrames) {
   EXPECT_EQ(1, FindInPageASCII(web_contents, "google",
                                kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
+  EXPECT_EQ(0u, GetFindBarAudibleAlertsForBrowser(browser()));
+
+  EXPECT_EQ(
+      0, FindInPageASCII(web_contents, "google!", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(0, ordinal);
+  EXPECT_EQ(1u, GetFindBarAudibleAlertsForBrowser(browser()));
+
+  // Extend the search string one more.
+  EXPECT_EQ(0, FindInPageASCII(web_contents, "google!!", kFwd, kIgnoreCase,
+                               &ordinal));
+  EXPECT_EQ(0, ordinal);
+  EXPECT_EQ(2u, GetFindBarAudibleAlertsForBrowser(browser()));
+
+  // "Backspace" one, make sure there's no audible alert while backspacing.
   EXPECT_EQ(0, FindInPageASCII(web_contents, "google!",
                                kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(0, ordinal);
+  EXPECT_EQ(2u, GetFindBarAudibleAlertsForBrowser(browser()));
 
   // Negative test (no matches should be found).
   EXPECT_EQ(0, FindInPageASCII(web_contents, "Non-existing string",
@@ -299,6 +322,35 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
     EXPECT_EQ(0, FindInPageASCII(web_contents, "bat",
                                  kFwd, kIgnoreCase, NULL));
   }
+}
+
+// This test removes a frame after a search comes up empty, then navigates to
+// a different page and verifies this doesn't cause any extraneous dings.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoAudibleAlertOnFrameChange) {
+  // First we navigate to our frames page.
+  GURL url = GetURL(kFramePage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  int ordinal = 0;
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(0u, GetFindBarAudibleAlertsForBrowser(browser()));
+
+  // Search for a non-existant string.
+  EXPECT_EQ(
+      0, FindInPageASCII(web_contents, "google!", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(0, ordinal);
+  EXPECT_EQ(1u, GetFindBarAudibleAlertsForBrowser(browser()));
+
+  // Remove the first frame of the page.
+  constexpr char kRemoveFrameScript[] =
+      "frame = document.getElementsByTagName(\"FRAME\")[0];\n"
+      "frame.parentElement.removeChild(frame);\n";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, kRemoveFrameScript));
+
+  ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
+
+  EXPECT_EQ(1u, GetFindBarAudibleAlertsForBrowser(browser()));
 }
 
 // Verify search for text within special URLs such as chrome:history,

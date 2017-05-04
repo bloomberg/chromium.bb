@@ -77,6 +77,7 @@ class FindBarHost : public DropdownBarHost,
   base::string16 GetFindSelectedText() override;
   base::string16 GetMatchCountText() override;
   int GetWidth() override;
+  size_t GetAudibleAlertCount() override;
 
   // Overridden from DropdownBarHost:
   // Returns the rectangle representing where to position the find bar. It uses
@@ -129,6 +130,9 @@ class FindBarHost : public DropdownBarHost,
 
   // A pointer back to the owning controller.
   FindBarController* find_bar_controller_;
+
+  // The number of audible alerts issued.
+  size_t audible_alerts_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarHost);
 };
