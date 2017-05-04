@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.Space;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -69,6 +70,8 @@ class TabularContextMenuListAdapter extends BaseAdapter {
             viewHolder.mText = (TextView) convertView.findViewById(R.id.context_text);
             viewHolder.mShareIcon =
                     (ImageView) convertView.findViewById(R.id.context_menu_share_icon);
+            viewHolder.mRightPadding =
+                    (Space) convertView.findViewById(R.id.context_menu_right_padding);
 
             convertView.setTag(viewHolder);
         } else {
@@ -94,9 +97,11 @@ class TabularContextMenuListAdapter extends BaseAdapter {
                         mOnDirectShare.run();
                     }
                 });
+                viewHolder.mRightPadding.setVisibility(View.GONE);
             }
         } else {
             viewHolder.mShareIcon.setVisibility(View.GONE);
+            viewHolder.mRightPadding.setVisibility(View.VISIBLE);
         }
 
         return convertView;
@@ -106,5 +111,6 @@ class TabularContextMenuListAdapter extends BaseAdapter {
         ImageView mIcon;
         TextView mText;
         ImageView mShareIcon;
+        Space mRightPadding;
     }
 }
