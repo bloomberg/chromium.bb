@@ -140,6 +140,10 @@ void PointerLockController::DispatchLockedMouseEvent(
 
   element_->DispatchMouseEvent(event, event_type, event.click_count);
 
+  // Event handlers may remove element.
+  if (!element_)
+    return;
+
   // Create click events
   if (event_type == EventTypeNames::mouseup) {
     element_->DispatchMouseEvent(event, EventTypeNames::click,
