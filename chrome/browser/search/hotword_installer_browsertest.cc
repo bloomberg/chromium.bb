@@ -89,9 +89,18 @@ class HotwordInstallerBrowserTest : public ExtensionBrowserTest {
    DISALLOW_COPY_AND_ASSIGN(HotwordInstallerBrowserTest);
 };
 
+// Disabled on Windows due to https://crbug.com/717648. Since the installation
+// is still in progress during shutdown, file handles may still be open. This
+// causes TestingProfile to crash during shutdown.
+#if defined(OS_WIN)
+#define Maybe_AbortInstallOnShutdown DISABLED_AbortInstallOnShutdown
+#else
+#define Maybe_AbortInstallOnShutdown AbortInstallOnShutdown
+#endif
 // Test that installing to a non-existent URL (which should hang) does not
 // crash. This test is successful if it does not crash and trigger any DCHECKS.
-IN_PROC_BROWSER_TEST_F(HotwordInstallerBrowserTest, AbortInstallOnShutdown) {
+IN_PROC_BROWSER_TEST_F(HotwordInstallerBrowserTest,
+                       Maybe_AbortInstallOnShutdown) {
   TestingProfile test_profile;
   HotwordServiceFactory* hotword_service_factory =
       HotwordServiceFactory::GetInstance();
