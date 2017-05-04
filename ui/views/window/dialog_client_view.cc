@@ -12,6 +12,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/blue_button.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -392,8 +393,13 @@ void DialogClientView::SetupLayout() {
   }
 
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    // Only link the extra view column if it is a button.
-    if (views[0] && !CustomButton::AsCustomButton(views[0]))
+    // If |views[0]| is non-null, it is a visible |extra_view_| and its column
+    // will be in |link[0]|. Skip that if it is not a button, or if it is a
+    // Checkbox (which extends LabelButton). Otherwise, link everything.
+    bool skip_first_link =
+        views[0] && (!CustomButton::AsCustomButton(views[0]) ||
+                     views[0]->GetClassName() == Checkbox::kViewClassName);
+    if (skip_first_link)
       column_set->LinkColumnSizes(link[1], link[2], -1);
     else
       column_set->LinkColumnSizes(link[0], link[1], link[2], -1);
