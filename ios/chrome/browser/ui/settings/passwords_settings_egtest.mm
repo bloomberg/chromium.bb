@@ -26,6 +26,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -47,6 +48,11 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
 
 namespace {
+
+// How many points to scroll at a time when searching for an element. Setting it
+// too low means searching takes too long and the test might time out. Setting
+// it too high could result in scrolling way past the searched element.
+constexpr int kScrollAmount = 150;
 
 // Matcher for the Settings button in the tools menu.
 id<GREYMatcher> SettingsButton() {
@@ -121,6 +127,7 @@ GREYLayoutConstraint* Below() {
 // Matcher for the Copy site button in Password Details view.
 id<GREYMatcher> CopySiteButton() {
   return grey_allOf(
+      grey_interactable(),
       ButtonWithAccessibilityLabel(
           [NSString stringWithFormat:@"%@: %@",
                                      l10n_util::GetNSString(
@@ -135,6 +142,7 @@ id<GREYMatcher> CopySiteButton() {
 // Matcher for the Copy username button in Password Details view.
 id<GREYMatcher> CopyUsernameButton() {
   return grey_allOf(
+      grey_interactable(),
       ButtonWithAccessibilityLabel([NSString
           stringWithFormat:@"%@: %@",
                            l10n_util::GetNSString(
@@ -149,6 +157,7 @@ id<GREYMatcher> CopyUsernameButton() {
 // Matcher for the Copy password button in Password Details view.
 id<GREYMatcher> CopyPasswordButton() {
   return grey_allOf(
+      grey_interactable(),
       ButtonWithAccessibilityLabel([NSString
           stringWithFormat:@"%@: %@",
                            l10n_util::GetNSString(
@@ -189,6 +198,15 @@ id<GREYMatcher> CopyPasswordButton() {
 @end
 
 @implementation PasswordsSettingsTestCase
+
+- (void)tearDown {
+  // Snackbars triggered by tests stay up for a limited time even if the
+  // settings get closed. Ensure that they are closed to avoid interference with
+  // other tests.
+  [MDCSnackbarManager
+      dismissAndCallCompletionBlocksWithCategory:@"PasswordsSnackbarCategory"];
+  [super tearDown];
+}
 
 // Return pref for saving passwords back to the passed value and restores the
 // experimental flag for viewing passwords.
@@ -339,8 +357,7 @@ id<GREYMatcher> CopyPasswordButton() {
 
 // Checks that attempts to copy a password provide appropriate feedback,
 // both when reauthentication succeeds and when it fails.
-// TODO(crbug.com/718043): Re-enable test.
-- (void)DISABLED_testCopyPasswordToast {
+- (void)testCopyPasswordToast {
   [self scopedEnablePasswordManagementAndViewingUI];
 
   // Saving a form is needed for using the "password details" view.
@@ -368,23 +385,37 @@ id<GREYMatcher> CopyPasswordButton() {
 
   // Check the snackbar in case of successful reauthentication.
   mock_reauthentication_module.shouldSucceed = YES;
-  [[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
+  [[[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   NSString* snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE);
+  // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
-      assertWithMatcher:grey_notNil()];
+      performAction:grey_tap()];
+  // Wait until the fade-out animation completes.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Check the snackbar in case of failed reauthentication.
   mock_reauthentication_module.shouldSucceed = NO;
-  [[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
+  [[[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_NOT_COPIED_MESSAGE);
+  // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
-      assertWithMatcher:grey_notNil()];
+      performAction:grey_tap()];
+  // Wait until the fade-out animation completes.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   [self tapBackArrow];
   [self tapBackArrow];
@@ -405,13 +436,20 @@ id<GREYMatcher> CopyPasswordButton() {
       performAction:grey_tap()];
 
   // Check the snackbar.
-  [[EarlGrey selectElementWithMatcher:CopyUsernameButton()]
+  [[[EarlGrey selectElementWithMatcher:CopyUsernameButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   NSString* snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE);
+  // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
-      assertWithMatcher:grey_notNil()];
+      performAction:grey_tap()];
+  // Wait until the fade-out animation completes.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   [self tapBackArrow];
   [self tapBackArrow];
@@ -432,13 +470,20 @@ id<GREYMatcher> CopyPasswordButton() {
       performAction:grey_tap()];
 
   // Check the snackbar.
-  [[EarlGrey selectElementWithMatcher:CopySiteButton()]
+  [[[EarlGrey selectElementWithMatcher:CopySiteButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   NSString* snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE);
+  // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
-      assertWithMatcher:grey_notNil()];
+      performAction:grey_tap()];
+  // Wait until the fade-out animation completes.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   [self tapBackArrow];
   [self tapBackArrow];

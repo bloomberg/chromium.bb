@@ -97,6 +97,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
     _site = base::SysUTF8ToNSString(_passwordForm.origin.spec());
     self.title =
         [PasswordDetailsCollectionViewController simplifyOrigin:origin];
+    self.collectionViewAccessibilityIdentifier =
+        @"PasswordDetailsCollectionViewController";
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
                       selector:@selector(hidePassword)
@@ -377,6 +379,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   // to mock it in the unittest, and avoid having an EGTest just for that?
   MDCSnackbarMessage* copyPasswordResultMessage =
       [MDCSnackbarMessage messageWithText:message];
+  copyPasswordResultMessage.category = @"PasswordsSnackbarCategory";
   [MDCSnackbarManager showMessage:copyPasswordResultMessage];
 }
 
