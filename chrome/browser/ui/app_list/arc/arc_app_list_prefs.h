@@ -239,6 +239,8 @@ class ArcAppListPrefs
     return package_list_initial_refreshed_;
   }
 
+  // Returns set of ARC apps for provided package name, not including shortcuts,
+  // associated with this package.
   std::unordered_set<std::string> GetAppsForPackage(
       const std::string& package_name) const;
 
@@ -329,6 +331,10 @@ class ArcAppListPrefs
   void DisableAllApps();
   void RemoveAllApps();
   std::vector<std::string> GetAppIdsNoArcEnabledCheck() const;
+  std::unordered_set<std::string> GetAppsAndShortcutsForPackage(
+      const std::string& package_name,
+      bool include_shortcuts) const;
+
   // Enumerates apps from preferences and notifies listeners about available
   // apps while ARC is not started yet. All apps in this case have disabled
   // state.

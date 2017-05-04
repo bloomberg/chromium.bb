@@ -383,10 +383,12 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
   void AddPackage(const arc::mojom::ArcPackageInfo& package) {
     arc_test_.AddPackage(package);
+    app_instance()->SendPackageAdded(package);
   }
 
   void RemovePackage(const arc::mojom::ArcPackageInfo& package) {
     arc_test_.RemovePackage(package);
+    app_instance()->SendPackageUninstalled(package.package_name);
   }
 
   AppListControllerDelegate* controller() { return controller_.get(); }
@@ -557,11 +559,9 @@ TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
   package.sync = true;
 
   RemovePackage(package);
-  app_instance()->SendPackageUninstalled(package.package_name);
   ValidateHavePackages(fake_packages());
 
   AddPackage(package);
-  app_instance()->SendPackageAdded(package);
   ValidateHavePackages(fake_packages());
 }
 
@@ -586,13 +586,12 @@ TEST_P(ArcAppModelBuilderTest, InstallUninstallShortcut) {
   std::vector<arc::mojom::ShortcutInfo> shortcuts = fake_shortcuts();
   ASSERT_GE(shortcuts.size(), 2U);
 
-  // Adding package is requred to safely call SendPackageUninstalled.
+  // Adding package is required to safely call SendPackageUninstalled.
   arc::mojom::ArcPackageInfo package;
   package.package_name = shortcuts[1].package_name;
   package.package_version = 1;
   package.sync = true;
   AddPackage(package);
-  app_instance()->SendPackageAdded(package);
 
   app_instance()->SendInstallShortcuts(shortcuts);
   ValidateHaveShortcuts(shortcuts);
@@ -1364,7 +1363,7 @@ TEST_P(ArcAppModelBuilderTest, NonLaunchableApp) {
   EXPECT_TRUE(prefs->IsRegistered(app_id));
 }
 
-TEST_P(ArcAppModelBuilderTest, ArcAppsOnPackageUpdated) {
+TEST_P(ArcAppModelBuilderTest, ArcAppsAndShortcutsOnPackageChange) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -1372,13 +1371,27 @@ TEST_P(ArcAppModelBuilderTest, ArcAppsOnPackageUpdated) {
   ASSERT_GE(3u, apps.size());
   apps[0].package_name = apps[2].package_name;
   apps[1].package_name = apps[2].package_name;
+
+  std::vector<arc::mojom::ShortcutInfo> shortcuts = fake_shortcuts();
+  for (auto& shortcut : shortcuts)
+    shortcut.package_name = apps[0].package_name;
+
   // Second app should be preserved after update.
   std::vector<arc::mojom::AppInfo> apps1(apps.begin(), apps.begin() + 2);
   std::vector<arc::mojom::AppInfo> apps2(apps.begin() + 1, apps.begin() + 3);
 
+  // Adding package is required to safely call SendPackageUninstalled.
+  arc::mojom::ArcPackageInfo package;
+  package.package_name = apps[0].package_name;
+  package.package_version = 1;
+  package.sync = true;
+  AddPackage(package);
+
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(apps1);
-  ValidateHaveApps(apps1);
+  app_instance()->SendInstallShortcuts(shortcuts);
+
+  ValidateHaveAppsAndShortcuts(apps1, shortcuts);
 
   const std::string app_id = ArcAppTest::GetAppId(apps[1]);
   const base::Time now_time = base::Time::Now();
@@ -1389,12 +1402,16 @@ TEST_P(ArcAppModelBuilderTest, ArcAppsOnPackageUpdated) {
   EXPECT_EQ(now_time, app_info_before->last_launch_time);
 
   app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps2);
-  ValidateHaveApps(apps2);
+  ValidateHaveAppsAndShortcuts(apps2, shortcuts);
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info_after =
       prefs->GetApp(app_id);
   ASSERT_TRUE(app_info_after);
   EXPECT_EQ(now_time, app_info_after->last_launch_time);
+
+  RemovePackage(package);
+  ValidateHaveAppsAndShortcuts(std::vector<arc::mojom::AppInfo>(),
+                               std::vector<arc::mojom::ShortcutInfo>());
 }
 
 TEST_P(ArcDefaulAppTest, DefaultApps) {
