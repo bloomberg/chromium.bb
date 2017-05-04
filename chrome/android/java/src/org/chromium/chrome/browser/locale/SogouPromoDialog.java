@@ -80,7 +80,7 @@ public class SogouPromoDialog extends PromoDialog {
     @Override
     protected DialogParams getDialogParams() {
         PromoDialog.DialogParams params = new PromoDialog.DialogParams();
-        params.drawableResource = R.drawable.search_sogou;
+        params.vectorDrawableResource = R.drawable.search_sogou;
         params.headerStringResource = R.string.search_with_sogou;
         params.subheaderStringResource = R.string.sogou_explanation;
         params.primaryButtonStringResource = R.string.ok;

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget;
 
 import android.content.Context;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,7 +80,7 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
         assert params.primaryButtonStringResource != 0;
         mParams = params;
 
-        if (mParams.drawableResource == 0) {
+        if (mParams.drawableResource == 0 && mParams.vectorDrawableResource == 0) {
             // Dialogs with no illustration make the header stay visible at all times instead of
             // scrolling off on small screens.
             ((ViewGroup) mIllustrationView.getParent()).removeView(mIllustrationView);
@@ -94,6 +95,9 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
                     (MarginLayoutParams) mHeaderView.getLayoutParams(), marginSize);
             ApiCompatibilityUtils.setMarginEnd(
                     (MarginLayoutParams) mHeaderView.getLayoutParams(), marginSize);
+        } else if (mParams.vectorDrawableResource != 0) {
+            mIllustrationView.setImageDrawable(VectorDrawableCompat.create(
+                    getResources(), mParams.vectorDrawableResource, getContext().getTheme()));
         } else {
             mIllustrationView.setImageResource(mParams.drawableResource);
         }
