@@ -8,14 +8,16 @@ import argparse
 import collections
 import json
 import tempfile
-import time
 import os
-import subprocess
 import sys
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.abspath(os.path.join(
     CURRENT_DIR, '..', '..', '..', '..', '..'))
+
+sys.path.append(os.path.join(BASE_DIR, 'build', 'android'))
+from pylib.utils import google_storage_helper  # pylint: disable=import-error
+
 sys.path.append(os.path.join(BASE_DIR, 'third_party'))
 import jinja2  # pylint: disable=import-error
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -250,7 +252,7 @@ def create_suite_table(results_dict):
           footer_row)
 
 
-def results_to_html(results_dict, cs_base_url, bucket, server_url):
+def results_to_html(results_dict, cs_base_url):
   """Convert list of test results into html format."""
 
   test_rows_header, test_rows = create_test_table(results_dict, cs_base_url)
@@ -273,11 +275,10 @@ def results_to_html(results_dict, cs_base_url, bucket, server_url):
   main_template = JINJA_ENVIRONMENT.get_template(
       os.path.join('template', 'main.html'))
   return main_template.render(  #  pylint: disable=no-member
-      {'tb_values': [suite_table_values, test_table_values],
-       'bucket': bucket, 'server_url': server_url})
+      {'tb_values': [suite_table_values, test_table_values]})
 
 
-def result_details(json_path, cs_base_url, bucket, server_url):
+def result_details(json_path, cs_base_url):
   """Get result details from json path and then convert results to html."""
 
   with open(json_path) as json_file:
@@ -290,24 +291,23 @@ def result_details(json_path, cs_base_url, bucket, server_url):
   for testsuite_run in json_object['per_iteration_data']:
     for test, test_runs in testsuite_run.iteritems():
       results_dict[test].extend(test_runs)
-  return results_to_html(results_dict, cs_base_url, bucket, server_url)
+  return results_to_html(results_dict, cs_base_url)
 
 
 def upload_to_google_bucket(html, test_name, builder_name, build_number,
-                            bucket, server_url, content_type):
+                            bucket):
   with tempfile.NamedTemporaryFile(suffix='.html') as temp_file:
     temp_file.write(html)
     temp_file.flush()
-    dest = 'html/%s_%s_%s_%s.html' % (
-        test_name, builder_name, build_number,
-        time.strftime('%Y_%m_%d_T%H_%M_%S'))
-    gsutil_path = os.path.join(BASE_DIR, 'third_party', 'catapult',
-                               'third_party', 'gsutil', 'gsutil.py')
-    subprocess.check_call([
-        sys.executable, gsutil_path, '-h', "Content-Type:%s" % content_type,
-        'cp', temp_file.name, 'gs://%s/%s' % (bucket, dest)])
 
-  return '%s/%s/%s' % (server_url, bucket, dest)
+    return google_storage_helper.upload(
+        name=google_storage_helper.unique_name(
+            '%s_%s_%s' % (test_name, builder_name, build_number),
+            suffix='.html'),
+        filepath=temp_file.name,
+        bucket='%s/html' % bucket,
+        content_type='text/html',
+        authenticated_link=True)
 
 
 def main():
@@ -320,14 +320,6 @@ def main():
   parser.add_argument('--build-number', help='Build number.')
   parser.add_argument('--test-name', help='The name of the test.',
                       required=True)
-  parser.add_argument('--server-url', help='The url of the server.',
-                      default='https://storage.cloud.google.com')
-  parser.add_argument(
-      '--content-type',
-      help=('Content type, which is used to determine '
-            'whether to download the file, or view in browser.'),
-      default='text/html',
-      choices=['text/html', 'application/octet-stream'])
   parser.add_argument(
       '-o', '--output-json',
       help='(Swarming Merge Script API)'
@@ -388,13 +380,11 @@ def main():
   if not os.path.exists(json_file):
     raise IOError('--json-file %s not found.' % json_file)
 
-  result_html_string = result_details(json_file, args.cs_base_url,
-                                      args.bucket, args.server_url)
+  result_html_string = result_details(json_file, args.cs_base_url)
   result_details_link = upload_to_google_bucket(
       result_html_string.encode('UTF-8'),
       args.test_name, builder_name,
-      build_number, args.bucket,
-      args.server_url, args.content_type)
+      build_number, args.bucket)
 
   if args.output_json:
     with open(json_file) as original_json_file:

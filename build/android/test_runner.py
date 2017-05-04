@@ -163,6 +163,10 @@ def AddCommonOptions(parser):
       '--flakiness-dashboard-server',
       dest='flakiness_dashboard_server',
       help=argparse.SUPPRESS)
+  parser.add_argument(
+      '--gs-results-bucket',
+      help='Google Storage bucket to upload results to.')
+
 
   parser.add_argument(
       '--output-directory',
