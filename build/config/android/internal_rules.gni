@@ -615,7 +615,12 @@ template("test_runner_script") {
       test_runner_args += [ "--tool=asan" ]
     }
 
-    generated_script = "$root_build_dir/bin/run_${_test_name}"
+    if (defined(invoker.generated_script)) {
+      assert(_test_name != "" || true)  # Mark _test_name as used.
+      generated_script = invoker.generated_script
+    } else {
+      generated_script = "$root_build_dir/bin/run_${_test_name}"
+    }
     outputs = [
       generated_script,
     ]
