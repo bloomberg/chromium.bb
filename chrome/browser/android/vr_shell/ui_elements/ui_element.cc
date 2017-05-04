@@ -36,6 +36,10 @@ Transform::Transform() {
   MakeIdentity();
 }
 
+Transform::Transform(const Transform& other) {
+  to_world = other.to_world;
+}
+
 void Transform::MakeIdentity() {
   vr::SetIdentityM(&to_world);
 }
@@ -121,7 +125,7 @@ void UiElement::OnButtonDown() {}
 void UiElement::OnButtonUp() {}
 
 void UiElement::Animate(const base::TimeTicks& time) {
-  for (auto& it : animations) {
+  for (auto& it : animations_) {
     Animation& animation = *it;
     if (time < animation.start)
       continue;
@@ -130,27 +134,27 @@ void UiElement::Animate(const base::TimeTicks& time) {
     if (animation.from.size() == 0) {
       switch (animation.property) {
         case Animation::SIZE:
-          animation.from.push_back(size.x());
-          animation.from.push_back(size.y());
+          animation.from.push_back(size_.x());
+          animation.from.push_back(size_.y());
           break;
         case Animation::SCALE:
-          animation.from.push_back(scale.x());
-          animation.from.push_back(scale.y());
-          animation.from.push_back(scale.z());
+          animation.from.push_back(scale_.x());
+          animation.from.push_back(scale_.y());
+          animation.from.push_back(scale_.z());
           break;
         case Animation::ROTATION:
-          animation.from.push_back(rotation.x);
-          animation.from.push_back(rotation.y);
-          animation.from.push_back(rotation.z);
-          animation.from.push_back(rotation.angle);
+          animation.from.push_back(rotation_.x);
+          animation.from.push_back(rotation_.y);
+          animation.from.push_back(rotation_.z);
+          animation.from.push_back(rotation_.angle);
           break;
         case Animation::TRANSLATION:
-          animation.from.push_back(translation.x());
-          animation.from.push_back(translation.y());
-          animation.from.push_back(translation.z());
+          animation.from.push_back(translation_.x());
+          animation.from.push_back(translation_.y());
+          animation.from.push_back(translation_.z());
           break;
         case Animation::OPACITY:
-          animation.from.push_back(opacity);
+          animation.from.push_back(opacity_);
           break;
       }
     }
@@ -172,34 +176,34 @@ void UiElement::Animate(const base::TimeTicks& time) {
     switch (animation.property) {
       case Animation::SIZE:
         CHECK_EQ(animation.from.size(), 2u);
-        size.set_x(values[0]);
-        size.set_y(values[1]);
+        size_.set_x(values[0]);
+        size_.set_y(values[1]);
         break;
       case Animation::SCALE:
         CHECK_EQ(animation.from.size(), 3u);
-        scale = {values[0], values[1], values[2]};
+        scale_ = {values[0], values[1], values[2]};
         break;
       case Animation::ROTATION:
         CHECK_EQ(animation.from.size(), 4u);
-        rotation.x = values[0];
-        rotation.y = values[1];
-        rotation.z = values[2];
-        rotation.angle = values[3];
+        rotation_.x = values[0];
+        rotation_.y = values[1];
+        rotation_.z = values[2];
+        rotation_.angle = values[3];
         break;
       case Animation::TRANSLATION:
         CHECK_EQ(animation.from.size(), 3u);
-        translation = {values[0], values[1], values[2]};
+        translation_ = {values[0], values[1], values[2]};
         break;
       case Animation::OPACITY:
         CHECK_EQ(animation.from.size(), 1u);
-        opacity = values[0];
+        opacity_ = values[0];
         break;
     }
   }
-  for (auto it = animations.begin(); it != animations.end();) {
+  for (auto it = animations_.begin(); it != animations_.end();) {
     const Animation& animation = **it;
     if (time >= (animation.start + animation.duration)) {
-      it = animations.erase(it);
+      it = animations_.erase(it);
     } else {
       ++it;
     }
@@ -207,11 +211,11 @@ void UiElement::Animate(const base::TimeTicks& time) {
 }
 
 bool UiElement::IsVisible() const {
-  return visible && computed_opacity > 0.0f;
+  return visible_ && computed_opacity_ > 0.0f;
 }
 
 bool UiElement::IsHitTestable() const {
-  return IsVisible() && hit_testable;
+  return IsVisible() && hit_testable_;
 }
 
 }  // namespace vr_shell

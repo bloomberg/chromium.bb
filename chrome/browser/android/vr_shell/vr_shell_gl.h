@@ -42,12 +42,12 @@ namespace vr_shell {
 
 class FPSMeter;
 class MailboxToSurfaceBridge;
+class UiElement;
 class UiScene;
 class VrBrowserInterface;
 class VrController;
 class VrShell;
 class VrShellRenderer;
-struct UiElement;
 
 struct WebVrBounds {
   WebVrBounds(const gfx::RectF& left,

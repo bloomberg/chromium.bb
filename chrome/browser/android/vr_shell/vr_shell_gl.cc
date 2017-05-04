@@ -605,7 +605,7 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
   InputTarget input_target = InputTarget::NONE;
   int pixel_x = 0;
   int pixel_y = 0;
-  if (target_element_ != nullptr && target_element_->fill == Fill::CONTENT) {
+  if (target_element_ != nullptr && target_element_->fill() == Fill::CONTENT) {
     input_target = InputTarget::CONTENT;
     gfx::RectF pixel_rect(0, 0, content_tex_css_width_,
                           content_tex_css_height_);
@@ -735,19 +735,19 @@ void VrShellGl::SendInputToContent(InputTarget input_target,
 void VrShellGl::SendInputToUiElements(UiElement* target_element) {
   if (target_element != previous_target_element_) {
     if (previous_target_element_ &&
-        previous_target_element_->fill != Fill::CONTENT) {
+        previous_target_element_->fill() != Fill::CONTENT) {
       task_runner_->PostTask(
           FROM_HERE, base::Bind(&UiElement::OnHoverLeave,
                                 base::Unretained(previous_target_element_)));
     }
-    if (target_element && target_element->fill != Fill::CONTENT) {
+    if (target_element && target_element->fill() != Fill::CONTENT) {
       task_runner_->PostTask(FROM_HERE,
                              base::Bind(&UiElement::OnHoverEnter,
                                         base::Unretained(target_element)));
     }
     click_target_element_ = nullptr;
   }
-  if (target_element && target_element->fill != Fill::CONTENT) {
+  if (target_element && target_element->fill() != Fill::CONTENT) {
     if (controller_->ButtonDownHappened(
             gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK)) {
       task_runner_->PostTask(FROM_HERE,
@@ -1007,23 +1007,24 @@ void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
     vr::Mat4f transform;
     vr::MatrixMul(view_proj_matrix, rect->TransformMatrix(), &transform);
 
-    switch (rect->fill) {
+    switch (rect->fill()) {
       case Fill::OPAQUE_GRADIENT: {
         vr_shell_renderer_->GetGradientQuadRenderer()->Draw(
-            transform, rect->edge_color, rect->center_color,
-            rect->computed_opacity);
+            transform, rect->edge_color(), rect->center_color(),
+            rect->computed_opacity());
         break;
       }
       case Fill::GRID_GRADIENT: {
         vr_shell_renderer_->GetGradientGridRenderer()->Draw(
-            transform, rect->edge_color, rect->center_color,
-            rect->gridline_count, rect->computed_opacity);
+            transform, rect->edge_color(), rect->center_color(),
+            rect->gridline_count(), rect->computed_opacity());
         break;
       }
       case Fill::CONTENT: {
         gfx::RectF copy_rect(0, 0, 1, 1);
         vr_shell_renderer_->GetExternalTexturedQuadRenderer()->Draw(
-            content_texture_id_, transform, copy_rect, rect->computed_opacity);
+            content_texture_id_, transform, copy_rect,
+            rect->computed_opacity());
         break;
       }
       case Fill::SELF: {
@@ -1059,8 +1060,8 @@ std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(
   std::sort(
       zOrderedElementPairs.begin(), zOrderedElementPairs.end(),
       [](const DistanceElementPair& first, const DistanceElementPair& second) {
-        if (first.second->draw_phase != second.second->draw_phase) {
-          return first.second->draw_phase < second.second->draw_phase;
+        if (first.second->draw_phase() != second.second->draw_phase()) {
+          return first.second->draw_phase() < second.second->draw_phase();
         } else {
           return first.first > second.first;
         }

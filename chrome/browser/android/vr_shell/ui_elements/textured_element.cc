@@ -24,10 +24,10 @@ void TexturedElement::Initialize() {
       texture_size_.width(), texture_size_.height());
   GetTexture()->DrawAndLayout(surface->getCanvas(), texture_size_);
   Flush(surface.get());
-  fill = Fill::SELF;
+  set_fill(Fill::SELF);
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
-  float y = drawn_size.height() / drawn_size.width() * size.x();
-  size = {size.x(), y, 1};
+  float y = drawn_size.height() / drawn_size.width() * size().x();
+  set_size({size().x(), y, 1});
 }
 
 void TexturedElement::Render(VrShellRenderer* renderer,
@@ -36,7 +36,7 @@ void TexturedElement::Render(VrShellRenderer* renderer,
   gfx::RectF copy_rect(0, 0, drawn_size.width() / texture_size_.width(),
                        drawn_size.height() / texture_size_.height());
   renderer->GetTexturedQuadRenderer()->AddQuad(
-      texture_handle_, view_proj_matrix, copy_rect, opacity);
+      texture_handle_, view_proj_matrix, copy_rect, opacity());
 }
 
 void TexturedElement::Flush(SkSurface* surface) {

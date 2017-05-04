@@ -27,10 +27,10 @@ void ApplyAnchoring(const UiElement& parent,
   float x_offset;
   switch (x_anchoring) {
     case XLEFT:
-      x_offset = -0.5f * parent.size.x();
+      x_offset = -0.5f * parent.size().x();
       break;
     case XRIGHT:
-      x_offset = 0.5f * parent.size.x();
+      x_offset = 0.5f * parent.size().x();
       break;
     case XNONE:
       x_offset = 0.0f;
@@ -39,10 +39,10 @@ void ApplyAnchoring(const UiElement& parent,
   float y_offset;
   switch (y_anchoring) {
     case YTOP:
-      y_offset = 0.5f * parent.size.y();
+      y_offset = 0.5f * parent.size().y();
       break;
     case YBOTTOM:
-      y_offset = -0.5f * parent.size.y();
+      y_offset = -0.5f * parent.size().y();
       break;
     case YNONE:
       y_offset = 0.0f;
@@ -54,13 +54,13 @@ void ApplyAnchoring(const UiElement& parent,
 }  // namespace
 
 void UiScene::AddUiElement(std::unique_ptr<UiElement> element) {
-  CHECK_GE(element->id, 0);
-  CHECK_EQ(GetUiElementById(element->id), nullptr);
-  if (element->parent_id >= 0) {
-    CHECK_NE(GetUiElementById(element->parent_id), nullptr);
+  CHECK_GE(element->id(), 0);
+  CHECK_EQ(GetUiElementById(element->id()), nullptr);
+  if (element->parent_id() >= 0) {
+    CHECK_NE(GetUiElementById(element->parent_id()), nullptr);
   } else {
-    CHECK_EQ(element->x_anchoring, XAnchoring::XNONE);
-    CHECK_EQ(element->y_anchoring, YAnchoring::YNONE);
+    CHECK_EQ(element->x_anchoring(), XAnchoring::XNONE);
+    CHECK_EQ(element->y_anchoring(), YAnchoring::YNONE);
   }
   if (gl_initialized_)
     element->Initialize();
@@ -69,8 +69,8 @@ void UiScene::AddUiElement(std::unique_ptr<UiElement> element) {
 
 void UiScene::RemoveUiElement(int element_id) {
   for (auto it = ui_elements_.begin(); it != ui_elements_.end(); ++it) {
-    if ((*it)->id == element_id) {
-      if ((*it)->fill == Fill::CONTENT) {
+    if ((*it)->id() == element_id) {
+      if ((*it)->fill() == Fill::CONTENT) {
         content_element_ = nullptr;
       }
       ui_elements_.erase(it);
@@ -83,16 +83,16 @@ void UiScene::AddAnimation(int element_id,
                            std::unique_ptr<Animation> animation) {
   UiElement* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
-  for (const std::unique_ptr<Animation>& existing : element->animations) {
+  for (const std::unique_ptr<Animation>& existing : element->animations()) {
     CHECK_NE(existing->id, animation->id);
   }
-  element->animations.emplace_back(std::move(animation));
+  element->animations().emplace_back(std::move(animation));
 }
 
 void UiScene::RemoveAnimation(int element_id, int animation_id) {
   UiElement* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
-  auto& animations = element->animations;
+  auto& animations = element->animations();
   for (auto it = animations.begin(); it != animations.end(); ++it) {
     const Animation& existing_animation = **it;
     if (existing_animation.id == animation_id) {
@@ -103,10 +103,10 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
 }
 
 void UiScene::UpdateTransforms(const base::TimeTicks& time) {
-  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
+  for (const auto& element : ui_elements_) {
     // Process all animations before calculating object transforms.
     element->Animate(time);
-    element->dirty = true;
+    element->set_dirty(true);
   }
   for (auto& element : ui_elements_) {
     ApplyRecursiveTransforms(element.get());
@@ -114,8 +114,8 @@ void UiScene::UpdateTransforms(const base::TimeTicks& time) {
 }
 
 UiElement* UiScene::GetUiElementById(int element_id) {
-  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
-    if (element->id == element_id) {
+  for (const auto& element : ui_elements_) {
+    if (element->id() == element_id) {
       return element.get();
     }
   }
@@ -124,8 +124,8 @@ UiElement* UiScene::GetUiElementById(int element_id) {
 
 std::vector<const UiElement*> UiScene::GetWorldElements() const {
   std::vector<const UiElement*> elements;
-  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
-    if (element->IsVisible() && !element->lock_to_fov) {
+  for (const auto& element : ui_elements_) {
+    if (element->IsVisible() && !element->lock_to_fov()) {
       elements.push_back(element.get());
     }
   }
@@ -134,8 +134,8 @@ std::vector<const UiElement*> UiScene::GetWorldElements() const {
 
 std::vector<const UiElement*> UiScene::GetHeadLockedElements() const {
   std::vector<const UiElement*> elements;
-  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
-    if (element->IsVisible() && element->lock_to_fov) {
+  for (const auto& element : ui_elements_) {
+    if (element->IsVisible() && element->lock_to_fov()) {
       elements.push_back(element.get());
     }
   }
@@ -179,48 +179,49 @@ UiScene::UiScene() = default;
 UiScene::~UiScene() = default;
 
 void UiScene::ApplyRecursiveTransforms(UiElement* element) {
-  if (!element->dirty)
+  if (!element->dirty())
     return;
 
   UiElement* parent = nullptr;
-  if (element->parent_id >= 0) {
-    parent = GetUiElementById(element->parent_id);
+  if (element->parent_id() >= 0) {
+    parent = GetUiElementById(element->parent_id());
     CHECK(parent != nullptr);
   }
 
   Transform* transform = element->mutable_transform();
   transform->MakeIdentity();
-  transform->Scale(element->size);
-  element->computed_opacity = element->opacity;
-  element->computed_lock_to_fov = element->lock_to_fov;
+  transform->Scale(element->size());
+  element->set_computed_opacity(element->opacity());
+  element->set_computed_lock_to_fov(element->lock_to_fov());
 
   // Compute an inheritable transformation that can be applied to this element,
   // and it's children, if applicable.
-  Transform* inheritable = &element->inheritable_transform;
+  Transform* inheritable = &element->inheritable_transform();
   inheritable->MakeIdentity();
-  inheritable->Scale(element->scale);
-  inheritable->Rotate(element->rotation);
-  inheritable->Translate(element->translation);
+  inheritable->Scale(element->scale());
+  inheritable->Rotate(element->rotation());
+  inheritable->Translate(element->translation());
   if (parent) {
-    ApplyAnchoring(*parent, element->x_anchoring, element->y_anchoring,
+    ApplyAnchoring(*parent, element->x_anchoring(), element->y_anchoring(),
                    inheritable);
     ApplyRecursiveTransforms(parent);
-    vr::MatrixMul(parent->inheritable_transform.to_world, inheritable->to_world,
-                  &inheritable->to_world);
+    vr::MatrixMul(parent->inheritable_transform().to_world,
+                  inheritable->to_world, &inheritable->to_world);
 
-    element->computed_opacity *= parent->opacity;
-    element->computed_lock_to_fov = parent->lock_to_fov;
+    element->set_computed_opacity(element->computed_opacity() *
+                                  parent->opacity());
+    element->set_computed_lock_to_fov(parent->lock_to_fov());
   }
 
   vr::MatrixMul(inheritable->to_world, transform->to_world,
                 &transform->to_world);
-  element->dirty = false;
+  element->set_dirty(false);
 }
 
 // TODO(mthiesse): Move this to UiSceneManager.
 void UiScene::OnGLInitialized() {
   gl_initialized_ = true;
-  for (const std::unique_ptr<UiElement>& element : ui_elements_) {
+  for (auto& element : ui_elements_) {
     element->Initialize();
   }
 }
