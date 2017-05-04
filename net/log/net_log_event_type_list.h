@@ -1234,6 +1234,10 @@ EVENT_TYPE(HTTP_TRANSACTION_SET_PRIORITY)
 //   }
 EVENT_TYPE(HTTP_TRANSACTION_RESTART_AFTER_ERROR)
 
+// This event is sent when we try to restart a transaction after the initial
+// attempt failed with HTTP 421 Misdirected Requested.
+EVENT_TYPE(HTTP_TRANSACTION_RESTART_MISDIRECTED_REQUEST)
+
 // ------------------------------------------------------------------------
 // BidirectionalStream
 // ------------------------------------------------------------------------

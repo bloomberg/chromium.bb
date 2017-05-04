@@ -1301,8 +1301,16 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  if (response_.headers->response_code() == 421) {
-    return HandleIOError(ERR_MISDIRECTED_REQUEST);
+  if (response_.headers->response_code() == 421 &&
+      (enable_ip_based_pooling_ || enable_alternative_services_)) {
+    // Retry the request with both IP based pooling and Alternative Services
+    // disabled.
+    enable_ip_based_pooling_ = false;
+    enable_alternative_services_ = false;
+    net_log_.AddEvent(
+        NetLogEventType::HTTP_TRANSACTION_RESTART_MISDIRECTED_REQUEST);
+    ResetConnectionAndRequestForResend();
+    return OK;
   }
 
   if (IsSecureRequest()) {
@@ -1595,19 +1603,6 @@ int HttpNetworkTransaction::HandleIOError(int error) {
         ResetConnectionAndRequestForResend();
         error = OK;
       }
-      break;
-    case ERR_MISDIRECTED_REQUEST:
-      // If this is the second try, just give up.
-      if (!enable_ip_based_pooling_ && !enable_alternative_services_)
-        return OK;
-      // Otherwise retry the request with both IP based pooling
-      // and Alternative Services disabled.
-      enable_ip_based_pooling_ = false;
-      enable_alternative_services_ = false;
-      net_log_.AddEventWithNetErrorCode(
-          NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
-      ResetConnectionAndRequestForResend();
-      error = OK;
       break;
   }
   return error;
