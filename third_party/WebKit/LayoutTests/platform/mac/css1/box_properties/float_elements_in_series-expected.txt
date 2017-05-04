@@ -60,63 +60,35 @@ layer at (0,0) size 785x699 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             LayoutTableRow {TR} at (0,0) size 620x19
               LayoutTableCell {TD} at (0,9) size 20x1 [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (20,9) size 100x1 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 100x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (120,9) size 20x0 [bgcolor=#000000] [r=0 c=2 rs=1 cs=1]
               LayoutTableCell {TD} at (140,9) size 20x1 [bgcolor=#FFFFFF] [r=0 c=3 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (160,9) size 20x1 [bgcolor=#000000] [r=0 c=4 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (180,9) size 100x1 [bgcolor=#0000FF] [r=0 c=5 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 100x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (280,9) size 20x1 [bgcolor=#000000] [r=0 c=6 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (300,9) size 20x1 [bgcolor=#FFFFFF] [r=0 c=7 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (320,9) size 20x1 [bgcolor=#000000] [r=0 c=8 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (340,9) size 100x1 [bgcolor=#FF0000] [r=0 c=9 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 100x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (440,0) size 20x19 [bgcolor=#000000] [r=0 c=10 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutText {#text} at (0,1) size 5x18
                   text run at (0,1) width 5: ";"
               LayoutTableCell {TD} at (460,9) size 20x1 [bgcolor=#FFFFFF] [r=0 c=11 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (480,9) size 20x1 [bgcolor=#000000] [r=0 c=12 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (500,9) size 100x1 [bgcolor=#008000] [r=0 c=13 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 100x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
               LayoutTableCell {TD} at (600,9) size 20x1 [bgcolor=#000000] [r=0 c=14 rs=1 cs=1]
                 LayoutBlockFlow {IMG} at (0,0) size 20x1
-                  LayoutInline {SPAN} at (0,0) size 0x0
-                    LayoutInline {SPAN} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,442) size 769x229 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x227
           LayoutTableRow {TR} at (0,0) size 767x26
@@ -156,60 +128,116 @@ layer at (0,0) size 785x699 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     LayoutTableRow {TR} at (0,0) size 620x19
                       LayoutTableCell {TD} at (0,9) size 20x1 [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (20,9) size 100x1 [bgcolor=#FFFF00] [r=0 c=1 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 100x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (120,9) size 20x0 [bgcolor=#000000] [r=0 c=2 rs=1 cs=1]
                       LayoutTableCell {TD} at (140,9) size 20x1 [bgcolor=#FFFFFF] [r=0 c=3 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (160,9) size 20x1 [bgcolor=#000000] [r=0 c=4 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (180,9) size 100x1 [bgcolor=#0000FF] [r=0 c=5 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 100x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (280,9) size 20x1 [bgcolor=#000000] [r=0 c=6 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (300,9) size 20x1 [bgcolor=#FFFFFF] [r=0 c=7 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (320,9) size 20x1 [bgcolor=#000000] [r=0 c=8 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (340,9) size 100x1 [bgcolor=#FF0000] [r=0 c=9 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 100x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (440,0) size 20x19 [bgcolor=#000000] [r=0 c=10 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                         LayoutText {#text} at (0,1) size 5x18
                           text run at (0,1) width 5: ";"
                       LayoutTableCell {TD} at (460,9) size 20x1 [bgcolor=#FFFFFF] [r=0 c=11 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (480,9) size 20x1 [bgcolor=#000000] [r=0 c=12 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (500,9) size 100x1 [bgcolor=#008000] [r=0 c=13 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 100x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
                       LayoutTableCell {TD} at (600,9) size 20x1 [bgcolor=#000000] [r=0 c=14 rs=1 cs=1]
                         LayoutBlockFlow {IMG} at (0,0) size 20x1
-                          LayoutInline {SPAN} at (0,0) size 0x0
-                            LayoutInline {SPAN} at (0,0) size 0x0
+layer at (8,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (28,420) size 100x1
+  LayoutBlockFlow {SPAN} at (0,0) size 100x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (148,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (168,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (188,420) size 100x1
+  LayoutBlockFlow {SPAN} at (0,0) size 100x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (288,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (308,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (328,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (348,420) size 100x1
+  LayoutBlockFlow {SPAN} at (0,0) size 100x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (448,411) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (468,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (488,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (508,420) size 100x1
+  LayoutBlockFlow {SPAN} at (0,0) size 100x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (608,420) size 20x1
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (25,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (45,644) size 100x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 100x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (165,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (185,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (205,644) size 100x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 100x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (305,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (325,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (345,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (365,644) size 100x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 100x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (465,635) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (485,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (505,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (525,644) size 100x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 100x1
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (625,644) size 20x1 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {SPAN} at (0,0) size 20x1
+    LayoutInline {SPAN} at (0,0) size 0x0
