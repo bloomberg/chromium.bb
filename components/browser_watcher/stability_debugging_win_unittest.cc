@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
+#include "components/browser_watcher/stability_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 

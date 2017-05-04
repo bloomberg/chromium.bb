@@ -57,7 +57,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/browser_watcher/stability_debugging.h"
+#include "components/browser_watcher/stability_paths.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"

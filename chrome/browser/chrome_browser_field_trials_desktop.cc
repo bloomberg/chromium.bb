@@ -25,7 +25,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_watcher/features.h"
-#include "components/browser_watcher/stability_debugging.h"
+#include "components/browser_watcher/stability_paths.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/content_switches.h"
 #include "media/media_features.h"

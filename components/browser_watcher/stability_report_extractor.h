@@ -4,8 +4,8 @@
 //
 // Implementation of the collection of a stability file to a protocol buffer.
 
-#ifndef COMPONENTS_BROWSER_WATCHER_POSTMORTEM_REPORT_EXTRACTOR_H_
-#define COMPONENTS_BROWSER_WATCHER_POSTMORTEM_REPORT_EXTRACTOR_H_
+#ifndef COMPONENTS_BROWSER_WATCHER_STABILITY_REPORT_EXTRACTOR_H_
+#define COMPONENTS_BROWSER_WATCHER_STABILITY_REPORT_EXTRACTOR_H_
 
 #include "base/files/file_path.h"
 #include "components/browser_watcher/stability_report.pb.h"
@@ -33,4 +33,4 @@ CollectionStatus Extract(const base::FilePath& stability_file,
 
 }  // namespace browser_watcher
 
-#endif  // COMPONENTS_BROWSER_WATCHER_POSTMORTEM_REPORT_EXTRACTOR_H_
+#endif  // COMPONENTS_BROWSER_WATCHER_STABILITY_REPORT_EXTRACTOR_H_

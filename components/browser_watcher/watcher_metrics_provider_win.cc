@@ -25,7 +25,7 @@
 #include "base/win/registry.h"
 #include "components/browser_watcher/features.h"
 #include "components/browser_watcher/postmortem_report_collector.h"
-#include "components/browser_watcher/stability_debugging.h"
+#include "components/browser_watcher/stability_paths.h"
 #include "components/browser_watcher/system_session_analyzer_win.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 
