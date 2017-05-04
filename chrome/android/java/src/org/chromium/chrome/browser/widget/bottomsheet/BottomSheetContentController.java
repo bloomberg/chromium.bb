@@ -106,6 +106,16 @@ public class BottomSheetContentController extends BottomNavigationView
             // TODO(twellington): determine a policy for destroying the
             //                    SuggestionsBottomSheetContent.
         }
+
+        @Override
+        public void onSheetContentChanged(BottomSheetContent newContent) {
+            if (!mShouldOpenSheetOnNextContentChange) return;
+
+            mShouldOpenSheetOnNextContentChange = false;
+            if (!mBottomSheet.isSheetOpen()) {
+                mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
+            }
+        }
     };
 
     private BottomSheet mBottomSheet;
@@ -115,6 +125,7 @@ public class BottomSheetContentController extends BottomNavigationView
     private int mSelectedItemId;
     private boolean mDefaultContentInitialized;
     private ChromeActivity mActivity;
+    private boolean mShouldOpenSheetOnNextContentChange;
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
@@ -175,6 +186,19 @@ public class BottomSheetContentController extends BottomNavigationView
         if (mDefaultContentInitialized) return;
         showBottomSheetContent(R.id.action_home);
         mDefaultContentInitialized = true;
+    }
+
+    /**
+     * Shows the specified {@link BottomSheetContent} and opens the {@link BottomSheet}.
+     * @param itemId The menu item id of the {@link BottomSheetContent} to show.
+     */
+    public void showContentAndOpenSheet(int itemId) {
+        if (itemId != mSelectedItemId) {
+            mShouldOpenSheetOnNextContentChange = true;
+            selectItem(itemId);
+        } else if (!mBottomSheet.isSheetOpen()) {
+            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
+        }
     }
 
     @Override
@@ -258,10 +282,18 @@ public class BottomSheetContentController extends BottomNavigationView
      * @param itemId The id of the MenuItem to select.
      */
     @VisibleForTesting
-    public void selectItemForTests(int itemId) {
+    public void selectItem(int itemId) {
         // TODO(twellington): A #setSelectedItemId() method was added to the support library
         //                    recently. Replace this custom implementation with that method after
         //                    the support library is rolled.
         onNavigationItemSelected(getMenu().findItem(itemId));
+    }
+
+    @VisibleForTesting
+    public int getSelectedItemIdForTests() {
+        // TODO(twellington): A #getSelectedItemId() method was added to the support library
+        //                    recently. Replace this custom implementation with that method after
+        //                    the support library is rolled.
+        return mSelectedItemId;
     }
 }
