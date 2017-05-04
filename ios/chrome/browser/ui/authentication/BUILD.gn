@@ -9,6 +9,9 @@ bundle_data("resources") {
     "resources/signin_confirmation_more.png",
     "resources/signin_confirmation_more@2x.png",
     "resources/signin_confirmation_more@3x.png",
+    "resources/signin_promo_close_gray.png",
+    "resources/signin_promo_close_gray@2x.png",
+    "resources/signin_promo_close_gray@3x.png",
   ]
   if (is_chrome_branded) {
     sources += [

@@ -13,11 +13,18 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Close button size.
+const CGFloat kCloseButtonSize = 24;
+}
+
 @implementation BookmarkSigninPromoCell {
   SigninPromoView* _signinPromoView;
+  UIButton* _closeButton;
 }
 
 @synthesize signinPromoView = _signinPromoView;
+@synthesize closeButtonAction = _closeButtonAction;
 
 + (NSString*)reuseIdentifier {
   return @"BookmarkSigninPromoCell";
@@ -35,6 +42,21 @@
     _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_signinPromoView];
     AddSameConstraints(_signinPromoView, contentView);
+
+    _closeButton = [[UIButton alloc]
+        initWithFrame:CGRectMake(0, 0, kCloseButtonSize, kCloseButtonSize)];
+    [_closeButton addTarget:self
+                     action:@selector(closeButtonAction:)
+           forControlEvents:UIControlEventTouchUpInside];
+    _closeButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView addSubview:_closeButton];
+    [_closeButton setImage:[UIImage imageNamed:@"signin_promo_close_gray"]
+                  forState:UIControlStateNormal];
+    NSArray* buttonVisualConstraints =
+        @[ @"H:[closeButton]-|", @"V:|-[closeButton]" ];
+    NSDictionary* views = @{ @"closeButton" : _closeButton };
+    ApplyVisualConstraints(buttonVisualConstraints, views);
+
     _signinPromoView.backgroundColor = [UIColor whiteColor];
     _signinPromoView.textLabel.text =
         l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_SETTINGS);
@@ -52,6 +74,16 @@
   // Re-layout with the new preferred width to allow the label to adjust its
   // height.
   [super layoutSubviews];
+}
+
+- (void)prepareForReuse {
+  _closeButtonAction = nil;
+}
+
+- (void)closeButtonAction:(id)sender {
+  if (_closeButtonAction) {
+    _closeButtonAction();
+  }
 }
 
 @end

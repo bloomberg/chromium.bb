@@ -414,6 +414,10 @@ CGSize PreferredCellSizeForWidth(UICollectionViewCell* cell, CGFloat width) {
       signinPromoCell.signinPromoView.sendChromeCommand = YES;
       [[_signinPromoViewMediator createConfigurator]
           configureSigninPromoView:signinPromoCell.signinPromoView];
+      __weak BookmarkFolderCollectionView* weakSelf = self;
+      signinPromoCell.closeButtonAction = ^() {
+        [weakSelf.delegate bookmarkCollectionViewDismissPromo:self];
+      };
       return signinPromoCell;
     } else {
       BookmarkPromoCell* promoCell = [self.collectionView
