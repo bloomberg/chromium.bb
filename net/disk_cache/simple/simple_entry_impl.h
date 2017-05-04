@@ -19,6 +19,7 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_operation.h"
+#include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 
@@ -245,12 +246,13 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                               std::unique_ptr<int> result);
 
   // Called after an asynchronous read. Updates |crc32s_| if possible.
-  void ReadOperationComplete(int stream_index,
-                             int offset,
-                             const CompletionCallback& completion_callback,
-                             std::unique_ptr<uint32_t> read_crc32,
-                             std::unique_ptr<SimpleEntryStat> entry_stat,
-                             std::unique_ptr<int> result);
+  void ReadOperationComplete(
+      int stream_index,
+      int offset,
+      const CompletionCallback& completion_callback,
+      std::unique_ptr<SimpleSynchronousEntry::CRCRequest> crc_request,
+      std::unique_ptr<SimpleEntryStat> entry_stat,
+      std::unique_ptr<int> result);
 
   // Called after an asynchronous write completes.
   // |buf| parameter brings back a reference to net::IOBuffer to the original
@@ -281,13 +283,11 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                              State state_to_restore,
                              int result);
 
-  // Called after validating the checksums on an entry. Passes through the
-  // original result if successful, propagates the error if the checksum does
-  // not validate.
-  void ChecksumOperationComplete(int original_result,
-                                 int stream_index,
-                                 const CompletionCallback& completion_callback,
-                                 std::unique_ptr<int> result);
+  // Reports reads result potentially refining status based on |crc_result|.
+  // |crc_result| is permitted to be null.
+  void RecordReadResultConsideringChecksum(
+      int result,
+      std::unique_ptr<SimpleSynchronousEntry::CRCRequest> crc_result) const;
 
   // Called after completion of asynchronous IO and receiving file metadata for
   // the entry in |entry_stat|. Updates the metadata in the entry and in the
