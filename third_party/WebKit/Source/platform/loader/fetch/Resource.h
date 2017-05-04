@@ -106,7 +106,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void SetEncoding(const String&) {}
   virtual String Encoding() const { return String(); }
   virtual void AppendData(const char*, size_t);
-  virtual void GetError(const ResourceError&);
+  virtual void FinishAsError(const ResourceError&);
   virtual void SetCORSFailed() {}
 
   void SetNeedsSynchronousCacheHit(bool needs_synchronous_cache_hit) {

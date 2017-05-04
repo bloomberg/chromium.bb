@@ -82,11 +82,11 @@ class CORE_EXPORT ImageResource final
   bool CanReuse(const FetchParameters&) const override;
 
   PassRefPtr<const SharedBuffer> ResourceBuffer() const override;
-  void AppendData(const char*, size_t) override;
-  void GetError(const ResourceError&) override;
   void ResponseReceived(const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;
+  void AppendData(const char*, size_t) override;
   void Finish(double finish_time = 0.0) override;
+  void FinishAsError(const ResourceError&) override;
 
   // For compatibility, images keep loading even if there are HTTP errors.
   bool ShouldIgnoreHTTPStatusCodeErrors() const override { return true; }

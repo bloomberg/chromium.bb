@@ -451,7 +451,7 @@ Resource* ResourceFetcher::ResourceForBlockedRequest(
     ResourceRequestBlockedReason blocked_reason) {
   Resource* resource = factory.Create(params.GetResourceRequest(),
                                       params.Options(), params.Charset());
-  resource->GetError(ResourceError::CancelledDueToAccessCheckError(
+  resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
       params.Url(), blocked_reason));
   return resource;
 }
@@ -1317,7 +1317,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
 
   if (error.IsCancellation())
     RemovePreload(resource);
-  resource->GetError(error);
+  resource->FinishAsError(error);
 
   HandleLoadCompletion(resource);
 }
