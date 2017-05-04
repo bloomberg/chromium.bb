@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/content_restriction.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
 #include "pdf/pdf.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -48,7 +49,6 @@ namespace chrome_pdf {
 
 namespace {
 
-const char kChromePrint[] = "chrome://print/";
 const char kChromeExtension[] =
     "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai";
 
@@ -218,11 +218,11 @@ const PPP_Pdf ppp_private = {
     &EnableAccessibility,
 };
 
-int ExtractPrintPreviewPageIndex(const std::string& src_url) {
+int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
   // Sample |src_url| format: chrome://print/id/page_index/print.pdf
-  std::vector<std::string> url_substr =
-      base::SplitString(src_url.substr(strlen(kChromePrint)), "/",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<base::StringPiece> url_substr =
+      base::SplitStringPiece(src_url.substr(strlen(chrome::kChromeUIPrintURL)),
+                             "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (url_substr.size() != 3)
     return -1;
 
@@ -235,8 +235,8 @@ int ExtractPrintPreviewPageIndex(const std::string& src_url) {
   return page_index;
 }
 
-bool IsPrintPreviewUrl(const std::string& url) {
-  return url.substr(0, strlen(kChromePrint)) == kChromePrint;
+bool IsPrintPreviewUrl(base::StringPiece url) {
+  return url.starts_with(chrome::kChromeUIPrintURL);
 }
 
 void ScalePoint(float scale, pp::Point* point) {
@@ -327,10 +327,9 @@ bool OutOfProcessInstance::Init(uint32_t argc,
     return false;
   std::string document_url = document_url_var.AsString();
   base::StringPiece document_url_piece(document_url);
-  is_print_preview_ = document_url_piece.starts_with(kChromePrint);
-  if (!document_url_piece.starts_with(kChromeExtension) && !is_print_preview_) {
+  is_print_preview_ = IsPrintPreviewUrl(document_url_piece);
+  if (!document_url_piece.starts_with(kChromeExtension) && !is_print_preview_)
     return false;
-  }
 
   // Check if the plugin is full frame. This is passed in from JS.
   for (uint32_t i = 0; i < argc; ++i) {
@@ -1573,14 +1572,14 @@ void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
 }
 
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,
-                                                  int dst_page_index) {
+                                                  int dest_page_index) {
   DCHECK(IsPrintPreview());
 
   int src_page_index = ExtractPrintPreviewPageIndex(url);
   if (src_page_index < 1)
     return;
 
-  preview_pages_info_.push(std::make_pair(url, dst_page_index));
+  preview_pages_info_.push(std::make_pair(url, dest_page_index));
   LoadAvailablePreviewPage();
 }
 
@@ -1591,9 +1590,9 @@ void OutOfProcessInstance::LoadAvailablePreviewPage() {
   }
 
   const std::string& url = preview_pages_info_.front().first;
-  int dst_page_index = preview_pages_info_.front().second;
+  int dest_page_index = preview_pages_info_.front().second;
   int src_page_index = ExtractPrintPreviewPageIndex(url);
-  if (src_page_index < 1 || dst_page_index >= print_preview_page_count_ ||
+  if (src_page_index < 1 || dest_page_index >= print_preview_page_count_ ||
       preview_document_load_state_ == LOAD_STATE_LOADING) {
     return;
   }

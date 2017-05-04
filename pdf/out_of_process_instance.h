@@ -200,9 +200,9 @@ class OutOfProcessInstance : public pp::Instance,
   // Process the preview page data information. |src_url| specifies the preview
   // page data location. The |src_url| is in the format:
   // chrome://print/id/page_number/print.pdf
-  // |dst_page_index| specifies the blank page index that needs to be replaced
+  // |dest_page_index| specifies the blank page index that needs to be replaced
   // with the new page data.
-  void ProcessPreviewPageInfo(const std::string& src_url, int dst_page_index);
+  void ProcessPreviewPageInfo(const std::string& src_url, int dest_page_index);
   // Load the next available preview page into the blank page.
   void LoadAvailablePreviewPage();
 
