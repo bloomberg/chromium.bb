@@ -8,17 +8,23 @@
 
 #import "remoting/client/ios/app/host_view_controller.h"
 
+#include <memory>
+
 #import <GLKit/GLKit.h>
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "remoting/client/ios/display/gl_display_handler.h"
+#import "remoting/client/ios/client_gestures.h"
 #import "remoting/client/ios/session/remoting_client.h"
+
+#include "remoting/client/gesture_interpreter.h"
 
 static const CGFloat kFabInset = 15.f;
 
 @interface HostViewController () {
   RemotingClient* _client;
   MDCFloatingButton* _floatingButton;
+
+  ClientGestures* _clientGestures;
 }
 @end
 
@@ -71,24 +77,28 @@ static const CGFloat kFabInset = 15.f;
   // viewDidLayoutSubviews may be called before viewDidAppear, in which case
   // the surface is not ready and onSurfaceChanged will be no-op.
   // Call onSurfaceChanged here to cover that case.
-  [_client.displayHandler onSurfaceChanged:glView.frame];
+  [_client surfaceChanged:self.view.frame];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  ((GLKView*)self.view).enableSetNeedsDisplay = true;
+
+  _clientGestures =
+      [[ClientGestures alloc] initWithView:self.view client:_client];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
+
+  _clientGestures = nil;
 }
 
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
-  [_client.displayHandler onSurfaceChanged:((GLKView*)self.view).frame];
+  [_client surfaceChanged:self.view.frame];
 
-  const CGSize& btnSize = _floatingButton.frame.size;
+  CGSize btnSize = _floatingButton.frame.size;
   _floatingButton.frame =
       CGRectMake(self.view.frame.size.width - btnSize.width - kFabInset,
                  self.view.frame.size.height - btnSize.height - kFabInset,

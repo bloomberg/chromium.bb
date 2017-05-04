@@ -24,6 +24,7 @@
 #include "remoting/client/display/gl_renderer.h"
 #include "remoting/client/display/gl_renderer_delegate.h"
 #include "remoting/client/dual_buffer_frame_consumer.h"
+#include "remoting/client/queued_task_poster.h"
 #include "remoting/client/software_video_renderer.h"
 
 namespace remoting {
@@ -36,6 +37,8 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   ~Core() override;
 
   void Initialize();
+
+  void SetHandlerDelegate(id<GlDisplayHandlerDelegate> delegate);
 
   // CursorShapeStub interface.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
@@ -50,6 +53,7 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   void Stop();
   void SurfaceCreated(GLKView* view);
   void SurfaceChanged(int width, int height);
+  void SetTransformation(const remoting::ViewMatrix& matrix);
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
   EAGLContext* GetEAGLContext();
   base::WeakPtr<Core> GetWeakPtr();
@@ -61,10 +65,12 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   std::unique_ptr<DualBufferFrameConsumer> owned_frame_consumer_;
   base::WeakPtr<DualBufferFrameConsumer> frame_consumer_;
 
+  // TODO(yuweih): Release references once the surface is destroyed.
   GLKView* gl_view_;
   EAGLContext* eagl_context_;
   std::unique_ptr<GlRenderer> renderer_;
   //  GlDemoScreen *demo_screen_;
+  id<GlDisplayHandlerDelegate> handler_delegate_;
 
   // Used on display thread.
   base::WeakPtr<Core> weak_ptr_;
@@ -115,6 +121,11 @@ void Core::Initialize() {
   renderer_->SetDelegate(weak_ptr_);
 }
 
+void Core::SetHandlerDelegate(id<GlDisplayHandlerDelegate> delegate) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  handler_delegate_ = delegate;
+}
+
 void Core::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   renderer_->OnCursorShapeChanged(cursor_shape);
@@ -137,11 +148,15 @@ void Core::OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
 }
 
 void Core::OnFrameRendered() {
-  [gl_view_ setNeedsDisplay];
+  [gl_view_ display];
 }
 
 void Core::OnSizeChanged(int width, int height) {
-  // Nothing to do.
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  runtime_->ui_task_runner()->PostTask(
+      FROM_HERE, base::BindBlockArc(^() {
+        [handler_delegate_ canvasSizeChanged:CGSizeMake(width, height)];
+      }));
 }
 
 void Core::Stop() {
@@ -158,6 +173,8 @@ void Core::SurfaceCreated(GLKView* view) {
   renderer_->OnSurfaceCreated(
       base::MakeUnique<GlCanvas>(static_cast<int>([eagl_context_ API])));
 
+  renderer_->RequestCanvasSize();
+
   runtime_->network_task_runner()->PostTask(
       FROM_HERE, base::Bind(&DualBufferFrameConsumer::RequestFullDesktopFrame,
                             frame_consumer_));
@@ -166,14 +183,11 @@ void Core::SurfaceCreated(GLKView* view) {
 void Core::SurfaceChanged(int width, int height) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   renderer_->OnSurfaceChanged(width, height);
+}
 
-  // TODO(nicholss): This are wrong values but it lets us get something on the
-  // screen.
-  std::array<float, 9> matrix = {{1, 0, 0,  // Row 1
-                                  0, 1, 0,  // Row 2
-                                  0, 0, 1}};
-
-  renderer_->OnPixelTransformationChanged(matrix);
+void Core::SetTransformation(const remoting::ViewMatrix& matrix) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_->OnPixelTransformationChanged(matrix.ToMatrixArray());
 }
 
 EAGLContext* Core::GetEAGLContext() {
@@ -190,6 +204,7 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 @interface GlDisplayHandler () {
   remoting::GlDisplayHandler::Core* _core;
   remoting::ChromotingClientRuntime* _runtime;
+  std::unique_ptr<remoting::QueuedTaskPoster> _uiTaskPoster;
 }
 @end
 
@@ -200,6 +215,8 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
   if (self) {
     _runtime = remoting::ChromotingClientRuntime::GetInstance();
     _core = new remoting::GlDisplayHandler::Core();
+    _uiTaskPoster.reset(
+        new remoting::QueuedTaskPoster(_runtime->display_task_runner()));
   }
   return self;
 }
@@ -239,15 +256,25 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
                  _core->GetWeakPtr(), frame.size.width, frame.size.height));
 }
 
-// TODO(nicholss): Remove this function, it is not used in the final impl,
-// or it should call RequestRender.
-- (void)glkView:(GLKView*)view drawInRect:(CGRect)rect {
-  if (_core) {
-    _runtime->display_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&remoting::GlDisplayHandler::Core::SurfaceChanged,
-                   _core->GetWeakPtr(), rect.size.width, rect.size.height));
-  }
+- (void)onPixelTransformationChanged:(const remoting::ViewMatrix&)matrix {
+  _uiTaskPoster->AddTask(
+      base::Bind(&remoting::GlDisplayHandler::Core::SetTransformation,
+                 _core->GetWeakPtr(), matrix));
+}
+
+#pragma mark - Properties
+
+- (void)setDelegate:(id<GlDisplayHandlerDelegate>)delegate {
+  _runtime->display_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&remoting::GlDisplayHandler::Core::SetHandlerDelegate,
+                 _core->GetWeakPtr(), delegate));
+}
+
+- (id<GlDisplayHandlerDelegate>)delegate {
+  // Implementation is still required for UNAVAILABLE_ATTRIBUTE.
+  NOTREACHED();
+  return nil;
 }
 
 @end

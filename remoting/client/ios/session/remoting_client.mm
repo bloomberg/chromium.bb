@@ -8,6 +8,8 @@
 
 #import "remoting/client/ios/session/remoting_client.h"
 
+#include <memory>
+
 #import "base/mac/bind_objc_block.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 #import "remoting/client/ios/display/gl_display_handler.h"
@@ -18,6 +20,7 @@
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/connect_to_host_info.h"
+#include "remoting/client/gesture_interpreter.h"
 #include "remoting/client/ios/session/remoting_client_session_delegate.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_renderer.h"
@@ -36,6 +39,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   ClientSessionDetails* _sessionDetails;
   // Call _secretFetchedCallback on the network thread.
   remoting::protocol::SecretFetchedCallback _secretFetchedCallback;
+  std::unique_ptr<remoting::GestureInterpreter> _gestureInterpreter;
 }
 @end
 
@@ -108,6 +112,12 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   base::WeakPtr<remoting::protocol::AudioStub> audioPlayer = nullptr;
 
   _displayHandler = [[GlDisplayHandler alloc] init];
+  _displayHandler.delegate = self;
+  __weak GlDisplayHandler* weakDisplayHandler = _displayHandler;
+  _gestureInterpreter.reset(new remoting::GestureInterpreter(
+      base::BindBlockArc(^(const remoting::ViewMatrix& matrix) {
+        [weakDisplayHandler onPixelTransformationChanged:matrix];
+      })));
 
   _runtime->ui_task_runner()->PostTask(
       FROM_HERE, base::BindBlockArc(^{
@@ -136,6 +146,10 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 
 - (HostInfo*)hostInfo {
   return _sessionDetails.hostInfo;
+}
+
+- (remoting::GestureInterpreter*)gestureInterpreter {
+  return _gestureInterpreter.get();
 }
 
 #pragma mark - ChromotingSession::Delegate
@@ -199,6 +213,20 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
                              message:(NSString*)message {
   NSLog(@"TODO(nicholss): implement this, handleExtensionMessageOfType %@:%@.",
         type, message);
+}
+
+- (void)surfaceChanged:(const CGRect&)frame {
+  [_displayHandler onSurfaceChanged:frame];
+  _gestureInterpreter->OnSurfaceSizeChanged(frame.size.width,
+                                            frame.size.height);
+}
+
+#pragma mark - GlDisplayHandlerDelegate
+
+- (void)canvasSizeChanged:(CGSize)size {
+  if (_gestureInterpreter) {
+    _gestureInterpreter->OnDesktopSizeChanged(size.width, size.height);
+  }
 }
 
 @end

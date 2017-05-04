@@ -7,7 +7,15 @@
 
 #import <Foundation/Foundation.h>
 
+#import "remoting/client/ios/display/gl_display_handler.h"
+
 #include "remoting/protocol/connection_to_host.h"
+
+namespace remoting {
+
+class GestureInterpreter;
+
+}  // namespace remoting
 
 @class HostInfo;
 @class GlDisplayHandler;
@@ -28,7 +36,7 @@ extern NSString* const kHostSessionPin;
 // NSNotificationCenter to signal session state changes using the key
 // |kHostSessionStatusChanged|. It expects to receive an event back on
 // |kHostSessionPinProvided| when the session is asking for a PIN authenication.
-@interface RemotingClient : NSObject
+@interface RemotingClient : NSObject<GlDisplayHandlerDelegate>
 
 // Connect to a given host.
 // |hostInfo| is all the details around a host.
@@ -55,10 +63,17 @@ extern NSString* const kHostSessionPin;
 
 - (void)handleExtensionMessageOfType:(NSString*)type message:(NSString*)message;
 
+// Notifies all components that the frame of the surface has changed.
+- (void)surfaceChanged:(const CGRect&)frame;
+
 // The display handler tied to the remoting client used to display the host.
 @property(nonatomic, strong) GlDisplayHandler* displayHandler;
 // The host info used to make the remoting client connection.
 @property(nonatomic, readonly) HostInfo* hostInfo;
+// The gesture interpreter used to handle gestures.
+// This is valid only after the client has connected to the host. Always use
+// RemotingClient.gestureInterpreter instead of storing the pointer separately.
+@property(nonatomic, readonly) remoting::GestureInterpreter* gestureInterpreter;
 
 @end
 
