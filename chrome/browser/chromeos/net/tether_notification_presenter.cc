@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -19,6 +20,24 @@
 namespace chromeos {
 
 namespace tether {
+
+namespace {
+
+const char kTetherSettingsSubpage[] = "networks?type=Tether";
+
+class SettingsUiDelegateImpl
+    : public TetherNotificationPresenter::SettingsUiDelegate {
+ public:
+  SettingsUiDelegateImpl() {}
+  ~SettingsUiDelegateImpl() override {}
+
+  void ShowSettingsSubPageForProfile(Profile* profile,
+                                     const std::string& sub_page) override {
+    chrome::ShowSettingsSubPageForProfile(profile, sub_page);
+  }
+};
+
+}  // namespace
 
 // static
 constexpr const char TetherNotificationPresenter::kTetherNotifierId[] =
@@ -62,10 +81,13 @@ TetherNotificationPresenter::CreateNotification(
 }
 
 TetherNotificationPresenter::TetherNotificationPresenter(
+    Profile* profile,
     message_center::MessageCenter* message_center,
     NetworkConnect* network_connect)
-    : message_center_(message_center),
+    : profile_(profile),
+      message_center_(message_center),
       network_connect_(network_connect),
+      settings_ui_delegate_(base::WrapUnique(new SettingsUiDelegateImpl())),
       weak_ptr_factory_(this) {
   message_center_->AddObserver(this);
 }
@@ -141,8 +163,8 @@ void TetherNotificationPresenter::RemoveConnectionToHostFailedNotification() {
 void TetherNotificationPresenter::OnNotificationClicked(
     const std::string& notification_id) {
   PA_LOG(INFO) << "Notification with ID " << notification_id << " was clicked.";
-
-  // TODO(khorimoto): Open the settings page.
+  settings_ui_delegate_->ShowSettingsSubPageForProfile(profile_,
+                                                       kTetherSettingsSubpage);
 }
 
 void TetherNotificationPresenter::OnNotificationButtonClicked(
@@ -153,10 +175,13 @@ void TetherNotificationPresenter::OnNotificationButtonClicked(
                << " was clicked.";
 
   if (notification_id == kPotentialHotspotNotificationId && button_index == 0) {
-    // TODO (hansberry): Only directly start a connection if this is not the
-    // first time the user has connected to a host.
     network_connect_->ConnectToNetworkId(hotspot_nearby_device_.GetDeviceId());
   }
+}
+
+void TetherNotificationPresenter::SetSettingsUiDelegateForTesting(
+    std::unique_ptr<SettingsUiDelegate> settings_ui_delegate) {
+  settings_ui_delegate_ = std::move(settings_ui_delegate);
 }
 
 void TetherNotificationPresenter::ShowNotification(

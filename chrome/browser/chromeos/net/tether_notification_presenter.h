@@ -18,6 +18,8 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification.h"
 
+class Profile;
+
 namespace message_center {
 class MessageCenter;
 class Notification;
@@ -33,9 +35,10 @@ class TetherNotificationPresenter
     : public NotificationPresenter,
       public message_center::MessageCenterObserver {
  public:
-  // Caller must ensure that |message_center| amd |network_connect| outlive
-  // this instance.
-  TetherNotificationPresenter(message_center::MessageCenter* message_center,
+  // Caller must ensure that |profile|, |message_center|, and |network_connect|
+  // outlive this instance.
+  TetherNotificationPresenter(Profile* profile,
+                              message_center::MessageCenter* message_center,
                               NetworkConnect* network_connect);
   ~TetherNotificationPresenter() override;
 
@@ -52,9 +55,17 @@ class TetherNotificationPresenter
   void OnNotificationButtonClicked(const std::string& notification_id,
                                    int button_index) override;
 
- private:
-  friend class TetherNotificationPresenterTest;
+  class SettingsUiDelegate {
+   public:
+    virtual ~SettingsUiDelegate() {}
 
+    // Displays the settings page (opening a new window if necessary) at the
+    // provided subpage for the user with the Profile |profile|.
+    virtual void ShowSettingsSubPageForProfile(Profile* profile,
+                                               const std::string& sub_page) = 0;
+  };
+
+ private:
   static const char kTetherNotifierId[];
   static const char kPotentialHotspotNotificationId[];
   static const char kActiveHostNotificationId[];
@@ -69,11 +80,19 @@ class TetherNotificationPresenter
       const base::string16& message,
       const message_center::RichNotificationData rich_notification_data);
 
+  friend class TetherNotificationPresenterTest;
+
+  void SetSettingsUiDelegateForTesting(
+      std::unique_ptr<SettingsUiDelegate> settings_ui_delegate);
+
   void ShowNotification(
       std::unique_ptr<message_center::Notification> notification);
 
+  Profile* profile_;
   message_center::MessageCenter* message_center_;
   NetworkConnect* network_connect_;
+
+  std::unique_ptr<SettingsUiDelegate> settings_ui_delegate_;
 
   cryptauth::RemoteDevice hotspot_nearby_device_;
   base::WeakPtrFactory<TetherNotificationPresenter> weak_ptr_factory_;

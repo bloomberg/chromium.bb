@@ -8,7 +8,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/cryptauth/remote_device_test_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
@@ -136,15 +138,45 @@ class TetherNotificationPresenterTest : public testing::Test {
     std::string network_id_to_connect_;
   };
 
+  class TestSettingsUiDelegate
+      : public TetherNotificationPresenter::SettingsUiDelegate {
+   public:
+    TestSettingsUiDelegate() {}
+    ~TestSettingsUiDelegate() override {}
+
+    Profile* last_profile() { return last_profile_; }
+    std::string last_settings_subpage() { return last_settings_subpage_; }
+
+    // TetherNotificationPresenter::SettingsUiDelegate:
+    void ShowSettingsSubPageForProfile(Profile* profile,
+                                       const std::string& sub_page) override {
+      last_profile_ = profile;
+      last_settings_subpage_ = sub_page;
+    }
+
+   private:
+    Profile* last_profile_ = nullptr;
+    std::string last_settings_subpage_;
+  };
+
  protected:
   TetherNotificationPresenterTest() : test_device_(CreateTestRemoteDevice()) {}
 
   void SetUp() override {
+    TestingProfile::Builder builder;
+    profile_ = builder.Build();
     test_message_center_ = base::WrapUnique(new TestMessageCenter());
     test_network_connect_ = base::WrapUnique(new TestNetworkConnect());
     notification_presenter_ = base::WrapUnique(new TetherNotificationPresenter(
-        test_message_center_.get(), test_network_connect_.get()));
+        profile_.get(), test_message_center_.get(),
+        test_network_connect_.get()));
+
+    test_settings_ui_delegate_ = new TestSettingsUiDelegate();
+    notification_presenter_->SetSettingsUiDelegateForTesting(
+        base::WrapUnique(test_settings_ui_delegate_));
   }
+
+  void TearDown() override { profile_.reset(); }
 
   std::string GetActiveHostNotificationId() {
     return std::string(TetherNotificationPresenter::kActiveHostNotificationId);
@@ -155,10 +187,24 @@ class TetherNotificationPresenterTest : public testing::Test {
         TetherNotificationPresenter::kPotentialHotspotNotificationId);
   }
 
+  void VerifySettingsOpened() {
+    EXPECT_EQ(profile_.get(), test_settings_ui_delegate_->last_profile());
+    EXPECT_EQ("networks?type=Tether",
+              test_settings_ui_delegate_->last_settings_subpage());
+  }
+
+  void VerifySettingsNotOpened() {
+    EXPECT_FALSE(test_settings_ui_delegate_->last_profile());
+    EXPECT_TRUE(test_settings_ui_delegate_->last_settings_subpage().empty());
+  }
+
+  const content::TestBrowserThreadBundle thread_bundle_;
   const cryptauth::RemoteDevice test_device_;
 
+  std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TestMessageCenter> test_message_center_;
   std::unique_ptr<TestNetworkConnect> test_network_connect_;
+  TestSettingsUiDelegate* test_settings_ui_delegate_;
 
   std::unique_ptr<TetherNotificationPresenter> notification_presenter_;
 
@@ -183,6 +229,8 @@ TEST_F(TetherNotificationPresenterTest,
   EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
       GetActiveHostNotificationId()));
   EXPECT_EQ(0u, test_message_center_->GetNumNotifications());
+
+  VerifySettingsNotOpened();
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -199,7 +247,7 @@ TEST_F(TetherNotificationPresenterTest,
 
   // Tap the notification.
   test_message_center_->NotifyNotificationTapped(GetActiveHostNotificationId());
-  // TODO(khorimoto): Test that the tethering settings page is opened.
+  VerifySettingsOpened();
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -217,6 +265,8 @@ TEST_F(TetherNotificationPresenterTest,
   notification_presenter_->RemovePotentialHotspotNotification();
   EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
       GetPotentialHotspotNotificationId()));
+
+  VerifySettingsNotOpened();
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -234,7 +284,7 @@ TEST_F(TetherNotificationPresenterTest,
   // Tap the notification.
   test_message_center_->NotifyNotificationTapped(
       GetPotentialHotspotNotificationId());
-  // TODO(khorimoto): Test that the tethering settings page is opened.
+  VerifySettingsOpened();
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -255,9 +305,6 @@ TEST_F(TetherNotificationPresenterTest,
 
   EXPECT_EQ(test_device_.GetDeviceId(),
             test_network_connect_->network_id_to_connect());
-
-  // TODO(hansberry): Test for the case of the user not yet going through
-  // the connection dialog.
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -275,6 +322,8 @@ TEST_F(TetherNotificationPresenterTest,
   notification_presenter_->RemovePotentialHotspotNotification();
   EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
       GetPotentialHotspotNotificationId()));
+
+  VerifySettingsNotOpened();
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -292,7 +341,7 @@ TEST_F(TetherNotificationPresenterTest,
   // Tap the notification.
   test_message_center_->NotifyNotificationTapped(
       GetPotentialHotspotNotificationId());
-  // TODO(khorimoto): Test that the tethering settings page is opened.
+  VerifySettingsOpened();
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -323,6 +372,8 @@ TEST_F(TetherNotificationPresenterTest,
   notification_presenter_->RemovePotentialHotspotNotification();
   EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
       GetPotentialHotspotNotificationId()));
+
+  VerifySettingsNotOpened();
 }
 
 }  // namespace tether
