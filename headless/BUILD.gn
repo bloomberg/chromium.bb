@@ -183,8 +183,6 @@ action("gen_devtools_client_api") {
   outputs = generated_devtools_api
 
   sources = [
-    "lib/browser/devtools_api/deprecated_type_conversions_h.template",
-    "lib/browser/devtools_api/deprecated_types_h.template",
     "lib/browser/devtools_api/domain_cc.template",
     "lib/browser/devtools_api/domain_h.template",
     "lib/browser/devtools_api/domain_type_conversions_h.template",
