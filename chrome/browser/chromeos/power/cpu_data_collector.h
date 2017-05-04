@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -38,12 +39,12 @@ class CpuDataCollector {
     // Indicates whether the CPU is online.
     bool cpu_online;
 
-    // A mapping from a CPU state to time spent in that state in milliseconds.
-    // For idle state samples, the name of the state at index i in this vector
-    // is the name at index i in the vector returned by cpu_idle_state_names().
-    // Similarly, for freq state occupancy, similar information is in the vector
-    // returned by cpu_freq_state_names().
-    std::vector<int64_t> time_in_state;
+    // A mapping from a CPU state to time spent in that state. For idle state
+    // samples, the name of the state at index i in this vector is the name at
+    // index i in the vector returned by cpu_idle_state_names(). Similarly, for
+    // freq state occupancy, similar information is in the vector returned by
+    // cpu_freq_state_names().
+    std::vector<base::TimeDelta> time_in_state;
   };
 
   typedef std::deque<StateOccupancySample> StateOccupancySampleDeque;
@@ -70,6 +71,36 @@ class CpuDataCollector {
   // Starts a repeating timer which periodically runs a callback to collect
   // CPU state occupancy samples.
   void Start();
+
+  // Read CPU frequency data of a specific CPU from the file in |path| and fill
+  // |cpu_freq_state_names| and |freq_sample| with the data.
+  // Sample file looks like:
+  // 126000 223344
+  // 216000 93495
+  // ...
+  // 1800000 321907
+  static bool ReadCpuFreqTimeInState(
+      const base::FilePath& path,
+      std::vector<std::string>* cpu_freq_state_names,
+      CpuDataCollector::StateOccupancySample* freq_sample);
+
+  // Read CPU frequency data of all CPUs from the file in |path| and fill
+  // |cpu_freq_state_names| and |freq_samples| with the data. |cpu_count| is the
+  // number of possible CPUs on the system. Note that |freq_samples| is not
+  // empty and sample at index i in |freq_samples| corresponds to the freq state
+  // information of the i-th CPU. |cpu_online| of each sample must be set before
+  // calling this function.
+  // Sample file looks like:
+  // freq   cpu0    cpu1
+  // 126000   223344    223311
+  // 216000   93495   93450
+  // ...
+  // 1800000    321907    331897
+  static bool ReadCpuFreqAllTimeInState(
+      int cpu_count,
+      const base::FilePath& path,
+      std::vector<std::string>* cpu_freq_state_names,
+      std::vector<CpuDataCollector::StateOccupancySample>* freq_samples);
 
  private:
   // Posts callbacks to the blocking pool which collect CPU state occupancy

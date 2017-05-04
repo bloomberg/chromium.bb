@@ -176,7 +176,7 @@ void PowerMessageHandler::GetJsStateOccupancyData(
           new base::DictionaryValue);
       for (size_t index = 0; index < sample.time_in_state.size(); ++index) {
         state_dict->SetDouble(state_names[index],
-                              static_cast<double>(sample.time_in_state[index]));
+                              sample.time_in_state[index].InMillisecondsF());
       }
       js_sample->Set("timeInState", std::move(state_dict));
 
