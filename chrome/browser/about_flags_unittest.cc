@@ -244,9 +244,9 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
   ASSERT_TRUE(
       PathService::Get(base::DIR_SOURCE_ROOT, &histograms_xml_file_path));
   histograms_xml_file_path = histograms_xml_file_path.AppendASCII("tools")
-      .AppendASCII("metrics")
-      .AppendASCII("histograms")
-      .AppendASCII("histograms.xml");
+                                 .AppendASCII("metrics")
+                                 .AppendASCII("histograms")
+                                 .AppendASCII("enums.xml");
 
   XmlReader histograms_xml;
   ASSERT_TRUE(histograms_xml.LoadFile(
@@ -254,14 +254,14 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
   std::map<Sample, std::string> login_custom_flags =
       ReadEnumFromHistogramsXml("LoginCustomFlags", &histograms_xml);
   ASSERT_TRUE(login_custom_flags.size())
-      << "Error reading enum 'LoginCustomFlags' from histograms.xml.";
+      << "Error reading enum 'LoginCustomFlags' from enums.xml.";
 
   // Build reverse map {switch_name => id} from login_custom_flags.
   SwitchToIdMap histograms_xml_switches_ids;
 
   EXPECT_TRUE(login_custom_flags.count(testing::kBadSwitchFormatHistogramId))
       << "Entry for UMA ID of incorrect command-line flag is not found in "
-         "histograms.xml enum LoginCustomFlags. "
+         "enums.xml enum LoginCustomFlags. "
          "Consider adding entry:\n"
       << "  " << GetHistogramEnumEntryText("BAD_FLAG_FORMAT", 0);
   // Check that all LoginCustomFlags entries have correct values.
@@ -274,9 +274,10 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
     }
     const Sample uma_id = GetSwitchUMAId(entry.second);
     EXPECT_EQ(uma_id, entry.first)
-        << "histograms.xml enum LoginCustomFlags "
-           "entry '" << entry.second << "' has incorrect value=" << entry.first
-        << ", but " << uma_id << " is expected. Consider changing entry to:\n"
+        << "enums.xml enum LoginCustomFlags "
+           "entry '"
+        << entry.second << "' has incorrect value=" << entry.first << ", but "
+        << uma_id << " is expected. Consider changing entry to:\n"
         << "  " << GetHistogramEnumEntryText(entry.second, uma_id);
     SetSwitchToHistogramIdMapping(entry.second, entry.first,
                                   &histograms_xml_switches_ids);
@@ -302,9 +303,8 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
     // reported in the previous loop.
     EXPECT_TRUE(enum_entry != histograms_xml_switches_ids.end() &&
                 enum_entry->first == flag)
-        << "histograms.xml enum LoginCustomFlags doesn't contain switch '"
-        << flag << "' (value=" << uma_id
-        << " expected). Consider adding entry:\n"
+        << "enums.xml enum LoginCustomFlags doesn't contain switch '" << flag
+        << "' (value=" << uma_id << " expected). Consider adding entry:\n"
         << "  " << GetHistogramEnumEntryText(flag, uma_id);
   }
 }
