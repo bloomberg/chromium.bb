@@ -1,0 +1,7 @@
+include_rules = [
+  "-content",
+  "+base",
+  "+components/keyed_service",
+  "+net/http",
+  "+url",
+]
