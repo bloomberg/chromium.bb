@@ -112,14 +112,9 @@ ExtensionNavigationThrottle::WillStartRequest() {
   // we can't get it from NavigationHandle. However, this code only cares about
   // the ancestor chain, so find the current RenderFrameHost and use it to
   // traverse up to the main frame.
-  content::RenderFrameHost* navigating_frame = nullptr;
-  for (auto* frame : web_contents->GetAllFrames()) {
-    if (frame->GetFrameTreeNodeId() ==
-        navigation_handle()->GetFrameTreeNodeId()) {
-      navigating_frame = frame;
-      break;
-    }
-  }
+  content::RenderFrameHost* navigating_frame =
+      web_contents->FindFrameByFrameTreeNodeId(
+          navigation_handle()->GetFrameTreeNodeId());
   DCHECK(navigating_frame);
 
   // Traverse the chain of parent frames, checking if they are the same origin
