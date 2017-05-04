@@ -37,6 +37,10 @@ class OfflinePageModelQueryTest : public testing::Test {
   ClientPolicyController policy_;
   OfflinePageModelQueryBuilder builder_;
 
+  const OfflinePageItem cache_page() {
+    return OfflinePageItem(GURL("https://download.com"), 3,
+                           {kBookmarkNamespace, "id1"}, base::FilePath(), 3);
+  }
   const OfflinePageItem download_page() {
     return OfflinePageItem(GURL("https://download.com"), 4,
                            {kDownloadNamespace, "id1"}, base::FilePath(), 4);
@@ -276,6 +280,43 @@ TEST_F(OfflinePageModelQueryTest, UrlsReplace) {
 
   EXPECT_FALSE(query->Matches(kTestItem1));
   EXPECT_TRUE(query->Matches(kTestItem2));
+}
+
+TEST_F(OfflinePageModelQueryTest, RequireRemovedOnCacheReset_Only) {
+  builder_.RequireRemovedOnCacheReset(Requirement::INCLUDE_MATCHING);
+  std::unique_ptr<OfflinePageModelQuery> query = builder_.Build(&policy_);
+
+  auto restriction = query->GetRestrictedToNamespaces();
+  std::set<std::string> namespaces_allowed = restriction.second;
+  bool restricted_to_namespaces = restriction.first;
+  EXPECT_TRUE(restricted_to_namespaces);
+
+  for (const std::string& name_space : namespaces_allowed) {
+    EXPECT_TRUE(policy_.IsRemovedOnCacheReset(name_space))
+        << "Namespace: " << name_space;
+  }
+  EXPECT_TRUE(query->Matches(kTestItem1));
+  EXPECT_TRUE(query->Matches(cache_page()));
+  EXPECT_FALSE(query->Matches(download_page()));
+}
+
+TEST_F(OfflinePageModelQueryTest, RequireRemovedOnCacheReset_Except) {
+  builder_.RequireRemovedOnCacheReset(Requirement::EXCLUDE_MATCHING);
+  std::unique_ptr<OfflinePageModelQuery> query = builder_.Build(&policy_);
+
+  auto restriction = query->GetRestrictedToNamespaces();
+  std::set<std::string> namespaces_allowed = restriction.second;
+  bool restricted_to_namespaces = restriction.first;
+  EXPECT_TRUE(restricted_to_namespaces);
+
+  for (const std::string& name_space : namespaces_allowed) {
+    EXPECT_FALSE(policy_.IsRemovedOnCacheReset(name_space))
+        << "Namespace: " << name_space;
+  }
+
+  EXPECT_FALSE(query->Matches(kTestItem1));
+  EXPECT_FALSE(query->Matches(cache_page()));
+  EXPECT_TRUE(query->Matches(download_page()));
 }
 
 TEST_F(OfflinePageModelQueryTest, RequireSupportedByDownload_Only) {
