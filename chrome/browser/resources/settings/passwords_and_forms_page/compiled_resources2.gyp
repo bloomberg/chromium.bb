@@ -49,6 +49,14 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'password_list_item',
+      'dependencies': [
+        '../compiled_resources2.gyp:focus_row_behavior',
+        '<(EXTERNS_GYP):passwords_private',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'passwords_section',
       'dependencies': [
         '../compiled_resources2.gyp:global_scroll_target_behavior',
@@ -58,6 +66,7 @@
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
         '<(EXTERNS_GYP):passwords_private',
         'password_edit_dialog',
+        'password_list_item',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
