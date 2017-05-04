@@ -171,6 +171,10 @@ class FullCardRequester
 
   _navigationController = [[UINavigationController alloc]
       initWithRootViewController:_viewController];
+  [_navigationController
+      setModalPresentationStyle:UIModalPresentationFormSheet];
+  [_navigationController
+      setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
   [_navigationController setNavigationBarHidden:YES];
 
   [[self baseViewController] presentViewController:_navigationController
