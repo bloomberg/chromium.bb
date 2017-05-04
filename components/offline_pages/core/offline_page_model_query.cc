@@ -41,6 +41,13 @@ OfflinePageModelQueryBuilder& OfflinePageModelQueryBuilder::SetUrls(
 }
 
 OfflinePageModelQueryBuilder&
+OfflinePageModelQueryBuilder::RequireRemovedOnCacheReset(
+    Requirement removed_on_cache_reset) {
+  removed_on_cache_reset_ = removed_on_cache_reset;
+  return *this;
+}
+
+OfflinePageModelQueryBuilder&
 OfflinePageModelQueryBuilder::RequireSupportedByDownload(
     Requirement supported_by_download) {
   supported_by_download_ = supported_by_download;
@@ -85,7 +92,9 @@ std::unique_ptr<OfflinePageModelQuery> OfflinePageModelQueryBuilder::Build(
   for (auto& name_space : controller->GetAllNamespaces()) {
     // If any exclusion requirements exist, and the namespace matches one of
     // those excluded by policy, skip adding it to |allowed_namespaces|.
-    if ((supported_by_download_ == Requirement::EXCLUDE_MATCHING &&
+    if ((removed_on_cache_reset_ == Requirement::EXCLUDE_MATCHING &&
+         controller->IsRemovedOnCacheReset(name_space)) ||
+        (supported_by_download_ == Requirement::EXCLUDE_MATCHING &&
          controller->IsSupportedByDownload(name_space)) ||
         (shown_as_recently_visited_site_ == Requirement::EXCLUDE_MATCHING &&
          controller->IsShownAsRecentlyVisitedSite(name_space)) ||
@@ -96,7 +105,9 @@ std::unique_ptr<OfflinePageModelQuery> OfflinePageModelQueryBuilder::Build(
       continue;
     }
 
-    if ((supported_by_download_ == Requirement::INCLUDE_MATCHING &&
+    if ((removed_on_cache_reset_ == Requirement::INCLUDE_MATCHING &&
+         !controller->IsRemovedOnCacheReset(name_space)) ||
+        (supported_by_download_ == Requirement::INCLUDE_MATCHING &&
          !controller->IsSupportedByDownload(name_space)) ||
         (shown_as_recently_visited_site_ == Requirement::INCLUDE_MATCHING &&
          !controller->IsShownAsRecentlyVisitedSite(name_space)) ||
@@ -111,6 +122,7 @@ std::unique_ptr<OfflinePageModelQuery> OfflinePageModelQueryBuilder::Build(
     allowed_namespaces.emplace_back(name_space);
   }
 
+  removed_on_cache_reset_ = Requirement::UNSET;
   supported_by_download_ = Requirement::UNSET;
   shown_as_recently_visited_site_ = Requirement::UNSET;
   restricted_to_original_tab_ = Requirement::UNSET;
