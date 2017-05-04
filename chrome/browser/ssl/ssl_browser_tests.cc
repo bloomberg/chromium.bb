@@ -1401,22 +1401,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
 }
 #endif  // defined(USE_NSS_CERTS)
 
-// Flaky on CrOS http://crbug.com/92292
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestHTTPSErrorWithNoNavEntry \
-    DISABLED_TestHTTPSErrorWithNoNavEntry
-#else
-#define MAYBE_TestHTTPSErrorWithNoNavEntry TestHTTPSErrorWithNoNavEntry
-#endif  // defined(OS_CHROMEOS)
-
 // Open a page with a HTTPS error in a tab with no prior navigation (through a
 // link with a blank target).  This is to test that the lack of navigation entry
 // does not cause any problems (it was causing a crasher, see
 // http://crbug.com/19941).
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
   ASSERT_TRUE(https_server_expired_.Start());
 
-  GURL url = https_server_expired_.GetURL("/ssl/google.htm");
+  const GURL url = https_server_expired_.GetURL("/ssl/google.htm");
   WebContents* tab2 = chrome::AddSelectedTabWithURL(
       browser(), url, ui::PAGE_TRANSITION_TYPED);
   content::WaitForLoadStop(tab2);
@@ -1425,6 +1417,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   EXPECT_FALSE(chrome::CanGoBack(browser()));
 
   // We should have an interstitial page showing.
+  WaitForInterstitialAttach(tab2);
   ASSERT_TRUE(tab2->GetInterstitialPage());
   ASSERT_EQ(SSLBlockingPage::kTypeForTesting, tab2->GetInterstitialPage()
                                                   ->GetDelegateForTesting()
