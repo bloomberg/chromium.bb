@@ -189,7 +189,7 @@ void BluetoothLowEnergyDeviceMac::DisconnectGatt() {
 void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
   --discovery_pending_count_;
   if (discovery_pending_count_ < 0) {
-    // This should never happens, just in case it happens with a device,
+    // This should never happen, just in case it happens with a device,
     // discovery_pending_count_ is set back to 0.
     VLOG(1) << *this
             << ": BluetoothLowEnergyDeviceMac::discovery_pending_count_ "
@@ -254,6 +254,13 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
   if (!IsGattConnected()) {
     VLOG(1) << *this << ": DidDiscoverCharacteristics, gatt disconnected.";
     // Don't create characteristics if the device disconnected.
+    return;
+  }
+  if (IsGattServicesDiscoveryComplete()) {
+    // This should never happen, just in case it happens with a device, this
+    // notification should be ignored.
+    VLOG(1) << *this
+            << ": Discovery complete, ignoring DidDiscoverCharacteristics.";
     return;
   }
 
@@ -327,6 +334,13 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverDescriptors(
     // Don't discover descriptors if the device disconnected.
     return;
   }
+  if (IsGattServicesDiscoveryComplete()) {
+    // This should never happen, just in case it happens with a device, this
+    // notification should be ignored.
+    VLOG(1) << *this
+            << ": Discovery complete, ignoring DidDiscoverDescriptors.";
+    return;
+  }
   BluetoothRemoteGattServiceMac* gatt_service =
       GetBluetoothRemoteGattService(cb_characteristic.service);
   DCHECK(gatt_service);
@@ -380,6 +394,7 @@ void BluetoothLowEnergyDeviceMac::DiscoverPrimaryServices() {
 }
 
 void BluetoothLowEnergyDeviceMac::SendNotificationIfDiscoveryComplete() {
+  DCHECK(!IsGattServicesDiscoveryComplete());
   // Notify when all services have been discovered.
   bool discovery_complete =
       discovery_pending_count_ == 0 &&

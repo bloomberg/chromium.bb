@@ -2386,7 +2386,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ReadDuringDisconnect) {
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
             last_gatt_error_code_);
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
 // Tests that write requests after a device disconnects but before the
@@ -2411,7 +2411,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, WriteDuringDisconnect) {
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
             last_gatt_error_code_);
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
 // Tests that start notifications requests after a device disconnects but before
@@ -2440,7 +2440,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
             last_gatt_error_code_);
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
 // Tests that stop notifications requests after a device disconnects but before
@@ -2461,7 +2461,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   notify_sessions_[0]->Stop(GetStopNotifyCallback(Call::EXPECTED));
   base::RunLoop().RunUntilIdle();
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
 // Tests that deleting notify sessions after a device disconnects but before the
@@ -2482,5 +2482,121 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   notify_sessions_.clear();
   base::RunLoop().RunUntilIdle();
 }
-#endif
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_MACOSX)
+// Tests to receive a services changed notification from macOS, while
+// discovering descriptors. This test simulate having 2 descriptor scan at the
+// same time. Only once both descriptor scanning is done, the gatt device is
+// ready.
+// Android: This test doesn't apply to Android because there is no services
+// changed event that could arrive during a discovery procedure.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       SimulateDeviceModificationWhileDiscoveringDescriptors) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Starts first discovery process.
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, observer.device_changed_count());
+  AddServicesToDeviceMac(device, {kTestUUIDHeartRate});
+  SimulateDidDiscoverServicesMac(device);
+  EXPECT_EQ(1u, device->GetGattServices().size());
+  BluetoothRemoteGattService* service = device->GetGattServices()[0];
+  std::string characteristic_uuid = "11111111-0000-1000-8000-00805f9b34fb";
+  AddCharacteristicToServiceMac(service, characteristic_uuid,
+                                /* properties */ 0);
+  SimulateDidDiscoverCharacteristicsMac(service);
+  EXPECT_EQ(1u, service->GetCharacteristics().size());
+  BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristics()[0];
+  std::string descriptor_uuid = "22222222-0000-1000-8000-00805f9b34fb";
+  AddDescriptorToCharacteristicMac(characteristic, descriptor_uuid);
+  // Now waiting for descriptor discovery.
+
+  // Starts second discovery process.
+  SimulateGattServicesChanged(device);
+  EXPECT_EQ(2, observer.device_changed_count());
+  SimulateDidDiscoverServicesMac(device);
+  SimulateDidDiscoverCharacteristicsMac(service);
+  // Now waiting for a second descriptor discovery.
+
+  // Finish discovery process.
+  // First system call to -[id<CBPeripheralDelegate>
+  // peripheral:didDiscoverDescriptorsForCharacteristic:error:]
+  SimulateDidDiscoverDescriptorsMac(characteristic);
+  EXPECT_EQ(0, observer.gatt_service_changed_count());
+  EXPECT_EQ(1u, service->GetCharacteristics().size());
+  EXPECT_EQ(1u, characteristic->GetDescriptors().size());
+  EXPECT_EQ(2, observer.device_changed_count());
+
+  // Second system call to -[id<CBPeripheralDelegate>
+  // peripheral:didDiscoverDescriptorsForCharacteristic:error:]
+  // Finish second discovery process.
+  observer.Reset();
+  SimulateDidDiscoverDescriptorsMac(characteristic);
+  EXPECT_EQ(1, observer.gatt_service_changed_count());
+  EXPECT_EQ(1, observer.device_changed_count());
+}
+#endif  // defined(OS_MACOSX)
+
+#if defined(OS_MACOSX)
+// Simulates to receive an extra discovery descriptor notifications from  macOS.
+// Those notifications should be ignored.
+// Android: This test doesn't apply to Android because there is no services
+// changed event that could arrive during a discovery procedure.
+TEST_F(BluetoothRemoteGattCharacteristicTest, ExtraDidDiscoverDescriptorsCall) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Starts first discovery process.
+  SimulateGattConnection(device);
+  AddServicesToDeviceMac(device, {kTestUUIDHeartRate});
+  SimulateDidDiscoverServicesMac(device);
+  EXPECT_EQ(1u, device->GetGattServices().size());
+  BluetoothRemoteGattService* service = device->GetGattServices()[0];
+  std::string characteristic_uuid = "11111111-0000-1000-8000-00805f9b34fb";
+  AddCharacteristicToServiceMac(service, characteristic_uuid,
+                                /* properties */ 0);
+  SimulateDidDiscoverCharacteristicsMac(service);
+  EXPECT_EQ(1u, service->GetCharacteristics().size());
+  BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristics()[0];
+  std::string descriptor_uuid = "22222222-0000-1000-8000-00805f9b34fb";
+  AddDescriptorToCharacteristicMac(characteristic, descriptor_uuid);
+  SimulateDidDiscoverDescriptorsMac(characteristic);
+  EXPECT_EQ(1, observer.gatt_service_changed_count());
+  EXPECT_EQ(1u, service->GetCharacteristics().size());
+  EXPECT_EQ(1u, characteristic->GetDescriptors().size());
+
+  observer.Reset();
+  SimulateDidDiscoverDescriptorsMac(characteristic);  // Extra system call.
+  SimulateGattServicesChanged(device);
+  SimulateDidDiscoverDescriptorsMac(characteristic);  // Extra system call.
+  SimulateDidDiscoverServicesMac(device);
+  SimulateDidDiscoverDescriptorsMac(characteristic);  // Extra system call.
+  SimulateDidDiscoverCharacteristicsMac(service);
+  SimulateDidDiscoverDescriptorsMac(characteristic);
+  SimulateDidDiscoverDescriptorsMac(characteristic);  // Extra system call.
+  EXPECT_EQ(2, observer.device_changed_count());
+}
+#endif  // defined(OS_MACOSX)
 }  // namespace device

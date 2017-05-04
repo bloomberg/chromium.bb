@@ -29,8 +29,7 @@
 - (void)simulateGattNotifySessionStopped;
 - (void)simulateGattNotifySessionStoppedWithError:(NSError*)error;
 - (void)simulateGattCharacteristicChangedWithValue:(NSData*)value;
-- (void)simulateDescriptorWithUUID:(CBUUID*)uuid;
-- (void)discoverDescriptors;
+- (void)addDescriptorWithUUID:(CBUUID*)uuid;
 
 @end
 

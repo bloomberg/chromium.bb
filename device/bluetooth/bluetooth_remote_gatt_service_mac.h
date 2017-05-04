@@ -96,8 +96,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   std::string identifier_;
   // Service UUID.
   BluetoothUUID uuid_;
-  // Is true if the characteristics has been discovered.
+  // Is true if the characteristics has been discovered and
+  // discovery_pending_count_ is 0.
   bool is_discovery_complete_;
+  // Increased each time DiscoverCharacteristics() is called. And decreased when
+  // DidDiscoverCharacteristics() is called.
+  int discovery_pending_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceMac);
 };

@@ -103,23 +103,41 @@ class BluetoothTestMac : public BluetoothTestBase {
   // macOS is the only platform for which we need to discover each set of
   // attributes individually so we need a method to simulate discovering each
   // set of attributes.
-  void SimulateDidDiscoverServices(BluetoothDevice* device,
-                                   const std::vector<std::string>& uuids);
+  // Simulates service discovery for a device.
+  void SimulateDidDiscoverServicesMac(BluetoothDevice* device);
+  // Simulates characteristic discovery for a service.
+  void SimulateDidDiscoverCharacteristicsMac(
+      BluetoothRemoteGattService* service);
+  // Simulates descriptor discovery for a characteristic.
+  void SimulateDidDiscoverDescriptorsMac(
+      BluetoothRemoteGattCharacteristic* characteristic);
   // CoreBluetooth can return NSData when reading remote gatt descriptors.
   // This methods simulate receiving NSData from CoreBluetooth.
-  void SimulateGattDescriptorReadNSData(
+  void SimulateGattDescriptorReadNSDataMac(
       BluetoothRemoteGattDescriptor* descriptor,
       const std::vector<uint8_t>& value);
   // CoreBluetooth can return NSString when reading remote gatt descriptors.
   // This methods simulate receiving NSString from CoreBluetooth.
-  void SimulateGattDescriptorReadNSString(
+  void SimulateGattDescriptorReadNSStringMac(
       BluetoothRemoteGattDescriptor* descriptor,
       const std::string& value);
   // CoreBluetooth can return NSString when reading remote gatt descriptors.
   // This methods simulate receiving NSString from CoreBluetooth.
-  void SimulateGattDescriptorReadNSNumber(
+  void SimulateGattDescriptorReadNSNumberMac(
       BluetoothRemoteGattDescriptor* descriptor,
       short value);
+
+  // Adds services in MockCBPeripheral.
+  void AddServicesToDeviceMac(BluetoothDevice* device,
+                              const std::vector<std::string>& uuids);
+  // Adds a characteristic in MockCBService.
+  void AddCharacteristicToServiceMac(BluetoothRemoteGattService* service,
+                                     const std::string& characteristic_uuid,
+                                     int properties);
+  // Adds a descriptor in MockCBCharacteristic.
+  void AddDescriptorToCharacteristicMac(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      const std::string& uuid);
 
   // Callback for the bluetooth central manager mock.
   void OnFakeBluetoothDeviceConnectGattCalled();
@@ -159,9 +177,6 @@ class BluetoothTestMac : public BluetoothTestBase {
   // Returns MockCBDescriptor from BluetoothRemoteGattDescriptor.
   MockCBDescriptor* GetCBMockDescriptor(
       BluetoothRemoteGattDescriptor* descriptor) const;
-  // Adds services in MockCBPeripheral.
-  void AddServicesToDevice(BluetoothDevice* device,
-                           const std::vector<std::string>& uuids);
 
   // Utility function for finding CBUUIDs with relatively nice SHA256 hashes.
   std::string FindCBUUIDForHashTarget();

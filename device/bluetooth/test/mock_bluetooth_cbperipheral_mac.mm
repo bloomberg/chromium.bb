@@ -94,9 +94,6 @@ using base::scoped_nsobject;
 }
 
 - (void)discoverDescriptorsForCharacteristic:(CBCharacteristic*)characteristic {
-  MockCBCharacteristic* mock_characteristic =
-      ObjCCast<MockCBCharacteristic>(characteristic);
-  [mock_characteristic discoverDescriptors];
 }
 
 - (void)readValueForCharacteristic:(CBCharacteristic*)characteristic {
@@ -158,6 +155,19 @@ using base::scoped_nsobject;
   [_delegate peripheral:self.peripheral didDiscoverServices:nil];
 }
 
+- (void)mockDidDiscoverCharacteristicsForService:(CBService*)service {
+  [_delegate peripheral:self.peripheral
+      didDiscoverCharacteristicsForService:service
+                                     error:nil];
+}
+
+- (void)mockDidDiscoverDescriptorsForCharacteristic:
+    (CBCharacteristic*)characteristic {
+  [_delegate peripheral:self.peripheral
+      didDiscoverDescriptorsForCharacteristic:characteristic
+                                        error:nil];
+}
+
 - (void)mockDidDiscoverEvents {
   [self mockDidDiscoverServices];
   // BluetoothLowEnergyDeviceMac is expected to call
@@ -165,9 +175,7 @@ using base::scoped_nsobject;
   // so -[<CBPeripheralDelegate peripheral:didDiscoverCharacteristicsForService:
   // error:] needs to be called for all services.
   for (CBService* service in _services.get()) {
-    [_delegate peripheral:self.peripheral
-        didDiscoverCharacteristicsForService:service
-                                       error:nil];
+    [self mockDidDiscoverCharacteristicsForService:service];
     for (CBCharacteristic* characteristic in service.characteristics) {
       // After discovering services, BluetoothLowEnergyDeviceMac is expected to
       // discover characteristics for all services.
