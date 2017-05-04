@@ -54,7 +54,14 @@ Polymer({
     this.menuItem_ = e.detail.item;
     var menu = /** @type {!CrActionMenuElement} */ (
         this.$.dropdown);
-    menu.showAt(/** @type {!Element} */ (e.detail.target));
+    if (e.detail.targetElement) {
+      menu.showAt(/** @type {!Element} */ (e.detail.targetElement));
+    } else {
+      menu.showAtPosition({
+        top: e.detail.y,
+        left: e.detail.x,
+      });
+    }
   },
 
   /** @private */
@@ -84,6 +91,20 @@ Polymer({
         // TODO(jiaxi): Add toast later.
       }.bind(this));
     }
+    this.closeDropdownMenu_();
+  },
+
+  /**
+   * Close the menu on mousedown so clicks can propagate to the underlying UI.
+   * This allows the user to right click the list while a context menu is
+   * showing and get another context menu.
+   * @param {Event} e
+   * @private
+   */
+  onMenuMousedown_: function(e) {
+    if (e.path[0] != this.$.dropdown)
+      return;
+
     this.closeDropdownMenu_();
   },
 
