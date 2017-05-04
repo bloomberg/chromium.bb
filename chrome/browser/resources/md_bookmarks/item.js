@@ -38,6 +38,7 @@ Polymer({
   listeners: {
     'click': 'onClick_',
     'dblclick': 'onDblClick_',
+    'contextmenu': 'onContextMenu_',
   },
 
   /** @override */
@@ -61,12 +62,29 @@ Polymer({
    * @param {Event} e
    * @private
    */
+  onContextMenu_: function(e) {
+    e.preventDefault();
+    if (!this.isSelectedItem_) {
+      this.dispatch(bookmarks.actions.selectItem(
+          this.itemId, false, false, this.getState()));
+    }
+    this.fire('open-item-menu', {
+      x: e.clientX,
+      y: e.clientY,
+      item: this.item_,
+    });
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
   onMenuButtonClick_: function(e) {
     e.stopPropagation();
     this.dispatch(bookmarks.actions.selectItem(
         this.itemId, false, false, this.getState()));
     this.fire('open-item-menu', {
-      target: e.target,
+      targetElement: e.target,
       item: this.item_,
     });
   },

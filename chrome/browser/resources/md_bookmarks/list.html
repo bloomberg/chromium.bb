@@ -36,7 +36,7 @@
         justify-content: center;
       }
     </style>
-    <dialog is="cr-action-menu" id="dropdown">
+    <dialog is="cr-action-menu" id="dropdown" on-mousedown="onMenuMousedown_">
       <button class="dropdown-item" on-tap="onEditTap_">
         [[getEditActionLabel_(menuItem_)]]
       </button>

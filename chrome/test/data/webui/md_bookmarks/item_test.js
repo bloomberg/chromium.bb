@@ -48,4 +48,16 @@ suite('<bookmarks-item>', function() {
         bookmarks.actions.selectItem('2', false, false, store.data),
         store.lastAction);
   });
+
+  test('context menu selects item if unselected', function() {
+    item.isSelectedItem_ = true;
+    item.dispatchEvent(new MouseEvent('contextmenu'));
+    assertEquals(null, store.lastAction);
+
+    item.isSelectedItem_ = false;
+    item.dispatchEvent(new MouseEvent('contextmenu'));
+    assertDeepEquals(
+        bookmarks.actions.selectItem('2', false, false, store.data),
+        store.lastAction);
+  });
 });
