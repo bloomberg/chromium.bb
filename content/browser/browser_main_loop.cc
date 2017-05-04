@@ -1009,8 +1009,19 @@ int BrowserMainLoop::CreateThreads() {
     // |non_ui_non_io_task_runner_traits| (which can be augmented below).
     // TODO(gab): Existing non-UI/non-IO BrowserThreads allow sync primitives so
     // the initial redirection will as well but they probably don't need to.
-    base::TaskTraits non_ui_non_io_task_runner_traits =
-        base::TaskTraits().MayBlock().WithBaseSyncPrimitives();
+    base::TaskTraits non_ui_non_io_task_runner_traits;
+
+    // Note: if you're copying these TaskTraits elsewhere, you most likely don't
+    // need and shouldn't use base::WithBaseSyncPrimitives() -- see its
+    // documentation.
+    constexpr base::TaskTraits kUserVisibleTraits = {
+        base::MayBlock(), base::WithBaseSyncPrimitives(),
+        base::TaskPriority::USER_VISIBLE,
+        base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
+    constexpr base::TaskTraits kUserBlockingTraits = {
+        base::MayBlock(), base::WithBaseSyncPrimitives(),
+        base::TaskPriority::USER_BLOCKING,
+        base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
 
     switch (thread_id) {
       case BrowserThread::DB:
@@ -1018,9 +1029,7 @@ int BrowserMainLoop::CreateThreads() {
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::DB");
         if (redirect_thread) {
-          non_ui_non_io_task_runner_traits
-              .WithPriority(base::TaskPriority::USER_VISIBLE)
-              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+          non_ui_non_io_task_runner_traits = kUserVisibleTraits;
         } else {
           thread_to_start = &db_thread_;
           options.timer_slack = base::TIMER_SLACK_MAXIMUM;
@@ -1031,9 +1040,7 @@ int BrowserMainLoop::CreateThreads() {
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::FILE_USER_BLOCKING");
         if (redirect_thread) {
-          non_ui_non_io_task_runner_traits
-              .WithPriority(base::TaskPriority::USER_BLOCKING)
-              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+          non_ui_non_io_task_runner_traits = kUserBlockingTraits;
         } else {
           thread_to_start = &file_user_blocking_thread_;
         }
@@ -1054,9 +1061,7 @@ int BrowserMainLoop::CreateThreads() {
         options.timer_slack = base::TIMER_SLACK_MAXIMUM;
 #else
         if (redirect_thread) {
-          non_ui_non_io_task_runner_traits
-              .WithPriority(base::TaskPriority::USER_VISIBLE)
-              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+          non_ui_non_io_task_runner_traits = kUserVisibleTraits;
         } else {
           thread_to_start = &file_thread_;
           options = io_message_loop_options;
@@ -1077,9 +1082,7 @@ int BrowserMainLoop::CreateThreads() {
         DCHECK(message_loop);
 #endif
         if (redirect_thread) {
-          non_ui_non_io_task_runner_traits
-              .WithPriority(base::TaskPriority::USER_BLOCKING)
-              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+          non_ui_non_io_task_runner_traits = kUserBlockingTraits;
         } else {
           thread_to_start = &process_launcher_thread_;
           options.timer_slack = base::TIMER_SLACK_MAXIMUM;
@@ -1100,9 +1103,7 @@ int BrowserMainLoop::CreateThreads() {
         options.timer_slack = base::TIMER_SLACK_MAXIMUM;
 #else  // OS_WIN
         if (redirect_thread) {
-          non_ui_non_io_task_runner_traits
-              .WithPriority(base::TaskPriority::USER_BLOCKING)
-              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+          non_ui_non_io_task_runner_traits = kUserBlockingTraits;
         } else {
           thread_to_start = &cache_thread_;
           options.timer_slack = base::TIMER_SLACK_MAXIMUM;

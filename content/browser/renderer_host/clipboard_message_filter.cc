@@ -182,10 +182,8 @@ void ClipboardMessageFilter::OnReadImage(ui::ClipboardType type,
 
   base::PostTaskWithTraits(
       FROM_HERE,
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN),
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ClipboardMessageFilter::ReadAndEncodeImage, this, bitmap,
                      reply_msg));
 }

@@ -520,8 +520,7 @@ void StoragePartitionImplMap::AsyncObliterate(
       GetStoragePartitionDomainPath(partition_domain));
 
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&BlockingObliteratePath, browser_context_->GetPath(),
                  domain_root, paths_to_keep,
                  base::ThreadTaskRunnerHandle::Get(), on_gc_required));

@@ -98,10 +98,8 @@ PluginServiceImpl::~PluginServiceImpl() {
 
 void PluginServiceImpl::Init() {
   plugin_list_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::USER_VISIBLE)
-          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   PluginList::Singleton()->set_will_load_plugins_callback(
       base::Bind(&WillLoadPluginsCallback, &plugin_list_sequence_checker_));
 

@@ -517,8 +517,7 @@ void PageHandler::ScreencastFrameCaptured(cc::CompositorFrameMetadata metadata,
     return;
   }
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().WithShutdownBehavior(
-                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&EncodeImage, gfx::Image::CreateFrom1xBitmap(bitmap),
                  screencast_format_, screencast_quality_),
       base::Bind(&PageHandler::ScreencastFrameEncoded,

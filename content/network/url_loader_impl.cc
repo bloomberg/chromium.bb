@@ -189,8 +189,7 @@ URLLoaderImpl::URLLoaderImpl(
   if (request.request_body.get()) {
     scoped_refptr<base::SequencedTaskRunner> task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            base::TaskTraits().MayBlock().WithPriority(
-                base::TaskPriority::USER_VISIBLE));
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
     url_request_->set_upload(
         CreateUploadDataStream(request.request_body.get(), task_runner.get()));
   }

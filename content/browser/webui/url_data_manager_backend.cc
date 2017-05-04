@@ -474,8 +474,7 @@ int URLRequestChromeJob::PostReadTask(scoped_refptr<net::IOBuffer> buf,
     return 0;
 
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().WithShutdownBehavior(
-                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&CopyData, base::RetainedRef(buf), buf_size, data_,
                  data_offset_),
       base::Bind(&URLRequestChromeJob::ReadRawDataComplete, AsWeakPtr(),
