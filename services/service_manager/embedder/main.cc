@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "mojo/edk/embedder/configuration.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "services/service_manager/embedder/main_delegate.h"
@@ -394,8 +395,23 @@ int Main(const MainParams& params) {
   InitializeMac();
 #endif
 
-  mojo::edk::SetMaxMessageSize(kMaximumMojoMessageSize);
-  mojo::edk::Init();
+  mojo::edk::Configuration mojo_config;
+  ProcessType process_type = delegate->OverrideProcessType();
+  if (process_type == ProcessType::kDefault) {
+    std::string type_switch =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+    if (type_switch == switches::kProcessTypeServiceManager) {
+      mojo_config.is_broker_process = true;
+      process_type = ProcessType::kServiceManager;
+    } else if (type_switch == switches::kProcessTypeService) {
+      process_type = ProcessType::kService;
+    } else {
+      process_type = ProcessType::kEmbedder;
+    }
+  }
+  mojo_config.max_message_num_bytes = kMaximumMojoMessageSize;
+  delegate->OverrideMojoConfiguration(&mojo_config);
+  mojo::edk::Init(mojo_config);
 
   ui::RegisterPathProvider();
 
@@ -411,21 +427,6 @@ int Main(const MainParams& params) {
     return exit_code;
   }
 
-  ProcessType process_type = delegate->OverrideProcessType();
-  if (process_type == ProcessType::kDefault) {
-    std::string type_switch =
-        command_line.GetSwitchValueASCII(switches::kProcessType);
-    if (type_switch == switches::kProcessTypeServiceManager) {
-      process_type = ProcessType::kServiceManager;
-    } else if (type_switch == switches::kProcessTypeService) {
-      process_type = ProcessType::kService;
-    } else {
-      process_type = ProcessType::kEmbedder;
-    }
-  }
-
-  base::Optional<base::AtExitManager> at_exit;
-
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTraceToConsole)) {
     base::trace_event::TraceConfig trace_config =
@@ -440,13 +441,11 @@ int Main(const MainParams& params) {
       break;
 
     case ProcessType::kServiceManager:
-      at_exit.emplace();
       exit_code = RunServiceManager(delegate);
       break;
 
     case ProcessType::kService:
       CommonSubprocessInit();
-      at_exit.emplace();
       exit_code = RunService(delegate);
       break;
 

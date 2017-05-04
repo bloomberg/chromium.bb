@@ -19,10 +19,6 @@ MOJO_SYSTEM_IMPL_EXPORT inline const Configuration& GetConfiguration() {
   return internal::g_configuration;
 }
 
-MOJO_SYSTEM_IMPL_EXPORT inline Configuration* GetMutableConfiguration() {
-  return &internal::g_configuration;
-}
-
 }  // namespace edk
 }  // namespace mojo
 

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "mojo/edk/embedder/configuration.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/embedder/process_type.h"
 #include "services/service_manager/embedder/service_manager_embedder_export.h"
@@ -61,6 +62,9 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT MainDelegate {
   // Force execution of the current process as a specific process type. May
   // return |ProcessType::kDefault| to avoid overriding.
   virtual ProcessType OverrideProcessType();
+
+  // Allows the embedder to override the process-wide Mojop configuration.
+  virtual void OverrideMojoConfiguration(mojo::edk::Configuration* config);
 
   // Create the service catalog to be used by the Service Manager. May return
   // null to use the default (empty) catalog, if you're into that.

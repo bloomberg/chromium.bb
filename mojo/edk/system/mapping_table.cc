@@ -24,7 +24,7 @@ MojoResult MappingTable::AddMapping(
   DCHECK(mapping);
 
   if (address_to_mapping_map_.size() >=
-      GetConfiguration().max_mapping_table_sze)
+      GetConfiguration().max_mapping_table_size)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   void* address = mapping->GetBase();

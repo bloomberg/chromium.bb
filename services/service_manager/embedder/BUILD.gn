@@ -33,12 +33,12 @@ component("embedder") {
     "//base:base_static",
     "//base/allocator:features",
     "//components/tracing:startup_tracing",
-    "//mojo/edk/system",
     "//ui/base",
   ]
 
   public_deps = [
     "//base",
+    "//mojo/edk/system",
     "//services/service_manager/background:lib",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/standalone_service",
