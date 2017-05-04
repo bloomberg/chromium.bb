@@ -60,7 +60,9 @@ const display::ManagedDisplayInfo WMHelperAsh::GetDisplayInfo(
 }
 
 aura::Window* WMHelperAsh::GetContainer(int container_id) {
-  return ash::Shell::GetContainer(ash::Shell::GetRootWindowForNewWindows(),
+  // TODO(domlaskowski): Use target root window once multi-display support lands
+  // in ARC. See crbug.com/718627.
+  return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                   container_id);
 }
 
