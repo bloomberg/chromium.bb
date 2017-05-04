@@ -62,6 +62,10 @@ bool SwitchToFrench() {
   EXPECT_NE("fr", default_locale);
 
   // Switch browser language to French.
+  g_browser_process->SetApplicationLocale("fr");
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(prefs::kApplicationLocale, "fr");
+
   std::string loaded_locale =
       ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("fr");
 
@@ -238,15 +242,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest,
                        NTPRespectsBrowserLanguageSetting) {
-  // Make sure the default language is not French.
-  std::string default_locale = g_browser_process->GetApplicationLocale();
-  EXPECT_NE("fr", default_locale);
-
-  // Switch browser language to French.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  std::string loaded_locale =
-      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("fr");
-
   // If the platform cannot load the French locale (GetApplicationLocale() is
   // platform specific, and has been observed to fail on a small number of
   // platforms), abort the test.
@@ -254,10 +249,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
     LOG(ERROR) << "Failed switching to French language, aborting test.";
     return;
   }
-
-  g_browser_process->SetApplicationLocale(loaded_locale);
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kApplicationLocale, loaded_locale);
 
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
