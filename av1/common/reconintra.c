@@ -2420,9 +2420,9 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
   // the frame bottom edge
   const int yd = (xd->mb_to_bottom_edge >> (3 + pd->subsampling_y)) +
                  (hpx - y - txhpx) - yd_chr_offset;
-  const int right_available =
-      (mi_col + ((col_off + txw) >> (1 - pd->subsampling_x))) <
-      xd->tile.mi_col_end;
+  const int right_available = mi_col + ((col_off + txw) << pd->subsampling_x >>
+                                        (MI_SIZE_LOG2 - tx_size_wide_log2[0])) <
+                              xd->tile.mi_col_end;
   const int bottom_available = (yd > 0);
 #if CONFIG_EXT_PARTITION_TYPES
   const PARTITION_TYPE partition = xd->mi[0]->mbmi.partition;
