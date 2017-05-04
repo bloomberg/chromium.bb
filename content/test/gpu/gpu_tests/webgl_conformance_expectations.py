@@ -113,6 +113,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=679696)
     self.Fail('conformance/extensions/ext-disjoint-timer-query.html',
         ['passthrough'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/get-extension.html',
+        ['passthrough'], bug=682745)
     self.Fail('conformance/extensions/oes-texture-float.html',
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/oes-texture-float-linear.html',
