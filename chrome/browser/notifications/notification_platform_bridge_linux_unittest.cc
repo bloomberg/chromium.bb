@@ -11,13 +11,19 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::Return;
+using testing::StrictMock;
 
 namespace {
 
@@ -38,6 +44,82 @@ ACTION_P(OnGetCapabilities, capabilities) {
   return response;
 }
 
+ACTION_P(OnNotify, id) {
+  // The "Notify" message must have type (susssasa{sv}i).
+  // https://developer.gnome.org/notification-spec/#command-notify
+  dbus::MethodCall* method_call = arg0;
+  dbus::MessageReader reader(method_call);
+  std::string str;
+  uint32_t uint32;
+  int32_t int32;
+  EXPECT_TRUE(reader.PopString(&str));
+  EXPECT_TRUE(reader.PopUint32(&uint32));
+  EXPECT_TRUE(reader.PopString(&str));
+  EXPECT_TRUE(reader.PopString(&str));
+  EXPECT_TRUE(reader.PopString(&str));
+
+  {
+    dbus::MessageReader actions_reader(nullptr);
+    EXPECT_TRUE(reader.PopArray(&actions_reader));
+    while (actions_reader.HasMoreData()) {
+      // Actions come in pairs.
+      EXPECT_TRUE(actions_reader.PopString(&str));
+      EXPECT_TRUE(actions_reader.PopString(&str));
+    }
+  }
+
+  {
+    dbus::MessageReader hints_reader(nullptr);
+    EXPECT_TRUE(reader.PopArray(&hints_reader));
+    while (hints_reader.HasMoreData()) {
+      dbus::MessageReader dict_entry_reader(nullptr);
+      EXPECT_TRUE(hints_reader.PopDictEntry(&dict_entry_reader));
+      EXPECT_TRUE(dict_entry_reader.PopString(&str));
+      dbus::MessageReader variant_reader(nullptr);
+      EXPECT_TRUE(dict_entry_reader.PopVariant(&variant_reader));
+      EXPECT_FALSE(dict_entry_reader.HasMoreData());
+    }
+  }
+
+  EXPECT_TRUE(reader.PopInt32(&int32));
+  EXPECT_FALSE(reader.HasMoreData());
+
+  dbus::Response* response = dbus::Response::CreateEmpty().release();
+  dbus::MessageWriter writer(response);
+  writer.AppendUint32(id);
+  return response;
+}
+
+ACTION(OnCloseNotification) {
+  // The "CloseNotification" message must have type (u).
+  // https://developer.gnome.org/notification-spec/#command-close-notification
+  dbus::MethodCall* method_call = arg0;
+  dbus::MessageReader reader(method_call);
+  uint32_t uint32;
+  EXPECT_TRUE(reader.PopUint32(&uint32));
+  EXPECT_FALSE(reader.HasMoreData());
+
+  return dbus::Response::CreateEmpty().release();
+}
+
+// Matches a method call to the specified dbus target.
+MATCHER_P(Calls, member, "") {
+  return arg->GetMember() == member;
+}
+
+Notification CreateNotification(const char* id,
+                                const char* title,
+                                const char* body,
+                                const char* origin) {
+  message_center::RichNotificationData optional_fields;
+  GURL url = GURL(origin);
+  return Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                      base::UTF8ToUTF16(title), base::UTF8ToUTF16(body),
+                      gfx::Image(), message_center::NotifierId(url),
+                      base::UTF8ToUTF16("Notifier's Name"), url, id,
+                      optional_fields, new MockNotificationDelegate(id));
+}
+
 }  // namespace
 
 class NotificationPlatformBridgeLinuxTest : public testing::Test {
@@ -47,27 +129,27 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
   void SetUp() override {
     mock_bus_ = new dbus::MockBus(dbus::Bus::Options());
-    mock_notification_proxy_ = new testing::StrictMock<dbus::MockObjectProxy>(
+    mock_notification_proxy_ = new StrictMock<dbus::MockObjectProxy>(
         mock_bus_.get(), kFreedesktopNotificationsName,
         dbus::ObjectPath(kFreedesktopNotificationsPath));
 
     EXPECT_CALL(*mock_bus_.get(),
                 GetObjectProxy(kFreedesktopNotificationsName,
                                dbus::ObjectPath(kFreedesktopNotificationsPath)))
-        .WillOnce(testing::Return(mock_notification_proxy_.get()));
+        .WillOnce(Return(mock_notification_proxy_.get()));
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
-                MockCallMethodAndBlock(testing::_, testing::_))
+                MockCallMethodAndBlock(Calls("GetCapabilities"), _))
         .WillOnce(OnGetCapabilities(std::vector<std::string>()));
 
-    EXPECT_CALL(*mock_notification_proxy_.get(),
-                ConnectToSignal(kFreedesktopNotificationsName, "ActionInvoked",
-                                testing::_, testing::_))
+    EXPECT_CALL(
+        *mock_notification_proxy_.get(),
+        ConnectToSignal(kFreedesktopNotificationsName, "ActionInvoked", _, _))
         .WillOnce(RegisterSignalCallback(&action_invoked_callback_));
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 ConnectToSignal(kFreedesktopNotificationsName,
-                                "NotificationClosed", testing::_, testing::_))
+                                "NotificationClosed", _, _))
         .WillOnce(RegisterSignalCallback(&notification_closed_callback_));
 
     notification_bridge_linux_ =
@@ -99,3 +181,17 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 };
 
 TEST_F(NotificationPlatformBridgeLinuxTest, SetUpAndTearDown) {}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              MockCallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(1));
+  notification_bridge_linux_->Display(NotificationCommon::PERSISTENT, "", "",
+                                      false,
+                                      CreateNotification("id1", "", "", ""));
+
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              MockCallMethodAndBlock(Calls("CloseNotification"), _))
+      .WillOnce(OnCloseNotification());
+  notification_bridge_linux_->Close("", "");
+}
