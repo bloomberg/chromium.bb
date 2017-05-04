@@ -24,6 +24,7 @@ namespace net {
 
 DEFINE_CERT_ERROR_ID(kValidityFailedNotAfter, "Time is after notAfter");
 DEFINE_CERT_ERROR_ID(kValidityFailedNotBefore, "Time is before notBefore");
+DEFINE_CERT_ERROR_ID(kCertIsDistrusted, "Certificate is distrusted");
 
 namespace {
 
@@ -62,7 +63,6 @@ DEFINE_CERT_ERROR_ID(kEkuLacksServerAuth,
                      "The extended key usage does not include server auth");
 DEFINE_CERT_ERROR_ID(kEkuLacksClientAuth,
                      "The extended key usage does not include client auth");
-DEFINE_CERT_ERROR_ID(kCertIsDistrusted, "Certificate is distrusted");
 DEFINE_CERT_ERROR_ID(kCertIsNotTrustAnchor,
                      "Certificate is not a trust anchor");
 
