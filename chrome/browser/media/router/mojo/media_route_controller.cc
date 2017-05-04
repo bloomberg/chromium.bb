@@ -42,27 +42,27 @@ MediaRouteController::MediaRouteController(
       &MediaRouteController::OnMojoConnectionError, base::Unretained(this)));
 }
 
-void MediaRouteController::Play() {
+void MediaRouteController::Play() const {
   DCHECK(is_valid_);
   mojo_media_controller_->Play();
 }
 
-void MediaRouteController::Pause() {
+void MediaRouteController::Pause() const {
   DCHECK(is_valid_);
   mojo_media_controller_->Pause();
 }
 
-void MediaRouteController::Seek(base::TimeDelta time) {
+void MediaRouteController::Seek(base::TimeDelta time) const {
   DCHECK(is_valid_);
   mojo_media_controller_->Seek(time);
 }
 
-void MediaRouteController::SetMute(bool mute) {
+void MediaRouteController::SetMute(bool mute) const {
   DCHECK(is_valid_);
   mojo_media_controller_->SetMute(mute);
 }
 
-void MediaRouteController::SetVolume(float volume) {
+void MediaRouteController::SetVolume(float volume) const {
   DCHECK(is_valid_);
   mojo_media_controller_->SetVolume(volume);
 }

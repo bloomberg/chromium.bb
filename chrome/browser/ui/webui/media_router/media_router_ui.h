@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
@@ -95,8 +96,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Closes the media router UI.
   void Close();
 
-  // Notifies this instance that the UI has been initialized. Marked virtual for
-  // tests.
+  // Notifies this instance that the UI has been initialized.
   virtual void UIInitialized();
 
   // Requests a route be created from the source mapped to
@@ -128,11 +128,11 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
                                  MediaCastMode cast_mode);
 
   // Returns true if the cast mode last chosen for the current origin is tab
-  // mirroring. Marked virtual for tests.
+  // mirroring.
   virtual bool UserSelectedTabMirroringForCurrentOrigin() const;
 
   // Records the cast mode selection for the current origin, unless the cast
-  // mode is MediaCastMode::DESKTOP_MIRROR. Marked virtual for tests.
+  // mode is MediaCastMode::DESKTOP_MIRROR.
   virtual void RecordCastModeSelection(MediaCastMode cast_mode);
 
   // Returns the hostname of the default source's parent frame URL.
@@ -146,7 +146,6 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   const std::vector<MediaRoute::Id>& joinable_route_ids() const {
     return joinable_route_ids_;
   }
-  // Marked virtual for tests.
   virtual const std::set<MediaCastMode>& cast_modes() const;
   const std::unordered_map<MediaRoute::Id, MediaCastMode>&
   routes_and_cast_modes() const {
@@ -154,7 +153,6 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   }
   const content::WebContents* initiator() const { return initiator_; }
 
-  // Marked virtual for tests.
   virtual const std::string& GetRouteProviderExtensionId() const;
 
   // Called to track UI metrics.
@@ -164,6 +162,18 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   void UpdateMaxDialogHeight(int height);
 
+  // Gets the route controller currently in use by the UI. Returns a nullptr if
+  // none is in use.
+  virtual const MediaRouteController* GetMediaRouteController() const;
+
+  // Called when a media controller UI surface is created. Creates an observer
+  // for the MediaRouteController for |route_id| to listen for media status
+  // updates.
+  virtual void OnMediaControllerUIAvailable(const MediaRoute::Id& route_id);
+  // Called when a media controller UI surface is closed. Resets the observer
+  // for MediaRouteController.
+  virtual void OnMediaControllerUIClosed();
+
   void InitForTest(MediaRouter* router,
                    content::WebContents* initiator,
                    MediaRouterWebUIMessageHandler* handler,
@@ -171,6 +181,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
                        create_session_request);
 
  private:
+  friend class MediaRouterUITest;
+
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortedSinks);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortSinksByIconType);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, FilterNonDisplayRoutes);
@@ -187,6 +199,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            RouteCreationTimeoutForPresentation);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, RouteRequestFromIncognito);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, OpenAndCloseUIDetailsView);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SendMediaCommands);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SendMediaStatusUpdate);
 
   class UIIssuesObserver;
 
@@ -210,6 +225,23 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
     RoutesUpdatedCallback callback_;
 
     DISALLOW_COPY_AND_ASSIGN(UIMediaRoutesObserver);
+  };
+
+  class UIMediaRouteControllerObserver : public MediaRouteController::Observer {
+   public:
+    explicit UIMediaRouteControllerObserver(
+        MediaRouterUI* ui,
+        scoped_refptr<MediaRouteController> controller);
+    ~UIMediaRouteControllerObserver() override;
+
+    // MediaRouteController::Observer
+    void OnMediaStatusUpdated(const MediaStatus& status) override;
+    void OnControllerInvalidated() override;
+
+   private:
+    MediaRouterUI* ui_;
+
+    DISALLOW_COPY_AND_ASSIGN(UIMediaRouteControllerObserver);
   };
 
   static std::string GetExtensionName(const GURL& url,
@@ -291,6 +323,14 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // opaque origin ("null") if |initiator_| is not set.
   std::string GetSerializedInitiatorOrigin() const;
 
+  // Destroys the route controller observer. Called when the route controller is
+  // invalidated.
+  void OnRouteControllerInvalidated();
+
+  // Called by the internal route controller observer. Notifies the message
+  // handler of a media status update for the route currently shown in the UI.
+  void UpdateMediaRouteStatus(const MediaStatus& status);
+
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.
   MediaRouterWebUIMessageHandler* handler_ = nullptr;
@@ -347,6 +387,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // The start time for UI initialization metrics timer. When a dialog has been
   // been painted and initialized with initial data, this should be cleared.
   base::Time start_time_;
+
+  // The observer for the route controller. Notifies |handler_| of media status
+  // updates.
+  std::unique_ptr<UIMediaRouteControllerObserver> route_controller_observer_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.

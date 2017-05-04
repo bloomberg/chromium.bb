@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
 #include "chrome/common/media_router/issue.h"
+#include "chrome/common/media_router/media_status.h"
 #include "components/signin/core/browser/account_info.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/gfx/geometry/size.h"
@@ -56,6 +57,13 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // the browser window changes.
   void UpdateMaxDialogHeight(int height);
 
+  // Notifies the WebUI with an updated MediaStatus. Overridden in tests.
+  virtual void UpdateMediaRouteStatus(const MediaStatus& status);
+
+  // Notifies the WebUI that the controller for the selected route has been
+  // invalidated.
+  void OnRouteControllerInvalidated();
+
   void SetWebUIForTest(content::WebUI* webui);
   void set_incognito_for_test(bool incognito) { incognito_ = incognito; }
 
@@ -64,6 +72,12 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
                            RecordCastModeSelection);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterWebUIMessageHandlerTest,
                            RetrieveCastModeSelection);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterWebUIMessageHandlerTest,
+                           OnRouteDetailsOpenedAndClosed);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterWebUIMessageHandlerTest,
+                           OnMediaCommandsReceived);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterWebUIMessageHandlerTest,
+                           OnInvalidMediaCommandsReceived);
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -89,8 +103,17 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnReportSinkCount(const base::ListValue* args);
   void OnReportTimeToClickSink(const base::ListValue* args);
   void OnReportTimeToInitialActionClose(const base::ListValue* args);
+  void OnMediaControllerAvailable(const base::ListValue* args);
+  void OnMediaControllerClosed(const base::ListValue* args);
   void OnSearchSinksAndCreateRoute(const base::ListValue* args);
   void OnInitialDataReceived(const base::ListValue* args);
+
+  // Handlers for JavaScript messages to control the media.
+  void OnPlayCurrentMedia(const base::ListValue* args);
+  void OnPauseCurrentMedia(const base::ListValue* args);
+  void OnSeekCurrentMedia(const base::ListValue* args);
+  void OnSetCurrentMediaMute(const base::ListValue* args);
+  void OnSetCurrentMediaVolume(const base::ListValue* args);
 
   // Performs an action for an Issue of |type|.
   // |args| contains additional parameter that varies based on |type|.
@@ -128,6 +151,9 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
 
   // Keeps track of whether a command to close the dialog has been issued.
   bool dialog_closing_;
+
+  // The media status currently shown in the UI.
+  base::Optional<MediaStatus> current_media_status_;
 
   MediaRouterUI* media_router_ui_;
 

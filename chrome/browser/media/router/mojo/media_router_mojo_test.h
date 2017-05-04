@@ -147,6 +147,23 @@ class MockMediaController : public mojom::MediaController {
   mojo::Binding<mojom::MediaController> binding_;
 };
 
+class MockMediaRouteController : public MediaRouteController {
+ public:
+  MockMediaRouteController(const MediaRoute::Id& route_id,
+                           mojom::MediaControllerPtr mojo_media_controller,
+                           MediaRouter* media_router);
+
+  MOCK_CONST_METHOD0(Play, void());
+  MOCK_CONST_METHOD0(Pause, void());
+  MOCK_CONST_METHOD1(Seek, void(base::TimeDelta time));
+  MOCK_CONST_METHOD1(SetMute, void(bool mute));
+  MOCK_CONST_METHOD1(SetVolume, void(float volume));
+
+ protected:
+  // The dtor is protected because MockMediaRouteController is ref-counted.
+  ~MockMediaRouteController() override;
+};
+
 class MockMediaRouteControllerObserver : public MediaRouteController::Observer {
  public:
   MockMediaRouteControllerObserver(
