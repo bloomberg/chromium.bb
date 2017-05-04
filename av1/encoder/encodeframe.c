@@ -72,8 +72,7 @@
 
 static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
                               TOKENEXTRA **t, RUN_TYPE dry_run, int mi_row,
-                              int mi_col, BLOCK_SIZE bsize,
-                              PICK_MODE_CONTEXT *ctx, int *rate);
+                              int mi_col, BLOCK_SIZE bsize, int *rate);
 
 #if CONFIG_SUPERTX
 static int check_intra_b(PICK_MODE_CONTEXT *ctx);
@@ -1905,7 +1904,6 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_PALETTE
 
   ctx->skippable = 0;
-  ctx->pred_pixel_ready = 0;
 
   // Set to zero to make sure we do not use the previous encoded frame stats
   mbmi->skip = 0;
@@ -2445,7 +2443,7 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
                          get_frame_new_buffer(&cpi->common), mi_row, mi_col);
   }
 #endif
-  encode_superblock(cpi, td, tp, dry_run, mi_row, mi_col, bsize, ctx, rate);
+  encode_superblock(cpi, td, tp, dry_run, mi_row, mi_col, bsize, rate);
 
   if (!dry_run) {
 #if CONFIG_EXT_DELTA_Q
@@ -2909,7 +2907,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
         av1_init_rd_stats(&tmp_rdc);
         update_state(cpi, td, ctx_h, mi_row, mi_col, subsize, 1);
         encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, mi_col, subsize,
-                          ctx_h, NULL);
+                          NULL);
         rd_pick_sb_modes(cpi, tile_data, x, mi_row + hbs, mi_col, &tmp_rdc,
 #if CONFIG_SUPERTX
                          &rt_nocoef,
@@ -2952,7 +2950,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
         av1_init_rd_stats(&tmp_rdc);
         update_state(cpi, td, ctx_v, mi_row, mi_col, subsize, 1);
         encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, mi_col, subsize,
-                          ctx_v, NULL);
+                          NULL);
         rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + hbs, &tmp_rdc,
 #if CONFIG_SUPERTX
                          &rt_nocoef,
@@ -3532,7 +3530,7 @@ static void rd_test_partition3(
     PICK_MODE_CONTEXT *ctx_0 = &ctxs[0];
     update_state(cpi, td, ctx_0, mi_row0, mi_col0, subsize0, 1);
     encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row0, mi_col0, subsize0,
-                      ctx_0, NULL);
+                      NULL);
 
     if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_0);
 
@@ -3573,7 +3571,7 @@ static void rd_test_partition3(
       PICK_MODE_CONTEXT *ctx_1 = &ctxs[1];
       update_state(cpi, td, ctx_1, mi_row1, mi_col1, subsize1, 1);
       encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row1, mi_col1, subsize1,
-                        ctx_1, NULL);
+                        NULL);
 
       if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_1);
 
@@ -4233,7 +4231,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       PICK_MODE_CONTEXT *ctx_h = &pc_tree->horizontal[0];
       update_state(cpi, td, ctx_h, mi_row, mi_col, subsize, 1);
       encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, mi_col, subsize,
-                        ctx_h, NULL);
+                        NULL);
 
       if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_h);
 
@@ -4379,7 +4377,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         !force_vert_split && (bsize > BLOCK_8X8 || unify_bsize)) {
       update_state(cpi, td, &pc_tree->vertical[0], mi_row, mi_col, subsize, 1);
       encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, mi_col, subsize,
-                        &pc_tree->vertical[0], NULL);
+                        NULL);
 
       if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
@@ -5900,8 +5898,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
                               TOKENEXTRA **t, RUN_TYPE dry_run, int mi_row,
-                              int mi_col, BLOCK_SIZE bsize,
-                              PICK_MODE_CONTEXT *ctx, int *rate) {
+                              int mi_col, BLOCK_SIZE bsize, int *rate) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -5975,8 +5972,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                            &xd->block_refs[ref]->sf);
     }
-    if (!(cpi->sf.reuse_inter_pred_sby && ctx->pred_pixel_ready) || seg_skip)
-      av1_build_inter_predictors_sby(xd, mi_row, mi_col, NULL, block_size);
+    av1_build_inter_predictors_sby(xd, mi_row, mi_col, NULL, block_size);
 
     av1_build_inter_predictors_sbuv(xd, mi_row, mi_col, NULL, block_size);
 #if CONFIG_MOTION_VAR
