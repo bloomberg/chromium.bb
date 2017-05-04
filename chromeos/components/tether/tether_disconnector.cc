@@ -1,0 +1,211 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromeos/components/tether/tether_disconnector.h"
+
+#include "base/values.h"
+#include "chromeos/components/tether/active_host.h"
+#include "chromeos/components/tether/device_id_tether_network_guid_map.h"
+#include "chromeos/components/tether/network_configuration_remover.h"
+#include "chromeos/components/tether/tether_connector.h"
+#include "chromeos/components/tether/tether_host_fetcher.h"
+#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "components/proximity_auth/logging/logging.h"
+
+namespace chromeos {
+
+namespace tether {
+
+TetherDisconnector::TetherDisconnector(
+    NetworkConnectionHandler* network_connection_handler,
+    NetworkStateHandler* network_state_handler,
+    ActiveHost* active_host,
+    BleConnectionManager* ble_connection_manager,
+    NetworkConfigurationRemover* network_configuration_remover,
+    TetherConnector* tether_connector,
+    DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
+    TetherHostFetcher* tether_host_fetcher)
+    : network_connection_handler_(network_connection_handler),
+      network_state_handler_(network_state_handler),
+      active_host_(active_host),
+      ble_connection_manager_(ble_connection_manager),
+      network_configuration_remover_(network_configuration_remover),
+      tether_connector_(tether_connector),
+      device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
+      tether_host_fetcher_(tether_host_fetcher),
+      weak_ptr_factory_(this) {}
+
+TetherDisconnector::~TetherDisconnector() {
+  if (disconnect_tethering_operation_)
+    disconnect_tethering_operation_->RemoveObserver(this);
+}
+
+void TetherDisconnector::DisconnectFromNetwork(
+    const std::string& tether_network_guid,
+    const base::Closure& success_callback,
+    const network_handler::StringResultCallback& error_callback) {
+  DCHECK(!tether_network_guid.empty());
+
+  ActiveHost::ActiveHostStatus status = active_host_->GetActiveHostStatus();
+  std::string active_tether_network_guid = active_host_->GetTetherNetworkGuid();
+  std::string active_wifi_network_guid = active_host_->GetWifiNetworkGuid();
+
+  if (status == ActiveHost::ActiveHostStatus::DISCONNECTED) {
+    PA_LOG(ERROR) << "Disconnect requested for Tether network with GUID "
+                  << tether_network_guid << ", but no device is connected.";
+    error_callback.Run(NetworkConnectionHandler::kErrorNotConnected);
+    return;
+  }
+
+  if (tether_network_guid != active_tether_network_guid) {
+    PA_LOG(ERROR) << "Disconnect requested for Tether network with GUID "
+                  << tether_network_guid << ", but that device is not the "
+                  << "active host.";
+    error_callback.Run(NetworkConnectionHandler::kErrorNotConnected);
+    return;
+  }
+
+  if (status == ActiveHost::ActiveHostStatus::CONNECTING) {
+    // Note: CancelConnectionAttempt() internally sets the active host to be
+    // disconnected.
+    if (tether_connector_->CancelConnectionAttempt(tether_network_guid)) {
+      PA_LOG(INFO) << "Disconnect requested for Tether network with GUID "
+                   << tether_network_guid << ", which had not yet connected. "
+                   << "Canceled in-progress connection attempt.";
+      success_callback.Run();
+      return;
+    }
+
+    PA_LOG(ERROR) << "Disconnect requested for Tether network with GUID "
+                  << tether_network_guid << " (not yet connected), but "
+                  << "canceling connection attempt failed.";
+    error_callback.Run(NetworkConnectionHandler::kErrorDisconnectFailed);
+    return;
+  }
+
+  DCHECK(!active_wifi_network_guid.empty());
+  DCHECK(!disconnect_tethering_operation_);
+  DisconnectActiveWifiConnection(tether_network_guid, active_wifi_network_guid,
+                                 success_callback, error_callback);
+}
+
+void TetherDisconnector::DisconnectActiveWifiConnection(
+    const std::string& tether_network_guid,
+    const std::string& wifi_network_guid,
+    const base::Closure& success_callback,
+    const network_handler::StringResultCallback& error_callback) {
+  // First, disconnect the active host so that the user gets visual indication
+  // that the disconnection is in progress as quickly as possible.
+  // TODO(hansberry): This will result in the Tether network becoming
+  // disconnected, but the Wi-Fi network will still be connected until the
+  // DisconnectNetwork() call below completes. This will result in a jarring UI
+  // transition which needs to be fixed.
+  active_host_->SetActiveHostDisconnected();
+
+  const NetworkState* wifi_network_state =
+      network_state_handler_->GetNetworkStateFromGuid(wifi_network_guid);
+  if (wifi_network_state) {
+    network_connection_handler_->DisconnectNetwork(
+        wifi_network_state->path(),
+        base::Bind(&TetherDisconnector::OnSuccessfulWifiDisconnect,
+                   weak_ptr_factory_.GetWeakPtr(), wifi_network_guid,
+                   success_callback, error_callback),
+        base::Bind(&TetherDisconnector::OnFailedWifiDisconnect,
+                   weak_ptr_factory_.GetWeakPtr(), wifi_network_guid,
+                   success_callback, error_callback));
+  } else {
+    PA_LOG(ERROR) << "Wi-Fi NetworkState for GUID " << wifi_network_guid << " "
+                  << "was not registered. Cannot disconnect.";
+    error_callback.Run(NetworkConnectionHandler::kErrorDisconnectFailed);
+  }
+
+  // In addition to disconnecting from the Wi-Fi network, this device must also
+  // send a DisconnectTetheringRequest to the tether host so that it can shut
+  // down its Wi-Fi hotspot if it is no longer in use.
+  const std::string device_id =
+      device_id_tether_network_guid_map_->GetDeviceIdForTetherNetworkGuid(
+          tether_network_guid);
+  tether_host_fetcher_->FetchTetherHost(
+      device_id, base::Bind(&TetherDisconnector::OnTetherHostFetched,
+                            weak_ptr_factory_.GetWeakPtr(), device_id));
+}
+
+void TetherDisconnector::OnOperationFinished(const std::string& device_id,
+                                             bool success) {
+  if (success) {
+    PA_LOG(INFO) << "Successfully sent DisconnectTetheringRequest to device "
+                 << "with ID "
+                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id);
+  } else {
+    PA_LOG(ERROR) << "Failed to send DisconnectTetheringRequest to device "
+                  << "with ID "
+                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                         device_id);
+  }
+
+  // Regardless of success/failure, unregister as a listener and delete the
+  // operation.
+  disconnect_tethering_operation_->RemoveObserver(this);
+  disconnect_tethering_operation_.reset();
+}
+
+void TetherDisconnector::OnSuccessfulWifiDisconnect(
+    const std::string& wifi_network_guid,
+    const base::Closure& success_callback,
+    const network_handler::StringResultCallback& error_callback) {
+  PA_LOG(INFO) << "Successfully disconnected from Wi-Fi network with GUID "
+               << wifi_network_guid << ".";
+  CleanUpAfterWifiDisconnection(true /* success */, wifi_network_guid,
+                                success_callback, error_callback);
+}
+
+void TetherDisconnector::OnFailedWifiDisconnect(
+    const std::string& wifi_network_guid,
+    const base::Closure& success_callback,
+    const network_handler::StringResultCallback& error_callback,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  PA_LOG(ERROR) << "Failed to disconnect from Wi-Fi network with GUID "
+                << wifi_network_guid << ". Error name: " << error_name;
+  CleanUpAfterWifiDisconnection(false /* success */, wifi_network_guid,
+                                success_callback, error_callback);
+}
+
+void TetherDisconnector::CleanUpAfterWifiDisconnection(
+    bool success,
+    const std::string& wifi_network_guid,
+    const base::Closure& success_callback,
+    const network_handler::StringResultCallback& error_callback) {
+  if (success)
+    success_callback.Run();
+  else
+    error_callback.Run(NetworkConnectionHandler::kErrorDisconnectFailed);
+
+  network_configuration_remover_->RemoveNetworkConfiguration(wifi_network_guid);
+}
+
+void TetherDisconnector::OnTetherHostFetched(
+    const std::string& device_id,
+    std::unique_ptr<cryptauth::RemoteDevice> tether_host) {
+  if (!tether_host) {
+    PA_LOG(ERROR) << "Could not fetch device with ID "
+                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                  << ". Unable to send DisconnectTetheringRequest.";
+    return;
+  }
+
+  disconnect_tethering_operation_ =
+      DisconnectTetheringOperation::Factory::NewInstance(
+          *tether_host, ble_connection_manager_);
+
+  // Start the operation; OnOperationFinished() will be called when finished.
+  disconnect_tethering_operation_->AddObserver(this);
+  disconnect_tethering_operation_->Initialize();
+}
+
+}  // namespace tether
+
+}  // namespace chromeos

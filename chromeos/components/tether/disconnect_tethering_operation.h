@@ -36,9 +36,11 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
 
   class Observer {
    public:
-    // Alerts observers when the operation has finished. |success| is true when
-    // the operation successfully sends the message and false otherwise.
-    virtual void OnOperationFinished(bool success) = 0;
+    // Alerts observers when the operation has finished for device with ID
+    // |device_id|. |success| is true when the operation successfully sends the
+    // message and false otherwise.
+    virtual void OnOperationFinished(const std::string& device_id,
+                                     bool success) = 0;
   };
 
   DisconnectTetheringOperation(const cryptauth::RemoteDevice& device_to_connect,
@@ -49,6 +51,8 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   void RemoveObserver(Observer* observer);
 
  protected:
+  void NotifyObserversOperationFinished(bool success);
+
   // MessageTransferOperation:
   void OnDeviceAuthenticated(
       const cryptauth::RemoteDevice& remote_device) override;
@@ -59,6 +63,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   friend class DisconnectTetheringOperationTest;
 
   base::ObserverList<Observer> observer_list_;
+  std::string device_id_;
   bool has_authenticated_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectTetheringOperation);
