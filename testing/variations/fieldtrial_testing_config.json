@@ -369,6 +369,7 @@
                     "//4": "browser_main_loop.cc).",
                     "name": "RedirectWithDefaultInitParams",
                     "params": {
+                        "RedirectNonUINonIOBrowserThreads": "true",
                         "RedirectSequencedWorkerPools": "true"
                     }
                 },
