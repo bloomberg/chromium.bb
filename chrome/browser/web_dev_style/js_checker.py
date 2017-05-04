@@ -76,10 +76,10 @@ class JSChecker(object):
         "Don't use wrapper types (i.e. new String() or @type {String})")
 
   def VarNameCheck(self, i, line):
-    """See the style guide. http://goo.gl/uKir6"""
+    """See the style guide. http://goo.gl/eQiXVW"""
     return self.RegexCheck(i, line,
-        r"var (?!g_\w+)([a-z]*[_$][\w_$]*)(?<! \$)",
-        "Please use var namesLikeThis <http://goo.gl/uKir6>")
+        r"var (?!g_\w+)(_?[a-z][a-zA-Z]*[_$][\w_$]*)(?<! \$)",
+        "Please use var namesLikeThis <https://goo.gl/eQiXVW>")
 
   def _GetErrorHighlight(self, start, length):
     """Takes a start position and a length, and produces a row of '^'s to
