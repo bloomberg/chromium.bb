@@ -59,8 +59,6 @@ layer at (8,52) size 180x1158 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutText {#text} at (0,1) size 12x19
           text run at (0,1) width 12: "1."
         LayoutBlockFlow {IMG} at (12,0) size 16x16 [bgcolor=#008000]
-          LayoutInline {SPAN} at (0,0) size 0x0
-            LayoutInline {SPAN} at (0,0) size 0x0
         LayoutBR {BR} at (28,1) size 0x19
         LayoutText {#text} at (0,21) size 12x19
           text run at (0,21) width 12: "2."
@@ -90,8 +88,6 @@ layer at (8,52) size 180x1158 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutText {#text} at (0,1) size 12x19
           text run at (0,1) width 12: "1."
         LayoutBlockFlow {IMG} at (12,0) size 16x16 [bgcolor=#008000]
-          LayoutInline {SPAN} at (0,0) size 0x0
-            LayoutInline {SPAN} at (0,0) size 0x0
         LayoutBR {BR} at (28,1) size 0x19
         LayoutText {#text} at (0,21) size 12x19
           text run at (0,21) width 12: "2."
@@ -273,3 +269,9 @@ layer at (8,52) size 180x1158 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutText {#text} at (12,60) size 4x19
           text run at (12,60) width 4: " "
         LayoutBR {BR} at (16,60) size 0x19
+layer at (20,256) size 16x16
+  LayoutBlockFlow {SPAN} at (0,0) size 16x16
+    LayoutInline {SPAN} at (0,0) size 0x0
+layer at (20,398) size 16x16
+  LayoutBlockFlow {SPAN} at (0,0) size 16x16
+    LayoutInline {SPAN} at (0,0) size 0x0

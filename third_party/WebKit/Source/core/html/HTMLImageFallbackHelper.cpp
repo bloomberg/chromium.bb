@@ -101,11 +101,7 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
   bool treat_as_replaced =
       image_has_intrinsic_dimensions &&
       (element.GetDocument().InQuirksMode() || image_has_no_alt_attribute);
-  // 16px for the image and 2px for its top/left border/padding offset.
-  int pixels_for_alt_image = 18;
-  if (treat_as_replaced &&
-      !ImageSmallerThanAltImage(pixels_for_alt_image, new_style->Width(),
-                                new_style->Height())) {
+  if (treat_as_replaced) {
     // https://html.spec.whatwg.org/multipage/rendering.html#images-3:
     // "If the element does not represent an image, but the element already has
     // intrinsic dimensions (e.g. from the dimension attributes or CSS rules),
@@ -117,15 +113,6 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
     place_holder->SetInlineStyleProperty(CSSPropertyOverflow, CSSValueHidden);
     place_holder->SetInlineStyleProperty(CSSPropertyDisplay,
                                          CSSValueInlineBlock);
-    place_holder->SetInlineStyleProperty(CSSPropertyBorderWidth, 1,
-                                         CSSPrimitiveValue::UnitType::kPixels);
-    place_holder->SetInlineStyleProperty(CSSPropertyBorderStyle, CSSValueSolid);
-    place_holder->SetInlineStyleProperty(CSSPropertyBorderColor,
-                                         CSSValueSilver);
-    place_holder->SetInlineStyleProperty(CSSPropertyPadding, 1,
-                                         CSSPrimitiveValue::UnitType::kPixels);
-    place_holder->SetInlineStyleProperty(CSSPropertyBoxSizing,
-                                         CSSValueBorderBox);
     CSSPrimitiveValue::UnitType unit =
         new_style->Height().IsPercent()
             ? CSSPrimitiveValue::UnitType::kPercentage
@@ -134,13 +121,32 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
                                          new_style->Height().Value(), unit);
     place_holder->SetInlineStyleProperty(CSSPropertyWidth,
                                          new_style->Width().Value(), unit);
-    broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueInline);
-    // Make sure the broken image icon appears on the appropriate side of the
-    // image for the element's writing direction.
-    broken_image->SetInlineStyleProperty(
-        CSSPropertyFloat,
-        AtomicString(new_style->Direction() == TextDirection::kLtr ? "left"
-                                                                   : "right"));
+
+    // 16px for the image and 2px for its top/left border/padding offset.
+    int pixels_for_alt_image = 18;
+    if (ImageSmallerThanAltImage(pixels_for_alt_image, new_style->Width(),
+                                 new_style->Height())) {
+      broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    } else {
+      place_holder->SetInlineStyleProperty(
+          CSSPropertyBorderWidth, 1, CSSPrimitiveValue::UnitType::kPixels);
+      place_holder->SetInlineStyleProperty(CSSPropertyBorderStyle,
+                                           CSSValueSolid);
+      place_holder->SetInlineStyleProperty(CSSPropertyBorderColor,
+                                           CSSValueSilver);
+      place_holder->SetInlineStyleProperty(
+          CSSPropertyPadding, 1, CSSPrimitiveValue::UnitType::kPixels);
+      place_holder->SetInlineStyleProperty(CSSPropertyBoxSizing,
+                                           CSSValueBorderBox);
+      broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueInline);
+      // Make sure the broken image icon appears on the appropriate side of the
+      // image for the element's writing direction.
+      broken_image->SetInlineStyleProperty(
+          CSSPropertyFloat,
+          AtomicString(new_style->Direction() == TextDirection::kLtr
+                           ? "left"
+                           : "right"));
+    }
   } else {
     // "If the element is an img element that represents nothing and the user
     // agent does not expect this to change the user agent is expected to treat
@@ -153,7 +159,7 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
     // user can request the image be displayed or investigate why it is not
     // rendering."
     //  - We opt not to display an icon, like Firefox.
-    if (!treat_as_replaced && new_style->Display() == EDisplay::kInline) {
+    if (new_style->Display() == EDisplay::kInline) {
       new_style->SetWidth(Length());
       new_style->SetHeight(Length());
     }
