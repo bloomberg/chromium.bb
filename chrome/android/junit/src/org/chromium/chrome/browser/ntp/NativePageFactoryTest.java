@@ -7,6 +7,12 @@ package org.chromium.chrome.browser.ntp;
 import android.app.Activity;
 import android.view.View;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
@@ -14,11 +20,6 @@ import org.chromium.chrome.browser.ntp.NativePageFactory.NativePageType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /**
  * Tests public methods in NativePageFactory.
@@ -102,7 +103,7 @@ public class NativePageFactoryTest {
         }
 
         @Override
-        public NativePage buildRecentTabsPage(Activity activity, Tab tab) {
+        public NativePage buildRecentTabsPage(ChromeActivity activity, Tab tab) {
             return new MockNativePage(NativePageType.RECENT_TABS);
         }
     }
