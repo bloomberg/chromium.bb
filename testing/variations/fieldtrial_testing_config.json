@@ -1415,6 +1415,24 @@
             ]
         }
     ],
+    "MetricsServiceUrl": [
+        {
+            "platforms": [
+                "chromeos",
+                "mac",
+                "win",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "NewURL",
+                    "enable_features": [
+                        "NewMetricsUrl"
+                    ]
+                }
+            ]
+        }
+    ],
     "MidiManagerAndroid": [
         {
             "platforms": [
@@ -3116,25 +3134,6 @@
                     "enable_features": [
                         "Ukm"
                     ]
-                }
-            ]
-        }
-    ],
-    "UMA_EnableCellularLogUpload": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_wo_sampling",
-                    "params": {
-                        "Enabled": "true",
-                        "Optimize": "true",
-                        "Sample_Probability": "100",
-                        "Uma_Quota": "204800",
-                        "Uma_Ratio": "0.05"
-                    }
                 }
             ]
         }
