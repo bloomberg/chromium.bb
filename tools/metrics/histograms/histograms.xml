@@ -43837,6 +43837,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Notifications.Freedesktop.Capabilities"
+    enum="BooleanSupported">
+<!-- Name completed by histogram_suffixes name="FreedesktopNotificationCapabilitiesId" -->
+
+  <owner>thomasanderson@chromium.org</owner>
+  <summary>
+    Whether the notification server supports the capability in question.  (Linux
+    only) Logged when the proxy to /org/Freedesktop/Notifications is set up
+    successfully, which happens at most once on startup.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.Icon.FileSize" units="bytes">
   <obsolete>
     Deprecated Nov 2016 in favor of Notifications.LoadFileSize.*
@@ -43875,6 +43887,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of milliseconds it took to scale down an icon for a Web
     Notification.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.Linux.BridgeInitializationStatus"
+    enum="LinuxNotificationBridgeStatusCode">
+  <owner>thomasanderson@chromium.org</owner>
+  <summary>
+    The status code for initializing NotificationPlatformBridgeLinux.  (Linux
+    only) Logged on each start up.
   </summary>
 </histogram>
 
@@ -43968,6 +43989,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records delivery status for persistent notification close events sent to a
     Service Worker when the event has been handled.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.UsingNativeNotificationCenter"
+    enum="BooleanNativeNotifications">
+  <owner>thomasanderson@chromium.org</owner>
+  <summary>
+    Indicates if Chrome is using system notifications or the Chrome notification
+    center.  Logged on each start up.
   </summary>
 </histogram>
 
@@ -85514,6 +85544,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Omnibox" label="The user interacted with the omnibox."/>
   <suffix name="SwitchTabs" label="The user switched tabs."/>
   <affected-histogram name="FirstUserAction.BackgroundTime.MainIntent"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="FreedesktopNotificationCapabilitiesId" separator=".">
+  <suffix name="ActionIcons" label="action-icons capability"/>
+  <suffix name="Actions" label="actions capability"/>
+  <suffix name="Body" label="body capability"/>
+  <suffix name="BodyHyperlinks" label="body-hyperlinks capability"/>
+  <suffix name="BodyImages" label="body-images capability"/>
+  <suffix name="BodyMarkup" label="body-markup capability"/>
+  <suffix name="IconMulti" label="icon-multi capability"/>
+  <suffix name="IconStatic" label="icon-static capability"/>
+  <suffix name="Persistence" label="persistence capability"/>
+  <suffix name="Sound" label="sound capability"/>
+  <affected-histogram name="Notifications.Freedesktop.Capabilities"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="FromGWS">

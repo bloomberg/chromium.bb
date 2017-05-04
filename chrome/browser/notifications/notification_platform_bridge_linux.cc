@@ -8,11 +8,13 @@
 #include <memory>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -39,6 +41,18 @@ const char kFreedesktopNotificationsPath[] = "/org/freedesktop/Notifications";
 
 const char kDefaultButtonId[] = "default";
 const char kSettingsButtonId[] = "settings";
+
+// The values in this enumeration correspond to those of the
+// Linux.NotificationPlatformBridge.InitializationStatus histogram, so
+// the ordering should not be changed.  New error codes should be
+// added at the end, before NUM_ITEMS.
+enum class ConnectionInitializationStatusCode {
+  SUCCESS = 0,
+  NATIVE_NOTIFICATIONS_NOT_SUPPORTED = 1,
+  MISSING_REQUIRED_CAPABILITIES = 2,
+  COULD_NOT_CONNECT_TO_SIGNALS = 3,
+  NUM_ITEMS
+};
 
 gfx::Image DeepCopyImage(const gfx::Image& image) {
   std::unique_ptr<gfx::ImageSkia> image_skia(image.CopyImageSkia());
@@ -311,14 +325,30 @@ class NotificationPlatformBridgeLinuxImpl
         bus_->GetObjectProxy(kFreedesktopNotificationsName,
                              dbus::ObjectPath(kFreedesktopNotificationsPath));
     if (!notification_proxy_) {
-      OnConnectionInitializationFinishedOnTaskRunner(false);
+      OnConnectionInitializationFinishedOnTaskRunner(
+          ConnectionInitializationStatusCode::
+              NATIVE_NOTIFICATIONS_NOT_SUPPORTED);
       return;
     }
+
+    dbus::MethodCall get_capabilities_call(kFreedesktopNotificationsName,
+                                           "GetCapabilities");
+    std::unique_ptr<dbus::Response> capabilities_response =
+        notification_proxy_->CallMethodAndBlock(
+            &get_capabilities_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
+    if (capabilities_response) {
+      dbus::MessageReader reader(capabilities_response.get());
+      std::vector<std::string> capabilities;
+      reader.PopArrayOfStrings(&capabilities);
+      for (const std::string& capability : capabilities)
+        capabilities_.insert(capability);
+    }
+    RecordMetricsForCapabilities();
 
     connected_signals_barrier_ = base::BarrierClosure(
         2, base::Bind(&NotificationPlatformBridgeLinuxImpl::
                           OnConnectionInitializationFinishedOnTaskRunner,
-                      this, true));
+                      this, ConnectionInitializationStatusCode::SUCCESS));
     notification_proxy_->ConnectToSignal(
         kFreedesktopNotificationsName, "ActionInvoked",
         base::Bind(&NotificationPlatformBridgeLinuxImpl::OnActionInvoked, this),
@@ -584,12 +614,17 @@ class NotificationPlatformBridgeLinuxImpl
       CleanUp();
   }
 
-  void OnConnectionInitializationFinishedOnTaskRunner(bool success) {
+  void OnConnectionInitializationFinishedOnTaskRunner(
+      ConnectionInitializationStatusCode status) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    PostTaskToUiThread(
-        base::BindOnce(&NotificationPlatformBridgeLinuxImpl::
-                           OnConnectionInitializationFinishedOnUiThread,
-                       this, success));
+    UMA_HISTOGRAM_ENUMERATION(
+        "Notifications.Linux.BridgeInitializationStatus",
+        static_cast<int>(status),
+        static_cast<int>(ConnectionInitializationStatusCode::NUM_ITEMS));
+    PostTaskToUiThread(base::BindOnce(
+        &NotificationPlatformBridgeLinuxImpl::
+            OnConnectionInitializationFinishedOnUiThread,
+        this, status == ConnectionInitializationStatusCode::SUCCESS));
   }
 
   void OnSignalConnected(const std::string& interface_name,
@@ -597,10 +632,37 @@ class NotificationPlatformBridgeLinuxImpl
                          bool success) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     if (!success) {
-      OnConnectionInitializationFinishedOnTaskRunner(false);
+      OnConnectionInitializationFinishedOnTaskRunner(
+          ConnectionInitializationStatusCode::COULD_NOT_CONNECT_TO_SIGNALS);
       return;
     }
     connected_signals_barrier_.Run();
+  }
+
+  void RecordMetricsForCapabilities() {
+    // Histogram macros must be called with the same name for each
+    // callsite, so we can't roll the below into a nice loop.
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.ActionIcons",
+                          capabilities_.count("action-icons"));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Actions",
+                          capabilities_.count("actions"));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Body",
+                          capabilities_.count("body"));
+    UMA_HISTOGRAM_BOOLEAN(
+        "Notifications.Freedesktop.Capabilities.BodyHyperlinks",
+        capabilities_.count("body-hyperlinks"));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.BodyImages",
+                          capabilities_.count("body-images"));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.BodyMarkup",
+                          capabilities_.count("body-markup"));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.IconMulti",
+                          capabilities_.count("icon-multi"));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.IconStatic",
+                          capabilities_.count("icon-static"));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Persistence",
+                          capabilities_.count("persistence"));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Sound",
+                          capabilities_.count("sound"));
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -621,6 +683,8 @@ class NotificationPlatformBridgeLinuxImpl
   scoped_refptr<dbus::Bus> bus_;
 
   dbus::ObjectProxy* notification_proxy_ = nullptr;
+
+  std::unordered_set<std::string> capabilities_;
 
   base::Closure connected_signals_barrier_;
 
