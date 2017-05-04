@@ -48,6 +48,7 @@ extern const base::FilePath::CharType kChannelIDFilename[];
 extern const base::FilePath::CharType kCookieFilename[];
 extern const base::FilePath::CharType kCRLSetFilename[];
 extern const base::FilePath::CharType kCustomDictionaryFileName[];
+extern const base::FilePath::CharType kDownloadServiceStorageDirname[];
 extern const base::FilePath::CharType kExtensionActivityLogFilename[];
 extern const base::FilePath::CharType kExtensionsCookieFilename[];
 extern const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[];
