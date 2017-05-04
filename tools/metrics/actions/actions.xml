@@ -8804,7 +8804,7 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="Launcher_ClickOnApplistButton">
+<action name="Launcher_ClickOnApplistButton" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -8829,6 +8829,11 @@ should be able to be added at any place in this file.
     Recorded when the user minimizes an existing task by clicking an icon in the
     shelf.
   </description>
+</action>
+
+<action name="Launcher_Show">
+  <owner>vadimt@chromium.org</owner>
+  <description>Launcher got shown.</description>
 </action>
 
 <action name="Launcher_SwitchTask">
