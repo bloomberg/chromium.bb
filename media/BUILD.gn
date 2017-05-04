@@ -376,17 +376,12 @@ component("media") {
     deps += [ "//third_party/libvpx" ]
   }
 
-  if (disable_ffmpeg_video_decoders) {
-      sources -= [
-        "filters/decrypting_video_decoder.cc",
-        "filters/decrypting_video_decoder.h",
-      ]
-  }
-
   if (is_android) {
     sources -= [
       "filters/decrypting_audio_decoder.cc",
       "filters/decrypting_audio_decoder.h",
+      "filters/decrypting_video_decoder.cc",
+      "filters/decrypting_video_decoder.h",
     ]
     sources += [
       "filters/android/media_codec_audio_decoder.cc",
@@ -625,7 +620,7 @@ source_set("unit_tests") {
 
   data_deps = []
 
-  if (disable_ffmpeg_video_decoders) {
+  if (is_android) {
     sources -= [
       "filters/decrypting_audio_decoder_unittest.cc",
       "filters/decrypting_video_decoder_unittest.cc",
@@ -659,9 +654,8 @@ source_set("unit_tests") {
     ]
 
     if (!disable_ffmpeg_video_decoders) {
-      sources += [
-        "filters/ffmpeg_video_decoder_unittest.cc",
-      ]
+      # FFmpeg on Android does not include video decoders.
+      sources += [ "filters/ffmpeg_video_decoder_unittest.cc" ]
     }
   }
 

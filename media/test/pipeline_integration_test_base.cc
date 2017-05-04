@@ -56,7 +56,8 @@ static ScopedVector<VideoDecoder> CreateVideoDecodersForTest(
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 // Android does not have an ffmpeg video decoder.
-#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID)
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID) && \
+    !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   video_decoders.push_back(new FFmpegVideoDecoder(media_log));
 #endif
   return video_decoders;

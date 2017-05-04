@@ -31,7 +31,7 @@
 #include "media/base/media_log_event.h"
 #include "media/filters/gpu_video_decoder.h"
 
-#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if !defined(OS_ANDROID)
 #include "media/filters/decrypting_video_decoder.h"
 #endif
 
@@ -524,7 +524,7 @@ std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
     return uma_name + "Other";
   }
 
-#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+#if !defined(OS_ANDROID)
   if (player_info.video_decoder ==
       media::DecryptingVideoDecoder::kDecoderName) {
     return uma_name + "DVD";
