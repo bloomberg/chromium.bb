@@ -49,6 +49,7 @@ source_set("browser") {
     "//components/filesystem:lib",
     "//components/leveldb:lib",
     "//components/link_header_util",
+    "//components/metrics",
     "//components/mime_util",
     "//components/payments/mojom:mojom_payment_app",
     "//components/rappor",
