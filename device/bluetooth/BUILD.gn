@@ -45,6 +45,8 @@ source_set("fake_bluetooth") {
   sources = [
     "test/fake_bluetooth.cc",
     "test/fake_bluetooth.h",
+    "test/fake_central.cc",
+    "test/fake_central.h",
   ]
 
   deps = [

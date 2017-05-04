@@ -9,6 +9,13 @@ module bluetooth.mojom;
 // devices, simulating GATT attributes and its descendants, and simulating
 // success and error responses.
 
+// Indicates the various states of Central.
+enum CentralState {
+  ABSENT,
+  POWERED_ON,
+  POWERED_OFF,
+};
+
 // FakeBluetooth allows clients to control the global Bluetooth state.
 interface FakeBluetooth {
   // Set it to indicate whether the platform supports BLE. For example, Windows
@@ -16,4 +23,19 @@ interface FakeBluetooth {
   // 10 is a platform that does support LE, even if there is no Bluetooth radio
   // available.
   SetLESupported(bool available) => ();
+
+  // Initializes a fake Central with |state| as the initial state.
+  SimulateCentral(CentralState state) => (FakeCentral fake_central);
+};
+
+// FakeCentral allows clients to simulate events that a device in the
+// Central/Observer role would receive as well as monitor the operations
+// performed by the device in the Central/Observer role.
+//
+// A "Central" interface would allow its clients to receive advertising events
+// and initiate connections to peripherals i.e. operations of two roles
+// defined by the Bluetooth Spec: Observer and Central.
+// See Bluetooth 4.2 Vol 3 Part C 2.2.2 "Roles when Operating over an
+// LE Physical Transport".
+interface FakeCentral {
 };
