@@ -23,7 +23,7 @@ CrSettingsBrowserTest.prototype = {
 
   /** @override */
   get browsePreload() {
-    throw 'this is abstract and should be overriden by subclasses';
+    throw 'this is abstract and should be overridden by subclasses';
   },
 
   /** @override */
@@ -777,13 +777,12 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPage', function() {
 });
 
 /**
- * Test fixture for chrome/browser/resources/settings/site_settings/.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
-function CrSettingsSiteSettingsTest() {}
+function CrSettingsSiteDataDetailsTest() {}
 
-CrSettingsSiteSettingsTest.prototype = {
+CrSettingsSiteDataDetailsTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
@@ -796,29 +795,199 @@ CrSettingsSiteSettingsTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    // TODO(dbeam): split these up.
-    'category_default_setting_tests.js',
-    'category_setting_exceptions_tests.js',
-    'site_details_tests.js',
-    'site_details_permission_tests.js',
-    'site_list_tests.js',
     'test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
-    'zoom_levels_tests.js',
-    'usb_devices_tests.js',
     'site_data_details_subpage_tests.js',
   ]),
 };
 
-TEST_F('CrSettingsSiteSettingsTest', 'SiteSettings', function() {
-  category_default_setting.registerTests();
-  category_setting_exceptions.registerTests();
-  site_details.registerTests();
-  site_details_permission.registerTests();
-  site_list.registerTests();
-  zoom_levels.registerTests();
-  usb_devices.registerTests();
+TEST_F('CrSettingsSiteDataDetailsTest', 'SiteSettings', function() {
+  mocha.run();
+});
 
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsCategoryDefaultSettingTest() {}
+
+CrSettingsCategoryDefaultSettingTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'category_default_setting_tests.js',
+  ]),
+};
+
+TEST_F(
+    'CrSettingsCategoryDefaultSettingTest', 'CategoryDefaultSetting',
+    function() {
+      mocha.run();
+    });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsCategorySettingExceptionsTest() {}
+
+CrSettingsCategorySettingExceptionsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'category_setting_exceptions_tests.js',
+  ]),
+};
+
+TEST_F(
+    'CrSettingsCategorySettingExceptionsTest', 'CategorySettingExceptions',
+    function() {
+      mocha.run();
+    });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteDetailsTest() {}
+
+CrSettingsSiteDetailsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'site_details_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsSiteDetailsTest', 'SiteDetails', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteDetailsPermissionTest() {}
+
+CrSettingsSiteDetailsPermissionTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'site_details_permission_tests.js',
+  ]),
+};
+
+TEST_F(
+    'CrSettingsSiteDetailsPermissionTest', 'SiteDetailsPermission', function() {
+      mocha.run();
+    });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteListTest() {}
+
+CrSettingsSiteListTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  commandLineSwitches: [{
+    switchName: 'enable-site-settings',
+  }],
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'site_list_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsSiteListTest', 'SiteList', function() {
+  mocha.grep('SiteList').run();
+});
+
+TEST_F('CrSettingsSiteListTest', 'EditExceptionDialog', function() {
+  mocha.grep('EditExceptionDialog').run();
+});
+
+TEST_F('CrSettingsSiteListTest', 'AddExceptionDialog', function() {
+  mocha.grep('AddExceptionDialog').run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsZoomLevelsTest() {}
+
+CrSettingsZoomLevelsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'zoom_levels_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsZoomLevelsTest', 'ZoomLevels', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsUsbDevicesTest() {}
+
+CrSettingsUsbDevicesTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'usb_devices_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsUsbDevicesTest', 'UsbDevices', function() {
   mocha.run();
 });
 

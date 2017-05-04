@@ -3,33 +3,25 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for category-setting-exceptions. */
-cr.define('category_setting_exceptions', function() {
-  function registerTests() {
-    suite('CategorySettingExceptions', function() {
-      /**
-       * A site settings exceptions created before each test.
-       * @type {SiteSettingsExceptionsElement}
-       */
-      var testElement;
+suite('CategorySettingExceptions', function() {
+  /**
+   * A site settings exceptions created before each test.
+   * @type {SiteSettingsExceptionsElement}
+   */
+  var testElement;
 
-      // Initialize a category-setting-exceptions before each test.
-      setup(function() {
-        browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-        settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
-        PolymerTest.clearBody();
-        testElement = document.createElement('category-setting-exceptions');
-        document.body.appendChild(testElement);
-      });
+  // Initialize a category-setting-exceptions before each test.
+  setup(function() {
+    browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    PolymerTest.clearBody();
+    testElement = document.createElement('category-setting-exceptions');
+    document.body.appendChild(testElement);
+  });
 
-      test('create category-setting-exceptions', function() {
-        // The category-setting-exceptions is mainly a container for site-lists.
-        // There's not much that merits testing.
-        assertTrue(!!testElement);
-      });
-    });
-  }
-
-  return {
-    registerTests: registerTests,
-  };
+  test('create category-setting-exceptions', function() {
+    // The category-setting-exceptions is mainly a container for site-lists.
+    // There's not much that merits testing.
+    assertTrue(!!testElement);
+  });
 });
