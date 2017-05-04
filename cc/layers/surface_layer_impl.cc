@@ -66,12 +66,16 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   AppendRainbowDebugBorder(render_pass);
   SharedQuadState* common_shared_quad_state = nullptr;
-  auto* primary = CreateSurfaceDrawQuad(
-      render_pass, SurfaceDrawQuadType::PRIMARY, primary_surface_info_,
-      &append_quads_data->embedded_surfaces, &common_shared_quad_state);
+  auto* primary =
+      CreateSurfaceDrawQuad(render_pass, SurfaceDrawQuadType::PRIMARY,
+                            primary_surface_info_, &common_shared_quad_state);
   // Emitting a fallback SurfaceDrawQuad is unnecessary if the primary and
   // fallback surface Ids match.
-  if (primary && fallback_surface_info_.id() != primary_surface_info_.id()) {
+  bool needs_fallback =
+      fallback_surface_info_.id() != primary_surface_info_.id();
+  if (primary && needs_fallback) {
+    // Add the primary surface ID as a dependency.
+    append_quads_data->embedded_surfaces.push_back(primary_surface_info_.id());
     // We can use the same SharedQuadState as the primary SurfaceDrawQuad if
     // we don't need a different transform on the fallback.
     bool use_common_shared_quad_state =
@@ -80,7 +84,6 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
             fallback_surface_info_.device_scale_factor();
     primary->fallback_quad = CreateSurfaceDrawQuad(
         render_pass, SurfaceDrawQuadType::FALLBACK, fallback_surface_info_,
-        nullptr /* embedded_surfaces */,
         use_common_shared_quad_state ? &common_shared_quad_state : nullptr);
   }
 }
@@ -89,7 +92,6 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     RenderPass* render_pass,
     SurfaceDrawQuadType surface_draw_quad_type,
     const SurfaceInfo& surface_info,
-    std::vector<SurfaceId>* embedded_surfaces,
     SharedQuadState** common_shared_quad_state) {
   if (!surface_info.is_valid())
     return nullptr;
@@ -139,8 +141,6 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                             surface_info.id(), surface_draw_quad_type, nullptr);
-  if (embedded_surfaces)
-    embedded_surfaces->push_back(surface_info.id());
 
   return surface_draw_quad;
 }

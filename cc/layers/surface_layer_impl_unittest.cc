@@ -327,7 +327,11 @@ TEST(SurfaceLayerImplTest,
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
-  EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id1));
+  // As the primary and fallback SurfaceInfos match, there is no reason to
+  // add the primary surface ID to |embedded_surfaces| because it is not an
+  // unresolved dependency. The fallback surface will already be added as a
+  // reference in referenced_surfaces.
+  EXPECT_THAT(data.embedded_surfaces, testing::IsEmpty());
 
   ASSERT_EQ(1u, render_pass->quad_list.size());
   const SurfaceDrawQuad* surface_draw_quad1 =
