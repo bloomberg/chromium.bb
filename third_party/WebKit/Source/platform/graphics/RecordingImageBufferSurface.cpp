@@ -59,6 +59,7 @@ void RecordingImageBufferSurface::SetImageBuffer(ImageBuffer* image_buffer) {
     image_buffer_->ResetCanvas(current_frame_->getRecordingCanvas());
   }
   if (fallback_surface_) {
+    DCHECK(fallback_surface_->IsValid());
     fallback_surface_->SetImageBuffer(image_buffer);
   }
 }
@@ -73,6 +74,8 @@ bool RecordingImageBufferSurface::WritePixels(const SkImageInfo& orig_info,
     if (write_rect.Contains(IntRect(IntPoint(), size())))
       WillOverwriteCanvas();
     FallBackToRasterCanvas(kFallbackReasonWritePixels);
+    if (!fallback_surface_->IsValid())
+      return false;
   }
   return fallback_surface_->WritePixels(orig_info, pixels, row_bytes, x, y);
 }
@@ -95,6 +98,10 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
 
   fallback_surface_ = WTF::WrapUnique(new UnacceleratedImageBufferSurface(
       size(), GetOpacityMode(), kInitializeImagePixels, color_params()));
+  // If the fallback surface fails to be created, then early out.
+  if (!fallback_surface_->IsValid())
+    return;
+
   fallback_surface_->SetImageBuffer(image_buffer_);
 
   if (previous_frame_) {
@@ -177,12 +184,16 @@ sk_sp<SkImage> RecordingImageBufferSurface::NewImageSnapshot(
     SnapshotReason reason) {
   if (!fallback_surface_)
     FallBackToRasterCanvas(SnapshotReasonToFallbackReason(reason));
+  if (!fallback_surface_->IsValid())
+    return nullptr;
   return fallback_surface_->NewImageSnapshot(hint, reason);
 }
 
 PaintCanvas* RecordingImageBufferSurface::Canvas() {
-  if (fallback_surface_)
+  if (fallback_surface_) {
+    DCHECK(fallback_surface_->IsValid());
     return fallback_surface_->Canvas();
+  }
 
   DCHECK(current_frame_->getRecordingCanvas());
   return current_frame_->getRecordingCanvas();
