@@ -4,8 +4,11 @@
 
 #include "chrome/browser/notifications/native_notification_display_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -66,6 +69,7 @@ NativeNotificationDisplayService::~NativeNotificationDisplayService() = default;
 
 void NativeNotificationDisplayService::OnNotificationPlatformBridgeReady(
     bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Notifications.UsingNativeNotificationCenter", success);
   if (success) {
     notification_bridge_ready_ = true;
   } else {

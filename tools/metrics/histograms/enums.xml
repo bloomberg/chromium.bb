@@ -2914,6 +2914,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Missing data in disk cache"/>
 </enum>
 
+<enum name="BooleanNativeNotifications" type="int">
+  <int value="0" label="Using Chrome notifications"/>
+  <int value="1" label="Using native notifications"/>
+</enum>
+
 <enum name="BooleanNavPreloadFinishedFirst" type="int">
   <int value="0" label="Worker preparation finished first"/>
   <int value="1" label="Navigation preload response arrived first"/>
@@ -20342,6 +20347,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="18" label="2.27"/>
   <int value="19" label="2.28"/>
   <int value="20" label="2.29"/>
+</enum>
+
+<enum name="LinuxNotificationBridgeStatusCode" type="int">
+  <int value="0" label="success"/>
+  <int value="1" label="native notifications not supported"/>
+  <int value="2" label="missing required capabilities"/>
+  <int value="3" label="could not connect to signals"/>
 </enum>
 
 <enum name="LinuxSandboxStatus" type="int">

@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/notification_platform_bridge_linux.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -28,6 +29,15 @@ ACTION_P(RegisterSignalCallback, callback_addr) {
   arg3.Run("" /* interface_name */, "" /* signal_name */, true /* success */);
 }
 
+ACTION_P(OnGetCapabilities, capabilities) {
+  // MockObjectProxy::CallMethodAndBlock will wrap the return value in
+  // a unique_ptr.
+  dbus::Response* response = dbus::Response::CreateEmpty().release();
+  dbus::MessageWriter writer(response);
+  writer.AppendArrayOfStrings(capabilities);
+  return response;
+}
+
 }  // namespace
 
 class NotificationPlatformBridgeLinuxTest : public testing::Test {
@@ -45,6 +55,10 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
                 GetObjectProxy(kFreedesktopNotificationsName,
                                dbus::ObjectPath(kFreedesktopNotificationsPath)))
         .WillOnce(testing::Return(mock_notification_proxy_.get()));
+
+    EXPECT_CALL(*mock_notification_proxy_.get(),
+                MockCallMethodAndBlock(testing::_, testing::_))
+        .WillOnce(OnGetCapabilities(std::vector<std::string>()));
 
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 ConnectToSignal(kFreedesktopNotificationsName, "ActionInvoked",
