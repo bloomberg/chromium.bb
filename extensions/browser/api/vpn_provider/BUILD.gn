@@ -16,4 +16,8 @@ source_set("vpn_provider") {
   deps = [
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

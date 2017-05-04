@@ -12,4 +12,8 @@ source_set("mime_handler_private") {
     "//content/public/browser",
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

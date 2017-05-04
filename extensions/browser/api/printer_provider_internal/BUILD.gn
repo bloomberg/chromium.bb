@@ -18,4 +18,8 @@ source_set("printer_provider_internal") {
     "//content/public/browser",
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

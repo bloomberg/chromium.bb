@@ -16,4 +16,8 @@ source_set("printer_provider") {
     "//device/usb",
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

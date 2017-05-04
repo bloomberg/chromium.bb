@@ -33,4 +33,8 @@ source_set("display_source") {
   deps = [
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

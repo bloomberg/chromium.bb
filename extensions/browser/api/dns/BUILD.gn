@@ -13,4 +13,8 @@ source_set("dns") {
   deps = [
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

@@ -13,4 +13,8 @@ source_set("system_memory") {
   deps = [
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }

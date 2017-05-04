@@ -25,6 +25,10 @@ source_set("networking_private") {
     "//net",
   ]
 
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
+
   if (!is_chromeos && is_linux) {
     sources += [
       "network_config_dbus_constants_linux.cc",

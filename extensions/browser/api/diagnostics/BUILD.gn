@@ -14,4 +14,8 @@ source_set("diagnostics") {
   deps = [
     "//extensions/common/api",
   ]
+
+  public_deps = [
+    "//extensions/browser:browser_sources",
+  ]
 }
