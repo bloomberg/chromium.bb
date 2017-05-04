@@ -28,11 +28,9 @@ class WifiHotspotConnector;
 // initiates a connection by starting a ConnectTetheringOperation. When a
 // response has been received from the tether host, TetherConnector connects to
 // the associated Wi-Fi network.
-class TetherConnector : public NetworkConnectionHandler::TetherDelegate,
-                        public ConnectTetheringOperation::Observer {
+class TetherConnector : public ConnectTetheringOperation::Observer {
  public:
   TetherConnector(
-      NetworkConnectionHandler* network_connection_handler,
       NetworkStateHandler* network_state_handler,
       WifiHotspotConnector* wifi_hotspot_connector,
       ActiveHost* active_host,
@@ -40,13 +38,15 @@ class TetherConnector : public NetworkConnectionHandler::TetherDelegate,
       BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
-  ~TetherConnector() override;
+  virtual ~TetherConnector();
 
-  // NetworkConnectionHandler::TetherDelegate:
-  void ConnectToNetwork(
+  virtual void ConnectToNetwork(
       const std::string& tether_network_guid,
       const base::Closure& success_callback,
-      const network_handler::StringResultCallback& error_callback) override;
+      const network_handler::StringResultCallback& error_callback);
+
+  // Returns whether the connection attempt was successfully canceled.
+  virtual bool CancelConnectionAttempt(const std::string& tether_network_guid);
 
   // ConnectTetheringOperation::Observer:
   void OnSuccessfulConnectTetheringResponse(
@@ -60,7 +60,7 @@ class TetherConnector : public NetworkConnectionHandler::TetherDelegate,
  private:
   friend class TetherConnectorTest;
 
-  void SetConnectionFailed();
+  void SetConnectionFailed(const std::string& error_name);
   void SetConnectionSucceeded(const std::string& device_id,
                               const std::string& wifi_network_guid);
 

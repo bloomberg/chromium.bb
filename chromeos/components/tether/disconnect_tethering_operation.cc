@@ -48,6 +48,7 @@ DisconnectTetheringOperation::DisconnectTetheringOperation(
     : MessageTransferOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
+      device_id_(device_to_connect.GetDeviceId()),
       has_authenticated_(false) {}
 
 DisconnectTetheringOperation::~DisconnectTetheringOperation() {}
@@ -58,6 +59,13 @@ void DisconnectTetheringOperation::AddObserver(Observer* observer) {
 
 void DisconnectTetheringOperation::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+void DisconnectTetheringOperation::NotifyObserversOperationFinished(
+    bool success) {
+  for (auto& observer : observer_list_) {
+    observer.OnOperationFinished(device_id_, success);
+  }
 }
 
 void DisconnectTetheringOperation::OnDeviceAuthenticated(
@@ -71,9 +79,7 @@ void DisconnectTetheringOperation::OnDeviceAuthenticated(
 }
 
 void DisconnectTetheringOperation::OnOperationFinished() {
-  for (auto& observer : observer_list_) {
-    observer.OnOperationFinished(has_authenticated_);
-  }
+  NotifyObserversOperationFinished(has_authenticated_);
 }
 
 MessageType DisconnectTetheringOperation::GetMessageTypeForConnection() {

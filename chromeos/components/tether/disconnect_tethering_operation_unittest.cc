@@ -21,23 +21,26 @@ namespace {
 
 class TestObserver : public DisconnectTetheringOperation::Observer {
  public:
-  TestObserver() : has_run_callback_(false), success_(false) {}
+  TestObserver() : success_(false) {}
 
   virtual ~TestObserver() {}
 
+  std::string last_device_id() { return last_device_id_; }
+
   bool WasLastOperationSuccessful() {
-    EXPECT_TRUE(has_run_callback_);
+    EXPECT_TRUE(!last_device_id_.empty());
     return success_;
   }
 
   // DisconnectTetheringOperation::Observer:
-  void OnOperationFinished(bool success) override {
-    has_run_callback_ = true;
+  void OnOperationFinished(const std::string& device_id,
+                           bool success) override {
+    last_device_id_ = device_id;
     success_ = success;
   }
 
  private:
-  bool has_run_callback_;
+  std::string last_device_id_;
   bool success_;
 };
 
@@ -95,11 +98,13 @@ class DisconnectTetheringOperationTest : public testing::Test {
 
 TEST_F(DisconnectTetheringOperationTest, TestSuccess) {
   SimulateDeviceAuthenticationAndVerifyMessageSent();
+  EXPECT_EQ(test_device_.GetDeviceId(), test_observer_->last_device_id());
   EXPECT_TRUE(test_observer_->WasLastOperationSuccessful());
 }
 
 TEST_F(DisconnectTetheringOperationTest, TestFailure) {
   SimulateConnectionTimeout();
+  EXPECT_EQ(test_device_.GetDeviceId(), test_observer_->last_device_id());
   EXPECT_FALSE(test_observer_->WasLastOperationSuccessful());
 }
 

@@ -15,8 +15,10 @@
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/local_device_data_provider.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
+#include "chromeos/components/tether/network_connection_handler_tether_delegate.h"
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/components/tether/tether_connector.h"
+#include "chromeos/components/tether/tether_disconnector.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_network_disconnection_handler.h"
@@ -192,18 +194,26 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   device_id_tether_network_guid_map_ =
       base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
   tether_connector_ = base::MakeUnique<TetherConnector>(
-      network_connection_handler_, network_state_handler_,
-      wifi_hotspot_connector_.get(), active_host_.get(),
+      network_state_handler_, wifi_hotspot_connector_.get(), active_host_.get(),
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
       tether_host_response_recorder_.get(),
       device_id_tether_network_guid_map_.get());
   network_configuration_remover_ =
       base::MakeUnique<NetworkConfigurationRemover>(
           network_state_handler_, managed_network_configuration_handler_);
+  tether_disconnector_ = base::MakeUnique<TetherDisconnector>(
+      network_connection_handler_, network_state_handler_, active_host_.get(),
+      ble_connection_manager_.get(), network_configuration_remover_.get(),
+      tether_connector_.get(), device_id_tether_network_guid_map_.get(),
+      tether_host_fetcher_.get());
   tether_network_disconnection_handler_ =
       base::MakeUnique<TetherNetworkDisconnectionHandler>(
           active_host_.get(), network_state_handler_,
           network_configuration_remover_.get());
+  network_connection_handler_tether_delegate_ =
+      base::MakeUnique<NetworkConnectionHandlerTetherDelegate>(
+          network_connection_handler_, tether_connector_.get(),
+          tether_disconnector_.get());
   host_scan_cache_ = base::MakeUnique<HostScanCache>(
       network_state_handler_, active_host_.get(),
       tether_host_response_recorder_.get(),
