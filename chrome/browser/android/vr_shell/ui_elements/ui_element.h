@@ -48,8 +48,10 @@ enum Fill {
   SELF = 4,
 };
 
+// TODO(vollick): use gfx::Transform crbug.com/718004
 struct Transform {
   Transform();
+  explicit Transform(const Transform& other);
 
   void MakeIdentity();
   void Rotate(const vr::Quatf& quat);
@@ -86,8 +88,8 @@ class WorldRectangle {
   Transform transform_;
 };
 
-// TODO(mthiesse): Make this a class - we derive classes from this struct.
-struct UiElement : public WorldRectangle {
+class UiElement : public WorldRectangle {
+ public:
   UiElement();
   virtual ~UiElement();
 
@@ -110,70 +112,179 @@ struct UiElement : public WorldRectangle {
   virtual void OnButtonDown();
   virtual void OnButtonUp();
 
-  // Valid IDs are non-negative.
-  int id = -1;
+  int id() const { return id_; }
+  void set_id(int id) { id_ = id; }
 
   // If a non-negative parent ID is specified, applicable transformations
   // are applied relative to the parent, rather than absolutely.
-  int parent_id = -1;
+  int parent_id() const { return parent_id_; }
+  void set_parent_id(int id) { parent_id_ = id; }
 
   // If true, this object will be visible.
-  bool visible = true;
+  bool visible() const { return visible_; }
+  void set_visible(bool visible) { visible_ = visible; }
 
   // If false, the reticle will not hit the element, even if visible.
-  bool hit_testable = true;
+  bool hit_testable() const { return hit_testable_; }
+  void set_hit_testable(bool hit_testable) { hit_testable_ = hit_testable; }
 
   // If true, transformations will be applied relative to the field of view,
   // rather than the world.
-  bool lock_to_fov = false;
+  bool lock_to_fov() const { return lock_to_fov_; }
+  void set_lock_to_fov(bool lock) { lock_to_fov_ = lock; }
+
+  // The computed lock to the FoV, incorporating lock of parent objects.
+  bool computed_lock_to_fov() const { return computed_lock_to_fov_; }
+  void set_computed_lock_to_fov(bool computed_lock) {
+    computed_lock_to_fov_ = computed_lock;
+  }
 
   // The size of the object.  This does not affect children.
-  gfx::Vector3dF size = {1.0f, 1.0f, 1.0f};
+  gfx::Vector3dF size() const { return size_; }
+  void set_size(const gfx::Vector3dF& size) { size_ = size; }
 
   // The scale of the object, and its children.
-  gfx::Vector3dF scale = {1.0f, 1.0f, 1.0f};
+  gfx::Vector3dF scale() const { return scale_; }
+  void set_scale(const gfx::Vector3dF& scale) { scale_ = scale; }
 
   // The rotation of the object, and its children.
-  vr::RotationAxisAngle rotation = {1.0f, 0.0f, 0.0f, 0.0f};
+  vr::RotationAxisAngle rotation() const { return rotation_; }
+  void set_rotation(const vr::RotationAxisAngle& rotation) {
+    rotation_ = rotation;
+  }
 
   // The translation of the object, and its children.  Translation is applied
   // after rotation and scaling.
-  gfx::Vector3dF translation = {0.0f, 0.0f, 0.0f};
+  gfx::Vector3dF translation() const { return translation_; }
+  void set_translation(const gfx::Vector3dF& translation) {
+    translation_ = translation;
+  }
 
   // The opacity of the object (between 0.0 and 1.0).
-  float opacity = 1.0f;
+  float opacity() const { return opacity_; }
+  void set_opacity(float opacity) { opacity_ = opacity; }
 
   // The computed opacity, incorporating opacity of parent objects.
-  float computed_opacity;
-
-  // The computed lock to the FoV, incorporating lock of parent objects.
-  bool computed_lock_to_fov;
+  float computed_opacity() const { return computed_opacity_; }
+  void set_computed_opacity(float computed_opacity) {
+    computed_opacity_ = computed_opacity;
+  }
 
   // If anchoring is specified, the translation will be relative to the
   // specified edge(s) of the parent, rather than the center.  A parent object
   // must be specified when using anchoring.
-  XAnchoring x_anchoring = XAnchoring::XNONE;
-  YAnchoring y_anchoring = YAnchoring::YNONE;
+  XAnchoring x_anchoring() const { return x_anchoring_; }
+  void set_x_anchoring(XAnchoring x_anchoring) { x_anchoring_ = x_anchoring; }
+
+  YAnchoring y_anchoring() const { return y_anchoring_; }
+  void set_y_anchoring(YAnchoring y_anchoring) { y_anchoring_ = y_anchoring; }
 
   // Animations that affect the properties of the object over time.
-  std::vector<std::unique_ptr<Animation>> animations;
+  std::vector<std::unique_ptr<Animation>>& animations() { return animations_; }
+  const std::vector<std::unique_ptr<Animation>>& animations() const {
+    return animations_;
+  }
 
-  Fill fill = Fill::NONE;
+  Fill fill() const { return fill_; }
+  void set_fill(Fill fill) { fill_ = fill; }
 
-  vr::Colorf edge_color = {1.0f, 1.0f, 1.0f, 1.0f};
-  vr::Colorf center_color = {1.0f, 1.0f, 1.0f, 1.0f};
+  vr::Colorf edge_color() const { return edge_color_; }
+  void set_edge_color(const vr::Colorf& edge_color) {
+    edge_color_ = edge_color;
+  }
 
-  int gridline_count = 1;
+  vr::Colorf center_color() const { return center_color_; }
+  void set_center_color(const vr::Colorf& center_color) {
+    center_color_ = center_color;
+  }
 
-  int draw_phase = 1;
+  int gridline_count() const { return gridline_count_; }
+  void set_gridline_count(int gridline_count) {
+    gridline_count_ = gridline_count;
+  }
+
+  int draw_phase() const { return draw_phase_; }
+  void set_draw_phase(int draw_phase) { draw_phase_ = draw_phase; }
 
   // This transform can be used by children to derive position of its parent.
-  Transform inheritable_transform;
+  Transform& inheritable_transform() { return inheritable_transform_; }
+  const Transform& inheritable_transform() const {
+    return inheritable_transform_;
+  }
+  void set_inheritable_transform(const Transform& transform) {
+    inheritable_transform_ = transform;
+  }
 
   // A flag usable during transformation calculates to avoid duplicate work.
-  bool dirty;
+  bool dirty() const { return dirty_; }
+  void set_dirty(bool dirty) { dirty_ = dirty; }
 
  private:
+  // Valid IDs are non-negative.
+  int id_ = -1;
+
+  // If a non-negative parent ID is specified, applicable transformations
+  // are applied relative to the parent, rather than absolutely.
+  int parent_id_ = -1;
+
+  // If true, this object will be visible.
+  bool visible_ = true;
+
+  // If false, the reticle will not hit the element, even if visible.
+  bool hit_testable_ = true;
+
+  // If true, transformations will be applied relative to the field of view,
+  // rather than the world.
+  bool lock_to_fov_ = false;
+
+  // The computed lock to the FoV, incorporating lock of parent objects.
+  bool computed_lock_to_fov_;
+
+  // The size of the object.  This does not affect children.
+  gfx::Vector3dF size_ = {1.0f, 1.0f, 1.0f};
+
+  // The scale of the object, and its children.
+  gfx::Vector3dF scale_ = {1.0f, 1.0f, 1.0f};
+
+  // The rotation of the object, and its children.
+  vr::RotationAxisAngle rotation_ = {1.0f, 0.0f, 0.0f, 0.0f};
+
+  // The translation of the object, and its children.  Translation is applied
+  // after rotation and scaling.
+  gfx::Vector3dF translation_ = {0.0f, 0.0f, 0.0f};
+
+  // The opacity of the object (between 0.0 and 1.0).
+  float opacity_ = 1.0f;
+
+  // The computed opacity, incorporating opacity of parent objects.
+  float computed_opacity_;
+
+  // If anchoring is specified, the translation will be relative to the
+  // specified edge(s) of the parent, rather than the center.  A parent object
+  // must be specified when using anchoring.
+  XAnchoring x_anchoring_ = XAnchoring::XNONE;
+  YAnchoring y_anchoring_ = YAnchoring::YNONE;
+
+  // Animations that affect the properties of the object over time.
+  std::vector<std::unique_ptr<Animation>> animations_;
+
+  Fill fill_ = Fill::NONE;
+
+  vr::Colorf edge_color_ = {1.0f, 1.0f, 1.0f, 1.0f};
+  vr::Colorf center_color_ = {1.0f, 1.0f, 1.0f, 1.0f};
+
+  int gridline_count_ = 1;
+
+  int draw_phase_ = 1;
+
+  // This transform can be used by children to derive position of its parent.
+  Transform inheritable_transform_;
+
+  // A flag usable during transformation calculates to avoid duplicate work.
+  bool dirty_;
+
+  Transform transform_;
+
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };
 

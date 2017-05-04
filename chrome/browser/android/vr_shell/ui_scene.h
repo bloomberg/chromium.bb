@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "device/vr/vr_types.h"
 
 namespace base {
@@ -19,7 +20,7 @@ class TimeTicks;
 namespace vr_shell {
 
 class Animation;
-struct UiElement;
+class UiElement;
 
 class UiScene {
  public:

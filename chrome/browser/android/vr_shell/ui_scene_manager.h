@@ -12,7 +12,7 @@
 
 namespace vr_shell {
 
-struct UiElement;
+class UiElement;
 class UiScene;
 class VrBrowserInterface;
 

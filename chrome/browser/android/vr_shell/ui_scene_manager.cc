@@ -46,8 +46,6 @@ static constexpr float kTextureOffset = 0.01;
 
 UiSceneManager::UiSceneManager(VrBrowserInterface* browser, UiScene* scene)
     : browser_(browser), scene_(scene), weak_ptr_factory_(this) {
-  std::unique_ptr<UiElement> element;
-
   CreateBackground();
   CreateContentQuad();
   CreateSecurityWarnings();
@@ -61,28 +59,28 @@ void UiSceneManager::CreateSecurityWarnings() {
   // TODO(mthiesse): Programatically compute the proper texture size for these
   // textured UI elements.
   element = base::MakeUnique<PermanentSecurityWarning>(512);
-  element->id = AllocateId();
-  element->fill = vr_shell::Fill::NONE;
-  element->size = {kPermanentWarningWidth, kPermanentWarningHeight, 1};
-  element->scale = {kWarningDistance, kWarningDistance, 1};
-  element->translation = {0, kWarningDistance * sin(kWarningAngleRadians),
-                          -kWarningDistance * cos(kWarningAngleRadians)};
-  element->rotation = {1.0f, 0, 0, kWarningAngleRadians};
-  element->visible = false;
-  element->hit_testable = false;
-  element->lock_to_fov = true;
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::NONE);
+  element->set_size({kPermanentWarningWidth, kPermanentWarningHeight, 1});
+  element->set_scale({kWarningDistance, kWarningDistance, 1});
+  element->set_translation({0, kWarningDistance * sin(kWarningAngleRadians),
+                            -kWarningDistance * cos(kWarningAngleRadians)});
+  element->set_rotation({1.0f, 0, 0, kWarningAngleRadians});
+  element->set_visible(false);
+  element->set_hit_testable(false);
+  element->set_lock_to_fov(true);
   permanent_security_warning_ = element.get();
   scene_->AddUiElement(std::move(element));
 
   element = base::MakeUnique<TransientSecurityWarning>(1024);
-  element->id = AllocateId();
-  element->fill = vr_shell::Fill::NONE;
-  element->size = {kTransientWarningWidth, kTransientWarningHeight, 1};
-  element->scale = {kWarningDistance, kWarningDistance, 1};
-  element->translation = {0, 0, -kWarningDistance};
-  element->visible = false;
-  element->hit_testable = false;
-  element->lock_to_fov = true;
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::NONE);
+  element->set_size({kTransientWarningWidth, kTransientWarningHeight, 1});
+  element->set_scale({kWarningDistance, kWarningDistance, 1});
+  element->set_translation({0, 0, -kWarningDistance});
+  element->set_visible(false);
+  element->set_hit_testable(false);
+  element->set_lock_to_fov(true);
   transient_security_warning_ = element.get();
   scene_->AddUiElement(std::move(element));
 }
@@ -91,11 +89,11 @@ void UiSceneManager::CreateContentQuad() {
   std::unique_ptr<UiElement> element;
 
   element = base::MakeUnique<UiElement>();
-  element->id = AllocateId();
-  element->fill = vr_shell::Fill::CONTENT;
-  element->size = {kContentWidth, kContentHeight, 1};
-  element->translation = {0, kContentVerticalOffset, -kContentDistance};
-  element->visible = false;
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::CONTENT);
+  element->set_size({kContentWidth, kContentHeight, 1});
+  element->set_translation({0, kContentVerticalOffset, -kContentDistance});
+  element->set_visible(false);
   main_content_ = element.get();
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
@@ -103,16 +101,16 @@ void UiSceneManager::CreateContentQuad() {
   // Place an invisible but hittable plane behind the content quad, to keep the
   // reticle roughly planar with the content if near content.
   element = base::MakeUnique<UiElement>();
-  element->id = AllocateId();
-  element->fill = vr_shell::Fill::NONE;
-  element->size = {kBackplaneSize, kBackplaneSize, 1.0};
-  element->translation = {0.0, 0.0, -kTextureOffset};
-  element->parent_id = main_content_->id;
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::NONE);
+  element->set_size({kBackplaneSize, kBackplaneSize, 1.0});
+  element->set_translation({0.0, 0.0, -kTextureOffset});
+  element->set_parent_id(main_content_->id());
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
   // Limit reticle distance to a sphere based on content distance.
-  scene_->SetBackgroundDistance(main_content_->translation.z() *
+  scene_->SetBackgroundDistance(main_content_->translation().z() *
                                 -kBackgroundDistanceMultiplier);
 }
 
@@ -121,45 +119,45 @@ void UiSceneManager::CreateBackground() {
 
   // Floor.
   element = base::MakeUnique<UiElement>();
-  element->id = AllocateId();
-  element->size = {kSceneSize, kSceneSize, 1.0};
-  element->translation = {0.0, -kSceneHeight / 2, 0.0};
-  element->rotation = {1.0, 0.0, 0.0, -M_PI / 2.0};
-  element->fill = vr_shell::Fill::OPAQUE_GRADIENT;
-  element->edge_color = kBackgroundHorizonColor;
-  element->center_color = kBackgroundCenterColor;
-  element->draw_phase = 0;
+  element->set_id(AllocateId());
+  element->set_size({kSceneSize, kSceneSize, 1.0});
+  element->set_translation({0.0, -kSceneHeight / 2, 0.0});
+  element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2.0});
+  element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
+  element->set_edge_color(kBackgroundHorizonColor);
+  element->set_center_color(kBackgroundCenterColor);
+  element->set_draw_phase(0);
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
   // Ceiling.
   element = base::MakeUnique<UiElement>();
-  element->id = AllocateId();
-  element->fill = vr_shell::Fill::OPAQUE_GRADIENT;
-  element->size = {kSceneSize, kSceneSize, 1.0};
-  element->translation = {0.0, kSceneHeight / 2, 0.0};
-  element->rotation = {1.0, 0.0, 0.0, M_PI / 2};
-  element->fill = vr_shell::Fill::OPAQUE_GRADIENT;
-  element->edge_color = kBackgroundHorizonColor;
-  element->center_color = kBackgroundCenterColor;
-  element->draw_phase = 0;
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
+  element->set_size({kSceneSize, kSceneSize, 1.0});
+  element->set_translation({0.0, kSceneHeight / 2, 0.0});
+  element->set_rotation({1.0, 0.0, 0.0, M_PI / 2});
+  element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
+  element->set_edge_color(kBackgroundHorizonColor);
+  element->set_center_color(kBackgroundCenterColor);
+  element->set_draw_phase(0);
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
   // Floor grid.
   element = base::MakeUnique<UiElement>();
-  element->id = AllocateId();
-  element->fill = vr_shell::Fill::GRID_GRADIENT;
-  element->size = {kSceneSize, kSceneSize, 1.0};
-  element->translation = {0.0, -kSceneHeight / 2 + kTextureOffset, 0.0};
-  element->rotation = {1.0, 0.0, 0.0, -M_PI / 2};
-  element->fill = vr_shell::Fill::GRID_GRADIENT;
-  element->center_color = kBackgroundHorizonColor;
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::GRID_GRADIENT);
+  element->set_size({kSceneSize, kSceneSize, 1.0});
+  element->set_translation({0.0, -kSceneHeight / 2 + kTextureOffset, 0.0});
+  element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2});
+  element->set_fill(vr_shell::Fill::GRID_GRADIENT);
+  element->set_center_color(kBackgroundHorizonColor);
   vr::Colorf edge_color = kBackgroundHorizonColor;
   edge_color.a = 0.0;
-  element->edge_color = edge_color;
-  element->gridline_count = kFloorGridlineCount;
-  element->draw_phase = 0;
+  element->set_edge_color(edge_color);
+  element->set_gridline_count(kFloorGridlineCount);
+  element->set_draw_phase(0);
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
@@ -175,7 +173,7 @@ void UiSceneManager::SetWebVRMode(bool web_vr) {
 
   // Make all VR scene UI elements visible if not in WebVR.
   for (UiElement* element : browser_ui_elements_) {
-    element->visible = !web_vr_mode_;
+    element->set_visible(!web_vr_mode_);
   }
 
   ConfigureSecurityWarnings();
@@ -196,8 +194,8 @@ void UiSceneManager::OnAppButtonClicked() {
 
 void UiSceneManager::ConfigureSecurityWarnings() {
   bool enabled = web_vr_mode_ && !secure_origin_;
-  permanent_security_warning_->visible = enabled;
-  transient_security_warning_->visible = enabled;
+  permanent_security_warning_->set_visible(enabled);
+  transient_security_warning_->set_visible(enabled);
   if (enabled) {
     security_warning_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kWarningTimeoutSeconds), this,
@@ -208,7 +206,7 @@ void UiSceneManager::ConfigureSecurityWarnings() {
 }
 
 void UiSceneManager::OnSecurityWarningTimer() {
-  transient_security_warning_->visible = false;
+  transient_security_warning_->set_visible(false);
 }
 
 int UiSceneManager::AllocateId() {
