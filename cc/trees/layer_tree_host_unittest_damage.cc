@@ -12,6 +12,7 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -55,7 +56,7 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
-        impl->active_tree()->root_layer_for_testing()->GetRenderSurface();
+        GetRenderSurface(impl->active_tree()->root_layer_for_testing());
     gfx::Rect root_damage;
     EXPECT_TRUE(
         root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
@@ -118,7 +119,7 @@ class LayerTreeHostDamageTestSetViewportSize
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
-        impl->active_tree()->root_layer_for_testing()->GetRenderSurface();
+        GetRenderSurface(impl->active_tree()->root_layer_for_testing());
     gfx::Rect root_damage;
     EXPECT_TRUE(
         root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
@@ -260,7 +261,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
-        host_impl->active_tree()->root_layer_for_testing()->GetRenderSurface();
+        GetRenderSurface(host_impl->active_tree()->root_layer_for_testing());
     gfx::Rect root_damage;
     EXPECT_TRUE(
         root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
@@ -387,7 +388,7 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
-        host_impl->active_tree()->root_layer_for_testing()->GetRenderSurface();
+        GetRenderSurface(host_impl->active_tree()->root_layer_for_testing());
     gfx::Rect root_damage;
     EXPECT_TRUE(
         root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
@@ -473,7 +474,7 @@ class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
-        host_impl->active_tree()->root_layer_for_testing()->GetRenderSurface();
+        GetRenderSurface(host_impl->active_tree()->root_layer_for_testing());
     gfx::Rect root_damage;
     EXPECT_TRUE(
         root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));

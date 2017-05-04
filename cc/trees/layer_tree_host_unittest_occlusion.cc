@@ -7,6 +7,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -106,13 +107,13 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
-    RenderSurfaceImpl* surface = child->GetRenderSurface();
+    RenderSurfaceImpl* surface = GetRenderSurface(child);
 
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->contributes_to_drawn_render_surface());
     EXPECT_TRUE(child->contributes_to_drawn_render_surface());
-    EXPECT_TRUE(child->GetRenderSurface());
-    EXPECT_EQ(child->GetRenderSurface(), child->render_target());
+    EXPECT_TRUE(GetRenderSurface(child));
+    EXPECT_EQ(GetRenderSurface(child), child->render_target());
 
     EXPECT_OCCLUSION_EQ(
         Occlusion(surface->draw_transform(), SimpleEnclosedRegion(),
@@ -173,14 +174,14 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
-    RenderSurfaceImpl* surface = child->GetRenderSurface();
+    RenderSurfaceImpl* surface = GetRenderSurface(child);
     LayerImpl* mask = surface->MaskLayer();
 
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->contributes_to_drawn_render_surface());
     EXPECT_TRUE(child->contributes_to_drawn_render_surface());
-    EXPECT_TRUE(child->GetRenderSurface());
-    EXPECT_EQ(child->GetRenderSurface(), child->render_target());
+    EXPECT_TRUE(GetRenderSurface(child));
+    EXPECT_EQ(GetRenderSurface(child), child->render_target());
 
     gfx::Transform transform = surface->draw_transform();
     transform.PreconcatTransform(child->DrawTransform());
@@ -245,7 +246,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
-    LayerImpl* mask = child->GetRenderSurface()->MaskLayer();
+    LayerImpl* mask = GetRenderSurface(child)->MaskLayer();
 
     gfx::Transform scale;
     scale.Scale(2, 2);

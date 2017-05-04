@@ -932,14 +932,6 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
                                            gfx::Rect(scaled_bounds));
 }
 
-RenderSurfaceImpl* LayerImpl::GetRenderSurface() const {
-  DCHECK(effect_tree_index_ != EffectTree::kInvalidNodeId);
-  EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
-  if (effect_node->owning_layer_id == id())
-    return GetEffectTree().GetRenderSurface(effect_tree_index_);
-  return nullptr;
-}
-
 RenderSurfaceImpl* LayerImpl::render_target() {
   return GetEffectTree().GetRenderSurface(render_target_effect_tree_index());
 }

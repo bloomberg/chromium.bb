@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,7 +38,7 @@ class TestLayerImpl : public LayerImpl {
 };
 
 #define EXPECT_COUNT(layer, target, contrib, itself)                      \
-  if (layer->GetRenderSurface()) {                                        \
+  if (GetRenderSurface(layer)) {                                          \
     EXPECT_EQ(target, target_surface_count_[layer->effect_tree_index()]); \
     EXPECT_EQ(contrib,                                                    \
               contributing_surface_count_[layer->effect_tree_index()]);   \

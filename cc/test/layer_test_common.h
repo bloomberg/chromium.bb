@@ -15,6 +15,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
 #define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test)                 \
@@ -39,6 +40,9 @@ class CompositorFrameSink;
 class QuadList;
 class RenderSurfaceImpl;
 class ResourceProvider;
+
+RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl);
+const RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer_impl);
 
 class LayerTestCommon {
  public:

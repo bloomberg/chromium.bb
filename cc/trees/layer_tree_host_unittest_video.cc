@@ -8,6 +8,7 @@
 #include "cc/layers/video_layer.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/test/fake_video_frame_provider.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -48,7 +49,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
                                    LayerTreeHostImpl::FrameData* frame,
                                    DrawResult draw_result) override {
     LayerImpl* root_layer = host_impl->active_tree()->root_layer_for_testing();
-    RenderSurfaceImpl* root_surface = root_layer->GetRenderSurface();
+    RenderSurfaceImpl* root_surface = GetRenderSurface(root_layer);
     gfx::Rect damage_rect;
     EXPECT_TRUE(
         root_surface->damage_tracker()->GetDamageRectIfValid(&damage_rect));

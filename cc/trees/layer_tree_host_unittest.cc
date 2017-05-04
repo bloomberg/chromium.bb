@@ -46,6 +46,7 @@
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/push_properties_counting_layer.h"
 #include "cc/test/push_properties_counting_layer_impl.h"
@@ -1043,29 +1044,29 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
     LayerImpl* child_impl = impl->active_tree()->LayerById(child_->id());
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_TRUE(root_impl->GetRenderSurface()->AncestorPropertyChanged());
-        EXPECT_TRUE(child_impl->GetRenderSurface()->AncestorPropertyChanged());
+        EXPECT_TRUE(GetRenderSurface(root_impl)->AncestorPropertyChanged());
+        EXPECT_TRUE(GetRenderSurface(child_impl)->AncestorPropertyChanged());
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        EXPECT_FALSE(root_impl->GetRenderSurface()->AncestorPropertyChanged());
-        EXPECT_FALSE(child_impl->GetRenderSurface()->AncestorPropertyChanged());
+        EXPECT_FALSE(GetRenderSurface(root_impl)->AncestorPropertyChanged());
+        EXPECT_FALSE(GetRenderSurface(child_impl)->AncestorPropertyChanged());
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        EXPECT_TRUE(root_impl->GetRenderSurface()->AncestorPropertyChanged());
-        EXPECT_TRUE(child_impl->GetRenderSurface()->AncestorPropertyChanged());
+        EXPECT_TRUE(GetRenderSurface(root_impl)->AncestorPropertyChanged());
+        EXPECT_TRUE(GetRenderSurface(child_impl)->AncestorPropertyChanged());
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
-        EXPECT_FALSE(root_impl->GetRenderSurface()->AncestorPropertyChanged());
-        EXPECT_TRUE(child_impl->GetRenderSurface()->AncestorPropertyChanged());
+        EXPECT_FALSE(GetRenderSurface(root_impl)->AncestorPropertyChanged());
+        EXPECT_TRUE(GetRenderSurface(child_impl)->AncestorPropertyChanged());
         EndTest();
         PostSetNeedsCommitToMainThread();
         break;
       case 4:
-        EXPECT_FALSE(root_impl->GetRenderSurface()->AncestorPropertyChanged());
-        EXPECT_FALSE(child_impl->GetRenderSurface()->AncestorPropertyChanged());
+        EXPECT_FALSE(GetRenderSurface(root_impl)->AncestorPropertyChanged());
+        EXPECT_FALSE(GetRenderSurface(child_impl)->AncestorPropertyChanged());
         EndTest();
         break;
     }
@@ -1491,16 +1492,14 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
     switch (index_) {
       case 0:
         index_++;
-        EXPECT_FALSE(impl->sync_tree()
-                         ->root_layer_for_testing()
-                         ->GetRenderSurface()
-                         ->MaskLayer());
+        EXPECT_FALSE(
+            GetRenderSurface(impl->sync_tree()->root_layer_for_testing())
+                ->MaskLayer());
         break;
       case 1:
-        EXPECT_TRUE(impl->sync_tree()
-                        ->root_layer_for_testing()
-                        ->GetRenderSurface()
-                        ->MaskLayer());
+        EXPECT_TRUE(
+            GetRenderSurface(impl->sync_tree()->root_layer_for_testing())
+                ->MaskLayer());
         EndTest();
         break;
     }
@@ -2591,12 +2590,11 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 
     // Both layers should be drawing into the root render surface.
     ASSERT_EQ(1u, render_surface_list.size());
-    ASSERT_EQ(root->GetRenderSurface(), render_surface_list[0]);
-    ASSERT_EQ(2, root->GetRenderSurface()->num_contributors());
+    ASSERT_EQ(GetRenderSurface(root), render_surface_list[0]);
+    ASSERT_EQ(2, GetRenderSurface(root)->num_contributors());
 
     // The root render surface is the size of the viewport.
-    EXPECT_EQ(gfx::Rect(0, 0, 60, 60),
-              root->GetRenderSurface()->content_rect());
+    EXPECT_EQ(gfx::Rect(0, 0, 60, 60), GetRenderSurface(root)->content_rect());
 
     // The max tiling scale of the child should be scaled.
     EXPECT_FLOAT_EQ(1.5f, child->MaximumTilingContentsScale());
@@ -5679,7 +5677,7 @@ class LayerTreeHostTestRenderSurfaceEffectTreeIndex : public LayerTreeHostTest {
       LayerImpl* grand_child_impl =
           host_impl->sync_tree()->LayerById(grand_child_->id());
       EXPECT_EQ(grand_child_impl->effect_tree_index(),
-                grand_child_impl->GetRenderSurface()->EffectTreeIndex());
+                GetRenderSurface(grand_child_impl)->EffectTreeIndex());
     }
   }
 
@@ -5693,12 +5691,12 @@ class LayerTreeHostTestRenderSurfaceEffectTreeIndex : public LayerTreeHostTest {
       case 1:
       case 2:
         EXPECT_EQ(grand_child_impl->effect_tree_index(),
-                  grand_child_impl->GetRenderSurface()->EffectTreeIndex());
+                  GetRenderSurface(grand_child_impl)->EffectTreeIndex());
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
         EXPECT_EQ(grand_child_impl->effect_tree_index(),
-                  grand_child_impl->GetRenderSurface()->EffectTreeIndex());
+                  GetRenderSurface(grand_child_impl)->EffectTreeIndex());
         EndTest();
     }
   }
