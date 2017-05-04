@@ -94,7 +94,7 @@
       </div>
 
       <div class="outline-box">
-        <b>FILE:</b> <span id='file-path-logging'></span> <br/>
+        <b>FILE:</b> <span id="file-path-logging"></span> <br/>
         <b>OPTIONS:</b> <span id="capture-mode-logging"></span>
       </div>
     </div>
@@ -110,16 +110,11 @@
       <h2>Log file written</h2>
 
       <if expr="is_ios or is_android">
-      <button id="mobile-email">
-        Email Log
-        <div class="warning" id="mobile-private-data-text" hidden>
-          Log contains private information
-        </div>
+      <button id="mobile-email">Email Log</button>
+      </if>
 
-        <div class="warning" id="mobile-send-old-log-text" hidden>
-          Log file from previous session
-        </div>
-      </button>
+      <if expr="not(is_ios or is_android)">
+      <button id="show-file">Show File</button>
       </if>
 
       <button id="startover">
@@ -136,8 +131,9 @@
         </if>
       </div>
 
+      <!-- TODO(eroman): This is duplicated with the logging state -->
       <div class="outline-box">
-        <b>FILE:</b> <span id='file-path-stopped'></span> <br/>
+        <b>FILE:</b> <span id="file-path-stopped"></span> <br/>
         <b>OPTIONS:</b> <span id="capture-mode-stopped"></span>
       </div>
 

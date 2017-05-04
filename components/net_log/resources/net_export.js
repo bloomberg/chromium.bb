@@ -27,6 +27,7 @@ var NetExportView = (function() {
   var kIdStartLoggingButton = 'start-logging';
   var kIdStopLoggingButton = 'stop-logging';
   var kIdEmailLogButton = 'mobile-email';
+  var kIdShowFileButton = 'show-file';
   var kIdCaptureModeLogging = 'capture-mode-logging';
   var kIdFilePathLogging = 'file-path-logging';
   var kIdCaptureModeStopped = 'capture-mode-stopped';
@@ -70,6 +71,14 @@ var NetExportView = (function() {
      */
     onSendEmail_: function() {
       chrome.send('sendNetLog');
+    },
+
+    /**
+     * Reveals the log file in the shell (i.e. selects it in the Finder on
+     * Mac).
+     */
+    onShowFile_: function() {
+      chrome.send('showFile');
     },
 
     /**
@@ -201,6 +210,9 @@ var NetExportView = (function() {
       // The email button is only available in the mobile UI.
       if ($(kIdEmailLogButton))
         $(kIdEmailLogButton).onclick = this.onSendEmail_.bind(this);
+      // The show file button is only available in the desktop UI.
+      if ($(kIdShowFileButton))
+        $(kIdShowFileButton).onclick = this.onShowFile_.bind(this);
       $(kIdStartOverButton).onclick = this.onStartOver_.bind(this);
 
       $(kIdFilePathStoppedLogging).textContent = info.file;
