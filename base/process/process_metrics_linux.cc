@@ -57,17 +57,17 @@ static uint64_t ReadFileToUint64(const FilePath file) {
 // Read /proc/<pid>/status and return the value for |field|, or 0 on failure.
 // Only works for fields in the form of "Field: value kB".
 size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
-  std::string status;
+  std::string status_data;
   {
     // Synchronously reading files in /proc does not hit the disk.
     ThreadRestrictions::ScopedAllowIO allow_io;
-    FilePath stat_file = internal::GetProcPidDir(pid).Append("status");
-    if (!ReadFileToString(stat_file, &status))
+    FilePath status_file = internal::GetProcPidDir(pid).Append("status");
+    if (!ReadFileToString(status_file, &status_data))
       return 0;
   }
 
   StringPairs pairs;
-  SplitStringIntoKeyValuePairs(status, ':', '\n', &pairs);
+  SplitStringIntoKeyValuePairs(status_data, ':', '\n', &pairs);
   TrimKeyValuePairs(&pairs);
   for (size_t i = 0; i < pairs.size(); ++i) {
     const std::string& key = pairs[i].first;
@@ -93,23 +93,23 @@ size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
 }
 
 #if defined(OS_LINUX) || defined(OS_AIX)
-// Read /proc/<pid>/sched and look for |field|. On succes, return true and
+// Read /proc/<pid>/status and look for |field|. On success, return true and
 // write the value for |field| into |result|.
 // Only works for fields in the form of "field    :     uint_value"
-bool ReadProcSchedAndGetFieldAsUint64(pid_t pid,
-                                      const std::string& field,
-                                      uint64_t* result) {
-  std::string sched_data;
+bool ReadProcStatusAndGetFieldAsUint64(pid_t pid,
+                                       const std::string& field,
+                                       uint64_t* result) {
+  std::string status_data;
   {
     // Synchronously reading files in /proc does not hit the disk.
     ThreadRestrictions::ScopedAllowIO allow_io;
-    FilePath sched_file = internal::GetProcPidDir(pid).Append("sched");
-    if (!ReadFileToString(sched_file, &sched_data))
+    FilePath status_file = internal::GetProcPidDir(pid).Append("status");
+    if (!ReadFileToString(status_file, &status_data))
       return false;
   }
 
   StringPairs pairs;
-  SplitStringIntoKeyValuePairs(sched_data, ':', '\n', &pairs);
+  SplitStringIntoKeyValuePairs(status_data, ':', '\n', &pairs);
   TrimKeyValuePairs(&pairs);
   for (size_t i = 0; i < pairs.size(); ++i) {
     const std::string& key = pairs[i].first;
@@ -959,10 +959,11 @@ void GetSwapInfo(SwapInfo* swap_info) {
 
 #if defined(OS_LINUX) || defined(OS_AIX)
 int ProcessMetrics::GetIdleWakeupsPerSecond() {
-  uint64_t wake_ups;
-  const char kWakeupStat[] = "se.statistics.nr_wakeups";
-  return ReadProcSchedAndGetFieldAsUint64(process_, kWakeupStat, &wake_ups) ?
-      CalculateIdleWakeupsPerSecond(wake_ups) : 0;
+  uint64_t num_switches;
+  static const char kSwitchStat[] = "voluntary_ctxt_switches";
+  return ReadProcStatusAndGetFieldAsUint64(process_, kSwitchStat, &num_switches)
+             ? CalculateIdleWakeupsPerSecond(num_switches)
+             : 0;
 }
 #endif  // defined(OS_LINUX) || defined(OS_AIX)
 
