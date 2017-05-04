@@ -10864,6 +10864,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataUse.ContentType.UserTraffic" enum="DataUseContentType"
     units="bytes">
+  <obsolete>
+    Deprecated 2017/04. Bytes are logged to DataUse.ContentType.UserTrafficKB.
+  </obsolete>
+  <owner>rajendrant@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Data use of user traffic by different content types. Recorded when network
+    bytes are received by Chrome.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.ContentType.UserTrafficKB" enum="DataUseContentType"
+    units="KB">
   <owner>rajendrant@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>

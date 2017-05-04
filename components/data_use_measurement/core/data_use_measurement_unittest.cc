@@ -447,9 +447,9 @@ TEST_F(DataUseMeasurementTest, ContentType) {
     base::HistogramTester histogram_tester;
     std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
     data_use_measurement_.OnBeforeURLRequest(request.get());
-    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
-    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTraffic",
-                                        DataUseUserData::OTHER, 1000);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 10 * 1024);
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTrafficKB",
+                                        DataUseUserData::OTHER, 10);
   }
 
   {
@@ -471,10 +471,10 @@ TEST_F(DataUseMeasurementTest, ContentType) {
     url_request_classifier_->set_content_type(DataUseUserData::VIDEO);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     data_use_measurement_.OnHeadersReceived(request.get(), nullptr);
-    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 10 * 1024);
 
-    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTraffic",
-                                        DataUseUserData::VIDEO, 1000);
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTrafficKB",
+                                        DataUseUserData::VIDEO, 10);
   }
 
   // Audio request from background tab.
@@ -485,11 +485,11 @@ TEST_F(DataUseMeasurementTest, ContentType) {
     url_request_classifier_->set_content_type(DataUseUserData::AUDIO);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     data_use_measurement_.OnHeadersReceived(request.get(), nullptr);
-    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 10 * 1024);
 
-    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTraffic",
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTrafficKB",
                                         DataUseUserData::AUDIO_TABBACKGROUND,
-                                        1000);
+                                        10);
   }
 
   // Video request from background app.
@@ -502,12 +502,33 @@ TEST_F(DataUseMeasurementTest, ContentType) {
     ascriber_.SetTabVisibility(false);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     data_use_measurement_.OnHeadersReceived(request.get(), nullptr);
-    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 10 * 1024);
 
-    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTraffic",
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTrafficKB",
                                         DataUseUserData::VIDEO_APPBACKGROUND,
-                                        1000);
+                                        10);
   }
+}
+
+TEST_F(DataUseMeasurementTest, ContentTypeInKB) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
+  url_request_classifier_->set_content_type(DataUseUserData::VIDEO);
+  data_use_measurement()->OnApplicationStateChangeForTesting(
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+  ascriber_.SetTabVisibility(false);
+  data_use_measurement_.OnBeforeURLRequest(request.get());
+  data_use_measurement_.OnHeadersReceived(request.get(), nullptr);
+  data_use_measurement_.OnNetworkBytesReceived(*request, 600);
+
+  // UserTrafficKB metric is not recorded for the first 600 bytes of data use.
+  histogram_tester.ExpectTotalCount("DataUse.ContentType.UserTrafficKB", 0);
+
+  data_use_measurement_.OnNetworkBytesReceived(*request, 600);
+
+  // UserTrafficKB recorded for 1KB.
+  histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTrafficKB",
+                                      DataUseUserData::VIDEO_APPBACKGROUND, 1);
 }
 
 #endif
