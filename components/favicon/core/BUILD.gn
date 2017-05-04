@@ -69,6 +69,7 @@ source_set("unit_tests") {
     "//components/history/core/browser:browser",
     "//components/history/core/test:test",
     "//components/image_fetcher/core",
+    "//components/variations:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
