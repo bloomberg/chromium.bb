@@ -251,9 +251,9 @@
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter"
         ],
-        "hard_timeout": 15,
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 900
         },
         "test": "mash_browser_tests"
       },
@@ -299,9 +299,9 @@
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mus.browser_tests.filter"
         ],
-        "hard_timeout": 15,
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 900
         },
         "test": "mus_browser_tests"
       },
