@@ -100,8 +100,7 @@ void FFmpegGlue::InitializeFFmpeg() {
   CHECK(initialized);
 }
 
-FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol)
-    : open_called_(false) {
+FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol) {
   InitializeFFmpeg();
 
   // Initialize an AVIOContext using our custom read and seek operations.  Don't
@@ -157,41 +156,38 @@ bool FFmpegGlue::OpenContext() {
     if (num_read < container_names::kMinimumContainerSize)
       return false;
 
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Media.DetectedContainer",
-        container_names::DetermineContainer(buffer.data(), num_read));
+    container_ = container_names::DetermineContainer(buffer.data(), num_read);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container_);
     return false;
   } else if (ret < 0) {
     return false;
   }
 
   // Rely on ffmpeg's parsing if we're able to succesfully open the file.
-  container_names::MediaContainerName container =
-      container_names::CONTAINER_UNKNOWN;
   if (strcmp(format_context_->iformat->name, "mov,mp4,m4a,3gp,3g2,mj2") == 0)
-    container = container_names::CONTAINER_MOV;
+    container_ = container_names::CONTAINER_MOV;
   else if (strcmp(format_context_->iformat->name, "flac") == 0)
-    container = container_names::CONTAINER_FLAC;
+    container_ = container_names::CONTAINER_FLAC;
   else if (strcmp(format_context_->iformat->name, "matroska,webm") == 0)
-    container = container_names::CONTAINER_WEBM;
+    container_ = container_names::CONTAINER_WEBM;
   else if (strcmp(format_context_->iformat->name, "ogg") == 0)
-    container = container_names::CONTAINER_OGG;
+    container_ = container_names::CONTAINER_OGG;
   else if (strcmp(format_context_->iformat->name, "wav") == 0)
-    container = container_names::CONTAINER_WAV;
+    container_ = container_names::CONTAINER_WAV;
   else if (strcmp(format_context_->iformat->name, "aac") == 0)
-    container = container_names::CONTAINER_AAC;
+    container_ = container_names::CONTAINER_AAC;
   else if (strcmp(format_context_->iformat->name, "mp3") == 0)
-    container = container_names::CONTAINER_MP3;
+    container_ = container_names::CONTAINER_MP3;
   else if (strcmp(format_context_->iformat->name, "amr") == 0)
-    container = container_names::CONTAINER_AMR;
+    container_ = container_names::CONTAINER_AMR;
   else if (strcmp(format_context_->iformat->name, "avi") == 0)
-    container = container_names::CONTAINER_AVI;
+    container_ = container_names::CONTAINER_AVI;
   // TODO(jrummell): Remove GSM detection. http://crbug.com/711774
   else if (strcmp(format_context_->iformat->name, "gsm") == 0)
-    container = container_names::CONTAINER_GSM;
+    container_ = container_names::CONTAINER_GSM;
 
-  DCHECK_NE(container, container_names::CONTAINER_UNKNOWN);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container);
+  DCHECK_NE(container_, container_names::CONTAINER_UNKNOWN);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container_);
 
   return true;
 }

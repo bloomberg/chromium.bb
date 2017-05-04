@@ -27941,6 +27941,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.MSE.VideoCodec.MP4" enum="MSECodec">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Video codec used in Media Source Extensions playback if the media container
+    is MP4. Set when AddId() is called during playback.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.VideoCodec.WebM" enum="MSECodec">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Video codec used in Media Source Extensions playback if the media container
+    is WebM. Set when AddId() is called during playback.
+  </summary>
+</histogram>
+
 <histogram name="Media.Netflix.AudioBitrate" units="kbps">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
@@ -28304,6 +28320,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>zqzhang@chromium.org</owner>
   <summary>
     The number of times user interacts with MediaSession sorted by action type.
+  </summary>
+</histogram>
+
+<histogram name="Media.SRC.VideoCodec.MP4" enum="VideoCodec">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Video codec used in plain src= (not MSE) HTML5 media if the media container
+    is MP4.
+  </summary>
+</histogram>
+
+<histogram name="Media.SRC.VideoCodec.WebM" enum="VideoCodec">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Video codec used in plain src= (not MSE) HTML5 media if the media container
+    is WebM.
   </summary>
 </histogram>
 
