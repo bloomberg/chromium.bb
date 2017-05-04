@@ -190,12 +190,17 @@ function testInvalidConstructor(should, name, context) {
 function testDefaultConstructor(should, name, context, options) {
   let node;
 
+  let message = options.prefix + ' = new ' + name + '(context';
+  if (options.constructorOptions)
+    message += ', ' + JSON.stringify(options.constructorOptions);
+  message += ')'
+
   should(() => {
-    node = new window[name](context);
-  }, options.prefix + ' = new ' + name + '(context)').notThrow();
+    node = new window[name](context, options.constructorOptions);
+  }, message).notThrow();
+
   should(node instanceof window[name], options.prefix + ' instanceof ' + name)
       .beEqualTo(true);
-
   should(node.numberOfInputs, options.prefix + '.numberOfInputs')
       .beEqualTo(options.numberOfInputs);
   should(node.numberOfOutputs, options.prefix + '.numberOfOutputs')
