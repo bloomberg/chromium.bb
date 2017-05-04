@@ -81,6 +81,17 @@ struct CacheControlHeader {
         max_age(0.0) {}
 };
 
+struct ServerTimingHeader {
+  String metric;
+  double duration;
+  String description;
+
+  ServerTimingHeader(String metric, double duration, String description)
+      : metric(metric), duration(duration), description(description) {}
+};
+
+using ServerTimingHeaderVector = Vector<std::unique_ptr<ServerTimingHeader>>;
+
 PLATFORM_EXPORT bool IsContentDispositionAttachment(const String&);
 PLATFORM_EXPORT bool IsValidHTTPHeaderValue(const String&);
 PLATFORM_EXPORT bool IsValidHTTPFieldContentRFC7230(const String&);
@@ -161,6 +172,11 @@ PLATFORM_EXPORT bool ParseContentRangeHeaderFor206(const String& content_range,
                                                    int64_t* first_byte_position,
                                                    int64_t* last_byte_position,
                                                    int64_t* instance_length);
+
+PLATFORM_EXPORT std::unique_ptr<ServerTimingHeaderVector>
+ParseServerTimingHeader(const String&);
+
+PLATFORM_EXPORT String CheckDoubleQuotedString(const String&);
 
 }  // namespace blink
 

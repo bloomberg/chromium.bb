@@ -83,6 +83,8 @@ PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
     return kTaskAttribution;
   if (entry_type == "paint")
     return kPaint;
+  if (entry_type == "server")
+    return kServer;
   return kInvalid;
 }
 

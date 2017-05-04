@@ -4827,6 +4827,11 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter transferSize
     getter workerStart
     method constructor
+interface PerformanceServerTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter description
+    getter metric
+    method constructor
 interface PerformanceTiming
     attribute @@toStringTag
     getter connectEnd

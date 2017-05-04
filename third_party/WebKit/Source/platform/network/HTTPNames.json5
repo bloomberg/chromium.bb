@@ -53,6 +53,7 @@
     "Referrer-Policy",
     "Refresh",
     "Resource-Freshness",
+    "Server-Timing",
     "SourceMap",
     "Suborigin",
     "Timing-Allow-Origin",

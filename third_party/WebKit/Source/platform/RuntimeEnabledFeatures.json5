@@ -857,6 +857,10 @@
       status: "experimental",
     },
     {
+      name: "ServerTiming",
+      status: "experimental",
+    },
+    {
       name: "ServiceWorkerNavigationPreload",
       status: "stable",
     },

@@ -1514,6 +1514,7 @@ void LocalDOMWindow::DispatchLoadEvent() {
     DocumentLoadTiming& timing = document_loader->GetTiming();
     timing.MarkLoadEventStart();
     DispatchEvent(load_event, document());
+    SetHasLoadEventFired();
     timing.MarkLoadEventEnd();
     DCHECK(document_loader->Fetcher());
     // If fetcher->countPreloads() is not empty here, it's full of link
