@@ -143,7 +143,6 @@ SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory,
   if (adapter_factory != nullptr) {
     decoder_adapter_ = adapter_factory(this);
   }
-  skip_rewritelength_ = FLAGS_chromium_http2_flag_remove_rewritelength;
 }
 
 SpdyFramer::SpdyFramer(CompressionOption option)
@@ -1877,22 +1876,11 @@ SpdySerializedFrame SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
       data_ir, &flags, &frame_size, &num_padding_fields);
 
   SpdyFrameBuilder builder(frame_size);
-  if (!skip_rewritelength_) {
-    builder.BeginNewFrame(*this, SpdyFrameType::DATA, flags,
-                          data_ir.stream_id());
-    if (data_ir.padded()) {
-      builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
-    }
-    builder.OverwriteLength(*this, num_padding_fields + data_ir.data_len() +
-                                       data_ir.padding_payload_len());
-  } else {
-    builder.BeginNewFrame(*this, SpdyFrameType::DATA, flags,
-                          data_ir.stream_id(),
-                          num_padding_fields + data_ir.data_len() +
-                              data_ir.padding_payload_len());
-    if (data_ir.padded()) {
-      builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
-    }
+  builder.BeginNewFrame(
+      *this, SpdyFrameType::DATA, flags, data_ir.stream_id(),
+      num_padding_fields + data_ir.data_len() + data_ir.padding_payload_len());
+  if (data_ir.padded()) {
+    builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
   }
   DCHECK_EQ(frame_size, builder.length());
   return builder.take();
@@ -2054,14 +2042,9 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
                                 &weight, &length_field);
 
   SpdyFrameBuilder builder(size);
+  builder.BeginNewFrame(*this, SpdyFrameType::HEADERS, flags,
+                        headers.stream_id(), length_field);
 
-  if (!skip_rewritelength_) {
-    builder.BeginNewFrame(*this, SpdyFrameType::HEADERS, flags,
-                          headers.stream_id());
-  } else {
-    builder.BeginNewFrame(*this, SpdyFrameType::HEADERS, flags,
-                          headers.stream_id(), length_field);
-  }
   DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
   int padding_payload_len = 0;
@@ -2137,14 +2120,9 @@ SpdySerializedFrame SpdyFramer::SerializePushPromise(
                                     &size);
 
   SpdyFrameBuilder builder(size);
-  if (!skip_rewritelength_) {
-    builder.BeginNewFrame(*this, SpdyFrameType::PUSH_PROMISE, flags,
-                          push_promise.stream_id());
-  } else {
-    size_t length = std::min(size, kMaxControlFrameSize) - GetFrameHeaderSize();
-    builder.BeginNewFrame(*this, SpdyFrameType::PUSH_PROMISE, flags,
-                          push_promise.stream_id(), length);
-  }
+  size_t length = std::min(size, kMaxControlFrameSize) - GetFrameHeaderSize();
+  builder.BeginNewFrame(*this, SpdyFrameType::PUSH_PROMISE, flags,
+                        push_promise.stream_id(), length);
   int padding_payload_len = 0;
   if (push_promise.padded()) {
     builder.WriteUInt8(push_promise.padding_payload_len());
@@ -2448,23 +2426,12 @@ bool SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
 
   SpdyFrameBuilder builder(frame_size, output);
   bool ok = true;
-  if (!skip_rewritelength_) {
-    ok = builder.BeginNewFrame(*this, SpdyFrameType::DATA, flags,
-                               data_ir.stream_id());
-    if (data_ir.padded()) {
-      ok = ok && builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
-    }
-    ok = ok && builder.OverwriteLength(*this,
-                                       num_padding_fields + data_ir.data_len() +
-                                           data_ir.padding_payload_len());
-  } else {
-    ok = ok && builder.BeginNewFrame(*this, SpdyFrameType::DATA, flags,
-                                     data_ir.stream_id(),
-                                     num_padding_fields + data_ir.data_len() +
-                                         data_ir.padding_payload_len());
-    if (data_ir.padded()) {
-      ok = ok && builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
-    }
+  ok = ok && builder.BeginNewFrame(*this, SpdyFrameType::DATA, flags,
+                                   data_ir.stream_id(),
+                                   num_padding_fields + data_ir.data_len() +
+                                       data_ir.padding_payload_len());
+  if (data_ir.padded()) {
+    ok = ok && builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
   }
   DCHECK_EQ(frame_size, builder.length());
   return ok;
@@ -2561,13 +2528,8 @@ bool SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers,
 
   bool ok = true;
   SpdyFrameBuilder builder(size, output);
-  if (!skip_rewritelength_) {
-    ok = builder.BeginNewFrame(*this, SpdyFrameType::HEADERS, flags,
-                               headers.stream_id());
-  } else {
-    ok = ok && builder.BeginNewFrame(*this, SpdyFrameType::HEADERS, flags,
-                                     headers.stream_id(), length_field);
-  }
+  ok = ok && builder.BeginNewFrame(*this, SpdyFrameType::HEADERS, flags,
+                                   headers.stream_id(), length_field);
   DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
   int padding_payload_len = 0;
@@ -2619,14 +2581,9 @@ bool SpdyFramer::SerializePushPromise(const SpdyPushPromiseIR& push_promise,
 
   bool ok = true;
   SpdyFrameBuilder builder(size, output);
-  if (!skip_rewritelength_) {
-    ok = builder.BeginNewFrame(*this, SpdyFrameType::PUSH_PROMISE, flags,
-                               push_promise.stream_id());
-  } else {
-    size_t length = std::min(size, kMaxControlFrameSize) - GetFrameHeaderSize();
-    ok = builder.BeginNewFrame(*this, SpdyFrameType::PUSH_PROMISE, flags,
-                               push_promise.stream_id(), length);
-  }
+  size_t length = std::min(size, kMaxControlFrameSize) - GetFrameHeaderSize();
+  ok = builder.BeginNewFrame(*this, SpdyFrameType::PUSH_PROMISE, flags,
+                             push_promise.stream_id(), length);
 
   int padding_payload_len = 0;
   if (push_promise.padded()) {
@@ -2892,10 +2849,6 @@ bool SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
     SpdyString padding = SpdyString(padding_payload_len, 0);
     ret &= builder->WriteBytes(padding.data(), padding.length());
   }
-  if (bytes_remaining > 0 && !skip_rewritelength_) {
-    ret &= builder->OverwriteLength(
-        *this, kMaxControlFrameSize - GetFrameHeaderSize());
-  }
 
   // Tack on CONTINUATION frames for the overflow.
   while (bytes_remaining > 0 && ret) {
@@ -2905,13 +2858,8 @@ bool SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
     if (bytes_remaining == bytes_to_write) {
       flags |= end_flag;
     }
-    if (!skip_rewritelength_) {
-      ret &= builder->BeginNewFrame(*this, SpdyFrameType::CONTINUATION, flags,
-                                    stream_id);
-    } else {
-      ret &= builder->BeginNewFrame(*this, SpdyFrameType::CONTINUATION, flags,
-                                    stream_id, bytes_to_write);
-    }
+    ret &= builder->BeginNewFrame(*this, SpdyFrameType::CONTINUATION, flags,
+                                  stream_id, bytes_to_write);
     // Write payload fragment.
     ret &= builder->WriteBytes(
         &hpack_encoding[hpack_encoding.size() - bytes_remaining],

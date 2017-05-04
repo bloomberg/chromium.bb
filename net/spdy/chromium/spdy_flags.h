@@ -10,7 +10,6 @@
 namespace net {
 
 NET_EXPORT_PRIVATE extern bool FLAGS_chromium_http2_flag_log_compressed_size;
-NET_EXPORT_PRIVATE extern bool FLAGS_chromium_http2_flag_remove_rewritelength;
 NET_EXPORT_PRIVATE extern bool
     FLAGS_chromium_http2_flag_spdy_use_hpack_decoder3;
 NET_EXPORT_PRIVATE extern bool FLAGS_use_nested_spdy_framer_decoder;
