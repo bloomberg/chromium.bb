@@ -153,13 +153,9 @@ devtools_domains = [
   "tracing",
 ]
 
-generated_devtools_api = [
-  "$target_gen_dir/public/domains/types.h",
-  "$target_gen_dir/public/domains/type_conversions.h",
-]
+generated_devtools_api = []
 foreach(domain, devtools_domains) {
   generated_devtools_api += [
-    "$target_gen_dir/public/domains/" + domain + ".h",
     "$target_gen_dir/public/devtools/domains/" + domain + ".cc",
     "$target_gen_dir/public/devtools/domains/" + domain + ".h",
     "$target_gen_dir/public/devtools/domains/types_" + domain + ".h",
