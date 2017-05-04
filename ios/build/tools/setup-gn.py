@@ -21,7 +21,7 @@ except ImportError:
 
 
 SUPPORTED_TARGETS = ('iphoneos', 'iphonesimulator')
-SUPPORTED_CONFIGS = ('Debug', 'Release', 'Profile', 'Official')
+SUPPORTED_CONFIGS = ('Debug', 'Release', 'Profile', 'Official', 'Coverage')
 
 
 class ConfigParserWithStringInterpolation(ConfigParser.SafeConfigParser):
@@ -90,12 +90,13 @@ class GnGenerator(object):
       if goma_dir:
         args.append(('goma_dir', '"%s"' % os.path.expanduser(goma_dir)))
 
-    args.append(('is_debug', self._config == 'Debug'))
+    args.append(('is_debug', self._config in ('Debug', 'Coverage')))
     args.append(('enable_dsyms', self._config in ('Profile', 'Official')))
     args.append(('enable_stripping', 'enable_dsyms'))
     args.append(('is_official_build', self._config == 'Official'))
     args.append(('is_chrome_branded', 'is_official_build'))
     args.append(('use_xcode_clang', 'is_official_build'))
+    args.append(('ios_enable_coverage', self._config == 'Coverage'))
     if os.environ.get('FORCE_MAC_TOOLCHAIN', '0') == '1':
       args.append(('use_system_xcode', False))
 
