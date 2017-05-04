@@ -110,13 +110,13 @@ class BaseBlockingPage
 
   void SetThreatDetailsProceedDelayForTesting(int64_t delay);
 
- private:
   static std::unique_ptr<
       security_interstitials::SecurityInterstitialControllerClient>
   CreateControllerClient(content::WebContents* web_contents,
                          const UnsafeResourceList& unsafe_resources,
                          BaseUIManager* ui_manager);
 
+ private:
   // For reporting back user actions.
   BaseUIManager* ui_manager_;
 
