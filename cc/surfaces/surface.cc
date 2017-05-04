@@ -220,13 +220,13 @@ void Surface::UpdateBlockingSurfaces(bool has_previous_pending_frame,
   // changes in dependencies so that we can update the SurfaceDependencyTracker
   // map.
   if (has_previous_pending_frame) {
-    SurfaceDependencies removed_dependencies;
+    base::flat_set<SurfaceId> removed_dependencies;
     for (const SurfaceId& surface_id : blocking_surfaces_) {
       if (!new_blocking_surfaces.count(surface_id))
         removed_dependencies.insert(surface_id);
     }
 
-    SurfaceDependencies added_dependencies;
+    base::flat_set<SurfaceId> added_dependencies;
     for (const SurfaceId& surface_id : new_blocking_surfaces) {
       if (!blocking_surfaces_.count(surface_id))
         added_dependencies.insert(surface_id);

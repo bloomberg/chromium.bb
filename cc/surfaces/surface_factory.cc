@@ -128,8 +128,8 @@ void SurfaceFactory::OnSurfaceActivated(Surface* surface) {
 
 void SurfaceFactory::OnSurfaceDependenciesChanged(
     Surface* surface,
-    const SurfaceDependencies& added_dependencies,
-    const SurfaceDependencies& removed_dependencies) {}
+    const base::flat_set<SurfaceId>& added_dependencies,
+    const base::flat_set<SurfaceId>& removed_dependencies) {}
 
 void SurfaceFactory::OnSurfaceDiscarded(Surface* surface) {}
 

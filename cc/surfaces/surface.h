@@ -114,7 +114,7 @@ class CC_SURFACES_EXPORT Surface {
                : nullptr;
   }
 
-  const SurfaceDependencies& blocking_surfaces() const {
+  const base::flat_set<SurfaceId>& blocking_surfaces() const {
     return blocking_surfaces_;
   }
 
@@ -163,7 +163,7 @@ class CC_SURFACES_EXPORT Surface {
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;
 
-  SurfaceDependencies blocking_surfaces_;
+  base::flat_set<SurfaceId> blocking_surfaces_;
   base::ObserverList<PendingFrameObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
