@@ -2665,6 +2665,8 @@ function testFindAPI() {
   document.body.appendChild(webview);
 };
 
+// TODO(paulmeyer): Make sure this test is not still flaky. If it is, it is
+// likely because the search for "dog" compelted too quickly. crbug.com/710486.
 function testFindAPI_findupdate() {
   var webview = new WebView();
   webview.src = testFindPage;
@@ -2683,8 +2685,8 @@ function testFindAPI_findupdate() {
         if (e.canceled) {
           canceledTest = true;
         } else {
-          embedder.test.assertEq(e.searchText, "dog");
-          embedder.test.assertEq(e.numberOfMatches, 100);
+          embedder.test.assertEq(e.searchText, "cat");
+          embedder.test.assertEq(e.numberOfMatches, 10);
           embedder.test.assertEq(e.activeMatchOrdinal, 1);
           embedder.test.assertTrue(canceledTest);
           embedder.test.succeed();
@@ -2692,8 +2694,8 @@ function testFindAPI_findupdate() {
       }
     });
     webview.find("dog");
-    webview.find("cat");
     webview.find("dog");
+    webview.find("cat");
   });
 
   document.body.appendChild(webview);
