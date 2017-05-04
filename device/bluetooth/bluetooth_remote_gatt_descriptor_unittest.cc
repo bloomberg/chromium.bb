@@ -780,7 +780,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_NSString) {
   EXPECT_EQ(1, gatt_read_descriptor_attempts_);
 
   std::string test_string = "Hello";
-  SimulateGattDescriptorReadNSString(descriptor1_, test_string);
+  SimulateGattDescriptorReadNSStringMac(descriptor1_, test_string);
   base::RunLoop().RunUntilIdle();
 
   std::vector<uint8_t> test_vector(test_string.begin(), test_string.end());
@@ -802,7 +802,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_NSNumber) {
   EXPECT_EQ(1, gatt_read_descriptor_attempts_);
 
   const short test_number = 0x1234;
-  SimulateGattDescriptorReadNSNumber(descriptor1_, test_number);
+  SimulateGattDescriptorReadNSNumberMac(descriptor1_, test_number);
   base::RunLoop().RunUntilIdle();
 
   uint8_t values[] = {0x34, 0x12};

@@ -105,8 +105,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   bool HasPendingWrite() const {
     return !write_characteristic_value_callbacks_.first.is_null();
   };
-  // Is true if the characteristic has been discovered with all its descriptors.
+  // Is true if the characteristic has been discovered with all its descriptors
+  // and discovery_pending_count_ is 0.
   bool is_discovery_complete_;
+  // Increased each time DiscoverDescriptors() is called. And decreased when
+  // DidDiscoverDescriptors() is called.
+  int discovery_pending_count_;
   // gatt_service_ owns instances of this class.
   BluetoothRemoteGattServiceMac* gatt_service_;
   // A characteristic from CBPeripheral.services.characteristics.

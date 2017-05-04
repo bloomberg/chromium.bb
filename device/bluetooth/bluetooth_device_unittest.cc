@@ -483,11 +483,11 @@ TEST_F(BluetoothTest, GetUUIDs_Connection) {
 
 #if defined(OS_MACOSX)
 // Tests that receiving 2 notifications in a row from macOS that services has
-// changed is handled correctly. Each notification should generate a notfication
-// that the gatt device has changed, and each notification should ask to macOS
-// to scan for services. Only after the second service scan is received, the
-// device changed notification should be sent and the characteristic discovery
-// procedure should be started.
+// changed is handled correctly. Each notification should generate a
+// notification that the gatt device has changed, and each notification should
+// ask to macOS to scan for services. Only after the second service scan is
+// received, the device changed notification should be sent and the
+// characteristic discovery procedure should be started.
 // Android: This test doesn't apply to Android because there is no services
 // changed event that could arrive during a discovery procedure.
 TEST_F(BluetoothTest, TwoPendingServiceDiscoveryRequests) {
@@ -511,16 +511,21 @@ TEST_F(BluetoothTest, TwoPendingServiceDiscoveryRequests) {
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
 
-  // Fist system call to
-  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
+  // First system call to
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:] using
+  // SimulateDidDiscoverServicesMac().
   observer.Reset();
-  SimulateDidDiscoverServices(device, {kTestUUIDHeartRate});
+  AddServicesToDeviceMac(device, {kTestUUIDHeartRate});
+  SimulateDidDiscoverServicesMac(device);
   EXPECT_EQ(0, observer.device_changed_count());
   EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
   EXPECT_EQ(gatt_characteristic_discovery_attempts_, 0);
 
   // Second system call to
-  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:] using the
+  // generic call to SimulateGattServicesDiscovered(). This method triggers
+  // the full discovery cycles (services, characteristics and descriptors),
+  // which includes -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:].
   SimulateGattServicesDiscovered(
       device, std::vector<std::string>({kTestUUIDImmediateAlert}));
   EXPECT_EQ(1, observer.device_changed_count());
@@ -551,7 +556,7 @@ TEST_F(BluetoothTest, ExtraDidDiscoverServicesCall) {
   EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
 
   // Legitimate system call to
-  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:].
   observer.Reset();
   SimulateGattServicesDiscovered(
       device, std::vector<std::string>({kTestUUIDHeartRate}));
@@ -561,8 +566,15 @@ TEST_F(BluetoothTest, ExtraDidDiscoverServicesCall) {
   EXPECT_EQ(1u, device->GetGattServices().size());
 
   // Unexpected system call to
-  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
-  SimulateDidDiscoverServices(device, {kTestUUIDImmediateAlert});
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]:
+  // This system call is expected only once after -[CBCentralManager
+  // discoverServices:]. The call to -[CBCentralManager discoverServices:] and
+  // its answer with -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:]
+  // is done with SimulateGattServicesDiscovered(). So a second system call to
+  // -[id<CBPeripheralDelegate> peripheral:didDiscoverServices:] is not expected
+  // and should be ignored.
+  AddServicesToDeviceMac(device, {kTestUUIDImmediateAlert});
+  SimulateDidDiscoverServicesMac(device);
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
 

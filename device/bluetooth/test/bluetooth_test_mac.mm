@@ -299,7 +299,7 @@ void BluetoothTestMac::SimulateGattDisconnection(BluetoothDevice* device) {
 void BluetoothTestMac::SimulateGattServicesDiscovered(
     BluetoothDevice* device,
     const std::vector<std::string>& uuids) {
-  AddServicesToDevice(device, uuids);
+  AddServicesToDeviceMac(device, uuids);
   [GetMockCBPeripheral(device) mockDidDiscoverEvents];
 }
 
@@ -379,7 +379,7 @@ void BluetoothTestMac::SimulateGattDescriptor(
   MockCBCharacteristic* characteristic_mock =
       GetCBMockCharacteristic(characteristic);
   CBUUID* cb_uuid = [CBUUID UUIDWithString:@(uuid.c_str())];
-  [characteristic_mock simulateDescriptorWithUUID:cb_uuid];
+  [characteristic_mock addDescriptorWithUUID:cb_uuid];
   MockCBPeripheral* peripheral_mock = GetMockCBPeripheral(characteristic);
   [peripheral_mock didModifyServices:@[]];
   // After -[MockCBPeripheral didModifyServices:], BluetoothLowEnergyDeviceMac
@@ -451,7 +451,7 @@ void BluetoothTestMac::SimulateGattCharacteristicRemoved(
 void BluetoothTestMac::SimulateGattDescriptorRead(
     BluetoothRemoteGattDescriptor* descriptor,
     const std::vector<uint8_t>& value) {
-  SimulateGattDescriptorReadNSData(descriptor, value);
+  SimulateGattDescriptorReadNSDataMac(descriptor, value);
 }
 
 void BluetoothTestMac::SimulateGattDescriptorReadError(
@@ -490,14 +490,30 @@ void BluetoothTestMac::ExpectedNotifyValue(
   }
 }
 
-void BluetoothTestMac::SimulateDidDiscoverServices(
-    BluetoothDevice* device,
-    const std::vector<std::string>& uuids) {
-  AddServicesToDevice(device, uuids);
+void BluetoothTestMac::SimulateDidDiscoverServicesMac(BluetoothDevice* device) {
   [GetMockCBPeripheral(device) mockDidDiscoverServices];
 }
 
-void BluetoothTestMac::SimulateGattDescriptorReadNSData(
+void BluetoothTestMac::SimulateDidDiscoverCharacteristicsMac(
+    BluetoothRemoteGattService* service) {
+  BluetoothRemoteGattServiceMac* mac_gatt_service =
+      static_cast<BluetoothRemoteGattServiceMac*>(service);
+  CBService* cb_service = mac_gatt_service->GetService();
+  [GetMockCBPeripheral(service)
+      mockDidDiscoverCharacteristicsForService:cb_service];
+}
+
+void BluetoothTestMac::SimulateDidDiscoverDescriptorsMac(
+    BluetoothRemoteGattCharacteristic* characteristic) {
+  BluetoothRemoteGattCharacteristicMac* mac_gatt_characteristic =
+      static_cast<BluetoothRemoteGattCharacteristicMac*>(characteristic);
+  CBCharacteristic* cb_characteristic =
+      mac_gatt_characteristic->GetCBCharacteristic();
+  [GetMockCBPeripheral(characteristic)
+      mockDidDiscoverDescriptorsForCharacteristic:cb_characteristic];
+}
+
+void BluetoothTestMac::SimulateGattDescriptorReadNSDataMac(
     BluetoothRemoteGattDescriptor* descriptor,
     const std::vector<uint8_t>& value) {
   scoped_nsobject<NSData> data(
@@ -505,18 +521,54 @@ void BluetoothTestMac::SimulateGattDescriptorReadNSData(
   [GetCBMockDescriptor(descriptor) simulateReadWithValue:data error:nil];
 }
 
-void BluetoothTestMac::SimulateGattDescriptorReadNSString(
+void BluetoothTestMac::SimulateGattDescriptorReadNSStringMac(
     BluetoothRemoteGattDescriptor* descriptor,
     const std::string& value) {
   NSString* string = base::SysUTF8ToNSString(value);
   [GetCBMockDescriptor(descriptor) simulateReadWithValue:string error:nil];
 }
 
-void BluetoothTestMac::SimulateGattDescriptorReadNSNumber(
+void BluetoothTestMac::SimulateGattDescriptorReadNSNumberMac(
     BluetoothRemoteGattDescriptor* descriptor,
     short value) {
   NSNumber* number = [NSNumber numberWithShort:value];
   [GetCBMockDescriptor(descriptor) simulateReadWithValue:number error:nil];
+}
+
+void BluetoothTest::AddServicesToDeviceMac(
+    BluetoothDevice* device,
+    const std::vector<std::string>& uuids) {
+  scoped_nsobject<NSMutableArray> services([[NSMutableArray alloc] init]);
+  for (auto uuid : uuids) {
+    CBUUID* cb_service_uuid = [CBUUID UUIDWithString:@(uuid.c_str())];
+    [services addObject:cb_service_uuid];
+  }
+  [GetMockCBPeripheral(device) addServices:services];
+}
+
+void BluetoothTestMac::AddCharacteristicToServiceMac(
+    BluetoothRemoteGattService* service,
+    const std::string& characteristic_uuid,
+    int properties) {
+  BluetoothRemoteGattServiceMac* mac_gatt_service =
+      static_cast<BluetoothRemoteGattServiceMac*>(service);
+  CBService* cb_service = mac_gatt_service->GetService();
+  MockCBService* service_mock = ObjCCast<MockCBService>(cb_service);
+  CBUUID* cb_uuid = [CBUUID UUIDWithString:@(characteristic_uuid.c_str())];
+  [service_mock addCharacteristicWithUUID:cb_uuid properties:properties];
+}
+
+void BluetoothTestMac::AddDescriptorToCharacteristicMac(
+    BluetoothRemoteGattCharacteristic* characteristic,
+    const std::string& uuid) {
+  BluetoothRemoteGattCharacteristicMac* mac_gatt_characteristic =
+      static_cast<BluetoothRemoteGattCharacteristicMac*>(characteristic);
+  CBCharacteristic* cb_characteristic =
+      mac_gatt_characteristic->GetCBCharacteristic();
+  MockCBCharacteristic* characteristic_mock =
+      ObjCCast<MockCBCharacteristic>(cb_characteristic);
+  CBUUID* cb_uuid = [CBUUID UUIDWithString:@(uuid.c_str())];
+  [characteristic_mock addDescriptorWithUUID:cb_uuid];
 }
 
 void BluetoothTestMac::OnFakeBluetoothDeviceConnectGattCalled() {
@@ -621,17 +673,6 @@ MockCBDescriptor* BluetoothTest::GetCBMockDescriptor(
   CBDescriptor* cb_descriptor = mac_gatt_descriptor->GetCBDescriptor();
   return ObjCCast<MockCBDescriptor>(cb_descriptor);
 }
-
-void BluetoothTest::AddServicesToDevice(BluetoothDevice* device,
-                                        const std::vector<std::string>& uuids) {
-  scoped_nsobject<NSMutableArray> services([[NSMutableArray alloc] init]);
-  for (auto uuid : uuids) {
-    CBUUID* cb_service_uuid = [CBUUID UUIDWithString:@(uuid.c_str())];
-    [services addObject:cb_service_uuid];
-  }
-  [GetMockCBPeripheral(device) addServices:services];
-}
-
 // Utility function for generating new (CBUUID, address) pairs where CBUUID
 // hashes to address. For use when adding a new device address to the testing
 // suite because CoreBluetooth peripherals have CBUUIDs in place of addresses,

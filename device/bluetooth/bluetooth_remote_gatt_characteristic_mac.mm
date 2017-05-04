@@ -69,7 +69,9 @@ static BluetoothGattCharacteristic::Properties ConvertProperties(
 BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
     BluetoothRemoteGattServiceMac* gatt_service,
     CBCharacteristic* cb_characteristic)
-    : gatt_service_(gatt_service),
+    : is_discovery_complete_(false),
+      discovery_pending_count_(0),
+      gatt_service_(gatt_service),
       cb_characteristic_(cb_characteristic, base::scoped_policy::RETAIN) {
   uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID(
       [cb_characteristic_.get() UUID]);
@@ -242,6 +244,7 @@ void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
 void BluetoothRemoteGattCharacteristicMac::DiscoverDescriptors() {
   VLOG(1) << *this << ": Discover descriptors.";
   is_discovery_complete_ = false;
+  ++discovery_pending_count_;
   [GetCBPeripheral()
       discoverDescriptorsForCharacteristic:cb_characteristic_.get()];
 }
@@ -340,8 +343,15 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidDiscoverDescriptors() {
-  DCHECK(!is_discovery_complete_);
+  if (discovery_pending_count_ == 0) {
+    // This should never happen, just in case it happens with a device, this
+    // notification should be ignored.
+    VLOG(1) << *this
+            << ": Unmatch DiscoverDescriptors and DidDiscoverDescriptors.";
+    return;
+  }
   VLOG(1) << *this << ": Did discover descriptors.";
+  --discovery_pending_count_;
   std::unordered_set<std::string> descriptor_identifier_to_remove;
   for (const auto& iter : gatt_descriptor_macs_) {
     descriptor_identifier_to_remove.insert(iter.first);
@@ -374,7 +384,7 @@ void BluetoothRemoteGattCharacteristicMac::DidDiscoverDescriptors() {
     gatt_descriptor_macs_.erase(pair_to_remove);
     GetMacAdapter()->NotifyGattDescriptorRemoved(descriptor_to_remove.get());
   }
-  is_discovery_complete_ = true;
+  is_discovery_complete_ = discovery_pending_count_ == 0;
 }
 
 bool BluetoothRemoteGattCharacteristicMac::IsReadable() const {
