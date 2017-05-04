@@ -112,4 +112,5 @@ void VRDisplayImpl::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
   }
   device_->GetVRVSyncProvider(std::move(request));
 }
-}
+
+}  // namespace device
