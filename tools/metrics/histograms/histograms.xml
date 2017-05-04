@@ -30626,7 +30626,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Android: Records which states of the &quot;first run experience&quot; have
     been reached. Each bucket represents a state and recorded everytime the
-    state changed.
+    state changed.  Pages can be double counted if the user goes backwards in
+    the flow.
   </summary>
 </histogram>
 

@@ -15,6 +15,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.view.ViewGroup;
 import android.widget.Button;
 
 import org.junit.After;
@@ -30,6 +31,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
@@ -48,6 +52,7 @@ public class FirstRunIntegrationTest {
 
     private FirstRunActivityTestObserver mTestObserver = new FirstRunActivityTestObserver();
     private Activity mActivity;
+    private String mSelectedEngine;
 
     @Before
     public void setUp() throws Exception {
@@ -231,7 +236,27 @@ public class FirstRunIntegrationTest {
 
     @Test
     @MediumTest
-    public void testClickThroughFirstRun() throws Exception {
+    public void testDefaultSearchEngine_DontShow() throws Exception {
+        runSearchEnginePromptTest(LocaleManager.SEARCH_ENGINE_PROMO_DONT_SHOW);
+    }
+
+    @Test
+    @MediumTest
+    public void testDefaultSearchEngine_ShowExisting() throws Exception {
+        runSearchEnginePromptTest(LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING);
+    }
+
+    private void runSearchEnginePromptTest(@SearchEnginePromoType final int searchPromoType)
+            throws Exception {
+        // Force the LocaleManager into a specific state.
+        LocaleManager mockManager = new LocaleManager() {
+            @Override
+            public int getSearchEnginePromoShowType() {
+                return searchPromoType;
+            }
+        };
+        LocaleManager.setInstanceForTest(mockManager);
+
         final ActivityMonitor freMonitor =
                 new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
         Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
@@ -260,16 +285,51 @@ public class FirstRunIntegrationTest {
         // Accept the ToS.
         if (freProperties.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE)) {
             clickButton(mActivity, R.id.terms_accept, "Failed to accept ToS");
-            mTestObserver.acceptTermsOfServiceCallback.waitForCallback(
-                    "Failed to accept the ToS", 0);
             mTestObserver.jumpToPageCallback.waitForCallback(
                     "Failed to try moving to the next screen", 0);
+            mTestObserver.acceptTermsOfServiceCallback.waitForCallback(
+                    "Failed to accept the ToS", 0);
         }
 
         // Acknowledge that Data Saver will be enabled.
         if (freProperties.getBoolean(FirstRunActivity.SHOW_DATA_REDUCTION_PAGE)) {
             int jumpCallCount = mTestObserver.jumpToPageCallback.getCallCount();
             clickButton(mActivity, R.id.next_button, "Failed to skip data saver");
+            mTestObserver.jumpToPageCallback.waitForCallback(
+                    "Failed to try moving to next screen", jumpCallCount);
+        }
+
+        // Select a default search engine.
+        if (searchPromoType == LocaleManager.SEARCH_ENGINE_PROMO_DONT_SHOW) {
+            Assert.assertFalse("Search engine page was shown.",
+                    freProperties.getBoolean(FirstRunActivity.SHOW_SEARCH_ENGINE_PAGE));
+        } else {
+            Assert.assertTrue("Search engine page wasn't shown.",
+                    freProperties.getBoolean(FirstRunActivity.SHOW_SEARCH_ENGINE_PAGE));
+            int jumpCallCount = mTestObserver.jumpToPageCallback.getCallCount();
+
+            // Click on the first search engine option available.
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    ViewGroup options = (ViewGroup) mActivity.findViewById(R.id.engine_controls);
+                    options.getChildAt(0).performClick();
+                    mSelectedEngine = (String) (options.getChildAt(0).getTag());
+                }
+            });
+
+            clickButton(mActivity, R.id.button_primary, "Failed to select default search engine");
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    Assert.assertEquals("Search engine wasn't set",
+                            TemplateUrlService.getInstance()
+                                    .getDefaultSearchEngineTemplateUrl()
+                                    .getKeyword(),
+                            mSelectedEngine);
+                }
+            });
+
             mTestObserver.jumpToPageCallback.waitForCallback(
                     "Failed to try moving to next screen", jumpCallCount);
         }

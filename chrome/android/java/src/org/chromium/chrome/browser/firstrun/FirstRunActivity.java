@@ -75,8 +75,9 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     public static final String EXTRA_FINISH_ON_TOUCH_OUTSIDE = "Extra.FreFinishOnTouchOutside";
 
     static final String SHOW_WELCOME_PAGE = "ShowWelcome";
-    static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
     static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
+    static final String SHOW_SEARCH_ENGINE_PAGE = "ShowSearchEnginePage";
+    static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
 
     static final String POST_NATIVE_SETUP_NEEDED = "PostNativeSetupNeeded";
 
@@ -105,7 +106,8 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     private static final int FRE_PROGRESS_SIGNIN_SHOWN = 3;
     private static final int FRE_PROGRESS_COMPLETED_SIGNED_IN = 4;
     private static final int FRE_PROGRESS_COMPLETED_NOT_SIGNED_IN = 5;
-    private static final int FRE_PROGRESS_MAX = 6;
+    private static final int FRE_PROGRESS_DEFAULT_SEARCH_ENGINE_SHOWN = 6;
+    private static final int FRE_PROGRESS_MAX = 7;
     private static final EnumeratedHistogramSample sMobileFreProgressMainIntentHistogram =
             new EnumeratedHistogramSample("MobileFre.Progress.MainIntent", FRE_PROGRESS_MAX);
     private static final EnumeratedHistogramSample sMobileFreProgressViewIntentHistogram =
@@ -172,6 +174,13 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         if (mFreProperties.getBoolean(SHOW_DATA_REDUCTION_PAGE)) {
             mPages.add(pageOf(DataReductionProxyFirstRunFragment.class));
             mFreProgressStates.add(FRE_PROGRESS_DATA_SAVER_SHOWN);
+            notifyAdapter = true;
+        }
+
+        // An optional page to select a default search engine.
+        if (mFreProperties.getBoolean(SHOW_SEARCH_ENGINE_PAGE)) {
+            mPages.add(pageOf(DefaultSearchEngineFirstRunFragment.class));
+            mFreProgressStates.add(FRE_PROGRESS_DEFAULT_SEARCH_ENGINE_SHOWN);
             notifyAdapter = true;
         }
 

@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -81,6 +82,17 @@ public class LocaleManager {
     };
 
     /**
+     * @return An instance of the {@link LocaleManager}. This should only be called on UI thread.
+     */
+    public static LocaleManager getInstance() {
+        assert ThreadUtils.runningOnUiThread();
+        if (sInstance == null) {
+            sInstance = AppHooks.get().createLocaleManager();
+        }
+        return sInstance;
+    }
+
+    /**
      * Starts listening to state changes of the phone.
      */
     public void startObservingPhoneChanges() {
@@ -91,17 +103,6 @@ public class LocaleManager {
      * Stops listening to state changes of the phone.
      */
     public void stopObservingPhoneChanges() {}
-
-    /**
-     * @return An instance of the {@link LocaleManager}. This should only be called on UI thread.
-     */
-    public static LocaleManager getInstance() {
-        assert ThreadUtils.runningOnUiThread();
-        if (sInstance == null) {
-            sInstance = AppHooks.get().createLocaleManager();
-        }
-        return sInstance;
-    }
 
     /**
      * Starts recording metrics in deferred startup.
@@ -260,7 +261,7 @@ public class LocaleManager {
      * @return Whether and which search engine promo should be shown.
      */
     @SearchEnginePromoType
-    protected int getSearchEnginePromoShowType() {
+    public int getSearchEnginePromoShowType() {
         if (!isSpecialLocaleEnabled()) return SEARCH_ENGINE_PROMO_DONT_SHOW;
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         if (preferences.getBoolean(PREF_PROMO_SHOWN, false)) {
@@ -272,5 +273,12 @@ public class LocaleManager {
     private SpecialLocaleHandler getSpecialLocaleHandler() {
         if (mLocaleHandler == null) mLocaleHandler = new SpecialLocaleHandler(getSpecialLocaleId());
         return mLocaleHandler;
+    }
+
+    /** Set a LocaleManager to be used for testing. */
+    @VisibleForTesting
+    public static void setInstanceForTest(LocaleManager instance) {
+        assert sInstance == null;
+        sInstance = instance;
     }
 }
