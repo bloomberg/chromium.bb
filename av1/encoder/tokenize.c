@@ -472,14 +472,8 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       td->rd_counts.coef_counts[txsize_sqr_map[tx_size]][type][ref];
 #if !CONFIG_NEW_TOKENSET
-#if CONFIG_SUBFRAME_PROB_UPDATE
-  const aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
-      cpi->subframe_stats.coef_probs_buf[cpi->common.coef_probs_update_idx]
-                                        [txsize_sqr_map[tx_size]][type][ref];
-#else
   aom_prob(*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       cpi->common.fc->coef_probs[txsize_sqr_map[tx_size]][type][ref];
-#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 #endif  // !CONFIG_NEW_TOKENSET
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
