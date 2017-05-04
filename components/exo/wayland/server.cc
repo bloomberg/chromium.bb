@@ -2661,12 +2661,6 @@ class WaylandPointerDelegate : public PointerDelegate {
                          WL_POINTER_AXIS_VERTICAL_SCROLL,
                          wl_fixed_from_double(-y_value));
   }
-  void OnPointerScrollCancel(base::TimeTicks time_stamp) override {
-    // Wayland doesn't know the concept of a canceling kinetic scrolling.
-    // But we can send a 0 distance scroll to emulate this behavior.
-    OnPointerScroll(time_stamp, gfx::Vector2dF(0, 0), false);
-    OnPointerScrollStop(time_stamp);
-  }
   void OnPointerScrollStop(base::TimeTicks time_stamp) override {
     if (wl_resource_get_version(pointer_resource_) >=
         WL_POINTER_AXIS_STOP_SINCE_VERSION) {
