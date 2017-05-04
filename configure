@@ -492,6 +492,7 @@ post_process_cmdline() {
     soft_enable motion_var
     soft_enable warped_motion
     soft_enable ext_delta_q
+    soft_enable loopfiltering_across_tiles
 
     # Backwards/jenkins compatibility with --enable-aom-highbitdepth
     enabled aom_highbitdepth && enable_feature highbitdepth
