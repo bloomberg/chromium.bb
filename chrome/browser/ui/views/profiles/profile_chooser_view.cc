@@ -567,6 +567,7 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
   // margins, see related bug <http://crbug.com/593203>.
   set_margins(gfx::Insets(0, 0, 2, 0));
   ResetView();
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
 }
 
 ProfileChooserView::~ProfileChooserView() {

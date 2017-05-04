@@ -7182,6 +7182,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="24" label="Payment Request"/>
   <int value="25" label="Save Card"/>
   <int value="26" label="Card Unmask"/>
+  <int value="27" label="Sign In"/>
+  <int value="28" label="Sign In Sync Confirmation"/>
+  <int value="29" label="Sign In Error"/>
+  <int value="30" label="Sign In Email Confirmation"/>
+  <int value="31" label="Profile Chooser"/>
 </enum>
 
 <enum name="DidNavigateToAd" type="int">
