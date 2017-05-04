@@ -230,6 +230,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // Invoked when the mouse is dragged. Updates the models as appropriate.
   void ContinueDrag(const ui::LocatedEvent& event);
 
+  // Ends the drag on the other shelf. (ie if we are on main shelf, ends drag on
+  // the overflow shelf). Invoked when a shelf item is being dragged from one
+  // shelf to the other.
+  void EndDragOnOtherShelf(bool cancel);
+
   // Handles ripping off an item from the shelf. Returns true when the item got
   // removed.
   bool HandleRipOffDrag(const ui::LocatedEvent& event);
@@ -445,6 +450,9 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // True when the icon was dragged off the shelf.
   bool dragged_off_shelf_ = false;
+
+  // True when an item is dragged from one shelf to another (eg. overflow).
+  bool dragged_to_another_shelf_ = false;
 
   // The rip off view when a snap back operation is underway.
   views::View* snap_back_from_rip_off_view_ = nullptr;

@@ -112,8 +112,9 @@ class ShelfViewTestAPI {
   // Returns true if item is ripped off.
   bool IsRippedOffFromShelf();
 
-  // Returns true if an item is ripped off and entered into shelf.
-  bool DraggedItemFromOverflowToShelf();
+  // Returns true when an item is dragged from one shelf to another (eg.
+  // overflow).
+  bool DraggedItemToAnotherShelf();
 
   // An accessor for |shelf_button_pressed_metric_tracker_|.
   ShelfButtonPressedMetricTracker* shelf_button_pressed_metric_tracker();
