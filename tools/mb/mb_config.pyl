@@ -933,7 +933,7 @@
     ],
 
     'asan_lsan_chromeos_release_trybot': [
-      'asan', 'lsan', 'chromeos', 'release_trybot',
+      'asan', 'lsan', 'chromeos', 'x11_cros', 'release_trybot',
     ],
 
     'asan_lsan_edge_debug_bot': [
@@ -1005,19 +1005,19 @@
     ],
 
     'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
-      'chromeos', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+      'chromeos', 'x11_cros', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'chromeos_msan_release_bot': [
-      'chromeos', 'msan', 'release_bot',
+      'chromeos', 'x11_cros', 'msan', 'release_bot',
     ],
 
     'chromeos_with_codecs_debug_bot': [
-      'chromeos_with_codecs', 'debug_bot',
+      'chromeos_with_codecs', 'x11_cros', 'debug_bot',
     ],
 
     'chromeos_with_codecs_debug_trybot': [
-      'chromeos_with_codecs', 'debug_trybot',
+      'chromeos_with_codecs', 'x11_cros', 'debug_trybot',
     ],
 
     'chromeos_with_codecs_ozone_release_bot': [
@@ -1029,11 +1029,11 @@
     ],
 
     'chromeos_with_codecs_release_bot': [
-      'chromeos_with_codecs', 'release_bot',
+      'chromeos_with_codecs', 'x11_cros', 'release_bot',
     ],
 
     'chromeos_with_codecs_release_trybot': [
-      'chromeos_with_codecs', 'release_trybot',
+      'chromeos_with_codecs', 'x11_cros', 'release_trybot',
     ],
 
     'clang_debug_trybot_x86': [
@@ -1187,7 +1187,7 @@
     ],
 
     'gpu_fyi_tests_chromeos_release_trybot': [
-      'gpu_fyi_tests', 'release_trybot', 'chromeos',
+      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'x11_cros',
     ],
 
     'gpu_fyi_tests_debug_trybot': [
@@ -1306,7 +1306,7 @@
     ],
 
     'official_goma_chromeos': [
-      'official', 'goma', 'chromeos',
+      'official', 'goma', 'chromeos', 'x11_cros',
     ],
 
     'official_goma_thin_lto_use_lld': [
@@ -1754,6 +1754,11 @@
 
     'no_symbols': {
       'gn_args': 'symbol_level=0',
+    },
+
+    'x11_cros': {
+      # When use_ozone=false then use_x11=true.
+      'gn_args': 'use_ozone=false',
     },
 
     'official': {
