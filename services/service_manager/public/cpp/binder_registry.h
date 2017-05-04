@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/lib/callback_binder.h"
+#include "services/service_manager/public/cpp/interface_binder.h"
 
 namespace service_manager {
 
@@ -34,9 +34,9 @@ class BinderRegistry {
                                 mojo::InterfaceRequest<Interface>)>& callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner =
           nullptr) {
-    SetInterfaceBinder(Interface::Name_,
-                       base::MakeUnique<internal::CallbackBinder<Interface>>(
-                           callback, task_runner));
+    SetInterfaceBinder(
+        Interface::Name_,
+        base::MakeUnique<CallbackBinder<Interface>>(callback, task_runner));
   }
   void AddInterface(
       const std::string& interface_name,

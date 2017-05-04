@@ -1,11 +1,10 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/public/cpp/lib/callback_binder.h"
+#include "services/service_manager/public/cpp/interface_binder.h"
 
 namespace service_manager {
-namespace internal {
 
 GenericCallbackBinder::GenericCallbackBinder(
     const BindCallback& callback,
@@ -33,5 +32,4 @@ void GenericCallbackBinder::RunCallback(const BindCallback& callback,
   callback.Run(std::move(handle));
 }
 
-}  // namespace internal
 }  // namespace service_manager
