@@ -67,6 +67,10 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
 
   SurfaceFactoryClient* client() { return client_; }
 
+  SurfaceResourceHolderClient* resource_holder_client() {
+    return resource_holder_client_;
+  }
+
   void ReceiveFromChild(const TransferableResourceArray& resources);
   void RefResources(const TransferableResourceArray& resources);
   void UnrefResources(const ReturnedResourceArray& resources);
@@ -96,6 +100,7 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
   const FrameSinkId frame_sink_id_;
   SurfaceManager* manager_;
   SurfaceFactoryClient* client_;
+  SurfaceResourceHolderClient* resource_holder_client_;
   SurfaceResourceHolder holder_;
   bool needs_sync_points_;
   bool seen_first_frame_activation_ = false;

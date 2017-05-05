@@ -90,6 +90,12 @@ class CC_EXPORT CompositorFrameMetadata {
   // that if |can_activate_before_dependencies| then the display compositor
   // can choose to activate a CompositorFrame before all dependencies are
   // available.
+  // Note: |activation_dependencies| and |referenced_surfaces| are disjointed
+  //       sets of surface IDs. If a surface ID is known to exist and can be
+  //       used without additional synchronization, then it is placed in
+  //       |referenced_surfaces|. |activation_dependencies| is the set of
+  //       surface IDs that this frame would like to block on until they
+  //       become available or a deadline hits.
   std::vector<SurfaceId> activation_dependencies;
 
   // This indicates whether this CompositorFrame can be activated before
