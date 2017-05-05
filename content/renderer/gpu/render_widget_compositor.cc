@@ -87,6 +87,57 @@ using blink::WebBrowserControlsState;
 namespace content {
 namespace {
 
+using ReportTimeCallback = base::Callback<void(bool, double)>;
+
+double MonotonicallyIncreasingTime() {
+  return static_cast<double>(base::TimeTicks::Now().ToInternalValue()) /
+         base::Time::kMicrosecondsPerSecond;
+}
+
+class ReportTimeSwapPromise : public cc::SwapPromise {
+ public:
+  ReportTimeSwapPromise(
+      ReportTimeCallback callback,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  ~ReportTimeSwapPromise() override;
+
+  void DidActivate() override {}
+  void WillSwap(cc::CompositorFrameMetadata* metadata) override {}
+  void DidSwap() override;
+  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override;
+
+  int64_t TraceId() const override;
+
+ private:
+  ReportTimeCallback callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
+};
+
+ReportTimeSwapPromise::ReportTimeSwapPromise(
+    ReportTimeCallback callback,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : callback_(callback), task_runner_(task_runner) {}
+
+ReportTimeSwapPromise::~ReportTimeSwapPromise() {}
+
+void ReportTimeSwapPromise::DidSwap() {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(callback_, true, MonotonicallyIncreasingTime()));
+}
+
+cc::SwapPromise::DidNotSwapAction ReportTimeSwapPromise::DidNotSwap(
+    cc::SwapPromise::DidNotSwapReason reason) {
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, false, 0));
+  return cc::SwapPromise::DidNotSwapAction::BREAK_PROMISE;
+}
+
+int64_t ReportTimeSwapPromise::TraceId() const {
+  return 0;
+}
+
 bool GetSwitchValueAsInt(const base::CommandLine& command_line,
                          const std::string& switch_string,
                          int min_value,
@@ -1150,6 +1201,11 @@ void RenderWidgetCompositor::SetContentSourceId(uint32_t id) {
 void RenderWidgetCompositor::SetLocalSurfaceId(
     const cc::LocalSurfaceId& local_surface_id) {
   layer_tree_host_->SetLocalSurfaceId(local_surface_id);
+}
+
+void RenderWidgetCompositor::NotifySwapTime(ReportTimeCallback callback) {
+  QueueSwapPromise(base::MakeUnique<ReportTimeSwapPromise>(
+      std::move(callback), base::ThreadTaskRunnerHandle::Get()));
 }
 
 }  // namespace content

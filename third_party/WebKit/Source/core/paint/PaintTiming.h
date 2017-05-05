@@ -26,6 +26,12 @@ class CORE_EXPORT PaintTiming final
  public:
   virtual ~PaintTiming() {}
 
+  enum class PaintEvent {
+    kFirstPaint,
+    kFirstContentfulPaint,
+    kFirstMeaningfulPaint
+  };
+
   static PaintTiming& From(Document&);
 
   // mark*() methods record the time for the given paint event, record a trace
@@ -82,6 +88,8 @@ class CORE_EXPORT PaintTiming final
     return *fmp_detector_;
   }
 
+  void ReportSwapTime(PaintEvent, bool did_swap, double timestamp);
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -101,11 +109,16 @@ class CORE_EXPORT PaintTiming final
   // time has not yet been recorded.
   void SetFirstContentfulPaint(double stamp);
 
+  void RegisterNotifySwapTime(PaintEvent);
+
   double first_paint_ = 0.0;
+  double first_paint_swap_ = 0.0;
   double first_text_paint_ = 0.0;
   double first_image_paint_ = 0.0;
   double first_contentful_paint_ = 0.0;
+  double first_contentful_paint_swap_ = 0.0;
   double first_meaningful_paint_ = 0.0;
+  double first_meaningful_paint_swap_ = 0.0;
   double first_meaningful_paint_candidate_ = 0.0;
 
   Member<FirstMeaningfulPaintDetector> fmp_detector_;
