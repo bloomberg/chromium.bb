@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -26,6 +27,7 @@ namespace {
 const char kRegistryPolBaseDir[] = "chrome/test/data/policy/gpo";
 const char kRegistryPolFile[] = "parser_test/registry.pol";
 const char kInvalidEncodingRegistryPolFile[] = "invalid_encoding/registry.pol";
+const char kNonExistingRegistryPolFile[] = "does_not_exist.pol";
 
 const char kRegistryKey[] = "SOFTWARE\\Policies\\Chromium";
 
@@ -116,7 +118,7 @@ TEST_F(PRegParserTest, TestParseFile) {
 
   // Run the parser.
   base::FilePath test_file(test_data_dir_.AppendASCII(kRegistryPolFile));
-  PolicyLoadStatusSample status;
+  PolicyLoadStatusUmaReporter status;
   ASSERT_TRUE(preg_parser::ReadFile(test_file, base::ASCIIToUTF16(kRegistryKey),
                                     &dict, &status));
 
@@ -144,7 +146,7 @@ TEST_F(PRegParserTest, SubstringRootInvalid) {
   // key like "Aa/Bb/C".
   base::FilePath test_file(test_data_dir_.AppendASCII(kRegistryPolFile));
   RegistryDict empty;
-  PolicyLoadStatusSample status;
+  PolicyLoadStatusUmaReporter status;
 
   // No data should be loaded for partial roots ("Aa/Bb/C").
   RegistryDict dict1;
@@ -164,13 +166,28 @@ TEST_F(PRegParserTest, RejectInvalidStrings) {
   // Tests whether strings with invalid characters are rejected.
   base::FilePath test_file(
       test_data_dir_.AppendASCII(kInvalidEncodingRegistryPolFile));
-  PolicyLoadStatusSample status;
+  PolicyLoadStatusUmaReporter status;
   RegistryDict dict;
   ASSERT_TRUE(preg_parser::ReadFile(test_file, base::ASCIIToUTF16(kRegistryKey),
                                     &dict, &status));
 
   RegistryDict empty;
   EXPECT_TRUE(RegistryDictEquals(dict, empty));
+}
+
+TEST_F(PRegParserTest, LoadStatusSampling) {
+  // Tests load status sampling.
+  PolicyLoadStatusUmaReporter status;
+  RegistryDict dict;
+  base::FilePath test_file(
+      test_data_dir_.AppendASCII(kNonExistingRegistryPolFile));
+  ASSERT_FALSE(preg_parser::ReadFile(
+      test_file, base::ASCIIToUTF16(kRegistryKey), &dict, &status));
+
+  PolicyLoadStatusSampler::StatusSet expected_status_set;
+  expected_status_set[POLICY_LOAD_STATUS_STARTED] = true;
+  expected_status_set[POLICY_LOAD_STATUS_READ_ERROR] = true;
+  EXPECT_EQ(expected_status_set, status.GetStatusSet());
 }
 
 }  // namespace

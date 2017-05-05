@@ -34,8 +34,9 @@ Environment* env = new Environment();
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Note: Don't use PolicyLoadStatusUmaReporter here, it leaks!
+  PolicyLoadStatusSampler status;
   RegistryDict dict;
-  PolicyLoadStatus status;
   ReadDataInternal(data, size, env->root, &dict, &status, "data");
   return 0;
 }

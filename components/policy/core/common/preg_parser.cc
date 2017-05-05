@@ -294,30 +294,24 @@ const char kPRegFileHeader[8] = {'P',    'R',    'e',    'g',
 bool ReadFile(const base::FilePath& file_path,
               const base::string16& root,
               RegistryDict* dict,
-              PolicyLoadStatusSample* status_sample) {
+              PolicyLoadStatusSampler* status) {
   base::MemoryMappedFile mapped_file;
   if (!mapped_file.Initialize(file_path) || !mapped_file.IsValid()) {
     PLOG(ERROR) << "Failed to map " << file_path.value();
-    status_sample->Add(POLICY_LOAD_STATUS_READ_ERROR);
+    status->Add(POLICY_LOAD_STATUS_READ_ERROR);
     return false;
   }
 
-  PolicyLoadStatus status = POLICY_LOAD_STATUS_SIZE;
-  bool res = ReadDataInternal(
-      mapped_file.data(), mapped_file.length(), root, dict, &status,
+  return ReadDataInternal(
+      mapped_file.data(), mapped_file.length(), root, dict, status,
       base::StringPrintf("file '%s'", file_path.value().c_str()));
-  if (!res) {
-    DCHECK(status != POLICY_LOAD_STATUS_SIZE);
-    status_sample->Add(status);
-  }
-  return res;
 }
 
 POLICY_EXPORT bool ReadDataInternal(const uint8_t* preg_data,
                                     size_t preg_data_size,
                                     const base::string16& root,
                                     RegistryDict* dict,
-                                    PolicyLoadStatus* status,
+                                    PolicyLoadStatusSampler* status,
                                     const std::string& debug_name) {
   DCHECK(status);
   DCHECK(root.empty() || root.back() != kRegistryPathSeparator[0]);
@@ -325,7 +319,7 @@ POLICY_EXPORT bool ReadDataInternal(const uint8_t* preg_data,
   // Check data size.
   if (preg_data_size > kMaxPRegFileSize) {
     LOG(ERROR) << "PReg " << debug_name << " too large: " << preg_data_size;
-    *status = POLICY_LOAD_STATUS_TOO_BIG;
+    status->Add(POLICY_LOAD_STATUS_TOO_BIG);
     return false;
   }
 
@@ -334,7 +328,7 @@ POLICY_EXPORT bool ReadDataInternal(const uint8_t* preg_data,
   if (!preg_data || preg_data_size < kHeaderSize ||
       memcmp(kPRegFileHeader, preg_data, kHeaderSize) != 0) {
     LOG(ERROR) << "Bad PReg " << debug_name;
-    *status = POLICY_LOAD_STATUS_PARSE_ERROR;
+    status->Add(POLICY_LOAD_STATUS_PARSE_ERROR);
     return false;
   }
 
@@ -398,7 +392,7 @@ POLICY_EXPORT bool ReadDataInternal(const uint8_t* preg_data,
 
   LOG(ERROR) << "Error parsing PReg " << debug_name << " at offset "
              << (reinterpret_cast<const uint8_t*>(cursor - 1) - preg_data);
-  *status = POLICY_LOAD_STATUS_PARSE_ERROR;
+  status->Add(POLICY_LOAD_STATUS_PARSE_ERROR);
   return false;
 }
 

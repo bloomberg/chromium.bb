@@ -129,7 +129,7 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
        !config_file_path.empty(); config_file_path = file_enumerator.Next())
     files.insert(config_file_path);
 
-  PolicyLoadStatusSample status;
+  PolicyLoadStatusUmaReporter status;
   if (files.empty()) {
     status.Add(POLICY_LOAD_STATUS_NO_POLICY);
     return;
