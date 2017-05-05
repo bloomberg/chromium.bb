@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -47,7 +46,7 @@ class AudioInputDevice::AudioThreadCallback
   const double bytes_per_ms_;
   int current_segment_id_;
   uint32_t last_buffer_id_;
-  ScopedVector<media::AudioBus> audio_buses_;
+  std::vector<std::unique_ptr<media::AudioBus>> audio_buses_;
   CaptureCallback* capture_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
@@ -297,9 +296,8 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
   for (int i = 0; i < total_segments_; ++i) {
     media::AudioInputBuffer* buffer =
         reinterpret_cast<media::AudioInputBuffer*>(ptr);
-    std::unique_ptr<media::AudioBus> audio_bus =
-        media::AudioBus::WrapMemory(audio_parameters_, buffer->audio);
-    audio_buses_.push_back(std::move(audio_bus));
+    audio_buses_.push_back(
+        media::AudioBus::WrapMemory(audio_parameters_, buffer->audio));
     ptr += segment_length_;
   }
 
@@ -341,7 +339,7 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   last_buffer_id_ = buffer->params.id;
 
   // Use pre-allocated audio bus wrapping existing block of shared memory.
-  media::AudioBus* audio_bus = audio_buses_[current_segment_id_];
+  media::AudioBus* audio_bus = audio_buses_[current_segment_id_].get();
 
   // Deliver captured data to the client in floating point format and update
   // the audio delay measurement.

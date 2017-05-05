@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -166,7 +165,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   FRIEND_TEST_ALL_PREFIXES(AudioManagerTest, AudioDebugRecording);
 
   struct DispatcherParams;
-  typedef ScopedVector<DispatcherParams> AudioOutputDispatchers;
+  typedef std::vector<std::unique_ptr<DispatcherParams>> AudioOutputDispatchers;
 
   class CompareByParams;
 
