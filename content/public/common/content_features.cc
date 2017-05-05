@@ -9,13 +9,6 @@ namespace features {
 
 // All features in alphabetical order.
 
-// Enables the Accessibility Object Model.
-// Explainer: https://github.com/WICG/aom/blob/master/explainer.md
-// Spec: https://wicg.github.io/aom/spec/
-const base::Feature kAccessibilityObjectModel(
-    "AccessibilityObjectModel",
-    base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables content-initiated, main frame navigations to data URLs.
 // TODO(meacer): Remove when the deprecation is complete.
 //               https://www.chromestatus.com/feature/5669602927312896

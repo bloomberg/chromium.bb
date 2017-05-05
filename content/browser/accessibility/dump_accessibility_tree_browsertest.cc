@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
@@ -72,6 +71,9 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     // Enable <dialog>, which is used in some tests.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
+    // Enable accessibility object model, used in other tests.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
   }
 
   void RunAriaTest(const base::FilePath::CharType* file_path) {
@@ -86,9 +88,6 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   }
 
   void RunAomTest(const base::FilePath::CharType* file_path) {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAccessibilityObjectModel);
-
     base::FilePath test_path = GetTestFilePath("accessibility", "aom");
     {
       base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
@@ -136,9 +135,6 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
         actual_contents, "\n",
         base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
-
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSColor) {

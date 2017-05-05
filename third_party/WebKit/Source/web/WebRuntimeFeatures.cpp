@@ -68,10 +68,6 @@ void WebRuntimeFeatures::EnableAccelerated2dCanvas(bool enable) {
   RuntimeEnabledFeatures::setAccelerated2dCanvasEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableAccessibilityObjectModel(bool enable) {
-  RuntimeEnabledFeatures::setAccessibilityObjectModelEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableAudioOutputDevices(bool enable) {
   RuntimeEnabledFeatures::setAudioOutputDevicesEnabled(enable);
 }
