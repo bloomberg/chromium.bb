@@ -144,8 +144,8 @@ def method_context(interface, method, is_visible=True):
     is_custom_call_epilogue = has_extended_attribute_value(method, 'Custom', 'CallEpilogue')
     is_post_message = 'PostMessage' in extended_attributes
     if is_post_message:
-        includes.add('bindings/core/v8/SerializedScriptValueFactory.h')
-        includes.add('bindings/core/v8/Transferables.h')
+        includes.add('bindings/core/v8/serialization/SerializedScriptValueFactory.h')
+        includes.add('bindings/core/v8/serialization/Transferables.h')
         includes.add('core/dom/DOMArrayBufferBase.h')
         includes.add('core/frame/ImageBitmap.h')
 

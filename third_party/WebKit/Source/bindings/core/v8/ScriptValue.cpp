@@ -30,8 +30,8 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 
-#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "platform/bindings/ScriptState.h"
 
 namespace blink {

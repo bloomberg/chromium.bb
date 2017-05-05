@@ -27,7 +27,7 @@
 #ifndef HistoryItem_h
 #define HistoryItem_h
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "platform/geometry/FloatPoint.h"

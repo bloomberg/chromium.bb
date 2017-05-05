@@ -4,7 +4,7 @@
 
 #include "modules/broadcastchannel/BroadcastChannel.h"
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/EventQueue.h"
 #include "core/events/MessageEvent.h"

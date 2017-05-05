@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8ImageData.h"
+#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "core/fileapi/File.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,7 +121,8 @@ TEST(SerializedScriptValueTest, WireFormatVersion0ImageData) {
 TEST(SerializedScriptValueTest, UserSelectedFile) {
   V8TestingScope scope;
   String file_path = testing::BlinkRootDir();
-  file_path.append("/Source/bindings/core/v8/SerializedScriptValueTest.cpp");
+  file_path.append(
+      "/Source/bindings/core/v8/serialization/SerializedScriptValueTest.cpp");
   File* original_file = File::Create(file_path);
   ASSERT_TRUE(original_file->HasBackingFile());
   ASSERT_EQ(File::kIsUserVisible, original_file->GetUserVisibility());

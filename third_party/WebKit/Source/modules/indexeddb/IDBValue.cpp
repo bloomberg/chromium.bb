@@ -4,7 +4,7 @@
 
 #include "modules/indexeddb/IDBValue.h"
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebBlobInfo.h"

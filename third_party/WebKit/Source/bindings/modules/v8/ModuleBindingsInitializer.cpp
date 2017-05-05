@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/modules/v8/ConditionalFeaturesForModules.h"
-#include "bindings/modules/v8/SerializedScriptValueForModulesFactory.h"
+#include "bindings/modules/v8/serialization/SerializedScriptValueForModulesFactory.h"
 #include "bindings/modules/v8/wasm/WasmResponseExtensions.h"
 
 namespace blink {

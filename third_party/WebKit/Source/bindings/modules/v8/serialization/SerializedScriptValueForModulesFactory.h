@@ -5,7 +5,7 @@
 #ifndef SerializedScriptValueForModulesFactory_h
 #define SerializedScriptValueForModulesFactory_h
 
-#include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {

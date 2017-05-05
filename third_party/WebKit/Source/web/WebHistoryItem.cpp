@@ -30,7 +30,7 @@
 
 #include "public/web/WebHistoryItem.h"
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/loader/HistoryItem.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"

@@ -31,8 +31,8 @@
 #include "public/web/WebSerializedScriptValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/SerializedScriptValue.h"
-#include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "public/platform/WebString.h"
 
 namespace blink {

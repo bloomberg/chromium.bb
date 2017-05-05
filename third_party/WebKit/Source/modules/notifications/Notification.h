@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "modules/EventTargetModules.h"
