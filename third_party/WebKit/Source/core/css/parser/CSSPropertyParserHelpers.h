@@ -8,6 +8,7 @@
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/Length.h"  // For ValueRange
@@ -119,6 +120,24 @@ CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange& range) {
       !IdentMatches<names...>(range.Peek().Id()))
     return nullptr;
   return CSSIdentifierValue::Create(range.ConsumeIncludingWhitespace().Id());
+}
+
+// ConsumeCommaSeparatedList takes a callback function to call on each item in
+// the list, followed by the arguments to pass to this callback.
+// The first argument to the callback must be the CSSParserTokenRange
+template <typename Func, typename... Args>
+CSSValueList* ConsumeCommaSeparatedList(Func callback,
+                                        CSSParserTokenRange& range,
+                                        Args... args) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  do {
+    CSSValue* value = callback(range, args...);
+    if (!value)
+      return nullptr;
+    list->Append(*value);
+  } while (ConsumeCommaIncludingWhitespace(range));
+  DCHECK(list->length());
+  return list;
 }
 
 }  // namespace CSSPropertyParserHelpers
