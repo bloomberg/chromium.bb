@@ -59,10 +59,13 @@ static_library("test_support") {
     "test_ruleset_creator.h",
     "test_ruleset_utils.cc",
     "test_ruleset_utils.h",
+    "url_rule_test_support.cc",
+    "url_rule_test_support.h",
   ]
   deps = [
     ":common",
     "//base",
+    "//net",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
   ]

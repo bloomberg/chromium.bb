@@ -10,160 +10,78 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/string_util.h"
+#include "base/strings/string_piece.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
+#include "components/subresource_filter/core/common/url_rule_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace subresource_filter {
 
-namespace {
+using namespace testing;
 
-constexpr proto::AnchorType kAnchorNone = proto::ANCHOR_TYPE_NONE;
-constexpr proto::AnchorType kBoundary = proto::ANCHOR_TYPE_BOUNDARY;
-constexpr proto::AnchorType kSubdomain = proto::ANCHOR_TYPE_SUBDOMAIN;
-constexpr proto::UrlPatternType kSubstring = proto::URL_PATTERN_TYPE_SUBSTRING;
-
-constexpr proto::SourceType kAnyParty = proto::SOURCE_TYPE_ANY;
-constexpr proto::SourceType kFirstParty = proto::SOURCE_TYPE_FIRST_PARTY;
-constexpr proto::SourceType kThirdParty = proto::SOURCE_TYPE_THIRD_PARTY;
-
-constexpr proto::ElementType kAllElementTypes = proto::ELEMENT_TYPE_ALL;
-constexpr proto::ElementType kOther = proto::ELEMENT_TYPE_OTHER;
-constexpr proto::ElementType kImage = proto::ELEMENT_TYPE_IMAGE;
-constexpr proto::ElementType kFont = proto::ELEMENT_TYPE_FONT;
-constexpr proto::ElementType kScript = proto::ELEMENT_TYPE_SCRIPT;
-constexpr proto::ElementType kPopup = proto::ELEMENT_TYPE_POPUP;
-constexpr proto::ElementType kWebSocket = proto::ELEMENT_TYPE_WEBSOCKET;
-
-constexpr proto::ActivationType kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
-constexpr proto::ActivationType kGenericBlock =
-    proto::ACTIVATION_TYPE_GENERICBLOCK;
-
-// Note: Returns unique origin on origin_string == nullptr.
-url::Origin GetOrigin(const char* origin_string) {
-  return origin_string ? url::Origin(GURL(origin_string)) : url::Origin();
-}
-
-class UrlRuleBuilder {
+class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
  public:
-  explicit UrlRuleBuilder(const UrlPattern& url_pattern,
-                          bool is_whitelist = false)
-      : UrlRuleBuilder(url_pattern, kAnyParty, is_whitelist) {}
-
-  UrlRuleBuilder(const UrlPattern& url_pattern,
-                 proto::SourceType source_type,
-                 bool is_whitelist) {
-    rule_.set_semantics(is_whitelist ? proto::RULE_SEMANTICS_WHITELIST
-                                     : proto::RULE_SEMANTICS_BLACKLIST);
-
-    rule_.set_source_type(source_type);
-    rule_.set_element_types(kAllElementTypes);
-
-    rule_.set_url_pattern_type(url_pattern.type());
-    rule_.set_anchor_left(url_pattern.anchor_left());
-    rule_.set_anchor_right(url_pattern.anchor_right());
-    rule_.set_match_case(url_pattern.match_case());
-    rule_.set_url_pattern(url_pattern.url_pattern().as_string());
-  }
-
-  UrlRuleBuilder& AddDomain(std::string domain_pattern) {
-    DCHECK(!domain_pattern.empty());
-    auto* domain = rule_.add_domains();
-    if (domain_pattern[0] == '~') {
-      domain_pattern.erase(0, 1);
-      domain->set_exclude(true);
-    }
-    domain->set_domain(domain_pattern);
-    return *this;
-  }
-
-  UrlRuleBuilder& AddDomains(const std::vector<std::string>& domains) {
-    for (const std::string domain : domains)
-      AddDomain(domain);
-    return *this;
-  }
-
-  const proto::UrlRule& rule() const { return rule_; }
-  proto::UrlRule& rule() { return rule_; }
-
- private:
-  proto::UrlRule rule_;
-
-  DISALLOW_COPY_AND_ASSIGN(UrlRuleBuilder);
-};
-
-}  // namespace
-
-class SubresourceFilterIndexedRulesetTest : public testing::Test {
- public:
-  SubresourceFilterIndexedRulesetTest() = default;
+  SubresourceFilterIndexedRulesetTest() { Reset(); }
 
  protected:
-  bool ShouldAllow(const char* url,
-                   const char* document_origin = nullptr,
+  bool ShouldAllow(base::StringPiece url,
+                   base::StringPiece document_origin = nullptr,
                    proto::ElementType element_type = kOther,
                    bool disable_generic_rules = false) const {
-    DCHECK_NE(matcher_.get(), nullptr);
-    url::Origin origin = GetOrigin(document_origin);
-    FirstPartyOrigin first_party(origin);
-    return !matcher_->ShouldDisallowResourceLoad(
-        GURL(url), first_party, element_type, disable_generic_rules);
-  }
-
-  bool ShouldAllow(const char* url,
-                   const char* document_origin,
-                   bool disable_generic_rules) const {
-    return ShouldAllow(url, document_origin, kOther, disable_generic_rules);
-  }
-
-  bool ShouldDeactivate(const char* document_url,
-                        const char* parent_document_origin = nullptr,
-                        proto::ActivationType activation_type =
-                            proto::ACTIVATION_TYPE_UNSPECIFIED) const {
     DCHECK(matcher_);
-    url::Origin origin = GetOrigin(parent_document_origin);
-    return matcher_->ShouldDisableFilteringForDocument(GURL(document_url),
-                                                       origin, activation_type);
+    return !matcher_->ShouldDisallowResourceLoad(
+        GURL(url), FirstPartyOrigin(GetOrigin(document_origin)), element_type,
+        disable_generic_rules);
   }
 
-  void AddUrlRule(const proto::UrlRule& rule) {
-    ASSERT_TRUE(indexer_.AddUrlRule(rule)) << "URL pattern: "
-                                           << rule.url_pattern();
+  bool ShouldDeactivate(
+      base::StringPiece document_url,
+      base::StringPiece parent_document_origin = nullptr,
+      proto::ActivationType activation_type = kNoActivation) const {
+    DCHECK(matcher_);
+    return matcher_->ShouldDisableFilteringForDocument(
+        GURL(document_url), GetOrigin(parent_document_origin), activation_type);
   }
 
-  void AddSimpleRule(const UrlPattern& url_pattern, bool is_whitelist) {
-    AddUrlRule(UrlRuleBuilder(url_pattern, is_whitelist).rule());
+  bool AddUrlRule(const proto::UrlRule& rule) {
+    return indexer_->AddUrlRule(rule);
   }
 
-  void AddBlacklistRule(const UrlPattern& url_pattern,
-                        proto::SourceType source_type = kAnyParty) {
-    AddUrlRule(UrlRuleBuilder(url_pattern, source_type, false).rule());
+  bool AddSimpleRule(base::StringPiece url_pattern) {
+    return AddUrlRule(MakeUrlRule(UrlPattern(url_pattern, kSubstring)));
   }
 
-  void AddWhitelistRuleWithActivationTypes(const UrlPattern& url_pattern,
-                                           int32_t activation_types) {
-    UrlRuleBuilder builder(url_pattern, kAnyParty, true);
-    builder.rule().set_element_types(proto::ELEMENT_TYPE_UNSPECIFIED);
-    builder.rule().set_activation_types(activation_types);
-    AddUrlRule(builder.rule());
+  bool AddSimpleWhitelistRule(base::StringPiece url_pattern) {
+    auto rule = MakeUrlRule(UrlPattern(url_pattern, kSubstring));
+    rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+    return AddUrlRule(rule);
+  }
+
+  bool AddSimpleWhitelistRule(base::StringPiece url_pattern,
+                              int32_t activation_types) {
+    auto rule = MakeUrlRule(url_pattern);
+    rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+    rule.clear_element_types();
+    rule.set_activation_types(activation_types);
+    return AddUrlRule(rule);
   }
 
   void Finish() {
-    indexer_.Finish();
-    matcher_.reset(new IndexedRulesetMatcher(indexer_.data(), indexer_.size()));
+    indexer_->Finish();
+    matcher_.reset(
+        new IndexedRulesetMatcher(indexer_->data(), indexer_->size()));
   }
 
   void Reset() {
     matcher_.reset(nullptr);
-    indexer_.~RulesetIndexer();
-    new (&indexer_) RulesetIndexer();
+    indexer_.reset(new RulesetIndexer);
   }
 
-  RulesetIndexer indexer_;
+  std::unique_ptr<RulesetIndexer> indexer_;
   std::unique_ptr<IndexedRulesetMatcher> matcher_;
 
  private:
@@ -177,138 +95,103 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithoutMetaInfo) {
     bool expect_allowed;
   } kTestCases[] = {
       // SUBSTRING
-      {{"abcd", kSubstring}, "http://example.com/abcd", false},
-      {{"abcd", kSubstring}, "http://example.com/dcab", true},
-      {{"42", kSubstring}, "http://example.com/adcd/picture42.png", false},
+      {{"abcd", kSubstring}, "http://ex.com/abcd", false},
+      {{"abcd", kSubstring}, "http://ex.com/dcab", true},
+      {{"42", kSubstring}, "http://ex.com/adcd/picture42.png", false},
       {{"&test", kSubstring},
-       "http://example.com/params?para1=false&test=true",
+       "http://ex.com/params?para1=false&test=true",
        false},
-      {{"-test-42.", kSubstring}, "http://example.com/unit-test-42.1", false},
+      {{"-test-42.", kSubstring}, "http://ex.com/unit-test-42.1", false},
       {{"/abcdtest160x600.", kSubstring},
-       "http://example.com/abcdtest160x600.png",
+       "http://ex.com/abcdtest160x600.png",
        false},
 
       // WILDCARDED
-      {{"http://example.com/abcd/picture*.png"},
-       "http://example.com/abcd/picture42.png",
+      {{"http://ex.com/abcd/picture*.png"},
+       "http://ex.com/abcd/picture42.png",
        false},
-      {{"example.com", kSubdomain, kAnchorNone}, "http://example.com", false},
-      {{"example.com", kSubdomain, kAnchorNone},
-       "http://test.example.com",
-       false},
-      {{"example.com", kSubdomain, kAnchorNone},
-       "https://test.example.com.com",
-       false},
-      {{"example.com", kSubdomain, kAnchorNone},
-       "https://test.rest.example.com",
-       false},
-      {{"example.com", kSubdomain, kAnchorNone},
-       "https://test_example.com",
-       true},
+      {{"ex.com", kSubdomain, kAnchorNone}, "http://ex.com", false},
+      {{"ex.com", kSubdomain, kAnchorNone}, "http://test.ex.com", false},
+      {{"ex.com", kSubdomain, kAnchorNone}, "https://test.ex.com.com", false},
+      {{"ex.com", kSubdomain, kAnchorNone}, "https://test.rest.ex.com", false},
+      {{"ex.com", kSubdomain, kAnchorNone}, "https://test_ex.com", true},
 
-      {{"http://example.com", kBoundary, kAnchorNone},
-       "http://example.com/",
+      {{"http://ex.com", kBoundary, kAnchorNone}, "http://ex.com/", false},
+      {{"http://ex.com", kBoundary, kAnchorNone}, "http://ex.com/42", false},
+      {{"http://ex.com", kBoundary, kAnchorNone},
+       "http://ex.com/42/http://ex.com/",
        false},
-      {{"http://example.com", kBoundary, kAnchorNone},
-       "http://example.com/42",
+      {{"http://ex.com", kBoundary, kAnchorNone},
+       "http://ex.com/42/http://ex.info/",
        false},
-      {{"http://example.com", kBoundary, kAnchorNone},
-       "http://example.com/42/http://example.com/",
-       false},
-      {{"http://example.com", kBoundary, kAnchorNone},
-       "http://example.com/42/http://example.info/",
-       false},
-      {{"http://example.com/", kBoundary, kBoundary},
-       "http://example.com",
-       false},
-      {{"http://example.com/", kBoundary, kBoundary},
-       "http://example.com/42",
+      {{"http://ex.com/", kBoundary, kBoundary}, "http://ex.com", false},
+      {{"http://ex.com/", kBoundary, kBoundary}, "http://ex.com/42", true},
+      {{"http://ex.com/", kBoundary, kBoundary},
+       "http://ex.info/42/http://ex.com/",
        true},
-      {{"http://example.com/", kBoundary, kBoundary},
-       "http://example.info/42/http://example.com/",
+      {{"http://ex.com/", kBoundary, kBoundary},
+       "http://ex.info/42/http://ex.com/",
        true},
-      {{"http://example.com/", kBoundary, kBoundary},
-       "http://example.info/42/http://example.com/",
+      {{"http://ex.com/", kBoundary, kBoundary}, "http://ex.com/", false},
+      {{"http://ex.com/", kBoundary, kBoundary}, "http://ex.com/42.swf", true},
+      {{"http://ex.com/", kBoundary, kBoundary},
+       "http://ex.info/redirect/http://ex.com/",
        true},
-      {{"http://example.com/", kBoundary, kBoundary},
-       "http://example.com/",
-       false},
-      {{"http://example.com/", kBoundary, kBoundary},
-       "http://example.com/42.swf",
-       true},
-      {{"http://example.com/", kBoundary, kBoundary},
-       "http://example.info/redirect/http://example.com/",
-       true},
-      {{"pdf", kAnchorNone, kBoundary}, "http://example.com/abcd.pdf", false},
-      {{"pdf", kAnchorNone, kBoundary}, "http://example.com/pdfium", true},
-      {{"http://example.com^"}, "http://example.com/", false},
-      {{"http://example.com^"}, "http://example.com:8000/", false},
-      {{"http://example.com^"}, "http://example.com.ru", true},
-      {{"^example.com^"},
-       "http://example.com:8000/42.loss?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
+      {{"pdf", kAnchorNone, kBoundary}, "http://ex.com/abcd.pdf", false},
+      {{"pdf", kAnchorNone, kBoundary}, "http://ex.com/pdfium", true},
+      {{"http://ex.com^"}, "http://ex.com/", false},
+      {{"http://ex.com^"}, "http://ex.com:8000/", false},
+      {{"http://ex.com^"}, "http://ex.com.ru", true},
+      {{"^ex.com^"},
+       "http://ex.com:8000/42.loss?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
        false},
       {{"^42.loss^"},
-       "http://example.com:8000/42.loss?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
+       "http://ex.com:8000/42.loss?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
        false},
 
-      // FIXME(pkalinnikov): The '^' at the end should match end-of-string.
+      // TODO(pkalinnikov): The '^' at the end should match end-of-string.
+      //
       // {"^%D1%82%D0%B5%D1%81%D1%82^",
-      //  "http://example.com:8000/42.loss?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
+      //  "http://ex.com:8000/42.loss?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
       //  false},
-      // {"/abcd/*/picture^", "http://example.com/abcd/42/picture", false},
+      // {"/abcd/*/picture^", "http://ex.com/abcd/42/picture", false},
 
-      {{"/abcd/*/picture^"},
-       "http://example.com/abcd/42/loss/picture?param",
+      {{"/abcd/*/picture^"}, "http://ex.com/abcd/42/loss/picture?param", false},
+      {{"/abcd/*/picture^"}, "http://ex.com/abcd//picture/42", false},
+      {{"/abcd/*/picture^"}, "http://ex.com/abcd/picture", true},
+      {{"/abcd/*/picture^"}, "http://ex.com/abcd/42/pictureraph", true},
+      {{"/abcd/*/picture^"}, "http://ex.com/abcd/42/picture.swf", true},
+      {{"test.ex.com^", kSubdomain, kAnchorNone},
+       "http://test.ex.com/42.swf",
        false},
-      {{"/abcd/*/picture^"}, "http://example.com/abcd//picture/42", false},
-      {{"/abcd/*/picture^"}, "http://example.com/abcd/picture", true},
-      {{"/abcd/*/picture^"}, "http://example.com/abcd/42/pictureraph", true},
-      {{"/abcd/*/picture^"}, "http://example.com/abcd/42/picture.swf", true},
-      {{"test.example.com^", kSubdomain, kAnchorNone},
-       "http://test.example.com/42.swf",
+      {{"test.ex.com^", kSubdomain, kAnchorNone},
+       "http://server1.test.ex.com/42.swf",
        false},
-      {{"test.example.com^", kSubdomain, kAnchorNone},
-       "http://server1.test.example.com/42.swf",
+      {{"test.ex.com^", kSubdomain, kAnchorNone},
+       "https://test.ex.com:8000/",
        false},
-      {{"test.example.com^", kSubdomain, kAnchorNone},
-       "https://test.example.com:8000/",
-       false},
-      {{"test.example.com^", kSubdomain, kAnchorNone},
-       "http://test.example.com.ua/42.swf",
+      {{"test.ex.com^", kSubdomain, kAnchorNone},
+       "http://test.ex.com.ua/42.swf",
        true},
-      {{"test.example.com^", kSubdomain, kAnchorNone},
-       "http://example.com/redirect/http://test.example.com/",
+      {{"test.ex.com^", kSubdomain, kAnchorNone},
+       "http://ex.com/redirect/http://test.ex.com/",
        true},
 
-      {{"/abcd/*"}, "https://example.com/abcd/", false},
-      {{"/abcd/*"}, "http://example.com/abcd/picture.jpeg", false},
-      {{"/abcd/*"}, "https://example.com/abcd", true},
-      {{"/abcd/*"}, "http://abcd.example.com", true},
-      {{"*/abcd/"}, "https://example.com/abcd/", false},
-      {{"*/abcd/"}, "http://example.com/abcd/picture.jpeg", false},
-      {{"*/abcd/"}, "https://example.com/test-abcd/", true},
-      {{"*/abcd/"}, "http://abcd.example.com", true},
-
-      // FIXME(pkalinnikov): Implement REGEXP matching.
-      // REGEXP
-      // {"/test|rest\\d+/", "http://example.com/test42", false},
-      // {"/test|rest\\d+/", "http://example.com/test", false},
-      // {"/test|rest\\d+/", "http://example.com/rest42", false},
-      // {"/test|rest\\d+/", "http://example.com/rest", true},
-      // {"/example\\.com/.*\\/[a-zA-Z0-9]{3}/", "http://example.com/abcd/42y",
-      //  false},
-      // {"/example\\.com/.*\\/[a-zA-Z0-9]{3}/", "http://example.com/abcd/%42y",
-      //  true},
-      // {"||example.com^*/test.htm", "http://example.com/unit/test.html",
-      // false},
-      // {"||example.com^*/test.htm", "http://examole.com/test.htm", true},
+      {{"/abcd/*"}, "https://ex.com/abcd/", false},
+      {{"/abcd/*"}, "http://ex.com/abcd/picture.jpeg", false},
+      {{"/abcd/*"}, "https://ex.com/abcd", true},
+      {{"/abcd/*"}, "http://abcd.ex.com", true},
+      {{"*/abcd/"}, "https://ex.com/abcd/", false},
+      {{"*/abcd/"}, "http://ex.com/abcd/picture.jpeg", false},
+      {{"*/abcd/"}, "https://ex.com/test-abcd/", true},
+      {{"*/abcd/"}, "http://abcd.ex.com", true},
   };
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message() << "Rule: " << test_case.url_pattern
-                                    << "; URL: " << test_case.url);
+    SCOPED_TRACE(::testing::Message() << "UrlPattern: " << test_case.url_pattern
+                                      << "; URL: " << test_case.url);
 
-    AddBlacklistRule(test_case.url_pattern);
+    ASSERT_TRUE(AddUrlRule(MakeUrlRule(test_case.url_pattern)));
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed, ShouldAllow(test_case.url));
@@ -325,47 +208,39 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithThirdParty) {
     const char* document_origin;
     bool expect_allowed;
   } kTestCases[] = {
-      {"example.com", kThirdParty, "http://example.com", "http://exmpl.org",
+      {"ex.com", kThirdParty, "http://ex.com", "http://exmpl.org", false},
+      {"ex.com", kThirdParty, "http://ex.com", "http://ex.com", true},
+      {"ex.com", kThirdParty, "http://ex.com/path?k=v", "http://exmpl.org",
        false},
-      {"example.com", kThirdParty, "http://example.com", "http://example.com",
+      {"ex.com", kThirdParty, "http://ex.com/path?k=v", "http://ex.com", true},
+      {"ex.com", kFirstParty, "http://ex.com/path?k=v", "http://ex.com", false},
+      {"ex.com", kFirstParty, "http://ex.com/path?k=v", "http://exmpl.com",
        true},
-      {"example.com", kThirdParty, "http://example.com/path?k=v",
-       "http://exmpl.org", false},
-      {"example.com", kThirdParty, "http://example.com/path?k=v",
-       "http://example.com", true},
-      {"example.com", kFirstParty, "http://example.com/path?k=v",
-       "http://example.com", false},
-      {"example.com", kFirstParty, "http://example.com/path?k=v",
-       "http://exmpl.com", true},
-      {"example.com", kAnyParty, "http://example.com/path?k=v",
-       "http://example.com", false},
-      {"example.com", kAnyParty, "http://example.com/path?k=v",
-       "http://exmpl.com", false},
-      {"example.com", kThirdParty, "http://subdomain.example.com",
-       "http://example.com", true},
-      {"example.com", kThirdParty, "http://example.com", nullptr, false},
+      {"ex.com", kAnyParty, "http://ex.com/path?k=v", "http://ex.com", false},
+      {"ex.com", kAnyParty, "http://ex.com/path?k=v", "http://exmpl.com",
+       false},
+      {"ex.com", kThirdParty, "http://subdomain.ex.com", "http://ex.com", true},
+      {"ex.com", kThirdParty, "http://ex.com", nullptr, false},
 
       // Public Suffix List tests.
-      {"example.com", kThirdParty, "http://two.example.com",
-       "http://one.example.com", true},
-      {"example.com", kThirdParty, "http://example.com",
-       "http://one.example.com", true},
-      {"example.com", kThirdParty, "http://two.example.com",
-       "http://example.com", true},
-      {"example.com", kThirdParty, "http://example.com", "http://example.org",
-       false},
+      {"ex.com", kThirdParty, "http://two.ex.com", "http://one.ex.com", true},
+      {"ex.com", kThirdParty, "http://ex.com", "http://one.ex.com", true},
+      {"ex.com", kThirdParty, "http://two.ex.com", "http://ex.com", true},
+      {"ex.com", kThirdParty, "http://ex.com", "http://ex.org", false},
       {"appspot.com", kThirdParty, "http://two.appspot.org",
        "http://one.appspot.com", true},
   };
 
   for (auto test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "Rule: " << test_case.url_pattern << "; source: "
-                 << (int)test_case.source_type << "; URL: " << test_case.url
-                 << "; document: " << test_case.document_origin);
+    SCOPED_TRACE(::testing::Message()
+                 << "UrlPattern: " << test_case.url_pattern
+                 << "; SourceType: " << static_cast<int>(test_case.source_type)
+                 << "; URL: " << test_case.url
+                 << "; DocumentOrigin: " << test_case.document_origin);
 
-    AddBlacklistRule(UrlPattern(test_case.url_pattern, kSubstring),
-                     test_case.source_type);
+    auto rule = MakeUrlRule(UrlPattern(test_case.url_pattern, kSubstring));
+    rule.set_source_type(test_case.source_type);
+    ASSERT_TRUE(AddUrlRule(rule));
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
@@ -380,7 +255,6 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
   const struct {
     std::vector<std::string> domains;
     const char* document_origin;
-
     bool expect_allowed;
   } kTestCases[] = {
       {std::vector<std::string>(), nullptr, false},
@@ -471,13 +345,13 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
   };
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "Domains: " << base::JoinString(test_case.domains, "|")
-                 << "; document: " << test_case.document_origin);
+    SCOPED_TRACE(::testing::Message()
+                 << "Domains: " << ::testing::PrintToString(test_case.domains)
+                 << "; DocumentOrigin: " << test_case.document_origin);
 
-    UrlRuleBuilder builder(UrlPattern(kUrl, kSubstring));
-    builder.AddDomains(test_case.domains);
-    AddUrlRule(builder.rule());
+    auto rule = MakeUrlRule(UrlPattern(kUrl, kSubstring));
+    AddDomains(test_case.domains, &rule);
+    ASSERT_TRUE(AddUrlRule(rule));
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
@@ -505,26 +379,26 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithLongDomainList) {
     domains.push_back("~sub.sub.c.sub." + domain);
   }
 
-  UrlRuleBuilder builder(UrlPattern(kUrl, kSubstring));
-  builder.AddDomains(domains);
-  AddUrlRule(builder.rule());
+  auto rule = MakeUrlRule(UrlPattern(kUrl, kSubstring));
+  AddDomains(domains, &rule);
+  ASSERT_TRUE(AddUrlRule(rule));
   Finish();
 
   for (size_t i = 0; i < kDomains; ++i) {
-    SCOPED_TRACE(testing::Message() << "Iteration: " << i);
+    SCOPED_TRACE(::testing::Message() << "Iteration: " << i);
     const std::string domain = "domain" + std::to_string(i) + ".com";
 
-    EXPECT_FALSE(ShouldAllow(kUrl, ("http://" + domain).c_str()));
-    EXPECT_TRUE(ShouldAllow(kUrl, ("http://sub." + domain).c_str()));
-    EXPECT_FALSE(ShouldAllow(kUrl, ("http://a.sub." + domain).c_str()));
-    EXPECT_FALSE(ShouldAllow(kUrl, ("http://b.sub." + domain).c_str()));
-    EXPECT_FALSE(ShouldAllow(kUrl, ("http://c.sub." + domain).c_str()));
-    EXPECT_TRUE(ShouldAllow(kUrl, ("http://aa.sub." + domain).c_str()));
-    EXPECT_TRUE(ShouldAllow(kUrl, ("http://ab.sub." + domain).c_str()));
-    EXPECT_TRUE(ShouldAllow(kUrl, ("http://ba.sub." + domain).c_str()));
-    EXPECT_TRUE(ShouldAllow(kUrl, ("http://bb.sub." + domain).c_str()));
-    EXPECT_FALSE(ShouldAllow(kUrl, ("http://sub.c.sub." + domain).c_str()));
-    EXPECT_TRUE(ShouldAllow(kUrl, ("http://sub.sub.c.sub." + domain).c_str()));
+    EXPECT_FALSE(ShouldAllow(kUrl, "http://" + domain));
+    EXPECT_TRUE(ShouldAllow(kUrl, "http://sub." + domain));
+    EXPECT_FALSE(ShouldAllow(kUrl, "http://a.sub." + domain));
+    EXPECT_FALSE(ShouldAllow(kUrl, "http://b.sub." + domain));
+    EXPECT_FALSE(ShouldAllow(kUrl, "http://c.sub." + domain));
+    EXPECT_TRUE(ShouldAllow(kUrl, "http://aa.sub." + domain));
+    EXPECT_TRUE(ShouldAllow(kUrl, "http://ab.sub." + domain));
+    EXPECT_TRUE(ShouldAllow(kUrl, "http://ba.sub." + domain));
+    EXPECT_TRUE(ShouldAllow(kUrl, "http://bb.sub." + domain));
+    EXPECT_FALSE(ShouldAllow(kUrl, "http://sub.c.sub." + domain));
+    EXPECT_TRUE(ShouldAllow(kUrl, "http://sub.sub.c.sub." + domain));
   }
 }
 
@@ -561,14 +435,16 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithElementTypes) {
   };
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "Rule: " << test_case.url_pattern << "; ElementTypes: "
-                 << (int)test_case.element_types << "; URL: " << test_case.url
-                 << "; ElementType: " << (int)test_case.element_type);
+    SCOPED_TRACE(
+        ::testing::Message()
+        << "UrlPattern: " << test_case.url_pattern
+        << "; ElementTypes: " << static_cast<int>(test_case.element_types)
+        << "; URL: " << test_case.url
+        << "; ElementType: " << static_cast<int>(test_case.element_type));
 
-    UrlRuleBuilder builder(UrlPattern(test_case.url_pattern, kSubstring));
-    builder.rule().set_element_types(test_case.element_types);
-    AddUrlRule(builder.rule());
+    auto rule = MakeUrlRule(UrlPattern(test_case.url_pattern, kSubstring));
+    rule.set_element_types(test_case.element_types);
+    ASSERT_TRUE(AddUrlRule(rule));
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
@@ -602,15 +478,15 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithActivationTypes) {
   };
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "Rule: " << test_case.url_pattern
-                 << "; ActivationTypes: " << (int)test_case.activation_types
-                 << "; DocURL: " << test_case.document_url
-                 << "; ActivationType: " << (int)test_case.activation_type);
+    SCOPED_TRACE(
+        ::testing::Message()
+        << "UrlPattern: " << test_case.url_pattern
+        << "; ActivationTypes: " << static_cast<int>(test_case.activation_types)
+        << "; DocumentURL: " << test_case.document_url
+        << "; ActivationType: " << static_cast<int>(test_case.activation_type));
 
-    AddWhitelistRuleWithActivationTypes(
-        UrlPattern(test_case.url_pattern, kSubstring),
-        test_case.activation_types);
+    ASSERT_TRUE(AddSimpleWhitelistRule(test_case.url_pattern,
+                                       test_case.activation_types));
     Finish();
 
     EXPECT_EQ(test_case.expect_disabled,
@@ -628,11 +504,12 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithActivationTypes) {
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithElementAndActivationTypes) {
-  UrlRuleBuilder builder(UrlPattern("allow.ex.com"), true /* is_whitelist */);
-  builder.rule().set_activation_types(kDocument);
+  auto rule = MakeUrlRule(UrlPattern("allow.ex.com", kSubstring));
+  rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+  rule.set_activation_types(kDocument);
 
-  AddUrlRule(builder.rule());
-  AddBlacklistRule(UrlPattern("ex.com"));
+  ASSERT_TRUE(AddUrlRule(rule));
+  ASSERT_TRUE(AddSimpleRule("ex.com"));
   Finish();
 
   EXPECT_FALSE(ShouldAllow("http://ex.com"));
@@ -645,37 +522,35 @@ TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithElementAndActivationTypes) {
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, MatchWithDisableGenericRules) {
-  // Generic rules.
-  ASSERT_NO_FATAL_FAILURE(
-      AddUrlRule(UrlRuleBuilder(UrlPattern("some_text", kSubstring)).rule()));
-  ASSERT_NO_FATAL_FAILURE(
-      AddUrlRule(UrlRuleBuilder(UrlPattern("another_text", kSubstring))
-                     .AddDomain("~example.com")
-                     .rule()));
+  const struct {
+    const char* url_pattern;
+    std::vector<std::string> domains;
+  } kRules[] = {
+      // Generic rules.
+      {"some_text", std::vector<std::string>()},
+      {"another_text", {"~example.com"}},
+      {"final_text", {"~example1.com", "~example2.com"}},
+      // Domain specific rules.
+      {"some_text", {"example1.com"}},
+      {"more_text", {"example.com", "~exclude.example.com"}},
+      {"last_text", {"example1.com", "sub.example2.com"}},
+  };
 
-  // Domain specific rules.
-  ASSERT_NO_FATAL_FAILURE(
-      AddUrlRule(UrlRuleBuilder(UrlPattern("some_text", kSubstring))
-                     .AddDomain("example1.com")
-                     .rule()));
-  ASSERT_NO_FATAL_FAILURE(
-      AddUrlRule(UrlRuleBuilder(UrlPattern("more_text", kSubstring))
-                     .AddDomain("example.com")
-                     .AddDomain("~exclude.example.com")
-                     .rule()));
-  ASSERT_NO_FATAL_FAILURE(
-      AddUrlRule(UrlRuleBuilder(UrlPattern("last_text", kSubstring))
-                     .AddDomain("example1.com")
-                     .AddDomain("sub.example2.com")
-                     .rule()));
+  for (const auto& rule_data : kRules) {
+    auto rule = MakeUrlRule(UrlPattern(rule_data.url_pattern, kSubstring));
+    AddDomains(rule_data.domains, &rule);
+    ASSERT_TRUE(AddUrlRule(rule))
+        << "UrlPattern: " << rule_data.url_pattern
+        << "; Domains: " << ::testing::PrintToString(rule_data.domains);
+  }
+
   // Note: Some of the rules have common domains (e.g., example1.com), which are
   // ultimately shared by FlatBuffers' CreateSharedString. The test also makes
   // sure that the data structure works properly with such optimization.
-
   Finish();
 
   const struct {
-    const char* url_pattern;
+    const char* url;
     const char* document_origin;
     bool should_allow_with_disable_generic_rules;
     bool should_allow_with_enable_all_rules;
@@ -685,6 +560,10 @@ TEST_F(SubresourceFilterIndexedRulesetTest, MatchWithDisableGenericRules) {
 
       {"http://ex.com/another_text", "http://example.com", true, true},
       {"http://ex.com/another_text", "http://example1.com", true, false},
+
+      {"http://ex.com/final_text", "http://example.com", true, false},
+      {"http://ex.com/final_text", "http://example1.com", true, true},
+      {"http://ex.com/final_text", "http://example2.com", true, true},
 
       {"http://ex.com/more_text", "http://example.com", false, false},
       {"http://ex.com/more_text", "http://exclude.example.com", true, true},
@@ -699,37 +578,37 @@ TEST_F(SubresourceFilterIndexedRulesetTest, MatchWithDisableGenericRules) {
   constexpr bool kDisableGenericRules = true;
   constexpr bool kEnableAllRules = false;
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "Url: " << test_case.url_pattern
-                 << "; document: " << test_case.document_origin);
+    SCOPED_TRACE(::testing::Message()
+                 << "URL: " << test_case.url
+                 << "; DocumentOrigin: " << test_case.document_origin);
 
     EXPECT_EQ(test_case.should_allow_with_disable_generic_rules,
-              ShouldAllow(test_case.url_pattern, test_case.document_origin,
+              ShouldAllow(test_case.url, test_case.document_origin, kOther,
                           kDisableGenericRules));
     EXPECT_EQ(test_case.should_allow_with_enable_all_rules,
-              ShouldAllow(test_case.url_pattern, test_case.document_origin,
+              ShouldAllow(test_case.url, test_case.document_origin, kOther,
                           kEnableAllRules));
   }
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, EmptyRuleset) {
   Finish();
+  EXPECT_TRUE(ShouldAllow(nullptr));
   EXPECT_TRUE(ShouldAllow("http://example.com"));
   EXPECT_TRUE(ShouldAllow("http://another.example.com?param=val"));
-  EXPECT_TRUE(ShouldAllow(nullptr));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, NoRuleApplies) {
-  AddSimpleRule(UrlPattern("?filtered_content=", kSubstring), false);
-  AddSimpleRule(UrlPattern("&filtered_content=", kSubstring), false);
+  ASSERT_TRUE(AddSimpleRule("?filter_out="));
+  ASSERT_TRUE(AddSimpleRule("&filter_out="));
   Finish();
 
   EXPECT_TRUE(ShouldAllow("http://example.com"));
-  EXPECT_TRUE(ShouldAllow("http://example.com?filtered_not"));
+  EXPECT_TRUE(ShouldAllow("http://example.com?filter_not"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklist) {
-  AddSimpleRule(UrlPattern("?param=", kSubstring), false);
+  ASSERT_TRUE(AddSimpleRule("?param="));
   Finish();
 
   EXPECT_TRUE(ShouldAllow("https://example.com"));
@@ -737,26 +616,25 @@ TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklist) {
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, SimpleWhitelist) {
-  AddSimpleRule(UrlPattern("example.com/?filtered_content=", kSubstring), true);
+  ASSERT_TRUE(AddSimpleWhitelistRule("example.com/?filter_out="));
   Finish();
 
-  EXPECT_TRUE(ShouldAllow("https://example.com?filtered_content=image1"));
+  EXPECT_TRUE(ShouldAllow("https://example.com?filter_out=true"));
 }
 
-TEST_F(SubresourceFilterIndexedRulesetTest, BlacklistWhitelist) {
-  AddSimpleRule(UrlPattern("?filter=", kSubstring), false);
-  AddSimpleRule(UrlPattern("whitelisted.com/?filter=", kSubstring), true);
+TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklistAndWhitelist) {
+  ASSERT_TRUE(AddSimpleRule("?filter="));
+  ASSERT_TRUE(AddSimpleWhitelistRule("whitelisted.com/?filter="));
   Finish();
 
-  EXPECT_TRUE(ShouldAllow("https://whitelisted.com?filter=off"));
-  EXPECT_TRUE(ShouldAllow("https://notblacklisted.com"));
   EXPECT_FALSE(ShouldAllow("http://blacklisted.com?filter=on"));
+  EXPECT_TRUE(ShouldAllow("https://whitelisted.com?filter=on"));
+  EXPECT_TRUE(ShouldAllow("https://notblacklisted.com"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, BlacklistAndActivationType) {
-  AddSimpleRule(UrlPattern("example.com", kSubstring), false);
-  AddWhitelistRuleWithActivationTypes(UrlPattern("example.com", kSubstring),
-                                      kDocument);
+  ASSERT_TRUE(AddSimpleRule("example.com"));
+  ASSERT_TRUE(AddSimpleWhitelistRule("example.com", kDocument));
   Finish();
 
   EXPECT_TRUE(ShouldDeactivate("https://example.com", nullptr, kDocument));
@@ -765,7 +643,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, BlacklistAndActivationType) {
   EXPECT_TRUE(ShouldAllow("https://xample.com"));
 }
 
-TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithUnsupportedTypes) {
+TEST_F(SubresourceFilterIndexedRulesetTest, RulesWithUnsupportedTypes) {
   const struct {
     int element_types;
     int activation_types;
@@ -781,21 +659,24 @@ TEST_F(SubresourceFilterIndexedRulesetTest, RuleWithUnsupportedTypes) {
       {proto::ELEMENT_TYPE_POPUP, proto::ACTIVATION_TYPE_ELEMHIDE},
   };
 
-  for (const auto& rule : kRules) {
-    UrlRuleBuilder builder(UrlPattern("example.com"));
-    builder.rule().set_element_types(rule.element_types);
-    builder.rule().set_activation_types(rule.activation_types);
-    EXPECT_FALSE(indexer_.AddUrlRule(builder.rule()));
+  for (const auto& rule_data : kRules) {
+    auto rule = MakeUrlRule(UrlPattern("example.com", kSubstring));
+    rule.set_element_types(rule_data.element_types);
+    rule.set_activation_types(rule_data.activation_types);
+    EXPECT_FALSE(AddUrlRule(rule))
+        << "ElementTypes: " << static_cast<int>(rule_data.element_types)
+        << "; ActivationTypes: "
+        << static_cast<int>(rule_data.activation_types);
   }
-  AddSimpleRule(UrlPattern("exmpl.com", kSubstring), false);
-
+  ASSERT_TRUE(AddSimpleRule("exmpl.com"));
   Finish();
+
   EXPECT_TRUE(ShouldAllow("http://example.com/"));
   EXPECT_FALSE(ShouldAllow("https://exmpl.com/"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest,
-       RuleWithSupportedAndUnsupportedTypes) {
+       RulesWithSupportedAndUnsupportedTypes) {
   const struct {
     int element_types;
     int activation_types;
@@ -805,18 +686,22 @@ TEST_F(SubresourceFilterIndexedRulesetTest,
       {0, kDocument | (proto::ACTIVATION_TYPE_MAX << 1)},
   };
 
-  for (const auto& rule : kRules) {
-    UrlRuleBuilder builder(UrlPattern("example.com"));
-    builder.rule().set_element_types(rule.element_types);
-    builder.rule().set_activation_types(rule.activation_types);
-    if (rule.activation_types)
-      builder.rule().set_semantics(proto::RULE_SEMANTICS_WHITELIST);
-    EXPECT_TRUE(indexer_.AddUrlRule(builder.rule()));
+  for (const auto& rule_data : kRules) {
+    auto rule = MakeUrlRule(UrlPattern("example.com", kSubstring));
+    rule.set_element_types(rule_data.element_types);
+    rule.set_activation_types(rule_data.activation_types);
+    if (rule_data.activation_types)
+      rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+    EXPECT_TRUE(AddUrlRule(rule))
+        << "ElementTypes: " << static_cast<int>(rule_data.element_types)
+        << "; ActivationTypes: "
+        << static_cast<int>(rule_data.activation_types);
   }
   Finish();
 
   EXPECT_FALSE(ShouldAllow("http://example.com/", nullptr, kImage));
   EXPECT_FALSE(ShouldAllow("http://example.com/", nullptr, kScript));
+  EXPECT_TRUE(ShouldAllow("http://example.com/", nullptr, kPopup));
   EXPECT_TRUE(ShouldAllow("http://example.com/"));
 
   EXPECT_TRUE(ShouldDeactivate("http://example.com", nullptr, kDocument));
