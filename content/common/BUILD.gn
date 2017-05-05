@@ -618,9 +618,6 @@ mojom("mojo_bindings") {
     "//components/leveldb/public/interfaces",
     "//components/payments/mojom:mojom_payment_app",
     "//content/public/common:interfaces",
-
-    # TODO(mcasas): remove the following dep after https://crbug.com/653994
-    "//gpu/ipc/common:interfaces",
     "//ipc:mojom",
     "//media/capture/mojo:capture_types",
     "//media/mojo/interfaces",
