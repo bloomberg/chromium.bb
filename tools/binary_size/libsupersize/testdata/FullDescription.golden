@@ -68,10 +68,10 @@ First columns are: running total, address, pss
                source_path= 	object_path=
                flags={}  name=** symbol gap 2 (end of section)
 > 35826720 t@0x28f000   pss=5718  padding=5718  size_without_padding=0
-               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               source_path= 	object_path=
                flags={}  name=** symbol gap 0
 > 35830760 t@0x2a1000   pss=4040  padding=4040  size_without_padding=0
-               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               source_path= 	object_path=
                flags={}  name=** symbol gap 1
 39116875 r@Group      pss=3286115  padding=3286115  size_without_padding=0  count=2
              source_path= 	object_path=
@@ -80,7 +80,7 @@ First columns are: running total, address, pss
                source_path= 	object_path=
                flags={}  name=** symbol gap 3 (end of section)
 >  3286115 r@0x284e364  pss=3  padding=3  size_without_padding=0
-               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               source_path= 	object_path=
                flags={}  name=** symbol gap 2
 41758269 r@Group      pss=2641394  padding=352  size_without_padding=2641042  count=2
              source_path= 	object_path=
