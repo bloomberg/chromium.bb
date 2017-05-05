@@ -967,6 +967,8 @@ if (is_android && enable_java_templates) {
 #  that have not been ported over.
 if (is_android) {
   data_dir = "android"
+} else if (is_ios) {
+  data_dir = "ios"
 } else {
   data_dir = "common"
 }

@@ -54,7 +54,7 @@ Pre-built data files are generated and checked in with the following steps
      This makes icudt${version}l.dat.
 
   f. Run
-       ${CHROME_ICU_TREE_TOP}/scripts/copy_data.sh
+       ${CHROME_ICU_TREE_TOP}/scripts/copy_data.sh common
 
      This copies the ICU data files for non-Android platforms
      (both Little and Big Endian) to the following locations:
@@ -73,20 +73,33 @@ Pre-built data files are generated and checked in with the following steps
      This makes icudt${version}l.dat for Android.
 
   i. Run
-       ${CHROME_ICU_TREE_TOP}/scripts/copy_data_android.sh
+       ${CHROME_ICU_TREE_TOP}/scripts/copy_data.sh android
 
      This copies the icu data file for Android to the following location:
 
      android/icudtl.dat
 
   j. Run
+       ${CHROME_ICU_TREE_TOP}/ios/patch_locale.sh
+
+     Further cuts the data size for iOS.
+
+  k. Run
+       ${CHROME_ICU_TREE_TOP}/scripts/make_data.sh
+
+     This makes icudt${version}l.dat for iOS.
+
+  l. Run
+       ${CHROME_ICU_TREE_TOP}/scripts/copy_data.sh ios
+
+  m. Run
        ${CHROME_ICU_TREE_TOP}/scripts/clean_up_data_source.sh
 
      This reverts the result of trim_data.sh and patch_locale.sh and
      make the tree ready for committing updated ICU data files for
      non-Android and Android platforms.
 
-  k. Whenever data is updated (e.g timezone update), follow d ~ j as long
+  n. Whenever data is updated (e.g timezone update), follow d ~ m as long
   as the ICU build directory used in a ~ c is kept. Besides, icudt.dll for
   Windows has to be udpated following the procedure described below.
 
