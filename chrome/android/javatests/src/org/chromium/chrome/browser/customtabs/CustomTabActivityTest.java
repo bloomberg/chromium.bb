@@ -1477,6 +1477,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testPostMessageThroughHiddenTabWithRequestBeforeMayLaunchUrl()
             throws InterruptedException {
         sendPostMessageDuringHiddenTabTransition(BEFORE_MAY_LAUNCH_URL);
@@ -1489,6 +1490,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testPostMessageThroughHiddenTabWithRequestBeforeIntent()
             throws InterruptedException {
         sendPostMessageDuringHiddenTabTransition(BEFORE_INTENT);
@@ -1501,11 +1503,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testPostMessageThroughHiddenTabWithRequestAfterIntent()
             throws InterruptedException {
         sendPostMessageDuringHiddenTabTransition(AFTER_INTENT);
     }
 
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     private void sendPostMessageDuringHiddenTabTransition(int requestTime)
             throws InterruptedException {
         sendPostMessageDuringSpeculationTransition(
@@ -1788,6 +1792,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testHiddenTabAndChangingFragmentIgnoreFragments() throws Exception {
         startHiddenTabAndChangeFragment(true, true);
     }
@@ -1796,6 +1801,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testHiddenTabAndChangingFragmentDontIgnoreFragments() throws Exception {
         startHiddenTabAndChangeFragment(false, true);
     }
@@ -1804,6 +1810,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testHiddenTabAndChangingFragmentDontWait() throws Exception {
         startHiddenTabAndChangeFragment(true, false);
     }
@@ -1812,6 +1819,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testHiddenTabAndChangingFragmentDontWaitDrop() throws Exception {
         startHiddenTabAndChangeFragment(false, false);
     }
@@ -1900,6 +1908,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testHiddenTabCorrectUrl() throws Exception {
         testSpeculateCorrectUrl(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
     }
@@ -2105,6 +2114,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testHiddenTabWithReferrer() throws Exception {
         testSpeculatingWithReferrer(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
     }
@@ -2143,6 +2153,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testHiddenTabWithMismatchedReferrers() throws Exception {
         testSpeculatingWithMismatchedReferrers(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
     }
