@@ -776,7 +776,7 @@ static int ransac(const int *matched_points, int npoints,
     if (current_motion.num_inliers >= worst_kept_motion->num_inliers &&
         current_motion.num_inliers > 1) {
       int temp;
-      double fracinliers, pNoOutliers, mean_distance;
+      double fracinliers, pNoOutliers, mean_distance, dtemp;
       mean_distance = sum_distance / ((double)current_motion.num_inliers);
       current_motion.variance =
           sum_distance_squared / ((double)current_motion.num_inliers - 1.0) -
@@ -796,7 +796,10 @@ static int ransac(const int *matched_points, int npoints,
         pNoOutliers = 1 - pow(fracinliers, minpts);
         pNoOutliers = fmax(EPS, pNoOutliers);
         pNoOutliers = fmin(1 - EPS, pNoOutliers);
-        temp = (int)(log(1.0 - PROBABILITY_REQUIRED) / log(pNoOutliers));
+        dtemp = log(1.0 - PROBABILITY_REQUIRED) / log(pNoOutliers);
+        temp = (dtemp > (double)INT32_MAX)
+                   ? INT32_MAX
+                   : dtemp < (double)INT32_MIN ? INT32_MIN : (int)dtemp;
 
         if (temp > 0 && temp < N) {
           N = AOMMAX(temp, MIN_TRIALS);
