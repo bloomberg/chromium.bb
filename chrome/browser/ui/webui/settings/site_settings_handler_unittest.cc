@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/test/base/testing_profile.h"
@@ -253,15 +254,23 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
 TEST_F(SiteSettingsHandlerTest, Origins) {
   // Test the JS -> C++ -> JS callback path for configuring origins, by setting
   // Google.com to blocked.
-  base::ListValue setArgs;
-  std::string google("http://www.google.com");
-  setArgs.AppendString(google);  // Primary pattern.
-  setArgs.AppendString(google);  // Secondary pattern.
-  setArgs.AppendString("notifications");
-  setArgs.AppendString("block");
-  setArgs.AppendBoolean(false);  // Incognito.
-  handler()->HandleSetCategoryPermissionForOrigin(&setArgs);
-  EXPECT_EQ(1U, web_ui()->call_data().size());
+  const std::string google("http://www.google.com");
+  const std::string kUmaBase("WebsiteSettings.Menu.PermissionChanged");
+  {
+    base::ListValue set_args;
+    set_args.AppendString(google);  // Primary pattern.
+    set_args.AppendString(google);  // Secondary pattern.
+    set_args.AppendString("notifications");
+    set_args.AppendString("block");
+    set_args.AppendBoolean(false);  // Incognito.
+    base::HistogramTester histograms;
+    handler()->HandleSetCategoryPermissionForOrigin(&set_args);
+    EXPECT_EQ(1U, web_ui()->call_data().size());
+    histograms.ExpectTotalCount(kUmaBase, 1);
+    histograms.ExpectTotalCount(kUmaBase + ".Allowed", 0);
+    histograms.ExpectTotalCount(kUmaBase + ".Blocked", 1);
+    histograms.ExpectTotalCount(kUmaBase + ".Reset", 0);
+  }
 
   // Verify the change was successful.
   base::ListValue listArgs;
@@ -270,14 +279,21 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   handler()->HandleGetExceptionList(&listArgs);
   ValidateOrigin(google, google, google, "block", "preference", 2U);
 
-  // Reset things back to how they were.
-  base::ListValue resetArgs;
-  resetArgs.AppendString(google);
-  resetArgs.AppendString(google);
-  resetArgs.AppendString("notifications");
-  resetArgs.AppendBoolean(false);  // Incognito.
-  handler()->HandleResetCategoryPermissionForOrigin(&resetArgs);
-  EXPECT_EQ(3U, web_ui()->call_data().size());
+  {
+    // Reset things back to how they were.
+    base::ListValue reset_args;
+    reset_args.AppendString(google);
+    reset_args.AppendString(google);
+    reset_args.AppendString("notifications");
+    reset_args.AppendBoolean(false);  // Incognito.
+    base::HistogramTester histograms;
+    handler()->HandleResetCategoryPermissionForOrigin(&reset_args);
+    EXPECT_EQ(3U, web_ui()->call_data().size());
+    histograms.ExpectTotalCount(kUmaBase, 1);
+    histograms.ExpectTotalCount(kUmaBase + ".Allowed", 0);
+    histograms.ExpectTotalCount(kUmaBase + ".Blocked", 0);
+    histograms.ExpectTotalCount(kUmaBase + ".Reset", 1);
+  }
 
   // Verify the reset was successful.
   handler()->HandleGetExceptionList(&listArgs);
