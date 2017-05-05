@@ -241,6 +241,27 @@ def get_waterfall_config():
     'android', target_bits=32, num_device_shards=7, num_host_shards=3)
 
   waterfall = add_tester(
+    waterfall, 'Android Nexus5X Perf', 'android-nexus5X', 'android',
+    swarming=[
+      {
+       'os': 'Android',
+       'android_devices': '1',
+       'pool': 'Chrome-perf',
+       'device_ids': [
+           'build73-b1--device1', 'build73-b1--device2', 'build73-b1--device3',
+           'build73-b1--device4', 'build73-b1--device5', 'build73-b1--device6',
+           'build73-b1--device7',
+           'build74-b1--device1', 'build74-b1--device2', 'build74-b1--device3',
+           'build74-b1--device4', 'build74-b1--device5', 'build74-b1--device6',
+           'build74-b1--device7',
+           'build75-b1--device1', 'build75-b1--device2', 'build75-b1--device3',
+           'build75-b1--device4', 'build75-b1--device5', 'build75-b1--device6',
+           'build75-b1--device7',
+          ]
+      }
+    ])
+
+  waterfall = add_tester(
     waterfall, 'Win Zenbook Perf', 'win-zenbook', 'win',
     swarming=[
       {
