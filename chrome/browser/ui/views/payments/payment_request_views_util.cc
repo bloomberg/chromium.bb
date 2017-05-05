@@ -361,7 +361,8 @@ std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text) {
 
 std::unique_ptr<views::View> CreateShippingOptionLabel(
     payments::mojom::PaymentShippingOption* shipping_option,
-    const base::string16& formatted_amount) {
+    const base::string16& formatted_amount,
+    bool emphasize_label) {
   std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
 
   std::unique_ptr<views::BoxLayout> layout =
@@ -377,6 +378,10 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     shipping_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     shipping_label->set_id(
         static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
+    if (emphasize_label) {
+      shipping_label->SetFontList(shipping_label->font_list().DeriveWithWeight(
+          gfx::Font::Weight::MEDIUM));
+    }
     container->AddChildView(shipping_label.release());
 
     std::unique_ptr<views::Label> amount_label =

@@ -116,9 +116,12 @@ std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(SkColor color);
 // Creates a label with a bold font.
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text);
 
+// Creates a 2 line label containing |shipping_option|'s label and amount. If
+// |emphasize_label| is true, the label part will be in medium weight.
 std::unique_ptr<views::View> CreateShippingOptionLabel(
     payments::mojom::PaymentShippingOption* shipping_option,
-    const base::string16& formatted_amount);
+    const base::string16& formatted_amount,
+    bool emphasize_label);
 
 }  // namespace payments
 
