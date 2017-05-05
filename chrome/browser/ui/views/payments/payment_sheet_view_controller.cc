@@ -869,7 +869,8 @@ PaymentSheetViewController::CreateShippingOptionRow() {
               ? CreateCheckingSpinnerView()
               : CreateShippingOptionLabel(selected_option,
                                           spec()->GetFormattedCurrencyAmount(
-                                              selected_option->amount->value));
+                                              selected_option->amount->value),
+                                          /*emphasize_label=*/false);
       return builder.Id(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)
           .CreateWithChevron(std::move(option_row_content), nullptr);
     } else {
