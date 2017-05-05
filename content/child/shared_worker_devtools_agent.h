@@ -37,7 +37,7 @@ class SharedWorkerDevToolsAgent {
   void OnReattach(const std::string& host_id,
                   int session_id,
                   const std::string& state);
-  void OnDetach();
+  void OnDetach(int session_id);
   void OnDispatchOnInspectorBackend(
       int session_id,
       int call_id,

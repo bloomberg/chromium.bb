@@ -424,7 +424,7 @@ class DevToolsAgentTest : public RenderViewImplTest {
 
   void Detach() {
     agent()->send_protocol_message_callback_for_test_.Reset();
-    agent()->OnDetach();
+    agent()->DetachAllSessions();
   }
 
   bool IsPaused() {

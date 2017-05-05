@@ -97,7 +97,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   void ReattachDevTools(const WebString& host_id,
                         int sesion_id,
                         const WebString& saved_state) override;
-  void DetachDevTools() override;
+  void DetachDevTools(int session_id) override;
   void DispatchDevToolsMessage(int session_id,
                                int call_id,
                                const WebString& method,

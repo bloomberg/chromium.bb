@@ -68,7 +68,7 @@ class WebEmbeddedWorker {
   virtual void ReattachDevTools(const WebString& host_id,
                                 int session_id,
                                 const WebString& saved_state) = 0;
-  virtual void DetachDevTools() = 0;
+  virtual void DetachDevTools(int session_id) = 0;
   virtual void DispatchDevToolsMessage(int session_id,
                                        int call_id,
                                        const WebString& method,

@@ -2715,6 +2715,11 @@ void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
   frame_->AddMessageToConsole(wcm);
 }
 
+void RenderFrameImpl::DetachDevToolsForTest() {
+  if (devtools_agent_)
+    devtools_agent_->DetachAllSessions();
+}
+
 PreviewsState RenderFrameImpl::GetPreviewsState() const {
   return previews_state_;
 }

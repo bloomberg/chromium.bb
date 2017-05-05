@@ -297,7 +297,8 @@ void WebDevToolsAgentImpl::WillBeDestroyed() {
   DCHECK(inspected_frames_->Root()->View());
   instrumenting_agents_->removeInspectorTraceEvents(trace_events_agent_);
   trace_events_agent_ = nullptr;
-  Detach();
+  if (session_)
+    Detach(session_->SessionId());
   resource_content_loader_->Dispose();
   client_ = nullptr;
 }
@@ -428,8 +429,8 @@ void WebDevToolsAgentImpl::Reattach(const WebString& host_id,
   session_->Restore();
 }
 
-void WebDevToolsAgentImpl::Detach() {
-  if (!Attached())
+void WebDevToolsAgentImpl::Detach(int session_id) {
+  if (!Attached() || session_id != session_->SessionId())
     return;
   DestroySession();
 }

@@ -94,7 +94,7 @@ class WebDevToolsAgentImpl final
   void Reattach(const WebString& host_id,
                 int session_id,
                 const WebString& saved_state) override;
-  void Detach() override;
+  void Detach(int session_id) override;
   void ContinueProgram() override;
   void DispatchOnInspectorBackend(int session_id,
                                   int call_id,
