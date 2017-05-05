@@ -1518,7 +1518,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestContentLoadEvent) {
   TestHelper("testContentLoadEvent", "web_view/shim", NO_TEST_SERVER);
 }
 
-// TODO(fsamuel): Enable this test once <webview> can run in a detached state.
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestContentLoadEventWithDisplayNone) {
   TestHelper("testContentLoadEventWithDisplayNone",
              "web_view/shim",
