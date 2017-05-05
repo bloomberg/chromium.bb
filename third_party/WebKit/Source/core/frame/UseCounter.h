@@ -1577,6 +1577,7 @@ class CORE_EXPORT UseCounter {
     kElementNameDOMInvalidHTMLParserValid = 1968,
     kElementNameDOMValidHTMLParserInvalid = 1969,
     kGATTServerDisconnectedEvent = 1970,
+    kAnchorClickDispatchForNonConnectedNode = 1971,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

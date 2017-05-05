@@ -321,6 +321,11 @@ void HTMLAnchorElement::HandleClick(Event* event) {
   if (!frame)
     return;
 
+  if (!isConnected()) {
+    UseCounter::Count(GetDocument(),
+                      UseCounter::kAnchorClickDispatchForNonConnectedNode);
+  }
+
   StringBuilder url;
   url.Append(StripLeadingAndTrailingHTMLSpaces(FastGetAttribute(hrefAttr)));
   AppendServerMapMousePosition(url, event);

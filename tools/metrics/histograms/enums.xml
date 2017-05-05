@@ -14816,6 +14816,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1968" label="ElementNameDOMInvalidHTMLParserValid"/>
   <int value="1969" label="ElementNameDOMValidHTMLParserInvalid"/>
   <int value="1970" label="GATTServerDisconnectedEvent"/>
+  <int value="1971" label="AnchorClickDispatchForNonConnectedNode"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
