@@ -210,7 +210,7 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
       base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
 #endif  // BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
   } else {
-    CHECK(false) << "Invalid mode '" << profiling_mode << "' for "
+    LOG(FATAL) << "Invalid mode '" << profiling_mode << "' for "
                << switches::kEnableHeapProfiling << " flag.";
   }
 
