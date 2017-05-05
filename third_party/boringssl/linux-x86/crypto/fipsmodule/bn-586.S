@@ -1,5 +1,5 @@
 #if defined(__i386__)
-.file	"src/crypto/bn/asm/bn-586.S"
+.file	"src/crypto/fipsmodule/bn/asm/bn-586.S"
 .text
 .globl	bn_mul_add_words
 .hidden	bn_mul_add_words
