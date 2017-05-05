@@ -41,6 +41,10 @@ constexpr int kPaymentRequestButtonSpacing = 10;
 // Dimensions of the dialog itself.
 constexpr int kDialogHeight = 450;
 
+// Fixed width of the amount sections in the payment sheet and the order summary
+// sheet, in pixels.
+constexpr int kAmountSectionWidth = 96;
+
 enum class PaymentRequestCommonTags {
   BACK_BUTTON_TAG = 0,
   CLOSE_BUTTON_TAG,

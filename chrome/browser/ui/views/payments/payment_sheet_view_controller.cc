@@ -96,7 +96,7 @@ class PreviewEliderLabel : public views::Label {
       base::string16 elided_string =
           base::i18n::MessageFormatter::FormatWithNumberedArgs(
               format_string_, "", elided_preview, n_);
-      if (gfx::GetStringWidth(elided_string, font_list()) <= width())
+      if (gfx::GetStringWidth(elided_string, font_list()) <= pixel_width)
         return elided_string;
     }
 

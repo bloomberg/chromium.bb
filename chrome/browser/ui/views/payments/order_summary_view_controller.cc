@@ -34,13 +34,13 @@ namespace {
 
 // Creates a view for a line item to be displayed in the Order Summary Sheet.
 // |label| is the text in the left-aligned label and |amount| is the text of the
-// right-aliged label in the row. The |amount| text is bold if |bold_amount| is
-// true, which is only the case for the last row containing the total of the
-// order. |amount_label_id| is specified to recall the view later, e.g. in
-// tests.
+// right-aliged label in the row. The |amount| and |label| texts are emphasized
+// if |emphasize| is true, which is only the case for the last row containing
+// the total of the order. |amount_label_id| is specified to recall the view
+// later, e.g. in tests.
 std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
                                                 const base::string16& amount,
-                                                bool bold_amount,
+                                                bool emphasize,
                                                 DialogViewID amount_label_id) {
   std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
 
@@ -52,7 +52,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
 
   // The vertical spacing for these rows is slightly different than the spacing
   // spacing for clickable rows, so don't use kPaymentRequestRowVerticalInsets.
-  constexpr int kRowVerticalInset = 12;
+  constexpr int kRowVerticalInset = 4;
   layout->SetInsets(kRowVerticalInset,
                     payments::kPaymentRequestRowHorizontalInsets,
                     kRowVerticalInset,
@@ -65,21 +65,24 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   // required.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::FIXED, kAmountSectionWidth,
+                     kAmountSectionWidth);
 
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(label));
-  views::StyledLabel::RangeStyleInfo style_info;
-  if (bold_amount)
-    style_info.weight = gfx::Font::Weight::BOLD;
-
-  std::unique_ptr<views::StyledLabel> amount_label =
-      base::MakeUnique<views::StyledLabel>(amount, nullptr);
-  amount_label->set_id(static_cast<int>(amount_label_id));
-  amount_label->SetDefaultStyle(style_info);
-  amount_label->SizeToFit(0);
-  layout->AddView(amount_label.release());
+  std::unique_ptr<views::Label> label_text =
+      base::MakeUnique<views::Label>(label);
+  std::unique_ptr<views::Label> amount_text =
+      base::MakeUnique<views::Label>(amount);
+  amount_text->set_id(static_cast<int>(amount_label_id));
+  if (emphasize) {
+    label_text->SetFontList(
+        label_text->font_list().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+    amount_text->SetFontList(
+        amount_text->font_list().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  }
+  layout->AddView(label_text.release());
+  layout->AddView(amount_text.release());
 
   return row;
 }
