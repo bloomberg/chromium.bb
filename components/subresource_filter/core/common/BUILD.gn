@@ -83,6 +83,7 @@ source_set("unit_tests") {
     "scoped_timers_unittest.cc",
     "string_splitter_unittest.cc",
     "unindexed_ruleset_unittest.cc",
+    "url_pattern_index_unittest.cc",
     "url_pattern_unittest.cc",
   ]
   deps = [
