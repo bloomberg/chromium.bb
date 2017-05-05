@@ -17216,6 +17216,431 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="UPGRADE_ERROR"/>
 </enum>
 
+<enum name="GpuDriverBugWorkaroundEntry" type="int">
+<!-- Generated from gpu/config/gpu_driver_bug_list.json -->
+
+  <int value="0"
+      label="0: Recorded once every time this histogram is updated."/>
+  <int value="1"
+      label="1: Imagination driver doesn't like uploading lots of buffer data
+             constantly"/>
+  <int value="2"
+      label="2: ARM driver doesn't like uploading lots of buffer data
+             constantly"/>
+  <int value="6"
+      label="6: Restore scissor on FBO change with Qualcomm GPUs on older
+             versions of Android"/>
+  <int value="7"
+      label="7: Work around a bug in offscreen buffers on NVIDIA GPUs on Macs"/>
+  <int value="17"
+      label="17: Some drivers are unable to reset the D3D device in the GPU
+             process sandbox"/>
+  <int value="19"
+      label="19: Disable depth textures on older Qualcomm GPUs (legacy
+             blacklist entry, original problem unclear)"/>
+  <int value="20"
+      label="20: Disable EXT_draw_buffers on GeForce GT 650M on Mac OS X due
+             to driver bugs"/>
+  <int value="21" label="21: Vivante GPUs are buggy with context switching"/>
+  <int value="22"
+      label="22: Imagination drivers are buggy with context switching"/>
+  <int value="23"
+      label="23: Disable OES_standard_derivative on Intel Pineview M Gallium
+             drivers"/>
+  <int value="24"
+      label="24: Mali-4xx drivers throw an error when a buffer object's size
+             is set to 0"/>
+  <int value="26"
+      label="26: Disable use of Direct3D 11 on Windows Vista and lower"/>
+  <int value="27"
+      label="27: Async Readpixels with GL_BGRA format is broken on Haswell
+             chipset on Macs"/>
+  <int value="30"
+      label="30: Multisampling is buggy on OSX when multiple monitors are
+             connected"/>
+  <int value="31"
+      label="31: The Mali-Txxx driver does not guarantee flush ordering"/>
+  <int value="32"
+      label="32: Share groups are not working on (older?) Broadcom drivers"/>
+  <int value="33"
+      label="33: Share group-related crashes and poor context switching perf
+             on Imagination drivers"/>
+  <int value="34"
+      label="34: Share groups are not working on (older?) Vivante drivers"/>
+  <int value="35"
+      label="35: Share-group related crashes on older NVIDIA drivers"/>
+  <int value="36" label="36: Share-group related crashes on Qualcomm drivers"/>
+  <int value="37"
+      label="37: Program link fails in NVIDIA Linux if gl_Position is not set"/>
+  <int value="38"
+      label="38: Non-virtual contexts on Qualcomm sometimes cause
+             out-of-order frames"/>
+  <int value="39"
+      label="39: Multisampled renderbuffer allocation must be validated on
+             some Macs"/>
+  <int value="40"
+      label="40: Framebuffer discarding causes flickering on old ARM drivers"/>
+  <int value="42"
+      label="42: Framebuffer discarding causes flickering on older IMG
+             drivers"/>
+  <int value="43"
+      label="43: Framebuffer discarding doesn't accept trivial attachments on
+             Vivante"/>
+  <int value="44"
+      label="44: Framebuffer discarding causes jumpy scrolling on Mali
+             drivers"/>
+  <int value="45" label="45: Unfold short circuit on Mac OS X"/>
+  <int value="48"
+      label="48: Force to use discrete GPU on older MacBookPro models"/>
+  <int value="49"
+      label="49: The first draw operation from an idle state is slow"/>
+  <int value="51" label="51: TexSubImage is faster for full uploads on ANGLE"/>
+  <int value="54"
+      label="54: Clear uniforms before first program use on all platforms"/>
+  <int value="55"
+      label="55: Mesa drivers in Linux handle varyings without static use
+             incorrectly"/>
+  <int value="56"
+      label="56: Mesa drivers in ChromeOS handle varyings without static use
+             incorrectly"/>
+  <int value="59" label="59: Multisampling is buggy in Intel IvyBridge"/>
+  <int value="64"
+      label="64: Linux AMD drivers incorrectly return initial value of 1 for
+             TEXTURE_MAX_ANISOTROPY"/>
+  <int value="65"
+      label="65: Linux NVIDIA drivers don't have the correct defaults for
+             vertex attributes"/>
+  <int value="68"
+      label="68: Disable partial swaps on Mesa drivers (detected with
+             GL_RENDERER)"/>
+  <int value="69"
+      label="69: Some shaders in Skia need more than the min available vertex
+             and fragment shader uniform vectors in case of OSMesa"/>
+  <int value="70" label="70: Disable D3D11 on older nVidia drivers"/>
+  <int value="71"
+      label="71: Vivante's support of OES_standard_derivatives is buggy"/>
+  <int value="72" label="72: Use virtual contexts on NVIDIA with GLES 3.1"/>
+  <int value="74"
+      label="74: Testing EGL sync fences was broken on most Qualcomm drivers"/>
+  <int value="75"
+      label="75: Mali-4xx support of EXT_multisampled_render_to_texture is
+             buggy on Android &lt; 4.3"/>
+  <int value="76" label="76: Testing EGL sync fences was broken on IMG"/>
+  <int value="77" label="77: Testing fences was broken on Mali ES2 drivers"/>
+  <int value="78" label="78: Testing fences was broken on Broadcom drivers"/>
+  <int value="82"
+      label="82: PBO mappings segfault on certain older Qualcomm drivers"/>
+  <int value="86" label="86: Disable use of Direct3D 11 on Matrox video cards"/>
+  <int value="87" label="87: Disable use of Direct3D 11 on older AMD drivers"/>
+  <int value="88"
+      label="88: Always rewrite vec/mat constructors to be consistent"/>
+  <int value="89" label="89: Mac drivers handle struct scopes incorrectly"/>
+  <int value="90"
+      label="90: Linux AMD drivers handle struct scopes incorrectly"/>
+  <int value="91"
+      label="91: ETC1 non-power-of-two sized textures crash older IMG drivers"/>
+  <int value="92" label="92: Old Intel drivers cannot reliably support D3D11"/>
+  <int value="93"
+      label="93: The GL implementation on the Android emulator has problems
+             with PBOs."/>
+  <int value="94"
+      label="94: Disable EGL_KHR_wait_sync on NVIDIA with GLES 3.1"/>
+  <int value="95" label="95: glClear does not always work on these drivers"/>
+  <int value="97"
+      label="97: Multisampling has poor performance in Intel BayTrail"/>
+  <int value="98"
+      label="98: PowerVR SGX 540 drivers throw GL_OUT_OF_MEMORY error when a
+             buffer object's size is set to 0"/>
+  <int value="99"
+      label="99: Qualcomm driver before Lollipop deletes egl sync objects
+             after context destruction"/>
+  <int value="100"
+      label="100: Disable Direct3D11 on systems with AMD switchable graphics"/>
+  <int value="101"
+      label="101: The Mali-Txxx driver hangs when reading from currently
+             displayed buffer"/>
+  <int value="102"
+      label="102: Adreno 420 driver loses FBO attachment contents on bound
+             FBO deletion"/>
+  <int value="103"
+      label="103: Adreno 420 driver drops draw calls after FBO invalidation"/>
+  <int value="104"
+      label="104: EXT_occlusion_query_boolean hangs on MediaTek MT8135
+             pre-Lollipop"/>
+  <int value="105"
+      label="105: Framebuffer discarding causes corruption on Mali-4xx"/>
+  <int value="106"
+      label="106: EXT_occlusion_query_boolean hangs on PowerVR SGX 544 (IMG)
+             drivers"/>
+  <int value="107" label="107: Workaround IMG PowerVR G6xxx drivers bugs"/>
+  <int value="108" label="108: Mali-4xx does not support GL_RGB format"/>
+  <int value="109"
+      label="109: MakeCurrent is slow on Linux with NVIDIA drivers"/>
+  <int value="110"
+      label="110: EGL Sync server causes crashes on Adreno 2xx and 3xx
+             drivers"/>
+  <int value="111"
+      label="111: Discard Framebuffer breaks WebGL on Mali-4xx Linux"/>
+  <int value="112"
+      label="112: EXT_disjoint_timer_query fails after 2 queries on adreno
+             3xx in lollypop"/>
+  <int value="113"
+      label="113: EXT_disjoint_timer_query fails after 256 queries on adreno
+             4xx"/>
+  <int value="115"
+      label="115: glGetIntegerv with GL_GPU_DISJOINT_EXT causes
+             GL_INVALID_ENUM error"/>
+  <int value="116"
+      label="116: Adreno 420 support for EXT_multisampled_render_to_texture
+             is buggy on Android &lt; 5.1"/>
+  <int value="117"
+      label="117: GL_KHR_blend_equation_advanced breaks blending on Adreno
+             4xx"/>
+  <int value="118"
+      label="118: NVIDIA 331 series drivers shader compiler may crash when
+             attempting to optimize pow()"/>
+  <int value="119"
+      label="119: Context lost recovery often fails on Mali-400/450 on
+             Android."/>
+  <int value="120"
+      label="120: CHROMIUM_copy_texture is slow on Mali pre-Lollipop"/>
+  <int value="123"
+      label="123: NVIDIA drivers before 346 lack features in
+             NV_path_rendering and related extensions to implement driver
+             level path rendering."/>
+  <int value="125" label="125: glFinish doesn't clear caches on Android"/>
+  <int value="126"
+      label="126: Program binaries contain incorrect bound attribute
+             locations on Adreno 3xx GPUs"/>
+  <int value="127"
+      label="127: Android Adreno crashes on binding incomplete cube map
+             texture to FBO"/>
+  <int value="128"
+      label="128: Linux ATI drivers crash on binding incomplete cube map
+             texture to FBO"/>
+  <int value="129"
+      label="129: ANGLE crash on glReadPixels from incomplete cube map
+             texture"/>
+  <int value="130"
+      label="130: NVIDIA fails glReadPixels from incomplete cube map texture"/>
+  <int value="131"
+      label="131: Linux Mesa drivers crash on glTexSubImage2D() to texture
+             storage bound to FBO"/>
+  <int value="132"
+      label="132: On Intel GPUs MSAA performance is not acceptable for GPU
+             rasterization"/>
+  <int value="133"
+      label="133: CHROMIUM_copy_texture with 1MB copy per flush to avoid
+             unwanted cache growth on Adreno"/>
+  <int value="134"
+      label="134: glReadPixels fails on FBOs with SRGB_ALPHA textures"/>
+  <int value="135" label="135: Screen flickers on 2009 iMacs"/>
+  <int value="136"
+      label="136: glGenerateMipmap fails if the zero texture level is not set
+             on some Mac drivers"/>
+  <int value="137"
+      label="137: NVIDIA fails glReadPixels from incomplete cube map texture"/>
+  <int value="138"
+      label="138: NVIDIA drivers before 346 lack features in
+             NV_path_rendering and related extensions to implement driver
+             level path rendering."/>
+  <int value="139"
+      label="139: Mesa drivers wrongly report supporting GL_EXT_texture_rg
+             with GLES 2.0 prior version 11.1"/>
+  <int value="140"
+      label="140: glReadPixels fails on FBOs with SRGB_ALPHA textures, Nexus
+             5X"/>
+  <int value="141"
+      label="141: Framebuffer discarding can hurt performance on non-tilers"/>
+  <int value="142"
+      label="142: Pack parameters work incorrectly with pack buffer bound"/>
+  <int value="143" label="143: Timer queries crash on Intel GPUs on Linux"/>
+  <int value="144"
+      label="144: Pack parameters work incorrectly with pack buffer bound"/>
+  <int value="145"
+      label="145: EGLImage ref counting across EGLContext/threads is broken"/>
+  <int value="147"
+      label="147: Limit max texure size to 4096 on all of Android"/>
+  <int value="148"
+      label="148: Mali-4xx GPU on JB doesn't support DetachGLContext"/>
+  <int value="149"
+      label="149: Direct composition flashes black initially on Win &lt;10"/>
+  <int value="150"
+      label="150: Alignment works incorrectly with unpack buffer bound"/>
+  <int value="151"
+      label="151: Alignment works incorrectly with unpack buffer bound"/>
+  <int value="152"
+      label="152: copyTexImage2D fails when reading from IOSurface on
+             multiple GPU types."/>
+  <int value="153"
+      label="153: Vivante GC1000 with EXT_multisampled_render_to_texture
+             fails glReadPixels"/>
+  <int value="156" label="156: glEGLImageTargetTexture2DOES crashes"/>
+  <int value="157"
+      label="157: Testing fences was broken on Mali ES2 drivers for specific
+             phone models"/>
+  <int value="158"
+      label="158: IOSurface use becomes pathologically slow over time on
+             10.10."/>
+  <int value="159"
+      label="159: Framebuffer discarding can hurt performance on non-tilers"/>
+  <int value="160"
+      label="160: Framebuffer discarding not useful on NVIDIA Kepler
+             architecture and later"/>
+  <int value="161"
+      label="161: Framebuffer discarding not useful on NVIDIA Kepler
+             architecture and later"/>
+  <int value="162"
+      label="162: Framebuffer discarding not useful on NVIDIA Kepler
+             architecture and later"/>
+  <int value="163"
+      label="163: Multisample renderbuffers with format GL_RGB8 have
+             performance issues on Intel GPUs."/>
+  <int value="164"
+      label="164: glColorMask does not work for multisample renderbuffers on
+             old AMD GPUs."/>
+  <int value="165"
+      label="165: Unpacking overlapping rows from unpack buffers is unstable
+             on NVIDIA GL driver"/>
+  <int value="167"
+      label="167: glEGLImageTargetTexture2DOES crashes on Mali-400"/>
+  <int value="168"
+      label="168: VirtualBox driver doesn't correctly support partial swaps."/>
+  <int value="169"
+      label="169: Mac Drivers store texture level parameters on int16_t that
+             overflow"/>
+  <int value="170"
+      label="170: Zero copy DXGI video hangs on shutdown on Win &lt; 8.1"/>
+  <int value="172"
+      label="172: Limited enabling of Chromium GL_INTEL_framebuffer_CMAA"/>
+  <int value="174"
+      label="174: Adreno 4xx support for EXT_multisampled_render_to_texture
+             is buggy on Android 7.0"/>
+  <int value="175"
+      label="175: Adreno 5xx support for EXT_multisampled_render_to_texture
+             is buggy on Android &lt; 7.0"/>
+  <int value="176" label="176: glClear does not work on Acer Predator GT-810"/>
+  <int value="177"
+      label="177: glGetFragData{Location|Index} works incorrectly on Max"/>
+  <int value="178"
+      label="178: GL_KHR_blend_equation_advanced is incorrectly implemented
+             on Intel BayTrail on KitKat"/>
+  <int value="179"
+      label="179: glResumeTransformFeedback works incorrectly on Intel GPUs"/>
+  <int value="180"
+      label="180: eglCreateImageKHR fails for one component textures on
+             PowerVR"/>
+  <int value="181"
+      label="181: glTexStorage* are buggy when base mipmap level is not 0"/>
+  <int value="182"
+      label="182: Frequent hang in glClear on old android versions on
+             Mali-T7xx"/>
+  <int value="183"
+      label="183: Result of abs(i) where i is an integer in vertex shader is
+             wrong"/>
+  <int value="184"
+      label="184: Rewrite texelFetchOffset to texelFetch for Intel Mac"/>
+  <int value="185"
+      label="185: Zero-copy NV12 video displays incorrect colors on NVIDIA
+             drivers."/>
+  <int value="186"
+      label="186: Rewrite condition in for and while loops for Intel Mac"/>
+  <int value="187"
+      label="187: Rewrite do-while loops to simpler constructs on Mac"/>
+  <int value="188"
+      label="188: AVSampleBufferDisplayLayer leaks IOSurfaces on 10.9."/>
+  <int value="189"
+      label="189: Do TexImage2D first before CopyTexImage2D for cube map
+             texture on Intel Mac 10.11"/>
+  <int value="190"
+      label="190: Disable partial swaps on Mesa drivers (detected with
+             GL_VERSION)"/>
+  <int value="191" label="191: Emulate GLSL function isnan() on Intel Mac"/>
+  <int value="192"
+      label="192: Decode and encode before generateMipmap for srgb format
+             textures on os except macosx"/>
+  <int value="193"
+      label="193: Decode and encode before generateMipmap for srgb format
+             textures on macosx"/>
+  <int value="194"
+      label="194: Init first two levels before CopyTexImage2D for cube map
+             texture on Intel Mac 10.12"/>
+  <int value="195"
+      label="195: Insert statements to reference all members in unused
+             std140/shared blocks on Mac"/>
+  <int value="196"
+      label="196: Tex(Sub)Image3D performs incorrectly when uploading from
+             unpack buffer with GL_UNPACK_IMAGE_HEIGHT greater than zero on
+             Intel Macs"/>
+  <int value="197"
+      label="197: adjust src/dst region if blitting pixels outside read
+             framebuffer on Mac"/>
+  <int value="198"
+      label="198: adjust src/dst region if blitting pixels outside read
+             framebuffer on Linux Intel"/>
+  <int value="199"
+      label="199: adjust src/dst region if blitting pixels outside read
+             framebuffer on Linux AMD"/>
+  <int value="200"
+      label="200: ES3 support is unreliable on some older drivers"/>
+  <int value="201"
+      label="201: AMD drivers in Linux require invariant qualifier to match
+             between vertex and fragment shaders"/>
+  <int value="202"
+      label="202: Mac driver GL 4.1 requires invariant and centroid to match
+             between shaders"/>
+  <int value="203"
+      label="203: Mesa driver GL 3.3 requires invariant and centroid to match
+             between shaders"/>
+  <int value="205"
+      label="205: Adreno 5xx support for EXT_multisampled_render_to_texture
+             is buggy on Android 7.1"/>
+  <int value="206"
+      label="206: Disable KHR_blend_equation_advanced until cc shaders are
+             updated"/>
+  <int value="207"
+      label="207: Decode and Encode before generateMipmap for srgb format
+             textures on Windows"/>
+  <int value="208"
+      label="208: Decode and Encode before generateMipmap for srgb format
+             textures on Linux Mesa ANGLE path"/>
+  <int value="209"
+      label="209: Decode and Encode before generateMipmap for srgb format
+             textures on Chromeos Intel"/>
+  <int value="210"
+      label="210: Decode and Encode before generateMipmap for srgb format
+             textures on Linux AMD"/>
+  <int value="211" label="211: Rewrite -float to 0.0 - float for Intel Mac"/>
+  <int value="212"
+      label="212: Program binaries don't contain transform feedback varyings
+             on Qualcomm GPUs"/>
+  <int value="213"
+      label="213: The Mali-Gxx driver does not guarantee flush ordering"/>
+  <int value="214"
+      label="214: Some Adreno 3xx don't setup scissor state correctly when
+             FBO0 is bound, nor support MSAA properly."/>
+  <int value="215"
+      label="215: Fake no-op GPU driver bug workaround for testing"/>
+  <int value="216"
+      label="216: Pack parameters work incorrectly with pack buffer bound"/>
+  <int value="217"
+      label="217: Alignment works incorrectly with unpack buffer bound"/>
+  <int value="219"
+      label="219: Zero-copy DXGI video hangs or displays incorrect colors on
+             AMD drivers"/>
+  <int value="220"
+      label="220: NV12 DXGI video displays incorrect colors on older AMD
+             drivers"/>
+  <int value="221"
+      label="221: Very large instanced draw calls crash on some Adreno 3xx
+             drivers"/>
+  <int value="222"
+      label="222: Software to Accelerated canvas update breaks Linux AMD"/>
+  <int value="223"
+      label="223: Force integer or srgb cube map texture complete on Linux
+             AMD"/>
+</enum>
+
 <enum name="GpuImageDecodeState" type="int">
   <int value="0" label="Wasted, once"/>
   <int value="1" label="Used, once"/>

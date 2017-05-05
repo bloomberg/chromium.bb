@@ -209,6 +209,30 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
   }
 }
 
+void UpdateDriverBugListStats(const gpu::GpuDriverBugList* bug_list,
+                              const std::set<int>& workarounds) {
+  uint32_t max_entry_id = bug_list->max_entry_id();
+  if (max_entry_id == 0) {
+    // Driver bug list was not loaded.  No need to go further.
+    return;
+  }
+
+  // Use entry 0 to capture the total number of times that data was recorded
+  // in this histogram in order to have a convenient denominator to compute
+  // driver bug list percentages for the rest of the entries.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DriverBugTestResultsPerEntry", 0);
+
+  if (workarounds.size() != 0) {
+    std::vector<uint32_t> flag_entries;
+    bug_list->GetDecisionEntries(&flag_entries);
+    DCHECK_GT(flag_entries.size(), 0u);
+    for (size_t i = 0; i < flag_entries.size(); ++i) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DriverBugTestResultsPerEntry",
+                                  flag_entries[i]);
+    }
+  }
+}
+
 // Combine the integers into a string, seperated by ','.
 std::string IntSetToString(const std::set<int>& list) {
   std::string rt;
@@ -685,6 +709,7 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
     disabled_driver_bug_exts = gpu_driver_bug_list_->GetDisabledExtensions();
     disabled_ext_set.insert(disabled_driver_bug_exts.begin(),
                             disabled_driver_bug_exts.end());
+    UpdateDriverBugListStats(gpu_driver_bug_list_.get(), gpu_driver_bugs_);
   }
   disabled_extensions_ =
       base::JoinString(std::vector<base::StringPiece>(disabled_ext_set.begin(),
