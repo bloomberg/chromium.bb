@@ -20,12 +20,14 @@ VrGLThread::VrGLThread(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
     bool initially_web_vr,
+    bool in_cct,
     bool reprojected_rendering)
     : base::Thread("VrShellGL"),
       weak_vr_shell_(weak_vr_shell),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       gvr_api_(gvr_api),
       initially_web_vr_(initially_web_vr),
+      in_cct_(in_cct),
       reprojected_rendering_(reprojected_rendering) {}
 
 VrGLThread::~VrGLThread() {
@@ -36,7 +38,8 @@ void VrGLThread::Init() {
   scene_ = base::MakeUnique<UiScene>();
   vr_shell_gl_ = base::MakeUnique<VrShellGl>(
       this, gvr_api_, initially_web_vr_, reprojected_rendering_, scene_.get());
-  scene_manager_ = base::MakeUnique<UiSceneManager>(this, scene_.get());
+  scene_manager_ =
+      base::MakeUnique<UiSceneManager>(this, scene_.get(), in_cct_);
 
   weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
   weak_scene_manager_ = scene_manager_->GetWeakPtr();

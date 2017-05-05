@@ -83,6 +83,7 @@ VrShell::VrShell(JNIEnv* env,
                  jobject obj,
                  ui::WindowAndroid* window,
                  bool for_web_vr,
+                 bool in_cct,
                  VrShellDelegate* delegate,
                  gvr_context* gvr_api,
                  bool reprojected_rendering)
@@ -99,9 +100,9 @@ VrShell::VrShell(JNIEnv* env,
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
 
-  gl_thread_ = base::MakeUnique<VrGLThread>(weak_ptr_factory_.GetWeakPtr(),
-                                            main_thread_task_runner_, gvr_api,
-                                            for_web_vr, reprojected_rendering_);
+  gl_thread_ = base::MakeUnique<VrGLThread>(
+      weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
+      for_web_vr, in_cct, reprojected_rendering_);
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
@@ -556,11 +557,13 @@ jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& delegate,
            jlong window_android,
            jboolean for_web_vr,
+           jboolean in_cct,
            jlong gvr_api,
            jboolean reprojected_rendering) {
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, reinterpret_cast<ui::WindowAndroid*>(window_android),
-      for_web_vr, VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
+      for_web_vr, in_cct,
+      VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
       reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering));
 }
 

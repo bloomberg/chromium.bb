@@ -34,7 +34,11 @@ class UiSceneManagerTest : public testing::Test {
   void SetUp() override {
     browser_ = base::MakeUnique<MockBrowserInterface>();
     scene_ = base::MakeUnique<UiScene>();
-    manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get());
+    // TODO(mthiesse): When we have UI to test for CCT, we'll need to modify
+    // setup to allow us to test CCT mode.
+    bool in_cct = false;
+    manager_ =
+        base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(), in_cct);
   }
 
  protected:

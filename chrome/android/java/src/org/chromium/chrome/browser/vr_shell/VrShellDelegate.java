@@ -310,7 +310,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     private static boolean activitySupportsVrBrowsing(Activity activity) {
-        return activity instanceof ChromeTabbedActivity;
+        return activity instanceof ChromeTabbedActivity || activity instanceof CustomTabActivity;
     }
 
     /**
@@ -500,8 +500,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         addVrViews();
-        mVrShell.initializeNative(
-                mActivity.getActivityTab(), mRequestedWebVr || tentativeWebVrMode);
+        mVrShell.initializeNative(mActivity.getActivityTab(), mRequestedWebVr || tentativeWebVrMode,
+                mActivity instanceof CustomTabActivity);
         mVrShell.setWebVrModeEnabled(mRequestedWebVr || tentativeWebVrMode);
 
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow work

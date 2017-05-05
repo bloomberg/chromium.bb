@@ -39,13 +39,22 @@ static constexpr int kFloorGridlineCount = 40;
 static constexpr vr::Colorf kBackgroundHorizonColor = {0.57, 0.57, 0.57, 1.0};
 static constexpr vr::Colorf kBackgroundCenterColor = {0.48, 0.48, 0.48, 1.0};
 
+// Placeholders to demonstrate UI changes when in CCT.
+static constexpr vr::Colorf kCctBackgroundHorizonColor = {0.2, 0.6, 0.2, 1.0};
+static constexpr vr::Colorf kCctBackgroundCenterColor = {0.13, 0.52, 0.13, 1.0};
+
 // Tiny distance to offset textures that should appear in the same plane.
 static constexpr float kTextureOffset = 0.01;
 
 }  // namespace
 
-UiSceneManager::UiSceneManager(VrBrowserInterface* browser, UiScene* scene)
-    : browser_(browser), scene_(scene), weak_ptr_factory_(this) {
+UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
+                               UiScene* scene,
+                               bool in_cct)
+    : browser_(browser),
+      scene_(scene),
+      in_cct_(in_cct),
+      weak_ptr_factory_(this) {
   CreateBackground();
   CreateContentQuad();
   CreateSecurityWarnings();
@@ -63,8 +72,9 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_fill(vr_shell::Fill::NONE);
   element->set_size({kPermanentWarningWidth, kPermanentWarningHeight, 1});
   element->set_scale({kWarningDistance, kWarningDistance, 1});
-  element->set_translation({0, kWarningDistance * sin(kWarningAngleRadians),
-                            -kWarningDistance * cos(kWarningAngleRadians)});
+  element->set_translation(
+      gfx::Vector3dF(0, kWarningDistance * sin(kWarningAngleRadians),
+                     -kWarningDistance * cos(kWarningAngleRadians)));
   element->set_rotation({1.0f, 0, 0, kWarningAngleRadians});
   element->set_visible(false);
   element->set_hit_testable(false);
@@ -116,6 +126,10 @@ void UiSceneManager::CreateContentQuad() {
 
 void UiSceneManager::CreateBackground() {
   std::unique_ptr<UiElement> element;
+  vr::Colorf horizon =
+      in_cct_ ? kCctBackgroundHorizonColor : kBackgroundHorizonColor;
+  vr::Colorf center =
+      in_cct_ ? kCctBackgroundCenterColor : kBackgroundCenterColor;
 
   // Floor.
   element = base::MakeUnique<UiElement>();
@@ -124,8 +138,8 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, -kSceneHeight / 2, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2.0});
   element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
-  element->set_edge_color(kBackgroundHorizonColor);
-  element->set_center_color(kBackgroundCenterColor);
+  element->set_edge_color(horizon);
+  element->set_center_color(center);
   element->set_draw_phase(0);
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
@@ -138,8 +152,8 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, kSceneHeight / 2, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, M_PI / 2});
   element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
-  element->set_edge_color(kBackgroundHorizonColor);
-  element->set_center_color(kBackgroundCenterColor);
+  element->set_edge_color(horizon);
+  element->set_center_color(center);
   element->set_draw_phase(0);
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
@@ -152,8 +166,8 @@ void UiSceneManager::CreateBackground() {
   element->set_translation({0.0, -kSceneHeight / 2 + kTextureOffset, 0.0});
   element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2});
   element->set_fill(vr_shell::Fill::GRID_GRADIENT);
-  element->set_center_color(kBackgroundHorizonColor);
-  vr::Colorf edge_color = kBackgroundHorizonColor;
+  element->set_center_color(horizon);
+  vr::Colorf edge_color = horizon;
   edge_color.a = 0.0;
   element->set_edge_color(edge_color);
   element->set_gridline_count(kFloorGridlineCount);
@@ -161,7 +175,7 @@ void UiSceneManager::CreateBackground() {
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
 
-  scene_->SetBackgroundColor(kBackgroundHorizonColor);
+  scene_->SetBackgroundColor(horizon);
 }
 
 base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
