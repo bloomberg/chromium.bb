@@ -2338,7 +2338,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           hw_tests=[
               config_lib.HWTestConfig(
                   constants.HWTEST_MOBLAB_QUICK_SUITE,
-                  num=1, timeout=120*60,
+                  num=1, timeout=90*60,
                   pool=constants.HWTEST_PALADIN_POOL)
           ],
           hw_tests_override=None)
