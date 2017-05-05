@@ -72,8 +72,7 @@ class PackagedApp : public service_manager::Service,
     service_manager_connection_closed_callback_.Run();
     context()->QuitNow();
     // This only closed our relationship with the service manager, existing
-    // |bindings_|
-    // remain active.
+    // |bindings_| remain active.
   }
 
   void BindingLost() {
