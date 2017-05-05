@@ -1828,7 +1828,7 @@
     {
       name: "text-align",
       custom_value: true,
-      independent: true,
+      independent: false,
       inherited: true,
       default_value: "start",
       field_template: "keyword",
