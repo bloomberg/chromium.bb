@@ -260,9 +260,6 @@ const RenderPass* SurfaceHittest::GetRenderPassForSurfaceById(
     return nullptr;
   const CompositorFrame& surface_frame = surface->GetActiveFrame();
 
-  if (surface_frame.render_pass_list.empty())
-    return nullptr;
-
   if (!render_pass_id)
     return surface_frame.render_pass_list.back().get();
 

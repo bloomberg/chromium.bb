@@ -76,7 +76,6 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   }
 
   gfx::Rect last_swap_rect() const {
-    DCHECK(last_swap_rect_valid_);
     return last_swap_rect_;
   }
 
@@ -93,7 +92,6 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   std::unique_ptr<CompositorFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
   TransferableResourceArray resources_held_by_parent_;
-  bool last_swap_rect_valid_ = false;
   gfx::Rect last_swap_rect_;
 
  private:

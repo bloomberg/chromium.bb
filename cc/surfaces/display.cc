@@ -283,19 +283,17 @@ bool Display::DrawAndSwap() {
 
   gfx::Size surface_size;
   bool have_damage = false;
-  if (!frame.render_pass_list.empty()) {
-    RenderPass& last_render_pass = *frame.render_pass_list.back();
-    if (last_render_pass.output_rect.size() != current_surface_size_ &&
-        last_render_pass.damage_rect == last_render_pass.output_rect &&
-        !current_surface_size_.IsEmpty()) {
-      // Resize the output rect to the current surface size so that we won't
-      // skip the draw and so that the GL swap won't stretch the output.
-      last_render_pass.output_rect.set_size(current_surface_size_);
-      last_render_pass.damage_rect = last_render_pass.output_rect;
-    }
-    surface_size = last_render_pass.output_rect.size();
-    have_damage = !last_render_pass.damage_rect.size().IsEmpty();
+  RenderPass& last_render_pass = *frame.render_pass_list.back();
+  if (last_render_pass.output_rect.size() != current_surface_size_ &&
+      last_render_pass.damage_rect == last_render_pass.output_rect &&
+      !current_surface_size_.IsEmpty()) {
+    // Resize the output rect to the current surface size so that we won't
+    // skip the draw and so that the GL swap won't stretch the output.
+    last_render_pass.output_rect.set_size(current_surface_size_);
+    last_render_pass.damage_rect = last_render_pass.output_rect;
   }
+  surface_size = last_render_pass.output_rect.size();
+  have_damage = !last_render_pass.damage_rect.size().IsEmpty();
 
   bool size_matches = surface_size == current_surface_size_;
   if (!size_matches)

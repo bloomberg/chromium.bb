@@ -9,10 +9,19 @@ namespace cc {
 namespace test {
 
 CompositorFrame MakeCompositorFrame() {
+  CompositorFrame frame = MakeEmptyCompositorFrame();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
+  pass->SetNew(1, gfx::Rect(0, 0, 20, 20), gfx::Rect(), gfx::Transform());
+  frame.render_pass_list.push_back(std::move(pass));
+  return frame;
+}
+
+CompositorFrame MakeEmptyCompositorFrame() {
   CompositorFrame frame;
   frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
   frame.metadata.begin_frame_ack.sequence_number =
       BeginFrameArgs::kStartingFrameNumber;
+  frame.metadata.device_scale_factor = 1;
   return frame;
 }
 

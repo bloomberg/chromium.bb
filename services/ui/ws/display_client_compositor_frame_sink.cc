@@ -51,9 +51,7 @@ void DisplayClientCompositorFrameSink::SubmitCompositorFrame(
   DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
 
-  gfx::Size frame_size = last_submitted_frame_size_;
-  if (!frame.render_pass_list.empty())
-    frame_size = frame.render_pass_list.back()->output_rect.size();
+  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
 
   if (!local_surface_id_.is_valid() ||
       frame_size != last_submitted_frame_size_) {

@@ -120,10 +120,11 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame) {
   DCHECK(surface_factory_);
-  ++ack_pending_count_;
-
   DCHECK_GE(frame.metadata.begin_frame_ack.sequence_number,
             BeginFrameArgs::kStartingFrameNumber);
+  DCHECK(!frame.render_pass_list.empty());
+
+  ++ack_pending_count_;
 
   // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
