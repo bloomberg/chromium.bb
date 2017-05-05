@@ -278,7 +278,7 @@ static void GetDeviceSupportedFormatsDirectShow(const Descriptor& descriptor,
   }
 
   ScopedComPtr<IAMStreamConfig> stream_config;
-  hr = output_capture_pin.QueryInterface(stream_config.Receive());
+  hr = output_capture_pin.CopyTo(stream_config.Receive());
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to get IAMStreamConfig interface from "
                    "capture device: " << logging::SystemErrorCodeToString(hr);

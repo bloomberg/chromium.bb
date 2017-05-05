@@ -187,7 +187,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   }
 
   base::win::ScopedComPtr<IAccessible> iaccessible;
-  hr = dispatch.QueryInterface(iaccessible.Receive());
+  hr = dispatch.CopyTo(iaccessible.Receive());
   if (!SUCCEEDED(hr)) {
     VLOG(1) << "Ignoring result " << hr << " from QueryInterface";
     return;

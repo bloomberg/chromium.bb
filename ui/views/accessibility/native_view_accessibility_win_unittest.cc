@@ -29,7 +29,7 @@ class NativeViewAccessibilityWinTest : public ViewsTestBase {
     ScopedComPtr<IAccessible> view_accessible(
         view->GetNativeViewAccessible());
     ScopedComPtr<IServiceProvider> service_provider;
-    ASSERT_EQ(S_OK, view_accessible.QueryInterface(service_provider.Receive()));
+    ASSERT_EQ(S_OK, view_accessible.CopyTo(service_provider.Receive()));
     ASSERT_EQ(S_OK,
         service_provider->QueryService(IID_IAccessible2_2, result));
   }
@@ -61,7 +61,7 @@ TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
   ScopedVariant child_index(1);
   ASSERT_EQ(S_OK, content_accessible->get_accChild(
       child_index, textfield_dispatch.Receive()));
-  ASSERT_EQ(S_OK, textfield_dispatch.QueryInterface(
+  ASSERT_EQ(S_OK, textfield_dispatch.CopyTo(
       textfield_accessible.Receive()));
 
   ScopedBstr name;
@@ -100,7 +100,7 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   ScopedVariant child_index_1(1);
   ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
       child_index_1, child_view_dispatch.Receive()));
-  ASSERT_EQ(S_OK, child_view_dispatch.QueryInterface(
+  ASSERT_EQ(S_OK, child_view_dispatch.CopyTo(
       child_view_accessible.Receive()));
 
   Widget owned_widget;
@@ -119,7 +119,7 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   ScopedVariant child_index_2(2);
   ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
       child_index_2, child_widget_dispatch.Receive()));
-  ASSERT_EQ(S_OK, child_widget_dispatch.QueryInterface(
+  ASSERT_EQ(S_OK, child_widget_dispatch.CopyTo(
       child_widget_accessible.Receive()));
 
   ScopedComPtr<IDispatch> child_widget_sibling_dispatch;
@@ -130,7 +130,7 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
       NAVDIR_PREVIOUS, childid_self, result.Receive()));
   ASSERT_EQ(VT_DISPATCH, V_VT(result.ptr()));
   child_widget_sibling_dispatch = V_DISPATCH(result.ptr());
-  ASSERT_EQ(S_OK, child_widget_sibling_dispatch.QueryInterface(
+  ASSERT_EQ(S_OK, child_widget_sibling_dispatch.CopyTo(
       child_widget_sibling_accessible.Receive()));
   ASSERT_EQ(child_view_accessible.Get(), child_widget_sibling_accessible.Get());
 
@@ -138,7 +138,7 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   ScopedComPtr<IAccessible> child_widget_parent_accessible;
   ASSERT_EQ(S_OK, child_widget_accessible->get_accParent(
       child_widget_parent_dispatch.Receive()));
-  ASSERT_EQ(S_OK, child_widget_parent_dispatch.QueryInterface(
+  ASSERT_EQ(S_OK, child_widget_parent_dispatch.CopyTo(
       child_widget_parent_accessible.Receive()));
   ASSERT_EQ(root_view_accessible.Get(), child_widget_parent_accessible.Get());
 }

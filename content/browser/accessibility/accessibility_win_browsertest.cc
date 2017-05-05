@@ -161,7 +161,7 @@ void AccessibilityWinBrowserTest::SetUpInputField(
   ASSERT_EQ(ROLE_SYSTEM_TEXT, input_role);
 
   // Retrieve the IAccessibleText interface for the field.
-  ASSERT_HRESULT_SUCCEEDED(input.QueryInterface(input_text->Receive()));
+  ASSERT_HRESULT_SUCCEEDED(input.CopyTo(input_text->Receive()));
 
   // Set the caret on the last character.
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
@@ -213,7 +213,7 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   ASSERT_EQ(ROLE_SYSTEM_TEXT, textarea_role);
 
   // Retrieve the IAccessibleText interface for the field.
-  ASSERT_HRESULT_SUCCEEDED(textarea.QueryInterface(textarea_text->Receive()));
+  ASSERT_HRESULT_SUCCEEDED(textarea.CopyTo(textarea_text->Receive()));
 
   // Set the caret on the last character.
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
@@ -257,7 +257,7 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraph(
   LONG paragraph_role = 0;
   ASSERT_HRESULT_SUCCEEDED(paragraph->role(&paragraph_role));
   ASSERT_EQ(IA2_ROLE_PARAGRAPH, paragraph_role);
-  ASSERT_HRESULT_SUCCEEDED(paragraph.QueryInterface(
+  ASSERT_HRESULT_SUCCEEDED(paragraph.CopyTo(
       accessible_text->Receive()));
 }
 
@@ -281,7 +281,7 @@ AccessibilityWinBrowserTest::GetAccessibleFromVariant(
       HRESULT hr = parent->get_accChild(*var, dispatch.Receive());
       EXPECT_TRUE(SUCCEEDED(hr));
       if (dispatch.Get())
-        dispatch.QueryInterface(ptr.Receive());
+        dispatch.CopyTo(ptr.Receive());
       break;
     }
   }
@@ -1122,7 +1122,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
   SetUpSampleParagraph(&accessible_text);
   base::win::ScopedComPtr<IAccessible2> paragraph;
   ASSERT_HRESULT_SUCCEEDED(
-      accessible_text.QueryInterface(IID_PPV_ARGS(&paragraph)));
+      accessible_text.CopyTo(IID_PPV_ARGS(&paragraph)));
 
   LONG prev_x, prev_y, x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -1881,7 +1881,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
   ASSERT_EQ(ROLE_SYSTEM_GRAPHIC, image_role);
 
   base::win::ScopedComPtr<IAccessibleAction> image_action;
-  ASSERT_HRESULT_SUCCEEDED(image.QueryInterface(image_action.Receive()));
+  ASSERT_HRESULT_SUCCEEDED(image.CopyTo(image_action.Receive()));
 
   LONG n_actions = 0;
   EXPECT_HRESULT_SUCCEEDED(image_action->nActions(&n_actions));
@@ -1978,9 +1978,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   base::win::ScopedComPtr<IAccessibleTable2> table2;
   base::win::ScopedComPtr<IUnknown> cell;
   base::win::ScopedComPtr<IAccessible2> cell1;
-  EXPECT_HRESULT_SUCCEEDED(table.QueryInterface(table2.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(table.CopyTo(table2.Receive()));
   EXPECT_HRESULT_SUCCEEDED(table2->get_cellAt(0, 0, cell.Receive()));
-  EXPECT_HRESULT_SUCCEEDED(cell.QueryInterface(cell1.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(cell.CopyTo(cell1.Receive()));
 
   base::win::ScopedBstr name;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -1991,7 +1991,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell1->get_accName(childid_self, name.Receive()));
   // EXPECT_STREQ(L"AD", name);
-  EXPECT_HRESULT_SUCCEEDED(cell1.QueryInterface(accessible_cell.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(cell1.CopyTo(accessible_cell.Receive()));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
   EXPECT_EQ(0, row_index);
@@ -2017,7 +2017,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell2->get_accName(childid_self, name.Receive()));
   // EXPECT_STREQ(L"BC", name);
-  EXPECT_HRESULT_SUCCEEDED(cell2.QueryInterface(accessible_cell.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(cell2.CopyTo(accessible_cell.Receive()));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
   EXPECT_EQ(0, row_index);
@@ -2037,7 +2037,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell3->get_accName(childid_self, name.Receive()));
   // EXPECT_STREQ(L"EF", name);
-  EXPECT_HRESULT_SUCCEEDED(cell3.QueryInterface(accessible_cell.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(cell3.CopyTo(accessible_cell.Receive()));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
   EXPECT_EQ(1, row_index);
