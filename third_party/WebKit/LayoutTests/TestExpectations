@@ -273,8 +273,6 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip 
 # LayoutNG - is a new layout system for Blink.
 
 ### external/wpt/css/CSS2/floats-clear
-#### Passed: 53 28%
-#### Skipped: 138
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/adjacent-floats-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-002.xht [ Skip ]
@@ -415,8 +413,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-015.xht [ Skip ]
 
 ### external/wpt/css/CSS2/floats
-#### Passed: 18 43%
-#### Skipped: 24
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001a.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001b.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001c.xht [ Skip ]
@@ -443,8 +439,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-inline-003r.xht [ Skip ]
 
 ### external/wpt/css/CSS2/positioning
-#### Passed: 278 53%
-#### Skipped: 245
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-non-replaced-height-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-non-replaced-height-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-non-replaced-height-004.xht [ Skip ]
@@ -692,15 +686,11 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-113.xht
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-offset-percentage-001.xht [ Skip ]
 
 #### external/wpt/css/CSS2/abspos
-#### Passed: 13 81%
-#### Skipped: 3
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-007.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-009a.xht [ Skip ]
 
 #### external/wpt/css/CSS2/normal-flow
-#### Passed: 495 70%
-#### Skipped: 213
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-contexts-008.xht [ Skip ]
@@ -917,8 +907,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-perce
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-percentage-002.xht [ Skip ]
 
 #### fast/block/basic
-#### Passed: 6
-#### Skipped: 26
 crbug.com/635619 virtual/layout_ng/fast/block/basic/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/003.html [ Skip ]
@@ -948,8 +936,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/basic/min-pref-width-nowrap-floats
 crbug.com/635619 virtual/layout_ng/fast/block/basic/percent-height-inside-anonymous-block.html [ Failure Crash ]
 
 #### fast/block/margin-collapse
-#### Passed: 33
-#### Skipped: 57
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/004.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/006.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/016.html [ Skip ]
@@ -1008,9 +994,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Skip ]
 
 #### fast/block/float
-#### Total: 209
-#### Passed: 29
-#### Skipped: 176
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
