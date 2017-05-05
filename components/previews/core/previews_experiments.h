@@ -85,9 +85,6 @@ enum class PreviewsType {
 
 typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
 
-// Returns true if any client-side previews experiment is active.
-bool IsIncludedInClientSidePreviewsExperimentsFieldTrial();
-
 }  // namespace previews
 
 #endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
