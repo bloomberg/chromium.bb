@@ -50,7 +50,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   uint32_t GetImageTextureTarget(gfx::BufferFormat format,
                                  gfx::BufferUsage usage) override;
-  bool DoesCreateTestContexts() override;
+  double GetRefreshRate() const override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   void AddObserver(ui::ContextFactoryObserver* observer) override;

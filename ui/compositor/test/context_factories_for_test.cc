@@ -34,10 +34,9 @@ void InitializeContextFactoryForTests(
     enable_pixel_output = true;
   if (enable_pixel_output)
     g_disable_null_draw = new gl::DisableNullDrawGLBindings;
-  bool context_factory_for_test = true;
   g_surface_manager = new cc::SurfaceManager;
-  g_implicit_factory =
-      new InProcessContextFactory(context_factory_for_test, g_surface_manager);
+  g_implicit_factory = new InProcessContextFactory(g_surface_manager);
+  g_implicit_factory->SetUseFastRefreshRateForTests();
   *context_factory = g_implicit_factory;
   *context_factory_private = g_implicit_factory;
 }

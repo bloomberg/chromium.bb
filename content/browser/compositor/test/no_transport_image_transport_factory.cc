@@ -19,11 +19,12 @@ namespace content {
 
 NoTransportImageTransportFactory::NoTransportImageTransportFactory()
     : frame_sink_manager_host_(base::MakeUnique<FrameSinkManagerHost>()),
-      // The context factory created here is for unit tests, thus passing in
-      // true in constructor.
       context_factory_(base::MakeUnique<ui::InProcessContextFactory>(
-          true,
-          frame_sink_manager_host_->surface_manager())) {}
+          frame_sink_manager_host_->surface_manager())) {
+  // The context factory created here is for unit tests, thus using a higher
+  // refresh rate to spend less time waiting for BeginFrames.
+  context_factory_->SetUseFastRefreshRateForTests();
+}
 
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {
   std::unique_ptr<display_compositor::GLHelper> lost_gl_helper =

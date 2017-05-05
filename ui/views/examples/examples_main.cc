@@ -67,11 +67,9 @@ int main(int argc, char** argv) {
   gl::init::InitializeGLOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
-  bool context_factory_for_test = false;
   cc::SurfaceManager surface_manager;
-  std::unique_ptr<ui::InProcessContextFactory> context_factory(
-      new ui::InProcessContextFactory(context_factory_for_test,
-                                      &surface_manager));
+  auto context_factory =
+      base::MakeUnique<ui::InProcessContextFactory>(&surface_manager);
   context_factory->set_use_test_surface(false);
 
   base::MessageLoopForUI message_loop;

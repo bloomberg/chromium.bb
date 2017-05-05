@@ -46,13 +46,6 @@
 #include "ui/gfx/icc_profile.h"
 #include "ui/gl/gl_switches.h"
 
-namespace {
-
-constexpr double kDefaultRefreshRate = 60.0;
-constexpr double kTestRefreshRate = 200.0;
-
-}  // namespace
-
 namespace ui {
 
 Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
@@ -84,8 +77,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   // Use occlusion to allow more overlapping windows to take less memory.
   settings.use_occlusion_for_tile_prioritization = true;
   refresh_rate_ = settings.renderer_settings.refresh_rate =
-      context_factory_->DoesCreateTestContexts() ? kTestRefreshRate
-                                                 : kDefaultRefreshRate;
+      context_factory_->GetRefreshRate();
   settings.main_frame_before_activation_enabled = false;
   settings.renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(switches::kUIDisablePartialSwap);
