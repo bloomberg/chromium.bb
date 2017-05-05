@@ -78,20 +78,13 @@ void DisplayAndroidManager::UpdateDisplay(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobject,
     jint sdkDisplayId,
-    jint physicalWidth,
-    jint physicalHeight,
     jint width,
     jint height,
     jfloat dipScale,
     jint rotationDegrees,
     jint bitsPerPixel,
     jint bitsPerComponent) {
-  gfx::Rect bounds_in_pixels = gfx::Rect(physicalWidth, physicalHeight);
-
-  // Physical width and height might be not supported.
-  if (bounds_in_pixels.IsEmpty())
-    bounds_in_pixels = gfx::Rect(width, height);
-
+  gfx::Rect bounds_in_pixels = gfx::Rect(width, height);
   const gfx::Rect bounds_in_dip = gfx::Rect(
       gfx::ScaleToCeiledSize(bounds_in_pixels.size(), 1.0f / dipScale));
 

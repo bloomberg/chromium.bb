@@ -279,8 +279,8 @@ public class VrShellImpl
         // Set the UI and content sizes before we load the UI.
         if (forWebVR) {
             DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
-            setContentCssSize(primaryDisplay.getPhysicalDisplayWidth(),
-                    primaryDisplay.getPhysicalDisplayHeight(), WEBVR_DPR);
+            setContentCssSize(
+                    primaryDisplay.getDisplayWidth(), primaryDisplay.getDisplayHeight(), WEBVR_DPR);
         } else {
             setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
         }
@@ -372,7 +372,7 @@ public class VrShellImpl
         int surfaceHeight = (int) Math.ceil(height * dpr);
 
         Point size = new Point(surfaceWidth, surfaceHeight);
-        mContentVirtualDisplay.update(size, size, dpr, null, null, null);
+        mContentVirtualDisplay.update(size, dpr, null, null, null);
         if (mTab != null && mTab.getContentViewCore() != null) {
             mTab.getContentViewCore().onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
             mTab.getContentViewCore().onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
