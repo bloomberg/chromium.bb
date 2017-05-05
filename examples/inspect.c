@@ -27,17 +27,17 @@
 #endif
 
 #include "aom/aom_decoder.h"
-#include "aom/aomdx.h"
-
-#include "../tools_common.h"
-#include "../video_reader.h"
 #include "./aom_config.h"
-// #include "av1/av1_dx_iface.c"
-#include "../av1/common/onyxc_int.h"
 #if CONFIG_ACCOUNTING
 #include "../av1/decoder/accounting.h"
 #endif
 #include "../av1/decoder/inspection.h"
+#include "aom/aomdx.h"
+
+#include "../tools_common.h"
+#include "../video_reader.h"
+// #include "av1/av1_dx_iface.c"
+#include "../av1/common/onyxc_int.h"
 
 #include "../video_common.h"
 
