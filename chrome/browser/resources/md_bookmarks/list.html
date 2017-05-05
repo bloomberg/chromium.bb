@@ -1,9 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
-<link rel="import" href="chrome://bookmarks/edit_dialog.html">
 <link rel="import" href="chrome://bookmarks/item.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 <link rel="import" href="chrome://bookmarks/store_client.html">
@@ -36,18 +33,6 @@
         justify-content: center;
       }
     </style>
-    <dialog is="cr-action-menu" id="dropdown" on-mousedown="onMenuMousedown_">
-      <button class="dropdown-item" on-tap="onEditTap_">
-        [[getEditActionLabel_(menuItem_)]]
-      </button>
-      <button class="dropdown-item" on-tap="onCopyURLTap_"
-          hidden$="[[!menuItem_.url]]">
-        $i18n{menuCopyURL}
-      </button>
-      <button class="dropdown-item" on-tap="onDeleteTap_">
-         $i18n{menuDelete}
-      </button>
-    </dialog>
     <div id="bookmarksCard" hidden$="[[isEmptyList_(displayedList_.length)]]">
       <template is="dom-repeat" items="[[displayedList_]]" as="id">
         <bookmarks-item item-id="[[id]]" draggable="true">
@@ -58,9 +43,6 @@
         hidden$="[[!isEmptyList_(displayedList_.length)]]">
       [[emptyListMessage_(searchTerm_)]]
     </div>
-    <template is="cr-lazy-render" id="editDialog">
-      <bookmarks-edit-dialog></bookmarks-edit-dialog>
-    </template>
   </template>
   <script src="chrome://bookmarks/list.js"></script>
 </dom-module>

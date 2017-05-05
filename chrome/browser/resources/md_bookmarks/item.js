@@ -71,7 +71,6 @@ Polymer({
     this.fire('open-item-menu', {
       x: e.clientX,
       y: e.clientY,
-      item: this.item_,
     });
   },
 
@@ -85,7 +84,6 @@ Polymer({
         this.itemId, false, false, this.getState()));
     this.fire('open-item-menu', {
       targetElement: e.target,
-      item: this.item_,
     });
   },
 
