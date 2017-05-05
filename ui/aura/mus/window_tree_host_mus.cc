@@ -30,10 +30,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(
 
 static uint32_t accelerated_widget_count = 1;
 
-bool IsUsingTestContext() {
-  return aura::Env::GetInstance()->context_factory()->DoesCreateTestContexts();
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,20 +56,16 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   // process then ui::Compositor will not a cc::FrameSinkId.
   CreateCompositor(init_params.frame_sink_id);
   gfx::AcceleratedWidget accelerated_widget;
-  if (IsUsingTestContext()) {
-    accelerated_widget = gfx::kNullAcceleratedWidget;
-  } else {
 // We need accelerated widget numbers to be different for each
 // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t
 // has this property.
 #if defined(OS_WIN) || defined(OS_ANDROID)
-    accelerated_widget =
-        reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
+  accelerated_widget =
+      reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #else
-    accelerated_widget =
-        static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
+  accelerated_widget =
+      static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #endif
-  }
   OnAcceleratedWidgetAvailable(accelerated_widget,
                                GetDisplay().device_scale_factor());
 
