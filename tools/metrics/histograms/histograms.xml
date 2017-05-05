@@ -28834,6 +28834,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Pixel format used in HTML5 video. Emitted on video load.</summary>
 </histogram>
 
+<histogram name="Media.VideoFrame.ColorSpace" enum="VideoFrameColorSpaceUMA">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>Video frame color space. Emitted for each video frame.</summary>
+</histogram>
+
 <histogram name="Media.VideoFrameColorSpace" enum="VideoFrameColorSpace">
   <owner>mcasas@chromium.org</owner>
   <owner>watk@chromium.org</owner>

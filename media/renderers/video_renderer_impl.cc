@@ -25,6 +25,76 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 
+namespace {
+
+// Used for UMA stats, only add numbers to end!
+enum VideoFrameColorSpaceUMA {
+  Unknown = 0,
+  UnknownRGB = 1,
+  UnknownHDR = 2,
+  REC601 = 3,
+  REC709 = 4,
+  JPEG = 5,
+  PQ = 6,
+  HLG = 7,
+  SCRGB = 8,
+  MAX = SCRGB
+};
+
+VideoFrameColorSpaceUMA ColorSpaceUMAHelper(
+    const gfx::ColorSpace& color_space) {
+  if (!color_space.IsHDR()) {
+    if (color_space == gfx::ColorSpace::CreateREC709())
+      return VideoFrameColorSpaceUMA::REC709;
+
+    // TODO: Check for both PAL & NTSC rec601
+    if (color_space == gfx::ColorSpace::CreateREC601())
+      return VideoFrameColorSpaceUMA::REC601;
+
+    if (color_space == gfx::ColorSpace::CreateJpeg())
+      return VideoFrameColorSpaceUMA::JPEG;
+
+    if (color_space == color_space.GetAsFullRangeRGB())
+      return VideoFrameColorSpaceUMA::UnknownRGB;
+
+    return VideoFrameColorSpaceUMA::Unknown;
+  }
+
+  if (color_space == gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                                     gfx::ColorSpace::TransferID::SMPTEST2084,
+                                     gfx::ColorSpace::MatrixID::BT709,
+                                     gfx::ColorSpace::RangeID::LIMITED)) {
+    return VideoFrameColorSpaceUMA::PQ;
+  }
+
+  if (color_space == gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                                     gfx::ColorSpace::TransferID::SMPTEST2084,
+                                     gfx::ColorSpace::MatrixID::BT2020_NCL,
+                                     gfx::ColorSpace::RangeID::LIMITED)) {
+    return VideoFrameColorSpaceUMA::PQ;
+  }
+
+  if (color_space == gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                                     gfx::ColorSpace::TransferID::ARIB_STD_B67,
+                                     gfx::ColorSpace::MatrixID::BT709,
+                                     gfx::ColorSpace::RangeID::LIMITED)) {
+    return VideoFrameColorSpaceUMA::HLG;
+  }
+
+  if (color_space == gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                                     gfx::ColorSpace::TransferID::ARIB_STD_B67,
+                                     gfx::ColorSpace::MatrixID::BT2020_NCL,
+                                     gfx::ColorSpace::RangeID::LIMITED)) {
+    return VideoFrameColorSpaceUMA::HLG;
+  }
+
+  if (color_space == gfx::ColorSpace::CreateSCRGBLinear())
+    return VideoFrameColorSpaceUMA::SCRGB;
+
+  return VideoFrameColorSpaceUMA::UnknownHDR;
+}
+};
+
 namespace media {
 
 VideoRendererImpl::VideoRendererImpl(
@@ -87,6 +157,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
     StopSink();
 
   base::AutoLock auto_lock(lock_);
+
   DCHECK_EQ(state_, kPlaying);
   flush_cb_ = callback;
   state_ = kFlushing;
@@ -377,7 +448,6 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-
   DCHECK_EQ(state_, kPlaying);
   CHECK(pending_read_);
   pending_read_ = false;
@@ -396,6 +466,10 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
     DCHECK_EQ(status, VideoFrameStream::DEMUXER_READ_ABORTED);
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoFrame.ColorSpace",
+                            ColorSpaceUMAHelper(frame->ColorSpace()),
+                            static_cast<int>(VideoFrameColorSpaceUMA::MAX) + 1);
 
   if (frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM)) {
     DCHECK(!received_end_of_stream_);

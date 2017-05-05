@@ -35381,6 +35381,18 @@ from previous Chrome versions.
   <int value="3" label="SD Rec 601"/>
 </enum>
 
+<enum name="VideoFrameColorSpaceUMA" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="UnknownRGB"/>
+  <int value="2" label="UnknownHDR"/>
+  <int value="3" label="rec601"/>
+  <int value="4" label="rec709"/>
+  <int value="5" label="JPEG"/>
+  <int value="6" label="PQ"/>
+  <int value="7" label="HLG"/>
+  <int value="8" label="scRGB"/>
+</enum>
+
 <enum name="VideoFramePixelFormat" type="int">
   <obsolete>
     Deprecated as of 08/2015. Substituted by VideoPixelFormatUnion.
