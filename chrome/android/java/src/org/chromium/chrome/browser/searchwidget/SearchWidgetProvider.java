@@ -392,7 +392,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
     /** Sets an {@link SearchWidgetProviderDelegate} to interact with. */
     @VisibleForTesting
-    static void setDelegateForTest(SearchWidgetProviderDelegate delegate) {
+    static void setActivityDelegateForTest(SearchWidgetProviderDelegate delegate) {
         assert sDelegate == null;
         sDelegate = delegate;
     }

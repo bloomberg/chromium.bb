@@ -278,7 +278,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     /**
      * Call to begin loading the library, if it was delayed.
      */
-    protected void beginLoadingLibrary() {
+    protected void startNativeInitialization() {
         assert shouldDelayBrowserStartup();
         ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
     }

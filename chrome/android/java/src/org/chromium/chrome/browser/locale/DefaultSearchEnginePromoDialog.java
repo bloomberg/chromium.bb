@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.widget.Button;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
@@ -20,6 +21,12 @@ import org.chromium.chrome.browser.widget.RadioButtonLayout;
 
 /** A dialog that forces the user to choose a default search engine. */
 public class DefaultSearchEnginePromoDialog extends PromoDialog {
+    /** Notified about events happening to the dialog. */
+    public static interface DefaultSearchEnginePromoDialogObserver {
+        void onDialogShown(DefaultSearchEnginePromoDialog shownDialog);
+    }
+    private static DefaultSearchEnginePromoDialogObserver sObserver;
+
     /** Used to determine the promo dialog contents. */
     @SearchEnginePromoType
     private final int mDialogType;
@@ -83,6 +90,7 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
         okButton.setEnabled(false);
 
         RadioButtonLayout radioButtons = new RadioButtonLayout(getContext());
+        radioButtons.setId(R.id.default_search_engine_dialog_options);
         addControl(radioButtons);
 
         Runnable dismissRunnable = new Runnable() {
@@ -96,6 +104,12 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
     }
 
     @Override
+    public void show() {
+        super.show();
+        if (sObserver != null) sObserver.onDialogShown(this);
+    }
+
+    @Override
     public void onDismiss(DialogInterface dialog) {
         if (mHelper.getCurrentlySelectedKeyword() == null) {
             // This shouldn't happen, but in case it does, finish the Activity so that the user has
@@ -106,5 +120,12 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
         if (mOnDismissed != null) {
             mOnDismissed.onResult(mHelper.getCurrentlySelectedKeyword() != null);
         }
+    }
+
+    /** See {@link #sObserver}. */
+    @VisibleForTesting
+    @Nullable
+    public static void setObserverForTests(DefaultSearchEnginePromoDialogObserver observer) {
+        sObserver = observer;
     }
 }

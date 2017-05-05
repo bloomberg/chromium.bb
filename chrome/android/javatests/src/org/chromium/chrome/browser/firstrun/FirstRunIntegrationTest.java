@@ -15,7 +15,6 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.view.ViewGroup;
 import android.widget.Button;
 
 import org.junit.After;
@@ -31,9 +30,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
@@ -52,7 +51,6 @@ public class FirstRunIntegrationTest {
 
     private FirstRunActivityTestObserver mTestObserver = new FirstRunActivityTestObserver();
     private Activity mActivity;
-    private String mSelectedEngine;
 
     @Before
     public void setUp() throws Exception {
@@ -307,35 +305,8 @@ public class FirstRunIntegrationTest {
             Assert.assertTrue("Search engine page wasn't shown.",
                     freProperties.getBoolean(FirstRunActivity.SHOW_SEARCH_ENGINE_PAGE));
             int jumpCallCount = mTestObserver.jumpToPageCallback.getCallCount();
-
-            // Click on the first search engine option available.
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    ViewGroup options = (ViewGroup) mActivity.findViewById(R.id.engine_controls);
-                    return options.getChildCount() > 0;
-                }
-            });
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    ViewGroup options = (ViewGroup) mActivity.findViewById(R.id.engine_controls);
-                    options.getChildAt(0).performClick();
-                    mSelectedEngine = (String) (options.getChildAt(0).getTag());
-                }
-            });
-
-            clickButton(mActivity, R.id.button_primary, "Failed to select default search engine");
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    Assert.assertEquals("Search engine wasn't set",
-                            TemplateUrlService.getInstance()
-                                    .getDefaultSearchEngineTemplateUrl()
-                                    .getKeyword(),
-                            mSelectedEngine);
-                }
-            });
+            DefaultSearchEngineDialogHelperUtils.clickOnFirstEngine(
+                    mActivity.findViewById(android.R.id.content));
 
             mTestObserver.jumpToPageCallback.waitForCallback(
                     "Failed to try moving to next screen", jumpCallCount);
