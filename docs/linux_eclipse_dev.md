@@ -65,20 +65,6 @@ Before you start setting up your work space - here are a few hints:
     (Note: This means that the source will possibly not reside in your user
     directory since it would require a link from filer to your local
     repository.)
-*   You may want to start Eclipse from the source root. To do this you can add
-    an icon to your task bar as launcher. It should point to a shell script
-    which will set the current path to your source base, and then start Eclipse.
-    The result would probably look like this:
-
-    ```shell
-    ~/.bashrc
-    cd /usr/local/google/chromium/src
-    export PATH=/home/skuhne/depot_tools:/usr/local/google/goma/goma:/opt/eclipse:/usr/local/symlinks:/usr/local/scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-    /opt/eclipse/eclipse -vm /usr/bin/java
-    ```
-
-(Note: Things work fine for me without launching Eclipse from a special
-directory. jamescook@chromium.org 2012-06-1)
 
 ### Run Eclipse & Set your workspace
 
@@ -93,7 +79,7 @@ same directory as your checkout.
 ### Install the C Development Tools ("CDT")
 
 1.  From the Help menu, select Install New Software...
-    1.  Select the 'Workd with' URL for the CDT
+    1.  Select the 'Work with' URL for the CDT
         If it's not there you can click Add... and add it.
         See https://eclipse.org/cdt/downloads.php for up to date versions,
         e.g. with CDT 8.7.0 for Eclipse Mars, use
@@ -118,21 +104,26 @@ tries to do these too often and gets confused:
 1.  Turn off "Refresh using native hooks or polling"
 1.  Click "Apply"
 
-Chromium uses C++11, so tell the indexer about it. Otherwise it will get
-confused about things like std::unique_ptr.
-
-1.  Open Window > Preferences > C/C++ > Build > Settings > Discovery >
-    CDT GCC Build-in Compiler Settings
-1.  In the text box entitled Command to get compiler specs append "-std=c++11"
-
 Create a single Eclipse project for everything:
 
 1.  From the File menu, select New > Project...
 1.  Select C/C++ Project > Makefile Project with Existing Code
-1.  Name the project the exact name of the directory: "src"
-1.  Provide a path to the code, like /work/chromium/src
+1.  Name the project the exact name of the directory: "src" (or "WebKit" if you
+    mainly work in Blink and want a faster experience)
+1.  Provide a path to the code, like /work/chromium/src (or
+    /work/chromium/src/third_party/WebKit)
 1.  Select toolchain: Linux GCC
 1.  Click Finish.
+
+Chromium uses C++11, so tell the indexer about it. Otherwise it will get
+confused about things like std::unique_ptr.
+
+1.  Right-click on "src" and select "Properties..."
+1.  Navigate to C/C++ General > Preprocess Include Paths, Macros etc. >
+    Providers
+1.  Select CDT GCC Built-in Compiler Settings
+1.  In the text box entitled Command to get compiler specs append "-std=c++11"
+    (leaving out the quotes)
 
 Chromium has a huge amount of code, enough that Eclipse can take a very long
 time to perform operations like "go to definition" and "open resource". You need
@@ -142,7 +133,7 @@ In the Project Explorer on the left side:
 
 1.  Right-click on "src" and select "Properties..."
 1.  Open Resource > Resource Filters
-1.  Click "Add..."
+1.  Click "Add Filter..."
 1.  Add the following filter:
     *   Include only
     *   Files, all children (recursive)
@@ -152,10 +143,10 @@ In the Project Explorer on the left side:
 1.  Add another filter:
     *   Exclude all
     *   Folders
-    *   Name matches `out_.*|\.git|\.svn|LayoutTests` regular expression
+    *   Name matches `out_.*|\.git|LayoutTests` regular expression
         *   If you aren't working on WebKit, adding `|WebKit` will remove more
             files
-1.  Click "OK"
+1.  Click "Apply and Close"
 
 Don't exclude the primary "out" directory, as it contains generated header files
 for things like string resources and Eclipse will miss a lot of symbols if you
@@ -170,7 +161,7 @@ most header files, however. Give it more help finding them:
 1.  Select "Use active build configuration"
 1.  Set Cache limits > Index database > Limit relative... to 20%
 1.  Set Cache limits > Index database > Absolute limit to 256 MB
-1.  Click "OK"
+1.  Click "Apply and Close"
 
 Now the indexer will find many more include files, regardless of which approach
 you take below.
@@ -288,8 +279,8 @@ After fighting with with a number of approaches, I've found the below to work
 best for me.
 
 1.  From a shell in your src directory, run
-    `gn gen --ide=eclipse out/Debug_gn/' (replacing Debug_gn with the output directory you normally use when building).
-    1.  This generates <project root>/out/Debug_gn/eclipse-cdt-settings.xml which
+    `gn gen --ide=eclipse out/Debug/` (replacing Debug with the output directory you normally use when building).
+    1.  This generates <project root>/out/Debug/eclipse-cdt-settings.xml which
         is used below.
     1.  This creates a single list of include directories and preprocessor
         definitions to be used for all source files, and so is a little
@@ -400,6 +391,3 @@ in practice than the simpler (and less bug-prone) approach above.
     is helpful:
 1.  For improved performance, I use medium-granularity projects (eg. one for
     WebKit/Source) instead of putting all of 'src/' in one project.
-1.  For working in Blink (which uses WebKit code style), feel free to use
-    [this](https://drive.google.com/file/d/0B2LVVIKSxUVYM3R6U0tUa1dmY0U/view?usp=sharing)
-    code-style formatter XML profile
