@@ -66,9 +66,6 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   virtual Page* GetPage() const = 0;
   virtual Frame* FocusedCoreFrame() const = 0;
 
-  // PLATFORM_EXPORT static WebViewBase* Create(WebViewClient*,
-  //                                            WebPageVisibilityState);
-
   static WebViewBase* FromPage(Page*);
   static HashSet<WebViewBase*>& AllInstances();
 
