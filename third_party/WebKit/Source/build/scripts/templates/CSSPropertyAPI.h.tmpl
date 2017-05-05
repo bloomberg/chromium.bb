@@ -14,20 +14,21 @@ class CSSValue;
 class CSSParserContext;
 class CSSParserTokenRange;
 
-// We will use this API to represent all functions used for property-specific
-// logic inside the blink style engine. All specific properties are subclasses
-// of CSSPropertyAPI.
+// Base class for property APIs that contain logic for handling individual
+// properties.
+// The methods declared here are standard methods among property APIs, and can
+// be called on a particular property API through a CSSPropertyDescriptor
+// object.
+// Note that not all methods are implemented by all property APIs. Methods that
+// are not implemented on a property API will return nullptr when accessed
+// through a CSSPropertyDescriptor.
+// See the api_methods field on properties defined in CSSProperties.json5 for a
+// definition of which methods are implemented on a property.
 //
-// To add a new implementation of this API for a property:
-// - Make a class that implements CSSPropertyAPI.
-// - For each method that you wish to implement in this class, add this method
-//   name to the api_methods flag in CSSProperties.json5.
-// - Implement these methods in the .cpp file.
-//
-// To add new functions to this API:
-// - Add the function to the struct below.
-// - Add the function name to the valid_values field for api_methods in
-//   CSSProperties.json5.
+// Status (5th May 2017): Eventually, all property specific logic will be
+// contained within property APIs that inherit from CSSPropertyAPI.
+// Currently, the code base is in a transitional state and property specific
+// logic is still scattered around the code base.
 class CSSPropertyAPI {
   STATIC_ONLY(CSSPropertyAPI);
 
