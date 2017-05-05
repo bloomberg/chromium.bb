@@ -196,6 +196,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void EndIdlePeriodForTesting(const base::Closure& callback,
                                base::TimeTicks time_remaining);
   bool PolicyNeedsUpdateForTesting();
+  WakeUpBudgetPool* GetWakeUpBudgetPoolForTesting();
 
   base::TickClock* tick_clock() const;
 
@@ -399,6 +400,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   bool ShouldDisableThrottlingBecauseOfAudio(base::TimeTicks now);
 
+  void AddQueueToWakeUpBudgetPool(TaskQueue* queue);
+
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
@@ -479,6 +482,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool is_audio_playing;
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
+    WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
   };
 
   struct AnyThread {

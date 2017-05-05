@@ -16,6 +16,8 @@
 #include "platform/scheduler/base/cancelable_closure_holder.h"
 #include "platform/scheduler/base/time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
+#include "platform/scheduler/renderer/cpu_time_budget_pool.h"
+#include "platform/scheduler/renderer/wake_up_budget_pool.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 
 namespace base {
@@ -31,6 +33,15 @@ class BudgetPool;
 class RendererSchedulerImpl;
 class ThrottledTimeDomain;
 class CPUTimeBudgetPool;
+class WakeUpBudgetPool;
+
+// kNewTasksOnly prevents new tasks from running (old tasks can run normally),
+// kAllTasks block queue completely.
+// kAllTasks-type block always blocks the queue completely.
+// kNewTasksOnly-type block does nothing when queue is already blocked by
+// kAllTasks, and overrides previous kNewTasksOnly block if any, which may
+// unblock some tasks.
+enum class QueueBlockType { kAllTasks, kNewTasksOnly };
 
 // Interface for BudgetPool to interact with TaskQueueThrottler.
 class PLATFORM_EXPORT BudgetPoolController {
@@ -47,12 +58,10 @@ class PLATFORM_EXPORT BudgetPoolController {
   // Deletes the budget pool.
   virtual void UnregisterBudgetPool(BudgetPool* budget_pool) = 0;
 
-  // Insert a fence to prevent tasks from running and schedule a wake-up at
-  // an appropriate time.
-  virtual void BlockQueue(base::TimeTicks now, TaskQueue* queue) = 0;
-
-  // Schedule a call to unblock queue at an appropriate moment.
-  virtual void UnblockQueue(base::TimeTicks now, TaskQueue* queue) = 0;
+  // Ensure that an appropriate type of the fence is installed and schedule
+  // a pump for this queue when needed.
+  virtual void UpdateQueueThrottlingState(base::TimeTicks now,
+                                          TaskQueue* queue) = 0;
 
   // Returns true if the |queue| is throttled (i.e. added to TaskQueueThrottler
   // and throttling is not disabled).
@@ -97,8 +106,8 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   void RemoveQueueFromBudgetPool(TaskQueue* queue,
                                  BudgetPool* budget_pool) override;
   void UnregisterBudgetPool(BudgetPool* budget_pool) override;
-  void BlockQueue(base::TimeTicks now, TaskQueue* queue) override;
-  void UnblockQueue(base::TimeTicks now, TaskQueue* queue) override;
+  void UpdateQueueThrottlingState(base::TimeTicks now,
+                                  TaskQueue* queue) override;
   bool IsThrottled(TaskQueue* queue) const override;
 
   // Increments the throttled refcount and causes |task_queue| to be throttled
@@ -132,6 +141,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
 
   // Returned object is owned by |TaskQueueThrottler|.
   CPUTimeBudgetPool* CreateCPUTimeBudgetPool(const char* name);
+  WakeUpBudgetPool* CreateWakeUpBudgetPool(const char* name);
 
   // Accounts for given task for cpu-based throttling needs.
   void OnTaskRunTimeReported(TaskQueue* task_queue,
@@ -162,14 +172,19 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
 
   // Return next possible time when queue is allowed to run in accordance
   // with throttling policy.
-  base::TimeTicks GetNextAllowedRunTime(base::TimeTicks now, TaskQueue* queue);
+  base::TimeTicks GetNextAllowedRunTime(TaskQueue* queue,
+                                        base::TimeTicks desired_run_time);
+
+  bool CanRunTasksAt(TaskQueue* queue, base::TimeTicks moment, bool is_wakeup);
 
   void MaybeDeleteQueueMetadata(TaskQueueMap::iterator it);
 
-  // Schedule a call PumpThrottledTasks at an appropriate moment for this queue.
-  void SchedulePumpQueue(const tracked_objects::Location& from_here,
-                         base::TimeTicks now,
-                         TaskQueue* queue);
+  void UpdateQueueThrottlingStateInternal(base::TimeTicks now,
+                                          TaskQueue* queue,
+                                          bool is_wake_up);
+
+  base::Optional<QueueBlockType> GetQueueBlockType(base::TimeTicks now,
+                                                   TaskQueue* queue);
 
   TaskQueueMap queue_details_;
   base::Callback<void(TaskQueue*, base::TimeTicks)>

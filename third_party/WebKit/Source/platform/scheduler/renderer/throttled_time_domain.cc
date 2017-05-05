@@ -25,8 +25,15 @@ void ThrottledTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
   // We ignore this because RequestWakeUpAt is a NOP.
 }
 
+void ThrottledTimeDomain::SetNextTaskRunTime(base::TimeTicks run_time) {
+  next_task_run_time_ = run_time;
+}
+
 base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(
     LazyNow* lazy_now) {
+  if (next_task_run_time_ && next_task_run_time_ > lazy_now->Now())
+    return next_task_run_time_.value() - lazy_now->Now();
+
   base::TimeTicks next_run_time;
   if (!NextScheduledRunTime(&next_run_time))
     return base::nullopt;

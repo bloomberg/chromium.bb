@@ -220,6 +220,9 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // blocked by it.
   virtual void RemoveFence() = 0;
 
+  virtual bool HasFence() const = 0;
+
+  // Returns true if the queue has a fence which is blocking execution of tasks.
   virtual bool BlockedByFence() const = 0;
 
   virtual void SetObserver(Observer* observer) = 0;

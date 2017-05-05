@@ -217,7 +217,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       in_idle_period_for_testing(false),
       use_virtual_time(false),
       is_audio_playing(false),
-      rail_mode_observer(nullptr) {
+      rail_mode_observer(nullptr),
+      wake_up_budget_pool(nullptr) {
   foreground_main_thread_load_tracker.Resume(now);
 }
 
@@ -336,6 +337,7 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
   }
   loading_task_queue->AddTaskObserver(
       &GetMainThreadOnly().loading_task_cost_estimator);
+  AddQueueToWakeUpBudgetPool(loading_task_queue.get());
   return loading_task_queue;
 }
 
@@ -362,6 +364,7 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
   }
   timer_task_queue->AddTaskObserver(
       &GetMainThreadOnly().timer_task_cost_estimator);
+  AddQueueToWakeUpBudgetPool(timer_task_queue.get());
   return timer_task_queue;
 }
 
@@ -1375,6 +1378,10 @@ IdleTimeEstimator* RendererSchedulerImpl::GetIdleTimeEstimatorForTesting() {
   return &GetMainThreadOnly().idle_time_estimator;
 }
 
+WakeUpBudgetPool* RendererSchedulerImpl::GetWakeUpBudgetPoolForTesting() {
+  return GetMainThreadOnly().wake_up_budget_pool;
+}
+
 void RendererSchedulerImpl::SuspendTimerQueue() {
   GetMainThreadOnly().timer_queue_suspend_count++;
   ForceUpdatePolicy();
@@ -1911,6 +1918,18 @@ bool RendererSchedulerImpl::ShouldDisableThrottlingBecauseOfAudio(
   return GetMainThreadOnly().last_audio_state_change.value() +
              kThrottlingDelayAfterAudioIsPlayed >
          now;
+}
+
+void RendererSchedulerImpl::AddQueueToWakeUpBudgetPool(TaskQueue* queue) {
+  if (!GetMainThreadOnly().wake_up_budget_pool) {
+    GetMainThreadOnly().wake_up_budget_pool =
+        task_queue_throttler()->CreateWakeUpBudgetPool("renderer_wake_up_pool");
+    GetMainThreadOnly().wake_up_budget_pool->SetWakeUpRate(1);
+    GetMainThreadOnly().wake_up_budget_pool->SetWakeUpDuration(
+        base::TimeDelta());
+  }
+  GetMainThreadOnly().wake_up_budget_pool->AddQueue(tick_clock()->NowTicks(),
+                                                    queue);
 }
 
 TimeDomain* RendererSchedulerImpl::GetActiveTimeDomain() {

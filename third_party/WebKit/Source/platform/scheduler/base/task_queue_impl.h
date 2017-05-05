@@ -154,6 +154,7 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   void SetBlameContext(base::trace_event::BlameContext* blame_context) override;
   void InsertFence(InsertFencePosition position) override;
   void RemoveFence() override;
+  bool HasFence() const override;
   bool BlockedByFence() const override;
   const char* GetName() const override;
   QueueType GetQueueType() const override;
