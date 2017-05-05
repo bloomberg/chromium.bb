@@ -59,6 +59,9 @@ const char kPingbackURL[] =
 const char kServerExperimentsFieldTrial[] =
     "DataReductionProxyServerExperiments";
 
+// LitePage black list version.
+const char kLitePageBlacklistVersion[] = "lite-page-blacklist-version";
+
 bool IsIncludedInFieldTrial(const std::string& name) {
   return base::StartsWith(FieldTrialList::FindFullName(name), kEnabled,
                           base::CompareCase::SENSITIVE);
@@ -311,6 +314,12 @@ GURL GetPingbackURL() {
 bool ShouldForceEnableDataReductionProxy() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxy);
+}
+
+int LitePageVersion() {
+  return GetFieldTrialParameterAsInteger(
+      data_reduction_proxy::params::GetLoFiFieldTrialName(),
+      kLitePageBlacklistVersion, 0, 0);
 }
 
 int GetFieldTrialParameterAsInteger(const std::string& group,

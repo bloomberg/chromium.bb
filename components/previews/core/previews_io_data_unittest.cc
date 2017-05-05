@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_black_list_item.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -40,15 +41,16 @@ namespace previews {
 
 namespace {
 
-// TODO(sclittle): Tests should be testing the actual prod code that checks if
-// the appropriate field trial is enabled for the preview, instead of testing
-// this function here. Consider moving that code out of
-// chrome/browser/previews/previews_service.cc and into the previews/ component.
+// This method simulates the actual behavior of the passed in callback, which is
+// validated in other tests. For simplicity, offline, lite page, and server LoFi
+// use the offline previews check. Client LoFi uses a seperate check to verify
+// that types are treated differently.
 bool IsPreviewFieldTrialEnabled(PreviewsType type) {
   switch (type) {
     case PreviewsType::OFFLINE:
+    case PreviewsType::LITE_PAGE:
       return params::IsOfflinePreviewsEnabled();
-    case PreviewsType::CLIENT_LOFI:
+    case PreviewsType::LOFI:
       return params::IsClientLoFiEnabled();
     case PreviewsType::NONE:
     case PreviewsType::LAST:
@@ -273,6 +275,25 @@ TEST_F(PreviewsIODataTest, TestDisallowOfflineWhenNetworkQualityUnavailable) {
       1);
 }
 
+TEST_F(PreviewsIODataTest, TestAllowLitePageWhenNetworkQualityFast) {
+  // LoFi and LitePage check NQE on their own.
+  InitializeUIService();
+  CreateFieldTrialWithParams("ClientSidePreviews", "Enabled",
+                             {{"show_offline_pages", "true"},
+                              {"max_allowed_effective_connection_type", "2G"}});
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_3G);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LITE_PAGE,
+      net::EFFECTIVE_CONNECTION_TYPE_4G));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePage",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+}
+
 TEST_F(PreviewsIODataTest, TestDisallowOfflineWhenNetworkQualityFast) {
   InitializeUIService();
   CreateFieldTrialWithParams("ClientSidePreviews", "Enabled",
@@ -306,9 +327,7 @@ TEST_F(PreviewsIODataTest, TestDisallowOfflineOnReload) {
   EXPECT_FALSE(io_data()->ShouldAllowPreview(*request, PreviewsType::OFFLINE));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.Offline",
-      static_cast<int>(
-          PreviewsEligibilityReason::RELOAD_DISALLOWED_FOR_OFFLINE),
-      1);
+      static_cast<int>(PreviewsEligibilityReason::RELOAD_DISALLOWED), 1);
 }
 
 TEST_F(PreviewsIODataTest, TestAllowOffline) {
@@ -332,9 +351,10 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedByDefault) {
   InitializeUIService();
 
   base::HistogramTester histogram_tester;
-  EXPECT_FALSE(io_data()->ShouldAllowPreview(*CreateRequest(),
-                                             PreviewsType::CLIENT_LOFI));
-  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.ClientLoFi", 0);
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi()));
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.LoFi", 0);
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenFieldTrialDisabled) {
@@ -342,9 +362,10 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenFieldTrialDisabled) {
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Disabled", {});
 
   base::HistogramTester histogram_tester;
-  EXPECT_FALSE(io_data()->ShouldAllowPreview(*CreateRequest(),
-                                             PreviewsType::CLIENT_LOFI));
-  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.ClientLoFi", 0);
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi()));
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.LoFi", 0);
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkQualityUnavailable) {
@@ -355,10 +376,11 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkQualityUnavailable) {
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 
   base::HistogramTester histogram_tester;
-  EXPECT_FALSE(io_data()->ShouldAllowPreview(*CreateRequest(),
-                                             PreviewsType::CLIENT_LOFI));
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi()));
   histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.ClientLoFi",
+      "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
       1);
 }
@@ -372,10 +394,11 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkFast) {
       net::EFFECTIVE_CONNECTION_TYPE_3G);
 
   base::HistogramTester histogram_tester;
-  EXPECT_FALSE(io_data()->ShouldAllowPreview(*CreateRequest(),
-                                             PreviewsType::CLIENT_LOFI));
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi()));
   histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.ClientLoFi",
+      "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
 }
 
@@ -388,10 +411,11 @@ TEST_F(PreviewsIODataTest, ClientLoFiAllowed) {
       net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(io_data()->ShouldAllowPreview(*CreateRequest(),
-                                            PreviewsType::CLIENT_LOFI));
+  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi()));
   histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.ClientLoFi",
+      "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
 
@@ -407,10 +431,11 @@ TEST_F(PreviewsIODataTest, ClientLoFiAllowedOnReload) {
   request->SetLoadFlags(net::LOAD_BYPASS_CACHE);
 
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(
-      io_data()->ShouldAllowPreview(*request, PreviewsType::CLIENT_LOFI));
+  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
+      *request, PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi()));
   histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.ClientLoFi",
+      "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
 

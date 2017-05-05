@@ -9,10 +9,12 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
 #include "components/previews/core/previews_black_list.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "net/base/load_flags.h"
@@ -27,35 +29,30 @@ namespace {
 
 void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
                                   PreviewsType type) {
-  switch (type) {
-    case PreviewsType::OFFLINE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Previews.EligibilityReason.Offline", static_cast<int>(status),
-          static_cast<int>(PreviewsEligibilityReason::LAST));
-      break;
-    case PreviewsType::CLIENT_LOFI:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Previews.EligibilityReason.ClientLoFi", static_cast<int>(status),
-          static_cast<int>(PreviewsEligibilityReason::LAST));
-      break;
-    default:
-      NOTREACHED();
-  }
+  int32_t max_limit = static_cast<int32_t>(PreviewsEligibilityReason::LAST);
+  base::LinearHistogram::FactoryGet(
+      base::StringPrintf("Previews.EligibilityReason.%s",
+                         GetStringNameForType(type).c_str()),
+      1, max_limit, max_limit + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(static_cast<int>(status));
 }
 
-net::EffectiveConnectionType GetEffectiveConnectionTypeThresholdForPreviewsType(
-    PreviewsType type) {
+bool AllowedOnReload(PreviewsType type) {
   switch (type) {
+    // These types return new content on refresh.
+    case PreviewsType::LITE_PAGE:
+    case PreviewsType::LOFI:
+      return true;
+    // Loading these types will always be stale when refreshed.
     case PreviewsType::OFFLINE:
-      return params::EffectiveConnectionTypeThresholdForOffline();
-    case PreviewsType::CLIENT_LOFI:
-      return params::EffectiveConnectionTypeThresholdForClientLoFi();
+      return false;
     case PreviewsType::NONE:
     case PreviewsType::LAST:
       break;
   }
   NOTREACHED();
-  return net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  return false;
 }
 
 }  // namespace
@@ -110,6 +107,14 @@ void PreviewsIOData::ClearBlackList(base::Time begin_time,
 
 bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
                                         PreviewsType type) const {
+  return ShouldAllowPreviewAtECT(
+      request, type, params::DefaultEffectiveConnectionTypeThreshold());
+}
+
+bool PreviewsIOData::ShouldAllowPreviewAtECT(
+    const net::URLRequest& request,
+    PreviewsType type,
+    net::EffectiveConnectionType effective_connection_type_threshold) const {
   if (is_enabled_callback_.is_null() || !previews_black_list_) {
     LogPreviewsEligibilityReason(
         PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE, type);
@@ -119,7 +124,7 @@ bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
     return false;
 
   // The blacklist will disallow certain hosts for periods of time based on
-  // user's opting out of the preview
+  // user's opting out of the preview.
   PreviewsEligibilityReason status =
       previews_black_list_->IsLoadedAndAllowed(request.url(), type);
   if (status != PreviewsEligibilityReason::ALLOWED) {
@@ -137,20 +142,21 @@ bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
   }
 
   if (network_quality_estimator->GetEffectiveConnectionType() >
-      GetEffectiveConnectionTypeThresholdForPreviewsType(type)) {
+      effective_connection_type_threshold) {
     LogPreviewsEligibilityReason(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
                                  type);
     return false;
   }
   // LOAD_VALIDATE_CACHE or LOAD_BYPASS_CACHE mean the user reloaded the page.
   // If this is a query for offline previews, reloads should be disallowed.
-  if (type == PreviewsType::OFFLINE &&
-      (request.load_flags() &
-       (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE))) {
-    LogPreviewsEligibilityReason(
-        PreviewsEligibilityReason::RELOAD_DISALLOWED_FOR_OFFLINE, type);
+  if (!AllowedOnReload(type) &&
+      request.load_flags() &
+          (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE)) {
+    LogPreviewsEligibilityReason(PreviewsEligibilityReason::RELOAD_DISALLOWED,
+                                 type);
     return false;
   }
+
   LogPreviewsEligibilityReason(PreviewsEligibilityReason::ALLOWED, type);
   return true;
 }

@@ -902,9 +902,11 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
     // the session, and the user is eligible for previews.
     if (data_reduction_proxy_io_data->IsEnabled() &&
         !data_reduction_proxy_io_data->config()->lofi_off() &&
-        previews_io_data &&
-        previews_io_data->ShouldAllowPreview(
-            url_request, previews::PreviewsType::CLIENT_LOFI)) {
+        previews_io_data && previews::params::IsClientLoFiEnabled() &&
+        previews_io_data->ShouldAllowPreviewAtECT(
+            url_request, previews::PreviewsType::LOFI,
+            previews::params::
+                EffectiveConnectionTypeThresholdForClientLoFi())) {
       previews_state |= content::CLIENT_LOFI_ON;
     }
   }
