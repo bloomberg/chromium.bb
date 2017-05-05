@@ -2412,8 +2412,6 @@ crbug.com/626703 external/wpt/mixed-content/blockable/no-opt-in/same-host-http/i
 
 crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
 
-crbug.com/710226 [ Win Mac10.9 Mac10.10 Mac10.11 Mac10.12 ] external/wpt/cssom-view/MediaQueryList-001.html [ Failure ]
-
 # HTTP tests that started failing after WPT import
 crbug.com/711529 virtual/mojo-loading/http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
 crbug.com/711529 virtual/mojo-loading/http/tests/origin_trials/sample-api-workers.html [ Timeout ]
