@@ -1360,7 +1360,7 @@ static double warp_erroradv(WarpedMotionParams *wm, uint8_t *ref, int width,
                             int subsampling_x, int subsampling_y, int x_scale,
                             int y_scale) {
   int gm_err = 0, no_gm_err = 0;
-  int gm_sumerr = 0, no_gm_sumerr = 0;
+  int64_t gm_sumerr = 0, no_gm_sumerr = 0;
   int i, j;
   uint8_t *tmp = aom_malloc(p_width * p_height);
   warp_plane(wm, ref, width, height, stride, tmp, p_col, p_row, p_width,
@@ -1372,8 +1372,8 @@ static double warp_erroradv(WarpedMotionParams *wm, uint8_t *ref, int width,
       gm_err = dst[j + i * p_stride] - tmp[j + i * p_width];
       no_gm_err =
           dst[j + i * p_stride] - ref[(j + p_col) + (i + p_row) * stride];
-      gm_sumerr += error_measure(gm_err);
-      no_gm_sumerr += error_measure(no_gm_err);
+      gm_sumerr += (int64_t)error_measure(gm_err);
+      no_gm_sumerr += (int64_t)error_measure(no_gm_err);
     }
   }
 
