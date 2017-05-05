@@ -6,52 +6,34 @@
 #define TextPainter_h
 
 #include "core/CoreExport.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "core/paint/TextPainterBase.h"
 
 namespace blink {
 
-class ComputedStyle;
-class Font;
-class GraphicsContext;
-class GraphicsContextStateSaver;
-class LayoutTextCombine;
-class LineLayoutItem;
-struct PaintInfo;
-class ShadowList;
 class TextRun;
 struct TextRunPaintInfo;
+class LayoutTextCombine;
+class LineLayoutItem;
 
-class CORE_EXPORT TextPainter {
+// Text painter for legacy layout. Operates on TextRuns.
+class CORE_EXPORT TextPainter : public TextPainterBase {
   STACK_ALLOCATED();
 
  public:
-  struct Style;
-
-  TextPainter(GraphicsContext&,
-              const Font&,
-              const TextRun&,
+  TextPainter(GraphicsContext& context,
+              const Font& font,
+              const TextRun& run,
               const LayoutPoint& text_origin,
               const LayoutRect& text_bounds,
-              bool horizontal);
-  ~TextPainter();
+              bool horizontal)
+      : TextPainterBase(context, font, text_origin, text_bounds, horizontal),
+        run_(run),
+        combined_text_(0) {}
+  ~TextPainter() {}
 
-  void SetEmphasisMark(const AtomicString&, TextEmphasisPosition);
   void SetCombinedText(LayoutTextCombine* combined_text) {
     combined_text_ = combined_text;
   }
-  void SetEllipsisOffset(int offset) { ellipsis_offset_ = offset; }
-
-  static void UpdateGraphicsContext(GraphicsContext&,
-                                    const Style&,
-                                    bool horizontal,
-                                    GraphicsContextStateSaver&);
 
   void ClipDecorationsStripe(float upper, float stripe_width, float dilation);
   void Paint(unsigned start_offset,
@@ -59,45 +41,18 @@ class CORE_EXPORT TextPainter {
              unsigned length,
              const Style&);
 
-  struct Style {
-    STACK_ALLOCATED();
-    Color current_color;
-    Color fill_color;
-    Color stroke_color;
-    Color emphasis_mark_color;
-    float stroke_width;
-    const ShadowList* shadow;
+  void PaintDecorationUnderOrOverLine(GraphicsContext&,
+                                      const DecorationInfo&,
+                                      const AppliedTextDecoration&,
+                                      int line_offset,
+                                      float decoration_offset);
 
-    bool operator==(const Style& other) {
-      return current_color == other.current_color &&
-             fill_color == other.fill_color &&
-             stroke_color == other.stroke_color &&
-             emphasis_mark_color == other.emphasis_mark_color &&
-             stroke_width == other.stroke_width && shadow == other.shadow;
-    }
-    bool operator!=(const Style& other) { return !(*this == other); }
-  };
-  static Style TextPaintingStyle(LineLayoutItem,
-                                 const ComputedStyle&,
-                                 const PaintInfo&);
   static Style SelectionPaintingStyle(LineLayoutItem,
                                       bool have_selection,
                                       const PaintInfo&,
                                       const Style& text_style);
-  static Color TextColorForWhiteBackground(Color);
-
-  enum RotationDirection { kCounterclockwise, kClockwise };
-  static AffineTransform Rotation(const LayoutRect& box_rect,
-                                  RotationDirection);
 
  private:
-  void UpdateGraphicsContext(const Style& style,
-                             GraphicsContextStateSaver& saver) {
-    UpdateGraphicsContext(graphics_context_, style, horizontal_, saver);
-  }
-
-  enum PaintInternalStep { kPaintText, kPaintEmphasisMark };
-
   template <PaintInternalStep step>
   void PaintInternalRun(TextRunPaintInfo&, unsigned from, unsigned to);
 
@@ -108,42 +63,9 @@ class CORE_EXPORT TextPainter {
 
   void PaintEmphasisMarkForCombinedText();
 
-  GraphicsContext& graphics_context_;
-  const Font& font_;
   const TextRun& run_;
-  LayoutPoint text_origin_;
-  LayoutRect text_bounds_;
-  bool horizontal_;
-  AtomicString emphasis_mark_;
-  int emphasis_mark_offset_;
   LayoutTextCombine* combined_text_;
-  int ellipsis_offset_;
 };
-
-inline AffineTransform TextPainter::Rotation(
-    const LayoutRect& box_rect,
-    RotationDirection rotation_direction) {
-  // Why this matrix is correct: consider the case of a clockwise rotation.
-
-  // Let the corner points that define |boxRect| be ABCD, where A is top-left
-  // and B is bottom-left.
-
-  // 1. We want B to end up at the same pixel position after rotation as A is
-  //    before rotation.
-  // 2. Before rotation, B is at (x(), maxY())
-  // 3. Rotating clockwise by 90 degrees places B at the coordinates
-  //    (-maxY(), x()).
-  // 4. Point A before rotation is at (x(), y())
-  // 5. Therefore the translation from (3) to (4) is (x(), y()) - (-maxY(), x())
-  //    = (x() + maxY(), y() - x())
-
-  // A similar argument derives the counter-clockwise case.
-  return rotation_direction == kClockwise
-             ? AffineTransform(0, 1, -1, 0, box_rect.X() + box_rect.MaxY(),
-                               box_rect.Y() - box_rect.X())
-             : AffineTransform(0, -1, 1, 0, box_rect.X() - box_rect.Y(),
-                               box_rect.X() + box_rect.MaxY());
-}
 
 }  // namespace blink
 

@@ -72,7 +72,7 @@ Path AppliedDecorationPainter::PrepareDottedDashedStrokePath() {
   return stroke_path;
 }
 
-FloatRect AppliedDecorationPainter::DecorationBounds() {
+FloatRect AppliedDecorationPainter::Bounds() {
   StrokeData stroke_data;
   stroke_data.SetThickness(decoration_info_.thickness);
 

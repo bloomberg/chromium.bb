@@ -18,6 +18,8 @@ namespace blink {
 
 class GraphicsContext;
 
+// Helper class for painting a text decorations. Each instance paints a single
+// decoration.
 class AppliedDecorationPainter final {
   STACK_ALLOCATED();
 
@@ -37,7 +39,7 @@ class AppliedDecorationPainter final {
         wavy_offset_factor_(wavy_offset_factor){};
 
   void Paint();
-  FloatRect DecorationBounds();
+  FloatRect Bounds();
 
  private:
   void StrokeWavyTextDecoration();

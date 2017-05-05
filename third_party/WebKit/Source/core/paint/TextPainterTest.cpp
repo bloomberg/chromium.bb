@@ -58,7 +58,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_Simple) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   TextPainter::Style text_style = TextPainter::TextPaintingStyle(
-      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
   EXPECT_EQ(Color(0, 0, 255), text_style.fill_color);
   EXPECT_EQ(Color(0, 0, 255), text_style.stroke_color);
@@ -82,7 +82,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   TextPainter::Style text_style = TextPainter::TextPaintingStyle(
-      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(false /* usesTextAsClip */, false /* isPrinting */));
   EXPECT_EQ(Color(255, 0, 0), text_style.fill_color);
   EXPECT_EQ(Color(0, 255, 0), text_style.stroke_color);
@@ -112,7 +112,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   TextPainter::Style text_style = TextPainter::TextPaintingStyle(
-      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(true /* usesTextAsClip */, false /* isPrinting */));
   EXPECT_EQ(Color::kBlack, text_style.fill_color);
   EXPECT_EQ(Color::kBlack, text_style.stroke_color);
@@ -136,7 +136,7 @@ TEST_F(TextPainterTest,
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   TextPainter::Style text_style = TextPainter::TextPaintingStyle(
-      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
   EXPECT_EQ(Color(255, 0, 0), text_style.fill_color);
   EXPECT_EQ(Color(0, 255, 0), text_style.stroke_color);
@@ -157,7 +157,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   TextPainter::Style text_style = TextPainter::TextPaintingStyle(
-      GetLineLayoutText(), GetLineLayoutText().StyleRef(),
+      GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
       CreatePaintInfo(false /* usesTextAsClip */, true /* isPrinting */));
   EXPECT_EQ(Color(255, 220, 220).Dark(), text_style.fill_color);
   EXPECT_EQ(Color(220, 255, 220).Dark(), text_style.stroke_color);

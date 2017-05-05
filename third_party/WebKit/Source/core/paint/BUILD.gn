@@ -191,6 +191,8 @@ blink_core_sources("paint") {
     "TableSectionPainter.h",
     "TextPainter.cpp",
     "TextPainter.h",
+    "TextPainterBase.cpp",
+    "TextPainterBase.h",
     "ThemePainter.cpp",
     "ThemePainter.h",
     "ThemePainterDefault.cpp",
