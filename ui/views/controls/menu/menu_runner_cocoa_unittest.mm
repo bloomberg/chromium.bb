@@ -209,7 +209,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     runner_->Cancel();
   }
 
-  // Run a nested message loop so that async and sync menus can be tested the
+  // Run a nested run loop so that async and sync menus can be tested the
   // same way.
   void MaybeRunAsync() {
     if (!IsAsync())

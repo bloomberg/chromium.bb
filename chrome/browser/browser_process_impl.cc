@@ -1344,7 +1344,7 @@ void BrowserProcessImpl::Unpin() {
   shutting_down_ = true;
 #if BUILDFLAG(ENABLE_PRINTING)
   // Wait for the pending print jobs to finish. Don't do this later, since
-  // this might cause a nested message loop to run, and we don't want pending
+  // this might cause a nested run loop to run, and we don't want pending
   // tasks to run once teardown has started.
   print_job_manager_->Shutdown();
 #endif

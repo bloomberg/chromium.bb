@@ -708,7 +708,7 @@ void DocumentLoader::DataReceived(Resource* resource,
   if (in_data_received_) {
     // If this function is reentered, defer processing of the additional data to
     // the top-level invocation. Reentrant calls can occur because of web
-    // platform (mis-)features that require running a nested message loop:
+    // platform (mis-)features that require running a nested run loop:
     // - alert(), confirm(), prompt()
     // - Detach of plugin elements.
     // - Synchronous XMLHTTPRequest

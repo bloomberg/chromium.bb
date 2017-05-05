@@ -308,7 +308,7 @@ class VIEWS_EXPORT MenuController
   // Key processing.
   void OnKeyDown(ui::KeyboardCode key_code);
 
-  // Creates a MenuController. If |blocking| is true a nested message loop is
+  // Creates a MenuController. If |blocking| is true a nested run loop is
   // started in |Run|.
   MenuController(bool blocking,
                  internal::MenuControllerDelegate* delegate);

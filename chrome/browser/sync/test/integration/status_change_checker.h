@@ -45,7 +45,7 @@ class StatusChangeChecker {
   // Timeout length when blocking.
   virtual base::TimeDelta GetTimeoutDuration();
 
-  // Helper function to start running the nested message loop.
+  // Helper function to start running the nested run loop.
   //
   // Will exit if IsExitConditionSatisfied() returns true when called from
   // CheckExitCondition(), if a timeout occurs, or if StopWaiting() is called.

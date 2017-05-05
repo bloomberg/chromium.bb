@@ -53,7 +53,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   wm::WmToplevelWindowEventHandler wm_toplevel_window_event_handler_;
 
-  // Are we running a nested message loop from RunMoveLoop().
+  // Are we running a nested run loop from RunMoveLoop().
   bool in_move_loop_ = false;
 
   base::WeakPtrFactory<ToplevelWindowEventHandler> weak_factory_;

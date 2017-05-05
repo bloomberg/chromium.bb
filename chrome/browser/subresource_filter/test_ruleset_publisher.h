@@ -19,7 +19,7 @@ class TestRulesetPublisher {
   ~TestRulesetPublisher();
 
   // Indexes the |unindexed_ruleset| and publishes it to all renderers
-  // via the RulesetService. Spins a nested message loop until done.
+  // via the RulesetService. Spins a nested run loop until done.
   void SetRuleset(const TestRuleset& unindexed_ruleset);
 
  private:

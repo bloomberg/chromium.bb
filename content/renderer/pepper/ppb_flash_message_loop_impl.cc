@@ -84,7 +84,7 @@ int32_t PPB_Flash_MessageLoop_Impl::InternalRun(
   state_->set_run_callback(callback);
 
   // It is possible that the PPB_Flash_MessageLoop_Impl object has been
-  // destroyed when the nested message loop exits.
+  // destroyed when the nested run loop exits.
   scoped_refptr<State> state_protector(state_);
   {
     base::MessageLoop::ScopedNestableTaskAllower allow(

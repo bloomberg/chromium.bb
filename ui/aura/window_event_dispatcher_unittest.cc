@@ -2209,8 +2209,8 @@ TEST_P(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
   root_window()->RemovePreTargetHandler(&recorder);
 }
 
-// This handler triggers a nested message loop when it receives a right click
-// event, and runs a single callback in the nested message loop.
+// This handler triggers a nested run loop when it receives a right click
+// event, and runs a single callback in the nested run loop.
 class TriggerNestedLoopOnRightMousePress : public ui::test::TestEventHandler {
  public:
   explicit TriggerNestedLoopOnRightMousePress(const base::Closure& callback)
@@ -2244,8 +2244,8 @@ class TriggerNestedLoopOnRightMousePress : public ui::test::TestEventHandler {
   DISALLOW_COPY_AND_ASSIGN(TriggerNestedLoopOnRightMousePress);
 };
 
-// Tests that if dispatching a 'held' event triggers a nested message loop, then
-// the events that are dispatched from the nested message loop are transformed
+// Tests that if dispatching a 'held' event triggers a nested run loop, then
+// the events that are dispatched from the nested run loop are transformed
 // correctly.
 TEST_P(WindowEventDispatcherTestInHighDPI,
        EventsTransformedInRepostedEventTriggeredNestedLoop) {
@@ -2911,7 +2911,7 @@ class NestedLocationDelegate : public test::TestWindowDelegate {
 
   void InRunMessageLoop(base::RunLoop* run_loop) {
     ++nested_message_loop_count_;
-    // Nested message loops trigger falling back to using the location from
+    // nested run loops trigger falling back to using the location from
     // WindowTreeClient, which is 0,0.
     EXPECT_EQ(gfx::Point(0, 0), Env::GetInstance()->last_mouse_location());
     run_loop->Quit();

@@ -49,12 +49,12 @@ int32_t FlashMenuResource::Show(
   //  1. Flash sends a show request to the renderer.
   //  2. The show handler in the renderer (in the case of full screen) requests
   //     the window rect which is a sync message to the browser. This causes
-  //     a nested message loop to be spun up in the renderer.
+  //     a nested run loop to be spun up in the renderer.
   //  3. Flash expects context menus to be synchronous so it starts a nested
-  //     message loop. This creates a second nested message loop in both the
+  //     message loop. This creates a second nested run loop in both the
   //     plugin and renderer process.
   //  4. The browser sends the window rect reply to unblock the renderer, but
-  //     it's in the second nested message loop and the reply will *not*
+  //     it's in the second nested run loop and the reply will *not*
   //     unblock this loop.
   //  5. The second loop won't exit until the message loop is complete, but
   //     that can't start until the first one exits.

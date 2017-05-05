@@ -66,7 +66,7 @@ struct PPB_Testing_Private_1_0 {
                            PP_Resource image,
                            const struct PP_Point* top_left);
   /**
-   * Runs a nested message loop. The plugin will be reentered from this call.
+   * Runs a nested run loop. The plugin will be reentered from this call.
    * This function is used for unit testing the API. The normal pattern is to
    * issue some asynchronous call that has a callback. Then you call
    * RunMessageLoop which will suspend the plugin and go back to processing
@@ -77,7 +77,7 @@ struct PPB_Testing_Private_1_0 {
    */
   void (*RunMessageLoop)(PP_Instance instance);
   /**
-   * Posts a quit message for the outermost nested message loop. Use this to
+   * Posts a quit message for the outermost nested run loop. Use this to
    * exit and return back to the caller after you call RunMessageLoop.
    */
   void (*QuitMessageLoop)(PP_Instance instance);

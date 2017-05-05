@@ -47,7 +47,7 @@ void MenuRunnerImpl::Release() {
     if (delete_after_run_)
       return;  // We already canceled.
 
-    // The menu is running a nested message loop, we can't delete it now
+    // The menu is running a nested run loop, we can't delete it now
     // otherwise the stack would be in a really bad state (many frames would
     // have deleted objects on them). Instead cancel the menu, when it returns
     // Holder will delete itself.

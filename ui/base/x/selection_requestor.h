@@ -38,7 +38,7 @@ class UI_BASE_EXPORT SelectionRequestor {
   ~SelectionRequestor();
 
   // Does the work of requesting |target| from |selection|, spinning up the
-  // nested message loop, and reading the resulting data back. The result is
+  // nested run loop, and reading the resulting data back. The result is
   // stored in |out_data|.
   // |out_data_items| is the length of |out_data| in |out_type| items.
   bool PerformBlockingConvertSelection(
@@ -98,7 +98,7 @@ class UI_BASE_EXPORT SelectionRequestor {
     // The time when the request should be aborted.
     base::TimeTicks timeout;
 
-    // Called to terminate the nested message loop.
+    // Called to terminate the nested run loop.
     base::Closure quit_closure;
 
     // True if the request is complete.

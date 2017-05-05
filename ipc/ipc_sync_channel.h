@@ -225,12 +225,12 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   }
 
   // Both these functions wait for a reply, timeout or process shutdown.  The
-  // latter one also runs a nested message loop in the meantime.
+  // latter one also runs a nested run loop in the meantime.
   static void WaitForReply(mojo::SyncHandleRegistry* registry,
                            SyncContext* context,
                            bool pump_messages);
 
-  // Runs a nested message loop until a reply arrives, times out, or the process
+  // Runs a nested run loop until a reply arrives, times out, or the process
   // shuts down.
   static void WaitForReplyWithNestedMessageLoop(SyncContext* context);
 

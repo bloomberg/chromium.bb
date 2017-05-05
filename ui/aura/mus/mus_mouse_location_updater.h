@@ -19,7 +19,7 @@ namespace aura {
 // Env::last_mouse_location() should use
 // WindowTreeClient::GetCursorScreenPoint(). While processing an event
 // Env uses the value from the current event, otherwise Env uses
-// WindowTreeClient::GetCursorScreenPoint(). If a nested message loop is
+// WindowTreeClient::GetCursorScreenPoint(). If a nested run loop is
 // started while processing an event Env uses GetCursorScreenPoint().
 class MusMouseLocationUpdater : public base::RunLoop::NestingObserver {
  public:

@@ -184,7 +184,7 @@ class MessageLoop : public Resource {
   /// The message loop identified by the argument must have been previously
   /// successfully attached to the current thread.
   ///
-  /// You may not run nested message loops. Since the main thread has an
+  /// You may not run nested run loops. Since the main thread has an
   /// implicit message loop that the system runs, you may not call Run on the
   /// main thread.
   ///

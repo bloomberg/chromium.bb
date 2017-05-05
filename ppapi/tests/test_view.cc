@@ -46,7 +46,7 @@ void TestView::RunTests(const std::string& filter) {
 bool TestView::WaitUntilViewChanged() {
   size_t old_page_visibility_change_count = page_visibility_log_.size();
 
-  // Run a nested message loop. It will exit either on ViewChanged or if the
+  // Run a nested run loop. It will exit either on ViewChanged or if the
   // timeout happens.
   post_quit_on_view_changed_ = true;
   testing_interface_->RunMessageLoop(instance_->pp_instance());

@@ -6949,7 +6949,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
       WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
   EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 
-  // Run a modal dialog, which used to run a nested message loop and require
+  // Run a modal dialog, which used to run a nested run loop and require
   // a special case for notifying about the access.
   new_view->MainFrame()->ExecuteScript(
       WebScriptSource("window.opener.confirm('Modal');"));
@@ -6986,7 +6986,7 @@ TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
                       "window.opener.document.close();"));
   EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 
-  // Run a modal dialog, which used to run a nested message loop and require
+  // Run a modal dialog, which used to run a nested run loop and require
   // a special case for notifying about the access.
   new_view->MainFrame()->ExecuteScript(
       WebScriptSource("window.opener.confirm('Modal');"));

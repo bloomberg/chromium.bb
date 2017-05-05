@@ -418,7 +418,7 @@ bool MessageLoop::DeferOrRunPendingTask(PendingTask pending_task) {
     return true;
   }
 
-  // We couldn't run the task now because we're in a nested message loop
+  // We couldn't run the task now because we're in a nested run loop
   // and the task isn't nestable.
   deferred_non_nestable_work_queue_.push(std::move(pending_task));
   return false;

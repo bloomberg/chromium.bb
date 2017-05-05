@@ -606,7 +606,7 @@ class WebContents : public PageNavigator,
   virtual content::RendererPreferences* GetMutableRendererPrefs() = 0;
 
   // Tells the tab to close now. The tab will take care not to close until it's
-  // out of nested message loops.
+  // out of nested run loops.
   virtual void Close() = 0;
 
   // A render view-originated drag has ended. Informs the render view host and

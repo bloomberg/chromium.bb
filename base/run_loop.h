@@ -60,7 +60,7 @@ class BASE_EXPORT RunLoop {
   // effect.
   //
   // WARNING: You must NEVER assume that a call to Quit() or QuitWhenIdle() will
-  // terminate the targetted message loop. If a nested message loop continues
+  // terminate the targetted message loop. If a nested run loop continues
   // running, the target may NEVER terminate. It is very easy to livelock (run
   // forever) in such a case.
   void Quit();

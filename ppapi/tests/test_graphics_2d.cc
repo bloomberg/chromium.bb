@@ -653,7 +653,7 @@ void TestGraphics2D::ResetViewChangedState() {
 }
 
 bool TestGraphics2D::WaitUntilViewChanged() {
-  // Run a nested message loop. It will exit either on ViewChanged or if the
+  // Run a nested run loop. It will exit either on ViewChanged or if the
   // timeout happens.
 
   // If view changed before we have chance to run message loop, return directly.

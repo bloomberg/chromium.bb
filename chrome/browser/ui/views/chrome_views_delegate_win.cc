@@ -38,7 +38,7 @@ bool MonitorHasAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
   //    state of the taskbar and then retrieve its position. That call returns
   //    the edge on which the taskbar is present. If it matches the edge we
   //    are looking for, we are done.
-  // NOTE: This call spins a nested message loop.
+  // NOTE: This call spins a nested run loop.
   HWND taskbar = reinterpret_cast<HWND>(
       SHAppBarMessage(ABM_GETAUTOHIDEBAR, &taskbar_data));
   if (!::IsWindow(taskbar)) {

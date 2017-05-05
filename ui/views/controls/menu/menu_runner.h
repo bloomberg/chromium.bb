@@ -109,7 +109,7 @@ class VIEWS_EXPORT MenuRunner {
                  MenuAnchorPosition anchor,
                  ui::MenuSourceType source_type);
 
-  // Returns true if we're in a nested message loop running the menu.
+  // Returns true if we're in a nested run loop running the menu.
   bool IsRunning() const;
 
   // Hides and cancels the menu. This does nothing if the menu is not open.

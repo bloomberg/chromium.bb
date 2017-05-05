@@ -26,7 +26,7 @@ enum WindowMoveSource {
 // window moving.
 class AURA_EXPORT WindowMoveClient {
  public:
-  // Starts a nested message loop for moving the window. |drag_offset| is the
+  // Starts a nested run loop for moving the window. |drag_offset| is the
   // offset from the window origin to the cursor when the drag was started.
   // Returns MOVE_SUCCESSFUL if the move has completed successfully, or
   // MOVE_CANCELED otherwise.

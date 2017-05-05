@@ -10,13 +10,13 @@
 
 namespace views {
 
-// Runs a nested message loop and grabs the mouse. This is used to implement
+// Runs a nested run loop and grabs the mouse. This is used to implement
 // dragging.
 class X11MoveLoop {
  public:
   virtual ~X11MoveLoop() {}
 
-  // Runs the nested message loop. While the mouse is grabbed, use |cursor| as
+  // Runs the nested run loop. While the mouse is grabbed, use |cursor| as
   // the mouse cursor. Returns true if the move-loop is completed successfully.
   // If the pointer-grab fails, or the move-loop is canceled by the user (e.g.
   // by pressing escape), then returns false.

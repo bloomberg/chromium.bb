@@ -2511,7 +2511,7 @@ void Document::Shutdown() {
   // since that will cause a situation where LocalFrame still has a Document
   // attached after this finishes!  Normally, it shouldn't actually be possible
   // to trigger navigation here.  However, plugins (see below) can cause lots of
-  // crazy things to happen, since plugin detach involves nested message loops.
+  // crazy things to happen, since plugin detach involves nested run loops.
   FrameNavigationDisabler navigation_disabler(*frame_);
   // Defer FrameViewBase updates to avoid plugins trying to run script inside
   // ScriptForbiddenScope, which will crash the renderer after

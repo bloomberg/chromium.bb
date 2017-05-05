@@ -24,11 +24,11 @@ class TestFrameNavigationObserver : public WebContentsObserver {
 
   ~TestFrameNavigationObserver() override;
 
-  // Runs a nested message loop and blocks until the full load has
+  // Runs a nested run loop and blocks until the full load has
   // completed.
   void Wait();
 
-  // Runs a nested message loop and blocks until the navigation in the
+  // Runs a nested run loop and blocks until the navigation in the
   // associated FrameTreeNode has committed.
   void WaitForCommit();
 

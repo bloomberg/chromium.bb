@@ -52,14 +52,14 @@ bool MockCanAddURLToHistory(const GURL& url) {
 }
 
 // Used for querying top sites. Either runs sequentially, or runs a nested
-// nested message loop until the response is complete. The later is used when
+// nested run loop until the response is complete. The later is used when
 // TopSites is queried before it finishes loading.
 class TopSitesQuerier {
  public:
   TopSitesQuerier()
       : number_of_callbacks_(0), waiting_(false), weak_ptr_factory_(this) {}
 
-  // Queries top sites. If |wait| is true a nested message loop is run until the
+  // Queries top sites. If |wait| is true a nested run loop is run until the
   // callback is notified.
   void QueryTopSites(TopSitesImpl* top_sites, bool wait) {
     QueryAllTopSites(top_sites, wait, false);

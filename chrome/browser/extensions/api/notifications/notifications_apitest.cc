@@ -99,7 +99,7 @@ class UserGestureCatcher : public content::NotificationObserver {
   // A sequential list of user gesture notifications from the test extension(s).
   std::deque<bool> results_;
 
-  // True if we're in a nested message loop waiting for results from
+  // True if we're in a nested run loop waiting for results from
   // the extension.
   bool waiting_;
 };

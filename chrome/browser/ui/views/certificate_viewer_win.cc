@@ -24,7 +24,7 @@
 namespace {
 
 // Shows a Windows certificate viewer dialog on a background thread to avoid
-// nested message loops.
+// nested run loops.
 class CertificateViewerDialog : public ui::BaseShellDialogImpl {
  public:
   CertificateViewerDialog() {}

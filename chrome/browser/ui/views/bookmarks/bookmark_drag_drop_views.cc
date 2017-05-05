@@ -31,7 +31,7 @@ void DragBookmarks(Profile* profile,
   bookmarks::BookmarkNodeData drag_data(nodes);
   drag_data.Write(profile->GetPath(), &data);
 
-  // Allow nested message loop so we get DnD events as we drag this around.
+  // Allow nested run loop so we get DnD events as we drag this around.
   base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
       base::MessageLoop::current());
 

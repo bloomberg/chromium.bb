@@ -405,8 +405,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   TimeTicks recent_time_;
 
   // A queue of non-nestable tasks that we had to defer because when it came
-  // time to execute them we were in a nested message loop.  They will execute
-  // once we're out of nested message loops.
+  // time to execute them we were in a nested run loop.  They will execute
+  // once we're out of nested run loops.
   TaskQueue deferred_non_nestable_work_queue_;
 
   ObserverList<DestructionObserver> destruction_observers_;

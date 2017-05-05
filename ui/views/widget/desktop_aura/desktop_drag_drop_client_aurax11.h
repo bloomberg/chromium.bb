@@ -201,7 +201,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // with alpha > 32).
   bool IsValidDragImage(const gfx::ImageSkia& image);
 
-  // A nested message loop that notifies this object of events through the
+  // A nested run loop that notifies this object of events through the
   // X11MoveLoopDelegate interface.
   std::unique_ptr<X11MoveLoop> move_loop_;
 

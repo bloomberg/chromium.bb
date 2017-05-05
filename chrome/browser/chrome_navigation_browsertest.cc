@@ -65,7 +65,7 @@ class DidStartNavigationObserver : public content::WebContentsObserver {
         message_loop_runner_(new content::MessageLoopRunner) {}
   ~DidStartNavigationObserver() override {}
 
-  // Runs a nested message loop and blocks until the full load has
+  // Runs a nested run loop and blocks until the full load has
   // completed.
   void Wait() { message_loop_runner_->Run(); }
 

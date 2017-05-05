@@ -2728,7 +2728,7 @@ void MessageLoopTaskWithImmediateQuit(
   base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
 
   base::RunLoop run_loop;
-  // Needed because entering the nested message loop causes a DoWork to get
+  // Needed because entering the nested run loop causes a DoWork to get
   // posted.
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
   task_queue->PostTask(FROM_HERE, run_loop.QuitClosure());

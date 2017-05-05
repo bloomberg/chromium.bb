@@ -29,7 +29,7 @@
  */
 /**
  * The <code>PPB_Flash_MessageLoop</code> interface supports Pepper Flash to run
- * nested message loops.
+ * nested run loops.
  */
 struct PPB_Flash_MessageLoop_0_1 {
   /**
@@ -53,14 +53,14 @@ struct PPB_Flash_MessageLoop_0_1 {
    */
   PP_Bool (*IsFlashMessageLoop)(PP_Resource resource);
   /**
-   * Runs a nested message loop. The plugin will be reentered from this call.
+   * Runs a nested run loop. The plugin will be reentered from this call.
    * This function is used in places where Flash would normally enter a nested
    * message loop (e.g., when displaying context menus), but Pepper provides
    * only an asynchronous call. After performing that asynchronous call, call
    * <code>Run()</code>. In the callback, call <code>Quit()</code>.
    *
    * For a given message loop resource, only the first call to
-   * <code>Run()</code> will start a nested message loop. The subsequent calls
+   * <code>Run()</code> will start a nested run loop. The subsequent calls
    * will return <code>PP_ERROR_FAILED</code> immediately.
    *
    * @param[in] flash_message_loop The Flash message loop.
@@ -73,11 +73,11 @@ struct PPB_Flash_MessageLoop_0_1 {
    */
   int32_t (*Run)(PP_Resource flash_message_loop);
   /**
-   * Signals to quit the outermost nested message loop. Use this to exit and
+   * Signals to quit the outermost nested run loop. Use this to exit and
    * return back to the caller after you call <code>Run()</code>.
    *
    * If <code>Quit()</code> is not called to balance the call to
-   * <code>Run()</code>, the outermost nested message loop will be quitted
+   * <code>Run()</code>, the outermost nested run loop will be quitted
    * implicitly when the resource is destroyed.
    *
    * @param[in] flash_message_loop The Flash message loop.

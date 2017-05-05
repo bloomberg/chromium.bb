@@ -862,7 +862,7 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
           return target_details;
         }
         // If the |mouse_moved_handler_| changes out from under us, assume a
-        // nested message loop ran and we don't need to do anything.
+        // nested run loop ran and we don't need to do anything.
         if (mouse_moved_handler_ != old_mouse_moved_handler) {
           event->SetHandled();
           return target_details;

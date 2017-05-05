@@ -45,7 +45,7 @@ class RenderProcessHost;
 class Shell;
 
 #if defined(OS_ANDROID)
-// Android uses a nested message loop for running layout tests because the
+// Android uses a nested run loop for running layout tests because the
 // default message loop, provided by the system, does not offer a blocking
 // Run() method. The loop itself, implemented as NestedMessagePumpAndroid,
 // uses a base::WaitableEvent allowing it to sleep until more events arrive.

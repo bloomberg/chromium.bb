@@ -716,10 +716,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
   // Responsible for loading the tabs.
   scoped_refptr<TabLoader> tab_loader_;
 
-  // When synchronous we run a nested message loop. To avoid creating windows
-  // from the nested message loop (which can make exiting the nested message
+  // When synchronous we run a nested run loop. To avoid creating windows
+  // from the nested run loop (which can make exiting the nested message
   // loop take a while) we cache the SessionWindows here and create the actual
-  // windows when the nested message loop exits.
+  // windows when the nested run loop exits.
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows_;
   SessionID::id_type active_window_id_;
 

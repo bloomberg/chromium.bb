@@ -90,10 +90,10 @@ class EventGeneratorDelegate {
 //
 // 1) If your test depends on native events (ui::Event::native_event()).
 //   This return is empty/NULL event with EventGenerator.
-// 2) If your test involves nested message loop, such as
+// 2) If your test involves nested run loop, such as
 //    menu or drag & drop. Because this class directly
 //    post an event to WindowEventDispatcher, this event will not be
-//    handled in the nested message loop.
+//    handled in the nested run loop.
 // 3) Similarly, |base::MessagePumpObserver| will not be invoked.
 // 4) Any other code that requires native message loops, such as
 //    tests for WindowTreeHostWin/WindowTreeHostX11.

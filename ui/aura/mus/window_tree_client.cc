@@ -109,8 +109,8 @@ class EventAckHandler : public base::RunLoop::NestingObserver {
 
   // base::RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override {
-    // Acknowledge the event immediately if a nested message loop starts.
-    // Otherwise we appear unresponsive for the life of the nested message loop.
+    // Acknowledge the event immediately if a nested run loop starts.
+    // Otherwise we appear unresponsive for the life of the nested run loop.
     if (ack_callback_) {
       ack_callback_->Run(ui::mojom::EventResult::HANDLED);
       ack_callback_.reset();

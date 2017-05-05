@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
-// Invoked from the nested message loop.
+// Invoked from the nested run loop.
 void DragToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
                                TabStrip* not_attached_tab_strip,
                                TabStrip* target_tab_strip) {
@@ -1358,7 +1358,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, MAYBE_DragAll) {
 
 namespace {
 
-// Invoked from the nested message loop.
+// Invoked from the nested run loop.
 void DragAllToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
                                   TabStrip* attached_tab_strip,
                                   TabStrip* target_tab_strip,
@@ -1430,7 +1430,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
-// Invoked from the nested message loop.
+// Invoked from the nested run loop.
 void DragAllToSeparateWindowAndCancelStep2(
     DetachToBrowserTabDragControllerTest* test,
     TabStrip* attached_tab_strip,
@@ -1622,7 +1622,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
-// Invoked from the nested message loop.
+// Invoked from the nested run loop.
 void CancelOnNewTabWhenDraggingStep2(
     DetachToBrowserTabDragControllerTest* test,
     const BrowserList* browser_list) {
@@ -1844,7 +1844,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
 namespace {
 
-// Invoked from the nested message loop.
+// Invoked from the nested run loop.
 void DragTabToWindowInSeparateDisplayStep2(
     DetachToBrowserTabDragControllerTest* test,
     TabStrip* not_attached_tab_strip,
@@ -2268,7 +2268,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
       DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest);
 };
 
-// Invoked from the nested message loop.
+// Invoked from the nested run loop.
 void CancelDragTabToWindowInSeparateDisplayStep3(
     TabStrip* tab_strip,
     const BrowserList* browser_list) {
@@ -2282,7 +2282,7 @@ void CancelDragTabToWindowInSeparateDisplayStep3(
   display_manager->AddRemoveDisplay();
 }
 
-// Invoked from the nested message loop.
+// Invoked from the nested run loop.
 void CancelDragTabToWindowInSeparateDisplayStep2(
     DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest* test,
     TabStrip* tab_strip,

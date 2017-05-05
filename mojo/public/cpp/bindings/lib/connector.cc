@@ -52,7 +52,7 @@ class Connector::ActiveDispatchTracker {
 };
 
 // Watches the MessageLoop on the current thread. Notifies the current chain of
-// ActiveDispatchTrackers when a nested message loop is started.
+// ActiveDispatchTrackers when a nested run loop is started.
 class Connector::RunLoopNestingObserver
     : public base::RunLoop::NestingObserver,
       public base::MessageLoop::DestructionObserver {

@@ -33,7 +33,7 @@ class TestNavigationObserver {
 
   virtual ~TestNavigationObserver();
 
-  // Runs a nested message loop and blocks until the expected number of
+  // Runs a nested run loop and blocks until the expected number of
   // navigations are complete.
   void Wait();
 

@@ -929,7 +929,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
     Send(new ViewMsg_Repaint(routing_id_, view_size));
   }
 
-  // Pump a nested message loop until we time out or get a frame of the right
+  // Pump a nested run loop until we time out or get a frame of the right
   // size.
   TimeTicks start_time = TimeTicks::Now();
   TimeDelta time_left = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);

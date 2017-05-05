@@ -20,7 +20,7 @@ app_list::AppListModel* GetAppListModel(AppListService* service);
 
 AppListServiceImpl* GetAppListServiceImpl();
 
-// Creates a second profile in a nested message loop for testing the app list.
+// Creates a second profile in a nested run loop for testing the app list.
 Profile* CreateSecondProfileAsync();
 
 }  // namespace test
