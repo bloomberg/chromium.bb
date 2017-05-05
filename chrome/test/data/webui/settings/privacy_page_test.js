@@ -229,6 +229,25 @@ cr.define('settings_privacy_page', function() {
             'update-counter-text', checkbox.pref.key, 'result');
         assertEquals('result', checkbox.subLabel);
       });
+
+      test('history rows are hidden for supervised users', function() {
+        assertFalse(loadTimeData.getBoolean('isSupervised'));
+        assertFalse(element.$.browsingCheckbox.hidden);
+        assertFalse(element.$.downloadCheckbox.hidden);
+
+        element.remove();
+        testBrowserProxy.reset();
+        loadTimeData.overrideValues({isSupervised: true});
+
+        element = document.createElement('settings-clear-browsing-data-dialog');
+        document.body.appendChild(element);
+        Polymer.dom.flush();
+
+        return testBrowserProxy.whenCalled('initialize').then(function() {
+          assertTrue(element.$.browsingCheckbox.hidden);
+          assertTrue(element.$.downloadCheckbox.hidden);
+        });
+      });
     });
   }
 

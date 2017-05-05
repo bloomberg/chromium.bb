@@ -112,6 +112,8 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #else
       profile->IsOffTheRecord());
 #endif
+
+  html_source->AddBoolean("isSupervised", profile->IsSupervised());
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
@@ -351,8 +353,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
-
-  html_source->AddBoolean("isSupervised", profile->IsSupervised());
 }
 
 #if defined(OS_CHROMEOS)
