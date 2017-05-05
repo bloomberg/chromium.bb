@@ -56,6 +56,14 @@ Polymer({
     },
 
     /** @private */
+    isSupervised_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isSupervised');
+      },
+    },
+
+    /** @private */
     showHistoryDeletionDialog_: {
       type: Boolean,
       value: false,

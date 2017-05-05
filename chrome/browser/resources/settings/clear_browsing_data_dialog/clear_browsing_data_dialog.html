@@ -111,17 +111,23 @@
               menu-options="[[clearFromOptions_]]">
           </settings-dropdown-menu>
         </div>
+        <!-- Note: whether these checkboxes are checked are ignored if deleting
+             history is disabled (i.e. supervised users, policy), so it's OK to
+             have a hidden checkbox that's also checked (as the C++ accounts for
+             whether a user is allowed to delete history independently). -->
         <settings-checkbox id="browsingCheckbox"
             pref="{{prefs.browser.clear_data.browsing_history}}"
             label="$i18n{clearBrowsingHistory}"
             sub-label="[[counters_.browsing_history]]"
-            disabled="[[clearingInProgress_]]">
+            disabled="[[clearingInProgress_]]"
+            hidden="[[isSupervised_]]">
         </settings-checkbox>
         <settings-checkbox id="downloadCheckbox"
             pref="{{prefs.browser.clear_data.download_history}}"
             label="$i18n{clearDownloadHistory}"
             sub-label="[[counters_.download_history]]"
-            disabled="[[clearingInProgress_]]">
+            disabled="[[clearingInProgress_]]"
+            hidden="[[isSupervised_]]">
         </settings-checkbox>
         <settings-checkbox
             pref="{{prefs.browser.clear_data.cache}}"
