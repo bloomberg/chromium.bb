@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 #
 # This script should not be run directly but sourced by the other
-# scripts (e.g. sysroot-creator-trusty.sh).  Its up to the parent scripts
+# scripts (e.g. sysroot-creator-jessie.sh).  Its up to the parent scripts
 # to define certain environment variables: e.g.
 #  DISTRO=ubuntu
-#  DIST=trusty
-#  DIST_UPDATES=trusty-updates  # optional
+#  DIST=jessie
+#  DIST_UPDATES=jessie-updates  # optional
 #  REPO_EXTRA="universe restricted multiverse"  # optional
 #  APT_REPO=http://archive.ubuntu.com/ubuntu
 #  KEYRING_FILE=/usr/share/keyrings/ubuntu-archive-keyring.gpg
@@ -850,7 +850,7 @@ PrintDistro() {
 #@
 #@ DumpRelease
 #@
-#@    Prints disto release.  eg: trusty
+#@    Prints disto release.  eg: jessie
 PrintRelease() {
   echo ${DIST}
 }
