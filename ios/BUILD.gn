@@ -33,7 +33,6 @@ group("all") {
     deps = [
       "//components/cronet/ios:cronet_package",
       "//ios/crnet:crnet_framework",
-      "//ios/crnet/crnet_consumer",
       "//ios/crnet/test:crnet_test",
     ]
   } else {

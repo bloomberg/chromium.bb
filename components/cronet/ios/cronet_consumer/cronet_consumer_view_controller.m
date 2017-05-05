@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "crnet_consumer_view_controller.h"
+#import "cronet_consumer_view_controller.h"
 
-#import <CrNet/CrNet.h>
+#import <Cronet/Cronet.h>
 
-@implementation CrNetConsumerViewController {
+@implementation CronetConsumerViewController {
   UIWebView* _webView;
 }
 
@@ -22,13 +22,11 @@
   [self.view addSubview:button];
 
   _webView = [[UIWebView alloc]
-      initWithFrame:CGRectMake(0,
-                               52,
-                               self.view.bounds.size.width,
+      initWithFrame:CGRectMake(0, 52, self.view.bounds.size.width,
                                self.view.bounds.size.height - 52)];
   [self.view addSubview:_webView];
-  _webView.autoresizingMask = UIViewAutoresizingFlexibleWidth |
-      UIViewAutoresizingFlexibleHeight;
+  _webView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
   [self loadChromium];
 }
@@ -39,8 +37,10 @@
 }
 
 - (void)loadChromium {
-  [_webView loadRequest:[NSURLRequest requestWithURL:
-      [NSURL URLWithString:@"https://www.chromium.org"]]];
+  [_webView
+      loadRequest:[NSURLRequest
+                      requestWithURL:
+                          [NSURL URLWithString:@"https://www.chromium.org"]]];
 }
 
 @end
