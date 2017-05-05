@@ -682,6 +682,9 @@ interface CSSScale : CSSTransformComponent
     getter y
     getter z
     method constructor
+    setter x
+    setter y
+    setter z
 interface CSSSimpleLength : CSSLengthValue
     attribute @@toStringTag
     getter type

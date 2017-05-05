@@ -91,4 +91,13 @@ test(function() {
   }
 }, "Test that asMatrix is constructed correctly for CSSScale.");
 
+test(function() {
+  var actual = new CSSScale(0, 0, 0);
+  actual.x = 1;
+  actual.y = 2;
+  actual.z = 3;
+  assert_equals(actual.x, 1);
+  assert_equals(actual.y, 2);
+  assert_equals(actual.z, 3);
+}, "Test that x, y, z are mutable attributes.");
 </script>

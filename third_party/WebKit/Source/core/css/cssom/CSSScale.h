@@ -27,6 +27,10 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
   double y() const { return y_; }
   double z() const { return z_; }
 
+  void setX(double x) { x_ = x; }
+  void setY(double y) { y_ = y; }
+  void setZ(double z) { z_ = z; }
+
   TransformComponentType GetType() const override {
     return is2d_ ? kScaleType : kScale3DType;
   }
