@@ -356,7 +356,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   client_ = client;
 
   audio_buffer_stream_ = base::MakeUnique<AudioBufferStream>(
-      task_runner_, create_audio_decoders_cb_.Run(), media_log_);
+      task_runner_, create_audio_decoders_cb_, media_log_);
 
   audio_buffer_stream_->set_config_change_observer(base::Bind(
       &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));

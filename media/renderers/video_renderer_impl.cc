@@ -150,9 +150,8 @@ void VideoRendererImpl::Initialize(
   DCHECK(!was_background_rendering_);
   DCHECK(!time_progressing_);
 
-  ScopedVector<VideoDecoder> decoders = create_video_decoders_cb_.Run();
-  video_frame_stream_.reset(
-      new VideoFrameStream(task_runner_, std::move(decoders), media_log_));
+  video_frame_stream_.reset(new VideoFrameStream(
+      task_runner_, create_video_decoders_cb_, media_log_));
 
   // Always re-initialize or reset the |gpu_memory_buffer_pool_| in case we are
   // switching between video tracks with incompatible video formats (e.g. 8-bit

@@ -88,23 +88,25 @@ VideoRotation MockDemuxerStream::video_rotation() {
   return VIDEO_ROTATION_0;
 }
 
-std::string MockVideoDecoder::GetDisplayName() const {
-  return "MockVideoDecoder";
-}
-
-MockVideoDecoder::MockVideoDecoder() {
+MockVideoDecoder::MockVideoDecoder(const std::string& decoder_name)
+    : decoder_name_(decoder_name) {
   ON_CALL(*this, CanReadWithoutStalling()).WillByDefault(Return(true));
-}
-
-std::string MockAudioDecoder::GetDisplayName() const {
-  return "MockAudioDecoder";
 }
 
 MockVideoDecoder::~MockVideoDecoder() {}
 
-MockAudioDecoder::MockAudioDecoder() {}
+std::string MockVideoDecoder::GetDisplayName() const {
+  return decoder_name_;
+}
+
+MockAudioDecoder::MockAudioDecoder(const std::string& decoder_name)
+    : decoder_name_(decoder_name) {}
 
 MockAudioDecoder::~MockAudioDecoder() {}
+
+std::string MockAudioDecoder::GetDisplayName() const {
+  return decoder_name_;
+}
 
 MockRendererClient::MockRendererClient() {}
 

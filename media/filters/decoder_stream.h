@@ -50,14 +50,17 @@ class MEDIA_EXPORT DecoderStream {
     DECODE_ERROR,  // Decoder returned decode error.
   };
 
+  // Callback to create a list of decoders.
+  using CreateDecodersCB = base::RepeatingCallback<ScopedVector<Decoder>()>;
+
   // Indicates completion of a DecoderStream initialization.
-  typedef base::Callback<void(bool success)> InitCB;
+  using InitCB = base::Callback<void(bool success)>;
 
   // Indicates completion of a DecoderStream read.
-  typedef base::Callback<void(Status, const scoped_refptr<Output>&)> ReadCB;
+  using ReadCB = base::Callback<void(Status, const scoped_refptr<Output>&)>;
 
   DecoderStream(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-                ScopedVector<Decoder> decoders,
+                CreateDecodersCB create_decoders_cb,
                 MediaLog* media_log);
   virtual ~DecoderStream();
 
@@ -188,7 +191,7 @@ class MEDIA_EXPORT DecoderStream {
   DecoderStreamTraits<StreamType> traits_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
+  CreateDecodersCB create_decoders_cb_;
   MediaLog* media_log_;
 
   State state_;
@@ -210,6 +213,16 @@ class MEDIA_EXPORT DecoderStream {
 
   // Whether |decoder_| has produced a frame yet. Reset on fallback.
   bool decoder_produced_a_frame_;
+
+  // Whether we have already fallen back once on decode error, used to prevent
+  // issues like infinite fallback like:
+  // 1. select decoder 1
+  // 2. decode error on decoder 1
+  // 3. black list decoder 1 and select decoder 2
+  // 4. decode error again on decoder 2
+  // 5. black list decoder 2 and select decoder 1
+  // 6. go to (2)
+  bool has_fallen_back_once_on_decode_error_;
 
   std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 

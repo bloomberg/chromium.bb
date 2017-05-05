@@ -88,9 +88,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
   }
 
   // Sets the config to be encrypted or not encrypted manually. This can be
-  // useful for decryptors that decrypts an encrypted stream to a clear stream,
-  // or for decoder selectors that wants to select decrypting decoders instead
-  // of clear decoders.
+  // useful for decryptors that decrypts an encrypted stream to a clear stream.
   void SetIsEncrypted(bool is_encrypted);
 
  private:
