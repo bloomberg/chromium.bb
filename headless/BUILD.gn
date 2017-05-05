@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
-import("//headless/headless.gni")
 import("//build/util/process_version.gni")
+import("//headless/headless.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//printing/features/features.gni")
 import("//testing/test.gni")
@@ -21,7 +21,7 @@ config("headless_implementation") {
 
 group("headless") {
   deps = [
-    "//headless:headless_lib",
+    ":headless_lib",
   ]
 }
 
@@ -69,7 +69,7 @@ repack("pak") {
 
 action("embed_resources") {
   # TODO(altimin): Consider zipping file here, it can reduce size up to 80%.
-  script = "//headless/lib/embed_data.py"
+  script = "lib/embed_data.py"
 
   inputs = [
     "$root_out_dir/headless_lib.pak",
@@ -168,7 +168,7 @@ foreach(domain, devtools_domains) {
 }
 
 action("gen_devtools_client_api") {
-  script = "//headless/lib/browser/devtools_api/client_api_generator.py"
+  script = "lib/browser/devtools_api/client_api_generator.py"
   deps = [
     "//third_party/WebKit/Source/core/inspector:protocol_version",
   ]
@@ -484,9 +484,9 @@ test("headless_browsertests") {
   deps = [
     ":embedder_mojo_for_testing",
     ":headless_browser_tests_pak",
+    ":headless_lib",
     "//base",
     "//content/test:test_support",
-    "//headless:headless_lib",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -504,7 +504,7 @@ static_library("headless_shell_lib") {
   ]
 
   deps = [
-    "//headless:headless_lib",
+    ":headless_lib",
   ]
 
   configs += [ ":headless_implementation" ]
@@ -516,7 +516,7 @@ executable("headless_shell") {
   ]
 
   deps = [
-    "//headless:headless_shell_lib",
+    ":headless_shell_lib",
   ]
 
   if (is_win) {
@@ -545,6 +545,6 @@ executable("headless_example") {
   ]
 
   deps = [
-    "//headless:headless_shell_lib",
+    ":headless_shell_lib",
   ]
 }
