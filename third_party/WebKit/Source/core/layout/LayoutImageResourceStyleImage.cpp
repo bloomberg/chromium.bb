@@ -58,13 +58,13 @@ void LayoutImageResourceStyleImage::Shutdown() {
   cached_image_ = nullptr;
 }
 
-PassRefPtr<Image> LayoutImageResourceStyleImage::GetImage(const IntSize& size,
-                                                          float zoom) const {
+PassRefPtr<Image> LayoutImageResourceStyleImage::GetImage(
+    const IntSize& size) const {
   // Generated content may trigger calls to image() while we're still pending,
   // don't assert but gracefully exit.
   if (style_image_->IsPendingImage())
     return nullptr;
-  return style_image_->GetImage(*layout_object_, size, zoom);
+  return style_image_->GetImage(*layout_object_, size);
 }
 
 LayoutSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {

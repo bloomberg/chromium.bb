@@ -792,7 +792,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool HasLayer() const { return bitfields_.HasLayer(); }
 
-  // This may be different from styleRef().hasBoxDecorationBackground() because
+  // This may be different from StyleRef().hasBoxDecorationBackground() because
   // some objects may have box decoration background other than from their own
   // style.
   bool HasBoxDecorationBackground() const {
@@ -1341,8 +1341,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   const ComputedStyle* Style() const { return style_.Get(); }
   ComputedStyle* MutableStyle() const { return style_.Get(); }
 
-  // m_style can only be nullptr before the first style is set, thus most
-  // callers will never see a nullptr style and should use styleRef().
+  // style_ can only be nullptr before the first style is set, thus most
+  // callers will never see a nullptr style and should use StyleRef().
   // FIXME: It would be better if style() returned a const reference.
   const ComputedStyle& StyleRef() const { return MutableStyleRef(); }
   ComputedStyle& MutableStyleRef() const {
@@ -2006,7 +2006,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   };
   virtual bool IsOfType(LayoutObjectType type) const { return false; }
 
-  // Overrides should call the superclass at the end. m_style will be 0 the
+  // Overrides should call the superclass at the end. style_ will be 0 the
   // first time this function will be called.
   virtual void StyleWillChange(StyleDifference, const ComputedStyle& new_style);
   // Overrides should call the superclass at the start. |oldStyle| will be 0 the

@@ -117,14 +117,15 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
   document_.Clear();
 }
 
-PassRefPtr<Image> StyleFetchedImage::GetImage(const LayoutObject&,
-                                              const IntSize& container_size,
-                                              float zoom) const {
+PassRefPtr<Image> StyleFetchedImage::GetImage(
+    const LayoutObject& obj,
+    const IntSize& container_size) const {
   if (!image_->GetImage()->IsSVGImage())
     return image_->GetImage();
 
   return SVGImageForContainer::Create(ToSVGImage(image_->GetImage()),
-                                      container_size, zoom, url_);
+                                      container_size,
+                                      obj.StyleRef().EffectiveZoom(), url_);
 }
 
 bool StyleFetchedImage::KnownToBeOpaque(

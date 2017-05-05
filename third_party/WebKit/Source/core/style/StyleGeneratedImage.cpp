@@ -69,9 +69,8 @@ void StyleGeneratedImage::RemoveClient(LayoutObject* layout_object) {
 
 PassRefPtr<Image> StyleGeneratedImage::GetImage(
     const LayoutObject& layout_object,
-    const IntSize& size,
-    float zoom) const {
-  return image_generator_value_->GetImage(layout_object, size, zoom);
+    const IntSize& size) const {
+  return image_generator_value_->GetImage(layout_object, size);
 }
 
 bool StyleGeneratedImage::KnownToBeOpaque(

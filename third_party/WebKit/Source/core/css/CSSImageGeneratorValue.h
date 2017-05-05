@@ -57,7 +57,7 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
 
   void AddClient(const LayoutObject*, const IntSize&);
   void RemoveClient(const LayoutObject*);
-  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&, float zoom);
+  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&);
 
   bool IsFixedSize() const;
   IntSize FixedSize(const LayoutObject&, const FloatSize& default_object_size);

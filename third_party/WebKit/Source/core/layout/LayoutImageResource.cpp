@@ -94,8 +94,8 @@ LayoutSize LayoutImageResource::ImageSize(float multiplier) const {
   return size;
 }
 
-PassRefPtr<Image> LayoutImageResource::GetImage(const IntSize& container_size,
-                                                float zoom) const {
+PassRefPtr<Image> LayoutImageResource::GetImage(
+    const IntSize& container_size) const {
   if (!cached_image_)
     return Image::NullImage();
 
@@ -109,7 +109,9 @@ PassRefPtr<Image> LayoutImageResource::GetImage(const IntSize& container_size,
     const AtomicString& url_string = ToElement(node)->ImageSourceURL();
     url = node->GetDocument().CompleteURL(url_string);
   }
-  return SVGImageForContainer::Create(svg_image, container_size, zoom, url);
+  return SVGImageForContainer::Create(
+      svg_image, container_size, layout_object_->StyleRef().EffectiveZoom(),
+      url);
 }
 
 bool LayoutImageResource::MaybeAnimated() const {

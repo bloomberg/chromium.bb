@@ -49,7 +49,6 @@ class CORE_EXPORT CSSPaintImageGenerator
   // representing an invalid image if an error occurred.
   virtual PassRefPtr<Image> Paint(const LayoutObject&,
                                   const IntSize&,
-                                  float zoom,
                                   const CSSStyleValueVector*) = 0;
 
   virtual const Vector<CSSPropertyID>& NativeInvalidationProperties() const = 0;

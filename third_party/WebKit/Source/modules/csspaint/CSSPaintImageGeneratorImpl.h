@@ -28,7 +28,6 @@ class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
 
   PassRefPtr<Image> Paint(const LayoutObject&,
                           const IntSize&,
-                          float zoom,
                           const CSSStyleValueVector*) final;
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const final;
   const Vector<AtomicString>& CustomInvalidationProperties() const final;

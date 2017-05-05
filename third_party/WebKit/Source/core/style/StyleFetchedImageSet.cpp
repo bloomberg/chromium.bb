@@ -115,14 +115,15 @@ void StyleFetchedImageSet::RemoveClient(LayoutObject* layout_object) {
   best_fit_image_->RemoveObserver(layout_object);
 }
 
-PassRefPtr<Image> StyleFetchedImageSet::GetImage(const LayoutObject&,
-                                                 const IntSize& container_size,
-                                                 float zoom) const {
+PassRefPtr<Image> StyleFetchedImageSet::GetImage(
+    const LayoutObject& obj,
+    const IntSize& container_size) const {
   if (!best_fit_image_->GetImage()->IsSVGImage())
     return best_fit_image_->GetImage();
 
   return SVGImageForContainer::Create(ToSVGImage(best_fit_image_->GetImage()),
-                                      container_size, zoom, url_);
+                                      container_size,
+                                      obj.StyleRef().EffectiveZoom(), url_);
 }
 
 bool StyleFetchedImageSet::KnownToBeOpaque(

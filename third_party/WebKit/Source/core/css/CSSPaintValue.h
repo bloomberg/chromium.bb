@@ -31,7 +31,7 @@ class CSSPaintValue : public CSSImageGeneratorValue {
 
   String GetName() const;
 
-  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&, float zoom);
+  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&);
   bool IsFixedSize() const { return false; }
   IntSize FixedSize(const LayoutObject&) { return IntSize(); }
 

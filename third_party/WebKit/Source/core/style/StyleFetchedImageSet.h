@@ -69,8 +69,7 @@ class StyleFetchedImageSet final : public StyleImage,
   void AddClient(LayoutObject*) override;
   void RemoveClient(LayoutObject*) override;
   PassRefPtr<Image> GetImage(const LayoutObject&,
-                             const IntSize&,
-                             float) const override;
+                             const IntSize&) const override;
   float ImageScaleFactor() const override { return image_scale_factor_; }
   bool KnownToBeOpaque(const LayoutObject&) const override;
   ImageResourceContent* CachedImage() const override;

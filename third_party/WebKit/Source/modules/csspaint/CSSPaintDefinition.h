@@ -43,7 +43,6 @@ class CSSPaintDefinition final
   // throws an error.
   PassRefPtr<Image> Paint(const LayoutObject&,
                           const IntSize&,
-                          float zoom,
                           const CSSStyleValueVector*);
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
     return native_invalidation_properties_;

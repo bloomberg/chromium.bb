@@ -63,8 +63,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
                           PixelSnappedIntRect(border_image_rect),
                           border_widths);
 
-  RefPtr<Image> image =
-      style_image->GetImage(layout_object_, image_size, style.EffectiveZoom());
+  RefPtr<Image> image = style_image->GetImage(layout_object_, image_size);
 
   InterpolationQuality interpolation_quality =
       BoxPainter::ChooseInterpolationQuality(layout_object_, image.Get(), 0,

@@ -43,8 +43,7 @@ String CSSPaintValue::GetName() const {
 }
 
 PassRefPtr<Image> CSSPaintValue::GetImage(const LayoutObject& layout_object,
-                                          const IntSize& size,
-                                          float zoom) {
+                                          const IntSize& size) {
   if (!generator_)
     generator_ =
         CSSPaintImageGenerator::Create(GetName(), layout_object.GetDocument(),
@@ -53,7 +52,7 @@ PassRefPtr<Image> CSSPaintValue::GetImage(const LayoutObject& layout_object,
   if (!ParseInputArguments())
     return nullptr;
 
-  return generator_->Paint(layout_object, size, zoom, parsed_input_arguments_);
+  return generator_->Paint(layout_object, size, parsed_input_arguments_);
 }
 
 bool CSSPaintValue::ParseInputArguments() {
