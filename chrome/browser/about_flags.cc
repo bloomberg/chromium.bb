@@ -52,6 +52,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -2235,6 +2236,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableContentSuggestionsNewFaviconServerDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_snippets::kPublisherFaviconsFromNewServerFeature)},
+    {"enable-ntp-tiles-favicons-from-server",
+     flag_descriptions::kEnableNtpMostLikelyFaviconsFromServerName,
+     flag_descriptions::kEnableNtpMostLikelyFaviconsFromServerDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(ntp_tiles::kNtpMostLikelyFaviconsFromServerFeature)},
     {"enable-content-suggestions-settings",
      flag_descriptions::kEnableContentSuggestionsSettingsName,
      flag_descriptions::kEnableContentSuggestionsSettingsDescription,

@@ -18,5 +18,15 @@ const char kEnableNTPPopularSites[] = "enable-ntp-popular-sites";
 // Disables showing popular sites on the NTP.
 const char kDisableNTPPopularSites[] = "disable-ntp-popular-sites";
 
+// Enables the new Google favicon server for fetching favicons for Most Likely
+// tiles on the New Tab Page.
+const char kEnableNtpMostLikelyFaviconsFromServer[] =
+    "enable-ntp-most-likely-favicons-from-server";
+
+// Disables the new Google favicon server for fetching favicons for Most Likely
+// tiles on the New Tab Page.
+const char kDisableNtpMostLikelyFaviconsFromServer[] =
+    "disable-ntp-most-likely-favicons-from-server";
+
 }  // namespace switches
 }  // namespace ntp_tiles

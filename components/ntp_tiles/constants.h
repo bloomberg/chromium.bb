@@ -19,6 +19,16 @@ extern const char kPopularSitesFieldTrialName[];
 // Android or iOS users.
 extern const base::Feature kPopularSitesBakedInContentFeature;
 
+// Feature to allow the new Google favicon server for fetching favicons for Most
+// Likely tiles on the New Tab Page.
+extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature;
+
+// Use this to find out whether the kNtpMostLikelyFaviconsFromServerFeature is
+// enabled. This helper function abstracts iOS special way to override the
+// feature (via command-line params).
+// TODO(jkrcal): Remove once crbug.com/718926 is fixed.
+bool AreNtpMostLikelyFaviconsFromServerEnabled();
+
 }  // namespace ntp_tiles
 
 #endif  // COMPONENTS_NTP_TILES_CONSTANTS_H_

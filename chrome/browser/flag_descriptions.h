@@ -2591,6 +2591,14 @@ extern const char kEnableContentSuggestionsNewFaviconServerName[];
 // on the New Tab Page.
 extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
 
+// Name for the flag to enable fetching favicons from a Google server for tiles
+// on the New Tab Page (that originate from synced history).
+extern const char kEnableNtpMostLikelyFaviconsFromServerName[];
+
+// Description for the flag to enable fetching favicons from a Google server for
+// tiles on the New Tab Page (that originate from synced history).
+extern const char kEnableNtpMostLikelyFaviconsFromServerDescription[];
+
 // Name for the flag to enable the settings entry for content suggestions.
 extern const char kEnableContentSuggestionsSettingsName[];
 

@@ -2370,6 +2370,13 @@ const char kEnableContentSuggestionsNewFaviconServerDescription[] =
     "If enabled, the content suggestions (on the NTP) will get favicons from a "
     "new favicon server.";
 
+const char kEnableNtpMostLikelyFaviconsFromServerName[] =
+    "Download favicons for NTP tiles from Google.";
+
+const char kEnableNtpMostLikelyFaviconsFromServerDescription[] =
+    "If enabled, missing favicons for NTP tiles get downloaded from Google. "
+    "This only applies to tiles that originate from synced history.";
+
 const char kEnableContentSuggestionsSettingsName[] =
     "Show content suggestions settings.";
 
