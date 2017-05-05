@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 #include "storage/common/storage_common_export.h"
 
 namespace storage {
@@ -17,8 +18,14 @@ constexpr size_t kDefaultIPCMemorySize = 250u * 1024;
 constexpr size_t kDefaultSharedMemorySize = 10u * 1024 * 1024;
 constexpr size_t kDefaultMaxBlobInMemorySpace = 500u * 1024 * 1024;
 constexpr uint64_t kDefaultMaxBlobDiskSpace = 0ull;
-constexpr uint64_t kDefaultMinPageFileSize = 5ull * 1024 * 1024;
 constexpr uint64_t kDefaultMaxPageFileSize = 100ull * 1024 * 1024;
+
+#if defined(OS_ANDROID)
+// On minimal Android maximum in-memory space can be as low as 5MB.
+constexpr uint64_t kDefaultMinPageFileSize = 5ull * 1024 * 1024 / 2;
+#else
+constexpr uint64_t kDefaultMinPageFileSize = 5ull * 1024 * 1024;
+#endif
 
 // All sizes are in bytes.
 struct STORAGE_COMMON_EXPORT BlobStorageLimits {

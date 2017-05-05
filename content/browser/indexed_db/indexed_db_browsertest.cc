@@ -494,10 +494,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BlobsCountAgainstQuota) {
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
-  SimpleTest(GetTestUrl("indexeddb", "write_20mb_blob.html"));
+  SimpleTest(GetTestUrl("indexeddb", "write_4mb_blob.html"));
   int64_t size = RequestDiskUsage();
   // This assertion assumes that we do not compress blobs.
-  EXPECT_GT(size, 20 << 20 /* 20 MB */);
+  EXPECT_GT(size, 4 << 20 /* 4 MB */);
   // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
   GetContext()->TaskRunner()->PostTask(
       FROM_HERE,

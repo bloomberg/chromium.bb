@@ -53,8 +53,8 @@ using DiskSpaceFuncPtr = BlobMemoryController::DiskSpaceFuncPtr;
 //   Note: The disk is the user partition, so the operating system can still
 //   function if this is full.
 // Android:
-// * RAM -  20%
-// * Disk -  5%
+// * RAM -  1%
+// * Disk -  6%
 // Desktop:
 // * Ram -  20%, or 2 GB if x64.
 // * Disk - 10%
@@ -71,6 +71,8 @@ BlobStorageLimits CalculateBlobStorageLimitsImpl(const FilePath& storage_dir,
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && defined(ARCH_CPU_64_BITS)
     constexpr size_t kTwoGigabytes = 2ull * 1024 * 1024 * 1024;
     limits.max_blob_in_memory_space = kTwoGigabytes;
+#elif defined(OS_ANDROID)
+    limits.max_blob_in_memory_space = static_cast<size_t>(memory_size / 100ll);
 #else
     limits.max_blob_in_memory_space = static_cast<size_t>(memory_size / 5ll);
 #endif
@@ -81,7 +83,7 @@ BlobStorageLimits CalculateBlobStorageLimitsImpl(const FilePath& storage_dir,
 #if defined(OS_CHROMEOS)
     limits.desired_max_disk_space = static_cast<uint64_t>(disk_size / 2ll);
 #elif defined(OS_ANDROID)
-    limits.desired_max_disk_space = static_cast<uint64_t>(disk_size / 20ll);
+    limits.desired_max_disk_space = static_cast<uint64_t>(3ll * disk_size / 50);
 #else
     limits.desired_max_disk_space = static_cast<uint64_t>(disk_size / 10ll);
 #endif
