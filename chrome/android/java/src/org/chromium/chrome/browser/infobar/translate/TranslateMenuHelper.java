@@ -214,8 +214,8 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
         }
 
         private void refreshMenu(int menuType) {
-            // Don't refresh if the type is same as previous.
-            if (menuType == mMenuType) return;
+            // MENU_OVERFLOW is static and it should not reload.
+            if (menuType == TranslateMenu.MENU_OVERFLOW) return;
 
             clear();
 
