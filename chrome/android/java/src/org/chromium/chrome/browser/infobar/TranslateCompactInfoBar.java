@@ -178,9 +178,14 @@ class TranslateCompactInfoBar extends InfoBar
                 mLanguageMenuHelper.show(TranslateMenu.MENU_TARGET_LANGUAGE);
                 return;
             case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
-                nativeApplyBoolTranslateOption(
-                        mNativeTranslateInfoBarPtr, TranslateOption.ALWAYS_TRANSLATE, true);
-                showSnackbar(TranslateSnackbarType.ALWAYS_TRANSLATE);
+                mOptions.toggleAlwaysTranslateLanguageState(
+                        !mOptions.alwaysTranslateLanguageState());
+                nativeApplyBoolTranslateOption(mNativeTranslateInfoBarPtr,
+                        TranslateOption.ALWAYS_TRANSLATE, mOptions.alwaysTranslateLanguageState());
+                // Only show snackbar when "Always Translate" is enabled.
+                if (mOptions.alwaysTranslateLanguageState()) {
+                    showSnackbar(TranslateSnackbarType.ALWAYS_TRANSLATE);
+                }
                 return;
             case TranslateMenu.ID_OVERFLOW_NEVER_LANGUAGE:
                 nativeApplyBoolTranslateOption(
