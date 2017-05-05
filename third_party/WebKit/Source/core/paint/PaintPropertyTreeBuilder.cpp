@@ -269,6 +269,17 @@ void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         RoundedIntPoint(context.current.paint_offset);
     LayoutPoint fractional_paint_offset =
         LayoutPoint(context.current.paint_offset - rounded_paint_offset);
+    if (fractional_paint_offset != LayoutPoint()) {
+      // If the object has a non-translation transform, discard the fractional
+      // paint offset which can't be transformed by the transform.
+      TransformationMatrix matrix;
+      object.StyleRef().ApplyTransform(
+          matrix, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
+          ComputedStyle::kIncludeMotionPath,
+          ComputedStyle::kIncludeIndependentTransformProperties);
+      if (!matrix.IsIdentityOrTranslation())
+        fractional_paint_offset = LayoutPoint();
+    }
 
     force_subtree_update |= properties.UpdatePaintOffsetTranslation(
         context.current.transform,
@@ -283,8 +294,8 @@ void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         object.IsLayoutView()) {
       context.absolute_position.transform = properties.PaintOffsetTranslation();
       context.fixed_position.transform = properties.PaintOffsetTranslation();
-      context.absolute_position.paint_offset = LayoutPoint();
-      context.fixed_position.paint_offset = LayoutPoint();
+      context.absolute_position.paint_offset = fractional_paint_offset;
+      context.fixed_position.paint_offset = fractional_paint_offset;
     }
   } else {
     if (auto* properties = object.GetMutableForPainting().PaintProperties())

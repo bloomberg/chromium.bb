@@ -7,13 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [85, 70, 91, 91],
+          "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
+          "rect": [9, 58, 40, 40],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [84, 70, 91, 91],
+          "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
+          "rect": [8, 58, 40, 40],
           "reason": "bounds change"
         }
       ]
@@ -21,7 +21,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
+      "object": "LayoutBlockFlow (relative positioned) DIV class='child scale'",
       "reason": "bounds change"
     }
   ]
