@@ -105,7 +105,7 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
 }
 
 bool VRDisplay::getFrameData(VRFrameData* frame_data) {
-  if (!navigator_vr_->IsFocused() || !frame_pose_ || display_blurred_)
+  if (!FocusedOrPresenting() || !frame_pose_ || display_blurred_)
     return false;
 
   if (!frame_data)
@@ -794,7 +794,7 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
 }
 
 void VRDisplay::ConnectVSyncProvider() {
-  if (!navigator_vr_->IsFocused() || vr_v_sync_provider_.is_bound())
+  if (!FocusedOrPresenting() || vr_v_sync_provider_.is_bound())
     return;
   display_->GetVRVSyncProvider(mojo::MakeRequest(&vr_v_sync_provider_));
   vr_v_sync_provider_.set_connection_error_handler(ConvertToBaseCallback(
@@ -851,6 +851,12 @@ void VRDisplay::FocusChanged() {
   DVLOG(1) << __FUNCTION__;
   vr_v_sync_provider_.reset();
   ConnectVSyncProvider();
+}
+
+bool VRDisplay::FocusedOrPresenting() {
+  // TODO(mthiesse, crbug.com/687411): Focused state should be determined
+  // browser-side to correctly track which display should be receiving input.
+  return navigator_vr_->IsFocused() || is_presenting_;
 }
 
 DEFINE_TRACE(VRDisplay) {

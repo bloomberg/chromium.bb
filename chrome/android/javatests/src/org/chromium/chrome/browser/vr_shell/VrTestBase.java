@@ -193,7 +193,7 @@ public class VrTestBase extends ChromeTabbedActivityTestBase {
      * @param webContents The WebContents for the tab the JavaScript step is in
      */
     protected void waitOnJavaScriptStep(WebContents webContents) {
-        assertTrue("Polling JavaScript boolean javascriptDone succeeded",
+        assertTrue("Polling JavaScript boolean javascriptDone timed out",
                 pollJavaScriptBoolean("javascriptDone", POLL_TIMEOUT_LONG_MS, webContents));
         // Reset the synchronization boolean
         runJavaScriptOrFail("javascriptDone = false", POLL_TIMEOUT_SHORT_MS, webContents);
