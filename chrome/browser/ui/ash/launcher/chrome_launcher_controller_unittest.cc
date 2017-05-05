@@ -705,7 +705,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                        int index,
                        const std::string& extension_id) {
     auto entry = base::MakeUnique<base::DictionaryValue>();
-    entry->SetString(ash::launcher::kPinnedAppsPrefAppIDPath, extension_id);
+    entry->SetString(kPinnedAppsPrefAppIDPath, extension_id);
     pref_value->Insert(index, std::move(entry));
   }
 

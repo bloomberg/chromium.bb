@@ -289,8 +289,7 @@ void ChromeLauncherController::Init() {
   if (ash::Shell::HasInstance())
     SetVirtualKeyboardBehaviorFromPrefs();
 
-  prefs_observer_ =
-      ash::launcher::ChromeLauncherPrefsObserver::CreateIfNecessary(profile());
+  prefs_observer_ = ChromeLauncherPrefsObserver::CreateIfNecessary(profile());
 }
 
 ash::ShelfID ChromeLauncherController::CreateAppLauncherItem(
@@ -675,16 +674,14 @@ bool ChromeLauncherController::ShelfBoundsChangesProbablyWithUser(
   PrefService* prefs = profile()->GetPrefs();
   PrefService* other_prefs = other_profile->GetPrefs();
   const int64_t display = GetDisplayIDForShelf(shelf);
-  const bool currently_shown =
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
-      ash::launcher::GetShelfAutoHideBehaviorPref(prefs, display);
-  const bool other_shown =
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
-      ash::launcher::GetShelfAutoHideBehaviorPref(other_prefs, display);
+  const bool currently_shown = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
+                               GetShelfAutoHideBehaviorPref(prefs, display);
+  const bool other_shown = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
+                           GetShelfAutoHideBehaviorPref(other_prefs, display);
 
   return currently_shown != other_shown ||
-         ash::launcher::GetShelfAlignmentPref(prefs, display) !=
-             ash::launcher::GetShelfAlignmentPref(other_prefs, display);
+         GetShelfAlignmentPref(prefs, display) !=
+             GetShelfAlignmentPref(other_prefs, display);
 }
 
 void ChromeLauncherController::OnUserProfileReadyToSwitch(Profile* profile) {
@@ -721,8 +718,7 @@ void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
   PrefService* prefs = profile_->GetPrefs();
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     shelf_controller_->SetAutoHideBehavior(
-        ash::launcher::GetShelfAutoHideBehaviorPref(prefs, display.id()),
-        display.id());
+        GetShelfAutoHideBehaviorPref(prefs, display.id()), display.id());
   }
 }
 
@@ -733,9 +729,8 @@ void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
   // The pref helper functions return default values for invalid display ids.
   PrefService* prefs = profile_->GetPrefs();
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    shelf_controller_->SetAlignment(
-        ash::launcher::GetShelfAlignmentPref(prefs, display.id()),
-        display.id());
+    shelf_controller_->SetAlignment(GetShelfAlignmentPref(prefs, display.id()),
+                                    display.id());
   }
 }
 
@@ -988,8 +983,8 @@ void ChromeLauncherController::SyncPinPosition(const ash::ShelfID& shelf_id) {
   }
 
   ash::ShelfID shelf_id_before = ash::ShelfID(app_id_before, launch_id_before);
-  ash::launcher::SetPinPosition(profile(), ash::ShelfID(app_id, launch_id),
-                                shelf_id_before, shelf_ids_after);
+  SetPinPosition(profile(), ash::ShelfID(app_id, launch_id), shelf_id_before,
+                 shelf_ids_after);
 }
 
 void ChromeLauncherController::OnSyncModelUpdated() {
@@ -1013,9 +1008,8 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
   // cyclically trigger sync changes (eg. ShelfItemAdded calls SyncPinPosition).
   ScopedPinSyncDisabler scoped_pin_sync_disabler = GetScopedPinSyncDisabler();
 
-  const std::vector<ash::ShelfID> pinned_apps =
-      ash::launcher::GetPinnedAppsFromPrefs(profile()->GetPrefs(),
-                                            launcher_controller_helper_.get());
+  const std::vector<ash::ShelfID> pinned_apps = GetPinnedAppsFromPrefs(
+      profile()->GetPrefs(), launcher_controller_helper_.get());
 
   int index = 0;
   // Skip app list items if it exists.
@@ -1320,11 +1314,10 @@ void ChromeLauncherController::OnShelfCreated(int64_t display_id) {
 
   // The pref helper functions return default values for invalid display ids.
   PrefService* prefs = profile_->GetPrefs();
-  shelf_controller_->SetAlignment(
-      ash::launcher::GetShelfAlignmentPref(prefs, display_id), display_id);
+  shelf_controller_->SetAlignment(GetShelfAlignmentPref(prefs, display_id),
+                                  display_id);
   shelf_controller_->SetAutoHideBehavior(
-      ash::launcher::GetShelfAutoHideBehaviorPref(prefs, display_id),
-      display_id);
+      GetShelfAutoHideBehaviorPref(prefs, display_id), display_id);
 }
 
 void ChromeLauncherController::OnAlignmentChanged(ash::ShelfAlignment alignment,
@@ -1335,8 +1328,7 @@ void ChromeLauncherController::OnAlignmentChanged(ash::ShelfAlignment alignment,
   DCHECK(!updating_shelf_pref_from_observer_);
   base::AutoReset<bool> updating(&updating_shelf_pref_from_observer_, true);
   // This will uselessly store a preference value for invalid display ids.
-  ash::launcher::SetShelfAlignmentPref(profile_->GetPrefs(), display_id,
-                                       alignment);
+  SetShelfAlignmentPref(profile_->GetPrefs(), display_id, alignment);
 }
 
 void ChromeLauncherController::OnAutoHideBehaviorChanged(
@@ -1345,8 +1337,7 @@ void ChromeLauncherController::OnAutoHideBehaviorChanged(
   DCHECK(!updating_shelf_pref_from_observer_);
   base::AutoReset<bool> updating(&updating_shelf_pref_from_observer_, true);
   // This will uselessly store a preference value for invalid display ids.
-  ash::launcher::SetShelfAutoHideBehaviorPref(profile_->GetPrefs(), display_id,
-                                              auto_hide);
+  SetShelfAutoHideBehaviorPref(profile_->GetPrefs(), display_id, auto_hide);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1409,7 +1400,7 @@ void ChromeLauncherController::ShelfItemRemoved(
   // Remove the pin position from preferences as needed.
   if (ItemTypeIsPinned(old_item) && should_sync_pin_changes_) {
     ash::ShelfID shelf_id(shelf_app_id, old_item.id.launch_id);
-    ash::launcher::RemovePinPosition(profile(), shelf_id);
+    RemovePinPosition(profile(), shelf_id);
   }
 
   AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(shelf_app_id);
@@ -1443,7 +1434,7 @@ void ChromeLauncherController::ShelfItemChanged(
             old_item.id.app_id);
 
     ash::ShelfID shelf_id(shelf_app_id, old_item.id.launch_id);
-    ash::launcher::RemovePinPosition(profile(), shelf_id);
+    RemovePinPosition(profile(), shelf_id);
   }
 }
 
