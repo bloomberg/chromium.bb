@@ -16,8 +16,10 @@ const char kDisableSigninPromo[] = "disable-signin-promo";
 // Disables sending signin scoped device id to LSO with refresh token request.
 const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Enables consistent identity features.
 const char kEnableAccountConsistency[] = "enable-account-consistency";
+#endif
 
 // Enables sending EnableRefreshTokenAnnotationRequest.
 extern const char kEnableRefreshTokenAnnotationRequest[] =
