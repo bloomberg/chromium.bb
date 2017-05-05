@@ -17,6 +17,6 @@
 
     [CallWith=ScriptState] Promise<PhotoCapabilities> getPhotoCapabilities();
     [CallWith=ScriptState] Promise<void> setOptions(PhotoSettings photoSettings);
-    [CallWith=ScriptState] Promise<Blob> takePhoto();
+    [CallWith=ScriptState] Promise<Blob> takePhoto(optional PhotoSettings photoSettings);
     [CallWith=ScriptState] Promise<ImageBitmap> grabFrame();
 };

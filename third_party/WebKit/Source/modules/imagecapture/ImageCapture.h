@@ -56,9 +56,12 @@ class MODULES_EXPORT ImageCapture final
 
   ScriptPromise getPhotoCapabilities(ScriptState*);
 
-  ScriptPromise setOptions(ScriptState*, const PhotoSettings&);
+  ScriptPromise setOptions(ScriptState*,
+                           const PhotoSettings&,
+                           bool trigger_take_photo = false);
 
   ScriptPromise takePhoto(ScriptState*);
+  ScriptPromise takePhoto(ScriptState*, const PhotoSettings&);
 
   ScriptPromise grabFrame(ScriptState*);
 
@@ -77,14 +80,15 @@ class MODULES_EXPORT ImageCapture final
  private:
   ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
-  void OnPhotoCapabilities(ScriptPromiseResolver*,
-                           media::mojom::blink::PhotoCapabilitiesPtr);
-  void OnSetOptions(ScriptPromiseResolver*, bool);
-  void OnTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
-  void OnCapabilitiesUpdate(media::mojom::blink::PhotoCapabilitiesPtr);
+  void OnMojoPhotoCapabilities(ScriptPromiseResolver*,
+                               bool trigger_take_photo,
+                               media::mojom::blink::PhotoCapabilitiesPtr);
+  void OnMojoSetOptions(ScriptPromiseResolver*,
+                        bool trigger_take_photo,
+                        bool result);
+  void OnMojoTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
 
-  void OnCapabilitiesUpdateInternal(
-      const media::mojom::blink::PhotoCapabilities&);
+  void UpdateMediaTrackCapabilities(media::mojom::blink::PhotoCapabilitiesPtr);
   void OnServiceConnectionError();
 
   Member<MediaStreamTrack> stream_track_;
