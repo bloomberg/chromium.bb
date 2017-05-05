@@ -17,6 +17,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 
@@ -251,22 +252,22 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormats(
 std::string VideoCaptureDeviceFactoryLinux::GetDeviceModelId(
     const std::string& device_id) {
   // |unique_id| is of the form "/dev/video2".  |file_name| is "video2".
-  const std::string dev_dir = "/dev/";
-  DCHECK_EQ(0, device_id.compare(0, dev_dir.length(), dev_dir));
+  const char kDevDir[] = "/dev/";
+  DCHECK(base::StartsWith(device_id, kDevDir, base::CompareCase::SENSITIVE));
   const std::string file_name =
-      device_id.substr(dev_dir.length(), device_id.length());
-
-  const std::string vidPath =
-      base::StringPrintf(kVidPathTemplate, file_name.c_str());
-  const std::string pidPath =
-      base::StringPrintf(kPidPathTemplate, file_name.c_str());
+      device_id.substr(strlen(kDevDir), device_id.length());
 
   std::string usb_id;
-  if (!ReadIdFile(vidPath, &usb_id))
-    return "";
+  const std::string vid_path =
+      base::StringPrintf(kVidPathTemplate, file_name.c_str());
+  if (!ReadIdFile(vid_path, &usb_id))
+    return usb_id;
+
   usb_id.append(":");
-  if (!ReadIdFile(pidPath, &usb_id))
-    return "";
+  const std::string pid_path =
+      base::StringPrintf(kPidPathTemplate, file_name.c_str());
+  if (!ReadIdFile(pid_path, &usb_id))
+    usb_id.clear();
 
   return usb_id;
 }
