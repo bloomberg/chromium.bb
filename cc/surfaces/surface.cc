@@ -15,7 +15,9 @@
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/pending_frame_observer.h"
 #include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/surfaces/surface_resource_holder_client.h"
 
 namespace cc {
 
@@ -50,9 +52,23 @@ void Surface::SetPreviousFrameSurface(Surface* surface) {
   surface->TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 }
 
+void Surface::Close() {
+  closed_ = true;
+}
+
 void Surface::QueueFrame(CompositorFrame frame,
                          const DrawCallback& callback,
                          const WillDrawCallback& will_draw_callback) {
+  if (closed_) {
+    if (factory_ && factory_->resource_holder_client()) {
+      ReturnedResourceArray resources;
+      TransferableResource::ReturnResources(frame.resource_list, &resources);
+      factory_->resource_holder_client()->ReturnResources(resources);
+    }
+    callback.Run();
+    return;
+  }
+
   TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 
   base::Optional<FrameData> previous_pending_frame_data =
@@ -68,6 +84,25 @@ void Surface::QueueFrame(CompositorFrame frame,
   bool is_pending_frame = !blocking_surfaces_.empty();
 
   if (is_pending_frame) {
+    // Reject CompositorFrames submitted to surfaces referenced from this
+    // CompositorFrame as fallbacks. This saves some CPU cycles to allow
+    // children to catch up to the parent.
+    base::flat_set<FrameSinkId> frame_sink_ids_for_dependencies;
+    for (const SurfaceId& surface_id : frame.metadata.activation_dependencies)
+      frame_sink_ids_for_dependencies.insert(surface_id.frame_sink_id());
+    for (const SurfaceId& surface_id : frame.metadata.referenced_surfaces) {
+      // A surface ID in |referenced_surfaces| that has a corresponding surface
+      // ID in |activation_dependencies| with the same frame sink ID is said to
+      // be a fallback surface that can be used in place of the primary surface
+      // if the deadline passes before the dependency becomes available.
+      bool is_fallback_surface =
+          frame_sink_ids_for_dependencies.count(surface_id.frame_sink_id()) > 0;
+      if (is_fallback_surface) {
+        Surface* surface = factory_->manager()->GetSurfaceForId(surface_id);
+        DCHECK(surface);
+        surface->Close();
+      }
+    }
     pending_frame_data_ =
         FrameData(std::move(frame), callback, will_draw_callback);
     // Ask the surface manager to inform |this| when its dependencies are

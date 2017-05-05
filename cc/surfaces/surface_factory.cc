@@ -25,6 +25,7 @@ SurfaceFactory::SurfaceFactory(
     : frame_sink_id_(frame_sink_id),
       manager_(manager),
       client_(client),
+      resource_holder_client_(resource_holder_client),
       holder_(resource_holder_client),
       needs_sync_points_(true),
       weak_factory_(this) {}

@@ -137,6 +137,10 @@ class CC_SURFACES_EXPORT Surface {
     WillDrawCallback will_draw_callback;
   };
 
+  // Called to prevent additional CompositorFrames from being accepted into this
+  // surface. Once a Surface is closed, it cannot accept CompositorFrames again.
+  void Close();
+
   void ActivatePendingFrame();
   // Called when all of the surface's dependencies have been resolved.
   void ActivateFrame(FrameData frame_data);
@@ -153,13 +157,14 @@ class CC_SURFACES_EXPORT Surface {
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
 
-  SurfaceId surface_id_;
+  const SurfaceId surface_id_;
   SurfaceId previous_frame_surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;
 
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;
   int frame_index_;
+  bool closed_ = false;
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;
 
