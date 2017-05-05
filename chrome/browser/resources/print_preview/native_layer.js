@@ -277,10 +277,11 @@ cr.define('print_preview', function() {
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
      *     state of the print ticket.
      * @param {!print_preview.DocumentInfo} documentInfo Document data model.
+     * @param {boolean} generateDraft Tell the renderer to re-render.
      * @param {number} requestId ID of the preview request.
      */
     startGetPreview: function(
-        destination, printTicketStore, documentInfo, requestId) {
+        destination, printTicketStore, documentInfo, generateDraft, requestId) {
       assert(printTicketStore.isTicketValidForPreview(),
              'Trying to generate preview when ticket is not valid');
 
@@ -294,7 +295,7 @@ cr.define('print_preview', function() {
         'isFirstRequest': requestId == 0,
         'requestID': requestId,
         'previewModifiable': documentInfo.isModifiable,
-        'generateDraftData': documentInfo.isModifiable,
+        'generateDraftData': generateDraft,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
         'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
         // NOTE: Even though the following fields don't directly relate to the
@@ -341,8 +342,7 @@ cr.define('print_preview', function() {
       chrome.send(
           'getPreview',
           [JSON.stringify(ticket),
-           requestId > 0 ? documentInfo.pageCount : -1,
-           documentInfo.isModifiable]);
+           requestId > 0 ? documentInfo.pageCount : -1]);
     },
 
     /**

@@ -84,17 +84,22 @@ PrintPreviewWebUITest.prototype = {
       function NativeLayerStub() {
         cr.EventTarget.call(this);
         this.printStarted_ = false;
+        this.generateDraft_ = false;
       }
       NativeLayerStub.prototype = {
         __proto__: cr.EventTarget.prototype,
         isPrintStarted: function() { return this.printStarted_; },
+        generateDraft: function() { return this.generateDraft_; },
         previewReadyForTest: function() {},
         startGetInitialSettings: function() {},
         startGetLocalDestinations: function() {},
         startGetPrivetDestinations: function() {},
         startGetExtensionDestinations: function() {},
         startGetLocalDestinationCapabilities: function(destinationId) {},
-        startGetPreview: function() {},
+        startGetPreview: function(destination, printTicketStore, documentInfo,
+                                  generateDraft, requestId) {
+          this.generateDraft_ = generateDraft;
+        },
         startHideDialog: function () {},
         startPrint: function () { this.printStarted_ = true; }
       };
@@ -177,11 +182,20 @@ PrintPreviewWebUITest.prototype = {
   },
 
   /**
-   * @return {boolean} Whether the UI has/has not "printed" (called startPrint
-   *     on the native layer).
+   * @return {boolean} Whether the UI has "printed" or not. (called startPrint
+   *     on the native layer)
    */
   hasPrinted: function() {
     return this.nativeLayer_.isPrintStarted();
+  },
+
+  /**
+   * @return {boolean} Whether the UI is "generating draft" in the most recent
+   *     preview. (checking the result of the startGetPreview call in the native
+   *     layer)
+   */
+  generateDraft: function() {
+    return this.nativeLayer_.generateDraft();
   },
 
   /**
@@ -1447,5 +1461,34 @@ TEST_F('PrintPreviewWebUITest', 'TestInvalidSettingsError', function() {
   expectFalse(this.hasPrinted());
   printButton.click();
   expectTrue(this.hasPrinted());
+  testDone();
+});
+
+// Test the preview generator to make sure the generate draft parameter is set
+// correctly. It should be false if the only change is the page range.
+TEST_F('PrintPreviewWebUITest', 'TestGenerateDraft', function() {
+  // Use a real preview generator.
+  printPreview.previewArea_.previewGenerator_ =
+      new print_preview.PreviewGenerator(printPreview.destinationStore_,
+        printPreview.printTicketStore_, this.nativeLayer_,
+        printPreview.documentInfo_);
+
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
+
+  // The first request should generate draft because there was no previous print
+  // preview draft.
+  expectTrue(this.generateDraft());
+
+  // Change the page range - no new draft needed.
+  printPreview.printTicketStore_.pageRange.updateValue("2");
+  expectFalse(this.generateDraft());
+
+  // Change the margin type - need to regenerate again.
+  printPreview.printTicketStore_.marginsType.updateValue(
+      print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
+  expectTrue(this.generateDraft());
+
   testDone();
 });
