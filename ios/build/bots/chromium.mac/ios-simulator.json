@@ -51,18 +51,6 @@
     },
     {
       "include": "common_tests.json",
-      "device type": "iPhone 6s Plus",
-      "os": "9.0",
-      "xcode version": "8.0"
-    },
-    {
-      "include": "common_tests.json",
-      "device type": "iPhone 6s",
-      "os": "9.0",
-      "xcode version": "8.0"
-    },
-    {
-      "include": "common_tests.json",
       "device type": "iPhone 5",
       "os": "9.0",
       "xcode version": "8.0"
@@ -70,12 +58,6 @@
     {
       "include": "common_tests.json",
       "device type": "iPad Air 2",
-      "os": "9.0",
-      "xcode version": "8.0"
-    },
-    {
-      "include": "common_tests.json",
-      "device type": "iPad Retina",
       "os": "9.0",
       "xcode version": "8.0"
     }
