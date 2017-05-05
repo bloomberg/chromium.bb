@@ -33,6 +33,7 @@
 #include "WebEventListenerProperties.h"
 #include "WebFloatPoint.h"
 #include "WebSize.h"
+#include "base/callback.h"
 #include "cc/surfaces/frame_sink_id.h"
 
 namespace cc {
@@ -48,6 +49,8 @@ struct WebPoint;
 class WebSelection;
 
 class WebLayerTreeView {
+  using ReportTimeCallback = base::Callback<void(bool, double)>;
+
  public:
   virtual ~WebLayerTreeView() {}
 
@@ -181,6 +184,10 @@ class WebLayerTreeView {
 
   // Toggles scroll bottleneck rects on the HUD layer
   virtual void SetShowScrollBottleneckRects(bool) {}
+
+  // ReportTimeCallback is a callback that should be fired when the
+  // corresponding Swap completes (either with DidSwap or DidNotSwap).
+  virtual void NotifySwapTime(ReportTimeCallback callback) {}
 };
 
 }  // namespace blink
