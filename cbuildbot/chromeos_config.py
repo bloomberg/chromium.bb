@@ -2205,6 +2205,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'gale',
       'kip',
+      'lakitu-gpu',
       'loonix',
       'poppy',
       'scarlet',

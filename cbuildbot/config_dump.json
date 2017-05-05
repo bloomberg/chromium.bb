@@ -12699,6 +12699,7 @@
     },
     "lakitu-gpu-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "lakitu-gpu"
         ],
@@ -14930,6 +14931,7 @@
             "guado_moblab-paladin",
             "kevin-paladin",
             "kip-paladin",
+            "lakitu-gpu-paladin",
             "lakitu-paladin",
             "leon-paladin",
             "link-paladin",
