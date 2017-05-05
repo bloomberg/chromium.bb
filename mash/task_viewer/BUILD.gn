@@ -36,7 +36,6 @@ service("task_viewer") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//ui/views/mus:for_mojo_application",
   ]

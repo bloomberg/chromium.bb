@@ -30,7 +30,6 @@ source_set("renderer") {
     "//chromecast/common/media",
     "//chromecast/crash",
     "//chromecast/media",
-    "//chromecast/media",
     "//components/network_hints/renderer",
     "//content/public/common",
     "//content/public/renderer",
