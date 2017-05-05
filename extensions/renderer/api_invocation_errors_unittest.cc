@@ -31,6 +31,13 @@ TEST(APIInvocationErrors, ChainedErrors) {
       "Invalid type: expected string, found integer.",
       ArgumentError("foo",
                     IndexError(0, InvalidType(kTypeString, kTypeInteger))));
+
+  EXPECT_EQ(
+      "Error in invocation of tabs.query("
+      "object details, function callback): "
+      "Error at parameter 'details': Unexpected property: 'foo'.",
+      InvocationError("tabs.query", "object details, function callback",
+                      ArgumentError("details", UnexpectedProperty("foo"))));
 }
 
 }  // namespace api_errors

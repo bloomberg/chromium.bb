@@ -15,6 +15,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_binding_hooks.h"
 #include "extensions/renderer/api_event_handler.h"
+#include "extensions/renderer/api_invocation_errors.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_signature.h"
 #include "extensions/renderer/api_type_reference_map.h"
@@ -524,6 +525,7 @@ void APIBinding::HandleCall(const std::string& name,
     switch (hooks_result.code) {
       case APIBindingHooks::RequestResult::INVALID_INVOCATION:
         invalid_invocation = true;
+        error = std::move(hooks_result.error);
         // Throw a type error below so that it's not caught by our try-catch.
         break;
       case APIBindingHooks::RequestResult::THROWN:
@@ -543,7 +545,8 @@ void APIBinding::HandleCall(const std::string& name,
   }
 
   if (invalid_invocation) {
-    arguments->ThrowTypeError("Invalid invocation");
+    arguments->ThrowTypeError(api_errors::InvocationError(
+        name, signature->GetExpectedSignature(), error));
     return;
   }
 
@@ -581,7 +584,8 @@ void APIBinding::HandleCall(const std::string& name,
     }
   }
   if (invalid_invocation) {
-    arguments->ThrowTypeError("Invalid invocation");
+    arguments->ThrowTypeError(api_errors::InvocationError(
+        name, signature->GetExpectedSignature(), error));
     return;
   }
 

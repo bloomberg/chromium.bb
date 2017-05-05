@@ -26,6 +26,7 @@ extern const char kTypeBinary[];
 extern const char kTypeFunction[];
 extern const char kTypeUndefined[];
 extern const char kTypeNull[];
+extern const char kTypeAny[];
 
 // Methods to return a formatted string describing an error related to argument
 // parsing.
@@ -58,6 +59,12 @@ std::string PropertyError(const char* property_name, const std::string& error);
 // parameter in an API signature.
 std::string ArgumentError(const std::string& parameter_name,
                           const std::string& error);
+
+// Returns a message indicating that an API method was called with an invalid
+// signature.
+std::string InvocationError(const std::string& method_name,
+                            const std::string& expected_signature,
+                            const std::string& error);
 
 }  // namespace api_errors
 }  // namespace extensions

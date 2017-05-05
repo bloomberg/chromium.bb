@@ -320,4 +320,25 @@ TEST_F(APISignatureTest, TypeRefsTest) {
   }
 }
 
+TEST_F(APISignatureTest, ExpectedSignature) {
+  EXPECT_EQ("string string", OneString()->GetExpectedSignature());
+  EXPECT_EQ("string string, integer int",
+            StringAndInt()->GetExpectedSignature());
+  EXPECT_EQ("string string, optional integer int, boolean bool",
+            StringOptionalIntAndBool()->GetExpectedSignature());
+  EXPECT_EQ("object obj", OneObject()->GetExpectedSignature());
+  EXPECT_EQ("", NoArgs()->GetExpectedSignature());
+  EXPECT_EQ("integer int, function callback",
+            IntAndCallback()->GetExpectedSignature());
+  EXPECT_EQ("optional integer int, function callback",
+            OptionalIntAndCallback()->GetExpectedSignature());
+  EXPECT_EQ("optional function callback",
+            OptionalCallback()->GetExpectedSignature());
+  EXPECT_EQ(
+      "integer int, any any, optional object obj, optional function callback",
+      IntAnyOptionalObjectOptionalCallback()->GetExpectedSignature());
+  EXPECT_EQ("refObj obj", RefObj()->GetExpectedSignature());
+  EXPECT_EQ("refEnum enum", RefEnum()->GetExpectedSignature());
+}
+
 }  // namespace extensions

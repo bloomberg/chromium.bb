@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/api_invocation_errors.h"
@@ -336,6 +338,23 @@ bool APISignature::ConvertArgumentsIgnoringSchema(
   *json_out = std::move(json);
   *callback_out = callback;
   return true;
+}
+
+std::string APISignature::GetExpectedSignature() const {
+  if (!expected_signature_.empty() || signature_.empty())
+    return expected_signature_;
+
+  std::vector<std::string> pieces;
+  pieces.reserve(signature_.size());
+  const char* kOptionalPrefix = "optional ";
+  for (const auto& spec : signature_) {
+    pieces.push_back(
+        base::StringPrintf("%s%s %s", spec->optional() ? kOptionalPrefix : "",
+                           spec->GetTypeName().c_str(), spec->name().c_str()));
+  }
+  expected_signature_ = base::JoinString(pieces, ", ");
+
+  return expected_signature_;
 }
 
 }  // namespace extensions

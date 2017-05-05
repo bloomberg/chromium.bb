@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/renderer/api_binding.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "extensions/renderer/api_binding.h"
 #include "extensions/renderer/api_binding_hooks.h"
 #include "extensions/renderer/api_binding_hooks_test_delegate.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_event_handler.h"
+#include "extensions/renderer/api_invocation_errors.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_type_reference_map.h"
 #include "gin/arguments.h"
@@ -23,6 +24,8 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
+
+using namespace api_errors;
 
 namespace {
 
@@ -65,8 +68,6 @@ const char kFunctions[] =
     "    'type': 'function'"
     "  }]"
     "}]";
-
-const char kError[] = "Uncaught TypeError: Invalid invocation";
 
 bool AllowAllAPIs(const std::string& name) {
   return true;
@@ -187,7 +188,14 @@ class APIBindingUnittest : public APIBindingTest {
                      const std::string& script_source,
                      const std::string& expected_error) {
     RunTest(MainContext(), object, script_source, false, std::string(), false,
-            expected_error);
+            "Uncaught TypeError: " + expected_error);
+  }
+
+  void ExpectThrow(v8::Local<v8::Object> object,
+                   const std::string& script_source,
+                   const std::string& expected_error) {
+    RunTest(MainContext(), object, script_source, false, std::string(), false,
+            "Uncaught Error: " + expected_error);
   }
 
   bool HandlerWasInvoked() const { return last_request_ != nullptr; }
@@ -285,18 +293,29 @@ TEST_F(APIBindingUnittest, TestBasicAPICalls) {
   // Argument parsing is tested primarily in APISignature and ArgumentSpec
   // tests, so do a few quick sanity checks...
   ExpectPass(binding_object, "obj.oneString('foo');", "['foo']", false);
-  ExpectFailure(binding_object, "obj.oneString(1);", kError);
+  ExpectFailure(
+      binding_object, "obj.oneString(1);",
+      InvocationError(
+          "test.oneString", "string str",
+          ArgumentError("str", InvalidType(kTypeString, kTypeInteger))));
   ExpectPass(binding_object, "obj.stringAndInt('foo', 1)", "['foo',1]", false);
-  ExpectFailure(binding_object, "obj.stringAndInt(1)", kError);
+  ExpectFailure(
+      binding_object, "obj.stringAndInt(1)",
+      InvocationError(
+          "test.stringAndInt", "string str, integer int",
+          ArgumentError("str", InvalidType(kTypeString, kTypeInteger))));
   ExpectPass(binding_object, "obj.intAndCallback(1, function() {})", "[1]",
              true);
-  ExpectFailure(binding_object, "obj.intAndCallback(function() {})", kError);
+  ExpectFailure(
+      binding_object, "obj.intAndCallback(function() {})",
+      InvocationError(
+          "test.intAndCallback", "integer int, function callback",
+          ArgumentError("int", InvalidType(kTypeInteger, kTypeFunction))));
 
   // ...And an interesting case (throwing an error during parsing).
-  ExpectFailure(
-      binding_object,
-      "obj.oneObject({ get prop1() { throw new Error('Badness'); } });",
-      "Uncaught Error: Badness");
+  ExpectThrow(binding_object,
+              "obj.oneObject({ get prop1() { throw new Error('Badness'); } });",
+              "Badness");
 }
 
 // Test that enum values are properly exposed on the binding object.
@@ -402,12 +421,20 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   // properties from the API object.
   ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo'})",
              "[{'prop1':'foo'}]", false);
-  ExpectFailure(binding_object, "obj.takesRefObj({prop1: 'foo', prop2: 'a'})",
-                kError);
+  ExpectFailure(
+      binding_object, "obj.takesRefObj({prop1: 'foo', prop2: 'a'})",
+      InvocationError(
+          "test.takesRefObj", "refObj o",
+          ArgumentError(
+              "o",
+              PropertyError("prop2", InvalidType(kTypeInteger, kTypeString)))));
   ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']", false);
   ExpectPass(binding_object, "obj.takesRefEnum(obj.refEnum.BETA)", "['beta']",
              false);
-  ExpectFailure(binding_object, "obj.takesRefEnum('gamma')", kError);
+  ExpectFailure(
+      binding_object, "obj.takesRefEnum('gamma')",
+      InvocationError("test.takesRefEnum", "refEnum e",
+                      ArgumentError("e", InvalidEnumValue({"alpha", "beta"}))));
 }
 
 TEST_F(APIBindingUnittest, RestrictedAPIs) {
@@ -687,7 +714,11 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
 
   // First try calling with an invalid invocation. An error should be raised and
   // the hook should never have been called, since the arguments didn't match.
-  ExpectFailure(binding_object, "obj.oneString(1);", kError);
+  ExpectFailure(
+      binding_object, "obj.oneString(1);",
+      InvocationError(
+          "test.oneString", "string str",
+          ArgumentError("str", InvalidType(kTypeString, kTypeInteger))));
   v8::Local<v8::Value> property =
       GetPropertyFromObject(context->Global(), context, "requestArguments");
   ASSERT_FALSE(property.IsEmpty());
@@ -740,7 +771,11 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
   // Call the method with a hook. Since the hook updates arguments before
   // validation, we should be able to pass in invalid arguments and still
   // have the hook called.
-  ExpectFailure(binding_object, "obj.oneString(false);", kError);
+  ExpectFailure(
+      binding_object, "obj.oneString(false);",
+      InvocationError(
+          "test.oneString", "string str",
+          ArgumentError("str", InvalidType(kTypeString, kTypeBoolean))));
   EXPECT_EQ("[false]", GetStringPropertyFromObject(
                            context->Global(), context, "requestArguments"));
 
@@ -1006,7 +1041,11 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
 
   // Try calling the method with an invalid signature. Since it's invalid, we
   // should never enter the hook.
-  ExpectFailure(binding_object, "obj.oneString(false);", kError);
+  ExpectFailure(
+      binding_object, "obj.oneString(false);",
+      InvocationError(
+          "test.oneString", "string str",
+          ArgumentError("str", InvalidType(kTypeString, kTypeBoolean))));
   EXPECT_EQ("undefined", GetStringPropertyFromObject(
                              context->Global(), context, "requestArguments"));
 

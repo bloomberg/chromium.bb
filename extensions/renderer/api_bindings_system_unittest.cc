@@ -18,6 +18,7 @@
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/api_bindings_system_unittest.h"
+#include "extensions/renderer/api_invocation_errors.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/try_catch.h"
@@ -260,8 +261,13 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
         "(function(obj) { obj.functionWithEnum('mouse') })";
     v8::Local<v8::Function> function = FunctionFromString(context, kTestCall);
     v8::Local<v8::Value> args[] = {alpha_api};
-    RunFunctionAndExpectError(function, context, arraysize(args), args,
-                              "Uncaught TypeError: Invalid invocation");
+    RunFunctionAndExpectError(
+        function, context, arraysize(args), args,
+        "Uncaught TypeError: " +
+            api_errors::InvocationError(
+                "alpha.functionWithEnum", "alpha.enumRef e",
+                api_errors::ArgumentError(
+                    "e", api_errors::InvalidEnumValue({"cat", "dog"}))));
     EXPECT_FALSE(last_request());
     reset_last_request();  // Just to not pollute future results.
   }

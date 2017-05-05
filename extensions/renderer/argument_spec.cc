@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/api_invocation_errors.h"
@@ -275,6 +277,55 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
     return ParseArgumentToAny(context, value, out_value, error);
   NOTREACHED();
   return false;
+}
+
+const std::string& ArgumentSpec::GetTypeName() const {
+  if (!type_name_.empty())
+    return type_name_;
+
+  switch (type_) {
+    case ArgumentType::INTEGER:
+      type_name_ = api_errors::kTypeInteger;
+      break;
+    case ArgumentType::DOUBLE:
+      type_name_ = api_errors::kTypeDouble;
+      break;
+    case ArgumentType::BOOLEAN:
+      type_name_ = api_errors::kTypeBoolean;
+      break;
+    case ArgumentType::STRING:
+      type_name_ = api_errors::kTypeString;
+      break;
+    case ArgumentType::OBJECT:
+      type_name_ = instance_of_ ? *instance_of_ : api_errors::kTypeObject;
+      break;
+    case ArgumentType::LIST:
+      type_name_ = api_errors::kTypeList;
+      break;
+    case ArgumentType::BINARY:
+      type_name_ = api_errors::kTypeBinary;
+      break;
+    case ArgumentType::FUNCTION:
+      type_name_ = api_errors::kTypeFunction;
+      break;
+    case ArgumentType::REF:
+      type_name_ = ref_->c_str();
+      break;
+    case ArgumentType::CHOICES: {
+      std::vector<base::StringPiece> choices_strings;
+      choices_strings.reserve(choices_.size());
+      for (const auto& choice : choices_)
+        choices_strings.push_back(choice->GetTypeName());
+      type_name_ = base::StringPrintf(
+          "[%s]", base::JoinString(choices_strings, "|").c_str());
+      break;
+    }
+    case ArgumentType::ANY:
+      type_name_ = api_errors::kTypeAny;
+      break;
+  }
+  DCHECK(!type_name_.empty());
+  return type_name_;
 }
 
 bool ArgumentSpec::IsFundamentalType() const {
@@ -585,42 +636,8 @@ bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
 
 std::string ArgumentSpec::GetInvalidTypeError(
     v8::Local<v8::Value> value) const {
-  const char* expected_type = nullptr;
-  switch (type_) {
-    case ArgumentType::INTEGER:
-      expected_type = api_errors::kTypeInteger;
-      break;
-    case ArgumentType::DOUBLE:
-      expected_type = api_errors::kTypeDouble;
-      break;
-    case ArgumentType::BOOLEAN:
-      expected_type = api_errors::kTypeBoolean;
-      break;
-    case ArgumentType::STRING:
-      expected_type = api_errors::kTypeString;
-      break;
-    case ArgumentType::OBJECT:
-      expected_type =
-          instance_of_ ? instance_of_->c_str() : api_errors::kTypeObject;
-      break;
-    case ArgumentType::LIST:
-      expected_type = api_errors::kTypeList;
-      break;
-    case ArgumentType::BINARY:
-      expected_type = api_errors::kTypeBinary;
-      break;
-    case ArgumentType::FUNCTION:
-      expected_type = api_errors::kTypeFunction;
-      break;
-    case ArgumentType::REF:
-      expected_type = ref_->c_str();
-      break;
-    case ArgumentType::CHOICES:
-    case ArgumentType::ANY:
-      NOTREACHED();
-  }
-
-  return api_errors::InvalidType(expected_type, GetV8ValueTypeString(value));
+  return api_errors::InvalidType(GetTypeName().c_str(),
+                                 GetV8ValueTypeString(value));
 }
 
 }  // namespace extensions
