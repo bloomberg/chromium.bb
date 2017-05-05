@@ -16,6 +16,7 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
+#include "extensions/renderer/api_invocation_errors.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
@@ -243,8 +244,16 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
     v8::Local<v8::Function> function =
         FunctionFromString(context, kCallIdleQueryStateInvalid);
     ASSERT_FALSE(function.IsEmpty());
-    RunFunctionAndExpectError(function, context, 0, nullptr,
-                              "Uncaught TypeError: Invalid invocation");
+    RunFunctionAndExpectError(
+        function, context, 0, nullptr,
+        "Uncaught TypeError: " +
+            api_errors::InvocationError(
+                "idle.queryState",
+                "integer detectionIntervalInSeconds, function callback",
+                api_errors::ArgumentError(
+                    "detectionIntervalInSeconds",
+                    api_errors::InvalidType(api_errors::kTypeInteger,
+                                            api_errors::kTypeString))));
   }
 
   {

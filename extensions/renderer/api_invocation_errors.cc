@@ -22,6 +22,7 @@ const char kTypeBinary[] = "binary";
 const char kTypeFunction[] = "function";
 const char kTypeUndefined[] = "undefined";
 const char kTypeNull[] = "null";
+const char kTypeAny[] = "any";
 
 std::string InvalidEnumValue(const std::set<std::string>& valid_enums) {
   std::vector<base::StringPiece> options(valid_enums.begin(),
@@ -108,6 +109,14 @@ std::string ArgumentError(const std::string& parameter_name,
                           const std::string& error) {
   return base::StringPrintf("Error at parameter '%s': %s",
                             parameter_name.c_str(), error.c_str());
+}
+
+std::string InvocationError(const std::string& method_name,
+                            const std::string& expected_signature,
+                            const std::string& error) {
+  return base::StringPrintf("Error in invocation of %s(%s): %s",
+                            method_name.c_str(), expected_signature.c_str(),
+                            error.c_str());
 }
 
 }  // namespace api_errors

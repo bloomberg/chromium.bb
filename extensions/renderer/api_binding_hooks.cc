@@ -198,6 +198,8 @@ APIBindingHooks::RequestResult::RequestResult(
     ResultCode code,
     v8::Local<v8::Function> custom_callback)
     : code(code), custom_callback(custom_callback) {}
+APIBindingHooks::RequestResult::RequestResult(std::string invocation_error)
+    : code(INVALID_INVOCATION), error(std::move(invocation_error)) {}
 APIBindingHooks::RequestResult::~RequestResult() {}
 APIBindingHooks::RequestResult::RequestResult(const RequestResult& other) =
     default;
@@ -272,7 +274,7 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
       return RequestResult(RequestResult::THROWN);
     }
     if (!success)
-      return RequestResult(RequestResult::INVALID_INVOCATION);
+      return RequestResult(std::move(error));
     arguments->swap(parsed_v8_args);
   }
 

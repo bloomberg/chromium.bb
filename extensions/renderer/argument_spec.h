@@ -59,6 +59,10 @@ class ArgumentSpec {
                      std::unique_ptr<base::Value>* out_value,
                      std::string* error) const;
 
+  // Returns a type name for this argument. Note: This should only be used to
+  // surface errors to developers.
+  const std::string& GetTypeName() const;
+
   const std::string& name() const { return name_; }
   bool optional() const { return optional_; }
   ArgumentType type() const { return type_; }
@@ -122,6 +126,9 @@ class ArgumentSpec {
 
   // The type of the argument.
   ArgumentType type_ = ArgumentType::INTEGER;
+
+  // A readable type name for this argument, lazily initialized.
+  mutable std::string type_name_;
 
   // Whether or not the argument is required.
   bool optional_ = false;

@@ -778,4 +778,40 @@ TEST_F(ArgumentSpecUnitTest, NaNFun) {
   }
 }
 
+TEST_F(ArgumentSpecUnitTest, GetTypeName) {
+  struct {
+    ArgumentType type;
+    const char* expected_type_name;
+  } simple_cases[] = {
+      {ArgumentType::BOOLEAN, api_errors::kTypeBoolean},
+      {ArgumentType::INTEGER, api_errors::kTypeInteger},
+      {ArgumentType::OBJECT, api_errors::kTypeObject},
+      {ArgumentType::LIST, api_errors::kTypeList},
+      {ArgumentType::BINARY, api_errors::kTypeBinary},
+      {ArgumentType::FUNCTION, api_errors::kTypeFunction},
+      {ArgumentType::ANY, api_errors::kTypeAny},
+  };
+
+  for (const auto& test_case : simple_cases) {
+    ArgumentSpec spec(test_case.type);
+    EXPECT_EQ(test_case.expected_type_name, spec.GetTypeName());
+  }
+
+  {
+    const char kRefName[] = "someRef";
+    ArgumentSpec ref_spec(ArgumentType::REF);
+    ref_spec.set_ref(kRefName);
+    EXPECT_EQ(kRefName, ref_spec.GetTypeName());
+  }
+
+  {
+    std::vector<std::unique_ptr<ArgumentSpec>> choices;
+    choices.push_back(base::MakeUnique<ArgumentSpec>(ArgumentType::INTEGER));
+    choices.push_back(base::MakeUnique<ArgumentSpec>(ArgumentType::STRING));
+    ArgumentSpec choices_spec(ArgumentType::CHOICES);
+    choices_spec.set_choices(std::move(choices));
+    EXPECT_EQ("[integer|string]", choices_spec.GetTypeName());
+  }
+}
+
 }  // namespace extensions

@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_API_SIGNATURE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -59,9 +60,17 @@ class APISignature {
       std::unique_ptr<base::ListValue>* json_out,
       v8::Local<v8::Function>* callback_out) const;
 
+  // Returns a developer-readable string of the expected signature. For
+  // instance, if this signature expects a string 'someStr' and an optional int
+  // 'someInt', this would return "string someStr, optional integer someInt".
+  std::string GetExpectedSignature() const;
+
  private:
   // The list of expected arguments.
   std::vector<std::unique_ptr<ArgumentSpec>> signature_;
+
+  // A developer-readable signature string, lazily set.
+  mutable std::string expected_signature_;
 
   DISALLOW_COPY_AND_ASSIGN(APISignature);
 };

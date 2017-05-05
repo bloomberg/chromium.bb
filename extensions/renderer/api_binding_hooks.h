@@ -32,17 +32,20 @@ class APIBindingHooks {
       THROWN,              // An exception was thrown during parsing or
                            // handling.
       INVALID_INVOCATION,  // The request was called with invalid arguments.
+                           // |error| will contain the invocation error.
       NOT_HANDLED,         // The request was not handled.
     };
 
     explicit RequestResult(ResultCode code);
     RequestResult(ResultCode code, v8::Local<v8::Function> custom_callback);
+    RequestResult(std::string invocation_error);
     RequestResult(const RequestResult& other);
     ~RequestResult();
 
     ResultCode code;
     v8::Local<v8::Function> custom_callback;
     v8::Local<v8::Value> return_value;  // Only valid if code == HANDLED.
+    std::string error;
   };
 
   APIBindingHooks(const std::string& api_name,
