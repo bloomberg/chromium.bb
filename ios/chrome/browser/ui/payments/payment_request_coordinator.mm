@@ -54,6 +54,9 @@ class PRCardUnmaskPromptViewBridge
   void Show() override {
     view_controller_.reset(
         [[CardUnmaskPromptViewController alloc] initWithBridge:this]);
+    [view_controller_ setModalPresentationStyle:UIModalPresentationFormSheet];
+    [view_controller_
+        setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
     [base_view_controller_ presentViewController:view_controller_
                                         animated:YES
                                       completion:nil];
