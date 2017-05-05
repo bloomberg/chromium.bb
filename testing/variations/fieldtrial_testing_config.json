@@ -1606,24 +1606,6 @@
             ]
         }
     ],
-    "NTPTilesInInstantService": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NTPTilesInInstantService"
-                    ]
-                }
-            ]
-        }
-    ],
     "NetDelayableH2AndQuicRequests": [
         {
             "platforms": [
