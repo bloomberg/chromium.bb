@@ -313,6 +313,11 @@ source_set("browser_tests") {
   testonly = true
   sources = [
     "api/audio/audio_apitest.cc",
+
+    # TODO(michaelpg): bluetooth_appshell_test.cc is a crutch until we have a
+    # better system for testing APIs in both app_shell and chrome. See
+    # crbug.com/650835.
+    "api/bluetooth/bluetooth_appshell_test.cc",
     "api/bluetooth_socket/bluetooth_socket_apitest.cc",
     "api/display_source/display_source_apitest.cc",
     "api/display_source/display_source_apitestbase.cc",

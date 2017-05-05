@@ -47,13 +47,21 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_handler.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "extensions/shell/browser/shell_audio_controller_chromeos.h"
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
+#endif
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#elif defined(OS_LINUX)
+#include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -122,8 +130,17 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
       switches::kAppShellAllowRoaming)) {
     network_controller_->SetCellularAllowRoaming(true);
   }
+#elif defined(OS_LINUX)
+  // app_shell doesn't need GTK, so the fake input method context can work.
+  // See crbug.com/381852 and revision fb69f142.
+  // TODO(michaelpg): Verify this works for target environments.
+  ui::InitializeInputMethodForTesting();
+
+  bluez::DBusThreadManagerLinux::Initialize();
+  bluez::BluezDBusManager::Initialize(
+      bluez::DBusThreadManagerLinux::Get()->GetSystemBus(),
+      /*use_dbus_fakes=*/false);
 #else
-  // Non-Chrome OS platforms are for developer convenience, so use a test IME.
   ui::InitializeInputMethodForTesting();
 #endif
 }
@@ -278,6 +295,10 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
+#elif defined(OS_LINUX)
+  device::BluetoothAdapterFactory::Shutdown();
+  bluez::BluezDBusManager::Shutdown();
+  bluez::DBusThreadManagerLinux::Shutdown();
 #endif
 }
 
