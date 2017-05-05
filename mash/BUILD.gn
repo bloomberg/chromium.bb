@@ -27,6 +27,7 @@ group("all") {
   if (is_chromeos) {
     deps += [
       "//ash/autoclick/mus:accessibility_autoclick",
+      "//ash/mus/standalone:ash_standalone",
       "//ash/touch_hud/mus:touch_hud",
       "//mash:mash_unittests",
     ]
@@ -68,7 +69,10 @@ catalog("catalog") {
   catalog_deps = [ "//mash/example:catalog" ]
 
   if (is_chromeos) {
-    standalone_services += [ "//ash/mus:manifest" ]
+    standalone_services += [
+      "//ash/mus:manifest",
+      "//ash/mus/standalone:manifest",
+    ]
   }
 
   if (is_linux && !is_android) {
