@@ -196,7 +196,9 @@ TEST_F(MetricsLogTest, BasicRecord) {
 #endif
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile->mutable_hardware();
+#if !defined(OS_IOS)
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
+#endif
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
   hardware->set_hardware_class(base::SysInfo::HardwareModelName());
 #if defined(OS_WIN)
