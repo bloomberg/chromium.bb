@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -84,8 +85,9 @@ class TabularContextMenuListAdapter extends BaseAdapter {
         viewHolder.mIcon.setVisibility(icon != null ? View.VISIBLE : View.INVISIBLE);
 
         if (menuItem == ContextMenuItem.SHARE_IMAGE) {
+            Intent shareIntent = ShareHelper.getShareImageIntent(null);
             final Pair<Drawable, CharSequence> shareInfo =
-                    ShareHelper.getShareableIconAndName(mActivity);
+                    ShareHelper.getShareableIconAndName(mActivity, shareIntent);
             if (shareInfo.first != null) {
                 viewHolder.mShareIcon.setImageDrawable(shareInfo.first);
                 viewHolder.mShareIcon.setVisibility(View.VISIBLE);
