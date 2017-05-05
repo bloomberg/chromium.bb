@@ -58,8 +58,8 @@ class CronetURLRequestContextAdapter
 
   ~CronetURLRequestContextAdapter() override;
 
-  // Called on main Java thread to initialize URLRequestContext.
-  void InitRequestContextOnMainThread(
+  // Called on init Java thread to initialize URLRequestContext.
+  void InitRequestContextOnInitThread(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
 
@@ -107,8 +107,8 @@ class CronetURLRequestContextAdapter
   // Default net::LOAD flags used to create requests.
   int default_load_flags() const { return default_load_flags_; }
 
-  // Called on main Java thread to initialize URLRequestContext.
-  void InitRequestContextOnMainThread();
+  // Called on init Java thread to initialize URLRequestContext.
+  void InitRequestContextOnInitThread();
 
   // Configures the network quality estimator to observe requests to localhost,
   // to use smaller responses when estimating throughput, and to disable the

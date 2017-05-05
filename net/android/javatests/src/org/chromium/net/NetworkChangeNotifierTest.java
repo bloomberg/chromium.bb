@@ -592,6 +592,7 @@ public class NetworkChangeNotifierTest {
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testNetworkChangeNotifierJavaObservers() {
+        mReceiver.register();
         // Initialize the NetworkChangeNotifier with a connection.
         Intent connectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
         mReceiver.onReceive(InstrumentationRegistry.getInstrumentation().getTargetContext(),
@@ -657,6 +658,7 @@ public class NetworkChangeNotifierTest {
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testNetworkChangeNotifierMaxBandwidthNotifications() {
+        mReceiver.register();
         // Initialize the NetworkChangeNotifier with a connection.
         mConnectivityDelegate.setActiveNetworkExists(true);
         mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
@@ -953,6 +955,7 @@ public class NetworkChangeNotifierTest {
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testNetworkChangeNotifierIsOnline() {
+        mReceiver.register();
         Intent intent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
         // For any connection type it should return true.
         for (int i = ConnectivityManager.TYPE_MOBILE; i < ConnectivityManager.TYPE_VPN; i++) {

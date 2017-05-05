@@ -26,12 +26,14 @@ import android.net.NetworkRequest;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.telephony.TelephonyManager;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
@@ -367,7 +369,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
 
         String getWifiSsid() {
-            // Synchronized because this method can be called on multiple threads (e.g. UI thread
+            // Synchronized because this method can be called on multiple threads (e.g. mLooper
             // from a private caller, and another thread calling a public API like
             // getCurrentNetworkState) and is otherwise racy.
             synchronized (mLock) {
@@ -409,7 +411,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     // This class gets called back by ConnectivityManager whenever networks come
     // and go. It gets called back on a special handler thread
     // ConnectivityManager creates for making the callbacks. The callbacks in
-    // turn post to the UI thread where mObserver lives.
+    // turn post to mLooper where mObserver lives.
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private class MyNetworkCallback extends NetworkCallback {
         // If non-null, this indicates a VPN is in place for the current user, and no other
@@ -484,7 +486,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             final long netId = networkToNetId(network);
             @ConnectionType
             final int connectionType = mConnectivityManagerDelegate.getConnectionType(network);
-            ThreadUtils.postOnUiThread(new Runnable() {
+            runOnThread(new Runnable() {
                 @Override
                 public void run() {
                     mObserver.onNetworkConnect(netId, connectionType);
@@ -508,7 +510,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             // so forward the new ConnectionType along to observer.
             final long netId = networkToNetId(network);
             final int connectionType = mConnectivityManagerDelegate.getConnectionType(network);
-            ThreadUtils.postOnUiThread(new Runnable() {
+            runOnThread(new Runnable() {
                 @Override
                 public void run() {
                     mObserver.onNetworkConnect(netId, connectionType);
@@ -522,7 +524,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 return;
             }
             final long netId = networkToNetId(network);
-            ThreadUtils.postOnUiThread(new Runnable() {
+            runOnThread(new Runnable() {
                 @Override
                 public void run() {
                     mObserver.onNetworkSoonToDisconnect(netId);
@@ -535,7 +537,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             if (ignoreNetworkDueToVpn(network)) {
                 return;
             }
-            ThreadUtils.postOnUiThread(new Runnable() {
+            runOnThread(new Runnable() {
                 @Override
                 public void run() {
                     mObserver.onNetworkDisconnect(networkToNetId(network));
@@ -553,7 +555,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 }
                 @ConnectionType
                 final int newConnectionType = convertToConnectionType(getCurrentNetworkState());
-                ThreadUtils.postOnUiThread(new Runnable() {
+                runOnThread(new Runnable() {
                     @Override
                     public void run() {
                         mObserver.onConnectionTypeChanged(newConnectionType);
@@ -597,10 +599,16 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         protected abstract void destroy();
     }
 
-    private static final String TAG = "NetworkChangeNotifierAutoDetect";
+    private static final String TAG = NetworkChangeNotifierAutoDetect.class.getSimpleName();
     private static final int UNKNOWN_LINK_SPEED = -1;
 
+    // {@link Looper} for the thread this object lives on.
+    private final Looper mLooper;
+    // Used to post to the thread this object lives on.
+    private final Handler mHandler;
+    // {@link IntentFilter} for incoming global broadcast {@link Intent}s this object listens for.
     private final NetworkConnectivityIntentFilter mIntentFilter;
+    // Notifications are sent to this {@link Observer}.
     private final Observer mObserver;
     private final RegistrationPolicy mRegistrationPolicy;
 
@@ -675,16 +683,17 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     /**
-     * Constructs a NetworkChangeNotifierAutoDetect. Should only be called on UI thread.
+     * Constructs a NetworkChangeNotifierAutoDetect.  Lives on calling thread, receives broadcast
+     * notifications on the UI thread and forwards the notifications to be processed on the calling
+     * thread.
      * @param policy The RegistrationPolicy which determines when this class should watch
      *     for network changes (e.g. see (@link RegistrationPolicyAlwaysRegister} and
      *     {@link RegistrationPolicyApplicationStatus}).
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public NetworkChangeNotifierAutoDetect(Observer observer, RegistrationPolicy policy) {
-        // Since BroadcastReceiver is always called back on UI thread, ensure
-        // running on UI thread so notification logic can be single-threaded.
-        ThreadUtils.assertOnUiThread();
+        mLooper = Looper.myLooper();
+        mHandler = new Handler(mLooper);
         mObserver = observer;
         mConnectivityManagerDelegate =
                 new ConnectivityManagerDelegate(ContextUtils.getApplicationContext());
@@ -711,6 +720,25 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mRegistrationPolicy = policy;
         mRegistrationPolicy.init(this);
         mShouldSignalObserver = true;
+    }
+
+    private boolean onThread() {
+        return mLooper == Looper.myLooper();
+    }
+
+    private void assertOnThread() {
+        if (BuildConfig.DCHECK_IS_ON && !onThread()) {
+            throw new IllegalStateException(
+                    "Must be called on NetworkChangeNotifierAutoDetect thread.");
+        }
+    }
+
+    private void runOnThread(Runnable r) {
+        if (onThread()) {
+            r.run();
+        } else {
+            mHandler.post(r);
+        }
     }
 
     /**
@@ -741,6 +769,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     public void destroy() {
+        assertOnThread();
         mRegistrationPolicy.destroy();
         unregister();
     }
@@ -749,7 +778,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      * Registers a BroadcastReceiver in the given context.
      */
     public void register() {
-        ThreadUtils.assertOnUiThread();
+        assertOnThread();
         if (mRegistered) return;
 
         if (mShouldSignalObserver) {
@@ -790,6 +819,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      * Unregisters a BroadcastReceiver in the given context.
      */
     public void unregister() {
+        assertOnThread();
         if (!mRegistered) return;
         ContextUtils.getApplicationContext().unregisterReceiver(this);
         mRegistered = false;
@@ -997,15 +1027,23 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     // BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (mIgnoreNextBroadcast) {
-            mIgnoreNextBroadcast = false;
-            return;
-        }
-        final NetworkState networkState = getCurrentNetworkState();
-        if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
-            connectionTypeChanged(networkState);
-            maxBandwidthChanged(networkState);
-        }
+        runOnThread(new Runnable() {
+            @Override
+            public void run() {
+                // Once execution begins on the correct thread, make sure unregister() hasn't
+                // been called in the mean time. Ignore the broadcast if unregister() was called.
+                if (!mRegistered) {
+                    return;
+                }
+                if (mIgnoreNextBroadcast) {
+                    mIgnoreNextBroadcast = false;
+                    return;
+                }
+                final NetworkState networkState = getCurrentNetworkState();
+                connectionTypeChanged(networkState);
+                maxBandwidthChanged(networkState);
+            }
+        });
     }
 
     private void connectionTypeChanged(NetworkState networkState) {
