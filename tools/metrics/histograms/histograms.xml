@@ -55779,43 +55779,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Previews.EligibilityReason" enum="PreviewsEligibilityReason">
   <owner>ryansturm@chromium.org</owner>
   <summary>
-    Whether a particular preview was allowed to be shown or the reason the
-    preview could not be shown to the user.
+    When evaluating whether to show a user a preview, the preview might be
+    disallowed for various reasons. If the preview is disallowed, then this
+    reports the reason for disallowing it. If the preview is allowed, then this
+    reports &quot;Previews Allowed&quot;.
   </summary>
 </histogram>
 
-<histogram name="Previews.InfoBarAction.LitePage" enum="PreviewsInfoBarAction">
+<histogram name="Previews.InfoBarAction" enum="PreviewsInfoBarAction">
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>
-    User interactions with the previews LitePage &quot;Saved data&quot; infobar.
-    These include:
-
-    Displays of the infobar and clicks on the &quot;Load original&quot; link.
-    Whether the infobar was dismissed by navigation or the user clicking on
-    &quot;X&quot; close button.
-  </summary>
-</histogram>
-
-<histogram name="Previews.InfoBarAction.LoFi" enum="PreviewsInfoBarAction">
-  <owner>bengr@chromium.org</owner>
-  <owner>megjablon@chromium.org</owner>
-  <summary>
-    User interactions with the previews Lo-Fi &quot;Saved data&quot; infobar.
-    These include:
-
-    Displays of the infobar and clicks on the &quot;Load original&quot; link.
-    Whether the infobar was dismissed by navigation or the user clicking on
-    &quot;X&quot; close button.
-  </summary>
-</histogram>
-
-<histogram name="Previews.InfoBarAction.Offline" enum="PreviewsInfoBarAction">
-  <owner>bengr@chromium.org</owner>
-  <owner>megjablon@chromium.org</owner>
-  <summary>
-    User interactions with the previews Offline &quot;Faster page loaded&quot;
-    infobar. These include:
+    User interactions with the previews &quot;Saved data&quot; infobar. These
+    include:
 
     Displays of the infobar and clicks on the &quot;Load original&quot; link.
     Whether the infobar was dismissed by navigation or the user clicking on
@@ -55830,12 +55806,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Previews.OptOut.UserOptedOut.Offline"
-    enum="PreviewsUserOptedOut">
+<histogram name="Previews.OptOut.UserOptedOut" enum="PreviewsUserOptedOut">
   <owner>ryansturm@chromium.org</owner>
   <summary>
-    Whether the user chose to reload the full page when shown an offline
-    preview.
+    Whether the user chose to reload the original page when shown a preview.
   </summary>
 </histogram>
 
@@ -90064,8 +90038,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="Previews.Types" separator=".">
   <suffix name="Offline" label="Offline previews"/>
-  <suffix name="ClientLoFi" label="Client LoFi previews"/>
+  <suffix name="LitePage" label="Lite page previews"/>
+  <suffix name="LoFi" label="Server LoFi previews"/>
   <affected-histogram name="Previews.EligibilityReason"/>
+  <affected-histogram name="Previews.InfoBarAction"/>
+  <affected-histogram name="Previews.OptOut.UserOptedOut"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ProcessType" separator=".">

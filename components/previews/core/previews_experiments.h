@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
 #define COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -47,9 +48,9 @@ base::TimeDelta SingleOptOutDuration();
 // shown as a preview.
 base::TimeDelta OfflinePreviewFreshnessDuration();
 
-// The threshold of EffectiveConnectionType above which offline previews should
-// not be served.
-net::EffectiveConnectionType EffectiveConnectionTypeThresholdForOffline();
+// The threshold of EffectiveConnectionType above which previews will trigger by
+// default.
+net::EffectiveConnectionType DefaultEffectiveConnectionTypeThreshold();
 
 // Whether offline previews are enabled.
 bool IsOfflinePreviewsEnabled();
@@ -75,15 +76,21 @@ enum class PreviewsType {
   // The user is shown an offline page as a preview.
   OFFLINE = 1,
 
-  // Replace images with placeholders generated on the client.
-  CLIENT_LOFI = 2,
+  // Replace images with placeholders.
+  LOFI = 2,
+
+  // The user is shown a server lite page.
+  LITE_PAGE = 3,
 
   // Insert new enum values here. Keep values sequential to allow looping
   // from NONE+1 to LAST-1.
-  LAST = 3,
+  LAST = 4,
 };
 
 typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
+
+// Gets the string representation of |type|.
+std::string GetStringNameForType(PreviewsType type);
 
 }  // namespace previews
 

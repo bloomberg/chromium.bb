@@ -4,8 +4,6 @@
 
 #include "components/previews/core/previews_experiments.h"
 
-#include <string>
-
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -139,7 +137,7 @@ base::TimeDelta OfflinePreviewFreshnessDuration() {
                          "offline_preview_freshness_duration_in_days", 7));
 }
 
-net::EffectiveConnectionType EffectiveConnectionTypeThresholdForOffline() {
+net::EffectiveConnectionType DefaultEffectiveConnectionTypeThreshold() {
   return GetParamValueAsECT(kClientSidePreviewsFieldTrial,
                             kEffectiveConnectionTypeThreshold,
                             net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
@@ -175,5 +173,21 @@ net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi() {
 }
 
 }  // namespace params
+
+std::string GetStringNameForType(PreviewsType type) {
+  switch (type) {
+    case PreviewsType::OFFLINE:
+      return "Offline";
+    case PreviewsType::LOFI:
+      return "LoFi";
+    case PreviewsType::LITE_PAGE:
+      return "LitePage";
+    case PreviewsType::NONE:
+    case PreviewsType::LAST:
+      break;
+  }
+  NOTREACHED();
+  return std::string();
+}
 
 }  // namespace previews

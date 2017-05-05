@@ -74,7 +74,7 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   EXPECT_EQ(base::TimeDelta::FromDays(7),
             params::OfflinePreviewFreshnessDuration());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-            params::EffectiveConnectionTypeThresholdForOffline());
+            params::DefaultEffectiveConnectionTypeThreshold());
   EXPECT_EQ(0, params::OfflinePreviewsVersion());
 
   base::FieldTrialList field_trial_list(nullptr);
@@ -110,7 +110,7 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   EXPECT_EQ(base::TimeDelta::FromDays(12),
             params::OfflinePreviewFreshnessDuration());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G,
-            params::EffectiveConnectionTypeThresholdForOffline());
+            params::DefaultEffectiveConnectionTypeThreshold());
   EXPECT_EQ(10, params::OfflinePreviewsVersion());
 
   variations::testing::ClearAllVariationParams();

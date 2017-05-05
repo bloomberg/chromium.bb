@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
+#include "net/nqe/effective_connection_type.h"
 
 class GURL;
 
@@ -42,9 +43,10 @@ class PreviewsIOData : public PreviewsDecider {
 
   // Stores |previews_ui_service| as |previews_ui_service_| and posts a task to
   // InitializeOnIOThread on the IO thread.
-  void Initialize(base::WeakPtr<PreviewsUIService> previews_ui_service,
-                  std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
-                  const PreviewsIsEnabledCallback& is_enabled_callback);
+  virtual void Initialize(
+      base::WeakPtr<PreviewsUIService> previews_ui_service,
+      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      const PreviewsIsEnabledCallback& is_enabled_callback);
 
   // Adds a navigation to |url| to the black list with result |opt_out|.
   void AddPreviewNavigation(const GURL& url, bool opt_out, PreviewsType type);
@@ -59,6 +61,11 @@ class PreviewsIOData : public PreviewsDecider {
   // PreviewsDecider implementation:
   bool ShouldAllowPreview(const net::URLRequest& request,
                           PreviewsType type) const override;
+  bool ShouldAllowPreviewAtECT(
+      const net::URLRequest& request,
+      PreviewsType type,
+      net::EffectiveConnectionType effective_connection_type_threshold)
+      const override;
 
  protected:
   // Posts a task to SetIOData for |previews_ui_service_| on the UI thread with

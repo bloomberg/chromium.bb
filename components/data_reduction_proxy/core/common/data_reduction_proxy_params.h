@@ -145,6 +145,9 @@ GURL GetConfigServiceURL();
 // command line.
 bool ShouldForceEnableDataReductionProxy();
 
+// The current LitePage experiment blacklist version.
+int LitePageVersion();
+
 // Retrieves the int stored in |param_name| from the field trial group
 // |group|. If the value is not present, cannot be parsed, or is less than
 // |min_value|, returns |default_value|.
