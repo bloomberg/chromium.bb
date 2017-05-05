@@ -18,13 +18,15 @@ import re
 import sys
 import sets
 
+
 from core import path_util
 path_util.AddTelemetryToPath()
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
-from telemetry.util import bot_utils
 from telemetry import decorators
+
+from core.sharding_map_generator import load_benchmark_sharding_map
 
 
 SCRIPT_TESTS = [
@@ -175,12 +177,12 @@ def get_fyi_waterfall_config():
            'build152-b1', 'build153-b1', 'build154-b1', 'build155-b1',
            'build47-b4', 'build48-b4'],
        'perf_tests': [
-         ('cc_perftests', 0),
-         ('gpu_perftests', 0),
-         ('load_library_perf_tests', 0),
-         ('angle_perftests', 1),
-         ('performance_browser_tests', 1),
-         ('tracing_perftests', 1)]
+         ('cc_perftests', 'build136-b1'),
+         ('gpu_perftests', 'build136-b1'),
+         ('load_library_perf_tests', 'build136-b1'),
+         ('angle_perftests', 'build137-b1'),
+         ('performance_browser_tests', 'build137-b1'),
+         ('tracing_perftests', 'build137-b1')]
       }
     ])
   waterfall = add_tester(
@@ -300,7 +302,7 @@ def get_waterfall_config():
            'build134-m1', 'build135-m1', 'build136-m1'
           ],
        'perf_tests': [
-         ('media_perftests', 2)]
+         ('media_perftests', 'build134-m1')]
       }
     ])
   waterfall = add_tester(
@@ -315,9 +317,9 @@ def get_waterfall_config():
            'build145-m1', 'build146-m1', 'build147-m1'
           ],
        'perf_tests': [
-         ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2),
-         ('media_perftests', 3)]
+         ('load_library_perf_tests', 'build145-m1'),
+         ('performance_browser_tests', 'build145-m1'),
+         ('media_perftests', 'build146-m1')]
       }
     ])
   waterfall = add_tester(
@@ -333,9 +335,9 @@ def get_waterfall_config():
            'build187-m1', 'build188-m1', 'build189-m1'
           ],
        'perf_tests': [
-         ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2),
-         ('media_perftests', 3)]
+         ('load_library_perf_tests', 'build187-m1'),
+         ('performance_browser_tests', 'build187-m1'),
+         ('media_perftests', 'build188-m1')]
       }
     ])
   waterfall = add_tester(
@@ -351,8 +353,8 @@ def get_waterfall_config():
            'build140-m1', 'build141-m1', 'build142-m1'
           ],
        'perf_tests': [
-         ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2)]
+         ('load_library_perf_tests', 'build140-m1'),
+         ('performance_browser_tests', 'build140-m1')]
       }
     ])
   waterfall = add_tester(
@@ -368,10 +370,10 @@ def get_waterfall_config():
            'build103-m1', 'build104-m1', 'build105-m1'
           ],
        'perf_tests': [
-         ('angle_perftests', 2),
-         ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2),
-         ('media_perftests', 3)]
+         ('angle_perftests', 'build103-m1'),
+         ('load_library_perf_tests', 'build103-m1'),
+         ('performance_browser_tests', 'build103-m1'),
+         ('media_perftests', 'build104-m1')]
       }
     ])
   waterfall = add_tester(
@@ -387,9 +389,9 @@ def get_waterfall_config():
            'build166-m1', 'build167-m1', 'build168-m1'
           ],
        'perf_tests': [
-         ('angle_perftests', 2),
-         ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2)]
+         ('angle_perftests', 'build166-m1'),
+         ('load_library_perf_tests', 'build166-m1'),
+         ('performance_browser_tests', 'build166-m1')]
       }
     ])
   waterfall = add_tester(
@@ -405,10 +407,10 @@ def get_waterfall_config():
            'build94-m1', 'build95-m1', 'build96-m1'
           ],
        'perf_tests': [
-         ('angle_perftests', 2),
-         ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2),
-         ('media_perftests', 3)]
+         ('angle_perftests', 'build94-m1'),
+         ('load_library_perf_tests', 'build94-m1'),
+         ('performance_browser_tests', 'build94-m1'),
+         ('media_perftests', 'build95-m1')]
       }
     ])
 
@@ -425,7 +427,7 @@ def get_waterfall_config():
            'build104-b1', 'build105-b1', 'build106-b1'
           ],
        'perf_tests': [
-         ('media_perftests', 3)]
+         ('media_perftests', 'build105-b1')]
       }
     ])
   waterfall = add_tester(
@@ -513,8 +515,8 @@ def get_waterfall_config():
          # ('cc_perftests', 2),
          # crbug.com/709274
          # ('load_library_perf_tests', 2),
-         ('tracing_perftests', 2),
-         ('media_perftests', 3)]
+         ('tracing_perftests', 'build150-m1'),
+         ('media_perftests', 'build151-m1')]
       }
     ])
 
@@ -599,9 +601,11 @@ def generate_script_tests(master, tester_name, shard):
   return script_tests
 
 
-def get_swarming_dimension(dimension, device_affinity):
+def get_swarming_dimension(dimension, device_id):
+  assert device_id in dimension['device_ids']
+
   complete_dimension = {
-    'id': dimension['device_ids'][device_affinity],
+    'id': device_id,
     'os': dimension['os'],
     'pool': dimension['pool'],
   }
@@ -615,8 +619,8 @@ def get_swarming_dimension(dimension, device_affinity):
 def generate_cplusplus_isolate_script_test(dimension):
   return [
     generate_isolate_script_entry(
-        [get_swarming_dimension(dimension, shard)], [], name, name,
-        ignore_task_failure=False)
+        [get_swarming_dimension(dimension, shard)], [], name,
+        name, ignore_task_failure=False)
     for name, shard in dimension['perf_tests']
   ]
 
@@ -639,7 +643,8 @@ def ShouldBenchmarkBeScheduled(benchmark, platform):
 
   return True
 
-def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map,
+def generate_telemetry_tests(name, tester_config, benchmarks,
+                             benchmark_sharding_map,
                              benchmark_ref_build_blacklist):
   isolated_scripts = []
   # First determine the browser that you need based on the tester
@@ -662,15 +667,23 @@ def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map,
     # For each set of dimensions it is only triggered on one of the devices
     swarming_dimensions = []
     for dimension in tester_config['swarming_dimensions']:
-      sharding_map = benchmark_sharding_map.get(str(num_shards), None)
+      device = None
+      sharding_map = benchmark_sharding_map.get(name, None)
       if not sharding_map:
-        raise Exception('Invalid number of shards, generate new sharding map')
-      device_affinity = sharding_map.get(benchmark.Name(), None)
-      if device_affinity is None:
+        raise ValueError('No sharding map for benchmark %r found. Please'
+                         ' disable the benchmark with @Disabled(\'all\'), and'
+                         ' file a bug with Speed>Benchmarks>Waterfall'
+                         ' component and cc martiniss@ and nednguyen@ to'
+                         ' execute the benchmark on the waterfall.' % (
+                             name))
+
+      device = sharding_map.get(benchmark.Name(), None)
+
+      if device is None:
         raise Exception('Device affinity for benchmark %s not found'
           % benchmark.Name())
-      swarming_dimensions.append(
-          get_swarming_dimension(dimension, device_affinity))
+      swarming_dimensions.append(get_swarming_dimension(
+          dimension, device))
 
     test = generate_telemetry_test(
       swarming_dimensions, benchmark.Name(), browser_name)
@@ -717,7 +730,8 @@ BENCHMARK_REF_BUILD_BLACKLIST = [
 
 
 def current_benchmarks():
-  benchmarks_dir = os.path.join(src_dir(), 'tools', 'perf', 'benchmarks')
+  benchmarks_dir = os.path.join(
+      path_util.GetChromiumSrcDir(), 'tools', 'perf', 'benchmarks')
   top_level_dir = os.path.dirname(benchmarks_dir)
 
   all_benchmarks = discover.DiscoverClasses(
@@ -733,68 +747,11 @@ def current_benchmarks():
   return sorted(all_benchmarks, key=lambda b: b.Name())
 
 
-# Returns a sorted list of (benchmark, avg_runtime) pairs for every
-# benchmark in the all_benchmarks list where avg_runtime is in seconds.  Also
-# returns a list of benchmarks whose run time have not been seen before
-def get_sorted_benchmark_list_by_time(all_benchmarks):
-  runtime_list = []
-  benchmark_avgs = {}
-  new_benchmarks = []
-  timing_file_path = os.path.join(src_dir(), 'tools', 'perf', 'core',
-      'desktop_benchmark_avg_times.json')
-  # Load in the avg times as calculated on Nov 1st, 2016
-  with open(timing_file_path) as f:
-    benchmark_avgs = json.load(f)
-
-  for benchmark in all_benchmarks:
-    benchmark_avg_time = benchmark_avgs.get(benchmark.Name(), None)
-    if benchmark_avg_time is None:
-      # Assume that this is a new benchmark that was added after 11/1/16 when
-      # we generated the benchmarks. Use the old affinity algorithm after
-      # we have given the rest the same distribution, add it to the
-      # new benchmarks list.
-      new_benchmarks.append(benchmark)
-    else:
-      # Need to multiple the seconds by 2 since we will be generating two tests
-      # for each benchmark to be run on the same shard for the reference build
-      runtime_list.append((benchmark, benchmark_avg_time * 2.0))
-
-  # Return a reverse sorted list by runtime
-  runtime_list.sort(key=lambda tup: tup[1], reverse=True)
-  return runtime_list, new_benchmarks
-
-
-# Returns a map of benchmark name to shard it is on.
-def shard_benchmarks(num_shards, all_benchmarks):
-  benchmark_to_shard_dict = {}
-  shard_execution_times = [0] * num_shards
-  sorted_benchmark_list, new_benchmarks = get_sorted_benchmark_list_by_time(
-    all_benchmarks)
-  # Iterate over in reverse order and add them to the current smallest bucket.
-  for benchmark in sorted_benchmark_list:
-    # Find current smallest bucket
-    min_index = shard_execution_times.index(min(shard_execution_times))
-    benchmark_to_shard_dict[benchmark[0].Name()] = min_index
-    shard_execution_times[min_index] += benchmark[1]
-  # For all the benchmarks that didn't have avg run times, use the default
-  # device affinity algorithm
-  for benchmark in new_benchmarks:
-     device_affinity = bot_utils.GetDeviceAffinity(num_shards, benchmark.Name())
-     benchmark_to_shard_dict[benchmark.Name()] = device_affinity
-  return benchmark_to_shard_dict
-
-
 def generate_all_tests(waterfall):
   tests = {}
 
   all_benchmarks = current_benchmarks()
-  # Get benchmark sharding according to common sharding configurations
-  # Currently we only have bots sharded 5 directions and 1 direction
-  benchmark_sharding_map = {}
-  benchmark_sharding_map['22'] = shard_benchmarks(22, all_benchmarks)
-  benchmark_sharding_map['5'] = shard_benchmarks(5, all_benchmarks)
-  benchmark_sharding_map['1'] = shard_benchmarks(1, all_benchmarks)
-  benchmark_sharding_map['21'] = shard_benchmarks(21, all_benchmarks)
+  benchmark_sharding_map = load_benchmark_sharding_map()
 
   for name, config in waterfall['testers'].iteritems():
     benchmark_list = all_benchmarks
@@ -804,9 +761,8 @@ def generate_all_tests(waterfall):
       if len(config['swarming_dimensions']) > 1:
         raise Exception('Invalid assumption on number of swarming dimensions')
       # Generate benchmarks
-      sharding_map = benchmark_sharding_map
       isolated_scripts = generate_telemetry_tests(
-          config, benchmark_list, sharding_map,
+          name, config, benchmark_list, benchmark_sharding_map,
           BENCHMARK_REF_BUILD_BLACKLIST)
       # Generate swarmed non-telemetry tests if present
       if config['swarming_dimensions'][0].get('perf_tests', False):
@@ -838,7 +794,8 @@ def generate_all_tests(waterfall):
 
 def get_json_config_file_for_waterfall(waterfall):
   filename = '%s.json' % waterfall['name']
-  buildbot_dir = os.path.join(src_dir(), 'testing', 'buildbot')
+  buildbot_dir = os.path.join(
+      path_util.GetChromiumSrcDir(), 'testing', 'buildbot')
   return os.path.join(buildbot_dir, filename)
 
 
@@ -870,12 +827,6 @@ def update_all_tests(waterfalls):
     all_tests.update(tests)
   verify_all_tests_in_benchmark_csv(all_tests,
                                     get_all_waterfall_benchmarks_metadata())
-
-
-def src_dir():
-  file_path = os.path.abspath(__file__)
-  return os.path.dirname(os.path.dirname(
-      os.path.dirname(os.path.dirname(file_path))))
 
 
 # not_scheduled means this test is not scheduled on any of the chromium.perf
@@ -986,7 +937,7 @@ def update_benchmark_csv():
   csv_data = sorted(csv_data, key=lambda b: b[0])
   csv_data = header_data + csv_data
 
-  perf_dir = os.path.join(src_dir(), 'tools', 'perf')
+  perf_dir = os.path.join(path_util.GetChromiumSrcDir(), 'tools', 'perf')
   benchmark_file = os.path.join(perf_dir, 'benchmark.csv')
   with open(benchmark_file, 'wb') as f:
     writer = csv.writer(f, lineterminator="\n")
