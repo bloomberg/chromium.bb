@@ -235,67 +235,112 @@ You might have to adjust the commands to your situation and needs.
     "command": "ninja -C out/Debug -j 2000 chrome",
     "isShellCommand": true,
     "isTestCommand": true,
-    "problemMatcher": {
+    "problemMatcher": [
+    {
       "owner": "cpp",
       "fileLocation": ["relative", "${workspaceRoot}"],
       "pattern": {
         "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
         "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
       }
-    }
+    },
+    {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "severity": 3, "message": 4
+      }
+    }]
   },
   {
     "taskName": "2-build_chrome_release",
     "command": "ninja -C out/Release -j 2000 chrome",
     "isShellCommand": true,
     "isBuildCommand": true,
-    "problemMatcher": {
+    "problemMatcher": [
+    {
       "owner": "cpp",
       "fileLocation": ["relative", "${workspaceRoot}"],
       "pattern": {
         "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
         "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
       }
-    }
+    },
+    {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "severity": 3, "message": 4
+      }
+    }]
   },
   {
     "taskName": "3-build_all_debug",
     "command": "ninja -C out/Debug -j 2000",
     "isShellCommand": true,
-    "problemMatcher": {
+    "problemMatcher": [
+    {
       "owner": "cpp",
       "fileLocation": ["relative", "${workspaceRoot}"],
       "pattern": {
         "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
         "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
       }
-    }
+    },
+    {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "severity": 3, "message": 4
+      }
+    }]
   },
   {
     "taskName": "4-build_all_release",
     "command": "ninja -C out/Release -j 2000",
     "isShellCommand": true,
-    "problemMatcher": {
+    "problemMatcher": [
+    {
       "owner": "cpp",
       "fileLocation": ["relative", "${workspaceRoot}"],
       "pattern": {
         "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
         "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
       }
-    }
+    },
+    {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "severity": 3, "message": 4
+      }
+    }]
   },
   {
     "taskName": "5-build_test_debug",
     "command": "ninja -C out/Debug -j 2000 unit_tests components_unittests browser_tests",
     "isShellCommand": true,
-    "problemMatcher": {
+    "problemMatcher": [
+    {
       "owner": "cpp",
       "fileLocation": ["relative", "${workspaceRoot}"],
       "pattern": {
         "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
         "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
       }
-    }
+    },
+    {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "severity": 3, "message": 4
+      }
+    }]
   }]
 }
 ```
