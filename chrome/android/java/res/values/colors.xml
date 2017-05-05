@@ -36,6 +36,7 @@
     <color name="modal_dialog_scrim_color">#7f000000</color>
 
     <!-- New list of common text colors -->
+    <color name="black_alpha_20">#33000000</color>
     <color name="black_alpha_30">#4d000000</color>
     <color name="black_alpha_38">#61000000</color>
     <color name="black_alpha_40">#66000000</color>

@@ -437,8 +437,10 @@ Still reading?
     <!-- TODO(crbug.com/635567): Fix this properly. -->
     <ignore regexp="content/shell/android/shell_apk/res/values/strings.xml"/>
   </issue>
-  <!-- TODO(crbug.com/669629): Remove this when the Chromecast dependency on old layout code is removed. -->
   <issue id="UseCompoundDrawables">
+    <!-- Upscaling 24dp to 48dp doesn't work as expected with a TextView compound drawable. -->
+    <ignore regexp="chrome/android/java/res/layout/photo_picker_bitmap_view.xml"/>
+    <!-- TODO(crbug.com/669629): Remove this when the Chromecast dependency on old layout code is removed. -->
     <ignore regexp="chromecast/internal/android/prebuilt/settings/res/layout-v17/setup_activity_progress.xml"/>
   </issue>
   <issue id="UselessParent">
