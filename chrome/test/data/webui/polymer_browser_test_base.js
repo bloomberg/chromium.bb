@@ -188,10 +188,15 @@ PolymerTest.loadScript = function(src) {
 };
 
 /**
- * Removes all content from the body.
+ * Removes all content from the body. In a vulcanized build, this retains the
+ * inlined tags so stylesheets and dom-modules are not discarded.
  */
 PolymerTest.clearBody = function() {
+  // Save the div where vulcanize inlines content before clearing the page.
+  var vulcanizeDiv = document.querySelector('body > div[hidden][by-vulcanize]');
   document.body.innerHTML = '';
+  if (vulcanizeDiv)
+    document.body.appendChild(vulcanizeDiv);
 };
 
 /**
