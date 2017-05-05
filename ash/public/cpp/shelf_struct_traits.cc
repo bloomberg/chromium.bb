@@ -14,6 +14,16 @@ using ShelfItemStructTraits =
     StructTraits<ash::mojom::ShelfItemDataView, ash::ShelfItem>;
 
 // static
+bool StructTraits<ash::mojom::ShelfIDDataView, ash::ShelfID>::Read(
+    ash::mojom::ShelfIDDataView data,
+    ash::ShelfID* out) {
+  if (!data.ReadAppId(&out->app_id) ||!data.ReadLaunchId(&out->launch_id))
+    return false;
+  // A non-empty launch id requires a non-empty app id.
+  return out->launch_id.empty() || !out->app_id.empty();
+}
+
+// static
 const SkBitmap& ShelfItemStructTraits::image(const ash::ShelfItem& i) {
   // TODO(crbug.com/655874): Remove this when we have a gfx::Image[Skia] mojom.
   static const SkBitmap kNullSkBitmap;
@@ -24,15 +34,11 @@ const SkBitmap& ShelfItemStructTraits::image(const ash::ShelfItem& i) {
 bool ShelfItemStructTraits::Read(ash::mojom::ShelfItemDataView data,
                                  ash::ShelfItem* out) {
   SkBitmap image;
-  std::string app_id;
-  std::string launch_id;
   if (!data.ReadType(&out->type) || !data.ReadImage(&image) ||
-      !data.ReadStatus(&out->status) || !data.ReadAppId(&app_id) ||
-      !data.ReadLaunchId(&launch_id) || !data.ReadTitle(&out->title)) {
+      !data.ReadStatus(&out->status) || !data.ReadShelfId(&out->id) ||
+      !data.ReadTitle(&out->title)) {
     return false;
   }
-  out->id = data.shelf_id();
-  out->app_launch_id = ash::AppLaunchId(app_id, launch_id);
   // TODO(crbug.com/655874): Support high-dpi images via gfx::Image[Skia] mojom.
   out->image = gfx::ImageSkia::CreateFrom1xBitmap(image);
   out->shows_tooltip = data.shows_tooltip();

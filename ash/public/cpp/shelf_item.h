@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/strings/string16.h"
@@ -25,14 +24,11 @@ struct ASH_PUBLIC_EXPORT ShelfItem {
   // Image to display in the shelf.
   gfx::ImageSkia image;
 
-  // Assigned by the model when the item is added.
-  ShelfID id = kInvalidShelfID;
-
   // Running status.
   ShelfItemStatus status = STATUS_CLOSED;
 
   // The application id and launch id for this shelf item.
-  AppLaunchId app_launch_id;
+  ShelfID id;
 
   // The title to display for tooltips, etc.
   base::string16 title;

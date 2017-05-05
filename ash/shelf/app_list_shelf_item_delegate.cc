@@ -13,23 +13,30 @@
 
 namespace ash {
 
+namespace {
+
+// An app id for the app list, used to identify the shelf item.
+static constexpr char kAppListId[] = "AppListId";
+
+}  // namespace
+
 // static
 void AppListShelfItemDelegate::CreateAppListItemAndDelegate(ShelfModel* model) {
   // Add the app list item to the shelf model.
   ShelfItem item;
   item.type = TYPE_APP_LIST;
+  item.id = ShelfID(kAppListId);
   item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
   int index = model->Add(item);
   DCHECK_GE(index, 0);
 
   // Create an AppListShelfItemDelegate for that item.
-  ShelfID id = model->items()[index].id;
-  DCHECK_NE(id, kInvalidShelfID);
-  model->SetShelfItemDelegate(id, base::MakeUnique<AppListShelfItemDelegate>());
+  model->SetShelfItemDelegate(item.id,
+                              base::MakeUnique<AppListShelfItemDelegate>());
 }
 
 AppListShelfItemDelegate::AppListShelfItemDelegate()
-    : ShelfItemDelegate(AppLaunchId()) {}
+    : ShelfItemDelegate(ShelfID(kAppListId)) {}
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {}
 

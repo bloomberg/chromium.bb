@@ -90,7 +90,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
       ash::ShelfItemType shelf_item_type,
       ash::WmShelf* wm_shelf) {
     ash::ShelfItem item;
-    item.id = 123;  // dummy id
+    item.id = ash::ShelfID("dummy id");
     item.type = shelf_item_type;
     return LauncherContextMenu::Create(controller(), &item, wm_shelf);
   }

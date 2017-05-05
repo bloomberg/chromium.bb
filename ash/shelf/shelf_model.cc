@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/shelf/shelf_model_observer.h"
 
@@ -52,51 +51,45 @@ std::string GetShelfAppIdFromArcAppId(const std::string& arc_app_id) {
 
 }  // namespace
 
-ShelfModel::ShelfModel() : next_id_(1) {}
+ShelfModel::ShelfModel() = default;
 
-ShelfModel::~ShelfModel() {}
+ShelfModel::~ShelfModel() = default;
 
 ShelfID ShelfModel::GetShelfIDForAppID(const std::string& app_id) {
   // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
   const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
 
   if (shelf_app_id.empty())
-    return ash::kInvalidShelfID;
+    return ShelfID();
 
   for (const ShelfItem& item : items_) {
     // ShelfWindowWatcher handles app panel windows separately.
-    if (item.type != TYPE_APP_PANEL &&
-        item.app_launch_id.app_id() == shelf_app_id) {
+    if (item.type != TYPE_APP_PANEL && item.id.app_id == shelf_app_id)
       return item.id;
-    }
   }
-  return kInvalidShelfID;
+  return ShelfID();
 }
 
 ShelfID ShelfModel::GetShelfIDForAppIDAndLaunchID(
     const std::string& app_id,
     const std::string& launch_id) {
   // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+  const ShelfID id = ShelfID(GetShelfAppIdFromArcAppId(app_id), launch_id);
 
-  if (shelf_app_id.empty())
-    return ash::kInvalidShelfID;
+  if (id.IsNull())
+    return ShelfID();
 
   for (const ShelfItem& item : items_) {
     // ShelfWindowWatcher handles app panel windows separately.
-    if (item.type != TYPE_APP_PANEL &&
-        item.app_launch_id.app_id() == shelf_app_id &&
-        item.app_launch_id.launch_id() == launch_id) {
+    if (item.type != TYPE_APP_PANEL && item.id == id)
       return item.id;
-    }
   }
-  return kInvalidShelfID;
+  return ShelfID();
 }
 
-const std::string& ShelfModel::GetAppIDForShelfID(ShelfID id) {
+const std::string& ShelfModel::GetAppIDForShelfID(const ShelfID& id) {
   ShelfItems::const_iterator item = ItemByID(id);
-  return item != items().end() ? item->app_launch_id.app_id()
-                               : base::EmptyString();
+  return item != items().end() ? item->id.app_id : base::EmptyString();
 }
 
 void ShelfModel::PinAppWithID(const std::string& app_id) {
@@ -116,9 +109,9 @@ void ShelfModel::PinAppWithID(const std::string& app_id) {
     item.type = TYPE_PINNED_APP;
     Set(index, item);
   } else if (!shelf_app_id.empty()) {
-    ash::ShelfItem item;
-    item.type = ash::TYPE_PINNED_APP;
-    item.app_launch_id = AppLaunchId(shelf_app_id);
+    ShelfItem item;
+    item.type = TYPE_PINNED_APP;
+    item.id = ShelfID(shelf_app_id);
     Add(item);
   }
 }
@@ -145,7 +138,7 @@ void ShelfModel::UnpinAppWithID(const std::string& app_id) {
   ShelfItem item = items_[index];
   DCHECK_EQ(item.type, TYPE_PINNED_APP);
   DCHECK(!item.pinned_by_policy);
-  if (item.status == ash::STATUS_CLOSED) {
+  if (item.status == STATUS_CLOSED) {
     RemoveItemAt(index);
   } else {
     item.type = TYPE_APP;
@@ -164,9 +157,11 @@ int ShelfModel::Add(const ShelfItem& item) {
 }
 
 int ShelfModel::AddAt(int index, const ShelfItem& item) {
+  // Items should have unique non-empty ids to avoid undefined model behavior.
+  DCHECK(!item.id.IsNull());
+  DCHECK_EQ(ItemIndexByID(item.id), -1);
   index = ValidateInsertionIndex(item.type, index);
   items_.insert(items_.begin() + index, item);
-  items_[index].id = next_id_++;
   for (auto& observer : observers_)
     observer.ShelfItemAdded(index);
   return index;
@@ -204,7 +199,7 @@ void ShelfModel::Set(int index, const ShelfItem& item) {
 
   ShelfItem old_item(items_[index]);
   items_[index] = item;
-  items_[index].id = old_item.id;
+  DCHECK(old_item.id == item.id);
   for (auto& observer : observers_)
     observer.ShelfItemChanged(index, old_item);
 
@@ -223,7 +218,7 @@ void ShelfModel::Set(int index, const ShelfItem& item) {
   }
 }
 
-int ShelfModel::ItemIndexByID(ShelfID id) const {
+int ShelfModel::ItemIndexByID(const ShelfID& id) const {
   ShelfItems::const_iterator i = ItemByID(id);
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
 }
@@ -236,7 +231,7 @@ int ShelfModel::GetItemIndexForType(ShelfItemType type) {
   return -1;
 }
 
-ShelfItems::const_iterator ShelfModel::ItemByID(ShelfID id) const {
+ShelfItems::const_iterator ShelfModel::ItemByID(const ShelfID& id) const {
   for (ShelfItems::const_iterator i = items_.begin(); i != items_.end(); ++i) {
     if (i->id == id)
       return i;
@@ -261,7 +256,7 @@ int ShelfModel::FirstPanelIndex() const {
 }
 
 void ShelfModel::SetShelfItemDelegate(
-    ShelfID id,
+    const ShelfID& id,
     std::unique_ptr<ShelfItemDelegate> item_delegate) {
   if (item_delegate)
     item_delegate->set_shelf_id(id);
@@ -269,7 +264,7 @@ void ShelfModel::SetShelfItemDelegate(
   id_to_item_delegate_map_[id] = std::move(item_delegate);
 }
 
-ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(ShelfID id) {
+ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(const ShelfID& id) {
   if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end())
     return id_to_item_delegate_map_[id].get();
   return nullptr;

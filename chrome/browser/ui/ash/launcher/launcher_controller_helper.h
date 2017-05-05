@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -42,7 +41,7 @@ class LauncherControllerHelper : public ExtensionEnableFlowDelegate {
   // Note that already running applications are ignored by the restore process.
   virtual bool IsValidIDForCurrentUser(const std::string& id) const;
 
-  void LaunchApp(ash::AppLaunchId id,
+  void LaunchApp(const ash::ShelfID& id,
                  ash::ShelfLaunchSource source,
                  int event_flags);
 

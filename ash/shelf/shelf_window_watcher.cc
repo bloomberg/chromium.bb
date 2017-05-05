@@ -15,7 +15,6 @@
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -52,8 +51,8 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   else if (window->GetProperty(aura::client::kDrawAttentionKey))
     item->status = STATUS_ATTENTION;
 
-  const std::string* app_id = window->GetProperty(aura::client::kAppIdKey);
-  item->app_launch_id = app_id ? AppLaunchId(*app_id) : AppLaunchId();
+  const ShelfID* shelf_id = window->GetProperty(kShelfIDKey);
+  item->id = shelf_id ? *shelf_id : ShelfID();
 
   // Prefer app icons over window icons, they're typically larger.
   gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);
@@ -108,10 +107,9 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  if (key == aura::client::kAppIconKey || key == aura::client::kAppIdKey ||
-      key == aura::client::kDrawAttentionKey ||
-      key == aura::client::kWindowIconKey || key == kPanelAttachedKey ||
-      key == kShelfItemTypeKey) {
+  if (key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
+      key == aura::client::kDrawAttentionKey || key == kPanelAttachedKey ||
+      key == kShelfItemTypeKey || key == kShelfIDKey) {
     window_watcher_->OnUserWindowPropertyChanged(window);
   }
 }
@@ -160,24 +158,22 @@ ShelfWindowWatcher::~ShelfWindowWatcher() {
 void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   user_windows_with_items_.insert(window);
   ShelfItem item;
-  ShelfID id = model_->next_id();
   UpdateShelfItemForWindow(&item, window);
-  window->SetProperty(kShelfIDKey, id);
-  model_->SetShelfItemDelegate(id,
+  model_->SetShelfItemDelegate(item.id,
                                base::MakeUnique<ShelfWindowWatcherItemDelegate>(
-                                   id, WmWindow::Get(window)));
+                                   item.id, WmWindow::Get(window)));
   // Panels are inserted on the left so as not to push all existing panels over.
   model_->AddAt(item.type == TYPE_APP_PANEL ? 0 : model_->item_count(), item);
 }
 
 void ShelfWindowWatcher::RemoveShelfItem(aura::Window* window) {
   user_windows_with_items_.erase(window);
-  ShelfID shelf_id = window->GetProperty(kShelfIDKey);
-  DCHECK_NE(shelf_id, kInvalidShelfID);
-  int index = model_->ItemIndexByID(shelf_id);
+  ShelfID* shelf_id = window->GetProperty(kShelfIDKey);
+  DCHECK(shelf_id);
+  DCHECK(!shelf_id->IsNull());
+  int index = model_->ItemIndexByID(*shelf_id);
   DCHECK_GE(index, 0);
   model_->RemoveItemAt(index);
-  window->SetProperty(kShelfIDKey, kInvalidShelfID);
 }
 
 void ShelfWindowWatcher::OnContainerWindowDestroying(aura::Window* container) {
@@ -185,7 +181,8 @@ void ShelfWindowWatcher::OnContainerWindowDestroying(aura::Window* container) {
 }
 
 int ShelfWindowWatcher::GetShelfItemIndexForWindow(aura::Window* window) const {
-  return model_->ItemIndexByID(window->GetProperty(kShelfIDKey));
+  ShelfID* shelf_id = window->GetProperty(kShelfIDKey);
+  return shelf_id ? model_->ItemIndexByID(*shelf_id) : -1;
 }
 
 void ShelfWindowWatcher::OnUserWindowAdded(aura::Window* window) {
@@ -209,7 +206,8 @@ void ShelfWindowWatcher::OnUserWindowDestroying(aura::Window* window) {
 }
 
 void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
-  if (GetShelfItemType(window) == TYPE_UNDEFINED) {
+  if (GetShelfItemType(window) == TYPE_UNDEFINED ||
+      !window->GetProperty(kShelfIDKey)) {
     // Remove |window|'s ShelfItem if it was added by this ShelfWindowWatcher.
     if (user_windows_with_items_.count(window) > 0)
       RemoveShelfItem(window);

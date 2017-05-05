@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
@@ -21,13 +20,14 @@ class ShelfItemDelegate;
 class ShelfModelObserver;
 
 // Model used for shelf items. Owns ShelfItemDelegates but does not create them.
+// TODO(msw): Remove id conversion functions; check for item presence as needed.
 class ASH_EXPORT ShelfModel {
  public:
   ShelfModel();
   ~ShelfModel();
 
-  // Get the shelf ID from an application ID. Returns kInvalidShelfID if the
-  // app id is unknown, or has no associated ShelfID.
+  // Get the shelf ID from an application ID. Returns an empty ShelfID if the
+  // app id is unknown to the model, or has no associated ShelfID.
   ShelfID GetShelfIDForAppID(const std::string& app_id);
 
   // Get the shelf ID from an application ID and a launch ID.
@@ -35,14 +35,14 @@ class ASH_EXPORT ShelfModel {
   // multiple shelf items per app. This id is used together with the app_id to
   // uniquely identify each shelf item that has the same app_id.
   // For example, a single virtualization app might want to show different
-  // shelf icons for different remote apps. Returns kInvalidShelfID if the app
-  // id is unknown or has no associated ShelfID.
+  // shelf icons for different remote apps. Returns an empty ShelfID() if the
+  // app id is unknown to the model, or has no associated ShelfID.
   ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
                                         const std::string& launch_id);
 
   // Get the application ID for a given shelf ID. Returns an empty string for
   // an unknown or invalid ShelfID.
-  const std::string& GetAppIDForShelfID(ShelfID id);
+  const std::string& GetAppIDForShelfID(const ShelfID& id);
 
   // Pins an app with |app_id| to shelf. A running instance will get pinned.
   // In case there is no running instance a new shelf item is created and
@@ -77,7 +77,7 @@ class ASH_EXPORT ShelfModel {
   void Set(int index, const ShelfItem& item);
 
   // Returns the index of the item by id.
-  int ItemIndexByID(ShelfID id) const;
+  int ItemIndexByID(const ShelfID& id) const;
 
   // Returns the |index| of the item matching |type| in |items_|.
   // Returns -1 if the matching item is not found.
@@ -93,22 +93,19 @@ class ASH_EXPORT ShelfModel {
   // would go if there are no panels.
   int FirstPanelIndex() const;
 
-  // Returns the id assigned to the next item added.
-  ShelfID next_id() const { return next_id_; }
-
   // Returns an iterator into items() for the item with the specified id, or
   // items().end() if there is no item with the specified id.
-  ShelfItems::const_iterator ItemByID(ShelfID id) const;
+  ShelfItems::const_iterator ItemByID(const ShelfID& id) const;
 
   const ShelfItems& items() const { return items_; }
   int item_count() const { return static_cast<int>(items_.size()); }
 
   // Set |item_delegate| for |id| and takes ownership.
-  void SetShelfItemDelegate(ShelfID id,
+  void SetShelfItemDelegate(const ShelfID& id,
                             std::unique_ptr<ShelfItemDelegate> item_delegate);
 
   // Returns ShelfItemDelegate for |id|, or null if none exists.
-  ShelfItemDelegate* GetShelfItemDelegate(ShelfID id);
+  ShelfItemDelegate* GetShelfItemDelegate(const ShelfID& id);
 
   void AddObserver(ShelfModelObserver* observer);
   void RemoveObserver(ShelfModelObserver* observer);
@@ -118,9 +115,6 @@ class ASH_EXPORT ShelfModel {
   // is not the case, adjusts index by shifting it to the valid range and
   // returns the new value.
   int ValidateInsertionIndex(ShelfItemType type, int index) const;
-
-  // ID assigned to the next item.
-  ShelfID next_id_;
 
   ShelfItems items_;
   base::ObserverList<ShelfModelObserver> observers_;

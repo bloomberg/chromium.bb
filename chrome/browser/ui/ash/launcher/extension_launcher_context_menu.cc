@@ -211,8 +211,8 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
 }
 
 extensions::LaunchType ExtensionLauncherContextMenu::GetLaunchType() const {
-  const extensions::Extension* extension = GetExtensionForAppID(
-      item().app_launch_id.app_id(), controller()->profile());
+  const extensions::Extension* extension =
+      GetExtensionForAppID(item().id.app_id, controller()->profile());
 
   // An extension can be unloaded/updated/unavailable at any time.
   if (!extension)
@@ -223,6 +223,5 @@ extensions::LaunchType ExtensionLauncherContextMenu::GetLaunchType() const {
 }
 
 void ExtensionLauncherContextMenu::SetLaunchType(extensions::LaunchType type) {
-  extensions::SetLaunchType(controller()->profile(),
-                            item().app_launch_id.app_id(), type);
+  extensions::SetLaunchType(controller()->profile(), item().id.app_id, type);
 }

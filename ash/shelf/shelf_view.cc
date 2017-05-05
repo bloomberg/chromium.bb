@@ -297,7 +297,7 @@ void ShelfView::OnShelfAlignmentChanged() {
     app_list_button->SchedulePaint();
 }
 
-gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(ShelfID id) {
+gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
   int index = model_->ItemIndexByID(id);
   if (index < 0 || last_visible_index_ < 0)
     return gfx::Rect();
@@ -321,7 +321,7 @@ gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(ShelfID id) {
                    icon_bounds.height());
 }
 
-void ShelfView::UpdatePanelIconPosition(ShelfID id,
+void ShelfView::UpdatePanelIconPosition(const ShelfID& id,
                                         const gfx::Point& midpoint) {
   int current_index = model_->ItemIndexByID(id);
   int first_panel_index = model_->FirstPanelIndex();
@@ -529,7 +529,7 @@ bool ShelfView::StartDrag(const std::string& app_id,
                           const gfx::Point& location_in_screen_coordinates) {
   // Bail if an operation is already going on - or the cursor is not inside.
   // This could happen if mouse / touch operations overlap.
-  if (drag_and_drop_shelf_id_ ||
+  if (!drag_and_drop_shelf_id_.IsNull() ||
       !GetBoundsInScreen().Contains(location_in_screen_coordinates))
     return false;
 
@@ -545,10 +545,10 @@ bool ShelfView::StartDrag(const std::string& app_id,
   // When an item is dragged from overflow to shelf, IsShowingOverflowBubble()
   // returns true. At this time, we don't need to pin the item.
   if (!IsShowingOverflowBubble() &&
-      (!drag_and_drop_shelf_id_ || !model_->IsAppPinned(app_id))) {
+      (drag_and_drop_shelf_id_.IsNull() || !model_->IsAppPinned(app_id))) {
     model_->PinAppWithID(app_id);
     drag_and_drop_shelf_id_ = model_->GetShelfIDForAppID(drag_and_drop_app_id_);
-    if (!drag_and_drop_shelf_id_)
+    if (drag_and_drop_shelf_id_.IsNull())
       return false;
     drag_and_drop_item_pinned_ = true;
   }
@@ -578,7 +578,7 @@ bool ShelfView::StartDrag(const std::string& app_id,
 }
 
 bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
-  if (!drag_and_drop_shelf_id_ ||
+  if (drag_and_drop_shelf_id_.IsNull() ||
       !GetBoundsInScreen().Contains(location_in_screen_coordinates))
     return false;
 
@@ -596,7 +596,7 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
 }
 
 void ShelfView::EndDrag(bool cancel) {
-  if (!drag_and_drop_shelf_id_)
+  if (drag_and_drop_shelf_id_.IsNull())
     return;
 
   views::View* drag_and_drop_view =
@@ -617,7 +617,7 @@ void ShelfView::EndDrag(bool cancel) {
     }
   }
 
-  drag_and_drop_shelf_id_ = 0;
+  drag_and_drop_shelf_id_ = ShelfID();
 }
 
 bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
@@ -968,7 +968,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 
   // If this is not a drag and drop host operation and not the app list item,
   // check if the item got ripped off the shelf - if it did we are done.
-  if (!drag_and_drop_shelf_id_ &&
+  if (drag_and_drop_shelf_id_.IsNull() &&
       RemovableByRipOff(current_index) != NOT_REMOVABLE) {
     if (HandleRipOffDrag(event))
       return;
@@ -1652,7 +1652,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
   if (!context_menu_model)
     return;
 
-  context_menu_id_ = item ? item->id : 0;
+  context_menu_id_ = item ? item->id : ShelfID();
   ShowMenu(std::move(context_menu_model), source, point, true, source_type,
            nullptr);
 }
@@ -1715,7 +1715,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
 }
 
 void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
-  context_menu_id_ = 0;
+  context_menu_id_ = ShelfID();
 
   // Hide the hide overflow bubble after showing a context menu for its items.
   if (owner_overflow_bubble_)

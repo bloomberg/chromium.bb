@@ -255,17 +255,21 @@ struct EnumTraits<ash::mojom::ShelfLaunchSource, ash::ShelfLaunchSource> {
 
 template <>
 struct ASH_PUBLIC_EXPORT
+    StructTraits<ash::mojom::ShelfIDDataView, ash::ShelfID> {
+  static const std::string& app_id(const ash::ShelfID& i) { return i.app_id; }
+  static const std::string& launch_id(const ash::ShelfID& i) {
+    return i.launch_id;
+  }
+  static bool Read(ash::mojom::ShelfIDDataView data, ash::ShelfID* out);
+};
+
+template <>
+struct ASH_PUBLIC_EXPORT
     StructTraits<ash::mojom::ShelfItemDataView, ShelfItem> {
   static ash::ShelfItemType type(const ShelfItem& i) { return i.type; }
   static const SkBitmap& image(const ShelfItem& i);
-  static ash::ShelfID shelf_id(const ShelfItem& i) { return i.id; }
   static ash::ShelfItemStatus status(const ShelfItem& i) { return i.status; }
-  static const std::string& app_id(const ShelfItem& i) {
-    return i.app_launch_id.app_id();
-  }
-  static const std::string& launch_id(const ShelfItem& i) {
-    return i.app_launch_id.launch_id();
-  }
+  static const ash::ShelfID& shelf_id(const ShelfItem& i) { return i.id; }
   static const base::string16& title(const ShelfItem& i) { return i.title; }
   static bool shows_tooltip(const ShelfItem& i) { return i.shows_tooltip; }
   static bool pinned_by_policy(const ShelfItem& i) {

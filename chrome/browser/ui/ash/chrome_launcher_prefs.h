@@ -26,9 +26,6 @@ class PrefRegistrySyncable;
 }
 
 namespace ash {
-
-class AppLaunchId;
-
 namespace launcher {
 
 // Path within the dictionary entries in the prefs::kPinnedLauncherApps list
@@ -67,23 +64,22 @@ void SetShelfAlignmentPref(PrefService* prefs,
                            ShelfAlignment alignment);
 
 // Get the list of pinned apps from preferences.
-std::vector<AppLaunchId> GetPinnedAppsFromPrefs(
-    const PrefService* prefs,
-    LauncherControllerHelper* helper);
+std::vector<ShelfID> GetPinnedAppsFromPrefs(const PrefService* prefs,
+                                            LauncherControllerHelper* helper);
 
-// Removes information about pin position from sync model for the app. Note,
-// |app_launch_id| with non-empty launch_id is not supported.
-void RemovePinPosition(Profile* profile, const AppLaunchId& app_launch_id);
+// Removes information about pin position from sync model for the app.
+// Note, |shelf_id| with non-empty launch_id is not supported.
+void RemovePinPosition(Profile* profile, const ShelfID& shelf_id);
 
-// Updates information about pin position in sync model for the app
-// |app_launch_id|. |app_launch_id_before| optionally specifies an app that
-// exists right before the target app. |app_launch_ids_after| optionally
-// specifies sorted by position apps that exist right after the target app.
-// Note, |app_launch_id| with non-empty launch_id is not supported.
+// Updates information about pin position in sync model for the app |shelf_id|.
+// |shelf_id_before| optionally specifies an app that exists right before the
+// target app. |shelf_ids_after| optionally specifies sorted by position apps
+// that exist right after the target app.
+// Note, |shelf_id| with non-empty launch_id is not supported.
 void SetPinPosition(Profile* profile,
-                    const AppLaunchId& app_launch_id,
-                    const AppLaunchId& app_launch_id_before,
-                    const std::vector<AppLaunchId>& app_launch_ids_after);
+                    const ShelfID& shelf_id,
+                    const ShelfID& shelf_id_before,
+                    const std::vector<ShelfID>& shelf_ids_after);
 
 // Used to propagate remote preferences to local during the first run.
 class ChromeLauncherPrefsObserver

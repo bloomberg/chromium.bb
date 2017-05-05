@@ -19,8 +19,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
                              kRestoreShowStateOverrideKey,
                              ui::SHOW_STATE_DEFAULT);
 
-DEFINE_UI_CLASS_PROPERTY_KEY(ShelfID, kShelfIDKey, kInvalidShelfID);
-
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false);
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);

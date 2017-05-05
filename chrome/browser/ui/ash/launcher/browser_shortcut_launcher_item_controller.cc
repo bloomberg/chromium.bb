@@ -7,9 +7,9 @@
 #include <limits>
 #include <vector>
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -105,7 +105,7 @@ base::string16 GetBrowserListTitle(content::WebContents* web_contents) {
 
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     ash::ShelfModel* shelf_model)
-    : ash::ShelfItemDelegate(ash::AppLaunchId(extension_misc::kChromeAppId)),
+    : ash::ShelfItemDelegate(ash::ShelfID(extension_misc::kChromeAppId)),
       shelf_model_(shelf_model) {
   // Tag all open browser windows with the appropriate shelf id property. This
   // associates each window with the shelf item for the active web contents.
@@ -174,8 +174,9 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
 
   browser->window()->GetNativeWindow()->SetProperty(
       ash::kShelfIDKey,
-      ChromeLauncherController::instance()->GetShelfIDForWebContents(
-          web_contents));
+      new ash::ShelfID(
+          ChromeLauncherController::instance()->GetShelfIDForWebContents(
+              web_contents)));
 }
 
 void BrowserShortcutLauncherItemController::ItemSelected(
@@ -359,9 +360,10 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
 
   // v1 App popup windows with a valid app id have their own icon.
   if (browser->is_app() && browser->is_type_popup() &&
-      shelf_model_->GetShelfIDForAppID(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name())) !=
-          ash::kInvalidShelfID) {
+      !shelf_model_
+           ->GetShelfIDForAppID(
+               web_app::GetExtensionIdFromApplicationName(browser->app_name()))
+           .IsNull()) {
     return false;
   }
 

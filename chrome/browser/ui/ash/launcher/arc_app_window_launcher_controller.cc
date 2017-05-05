@@ -6,11 +6,11 @@
 #include <string>
 
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shared/app_types.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -157,9 +157,9 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 
   const arc::ArcAppShelfId& app_shelf_id() const { return app_shelf_id_; }
 
-  ash::ShelfID shelf_id() const { return shelf_id_; }
+  const ash::ShelfID& shelf_id() const { return shelf_id_; }
 
-  void set_shelf_id(ash::ShelfID shelf_id) { shelf_id_ = shelf_id; }
+  void set_shelf_id(const ash::ShelfID& shelf_id) { shelf_id_ = shelf_id; }
 
   views::Widget* widget() const { return widget_; }
 
@@ -236,7 +236,7 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
  private:
   const int task_id_;
   const arc::ArcAppShelfId app_shelf_id_;
-  ash::ShelfID shelf_id_ = 0;
+  ash::ShelfID shelf_id_;
   FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
   // Unowned pointers
   views::Widget* const widget_;
@@ -418,7 +418,8 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
       base::MakeUnique<AppWindow>(task_id, info->app_shelf_id(), widget, this));
   RegisterApp(info);
   DCHECK(info->app_window()->controller());
-  window->SetProperty(ash::kShelfIDKey, info->app_window()->shelf_id());
+  window->SetProperty(ash::kShelfIDKey,
+                      new ash::ShelfID(info->app_window()->shelf_id()));
   if (ash::Shell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {
@@ -656,7 +657,7 @@ ArcAppWindowLauncherController::AttachControllerToTask(
   ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
   const ash::ShelfID shelf_id =
       shelf_model->GetShelfIDForAppID(app_shelf_id.ToString());
-  if (shelf_id == ash::kInvalidShelfID) {
+  if (shelf_id.IsNull()) {
     owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {
     shelf_model->SetShelfItemDelegate(shelf_id, std::move(controller));
@@ -677,7 +678,7 @@ void ArcAppWindowLauncherController::RegisterApp(
   const ash::ShelfID shelf_id =
       ash::Shell::Get()->shelf_model()->GetShelfIDForAppID(
           controller->app_id());
-  DCHECK_NE(shelf_id, ash::kInvalidShelfID);
+  DCHECK(!shelf_id.IsNull());
 
   controller->AddWindow(app_window);
   owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);

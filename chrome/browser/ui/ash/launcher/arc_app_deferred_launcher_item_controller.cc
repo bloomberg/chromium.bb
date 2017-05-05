@@ -17,7 +17,7 @@ ArcAppDeferredLauncherItemController::ArcAppDeferredLauncherItemController(
     const std::string& arc_app_id,
     int event_flags,
     const base::WeakPtr<ArcAppDeferredLauncherController>& host)
-    : ash::ShelfItemDelegate(ash::AppLaunchId(arc_app_id)),
+    : ash::ShelfItemDelegate(ash::ShelfID(arc_app_id)),
       event_flags_(event_flags),
       host_(host),
       start_time_(base::Time::Now()) {}

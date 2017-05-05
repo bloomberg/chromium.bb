@@ -25,18 +25,21 @@ class ASH_PUBLIC_EXPORT AppLaunchId {
   AppLaunchId();
   ~AppLaunchId();
 
-  AppLaunchId(const AppLaunchId& app_launch_id) = default;
-  AppLaunchId(AppLaunchId&& app_launch_id) = default;
-  AppLaunchId& operator=(const AppLaunchId& other) = default;
+  AppLaunchId(const AppLaunchId& other);
+  AppLaunchId(AppLaunchId&& other);
+  AppLaunchId& operator=(const AppLaunchId& other);
+  bool operator==(const AppLaunchId& other) const;
+  bool operator!=(const AppLaunchId& other) const;
+  bool operator<(const AppLaunchId& other) const;
 
-  const std::string& app_id() const { return app_id_; }
-  const std::string& launch_id() const { return launch_id_; }
+  // Returns true if both the application id and launch id are empty.
+  // This is often used to determine if the id is invalid.
+  bool IsNull() const;
 
- private:
   // The application id associated with a set of windows.
-  std::string app_id_;
+  std::string app_id;
   // An id passed on app launch, to support multiple shelf items per app.
-  std::string launch_id_;
+  std::string launch_id;
 };
 
 }  // namespace ash

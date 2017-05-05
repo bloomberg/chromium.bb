@@ -61,26 +61,25 @@ bool CanBrowserBeUsedForDirectActivation(Browser* browser,
 
 // static
 std::unique_ptr<AppShortcutLauncherItemController>
-AppShortcutLauncherItemController::Create(
-    const ash::AppLaunchId& app_launch_id) {
-  if (app_launch_id.app_id() == ArcSupportHost::kHostAppId ||
-      app_launch_id.app_id() == arc::kPlayStoreAppId) {
+AppShortcutLauncherItemController::Create(const ash::ShelfID& shelf_id) {
+  if (shelf_id.app_id == ArcSupportHost::kHostAppId ||
+      shelf_id.app_id == arc::kPlayStoreAppId) {
     return base::MakeUnique<ArcPlaystoreShortcutLauncherItemController>();
   }
   return base::WrapUnique<AppShortcutLauncherItemController>(
-      new AppShortcutLauncherItemController(app_launch_id));
+      new AppShortcutLauncherItemController(shelf_id));
 }
 
 // Item controller for an app shortcut. Shortcuts track app and launcher ids,
 // but do not have any associated windows (opening a shortcut will replace the
 // item with the appropriate ash::ShelfItemDelegate type).
 AppShortcutLauncherItemController::AppShortcutLauncherItemController(
-    const ash::AppLaunchId& app_launch_id)
-    : ash::ShelfItemDelegate(app_launch_id) {
+    const ash::ShelfID& shelf_id)
+    : ash::ShelfItemDelegate(shelf_id) {
   // To detect V1 applications we use their domain and match them against the
   // used URL. This will also work with applications like Google Drive.
   const Extension* extension = GetExtensionForAppID(
-      app_launch_id.app_id(), ChromeLauncherController::instance()->profile());
+      shelf_id.app_id, ChromeLauncherController::instance()->profile());
   // Some unit tests have no real extension.
   if (extension) {
     set_refocus_url(GURL(
@@ -116,9 +115,9 @@ void AppShortcutLauncherItemController::ItemSelected(
     }
 
     // Launching some items replaces this item controller instance, which
-    // destroys its AppLaunchId string pair; making copies avoid crashes.
-    ChromeLauncherController::instance()->LaunchApp(
-        ash::AppLaunchId(app_launch_id()), source, ui::EF_NONE);
+    // destroys its ShelfID string pair; making copies avoid crashes.
+    ChromeLauncherController::instance()->LaunchApp(ash::ShelfID(shelf_id()),
+                                                    source, ui::EF_NONE);
     callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
     return;
   }

@@ -24,9 +24,8 @@
 #include "ui/wm/core/window_animations.h"
 
 ExtensionAppWindowLauncherItemController::
-    ExtensionAppWindowLauncherItemController(
-        const ash::AppLaunchId& app_launch_id)
-    : AppWindowLauncherItemController(app_launch_id) {}
+    ExtensionAppWindowLauncherItemController(const ash::ShelfID& shelf_id)
+    : AppWindowLauncherItemController(shelf_id) {}
 
 ExtensionAppWindowLauncherItemController::
     ~ExtensionAppWindowLauncherItemController() {}

@@ -600,22 +600,22 @@ TEST_F(WindowTreeClientWmTest, SetRectProperty) {
 // Verifies property setting behavior for a std::string* property.
 TEST_F(WindowTreeClientWmTest, SetStringProperty) {
   std::string example = "123";
-  ASSERT_EQ(nullptr, root_window()->GetProperty(client::kAppIdKey));
-  root_window()->SetProperty(client::kAppIdKey, new std::string(example));
-  EXPECT_TRUE(root_window()->GetProperty(client::kAppIdKey));
+  ASSERT_NE(nullptr, root_window()->GetProperty(client::kNameKey));
+  root_window()->SetProperty(client::kNameKey, new std::string(example));
+  EXPECT_TRUE(root_window()->GetProperty(client::kNameKey));
   base::Optional<std::vector<uint8_t>> value =
       window_tree()->GetLastPropertyValue();
   ASSERT_TRUE(value.has_value());
   EXPECT_EQ(example, mojo::ConvertTo<std::string>(*value));
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, true));
-  EXPECT_EQ(example, *root_window()->GetProperty(client::kAppIdKey));
+  EXPECT_EQ(example, *root_window()->GetProperty(client::kNameKey));
 
-  root_window()->SetProperty(client::kAppIdKey, new std::string());
-  EXPECT_EQ(std::string(), *root_window()->GetProperty(client::kAppIdKey));
+  root_window()->SetProperty(client::kNameKey, new std::string());
+  EXPECT_EQ(std::string(), *root_window()->GetProperty(client::kNameKey));
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, false));
-  EXPECT_EQ(example, *root_window()->GetProperty(client::kAppIdKey));
+  EXPECT_EQ(example, *root_window()->GetProperty(client::kNameKey));
 }
 
 // Verifies visible is reverted if the server replied that the change failed.

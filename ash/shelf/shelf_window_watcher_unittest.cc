@@ -17,6 +17,7 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm_window.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
@@ -39,10 +40,12 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
   }
 
   static ShelfID CreateShelfItem(WmWindow* window) {
-    ShelfID id = Shell::Get()->shelf_model()->next_id();
+    static int id = 0;
+    ShelfID shelf_id(base::IntToString(id++));
+    window->aura_window()->SetProperty(kShelfIDKey, new ShelfID(shelf_id));
     window->aura_window()->SetProperty(kShelfItemTypeKey,
                                        static_cast<int32_t>(TYPE_DIALOG));
-    return id;
+    return shelf_id;
   }
 
  protected:
@@ -271,12 +274,14 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_PanelContainer, gfx::Rect());
   WmWindow* window1 = WmWindow::Get(widget1->GetNativeWindow());
+  window1->aura_window()->SetProperty(kShelfIDKey, new ShelfID("foo"));
   window1->aura_window()->SetProperty(kShelfItemTypeKey,
                                       static_cast<int32_t>(TYPE_APP_PANEL));
   EXPECT_EQ(2, model_->item_count());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   WmWindow* window2 = WmWindow::Get(widget2->GetNativeWindow());
+  window2->aura_window()->SetProperty(kShelfIDKey, new ShelfID("bar"));
   window2->aura_window()->SetProperty(kShelfItemTypeKey,
                                       static_cast<int32_t>(TYPE_APP_PANEL));
   EXPECT_EQ(3, model_->item_count());
@@ -293,6 +298,7 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   panel_widget.Init(panel_params);
   panel_widget.Show();
   WmWindow* panel_window = WmWindow::Get(panel_widget.GetNativeWindow());
+  panel_window->aura_window()->SetProperty(kShelfIDKey, new ShelfID("baz"));
   panel_window->aura_window()->SetProperty(
       kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP_PANEL));
   EXPECT_EQ(4, model_->item_count());
@@ -312,6 +318,7 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   std::unique_ptr<aura::Window> window(
       base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL));
   window->Init(ui::LAYER_NOT_DRAWN);
+  window->SetProperty(kShelfIDKey, new ShelfID("foo"));
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
   Shell::GetPrimaryRootWindow()
       ->GetChildById(kShellWindowId_DefaultContainer)

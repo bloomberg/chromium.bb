@@ -19,7 +19,7 @@ class ExtensionAppWindowLauncherItemController
     : public AppWindowLauncherItemController {
  public:
   explicit ExtensionAppWindowLauncherItemController(
-      const ash::AppLaunchId& app_launch_id);
+      const ash::ShelfID& shelf_id);
 
   ~ExtensionAppWindowLauncherItemController() override;
 

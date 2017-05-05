@@ -17,7 +17,7 @@
 
 ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
     const std::string& arc_app_id)
-    : AppWindowLauncherItemController(ash::AppLaunchId(arc_app_id)) {}
+    : AppWindowLauncherItemController(ash::ShelfID(arc_app_id)) {}
 
 ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() {}
 

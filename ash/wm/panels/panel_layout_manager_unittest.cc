@@ -7,6 +7,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -19,7 +20,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -89,12 +89,14 @@ class PanelLayoutManagerTest : public test::AshTestBase {
                                               const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         delegate, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
+    static int id = 0;
+    window->SetProperty(kShelfIDKey, new ShelfID(base::IntToString(id++)));
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
   }
 
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
-    return CreatePanelWindowWithDelegate(NULL, bounds);
+    return CreatePanelWindowWithDelegate(nullptr, bounds);
   }
 
   aura::Window* GetPanelContainer(aura::Window* panel) {
@@ -212,14 +214,14 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   test::ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
 
-  // Clicks the shelf items on |shelf_view| that is associated with given
-  // |window|.
+  // Clicks the shelf item on |shelf_view| associated with the given |window|.
   void ClickShelfItemForWindow(ShelfView* shelf_view, aura::Window* window) {
     test::ShelfViewTestAPI test_api(shelf_view);
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
-    int index = Shell::Get()->shelf_model()->ItemIndexByID(
-        window->GetProperty(kShelfIDKey));
+    ShelfID* shelf_id = window->GetProperty(kShelfIDKey);
+    DCHECK(shelf_id);
+    int index = Shell::Get()->shelf_model()->ItemIndexByID(*shelf_id);
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 
     ui::test::EventGenerator& event_generator = GetEventGenerator();

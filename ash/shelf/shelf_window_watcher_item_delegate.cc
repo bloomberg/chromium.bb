@@ -18,7 +18,7 @@ namespace ash {
 
 namespace {
 
-ShelfItemType GetShelfItemType(ShelfID id) {
+ShelfItemType GetShelfItemType(const ShelfID& id) {
   ShelfModel* model = Shell::Get()->shelf_controller()->model();
   ShelfItems::const_iterator item = model->ItemByID(id);
   return item == model->items().end() ? TYPE_UNDEFINED : item->type;
@@ -26,10 +26,11 @@ ShelfItemType GetShelfItemType(ShelfID id) {
 
 }  // namespace
 
-ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(ShelfID id,
-                                                               WmWindow* window)
-    : ShelfItemDelegate(AppLaunchId()), id_(id), window_(window) {
-  DCHECK_NE(kInvalidShelfID, id_);
+ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(
+    const ShelfID& id,
+    WmWindow* window)
+    : ShelfItemDelegate(id), window_(window) {
+  DCHECK(!id.IsNull());
   DCHECK(window_);
 }
 
@@ -41,7 +42,7 @@ void ShelfWindowWatcherItemDelegate::ItemSelected(
     ShelfLaunchSource source,
     const ItemSelectedCallback& callback) {
   // Move panels attached on another display to the current display.
-  if (GetShelfItemType(id_) == TYPE_APP_PANEL &&
+  if (GetShelfItemType(shelf_id()) == TYPE_APP_PANEL &&
       window_->aura_window()->GetProperty(kPanelAttachedKey) &&
       wm::MoveWindowToDisplay(window_->aura_window(), display_id)) {
     window_->Activate();

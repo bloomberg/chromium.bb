@@ -16,7 +16,7 @@ class WmWindow;
 // The Chrome OS settings window, task manager window, and panel windows.
 class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
  public:
-  ShelfWindowWatcherItemDelegate(ShelfID id, WmWindow* window);
+  ShelfWindowWatcherItemDelegate(const ShelfID& id, WmWindow* window);
   ~ShelfWindowWatcherItemDelegate() override;
 
  private:
@@ -28,7 +28,6 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
   void Close() override;
 
-  ShelfID id_;
   // The window associated with this item. Not owned.
   WmWindow* window_;
 

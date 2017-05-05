@@ -32,7 +32,7 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
   ~AppShortcutLauncherItemController() override;
 
   static std::unique_ptr<AppShortcutLauncherItemController> Create(
-      const ash::AppLaunchId& app_launch_id);
+      const ash::ShelfID& shelf_id);
 
   std::vector<content::WebContents*> GetRunningApplications();
 
@@ -52,8 +52,7 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate {
   void set_refocus_url(const GURL& refocus_url) { refocus_url_ = refocus_url; }
 
  protected:
-  explicit AppShortcutLauncherItemController(
-      const ash::AppLaunchId& app_launch_id);
+  explicit AppShortcutLauncherItemController(const ash::ShelfID& shelf_id);
 
  private:
   // Get the last running application.

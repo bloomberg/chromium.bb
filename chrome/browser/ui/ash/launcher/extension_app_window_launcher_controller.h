@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -64,19 +65,18 @@ class ExtensionAppWindowLauncherController
 
  private:
   using AppControllerMap =
-      std::map<std::string, ExtensionAppWindowLauncherItemController*>;
-  using WindowToAppShelfIdMap = std::map<aura::Window*, std::string>;
+      std::map<ash::ShelfID, ExtensionAppWindowLauncherItemController*>;
 
   // A set of unowned AppWindowRegistry pointers for loaded users.
   // Note that this will only be used with multiple users in the side by side
   // mode.
   std::set<extensions::AppWindowRegistry*> registry_;
 
-  // Map of app launcher id to controller.
+  // Map of shelf id to controller.
   AppControllerMap app_controller_map_;
 
-  // Allows us to get from an aura::Window to the app shelf id.
-  WindowToAppShelfIdMap window_to_app_shelf_id_map_;
+  // Map of aura::Windows to shelf ids.
+  std::map<aura::Window*, ash::ShelfID> window_to_shelf_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppWindowLauncherController);
 };

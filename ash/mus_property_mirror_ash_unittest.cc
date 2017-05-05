@@ -46,25 +46,15 @@ TEST_F(MusPropertyMirrorAshTest, OwnedProperties) {
   std::unique_ptr<aura::Window> window_1(CreateTestWindow());
   std::unique_ptr<aura::Window> window_2(CreateTestWindow());
 
-  EXPECT_EQ(nullptr, window_1->GetProperty(aura::client::kAppIdKey));
-  EXPECT_EQ(nullptr, window_2->GetProperty(aura::client::kAppIdKey));
-  window_1->SetProperty(aura::client::kAppIdKey, new std::string("abc"));
-  EXPECT_EQ("abc", *window_1->GetProperty(aura::client::kAppIdKey));
-  mus_property_mirror_ash.MirrorPropertyFromWidgetWindowToRootWindow(
-      window_1.get(), window_2.get(), aura::client::kAppIdKey);
-  EXPECT_EQ("abc", *window_2->GetProperty(aura::client::kAppIdKey));
-  EXPECT_NE(window_1->GetProperty(aura::client::kAppIdKey),
-            window_2->GetProperty(aura::client::kAppIdKey));
-
   EXPECT_EQ(nullptr, window_1->GetProperty(aura::client::kTitleKey));
   EXPECT_EQ(nullptr, window_2->GetProperty(aura::client::kTitleKey));
   window_1->SetProperty(aura::client::kTitleKey,
-                        new base::string16(base::ASCIIToUTF16("def")));
-  EXPECT_EQ(base::ASCIIToUTF16("def"),
+                        new base::string16(base::ASCIIToUTF16("abc")));
+  EXPECT_EQ(base::ASCIIToUTF16("abc"),
             *window_1->GetProperty(aura::client::kTitleKey));
   mus_property_mirror_ash.MirrorPropertyFromWidgetWindowToRootWindow(
       window_1.get(), window_2.get(), aura::client::kTitleKey);
-  EXPECT_EQ(base::ASCIIToUTF16("def"),
+  EXPECT_EQ(base::ASCIIToUTF16("abc"),
             *window_2->GetProperty(aura::client::kTitleKey));
   EXPECT_NE(window_1->GetProperty(aura::client::kTitleKey),
             window_2->GetProperty(aura::client::kTitleKey));

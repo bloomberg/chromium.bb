@@ -308,11 +308,11 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   if (is_pinned()) {
     shelf_model->PinAppWithID(app_id);
     const ash::ShelfID shelf_id = shelf_model->GetShelfIDForAppID(app_id);
-    EXPECT_TRUE(shelf_id);
+    EXPECT_FALSE(shelf_id.IsNull());
     const ash::ShelfItem* item = chrome_controller()->GetItem(shelf_id);
     EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
   } else {
-    EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id));
+    EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id).IsNull());
   }
 
   StopInstance();
@@ -326,15 +326,12 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   app_info = app_prefs()->GetApp(app_id);
   ASSERT_TRUE(app_info);
   EXPECT_FALSE(app_info->ready);
-  if (is_pinned())
-    EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id));
-  else
-    EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id));
+  EXPECT_NE(is_pinned(), shelf_model->GetShelfIDForAppID(app_id).IsNull());
 
   // Launching non-ready ARC app creates item on shelf and spinning animation.
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
   const ash::ShelfID shelf_id = shelf_model->GetShelfIDForAppID(app_id);
-  EXPECT_TRUE(shelf_id);
+  EXPECT_FALSE(shelf_id.IsNull());
   const ash::ShelfItem* item = chrome_controller()->GetItem(shelf_id);
   EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
   AppAnimatedWaiter(app_id).Wait();
@@ -349,17 +346,14 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
                       ->GetArcDeferredLauncher()
                       ->GetActiveTime(app_id)
                       .is_zero());
-      if (is_pinned())
-        EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id));
-      else
-        EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id));
+      EXPECT_NE(is_pinned(), shelf_model->GetShelfIDForAppID(app_id).IsNull());
       break;
     case TEST_ACTION_EXIT:
-      // Just exist Chrome.
+      // Just exit Chrome.
       break;
     case TEST_ACTION_CLOSE:
-      // Close item during animation.
       {
+        // Close item during animation.
         ash::ShelfItemDelegate* delegate = GetShelfItemDelegate(app_id);
         ASSERT_TRUE(delegate);
         delegate->Close();
@@ -367,10 +361,8 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
                         ->GetArcDeferredLauncher()
                         ->GetActiveTime(app_id)
                         .is_zero());
-        if (is_pinned())
-          EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id));
-        else
-          EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id));
+        EXPECT_NE(is_pinned(),
+                  shelf_model->GetShelfIDForAppID(app_id).IsNull());
       }
       break;
   }
@@ -398,26 +390,26 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
   shelf_model->PinAppWithID(app_id2);
   const ash::ShelfID shelf_id1_before =
       shelf_model->GetShelfIDForAppID(app_id1);
-  EXPECT_TRUE(shelf_id1_before);
-  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id2));
+  EXPECT_FALSE(shelf_id1_before.IsNull());
+  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id2).IsNull());
 
   // Package contains only one app. App list is not shown for updated package.
   SendPackageUpdated(kTestAppPackage, false);
   // Second pin should gone.
   EXPECT_EQ(shelf_id1_before, shelf_model->GetShelfIDForAppID(app_id1));
-  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id2));
+  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id2).IsNull());
 
   // Package contains two apps. App list is not shown for updated package.
   SendPackageUpdated(kTestAppPackage, true);
   // Second pin should not appear.
   EXPECT_EQ(shelf_id1_before, shelf_model->GetShelfIDForAppID(app_id1));
-  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id2));
+  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id2).IsNull());
 
   // Package removed.
   SendPackageRemoved(kTestAppPackage);
   // No pin is expected.
-  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id1));
-  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id2));
+  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id1).IsNull());
+  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id2).IsNull());
 }
 
 // This test validates that app list is shown on new package and not shown

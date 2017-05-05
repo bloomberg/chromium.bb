@@ -42,8 +42,8 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     root_window->SetProperty(kWindowPinTypeKey, value);
   } else if (key == aura::client::kAppIconKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kAppIconKey);
-  } else if (key == aura::client::kAppIdKey) {
-    MirrorOwnedProperty(window, root_window, aura::client::kAppIdKey);
+  } else if (key == kShelfIDKey) {
+    MirrorOwnedProperty(window, root_window, kShelfIDKey);
   } else if (key == aura::client::kDrawAttentionKey) {
     bool value = window->GetProperty(aura::client::kDrawAttentionKey);
     root_window->SetProperty(aura::client::kDrawAttentionKey, value);

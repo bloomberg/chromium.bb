@@ -71,8 +71,6 @@ PropertyConverter::PropertyConverter() {
                    CreateAcceptAnyValueCallback());
   RegisterProperty(client::kAppIconKey,
                    ui::mojom::WindowManager::kAppIcon_Property);
-  RegisterProperty(client::kAppIdKey,
-                   ui::mojom::WindowManager::kAppID_Property);
   RegisterProperty(client::kImmersiveFullscreenKey,
                    ui::mojom::WindowManager::kImmersiveFullscreen_Property,
                    CreateAcceptAnyValueCallback());

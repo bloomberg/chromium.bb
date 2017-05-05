@@ -131,8 +131,6 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
     const AppWindow::CreateParams& create_params) {
   ChromeNativeAppWindowViewsAura::InitializeWindow(app_window, create_params);
   aura::Window* window = widget()->GetNativeWindow();
-  window->SetProperty(aura::client::kAppIdKey,
-                      new std::string(app_window->extension_id()));
 
   if (app_window->window_type_is_panel()) {
     // Ash's ShelfWindowWatcher handles app panel windows once this type is set.
