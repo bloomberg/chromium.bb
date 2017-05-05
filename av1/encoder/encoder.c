@@ -774,14 +774,12 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
                        "Failed to allocate scaled last source buffer");
 }
 
-static int alloc_context_buffers_ext(AV1_COMP *cpi) {
+static void alloc_context_buffers_ext(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   int mi_size = cm->mi_cols * cm->mi_rows;
 
-  cpi->mbmi_ext_base = aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base));
-  if (!cpi->mbmi_ext_base) return 1;
-
-  return 0;
+  CHECK_MEM_ERROR(cm, cpi->mbmi_ext_base,
+                  aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
 }
 
 void av1_alloc_compressor_data(AV1_COMP *cpi) {
