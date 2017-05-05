@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_ADAPTIVE_RENDERER_FACTORY_H_
-#define MEDIA_REMOTING_ADAPTIVE_RENDERER_FACTORY_H_
+#ifndef MEDIA_REMOTING_COURIER_RENDERER_FACTORY_H_
+#define MEDIA_REMOTING_COURIER_RENDERER_FACTORY_H_
 
 #include "media/base/renderer_factory.h"
 #include "media/remoting/renderer_controller.h"
@@ -11,14 +11,12 @@
 namespace media {
 namespace remoting {
 
-// Creates Renderers for either local playback or remote playback, as directed
-// by the RendererController.
-class AdaptiveRendererFactory : public RendererFactory {
+// Creates Renderers for remote playback.
+class CourierRendererFactory : public RendererFactory {
  public:
-  AdaptiveRendererFactory(
-      std::unique_ptr<RendererFactory> default_renderer_factory,
+  explicit CourierRendererFactory(
       std::unique_ptr<RendererController> controller);
-  ~AdaptiveRendererFactory() override;
+  ~CourierRendererFactory() override;
 
   std::unique_ptr<Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -27,14 +25,18 @@ class AdaptiveRendererFactory : public RendererFactory {
       VideoRendererSink* video_renderer_sink,
       const RequestSurfaceCB& request_surface_cb) override;
 
+  // Returns whether remote rendering has started, based off of |controller_|.
+  // Called by RendererFactorySelector to determine when to create a
+  // CourierRenderer.
+  bool IsRemotingActive();
+
  private:
-  const std::unique_ptr<RendererFactory> default_renderer_factory_;
   const std::unique_ptr<RendererController> controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(AdaptiveRendererFactory);
+  DISALLOW_COPY_AND_ASSIGN(CourierRendererFactory);
 };
 
 }  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_ADAPTIVE_RENDERER_FACTORY_H_
+#endif  // MEDIA_REMOTING_COURIER_RENDERER_FACTORY_H_

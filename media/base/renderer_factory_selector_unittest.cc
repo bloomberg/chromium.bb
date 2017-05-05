@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "media/base/renderer_factory_selector.h"
@@ -45,8 +46,12 @@ class RendererFactorySelectorTest : public testing::Test {
         ->factory_type();
   }
 
+  bool is_remoting_active() { return is_remoting_active_; }
+
  protected:
   RendererFactorySelector selector_;
+
+  bool is_remoting_active_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RendererFactorySelectorTest);
 };
@@ -86,5 +91,22 @@ TEST_F(RendererFactorySelectorTest, SetUseMediaPlayer) {
   EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
 }
 #endif
+
+TEST_F(RendererFactorySelectorTest, SetQueryIsRemotingActiveCB) {
+  AddFactory(FactoryType::DEFAULT);
+  AddFactory(FactoryType::COURIER);
+  selector_.SetBaseFactoryType(FactoryType::DEFAULT);
+  selector_.SetQueryIsRemotingActiveCB(
+      base::Bind(&RendererFactorySelectorTest::is_remoting_active,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+
+  is_remoting_active_ = true;
+  EXPECT_EQ(FactoryType::COURIER, GetCurrentlySelectedFactoryType());
+
+  is_remoting_active_ = false;
+  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+}
 
 }  // namespace media

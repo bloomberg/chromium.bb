@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_RENDERER_FACTORY_SELECTOR_H_
 #define MEDIA_BASE_RENDERER_FACTORY_SELECTOR_H_
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "media/base/renderer_factory.h"
 
@@ -15,12 +16,14 @@ namespace media {
 // choosing which RendererFactory should be used when creating a new Renderer.
 class MEDIA_EXPORT RendererFactorySelector {
  public:
+  using QueryIsRemotingActiveCB = base::Callback<bool()>;
+
   enum FactoryType {
     DEFAULT,       // DefaultRendererFactory.
     MOJO,          // MojoRendererFactory.
     MEDIA_PLAYER,  // MediaPlayerRendererClientFactory.
-    ADAPTIVE,      // AdaptiveRendererFactory.
-    FACTORY_TYPE_MAX = ADAPTIVE,
+    COURIER,       // CourierRendererFactory.
+    FACTORY_TYPE_MAX = COURIER,
   };
 
   RendererFactorySelector();
@@ -46,13 +49,15 @@ class MEDIA_EXPORT RendererFactorySelector {
   void SetUseMediaPlayer(bool use_media_player);
 #endif
 
- private:
-  void UpdateCurrentFactory();
+  // Sets the callback to query whether we are currently remoting, and if we
+  // should temporarily use the COURIER factory.
+  void SetQueryIsRemotingActiveCB(
+      QueryIsRemotingActiveCB query_is_remoting_active_cb);
 
+ private:
   bool use_media_player_ = false;
 
-  bool current_factory_needs_update_ = true;
-  RendererFactory* current_factory_ = nullptr;
+  QueryIsRemotingActiveCB query_is_remoting_active_cb_;
 
   base::Optional<FactoryType> base_factory_type_;
   std::unique_ptr<RendererFactory> factories_[FACTORY_TYPE_MAX + 1];
