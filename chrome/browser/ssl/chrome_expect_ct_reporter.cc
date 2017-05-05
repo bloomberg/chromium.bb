@@ -123,7 +123,10 @@ ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 void ChromeExpectCTReporter::OnExpectCTFailed(
     const net::HostPortPair& host_port_pair,
     const GURL& report_uri,
-    const net::SSLInfo& ssl_info) {
+    const net::X509Certificate* validated_certificate_chain,
+    const net::X509Certificate* served_certificate_chain,
+    const net::SignedCertificateTimestampAndStatusList&
+        signed_certificate_timestamps) {
   if (report_uri.is_empty())
     return;
 
@@ -138,15 +141,15 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
   report.SetInteger("port", host_port_pair.port());
   report.SetString("date-time", TimeToISO8601(base::Time::Now()));
   report.Set("served-certificate-chain",
-             GetPEMEncodedChainAsList(ssl_info.unverified_cert.get()));
+             GetPEMEncodedChainAsList(served_certificate_chain));
   report.Set("validated-certificate-chain",
-             GetPEMEncodedChainAsList(ssl_info.cert.get()));
+             GetPEMEncodedChainAsList(validated_certificate_chain));
 
   std::unique_ptr<base::ListValue> unknown_scts(new base::ListValue());
   std::unique_ptr<base::ListValue> invalid_scts(new base::ListValue());
   std::unique_ptr<base::ListValue> valid_scts(new base::ListValue());
 
-  for (const auto& sct_and_status : ssl_info.signed_certificate_timestamps) {
+  for (const auto& sct_and_status : signed_certificate_timestamps) {
     switch (sct_and_status.status) {
       case net::ct::SCT_STATUS_LOG_UNKNOWN:
         AddUnknownSCT(sct_and_status, unknown_scts.get());

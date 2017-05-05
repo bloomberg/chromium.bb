@@ -28,7 +28,10 @@ class ChromeExpectCTReporter
   // net::ExpectCTReporter:
   void OnExpectCTFailed(const net::HostPortPair& host_port_pair,
                         const GURL& report_uri,
-                        const net::SSLInfo& ssl_info) override;
+                        const net::X509Certificate* validated_certificate_chain,
+                        const net::X509Certificate* served_certificate_chain,
+                        const net::SignedCertificateTimestampAndStatusList&
+                            signed_certificate_timestamps) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, FeatureDisabled);

@@ -711,12 +711,15 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
     return false;
   }
 
-  if (ssl_info.ct_cert_policy_compliance !=
-          ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS &&
-      ssl_info.ct_cert_policy_compliance !=
-          ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY &&
-      transport_security_state->ShouldRequireCT(
-          new_hostname, ssl_info.cert.get(), ssl_info.public_key_hashes)) {
+  // As with CheckPublicKeyPins above, disable Expect-CT reports.
+  if (transport_security_state->CheckCTRequirements(
+          HostPortPair(new_hostname, 0), ssl_info.is_issued_by_known_root,
+          ssl_info.public_key_hashes, ssl_info.cert.get(),
+          ssl_info.unverified_cert.get(),
+          ssl_info.signed_certificate_timestamps,
+          TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
+          ssl_info.ct_cert_policy_compliance) !=
+      TransportSecurityState::CT_REQUIREMENTS_MET) {
     return false;
   }
 
