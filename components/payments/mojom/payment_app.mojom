@@ -58,6 +58,8 @@ interface PaymentManager {
       => (PaymentHandlerStatus status);
   SetPaymentInstrument(string instrument_key, PaymentInstrument instrument)
       => (PaymentHandlerStatus status);
+  ClearPaymentInstruments()
+      => (PaymentHandlerStatus status);
 };
 
 struct PaymentAppRequest {

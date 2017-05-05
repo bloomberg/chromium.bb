@@ -102,6 +102,14 @@ void PaymentManager::SetPaymentInstrument(
       scope_, instrument_key, std::move(details), callback);
 }
 
+void PaymentManager::ClearPaymentInstruments(
+    const ClearPaymentInstrumentsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_context_->payment_app_database()->ClearPaymentInstruments(
+      scope_, callback);
+}
+
 void PaymentManager::OnConnectionError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   payment_app_context_->PaymentManagerHadConnectionError(this);

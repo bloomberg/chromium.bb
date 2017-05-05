@@ -37,6 +37,7 @@ class MODULES_EXPORT PaymentInstruments final
                     const String& instrument_key,
                     const PaymentInstrument& details,
                     ExceptionState&);
+  ScriptPromise clear(ScriptState*);
 
   DECLARE_TRACE();
 
@@ -53,6 +54,8 @@ class MODULES_EXPORT PaymentInstruments final
                               payments::mojom::blink::PaymentHandlerStatus);
   void onSetPaymentInstrument(ScriptPromiseResolver*,
                               payments::mojom::blink::PaymentHandlerStatus);
+  void onClearPaymentInstruments(ScriptPromiseResolver*,
+                                 payments::mojom::blink::PaymentHandlerStatus);
 
   const payments::mojom::blink::PaymentManagerPtr& manager_;
 };

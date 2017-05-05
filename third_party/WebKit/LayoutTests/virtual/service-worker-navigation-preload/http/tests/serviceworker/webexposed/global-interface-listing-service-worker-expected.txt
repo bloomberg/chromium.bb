@@ -760,6 +760,7 @@ interface Path2D
     method quadraticCurveTo
     method rect
 interface PaymentInstruments
+    method clear
     method constructor
     method delete
     method get
