@@ -176,6 +176,8 @@ void HTMLFrameOwnerElement::ClearContentFrame() {
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
     node->DecrementConnectedSubframeCount();
+
+  GetDocument().CheckCompleted();
 }
 
 void HTMLFrameOwnerElement::DisconnectContentFrame() {
