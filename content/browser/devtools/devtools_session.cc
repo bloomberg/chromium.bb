@@ -6,7 +6,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -94,14 +93,6 @@ void DevToolsSession::sendProtocolNotification(
 }
 
 void DevToolsSession::flushProtocolNotifications() {
-}
-
-protocol::DevToolsDomainHandler* DevToolsSession::GetHandlerByName(
-    const std::string& name) {
-  auto it = handlers_.find(name);
-  if (it == handlers_.end())
-    return nullptr;
-  return it->second.get();
 }
 
 }  // namespace content

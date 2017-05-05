@@ -119,12 +119,9 @@ void ServiceWorkerDevToolsAgentHost::WorkerVersionDoomed() {
 void ServiceWorkerDevToolsAgentHost::NavigationPreloadRequestSent(
     const std::string& request_id,
     const ResourceRequest& request) {
-  if (!session())
-    return;
-  if (protocol::NetworkHandler* network_handler =
-          protocol::NetworkHandler::FromSession(session())) {
-    network_handler->NavigationPreloadRequestSent(worker_id().first, request_id,
-                                                  request);
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(this)) {
+    network->NavigationPreloadRequestSent(worker_id().first, request_id,
+                                          request);
   }
 }
 
@@ -132,24 +129,17 @@ void ServiceWorkerDevToolsAgentHost::NavigationPreloadResponseReceived(
     const std::string& request_id,
     const GURL& url,
     const ResourceResponseHead& head) {
-  if (!session())
-    return;
-  if (protocol::NetworkHandler* network_handler =
-          protocol::NetworkHandler::FromSession(session())) {
-    network_handler->NavigationPreloadResponseReceived(worker_id().first,
-                                                       request_id, url, head);
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(this)) {
+    network->NavigationPreloadResponseReceived(worker_id().first, request_id,
+                                               url, head);
   }
 }
 
 void ServiceWorkerDevToolsAgentHost::NavigationPreloadCompleted(
     const std::string& request_id,
     const ResourceRequestCompletionStatus& completion_status) {
-  if (!session())
-    return;
-  if (protocol::NetworkHandler* network_handler =
-          protocol::NetworkHandler::FromSession(session())) {
-    network_handler->NavigationPreloadCompleted(request_id, completion_status);
-  }
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(this))
+    network->NavigationPreloadCompleted(request_id, completion_status);
 }
 
 int64_t ServiceWorkerDevToolsAgentHost::service_worker_version_id() const {

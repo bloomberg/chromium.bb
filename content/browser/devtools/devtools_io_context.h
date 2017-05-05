@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_IO_CONTEXT_H_
+#define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_IO_CONTEXT_H_
+
 #include <stddef.h>
 
 #include <map>
@@ -61,3 +64,5 @@ class DevToolsIOContext {
 };
 
 }  // namespace content
+
+#endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_IO_CONTEXT_H_

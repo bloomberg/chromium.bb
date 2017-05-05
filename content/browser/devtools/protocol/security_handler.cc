@@ -58,12 +58,10 @@ void AddExplanations(
 }  // namespace
 
 // static
-SecurityHandler* SecurityHandler::FromAgentHost(DevToolsAgentHostImpl* host) {
-  DevToolsSession* session = DevToolsDomainHandler::GetFirstSession(host);
-  if (!session)
-    return nullptr;
-  return static_cast<SecurityHandler*>(
-      session->GetHandlerByName(Security::Metainfo::domainName));
+std::vector<SecurityHandler*> SecurityHandler::ForAgentHost(
+    DevToolsAgentHostImpl* host) {
+  return DevToolsSession::HandlersForAgentHost<SecurityHandler>(
+      host, Security::Metainfo::domainName);
 }
 
 SecurityHandler::SecurityHandler()

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/common/content_export.h"
 #include "content/common/devtools_messages.h"
@@ -19,10 +20,6 @@ namespace content {
 
 class BrowserContext;
 class DevToolsSession;
-
-namespace protocol {
-class DevToolsDomainHandler;
-}
 
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
@@ -67,11 +64,11 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   DevToolsIOContext* GetIOContext() { return &io_context_; }
 
   // TODO(dgozman): remove this accessor.
-  DevToolsSession* session() { return session_.get(); }
+  DevToolsSession* session() { return session_; }
 
  private:
   friend class DevToolsAgentHost; // for static methods
-  friend class protocol::DevToolsDomainHandler;
+  friend class DevToolsSession;
   bool InnerAttachClient(DevToolsAgentHostClient* client, bool force);
   void InnerDetachClient();
   void NotifyAttached();
@@ -80,7 +77,9 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   const std::string id_;
   int last_session_id_;
-  std::unique_ptr<DevToolsSession> session_;
+  // TODO(dgozman): remove this together with accessor above.
+  DevToolsSession* session_;
+  base::flat_set<std::unique_ptr<DevToolsSession>> sessions_;
   DevToolsIOContext io_context_;
   static int s_attached_count_;
   static int s_force_creation_count_;

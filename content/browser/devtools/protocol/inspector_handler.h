@@ -11,7 +11,7 @@
 
 namespace content {
 
-class DevToolsSession;
+class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
 
 namespace protocol {
@@ -22,7 +22,8 @@ class InspectorHandler : public DevToolsDomainHandler,
   InspectorHandler();
   ~InspectorHandler() override;
 
-  static InspectorHandler* FromSession(DevToolsSession* session);
+  static std::vector<InspectorHandler*> ForAgentHost(
+      DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderFrameHost(RenderFrameHostImpl* host) override;

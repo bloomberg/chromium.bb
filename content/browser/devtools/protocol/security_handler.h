@@ -30,7 +30,8 @@ class SecurityHandler : public DevToolsDomainHandler,
   SecurityHandler();
   ~SecurityHandler() override;
 
-  static SecurityHandler* FromAgentHost(DevToolsAgentHostImpl* host);
+  static std::vector<SecurityHandler*> ForAgentHost(
+      DevToolsAgentHostImpl* host);
 
   // DevToolsDomainHandler overrides
   void Wire(UberDispatcher* dispatcher) override;

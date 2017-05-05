@@ -19,9 +19,10 @@ InspectorHandler::~InspectorHandler() {
 }
 
 // static
-InspectorHandler* InspectorHandler::FromSession(DevToolsSession* session) {
-  return static_cast<InspectorHandler*>(
-      session->GetHandlerByName(Inspector::Metainfo::domainName));
+std::vector<InspectorHandler*> InspectorHandler::ForAgentHost(
+    DevToolsAgentHostImpl* host) {
+  return DevToolsSession::HandlersForAgentHost<InspectorHandler>(
+      host, Inspector::Metainfo::domainName);
 }
 
 void InspectorHandler::Wire(UberDispatcher* dispatcher) {

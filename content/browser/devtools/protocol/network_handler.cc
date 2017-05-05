@@ -426,9 +426,10 @@ NetworkHandler::~NetworkHandler() {
 }
 
 // static
-NetworkHandler* NetworkHandler::FromSession(DevToolsSession* session) {
-  return static_cast<NetworkHandler*>(
-      session->GetHandlerByName(Network::Metainfo::domainName));
+std::vector<NetworkHandler*> NetworkHandler::ForAgentHost(
+    DevToolsAgentHostImpl* host) {
+  return DevToolsSession::HandlersForAgentHost<NetworkHandler>(
+      host, Network::Metainfo::domainName);
 }
 
 void NetworkHandler::Wire(UberDispatcher* dispatcher) {

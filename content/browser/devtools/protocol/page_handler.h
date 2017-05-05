@@ -30,7 +30,7 @@ class Image;
 
 namespace content {
 
-class DevToolsSession;
+class DevToolsAgentHostImpl;
 class NavigationHandle;
 class PageNavigationThrottle;
 class RenderFrameHostImpl;
@@ -45,7 +45,7 @@ class PageHandler : public DevToolsDomainHandler,
   PageHandler();
   ~PageHandler() override;
 
-  static PageHandler* FromSession(DevToolsSession* session);
+  static std::vector<PageHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderFrameHost(RenderFrameHostImpl* host) override;

@@ -109,9 +109,10 @@ PageHandler::~PageHandler() {
 }
 
 // static
-PageHandler* PageHandler::FromSession(DevToolsSession* session) {
-  return static_cast<PageHandler*>(
-      session->GetHandlerByName(Page::Metainfo::domainName));
+std::vector<PageHandler*> PageHandler::ForAgentHost(
+    DevToolsAgentHostImpl* host) {
+  return DevToolsSession::HandlersForAgentHost<PageHandler>(
+      host, Page::Metainfo::domainName);
 }
 
 void PageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {

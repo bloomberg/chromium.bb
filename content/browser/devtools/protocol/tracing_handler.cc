@@ -131,9 +131,10 @@ TracingHandler::~TracingHandler() {
 }
 
 // static
-TracingHandler* TracingHandler::FromSession(DevToolsSession* session) {
-  return static_cast<TracingHandler*>(
-      session->GetHandlerByName(Tracing::Metainfo::domainName));
+std::vector<TracingHandler*> TracingHandler::ForAgentHost(
+    DevToolsAgentHostImpl* host) {
+  return DevToolsSession::HandlersForAgentHost<TracingHandler>(
+      host, Tracing::Metainfo::domainName);
 }
 
 void TracingHandler::Wire(UberDispatcher* dispatcher) {
