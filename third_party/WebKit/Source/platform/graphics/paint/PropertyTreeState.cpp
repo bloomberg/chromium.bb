@@ -40,30 +40,18 @@ bool IsAncestorOf(const PropertyNode* ancestor, const PropertyNode* child) {
 
 const CompositorElementId PropertyTreeState::GetCompositorElementId(
     const CompositorElementIdSet& element_ids) const {
-// The effect or transform nodes could have a compositor element id. The order
-// doesn't matter as the element id should be the same on all that have a
-// non-default CompositorElementId.
-//
-// Note that PropertyTreeState acts as a context that accumulates state as we
-// traverse the tree building layers. This means that we could see a compositor
-// element id 'A' for a parent layer in conjunction with a compositor element id
-// 'B' for a child layer. To preserve uniqueness of element ids, then, we check
-// for presence in the |element_ids| set (which represents element ids already
-// previously attached to a layer). This is an interim step while we pursue
-// broader rework of animation subsystem noted in http://crbug.com/709137.
-#if DCHECK_IS_ON()
-  CompositorElementId expected_element_id;
-  CompositorElementId effect_element_id = Effect()->GetCompositorElementId();
-  if (effect_element_id && !element_ids.Contains(effect_element_id)) {
-    expected_element_id = effect_element_id;
-  }
-  CompositorElementId transform_element_id =
-      Transform()->GetCompositorElementId();
-  if (expected_element_id && transform_element_id &&
-      !element_ids.Contains(transform_element_id)) {
-    DCHECK_EQ(expected_element_id, transform_element_id);
-  }
-#endif
+  // The effect or transform nodes could have a compositor element id. The order
+  // doesn't matter as the element id should be the same on all that have a
+  // non-default CompositorElementId.
+  //
+  // Note that PropertyTreeState acts as a context that accumulates state as we
+  // traverse the tree building layers. This means that we could see a
+  // compositor element id 'A' for a parent layer in conjunction with a
+  // compositor element id 'B' for a child layer. To preserve uniqueness of
+  // element ids, then, we check for presence in the |element_ids| set (which
+  // represents element ids already previously attached to a layer). This is an
+  // interim step while we pursue broader rework of animation subsystem noted in
+  // http://crbug.com/709137.
   if (Effect()->GetCompositorElementId() &&
       !element_ids.Contains(Effect()->GetCompositorElementId()))
     return Effect()->GetCompositorElementId();

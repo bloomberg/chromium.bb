@@ -3162,20 +3162,20 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       TransformNodeNotAnimatedHasNoCompositorElementId) {
+       TransformNodeNotAnimatedStillHasCompositorElementId) {
   SetBodyInnerHTML("<div id='target' style='transform: translateX(2em)'></div");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Transform());
-  EXPECT_EQ(CompositorElementId(),
+  EXPECT_NE(CompositorElementId(),
             properties->Transform()->GetCompositorElementId());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       EffectNodeNotAnimatedHasNoCompositorElementId) {
+       EffectNodeNotAnimatedStillHasCompositorElementId) {
   SetBodyInnerHTML("<div id='target' style='opacity: 0.5'></div");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Effect());
-  EXPECT_EQ(CompositorElementId(),
+  EXPECT_NE(CompositorElementId(),
             properties->Effect()->GetCompositorElementId());
 }
 

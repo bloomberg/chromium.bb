@@ -571,7 +571,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 }
 
 TEST_P(PaintPropertyTreeUpdateTest,
-       TransformNodeLosesCompositorElementIdWhenAnimationRemoved) {
+       TransformNodeDoesNotLoseCompositorElementIdWhenAnimationRemoved) {
   LoadTestData("transform-animation.html");
 
   Element* target = GetDocument().getElementById("target");
@@ -586,12 +586,12 @@ TEST_P(PaintPropertyTreeUpdateTest,
   // Remove the animation but keep the transform on the element.
   target->removeAttribute(HTMLNames::classAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(CompositorElementId(),
+  EXPECT_NE(CompositorElementId(),
             properties->Transform()->GetCompositorElementId());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest,
-       EffectNodeLosesCompositorElementIdWhenAnimationRemoved) {
+       EffectNodeDoesNotLoseCompositorElementIdWhenAnimationRemoved) {
   LoadTestData("opacity-animation.html");
 
   Element* target = GetDocument().getElementById("target");
@@ -605,7 +605,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
   target->removeAttribute(HTMLNames::classAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(CompositorElementId(),
+  EXPECT_NE(CompositorElementId(),
             properties->Effect()->GetCompositorElementId());
 }
 

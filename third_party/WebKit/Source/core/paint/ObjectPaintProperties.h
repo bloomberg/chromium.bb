@@ -8,6 +8,7 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
@@ -274,6 +275,13 @@ class CORE_EXPORT ObjectPaintProperties {
   }
 #endif
 
+  CompositorElementId& GetCompositorElementId() {
+    return compositor_element_id_;
+  }
+  void SetCompositorElementId(const CompositorElementId& id) {
+    compositor_element_id_ = id;
+  }
+
  private:
   ObjectPaintProperties() {}
 
@@ -319,6 +327,7 @@ class CORE_EXPORT ObjectPaintProperties {
   RefPtr<TransformPaintPropertyNode> svg_local_to_border_box_transform_;
   RefPtr<TransformPaintPropertyNode> scroll_translation_;
   RefPtr<TransformPaintPropertyNode> scrollbar_paint_offset_;
+  CompositorElementId compositor_element_id_;
 };
 
 }  // namespace blink
