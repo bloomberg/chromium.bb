@@ -59,6 +59,19 @@ class AutofillProfileComparator {
                   const AutofillProfile& p2,
                   NameInfo* name_info) const;
 
+  // Returns true if |full_name_2| is a variant of |full_name_1|.
+  //
+  // This function generates all variations of |full_name_1| and returns true if
+  // one of these variants is equal to |full_name_2|. For example, this function
+  // will return true if |full_name_2| is "john q public" and |full_name_1| is
+  // "john quincy public" because |full_name_2| can be derived from
+  // |full_name_1| by using the middle initial. Note that the reverse is not
+  // true, "john quincy public" is not a name variant of "john q public".
+  //
+  // Note: Expects that |full_name| is already normalized for comparison.
+  bool IsNameVariantOf(const base::string16& full_name_1,
+                       const base::string16& full_name_2) const;
+
   // Populates |email_info| with the result of merging the email addresses in
   // |p1| and |p2|. Returns true if successful. Expects that |p1| and |p2| have
   // already been found to be mergeable.
@@ -136,19 +149,6 @@ class AutofillProfileComparator {
   // Note: Expects that |name| is already normalized for comparison.
   static std::set<base::string16> GetNamePartVariants(
       const base::string16& name_part);
-
-  // Returns true if |full_name_2| is a variant of |full_name_1|.
-  //
-  // This function generates all variations of |full_name_1| and returns true if
-  // one of these variants is equal to |full_name_2|. For example, this function
-  // will return true if |full_name_2| is "john q public" and |full_name_1| is
-  // "john quincy public" because |full_name_2| can be derived from
-  // |full_name_1| by using the middle initial. Note that the reverse is not
-  // true, "john quincy public" is not a name variant of "john q public".
-  //
-  // Note: Expects that |full_name| is already normalized for comparison.
-  bool IsNameVariantOf(const base::string16& full_name_1,
-                       const base::string16& full_name_2) const;
 
   // Returns true if |p1| and |p2| have names which are equivalent for the
   // purposes of merging the two profiles. This means one of the names is
