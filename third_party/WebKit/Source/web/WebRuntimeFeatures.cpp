@@ -408,4 +408,8 @@ void WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(bool enable) {
   RuntimeEnabledFeatures::setMediaControlsOverlayPlayButtonEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableLocationHardReload(bool enable) {
+  RuntimeEnabledFeatures::setLocationHardReloadEnabled(enable);
+}
+
 }  // namespace blink

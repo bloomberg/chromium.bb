@@ -22058,6 +22058,7 @@ from previous Chrome versions.
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
   <int value="1831835753" label="MaterialDesignIncognitoNTP:enabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
+  <int value="1839740266" label="LocationHardReload:disabled"/>
   <int value="1844110073" label="enable-app-view"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
   <int value="1852630189" label="NTPBookmarkSuggestions:disabled"/>
@@ -22070,6 +22071,7 @@ from previous Chrome versions.
   <int value="1865799183" label="javascript-harmony"/>
   <int value="1866079109" label="team-drives"/>
   <int value="1867085340" label="brotli-encoding:enabled"/>
+  <int value="1872185826" label="LocationHardReload:enabled"/>
   <int value="1874604540" label="UseSuggestionsEvenIfFew:disabled"/>
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
