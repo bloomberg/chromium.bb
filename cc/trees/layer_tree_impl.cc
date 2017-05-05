@@ -1029,7 +1029,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     // calculations except when this function is explicitly passed a flag asking
     // us to skip it.
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        layer_list_[0], DrawViewportSize(),
+        layer_list_[0], DeviceViewport().size(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
         current_page_scale_factor(), PageScaleLayer(),
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
@@ -1169,8 +1169,8 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
       OuterViewportScrollLayer(), OverscrollElasticityLayer(),
       elastic_overscroll()->Current(IsActiveTree()),
       current_page_scale_factor(), device_scale_factor(),
-      gfx::Rect(DrawViewportSize()), layer_tree_host_impl_->DrawTransform(),
-      &property_trees_);
+      gfx::Rect(DeviceViewport().size()),
+      layer_tree_host_impl_->DrawTransform(), &property_trees_);
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
 }
 
@@ -1390,10 +1390,6 @@ base::TimeDelta LayerTreeImpl::CurrentBeginFrameInterval() const {
 
 gfx::Rect LayerTreeImpl::DeviceViewport() const {
   return layer_tree_host_impl_->DeviceViewport();
-}
-
-gfx::Size LayerTreeImpl::DrawViewportSize() const {
-  return layer_tree_host_impl_->DrawViewportSize();
 }
 
 const gfx::Rect LayerTreeImpl::ViewportRectForTilePriority() const {

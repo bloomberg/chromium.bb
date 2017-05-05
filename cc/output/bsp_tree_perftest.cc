@@ -110,8 +110,9 @@ class BspTreePerfTest : public LayerTreeTest {
                                 LayerTreeHostImpl* host_impl) {
     RenderSurfaceList update_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        active_tree->root_layer_for_testing(), active_tree->DrawViewportSize(),
-        host_impl->DrawTransform(), active_tree->device_scale_factor(),
+        active_tree->root_layer_for_testing(),
+        active_tree->DeviceViewport().size(), host_impl->DrawTransform(),
+        active_tree->device_scale_factor(),
         active_tree->current_page_scale_factor(),
         active_tree->InnerViewportContainerLayer(),
         active_tree->InnerViewportScrollLayer(),
