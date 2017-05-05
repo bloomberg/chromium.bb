@@ -18,7 +18,7 @@ class VrBrowserInterface;
 
 class UiSceneManager {
  public:
-  UiSceneManager(VrBrowserInterface* browser, UiScene* scene);
+  UiSceneManager(VrBrowserInterface* browser, UiScene* scene, bool in_cct);
   ~UiSceneManager();
 
   base::WeakPtr<UiSceneManager> GetWeakPtr();
@@ -48,6 +48,7 @@ class UiSceneManager {
   bool web_vr_mode_ = false;
   bool secure_origin_ = false;
   bool content_rendering_enabled_ = true;
+  bool in_cct_;
 
   int next_available_id_ = 1;
 

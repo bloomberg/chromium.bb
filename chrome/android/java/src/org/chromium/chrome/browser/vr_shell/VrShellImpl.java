@@ -270,14 +270,13 @@ public class VrShellImpl
     }
 
     @Override
-    public void initializeNative(Tab currentTab, boolean forWebVR) {
+    public void initializeNative(Tab currentTab, boolean forWebVr, boolean inCct) {
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
-
-        mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid.getNativePointer(), forWebVR,
-                getGvrApi().getNativeGvrContext(), mReprojectedRendering);
+        mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid.getNativePointer(), forWebVr,
+                inCct, getGvrApi().getNativeGvrContext(), mReprojectedRendering);
 
         // Set the UI and content sizes before we load the UI.
-        if (forWebVR) {
+        if (forWebVr) {
             DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
             setContentCssSize(
                     primaryDisplay.getDisplayWidth(), primaryDisplay.getDisplayHeight(), WEBVR_DPR);
@@ -592,7 +591,7 @@ public class VrShellImpl
     }
 
     private native long nativeInit(VrShellDelegate delegate, long nativeWindowAndroid,
-            boolean forWebVR, long gvrApi, boolean reprojectedRendering);
+            boolean forWebVR, boolean inCct, long gvrApi, boolean reprojectedRendering);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(
             long nativeVrShell, WebContents webContents, MotionEventSynthesizer eventSynthesizer);

@@ -70,6 +70,7 @@ class VrShell : public device::PresentingGvrDelegate,
           jobject obj,
           ui::WindowAndroid* window,
           bool for_web_vr,
+          bool in_cct,
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
           bool reprojected_rendering);

@@ -28,6 +28,7 @@ class VrGLThread : public VrBrowserInterface, public base::Thread {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       gvr_context* gvr_api,
       bool initially_web_vr,
+      bool in_cct,
       bool reprojected_rendering);
 
   ~VrGLThread() override;
@@ -67,6 +68,7 @@ class VrGLThread : public VrBrowserInterface, public base::Thread {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
   bool initially_web_vr_;
+  bool in_cct_;
   bool reprojected_rendering_;
 
   DISALLOW_COPY_AND_ASSIGN(VrGLThread);
