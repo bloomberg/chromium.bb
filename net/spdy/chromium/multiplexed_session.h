@@ -45,9 +45,7 @@ class NET_EXPORT_PRIVATE MultiplexedSession {
 class NET_EXPORT_PRIVATE MultiplexedSessionHandle {
  public:
   explicit MultiplexedSessionHandle(base::WeakPtr<MultiplexedSession> session);
-  MultiplexedSessionHandle(const MultiplexedSessionHandle& other);
-  MultiplexedSessionHandle(MultiplexedSessionHandle&& other);
-  ~MultiplexedSessionHandle();
+  virtual ~MultiplexedSessionHandle();
 
   // Gets the remote endpoint of the socket that the HTTP stream is using, if
   // any. Returns true and fills in |endpoint| if it is available; returns false

@@ -30,11 +30,10 @@ class IOBuffer;
 
 class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
     : public BidirectionalStreamImpl,
-      public QuicChromiumClientStream::Delegate,
-      public QuicChromiumClientSession::Observer {
+      public QuicChromiumClientStream::Delegate {
  public:
   explicit BidirectionalStreamQuicImpl(
-      const base::WeakPtr<QuicChromiumClientSession>& session);
+      std::unique_ptr<QuicChromiumClientSession::Handle> session);
 
   ~BidirectionalStreamQuicImpl() override;
 
@@ -65,11 +64,6 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   void OnClose() override;
   void OnError(int error) override;
 
-  // QuicChromiumClientSession::Observer implementation:
-  void OnCryptoHandshakeConfirmed() override;
-  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
-  void OnSessionClosed(int error, bool port_migration_detected) override;
-
   void OnStreamReady(int rv);
   void OnSendDataComplete(int rv);
   void OnReadDataComplete(int rv);
@@ -81,9 +75,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   // Resets the stream and ensures that |delegate_| won't be called back.
   void ResetStream();
 
-  base::WeakPtr<QuicChromiumClientSession> session_;
-  bool was_handshake_confirmed_;  // True if the crypto handshake succeeded.
-  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request_;
+  const std::unique_ptr<QuicChromiumClientSession::Handle> session_;
   QuicChromiumClientStream* stream_;  // Non-owning.
 
   const BidirectionalStreamRequestInfo* request_info_;

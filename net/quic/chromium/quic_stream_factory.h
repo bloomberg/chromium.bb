@@ -135,7 +135,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   std::unique_ptr<BidirectionalStreamImpl> CreateBidirectionalStreamImpl();
 
   // Sets |session_|.
-  void SetSession(QuicChromiumClientSession* session);
+  void SetSession(std::unique_ptr<QuicChromiumClientSession::Handle> session);
 
   const QuicServerId& server_id() const { return server_id_; }
 
@@ -147,7 +147,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   QuicServerId server_id_;
   NetLogWithSource net_log_;
   CompletionCallback callback_;
-  base::WeakPtr<QuicChromiumClientSession> session_;
+  std::unique_ptr<QuicChromiumClientSession::Handle> session_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamRequest);
 };

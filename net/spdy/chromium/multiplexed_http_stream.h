@@ -13,7 +13,8 @@ namespace net {
 // Base class for SPDY and QUIC HttpStream subclasses.
 class NET_EXPORT_PRIVATE MultiplexedHttpStream : public HttpStream {
  public:
-  explicit MultiplexedHttpStream(MultiplexedSessionHandle session);
+  explicit MultiplexedHttpStream(
+      std::unique_ptr<MultiplexedSessionHandle> session);
   ~MultiplexedHttpStream() override;
 
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
@@ -30,8 +31,12 @@ class NET_EXPORT_PRIVATE MultiplexedHttpStream : public HttpStream {
   // Caches SSL info from the underlying session.
   void SaveSSLInfo();
 
+ protected:
+  MultiplexedSessionHandle* session() { return session_.get(); }
+  const MultiplexedSessionHandle* session() const { return session_.get(); }
+
  private:
-  MultiplexedSessionHandle session_;
+  const std::unique_ptr<MultiplexedSessionHandle> session_;
 };
 
 }  // namespace net

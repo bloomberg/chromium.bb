@@ -36,7 +36,8 @@ const size_t SpdyHttpStream::kRequestBodyBufferSize = 1 << 14;  // 16KB
 SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
                                bool direct,
                                NetLogSource source_dependency)
-    : MultiplexedHttpStream(MultiplexedSessionHandle(spdy_session)),
+    : MultiplexedHttpStream(
+          base::MakeUnique<MultiplexedSessionHandle>(spdy_session)),
       spdy_session_(spdy_session),
       is_reused_(spdy_session_->IsReused()),
       source_dependency_(source_dependency),

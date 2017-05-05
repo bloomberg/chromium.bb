@@ -36,12 +36,11 @@ class QuicHttpStreamPeer;
 // non-owning pointer to a QuicChromiumClientStream which it uses to
 // send and receive data.
 class NET_EXPORT_PRIVATE QuicHttpStream
-    : public QuicChromiumClientSession::Observer,
-      public QuicChromiumClientStream::Delegate,
+    : public QuicChromiumClientStream::Delegate,
       public QuicClientPushPromiseIndex::Delegate,
       public MultiplexedHttpStream {
  public:
-  QuicHttpStream(const base::WeakPtr<QuicChromiumClientSession>& session,
+  QuicHttpStream(std::unique_ptr<QuicChromiumClientSession::Handle> session,
                  HttpServerProperties* http_server_properties);
 
   ~QuicHttpStream() override;
@@ -75,11 +74,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void OnDataAvailable() override;
   void OnClose() override;
   void OnError(int error) override;
-
-  // QuicChromiumClientSession::Observer implementation
-  void OnCryptoHandshakeConfirmed() override;
-  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
-  void OnSessionClosed(int error, bool port_migration_detected) override;
 
   // QuicClientPushPromiseIndex::Delegate implementation
   bool CheckVary(const SpdyHeaderBlock& client_request,
@@ -144,17 +138,18 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   // |session_error|, |connection_error| and |stream_error|.
   int ComputeResponseStatus() const;
 
-  State next_state_;
+  QuicChromiumClientSession::Handle* quic_session() {
+    return static_cast<QuicChromiumClientSession::Handle*>(session());
+  }
 
-  base::WeakPtr<QuicChromiumClientSession> session_;
-  const QuicServerId server_id_;  // The ID of the QUIC server for this stream.
+  const QuicChromiumClientSession::Handle* quic_session() const {
+    return static_cast<const QuicChromiumClientSession::Handle*>(session());
+  }
+
+  State next_state_;
 
   HttpServerProperties* http_server_properties_;  // Unowned.
 
-  QuicVersion quic_version_;
-  int session_error_;             // Error code from the connection shutdown.
-  bool was_handshake_confirmed_;  // True if the crypto handshake succeeded.
-  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request_;
   QuicChromiumClientStream* stream_;  // Non-owning.
 
   // The following three fields are all owned by the caller and must
@@ -213,11 +208,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   NetLogWithSource stream_net_log_;
 
+  int session_error_;  // Error code from the connection shutdown.
   QuicErrorCode quic_connection_error_;       // Cached connection error code.
   QuicRstStreamErrorCode quic_stream_error_;  // Cached stream error code.
-
-  // True when this stream receives a go away from server due to port migration.
-  bool port_migration_detected_;
 
   bool found_promise_;
   // |QuicClientPromisedInfo| owns this. It will be set when |Try()|
