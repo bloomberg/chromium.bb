@@ -80,8 +80,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     private int mProgressStartCount;
     private int mThemeColor;
 
-    /** Whether or not this progress bar can use theme colors. */
-    private boolean mCanUseThemes;
+    /** Whether or not to use the status bar color as the background of the toolbar. */
+    private boolean mUseStatusBarColorAsBackground;
 
     /** Whether the smooth-indeterminate animation is running. */
     private boolean mIsRunningSmoothIndeterminate;
@@ -147,13 +147,15 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      * @param context The application environment.
      * @param height The height of the progress bar in px.
      * @param topMargin The top margin of the progress bar.
-     * @param canUseThemes Whether or not this progress bar will apply theme colors when requested.
+     * @param useStatusBarColorAsBackground Whether or not to use the status bar color as the
+     *                                      background of the toolbar.
      */
-    public ToolbarProgressBar(Context context, int height, int topMargin, boolean canUseThemes) {
+    public ToolbarProgressBar(
+            Context context, int height, int topMargin, boolean useStatusBarColorAsBackground) {
         super(context, height);
         setAlpha(0.0f);
         mMarginTop = topMargin;
-        mCanUseThemes = canUseThemes;
+        mUseStatusBarColorAsBackground = useStatusBarColorAsBackground;
 
         // This tells accessibility services that progress bar changes are important enough to
         // announce to the user even when not focused.
@@ -232,7 +234,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
             mAnimatingView = new ToolbarProgressBarAnimatingView(getContext(), animationParams);
 
             // The primary theme color may not have been set.
-            if (mThemeColor != 0) {
+            if (mThemeColor != 0 || mUseStatusBarColorAsBackground) {
                 setThemeColor(mThemeColor, false);
             } else {
                 setForegroundColor(getForegroundColor());
@@ -403,9 +405,17 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         mThemeColor = color;
         boolean isDefaultTheme = ColorUtils.isUsingDefaultToolbarColor(getResources(), color);
 
+        // All colors use a single path if using the status bar color as the background.
+        if (mUseStatusBarColorAsBackground) {
+            if (isDefaultTheme) color = Color.BLACK;
+            setForegroundColor(
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.white_alpha_70));
+            setBackgroundColor(ColorUtils.getDarkenedColorForStatusBar(color));
+            return;
+        }
+
         // The default toolbar has specific colors to use.
-        if (!mCanUseThemes
-                || ((isDefaultTheme || !ColorUtils.isValidThemeColor(color)) && !isIncognito)) {
+        if ((isDefaultTheme || !ColorUtils.isValidThemeColor(color)) && !isIncognito) {
             setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),
                     R.color.progress_bar_foreground));
             setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),

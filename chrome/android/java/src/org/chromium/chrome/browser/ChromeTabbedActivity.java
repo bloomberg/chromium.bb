@@ -1908,14 +1908,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     protected void setStatusBarColor(Tab tab, int color) {
         if (DeviceFormFactor.isTablet(getApplicationContext())) return;
-
-        // If Chrome Home is enabled, the super of this function is not called because it only
-        // performs unnecessary transformations on the theme color.
-        if (getBottomSheet() != null) {
-            getBottomSheet().setStatusBarColor(getWindow());
-            return;
-        }
-
         super.setStatusBarColor(tab, isInOverviewMode() ? Color.BLACK : color);
     }
 
