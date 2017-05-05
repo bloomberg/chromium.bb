@@ -2624,7 +2624,7 @@ struct kernel_statfs {
                              /* if (%r0 != 0)
                               *   return %r0;
                               */
-                             "movs  %0,r0\n"
+                             "cmp   r0, #0\n"
                              "bne   1f\n"
 
                              /* In the child, now. Call "fn(arg)".
@@ -2655,8 +2655,9 @@ struct kernel_statfs {
                              "swi 0x0\n"
                            "1:\n"
 #ifdef __thumb2__
-                             "pop {r7}"
+                             "pop {r7}\n"
 #endif
+                             "mov %0, r0"
                              : "=r" (__res)
                              : "r"(fn), "r"(__stack), "r"(__flags), "r"(arg),
                                "r"(__ptid), "r"(__tls), "r"(__ctid),
