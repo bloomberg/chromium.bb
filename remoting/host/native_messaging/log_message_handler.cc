@@ -125,9 +125,13 @@ void LogMessageHandler::SendLogMessageToClient(
   dictionary->SetString("file", file);
   dictionary->SetInteger("line", line);
 
+  // Protect against this instance being torn down after the delegate is run.
+  base::WeakPtr<LogMessageHandler> self = weak_ptr_factory_.GetWeakPtr();
   delegate_.Run(std::move(dictionary));
 
-  suppress_logging_ = false;
+  if (self) {
+    suppress_logging_ = false;
+  }
 }
 
 }  // namespace remoting
