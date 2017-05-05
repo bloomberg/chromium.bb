@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/content_restriction.h"
-#include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
 #include "pdf/pdf.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -49,6 +48,7 @@ namespace chrome_pdf {
 
 namespace {
 
+const char kChromePrint[] = "chrome://print/";
 const char kChromeExtension[] =
     "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai";
 
@@ -221,8 +221,8 @@ const PPP_Pdf ppp_private = {
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
   // Sample |src_url| format: chrome://print/id/page_index/print.pdf
   std::vector<base::StringPiece> url_substr =
-      base::SplitStringPiece(src_url.substr(strlen(chrome::kChromeUIPrintURL)),
-                             "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      base::SplitStringPiece(src_url.substr(strlen(kChromePrint)), "/",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (url_substr.size() != 3)
     return -1;
 
@@ -236,7 +236,7 @@ int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
 }
 
 bool IsPrintPreviewUrl(base::StringPiece url) {
-  return url.starts_with(chrome::kChromeUIPrintURL);
+  return url.starts_with(kChromePrint);
 }
 
 void ScalePoint(float scale, pp::Point* point) {
