@@ -727,6 +727,11 @@ void LayerImpl::UpdatePropertyTreeScrollOffset() {
   // directly instead of going through layers.
   TransformTree& transform_tree = GetTransformTree();
   TransformNode* node = transform_tree.Node(transform_tree_index_);
+  DCHECK(node);
+  // TODO(pdr): This is a workaround for https://crbug.com/712298 to avoid
+  // crashing when there's no transform node. This workaround should be removed.
+  if (!node)
+    return;
   gfx::ScrollOffset current_offset = CurrentScrollOffset();
   if (node->scroll_offset != current_offset) {
     node->scroll_offset = current_offset;
