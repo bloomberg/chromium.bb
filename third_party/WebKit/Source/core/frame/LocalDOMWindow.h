@@ -54,6 +54,7 @@ class DOMVisualViewport;
 class DOMWindowEventQueue;
 class Element;
 class EventQueue;
+class ExceptionState;
 class External;
 class FrameConsole;
 class FrameRequestCallback;
@@ -272,7 +273,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                   const AtomicString& frame_name,
                   const String& window_features_string,
                   LocalDOMWindow* calling_window,
-                  LocalDOMWindow* entered_window);
+                  LocalDOMWindow* entered_window,
+                  ExceptionState&);
 
   FrameConsole* GetFrameConsole() const;
 

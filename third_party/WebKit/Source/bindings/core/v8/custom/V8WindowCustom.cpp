@@ -287,7 +287,11 @@ void V8Window::openMethodCustom(
   // passed the BindingSecurity check above.
   DOMWindow* opened_window = ToLocalDOMWindow(impl)->open(
       url_string, frame_name, window_features_string,
-      CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()));
+      CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()),
+      exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
   if (!opened_window) {
     V8SetReturnValueNull(info);
     return;
