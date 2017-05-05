@@ -4,7 +4,8 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
-#include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
@@ -42,6 +43,16 @@ using testing::kWaitForPageLoadTimeout;
       performAction:grey_tap()];
   // TODO(crbug.com/639517): Add webViewScrollView matcher so we don't have
   // to always find it.
+}
+
++ (void)openSettingsMenu {
+  [ChromeEarlGreyUI openToolsMenu];
+  id<GREYMatcher> toolsMenuTableViewMatcher =
+      grey_accessibilityID(kToolsMenuTableViewId);
+  [[[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
+         usingSearchAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)
+      onElementWithMatcher:toolsMenuTableViewMatcher] performAction:grey_tap()];
 }
 
 + (void)openNewTab {

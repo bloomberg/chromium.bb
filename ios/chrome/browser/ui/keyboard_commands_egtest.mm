@@ -133,10 +133,7 @@ const CGFloat kScrollDisplacement = 50.0;
 
 // Tests that keyboard commands are not registered when Settings are shown.
 - (void)testKeyboardCommandsNotRegistered_SettingsPresented {
-  // Open Settings
-  id<GREYMatcher> toolsMenuSettings =
-      grey_accessibilityID(kToolsMenuSettingsId);
-  [self selectToolsMenuItem:toolsMenuSettings];
+  [ChromeEarlGreyUI openSettingsMenu];
 
   [self verifyNoKeyboardCommandsAreRegistered];
 

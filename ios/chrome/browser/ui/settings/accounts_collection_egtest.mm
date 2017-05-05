@@ -68,16 +68,7 @@ void TapButtonWithLabelId(int message_id) {
 // Opens the signin screen from the settings page. Assumes the tools menu is
 // accessible. User must not be signed in.
 void OpenSignInFromSettings() {
-  const CGFloat scroll_displacement = 50.0;
-
-  [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
-      performAction:grey_tap()];
-
+  [ChromeEarlGreyUI openSettingsMenu];
   TapViewWithAccessibilityId(kSettingsSignInCellId);
 }
 

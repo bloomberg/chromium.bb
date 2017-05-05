@@ -492,10 +492,7 @@ void TapSuppressDialogsButton() {
   [self loadBlankTestPage];
 
   // Show settings.
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           StaticTextWithAccessibilityLabelId(
                                               IDS_IOS_SETTINGS_TITLE)]

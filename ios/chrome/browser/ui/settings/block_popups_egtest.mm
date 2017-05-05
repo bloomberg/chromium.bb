@@ -56,10 +56,6 @@ const std::string kOpenedWindowResponse = "Opened window";
 // Opens the block popups settings page.  Must be called from the NTP.
 void OpenBlockPopupsSettings() {
   const CGFloat scroll_displacement = 50.0;
-  id<GREYMatcher> tools_menu_table_view_matcher =
-      grey_accessibilityID(kToolsMenuTableViewId);
-  id<GREYMatcher> settings_button_matcher =
-      grey_accessibilityID(kToolsMenuSettingsId);
   id<GREYMatcher> content_settings_button_matcher =
       chrome_test_util::ButtonWithAccessibilityLabelId(
           IDS_IOS_CONTENT_SETTINGS_TITLE);
@@ -68,12 +64,7 @@ void OpenBlockPopupsSettings() {
   id<GREYMatcher> block_popups_button_matcher =
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
 
-  [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey selectElementWithMatcher:settings_button_matcher]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:tools_menu_table_view_matcher]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
 
   [[[EarlGrey selectElementWithMatcher:content_settings_button_matcher]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,

@@ -16,6 +16,11 @@
 // calling this method.
 + (void)openToolsMenu;
 
+// Opens the settings menu by opening the tools menu, and then tapping the
+// Settings button. There will be a GREYAssert if the tools menu is open when
+// calling this method.
++ (void)openSettingsMenu;
+
 // Open a new tab via the tools menu.
 + (void)openNewTab;
 
