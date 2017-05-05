@@ -83,6 +83,10 @@ public class UrlUtilitiesTest {
                 UrlUtilities.isValidForIntentFallbackNavigation("http://awesome.example.com/"));
         Assert.assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("inline:skates.co.uk"));
         Assert.assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("javascript:alert(1)"));
+        Assert.assertFalse(
+                UrlUtilities.isValidForIntentFallbackNavigation("file://hostname/path/to/file"));
+        Assert.assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("data:data"));
+        Assert.assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("about:awesome"));
         Assert.assertFalse(UrlUtilities.isValidForIntentFallbackNavigation(""));
     }
 
