@@ -110,7 +110,7 @@ class ArcCustomNotificationView::SlideHelper
     : public ui::LayerAnimationObserver {
  public:
   explicit SlideHelper(ArcCustomNotificationView* owner) : owner_(owner) {
-    owner_->parent()->layer()->GetAnimator()->AddObserver(this);
+    GetSlideOutLayer()->GetAnimator()->AddObserver(this);
 
     // Reset opacity to 1 to handle to case when the surface is sliding before
     // getting managed by this class, e.g. sliding in a popup before showing
@@ -119,13 +119,13 @@ class ArcCustomNotificationView::SlideHelper
       owner_->surface_->window()->layer()->SetOpacity(1.0f);
   }
   ~SlideHelper() override {
-    owner_->parent()->layer()->GetAnimator()->RemoveObserver(this);
+    GetSlideOutLayer()->GetAnimator()->RemoveObserver(this);
   }
 
   void Update() {
     const bool has_animation =
-        owner_->parent()->layer()->GetAnimator()->is_animating();
-    const bool has_transform = !owner_->parent()->GetTransform().IsIdentity();
+        GetSlideOutLayer()->GetAnimator()->is_animating();
+    const bool has_transform = !GetSlideOutLayer()->transform().IsIdentity();
     const bool sliding = has_transform || has_animation;
     if (sliding_ == sliding)
       return;
@@ -139,6 +139,12 @@ class ArcCustomNotificationView::SlideHelper
   }
 
  private:
+  // This is a temporary hack to address crbug.com/718965
+  ui::Layer* GetSlideOutLayer() {
+    ui::Layer* layer = owner_->parent()->layer();
+    return layer ? layer : owner_->GetWidget()->GetLayer();
+  }
+
   void OnSlideStart() {
     if (!owner_->surface_ || !owner_->surface_->window())
       return;
