@@ -276,6 +276,49 @@ bool AutofillProfileComparator::MergeCJKNames(
   return true;
 }
 
+bool AutofillProfileComparator::IsNameVariantOf(
+    const base::string16& full_name_1,
+    const base::string16& full_name_2) const {
+  data_util::NameParts name_1_parts = data_util::SplitName(full_name_1);
+
+  // Build the variants of full_name_1`s given, middle and family names.
+  //
+  // TODO(rogerm): Figure out whether or not we should break apart a compound
+  // family name into variants (crbug/619051)
+  const std::set<base::string16> given_name_variants =
+      GetNamePartVariants(name_1_parts.given);
+  const std::set<base::string16> middle_name_variants =
+      GetNamePartVariants(name_1_parts.middle);
+  base::StringPiece16 family_name = name_1_parts.family;
+
+  // Iterate over all full name variants of profile 2 and see if any of them
+  // match the full name from profile 1.
+  for (const auto& given_name : given_name_variants) {
+    for (const auto& middle_name : middle_name_variants) {
+      base::string16 candidate = base::CollapseWhitespace(
+          base::JoinString({given_name, middle_name, family_name}, kSpace),
+          true);
+      if (candidate == full_name_2)
+        return true;
+    }
+  }
+
+  // Also check if the name is just composed of the user's initials. For
+  // example, "thomas jefferson miller" could be composed as "tj miller".
+  if (!name_1_parts.given.empty() && !name_1_parts.middle.empty()) {
+    base::string16 initials;
+    initials.push_back(name_1_parts.given[0]);
+    initials.push_back(name_1_parts.middle[0]);
+    base::string16 candidate = base::CollapseWhitespace(
+        base::JoinString({initials, family_name}, kSpace), true);
+    if (candidate == full_name_2)
+      return true;
+  }
+
+  // There was no match found.
+  return false;
+}
+
 bool AutofillProfileComparator::MergeEmailAddresses(
     const AutofillProfile& p1,
     const AutofillProfile& p2,
@@ -705,49 +748,6 @@ std::set<base::string16> AutofillProfileComparator::GetNamePartVariants(
 
   // And, we're done.
   return variants;
-}
-
-bool AutofillProfileComparator::IsNameVariantOf(
-    const base::string16& full_name_1,
-    const base::string16& full_name_2) const {
-  data_util::NameParts name_1_parts = data_util::SplitName(full_name_1);
-
-  // Build the variants of full_name_1`s given, middle and family names.
-  //
-  // TODO(rogerm): Figure out whether or not we should break apart a compound
-  // family name into variants (crbug/619051)
-  const std::set<base::string16> given_name_variants =
-      GetNamePartVariants(name_1_parts.given);
-  const std::set<base::string16> middle_name_variants =
-      GetNamePartVariants(name_1_parts.middle);
-  base::StringPiece16 family_name = name_1_parts.family;
-
-  // Iterate over all full name variants of profile 2 and see if any of them
-  // match the full name from profile 1.
-  for (const auto& given_name : given_name_variants) {
-    for (const auto& middle_name : middle_name_variants) {
-      base::string16 candidate = base::CollapseWhitespace(
-          base::JoinString({given_name, middle_name, family_name}, kSpace),
-          true);
-      if (candidate == full_name_2)
-        return true;
-    }
-  }
-
-  // Also check if the name is just composed of the user's initials. For
-  // example, "thomas jefferson miller" could be composed as "tj miller".
-  if (!name_1_parts.given.empty() && !name_1_parts.middle.empty()) {
-    base::string16 initials;
-    initials.push_back(name_1_parts.given[0]);
-    initials.push_back(name_1_parts.middle[0]);
-    base::string16 candidate = base::CollapseWhitespace(
-        base::JoinString({initials, family_name}, kSpace), true);
-    if (candidate == full_name_2)
-      return true;
-  }
-
-  // There was no match found.
-  return false;
 }
 
 bool AutofillProfileComparator::HaveMergeableNames(
