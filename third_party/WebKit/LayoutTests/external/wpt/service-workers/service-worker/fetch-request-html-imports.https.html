@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <title>Service Worker: FetchEvent for HTMLImports</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/get-host-info.js?pipe=sub"></script>
-<script src="resources/test-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script>
 async_test(function(t) {
     var SCOPE = 'resources/fetch-request-html-imports-iframe.html';
@@ -15,6 +15,9 @@ async_test(function(t) {
         })
       .then(function() { return with_iframe(SCOPE); })
       .then(function(frame) {
+          t.add_cleanup(function() {
+              frame.remove();
+            });
           var same = frame.contentWindow.document.getElementById("same").import;
           var same_same = same.getElementById("same-same").import;
           var same_other = same.getElementById("same-other").import;
