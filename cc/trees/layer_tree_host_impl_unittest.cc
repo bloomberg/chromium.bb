@@ -3517,7 +3517,7 @@ TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf2) {
 }
 
 // This test verifies that only SurfaceLayers in the viewport are included
-// in CompositorFrameMetadata's |embedded_surfaces|.
+// in CompositorFrameMetadata's |activation_dependencies|.
 TEST_F(LayerTreeHostImplTest, EmbeddedSurfacesInMetadata) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
@@ -3546,7 +3546,7 @@ TEST_F(LayerTreeHostImplTest, EmbeddedSurfacesInMetadata) {
           host_impl_->compositor_frame_sink());
   const CompositorFrameMetadata& metadata =
       fake_compositor_frame_sink->last_sent_frame()->metadata;
-  EXPECT_THAT(metadata.embedded_surfaces,
+  EXPECT_THAT(metadata.activation_dependencies,
               testing::UnorderedElementsAre(children[0], children[1]));
   EXPECT_THAT(
       metadata.referenced_surfaces,

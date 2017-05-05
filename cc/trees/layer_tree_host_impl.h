@@ -227,7 +227,7 @@ class CC_EXPORT LayerTreeHostImpl
     ~FrameData();
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
-    std::vector<SurfaceId> embedded_surfaces;
+    std::vector<SurfaceId> activation_dependencies;
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
     RenderPassList render_passes;

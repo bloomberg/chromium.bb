@@ -106,9 +106,9 @@ struct StructTraits<cc::mojom::CompositorFrameMetadataDataView,
     return metadata.referenced_surfaces;
   }
 
-  static const std::vector<cc::SurfaceId>& embedded_surfaces(
+  static const std::vector<cc::SurfaceId>& activation_dependencies(
       const cc::CompositorFrameMetadata& metadata) {
-    return metadata.embedded_surfaces;
+    return metadata.activation_dependencies;
   }
 
   static bool can_activate_before_dependencies(

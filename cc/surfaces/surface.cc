@@ -203,7 +203,8 @@ void Surface::UpdateBlockingSurfaces(bool has_previous_pending_frame,
 
   base::flat_set<SurfaceId> new_blocking_surfaces;
 
-  for (const SurfaceId& surface_id : current_frame.metadata.embedded_surfaces) {
+  for (const SurfaceId& surface_id :
+       current_frame.metadata.activation_dependencies) {
     Surface* surface = factory_->manager()->GetSurfaceForId(surface_id);
     // If a referenced surface does not have a corresponding active frame in the
     // display compositor, then it blocks this frame.
