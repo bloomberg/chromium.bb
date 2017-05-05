@@ -18,13 +18,8 @@
 
 #include "build/build_config.h"
 
+#include "rlz/lib/rlz_api.h"
 #include "rlz/lib/rlz_enums.h"
-
-#if defined(OS_WIN)
-#define RLZ_LIB_API __cdecl
-#else
-#define RLZ_LIB_API
-#endif
 
 // Define one of
 // + RLZ_NETWORK_IMPLEMENTATION_WIN_INET: Uses win inet to send financial pings.
@@ -77,9 +72,6 @@ const size_t kMaxRlzLength = 64;
 const size_t kMaxDccLength = 128;
 // The maximum length of a CGI string in bytes.
 const size_t kMaxCgiLength = 2048;
-// The maximum length of a ping response we will parse in bytes. If the response
-// is bigger, please break it up into separate calls.
-const size_t kMaxPingResponseLength = 0x4000;  // 16K
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 // Set the URLRequestContextGetter used by SendFinancialPing(). The IO message
@@ -176,15 +168,6 @@ bool RLZ_LIB_API FormFinancialPingRequest(Product product,
                                           bool exclude_machine_id,
                                           char* request,
                                           size_t request_buffer_size);
-
-// Checks if a ping response is valid - ie. it has a checksum line which
-// is the CRC-32 checksum of the message uptil the checksum. If
-// checksum_idx is not NULL, it will get the index of the checksum, i.e. -
-// the effective end of the message.
-// Access: No restrictions.
-bool RLZ_LIB_API IsPingResponseValid(const char* response,
-                                     int* checksum_idx);
-
 
 // Complex helpers built on top of other functions.
 
