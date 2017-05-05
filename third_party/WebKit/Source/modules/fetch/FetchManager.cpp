@@ -7,7 +7,6 @@
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -31,6 +30,7 @@
 #include "modules/fetch/ResponseInit.h"
 #include "platform/HTTPNames.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceRequest.h"

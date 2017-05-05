@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Location.h"
-#include "bindings/core/v8/WrapperCreationSecurityCheck.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -41,6 +40,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
+#include "platform/bindings/WrapperCreationSecurityCheck.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {

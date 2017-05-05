@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
-#include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/events/ErrorEvent.h"
@@ -45,6 +44,7 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "v8/include/v8.h"
 
 namespace blink {

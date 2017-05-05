@@ -31,11 +31,9 @@
 #include "bindings/core/v8/V8PopStateEvent.h"
 
 #include "bindings/core/v8/V8History.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "core/events/PopStateEvent.h"
 #include "core/frame/History.h"
+#include "platform/bindings/V8PrivateProperty.h"
 
 namespace blink {
 

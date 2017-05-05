@@ -7,9 +7,9 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/testing/DeathAwareScriptWrappable.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

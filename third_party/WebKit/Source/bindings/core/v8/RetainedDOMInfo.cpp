@@ -31,9 +31,9 @@
 #include "bindings/core/v8/RetainedDOMInfo.h"
 
 #include "bindings/core/v8/V8Node.h"
-#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/NodeTraversal.h"
+#include "platform/bindings/WrapperTypeInfo.h"
 
 namespace blink {
 

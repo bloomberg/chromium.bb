@@ -4,8 +4,8 @@
 
 #include "bindings/modules/v8/V8ExtendableMessageEvent.h"
 
-#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/modules/v8/V8ExtendableMessageEventInit.h"
+#include "platform/bindings/V8PrivateProperty.h"
 
 namespace blink {
 

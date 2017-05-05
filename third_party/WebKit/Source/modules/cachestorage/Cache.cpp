@@ -12,7 +12,6 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/DOMException.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -25,6 +24,7 @@
 #include "platform/HTTPNames.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 
 namespace blink {

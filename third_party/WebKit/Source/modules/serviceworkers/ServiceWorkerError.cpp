@@ -32,9 +32,9 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/bindings/V8ThrowException.h"
 
 using blink::WebServiceWorkerError;
 

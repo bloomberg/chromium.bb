@@ -6,12 +6,12 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {
 

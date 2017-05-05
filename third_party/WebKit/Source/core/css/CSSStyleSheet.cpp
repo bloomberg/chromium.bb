@@ -22,7 +22,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/css/CSSImportRule.h"
@@ -40,6 +39,7 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/SVGStyleElement.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/StringBuilder.h"
 

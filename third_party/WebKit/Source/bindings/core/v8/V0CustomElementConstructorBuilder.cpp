@@ -35,8 +35,6 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8HTMLElement.h"
-#include "bindings/core/v8/V8PerContextData.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8SVGElement.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
@@ -49,6 +47,8 @@
 #include "core/frame/UseCounter.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/V0CustomElementBinding.h"
+#include "platform/bindings/V8PerContextData.h"
+#include "platform/bindings/V8PrivateProperty.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {

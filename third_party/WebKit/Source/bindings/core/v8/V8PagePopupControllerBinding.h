@@ -5,7 +5,7 @@
 #ifndef V8PagePopupControllerBinding_h
 #define V8PagePopupControllerBinding_h
 
-#include "bindings/core/v8/WrapperTypeInfo.h"
+#include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/wtf/Allocator.h"
 #include "v8/include/v8.h"
 

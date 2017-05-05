@@ -30,7 +30,6 @@
 
 #include "public/web/WebDOMFileSystem.h"
 
-#include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "bindings/modules/v8/V8DirectoryEntry.h"
 #include "bindings/modules/v8/V8FileEntry.h"
@@ -38,6 +37,7 @@
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
+#include "platform/bindings/WrapperTypeInfo.h"
 #include "v8/include/v8.h"
 #include "web/WebLocalFrameImpl.h"
 

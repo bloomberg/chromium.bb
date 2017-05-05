@@ -5,9 +5,9 @@
 #include "modules/serviceworkers/ForeignFetchEvent.h"
 
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
+#include "platform/bindings/V8PrivateProperty.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

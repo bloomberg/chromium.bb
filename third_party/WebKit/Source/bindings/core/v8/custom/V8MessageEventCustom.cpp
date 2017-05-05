@@ -37,10 +37,8 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8MessagePort.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
+#include "platform/bindings/V8PrivateProperty.h"
 
 namespace blink {
 

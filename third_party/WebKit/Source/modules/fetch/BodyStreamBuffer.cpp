@@ -6,8 +6,6 @@
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
-#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
@@ -17,6 +15,8 @@
 #include "modules/fetch/Body.h"
 #include "modules/fetch/ReadableStreamBytesConsumer.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8PrivateProperty.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
 
