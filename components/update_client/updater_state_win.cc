@@ -42,6 +42,21 @@ const wchar_t kRegValueGoogleUpdatePv[] = L"pv";
 const wchar_t kRegValueLastStartedAU[] = L"LastStartedAU";
 const wchar_t kRegValueLastChecked[] = L"LastChecked";
 
+base::Time GetUpdaterTimeValue(bool is_machine, const wchar_t* value_name) {
+  const HKEY root_key = is_machine ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  base::win::RegKey update_key;
+
+  if (update_key.Open(root_key, kRegPathGoogleUpdate,
+                      KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
+    DWORD value(0);
+    if (update_key.ReadValueDW(value_name, &value) == ERROR_SUCCESS) {
+      return base::Time::FromTimeT(value);
+    }
+  }
+
+  return base::Time();
+}
+
 }  // namespace
 
 std::string UpdaterState::GetUpdaterName() {
@@ -68,22 +83,6 @@ base::Time UpdaterState::GetUpdaterLastStartedAU(bool is_machine) {
 
 base::Time UpdaterState::GetUpdaterLastChecked(bool is_machine) {
   return GetUpdaterTimeValue(is_machine, kRegValueLastChecked);
-}
-
-base::Time UpdaterState::GetUpdaterTimeValue(bool is_machine,
-                                             const wchar_t* value_name) {
-  const HKEY root_key = is_machine ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  base::win::RegKey update_key;
-
-  if (update_key.Open(root_key, kRegPathGoogleUpdate,
-                      KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
-    DWORD value(0);
-    if (update_key.ReadValueDW(value_name, &value) == ERROR_SUCCESS) {
-      return base::Time::FromTimeT(value);
-    }
-  }
-
-  return base::Time();
 }
 
 bool UpdaterState::IsAutoupdateCheckEnabled() {
