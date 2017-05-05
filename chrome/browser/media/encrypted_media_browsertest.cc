@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/media_browsertest.h"
 #include "chrome/browser/media/test_license_server.h"
@@ -221,7 +222,10 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     if (!config)
       return;
     license_server_.reset(new TestLicenseServer(std::move(config)));
-    EXPECT_TRUE(license_server_->Start());
+    {
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      EXPECT_TRUE(license_server_->Start());
+    }
     query_params->push_back(
         std::make_pair("licenseServerURL", license_server_->GetServerURL()));
   }
