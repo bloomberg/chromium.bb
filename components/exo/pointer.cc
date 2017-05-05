@@ -89,9 +89,8 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
     }
     if (surface_) {
       surface_->window()->SetTransform(gfx::Transform());
-      WMHelper::GetInstance()
-          ->GetContainer(ash::kShellWindowId_MouseCursorContainer)
-          ->RemoveChild(surface_->window());
+      if (surface_->window()->parent())
+        surface_->window()->parent()->RemoveChild(surface_->window());
       surface_->SetSurfaceDelegate(nullptr);
       surface_->RemoveSurfaceObserver(this);
     }
