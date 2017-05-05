@@ -51,6 +51,7 @@ void SurfaceFactory::SubmitCompositorFrame(
     const WillDrawCallback& will_draw_callback) {
   TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
   DCHECK(local_surface_id.is_valid());
+  DCHECK(!frame.render_pass_list.empty());
 
   if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
                                "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
@@ -112,10 +113,7 @@ void SurfaceFactory::OnSurfaceActivated(Surface* surface) {
     seen_first_frame_activation_ = true;
 
     const CompositorFrame& frame = surface->GetActiveFrame();
-    // CompositorFrames might not be populated with a RenderPass in unit tests.
-    gfx::Size frame_size;
-    if (!frame.render_pass_list.empty())
-      frame_size = frame.render_pass_list.back()->output_rect.size();
+    gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
 
     // SurfaceCreated only applies for the first Surface activation. Thus,
     // SurfaceFactory stops observing new activations after the first one.
