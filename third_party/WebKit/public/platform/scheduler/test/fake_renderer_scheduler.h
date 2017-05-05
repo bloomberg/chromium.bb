@@ -27,6 +27,7 @@ class FakeRendererScheduler : public RendererScheduler {
       override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
+  void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
   void DidCommitFrameToCompositor() override;
   void DidHandleInputEventOnCompositorThread(
       const WebInputEvent& web_input_event,

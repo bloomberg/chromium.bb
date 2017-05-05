@@ -482,6 +482,8 @@ void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
 void Compositor::BeginMainFrameNotExpectedSoon() {
 }
 
+void Compositor::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {}
+
 static void SendDamagedRectsRecursive(ui::Layer* layer) {
   layer->SendDamagedRects();
   for (auto* child : layer->children())

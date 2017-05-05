@@ -2065,6 +2065,28 @@ TEST_F(RendererSchedulerImplWithMessageLoopTest,
                                           std::string("3")));
 }
 
+TEST_F(RendererSchedulerImplTest, TestBeginMainFrameNotExpectedUntil) {
+  base::TimeDelta ten_millis(base::TimeDelta::FromMilliseconds(10));
+  base::TimeTicks expected_deadline = clock_->NowTicks() + ten_millis;
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);  // Shouldn't run yet as no idle period.
+
+  base::TimeTicks now = clock_->NowTicks();
+  base::TimeTicks frame_time = now + ten_millis;
+  // No main frame is expected until frame_time, so short idle work can be
+  // scheduled in the mean time.
+  scheduler_->BeginMainFrameNotExpectedUntil(frame_time);
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);  // Should have run in a long idle time.
+  EXPECT_EQ(expected_deadline, deadline_in_task);
+}
+
 TEST_F(RendererSchedulerImplTest, TestLongIdlePeriod) {
   base::TimeTicks expected_deadline =
       clock_->NowTicks() + maximum_idle_period_duration();

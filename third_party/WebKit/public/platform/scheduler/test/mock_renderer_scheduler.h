@@ -33,6 +33,7 @@ class MockRendererScheduler : public RendererScheduler {
                std::unique_ptr<RenderWidgetSchedulingState>());
   MOCK_METHOD1(WillBeginFrame, void(const cc::BeginFrameArgs&));
   MOCK_METHOD0(BeginFrameNotExpectedSoon, void());
+  MOCK_METHOD1(BeginMainFrameNotExpectedUntil, void(base::TimeTicks));
   MOCK_METHOD0(DidCommitFrameToCompositor, void());
   MOCK_METHOD2(DidHandleInputEventOnCompositorThread,
                void(const WebInputEvent&, InputEventState));

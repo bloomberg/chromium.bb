@@ -125,6 +125,7 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION,
     ACTION_PREPARE_TILES,
     ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK,
+    ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT,
   };
   static const char* ActionToString(Action action);
 
@@ -133,6 +134,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   Action NextAction() const;
   void WillSendBeginMainFrame();
+  void WillNotifyBeginMainFrameNotSent();
   void WillCommit(bool commit_had_no_updates);
   void WillActivate();
   void WillDraw();
@@ -320,6 +322,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldCommit() const;
   bool ShouldPrepareTiles() const;
   bool ShouldInvalidateCompositorFrameSink() const;
+  bool ShouldNotifyBeginMainFrameNotSent() const;
 
   void WillDrawInternal();
   void WillPerformImplSideInvalidationInternal();
@@ -363,9 +366,11 @@ class CC_EXPORT SchedulerStateMachine {
   // These are used to ensure that an action only happens once per frame,
   // deadline, etc.
   bool did_draw_ = false;
+  bool did_send_begin_main_frame_for_current_frame_ = true;
   // Initialized to true to prevent begin main frame before begin frames have
   // started. Reset to true when we stop asking for begin frames.
-  bool did_send_begin_main_frame_ = true;
+  bool did_notify_begin_main_frame_not_sent_ = true;
+  bool did_commit_during_frame_ = false;
   bool did_invalidate_compositor_frame_sink_ = false;
   bool did_perform_impl_side_invalidation_ = false;
   bool did_prepare_tiles_ = false;

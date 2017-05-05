@@ -364,6 +364,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   void BeginMainFrameNotExpectedSoon() override {
     test_hooks_->BeginMainFrameNotExpectedSoon();
   }
+  void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
 
   bool IsForSubframe() override { return false; }
 

@@ -387,6 +387,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   void DidBeginMainFrame();
   void BeginMainFrame(const BeginFrameArgs& args);
   void BeginMainFrameNotExpectedSoon();
+  void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
   void RequestMainFrameUpdate();
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);

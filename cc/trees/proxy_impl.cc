@@ -612,6 +612,14 @@ void ProxyImpl::SendBeginMainFrameNotExpectedSoon() {
                                 proxy_main_weak_ptr_));
 }
 
+void ProxyImpl::ScheduledActionBeginMainFrameNotExpectedUntil(
+    base::TimeTicks time) {
+  DCHECK(IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::BeginMainFrameNotExpectedUntil,
+                            proxy_main_weak_ptr_, time));
+}
+
 DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   TRACE_EVENT_SYNTHETIC_DELAY("cc.Draw");
 

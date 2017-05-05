@@ -632,6 +632,11 @@ void SingleThreadProxy::SendBeginMainFrameNotExpectedSoon() {
   layer_tree_host_->BeginMainFrameNotExpectedSoon();
 }
 
+void SingleThreadProxy::ScheduledActionBeginMainFrameNotExpectedUntil(
+    base::TimeTicks time) {
+  layer_tree_host_->BeginMainFrameNotExpectedUntil(time);
+}
+
 void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->NotifyBeginMainFrameStarted(

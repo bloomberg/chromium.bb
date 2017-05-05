@@ -185,6 +185,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidBeginMainFrame() override;
   void BeginMainFrame(const cc::BeginFrameArgs& args) override;
   void BeginMainFrameNotExpectedSoon() override;
+  void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
   void UpdateLayerTreeHost() override;
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,

@@ -72,6 +72,12 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // need to be drawn. Must be called from the main thread.
   virtual void BeginFrameNotExpectedSoon() = 0;
 
+  // Called to notify about the start of a period where main frames are not
+  // scheduled and so short idle work can be scheduled. This will precede
+  // BeginFrameNotExpectedSoon and is also called when the compositor may be
+  // busy but the main thread is not.
+  virtual void BeginMainFrameNotExpectedUntil(base::TimeTicks time) = 0;
+
   // Called to notify about the start of a new frame.  Must be called from the
   // main thread.
   virtual void WillBeginFrame(const cc::BeginFrameArgs& args) = 0;

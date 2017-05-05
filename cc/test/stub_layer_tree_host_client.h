@@ -18,6 +18,7 @@ class StubLayerTreeHostClient : public LayerTreeHostClient {
   void DidBeginMainFrame() override {}
   void BeginMainFrame(const BeginFrameArgs& args) override {}
   void BeginMainFrameNotExpectedSoon() override {}
+  void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
   void UpdateLayerTreeHost() override {}
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,

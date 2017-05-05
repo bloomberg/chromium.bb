@@ -1088,6 +1088,12 @@ void RenderWidgetCompositor::BeginMainFrameNotExpectedSoon() {
   compositor_deps_->GetRendererScheduler()->BeginFrameNotExpectedSoon();
 }
 
+void RenderWidgetCompositor::BeginMainFrameNotExpectedUntil(
+    base::TimeTicks time) {
+  compositor_deps_->GetRendererScheduler()->BeginMainFrameNotExpectedUntil(
+      time);
+}
+
 void RenderWidgetCompositor::UpdateLayerTreeHost() {
   delegate_->UpdateVisualState();
 }

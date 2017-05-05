@@ -140,6 +140,8 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK";
     case ACTION_PERFORM_IMPL_SIDE_INVALIDATION:
       return "ACTION_PERFORM_IMPL_SIDE_INVALIDATION";
+    case ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
+      return "ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT";
   }
   NOTREACHED();
   return "???";
@@ -190,7 +192,11 @@ void SchedulerStateMachine::AsValueInto(
       "last_begin_frame_sequence_number_compositor_frame_was_fresh",
       last_begin_frame_sequence_number_compositor_frame_was_fresh_);
   state->SetBoolean("did_draw", did_draw_);
-  state->SetBoolean("did_send_begin_main_frame", did_send_begin_main_frame_);
+  state->SetBoolean("did_send_begin_main_frame_for_current_frame",
+                    did_send_begin_main_frame_for_current_frame_);
+  state->SetBoolean("did_notify_begin_main_frame_not_sent",
+                    did_notify_begin_main_frame_not_sent_);
+  state->SetBoolean("did_commit_during_frame", did_commit_during_frame_);
   state->SetBoolean("did_invalidate_compositor_frame_sink",
                     did_invalidate_compositor_frame_sink_);
   state->SetBoolean("did_perform_impl_side_invalidaion",
@@ -376,6 +382,42 @@ bool SchedulerStateMachine::ShouldActivatePendingTree() const {
   return pending_tree_is_ready_for_activation_;
 }
 
+bool SchedulerStateMachine::ShouldNotifyBeginMainFrameNotSent() const {
+  // This method returns true if most of the conditions for sending a
+  // BeginMainFrame are met, but one is not actually requested. This gives the
+  // main thread the chance to do something else.
+
+  // Don't notify if a BeginMainFrame has already been requested or is in
+  // progress.
+  if (needs_begin_main_frame_ ||
+      begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE)
+    return false;
+
+  // Only notify when we're visible.
+  if (!visible_)
+    return false;
+
+  // There are no BeginImplFrames while BeginFrameSource is paused, meaning
+  // the scheduler should send SendBeginMainFrameNotExpectedSoon instead,
+  // indicating a longer period of inactivity.
+  if (begin_frame_source_paused_)
+    return false;
+
+  // Do not notify that no BeginMainFrame was sent too many times in a single
+  // frame.
+  if (did_notify_begin_main_frame_not_sent_)
+    return false;
+
+  // Do not notify if a commit happened during this frame as the main thread
+  // will already be active and does not need to be woken up to make further
+  // actions. (This occurs if the main frame was scheduled but didn't complete
+  // before the vsync deadline).
+  if (did_commit_during_frame_)
+    return false;
+
+  return true;
+}
+
 bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
   if (!needs_begin_main_frame_)
     return false;
@@ -401,7 +443,7 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     return false;
 
   // Do not send more than one begin main frame in a begin frame.
-  if (did_send_begin_main_frame_)
+  if (did_send_begin_main_frame_for_current_frame_)
     return false;
 
   // Only send BeginMainFrame when there isn't another commit pending already.
@@ -544,6 +586,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     return ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK;
   if (ShouldBeginCompositorFrameSinkCreation())
     return ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION;
+  if (ShouldNotifyBeginMainFrameNotSent())
+    return ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT;
   return ACTION_NONE;
 }
 
@@ -620,13 +664,20 @@ void SchedulerStateMachine::WillSendBeginMainFrame() {
   DCHECK(!has_pending_tree_ || settings_.main_frame_before_activation_enabled);
   DCHECK(visible_);
   DCHECK(!begin_frame_source_paused_);
-  DCHECK(!did_send_begin_main_frame_);
+  DCHECK(!did_send_begin_main_frame_for_current_frame_);
   begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_SENT;
   needs_begin_main_frame_ = false;
-  did_send_begin_main_frame_ = true;
+  did_send_begin_main_frame_for_current_frame_ = true;
   last_frame_number_begin_main_frame_sent_ = current_frame_number_;
   last_begin_frame_sequence_number_begin_main_frame_sent_ =
       begin_frame_sequence_number_;
+}
+
+void SchedulerStateMachine::WillNotifyBeginMainFrameNotSent() {
+  DCHECK(visible_);
+  DCHECK(!begin_frame_source_paused_);
+  DCHECK(!did_notify_begin_main_frame_not_sent_);
+  did_notify_begin_main_frame_not_sent_ = true;
 }
 
 void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
@@ -638,6 +689,7 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
   commit_count_++;
   last_commit_had_no_updates_ = commit_has_no_updates;
   begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
+  did_commit_during_frame_ = true;
 
   if (commit_has_no_updates) {
     // Pending tree might still exist from prior commit.
@@ -983,7 +1035,9 @@ void SchedulerStateMachine::OnBeginImplFrame(uint32_t source_id,
   did_submit_in_last_frame_ = false;
   needs_one_begin_impl_frame_ = false;
 
-  did_send_begin_main_frame_ = false;
+  did_notify_begin_main_frame_not_sent_ = false;
+  did_send_begin_main_frame_for_current_frame_ = false;
+  did_commit_during_frame_ = false;
   did_invalidate_compositor_frame_sink_ = false;
   did_perform_impl_side_invalidation_ = false;
 }
@@ -1017,7 +1071,7 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
   // If we're entering a state where we won't get BeginFrames set all the
   // funnels so that we don't perform any actions that we shouldn't.
   if (!BeginFrameNeeded())
-    did_send_begin_main_frame_ = true;
+    did_send_begin_main_frame_for_current_frame_ = true;
 
   // Synchronous compositor finishes BeginFrames before triggering their
   // deadline. Therefore, we update sequence numbers when becoming idle, before

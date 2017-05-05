@@ -48,6 +48,8 @@ class SchedulerClient {
   virtual void ScheduledActionPerformImplSideInvalidation() = 0;
   virtual void DidFinishImplFrame() = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
+  virtual void ScheduledActionBeginMainFrameNotExpectedUntil(
+      base::TimeTicks time) = 0;
 
  protected:
   virtual ~SchedulerClient() {}
@@ -197,6 +199,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void ScheduleBeginImplFrameDeadline();
   void ScheduleBeginImplFrameDeadlineIfNeeded();
   void BeginImplFrameNotExpectedSoon();
+  void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void SetupNextBeginFrameIfNeeded();
   void StartObservingBeginFrameSource();
   void StopObservingBeginFrameSource();
