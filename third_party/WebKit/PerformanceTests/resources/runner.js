@@ -295,23 +295,23 @@ if (window.testRunner) {
             finish();
     }
 
-    function addRunTestStartMarker() {
+    PerfTestRunner.addRunTestStartMarker = function () {
       if (!window.testRunner || !window.testRunner.supportTracing)
           return;
       if (completedIterations < 0)
           console.time('blink_perf.runTest.warmup');
       else
           console.time('blink_perf.runTest');
-    }
+    };
 
-    function addRunTestEndMarker() {
+    PerfTestRunner.addRunTestEndMarker = function () {
       if (!window.testRunner || !window.testRunner.supportTracing)
           return;
       if (completedIterations < 0)
           console.timeEnd('blink_perf.runTest.warmup');
       else
           console.timeEnd('blink_perf.runTest');
-    }
+    };
 
 
     PerfTestRunner.measureFrameTime = function (test) {
@@ -328,11 +328,11 @@ if (window.testRunner) {
     var lastFrameTime = -1;
     function measureFrameTimeOnce() {
         if (lastFrameTime != -1)
-          addRunTestEndMarker();
+          PerfTestRunner.addRunTestEndMarker();
         var now = PerfTestRunner.now();
         var result = lastFrameTime == -1 ? -1 : now - lastFrameTime;
         lastFrameTime = now;
-        addRunTestStartMarker();
+        PerfTestRunner.addRunTestStartMarker();
 
         var returnValue = currentTest.run();
         if (returnValue - 0 === returnValue) {
@@ -358,11 +358,11 @@ if (window.testRunner) {
         // Force gc before measuring time to avoid interference between tests.
         PerfTestRunner.gc();
 
-        addRunTestStartMarker();
+        PerfTestRunner.addRunTestStartMarker();
         var start = PerfTestRunner.now();
         var returnValue = currentTest.run();
         var end = PerfTestRunner.now();
-        addRunTestEndMarker();
+        PerfTestRunner.addRunTestEndMarker();
 
         if (returnValue - 0 === returnValue) {
             if (returnValue < 0)

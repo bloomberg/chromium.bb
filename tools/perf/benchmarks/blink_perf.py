@@ -79,7 +79,7 @@ def CreateStorySetFromPath(path, skipped_file,
 
 
 def _ComputeTraceEventsThreadTimeForBlinkPerf(
-    renderer_thread, trace_events_to_measure):
+    model, renderer_thread, trace_events_to_measure):
   """ Compute the CPU duration for each of |trace_events_to_measure| during
   blink_perf test.
 
@@ -107,7 +107,17 @@ def _ComputeTraceEventsThreadTimeForBlinkPerf(
 
   for event_name in trace_events_to_measure:
     curr_test_runs_bound_index = 0
-    for event in renderer_thread.IterAllSlicesOfName(event_name):
+    seen_uuids = set()
+    for event in model.IterAllEventsOfName(event_name):
+      # Trace events can be duplicated in some cases. Filter out trace events
+      # that have duplicated uuid.
+      event_uuid = None
+      if event.args:
+        event_uuid = event.args.get('uuid')
+      if event_uuid and event_uuid in seen_uuids:
+        continue
+      elif event_uuid:
+        seen_uuids.add(event_uuid)
       while (curr_test_runs_bound_index < len(test_runs_bounds) and
              event.start > test_runs_bounds[curr_test_runs_bound_index].max):
         curr_test_runs_bound_index += 1
@@ -123,9 +133,7 @@ def _ComputeTraceEventsThreadTimeForBlinkPerf(
         intersect_cpu_time = intersect_wall_time
       trace_cpu_time_metrics[event_name][curr_test_runs_bound_index] += (
           intersect_cpu_time)
-
   return trace_cpu_time_metrics
-
 
 
 class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
@@ -207,7 +215,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       model = model_module.TimelineModel(trace_data)
       renderer_thread = model.GetRendererThreadFromTabId(tab.id)
       trace_cpu_time_metrics = _ComputeTraceEventsThreadTimeForBlinkPerf(
-          renderer_thread, trace_events_to_measure)
+          model, renderer_thread, trace_events_to_measure)
 
     log = tab.EvaluateJavaScript('document.getElementById("log").innerHTML')
 
@@ -401,4 +409,3 @@ class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
   @classmethod
   def ShouldDisable(cls, possible_browser):  # http://crbug.com/702319
     return possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'
-
