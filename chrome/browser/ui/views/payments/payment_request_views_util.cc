@@ -20,7 +20,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payments_profile_comparator.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -153,7 +153,7 @@ std::unique_ptr<views::Label> GetLabelForMissingInformation(
 // dialog at the bottom of the view it borders.
 class PaymentRequestRowBorderPainter : public views::Painter {
  public:
-  PaymentRequestRowBorderPainter() {}
+  explicit PaymentRequestRowBorderPainter(SkColor color) : color_(color) {}
   ~PaymentRequestRowBorderPainter() override {}
 
   // views::Painter:
@@ -167,10 +167,11 @@ class PaymentRequestRowBorderPainter : public views::Painter {
         gfx::PointF(payments::kPaymentRequestRowHorizontalInsets, line_height),
         gfx::PointF(size.width() - payments::kPaymentRequestRowHorizontalInsets,
                     line_height),
-        SK_ColorLTGRAY);
+        color_);
   }
 
  private:
+  SkColor color_;
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestRowBorderPainter);
 };
 
@@ -229,7 +230,8 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   views::Label* title_label = new views::Label(title);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetFontList(
-      title_label->GetDefaultFontList().DeriveWithSizeDelta(2));
+      title_label->GetDefaultFontList().DeriveWithSizeDelta(
+          ui::kTitleFontSizeDelta));
   layout->AddView(title_label);
 
   return container;
@@ -343,10 +345,9 @@ std::unique_ptr<views::View> GetContactInfoLabel(
   return base_label;
 }
 
-std::unique_ptr<views::Border> CreatePaymentRequestRowBorder() {
+std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(SkColor color) {
   return views::CreateBorderPainter(
-      base::MakeUnique<PaymentRequestRowBorderPainter>(),
-      gfx::Insets());
+      base::MakeUnique<PaymentRequestRowBorderPainter>(color), gfx::Insets());
 }
 
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text) {
