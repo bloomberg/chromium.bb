@@ -1,4 +1,4 @@
-<script src="../../resources/get-host-info.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
 <script type="text/javascript">
   var hostInfo = get_host_info();
   var makeLink = function(id, url) {
@@ -8,6 +8,6 @@
       link.href = url;
       document.documentElement.appendChild(link);
     };
-  makeLink('same', hostInfo.HTTP_ORIGIN + '/dummy-dir/same.html');
-  makeLink('other', hostInfo.HTTP_REMOTE_ORIGIN + '/dummy-dir/other.html');
+  makeLink('same', hostInfo.HTTPS_ORIGIN + '/dummy-dir/same.html');
+  makeLink('other', hostInfo.HTTPS_REMOTE_ORIGIN + '/dummy-dir/other.html');
 </script>
