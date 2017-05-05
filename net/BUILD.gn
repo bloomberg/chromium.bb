@@ -2196,6 +2196,8 @@ if (!is_ios) {
   }
 }
 
+# This section can be updated from globbing rules using:
+#    python ./tools/update_ios_bundle_data.py
 bundle_data("test_support_bundle_data") {
   visibility = [ ":test_support" ]
   testonly = true
@@ -2227,6 +2229,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/768-rsa-ee-by-768-rsa-intermediate.pem",
     "data/ssl/certificates/768-rsa-ee-by-prime256v1-ecdsa-intermediate.pem",
     "data/ssl/certificates/768-rsa-intermediate.pem",
+    "data/ssl/certificates/README",
     "data/ssl/certificates/aia-cert.pem",
     "data/ssl/certificates/aia-intermediate.der",
     "data/ssl/certificates/aia-root.pem",
@@ -2319,6 +2322,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/multi-root-crlset-D-and-E.raw",
     "data/ssl/certificates/multi-root-crlset-E.raw",
     "data/ssl/certificates/multi-root-crlset-unrelated.raw",
+    "data/ssl/certificates/multi-root.keychain",
     "data/ssl/certificates/multivalue_rdn.pem",
     "data/ssl/certificates/name_constraint_bad.pem",
     "data/ssl/certificates/name_constraint_good.pem",
@@ -2348,6 +2352,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/quic_test.example.com.crt",
     "data/ssl/certificates/quic_test.example.com.key",
     "data/ssl/certificates/quic_test.example.com.key.pkcs8",
+    "data/ssl/certificates/quic_test.example.com.key.pkcs8.pem",
     "data/ssl/certificates/quic_test.example.com.key.sct",
     "data/ssl/certificates/quic_test_ecc.example.com.crt",
     "data/ssl/certificates/quic_test_ecc.example.com.key",
@@ -2371,6 +2376,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/thawte.single.pem",
     "data/ssl/certificates/tls_feature_extension.pem",
     "data/ssl/certificates/tripadvisor-verisign-chain.pem",
+    "data/ssl/certificates/trustcenter.websecurity.symantec.com.pem",
     "data/ssl/certificates/twitter-chain.pem",
     "data/ssl/certificates/unescaped.pem",
     "data/ssl/certificates/unittest.key.bin",
