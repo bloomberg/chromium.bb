@@ -43,11 +43,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
   // Verify the expected amounts are shown ('Total', 'Pending Shipping Price'
   // and 'Subtotal', respectively).
   EXPECT_EQ(base::ASCIIToUTF16("USD $5.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   EXPECT_EQ(base::ASCIIToUTF16("$0.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
 
   // Go to the shipping address screen and select the first address (MI state).
   ClickOnBackArrow();
@@ -79,11 +79,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
   // Verify the expected amounts are shown ('Total', 'Standard shipping in US'
   // and 'Subtotal', respectively).
   EXPECT_EQ(base::ASCIIToUTF16("USD $10.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
 
   // Go to the shipping address screen and select the second address (CA state).
   ClickOnBackArrow();
@@ -114,11 +114,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
   // Verify the expected amounts are shown ('Total',
   // 'Free shipping in California' and 'Subtotal', respectively).
   EXPECT_EQ(base::ASCIIToUTF16("USD $5.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
   EXPECT_EQ(base::ASCIIToUTF16("$0.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
   EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
+            GetLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
 }
 
 }  // namespace payments
