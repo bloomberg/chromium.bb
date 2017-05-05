@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string_piece.h"
+#include "base/strings/string_piece_forward.h"
 #include "components/subresource_filter/core/common/closed_hash_map.h"
 #include "components/subresource_filter/core/common/flat/url_pattern_index_generated.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"

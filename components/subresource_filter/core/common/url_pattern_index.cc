@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/subresource_filter/core/common/ngram_extractor.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
