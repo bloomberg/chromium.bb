@@ -21,6 +21,7 @@ void ParamTraits<url::Origin>::GetSize(base::PickleSizer* s,
   GetParamSize(s, p.scheme());
   GetParamSize(s, p.host());
   GetParamSize(s, p.port());
+  GetParamSize(s, p.suborigin());
 }
 
 void ParamTraits<url::Origin>::Write(base::Pickle* m, const url::Origin& p) {
@@ -28,6 +29,7 @@ void ParamTraits<url::Origin>::Write(base::Pickle* m, const url::Origin& p) {
   WriteParam(m, p.scheme());
   WriteParam(m, p.host());
   WriteParam(m, p.port());
+  WriteParam(m, p.suborigin());
 }
 
 bool ParamTraits<url::Origin>::Read(const base::Pickle* m,
@@ -37,15 +39,17 @@ bool ParamTraits<url::Origin>::Read(const base::Pickle* m,
   std::string scheme;
   std::string host;
   uint16_t port;
+  std::string suborigin;
   if (!ReadParam(m, iter, &unique) || !ReadParam(m, iter, &scheme) ||
-      !ReadParam(m, iter, &host) || !ReadParam(m, iter, &port)) {
+      !ReadParam(m, iter, &host) || !ReadParam(m, iter, &port) ||
+      !ReadParam(m, iter, &suborigin)) {
     *p = url::Origin();
     return false;
   }
 
   *p = unique ? url::Origin()
               : url::Origin::UnsafelyCreateOriginWithoutNormalization(
-                    scheme, host, port);
+                    scheme, host, port, suborigin);
 
   // If a unique origin was created, but the unique flag wasn't set, then
   // the values provided to 'UnsafelyCreateOriginWithoutNormalization' were

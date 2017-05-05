@@ -20,7 +20,7 @@ void CheckCastedOriginsAlreadyNormalized(
   url::Origin checked_origin =
       url::Origin::UnsafelyCreateOriginWithoutNormalization(
           origin.Protocol().Utf8(), origin.Host().Utf8(),
-          origin.EffectivePort());
+          origin.EffectivePort(), origin.Suborigin().Utf8());
   url::Origin non_checked_origin =
       url::Origin::CreateFromNormalizedTupleWithSuborigin(
           origin.Protocol().Utf8(), origin.Host().Utf8(),

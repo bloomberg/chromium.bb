@@ -93,7 +93,7 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->icon_url = GURL("https://foo.com/icon.png");
   form->federation_origin =
       url::Origin::UnsafelyCreateOriginWithoutNormalization(
-          "http", "www.google.com", 80);
+          "http", "www.google.com", 80, "");
   form->skip_zero_click = false;
   form->layout = PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
   form->was_parsed_using_autofill_predictions = false;

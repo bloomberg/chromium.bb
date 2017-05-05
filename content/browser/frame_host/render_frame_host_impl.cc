@@ -2792,12 +2792,12 @@ bool RenderFrameHostImpl::CanCommitOrigin(
     return true;
 
   // Standard URLs must match the reported origin.
-  if (url.IsStandard() && !origin.IsSameOriginWith(url::Origin(url)))
+  if (url.IsStandard() && !origin.IsSamePhysicalOriginWith(url::Origin(url)))
     return false;
 
   // A non-unique origin must be a valid URL, which allows us to safely do a
   // conversion to GURL.
-  GURL origin_url(origin.Serialize());
+  GURL origin_url = origin.GetPhysicalOrigin().GetURL();
 
   // Verify that the origin is allowed to commit in this process.
   // Note: This also handles non-standard cases for |url|, such as
