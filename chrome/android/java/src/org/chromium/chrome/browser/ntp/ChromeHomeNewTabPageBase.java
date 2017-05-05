@@ -107,6 +107,8 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
         if (tabAlreadyShowing) onNewTabPageShown();
 
         mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+        mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
+                BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
 
         // TODO(twellington): disallow moving the NTP to the other window in Android N+
         //                    multi-window mode.
@@ -153,16 +155,6 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
         if (mTab.getActivity().getFadingBackgroundView() != null) {
             mTab.getActivity().getFadingBackgroundView().setEnabled(false);
         }
-
-        // This method may be called when an NTP is selected due to the user switching tab models.
-        // In this case, we do not want the bottom sheet to open. Unfortunately, without observing
-        // OverviewModeBehavior, we have no good signal to show the BottomSheet when an NTP is
-        // selected in the tab switcher. Eventually this won't matter because we will not allow
-        // NTPs to remain open after the user leaves them.
-        if (getLayoutManager() != null && getLayoutManager().overviewVisible()) return;
-
-        mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
-                BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
     }
 
     private boolean isTabChromeHomeNewTabPage(Tab tab) {
