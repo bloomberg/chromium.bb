@@ -8,12 +8,13 @@
 
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
+#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
@@ -43,6 +44,7 @@ using ::testing::Return;
 - (NSView*)toolbarView;
 - (NSView*)bookmarkView;
 - (BOOL)bookmarkBarVisible;
+- (void)dontFocusLocationBar:(BOOL)selectAll;
 @end
 
 @implementation BrowserWindowController (ExposedForTesting)
@@ -64,6 +66,9 @@ using ::testing::Return;
 
 - (BOOL)bookmarkBarVisible {
   return [bookmarkBarController_ isVisible];
+}
+
+- (void)dontFocusLocationBar:(BOOL)selectAll {
 }
 @end
 
@@ -808,6 +813,20 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   [controller_ showWindow:nil];
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 
+  // The fix for http://crbug.com/447740 , where the omnibox would lose focus
+  // when switching between normal and fullscreen modes, makes some changes to
+  // -[BrowserWindowController setContentViewSubviews:]. Those changes appear
+  // to have extended the lifetime of the browser window during this test -
+  // specifically, the browser window is no longer visible, but it has not been
+  // fully freed (possibly being kept around by a reference from the
+  // autocompleteTextView). As a result the window still appears in
+  // -[NSApplication windows] and causes the test to fail. To get around this
+  // problem, I disable -[BrowserWindowController focusLocationBar:] and later
+  // force the window to clear its first responder.
+  base::mac::ScopedObjCClassSwizzler tmpSwizzler(
+      [BrowserWindowController class], @selector(focusLocationBar:),
+      @selector(dontFocusLocationBar:));
+
   [controller_ enterBrowserFullscreen];
   WaitForFullScreenTransition();
   EXPECT_TRUE([controller_ isInAnyFullscreenMode]);
@@ -815,6 +834,8 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   [controller_ exitAnyFullscreen];
   WaitForFullScreenTransition();
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
+
+  [[controller_ window] makeFirstResponder:nil];
 }
 
 // If this test fails, it is usually a sign that the bots have some sort of
@@ -832,6 +853,12 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   chrome::testing::NSRunLoopRunAllPending();
   EXPECT_TRUE(IsFrontWindow([controller_ window]));
 
+  // See the comment in TestFullscreen for an explanation of this
+  // swizzling and the makeFirstResponder:nil call below.
+  base::mac::ScopedObjCClassSwizzler tmpSwizzler(
+      [BrowserWindowController class], @selector(focusLocationBar:),
+      @selector(dontFocusLocationBar:));
+
   [controller_ enterBrowserFullscreen];
   WaitForFullScreenTransition();
   [controller_ activate];
@@ -840,6 +867,8 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   // We have to cleanup after ourselves by unfullscreening.
   [controller_ exitAnyFullscreen];
   WaitForFullScreenTransition();
+
+  [[controller_ window] makeFirstResponder:nil];
 }
 
 @implementation BrowserWindowControllerFakeFullscreen
