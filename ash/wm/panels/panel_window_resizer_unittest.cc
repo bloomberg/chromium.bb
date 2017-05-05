@@ -25,6 +25,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
@@ -63,6 +64,8 @@ class PanelWindowResizerTest : public test::AshTestBase {
     gfx::Rect bounds(origin, gfx::Size(101, 101));
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
+    static int id = 0;
+    window->SetProperty(kShelfIDKey, new ShelfID(base::IntToString(id++)));
     shelf_view_test_->RunMessageLoopUntilAnimationsDone();
     return window;
   }

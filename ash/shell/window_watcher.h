@@ -34,7 +34,7 @@ class WindowWatcher : public aura::WindowObserver,
   WindowWatcher();
   ~WindowWatcher() override;
 
-  aura::Window* GetWindowByID(ash::ShelfID id);
+  aura::Window* GetWindowByID(const ShelfID& id);
 
   // aura::WindowObserver overrides:
   void OnWindowAdded(aura::Window* new_window) override;
@@ -49,7 +49,7 @@ class WindowWatcher : public aura::WindowObserver,
  private:
   class WorkspaceWindowWatcher;
 
-  typedef std::map<ash::ShelfID, aura::Window*> IDToWindow;
+  typedef std::map<ShelfID, aura::Window*> IDToWindow;
 
   // Maps from window to the id we gave it.
   IDToWindow id_to_window_;

@@ -5,10 +5,7 @@
 #ifndef ASH_WM_WINDOW_PROPERTIES_H_
 #define ASH_WM_WINDOW_PROPERTIES_H_
 
-#include <stdint.h>
-
 #include "ash/ash_export.h"
-#include "ash/public/cpp/shelf_types.h"
 #include "ui/base/class_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -58,9 +55,6 @@ ASH_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
 // set. This is used by e.g. the always maximized mode window manager.
 ASH_EXPORT extern const aura::WindowProperty<ui::WindowShowState>* const
     kRestoreShowStateOverrideKey;
-
-// A property key to store the id for a window's shelf item.
-ASH_EXPORT extern const aura::WindowProperty<ShelfID>* const kShelfIDKey;
 
 // Containers with this property (true) are aligned with physical pixel
 // boundary.

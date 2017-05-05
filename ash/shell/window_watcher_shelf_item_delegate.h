@@ -30,7 +30,6 @@ class WindowWatcherShelfItemDelegate : public ShelfItemDelegate {
   void Close() override;
 
  private:
-  ShelfID id_;
   WindowWatcher* watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowWatcherShelfItemDelegate);

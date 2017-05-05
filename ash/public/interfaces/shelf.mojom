@@ -115,16 +115,22 @@ struct MenuItem {
   uint32 radio_group_id;             // The radio group id.
 };
 
+// Identifier for shelf items and their windows.
+// This structure matches ash::ShelfID.
+struct ShelfID {
+  string app_id;            // An app id string, used to match app windows.
+                            // (eg. extension ids, arc ids, "AppList", etc.)
+  string launch_id;         // A string used to support multiple items per app.
+                            // (eg. Citrix may use 'Word' or 'Excel' launch ids)
+};
+
 // ShelfItems are used to populate the shelf.
 // This structure matches ash::ShelfItem.
 struct ShelfItem {
   ShelfItemType type;       // The type of the shelf item.
   skia.mojom.Bitmap image;  // An icon image Bitmap, shown on the shelf.
-  int64 shelf_id;           // A shelf model ID used by the shelf and clients.
   ShelfItemStatus status;   // The running/closed/etc. status of the item.
-  string app_id;            // An app id string, used to match app windows.
-  string launch_id;         // A string used to support multiple items per app.
-                            // (eg. Citrix may use 'Word' or 'Excel' launch ids)
+  ShelfID shelf_id;         // The id for the shelf item and its windows.
   mojo.common.mojom.String16 title;  // The title to display for tooltips, etc.
   bool shows_tooltip;       // Whether the tooltip should be shown on hover.
   bool pinned_by_policy;    // Whether the item is pinned by policy preferences,

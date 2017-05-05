@@ -15,13 +15,23 @@
 namespace ash {
 namespace {
 
+TEST(ShelfIDStructTraitsTest, Basic) {
+  ShelfID shelf_id("app_id", "launch_id");
+
+  ShelfID out_shelf_id;
+  ASSERT_TRUE(mojom::ShelfID::Deserialize(mojom::ShelfID::Serialize(&shelf_id),
+                                          &out_shelf_id));
+
+  EXPECT_EQ("app_id", out_shelf_id.app_id);
+  EXPECT_EQ("launch_id", out_shelf_id.launch_id);
+}
+
 TEST(ShelfItemStructTraitsTest, Basic) {
   ShelfItem item;
   item.type = TYPE_APP;
   item.image = gfx::test::CreateImageSkia(32, 16);
-  item.id = 123u;
+  item.id = ShelfID("app_id", "launch_id");
   item.status = STATUS_RUNNING;
-  item.app_launch_id = AppLaunchId("app_id", "launch_id");
   item.title = base::ASCIIToUTF16("title");
   item.shows_tooltip = false;
   item.pinned_by_policy = true;
@@ -33,10 +43,8 @@ TEST(ShelfItemStructTraitsTest, Basic) {
   EXPECT_EQ(TYPE_APP, out_item.type);
   EXPECT_FALSE(out_item.image.isNull());
   EXPECT_EQ(gfx::Size(32, 16), out_item.image.size());
-  EXPECT_EQ(123u, out_item.id);
   EXPECT_EQ(STATUS_RUNNING, out_item.status);
-  EXPECT_EQ("app_id", out_item.app_launch_id.app_id());
-  EXPECT_EQ("launch_id", out_item.app_launch_id.launch_id());
+  EXPECT_EQ(ShelfID("app_id", "launch_id"), out_item.id);
   EXPECT_EQ(base::ASCIIToUTF16("title"), out_item.title);
   EXPECT_FALSE(out_item.shows_tooltip);
   EXPECT_TRUE(out_item.pinned_by_policy);

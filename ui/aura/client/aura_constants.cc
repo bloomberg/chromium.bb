@@ -36,7 +36,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kActivateOnPointerKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAlwaysOnTopKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAnimationsDisabledKey, false);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAppIconKey, nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kAppIdKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kAppType, 0);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kConstrainedWindowKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCreatedByUserGesture, false);

@@ -8,10 +8,12 @@
 
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                         ash::mojom::WindowPinType)
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, ash::ShelfID*);
 
 namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPanelAttachedKey, true);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ShelfID, kShelfIDKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
 DEFINE_UI_CLASS_PROPERTY_KEY(ash::mojom::WindowPinType,
                              kWindowPinTypeKey,

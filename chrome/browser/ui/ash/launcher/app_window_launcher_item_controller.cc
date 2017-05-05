@@ -16,8 +16,8 @@
 #include "ui/wm/core/window_animations.h"
 
 AppWindowLauncherItemController::AppWindowLauncherItemController(
-    const ash::AppLaunchId& app_launch_id)
-    : ash::ShelfItemDelegate(app_launch_id), observed_windows_(this) {}
+    const ash::ShelfID& shelf_id)
+    : ash::ShelfItemDelegate(shelf_id), observed_windows_(this) {}
 
 AppWindowLauncherItemController::~AppWindowLauncherItemController() {}
 

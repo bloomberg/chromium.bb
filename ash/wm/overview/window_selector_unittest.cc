@@ -9,6 +9,7 @@
 #include "ash/accessibility_types.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -28,6 +29,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm_window.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/user_action_tester.h"
 #include "ui/aura/client/aura_constants.h"
@@ -145,6 +147,8 @@ class WindowSelectorTest : public test::AshTestBase {
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         nullptr, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
+    static int id = 0;
+    window->SetProperty(kShelfIDKey, new ShelfID(base::IntToString(id++)));
     window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;

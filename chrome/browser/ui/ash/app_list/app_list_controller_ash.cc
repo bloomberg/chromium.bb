@@ -44,7 +44,7 @@ bool AppListControllerDelegateAsh::IsAppPinned(const std::string& app_id) {
 bool AppListControllerDelegateAsh::IsAppOpen(const std::string& app_id) const {
   ash::ShelfID id =
       ash::Shell::Get()->shelf_model()->GetShelfIDForAppID(app_id);
-  return id && ChromeLauncherController::instance()->IsOpen(id);
+  return !id.IsNull() && ChromeLauncherController::instance()->IsOpen(id);
 }
 
 void AppListControllerDelegateAsh::PinApp(const std::string& app_id) {
@@ -116,7 +116,7 @@ void AppListControllerDelegateAsh::LaunchApp(
     AppListSource source,
     int event_flags) {
   ChromeLauncherController::instance()->LaunchApp(
-      ash::AppLaunchId(extension->id()), AppListSourceToLaunchSource(source),
+      ash::ShelfID(extension->id()), AppListSourceToLaunchSource(source),
       event_flags);
   DismissView();
 }

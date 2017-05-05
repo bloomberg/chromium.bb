@@ -30,6 +30,10 @@ enum class WindowPinType;
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kPanelAttachedKey;
 
+// A property key to store the id for a window's shelf item.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<ShelfID*>* const
+    kShelfIDKey;
+
 // A property key to store the type of a window's shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
     kShelfItemTypeKey;

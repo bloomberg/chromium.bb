@@ -90,10 +90,6 @@ interface WindowManager {
   // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
   const string kAppIcon_Property = "prop:app-icon";
 
-  // The application ID (eg. 'mojo:foo'). Maps to
-  // aura::client::client::kAppIdKey. Type: mojom::String
-  const string kAppID_Property = "prop:app-id";
-
   // Used to explicitly control whether a window appears in the most recently
   // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.
   const string kExcludeFromMru_Property = "prop:exclude_from_mru";
@@ -133,6 +129,9 @@ interface WindowManager {
 
   // See ShadowElevation for details. Type: wm::ShadowElevation.
   const string kShadowElevation_Property = "prop:shadow-elevation";
+
+  // The shelf ID struct. Maps to ash::kShelfIDKey. Type: ash::ShelfID.
+  const string kShelfID_Property = "prop:shelf-id";
 
   // The type of item to be shown on the shelf for this window. Type: int
   // A few ash::ShelfItemType values are supported; TYPE_UNKNOWN means no item.

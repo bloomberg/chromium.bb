@@ -146,17 +146,17 @@ TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
 
   ShelfItem shelf_item;
   shelf_item.type = ash::TYPE_PINNED_APP;
-  shelf_item.app_launch_id = AppLaunchId("app_id_1");
+  shelf_item.id = ShelfID("app_id_1");
   shelf_model->Add(shelf_item);
-  shelf_item.app_launch_id = AppLaunchId("app_id_2");
+  shelf_item.id = ShelfID("app_id_2");
   shelf_model->Add(shelf_item);
 
   shelf_item.type = ash::TYPE_APP;
-  shelf_item.app_launch_id = AppLaunchId("app_id_3");
+  shelf_item.id = ShelfID("app_id_3");
   shelf_model->Add(shelf_item);
-  shelf_item.app_launch_id = AppLaunchId("app_id_4");
+  shelf_item.id = ShelfID("app_id_4");
   shelf_model->Add(shelf_item);
-  shelf_item.app_launch_id = AppLaunchId("app_id_5");
+  shelf_item.id = ShelfID("app_id_5");
   shelf_model->Add(shelf_item);
 
   test_api().RecordPeriodicMetrics();

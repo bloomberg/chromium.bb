@@ -48,7 +48,7 @@ LauncherContextMenu* LauncherContextMenu::Create(
   DCHECK(controller);
   DCHECK(wm_shelf);
   // Create DesktopShellLauncherContextMenu if no item is selected.
-  if (!item || item->id == 0)
+  if (!item || item->id.IsNull())
     return new DesktopShellLauncherContextMenu(controller, item, wm_shelf);
 
   // Create ArcLauncherContextMenu if the item is an ARC app.
@@ -126,10 +126,10 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
           ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
       break;
     case MENU_PIN:
-      if (controller_->IsAppPinned(item_.app_launch_id.app_id()))
-        controller_->UnpinAppWithID(item_.app_launch_id.app_id());
+      if (controller_->IsAppPinned(item_.id.app_id))
+        controller_->UnpinAppWithID(item_.id.app_id);
       else
-        controller_->PinAppWithID(item_.app_launch_id.app_id());
+        controller_->PinAppWithID(item_.id.app_id);
       break;
     case MENU_AUTO_HIDE:
       wm_shelf_->SetAutoHideBehavior(
@@ -149,8 +149,8 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void LauncherContextMenu::AddPinMenu() {
-  // Expect an item with a none zero id to add pin/unpin menu item.
-  DCHECK(item_.id);
+  // Expect a valid ShelfID to add pin/unpin menu item.
+  DCHECK(!item_.id.IsNull());
   int menu_pin_string_id;
   const std::string app_id = controller_->GetAppIDForShelfID(item_.id);
   switch (GetPinnableForAppID(app_id, controller_->profile())) {

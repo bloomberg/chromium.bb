@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/ash_public_export.h"
 
 namespace ash {
@@ -89,10 +90,8 @@ enum ShelfAction {
   SHELF_ACTION_APP_LIST_SHOWN,
 };
 
-// Shelf IDs are sequential values assigned to shelf items by ShelfModel for
-// runtime use; they are not persisted across restarts of the ash environment.
-using ShelfID = uint32_t;
-const ShelfID kInvalidShelfID = 0u;
+// TODO(msw): Rename AppLaunchId to ShelfID.
+using ShelfID = AppLaunchId;
 
 // The type of a shelf item.
 enum ShelfItemType {

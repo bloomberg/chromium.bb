@@ -14,8 +14,8 @@ namespace shell {
 WindowWatcherShelfItemDelegate::WindowWatcherShelfItemDelegate(
     ShelfID id,
     WindowWatcher* watcher)
-    : ShelfItemDelegate(AppLaunchId()), id_(id), watcher_(watcher) {
-  DCHECK_NE(id_, kInvalidShelfID);
+    : ShelfItemDelegate(id), watcher_(watcher) {
+  DCHECK(!id.IsNull());
   DCHECK(watcher_);
 }
 
@@ -26,7 +26,7 @@ void WindowWatcherShelfItemDelegate::ItemSelected(
     int64_t display_id,
     ShelfLaunchSource source,
     const ItemSelectedCallback& callback) {
-  aura::Window* window = watcher_->GetWindowByID(id_);
+  aura::Window* window = watcher_->GetWindowByID(shelf_id());
   if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
     wm::MoveWindowToDisplay(window, display_id);
   window->Show();

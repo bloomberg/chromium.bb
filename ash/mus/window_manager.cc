@@ -90,6 +90,9 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       ui::mojom::WindowManager::kRenderParentTitleArea_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter_->RegisterProperty(
+      kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter_->RegisterProperty(
       kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property,
       base::Bind(&IsValidShelfItemType));
   property_converter_->RegisterProperty(

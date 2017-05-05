@@ -41,8 +41,6 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
   // Indicates mash shouldn't handle immersive, rather we will.
   properties[ui::mojom::WindowManager::kDisableImmersive_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(true);
-  properties[ui::mojom::WindowManager::kAppID_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(chrome_app_id);
 #if defined(OS_CHROMEOS)
   properties[ash::mojom::kAshWindowStyle_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(

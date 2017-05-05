@@ -63,8 +63,7 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   const WindowList& windows() const { return windows_; }
 
  protected:
-  explicit AppWindowLauncherItemController(
-      const ash::AppLaunchId& app_launch_id);
+  explicit AppWindowLauncherItemController(const ash::ShelfID& shelf_id);
 
   // Called when app window is removed from controller.
   virtual void OnWindowRemoved(ui::BaseWindow* window) {}

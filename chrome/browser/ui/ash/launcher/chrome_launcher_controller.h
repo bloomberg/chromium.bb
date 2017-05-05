@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
@@ -104,20 +103,20 @@ class ChromeLauncherController
       ash::ShelfItemStatus status);
 
   // Returns the shelf item with the given id, or null if |id| isn't found.
-  const ash::ShelfItem* GetItem(ash::ShelfID id) const;
+  const ash::ShelfItem* GetItem(const ash::ShelfID& id) const;
 
   // Updates the type of an item.
-  void SetItemType(ash::ShelfID id, ash::ShelfItemType type);
+  void SetItemType(const ash::ShelfID& id, ash::ShelfItemType type);
 
   // Updates the running status of an item. It will also update the status of
   // browsers shelf item if needed.
-  void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status);
+  void SetItemStatus(const ash::ShelfID& id, ash::ShelfItemStatus status);
 
   // Closes or unpins the shelf item.
-  void CloseLauncherItem(ash::ShelfID id);
+  void CloseLauncherItem(const ash::ShelfID& id);
 
   // Returns true if the item identified by |id| is pinned.
-  bool IsPinned(ash::ShelfID id);
+  bool IsPinned(const ash::ShelfID& id);
 
   // Set the shelf item status for the V1 application with the given |app_id|.
   // Adds or removes an item as needed to respect the running and pinned state.
@@ -126,20 +125,20 @@ class ChromeLauncherController
   // Requests that the shelf item controller specified by |id| open a new
   // instance of the app.  |event_flags| holds the flags of the event which
   // triggered this command.
-  void Launch(ash::ShelfID id, int event_flags);
+  void Launch(const ash::ShelfID& id, int event_flags);
 
   // Closes the specified item.
-  void Close(ash::ShelfID id);
+  void Close(const ash::ShelfID& id);
 
   // Returns true if the specified item is open.
-  bool IsOpen(ash::ShelfID id);
+  bool IsOpen(const ash::ShelfID& id);
 
   // Returns true if the specified item is for a platform app.
-  bool IsPlatformApp(ash::ShelfID id);
+  bool IsPlatformApp(const ash::ShelfID& id);
 
-  // Opens a new instance of the application identified by the AppLaunchId.
+  // Opens a new instance of the application identified by the ShelfID.
   // Used by the app-list, and by pinned-app shelf items.
-  void LaunchApp(ash::AppLaunchId id,
+  void LaunchApp(const ash::ShelfID& id,
                  ash::ShelfLaunchSource source,
                  int event_flags);
 
@@ -151,7 +150,8 @@ class ChromeLauncherController
                    int event_flags);
 
   // Set the image for a specific shelf item (e.g. when set by the app).
-  void SetLauncherItemImage(ash::ShelfID shelf_id, const gfx::ImageSkia& image);
+  void SetLauncherItemImage(const ash::ShelfID& shelf_id,
+                            const gfx::ImageSkia& image);
 
   // Notify the controller that the state of an non platform app's tabs
   // have changed,
@@ -162,7 +162,7 @@ class ChromeLauncherController
   ash::ShelfID GetShelfIDForWebContents(content::WebContents* contents);
 
   // Limits application refocusing to urls that match |url| for |id|.
-  void SetRefocusURLPatternForTest(ash::ShelfID id, const GURL& url);
+  void SetRefocusURLPatternForTest(const ash::ShelfID& id, const GURL& url);
 
   // Activates a |window|. If |allow_minimize| is true and the system allows
   // it, the the window will get minimized instead.
@@ -223,7 +223,7 @@ class ChromeLauncherController
   ArcAppDeferredLauncherController* GetArcDeferredLauncher();
 
   // Get the launch ID for a given shelf ID.
-  const std::string& GetLaunchIDForShelfID(ash::ShelfID id);
+  const std::string& GetLaunchIDForShelfID(const ash::ShelfID& id);
 
   AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
 
@@ -259,7 +259,7 @@ class ChromeLauncherController
   ash::ShelfID GetShelfIDForAppID(const std::string& app_id);
   ash::ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
                                              const std::string& launch_id);
-  const std::string& GetAppIDForShelfID(ash::ShelfID id);
+  const std::string& GetAppIDForShelfID(const ash::ShelfID& id);
   void PinAppWithID(const std::string& app_id);
   bool IsAppPinned(const std::string& app_id);
   void UnpinAppWithID(const std::string& app_id);
@@ -290,9 +290,8 @@ class ChromeLauncherController
   using WebContentsToAppIDMap = std::map<content::WebContents*, std::string>;
 
   // Creates a new app shortcut item and controller on the shelf at |index|.
-  ash::ShelfID CreateAppShortcutLauncherItem(
-      const ash::AppLaunchId& app_launch_id,
-      int index);
+  ash::ShelfID CreateAppShortcutLauncherItem(const ash::ShelfID& shelf_id,
+                                             int index);
 
   // Remembers / restores list of running applications.
   // Note that this order will neither be stored in the preference nor will it
@@ -301,7 +300,7 @@ class ChromeLauncherController
   void RestoreUnpinnedRunningApplicationOrder(const std::string& user_id);
 
   // Invoked when the associated browser or app is closed.
-  void RemoveShelfItem(ash::ShelfID id);
+  void RemoveShelfItem(const ash::ShelfID& id);
 
   // Internal helpers for pinning and unpinning that handle both
   // client-triggered and internal pinning operations.
@@ -309,7 +308,7 @@ class ChromeLauncherController
   void DoUnpinAppWithID(const std::string& app_id, bool update_prefs);
 
   // Pin a running app with |shelf_id| internally to |index|.
-  void PinRunningAppInternal(int index, ash::ShelfID shelf_id);
+  void PinRunningAppInternal(int index, const ash::ShelfID& shelf_id);
 
   // Unpin a locked application. This is an internal call which converts the
   // model type of the given app index from a shortcut into an unpinned running
@@ -317,7 +316,7 @@ class ChromeLauncherController
   void UnpinRunningAppInternal(int index);
 
   // Updates pin position for the item specified by |id| in sync model.
-  void SyncPinPosition(ash::ShelfID id);
+  void SyncPinPosition(const ash::ShelfID& id);
 
   // Re-syncs shelf model.
   void UpdateAppLaunchersFromPref();
@@ -391,7 +390,7 @@ class ChromeLauncherController
   void OnIsSyncingChanged() override;
 
   // An internal helper to unpin a shelf item; this does not update prefs.
-  void UnpinShelfItemInternal(ash::ShelfID id);
+  void UnpinShelfItemInternal(const ash::ShelfID& id);
 
   static ChromeLauncherController* instance_;
 

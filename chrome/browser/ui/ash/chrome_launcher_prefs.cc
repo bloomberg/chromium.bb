@@ -10,7 +10,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/public/cpp/app_launch_id.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -229,12 +228,11 @@ void PropagatePrefToLocalIfNotSet(
     pref_service->SetString(local_path, pref_service->GetString(synced_path));
 }
 
-std::vector<AppLaunchId> AppIdsToAppLaunchIds(
-    const std::vector<std::string> app_ids) {
-  std::vector<AppLaunchId> app_launch_ids(app_ids.size(), AppLaunchId());
+std::vector<ShelfID> AppIdsToShelfIDs(const std::vector<std::string> app_ids) {
+  std::vector<ShelfID> shelf_ids(app_ids.size());
   for (size_t i = 0; i < app_ids.size(); ++i)
-    app_launch_ids[i] = AppLaunchId(app_ids[i]);
-  return app_launch_ids;
+    shelf_ids[i] = ShelfID(app_ids[i]);
+  return shelf_ids;
 }
 
 struct PinInfo {
@@ -601,14 +599,13 @@ std::vector<std::string> ImportLegacyPinnedApps(
   return legacy_pins_valid;
 }
 
-std::vector<AppLaunchId> GetPinnedAppsFromPrefs(
-    const PrefService* prefs,
-    LauncherControllerHelper* helper) {
+std::vector<ShelfID> GetPinnedAppsFromPrefs(const PrefService* prefs,
+                                            LauncherControllerHelper* helper) {
   app_list::AppListSyncableService* app_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(helper->profile());
   // Some unit tests may not have it or service may not be initialized.
   if (!app_service || !app_service->IsInitialized())
-    return std::vector<AppLaunchId>();
+    return std::vector<ShelfID>();
 
   std::vector<PinInfo> pin_infos;
 
@@ -636,12 +633,12 @@ std::vector<AppLaunchId> GetPinnedAppsFromPrefs(
     sync_preferences::PrefServiceSyncable* const pref_service_syncable =
         PrefServiceSyncableFromProfile(helper->profile());
     if (!pref_service_syncable->IsSyncing())
-      return AppIdsToAppLaunchIds(
+      return AppIdsToShelfIDs(
           GetPinnedAppsFromPrefsLegacy(prefs, helper, true));
 
     // We need to import legacy pins model and convert it to sync based
     // model.
-    return AppIdsToAppLaunchIds(ImportLegacyPinnedApps(prefs, helper));
+    return AppIdsToShelfIDs(ImportLegacyPinnedApps(prefs, helper));
   }
 
   // Sort pins according their ordinals.
@@ -687,21 +684,21 @@ std::vector<AppLaunchId> GetPinnedAppsFromPrefs(
     }
   }
 
-  // Convert to AppLaunchId array.
+  // Convert to ShelfID array.
   std::vector<std::string> pins(pin_infos.size());
   for (size_t i = 0; i < pin_infos.size(); ++i)
     pins[i] = pin_infos[i].app_id;
 
-  return AppIdsToAppLaunchIds(pins);
+  return AppIdsToShelfIDs(pins);
 }
 
-void RemovePinPosition(Profile* profile, const AppLaunchId& app_launch_id) {
+void RemovePinPosition(Profile* profile, const ShelfID& shelf_id) {
   DCHECK(profile);
 
-  const std::string& app_id = app_launch_id.app_id();
-  if (!app_launch_id.launch_id().empty()) {
+  const std::string& app_id = shelf_id.app_id;
+  if (!shelf_id.launch_id.empty()) {
     VLOG(2) << "Syncing remove pin for '" << app_id
-            << "' with non-empty launch id '" << app_launch_id.launch_id()
+            << "' with non-empty launch id '" << shelf_id.launch_id
             << "' is not supported.";
     return;
   }
@@ -713,20 +710,20 @@ void RemovePinPosition(Profile* profile, const AppLaunchId& app_launch_id) {
 }
 
 void SetPinPosition(Profile* profile,
-                    const AppLaunchId& app_launch_id,
-                    const AppLaunchId& app_launch_id_before,
-                    const std::vector<AppLaunchId>& app_launch_ids_after) {
+                    const ShelfID& shelf_id,
+                    const ShelfID& shelf_id_before,
+                    const std::vector<ShelfID>& shelf_ids_after) {
   DCHECK(profile);
 
-  const std::string& app_id = app_launch_id.app_id();
-  if (!app_launch_id.launch_id().empty()) {
+  const std::string& app_id = shelf_id.app_id;
+  if (!shelf_id.launch_id.empty()) {
     VLOG(2) << "Syncing set pin for '" << app_id
-            << "' with non-empty launch id '" << app_launch_id.launch_id()
+            << "' with non-empty launch id '" << shelf_id.launch_id
             << "' is not supported.";
     return;
   }
 
-  const std::string& app_id_before = app_launch_id_before.app_id();
+  const std::string& app_id_before = shelf_id_before.app_id;
 
   DCHECK(!app_id.empty());
   DCHECK_NE(app_id, app_id_before);
@@ -741,8 +738,8 @@ void SetPinPosition(Profile* profile,
       app_id_before.empty() ? syncer::StringOrdinal()
                             : app_service->GetPinPosition(app_id_before);
   syncer::StringOrdinal position_after;
-  for (const auto& app_launch_id_after : app_launch_ids_after) {
-    const std::string& app_id_after = app_launch_id_after.app_id();
+  for (const auto& shelf_id_after : shelf_ids_after) {
+    const std::string& app_id_after = shelf_id_after.app_id;
     DCHECK_NE(app_id_after, app_id);
     DCHECK_NE(app_id_after, app_id_before);
     syncer::StringOrdinal position = app_service->GetPinPosition(app_id_after);

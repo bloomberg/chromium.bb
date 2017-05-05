@@ -140,7 +140,7 @@ class WmShelfObserverIconTest : public AshTestBase {
 // A ShelfItemDelegate that tracks selections and reports a custom action.
 class ShelfItemSelectionTracker : public ShelfItemDelegate {
  public:
-  ShelfItemSelectionTracker() : ShelfItemDelegate(AppLaunchId()) {}
+  ShelfItemSelectionTracker() : ShelfItemDelegate(ShelfID()) {}
   ~ShelfItemSelectionTracker() override {}
 
   size_t item_selected_count() const { return item_selected_count_; }
@@ -168,6 +168,7 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
 
 TEST_F(WmShelfObserverIconTest, AddRemove) {
   ShelfItem item;
+  item.id = ShelfID("foo");
   item.type = TYPE_APP;
   EXPECT_FALSE(observer()->icon_positions_changed());
   const int shelf_item_index = Shell::Get()->shelf_model()->Add(item);
@@ -197,6 +198,7 @@ TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   TestWmShelfObserver second_observer(second_shelf);
 
   ShelfItem item;
+  item.id = ShelfID("foo");
   item.type = TYPE_APP;
   EXPECT_FALSE(observer()->icon_positions_changed());
   EXPECT_FALSE(second_observer.icon_positions_changed());
@@ -272,22 +274,22 @@ class ShelfViewTest : public AshTestBase {
     if (type == TYPE_APP || type == TYPE_APP_PANEL)
       item.status = STATUS_RUNNING;
 
-    ShelfID id = model_->next_id();
-    item.app_launch_id = AppLaunchId(base::IntToString(id));
+    static int id = 0;
+    item.id = ShelfID(base::IntToString(id++));
     model_->Add(item);
     // Set a delegate; some tests require one to select the item.
-    model_->SetShelfItemDelegate(id,
+    model_->SetShelfItemDelegate(item.id,
                                  base::MakeUnique<ShelfItemSelectionTracker>());
     if (wait_for_animations)
       test_api_->RunMessageLoopUntilAnimationsDone();
-    return id;
+    return item.id;
   }
   ShelfID AddAppShortcut() { return AddItem(TYPE_PINNED_APP, true); }
   ShelfID AddPanel() { return AddItem(TYPE_APP_PANEL, true); }
   ShelfID AddAppNoWait() { return AddItem(TYPE_APP, false); }
   ShelfID AddApp() { return AddItem(TYPE_APP, true); }
 
-  void SetShelfItemTypeToAppShortcut(ShelfID id) {
+  void SetShelfItemTypeToAppShortcut(const ShelfID& id) {
     int index = model_->ItemIndexByID(id);
     DCHECK_GE(index, 0);
 
@@ -300,17 +302,17 @@ class ShelfViewTest : public AshTestBase {
     test_api_->RunMessageLoopUntilAnimationsDone();
   }
 
-  void RemoveByID(ShelfID id) {
+  void RemoveByID(const ShelfID& id) {
     model_->RemoveItemAt(model_->ItemIndexByID(id));
     test_api_->RunMessageLoopUntilAnimationsDone();
   }
 
-  ShelfButton* GetButtonByID(ShelfID id) {
+  ShelfButton* GetButtonByID(const ShelfID& id) {
     int index = model_->ItemIndexByID(id);
     return test_api_->GetButton(index);
   }
 
-  ShelfItem GetItemByID(ShelfID id) {
+  ShelfItem GetItemByID(const ShelfID& id) {
     ShelfItems::const_iterator items = model_->ItemByID(id);
     return *items;
   }
@@ -634,7 +636,7 @@ class ShelfViewTest : public AshTestBase {
 
   // Returns the center coordinates for a button. Helper function for an event
   // generator.
-  gfx::Point GetButtonCenter(ShelfID button_id) {
+  gfx::Point GetButtonCenter(const ShelfID& button_id) {
     return GetButtonCenter(
         test_api_->GetButton(model_->ItemIndexByID(button_id)));
   }
@@ -1997,7 +1999,7 @@ class InkDropSpy : public views::InkDrop {
 // A ShelfItemDelegate that returns a menu for the shelf item.
 class ListMenuShelfItemDelegate : public ShelfItemDelegate {
  public:
-  ListMenuShelfItemDelegate() : ShelfItemDelegate(AppLaunchId()) {}
+  ListMenuShelfItemDelegate() : ShelfItemDelegate(ShelfID()) {}
   ~ListMenuShelfItemDelegate() override {}
 
  private:

@@ -103,6 +103,9 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
 
 #if defined(USE_ASH)
   aura::Window* window = g_task_manager_view->GetWidget()->GetNativeWindow();
+  // An app id for task manager windows, also used to identify the shelf item.
+  static constexpr char kTaskManagerId[] = "TaskManagerId";
+  window->SetProperty(ash::kShelfIDKey, new ash::ShelfID(kTaskManagerId));
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_TASK_MANAGER);

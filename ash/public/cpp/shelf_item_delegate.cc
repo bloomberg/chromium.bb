@@ -6,10 +6,8 @@
 
 namespace ash {
 
-ShelfItemDelegate::ShelfItemDelegate(const ash::AppLaunchId& app_launch_id)
-    : app_launch_id_(app_launch_id),
-      shelf_id_(kInvalidShelfID),
-      image_set_by_controller_(false) {}
+ShelfItemDelegate::ShelfItemDelegate(const ash::ShelfID& shelf_id)
+    : shelf_id_(shelf_id), image_set_by_controller_(false) {}
 
 ShelfItemDelegate::~ShelfItemDelegate() {}
 

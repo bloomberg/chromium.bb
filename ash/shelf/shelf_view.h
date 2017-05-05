@@ -84,10 +84,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know. If the item is in an overflow shelf, the overflow icon location
   // will be returned.
-  gfx::Rect GetIdealBoundsOfItemIcon(ShelfID id);
+  gfx::Rect GetIdealBoundsOfItemIcon(const ShelfID& id);
 
   // Repositions the icon for the specified item by the midpoint of the window.
-  void UpdatePanelIconPosition(ShelfID id, const gfx::Point& midpoint);
+  void UpdatePanelIconPosition(const ShelfID& id, const gfx::Point& midpoint);
 
   // Returns true if we're showing a menu.
   bool IsShowingMenu() const;
@@ -400,7 +400,7 @@ class ASH_EXPORT ShelfView : public views::View,
   int start_drag_index_ = -1;
 
   // Used for the context menu of a particular item.
-  ShelfID context_menu_id_ = 0;
+  ShelfID context_menu_id_;
 
   std::unique_ptr<views::FocusSearch> focus_search_;
 
@@ -428,9 +428,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // and it needs to be deleted/unpinned again if the operation gets cancelled.
   bool drag_and_drop_item_pinned_ = false;
 
-  // The ShelfItem which is currently used for a drag and a drop operation
-  // or 0 otherwise.
-  ShelfID drag_and_drop_shelf_id_ = 0;
+  // The ShelfItem currently used for drag and drop; empty if none.
+  ShelfID drag_and_drop_shelf_id_;
 
   // The application ID of the application which we drag and drop.
   std::string drag_and_drop_app_id_;

@@ -16,7 +16,6 @@
 
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
-#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/shelf/shelf_application_menu_model.h"
@@ -255,7 +254,7 @@ class TestLauncherControllerHelper : public LauncherControllerHelper {
 class TestV2AppLauncherItemController : public ash::ShelfItemDelegate {
  public:
   explicit TestV2AppLauncherItemController(const std::string& app_id)
-      : ash::ShelfItemDelegate(ash::AppLaunchId(app_id)) {}
+      : ash::ShelfItemDelegate(ash::ShelfID(app_id)) {}
 
   ~TestV2AppLauncherItemController() override {}
 
@@ -596,6 +595,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   void AddAppListLauncherItem() {
     ash::ShelfItem app_list;
+    app_list.id = ash::ShelfID("AppListId");
     app_list.type = ash::TYPE_APP_LIST;
     model_->Add(app_list);
   }
@@ -827,7 +827,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     app_ids->clear();
     for (const auto& item : model_->items()) {
       if (item.type == ash::TYPE_PINNED_APP)
-        app_ids->push_back(item.app_launch_id.app_id());
+        app_ids->push_back(item.id.app_id);
     }
   }
 
@@ -1699,8 +1699,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppRunActivateClose) {
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting that the app is running should create a new shelf item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
@@ -1708,8 +1708,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppRunActivateClose) {
   EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting an active status should just update the existing item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_ACTIVE);
@@ -1720,8 +1720,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppRunActivateClose) {
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting that the app is closed again should have no effect.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
@@ -1734,8 +1734,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppPinRunCloseUnpin) {
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Pinning the app should create a new shelf item.
   launcher_controller_->PinAppWithID(extension1_->id());
@@ -1743,8 +1743,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppPinRunCloseUnpin) {
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting that the app is running should just update the existing item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
@@ -1752,8 +1752,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppPinRunCloseUnpin) {
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting that the app is closed should just update the existing item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
@@ -1761,15 +1761,15 @@ TEST_F(ChromeLauncherControllerTest, V1AppPinRunCloseUnpin) {
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Unpinning the app should remove its shelf item.
   launcher_controller_->UnpinAppWithID(extension1_->id());
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 }
 
 // Test the V1 app interaction flow: run it, pin it, close it, unpin it.
@@ -1778,8 +1778,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppRunPinCloseUnpin) {
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting that the app is running should create a new shelf item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
@@ -1787,8 +1787,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppRunPinCloseUnpin) {
   EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Pinning the app should just update the existing item.
   launcher_controller_->PinAppWithID(extension1_->id());
@@ -1796,8 +1796,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppRunPinCloseUnpin) {
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting that the app is closed should just update the existing item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
@@ -1805,15 +1805,15 @@ TEST_F(ChromeLauncherControllerTest, V1AppRunPinCloseUnpin) {
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Unpinning the app should remove its shelf item.
   launcher_controller_->UnpinAppWithID(extension1_->id());
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 }
 
 // Test the V1 app interaction flow: pin it, run it, unpin it, close it.
@@ -1822,8 +1822,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppPinRunUnpinClose) {
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Pinning the app should create a new shelf item.
   launcher_controller_->PinAppWithID(extension1_->id());
@@ -1831,8 +1831,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppPinRunUnpinClose) {
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting that the app is running should just update the existing item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
@@ -1840,8 +1840,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppPinRunUnpinClose) {
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Unpinning the app should just update the existing item.
   launcher_controller_->UnpinAppWithID(extension1_->id());
@@ -1849,15 +1849,15 @@ TEST_F(ChromeLauncherControllerTest, V1AppPinRunUnpinClose) {
   EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
   EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 
   // Reporting that the app is closed should remove its shelf item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(extension1_->id()).IsNull());
 }
 
 // Ensure unpinned V1 app ordering is properly restored after user changes.
@@ -1927,14 +1927,11 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
 
   arc_test_.StopArcInstance();
 
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id3));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_shortcut_id));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id3).IsNull());
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfIDForAppID(arc_shortcut_id).IsNull());
 
   arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON);
   arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON);
@@ -1950,10 +1947,10 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
       launcher_controller_->GetShelfIDForAppID(arc_app_id3);
   const ash::ShelfID shelf_id_shortcut =
       launcher_controller_->GetShelfIDForAppID(arc_shortcut_id);
-  EXPECT_NE(ash::kInvalidShelfID, shelf_id_app_1);
-  EXPECT_NE(ash::kInvalidShelfID, shelf_id_app_2);
-  EXPECT_NE(ash::kInvalidShelfID, shelf_id_app_3);
-  EXPECT_NE(ash::kInvalidShelfID, shelf_id_shortcut);
+  EXPECT_FALSE(shelf_id_app_1.IsNull());
+  EXPECT_FALSE(shelf_id_app_2.IsNull());
+  EXPECT_FALSE(shelf_id_app_3.IsNull());
+  EXPECT_FALSE(shelf_id_shortcut.IsNull());
 
   // We activated arc_app_id1 twice but expect one close for item controller
   // stops launching request.
@@ -1963,8 +1960,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
   item_delegate->Close();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
   EXPECT_EQ(shelf_id_app_2,
             launcher_controller_->GetShelfIDForAppID(arc_app_id2));
   EXPECT_EQ(shelf_id_app_3,
@@ -1977,12 +1973,9 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
 
   // Now deferred contollers should go away together with shelf items and ARC
   // app instance should receive request for launching apps and shortcuts.
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id3).IsNull());
 
   ASSERT_EQ(2U, arc_test_.app_instance()->launch_requests().size());
   ASSERT_EQ(1U, arc_test_.app_instance()->launch_intents().size());
@@ -2012,7 +2005,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
   const ash::ShelfID shelf_id =
       launcher_controller_->GetShelfIDForAppID(app_id);
-  EXPECT_NE(ash::kInvalidShelfID, shelf_id);
+  EXPECT_FALSE(shelf_id.IsNull());
 
   int item_index = model_->ItemIndexByID(shelf_id);
   ASSERT_GE(item_index, 0);
@@ -2024,7 +2017,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   // platform app.
   model_->SetShelfItemDelegate(
       shelf_id, base::MakeUnique<ExtensionAppWindowLauncherItemController>(
-                    ash::AppLaunchId(app_id)));
+                    ash::ShelfID(app_id)));
   launcher_controller_->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
 
   // This launch request should be ignored in case of active app.
@@ -2078,30 +2071,25 @@ TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
   views::Widget* arc_window1 = CreateArcWindow(window_app_id1);
   arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
                                             std::string());
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
 
   std::string window_app_id2("org.chromium.arc.2");
   views::Widget* arc_window2 = CreateArcWindow(window_app_id2);
   arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1],
                                             std::string());
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
 
   launcher_controller_->SetProfileForTest(profile2);
   SwitchActiveUser(account_id2);
 
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
 
   std::string window_app_id3("org.chromium.arc.3");
   views::Widget* arc_window3 = CreateArcWindow(window_app_id3);
   arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[2],
                                             std::string());
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id3).IsNull());
 
   arc_window2->CloseNow();
   arc_test_.app_instance()->SendTaskDestroyed(2);
@@ -2109,12 +2097,9 @@ TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
   launcher_controller_->SetProfileForTest(profile());
   SwitchActiveUser(account_id);
 
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id3).IsNull());
 
   // Close active window to let test passes.
   arc_window1->CloseNow();
@@ -2126,8 +2111,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
   SendListOfArcApps();
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id).IsNull());
 
   // Normal flow, create/destroy tasks.
   std::string window_app_id1("org.chromium.arc.1");
@@ -2136,30 +2120,24 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
   CreateArcWindow(window_app_id1);
   arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
                                             std::string());
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id).IsNull());
   CreateArcWindow(window_app_id2);
   arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[0],
                                             std::string());
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id).IsNull());
   arc_test_.app_instance()->SendTaskDestroyed(1);
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id).IsNull());
   arc_test_.app_instance()->SendTaskDestroyed(2);
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id).IsNull());
 
   // Stopping bridge removes apps.
   CreateArcWindow(window_app_id3);
   arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[0],
                                             std::string());
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id).IsNull());
   arc_test_.StopArcInstance();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id).IsNull());
 }
 
 // Test race creation/deletion of ARC app.
@@ -2176,39 +2154,31 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcRaceCreateClose) {
   // ARC window created before and closed after mojom notification.
   std::string window_app_id1("org.chromium.arc.1");
   views::Widget* arc_window = CreateArcWindow(window_app_id1);
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
   ASSERT_TRUE(arc_window);
   arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
                                             std::string());
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
   arc_test_.app_instance()->SendTaskDestroyed(1);
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
   arc_window->Close();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id1).IsNull());
 
   // ARC window created after and closed before mojom notification.
   std::string window_app_id2("org.chromium.arc.2");
   arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1],
                                             std::string());
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
   arc_window = CreateArcWindow(window_app_id2);
   ASSERT_TRUE(arc_window);
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
   arc_window->Close();
   base::RunLoop().RunUntilIdle();
   // Closing window does not close shelf item. It is closed on task destroy.
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
   arc_test_.app_instance()->SendTaskDestroyed(2);
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(arc_app_id2).IsNull());
 }
 
 TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
@@ -2224,7 +2194,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
                                             std::string());
   const ash::ShelfID shelf_id =
       launcher_controller_->GetShelfIDForAppID(arc_app_id);
-  EXPECT_NE(ash::kInvalidShelfID, shelf_id);
+  EXPECT_FALSE(shelf_id.IsNull());
 
   for (int i = 0; i < 3; ++i) {
     arc_window->Close();
@@ -3020,7 +2990,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuGeneration) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
 
   // Installing |extension3_| adds it to the launcher.
-  ash::ShelfID gmail_id = model_->next_id();
+  const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
   EXPECT_EQ(3, model_->item_count());
   int gmail_index = model_->ItemIndexByID(gmail_id);
@@ -3080,7 +3050,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   chrome::NewTab(browser());
 
   // Installing |extension3_| adds it to the launcher.
-  ash::ShelfID gmail_id = model_->next_id();
+  const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
   EXPECT_EQ(3, model_->item_count());
   int gmail_index = model_->ItemIndexByID(gmail_id);
@@ -3346,7 +3316,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
 
   // Add |extension3_| to the launcher and add two items.
   GURL gmail = GURL("https://mail.google.com/mail/u");
-  ash::ShelfID gmail_id = model_->next_id();
+  const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
   launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(gmail_url));
   base::string16 title1 = ASCIIToUTF16("Test1");
@@ -3394,7 +3364,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
 
   // Add |extension3_| to the launcher and add two items.
   GURL gmail = GURL("https://mail.google.com/mail/u");
-  ash::ShelfID gmail_id = model_->next_id();
+  const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
   launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(gmail_url));
   base::string16 title1 = ASCIIToUTF16("Test1");
@@ -3452,8 +3422,7 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
   model_observer_->clear_counts();
 
   // App panels should have a separate identifier than the app id
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(app_id).IsNull());
 
   // Setting the app image should not change the panel, which has a window icon.
   gfx::ImageSkia image;
@@ -3490,7 +3459,7 @@ TEST_F(ChromeLauncherControllerTest, GmailMatching) {
   EXPECT_FALSE(launcher_controller_->ContentCanBeHandledByGmailApp(content));
 
   // Installing |extension3_| adds it to the launcher.
-  ash::ShelfID gmail_id = model_->next_id();
+  const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
   EXPECT_EQ(3, model_->item_count());
   int gmail_index = model_->ItemIndexByID(gmail_id);
@@ -3521,7 +3490,7 @@ TEST_F(ChromeLauncherControllerTest, GmailOfflineMatching) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Installing |extension3_| adds it to the launcher.
-  ash::ShelfID gmail_id = model_->next_id();
+  const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
   EXPECT_EQ(3, model_->item_count());
   int gmail_index = model_->ItemIndexByID(gmail_id);
@@ -3645,7 +3614,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
 
   const ash::ShelfID shelfId3 = launcher_controller_->CreateAppLauncherItem(
       base::MakeUnique<ExtensionAppWindowLauncherItemController>(
-          ash::AppLaunchId(app_id3)),
+          ash::ShelfID(app_id3)),
       ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
@@ -3654,7 +3623,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
 
   const ash::ShelfID shelfId2 = launcher_controller_->CreateAppLauncherItem(
       base::MakeUnique<ExtensionAppWindowLauncherItemController>(
-          ash::AppLaunchId(app_id2)),
+          ash::ShelfID(app_id2)),
       ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
@@ -3663,7 +3632,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
 
   const ash::ShelfID shelfId1 = launcher_controller_->CreateAppLauncherItem(
       base::MakeUnique<ExtensionAppWindowLauncherItemController>(
-          ash::AppLaunchId(app_id1)),
+          ash::ShelfID(app_id1)),
       ash::STATUS_RUNNING);
   EXPECT_EQ(1, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
@@ -4094,23 +4063,19 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
 
   const std::string app_id =
       ArcAppTest::GetAppId(arc_test_.fake_default_apps()[0]);
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(app_id).IsNull());
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(app_id).IsNull());
 
   // Stop ARC again. Shelf item should go away.
   EnablePlayStore(false);
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_TRUE(launcher_controller_->GetShelfIDForAppID(app_id).IsNull());
 
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
 
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(app_id).IsNull());
   EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
 
   std::string window_app_id("org.chromium.arc.1");
@@ -4118,8 +4083,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_default_apps()[0],
                                             std::string());
 
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_FALSE(launcher_controller_->GetShelfIDForAppID(app_id).IsNull());
   EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
 }
 

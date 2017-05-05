@@ -6,6 +6,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
@@ -17,7 +18,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/compositor/layer.h"
@@ -299,24 +299,24 @@ void ShelfWidget::Shutdown() {
 }
 
 void ShelfWidget::UpdateIconPositionForPanel(WmWindow* panel) {
-  if (!shelf_view_)
+  ShelfID* id = panel->aura_window()->GetProperty(kShelfIDKey);
+  if (!shelf_view_ || !id)
     return;
 
   WmWindow* shelf_window = WmWindow::Get(this->GetNativeWindow());
   shelf_view_->UpdatePanelIconPosition(
-      panel->aura_window()->GetProperty(kShelfIDKey),
-      shelf_window->ConvertRectFromScreen(panel->GetBoundsInScreen())
-          .CenterPoint());
+      *id, shelf_window->ConvertRectFromScreen(panel->GetBoundsInScreen())
+               .CenterPoint());
 }
 
 gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
+  ShelfID* id = window->aura_window()->GetProperty(kShelfIDKey);
   // Window animations can be triggered during session restore before the shelf
   // view is created. In that case, return default empty bounds.
-  if (!shelf_view_)
+  if (!shelf_view_ || !id)
     return gfx::Rect();
 
-  ShelfID id = window->aura_window()->GetProperty(kShelfIDKey);
-  gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
+  gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(*id));
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
   return gfx::Rect(screen_origin.x() + bounds.x(),
