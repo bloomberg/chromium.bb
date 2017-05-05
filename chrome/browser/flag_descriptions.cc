@@ -3115,4 +3115,11 @@ const char kEnableHeapProfilingModeNative[] = "Enabled (native mode)";
 
 const char kEnableHeapProfilingTaskProfiler[] = "Enabled (task mode)";
 
+const char kUseSuggestionsEvenIfFewFeatureName[] =
+    "Disable minimum for server-side tile suggestions on NTP.";
+
+const char kUseSuggestionsEvenIfFewFeatureDescription[] =
+    "Request server-side suggestions even if there are only very few of them "
+    "and use them for tiles on the New Tab Page.";
+
 }  // namespace flag_descriptions
