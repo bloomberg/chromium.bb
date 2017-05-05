@@ -6,11 +6,11 @@
 #define ThreadDebugger_h
 
 #include <memory>
-#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/CoreExport.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "platform/Timer.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 #include "v8/include/v8-inspector.h"

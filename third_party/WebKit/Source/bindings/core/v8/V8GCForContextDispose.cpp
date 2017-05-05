@@ -30,7 +30,7 @@
 
 #include "bindings/core/v8/V8GCForContextDispose.h"
 
-#include "bindings/core/v8/V8PerIsolateData.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "public/platform/Platform.h"

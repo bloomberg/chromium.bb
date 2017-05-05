@@ -101,7 +101,7 @@ def attribute_context(interface, attribute, interfaces):
         'SameObject' in attribute.extended_attributes and
         'SaveSameObject' in attribute.extended_attributes)
     if is_save_same_object:
-        includes.add('bindings/core/v8/V8PrivateProperty.h')
+        includes.add('platform/bindings/V8PrivateProperty.h')
 
     if (base_idl_type == 'EventHandler' and
             interface.name in ['Window', 'WorkerGlobalScope'] and
@@ -111,12 +111,12 @@ def attribute_context(interface, attribute, interfaces):
     cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
     keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
     if cached_attribute_validation_method or keep_alive_for_gc:
-        includes.add('bindings/core/v8/V8PrivateProperty.h')
+        includes.add('platform/bindings/V8PrivateProperty.h')
 
     # [CachedAccessor]
     is_cached_accessor = 'CachedAccessor' in extended_attributes
     if is_cached_accessor:
-        includes.add('bindings/core/v8/V8PrivateProperty.h')
+        includes.add('platform/bindings/V8PrivateProperty.h')
 
     context = {
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]

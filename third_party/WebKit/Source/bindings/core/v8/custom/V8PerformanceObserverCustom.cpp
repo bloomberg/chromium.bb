@@ -9,11 +9,11 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Performance.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/PerformanceObserver.h"
 #include "platform/bindings/V8DOMWrapper.h"
+#include "platform/bindings/V8PrivateProperty.h"
 
 namespace blink {
 

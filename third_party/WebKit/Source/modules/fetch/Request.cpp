@@ -5,7 +5,6 @@
 #include "modules/fetch/Request.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/ThreadableLoader.h"
@@ -14,6 +13,7 @@
 #include "modules/fetch/RequestInit.h"
 #include "platform/HTTPNames.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/V8PrivateProperty.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"

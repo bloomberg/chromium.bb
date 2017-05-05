@@ -29,7 +29,6 @@
 #include <memory>
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/ClassicPendingScript.h"
 #include "core/dom/ClassicScript.h"
 #include "core/dom/DocumentParserTiming.h"
@@ -47,6 +46,7 @@
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/bindings/Microtask.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "public/platform/Platform.h"

@@ -56,7 +56,7 @@ INTERFACE_H_INCLUDES = frozenset([
     'bindings/core/v8/ToV8ForCore.h',
     'bindings/core/v8/V8BindingForCore.h',
     'platform/bindings/V8DOMWrapper.h',
-    'bindings/core/v8/WrapperTypeInfo.h',
+    'platform/bindings/WrapperTypeInfo.h',
     'platform/heap/Handle.h',
 ])
 INTERFACE_CPP_INCLUDES = frozenset([
@@ -298,7 +298,7 @@ def interface_context(interface, interfaces):
                             ' specified on partial interface definitions: '
                             '%s' % interface.name)
         if named_constructor:
-            includes.add('bindings/core/v8/V8PrivateProperty.h')
+            includes.add('platform/bindings/V8PrivateProperty.h')
 
         includes.add('platform/bindings/V8ObjectConstructor.h')
         includes.add('core/frame/LocalDOMWindow.h')

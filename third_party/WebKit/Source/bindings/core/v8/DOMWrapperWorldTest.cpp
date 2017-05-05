@@ -6,11 +6,11 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8Initializer.h"
-#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/WebThreadSupportingGC.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"

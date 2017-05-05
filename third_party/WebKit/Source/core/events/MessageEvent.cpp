@@ -27,11 +27,11 @@
 
 #include "core/events/MessageEvent.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
-#include <memory>
+#include "platform/bindings/V8PrivateProperty.h"
 
 namespace blink {
 

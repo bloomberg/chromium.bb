@@ -32,9 +32,9 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
 #include "platform/InstanceCounters.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "v8/include/v8.h"
 
 namespace blink {

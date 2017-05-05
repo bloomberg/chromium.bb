@@ -8,7 +8,6 @@
 #include "bindings/core/v8/V8CustomElementRegistry.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ThrowDOMException.h"
 #include "core/dom/ExceptionCode.h"
@@ -19,6 +18,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8BindingMacros.h"
+#include "platform/bindings/V8PrivateProperty.h"
 #include "platform/wtf/Allocator.h"
 #include "v8.h"
 

@@ -33,9 +33,9 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ErrorEvent.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/bindings/V8PrivateProperty.h"
 
 namespace blink {
 

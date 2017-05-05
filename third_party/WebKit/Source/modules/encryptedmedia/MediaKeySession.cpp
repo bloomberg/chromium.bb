@@ -29,7 +29,6 @@
 #include <limits>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
@@ -46,6 +45,7 @@
 #include "platform/Timer.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/PtrUtil.h"
