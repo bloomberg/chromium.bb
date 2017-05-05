@@ -17,7 +17,9 @@ PaymentRequestRowView::PaymentRequestRowView(views::ButtonListener* listener,
                                              bool clickable)
     : views::CustomButton(listener), clickable_(clickable) {
   SetEnabled(clickable_);
-  SetBorder(payments::CreatePaymentRequestRowBorder());
+  SetBorder(
+      payments::CreatePaymentRequestRowBorder(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SeparatorColor)));
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 }
 

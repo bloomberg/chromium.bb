@@ -44,7 +44,9 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
                                                 DialogViewID amount_label_id) {
   std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
 
-  row->SetBorder(payments::CreatePaymentRequestRowBorder());
+  row->SetBorder(payments::CreatePaymentRequestRowBorder(
+      row->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SeparatorColor)));
 
   views::GridLayout* layout = new views::GridLayout(row.get());
 
