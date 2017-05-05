@@ -1587,7 +1587,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     WebFrameClient* client,
     blink::InterfaceProvider* interface_provider,
     blink::InterfaceRegistry* interface_registry)
-    : WebLocalFrame(scope),
+    : WebLocalFrameBase(scope),
       local_frame_client_impl_(LocalFrameClientImpl::Create(this)),
       frame_widget_(0),
       client_(client),
