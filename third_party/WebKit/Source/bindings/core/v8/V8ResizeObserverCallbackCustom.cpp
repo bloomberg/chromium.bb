@@ -25,7 +25,7 @@ void V8ResizeObserverCallback::handleEvent(
     return;
   ScriptState::Scope scope(script_state_.Get());
 
-  if (m_callback.IsEmpty())
+  if (callback_.IsEmpty())
     return;
 
   v8::Local<v8::Value> observer_handle =
@@ -46,7 +46,7 @@ void V8ResizeObserverCallback::handleEvent(
   v8::TryCatch exception_catcher(script_state_->GetIsolate());
   exception_catcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(
-      m_callback.NewLocal(isolate), ExecutionContext::From(script_state_.Get()),
+      callback_.NewLocal(isolate), ExecutionContext::From(script_state_.Get()),
       this_object, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 

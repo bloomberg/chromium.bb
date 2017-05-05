@@ -36,14 +36,14 @@ class CORE_EXPORT VoidCallbackFunctionTypedef final : public GarbageCollectedFin
   bool call(ScriptWrappable* scriptWrappable, const String& arg);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.NewLocal(isolate);
+    return callback_.NewLocal(isolate);
   }
 
  private:
   VoidCallbackFunctionTypedef(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
-  TraceWrapperV8Reference<v8::Function> m_callback;
+  TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>

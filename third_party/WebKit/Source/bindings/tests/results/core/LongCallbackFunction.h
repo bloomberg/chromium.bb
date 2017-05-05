@@ -36,14 +36,14 @@ class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<
   bool call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.NewLocal(isolate);
+    return callback_.NewLocal(isolate);
   }
 
  private:
   LongCallbackFunction(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
-  TraceWrapperV8Reference<v8::Function> m_callback;
+  TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>

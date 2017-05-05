@@ -11,7 +11,7 @@ namespace blink {
 
 {{v8_class}}::{{v8_class}}(v8::Local<v8::Function> callback, ScriptState* scriptState)
     : script_state_(scriptState) {
-  m_callback.Set(scriptState->GetIsolate(), callback);
+  callback_.Set(scriptState->GetIsolate(), callback);
 }
 
 {{v8_class}}::~{{v8_class}}() {}
@@ -53,7 +53,7 @@ DEFINE_TRACE({{v8_class}}) {
   {% if method.idl_type == 'boolean' %}
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                executionContext,
                                {{this_handle_parameter}},
                                {{method.arguments | length}},
@@ -61,7 +61,7 @@ DEFINE_TRACE({{v8_class}}) {
                                isolate);
   return !exceptionCatcher.HasCaught();
   {% else %}{# void #}
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                ExecutionContext::From(script_state_.Get()),
                                {{this_handle_parameter}},
                                {{method.arguments | length}},

@@ -36,14 +36,14 @@ class CORE_EXPORT AnyCallbackFunctionOptionalAnyArg final : public GarbageCollec
   bool call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue);
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return m_callback.NewLocal(isolate);
+    return callback_.NewLocal(isolate);
   }
 
  private:
   AnyCallbackFunctionOptionalAnyArg(ScriptState*, v8::Local<v8::Function>);
 
   RefPtr<ScriptState> script_state_;
-  TraceWrapperV8Reference<v8::Function> m_callback;
+  TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>

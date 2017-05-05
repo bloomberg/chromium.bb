@@ -25,7 +25,7 @@ namespace blink {
 
 V8TestCallbackInterface::V8TestCallbackInterface(v8::Local<v8::Function> callback, ScriptState* scriptState)
     : script_state_(scriptState) {
-  m_callback.Set(scriptState->GetIsolate(), callback);
+  callback_.Set(scriptState->GetIsolate(), callback);
 }
 
 V8TestCallbackInterface::~V8TestCallbackInterface() {}
@@ -48,7 +48,7 @@ void V8TestCallbackInterface::voidMethod() {
   v8::Local<v8::Value> *argv = 0;
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                ExecutionContext::From(script_state_.Get()),
                                v8::Undefined(isolate),
                                0,
@@ -72,7 +72,7 @@ bool V8TestCallbackInterface::booleanMethod() {
   v8::Isolate* isolate = script_state_->GetIsolate();
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                executionContext,
                                v8::Undefined(isolate),
                                0,
@@ -96,7 +96,7 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
   v8::Local<v8::Value> argv[] = { boolArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                ExecutionContext::From(script_state_.Get()),
                                v8::Undefined(isolate),
                                1,
@@ -119,7 +119,7 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
   v8::Local<v8::Value> argv[] = { sequenceArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                ExecutionContext::From(script_state_.Get()),
                                v8::Undefined(isolate),
                                1,
@@ -142,7 +142,7 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
   v8::Local<v8::Value> argv[] = { floatArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                ExecutionContext::From(script_state_.Get()),
                                v8::Undefined(isolate),
                                1,
@@ -165,7 +165,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                ExecutionContext::From(script_state_.Get()),
                                v8::Undefined(isolate),
                                1,
@@ -189,7 +189,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle, stringArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                ExecutionContext::From(script_state_.Get()),
                                v8::Undefined(isolate),
                                2,
@@ -213,7 +213,7 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
   v8::Local<v8::Value> argv[] = { stringArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                ExecutionContext::From(script_state_.Get()),
                                thisHandle,
                                1,
