@@ -120,6 +120,9 @@ class NotificationBridge;
 // Called by the |locationBar_| when it has been added to its window.
 - (void)locationBarWasAddedToWindow;
 
+// Return YES if the location bar is the first responder.
+- (BOOL)locationBarHasFocus;
+
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar:(BOOL)selectAll;
 
