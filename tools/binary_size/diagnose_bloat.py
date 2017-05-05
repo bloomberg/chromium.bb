@@ -296,20 +296,10 @@ class _BuildArchive(object):
     """Save build artifacts necessary for diffing."""
     logging.info('Saving build results to: %s', self.dir)
     _EnsureDirsExist(self.dir)
-    build = self.build
-    self._ArchiveFile(build.abs_main_lib_path)
-    tool_prefix = _FindToolPrefix(build.output_directory)
-    size_path = os.path.join(self.dir, build.size_name)
-    supersize_cmd = [supersize_path, 'archive', size_path, '--elf-file',
-                     build.abs_main_lib_path, '--tool-prefix', tool_prefix,
-                     '--output-directory', build.output_directory,
-                     '--no-source-paths']
-    if build.IsAndroid():
-      supersize_cmd += ['--apk-file', build.abs_apk_path]
-      self._ArchiveFile(build.abs_apk_path)
-
-    logging.info('Creating .size file')
-    _RunCmd(supersize_cmd)
+    self._ArchiveFile(self.build.abs_main_lib_path)
+    if self.build.IsAndroid():
+      self._ArchiveFile(self.build.abs_apk_path)
+    self._ArchiveSizeFile(supersize_path)
     self.metadata.Write()
 
   def Exists(self):
@@ -319,6 +309,24 @@ class _BuildArchive(object):
     if not os.path.exists(filename):
       _Die('missing expected file: %s', filename)
     shutil.copy(filename, self.dir)
+
+  def _ArchiveSizeFile(self, supersize_path):
+    existing_size_file = self.build.abs_apk_path + '.size'
+    if os.path.exists(existing_size_file):
+      logging.info('Found existing .size file')
+      os.rename(
+          existing_size_file, os.path.join(self.dir, self.build.size_name))
+    else:
+      tool_prefix = _FindToolPrefix(self.build.output_directory)
+      size_path = os.path.join(self.dir, self.build.size_name)
+      supersize_cmd = [supersize_path, 'archive', size_path, '--elf-file',
+                       self.build.abs_main_lib_path, '--tool-prefix',
+                       tool_prefix, '--output-directory',
+                       self.build.output_directory, '--no-source-paths']
+      if self.build.IsAndroid():
+        supersize_cmd += ['--apk-file', self.build.abs_apk_path]
+      logging.info('Creating .size file')
+      _RunCmd(supersize_cmd)
 
 
 class _DiffArchiveManager(object):
@@ -609,7 +617,7 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
   # Files needed for supersize and resource_sizes. Paths relative to out dir.
   to_extract = [build.main_lib_path, build.map_file_path, 'args.gn']
   if build.IsAndroid():
-    to_extract += ['build_vars.txt', build.apk_path]
+    to_extract += ['build_vars.txt', build.apk_path, build.apk_path + '.size']
   extract_dir = dl_dst + '_' + 'unzipped'
   # Storage bucket stores entire output directory including out/Release prefix.
   logging.info('Extracting build artifacts')
@@ -622,12 +630,14 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
 
 
 def _ExtractFiles(to_extract, prefix, dst, z):
-  zip_infos = z.infolist()
-  assert all(info.filename.startswith(prefix) for info in zip_infos), (
+  """Extract prefixed files in |to_extract| from |z| if they exist."""
+  zipped_names = z.namelist()
+  assert all(name.startswith(prefix) for name in zipped_names), (
       'Storage bucket folder structure doesn\'t start with %s' % prefix)
   to_extract = [os.path.join(prefix, f) for f in to_extract]
   for f in to_extract:
-    z.extract(f, path=dst)
+    if f in zipped_names:
+      z.extract(f, path=dst)
 
 
 def _PrintAndWriteToFile(logfile, s, *args, **kwargs):
