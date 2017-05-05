@@ -233,7 +233,7 @@ CrSettingsPeoplePageQuickUnlockAuthenticateTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageQuickUnlockAuthenticateTest', 'Test', function() {
+TEST_F('CrSettingsPeoplePageQuickUnlockAuthenticateTest', 'All', function() {
   settings_people_page_quick_unlock.registerAuthenticateTests();
   mocha.run();
 });
@@ -264,7 +264,7 @@ CrSettingsPeoplePageLockScreenTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageLockScreenTest', 'Test', function() {
+TEST_F('CrSettingsPeoplePageLockScreenTest', 'All', function() {
   settings_people_page_quick_unlock.registerLockScreenTests();
   mocha.run();
 });
@@ -295,7 +295,7 @@ CrSettingsPeoplePageSetupPinDialogTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageSetupPinDialogTest', 'Test', function() {
+TEST_F('CrSettingsPeoplePageSetupPinDialogTest', 'All', function() {
   settings_people_page_quick_unlock.registerSetupPinDialogTests();
   mocha.run();
 });
@@ -324,8 +324,7 @@ CrSettingsFingerprintProgressArcTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsFingerprintProgressArcTest', 'FingerprintProgressArcTest',
-    function() {
+TEST_F('CrSettingsFingerprintProgressArcTest', 'All', function() {
   mocha.run();
 });
 
@@ -352,7 +351,7 @@ CrSettingsFingerprintListTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsFingerprintListTest', 'FingerprintListTest', function() {
+TEST_F('CrSettingsFingerprintListTest', 'All', function() {
   mocha.run();
 });
 
@@ -378,7 +377,7 @@ CrSettingsPeoplePageChangePictureTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageChangePictureTest', 'ChangePicture', function() {
+TEST_F('CrSettingsPeoplePageChangePictureTest', 'All', function() {
   settings_people_page_change_picture.registerTests();
   mocha.run();
 });
@@ -405,7 +404,7 @@ CrSettingsPeoplePageManageProfileTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageManageProfileTest', 'ManageProfile', function() {
+TEST_F('CrSettingsPeoplePageManageProfileTest', 'All', function() {
   settings_people_page_manage_profile.registerTests();
   mocha.run();
 });
@@ -432,7 +431,7 @@ CrSettingsPeoplePageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageTest', 'PeoplePage', function() {
+TEST_F('CrSettingsPeoplePageTest', 'All', function() {
   settings_people_page.registerTests();
   mocha.run();
 });
@@ -458,7 +457,7 @@ CrSettingsPeoplePageSyncPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageSyncPageTest', 'SyncPage', function() {
+TEST_F('CrSettingsPeoplePageSyncPageTest', 'All', function() {
   settings_people_page_sync_page.registerTests();
   mocha.run();
 });
@@ -481,7 +480,7 @@ CrSettingsRtlTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsRtlTest', 'DrawerPanelFlips', function() {
+TEST_F('CrSettingsRtlTest', 'All', function() {
   settingsHidePagesByDefaultForTest = true;
   settings_rtl_tests.registerDrawerPanelTests();
   mocha.run();
@@ -509,7 +508,7 @@ CrSettingsResetPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsResetPageTest', 'ResetPage', function() {
+TEST_F('CrSettingsResetPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -535,7 +534,7 @@ CrSettingsResetProfileBannerTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsResetProfileBannerTest', 'ResetProfileBanner', function() {
+TEST_F('CrSettingsResetProfileBannerTest', 'All', function() {
   mocha.run();
 });
 
@@ -634,7 +633,7 @@ CrSettingsDefaultBrowserTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsDefaultBrowserTest', 'DefaultBrowserPage', function() {
+TEST_F('CrSettingsDefaultBrowserTest', 'All', function() {
   settings_default_browser.registerTests();
   mocha.run();
 });
@@ -686,7 +685,7 @@ CrSettingsSearchPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSearchPageTest', 'SearchPage', function() {
+TEST_F('CrSettingsSearchPageTest', 'All', function() {
   settings_search_page.registerTests();
   mocha.run();
 });
@@ -714,7 +713,7 @@ CrSettingsSearchEnginesTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSearchEnginesTest', 'SearchEngines', function() {
+TEST_F('CrSettingsSearchEnginesTest', 'All', function() {
   settings_search_engines_page.registerTests();
   mocha.run();
 });
@@ -742,7 +741,7 @@ CrSettingsCertificateManagerTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCertificateManagerTest', 'CertificateManager', function() {
+TEST_F('CrSettingsCertificateManagerTest', 'All', function() {
   certificate_manager_page.registerTests();
   mocha.run();
 });
@@ -771,7 +770,7 @@ CrSettingsPrivacyPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPage', function() {
+TEST_F('CrSettingsPrivacyPageTest', 'All', function() {
   settings_privacy_page.registerTests();
   mocha.run();
 });
@@ -801,7 +800,7 @@ CrSettingsSiteDataDetailsTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSiteDataDetailsTest', 'SiteSettings', function() {
+TEST_F('CrSettingsSiteDataDetailsTest', 'All', function() {
   mocha.run();
 });
 
@@ -825,11 +824,9 @@ CrSettingsCategoryDefaultSettingTest.prototype = {
   ]),
 };
 
-TEST_F(
-    'CrSettingsCategoryDefaultSettingTest', 'CategoryDefaultSetting',
-    function() {
-      mocha.run();
-    });
+TEST_F('CrSettingsCategoryDefaultSettingTest', 'All', function() {
+  mocha.run();
+});
 
 /**
  * @constructor
@@ -851,11 +848,9 @@ CrSettingsCategorySettingExceptionsTest.prototype = {
   ]),
 };
 
-TEST_F(
-    'CrSettingsCategorySettingExceptionsTest', 'CategorySettingExceptions',
-    function() {
-      mocha.run();
-    });
+TEST_F('CrSettingsCategorySettingExceptionsTest', 'All', function() {
+  mocha.run();
+});
 
 /**
  * @constructor
@@ -877,7 +872,7 @@ CrSettingsSiteDetailsTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSiteDetailsTest', 'SiteDetails', function() {
+TEST_F('CrSettingsSiteDetailsTest', 'All', function() {
   mocha.run();
 });
 
@@ -901,10 +896,9 @@ CrSettingsSiteDetailsPermissionTest.prototype = {
   ]),
 };
 
-TEST_F(
-    'CrSettingsSiteDetailsPermissionTest', 'SiteDetailsPermission', function() {
-      mocha.run();
-    });
+TEST_F('CrSettingsSiteDetailsPermissionTest', 'All', function() {
+  mocha.run();
+});
 
 /**
  * @constructor
@@ -963,7 +957,7 @@ CrSettingsZoomLevelsTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsZoomLevelsTest', 'ZoomLevels', function() {
+TEST_F('CrSettingsZoomLevelsTest', 'All', function() {
   mocha.run();
 });
 
@@ -987,7 +981,7 @@ CrSettingsUsbDevicesTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsUsbDevicesTest', 'UsbDevices', function() {
+TEST_F('CrSettingsUsbDevicesTest', 'All', function() {
   mocha.run();
 });
 
@@ -1011,7 +1005,7 @@ CrSettingsProtocolHandlersTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsProtocolHandlersTest', 'ProtocolHandlers', function() {
+TEST_F('CrSettingsProtocolHandlersTest', 'All', function() {
   mocha.run();
 });
 
@@ -1108,7 +1102,7 @@ CrSettingsBluetoothPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsBluetoothPageTest', 'BluetoothPageTest', function() {
+TEST_F('CrSettingsBluetoothPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -1134,7 +1128,7 @@ CrSettingsInternetPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsInternetPageTest', 'InternetPageTest', function() {
+TEST_F('CrSettingsInternetPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -1183,7 +1177,7 @@ CrSettingsSubpageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSubpageTest', 'SettingsSubpage', function() {
+TEST_F('CrSettingsSubpageTest', 'All', function() {
   mocha.run();
 });
 
@@ -1230,7 +1224,7 @@ CrSettingsStartupUrlsPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsStartupUrlsPageTest', 'StartupUrlsPage', function() {
+TEST_F('CrSettingsStartupUrlsPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -1258,7 +1252,7 @@ CrSettingsEditDictionaryPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsEditDictionaryPageTest', 'EditDictionaryPage', function() {
+TEST_F('CrSettingsEditDictionaryPageTest', 'All', function() {
   mocha.run();
 });
 GEN('#endif');
@@ -1287,7 +1281,7 @@ CrSettingsLanguagesTest.prototype = {
 };
 
 // Flaky on Win and Linux, see http://crbug/692356.
-TEST_F('CrSettingsLanguagesTest', 'Languages', function() {
+TEST_F('CrSettingsLanguagesTest', 'All', function() {
   mocha.run();
 });
 
@@ -1540,7 +1534,7 @@ CrSettingsPrintingPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPrintingPageTest', 'CupsPrintersTest', function() {
+TEST_F('CrSettingsPrintingPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -1569,7 +1563,7 @@ CrSettingsAndroidAppsPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsAndroidAppsPageTest', 'AndroidAppsPageTest', function() {
+TEST_F('CrSettingsAndroidAppsPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -1592,7 +1586,7 @@ CrSettingsDateTimePageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsDateTimePageTest', 'DateTimePageTest', function() {
+TEST_F('CrSettingsDateTimePageTest', 'All', function() {
   mocha.run();
 });
 
