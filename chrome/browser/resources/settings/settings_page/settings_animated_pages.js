@@ -121,8 +121,8 @@ Polymer({
     if (newRoute.section == this.section && newRoute.isSubpage()) {
       this.switchToSubpage_(newRoute, oldRoute);
     } else {
-      this.$.animatedPages.exitAnimation = 'fade-out-animation';
-      this.$.animatedPages.entryAnimation = 'fade-in-animation';
+      this.$.animatedPages.exitAnimation = 'settings-fade-out-animation';
+      this.$.animatedPages.entryAnimation = 'settings-fade-in-animation';
       this.$.animatedPages.selected = 'default';
     }
   },
@@ -154,8 +154,8 @@ Polymer({
         this.$.animatedPages.entryAnimation = 'slide-from-left-animation';
       } else {
         // The old route is not a subpage or is at the same level, so just fade.
-        this.$.animatedPages.exitAnimation = 'fade-out-animation';
-        this.$.animatedPages.entryAnimation = 'fade-in-animation';
+        this.$.animatedPages.exitAnimation = 'settings-fade-out-animation';
+        this.$.animatedPages.entryAnimation = 'settings-fade-in-animation';
 
         if (!oldRoute.isSubpage()) {
           // Set the height the expand animation should start at before
