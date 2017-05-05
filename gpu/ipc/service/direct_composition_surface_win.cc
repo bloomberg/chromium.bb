@@ -30,6 +30,7 @@
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_dxgi.h"
+#include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_make_current.h"
 
@@ -256,6 +257,8 @@ class DCLayerTree::SwapChainPresenter {
   using PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE =
       HRESULT(WINAPI*)(DWORD, SECURITY_ATTRIBUTES*, HANDLE*);
 
+  bool UploadVideoImages(gl::GLImageMemory* y_image_memory,
+                         gl::GLImageMemory* uv_image_memory);
   // Returns true if the video processor changed.
   bool InitializeVideoProcessor(const gfx::Size& in_size,
                                 const gfx::Size& out_size);
@@ -279,8 +282,11 @@ class DCLayerTree::SwapChainPresenter {
   bool failed_to_create_yuy2_swapchain_ = false;
   int frames_since_color_space_change_ = 0;
 
-  // This is the GLImage that was presented in the last frame.
-  scoped_refptr<gl::GLImageDXGI> last_gl_image_;
+  // These are the GLImages that were presented in the last frame.
+  std::vector<scoped_refptr<gl::GLImage>> last_gl_images_;
+
+  base::win::ScopedComPtr<ID3D11Texture2D> staging_texture_;
+  gfx::Size staging_texture_size_;
 
   base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
   base::win::ScopedComPtr<IDXGISwapChain1> swap_chain_;
@@ -392,11 +398,89 @@ bool DCLayerTree::SwapChainPresenter::ShouldBeYUY2() {
   }
 }
 
+bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
+    gl::GLImageMemory* y_image_memory,
+    gl::GLImageMemory* uv_image_memory) {
+  gfx::Size texture_size = y_image_memory->GetSize();
+  gfx::Size uv_image_size = uv_image_memory->GetSize();
+  if (uv_image_size.height() != texture_size.height() / 2 ||
+      uv_image_size.width() != texture_size.width() / 2 ||
+      y_image_memory->format() != gfx::BufferFormat::R_8 ||
+      uv_image_memory->format() != gfx::BufferFormat::RG_88) {
+    DVLOG(ERROR) << "Invalid NV12 GLImageMemory properties.";
+    return false;
+  }
+
+  if (!staging_texture_ || (staging_texture_size_ != texture_size)) {
+    staging_texture_.Reset();
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = texture_size.width();
+    desc.Height = texture_size.height();
+    desc.Format = DXGI_FORMAT_NV12;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+
+    // This isn't actually bound to a decoder, but dynamic textures need
+    // BindFlags to be nonzero and D3D11_BIND_DECODER also works when creating
+    // a VideoProcessorInputView.
+    desc.BindFlags = D3D11_BIND_DECODER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    desc.MiscFlags = 0;
+    desc.SampleDesc.Count = 1;
+    base::win::ScopedComPtr<ID3D11Texture2D> texture;
+    HRESULT hr = d3d11_device_->CreateTexture2D(&desc, nullptr,
+                                                staging_texture_.Receive());
+    CHECK(SUCCEEDED(hr)) << "Creating D3D11 video upload texture failed: "
+                         << std::hex << hr;
+    staging_texture_size_ = texture_size;
+  }
+  base::win::ScopedComPtr<ID3D11DeviceContext> context;
+  d3d11_device_->GetImmediateContext(context.Receive());
+  D3D11_MAPPED_SUBRESOURCE mapped_resource;
+  HRESULT hr = context->Map(staging_texture_.Get(), 0, D3D11_MAP_WRITE_DISCARD,
+                            0, &mapped_resource);
+  CHECK(SUCCEEDED(hr)) << "Mapping D3D11 video upload texture failed: "
+                       << std::hex << hr;
+
+  size_t dest_stride = mapped_resource.RowPitch;
+  for (int y = 0; y < texture_size.height(); y++) {
+    const uint8_t* y_source =
+        y_image_memory->memory() + y * y_image_memory->stride();
+    uint8_t* dest =
+        reinterpret_cast<uint8_t*>(mapped_resource.pData) + dest_stride * y;
+    memcpy(dest, y_source, texture_size.width());
+  }
+
+  uint8_t* uv_dest_plane_start =
+      reinterpret_cast<uint8_t*>(mapped_resource.pData) +
+      dest_stride * texture_size.height();
+  for (int y = 0; y < uv_image_size.height(); y++) {
+    const uint8_t* uv_source =
+        uv_image_memory->memory() + y * uv_image_memory->stride();
+    uint8_t* dest = uv_dest_plane_start + dest_stride * y;
+    memcpy(dest, uv_source, texture_size.width());
+  }
+  context->Unmap(staging_texture_.Get(), 0);
+  return true;
+}
+
 void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     const ui::DCRendererLayerParams& params) {
   gl::GLImageDXGI* image_dxgi =
       gl::GLImageDXGI::FromGLImage(params.image[0].get());
-  DCHECK(image_dxgi);
+  gl::GLImageMemory* y_image_memory = nullptr;
+  gl::GLImageMemory* uv_image_memory = nullptr;
+  if (params.image.size() >= 2) {
+    y_image_memory = gl::GLImageMemory::FromGLImage(params.image[0].get());
+    uv_image_memory = gl::GLImageMemory::FromGLImage(params.image[1].get());
+  }
+
+  if (!image_dxgi && (!y_image_memory || !uv_image_memory)) {
+    DLOG(ERROR) << "Video GLImages are missing";
+    last_gl_images_.clear();
+    return;
+  }
 
   // Swap chain size is the minimum of the on-screen size and the source
   // size so the video processor can do the minimal amount of work and
@@ -423,14 +507,30 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     swap_chain_size_ = swap_chain_size;
     swap_chain_.Reset();
     ReallocateSwapChain(yuy2_swapchain);
-  } else if (last_gl_image_ == image_dxgi) {
-    // The swap chain is presenting the same image as last swap, which means
-    // that the image was never returned to the video decoder and should have
-    // the same contents as last time. It shouldn't need to be redrawn.
+  } else if (last_gl_images_ == params.image) {
+    // The swap chain is presenting the same images as last swap, which means
+    // that the images were never returned to the video decoder and should
+    // have the same contents as last time. It shouldn't need to be redrawn.
     return;
   }
 
-  last_gl_image_ = image_dxgi;
+  last_gl_images_ = params.image;
+
+  base::win::ScopedComPtr<ID3D11Texture2D> input_texture;
+  UINT input_level;
+  if (image_dxgi) {
+    input_texture = image_dxgi->texture();
+    input_level = (UINT)image_dxgi->level();
+    staging_texture_.Reset();
+  } else {
+    DCHECK(y_image_memory);
+    DCHECK(uv_image_memory);
+    if (!UploadVideoImages(y_image_memory, uv_image_memory))
+      return;
+    DCHECK(staging_texture_);
+    input_texture = staging_texture_;
+    input_level = 0;
+  }
 
   if (!out_view_) {
     base::win::ScopedComPtr<ID3D11Texture2D> texture;
@@ -487,11 +587,11 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   {
     D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC in_desc = {};
     in_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
-    in_desc.Texture2D.ArraySlice = (UINT)image_dxgi->level();
+    in_desc.Texture2D.ArraySlice = input_level;
     base::win::ScopedComPtr<ID3D11VideoProcessorInputView> in_view;
     HRESULT hr = video_device_->CreateVideoProcessorInputView(
-        image_dxgi->texture().Get(), video_processor_enumerator_.Get(),
-        &in_desc, in_view.Receive());
+        input_texture.Get(), video_processor_enumerator_.Get(), &in_desc,
+        in_view.Receive());
     CHECK(SUCCEEDED(hr));
 
     D3D11_VIDEO_PROCESSOR_STREAM stream = {};
@@ -809,8 +909,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
     VisualInfo* visual_info = &visual_info_[i];
 
     InitVisual(i);
-    if (params.image.size() > 0 && params.image[0] &&
-        params.image[0]->GetType() == gl::GLImage::Type::DXGI_IMAGE) {
+    if (params.image.size() >= 1 && params.image[0]) {
       UpdateVisualForVideo(visual_info, params);
     } else if (params.image.empty()) {
       UpdateVisualForBackbuffer(visual_info, params);
