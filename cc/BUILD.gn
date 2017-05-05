@@ -942,7 +942,6 @@ cc_test("cc_perftests") {
     "//cc/ipc",
     "//cc/ipc:interfaces",
     "//cc/paint",
-    "//cc/paint",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//gpu",
