@@ -133,16 +133,11 @@ void ClearCountryValue() {
 
 // Helper to open the settings page for the record with |address|.
 - (void)openEditAddress:(NSString*)address {
-  // Open settings and verify data in the view controller.
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   NSString* label = l10n_util::GetNSString(IDS_IOS_AUTOFILL);
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(label)]
       performAction:grey_tap()];
 
-  // Tap on the 'George Washington' result.
   NSString* cellLabel = address;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(cellLabel)]
       performAction:grey_tap()];

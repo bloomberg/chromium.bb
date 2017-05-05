@@ -145,13 +145,7 @@ void MockSignIn() {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
-  [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-         usingSearchAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)
-      onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
-      performAction:grey_tap()];
-
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(kSettingsSignInCellId)]
       performAction:grey_tap()];

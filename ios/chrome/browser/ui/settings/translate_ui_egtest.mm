@@ -35,13 +35,7 @@ const CGFloat kScrollDisplacement = 50.0;
   // Open translate settings.
   // TODO(crbug.com/606815): This and close settings is mostly shared with block
   // popups settings tests, and others. See if this can move to shared code.
-  [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollDisplacement)
-      onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_CONTENT_SETTINGS_TITLE)]

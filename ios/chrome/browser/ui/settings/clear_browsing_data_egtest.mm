@@ -27,10 +27,7 @@ using chrome_test_util::NavigationBarDoneButton;
 @implementation ClearBrowsingDataSettingsTestCase
 
 - (void)openClearBrowsingDataDialog {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   NSString* settingsLabel =
       l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
   [[EarlGrey

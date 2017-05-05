@@ -54,16 +54,7 @@ ChromeIdentity* GetFakeIdentity1() {
 // User must not be signed in.
 // TODO(crbug.com/638674): Evaluate if this can move to shared code.
 void OpenSignInFromSettings() {
-  const CGFloat scroll_displacement = 50.0;
-
-  [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
-      performAction:grey_tap()];
-
+  [ChromeEarlGreyUI openSettingsMenu];
   id<GREYMatcher> matcher =
       grey_allOf(grey_accessibilityID(kSettingsSignInCellId),
                  grey_sufficientlyVisible(), nil);

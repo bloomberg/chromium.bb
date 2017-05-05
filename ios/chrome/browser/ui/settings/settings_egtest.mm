@@ -103,10 +103,6 @@ id<GREYMatcher> ClearBrowsingDataButton() {
 id<GREYMatcher> ConfirmClearBrowsingDataButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CONFIRM_CLEAR_BUTTON);
 }
-// Matcher for the Settings button in the tools menu.
-id<GREYMatcher> SettingsButton() {
-  return grey_accessibilityID(kToolsMenuSettingsId);
-}
 // Matcher for the Save Passwords cell on the main Settings screen.
 id<GREYMatcher> PasswordsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_SAVE_PASSWORDS);
@@ -253,18 +249,10 @@ bool IsCertificateCleared() {
 // until the bottom.
 - (void)openSubSettingMenu:(id<GREYMatcher>)settingToTap {
   const CGFloat kScrollDisplacement = 150.0;
-  id<GREYMatcher> toolsMenuTableViewMatcher =
-      grey_accessibilityID(kToolsMenuTableViewId);
-  id<GREYMatcher> settingsButtonMatcher =
-      grey_accessibilityID(kToolsMenuSettingsId);
   id<GREYMatcher> settingsCollectionViewMatcher =
       grey_accessibilityID(kSettingsCollectionViewId);
 
-  [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey selectElementWithMatcher:settingsButtonMatcher]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollDisplacement)
-      onElementWithMatcher:toolsMenuTableViewMatcher] performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[[EarlGrey selectElementWithMatcher:settingToTap]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   kScrollDisplacement)
@@ -306,9 +294,7 @@ bool IsCertificateCleared() {
 
 // From the NTP, clears the cookies and site data via the UI.
 - (void)clearCookiesAndSiteData {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:PrivacyButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:ClearBrowsingDataCell()]
@@ -329,9 +315,7 @@ bool IsCertificateCleared() {
 
 // From the NTP, clears the saved passwords via the UI.
 - (void)clearPasswords {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:PrivacyButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:ClearBrowsingDataCell()]
@@ -409,9 +393,7 @@ bool IsCertificateCleared() {
 // If |saved| is YES, it checks that there is a Saved Passwords section.
 // If |saved| is NO, it checks that there is no Saved Passwords section.
 - (void)checkIfPasswordsSaved:(BOOL)saved {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:PasswordsButton()]
       performAction:grey_tap()];
 
@@ -455,10 +437,7 @@ bool IsCertificateCleared() {
 // Opens the passwords page from the NTP. It requires no menus to be open.
 - (void)openPasswordSettings {
   // Open settings and verify data in the view controller.
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:PasswordsButton()]
       performAction:grey_tap()];
 }
@@ -776,9 +755,7 @@ bool IsCertificateCleared() {
 - (void)testSettingsSignedOutIncognito {
   chrome_test_util::OpenNewIncognitoTab();
 
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
       assertWithMatcher:grey_notNil()];
@@ -790,9 +767,7 @@ bool IsCertificateCleared() {
 
 // Verifies the UI elements are accessible on the Settings page.
 - (void)testAccessibilityOnSettingsPage {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
@@ -880,9 +855,7 @@ bool IsCertificateCleared() {
 
 // Verifies the UI elements are accessible on the Save Passwords page.
 - (void)testAccessibilityOnSavePasswords {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:PasswordsButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
@@ -891,9 +864,7 @@ bool IsCertificateCleared() {
 
 // Verifies the UI elements are accessible on the Search engine page.
 - (void)testAccessibilityOnSearchEngine {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SearchEngineButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
@@ -902,9 +873,7 @@ bool IsCertificateCleared() {
 
 // Verifies the UI elements are accessible on the Autofill Forms page.
 - (void)testAccessibilityOnAutofillForms {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:AutofillButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
@@ -916,11 +885,7 @@ bool IsCertificateCleared() {
   // TODO(crbug/711511): Remove when Native App Launcher is full deprecated.
   if (!experimental_flags::IsNativeAppLauncherEnabled())
     return;
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:GoogleAppsButton()]
-      performAction:grey_tap()];
+  [self openSubSettingMenu:GoogleAppsButton()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
 }
@@ -987,10 +952,7 @@ bool IsCertificateCleared() {
 // Verifies that the Settings UI registers keyboard commands when presented, but
 // not when it itslef presents something.
 - (void)testSettingsKeyboardCommands {
-  // Open Settings.
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
       assertWithMatcher:grey_notNil()];
@@ -1030,9 +992,7 @@ bool IsCertificateCleared() {
 
 // Verifies the UI elements are accessible on the Send Usage Data page.
 - (void)testAccessibilityOnSendUsageData {
-  [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:PrivacyButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SendUsageDataButton()]
