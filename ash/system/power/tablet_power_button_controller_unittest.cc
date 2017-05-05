@@ -141,7 +141,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
 TEST_F(TabletPowerButtonControllerTest, LockScreenIfRequired) {
   Initialize(LoginStatus::USER);
   SetShouldLockScreenAutomatically(true);
-  EXPECT_FALSE(GetLockedState());
+  ASSERT_FALSE(GetLockedState());
 
   // On User logged in status, power-button-press-release should lock screen if
   // automatic screen-locking was requested.
@@ -261,7 +261,7 @@ TEST_F(TabletPowerButtonControllerTest,
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
-  EXPECT_TRUE(GetBacklightsForcedOff());
+  ASSERT_TRUE(GetBacklightsForcedOff());
   power_manager_client_->SendSuspendImminent();
   // There is a power button pressed here, but PowerButtonEvent is sent later.
   // Because of backlights forced off, resuming system will not restore
@@ -298,7 +298,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
-  EXPECT_TRUE(GetBacklightsForcedOff());
+  ASSERT_TRUE(GetBacklightsForcedOff());
   generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_FALSE(GetBacklightsForcedOff());
@@ -307,7 +307,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
-  EXPECT_TRUE(GetBacklightsForcedOff());
+  ASSERT_TRUE(GetBacklightsForcedOff());
   generator_->MoveMouseBy(1, 1);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_FALSE(GetBacklightsForcedOff());
@@ -316,7 +316,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
-  EXPECT_TRUE(GetBacklightsForcedOff());
+  ASSERT_TRUE(GetBacklightsForcedOff());
   generator_->set_flags(ui::EF_IS_SYNTHESIZED);
   generator_->MoveMouseBy(1, 1);
   generator_->set_flags(ui::EF_NONE);
@@ -331,7 +331,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnMaximizeMode) {
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
-  EXPECT_TRUE(GetBacklightsForcedOff());
+  ASSERT_TRUE(GetBacklightsForcedOff());
   generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
   EXPECT_TRUE(GetBacklightsForcedOff());
 
@@ -350,6 +350,7 @@ TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
   // There are two |power_key_pressed| events and |power_key_released| events
   // generated for each pressing and releasing, and multiple repeating pressed
   // events depending on holding.
+  ASSERT_EQ(0, power_manager_client_->num_set_backlights_forced_off_calls());
   tablet_controller_->OnKeyEvent(&power_key_pressed);
   tablet_controller_->OnKeyEvent(&power_key_pressed);
   PressPowerButton();
@@ -364,10 +365,10 @@ TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
 
 // Tests that under (1) tablet power button pressed/released, (2) keyboard/mouse
 // events on laptop mode when screen is off, requesting/stopping backlights
-// forced off should also set corresponding touch screen state in local pref.
-TEST_F(TabletPowerButtonControllerTest, TouchScreenState) {
+// forced off should also set corresponding touchscreen state in local pref.
+TEST_F(TabletPowerButtonControllerTest, TouchscreenState) {
   // Tests tablet power button.
-  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+  ASSERT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
@@ -383,8 +384,8 @@ TEST_F(TabletPowerButtonControllerTest, TouchScreenState) {
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
-  EXPECT_TRUE(GetBacklightsForcedOff());
-  EXPECT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+  ASSERT_TRUE(GetBacklightsForcedOff());
+  ASSERT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
   generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
@@ -393,8 +394,8 @@ TEST_F(TabletPowerButtonControllerTest, TouchScreenState) {
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
-  EXPECT_TRUE(GetBacklightsForcedOff());
-  EXPECT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+  ASSERT_TRUE(GetBacklightsForcedOff());
+  ASSERT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
   generator_->MoveMouseBy(1, 1);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
   EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
@@ -406,7 +407,7 @@ TEST_F(TabletPowerButtonControllerTest,
        EnterOrLeaveMaximizeModeWhilePressingPowerButton) {
   Initialize(LoginStatus::USER);
   SetShouldLockScreenAutomatically(true);
-  EXPECT_FALSE(GetLockedState());
+  ASSERT_FALSE(GetLockedState());
 
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
@@ -457,7 +458,7 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, false);
-  EXPECT_TRUE(GetBacklightsForcedOff());
+  ASSERT_TRUE(GetBacklightsForcedOff());
 
   // Test that a pressing-releasing operation after a short duration, backlights
   // forced off is stopped since we don't drop request for power button pressed.
