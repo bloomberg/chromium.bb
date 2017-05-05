@@ -57,17 +57,20 @@ test(function() {
   assert_not_equals(anchor, undefined);
   var target = anchor.inPageLinkTarget;
   assert_not_equals(target, undefined);
-  assert_equals(target.role, 'AXRole: AXStaticText');
-  assert_equals(target.name, 'After empty span');
-}, 'Test finding an approximate target when the real one is an empty span.');
+  assert_equals(target.role, 'AXRole: AXGroup');
+  assert_equals(target.name, '');
+}, 'Test finding the target when it is an empty span.');
 
 test(function() {
   var anchor = accessibilityController.accessibleElementById('anchor5');
   assert_not_equals(anchor, undefined);
   var target = anchor.inPageLinkTarget;
   assert_not_equals(target, undefined);
-  assert_equals(target.role, 'AXRole: AXStaticText');
-  assert_equals(target.name, 'Span with content');
+  assert_equals(target.role, 'AXRole: AXGroup');
+  var child = target.childAtIndex(0);
+  assert_not_equals(child, undefined);
+  assert_equals(child.role, 'AXRole: AXStaticText');
+  assert_equals(child.name, 'Span with content');
 }, 'Test finding the target when it is a span with content.');
 
 test(function() {

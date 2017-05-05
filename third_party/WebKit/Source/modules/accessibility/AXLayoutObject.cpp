@@ -298,9 +298,10 @@ AccessibilityRole AXLayoutObject::DetermineAccessibilityRole() {
   if (layout_object_->IsLayoutBlockFlow())
     return kGroupRole;
 
-  // If the element does not have role, but it has ARIA attributes,
-  // accessibility should fallback to exposing it as a group.
-  if (SupportsARIAAttributes())
+  // If the element does not have role, but it has ARIA attributes or is an
+  // in-page link target, accessibility should fallback to exposing it as a
+  // group.
+  if (IsInPageLinkTarget() || SupportsARIAAttributes())
     return kGroupRole;
 
   return kUnknownRole;

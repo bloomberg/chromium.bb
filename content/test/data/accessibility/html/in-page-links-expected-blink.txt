@@ -8,10 +8,10 @@ rootWebArea
 ++link name='Anchor with ID' inPageLinkTargetId=anchor
 ++++staticText name='Anchor with ID'
 ++++++inlineTextBox name='Anchor with ID'
-++link name='Empty span' inPageLinkTargetId=staticText
+++link name='Empty span' inPageLinkTargetId=group
 ++++staticText name='Empty span'
 ++++++inlineTextBox name='Empty span'
-++link name='Span with content' inPageLinkTargetId=staticText
+++link name='Span with content' inPageLinkTargetId=group
 ++++staticText name='Span with content'
 ++++++inlineTextBox name='Span with content'
 ++link name='Paragraph with content' inPageLinkTargetId=paragraph
@@ -30,11 +30,13 @@ rootWebArea
 ++++++staticText name='Anchor with ID'
 ++++++++inlineTextBox name='Anchor with ID'
 ++paragraph
+++++group
 ++++staticText name='After empty span'
 ++++++inlineTextBox name='After empty span'
 ++paragraph
-++++staticText name='Span with content'
-++++++inlineTextBox name='Span with content'
+++++group
+++++++staticText name='Span with content'
+++++++++inlineTextBox name='Span with content'
 ++paragraph
 ++++staticText name='Paragraph with content'
 ++++++inlineTextBox name='Paragraph with content'
