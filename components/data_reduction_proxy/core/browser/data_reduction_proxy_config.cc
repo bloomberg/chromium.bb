@@ -1017,9 +1017,6 @@ bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
     return IsNetworkQualityProhibitivelySlow(network_quality_estimator);
   }
 
-  // If Lo-Fi is not enabled through command line and the user is not in
-  // Lo-Fi field trials, set Lo-Fi to off.
-  lofi_off_ = true;
   return false;
 }
 

@@ -45,6 +45,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
@@ -897,7 +898,11 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
       previews_state |= content::SERVER_LITE_PAGE_ON;
 
     previews::PreviewsIOData* previews_io_data = io_data->previews_io_data();
-    if (data_reduction_proxy_io_data->IsEnabled() && previews_io_data &&
+    // Check that data saver is enabled, the user isn't opted out of LoFi for
+    // the session, and the user is eligible for previews.
+    if (data_reduction_proxy_io_data->IsEnabled() &&
+        !data_reduction_proxy_io_data->config()->lofi_off() &&
+        previews_io_data &&
         previews_io_data->ShouldAllowPreview(
             url_request, previews::PreviewsType::CLIENT_LOFI)) {
       previews_state |= content::CLIENT_LOFI_ON;
