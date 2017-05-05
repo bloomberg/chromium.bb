@@ -414,7 +414,7 @@ bool LayerTreeHostImpl::CanDraw() const {
   if (resourceless_software_draw_)
     return true;
 
-  if (DrawViewportSize().IsEmpty()) {
+  if (DeviceViewport().IsEmpty()) {
     TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw empty viewport",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
@@ -2497,22 +2497,18 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
   active_tree_->set_needs_update_draw_properties();
 }
 
-const gfx::Rect LayerTreeHostImpl::ViewportRectForTilePriority() const {
-  if (viewport_rect_for_tile_priority_.IsEmpty())
-    return DeviceViewport();
-
-  return viewport_rect_for_tile_priority_;
-}
-
-gfx::Size LayerTreeHostImpl::DrawViewportSize() const {
-  return DeviceViewport().size();
-}
-
 gfx::Rect LayerTreeHostImpl::DeviceViewport() const {
   if (external_viewport_.IsEmpty())
     return gfx::Rect(device_viewport_size_);
 
   return external_viewport_;
+}
+
+const gfx::Rect LayerTreeHostImpl::ViewportRectForTilePriority() const {
+  if (viewport_rect_for_tile_priority_.IsEmpty())
+    return DeviceViewport();
+
+  return viewport_rect_for_tile_priority_;
 }
 
 const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
@@ -3578,7 +3574,7 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 }
 
 void LayerTreeHostImpl::SetFullViewportDamage() {
-  SetViewportDamage(gfx::Rect(DrawViewportSize()));
+  SetViewportDamage(gfx::Rect(DeviceViewport().size()));
 }
 
 bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {

@@ -8321,7 +8321,7 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   // Draw a frame. In the first frame, the entire viewport should be damaged.
-  gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
+  gfx::Rect full_frame_damage(host_impl_->DeviceViewport().size());
   DrawFrameAndTestDamage(full_frame_damage);
 
   // The second frame has damage that doesn't touch the child layer. Its quads
@@ -9123,7 +9123,7 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
       new LatencyInfoSwapPromise(latency_info));
   host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
 
-  gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
+  gfx::Rect full_frame_damage(host_impl_->DeviceViewport().size());
   TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   EXPECT_TRUE(host_impl_->DrawLayers(&frame));
@@ -9167,7 +9167,7 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   // Trigger a draw-swap sequence.
   host_impl_->SetNeedsRedraw();
 
-  gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
+  gfx::Rect full_frame_damage(host_impl_->DeviceViewport().size());
   TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   EXPECT_TRUE(host_impl_->DrawLayers(&frame));

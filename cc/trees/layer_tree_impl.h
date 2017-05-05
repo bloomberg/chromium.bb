@@ -92,7 +92,6 @@ class CC_EXPORT LayerTreeImpl {
   BeginFrameArgs CurrentBeginFrameArgs() const;
   base::TimeDelta CurrentBeginFrameInterval() const;
   gfx::Rect DeviceViewport() const;
-  gfx::Size DrawViewportSize() const;
   const gfx::Rect ViewportRectForTilePriority() const;
   std::unique_ptr<ScrollbarAnimationController>
   CreateScrollbarAnimationController(ElementId scroll_element_id);
