@@ -21,6 +21,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
@@ -28,8 +30,12 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
+import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog;
+import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog.DefaultSearchEnginePromoDialogObserver;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityObserver;
+import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
@@ -38,40 +44,67 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.KeyUtils;
 
+import java.util.concurrent.Callable;
+
 /**
  * Tests the {@link SearchActivity}.
  *
  * TODO(dfalcantara): Add tests for:
- *                    + Checking that user can type in the box before native has loaded and still
- *                      have suggestions appear.
- *
  *                    + Performing a search query.
- *                        + Performing a search query while the SearchActivity is alive and the
- *                          default search engine is changed outside the SearchActivity.
  *
- *                    + Handling the promo dialog.
+ *                    + Performing a search query while the SearchActivity is alive and the
+ *                      default search engine is changed outside the SearchActivity.
+ *
+ *                    + Add microphone tests somehow (vague query + confident query).
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SearchActivityTest {
-    private static class TestObserver implements SearchActivityObserver {
-        public final CallbackHelper onSetContentViewCallback = new CallbackHelper();
-        public final CallbackHelper onFinishNativeInitializationCallback = new CallbackHelper();
+    private static class TestDelegate
+            extends SearchActivityDelegate implements DefaultSearchEnginePromoDialogObserver {
+        public final CallbackHelper shouldDelayNativeInitializationCallback = new CallbackHelper();
+        public final CallbackHelper showSearchEngineDialogIfNeededCallback = new CallbackHelper();
         public final CallbackHelper onFinishDeferredInitializationCallback = new CallbackHelper();
+        public final CallbackHelper onPromoDialogShownCallback = new CallbackHelper();
+
+        public boolean shouldDelayLoadingNative;
+        public boolean shouldDelayDeferredInitialization;
+        public boolean shouldShowRealSearchDialog;
+
+        public DefaultSearchEnginePromoDialog shownPromoDialog;
 
         @Override
-        public void onSetContentView() {
-            onSetContentViewCallback.notifyCalled();
+        boolean shouldDelayNativeInitialization() {
+            shouldDelayNativeInitializationCallback.notifyCalled();
+            return shouldDelayLoadingNative;
         }
 
         @Override
-        public void onFinishNativeInitialization() {
-            onFinishNativeInitializationCallback.notifyCalled();
+        boolean showSearchEngineDialogIfNeeded(Activity activity, Callback<Boolean> callback) {
+            showSearchEngineDialogIfNeededCallback.notifyCalled();
+
+            if (shouldShowRealSearchDialog) {
+                LocaleManager.setInstanceForTest(new LocaleManager() {
+                    @Override
+                    public int getSearchEnginePromoShowType() {
+                        return SEARCH_ENGINE_PROMO_SHOW_EXISTING;
+                    }
+                });
+                return super.showSearchEngineDialogIfNeeded(activity, callback);
+            }
+
+            return shouldDelayDeferredInitialization;
         }
 
         @Override
         public void onFinishDeferredInitialization() {
             onFinishDeferredInitializationCallback.notifyCalled();
+        }
+
+        @Override
+        public void onDialogShown(DefaultSearchEnginePromoDialog dialog) {
+            shownPromoDialog = dialog;
+            onPromoDialogShownCallback.notifyCalled();
         }
     }
 
@@ -79,23 +112,29 @@ public class SearchActivityTest {
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
 
-    private TestObserver mTestObserver;
+    private TestDelegate mTestDelegate;
 
     @Before
     public void setUp() {
-        mTestObserver = new TestObserver();
-        SearchActivity.setObserverForTests(mTestObserver);
+        mTestDelegate = new TestDelegate();
+        SearchActivity.setDelegateForTests(mTestDelegate);
+        DefaultSearchEnginePromoDialog.setObserverForTests(mTestDelegate);
     }
 
     @After
     public void tearDown() {
-        SearchActivity.setObserverForTests(null);
+        SearchActivity.setDelegateForTests(null);
     }
 
     @Test
     @SmallTest
     public void testOmniboxSuggestionContainerAppears() throws Exception {
-        Activity searchActivity = fullyStartSearchActivity();
+        SearchActivity searchActivity = startSearchActivity();
+
+        // Wait for the Activity to fully load.
+        mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
+        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
 
         // Type in anything.  It should force the suggestions to appear.
         setUrlBarText(searchActivity, "anything.");
@@ -108,10 +147,15 @@ public class SearchActivityTest {
     @Test
     @SmallTest
     public void testStartsBrowserAfterUrlSubmitted() throws Exception {
-        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        Activity searchActivity = fullyStartSearchActivity();
+        SearchActivity searchActivity = startSearchActivity();
+
+        // Wait for the Activity to fully load.
+        mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
+        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
 
         // Monitor for ChromeTabbedActivity.
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         ActivityMonitor browserMonitor =
                 new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
         instrumentation.addMonitor(browserMonitor);
@@ -120,8 +164,249 @@ public class SearchActivityTest {
         setUrlBarText(searchActivity, "about:blank");
         final UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
         KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        waitForChromeTabbedActivityToStart(browserMonitor);
+    }
 
-        // Wait for ChromeTabbedActivity to start.
+    @Test
+    @SmallTest
+    public void testTypeBeforeNativeIsLoaded() throws Exception {
+        // Wait for the activity to load, but don't let it load the native library.
+        mTestDelegate.shouldDelayLoadingNative = true;
+        final SearchActivity searchActivity = startSearchActivity();
+        mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
+        Assert.assertEquals(0, mTestDelegate.showSearchEngineDialogIfNeededCallback.getCallCount());
+        Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
+
+        // Set some text in the search box (but don't hit enter).
+        setUrlBarText(searchActivity, "about:blank");
+
+        // Start loading native, then let the activity finish initialization.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                searchActivity.startNativeInitialization();
+            }
+        });
+
+        Assert.assertEquals(
+                1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
+        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
+
+        // Omnibox suggestions should appear now.
+        final SearchActivityLocationBarLayout locationBar =
+                (SearchActivityLocationBarLayout) searchActivity.findViewById(
+                        R.id.search_location_bar);
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
+
+        // Hitting enter should submit the URL and kick the user to the browser.
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        ActivityMonitor browserMonitor =
+                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
+        instrumentation.addMonitor(browserMonitor);
+        UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+        KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        waitForChromeTabbedActivityToStart(browserMonitor);
+    }
+
+    @Test
+    @SmallTest
+    public void testEnterUrlBeforeNativeIsLoaded() throws Exception {
+        // Wait for the activity to load, but don't let it load the native library.
+        mTestDelegate.shouldDelayLoadingNative = true;
+        final SearchActivity searchActivity = startSearchActivity();
+        mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
+        Assert.assertEquals(0, mTestDelegate.showSearchEngineDialogIfNeededCallback.getCallCount());
+        Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
+
+        // Submit a URL before native is loaded.  The browser shouldn't start yet.
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        setUrlBarText(searchActivity, "about:blank");
+        UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+        KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        Assert.assertEquals(searchActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+        Assert.assertFalse(searchActivity.isFinishing());
+
+        // Finish initialization.  It should notice the URL is queued up and start the browser.
+        ActivityMonitor browserMonitor =
+                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
+        instrumentation.addMonitor(browserMonitor);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                searchActivity.startNativeInitialization();
+            }
+        });
+
+        Assert.assertEquals(
+                1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
+        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
+        waitForChromeTabbedActivityToStart(browserMonitor);
+    }
+
+    @Test
+    @SmallTest
+    public void testTypeBeforeDeferredInitialization() throws Exception {
+        // Start the Activity.  It should pause and assume that a promo dialog has appeared.
+        mTestDelegate.shouldDelayDeferredInitialization = true;
+        final SearchActivity searchActivity = startSearchActivity();
+        mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
+        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
+
+        // Set some text in the search box, then continue startup.
+        setUrlBarText(searchActivity, "about:blank");
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                searchActivity.finishDeferredInitialization();
+            }
+        });
+
+        // Let the initialization finish completely.
+        Assert.assertEquals(
+                1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
+        Assert.assertEquals(1, mTestDelegate.showSearchEngineDialogIfNeededCallback.getCallCount());
+        mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
+
+        // Omnibox suggestions should appear now.
+        final SearchActivityLocationBarLayout locationBar =
+                (SearchActivityLocationBarLayout) searchActivity.findViewById(
+                        R.id.search_location_bar);
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
+
+        // Hitting enter should submit the URL and kick the user to the browser.
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        ActivityMonitor browserMonitor =
+                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
+        instrumentation.addMonitor(browserMonitor);
+        UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+        KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        waitForChromeTabbedActivityToStart(browserMonitor);
+    }
+
+    @Test
+    @SmallTest
+    public void testRealPromoDialogInterruption() throws Exception {
+        // Start the Activity.  It should pause when the promo dialog appears.
+        mTestDelegate.shouldShowRealSearchDialog = true;
+        final SearchActivity searchActivity = startSearchActivity();
+        mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
+        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        mTestDelegate.onPromoDialogShownCallback.waitForCallback(0);
+        Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
+
+        // Set some text in the search box, then select the first engine to continue startup.
+        setUrlBarText(searchActivity, "about:blank");
+        DefaultSearchEngineDialogHelperUtils.clickOnFirstEngine(
+                mTestDelegate.shownPromoDialog.findViewById(android.R.id.content));
+
+        // Let the initialization finish completely.
+        Assert.assertEquals(
+                1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
+        Assert.assertEquals(1, mTestDelegate.showSearchEngineDialogIfNeededCallback.getCallCount());
+        mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
+
+        // Omnibox suggestions should appear now.
+        final SearchActivityLocationBarLayout locationBar =
+                (SearchActivityLocationBarLayout) searchActivity.findViewById(
+                        R.id.search_location_bar);
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
+
+        // Hitting enter should submit the URL and kick the user to the browser.
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        ActivityMonitor browserMonitor =
+                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
+        instrumentation.addMonitor(browserMonitor);
+        UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+        KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        waitForChromeTabbedActivityToStart(browserMonitor);
+    }
+
+    @Test
+    @SmallTest
+    public void testRealPromoDialogDismissWithoutSelection() throws Exception {
+        // Start the Activity.  It should pause when the promo dialog appears.
+        mTestDelegate.shouldShowRealSearchDialog = true;
+        startSearchActivity();
+        mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
+        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        mTestDelegate.onPromoDialogShownCallback.waitForCallback(0);
+        Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
+
+        // Dismiss the dialog without acting on it.
+        mTestDelegate.shownPromoDialog.dismiss();
+
+        // SearchActivity should realize the failure case and prevent the user from using it.
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return ApplicationStatus.getRunningActivities().size();
+            }
+        }));
+        Assert.assertEquals(
+                1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
+        Assert.assertEquals(1, mTestDelegate.showSearchEngineDialogIfNeededCallback.getCallCount());
+        Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
+    }
+
+    @Test
+    @SmallTest
+    public void testNewIntentDiscardsQuery() throws Exception {
+        final SearchActivity searchActivity = startSearchActivity();
+        setUrlBarText(searchActivity, "first query");
+        final SearchActivityLocationBarLayout locationBar =
+                (SearchActivityLocationBarLayout) searchActivity.findViewById(
+                        R.id.search_location_bar);
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
+
+        // Start the Activity again by firing another copy of the same Intent.
+        SearchActivity restartedActivity = startSearchActivity(1);
+        Assert.assertEquals(searchActivity, restartedActivity);
+
+        // The query should be wiped.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+                return TextUtils.isEmpty(urlBar.getText());
+            }
+        });
+    }
+
+    private SearchActivity startSearchActivity() throws Exception {
+        return startSearchActivity(0);
+    }
+
+    private SearchActivity startSearchActivity(int expectedCallCount) throws Exception {
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        ActivityMonitor searchMonitor =
+                new ActivityMonitor(SearchActivity.class.getName(), null, false);
+        instrumentation.addMonitor(searchMonitor);
+
+        // The SearchActivity shouldn't have started yet.
+        Assert.assertEquals(expectedCallCount,
+                mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
+        Assert.assertEquals(expectedCallCount,
+                mTestDelegate.showSearchEngineDialogIfNeededCallback.getCallCount());
+        Assert.assertEquals(expectedCallCount,
+                mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
+
+        // Fire the Intent to start up the SearchActivity.
+        Intent intent = new Intent();
+        SearchWidgetProvider.startSearchActivity(intent, false);
+        Activity searchActivity = instrumentation.waitForMonitorWithTimeout(
+                searchMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        Assert.assertNotNull("Activity didn't start", searchActivity);
+        Assert.assertTrue("Wrong activity started", searchActivity instanceof SearchActivity);
+        instrumentation.removeMonitor(searchMonitor);
+        return (SearchActivity) searchActivity;
+    }
+
+    private void waitForChromeTabbedActivityToStart(ActivityMonitor browserMonitor)
+            throws Exception {
+        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         final Activity browserActivity = instrumentation.waitForMonitorWithTimeout(
                 browserMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
         Assert.assertNotNull("Activity didn't start", browserActivity);
@@ -138,35 +423,6 @@ public class SearchActivityTest {
                 return TextUtils.equals("about:blank", tab.getUrl());
             }
         });
-    }
-
-    private Activity fullyStartSearchActivity() throws Exception {
-        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-
-        ActivityMonitor searchMonitor =
-                new ActivityMonitor(SearchActivity.class.getName(), null, false);
-        instrumentation.addMonitor(searchMonitor);
-
-        // The SearchActivity shouldn't have started yet.
-        Assert.assertEquals(0, mTestObserver.onSetContentViewCallback.getCallCount());
-        Assert.assertEquals(0, mTestObserver.onFinishNativeInitializationCallback.getCallCount());
-        Assert.assertEquals(0, mTestObserver.onFinishDeferredInitializationCallback.getCallCount());
-
-        // Fire the Intent to start up the SearchActivity.
-        Intent intent = new Intent();
-        SearchWidgetProvider.startSearchActivity(intent, false);
-        Activity searchActivity = instrumentation.waitForMonitorWithTimeout(
-                searchMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        Assert.assertNotNull("Activity didn't start", searchActivity);
-        Assert.assertTrue("Wrong activity started", searchActivity instanceof SearchActivity);
-
-        // Wait for the Activity fully load.
-        mTestObserver.onSetContentViewCallback.waitForCallback(0);
-        mTestObserver.onFinishNativeInitializationCallback.waitForCallback(0);
-        mTestObserver.onFinishDeferredInitializationCallback.waitForCallback(0);
-
-        instrumentation.removeMonitor(searchMonitor);
-        return searchActivity;
     }
 
     @SuppressLint("SetTextI18n")

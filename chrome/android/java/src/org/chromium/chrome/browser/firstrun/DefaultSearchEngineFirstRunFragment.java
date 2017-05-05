@@ -33,7 +33,8 @@ public class DefaultSearchEngineFirstRunFragment
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(
                 R.layout.default_search_engine_first_run_fragment, container, false);
-        mEngineLayout = (RadioButtonLayout) rootView.findViewById(R.id.engine_controls);
+        mEngineLayout = (RadioButtonLayout) rootView.findViewById(
+                R.id.default_search_engine_dialog_options);
         mButton = (Button) rootView.findViewById(R.id.button_primary);
         mButton.setEnabled(false);
 

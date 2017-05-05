@@ -27,6 +27,7 @@ import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
+import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -39,6 +40,13 @@ import java.util.List;
  */
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class SearchWidgetProviderTest extends InstrumentationTestCase {
+    private static class TestSearchDelegate extends SearchActivityDelegate {
+        @Override
+        public boolean isActivityDisabledForTests() {
+            return true;
+        }
+    }
+
     private static final class TestDelegate
             extends SearchWidgetProvider.SearchWidgetProviderDelegate {
         public static final int[] ALL_IDS = {11684, 20170525};
@@ -91,11 +99,11 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
     public void setUp() throws Exception {
         super.setUp();
         ApplicationTestUtils.setUp(getInstrumentation().getTargetContext(), true);
-        SearchActivity.disableForTests();
+        SearchActivity.setDelegateForTests(new TestSearchDelegate());
 
         mContext = new TestContext();
         mDelegate = new TestDelegate(mContext);
-        SearchWidgetProvider.setDelegateForTest(mDelegate);
+        SearchWidgetProvider.setActivityDelegateForTest(mDelegate);
     }
 
     @Override

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.searchwidget;
 
 import android.content.Context;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -68,6 +69,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     void onDeferredStartup(boolean isVoiceSearchIntent) {
         SearchWidgetProvider.updateCachedVoiceSearchAvailability(isVoiceSearchEnabled());
         if (isVoiceSearchIntent && mUrlBar.isFocused()) onUrlFocusChange(true);
+        if (!TextUtils.isEmpty(mUrlBar.getText())) onTextChangedForAutocomplete(false);
     }
 
     /** Begins a new query. */
