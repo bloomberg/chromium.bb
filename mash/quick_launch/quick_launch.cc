@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -165,7 +166,7 @@ void QuickLaunch::RemoveWindow(views::Widget* window) {
   auto it = std::find(windows_.begin(), windows_.end(), window);
   DCHECK(it != windows_.end());
   windows_.erase(it);
-  if (windows_.empty() && base::MessageLoop::current()->is_running())
+  if (windows_.empty() && base::RunLoop::IsRunningOnCurrentThread())
     base::MessageLoop::current()->QuitWhenIdle();
 }
 

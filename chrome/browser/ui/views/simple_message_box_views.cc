@@ -223,7 +223,7 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
   // Fallback to logging with a default response or a Windows MessageBox.
 #if defined(OS_WIN)
   if (!base::MessageLoopForUI::IsCurrent() ||
-      !base::MessageLoopForUI::current()->is_running() ||
+      !base::RunLoop::IsRunningOnCurrentThread() ||
       !ResourceBundle::HasSharedInstance()) {
     LOG_IF(ERROR, !checkbox_text.empty()) << "Dialog checkbox won't be shown";
     int result = ui::MessageBox(views::HWNDForNativeWindow(parent), message,

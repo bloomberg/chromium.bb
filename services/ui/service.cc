@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -268,10 +269,8 @@ void Service::OnFirstDisplayReady() {
 
 void Service::OnNoMoreDisplays() {
   // We may get here from the destructor, in which case there is no messageloop.
-  if (base::MessageLoop::current() &&
-      base::MessageLoop::current()->is_running()) {
+  if (base::RunLoop::IsRunningOnCurrentThread())
     base::MessageLoop::current()->QuitWhenIdle();
-  }
 }
 
 bool Service::IsTestConfig() const {

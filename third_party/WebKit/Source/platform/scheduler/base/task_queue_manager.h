@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
+#include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "platform/scheduler/base/enqueue_order.h"
@@ -53,7 +54,7 @@ class TaskTimeObserver;
 //
 class PLATFORM_EXPORT TaskQueueManager
     : public internal::TaskQueueSelector::Observer,
-      public base::MessageLoop::NestingObserver {
+      public base::RunLoop::NestingObserver {
  public:
   // Create a task queue manager where |delegate| identifies the thread
   // on which where the tasks are  eventually run. Category strings must have
@@ -233,8 +234,8 @@ class PLATFORM_EXPORT TaskQueueManager
   void OnTriedToSelectBlockedWorkQueue(
       internal::WorkQueue* work_queue) override;
 
-  // base::MessageLoop::NestingObserver implementation:
-  void OnBeginNestedMessageLoop() override;
+  // base::RunLoop::NestingObserver implementation:
+  void OnBeginNestedRunLoop() override;
 
   // Called by the task queue to register a new pending task.
   void DidQueueTask(const internal::TaskQueueImpl::Task& pending_task);

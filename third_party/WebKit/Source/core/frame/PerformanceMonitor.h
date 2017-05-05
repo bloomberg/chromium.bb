@@ -120,7 +120,7 @@ class CORE_EXPORT PerformanceMonitor final
   void DidProcessTask(scheduler::TaskQueue*,
                       double start_time,
                       double end_time) override;
-  void OnBeginNestedMessageLoop() override {}
+  void OnBeginNestedRunLoop() override {}
   void WillExecuteScript(ExecutionContext*);
   void DidExecuteScript();
 

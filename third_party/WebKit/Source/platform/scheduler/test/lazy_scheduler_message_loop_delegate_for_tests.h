@@ -9,9 +9,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/tick_clock.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
+
+namespace base {
+class MessageLoop;
+}
 
 namespace blink {
 namespace scheduler {
@@ -39,10 +43,8 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
-  void AddNestingObserver(
-      base::MessageLoop::NestingObserver* observer) override;
-  void RemoveNestingObserver(
-      base::MessageLoop::NestingObserver* observer) override;
+  void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;
+  void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
   base::TimeTicks NowTicks() override;
 
  private:
@@ -60,7 +62,7 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
   mutable scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
   std::unique_ptr<base::TickClock> time_source_;
 
-  base::MessageLoop::NestingObserver* pending_observer_;
+  base::RunLoop::NestingObserver* pending_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LazySchedulerMessageLoopDelegateForTests);
 };

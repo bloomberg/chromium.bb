@@ -8,6 +8,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -152,7 +154,7 @@ class Package : public service_manager::ForwardingService,
     DCHECK(it != contexts_.end());
     contexts_.erase(it);
     id_to_context_.erase(id_it);
-    if (contexts_.empty() && base::MessageLoop::current()->is_running())
+    if (contexts_.empty() && base::RunLoop::IsRunningOnCurrentThread())
       base::MessageLoop::current()->QuitWhenIdle();
   }
 

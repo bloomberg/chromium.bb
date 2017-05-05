@@ -2116,7 +2116,7 @@ class WindowEventDispatcherTestWithMessageLoop
 };
 
 TEST_P(WindowEventDispatcherTestWithMessageLoop, EventRepostedInNonNestedLoop) {
-  CHECK(!message_loop()->is_running());
+  ASSERT_FALSE(base::RunLoop::IsRunningOnCurrentThread());
   // Perform the test in a callback, so that it runs after the message-loop
   // starts.
   message_loop()->task_runner()->PostTask(

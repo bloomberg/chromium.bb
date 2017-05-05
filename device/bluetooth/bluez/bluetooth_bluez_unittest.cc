@@ -164,10 +164,8 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
   // Some tests use a message loop since background processing is simulated;
   // break out of those loops.
   void QuitMessageLoop() {
-    if (base::MessageLoop::current() &&
-        base::MessageLoop::current()->is_running()) {
+    if (base::RunLoop::IsRunningOnCurrentThread())
       base::MessageLoop::current()->QuitWhenIdle();
-    }
   }
 };
 
@@ -362,10 +360,8 @@ class BluetoothBlueZTest : public testing::Test {
   // Some tests use a message loop since background processing is simulated;
   // break out of those loops.
   void QuitMessageLoop() {
-    if (base::MessageLoop::current() &&
-        base::MessageLoop::current()->is_running()) {
+    if (base::RunLoop::IsRunningOnCurrentThread())
       base::MessageLoop::current()->QuitWhenIdle();
-    }
   }
 };
 const char BluetoothBlueZTest::kGapUuid[] =

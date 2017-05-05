@@ -6,7 +6,7 @@
 #define UI_AURA_MUS_MUS_MOUSE_LOCATION_UPDATER_H_
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 
 namespace ui {
 class Event;
@@ -21,7 +21,7 @@ namespace aura {
 // Env uses the value from the current event, otherwise Env uses
 // WindowTreeClient::GetCursorScreenPoint(). If a nested message loop is
 // started while processing an event Env uses GetCursorScreenPoint().
-class MusMouseLocationUpdater : public base::MessageLoop::NestingObserver {
+class MusMouseLocationUpdater : public base::RunLoop::NestingObserver {
  public:
   MusMouseLocationUpdater();
   ~MusMouseLocationUpdater() override;
@@ -36,8 +36,8 @@ class MusMouseLocationUpdater : public base::MessageLoop::NestingObserver {
   // location.
   void UseCursorScreenPoint();
 
-  // base::MessageLoop::NestingObserver:
-  void OnBeginNestedMessageLoop() override;
+  // base::RunLoop::NestingObserver:
+  void OnBeginNestedRunLoop() override;
 
   // Set to true while processing a valid mouse event.
   bool is_processing_trigger_event_ = false;

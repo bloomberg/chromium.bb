@@ -1835,9 +1835,9 @@ void RendererSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
                             static_cast<int>(TaskQueue::QueueType::COUNT));
 }
 
-void RendererSchedulerImpl::OnBeginNestedMessageLoop() {
+void RendererSchedulerImpl::OnBeginNestedRunLoop() {
   seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  seqlock_queueing_time_estimator_.data.OnBeginNestedMessageLoop();
+  seqlock_queueing_time_estimator_.data.OnBeginNestedRunLoop();
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
 }
 

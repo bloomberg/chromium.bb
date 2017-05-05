@@ -23,6 +23,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -1356,7 +1357,7 @@ void BrowserProcessImpl::Unpin() {
   __lsan_do_leak_check();
 #endif
 
-  CHECK(base::MessageLoop::current()->is_running());
+  CHECK(base::RunLoop::IsRunningOnCurrentThread());
 
 #if defined(OS_MACOSX)
   base::ThreadTaskRunnerHandle::Get()->PostTask(

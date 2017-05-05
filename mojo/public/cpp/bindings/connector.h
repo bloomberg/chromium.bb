@@ -157,7 +157,7 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
 
  private:
   class ActiveDispatchTracker;
-  class MessageLoopNestingObserver;
+  class RunLoopNestingObserver;
 
   // Callback of mojo::SimpleWatcher.
   void OnWatcherHandleReady(MojoResult result);
@@ -218,9 +218,9 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
   // notification.
   const char* heap_profiler_tag_ = nullptr;
 
-  // A cached pointer to the MessageLoopNestingObserver for the MessageLoop on
-  // which this Connector was created.
-  MessageLoopNestingObserver* const nesting_observer_;
+  // A cached pointer to the RunLoopNestingObserver for the thread on which this
+  // Connector was created.
+  RunLoopNestingObserver* const nesting_observer_;
 
   // |true| iff the Connector is currently dispatching a message. Used to detect
   // nested dispatch operations.

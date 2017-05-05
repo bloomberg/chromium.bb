@@ -29,11 +29,11 @@ bool IsMouseEventWithLocation(const ui::Event& event) {
 }  // namespace
 
 MusMouseLocationUpdater::MusMouseLocationUpdater() {
-  base::MessageLoop::current()->AddNestingObserver(this);
+  base::RunLoop::AddNestingObserverOnCurrentThread(this);
 }
 
 MusMouseLocationUpdater::~MusMouseLocationUpdater() {
-  base::MessageLoop::current()->RemoveNestingObserver(this);
+  base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
 }
 
 void MusMouseLocationUpdater::OnEventProcessingStarted(const ui::Event& event) {
@@ -60,7 +60,7 @@ void MusMouseLocationUpdater::UseCursorScreenPoint() {
   Env::GetInstance()->get_last_mouse_location_from_mus_ = true;
 }
 
-void MusMouseLocationUpdater::OnBeginNestedMessageLoop() {
+void MusMouseLocationUpdater::OnBeginNestedRunLoop() {
   UseCursorScreenPoint();
 }
 

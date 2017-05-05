@@ -93,10 +93,8 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
     adapter_ = adapter;
     ASSERT_NE(adapter_.get(), nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
-    if (base::MessageLoop::current() &&
-        base::MessageLoop::current()->is_running()) {
+    if (base::RunLoop::IsRunningOnCurrentThread())
       base::MessageLoop::current()->QuitWhenIdle();
-    }
   }
 
   std::unique_ptr<BluetoothAdvertisement::Data> CreateAdvertisementData() {

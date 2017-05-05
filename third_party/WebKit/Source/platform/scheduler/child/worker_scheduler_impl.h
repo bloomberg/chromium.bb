@@ -42,7 +42,7 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   void DidProcessTask(TaskQueue* task_queue,
                       double start_time,
                       double end_time) override;
-  void OnBeginNestedMessageLoop() override;
+  void OnBeginNestedRunLoop() override;
 
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;

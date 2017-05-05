@@ -132,7 +132,7 @@ class TestChromeOSMetricsProvider : public ChromeOSMetricsProvider {
     base::RunLoop().Run();
   }
   void GetBluetoothAdapterCallback() {
-    ASSERT_TRUE(base::MessageLoop::current()->is_running());
+    ASSERT_TRUE(base::RunLoop::IsRunningOnCurrentThread());
     base::MessageLoop::current()->QuitWhenIdle();
   }
 };

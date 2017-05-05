@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/run_loop.h"
+
 namespace blink {
 namespace scheduler {
 
@@ -59,17 +61,18 @@ bool SchedulerTqmDelegateImpl::RunsTasksOnCurrentThread() const {
 }
 
 bool SchedulerTqmDelegateImpl::IsNested() const {
-  return message_loop_->IsNested();
+  DCHECK(RunsTasksOnCurrentThread());
+  return base::RunLoop::IsNestedOnCurrentThread();
 }
 
 void SchedulerTqmDelegateImpl::AddNestingObserver(
-    base::MessageLoop::NestingObserver* observer) {
-  message_loop_->AddNestingObserver(observer);
+    base::RunLoop::NestingObserver* observer) {
+  base::RunLoop::AddNestingObserverOnCurrentThread(observer);
 }
 
 void SchedulerTqmDelegateImpl::RemoveNestingObserver(
-    base::MessageLoop::NestingObserver* observer) {
-  message_loop_->RemoveNestingObserver(observer);
+    base::RunLoop::NestingObserver* observer) {
+  base::RunLoop::RemoveNestingObserverOnCurrentThread(observer);
 }
 
 base::TimeTicks SchedulerTqmDelegateImpl::NowTicks() {

@@ -17,7 +17,7 @@ class TestTaskTimeObserver : public TaskTimeObserver {
   void DidProcessTask(TaskQueue* task_queue,
                       double start_time,
                       double end_time) override {}
-  void OnBeginNestedMessageLoop() override {}
+  void OnBeginNestedRunLoop() override {}
 };
 
 }  // namespace scheduler

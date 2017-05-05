@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/tick_clock.h"
 #include "platform/PlatformExport.h"
 
@@ -26,11 +26,10 @@ class PLATFORM_EXPORT TaskQueueManagerDelegate
 
   // A NestingObserver is notified when a nested message loop begins. The
   // observers are notified before the first task is processed.
-  virtual void AddNestingObserver(
-      base::MessageLoop::NestingObserver* observer) = 0;
+  virtual void AddNestingObserver(base::RunLoop::NestingObserver* observer) = 0;
 
   virtual void RemoveNestingObserver(
-      base::MessageLoop::NestingObserver* observer) = 0;
+      base::RunLoop::NestingObserver* observer) = 0;
 
  protected:
   ~TaskQueueManagerDelegate() override {}

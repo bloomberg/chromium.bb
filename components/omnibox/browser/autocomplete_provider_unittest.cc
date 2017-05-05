@@ -74,7 +74,7 @@ class AutocompleteProviderClientWithClosure
       AutocompleteController* controller) override {
     if (!closure_.is_null())
       closure_.Run();
-    if (base::MessageLoop::current()->is_running())
+    if (base::RunLoop::IsRunningOnCurrentThread())
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
