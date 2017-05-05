@@ -737,7 +737,7 @@ void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
 }
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
-  DCHECK_EQ(3U, args->GetSize());
+  DCHECK_EQ(2U, args->GetSize());
   std::unique_ptr<base::DictionaryValue> settings = GetSettingsDictionary(args);
   if (!settings)
     return;
@@ -794,18 +794,20 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   DCHECK(success);
 
   if (!generate_draft_data) {
-    double draft_page_count_double = -1;
-    success = args->GetDouble(1, &draft_page_count_double);
-    DCHECK(success);
-    int draft_page_count = static_cast<int>(draft_page_count_double);
-
-    bool preview_modifiable = false;
-    success = args->GetBoolean(2, &preview_modifiable);
+    int page_count = -1;
+    success = args->GetInteger(1, &page_count);
     DCHECK(success);
 
-    if (draft_page_count != -1 && preview_modifiable &&
-        print_preview_ui()->GetAvailableDraftPageCount() != draft_page_count) {
-      settings->SetBoolean(printing::kSettingGenerateDraftData, true);
+    if (page_count != -1) {
+      bool preview_modifiable = false;
+      success = settings->GetBoolean(printing::kSettingPreviewModifiable,
+                                     &preview_modifiable);
+      DCHECK(success);
+
+      if (preview_modifiable &&
+          print_preview_ui()->GetAvailableDraftPageCount() != page_count) {
+        settings->SetBoolean(printing::kSettingGenerateDraftData, true);
+      }
     }
   }
 
