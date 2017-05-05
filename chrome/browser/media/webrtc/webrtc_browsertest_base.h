@@ -188,6 +188,9 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void EnableOpusDtx(content::WebContents* tab) const;
 
   void CreateAndAddStreams(content::WebContents* tab, size_t count) const;
+  void VerifyRtpSenders(content::WebContents* tab,
+                        base::Optional<size_t> expected_num_tracks =
+                            base::Optional<size_t>()) const;
   void VerifyRtpReceivers(content::WebContents* tab,
                           base::Optional<size_t> expected_num_tracks =
                               base::Optional<size_t>()) const;

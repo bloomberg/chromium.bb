@@ -197,6 +197,7 @@ modules_idl_files =
                     "peerconnection/RTCPeerConnectionIceEvent.idl",
                     "peerconnection/RTCRtpContributingSource.idl",
                     "peerconnection/RTCRtpReceiver.idl",
+                    "peerconnection/RTCRtpSender.idl",
                     "peerconnection/RTCSessionDescription.idl",
                     "peerconnection/RTCSessionDescriptionCallback.idl",
                     "peerconnection/RTCStatsCallback.idl",

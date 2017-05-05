@@ -661,6 +661,8 @@ target(link_target_type, "renderer") {
       "media/webrtc/rtc_rtp_contributing_source.h",
       "media/webrtc/rtc_rtp_receiver.cc",
       "media/webrtc/rtc_rtp_receiver.h",
+      "media/webrtc/rtc_rtp_sender.cc",
+      "media/webrtc/rtc_rtp_sender.h",
       "media/webrtc/rtc_stats.cc",
       "media/webrtc/rtc_stats.h",
       "media/webrtc/stun_field_trial.cc",

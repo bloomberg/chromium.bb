@@ -46,6 +46,7 @@ enum class WebRTCErrorType;
 class WebRTCICECandidate;
 class WebRTCOfferOptions;
 class WebRTCRtpReceiver;
+class WebRTCRtpSender;
 class WebRTCSessionDescription;
 class WebRTCSessionDescriptionRequest;
 class WebRTCStatsRequest;
@@ -94,6 +95,10 @@ class WebRTCPeerConnectionHandler {
   virtual WebRTCDataChannelHandler* CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;
+  // Gets senders used by the peer connection. These are wrappers referencing
+  // webrtc-layer senders, multiple |WebRTCRtpSender| objects referencing the
+  // same webrtc-layer sender have the same |id|.
+  virtual WebVector<std::unique_ptr<WebRTCRtpSender>> GetSenders() = 0;
   // Gets receivers used by the peer connection. These are wrappers referencing
   // webrtc-layer receivers, multiple |WebRTCRtpReceiver| objects referencing
   // the same webrtc-layer receiver have the same |id|.

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 116 tests; 64 PASS, 52 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 116 tests; 66 PASS, 50 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object 
 PASS EventTarget interface object length 
 PASS EventTarget interface object name 
@@ -52,7 +52,7 @@ FAIL RTCPeerConnection interface: operation getStats(MediaStreamTrack,RTCStatsCa
             fn.apply(obj, args);
         }" did not throw
 PASS RTCPeerConnection interface: operation generateCertificate(AlgorithmIdentifier) 
-FAIL RTCPeerConnection interface: operation getSenders() assert_own_property: interface prototype object missing non-static operation expected property "getSenders" missing
+PASS RTCPeerConnection interface: operation getSenders() 
 PASS RTCPeerConnection interface: operation getReceivers() 
 FAIL RTCPeerConnection interface: operation addTrack(MediaStreamTrack,MediaStream) assert_own_property: interface prototype object missing non-static operation expected property "addTrack" missing
 FAIL RTCPeerConnection interface: operation removeTrack(RTCRtpSender) assert_own_property: interface prototype object missing non-static operation expected property "removeTrack" missing
@@ -116,7 +116,7 @@ PASS RTCPeerConnection interface: pc must inherit property "getStats" with the p
 PASS RTCPeerConnection interface: calling getStats(MediaStreamTrack,RTCStatsCallback,RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "generateCertificate" with the proper type (29) 
 FAIL RTCPeerConnection interface: calling generateCertificate(AlgorithmIdentifier) on pc with too few arguments must throw TypeError assert_unreached: Throws "TypeError: Cannot read property 'apply' of undefined" instead of rejecting promise Reached unreachable code
-FAIL RTCPeerConnection interface: pc must inherit property "getSenders" with the proper type (30) assert_inherits: property "getSenders" not found in prototype chain
+PASS RTCPeerConnection interface: pc must inherit property "getSenders" with the proper type (30) 
 PASS RTCPeerConnection interface: pc must inherit property "getReceivers" with the proper type (31) 
 FAIL RTCPeerConnection interface: pc must inherit property "addTrack" with the proper type (32) assert_inherits: property "addTrack" not found in prototype chain
 FAIL RTCPeerConnection interface: calling addTrack(MediaStreamTrack,MediaStream) on pc with too few arguments must throw TypeError assert_inherits: property "addTrack" not found in prototype chain

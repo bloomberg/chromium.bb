@@ -44,6 +44,8 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
     return webrtc_media_stream_.get();
   }
 
+  const blink::WebMediaStream& web_stream() const { return web_stream_; }
+
  protected:
   // MediaStreamObserver implementation.
   void TrackAdded(const blink::WebMediaStreamTrack& track) override;

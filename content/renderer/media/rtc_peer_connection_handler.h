@@ -147,6 +147,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(
       std::unique_ptr<blink::WebRTCStatsReportCallback> callback) override;
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpSender>> GetSenders()
+      override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> GetReceivers()
       override;
   blink::WebRTCDataChannelHandler* CreateDataChannel(

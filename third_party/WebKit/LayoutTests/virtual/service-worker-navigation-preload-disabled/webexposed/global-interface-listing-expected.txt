@@ -5079,6 +5079,7 @@ interface RTCPeerConnection : EventTarget
     method getLocalStreams
     method getReceivers
     method getRemoteStreams
+    method getSenders
     method getStats
     method getStreamById
     method removeStream
@@ -5107,6 +5108,10 @@ interface RTCRtpReceiver
     getter track
     method constructor
     method getContributingSources
+interface RTCRtpSender
+    attribute @@toStringTag
+    getter track
+    method constructor
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp
@@ -8715,6 +8720,7 @@ interface webkitRTCPeerConnection : EventTarget
     method getLocalStreams
     method getReceivers
     method getRemoteStreams
+    method getSenders
     method getStats
     method getStreamById
     method removeStream
