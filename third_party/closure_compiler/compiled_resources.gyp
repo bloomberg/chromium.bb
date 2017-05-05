@@ -20,7 +20,6 @@
       'target_name': 'compiled_resources',
       'type': 'none',
       'dependencies': [
-        '../../chrome/browser/resources/bookmark_manager/js/compiled_resources.gyp:*',
         '../../chrome/browser/resources/chromeos/compiled_resources.gyp:*',
         '../../chrome/browser/resources/extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/help/compiled_resources.gyp:*',
