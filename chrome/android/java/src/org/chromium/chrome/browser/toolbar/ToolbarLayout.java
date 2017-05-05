@@ -94,8 +94,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
         mLightModeTint =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
-        mProgressBar = new ToolbarProgressBar(getContext(), getProgressBarHeight(),
-                getProgressBarTopMargin(), getProgressBarUsesThemeColors());
+        mProgressBar = createProgressBar();
 
         addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
@@ -131,10 +130,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
-     * @return Whether or not the toolbar's progress bar should use theme colors.
+     * @return A progress bar for Chrome to use.
      */
-    protected boolean getProgressBarUsesThemeColors() {
-        return true;
+    protected ToolbarProgressBar createProgressBar() {
+        return new ToolbarProgressBar(
+                getContext(), getProgressBarHeight(), getProgressBarTopMargin(), false);
     }
 
     @Override
