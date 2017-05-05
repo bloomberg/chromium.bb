@@ -3134,12 +3134,15 @@ if (!is_ios) {
   }
 }
 
+# This section can be updated from globbing rules using:
+#    python ./tools/update_ios_bundle_data.py
 bundle_data("net_unittests_bundle_data") {
   testonly = true
   sources = [
     "data/cert_issuer_source_aia_unittest/i.pem",
     "data/cert_issuer_source_aia_unittest/i2.pem",
     "data/cert_issuer_source_aia_unittest/i3.pem",
+    "data/cert_issuer_source_aia_unittest/root.pem",
     "data/cert_issuer_source_aia_unittest/target_file_aia.pem",
     "data/cert_issuer_source_aia_unittest/target_file_and_http_aia.pem",
     "data/cert_issuer_source_aia_unittest/target_invalid_and_http_aia.pem",
@@ -3303,7 +3306,6 @@ bundle_data("net_unittests_bundle_data") {
     "data/parse_certificate_unittest/tbs_validity_generalized_time_and_utc_time.pem",
     "data/parse_certificate_unittest/tbs_validity_relaxed.pem",
     "data/parse_certificate_unittest/tbs_validity_utc_time_and_generalized_time.pem",
-    "data/parse_certificate_unittest/v3_certificate_template.txt",
     "data/parse_ocsp_unittest/bad_ocsp_type.pem",
     "data/parse_ocsp_unittest/bad_signature.pem",
     "data/parse_ocsp_unittest/bad_status.pem",
