@@ -36,6 +36,7 @@
 #undef CreateWindow
 
 namespace blink {
+class ExceptionState;
 class LocalFrame;
 struct FrameLoadRequest;
 struct WindowFeatures;
@@ -45,7 +46,8 @@ DOMWindow* CreateWindow(const String& url_string,
                         const WindowFeatures&,
                         LocalDOMWindow& calling_window,
                         LocalFrame& first_frame,
-                        LocalFrame& opener_frame);
+                        LocalFrame& opener_frame,
+                        ExceptionState&);
 
 void CreateWindowForRequest(const FrameLoadRequest&,
                             LocalFrame& opener_frame,

@@ -26,6 +26,7 @@
 
 #include "core/page/CreateWindow.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalFrame.h"
@@ -179,7 +180,8 @@ DOMWindow* CreateWindow(const String& url_string,
                         const WindowFeatures& window_features,
                         LocalDOMWindow& calling_window,
                         LocalFrame& first_frame,
-                        LocalFrame& opener_frame) {
+                        LocalFrame& opener_frame,
+                        ExceptionState& exception_state) {
   LocalFrame* active_frame = calling_window.GetFrame();
   ASSERT(active_frame);
 
@@ -188,10 +190,9 @@ DOMWindow* CreateWindow(const String& url_string,
                            : first_frame.GetDocument()->CompleteURL(url_string);
   if (!completed_url.IsEmpty() && !completed_url.IsValid()) {
     UseCounter::Count(active_frame, UseCounter::kWindowOpenWithInvalidURL);
-    // Don't expose client code to invalid URLs.
-    calling_window.PrintErrorMessage(
-        "Unable to open a window with invalid URL '" +
-        completed_url.GetString() + "'.\n");
+    exception_state.ThrowDOMException(
+        kSyntaxError, "Unable to open a window with invalid URL '" +
+                          completed_url.GetString() + "'.\n");
     return nullptr;
   }
 
