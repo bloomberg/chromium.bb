@@ -270,7 +270,8 @@ external/wpt/fonts/math [ Skip ]
 # external/wpt/gamepad [ Pass ]
 ## Owners: alexander.shalamov@intel.com,mikhail.pozdnyakov@intel.com,rijubrata.bhaumik@intel.com,timvolodine@chromium.org
 # external/wpt/generic-sensor [ Pass ]
-external/wpt/geolocation-API [ Skip ]
+## Owners: mcasas@chromium.org
+# external/wpt/geolocation-API [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/hr-time [ Pass ]
 ## Owners: dom-dev@chromium.org
@@ -372,7 +373,8 @@ external/wpt/tools [ Skip ]
 external/wpt/url [ Skip ]
 ## Owners: jsbell@chromium.org
 # external/wpt/user-timing [ Pass ]
-external/wpt/vibration [ Skip ]
+## Owners: platform-capabilities@chromium.org
+# external/wpt/vibration [ Pass ]
 ## Owners: bsheedy@chromium.org
 # external/wpt/webvr [ Pass ]
 external/wpt/wai-aria [ Skip ]
