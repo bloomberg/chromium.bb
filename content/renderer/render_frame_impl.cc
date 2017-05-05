@@ -4498,6 +4498,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
     }
   }
 
+  extra_data->set_url_loader_factory_override(url_loader_factory_.get());
+
   request.SetExtraData(extra_data);
 
   if (request.GetPreviewsState() == WebURLRequest::kPreviewsUnspecified) {
