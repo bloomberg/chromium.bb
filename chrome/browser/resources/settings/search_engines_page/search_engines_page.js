@@ -46,7 +46,10 @@ Polymer({
     showExtensionsList_: {
       type: Boolean,
       computed: 'computeShowExtensionsList_(extensions)',
-    }
+    },
+
+    /** @private {HTMLElement} */
+    omniboxExtensionlastFocused_: Object,
   },
 
   // Since the iron-list for extensions is enclosed in a dom-if, observe both
