@@ -5,7 +5,7 @@
 #ifndef FederatedCredential_h
 #define FederatedCredential_h
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "modules/ModulesExport.h"
 #include "modules/credentialmanager/CredentialUserData.h"
 #include "platform/bindings/ScriptWrappable.h"

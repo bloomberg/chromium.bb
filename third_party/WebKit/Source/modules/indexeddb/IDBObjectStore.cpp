@@ -28,8 +28,8 @@
 #include <memory>
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/ToV8ForCore.h"
+#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/DOMStringList.h"

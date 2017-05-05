@@ -5,8 +5,8 @@
 #ifndef V8ScriptValueDeserializer_h
 #define V8ScriptValueDeserializer_h
 
-#include "bindings/core/v8/SerializationTag.h"
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializationTag.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Allocator.h"

@@ -26,7 +26,7 @@
 
 #include "core/events/PopStateEvent.h"
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/frame/History.h"
 
 namespace blink {

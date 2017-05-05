@@ -31,9 +31,9 @@
 #include "core/workers/InProcessWorkerObjectProxy.h"
 
 #include <memory>
-#include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"

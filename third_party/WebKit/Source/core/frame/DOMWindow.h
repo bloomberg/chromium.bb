@@ -5,7 +5,7 @@
 #ifndef DOMWindow_h
 #define DOMWindow_h
 
-#include "bindings/core/v8/Transferables.h"
+#include "bindings/core/v8/serialization/Transferables.h"
 #include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"

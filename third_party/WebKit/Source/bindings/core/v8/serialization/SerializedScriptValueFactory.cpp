@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
 #include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"

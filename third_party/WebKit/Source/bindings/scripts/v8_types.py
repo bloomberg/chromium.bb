@@ -377,8 +377,8 @@ INCLUDES_FOR_TYPE = {
                      'core/dom/StaticNodeList.h',
                      'core/html/LabelsNodeList.h']),
     'Promise': set(['bindings/core/v8/ScriptPromise.h']),
-    'SerializedScriptValue': set(['bindings/core/v8/SerializedScriptValue.h',
-                                  'bindings/core/v8/SerializedScriptValueFactory.h']),
+    'SerializedScriptValue': set(['bindings/core/v8/serialization/SerializedScriptValue.h',
+                                  'bindings/core/v8/serialization/SerializedScriptValueFactory.h']),
     'ScriptValue': set(['bindings/core/v8/ScriptValue.h']),
 }
 

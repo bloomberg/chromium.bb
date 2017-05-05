@@ -31,7 +31,7 @@
 // Use this file to assert that various public API enum values continue
 // matching blink defined enum values.
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/IconURL.h"
 #include "core/editing/SelectionType.h"

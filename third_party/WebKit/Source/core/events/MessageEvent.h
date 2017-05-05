@@ -30,7 +30,7 @@
 #define MessageEvent_h
 
 #include <memory>
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"

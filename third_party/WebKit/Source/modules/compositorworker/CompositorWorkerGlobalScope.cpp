@@ -5,7 +5,7 @@
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 
 #include <memory>
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/CompositorWorkerProxyClient.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"

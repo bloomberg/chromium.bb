@@ -30,7 +30,7 @@
 
 #include "public/web/WebDOMMessageEvent.h"
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"

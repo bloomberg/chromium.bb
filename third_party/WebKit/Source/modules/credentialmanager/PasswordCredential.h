@@ -5,7 +5,7 @@
 #ifndef PasswordCredential_h
 #define PasswordCredential_h
 
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/modules/v8/FormDataOrURLSearchParams.h"
 #include "modules/ModulesExport.h"
 #include "modules/credentialmanager/CredentialUserData.h"

@@ -4,8 +4,8 @@
 
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 
-#include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 
 namespace blink {
 

@@ -25,8 +25,6 @@
 
 #include "bindings/modules/v8/V8BindingForModules.h"
 
-#include "bindings/core/v8/SerializedScriptValue.h"
-#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -34,6 +32,8 @@
 #include "bindings/core/v8/V8DOMStringList.h"
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8Uint8Array.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8IDBCursor.h"
 #include "bindings/modules/v8/V8IDBCursorWithValue.h"

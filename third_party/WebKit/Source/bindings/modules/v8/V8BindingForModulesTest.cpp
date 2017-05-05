@@ -25,12 +25,12 @@
 
 #include "bindings/modules/v8/V8BindingForModules.h"
 
-#include "bindings/core/v8/SerializationTag.h"
-#include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "bindings/core/v8/serialization/SerializationTag.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBKey.h"
