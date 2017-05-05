@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -6,9 +6,14 @@
     {
       'target_name': 'apps_page',
       'variables': {
-        'depends': [
-          '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
+        'script_args': ['--custom_sources'],
+        'source_files': [
+          '../../../../third_party/closure_compiler/externs/chrome_send.js',
+          '../../../../third_party/jstemplate/util.js',
+          '../../../../third_party/jstemplate/jsevalcontext.js',
+          '../../../../third_party/jstemplate/jstemplate.js',
           '../../../../ui/webui/resources/js/action_link.js',
+          '../../../../ui/webui/resources/js/assert.js',
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../ui/webui/resources/js/load_time_data.js',
@@ -38,10 +43,10 @@
           'page_list_view.js',
           'nav_dot.js',
           'new_tab.js',
+          'apps_page.js',
         ],
-        'externs': ['<(EXTERNS_DIR)/chrome_send.js'],
       },
-      'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
-    }
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

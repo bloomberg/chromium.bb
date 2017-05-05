@@ -30,6 +30,7 @@
         '<(DEPTH)/chrome/browser/resources/md_history/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_user_manager/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/media_router/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/ntp4/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/offline_pages/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/settings/compiled_resources2.gyp:*',
         # TODO(dpapad): Uncomment following line once all errors are fixed.
