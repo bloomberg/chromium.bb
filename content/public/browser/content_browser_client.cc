@@ -239,6 +239,19 @@ void ContentBrowserClient::GetQuotaSettings(
   callback.Run(storage::GetNoQuotaSettings());
 }
 
+void ContentBrowserClient::AllowCertificateError(
+    WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    ResourceType resource_type,
+    bool overridable,
+    bool strict_enforcement,
+    bool expired_previous_decision,
+    const base::Callback<void(CertificateRequestResultType)>& callback) {
+  callback.Run(CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+}
+
 void ContentBrowserClient::SelectClientCertificate(
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
