@@ -65,6 +65,10 @@ bool SearchResultContainerView::UpdateScheduled() {
   return update_factory_.HasWeakPtrs();
 }
 
+const char* SearchResultContainerView::GetClassName() const {
+  return "SearchResultContainerView";
+}
+
 void SearchResultContainerView::ListItemsAdded(size_t start, size_t count) {
   ScheduleUpdate();
 }

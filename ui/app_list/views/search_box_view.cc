@@ -105,6 +105,8 @@ class SearchBoxImageButton : public views::ImageButton {
       canvas->FillRect(gfx::Rect(size()), kSelectedColor);
   }
 
+  const char* GetClassName() const override { return "SearchBoxImageButton"; }
+
   bool selected_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxImageButton);
@@ -299,6 +301,10 @@ void SearchBoxView::OnEnabledChanged() {
   search_box_->SetEnabled(enabled());
   if (speech_button_)
     speech_button_->SetEnabled(enabled());
+}
+
+const char* SearchBoxView::GetClassName() const {
+  return "SearchBoxView";
 }
 
 void SearchBoxView::UpdateModel() {

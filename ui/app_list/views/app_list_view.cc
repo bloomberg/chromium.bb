@@ -376,6 +376,7 @@ void AppListView::InitChildWidgets() {
   search_box_widget_params.parent = GetWidget()->GetNativeView();
   search_box_widget_params.opacity =
       views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  search_box_widget_params.name = "SearchBoxView";
 
   // Create a widget for the SearchBoxView to live in. This allows the
   // SearchBoxView to be on top of the custom launcher page's WebContents
@@ -403,7 +404,6 @@ void AppListView::InitChildWidgets() {
 
 void AppListView::InitializeFullscreen(gfx::NativeView parent,
                                        int initial_apps_page) {
-
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams app_list_overlay_view_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);

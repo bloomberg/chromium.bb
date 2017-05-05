@@ -104,6 +104,10 @@ void TileItemView::Layout() {
   title_->SetBoundsRect(rect);
 }
 
+const char* TileItemView::GetClassName() const {
+  return "TileItemView";
+}
+
 void TileItemView::ImageShadowAnimationProgressed(
     ImageShadowAnimator* animator) {
   icon_->SetImage(animator->shadow_image());
