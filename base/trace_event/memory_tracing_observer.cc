@@ -4,6 +4,7 @@
 
 #include "base/trace_event/memory_tracing_observer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_argument.h"
 
@@ -56,11 +57,15 @@ void MemoryTracingObserver::OnTraceLogEnabled() {
   const TraceConfig::MemoryDumpConfig& memory_dump_config =
       trace_config.memory_dump_config();
 
+  memory_dump_config_ =
+      MakeUnique<TraceConfig::MemoryDumpConfig>(memory_dump_config);
+
   memory_dump_manager_->Enable(memory_dump_config);
 }
 
 void MemoryTracingObserver::OnTraceLogDisabled() {
   memory_dump_manager_->Disable();
+  memory_dump_config_.reset();
 }
 
 bool MemoryTracingObserver::AddDumpToTraceIfEnabled(
@@ -70,6 +75,10 @@ bool MemoryTracingObserver::AddDumpToTraceIfEnabled(
   // If tracing has been disabled early out to avoid the cost of serializing the
   // dump then ignoring the result.
   if (!IsMemoryInfraTracingEnabled())
+    return false;
+  // If the dump mode is too detailed don't add to trace to avoid accidentally
+  // including PII.
+  if (!IsDumpModeAllowed(req_args->level_of_detail))
     return false;
 
   CHECK_NE(MemoryDumpType::SUMMARY_ONLY, req_args->dump_type);
@@ -92,6 +101,13 @@ bool MemoryTracingObserver::AddDumpToTraceIfEnabled(
       nullptr /* arg_values */, &event_value, TRACE_EVENT_FLAG_HAS_ID);
 
   return true;
+}
+
+bool MemoryTracingObserver::IsDumpModeAllowed(
+    MemoryDumpLevelOfDetail dump_mode) const {
+  if (!memory_dump_config_)
+    return false;
+  return memory_dump_config_->allowed_dump_modes.count(dump_mode) != 0;
 }
 
 }  // namespace trace_event

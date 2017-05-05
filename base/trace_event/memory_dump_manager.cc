@@ -28,12 +28,12 @@
 #include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
+#include "base/trace_event/heap_profiler_serialization_state.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
 #include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_scheduler.h"
-#include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/memory_infra_background_whitelist.h"
 #include "base/trace_event/memory_peak_detector.h"
 #include "base/trace_event/memory_tracing_observer.h"
@@ -83,29 +83,33 @@ void FillOsDumpFromProcessMemoryDump(
 }
 
 // Proxy class which wraps a ConvertableToTraceFormat owned by the
-// |session_state| into a proxy object that can be added to the trace event log.
-// This is to solve the problem that the MemoryDumpSessionState is refcounted
-// but the tracing subsystem wants a std::unique_ptr<ConvertableToTraceFormat>.
+// |heap_profiler_serialization_state| into a proxy object that can be added to
+// the trace event log. This is to solve the problem that the
+// HeapProfilerSerializationState is refcounted but the tracing subsystem wants
+// a std::unique_ptr<ConvertableToTraceFormat>.
 template <typename T>
 struct SessionStateConvertableProxy : public ConvertableToTraceFormat {
-  using GetterFunctPtr = T* (MemoryDumpSessionState::*)() const;
+  using GetterFunctPtr = T* (HeapProfilerSerializationState::*)() const;
 
-  SessionStateConvertableProxy(
-      scoped_refptr<MemoryDumpSessionState> session_state,
-      GetterFunctPtr getter_function)
-      : session_state(session_state), getter_function(getter_function) {}
+  SessionStateConvertableProxy(scoped_refptr<HeapProfilerSerializationState>
+                                   heap_profiler_serialization_state,
+                               GetterFunctPtr getter_function)
+      : heap_profiler_serialization_state(heap_profiler_serialization_state),
+        getter_function(getter_function) {}
 
   void AppendAsTraceFormat(std::string* out) const override {
-    return (session_state.get()->*getter_function)()->AppendAsTraceFormat(out);
+    return (heap_profiler_serialization_state.get()->*getter_function)()
+        ->AppendAsTraceFormat(out);
   }
 
   void EstimateTraceMemoryOverhead(
       TraceEventMemoryOverhead* overhead) override {
-    return (session_state.get()->*getter_function)()
+    return (heap_profiler_serialization_state.get()->*getter_function)()
         ->EstimateTraceMemoryOverhead(overhead);
   }
 
-  scoped_refptr<MemoryDumpSessionState> session_state;
+  scoped_refptr<HeapProfilerSerializationState>
+      heap_profiler_serialization_state;
   GetterFunctPtr const getter_function;
 };
 
@@ -407,11 +411,9 @@ void MemoryDumpManager::RequestGlobalDump(
     const GlobalMemoryDumpCallback& callback) {
   // Bail out immediately if tracing is not enabled at all or if the dump mode
   // is not allowed.
-  if (!UNLIKELY(subtle::NoBarrier_Load(&is_enabled_)) ||
-      !IsDumpModeAllowed(level_of_detail)) {
+  if (!UNLIKELY(subtle::NoBarrier_Load(&is_enabled_))) {
     VLOG(1) << kLogPrefix << " failed because " << kTraceCategory
-            << " tracing category is not enabled or the requested dump mode is "
-               "not allowed by trace config.";
+            << " tracing category is not enabled.";
     if (!callback.is_null())
       callback.Run(0u /* guid */, false /* success */);
     return;
@@ -500,14 +502,8 @@ void MemoryDumpManager::CreateProcessDump(
     AutoLock lock(lock_);
 
     pmd_async_state.reset(new ProcessMemoryDumpAsyncState(
-        args, dump_providers_, session_state_, callback,
+        args, dump_providers_, heap_profiler_serialization_state_, callback,
         GetOrCreateBgTaskRunnerLocked()));
-
-    // Safety check to prevent reaching here without calling RequestGlobalDump,
-    // with disallowed modes. If |session_state_| is null then tracing is
-    // disabled.
-    CHECK(!session_state_ ||
-          session_state_->IsDumpModeAllowed(args.level_of_detail));
 
     // If enabled, holds back the peak detector resetting its estimation window.
     MemoryPeakDetector::GetInstance()->Throttle();
@@ -775,50 +771,47 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 
 void MemoryDumpManager::Enable(
     const TraceConfig::MemoryDumpConfig& memory_dump_config) {
-
-  scoped_refptr<MemoryDumpSessionState> session_state =
-      new MemoryDumpSessionState;
-  session_state->SetAllowedDumpModes(memory_dump_config.allowed_dump_modes);
-  session_state->set_heap_profiler_breakdown_threshold_bytes(
-      memory_dump_config.heap_profiler_options.breakdown_threshold_bytes);
+  scoped_refptr<HeapProfilerSerializationState>
+      heap_profiler_serialization_state = new HeapProfilerSerializationState;
+  heap_profiler_serialization_state
+      ->set_heap_profiler_breakdown_threshold_bytes(
+          memory_dump_config.heap_profiler_options.breakdown_threshold_bytes);
   if (heap_profiling_enabled_) {
     // If heap profiling is enabled, the stack frame deduplicator and type name
     // deduplicator will be in use. Add a metadata events to write the frames
     // and type IDs.
-    session_state->SetStackFrameDeduplicator(
+    heap_profiler_serialization_state->SetStackFrameDeduplicator(
         WrapUnique(new StackFrameDeduplicator));
 
-    session_state->SetTypeNameDeduplicator(
+    heap_profiler_serialization_state->SetTypeNameDeduplicator(
         WrapUnique(new TypeNameDeduplicator));
 
     TRACE_EVENT_API_ADD_METADATA_EVENT(
         TraceLog::GetCategoryGroupEnabled("__metadata"), "stackFrames",
         "stackFrames",
         MakeUnique<SessionStateConvertableProxy<StackFrameDeduplicator>>(
-            session_state, &MemoryDumpSessionState::stack_frame_deduplicator));
+            heap_profiler_serialization_state,
+            &HeapProfilerSerializationState::stack_frame_deduplicator));
 
     TRACE_EVENT_API_ADD_METADATA_EVENT(
         TraceLog::GetCategoryGroupEnabled("__metadata"), "typeNames",
         "typeNames",
         MakeUnique<SessionStateConvertableProxy<TypeNameDeduplicator>>(
-            session_state, &MemoryDumpSessionState::type_name_deduplicator));
+            heap_profiler_serialization_state,
+            &HeapProfilerSerializationState::type_name_deduplicator));
   }
 
   AutoLock lock(lock_);
 
   // At this point we must have the ability to request global dumps.
   DCHECK(!request_dump_function_.is_null());
-  session_state_ = session_state;
+  heap_profiler_serialization_state_ = heap_profiler_serialization_state;
 
   subtle::NoBarrier_Store(&is_enabled_, 1);
 
   MemoryDumpScheduler::Config periodic_config;
   bool peak_detector_configured = false;
   for (const auto& trigger : memory_dump_config.triggers) {
-    if (!session_state_->IsDumpModeAllowed(trigger.level_of_detail)) {
-      NOTREACHED();
-      continue;
-    }
     if (trigger.trigger_type == MemoryDumpType::PERIODIC_INTERVAL) {
       if (periodic_config.triggers.empty()) {
         periodic_config.callback = BindRepeating(&OnPeriodicSchedulerTick);
@@ -869,25 +862,20 @@ void MemoryDumpManager::Disable() {
     AutoLock lock(lock_);
     MemoryDumpScheduler::GetInstance()->Stop();
     MemoryPeakDetector::GetInstance()->TearDown();
-    session_state_ = nullptr;
+    heap_profiler_serialization_state_ = nullptr;
   }
-}
-
-bool MemoryDumpManager::IsDumpModeAllowed(MemoryDumpLevelOfDetail dump_mode) {
-  AutoLock lock(lock_);
-  if (!session_state_)
-    return false;
-  return session_state_->IsDumpModeAllowed(dump_mode);
 }
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
     MemoryDumpRequestArgs req_args,
     const MemoryDumpProviderInfo::OrderedSet& dump_providers,
-    scoped_refptr<MemoryDumpSessionState> session_state,
+    scoped_refptr<HeapProfilerSerializationState>
+        heap_profiler_serialization_state,
     ProcessMemoryDumpCallback callback,
     scoped_refptr<SequencedTaskRunner> dump_thread_task_runner)
     : req_args(req_args),
-      session_state(std::move(session_state)),
+      heap_profiler_serialization_state(
+          std::move(heap_profiler_serialization_state)),
       callback(callback),
       dump_successful(true),
       callback_task_runner(ThreadTaskRunnerHandle::Get()),
@@ -905,7 +893,7 @@ ProcessMemoryDump* MemoryDumpManager::ProcessMemoryDumpAsyncState::
   auto iter = process_dumps.find(pid);
   if (iter == process_dumps.end()) {
     std::unique_ptr<ProcessMemoryDump> new_pmd(
-        new ProcessMemoryDump(session_state, dump_args));
+        new ProcessMemoryDump(heap_profiler_serialization_state, dump_args));
     iter = process_dumps.insert(std::make_pair(pid, std::move(new_pmd))).first;
   }
   return iter->second.get();
