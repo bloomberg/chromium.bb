@@ -33,8 +33,8 @@ void FakeContextFactory::RemoveCompositor(ui::Compositor* compositor) {
   frame_sink_ = nullptr;
 }
 
-bool FakeContextFactory::DoesCreateTestContexts() {
-  return true;
+double FakeContextFactory::GetRefreshRate() const {
+  return 200.0;
 }
 
 uint32_t FakeContextFactory::GetImageTextureTarget(gfx::BufferFormat format,

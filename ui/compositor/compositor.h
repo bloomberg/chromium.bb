@@ -149,9 +149,8 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Destroys per-compositor data.
   virtual void RemoveCompositor(Compositor* compositor) = 0;
 
-  // When true, the factory uses test contexts that do not do real GL
-  // operations.
-  virtual bool DoesCreateTestContexts() = 0;
+  // Returns refresh rate. Tests may return higher values.
+  virtual double GetRefreshRate() const = 0;
 
   // Returns the OpenGL target to use for image textures.
   virtual uint32_t GetImageTextureTarget(gfx::BufferFormat format,

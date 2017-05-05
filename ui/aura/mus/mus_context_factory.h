@@ -46,7 +46,7 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
       base::WeakPtr<ui::Compositor> compositor) override;
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   void RemoveCompositor(ui::Compositor* compositor) override;
-  bool DoesCreateTestContexts() override;
+  double GetRefreshRate() const override;
   uint32_t GetImageTextureTarget(gfx::BufferFormat format,
                                  gfx::BufferUsage usage) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;

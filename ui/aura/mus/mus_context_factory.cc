@@ -58,8 +58,8 @@ void MusContextFactory::RemoveCompositor(ui::Compositor* compositor) {
   // NOTIMPLEMENTED();
 }
 
-bool MusContextFactory::DoesCreateTestContexts() {
-  return false;
+double MusContextFactory::GetRefreshRate() const {
+  return 60.0;
 }
 
 uint32_t MusContextFactory::GetImageTextureTarget(gfx::BufferFormat format,

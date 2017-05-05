@@ -686,7 +686,9 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 #endif
 }
 
-bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
+double GpuProcessTransportFactory::GetRefreshRate() const {
+  return 60.0;
+}
 
 uint32_t GpuProcessTransportFactory::GetImageTextureTarget(
     gfx::BufferFormat format,

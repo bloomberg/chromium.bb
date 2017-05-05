@@ -131,11 +131,9 @@ struct InProcessContextFactory::PerCompositorData {
 };
 
 InProcessContextFactory::InProcessContextFactory(
-    bool context_factory_for_test,
     cc::SurfaceManager* surface_manager)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
-      context_factory_for_test_(context_factory_for_test),
       surface_manager_(surface_manager) {
   DCHECK(surface_manager);
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
@@ -150,6 +148,10 @@ InProcessContextFactory::~InProcessContextFactory() {
 void InProcessContextFactory::SendOnLostResources() {
   for (auto& observer : observer_list_)
     observer.OnLostResources();
+}
+
+void InProcessContextFactory::SetUseFastRefreshRateForTests() {
+  refresh_rate_ = 200.0;
 }
 
 void InProcessContextFactory::CreateCompositorFrameSink(
@@ -269,8 +271,8 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
   per_compositor_data_.erase(it);
 }
 
-bool InProcessContextFactory::DoesCreateTestContexts() {
-  return context_factory_for_test_;
+double InProcessContextFactory::GetRefreshRate() const {
+  return refresh_rate_;
 }
 
 uint32_t InProcessContextFactory::GetImageTextureTarget(
