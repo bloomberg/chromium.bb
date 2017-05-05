@@ -14,6 +14,12 @@ interface Permissions
 # notifications api not enabled in webview, crbug.com/434712
 interface Notification : EventTarget
 
+# web payments api not enabled in webiew, crbug.com/667069
+interface PaymentAddress
+interface PaymentRequest : EventTarget
+interface PaymentRequestUpdateEvent : Event
+interface PaymentResponse
+
 # not yet supported in webview and chrome on android in general, crbug.com/154571
 interface SharedWorker : EventTarget
 
@@ -32,6 +38,10 @@ interface PresentationRequest : EventTarget
 
 # remoteplayback api not supported in webview crbug.com/521319
 interface RemotePlayback : EventTarget
+
+# web payments api not enabled in webiew, crbug.com/667069
+interface HTMLIFrameElement : HTMLElement
+    setter allowPaymentRequest
 
 # Android does not support switching the audio output device, crbug.com/589500
 # Remote Playback API is not supported on Android WebView, crbug.com/521319
