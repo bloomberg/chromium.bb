@@ -294,7 +294,7 @@ bool VideoCaptureDeviceWin::Init() {
   if (FAILED(hr))
     return false;
 
-  hr = graph_builder_.QueryInterface(media_control_.Receive());
+  hr = graph_builder_.CopyTo(media_control_.Receive());
   DLOG_IF_FAILED_WITH_HRESULT("Failed to create media control builder", hr);
   if (FAILED(hr))
     return false;
@@ -350,7 +350,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
                found_capability.supported_format.frame_rate);
 
   ScopedComPtr<IAMStreamConfig> stream_config;
-  HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
+  HRESULT hr = output_capture_pin_.CopyTo(stream_config.Receive());
   if (FAILED(hr)) {
     SetErrorState(FROM_HERE, "Can't get the Capture format settings", hr);
     return;
@@ -482,7 +482,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScopedComPtr<IAMStreamConfig> stream_config;
-  HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
+  HRESULT hr = output_capture_pin_.CopyTo(stream_config.Receive());
   DLOG_IF_FAILED_WITH_HRESULT(
       "Failed to get IAMStreamConfig from capture device", hr);
   if (FAILED(hr))
@@ -490,7 +490,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
 
   // Get interface used for getting the frame rate.
   ScopedComPtr<IAMVideoControl> video_control;
-  hr = capture_filter_.QueryInterface(video_control.Receive());
+  hr = capture_filter_.CopyTo(video_control.Receive());
 
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);

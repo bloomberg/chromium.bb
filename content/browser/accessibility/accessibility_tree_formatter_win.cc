@@ -132,7 +132,7 @@ base::string16 GetIA2Hypertext(BrowserAccessibilityWin& ax_object) {
           index_of_embed, embedded_object.Receive());
       DCHECK(SUCCEEDED(hr));
       base::win::ScopedComPtr<IAccessible2> ax_embed;
-      hr = embedded_object.QueryInterface(ax_embed.Receive());
+      hr = embedded_object.CopyTo(ax_embed.Receive());
       DCHECK(SUCCEEDED(hr));
       hr = ax_embed->get_indexInParent(&child_index);
       DCHECK(SUCCEEDED(hr));

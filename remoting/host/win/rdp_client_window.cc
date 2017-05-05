@@ -287,7 +287,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   if (FAILED(result))
     return LogOnCreateError(result);
 
-  result = control.QueryInterface(client_.Receive());
+  result = control.CopyTo(client_.Receive());
   if (FAILED(result))
     return LogOnCreateError(result);
 
@@ -305,7 +305,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
     return LogOnCreateError(result);
 
   // Check to see if the platform exposes the interface used for resizing.
-  result = client_.QueryInterface(client_9_.Receive());
+  result = client_.CopyTo(client_9_.Receive());
   if (FAILED(result) && result != E_NOINTERFACE) {
     return LogOnCreateError(result);
   }
@@ -469,7 +469,7 @@ HRESULT RdpClientWindow::OnDisconnected(long reason) {
   // Get the error message as well.
   base::win::ScopedBstr error_message;
   base::win::ScopedComPtr<mstsc::IMsRdpClient5> client5;
-  result = client_.QueryInterface(client5.Receive());
+  result = client_.CopyTo(client5.Receive());
   if (SUCCEEDED(result)) {
     result = client5->GetErrorDescription(reason, extended_code,
                                           error_message.Receive());

@@ -29,7 +29,7 @@ void CreateDWriteFactory(IDWriteFactory** factory) {
     CHECK(false);
     return;
   }
-  factory_unknown.QueryInterface<IDWriteFactory>(factory);
+  factory_unknown.CopyTo(factory);
 }
 
 void MaybeInitializeDirectWrite() {

@@ -529,7 +529,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     hresult = google_update_->createAppBundleWeb(dispatch.Receive());
     if (FAILED(hresult))
       return hresult;
-    hresult = dispatch.QueryInterface(app_bundle.Receive());
+    hresult = dispatch.CopyTo(app_bundle.Receive());
     if (FAILED(hresult))
       return hresult;
     dispatch.Reset();
@@ -576,7 +576,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     if (FAILED(hresult))
       return hresult;
     base::win::ScopedComPtr<IAppWeb> app;
-    hresult = dispatch.QueryInterface(app.Receive());
+    hresult = dispatch.CopyTo(app.Receive());
     if (FAILED(hresult))
       return hresult;
     ConfigureProxyBlanket(app.Get());
@@ -598,7 +598,7 @@ bool UpdateCheckDriver::GetCurrentState(
   *hresult = app_->get_currentState(dispatch.Receive());
   if (FAILED(*hresult))
     return false;
-  *hresult = dispatch.QueryInterface(current_state->Receive());
+  *hresult = dispatch.CopyTo(current_state->Receive());
   if (FAILED(*hresult))
     return false;
   ConfigureProxyBlanket(current_state->Get());

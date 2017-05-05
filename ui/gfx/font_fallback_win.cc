@@ -359,7 +359,7 @@ bool GetFallbackFont(const Font& font,
   base::win::ScopedComPtr<IDWriteFactory> factory;
   gfx::win::CreateDWriteFactory(factory.Receive());
   base::win::ScopedComPtr<IDWriteFactory2> factory2;
-  factory.QueryInterface(factory2.Receive());
+  factory.CopyTo(factory2.Receive());
   if (!factory2) {
     // IDWriteFactory2 is not available before Win8.1
     return GetUniscribeFallbackFont(font, text, text_length, result);

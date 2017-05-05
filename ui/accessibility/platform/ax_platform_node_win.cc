@@ -245,7 +245,7 @@ int AXPlatformNodeWin::GetIndexInParent() {
   base::win::ScopedComPtr<IAccessible> parent_accessible;
   if (S_OK != get_accParent(parent_dispatch.Receive()))
     return -1;
-  if (S_OK != parent_dispatch.QueryInterface(parent_accessible.Receive()))
+  if (S_OK != parent_dispatch.CopyTo(parent_accessible.Receive()))
     return -1;
 
   LONG child_count = 0;
@@ -257,7 +257,7 @@ int AXPlatformNodeWin::GetIndexInParent() {
     base::win::ScopedComPtr<IAccessible> child_accessible;
     if (S_OK == parent_accessible->get_accChild(childid_index,
                                                 child_dispatch.Receive()) &&
-        S_OK == child_dispatch.QueryInterface(child_accessible.Receive())) {
+        S_OK == child_dispatch.CopyTo(child_accessible.Receive())) {
       if (child_accessible.Get() == this)
         return index - 1;
     }

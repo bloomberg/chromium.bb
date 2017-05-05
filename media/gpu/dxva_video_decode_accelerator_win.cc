@@ -849,10 +849,10 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
       RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device", false);
     }
 
-    hr = d3d11_device_.QueryInterface(video_device_.Receive());
+    hr = d3d11_device_.CopyTo(video_device_.Receive());
     RETURN_ON_HR_FAILURE(hr, "Failed to get video device", false);
 
-    hr = d3d11_device_context_.QueryInterface(video_context_.Receive());
+    hr = d3d11_device_context_.CopyTo(video_context_.Receive());
     RETURN_ON_HR_FAILURE(hr, "Failed to get video context", false);
   }
 
@@ -1313,7 +1313,7 @@ std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxH264Resolution() {
   }
 
   base::win::ScopedComPtr<ID3D11VideoDevice> video_device;
-  hr = device.QueryInterface(IID_PPV_ARGS(&video_device));
+  hr = device.CopyTo(IID_PPV_ARGS(&video_device));
   if (FAILED(hr))
     return max_resolution;
 
@@ -2861,7 +2861,7 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     dx11_converter_output_color_space_ = gfx::ColorSpace::CreateSRGB();
     if (use_color_info_ || use_fp16_) {
       base::win::ScopedComPtr<ID3D11VideoContext1> video_context1;
-      HRESULT hr = video_context_.QueryInterface(video_context1.Receive());
+      HRESULT hr = video_context_.CopyTo(video_context1.Receive());
       if (SUCCEEDED(hr)) {
         if (use_fp16_ &&
             base::CommandLine::ForCurrentProcess()->HasSwitch(

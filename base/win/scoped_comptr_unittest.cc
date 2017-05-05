@@ -49,7 +49,7 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
   EXPECT_TRUE(SUCCEEDED(CoGetMalloc(1, mem_alloc.Receive())));
 
   ScopedComPtr<IUnknown> qi_test;
-  EXPECT_HRESULT_SUCCEEDED(mem_alloc.QueryInterface(IID_PPV_ARGS(&qi_test)));
+  EXPECT_HRESULT_SUCCEEDED(mem_alloc.CopyTo(IID_PPV_ARGS(&qi_test)));
   EXPECT_TRUE(qi_test.Get() != NULL);
   qi_test.Reset();
 

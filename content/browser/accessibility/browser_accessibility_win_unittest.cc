@@ -222,7 +222,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   ASSERT_EQ(S_OK, hr);
 
   base::win::ScopedComPtr<IAccessible> text_accessible;
-  hr = text_dispatch.QueryInterface(text_accessible.Receive());
+  hr = text_dispatch.CopyTo(text_accessible.Receive());
   ASSERT_EQ(S_OK, hr);
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -254,7 +254,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
       one, text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
-  hr = text_dispatch.QueryInterface(text_accessible.Receive());
+  hr = text_dispatch.CopyTo(text_accessible.Receive());
   ASSERT_EQ(S_OK, hr);
 
   hr = text_accessible->get_accName(childid_self, name.Receive());
@@ -669,7 +669,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   // Get the text of the combo box.
   // It should be its value.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(0, hyperlink.Receive()));
-  EXPECT_EQ(S_OK, hyperlink.QueryInterface(hypertext.Receive()));
+  EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.Receive()));
   EXPECT_EQ(S_OK,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(combo_box_value.c_str(), text);
@@ -680,7 +680,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   // Get the text of the check box.
   // It should be its name.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(1, hyperlink.Receive()));
-  EXPECT_EQ(S_OK, hyperlink.QueryInterface(hypertext.Receive()));
+  EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.Receive()));
   EXPECT_EQ(S_OK,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(check_box_name.c_str(), text);
@@ -690,7 +690,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
 
   // Get the text of the button.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(2, hyperlink.Receive()));
-  EXPECT_EQ(S_OK, hyperlink.QueryInterface(hypertext.Receive()));
+  EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.Receive()));
   EXPECT_EQ(S_OK,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
   EXPECT_STREQ(button_text_name.c_str(), text);
@@ -700,7 +700,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
 
   // Get the text of the link.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(3, hyperlink.Receive()));
-  EXPECT_EQ(S_OK, hyperlink.QueryInterface(hypertext.Receive()));
+  EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.Receive()));
   EXPECT_EQ(S_OK, hypertext->get_text(0, 4, text.Receive()));
   EXPECT_STREQ(link_text_name.c_str(), text);
   text.Reset();
@@ -2419,7 +2419,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
 
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_target(0, target.Receive()));
-  target.QueryInterface(ax_target.Receive());
+  target.CopyTo(ax_target.Receive());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-ax_child1->unique_id(), unique_id);
   ax_target.Reset();
@@ -2427,7 +2427,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
 
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_target(1, target.Receive()));
-  target.QueryInterface(ax_target.Receive());
+  target.CopyTo(ax_target.Receive());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-ax_child2->unique_id(), unique_id);
   ax_target.Reset();
@@ -2450,7 +2450,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
 
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_target(0, target.Receive()));
-  target.QueryInterface(ax_target.Receive());
+  target.CopyTo(ax_target.Receive());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-ax_root->unique_id(), unique_id);
   ax_target.Reset();
@@ -2472,7 +2472,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
 
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_target(0, target.Receive()));
-  target.QueryInterface(ax_target.Receive());
+  target.CopyTo(ax_target.Receive());
   EXPECT_HRESULT_SUCCEEDED(ax_target->get_uniqueID(&unique_id));
   EXPECT_EQ(-ax_root->unique_id(), unique_id);
   ax_target.Reset();
