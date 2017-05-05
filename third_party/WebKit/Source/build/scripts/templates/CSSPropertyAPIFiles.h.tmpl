@@ -13,6 +13,15 @@ namespace blink {
 class CSSParserTokenRange;
 class CSSParserContext;
 
+// {{api_classname}} is the API that contains logic
+// for handling the {{property_name}} property.
+// The methods defined here are standard among property APIs and can be
+// accessed through a CSSPropertyDescriptor object.
+//
+// Status (5th May 2017): Eventually, all logic pertaining to the
+// {{property_name}} property will be contained within
+// {{api_classname}}. Currently, the code base is in a transitional
+// state and property specific logic is still scattered around the code base.
 class {{api_classname}} : public CSSPropertyAPI {
  public:
   {% for api_method in all_api_methods if api_method in methods_for_class %}
