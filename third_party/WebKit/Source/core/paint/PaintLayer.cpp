@@ -429,8 +429,10 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
 
   UpdateTransformationMatrix();
 
-  if (had3d_transform != Has3DTransform())
+  if (had3d_transform != Has3DTransform()) {
+    SetNeedsCompositingInputsUpdateInternal();
     MarkAncestorChainForDescendantDependentFlagsUpdate();
+  }
 
   if (FrameView* frame_view = GetLayoutObject().GetDocument().View())
     frame_view->SetNeedsUpdateGeometries();
