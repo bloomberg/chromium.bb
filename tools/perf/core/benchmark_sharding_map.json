@@ -2,7 +2,6 @@
   "Android Nexus5X Perf": {
     "build73-b1--device1": {
       "benchmarks": [
-        "smoothness.key_silk_cases",
         "system_health.memory_desktop",
         "system_health.memory_mobile"
       ]
@@ -25,6 +24,7 @@
     "build73-b1--device4": {
       "benchmarks": [
         "blink_perf.blink_gc",
+        "smoothness.key_silk_cases",
         "system_health.common_desktop",
         "v8.infinite_scroll-turbo_tbmv2"
       ]
@@ -544,7 +544,6 @@
         "thread_times.key_mobile_sites_smooth",
         "thread_times.key_silk_cases",
         "tracing.tracing_with_debug_overhead",
-        "v8.runtime_stats.top_25",
         "webrtc.datachannel",
         "webrtc.getusermedia",
         "webrtc.webrtc_smoothness_tbmv2"
@@ -711,6 +710,7 @@
         "v8.infinite_scroll-classic_tbmv2",
         "v8.key_mobile_sites_smooth",
         "v8.runtimestats.browsing_mobile",
+        "v8.runtime_stats.top_25",
         "webrtc.stress"
       ]
     }
@@ -1132,7 +1132,6 @@
         "thread_times.key_mobile_sites_smooth",
         "thread_times.key_silk_cases",
         "tracing.tracing_with_debug_overhead",
-        "v8.runtime_stats.top_25",
         "webrtc.datachannel",
         "webrtc.getusermedia",
         "webrtc.webrtc_smoothness_tbmv2"
@@ -1299,6 +1298,7 @@
         "v8.infinite_scroll-classic_tbmv2",
         "v8.key_mobile_sites_smooth",
         "v8.runtimestats.browsing_mobile",
+        "v8.runtime_stats.top_25",
         "webrtc.stress"
       ]
     }
@@ -1328,7 +1328,6 @@
         "thread_times.key_mobile_sites_smooth",
         "thread_times.key_silk_cases",
         "tracing.tracing_with_debug_overhead",
-        "v8.runtime_stats.top_25",
         "webrtc.datachannel",
         "webrtc.getusermedia",
         "webrtc.webrtc_smoothness_tbmv2"
@@ -1495,6 +1494,7 @@
         "v8.infinite_scroll-classic_tbmv2",
         "v8.key_mobile_sites_smooth",
         "v8.runtimestats.browsing_mobile",
+        "v8.runtime_stats.top_25",
         "webrtc.stress"
       ]
     }
@@ -4031,6 +4031,7 @@
         "media.tough_video_cases_extra",
         "octane",
         "page_cycler_v2.basic_oopif",
+        "page_cycler_v2.intl_es_fr_pt-BR",
         "page_cycler_v2.intl_ja_zh",
         "page_cycler_v2.top_10_mobile",
         "power.idle_platform",
@@ -4151,7 +4152,6 @@
         "memory.long_running_dual_browser_test",
         "memory.top_10_mobile_stress",
         "oortonline_tbmv2",
-        "page_cycler_v2.intl_es_fr_pt-BR",
         "page_cycler_v2.intl_ko_th_vi",
         "power.steady_state",
         "power.typical_10_mobile_reload",
