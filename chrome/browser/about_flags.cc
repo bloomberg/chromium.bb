@@ -1574,9 +1574,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebglDraftExtensionsName,
      flag_descriptions::kWebglDraftExtensionsDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)},
+#if !defined(OS_ANDROID)
     {"enable-account-consistency", flag_descriptions::kAccountConsistencyName,
-     flag_descriptions::kAccountConsistencyDescription, kOsAll,
+     flag_descriptions::kAccountConsistencyDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableAccountConsistency)},
+#endif
     {"enable-password-separated-signin-flow",
      flag_descriptions::kEnablePasswordSeparatedSigninFlowName,
      flag_descriptions::kEnablePasswordSeparatedSigninFlowDescription,

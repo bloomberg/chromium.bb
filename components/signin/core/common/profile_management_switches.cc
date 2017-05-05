@@ -18,10 +18,10 @@ bool IsEnableAccountConsistency() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // Account consistency is enabled on Android and iOS.
   return true;
-#endif
-
+#else
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAccountConsistency);
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 
 bool IsExtensionsMultiAccount() {
@@ -42,7 +42,9 @@ bool UsePasswordSeparatedSigninFlow() {
 }
 
 void EnableAccountConsistencyForTesting(base::CommandLine* command_line) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   command_line->AppendSwitch(switches::kEnableAccountConsistency);
+#endif
 }
 
 }  // namespace switches
