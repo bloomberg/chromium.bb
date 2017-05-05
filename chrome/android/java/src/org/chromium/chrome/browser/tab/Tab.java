@@ -1131,8 +1131,9 @@ public class Tab
 
             // If the NativePage was frozen while in the background (see NativePageAssassin),
             // recreate the NativePage now.
-            if (getNativePage() instanceof FrozenNativePage) {
-                maybeShowNativePage(getUrl(), true);
+            NativePage nativePage = getNativePage();
+            if (nativePage instanceof FrozenNativePage) {
+                maybeShowNativePage(nativePage.getUrl(), true);
             }
             NativePageAssassin.getInstance().tabShown(this);
 
