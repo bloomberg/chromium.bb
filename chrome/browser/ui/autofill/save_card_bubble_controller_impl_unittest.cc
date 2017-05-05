@@ -467,4 +467,60 @@ TEST_F(SaveCardBubbleControllerImplTest,
                  1)));
 }
 
+TEST_F(SaveCardBubbleControllerImplTest, OnlyOneActiveBubble_RepeatedLocal) {
+  base::HistogramTester histogram_tester;
+  ShowLocalBubble();
+  ShowLocalBubble();
+  ShowLocalBubble();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, OnlyOneActiveBubble_RepeatedUpload) {
+  base::HistogramTester histogram_tester;
+  ShowUploadBubble();
+  ShowUploadBubble();
+  ShowUploadBubble();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Upload.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, OnlyOneActiveBubble_LocalThenUpload) {
+  base::HistogramTester histogram_tester;
+  ShowLocalBubble();
+  ShowUploadBubble();
+  ShowUploadBubble();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+  EXPECT_TRUE(
+      histogram_tester
+          .GetAllSamples("Autofill.SaveCreditCardPrompt.Upload.FirstShow")
+          .empty());
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, OnlyOneActiveBubble_UploadThenLocal) {
+  base::HistogramTester histogram_tester;
+  ShowUploadBubble();
+  ShowLocalBubble();
+  ShowLocalBubble();
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Upload.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+  EXPECT_TRUE(
+      histogram_tester
+          .GetAllSamples("Autofill.SaveCreditCardPrompt.Local.FirstShow")
+          .empty());
+}
+
 }  // namespace autofill

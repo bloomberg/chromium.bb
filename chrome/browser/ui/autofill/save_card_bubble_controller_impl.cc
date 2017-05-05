@@ -50,6 +50,10 @@ SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
 void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
     const CreditCard& card,
     const base::Closure& save_card_callback) {
+  // Don't show the bubble if it's already visible.
+  if (save_card_bubble_view_)
+    return;
+
   is_uploading_ = false;
   is_reshow_ = false;
   should_cvc_be_requested_ = false;
@@ -71,6 +75,10 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_cvc_be_requested,
     const base::Closure& save_card_callback) {
+  // Don't show the bubble if it's already visible.
+  if (save_card_bubble_view_)
+    return;
+
   is_uploading_ = true;
   is_reshow_ = false;
   should_cvc_be_requested_ = should_cvc_be_requested;
@@ -102,6 +110,10 @@ void SaveCardBubbleControllerImpl::HideBubble() {
 }
 
 void SaveCardBubbleControllerImpl::ReshowBubble() {
+  // Don't show the bubble if it's already visible.
+  if (save_card_bubble_view_)
+    return;
+
   is_reshow_ = true;
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_uploading_,
