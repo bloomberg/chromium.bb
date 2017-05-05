@@ -201,7 +201,7 @@ TEST_F(RunLoopTest, DisallowWaitingDeathTest) {
                                             RunLoop nested_run_loop;
                                             nested_run_loop.RunUntilIdle();
                                           }));
-  EXPECT_DEATH({ run_loop_.RunUntilIdle(); }, "Check failed");
+  EXPECT_DEATH({ run_loop_.RunUntilIdle(); }, "");
 }
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
