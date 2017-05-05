@@ -470,6 +470,27 @@ void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
   }
 }
 
+void RendererSchedulerImpl::BeginMainFrameNotExpectedUntil(
+    base::TimeTicks time) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::BeginMainFrametime");
+  helper_.CheckOnValidThread();
+  if (helper_.IsShutdown())
+    return;
+
+  base::TimeTicks now(helper_.scheduler_tqm_delegate()->NowTicks());
+
+  if (now < time) {
+    // End any previous idle period.
+    EndIdlePeriod();
+
+    // TODO(rmcilroy): Consider reducing the idle period based on the runtime of
+    // the next pending delayed tasks (as currently done in for long idle times)
+    idle_helper_.StartIdlePeriod(
+        IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, now, time);
+  }
+}
+
 void RendererSchedulerImpl::SetAllRenderWidgetsHidden(bool hidden) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::SetAllRenderWidgetsHidden", "hidden",

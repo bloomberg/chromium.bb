@@ -204,6 +204,11 @@ base::TimeTicks Scheduler::LastBeginImplFrameTime() {
   return begin_impl_frame_tracker_.Current().frame_time;
 }
 
+void Scheduler::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
+  TRACE_EVENT1("cc", "Scheduler::BeginMainFrameNotExpectedUntil", "time", time);
+  client_->ScheduledActionBeginMainFrameNotExpectedUntil(time);
+}
+
 void Scheduler::BeginImplFrameNotExpectedSoon() {
   compositor_timing_history_->BeginImplFrameNotExpectedSoon();
 
@@ -652,6 +657,11 @@ void Scheduler::ProcessScheduledActions() {
         state_machine_.WillSendBeginMainFrame();
         // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
+        break;
+      case SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
+        state_machine_.WillNotifyBeginMainFrameNotSent();
+        BeginMainFrameNotExpectedUntil(begin_main_frame_args_.frame_time +
+                                       begin_main_frame_args_.interval);
         break;
       case SchedulerStateMachine::ACTION_COMMIT: {
         bool commit_has_no_updates = false;

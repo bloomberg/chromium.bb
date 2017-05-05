@@ -51,6 +51,9 @@ void FakeRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {}
 
 void FakeRendererScheduler::BeginFrameNotExpectedSoon() {}
 
+void FakeRendererScheduler::BeginMainFrameNotExpectedUntil(
+    base::TimeTicks time) {}
+
 void FakeRendererScheduler::DidCommitFrameToCompositor() {}
 
 void FakeRendererScheduler::DidHandleInputEventOnCompositorThread(

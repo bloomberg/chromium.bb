@@ -42,6 +42,7 @@ class CC_EXPORT ProxyMain : public Proxy {
 
   void DidReceiveCompositorFrameAck();
   void BeginMainFrameNotExpectedSoon();
+  void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void DidCommitAndDrawFrame();
   void SetAnimationEvents(std::unique_ptr<MutatorEvents> events);
   void DidLoseCompositorFrameSink();

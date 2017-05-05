@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 
 namespace gfx {
 class Vector2dF;
@@ -24,6 +25,7 @@ class LayerTreeHostClient {
   // mode, this corresponds to DidCommit().
   virtual void BeginMainFrame(const BeginFrameArgs& args) = 0;
   virtual void BeginMainFrameNotExpectedSoon() = 0;
+  virtual void BeginMainFrameNotExpectedUntil(base::TimeTicks time) = 0;
   virtual void DidBeginMainFrame() = 0;
   // A LayerTreeHost is bound to a LayerTreeHostClient. Visual frame-based
   // updates to the state of the LayerTreeHost are expected to happen only in

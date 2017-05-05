@@ -75,6 +75,12 @@ void ProxyMain::BeginMainFrameNotExpectedSoon() {
   layer_tree_host_->BeginMainFrameNotExpectedSoon();
 }
 
+void ProxyMain::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
+  TRACE_EVENT0("cc", "ProxyMain::BeginMainFrameNotExpectedUntil");
+  DCHECK(IsMainThread());
+  layer_tree_host_->BeginMainFrameNotExpectedUntil(time);
+}
+
 void ProxyMain::DidCommitAndDrawFrame() {
   DCHECK(IsMainThread());
   layer_tree_host_->DidCommitAndDrawFrame();

@@ -72,6 +72,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void ScheduledActionInvalidateCompositorFrameSink() override;
   void ScheduledActionPerformImplSideInvalidation() override;
   void SendBeginMainFrameNotExpectedSoon() override;
+  void ScheduledActionBeginMainFrameNotExpectedUntil(
+      base::TimeTicks time) override;
 
   // LayerTreeHostImplClient implementation
   void DidLoseCompositorFrameSinkOnImplThread() override;
