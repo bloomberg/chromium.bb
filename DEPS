@@ -154,7 +154,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '43359642a1c16ad3f4fc575c7edd0cb935810815',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'b34251f8b762f8e2112a89c587855ca4297fed96',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '4b06aadd0556135d3a90a4eb03eca24ef249e03e',
 
   'src/third_party/hunspell_dictionaries':
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + 'dc6e7c25bf47cbfb466e0701fd2728b4a12e79d5',
