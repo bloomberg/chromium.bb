@@ -2524,6 +2524,7 @@
     {
       name: "-webkit-border-end-width",
       api_class: "CSSPropertyAPIWebkitBorderWidth",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
@@ -2539,6 +2540,7 @@
     {
       name: "-webkit-border-start-width",
       api_class: "CSSPropertyAPIWebkitBorderWidth",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
@@ -2554,6 +2556,7 @@
     {
       name: "-webkit-border-before-width",
       api_class: "CSSPropertyAPIWebkitBorderWidth",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
@@ -2569,6 +2572,7 @@
     {
       name: "-webkit-border-after-width",
       api_class: "CSSPropertyAPIWebkitBorderWidth",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {

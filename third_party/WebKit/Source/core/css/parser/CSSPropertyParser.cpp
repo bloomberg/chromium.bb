@@ -49,6 +49,7 @@
 #include "core/css/properties/CSSPropertyOffsetPathUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
 #include "core/css/properties/CSSPropertyShapeUtils.h"
+#include "core/css/properties/CSSPropertyWebkitBorderWidthUtils.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -748,12 +749,6 @@ bool CSSPropertyParser::ConsumeOffsetShorthand(bool important) {
               important);
 
   return true;
-}
-
-static CSSValue* ConsumeBorderWidth(CSSParserTokenRange& range,
-                                    CSSParserMode css_parser_mode,
-                                    UnitlessQuirk unitless) {
-  return ConsumeLineWidth(range, css_parser_mode, unitless);
 }
 
 static CSSValue* ConsumeNoneOrURI(CSSParserTokenRange& range,
@@ -1710,12 +1705,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyColor:
     case CSSPropertyBackgroundColor:
       return ConsumeColor(range_, context_->Mode(), InQuirksMode());
-    case CSSPropertyWebkitBorderStartWidth:
-    case CSSPropertyWebkitBorderEndWidth:
-    case CSSPropertyWebkitBorderBeforeWidth:
-    case CSSPropertyWebkitBorderAfterWidth:
-      return ConsumeBorderWidth(range_, context_->Mode(),
-                                UnitlessQuirk::kForbid);
     case CSSPropertyBorderBottomColor:
     case CSSPropertyBorderLeftColor:
     case CSSPropertyBorderRightColor:
@@ -1734,7 +1723,8 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
                              current_shorthand == CSSPropertyBorderWidth);
       UnitlessQuirk unitless =
           allow_quirky_lengths ? UnitlessQuirk::kAllow : UnitlessQuirk::kForbid;
-      return ConsumeBorderWidth(range_, context_->Mode(), unitless);
+      return CSSPropertyWebkitBorderWidthUtils::ConsumeBorderWidth(
+          range_, context_->Mode(), unitless);
     }
     case CSSPropertyTextShadow:
       return ConsumeShadow(range_, context_->Mode(), false);

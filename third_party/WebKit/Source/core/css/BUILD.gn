@@ -507,6 +507,8 @@ blink_core_sources("css") {
     "properties/CSSPropertyPositionUtils.h",
     "properties/CSSPropertyShapeUtils.cpp",
     "properties/CSSPropertyShapeUtils.h",
+    "properties/CSSPropertyWebkitBorderWidthUtils.cpp",
+    "properties/CSSPropertyWebkitBorderWidthUtils.h",
     "resolver/AnimatedStyleBuilder.cpp",
     "resolver/AnimatedStyleBuilder.h",
     "resolver/CSSPropertyPriority.h",
