@@ -112,7 +112,7 @@ namespace chromeos {
 using ::testing::DoAll;
 using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::_;
 
 TEST(StartupCustomizationDocumentTest, Basic) {

@@ -31,7 +31,7 @@ using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
 using testing::Return;
-using testing::SetArgumentPointee;
+using testing::SetArgPointee;
 using testing::StrictMock;
 
 namespace media {

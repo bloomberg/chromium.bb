@@ -33,7 +33,7 @@ using ::testing::Pointee;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
@@ -351,17 +351,17 @@ void TestHelper::SetupContextGroupInitExpectations(
   SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", gl_version,
       context_type);
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxRenderbufferSize))
+      .WillOnce(SetArgPointee<1>(kMaxRenderbufferSize))
       .RetiresOnSaturation();
   if (strstr(extensions, "GL_EXT_framebuffer_multisample") ||
       strstr(extensions, "GL_EXT_multisampled_render_to_texture") ||
       gl_info.is_es3 || gl_info.is_desktop_core_profile) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxSamples))
+        .WillOnce(SetArgPointee<1>(kMaxSamples))
         .RetiresOnSaturation();
   } else if (strstr(extensions, "GL_IMG_multisampled_render_to_texture")) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES_IMG, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxSamples))
+        .WillOnce(SetArgPointee<1>(kMaxSamples))
         .RetiresOnSaturation();
   }
 
@@ -372,10 +372,10 @@ void TestHelper::SetupContextGroupInitExpectations(
         strstr(extensions, "GL_ARB_draw_buffers") ||
         (gl_info.is_es3 && strstr(extensions, "GL_NV_draw_buffers"))))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
-        .WillOnce(SetArgumentPointee<1>(8))
+        .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, _))
-        .WillOnce(SetArgumentPointee<1>(8))
+        .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
   }
 
@@ -384,94 +384,94 @@ void TestHelper::SetupContextGroupInitExpectations(
        strstr(extensions, "GL_ARB_blend_func_extended")) ||
       (gl_info.is_es && strstr(extensions, "GL_EXT_blend_func_extended"))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT, _))
-        .WillOnce(SetArgumentPointee<1>(8))
+        .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
   }
 
   if (gl_info.is_es3_capable) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxTransformFeedbackSeparateAttribs))
+        .WillOnce(SetArgPointee<1>(kMaxTransformFeedbackSeparateAttribs))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxUniformBufferBindings))
+        .WillOnce(SetArgPointee<1>(kMaxUniformBufferBindings))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, _))
-        .WillOnce(SetArgumentPointee<1>(kUniformBufferOffsetAlignment))
+        .WillOnce(SetArgPointee<1>(kUniformBufferOffsetAlignment))
         .RetiresOnSaturation();
   }
 
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
-      .WillOnce(SetArgumentPointee<1>(kNumVertexAttribs))
+      .WillOnce(SetArgPointee<1>(kNumVertexAttribs))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kNumTextureUnits))
+      .WillOnce(SetArgPointee<1>(kNumTextureUnits))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TEXTURE_SIZE, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxTextureSize))
+      .WillOnce(SetArgPointee<1>(kMaxTextureSize))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
+      .WillOnce(SetArgPointee<1>(kMaxCubeMapTextureSize))
       .RetiresOnSaturation();
   if (gl_info.is_es3_capable) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_3D_TEXTURE_SIZE, _))
-        .WillOnce(SetArgumentPointee<1>(kMax3DTextureSize))
+        .WillOnce(SetArgPointee<1>(kMax3DTextureSize))
         .RetiresOnSaturation();
   }
   if (gl_info.is_es3_capable) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxArrayTextureLayers))
+        .WillOnce(SetArgPointee<1>(kMaxArrayTextureLayers))
         .RetiresOnSaturation();
   }
   if (strstr(extensions, "GL_ARB_texture_rectangle") ||
       gl_info.is_desktop_core_profile) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxRectangleTextureSize))
+        .WillOnce(SetArgPointee<1>(kMaxRectangleTextureSize))
         .RetiresOnSaturation();
   }
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxTextureImageUnits))
+      .WillOnce(SetArgPointee<1>(kMaxTextureImageUnits))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVertexTextureImageUnits))
+      .WillOnce(SetArgPointee<1>(kMaxVertexTextureImageUnits))
       .RetiresOnSaturation();
 
   if (gl_info.is_es || gl_info.is_desktop_core_profile) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformVectors))
+        .WillOnce(SetArgPointee<1>(kMaxFragmentUniformVectors))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VARYING_VECTORS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxVaryingVectors))
+        .WillOnce(SetArgPointee<1>(kMaxVaryingVectors))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformVectors))
+        .WillOnce(SetArgPointee<1>(kMaxVertexUniformVectors))
         .RetiresOnSaturation();
   } else {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformComponents))
+        .WillOnce(SetArgPointee<1>(kMaxFragmentUniformComponents))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VARYING_FLOATS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxVaryingFloats))
+        .WillOnce(SetArgPointee<1>(kMaxVaryingFloats))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, _))
-        .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformComponents))
+        .WillOnce(SetArgPointee<1>(kMaxVertexUniformComponents))
         .RetiresOnSaturation();
   }
 
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, _))
       .Times(testing::Between(0, 1))
-      .WillRepeatedly(SetArgumentPointee<1>(kMaxVertexOutputComponents))
+      .WillRepeatedly(SetArgPointee<1>(kMaxVertexOutputComponents))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, _))
       .Times(testing::Between(0, 1))
-      .WillRepeatedly(SetArgumentPointee<1>(kMaxFragmentInputComponents))
+      .WillRepeatedly(SetArgPointee<1>(kMaxFragmentInputComponents))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET, _))
       .Times(testing::Between(0, 1))
-      .WillRepeatedly(SetArgumentPointee<1>(kMaxProgramTexelOffset))
+      .WillRepeatedly(SetArgPointee<1>(kMaxProgramTexelOffset))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, _))
       .Times(testing::Between(0, 1))
-      .WillRepeatedly(SetArgumentPointee<1>(kMinProgramTexelOffset))
+      .WillRepeatedly(SetArgPointee<1>(kMinProgramTexelOffset))
       .RetiresOnSaturation();
 
   bool use_default_textures = bind_generates_resource;
@@ -511,7 +511,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
   gl::GLVersionInfo gl_info(gl_version, gl_renderer, extensions);
   if (!gl_info.is_es && gl_info.major_version >= 3) {
     EXPECT_CALL(*gl, GetIntegerv(GL_NUM_EXTENSIONS, _))
-        .WillOnce(SetArgumentPointee<1>(split_extensions_.size()))
+        .WillOnce(SetArgPointee<1>(split_extensions_.size()))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < split_extensions_.size(); ++ii) {
       EXPECT_CALL(*gl, GetStringi(GL_EXTENSIONS, ii))
@@ -546,10 +546,10 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
     static const GLuint fb_ids[] = {103, 104};
     const GLsizei width = 16;
     EXPECT_CALL(*gl, GetIntegerv(GL_FRAMEBUFFER_BINDING, _))
-        .WillOnce(SetArgumentPointee<1>(fb_ids[0]))
+        .WillOnce(SetArgPointee<1>(fb_ids[0]))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_TEXTURE_BINDING_2D, _))
-        .WillOnce(SetArgumentPointee<1>(tx_ids[0]))
+        .WillOnce(SetArgPointee<1>(tx_ids[0]))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GenTextures(1, _))
         .WillOnce(SetArrayArgument<1>(tx_ids + 1, tx_ids + 2))
@@ -691,10 +691,10 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         strstr(extensions, "GL_ARB_draw_buffers") ||
         (gl_info.is_es3 && strstr(extensions, "GL_NV_draw_buffers"))))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
-        .WillOnce(SetArgumentPointee<1>(8))
+        .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, _))
-        .WillOnce(SetArgumentPointee<1>(8))
+        .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
   }
 
@@ -705,10 +705,10 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
     static const GLuint fb_ids[] = {103, 104};
     const GLsizei width = 1;
     EXPECT_CALL(*gl, GetIntegerv(GL_FRAMEBUFFER_BINDING, _))
-        .WillOnce(SetArgumentPointee<1>(fb_ids[0]))
+        .WillOnce(SetArgPointee<1>(fb_ids[0]))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetIntegerv(GL_TEXTURE_BINDING_2D, _))
-        .WillOnce(SetArgumentPointee<1>(tx_ids[0]))
+        .WillOnce(SetArgPointee<1>(tx_ids[0]))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GenTextures(1, _))
         .WillOnce(SetArrayArgument<1>(tx_ids + 1, tx_ids + 2))
@@ -866,39 +866,32 @@ void TestHelper::SetupProgramSuccessExpectations(
     ProgramOutputInfo* program_outputs,
     size_t num_program_outputs,
     GLuint service_id) {
-  EXPECT_CALL(*gl,
-      GetProgramiv(service_id, GL_LINK_STATUS, _))
-      .WillOnce(SetArgumentPointee<2>(1))
+  EXPECT_CALL(*gl, GetProgramiv(service_id, GL_LINK_STATUS, _))
+      .WillOnce(SetArgPointee<2>(1))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl,
-      GetProgramiv(service_id, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(0))
+  EXPECT_CALL(*gl, GetProgramiv(service_id, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(0))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl,
-      GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))
-      .WillOnce(SetArgumentPointee<2>(num_attribs))
+  EXPECT_CALL(*gl, GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))
+      .WillOnce(SetArgPointee<2>(num_attribs))
       .RetiresOnSaturation();
   size_t max_attrib_len = 0;
   for (size_t ii = 0; ii < num_attribs; ++ii) {
     size_t len = strlen(attribs[ii].name) + 1;
     max_attrib_len = std::max(max_attrib_len, len);
   }
-  EXPECT_CALL(*gl,
-      GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(max_attrib_len))
+  EXPECT_CALL(*gl, GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(max_attrib_len))
       .RetiresOnSaturation();
 
   for (size_t ii = 0; ii < num_attribs; ++ii) {
     const AttribInfo& info = attribs[ii];
     EXPECT_CALL(*gl,
-        GetActiveAttrib(service_id, ii,
-                        max_attrib_len, _, _, _, _))
+                GetActiveAttrib(service_id, ii, max_attrib_len, _, _, _, _))
         .WillOnce(DoAll(
-            SetArgumentPointee<3>(strlen(info.name)),
-            SetArgumentPointee<4>(info.size),
-            SetArgumentPointee<5>(info.type),
-            SetArrayArgument<6>(info.name,
-                                info.name + strlen(info.name) + 1)))
+            SetArgPointee<3>(strlen(info.name)), SetArgPointee<4>(info.size),
+            SetArgPointee<5>(info.type),
+            SetArrayArgument<6>(info.name, info.name + strlen(info.name) + 1)))
         .RetiresOnSaturation();
     if (!ProgramManager::HasBuiltInPrefix(info.name)) {
       EXPECT_CALL(*gl, GetAttribLocation(service_id, StrEq(info.name)))
@@ -906,9 +899,8 @@ void TestHelper::SetupProgramSuccessExpectations(
           .RetiresOnSaturation();
     }
   }
-  EXPECT_CALL(*gl,
-      GetProgramiv(service_id, GL_ACTIVE_UNIFORMS, _))
-      .WillOnce(SetArgumentPointee<2>(num_uniforms))
+  EXPECT_CALL(*gl, GetProgramiv(service_id, GL_ACTIVE_UNIFORMS, _))
+      .WillOnce(SetArgPointee<2>(num_uniforms))
       .RetiresOnSaturation();
 
   if (num_uniforms > 0) {
@@ -918,15 +910,15 @@ void TestHelper::SetupProgramSuccessExpectations(
       max_uniform_len = std::max(max_uniform_len, len);
     }
     EXPECT_CALL(*gl, GetProgramiv(service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
-        .WillOnce(SetArgumentPointee<2>(max_uniform_len))
+        .WillOnce(SetArgPointee<2>(max_uniform_len))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < num_uniforms; ++ii) {
       const UniformInfo& info = uniforms[ii];
       EXPECT_CALL(*gl,
                   GetActiveUniform(service_id, ii, max_uniform_len, _, _, _, _))
-          .WillOnce(DoAll(SetArgumentPointee<3>(strlen(info.name)),
-                          SetArgumentPointee<4>(info.size),
-                          SetArgumentPointee<5>(info.type),
+          .WillOnce(DoAll(SetArgPointee<3>(strlen(info.name)),
+                          SetArgPointee<4>(info.size),
+                          SetArgPointee<5>(info.type),
                           SetArrayArgument<6>(
                               info.name, info.name + strlen(info.name) + 1)))
           .RetiresOnSaturation();
@@ -956,7 +948,7 @@ void TestHelper::SetupProgramSuccessExpectations(
   if (feature_info->feature_flags().chromium_path_rendering) {
     EXPECT_CALL(*gl, GetProgramInterfaceiv(service_id, GL_FRAGMENT_INPUT_NV,
                                            GL_ACTIVE_RESOURCES, _))
-        .WillOnce(SetArgumentPointee<3>(int(num_varyings)))
+        .WillOnce(SetArgPointee<3>(int(num_varyings)))
         .RetiresOnSaturation();
     size_t max_varying_len = 0;
     for (size_t ii = 0; ii < num_varyings; ++ii) {
@@ -965,13 +957,13 @@ void TestHelper::SetupProgramSuccessExpectations(
     }
     EXPECT_CALL(*gl, GetProgramInterfaceiv(service_id, GL_FRAGMENT_INPUT_NV,
                                            GL_MAX_NAME_LENGTH, _))
-        .WillOnce(SetArgumentPointee<3>(int(max_varying_len)))
+        .WillOnce(SetArgPointee<3>(int(max_varying_len)))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < num_varyings; ++ii) {
       VaryingInfo& info = varyings[ii];
       EXPECT_CALL(*gl, GetProgramResourceName(service_id, GL_FRAGMENT_INPUT_NV,
                                               ii, max_varying_len, _, _))
-          .WillOnce(DoAll(SetArgumentPointee<4>(strlen(info.name)),
+          .WillOnce(DoAll(SetArgPointee<4>(strlen(info.name)),
                           SetArrayArgument<5>(
                               info.name, info.name + strlen(info.name) + 1)))
           .RetiresOnSaturation();
@@ -1164,15 +1156,12 @@ void TestHelper::SetShaderStates(
                                           NotNull(),   // varying_map
                                           NotNull(),   // interface_block_map
                                           NotNull()))  // output_variable_list
-      .WillOnce(DoAll(SetArgumentPointee<1>(*log_info),
-                      SetArgumentPointee<2>(*translated_source),
-                      SetArgumentPointee<3>(*shader_version),
-                      SetArgumentPointee<4>(*attrib_map),
-                      SetArgumentPointee<5>(*uniform_map),
-                      SetArgumentPointee<6>(*varying_map),
-                      SetArgumentPointee<7>(*interface_block_map),
-                      SetArgumentPointee<8>(*output_variable_list),
-                      Return(expected_valid)))
+      .WillOnce(DoAll(
+          SetArgPointee<1>(*log_info), SetArgPointee<2>(*translated_source),
+          SetArgPointee<3>(*shader_version), SetArgPointee<4>(*attrib_map),
+          SetArgPointee<5>(*uniform_map), SetArgPointee<6>(*varying_map),
+          SetArgPointee<7>(*interface_block_map),
+          SetArgPointee<8>(*output_variable_list), Return(expected_valid)))
       .RetiresOnSaturation();
   if (expected_valid) {
     EXPECT_CALL(*gl, ShaderSource(shader->service_id(), 1, _, NULL))
@@ -1181,10 +1170,9 @@ void TestHelper::SetShaderStates(
     EXPECT_CALL(*gl, CompileShader(shader->service_id()))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl, GetShaderiv(shader->service_id(),
-                                 GL_COMPILE_STATUS,
+    EXPECT_CALL(*gl, GetShaderiv(shader->service_id(), GL_COMPILE_STATUS,
                                  NotNull()))  // status
-        .WillOnce(SetArgumentPointee<2>(GL_TRUE))
+        .WillOnce(SetArgPointee<2>(GL_TRUE))
         .RetiresOnSaturation();
   }
   shader->RequestCompile(translator, Shader::kGL);

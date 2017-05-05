@@ -44,7 +44,7 @@ using testing::DoAll;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::Return;
-using testing::SetArgumentPointee;
+using testing::SetArgPointee;
 using testing::StrictMock;
 
 const ModelType kType = AUTOFILL_PROFILE;
@@ -226,7 +226,7 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
     EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
         .WillOnce(Return(true));
     EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
-        .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
+        .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
     EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_, _))
         .WillOnce(Return(SyncError()));
     EXPECT_CALL(*change_processor_.get(), GetSyncCount()).WillOnce(Return(0));
@@ -286,7 +286,7 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
       .WillOnce(Return(true));
   EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(false), Return(true)));
   EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(SyncError()));
   EXPECT_CALL(*change_processor_.get(), RecordAssociationTime(_));
@@ -320,7 +320,7 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
       .WillOnce(Return(true));
   EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
   EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(SyncError()));
   EXPECT_CALL(*change_processor_.get(), RecordAssociationTime(_));
@@ -345,7 +345,7 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest,
   EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
-      .WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
+      .WillRepeatedly(DoAll(SetArgPointee<0>(false), Return(false)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
   WaitForDTC();
@@ -381,8 +381,8 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, AbortDuringAssociation) {
       .WillOnce(Return(true));
   EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
       .WillOnce(DoAll(SignalEvent(&wait_for_db_thread_pause),
-                      WaitOnEvent(&pause_db_thread),
-                      SetArgumentPointee<0>(true), Return(true)));
+                      WaitOnEvent(&pause_db_thread), SetArgPointee<0>(true),
+                      Return(true)));
   EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                                  "Disconnected.", kType)));

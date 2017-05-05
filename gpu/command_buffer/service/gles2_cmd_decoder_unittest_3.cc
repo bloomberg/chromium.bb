@@ -24,7 +24,7 @@ using ::testing::MatcherCast;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrEq;
 
 namespace gpu {
@@ -124,9 +124,8 @@ void GLES2DecoderTestBase::SpecializedSetup<ValidateProgram, 0>(
   link_cmd.Init(client_program_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(link_cmd));
 
-  EXPECT_CALL(*gl_,
-      GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(0))
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(0))
       .RetiresOnSaturation();
 };
 

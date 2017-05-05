@@ -42,7 +42,7 @@ using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
@@ -318,7 +318,7 @@ TEST_P(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
   const GLenum kFormat = GL_RGB;
   // Use a different texture for framebuffer to avoid drawing feedback loops.
   EXPECT_CALL(*gl_, GenTextures(_, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
   GenHelper<GenTexturesImmediate>(kNewClientId);
   DoBindTexture(GL_TEXTURE_2D, kNewClientId, kNewServiceId);
@@ -1912,7 +1912,7 @@ TEST_P(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
   SetupAllNeededVertexBuffers();
   // Register a texture id.
   EXPECT_CALL(*gl_, GenTextures(_, _))
-      .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
+      .WillOnce(SetArgPointee<1>(kFBOServiceTextureId))
       .RetiresOnSaturation();
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
@@ -1976,7 +1976,7 @@ TEST_P(GLES2DecoderWithShaderTest, DrawWitFBOThatCantClearDoesNotDraw) {
 
   // Register a texture id.
   EXPECT_CALL(*gl_, GenTextures(_, _))
-      .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
+      .WillOnce(SetArgPointee<1>(kFBOServiceTextureId))
       .RetiresOnSaturation();
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
@@ -2123,7 +2123,7 @@ TEST_P(GLES2DecoderWithShaderTest,
 
   // Register a texture id.
   EXPECT_CALL(*gl_, GenTextures(_, _))
-      .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
+      .WillOnce(SetArgPointee<1>(kFBOServiceTextureId))
       .RetiresOnSaturation();
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 
@@ -2199,7 +2199,7 @@ TEST_P(GLES2DecoderWithShaderTest,
 
   // Register a texture id.
   EXPECT_CALL(*gl_, GenTextures(_, _))
-      .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
+      .WillOnce(SetArgPointee<1>(kFBOServiceTextureId))
       .RetiresOnSaturation();
   GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
 

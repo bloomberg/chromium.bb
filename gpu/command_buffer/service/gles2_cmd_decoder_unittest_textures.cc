@@ -44,7 +44,7 @@ using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
@@ -767,7 +767,7 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormat) {
   GLsizei height = 4;
   GLint border = 0;
   EXPECT_CALL(*gl_, GenTextures(_, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
   GenHelper<GenTexturesImmediate>(kNewClientId);
 
@@ -857,7 +857,7 @@ TEST_P(GLES2DecoderManualInitTest, CopyTexImage2DUnsizedInternalFormatES3) {
   GLsizei height = 4;
   GLint border = 0;
   EXPECT_CALL(*gl_, GenTextures(_, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
   GenHelper<GenTexturesImmediate>(kNewClientId);
 
@@ -2213,7 +2213,7 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
   InitDecoder(init);
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kNewServiceId));
   EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_EXTERNAL_OES, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -2618,7 +2618,7 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
   InitDecoder(init);
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_RECTANGLE_ARB, kNewServiceId));
   EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_RECTANGLE_ARB, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -3226,7 +3226,7 @@ TEST_P(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
 
   // Create new texture for consume.
   EXPECT_CALL(*gl_, GenTextures(_, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
   DoBindTexture(GL_TEXTURE_2D, kNewClientId, kNewServiceId);
 
@@ -3409,8 +3409,8 @@ TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidMailbox) {
   GLuint new_texture_id = kNewClientId;
 
   EXPECT_CALL(*gl_, GenTextures(1, _))
-        .WillOnce(SetArgumentPointee<1>(kNewServiceId))
-        .RetiresOnSaturation();
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, _))
         .Times(2)
         .RetiresOnSaturation();
@@ -3456,8 +3456,8 @@ TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidTarget) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   EXPECT_CALL(*gl_, GenTextures(1, _))
-        .WillOnce(SetArgumentPointee<1>(kNewServiceId))
-        .RetiresOnSaturation();
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_CUBE_MAP, _))
         .Times(2)
         .RetiresOnSaturation();
@@ -4769,7 +4769,7 @@ TEST_P(GLES2DecoderTest, BindTextureValidArgsNewId) {
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   if (!feature_info()->gl_version_info().BehavesLikeGLES() &&
       feature_info()->gl_version_info().IsAtLeastGL(3, 2)) {
     EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,

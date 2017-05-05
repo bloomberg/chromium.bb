@@ -27,7 +27,7 @@ using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
 using testing::Return;
-using testing::SetArgumentPointee;
+using testing::SetArgPointee;
 
 namespace browser_sync {
 namespace {

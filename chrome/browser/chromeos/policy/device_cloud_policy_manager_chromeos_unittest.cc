@@ -67,7 +67,7 @@ using testing::Invoke;
 using testing::Mock;
 using testing::Return;
 using testing::SaveArg;
-using testing::SetArgumentPointee;
+using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::WithArgs;
 using testing::_;

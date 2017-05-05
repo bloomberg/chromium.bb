@@ -23,7 +23,7 @@ using ::testing::MatcherCast;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrEq;
 
 namespace gpu {

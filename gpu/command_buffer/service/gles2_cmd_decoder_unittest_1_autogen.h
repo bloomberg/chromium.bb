@@ -33,7 +33,7 @@ TEST_P(GLES2DecoderTest1, BindBufferValidArgs) {
 TEST_P(GLES2DecoderTest1, BindBufferValidArgsNewId) {
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kNewServiceId));
   EXPECT_CALL(*gl_, GenBuffersARB(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   SpecializedSetup<cmds::BindBuffer, 0>(true);
   cmds::BindBuffer cmd;
   cmd.Init(GL_ARRAY_BUFFER, kNewClientId);
@@ -63,7 +63,7 @@ TEST_P(GLES2DecoderTest1, BindFramebufferValidArgs) {
 TEST_P(GLES2DecoderTest1, BindFramebufferValidArgsNewId) {
   EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER, kNewServiceId));
   EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   SpecializedSetup<cmds::BindFramebuffer, 0>(true);
   cmds::BindFramebuffer cmd;
   cmd.Init(GL_FRAMEBUFFER, kNewClientId);
@@ -94,7 +94,7 @@ TEST_P(GLES2DecoderTest1, BindRenderbufferValidArgs) {
 TEST_P(GLES2DecoderTest1, BindRenderbufferValidArgsNewId) {
   EXPECT_CALL(*gl_, BindRenderbufferEXT(GL_RENDERBUFFER, kNewServiceId));
   EXPECT_CALL(*gl_, GenRenderbuffersEXT(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   SpecializedSetup<cmds::BindRenderbuffer, 0>(true);
   cmds::BindRenderbuffer cmd;
   cmd.Init(GL_RENDERBUFFER, kNewClientId);
@@ -656,7 +656,7 @@ TEST_P(GLES2DecoderTest1, FrontFaceValidArgs) {
 
 TEST_P(GLES2DecoderTest1, GenBuffersImmediateValidArgs) {
   EXPECT_CALL(*gl_, GenBuffersARB(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   cmds::GenBuffersImmediate* cmd = GetImmediateAs<cmds::GenBuffersImmediate>();
   GLuint temp = kNewClientId;
   SpecializedSetup<cmds::GenBuffersImmediate, 0>(true);
@@ -719,7 +719,7 @@ TEST_P(GLES2DecoderTest1, GenerateMipmapInvalidArgs0_1) {
 
 TEST_P(GLES2DecoderTest1, GenFramebuffersImmediateValidArgs) {
   EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   cmds::GenFramebuffersImmediate* cmd =
       GetImmediateAs<cmds::GenFramebuffersImmediate>();
   GLuint temp = kNewClientId;
@@ -758,7 +758,7 @@ TEST_P(GLES2DecoderTest1, GenFramebuffersImmediateInvalidArgs) {
 
 TEST_P(GLES2DecoderTest1, GenRenderbuffersImmediateValidArgs) {
   EXPECT_CALL(*gl_, GenRenderbuffersEXT(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   cmds::GenRenderbuffersImmediate* cmd =
       GetImmediateAs<cmds::GenRenderbuffersImmediate>();
   GLuint temp = kNewClientId;
@@ -797,7 +797,7 @@ TEST_P(GLES2DecoderTest1, GenRenderbuffersImmediateInvalidArgs) {
 
 TEST_P(GLES3DecoderTest1, GenSamplersImmediateValidArgs) {
   EXPECT_CALL(*gl_, GenSamplers(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   cmds::GenSamplersImmediate* cmd =
       GetImmediateAs<cmds::GenSamplersImmediate>();
   GLuint temp = kNewClientId;
@@ -836,7 +836,7 @@ TEST_P(GLES3DecoderTest1, GenSamplersImmediateInvalidArgs) {
 
 TEST_P(GLES2DecoderTest1, GenTexturesImmediateValidArgs) {
   EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   cmds::GenTexturesImmediate* cmd =
       GetImmediateAs<cmds::GenTexturesImmediate>();
   GLuint temp = kNewClientId;
@@ -875,7 +875,7 @@ TEST_P(GLES2DecoderTest1, GenTexturesImmediateInvalidArgs) {
 
 TEST_P(GLES3DecoderTest1, GenTransformFeedbacksImmediateValidArgs) {
   EXPECT_CALL(*gl_, GenTransformFeedbacks(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   cmds::GenTransformFeedbacksImmediate* cmd =
       GetImmediateAs<cmds::GenTransformFeedbacksImmediate>();
   GLuint temp = kNewClientId;

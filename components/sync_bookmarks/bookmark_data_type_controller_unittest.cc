@@ -39,7 +39,7 @@ using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
 using testing::Return;
-using testing::SetArgumentPointee;
+using testing::SetArgPointee;
 
 namespace {
 
@@ -106,8 +106,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   void SetAssociateExpectations() {
     EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
         WillRepeatedly(Return(true));
-    EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
-        WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+    EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
+        .WillRepeatedly(DoAll(SetArgPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
         WillRepeatedly(Return(syncer::SyncError()));
   }
@@ -205,8 +205,8 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartFirstRun) {
   CreateBookmarkModel(LOAD_MODEL);
   SetStartExpectations();
   SetAssociateExpectations();
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
+      .WillRepeatedly(DoAll(SetArgPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _, _));
   Start();
 }
@@ -229,8 +229,8 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartOk) {
   CreateBookmarkModel(LOAD_MODEL);
   SetStartExpectations();
   SetAssociateExpectations();
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
+      .WillRepeatedly(DoAll(SetArgPointee<0>(true), Return(true)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
@@ -242,8 +242,8 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
   // Set up association to fail.
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
       WillRepeatedly(Return(true));
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
+      .WillRepeatedly(DoAll(SetArgPointee<0>(true), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
       WillRepeatedly(Return(syncer::SyncError(FROM_HERE,
                                               syncer::SyncError::DATATYPE_ERROR,
@@ -263,8 +263,8 @@ TEST_F(SyncBookmarkDataTypeControllerTest,
   // Set up association to fail with an unrecoverable error.
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
       WillRepeatedly(Return(true));
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
+      .WillRepeatedly(DoAll(SetArgPointee<0>(false), Return(false)));
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::UNRECOVERABLE_ERROR, _, _));
   Start();
