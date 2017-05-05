@@ -650,7 +650,9 @@ class StackSamplingProfilerTest : public testing::Test {
 
 // Checks that the basic expected information is present in a sampled call stack
 // profile.
-#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
+// macOS ASAN is not yet supported - crbug.com/718628.
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED) && \
+    !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
 #define MAYBE_Basic Basic
 #else
 #define MAYBE_Basic DISABLED_Basic
@@ -728,7 +730,9 @@ TEST_F(StackSamplingProfilerTest, MAYBE_Annotations) {
 
 // Checks that the profiler handles stacks containing dynamically-allocated
 // stack memory.
-#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
+// macOS ASAN is not yet supported - crbug.com/718628.
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED) && \
+    !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
 #define MAYBE_Alloca Alloca
 #else
 #define MAYBE_Alloca DISABLED_Alloca
@@ -1359,7 +1363,9 @@ TEST_F(StackSamplingProfilerTest, MAYBE_ConcurrentProfiling_Mixed) {
 
 // Checks that a stack that runs through another library produces a stack with
 // the expected functions.
-#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
+// macOS ASAN is not yet supported - crbug.com/718628.
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED) && \
+    !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
 #define MAYBE_OtherLibrary OtherLibrary
 #else
 #define MAYBE_OtherLibrary DISABLED_OtherLibrary
@@ -1442,7 +1448,9 @@ TEST_F(StackSamplingProfilerTest, MAYBE_UnloadingLibrary) {
 
 // Checks that a stack that runs through a library that has been unloaded
 // produces a stack, and doesn't crash.
-#if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
+// macOS ASAN is not yet supported - crbug.com/718628.
+#if defined(STACK_SAMPLING_PROFILER_SUPPORTED) && \
+    !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
 #define MAYBE_UnloadedLibrary UnloadedLibrary
 #else
 #define MAYBE_UnloadedLibrary DISABLED_UnloadedLibrary
