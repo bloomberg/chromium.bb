@@ -95,11 +95,8 @@ class DesktopViewport {
       const Bounds& bounds,
       const ViewMatrix::Point& point);
 
-  ViewMatrix::Vector2D desktop_size_;
-  ViewMatrix::Vector2D surface_size_;
-
-  bool desktop_size_ready_ = false;
-  bool surface_size_ready_ = false;
+  ViewMatrix::Vector2D desktop_size_{0.f, 0.f};
+  ViewMatrix::Vector2D surface_size_{0.f, 0.f};
 
   ViewMatrix desktop_to_surface_transform_;
 
