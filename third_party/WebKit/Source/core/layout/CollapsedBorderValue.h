@@ -49,25 +49,23 @@ class CollapsedBorderValue {
       : color_(0),
         width_(0),
         style_(kBorderStyleNone),
-        precedence_(kBorderPrecedenceOff),
-        transparent_(false) {}
+        precedence_(kBorderPrecedenceOff) {}
 
   CollapsedBorderValue(const BorderValue& border,
                        const Color& color,
                        EBorderPrecedence precedence)
       : color_(color),
-        width_(border.NonZero() ? border.Width() : 0),
+        width_(border.Style() > kBorderStyleHidden ? border.Width() : 0),
         style_(border.Style()),
-        precedence_(precedence),
-        transparent_(border.IsTransparent()) {
+        precedence_(precedence) {
     DCHECK(precedence != kBorderPrecedenceOff);
   }
 
-  unsigned Width() const { return style_ > kBorderStyleHidden ? width_ : 0; }
+  unsigned Width() const { return width_; }
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
   bool Exists() const { return precedence_ != kBorderPrecedenceOff; }
   Color GetColor() const { return color_; }
-  bool IsTransparent() const { return transparent_; }
+  bool IsTransparent() const { return !color_.Alpha(); }
   EBorderPrecedence Precedence() const {
     return static_cast<EBorderPrecedence>(precedence_);
   }
@@ -80,8 +78,8 @@ class CollapsedBorderValue {
   bool VisuallyEquals(const CollapsedBorderValue& o) const {
     if (!IsVisible() && !o.IsVisible())
       return true;
-    return GetColor() == o.GetColor() && IsTransparent() == o.IsTransparent() &&
-           IsSameIgnoringColor(o);
+    return GetColor() == o.GetColor() && Width() == o.Width() &&
+           Style() == o.Style();
   }
 
   bool IsVisible() const { return Width() && !IsTransparent(); }
@@ -93,10 +91,9 @@ class CollapsedBorderValue {
 
  private:
   Color color_;
-  unsigned width_ : 24;
+  unsigned width_ : 25;
   unsigned style_ : 4;       // EBorderStyle
   unsigned precedence_ : 3;  // EBorderPrecedence
-  unsigned transparent_ : 1;
 };
 
 }  // namespace blink
