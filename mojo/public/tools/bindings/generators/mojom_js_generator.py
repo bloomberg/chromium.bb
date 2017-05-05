@@ -342,47 +342,10 @@ def GetRelativePath(module, base_module):
 
 
 class Generator(generator.Generator):
-
-  js_filters = {
-    "decode_snippet": JavaScriptDecodeSnippet,
-    "default_value": JavaScriptDefaultValue,
-    "encode_snippet": JavaScriptEncodeSnippet,
-    "expression_to_text": ExpressionToText,
-    "field_offset": JavaScriptFieldOffset,
-    "has_callbacks": mojom.HasCallbacks,
-    "is_any_handle_or_interface_field": IsAnyHandleOrInterfaceField,
-    "is_array_pointer_field": IsArrayPointerField,
-    "is_associated_interface_field": IsAssociatedInterfaceField,
-    "is_associated_interface_request_field": IsAssociatedInterfaceRequestField,
-    "is_bool_field": IsBoolField,
-    "is_enum_field": IsEnumField,
-    "is_handle_field": IsHandleField,
-    "is_interface_field": IsInterfaceField,
-    "is_interface_request_field": IsInterfaceRequestField,
-    "is_map_pointer_field": IsMapPointerField,
-    "is_object_field": IsObjectField,
-    "is_string_pointer_field": IsStringPointerField,
-    "is_struct_pointer_field": IsStructPointerField,
-    "is_union_field": IsUnionField,
-    "js_type": JavaScriptType,
-    "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
-    "payload_size": JavaScriptPayloadSize,
-    "get_relative_path": GetRelativePath,
-    "stylize_method": generator.StudlyCapsToCamel,
-    "union_decode_snippet": JavaScriptUnionDecodeSnippet,
-    "union_encode_snippet": JavaScriptUnionEncodeSnippet,
-    "validate_array_params": JavaScriptValidateArrayParams,
-    "validate_enum_params": JavaScriptValidateEnumParams,
-    "validate_map_params": JavaScriptValidateMapParams,
-    "validate_nullable_params": JavaScriptNullableParam,
-    "validate_struct_params": JavaScriptValidateStructParams,
-    "validate_union_params": JavaScriptValidateUnionParams,
-  }
-
-  def GetParameters(self):
+  def _GetParameters(self):
     return {
       "namespace": self.module.namespace,
-      "imports": self.GetImports(),
+      "imports": self._GetImports(),
       "kinds": self.module.kinds,
       "enums": self.module.enums,
       "module": self.module,
@@ -390,29 +353,64 @@ class Generator(generator.Generator):
       "unions": self.GetUnions(),
       "use_new_js_bindings": self.use_new_js_bindings,
       "interfaces": self.GetInterfaces(),
-      "imported_interfaces": self.GetImportedInterfaces(),
+      "imported_interfaces": self._GetImportedInterfaces(),
     }
 
   @staticmethod
   def GetTemplatePrefix():
     return "js_templates"
 
-  @classmethod
-  def GetFilters(cls):
-    return cls.js_filters
+  def GetFilters(self):
+    js_filters = {
+      "decode_snippet": JavaScriptDecodeSnippet,
+      "default_value": JavaScriptDefaultValue,
+      "encode_snippet": JavaScriptEncodeSnippet,
+      "expression_to_text": ExpressionToText,
+      "field_offset": JavaScriptFieldOffset,
+      "has_callbacks": mojom.HasCallbacks,
+      "is_any_handle_or_interface_field": IsAnyHandleOrInterfaceField,
+      "is_array_pointer_field": IsArrayPointerField,
+      "is_associated_interface_field": IsAssociatedInterfaceField,
+      "is_associated_interface_request_field":
+          IsAssociatedInterfaceRequestField,
+      "is_bool_field": IsBoolField,
+      "is_enum_field": IsEnumField,
+      "is_handle_field": IsHandleField,
+      "is_interface_field": IsInterfaceField,
+      "is_interface_request_field": IsInterfaceRequestField,
+      "is_map_pointer_field": IsMapPointerField,
+      "is_object_field": IsObjectField,
+      "is_string_pointer_field": IsStringPointerField,
+      "is_struct_pointer_field": IsStructPointerField,
+      "is_union_field": IsUnionField,
+      "js_type": JavaScriptType,
+      "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
+      "payload_size": JavaScriptPayloadSize,
+      "get_relative_path": GetRelativePath,
+      "stylize_method": generator.StudlyCapsToCamel,
+      "union_decode_snippet": JavaScriptUnionDecodeSnippet,
+      "union_encode_snippet": JavaScriptUnionEncodeSnippet,
+      "validate_array_params": JavaScriptValidateArrayParams,
+      "validate_enum_params": JavaScriptValidateEnumParams,
+      "validate_map_params": JavaScriptValidateMapParams,
+      "validate_nullable_params": JavaScriptNullableParam,
+      "validate_struct_params": JavaScriptValidateStructParams,
+      "validate_union_params": JavaScriptValidateUnionParams,
+    }
+    return js_filters
 
   @UseJinja("module.amd.tmpl")
-  def GenerateAMDModule(self):
-    return self.GetParameters()
+  def _GenerateAMDModule(self):
+    return self._GetParameters()
 
   def GenerateFiles(self, args):
     if self.variant:
       raise Exception("Variants not supported in JavaScript bindings.")
 
-    self.Write(self.GenerateAMDModule(),
+    self.Write(self._GenerateAMDModule(),
         self.MatchMojomFilePath("%s.js" % self.module.name))
 
-  def GetImports(self):
+  def _GetImports(self):
     used_names = set()
     for each_import in self.module.imports:
       simple_name = each_import["module_name"].split(".")[0]
@@ -430,7 +428,7 @@ class Generator(generator.Generator):
       counter += 1
     return self.module.imports
 
-  def GetImportedInterfaces(self):
+  def _GetImportedInterfaces(self):
     interface_to_import = {};
     for each_import in self.module.imports:
       for each_interface in each_import["module"].interfaces:
