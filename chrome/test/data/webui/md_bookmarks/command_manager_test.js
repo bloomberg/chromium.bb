@@ -25,13 +25,19 @@ suite('<bookmarks-command-manager>', function() {
 
   setup(function() {
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder(
-          '1',
-          [
-            createFolder('11', []),
-            createFolder('12', []),
-            createItem('13'),
-          ])),
+      nodes: testTree(
+          createFolder(
+              '1',
+              [
+                createFolder(
+                    '11',
+                    [
+                      createItem('111'),
+                    ]),
+                createFolder('12', []),
+                createItem('13'),
+              ]),
+          createFolder('2', [])),
     });
     bookmarks.Store.instance_ = store;
 
@@ -110,5 +116,18 @@ suite('<bookmarks-command-manager>', function() {
 
     MockInteractions.pressAndReleaseKeyOn(document, keyCode, '', key);
     assertLastCommand('edit', ['11']);
+  });
+
+  test('does not delete children at same time as ancestor', function() {
+    var lastDelete = null;
+    chrome.bookmarkManagerPrivate.removeTrees = function(idArray) {
+      lastDelete = idArray.sort();
+    };
+
+    var parentAndChildren = new Set(['1', '2', '12', '111']);
+    assertTrue(commandManager.canExecute(Command.DELETE, parentAndChildren));
+    commandManager.handle(Command.DELETE, parentAndChildren);
+
+    assertDeepEquals(['1', '2'], lastDelete);
   });
 });

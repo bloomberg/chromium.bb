@@ -103,19 +103,39 @@ Polymer({
         });
         break;
       case Command.DELETE:
-        // TODO(tsergeant): Filter IDs so we don't try to delete children of
-        // something else already being deleted.
         chrome.bookmarkManagerPrivate.removeTrees(
-            Array.from(itemIds), function() {
+            Array.from(this.minimizeDeletionSet_(itemIds)), function() {
               // TODO(jiaxi): Add toast later.
             });
         break;
     }
-
   },
 
   ////////////////////////////////////////////////////////////////////////////
   // Private functions:
+
+  /**
+   * Minimize the set of |itemIds| by removing any node which has an ancestor
+   * node already in the set. This ensures that instead of trying to delete both
+   * a node and its descendant, we will only try to delete the topmost node,
+   * preventing an error in the bookmarkManagerPrivate.removeTrees API call.
+   * @param {!Set<string>} itemIds
+   * @return {!Set<string>}
+   */
+  minimizeDeletionSet_: function(itemIds) {
+    var minimizedSet = new Set();
+    var nodes = this.getState().nodes;
+    itemIds.forEach(function(itemId) {
+      var currentId = itemId;
+      while (currentId != ROOT_NODE_ID) {
+        currentId = assert(nodes[currentId].parentId);
+        if (itemIds.has(currentId))
+          return;
+      }
+      minimizedSet.add(itemId);
+    });
+    return minimizedSet;
+  },
 
   /**
    * @param {!Set<string>} itemIds
