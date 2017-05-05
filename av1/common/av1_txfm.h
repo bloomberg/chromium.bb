@@ -24,7 +24,7 @@ static const int cos_bit_min = 10;
 static const int cos_bit_max = 16;
 
 // cospi_arr[i][j] = (int)round(cos(M_PI*j/128) * (1<<(cos_bit_min+i)));
-static const int32_t cospi_arr[7][64] = {
+static const int32_t cospi_arr_data[7][64] = {
   { 1024, 1024, 1023, 1021, 1019, 1016, 1013, 1009, 1004, 999, 993, 987, 980,
     972,  964,  955,  946,  936,  926,  915,  903,  891,  878, 865, 851, 837,
     822,  807,  792,  775,  759,  742,  724,  706,  688,  669, 650, 630, 610,
@@ -67,6 +67,10 @@ static const int32_t cospi_arr[7][64] = {
     30893, 29466, 28020, 26558, 25080, 23586, 22078, 20557, 19024, 17479, 15924,
     14359, 12785, 11204, 9616,  8022,  6424,  4821,  3216,  1608 }
 };
+
+static INLINE const int32_t *cospi_arr(int n) {
+  return cospi_arr_data[n - cos_bit_min];
+}
 
 static INLINE int32_t round_shift(int32_t value, int bit) {
   assert(bit >= 1);

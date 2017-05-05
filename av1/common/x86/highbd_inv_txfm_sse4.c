@@ -24,7 +24,7 @@ static INLINE void load_buffer_4x4(const int32_t *coeff, __m128i *in) {
 }
 
 static void idct4x4_sse4_1(__m128i *in, int bit) {
-  const int32_t *cospi = cospi_arr[bit - cos_bit_min];
+  const int32_t *cospi = cospi_arr(bit);
   const __m128i cospi32 = _mm_set1_epi32(cospi[32]);
   const __m128i cospi48 = _mm_set1_epi32(cospi[48]);
   const __m128i cospi16 = _mm_set1_epi32(cospi[16]);
@@ -72,7 +72,7 @@ static void idct4x4_sse4_1(__m128i *in, int bit) {
 }
 
 static void iadst4x4_sse4_1(__m128i *in, int bit) {
-  const int32_t *cospi = cospi_arr[bit - cos_bit_min];
+  const int32_t *cospi = cospi_arr(bit);
   const __m128i cospi32 = _mm_set1_epi32(cospi[32]);
   const __m128i cospi8 = _mm_set1_epi32(cospi[8]);
   const __m128i cospim8 = _mm_set1_epi32(-cospi[8]);
@@ -325,7 +325,7 @@ static void load_buffer_8x8(const int32_t *coeff, __m128i *in) {
 }
 
 static void idct8x8_sse4_1(__m128i *in, __m128i *out, int bit) {
-  const int32_t *cospi = cospi_arr[bit - cos_bit_min];
+  const int32_t *cospi = cospi_arr(bit);
   const __m128i cospi56 = _mm_set1_epi32(cospi[56]);
   const __m128i cospim8 = _mm_set1_epi32(-cospi[8]);
   const __m128i cospi24 = _mm_set1_epi32(cospi[24]);
@@ -439,7 +439,7 @@ static void idct8x8_sse4_1(__m128i *in, __m128i *out, int bit) {
 }
 
 static void iadst8x8_sse4_1(__m128i *in, __m128i *out, int bit) {
-  const int32_t *cospi = cospi_arr[bit - cos_bit_min];
+  const int32_t *cospi = cospi_arr(bit);
   const __m128i cospi32 = _mm_set1_epi32(cospi[32]);
   const __m128i cospi16 = _mm_set1_epi32(cospi[16]);
   const __m128i cospim16 = _mm_set1_epi32(-cospi[16]);
@@ -849,7 +849,7 @@ static void write_buffer_16x16(__m128i *in, uint16_t *output, int stride,
 }
 
 static void idct16x16_sse4_1(__m128i *in, __m128i *out, int bit) {
-  const int32_t *cospi = cospi_arr[bit - cos_bit_min];
+  const int32_t *cospi = cospi_arr(bit);
   const __m128i cospi60 = _mm_set1_epi32(cospi[60]);
   const __m128i cospim4 = _mm_set1_epi32(-cospi[4]);
   const __m128i cospi28 = _mm_set1_epi32(cospi[28]);
@@ -1043,7 +1043,7 @@ static void idct16x16_sse4_1(__m128i *in, __m128i *out, int bit) {
 }
 
 static void iadst16x16_sse4_1(__m128i *in, __m128i *out, int bit) {
-  const int32_t *cospi = cospi_arr[bit - cos_bit_min];
+  const int32_t *cospi = cospi_arr(bit);
   const __m128i cospi32 = _mm_set1_epi32(cospi[32]);
   const __m128i cospi48 = _mm_set1_epi32(cospi[48]);
   const __m128i cospi16 = _mm_set1_epi32(cospi[16]);

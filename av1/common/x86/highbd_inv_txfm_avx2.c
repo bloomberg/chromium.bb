@@ -167,7 +167,7 @@ static INLINE __m256i half_btf_avx2(__m256i w0, __m256i n0, __m256i w1,
 }
 
 static void idct32_avx2(__m256i *in, __m256i *out, int bit) {
-  const int32_t *cospi = cospi_arr[bit - cos_bit_min];
+  const int32_t *cospi = cospi_arr(bit);
   const __m256i cospi62 = _mm256_set1_epi32(cospi[62]);
   const __m256i cospi30 = _mm256_set1_epi32(cospi[30]);
   const __m256i cospi46 = _mm256_set1_epi32(cospi[46]);
