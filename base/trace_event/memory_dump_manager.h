@@ -42,7 +42,7 @@ namespace trace_event {
 
 class MemoryTracingObserver;
 class MemoryDumpProvider;
-class MemoryDumpSessionState;
+class HeapProfilerSerializationState;
 
 // This is the interface exposed to the rest of the codebase to deal with
 // memory tracing. The main entry point for clients is represented by
@@ -147,18 +147,12 @@ class BASE_EXPORT MemoryDumpManager {
   // Enable heap profiling if kEnableHeapProfiling is specified.
   void EnableHeapProfilingIfNeeded();
 
-  // Returns true if the dump mode is allowed for current tracing session.
-  bool IsDumpModeAllowed(MemoryDumpLevelOfDetail dump_mode);
-
   // Lets tests see if a dump provider is registered.
   bool IsDumpProviderRegisteredForTesting(MemoryDumpProvider*);
 
-  // Returns the MemoryDumpSessionState object, which is shared by all the
-  // ProcessMemoryDump and MemoryAllocatorDump instances through all the tracing
-  // session lifetime.
-  const scoped_refptr<MemoryDumpSessionState>& session_state_for_testing()
-      const {
-    return session_state_;
+  const scoped_refptr<HeapProfilerSerializationState>&
+  heap_profiler_serialization_state_for_testing() const {
+    return heap_profiler_serialization_state_;
   }
 
   // Returns a unique id for identifying the processes. The id can be
@@ -197,7 +191,8 @@ class BASE_EXPORT MemoryDumpManager {
     ProcessMemoryDumpAsyncState(
         MemoryDumpRequestArgs req_args,
         const MemoryDumpProviderInfo::OrderedSet& dump_providers,
-        scoped_refptr<MemoryDumpSessionState> session_state,
+        scoped_refptr<HeapProfilerSerializationState>
+            heap_profiler_serialization_state,
         ProcessMemoryDumpCallback callback,
         scoped_refptr<SequencedTaskRunner> dump_thread_task_runner);
     ~ProcessMemoryDumpAsyncState();
@@ -221,8 +216,11 @@ class BASE_EXPORT MemoryDumpManager {
     // and becomes empty at the end, when all dump providers have been invoked.
     std::vector<scoped_refptr<MemoryDumpProviderInfo>> pending_dump_providers;
 
-    // The trace-global session state.
-    scoped_refptr<MemoryDumpSessionState> session_state;
+    // The HeapProfilerSerializationState object, which is shared by all
+    // the ProcessMemoryDump and MemoryAllocatorDump instances through all the
+    // tracing session lifetime.
+    scoped_refptr<HeapProfilerSerializationState>
+        heap_profiler_serialization_state;
 
     // Callback passed to the initial call to CreateProcessDump().
     ProcessMemoryDumpCallback callback;
@@ -293,7 +291,8 @@ class BASE_EXPORT MemoryDumpManager {
   MemoryDumpProviderInfo::OrderedSet dump_providers_;
 
   // Shared among all the PMDs to keep state scoped to the tracing session.
-  scoped_refptr<MemoryDumpSessionState> session_state_;
+  scoped_refptr<HeapProfilerSerializationState>
+      heap_profiler_serialization_state_;
 
   std::unique_ptr<MemoryTracingObserver> tracing_observer_;
 

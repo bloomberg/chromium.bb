@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TRACE_EVENT_MEMORY_DUMP_SESSION_STATE_H_
-#define BASE_TRACE_EVENT_MEMORY_DUMP_SESSION_STATE_H_
+#ifndef BASE_TRACE_EVENT_HEAP_PROFILER_SERIALIZATION_STATE_H_
+#define BASE_TRACE_EVENT_HEAP_PROFILER_SERIALIZATION_STATE_H_
 
 #include <memory>
 #include <set>
@@ -18,10 +18,10 @@ namespace trace_event {
 
 // Container for state variables that should be shared across all the memory
 // dumps in a tracing session.
-class BASE_EXPORT MemoryDumpSessionState
-    : public RefCountedThreadSafe<MemoryDumpSessionState> {
+class BASE_EXPORT HeapProfilerSerializationState
+    : public RefCountedThreadSafe<HeapProfilerSerializationState> {
  public:
-  MemoryDumpSessionState();
+  HeapProfilerSerializationState();
 
   // Returns the stack frame deduplicator that should be used by memory dump
   // providers when doing a heap dump.
@@ -55,8 +55,8 @@ class BASE_EXPORT MemoryDumpSessionState
   }
 
  private:
-  friend class RefCountedThreadSafe<MemoryDumpSessionState>;
-  ~MemoryDumpSessionState();
+  friend class RefCountedThreadSafe<HeapProfilerSerializationState>;
+  ~HeapProfilerSerializationState();
 
   // Deduplicates backtraces in heap dumps so they can be written once when the
   // trace is finalized.
@@ -66,12 +66,10 @@ class BASE_EXPORT MemoryDumpSessionState
   // trace is finalized.
   std::unique_ptr<TypeNameDeduplicator> type_name_deduplicator_;
 
-  std::set<MemoryDumpLevelOfDetail> allowed_dump_modes_;
-
   uint32_t heap_profiler_breakdown_threshold_bytes_;
 };
 
 }  // namespace trace_event
 }  // namespace base
 
-#endif  // BASE_TRACE_EVENT_MEMORY_DUMP_SESSION_STATE_H_
+#endif  // BASE_TRACE_EVENT_HEAP_PROFILER_SERIALIZATION_STATE_H

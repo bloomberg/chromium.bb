@@ -2,35 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event/memory_dump_session_state.h"
+#include "base/trace_event/heap_profiler_serialization_state.h"
 
 namespace base {
 namespace trace_event {
 
-MemoryDumpSessionState::MemoryDumpSessionState()
+HeapProfilerSerializationState::HeapProfilerSerializationState()
     : heap_profiler_breakdown_threshold_bytes_(0) {}
-MemoryDumpSessionState::~MemoryDumpSessionState() {}
+HeapProfilerSerializationState::~HeapProfilerSerializationState() {}
 
-void MemoryDumpSessionState::SetStackFrameDeduplicator(
+void HeapProfilerSerializationState::SetStackFrameDeduplicator(
     std::unique_ptr<StackFrameDeduplicator> stack_frame_deduplicator) {
   DCHECK(!stack_frame_deduplicator_);
   stack_frame_deduplicator_ = std::move(stack_frame_deduplicator);
 }
 
-void MemoryDumpSessionState::SetTypeNameDeduplicator(
+void HeapProfilerSerializationState::SetTypeNameDeduplicator(
     std::unique_ptr<TypeNameDeduplicator> type_name_deduplicator) {
   DCHECK(!type_name_deduplicator_);
   type_name_deduplicator_ = std::move(type_name_deduplicator);
-}
-
-void MemoryDumpSessionState::SetAllowedDumpModes(
-    std::set<MemoryDumpLevelOfDetail> allowed_dump_modes) {
-  allowed_dump_modes_ = allowed_dump_modes;
-}
-
-bool MemoryDumpSessionState::IsDumpModeAllowed(
-    MemoryDumpLevelOfDetail dump_mode) const {
-  return allowed_dump_modes_.count(dump_mode) != 0;
 }
 
 }  // namespace trace_event
