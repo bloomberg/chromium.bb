@@ -864,9 +864,6 @@ bool SessionsSyncManager::InitFromSyncModel(
               rewritten_specifics.tab_node_id(), new_tab_id);
           UpdateTrackerWithSpecifics(rewritten_specifics,
                                      remote.GetModifiedTime());
-
-          session_tracker_.ReassociateLocalTab(
-              rewritten_specifics.tab_node_id(), new_tab_id);
         }
       }
     }

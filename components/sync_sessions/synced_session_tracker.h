@@ -174,6 +174,9 @@ class SyncedSessionTracker {
   // any previous SessionTab object the node was associated with. This is useful
   // on restart when sync needs to reassociate tabs from a previous session with
   // newly restored tabs (and can be used in conjunction with PutTabInWindow).
+  // If |new_tab_id| is already associated with a tab object, that tab will be
+  // overwritten. Reassociating a tab with a node it is already mapped to will
+  // have no effect.
   void ReassociateLocalTab(int tab_node_id, SessionID::id_type new_tab_id);
 
   // **** Methods for querying/manipulating overall state ****.

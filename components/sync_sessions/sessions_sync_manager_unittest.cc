@@ -1695,7 +1695,8 @@ TEST_F(SessionsSyncManagerTest, ProcessForeignDeleteTabsWithReusedNodeIds) {
 
 TEST_F(SessionsSyncManagerTest, AssociationReusesNodes) {
   SyncChangeList changes;
-  AddTab(AddWindow()->GetSessionId(), kFoo1);
+  TestSyncedWindowDelegate* window = AddWindow();
+  TestSyncedTabDelegate* tab = AddTab(window->GetSessionId(), kFoo1);
   InitWithSyncDataTakeOutput(SyncDataList(), &changes);
   ASSERT_TRUE(ChangeTypeMatches(changes,
                                 {SyncChange::ACTION_ADD, SyncChange::ACTION_ADD,
@@ -1727,6 +1728,24 @@ TEST_F(SessionsSyncManagerTest, AssociationReusesNodes) {
   ASSERT_TRUE(ChangeTypeMatches(changes, {SyncChange::ACTION_UPDATE}));
   VerifyLocalTabChange(changes[0], 1, kFoo1);
   EXPECT_EQ(tab_node_id,
+            changes[0].sync_data().GetSpecifics().session().tab_node_id());
+  changes.clear();
+
+  // Update the original tab. Ensure the same tab node is updated.
+  NavigateTab(tab, kFoo2);
+  FilterOutLocalHeaderChanges(&changes);
+  ASSERT_TRUE(ChangeTypeMatches(changes, {SyncChange::ACTION_UPDATE}));
+  VerifyLocalTabChange(changes[0], 2, kFoo2);
+  EXPECT_EQ(tab_node_id,
+            changes[0].sync_data().GetSpecifics().session().tab_node_id());
+  changes.clear();
+
+  // Add a new tab. It should reuse the second tab node.
+  AddTab(window->GetSessionId(), kBar1);
+  FilterOutLocalHeaderChanges(&changes);
+  ASSERT_TRUE(ChangeTypeMatches(changes, {SyncChange::ACTION_UPDATE}));
+  VerifyLocalTabChange(changes[0], 1, kBar1);
+  EXPECT_EQ(tab_node_id + 1,
             changes[0].sync_data().GetSpecifics().session().tab_node_id());
 }
 
