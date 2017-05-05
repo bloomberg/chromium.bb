@@ -15,6 +15,7 @@
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -26,7 +27,6 @@
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -137,8 +137,9 @@ void UpdateShelfVisibility() {
 
 gfx::Rect GetTextFilterPosition(WmWindow* root_window) {
   gfx::Rect total_bounds = root_window->ConvertRectToScreen(
-      wm::GetDisplayWorkAreaBoundsInParent(root_window->GetChildByShellWindowId(
-          kShellWindowId_DefaultContainer)));
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+          root_window->GetChildByShellWindowId(kShellWindowId_DefaultContainer)
+              ->aura_window()));
   return gfx::Rect(
       0.5 * (total_bounds.width() -
              std::min(kTextFilterWidth, total_bounds.width())),

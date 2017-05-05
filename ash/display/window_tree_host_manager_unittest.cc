@@ -18,8 +18,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/wm_screen_util.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
@@ -1494,8 +1492,7 @@ class RootWindowTestObserver : public aura::WindowObserver {
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
-    shelf_display_bounds_ =
-        wm::GetDisplayBoundsWithShelf(WmWindow::Get(window));
+    shelf_display_bounds_ = ScreenUtil::GetDisplayBoundsWithShelf(window);
   }
 
   const gfx::Rect& shelf_display_bounds() const {

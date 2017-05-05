@@ -7,6 +7,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -23,8 +24,7 @@ gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
   aura::Window* root_window = window->GetRootWindow();
   if (GetRootWindowController(root_window)->wm_shelf()->shelf_widget())
     return GetDisplayWorkAreaBoundsInParent(window);
-  else
-    return GetDisplayBoundsInParent(window);
+  return GetDisplayBoundsInParent(window);
 }
 
 // static
@@ -41,6 +41,19 @@ gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   ::wm::ConvertRectFromScreen(window->parent(), &result);
   return result;
+}
+
+// static
+gfx::Rect ScreenUtil::GetDisplayBoundsWithShelf(aura::Window* window) {
+  if (ShellPort::Get()->IsInUnifiedMode()) {
+    // In unified desktop mode, there is only one shelf in the first display.
+    gfx::SizeF size(ShellPort::Get()->GetFirstDisplay().size());
+    float scale = window->GetRootWindow()->bounds().height() / size.height();
+    size.Scale(scale, scale);
+    return gfx::Rect(gfx::ToCeiledSize(size));
+  }
+
+  return window->GetRootWindow()->bounds();
 }
 
 }  // namespace ash

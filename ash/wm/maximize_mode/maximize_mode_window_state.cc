@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -26,8 +26,9 @@ namespace {
 gfx::Size GetMaximumSizeOfWindow(wm::WindowState* window_state) {
   DCHECK(window_state->CanMaximize() || window_state->CanResize());
 
-  gfx::Size workspace_size =
-      wm::GetMaximizedWindowBoundsInParent(window_state->window()).size();
+  gfx::Size workspace_size = ScreenUtil::GetMaximizedWindowBoundsInParent(
+                                 window_state->window()->aura_window())
+                                 .size();
 
   gfx::Size size = window_state->window()->GetMaximumSize();
   if (size.IsEmpty())
@@ -40,8 +41,8 @@ gfx::Size GetMaximumSizeOfWindow(wm::WindowState* window_state) {
 // Returns the centered bounds of the given bounds in the work area.
 gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
                             wm::WindowState* state_object) {
-  gfx::Rect work_area_in_parent =
-      wm::GetDisplayWorkAreaBoundsInParent(state_object->window());
+  gfx::Rect work_area_in_parent = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+      state_object->window()->aura_window());
   work_area_in_parent.ClampToCenteredSize(bounds_in_parent.size());
   return work_area_in_parent;
 }
@@ -49,7 +50,8 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
 // Returns the maximized/full screen and/or centered bounds of a window.
 gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
   if (state_object->IsFullscreen() || state_object->IsPinned())
-    return wm::GetDisplayBoundsInParent(state_object->window());
+    return ScreenUtil::GetDisplayBoundsInParent(
+        state_object->window()->aura_window());
 
   gfx::Rect bounds_in_parent;
   // Make the window as big as possible.

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
@@ -23,7 +24,6 @@
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
@@ -343,10 +343,10 @@ void WindowGrid::PositionWindows(bool animate) {
   WmWindow* widget_window = WmWindow::Get(shield_widget_->GetNativeWindow());
   const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
   widget_window->SetBounds(bounds);
-  gfx::Rect total_bounds =
-      root_window_->ConvertRectToScreen(wm::GetDisplayWorkAreaBoundsInParent(
-          root_window_->GetChildByShellWindowId(
-              kShellWindowId_DefaultContainer)));
+  gfx::Rect total_bounds = root_window_->ConvertRectToScreen(
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+          root_window_->GetChildByShellWindowId(kShellWindowId_DefaultContainer)
+              ->aura_window()));
   // Windows occupy vertically centered area with additional vertical insets.
   int horizontal_inset =
       gfx::ToFlooredInt(std::min(kOverviewInsetRatio * total_bounds.width(),

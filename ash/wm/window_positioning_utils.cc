@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"
@@ -29,7 +29,9 @@ namespace {
 int GetDefaultSnappedWindowWidth(WmWindow* window) {
   const float kSnappedWidthWorkspaceRatio = 0.5f;
 
-  int work_area_width = GetDisplayWorkAreaBoundsInParent(window).width();
+  int work_area_width =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window->aura_window())
+          .width();
   int min_width = window->GetMinimumSize().width();
   int ideal_width =
       static_cast<int>(work_area_width * kSnappedWidthWorkspaceRatio);
@@ -107,14 +109,16 @@ void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
 }
 
 gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(WmWindow* window) {
-  gfx::Rect work_area_in_parent(GetDisplayWorkAreaBoundsInParent(window));
+  gfx::Rect work_area_in_parent(
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window->aura_window()));
   return gfx::Rect(work_area_in_parent.x(), work_area_in_parent.y(),
                    GetDefaultSnappedWindowWidth(window),
                    work_area_in_parent.height());
 }
 
 gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(WmWindow* window) {
-  gfx::Rect work_area_in_parent(GetDisplayWorkAreaBoundsInParent(window));
+  gfx::Rect work_area_in_parent(
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window->aura_window()));
   int width = GetDefaultSnappedWindowWidth(window);
   return gfx::Rect(work_area_in_parent.right() - width, work_area_in_parent.y(),
                    width, work_area_in_parent.height());
