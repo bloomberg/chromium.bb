@@ -200,6 +200,10 @@ const base::Feature kMemoryPressureBasedSourceBufferGC{
 const base::Feature kNewRemotePlaybackPipeline{
     "NewRemotePlaybackPipeline", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// CanPlayThrough issued according to standard.
+const base::Feature kSpecCompliantCanPlayThrough{
+    "CanPlayThrough", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use shared block-based buffering for media.
 const base::Feature kUseNewMediaCache{"use-new-media-cache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

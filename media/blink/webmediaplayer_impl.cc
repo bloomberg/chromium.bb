@@ -219,6 +219,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       last_reported_memory_usage_(0),
       supports_save_(true),
       chunk_demuxer_(NULL),
+      tick_clock_(new base::DefaultTickClock()),
+      buffered_data_source_host_(
+          base::Bind(&WebMediaPlayerImpl::OnProgress, AsWeakPtr()),
+          tick_clock_.get()),
       url_index_(url_index),
       // Threaded compositing isn't enabled universally yet.
       compositor_task_runner_(params->compositor_task_runner()
@@ -251,8 +255,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   DCHECK(renderer_factory_selector_);
   DCHECK(client_);
   DCHECK(delegate_);
-
-  tick_clock_.reset(new base::DefaultTickClock());
 
   force_video_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
@@ -855,24 +857,7 @@ bool WebMediaPlayerImpl::DidLoadingProgress() {
   // Note: Separate variables used to ensure both methods are called every time.
   const bool pipeline_progress = pipeline_controller_.DidLoadingProgress();
   const bool data_progress = buffered_data_source_host_.DidLoadingProgress();
-  const bool did_loading_progress = pipeline_progress || data_progress;
-
-  if (did_loading_progress &&
-      highest_ready_state_ < ReadyState::kReadyStateHaveFutureData) {
-    // Reset the preroll attempt clock.
-    preroll_attempt_pending_ = true;
-    preroll_attempt_start_time_ = base::TimeTicks();
-
-    // Clear any 'stale' flag and give the pipeline a chance to resume. If we
-    // are already resumed, this will cause |preroll_attempt_start_time_| to be
-    // set.
-    // TODO(sandersd): Should this be on the same stack? It might be surprising
-    // that didLoadingProgress() can synchronously change state.
-    delegate_->ClearStaleFlag(delegate_id_);
-    UpdatePlayState();
-  }
-
-  return did_loading_progress;
+  return pipeline_progress || data_progress;
 }
 
 void WebMediaPlayerImpl::Paint(blink::WebCanvas* canvas,
@@ -1296,6 +1281,41 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   UpdatePlayState();
 }
 
+void WebMediaPlayerImpl::OnProgress() {
+  DVLOG(1) << __func__;
+  if (highest_ready_state_ < ReadyState::kReadyStateHaveFutureData) {
+    // Reset the preroll attempt clock.
+    preroll_attempt_pending_ = true;
+    preroll_attempt_start_time_ = base::TimeTicks();
+
+    // Clear any 'stale' flag and give the pipeline a chance to resume. If we
+    // are already resumed, this will cause |preroll_attempt_start_time_| to
+    // be set.
+    delegate_->ClearStaleFlag(delegate_id_);
+    UpdatePlayState();
+  } else if (ready_state_ == ReadyState::kReadyStateHaveFutureData &&
+             CanPlayThrough()) {
+    SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
+  }
+}
+
+bool WebMediaPlayerImpl::CanPlayThrough() {
+  if (!base::FeatureList::IsEnabled(kSpecCompliantCanPlayThrough))
+    return true;
+  if (chunk_demuxer_)
+    return true;
+  if (data_source_ && data_source_->assume_fully_buffered())
+    return true;
+  // If we're not currently downloading, we have as much buffer as
+  // we're ever going to get, which means we say we can play through.
+  if (network_state_ == WebMediaPlayer::kNetworkStateIdle)
+    return true;
+  return buffered_data_source_host_.CanPlayThrough(
+      base::TimeDelta::FromSecondsD(CurrentTime()),
+      base::TimeDelta::FromSecondsD(Duration()),
+      playback_rate_ == 0.0 ? 1.0 : playback_rate_);
+}
+
 void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
   DVLOG(1) << __func__ << "(" << state << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -1315,9 +1335,8 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
       RecordUnderflowDuration(base::TimeDelta());
     }
 
-    // TODO(chcunningham): Monitor playback position vs buffered. Potentially
-    // transition to HAVE_FUTURE_DATA here if not enough is buffered.
-    SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
+    SetReadyState(CanPlayThrough() ? WebMediaPlayer::kReadyStateHaveEnoughData
+                                   : WebMediaPlayer::kReadyStateHaveFutureData);
 
     // Let the DataSource know we have enough data. It may use this information
     // to release unused network connections.
@@ -1650,12 +1669,14 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 }
 
 void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
-  DVLOG(1) << __func__;
+  DVLOG(1) << __func__ << "(" << is_downloading << ")";
   if (!is_downloading && network_state_ == WebMediaPlayer::kNetworkStateLoading)
     SetNetworkState(WebMediaPlayer::kNetworkStateIdle);
   else if (is_downloading &&
            network_state_ == WebMediaPlayer::kNetworkStateIdle)
     SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
+  if (ready_state_ == ReadyState::kReadyStateHaveFutureData && !is_downloading)
+    SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
   media_log_->AddEvent(
       media_log_->CreateBooleanEvent(MediaLogEvent::NETWORK_ACTIVITY_SET,
                                      "is_downloading_data", is_downloading));
@@ -2400,5 +2421,10 @@ void WebMediaPlayerImpl::RecordVideoNaturalSize(const gfx::Size& natural_size) {
 }
 
 #undef UMA_HISTOGRAM_VIDEO_HEIGHT
+
+void WebMediaPlayerImpl::SetTickClockForTest(base::TickClock* tick_clock) {
+  tick_clock_.reset(tick_clock);
+  buffered_data_source_host_.SetTickClockForTest(tick_clock);
+}
 
 }  // namespace media
