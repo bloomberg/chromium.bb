@@ -11,7 +11,12 @@ class CompositorFrame;
 
 namespace test {
 
+// Creates a valid CompositorFrame.
 CompositorFrame MakeCompositorFrame();
+
+// Creates a CompositorFrame that will be valid once its render_pass_list is
+// initialized.
+CompositorFrame MakeEmptyCompositorFrame();
 
 }  // namespace test
 }  // namespace cc

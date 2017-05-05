@@ -52,13 +52,7 @@ void FakeCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   last_sent_frame_.reset(new CompositorFrame(std::move(frame)));
   ++num_sent_frames_;
 
-  if (!last_sent_frame_->render_pass_list.empty()) {
-    last_swap_rect_ = last_sent_frame_->render_pass_list.back()->damage_rect;
-    last_swap_rect_valid_ = true;
-  } else {
-    last_swap_rect_ = gfx::Rect();
-    last_swap_rect_valid_ = false;
-  }
+  last_swap_rect_ = last_sent_frame_->render_pass_list.back()->damage_rect;
 
   resources_held_by_parent_.insert(resources_held_by_parent_.end(),
                                    last_sent_frame_->resource_list.begin(),

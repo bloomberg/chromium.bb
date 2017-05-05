@@ -22,6 +22,7 @@
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_resource_holder_client.h"
+#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_surface_resource_holder_client.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/stub_surface_factory_client.h"
@@ -82,7 +83,7 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
 
   void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
                                           size_t num_resource_ids) {
-    CompositorFrame frame;
+    CompositorFrame frame = test::MakeCompositorFrame();
     for (size_t i = 0u; i < num_resource_ids; ++i) {
       TransferableResource resource;
       resource.id = resource_ids[i];
@@ -449,18 +450,6 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
         expected_returned_ids, expected_returned_counts,
         arraysize(expected_returned_counts), consumer_sync_token_);
   }
-}
-
-TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
-  LocalSurfaceId local_surface_id(6, kArbitraryToken);
-  SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
-  factory_->SubmitCompositorFrame(local_surface_id, CompositorFrame(),
-                                  SurfaceFactory::DrawCallback(),
-                                  SurfaceFactory::WillDrawCallback());
-  Surface* surface = manager_.GetSurfaceForId(surface_id);
-  ASSERT_NE(nullptr, surface);
-  EXPECT_EQ(2, surface->frame_index());
-  EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id);
 }
 
 void CreateSurfaceDrawCallback(SurfaceFactory* factory,

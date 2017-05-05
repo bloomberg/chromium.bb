@@ -625,14 +625,12 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
       provider_ ? provider_->GetChildToParentMap(child_id) : empty_map;
 
   CHECK(debug_weak_this.get());
-  if (!frame.render_pass_list.empty()) {
-    int remapped_pass_id =
-        RemapPassId(frame.render_pass_list.back()->id, surface_id);
-    if (in_moved_pixel_surface)
-      moved_pixel_passes_.insert(remapped_pass_id);
-    if (parent_pass_id)
-      render_pass_dependencies_[parent_pass_id].insert(remapped_pass_id);
-  }
+  int remapped_pass_id =
+      RemapPassId(frame.render_pass_list.back()->id, surface_id);
+  if (in_moved_pixel_surface)
+    moved_pixel_passes_.insert(remapped_pass_id);
+  if (parent_pass_id)
+    render_pass_dependencies_[parent_pass_id].insert(remapped_pass_id);
 
   struct SurfaceInfo {
     SurfaceInfo(const SurfaceId& id,
@@ -722,12 +720,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
 
   gfx::Rect damage_rect;
   gfx::Rect full_damage;
-  if (!frame.render_pass_list.empty()) {
-    RenderPass* last_pass = frame.render_pass_list.back().get();
-    full_damage = last_pass->output_rect;
-    damage_rect =
-        DamageRectForSurface(surface, *last_pass, last_pass->output_rect);
-  }
+  RenderPass* last_pass = frame.render_pass_list.back().get();
+  full_damage = last_pass->output_rect;
+  damage_rect =
+      DamageRectForSurface(surface, *last_pass, last_pass->output_rect);
 
   // Avoid infinite recursion by adding current surface to
   // referenced_surfaces_.

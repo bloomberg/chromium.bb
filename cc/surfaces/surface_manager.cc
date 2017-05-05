@@ -498,19 +498,15 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
     if (surface->HasPendingFrame()) {
       // This provides the surface size from the root render pass.
       const CompositorFrame& frame = surface->GetPendingFrame();
-      if (!frame.render_pass_list.empty()) {
-        *str << " pending "
-             << frame.render_pass_list.back()->output_rect.size().ToString();
-      }
+      *str << " pending "
+           << frame.render_pass_list.back()->output_rect.size().ToString();
     }
 
     if (surface->HasActiveFrame()) {
       // This provides the surface size from the root render pass.
       const CompositorFrame& frame = surface->GetActiveFrame();
-      if (!frame.render_pass_list.empty()) {
-        *str << " active "
-             << frame.render_pass_list.back()->output_rect.size().ToString();
-      }
+      *str << " active "
+           << frame.render_pass_list.back()->output_rect.size().ToString();
     }
   } else {
     *str << surface_id;

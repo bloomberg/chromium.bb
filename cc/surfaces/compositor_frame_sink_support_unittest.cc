@@ -11,6 +11,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +24,6 @@ using testing::_;
 using testing::Eq;
 
 namespace cc {
-namespace test {
 namespace {
 
 constexpr FrameSinkId kDisplayFrameSink(2, 0);
@@ -78,7 +78,7 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
 CompositorFrame MakeCompositorFrame(std::vector<SurfaceId> embedded_surfaces,
                                     std::vector<SurfaceId> referenced_surfaces,
                                     TransferableResourceArray resource_list) {
-  CompositorFrame compositor_frame;
+  CompositorFrame compositor_frame = test::MakeCompositorFrame();
   compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
   compositor_frame.metadata.embedded_surfaces = std::move(embedded_surfaces);
   compositor_frame.metadata.referenced_surfaces =
@@ -1321,5 +1321,4 @@ TEST_F(CompositorFrameSinkSupportTest, LateArrivingDependency) {
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
 }
 
-}  // namespace test
 }  // namespace cc

@@ -40,10 +40,7 @@ class FrameSinkManagerClient;
 class Surface;
 class SurfaceFactory;
 class SurfaceFactoryClient;
-
-namespace test {
 class CompositorFrameSinkSupportTest;
-}
 
 class CC_SURFACES_EXPORT SurfaceManager {
  public:
@@ -172,7 +169,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   }
 
  private:
-  friend class test::CompositorFrameSinkSupportTest;
+  friend class CompositorFrameSinkSupportTest;
   friend class SurfaceManagerRefTest;
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
