@@ -23,38 +23,40 @@ void RendererFactorySelector::AddFactory(
 void RendererFactorySelector::SetBaseFactoryType(FactoryType type) {
   DCHECK(factories_[type]);
   base_factory_type_ = type;
-  current_factory_needs_update_ = true;
 }
 
-// For the moment, this method should only be called once or twice.
-// This method will be regularly called whenever the logic in choosing a
-// renderer type is moved out of the AdaptiveRendererFactory, into this method.
-void RendererFactorySelector::UpdateCurrentFactory() {
+RendererFactory* RendererFactorySelector::GetCurrentFactory() {
+  // We cannot use the MEDIA_PLAYER and the COURIER factory at the same time.
+  DCHECK(!use_media_player_ || !query_is_remoting_active_cb_);
+
   DCHECK(base_factory_type_);
   FactoryType next_factory_type = base_factory_type_.value();
 
   if (use_media_player_)
     next_factory_type = FactoryType::MEDIA_PLAYER;
 
+  if (query_is_remoting_active_cb_ && query_is_remoting_active_cb_.Run())
+    next_factory_type = FactoryType::COURIER;
+
   DVLOG(1) << __func__ << " Selecting factory type: " << next_factory_type;
 
-  current_factory_ = factories_[next_factory_type].get();
-  current_factory_needs_update_ = false;
-}
+  RendererFactory* current_factory = factories_[next_factory_type].get();
 
-RendererFactory* RendererFactorySelector::GetCurrentFactory() {
-  if (current_factory_needs_update_)
-    UpdateCurrentFactory();
+  DCHECK(current_factory);
 
-  DCHECK(current_factory_);
-  return current_factory_;
+  return current_factory;
 }
 
 #if defined(OS_ANDROID)
 void RendererFactorySelector::SetUseMediaPlayer(bool use_media_player) {
   use_media_player_ = use_media_player;
-  current_factory_needs_update_ = true;
 }
 #endif
+
+void RendererFactorySelector::SetQueryIsRemotingActiveCB(
+    QueryIsRemotingActiveCB query_is_remoting_active_cb) {
+  DCHECK(!query_is_remoting_active_cb_);
+  query_is_remoting_active_cb_ = query_is_remoting_active_cb;
+}
 
 }  // namespace media

@@ -36,10 +36,10 @@ source_set("rpc") {
 
 source_set("remoting") {
   sources = [
-    "adaptive_renderer_factory.cc",
-    "adaptive_renderer_factory.h",
     "courier_renderer.cc",
     "courier_renderer.h",
+    "courier_renderer_factory.cc",
+    "courier_renderer_factory.h",
     "demuxer_stream_adapter.cc",
     "demuxer_stream_adapter.h",
     "metrics.cc",
