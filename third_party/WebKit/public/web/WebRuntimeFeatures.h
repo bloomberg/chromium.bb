@@ -150,6 +150,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void EnableVideoRotateToFullscreen(bool);
   BLINK_EXPORT static void EnableVideoFullscreenDetection(bool);
   BLINK_EXPORT static void EnableMediaControlsOverlayPlayButton(bool);
+  BLINK_EXPORT static void EnableLocationHardReload(bool);
 
  private:
   WebRuntimeFeatures();

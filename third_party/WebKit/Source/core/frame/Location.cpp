@@ -38,6 +38,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -226,8 +227,11 @@ void Location::reload(LocalDOMWindow* current_window) {
     return;
   if (GetDocument()->Url().ProtocolIsJavaScript())
     return;
-  dom_window_->GetFrame()->Reload(kFrameLoadTypeReload,
-                                  ClientRedirectPolicy::kClientRedirect);
+  dom_window_->GetFrame()->Reload(
+      RuntimeEnabledFeatures::locationHardReloadEnabled()
+          ? kFrameLoadTypeReloadBypassingCache
+          : kFrameLoadTypeReload,
+      ClientRedirectPolicy::kClientRedirect);
 }
 
 void Location::SetLocation(const String& url,
