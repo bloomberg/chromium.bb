@@ -86,6 +86,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.media.VideoPersister;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
@@ -933,7 +934,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     protected void onDeferredStartup() {
         initDeferredStartupForActivity();
-        DeferredStartupHandler.getInstance().initDeferredStartupForApp();
+        ProcessInitializationHandler.getInstance().initializeDeferredStartupTasks();
         DeferredStartupHandler.getInstance().queueDeferredTasksOnIdleHandler();
     }
 
