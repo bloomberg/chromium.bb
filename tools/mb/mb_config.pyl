@@ -256,6 +256,12 @@
       'Mac GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
     },
 
+    'chromium.infra.codesearch': {
+      'codesearch-gen-chromium-android': 'codesearch_gen_chromium_android_bot',
+      'codesearch-gen-chromium-chromiumos': 'codesearch_gen_chromium_chromiumos_bot',
+      'codesearch-gen-chromium-linux': 'codesearch_gen_chromium_linux_bot',
+    },
+
     'chromium.linux': {
       'Android Arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
       'Android Builder (dbg)': 'android_debug_static_bot',
@@ -1153,6 +1159,18 @@
     'codesearch': [
       # The Codesearch bots run their own recipe and invoke GN directly.
       'error',
+    ],
+
+    'codesearch_gen_chromium_android_bot': [
+      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'arm', 'android_without_codecs',
+    ],
+
+    'codesearch_gen_chromium_chromiumos_bot': [
+      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64', 'chromeos', 'ozone',
+    ],
+
+    'codesearch_gen_chromium_linux_bot': [
+      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64',
     ],
 
     # The 'cros_chrome_sdk_* configs are placeholders that indicate
