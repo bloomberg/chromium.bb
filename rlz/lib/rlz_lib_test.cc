@@ -25,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "rlz/lib/financial_ping.h"
+#include "rlz/lib/net_response_check.h"
 #include "rlz/lib/rlz_lib.h"
 #include "rlz/lib/rlz_value_store.h"
 #include "rlz/test/rlz_test_helpers.h"

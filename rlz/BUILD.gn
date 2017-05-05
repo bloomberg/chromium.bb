@@ -17,27 +17,18 @@ source_set("rlz_lib") {
     "chromeos/lib/rlz_value_store_chromeos.cc",
     "chromeos/lib/rlz_value_store_chromeos.h",
     "ios/lib/machine_id_ios.cc",
-    "lib/assert.cc",
-    "lib/assert.h",
-    "lib/crc32.h",
-    "lib/crc32_wrapper.cc",
     "lib/crc8.cc",
     "lib/crc8.h",
     "lib/financial_ping.cc",
     "lib/financial_ping.h",
-    "lib/lib_values.cc",
-    "lib/lib_values.h",
     "lib/machine_id.cc",
     "lib/machine_id.h",
     "lib/recursive_cross_process_lock_posix.cc",
     "lib/recursive_cross_process_lock_posix.h",
-    "lib/rlz_enums.h",
     "lib/rlz_lib.cc",
     "lib/rlz_lib.h",
     "lib/rlz_lib_clear.cc",
     "lib/rlz_value_store.h",
-    "lib/string_utils.cc",
-    "lib/string_utils.h",
     "mac/lib/machine_id_mac.cc",
     "mac/lib/rlz_value_store_mac.h",
     "mac/lib/rlz_value_store_mac.mm",
@@ -61,10 +52,10 @@ source_set("rlz_lib") {
   public_configs = [ ":rlz_config" ]
 
   deps = [
+    ":rlz_utils",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
-    "//third_party/zlib",
     "//url",
   ]
 
@@ -84,6 +75,32 @@ source_set("rlz_lib") {
     ]
     set_sources_assignment_filter(sources_assignment_filter)
   }
+}
+
+source_set("rlz_utils") {
+  sources = [
+    "lib/assert.cc",
+    "lib/assert.h",
+    "lib/crc32.h",
+    "lib/crc32_wrapper.cc",
+    "lib/lib_values.cc",
+    "lib/lib_values.h",
+    "lib/net_response_check.cc",
+    "lib/net_response_check.h",
+    "lib/rlz_api.h",
+    "lib/rlz_enums.h",
+    "lib/string_utils.cc",
+    "lib/string_utils.h",
+  ]
+
+  public_configs = [ ":rlz_config" ]
+
+  deps = [
+    "//base",
+    "//net",
+    "//third_party/zlib",
+    "//url",
+  ]
 }
 
 source_set("test_support") {
@@ -118,6 +135,7 @@ test("rlz_unittests") {
 
   deps = [
     ":rlz_lib",
+    ":rlz_utils",
     ":test_support",
     "//base",
     "//net:test_support",
@@ -148,6 +166,7 @@ if (is_win) {
     ]
     deps = [
       ":rlz_lib",
+      ":rlz_utils",
       "//build/config/sanitizers:deps",
       "//third_party/zlib",
     ]
