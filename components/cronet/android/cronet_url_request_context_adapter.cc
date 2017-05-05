@@ -37,6 +37,7 @@
 #include "base/values.h"
 #include "components/cronet/android/cert/cert_verifier_cache_serializer.h"
 #include "components/cronet/android/cert/proto/cert_verification.pb.h"
+#include "components/cronet/android/cronet_library_loader.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/url_request_context_config.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -84,16 +85,16 @@ class NetLogWithNetworkChangeEvents {
   net::NetLog* net_log() { return &net_log_; }
   // This function registers with the NetworkChangeNotifier and so must be
   // called *after* the NetworkChangeNotifier is created. Should only be
-  // called on the UI thread as it is not thread-safe and the UI thread is
+  // called on the init thread as it is not thread-safe and the init thread is
   // the thread the NetworkChangeNotifier is created on. This function is
   // not thread-safe because accesses to |net_change_logger_| are not atomic.
   // There might be multiple CronetEngines each with a network thread so
-  // so the UI thread is used. |g_net_log_| also outlives the network threads
+  // so the init thread is used. |g_net_log_| also outlives the network threads
   // so it would be unsafe to receive callbacks on the network threads without
   // a complicated thread-safe reference-counting system to control callback
   // registration.
-  void EnsureInitializedOnMainThread() {
-    DCHECK(base::MessageLoopForUI::IsCurrent());
+  void EnsureInitializedOnInitThread() {
+    DCHECK(cronet::OnInitThread());
     if (net_change_logger_)
       return;
     net_change_logger_.reset(new net::LoggingNetworkChangeObserver(&net_log_));
@@ -504,7 +505,7 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
   StopNetLogOnNetworkThread();
 }
 
-void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
+void CronetURLRequestContextAdapter::InitRequestContextOnInitThread(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
   base::android::ScopedJavaGlobalRef<jobject> jcaller_ref;
@@ -518,7 +519,7 @@ void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
   // TODO(csharrison) Architect the wrapper better so we don't need to cast for
   // android ProxyConfigServices.
   android_proxy_config_service->set_exclude_pac_url(true);
-  g_net_log.Get().EnsureInitializedOnMainThread();
+  g_net_log.Get().EnsureInitializedOnInitThread();
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::InitializeOnNetworkThread,

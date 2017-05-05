@@ -53,9 +53,9 @@ const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
     {"NetAndroid", net::android::RegisterJni},
 };
 
-// MessageLoop on the main thread, which is where objects that receive Java
+// MessageLoop on the init thread, which is where objects that receive Java
 // notifications generally live.
-base::MessageLoop* g_main_message_loop = nullptr;
+base::MessageLoop* g_init_message_loop = nullptr;
 
 net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
 
@@ -76,6 +76,11 @@ bool NativeInit() {
 
 }  // namespace
 
+bool OnInitThread() {
+  DCHECK(g_init_message_loop);
+  return g_init_message_loop == base::MessageLoop::current();
+}
+
 // Checks the available version of JNI. Also, caches Java reflection artifacts.
 jint CronetOnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
@@ -91,7 +96,7 @@ void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
   base::android::LibraryLoaderExitHook();
 }
 
-void CronetInitOnMainThread(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
+void CronetInitOnInitThread(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
 #if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
   base::i18n::InitializeICU();
 #endif
@@ -101,9 +106,8 @@ void CronetInitOnMainThread(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
   // configuration information.
   base::CommandLine::Init(0, nullptr);
   DCHECK(!base::MessageLoop::current());
-  DCHECK(!g_main_message_loop);
-  g_main_message_loop = new base::MessageLoopForUI();
-  base::MessageLoopForUI::current()->Start();
+  DCHECK(!g_init_message_loop);
+  g_init_message_loop = new base::MessageLoop();
   DCHECK(!g_network_change_notifier);
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());

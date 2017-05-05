@@ -12,6 +12,10 @@ namespace cronet {
 jint CronetOnLoad(JavaVM* vm, void* reserved);
 void CronetOnUnLoad(JavaVM* jvm, void* reserved);
 
+// Returns true when running on initialization thread.
+// Only callable after initialization thread is started.
+bool OnInitThread();
+
 }  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_ANDROID_CRONET_LIBRARY_LOADER_H_

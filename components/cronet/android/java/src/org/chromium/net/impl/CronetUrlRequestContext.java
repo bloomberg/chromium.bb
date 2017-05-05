@@ -5,8 +5,6 @@
 package org.chromium.net.impl;
 
 import android.os.ConditionVariable;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Process;
 
 import org.chromium.base.Log;
@@ -161,25 +159,19 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             mNetworkQualityEstimatorEnabled = builder.networkQualityEstimatorEnabled();
         }
 
-        // Init native Chromium URLRequestContext on main UI thread.
-        Runnable task = new Runnable() {
+        // Init native Chromium URLRequestContext on init thread.
+        CronetLibraryLoader.postToInitThread(new Runnable() {
             @Override
             public void run() {
-                CronetLibraryLoader.ensureInitializedOnMainThread(builder.getContext());
+                CronetLibraryLoader.ensureInitializedOnInitThread(builder.getContext());
                 synchronized (mLock) {
                     // mUrlRequestContextAdapter is guaranteed to exist until
-                    // initialization on main and network threads completes and
+                    // initialization on init and network threads completes and
                     // initNetworkThread is called back on network thread.
-                    nativeInitRequestContextOnMainThread(mUrlRequestContextAdapter);
+                    nativeInitRequestContextOnInitThread(mUrlRequestContextAdapter);
                 }
             }
-        };
-        // Run task immediately or post it to the UI thread.
-        if (Looper.getMainLooper() == Looper.myLooper()) {
-            task.run();
-        } else {
-            new Handler(Looper.getMainLooper()).post(task);
-        }
+        });
     }
 
     @VisibleForTesting
@@ -251,7 +243,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                 throw new IllegalThreadStateException("Cannot shutdown from network thread.");
             }
         }
-        // Wait for init to complete on main and network thread (without lock,
+        // Wait for init to complete on init and network thread (without lock,
         // so other thread could access it).
         mInitCompleted.block();
 
@@ -711,7 +703,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     private native void nativeGetCertVerifierData(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
-    private native void nativeInitRequestContextOnMainThread(long nativePtr);
+    private native void nativeInitRequestContextOnInitThread(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeConfigureNetworkQualityEstimatorForTesting(long nativePtr,
