@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.notifications;
+package org.chromium.chrome.browser.notifications.channels;
+
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
 /**
  * Initializes our notification channels.
  */
 public class ChannelsInitializer {
-
     private final NotificationManagerProxy mNotificationManager;
     private final ChannelDefinitions mChannelDefinitions;
 
@@ -57,5 +58,4 @@ public class ChannelsInitializer {
                 mChannelDefinitions.getChannelGroupFromId(channel));
         mNotificationManager.createNotificationChannel(channel);
     }
-
 }

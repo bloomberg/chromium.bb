@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+
 import java.util.List;
 
 /**

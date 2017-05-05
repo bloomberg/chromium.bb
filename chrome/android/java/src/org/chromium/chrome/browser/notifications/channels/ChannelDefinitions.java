@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.notifications;
+package org.chromium.chrome.browser.notifications.channels;
 
 import android.annotation.TargetApi;
 import android.app.NotificationManager;
@@ -137,10 +137,10 @@ public class ChannelDefinitions {
     public static class Channel {
         @ChannelId
         public final String mId;
-        final int mNameResId;
-        final int mImportance;
+        public final int mNameResId;
+        public final int mImportance;
         @ChannelGroupId
-        final String mGroupId;
+        public final String mGroupId;
 
         Channel(@ChannelId String id, int nameResId, int importance,
                 @ChannelGroupId String groupId) {
@@ -156,8 +156,8 @@ public class ChannelDefinitions {
      */
     public static class ChannelGroup {
         @ChannelGroupId
-        final String mId;
-        final int mNameResId;
+        public final String mId;
+        public final int mNameResId;
 
         ChannelGroup(@ChannelGroupId String id, int nameResId) {
             this.mId = id;

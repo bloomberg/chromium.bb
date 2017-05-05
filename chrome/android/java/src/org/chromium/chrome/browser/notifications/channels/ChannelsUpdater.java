@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.notifications;
+package org.chromium.chrome.browser.notifications.channels;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 
 /**
  * Contains helper methods for checking if we should update channels and updating them if so.

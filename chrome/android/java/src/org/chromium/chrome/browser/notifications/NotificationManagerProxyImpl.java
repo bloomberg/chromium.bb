@@ -10,6 +10,7 @@ import android.app.NotificationManager;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
