@@ -19,6 +19,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
+namespace {
+
+// Touch bar identifiers.
+NSString* const kBrowserWindowTouchBarId = @"browser-window";
+NSString* const kTabFullscreenTouchBarId = @"tab-fullscreen";
+
+// Touch bar items identifiers.
+NSString* const kBackForwardTouchId = @"BACK-FWD";
+NSString* const kReloadOrStopTouchId = @"RELOAD-STOP";
+NSString* const kHomeTouchId = @"HOME";
+NSString* const kSearchTouchId = @"SEARCH";
+NSString* const kStarTouchId = @"BOOKMARK";
+NSString* const kNewTabTouchId = @"NEW-TAB";
+NSString* const kExitFullscreenTouchId = @"EXIT-FULLSCREEN";
+NSString* const kFullscreenOriginLabelTouchId = @"FULLSCREEN-ORIGIN-LABEL";
+
+}  // namespace
+
 class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
  public:
   void SetUp() override {
@@ -38,6 +56,18 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
   }
 
   id bwc() const { return bwc_; }
+
+  NSString* GetFullscreenTouchBarItemId(NSString* id) {
+    return
+        [BrowserWindowTouchBar identifierForTouchBarId:kTabFullscreenTouchBarId
+                                                itemId:id];
+  }
+
+  NSString* GetBrowserTouchBarItemId(NSString* id) {
+    return
+        [BrowserWindowTouchBar identifierForTouchBarId:kBrowserWindowTouchBarId
+                                                itemId:id];
+  }
 
   void TearDown() override { CocoaProfileTest::TearDown(); }
 
@@ -67,12 +97,11 @@ TEST_F(BrowserWindowTouchBarUnitTest, TouchBarItems) {
   // is in tab fullscreen.
   NSTouchBar* touch_bar = [touch_bar_ makeTouchBar];
   NSArray* touch_bar_items = [touch_bar itemIdentifiers];
-  EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar
-                         touchBarIdForItemId:@"FULLSCREEN-ORIGIN-LABEL"]]);
+  EXPECT_TRUE(
+      [touch_bar_items containsObject:GetFullscreenTouchBarItemId(
+                                          kFullscreenOriginLabelTouchId)]);
   EXPECT_TRUE([[touch_bar escapeKeyReplacementItemIdentifier]
-      isEqualToString:[BrowserWindowTouchBar
-                          touchBarIdForItemId:@"EXIT-FULLSCREEN"]]);
+      isEqualToString:GetFullscreenTouchBarItemId(kExitFullscreenTouchId)]);
 
   BOOL no = NO;
   [[[bwc() stub] andReturnValue:OCMOCK_VALUE(no)]
@@ -80,32 +109,30 @@ TEST_F(BrowserWindowTouchBarUnitTest, TouchBarItems) {
 
   touch_bar_items = [[touch_bar_ makeTouchBar] itemIdentifiers];
   EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"BACK-FWD"]]);
+      containsObject:GetBrowserTouchBarItemId(kBackForwardTouchId)]);
+  EXPECT_TRUE([touch_bar_items
+      containsObject:GetBrowserTouchBarItemId(kReloadOrStopTouchId)]);
   EXPECT_TRUE(
-      [touch_bar_items containsObject:[BrowserWindowTouchBar
-                                          touchBarIdForItemId:@"RELOAD-STOP"]]);
+      [touch_bar_items containsObject:GetBrowserTouchBarItemId(kHomeTouchId)]);
   EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"HOME"]]);
+      containsObject:GetBrowserTouchBarItemId(kSearchTouchId)]);
+  EXPECT_TRUE(
+      [touch_bar_items containsObject:GetBrowserTouchBarItemId(kStarTouchId)]);
   EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"SEARCH"]]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"BOOKMARK"]]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"NEW-TAB"]]);
+      containsObject:GetBrowserTouchBarItemId(kNewTabTouchId)]);
 
   prefs->SetBoolean(prefs::kShowHomeButton, false);
   touch_bar_items = [[touch_bar_ makeTouchBar] itemIdentifiers];
   EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"BACK-FWD"]]);
+      containsObject:GetBrowserTouchBarItemId(kBackForwardTouchId)]);
+  EXPECT_TRUE([touch_bar_items
+      containsObject:GetBrowserTouchBarItemId(kReloadOrStopTouchId)]);
+  EXPECT_TRUE([touch_bar_items
+      containsObject:GetBrowserTouchBarItemId(kSearchTouchId)]);
   EXPECT_TRUE(
-      [touch_bar_items containsObject:[BrowserWindowTouchBar
-                                          touchBarIdForItemId:@"RELOAD-STOP"]]);
+      [touch_bar_items containsObject:GetBrowserTouchBarItemId(kStarTouchId)]);
   EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"SEARCH"]]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"BOOKMARK"]]);
-  EXPECT_TRUE([touch_bar_items
-      containsObject:[BrowserWindowTouchBar touchBarIdForItemId:@"NEW-TAB"]]);
+      containsObject:GetBrowserTouchBarItemId(kNewTabTouchId)]);
 }
 
 // Tests the reload or stop touch bar item.
@@ -122,13 +149,11 @@ TEST_F(BrowserWindowTouchBarUnitTest, ReloadOrStopTouchBarItem) {
 
   NSTouchBarItem* item =
       [touch_bar_ touchBar:touch_bar
-          makeItemForIdentifier:[BrowserWindowTouchBar
-                                    touchBarIdForItemId:@"RELOAD-STOP"]];
+          makeItemForIdentifier:GetBrowserTouchBarItemId(kReloadOrStopTouchId)];
   EXPECT_EQ(IDC_RELOAD, [[item view] tag]);
 
   [touch_bar_ setIsPageLoading:YES];
   item = [touch_bar_ touchBar:touch_bar
-        makeItemForIdentifier:[BrowserWindowTouchBar
-                                  touchBarIdForItemId:@"RELOAD-STOP"]];
+        makeItemForIdentifier:GetBrowserTouchBarItemId(kReloadOrStopTouchId)];
   EXPECT_EQ(IDC_STOP, [[item view] tag]);
 }
