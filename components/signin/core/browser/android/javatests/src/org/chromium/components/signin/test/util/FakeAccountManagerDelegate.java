@@ -42,10 +42,6 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     private final Context mContext;
     private final Set<AccountHolder> mAccounts = new HashSet<>();
 
-    // Tracks the number of in-progress getAccountsByType() tasks so that tests can wait for
-    // their completion.
-    private final ZeroCounter mGetAccountsTaskCounter = new ZeroCounter();
-
     @VisibleForTesting
     public FakeAccountManagerDelegate(Context context, Account... accounts) {
         mContext = context;
@@ -68,12 +64,6 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             }
         }
         return validAccounts.toArray(new Account[0]);
-    }
-
-    @VisibleForTesting
-    public void waitForGetAccountsTask() throws InterruptedException {
-        // Wait until all tasks are done because we don't know which is being waited for.
-        mGetAccountsTaskCounter.waitUntilZero();
     }
 
     /**
@@ -176,37 +166,5 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             }
         }
         throw new IllegalArgumentException("Can not find AccountHolder for account " + account);
-    }
-
-    /**
-     * Simple concurrency helper class for waiting until a resource count becomes zero.
-     */
-    private static class ZeroCounter {
-        private static final int WAIT_TIMEOUT_MS = 10000;
-
-        private final Object mLock = new Object();
-        private int mCount = 0;
-
-        public void increment() {
-            synchronized (mLock) {
-                mCount++;
-            }
-        }
-
-        public void decrement() {
-            synchronized (mLock) {
-                if (--mCount == 0) {
-                    mLock.notifyAll();
-                }
-            }
-        }
-
-        public void waitUntilZero() throws InterruptedException {
-            synchronized (mLock) {
-                while (mCount != 0) {
-                    mLock.wait(WAIT_TIMEOUT_MS);
-                }
-            }
-        }
     }
 }
