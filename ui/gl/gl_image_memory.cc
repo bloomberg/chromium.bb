@@ -363,6 +363,13 @@ GLImageMemory::GLImageMemory(const gfx::Size& size, unsigned internalformat)
 
 GLImageMemory::~GLImageMemory() {}
 
+// static
+GLImageMemory* GLImageMemory::FromGLImage(GLImage* image) {
+  if (!image || image->GetType() != Type::MEMORY)
+    return nullptr;
+  return static_cast<GLImageMemory*>(image);
+}
+
 bool GLImageMemory::Initialize(const unsigned char* memory,
                                gfx::BufferFormat format,
                                size_t stride) {
@@ -497,6 +504,10 @@ bool GLImageMemory::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                          const gfx::Rect& bounds_rect,
                                          const gfx::RectF& crop_rect) {
   return false;
+}
+
+GLImageMemory::Type GLImageMemory::GetType() const {
+  return Type::MEMORY;
 }
 
 // static

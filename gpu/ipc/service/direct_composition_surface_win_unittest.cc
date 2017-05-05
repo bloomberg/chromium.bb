@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/service/direct_composition_surface_win.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -12,12 +13,14 @@
 #include "base/win/scoped_select_object.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/hidden_window.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_dxgi.h"
+#include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/win/win_window.h"
@@ -506,5 +509,56 @@ TEST_F(DirectCompositionPixelTest, VideoSwapchain) {
   DestroySurface(std::move(surface_));
 }
 
+TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
+  if (!CheckIfDCSupported())
+    return;
+  InitializeSurface();
+  surface_->SetEnableDCLayers(true);
+  gfx::Size window_size(100, 100);
+
+  scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
+      nullptr, surface_.get(), gl::GLContextAttribs());
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, true));
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size y_size(50, 50);
+  gfx::Size uv_size(25, 25);
+  size_t y_stride =
+      gfx::RowSizeForBufferFormat(y_size.width(), gfx::BufferFormat::R_8, 0);
+  size_t uv_stride =
+      gfx::RowSizeForBufferFormat(uv_size.width(), gfx::BufferFormat::RG_88, 0);
+  std::vector<uint8_t> y_data(y_stride * y_size.height(), 0xff);
+  std::vector<uint8_t> uv_data(uv_stride * uv_size.height(), 0xff);
+  scoped_refptr<gl::GLImageRefCountedMemory> y_image(
+      new gl::GLImageRefCountedMemory(y_size, GL_BGRA_EXT));
+
+  y_image->Initialize(new base::RefCountedBytes(y_data),
+                      gfx::BufferFormat::R_8);
+  scoped_refptr<gl::GLImageRefCountedMemory> uv_image(
+      new gl::GLImageRefCountedMemory(uv_size, GL_BGRA_EXT));
+  uv_image->Initialize(new base::RefCountedBytes(uv_data),
+                       gfx::BufferFormat::RG_88);
+
+  ui::DCRendererLayerParams params(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{y_image, uv_image},
+      gfx::RectF(gfx::Rect(y_size)), gfx::Rect(window_size), 0, 0, 1.0, 0);
+  surface_->ScheduleDCLayer(params);
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface_->SwapBuffers());
+  Sleep(1000);
+
+  SkColor expected_color = SkColorSetRGB(0xff, 0xb7, 0xff);
+  SkColor actual_color =
+      ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+  EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+      << std::hex << "Expected " << expected_color << " Actual "
+      << actual_color;
+
+  context = nullptr;
+  DestroySurface(std::move(surface_));
+}
 }  // namespace
 }  // namespace gpu

@@ -679,6 +679,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
       allow_overlay = true;
       break;
+    case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
+#if defined(OS_WIN)
+      allow_overlay = true;
+#endif
+      break;
     default:
       break;
   }

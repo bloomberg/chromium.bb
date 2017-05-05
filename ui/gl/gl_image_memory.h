@@ -24,6 +24,9 @@ class GL_EXPORT GLImageMemory : public GLImage {
                   gfx::BufferFormat format,
                   size_t stride);
 
+  // Safe downcast. Returns |nullptr| on failure.
+  static GLImageMemory* FromGLImage(GLImage* image);
+
   // Overridden from GLImage:
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
@@ -39,14 +42,16 @@ class GL_EXPORT GLImageMemory : public GLImage {
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
   void Flush() override {}
+  Type GetType() const override;
 
   static unsigned GetInternalFormatForTesting(gfx::BufferFormat format);
 
+  const unsigned char* memory() { return memory_; }
+  size_t stride() const { return stride_; }
+  gfx::BufferFormat format() const { return format_; }
+
  protected:
   ~GLImageMemory() override;
-
-  gfx::BufferFormat format() const { return format_; }
-  size_t stride() const { return stride_; }
 
  private:
   const gfx::Size size_;
