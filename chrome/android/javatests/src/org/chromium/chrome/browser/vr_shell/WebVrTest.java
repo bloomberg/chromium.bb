@@ -24,8 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * End-to-end tests for WebVR using the WebVR test framework from
- * VrTestBase.
+ * End-to-end tests for WebVR using the WebVR test framework from VrTestBase.
  */
 @CommandLineFlags.Add("enable-webvr")
 @Restriction(RESTRICTION_TYPE_WEBVR_SUPPORTED)
@@ -46,8 +45,8 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that scanning the Daydream View NFC tag on supported devices
-     * fires the vrdisplayactivate event.
+     * Tests that scanning the Daydream View NFC tag on supported devices fires the
+     * vrdisplayactivate event.
      */
     @SmallTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
@@ -59,8 +58,7 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that screen touches are not registered when the viewer is a
-     * Daydream View.
+     * Tests that screen touches are not registered when the viewer is a Daydream View.
      */
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
@@ -91,8 +89,8 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that Daydream controller clicks are registered as screen taps when
-     * the viewer is a Daydream View.
+     * Tests that Daydream controller clicks are registered as screen taps when the viewer is a
+     * Daydream View.
      */
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
@@ -111,8 +109,7 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that screen touches are still registered when the viewer is
-     * Cardboard.
+     * Tests that screen touches are still registered when the viewer is Cardboard.
      */
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
@@ -148,9 +145,9 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Helper function to run the tests checking for the upgrade/install InfoBar
-     * being present since all that differs is the value returned by VrCoreVersionChecker
-     * and a couple asserts.
+     * Helper function to run the tests checking for the upgrade/install InfoBar being present since
+     * all that differs is the value returned by VrCoreVersionChecker and a couple asserts.
+     *
      * @param checkerReturnValue The value to have the VrCoreVersionChecker return
      */
     private void infoBarTestHelper(int checkerReturnValue) throws InterruptedException {
@@ -203,8 +200,8 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that the upgrade/install VR Services InfoBar is not present when
-     * VR Services is installed and up to date.
+     * Tests that the upgrade/install VR Services InfoBar is not present when VR Services is
+     * installed and up to date.
      */
     @MediumTest
     public void testInfoBarNotPresentWhenVrServicesCurrent() throws InterruptedException {
@@ -212,8 +209,7 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that the upgrade VR Services InfoBar is present when
-     * VR Services is outdated.
+     * Tests that the upgrade VR Services InfoBar is present when VR Services is outdated.
      */
     @MediumTest
     public void testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
@@ -221,8 +217,7 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that the install VR Services InfoBar is present when VR
-     * Services is missing.
+     * Tests that the install VR Services InfoBar is present when VR Services is missing.
      */
     @MediumTest
     public void testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
@@ -230,8 +225,8 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that the install VR Services InfoBar is not present when VR
-     * is not supported on the device.
+     * Tests that the install VR Services InfoBar is not present when VR is not supported on the
+     * device.
      */
     @MediumTest
     public void testInfoBarNotPresentWhenVrServicesNotSupported() throws InterruptedException {
@@ -239,8 +234,8 @@ public class WebVrTest extends VrTestBase {
     }
 
     /**
-     * Tests that the reported WebVR capabilities match expectations on the
-     * devices the WebVR tests are run on continuously.
+     * Tests that the reported WebVR capabilities match expectations on the devices the WebVR tests
+     * are run on continuously.
      */
     @MediumTest
     public void testDeviceCapabilitiesMatchExpectations() throws InterruptedException {
@@ -248,6 +243,18 @@ public class WebVrTest extends VrTestBase {
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         assertTrue("VRDisplayFound", vrDisplayFound(mWebContents));
         executeStepAndWait("stepCheckDeviceCapabilities('" + Build.DEVICE + "')", mWebContents);
+        endTest(mWebContents);
+    }
+
+    /**
+     * Tests that focus is locked to the presenting display for purposes of VR input.
+     */
+    @MediumTest
+    public void testPresentationLocksFocus() throws InterruptedException {
+        String testName = "test_presentation_locks_focus";
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
+        enterVrTapAndWait(mWebContents);
+        waitOnJavaScriptStep(mWebContents);
         endTest(mWebContents);
     }
 }

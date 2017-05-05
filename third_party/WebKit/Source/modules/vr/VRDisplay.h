@@ -141,6 +141,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   void ConnectVSyncProvider();
   void OnVSyncConnectionError();
 
+  bool FocusedOrPresenting();
+
   ScriptedAnimationController& EnsureScriptedAnimationController(Document*);
   void ProcessScheduledAnimations(double timestamp);
   void ProcessScheduledWindowAnimations(double timestamp);

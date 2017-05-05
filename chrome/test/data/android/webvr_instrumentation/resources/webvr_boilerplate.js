@@ -9,6 +9,7 @@ var glAttribs = {
 var gl = webglCanvas.getContext("webgl", glAttribs);
 var vrDisplay = null;
 var frameData = null;
+var onAnimationFrameCallback = null;
 
 function onResize() {
   if (vrDisplay && vrDisplay.isPresenting) {
@@ -40,6 +41,7 @@ function onAnimationFrame(t) {
   vrDisplay.requestAnimationFrame(onAnimationFrame);
   // If presenting, set canvas to blue. Otherwise, red.
   if (vrDisplay.isPresenting) {
+    if (onAnimationFrameCallback) onAnimationFrameCallback();
     vrDisplay.getFrameData(frameData);
 
     gl.clearColor(0.0, 0.0, 1.0, 1.0);
