@@ -201,7 +201,7 @@ TEST_F(TaskQueueThrottlerTest, TimerAlignment) {
 
   mock_task_runner_->RunUntilIdle();
 
-  // Times are aligned to a multipple of 1000 milliseconds.
+  // Times are aligned to a multiple of 1000 milliseconds.
   EXPECT_THAT(
       run_times,
       ElementsAre(
@@ -1053,6 +1053,132 @@ TEST_F(TaskQueueThrottlerTest, TwoBudgetPools) {
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(3000),
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(6000),
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(26000)));
+}
+
+namespace {
+void RunChainedTask(size_t run_times_count,
+                    scoped_refptr<TaskQueue> queue,
+                    base::SimpleTestTickClock* clock,
+                    base::TimeDelta task_duration,
+                    std::vector<base::TimeTicks>* run_times) {
+  run_times->push_back(clock->NowTicks());
+  clock->Advance(task_duration);
+
+  if (run_times_count <= 1)
+    return;
+
+  queue->PostTask(FROM_HERE,
+                  base::Bind(&RunChainedTask, run_times_count - 1, queue, clock,
+                             task_duration, run_times));
+}
+
+void RunChainedDelayedTask(size_t run_times_count,
+                           scoped_refptr<TaskQueue> queue,
+                           base::SimpleTestTickClock* clock,
+                           base::TimeDelta task_duration,
+                           std::vector<base::TimeTicks>* run_times,
+                           base::TimeDelta delay) {
+  run_times->push_back(clock->NowTicks());
+  clock->Advance(task_duration);
+
+  if (run_times_count <= 1)
+    return;
+
+  queue->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RunChainedDelayedTask, run_times_count - 1, queue, clock,
+                 task_duration, run_times, delay),
+      delay);
+}
+}  // namespace
+
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_ChainedTasks_Instantaneous) {
+  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+      base::TimeDelta::FromMilliseconds(10));
+  std::vector<base::TimeTicks> run_times;
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  timer_queue_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RunChainedTask, 10, timer_queue_, clock_.get(),
+                 base::TimeDelta(), &run_times),
+      base::TimeDelta::FromMilliseconds(100));
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                          base::TimeTicks() + base::TimeDelta::FromSeconds(1)));
+}
+
+TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_ImmediateTasks_Fast) {
+  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+      base::TimeDelta::FromMilliseconds(10));
+  std::vector<base::TimeTicks> run_times;
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  timer_queue_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RunChainedTask, 10, timer_queue_, clock_.get(),
+                 base::TimeDelta::FromMilliseconds(3), &run_times),
+      base::TimeDelta::FromMilliseconds(100));
+
+  mock_task_runner_->RunUntilIdle();
+
+  // TODO(altimin): Add fence mechanism to block immediate tasks.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(1000),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1003),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1006),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1009),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1012),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2000),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2003),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2006),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2009),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2012)));
+}
+
+TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_DelayedTasks) {
+  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+      base::TimeDelta::FromMilliseconds(10));
+  std::vector<base::TimeTicks> run_times;
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  timer_queue_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RunChainedDelayedTask, 10, timer_queue_, clock_.get(),
+                 base::TimeDelta(), &run_times,
+                 base::TimeDelta::FromMilliseconds(3)),
+      base::TimeDelta::FromMilliseconds(100));
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(1000),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1003),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1006),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1009),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2000),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2003),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2006),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2009),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(3000),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(3003)));
 }
 
 }  // namespace scheduler

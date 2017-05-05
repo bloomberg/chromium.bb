@@ -1,0 +1,66 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WAKE_UP_BUDGET_POOL_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WAKE_UP_BUDGET_POOL_H_
+
+#include "platform/scheduler/renderer/budget_pool.h"
+
+#include "base/macros.h"
+#include "base/optional.h"
+#include "base/time/time.h"
+#include "platform/scheduler/base/lazy_now.h"
+
+namespace blink {
+namespace scheduler {
+
+// WakeUpBudgetPool represents a collection of task queues which share a limit
+// on total cpu time.
+class PLATFORM_EXPORT WakeUpBudgetPool : public BudgetPool {
+ public:
+  WakeUpBudgetPool(const char* name,
+                   BudgetPoolController* budget_pool_controller,
+                   base::TimeTicks now);
+  ~WakeUpBudgetPool() override;
+
+  // Note: this does not have an immediate effect and should be called only
+  // during initialization of a WakeUpBudgetPool.
+  void SetWakeUpRate(double wakeups_per_second);
+
+  // Note: this does not have an immediate effect and should be called only
+  // during initialization of a WakeUpBudgetPool.
+  void SetWakeUpDuration(base::TimeDelta duration);
+
+  // BudgetPool implementation:
+  void RecordTaskRunTime(TaskQueue* queue,
+                         base::TimeTicks start_time,
+                         base::TimeTicks end_time) final;
+  bool CanRunTasksAt(base::TimeTicks moment, bool is_wake_up) const final;
+  base::TimeTicks GetNextAllowedRunTime(
+      base::TimeTicks desired_run_time) const final;
+  void OnQueueNextWakeUpChanged(TaskQueue* queue,
+                                base::TimeTicks now,
+                                base::TimeTicks desired_run_time) final;
+  void OnWakeUp(base::TimeTicks now) final;
+  void AsValueInto(base::trace_event::TracedValue* state,
+                   base::TimeTicks now) const final;
+
+ protected:
+  QueueBlockType GetBlockType() const final;
+
+ private:
+  base::Optional<base::TimeTicks> NextWakeUp() const;
+
+  double wakeups_per_second_;
+  base::TimeDelta wakeup_duration_;
+
+  base::Optional<base::TimeTicks> last_wakeup_;
+
+  DISALLOW_COPY_AND_ASSIGN(WakeUpBudgetPool);
+};
+
+}  // namespace scheduler
+}  // namespace blink
+
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WAKE_UP_BUDGET_POOL_H_

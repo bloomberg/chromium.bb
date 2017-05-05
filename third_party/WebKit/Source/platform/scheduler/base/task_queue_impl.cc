@@ -691,6 +691,10 @@ bool TaskQueueImpl::BlockedByFence() const {
          main_thread_only().current_fence;
 }
 
+bool TaskQueueImpl::HasFence() const {
+  return !!main_thread_only().current_fence;
+}
+
 bool TaskQueueImpl::CouldTaskRun(EnqueueOrder enqueue_order) const {
   if (!IsQueueEnabled())
     return false;
