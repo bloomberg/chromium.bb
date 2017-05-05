@@ -303,6 +303,12 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveInlineScriptInAttributes) {
   EXPECT_NE(WTF::kNotFound, mhtml.Find("src="));
 }
 
+TEST_F(WebFrameSerializerSanitizationTest, RemoveOtherAttributes) {
+  String mhtml =
+      GenerateMHTMLFromHtml("http://www.test.com", "remove_attributes.html");
+  EXPECT_EQ(WTF::kNotFound, mhtml.Find("ping="));
+}
+
 TEST_F(WebFrameSerializerSanitizationTest, DisableFormElements) {
   String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "form.html");
 

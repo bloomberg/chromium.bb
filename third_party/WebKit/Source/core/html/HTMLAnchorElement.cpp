@@ -37,6 +37,7 @@
 #include "core/loader/PingLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/NetworkHints.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
@@ -303,6 +304,10 @@ void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
   const AtomicString& ping_value = getAttribute(pingAttr);
   if (ping_value.IsNull() || !GetDocument().GetSettings() ||
       !GetDocument().GetSettings()->GetHyperlinkAuditingEnabled())
+    return;
+
+  // Pings should not be sent if MHTML page is loaded.
+  if (GetDocument().Fetcher()->Archive())
     return;
 
   UseCounter::Count(GetDocument(), UseCounter::kHTMLAnchorElementPingAttribute);
