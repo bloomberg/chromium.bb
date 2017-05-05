@@ -25,7 +25,6 @@ class SystemTrayDelegateMus : public SystemTrayDelegate {
 
  private:
   // SystemTrayDelegate:
-  LoginStatus GetUserLoginStatus() const override;
   NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
 
   std::unique_ptr<NetworkingConfigDelegate> networking_config_delegate_;

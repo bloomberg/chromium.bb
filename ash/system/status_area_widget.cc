@@ -7,6 +7,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
@@ -74,7 +75,8 @@ void StatusAreaWidget::CreateTrayViews() {
   ime_menu_tray_->Initialize();
   overview_button_tray_->Initialize();
   UpdateAfterShelfAlignmentChange();
-  UpdateAfterLoginStatusChange(delegate->GetUserLoginStatus());
+  UpdateAfterLoginStatusChange(
+      Shell::Get()->session_controller()->login_status());
 }
 
 void StatusAreaWidget::Shutdown() {

@@ -47,7 +47,6 @@ class SystemTrayDelegateChromeOS
 
   // Overridden from ash::SystemTrayDelegate:
   void Initialize() override;
-  ash::LoginStatus GetUserLoginStatus() const override;
   void ShowUserLogin() override;
   void GetCurrentIME(ash::IMEInfo* info) override;
   void GetAvailableIMEList(ash::IMEInfoList* list) override;

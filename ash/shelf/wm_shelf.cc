@@ -17,7 +17,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf_observer.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm_window.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -79,8 +78,8 @@ bool WmShelf::CanChangeShelfAlignment() {
   if (Shell::Get()->session_controller()->IsUserSupervised())
     return false;
 
-  LoginStatus login_status =
-      Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
+  const LoginStatus login_status =
+      Shell::Get()->session_controller()->login_status();
 
   switch (login_status) {
     case LoginStatus::LOCKED:

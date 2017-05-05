@@ -91,6 +91,10 @@ class ASH_EXPORT SessionController
   // Returns true if the current user is a child account.
   bool IsUserChild() const;
 
+  // Returns true if the current user session is a kiosk session (either
+  // chrome app kiosk or ARC kiosk).
+  bool IsKioskSession() const;
+
   // Locks the screen. The locking happens asynchronously.
   void LockScreen();
 

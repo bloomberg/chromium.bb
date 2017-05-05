@@ -17,7 +17,6 @@
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
@@ -66,8 +65,7 @@ bool IsInUserSession() {
   return !session_controller->IsUserSessionBlocked() &&
          session_controller->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
-         Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
-             LoginStatus::KIOSK_APP;
+         !session_controller->IsKioskSession();
 }
 
 // Returns true if the |palette_tray| is on an internal display or on every
