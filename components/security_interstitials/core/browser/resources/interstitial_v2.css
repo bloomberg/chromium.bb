@@ -328,10 +328,10 @@ input[type=checkbox]:checked ~ .checkbox::before {
  * Details message replaces the top content in its own scrollable area.
  */
 
-@media (max-width: 420px) and (max-height: 736px) and (orientation: portrait) {
+@media (max-width: 420px) {
   #details-button {
     border: 0;
-    margin: 8px 0 0;
+    margin: 28px 0 0;
   }
 
   .secondary-button {
@@ -342,18 +342,17 @@ input[type=checkbox]:checked ~ .checkbox::before {
 
 /* Fixed nav. */
 @media (min-width: 240px) and (max-width: 420px) and
-       (min-height: 401px) and (max-height: 736px) and (orientation:portrait),
-       (min-width: 421px) and (max-width: 736px) and (min-height: 240px) and
-       (max-height: 420px) and (orientation:landscape) {
+       (min-height: 401px),
+       (min-width: 421px) and (min-height: 240px) and
+       (max-height: 736px) {
   body .nav-wrapper {
     background: #f7f7f7;
     bottom: 0;
     box-shadow: 0 -22px 40px rgb(247, 247, 247);
-    left: 0;
     margin: 0;
     max-width: 736px;
-    padding-left: 24px;
-    padding-right: 24px;
+    padding-left: 0px;
+    padding-right: 48px;
     position: fixed;
     z-index: 2;
   }
@@ -371,10 +370,14 @@ input[type=checkbox]:checked ~ .checkbox::before {
   #main-content {
     padding-bottom: 40px;
   }
+
+  #details {
+    padding-top: 5.5vh;
+  }
 }
 
-@media (max-width: 420px) and (max-height: 736px) and (orientation: portrait),
-       (max-width: 736px) and (max-height: 420px) and (orientation: landscape) {
+@media (max-width: 420px) and (orientation: portrait),
+       (max-height: 736px) {
   body {
     margin: 0 auto;
   }
@@ -414,6 +417,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
     height: 0;
     opacity: 0;
     overflow: hidden;
+    padding-bottom: 0;
     transition: none;
   }
 
@@ -428,12 +432,12 @@ input[type=checkbox]:checked ~ .checkbox::before {
   }
 
   .icon {
-    margin-bottom: 12px;
+    margin-bottom: 5.69vh;
   }
 
   .interstitial-wrapper {
     box-sizing: border-box;
-    margin: 24px auto 12px;
+    margin: 7vh auto 12px;
     padding: 0 24px;
     position: relative;
   }
@@ -460,151 +464,34 @@ input[type=checkbox]:checked ~ .checkbox::before {
   }
 }
 
+@media (min-width: 421px) and (min-height: 500px) and (max-height: 736px) {
+  .interstitial-wrapper {
+    margin-top: 10vh;
+  }
+}
+
 @media (min-height: 400px) and (orientation:portrait) {
   .interstitial-wrapper {
     margin-bottom: 145px;
   }
 }
 
-@media (min-height: 299px) and (orientation:portrait) {
+@media (min-height: 299px) {
   .nav-wrapper {
     padding-bottom: 16px;
   }
 }
 
-@media (min-height: 405px) and (max-height: 736px) and
-       (max-width: 420px) and (orientation:portrait) {
-  .icon {
-    margin-bottom: 24px;
-  }
-
+@media (min-height: 500px) and (max-height: 650px) and (max-width: 414px) and
+       (orientation: portrait) {
   .interstitial-wrapper {
-    margin-top: 64px;
+    margin-top: 7vh;
   }
 }
 
-@media (min-height: 480px) and (max-width: 420px) and
-       (max-height: 736px) and (orientation: portrait),
-       (min-height: 338px) and (max-height: 420px) and (max-width: 736px) and
-       (orientation: landscape) {
-  .icon {
-    margin-bottom: 24px;
-  }
-
-  .nav-wrapper {
-    padding-bottom: 24px;
-  }
-}
-
-@media (min-height: 500px) and (max-width: 414px) and (orientation: portrait) {
+@media (min-height: 650px) and (max-width: 414px) and (orientation: portrait) {
   .interstitial-wrapper {
-    margin-top: 96px;
-  }
-}
-
-/* Phablet sizing */
-@media (min-width: 375px) and (min-height: 641px) and (max-height: 736px) and
-       (max-width: 414px) and (orientation: portrait) {
-  button,
-  [dir='rtl'] button,
-  .small-link {
-    font-size: 1em;
-    padding-bottom: 12px;
-    padding-top: 12px;
-  }
-
-  body:not(.offline) .icon {
-    height: 80px;
-    width: 80px;
-  }
-
-  #details-button {
-    margin-top: 28px;
-  }
-
-  h1 {
-    font-size: 1.7em;
-  }
-
-  .icon {
-    margin-bottom: 28px;
-  }
-
-  .interstitial-wrapper {
-    padding: 28px;
-  }
-
-  .interstitial-wrapper p {
-    font-size: 1.05em;
-  }
-
-  .nav-wrapper {
-    padding: 28px;
-  }
-}
-
-@media (min-width: 420px) and (max-width: 736px) and
-       (min-height: 240px) and (max-height: 298px) and
-       (orientation:landscape) {
-  body:not(.offline) .icon {
-    height: 50px;
-    width: 50px;
-  }
-
-  .icon {
-    padding-top: 0;
-  }
-
-  .interstitial-wrapper {
-    margin-top: 16px;
-  }
-
-  .nav-wrapper {
-    padding: 0 24px 8px;
-  }
-}
-
-@media (min-width: 420px) and (max-width: 736px) and
-       (min-height: 240px) and (max-height: 420px) and
-       (orientation:landscape) {
-  #details-button {
-    margin: 0;
-  }
-
-  .interstitial-wrapper {
-    margin-bottom: 70px;
-  }
-
-  .nav-wrapper {
-    margin-top: 0;
-  }
-
-  #extended-reporting-opt-in {
-    margin-top: 0;
-  }
-}
-
-/* Phablet landscape */
-@media (min-width: 680px) and (max-height: 414px) {
-  .interstitial-wrapper {
-    margin: 24px auto;
-  }
-
-  .nav-wrapper {
-    margin: 16px auto 0;
-  }
-}
-
-@media (max-height: 240px) and (orientation: landscape),
-       (max-height: 480px) and (orientation: portrait),
-       (max-width: 419px) and (max-height: 323px) {
-  body:not(.offline) .icon {
-    height: 56px;
-    width: 56px;
-  }
-
-  .icon {
-    margin-bottom: 16px;
+    margin-top: 10vh;
   }
 }
 
