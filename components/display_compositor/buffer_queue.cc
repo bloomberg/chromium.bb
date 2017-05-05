@@ -200,8 +200,9 @@ uint32_t BufferQueue::GetCurrentTextureId() const {
 
   // Return in-flight or displayed surface texture if no surface is
   // currently bound. This can happen when using overlays and surface
-  // damage is empty.
-  if (!in_flight_surfaces_.empty())
+  // damage is empty. Note: |in_flight_surfaces_| entries can be null
+  // as a result of calling FreeAllSurfaces().
+  if (!in_flight_surfaces_.empty() && in_flight_surfaces_.back())
     return in_flight_surfaces_.back()->texture;
   if (displayed_surface_)
     return displayed_surface_->texture;
