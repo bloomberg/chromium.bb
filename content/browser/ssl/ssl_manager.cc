@@ -383,17 +383,22 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
 
   DevToolsAgentHostImpl* agent_host = static_cast<DevToolsAgentHostImpl*>(
       DevToolsAgentHost::GetOrCreateFor(web_contents).get());
-  protocol::SecurityHandler* security_handler =
-      protocol::SecurityHandler::FromAgentHost(agent_host);
-  if (!security_handler ||
-      !security_handler->NotifyCertificateError(
-          cert_error, request_url,
-          base::Bind(&OnAllowCertificateWithRecordDecision, false, callback))) {
-    GetContentClient()->browser()->AllowCertificateError(
-        web_contents, cert_error, ssl_info, request_url, resource_type,
-        overridable, strict_enforcement, expired_previous_decision,
-        base::Bind(&OnAllowCertificateWithRecordDecision, true, callback));
+  if (agent_host) {
+    for (auto* security_handler :
+         protocol::SecurityHandler::ForAgentHost(agent_host)) {
+      if (security_handler->NotifyCertificateError(
+              cert_error, request_url,
+              base::Bind(&OnAllowCertificateWithRecordDecision, false,
+                         callback))) {
+        return;
+      }
+    }
   }
+
+  GetContentClient()->browser()->AllowCertificateError(
+      web_contents, cert_error, ssl_info, request_url, resource_type,
+      overridable, strict_enforcement, expired_previous_decision,
+      base::Bind(&OnAllowCertificateWithRecordDecision, true, callback));
 }
 
 void SSLManager::UpdateEntry(NavigationEntryImpl* entry,

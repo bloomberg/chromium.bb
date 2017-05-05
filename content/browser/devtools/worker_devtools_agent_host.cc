@@ -123,7 +123,8 @@ void WorkerDevToolsAgentHost::WorkerDestroyed() {
   DCHECK_NE(WORKER_TERMINATED, state_);
   if (state_ == WORKER_INSPECTED) {
     DCHECK(IsAttached());
-    protocol::InspectorHandler::FromSession(session())->TargetCrashed();
+    for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
+      inspector->TargetCrashed();
     DetachFromWorker();
   }
   state_ = WORKER_TERMINATED;

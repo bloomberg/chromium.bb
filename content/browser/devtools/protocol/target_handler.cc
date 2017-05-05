@@ -106,9 +106,10 @@ TargetHandler::~TargetHandler() {
 }
 
 // static
-TargetHandler* TargetHandler::FromSession(DevToolsSession* session) {
-  return static_cast<TargetHandler*>(
-      session->GetHandlerByName(Target::Metainfo::domainName));
+std::vector<TargetHandler*> TargetHandler::ForAgentHost(
+    DevToolsAgentHostImpl* host) {
+  return DevToolsSession::HandlersForAgentHost<TargetHandler>(
+      host, Target::Metainfo::domainName);
 }
 
 void TargetHandler::Wire(UberDispatcher* dispatcher) {

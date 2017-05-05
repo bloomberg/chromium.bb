@@ -118,8 +118,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
 }
 
 DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id)
-    : id_(id),
-      last_session_id_(0) {
+    : id_(id), last_session_id_(0), session_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -157,8 +156,10 @@ bool DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client,
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   if (session_)
     ForceDetach(true);
-  session_.reset(new DevToolsSession(this, client, ++last_session_id_));
-  AttachSession(session_.get());
+  DCHECK(!session_);
+  session_ = new DevToolsSession(this, client, ++last_session_id_);
+  sessions_.insert(std::unique_ptr<DevToolsSession>(session_));
+  AttachSession(session_);
   NotifyAttached();
   return true;
 }
@@ -185,12 +186,13 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
     const std::string& message) {
   if (!session_ || session_->client() != client)
     return false;
-  return DispatchProtocolMessage(session_.get(), message);
+  return DispatchProtocolMessage(session_, message);
 }
 
 void DevToolsAgentHostImpl::InnerDetachClient() {
   int session_id = session_->session_id();
-  session_.reset();
+  session_ = nullptr;
+  sessions_.clear();
   DetachSession(session_id);
   io_context_.DiscardAllStreams();
   NotifyDetached();
@@ -206,7 +208,7 @@ void DevToolsAgentHostImpl::InspectElement(
     int y) {
  if (!session_ || session_->client() != client)
    return;
- InspectElement(session_.get(), x, y);
+ InspectElement(session_, x, y);
 }
 
 std::string DevToolsAgentHostImpl::GetId() {

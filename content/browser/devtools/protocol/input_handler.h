@@ -20,7 +20,7 @@ class CompositorFrameMetadata;
 
 namespace content {
 
-class DevToolsSession;
+class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
 
 namespace protocol {
@@ -32,7 +32,7 @@ class InputHandler : public DevToolsDomainHandler,
   InputHandler();
   ~InputHandler() override;
 
-  static InputHandler* FromSession(DevToolsSession* session);
+  static std::vector<InputHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderFrameHost(RenderFrameHostImpl* host) override;

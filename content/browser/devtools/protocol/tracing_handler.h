@@ -26,8 +26,8 @@ class Timer;
 
 namespace content {
 
+class DevToolsAgentHostImpl;
 class DevToolsIOContext;
-class DevToolsSession;
 
 namespace protocol {
 
@@ -40,7 +40,7 @@ class TracingHandler : public DevToolsDomainHandler,
                  DevToolsIOContext* io_context);
   ~TracingHandler() override;
 
-  static TracingHandler* FromSession(DevToolsSession* session);
+  static std::vector<TracingHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
   Response Disable() override;

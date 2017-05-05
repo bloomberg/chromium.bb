@@ -15,7 +15,7 @@
 
 namespace content {
 
-class DevToolsSession;
+class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
 struct BeginNavigationParams;
 struct CommonNavigationParams;
@@ -31,7 +31,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   NetworkHandler();
   ~NetworkHandler() override;
 
-  static NetworkHandler* FromSession(DevToolsSession* session);
+  static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderFrameHost(RenderFrameHostImpl* host) override;

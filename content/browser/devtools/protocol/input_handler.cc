@@ -203,9 +203,10 @@ InputHandler::~InputHandler() {
 }
 
 // static
-InputHandler* InputHandler::FromSession(DevToolsSession* session) {
-  return static_cast<InputHandler*>(
-      session->GetHandlerByName(Input::Metainfo::domainName));
+std::vector<InputHandler*> InputHandler::ForAgentHost(
+    DevToolsAgentHostImpl* host) {
+  return DevToolsSession::HandlersForAgentHost<InputHandler>(
+      host, Input::Metainfo::domainName);
 }
 
 void InputHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
