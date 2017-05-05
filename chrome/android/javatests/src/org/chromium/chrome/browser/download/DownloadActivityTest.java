@@ -297,7 +297,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return TextUtils.equals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
+                return TextUtils.equals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
             }
         });
 
@@ -343,7 +343,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mStubbedProvider.getOfflinePageBridge().deleteItemCallback.getCallCount());
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
         assertEquals(15, mAdapter.getItemCount());
-        assertEquals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
+        assertEquals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest
@@ -376,7 +376,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return TextUtils.equals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
+                return TextUtils.equals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
             }
         });
 
@@ -416,7 +416,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
 
         // Assert that items are restored.
         assertEquals(15, mAdapter.getItemCount());
-        assertEquals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
+        assertEquals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest
