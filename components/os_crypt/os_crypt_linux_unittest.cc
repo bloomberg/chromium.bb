@@ -12,6 +12,10 @@
 
 namespace {
 
+KeyStorageLinux* GetNullKeyStorage() {
+  return nullptr;
+}
+
 class OSCryptLinuxTest : public testing::Test {
  public:
   OSCryptLinuxTest() = default;
@@ -65,6 +69,15 @@ TEST_F(OSCryptLinuxTest, VerifyV11) {
   ASSERT_EQ(ciphertext.substr(0, 3), "v11");
   ASSERT_TRUE(OSCrypt::DecryptString(ciphertext, &decipheredtext));
   ASSERT_EQ(originaltext, decipheredtext);
+}
+
+TEST_F(OSCryptLinuxTest, IsEncryptionAvailable) {
+  EXPECT_TRUE(OSCrypt::IsEncryptionAvailable());
+  // Restore default GetKeyStorage and GetPassword functions.
+  UseMockKeyStorageForTesting(nullptr, nullptr);
+  // Mock only GetKeyStorage function.
+  UseMockKeyStorageForTesting(GetNullKeyStorage, nullptr);
+  EXPECT_FALSE(OSCrypt::IsEncryptionAvailable());
 }
 
 }  // namespace

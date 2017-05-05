@@ -38,6 +38,9 @@ class OSCrypt {
   // this when we stop supporting keyring.
   static void SetMainThreadRunner(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner);
+
+  // Returns true iff the real secret key (not hardcoded one) is available.
+  static bool IsEncryptionAvailable();
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
   // Encrypt a string16. The output (second argument) is really an array of

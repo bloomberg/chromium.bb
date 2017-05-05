@@ -248,6 +248,11 @@ void OSCrypt::SetMainThreadRunner(
   KeyStorageLinux::SetMainThreadRunner(main_thread_runner);
 }
 
+// static
+bool OSCrypt::IsEncryptionAvailable() {
+  return g_get_password[Version::V11]();
+}
+
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)()) {
   // Save the real implementation to restore it later.
@@ -259,7 +264,7 @@ void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
     is_get_password_saved = true;
   }
 
-  if (get_key_storage_mock && get_password_v11_mock) {
+  if (get_key_storage_mock || get_password_v11_mock) {
     // Bypass calling KeyStorage::CreateService and caching of the key for V11
     if (get_password_v11_mock)
       g_get_password[Version::V11] = get_password_v11_mock;
