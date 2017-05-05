@@ -28,8 +28,8 @@
    centered at (x, y).
 */
 static double compute_variance(unsigned char *im, int stride, int x, int y) {
-  int sum = 0.0;
-  int sumsq = 0.0;
+  int sum = 0;
+  int sumsq = 0;
   int var;
   int i, j;
   for (i = 0; i < MATCH_SZ; ++i)
