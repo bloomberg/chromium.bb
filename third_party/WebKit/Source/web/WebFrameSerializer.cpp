@@ -195,6 +195,13 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   if (attribute.LocalName() == HTMLNames::srcsetAttr)
     return true;
 
+  // Do not save ping attribute since anyway the ping will be blocked from
+  // MHTML.
+  if (isHTMLAnchorElement(element) &&
+      attribute.LocalName() == HTMLNames::pingAttr) {
+    return true;
+  }
+
   // If srcdoc attribute for frame elements will be rewritten as src attribute
   // containing link instead of html contents, don't ignore the attribute.
   // Bail out now to avoid the check in Element::isScriptingAttribute.
