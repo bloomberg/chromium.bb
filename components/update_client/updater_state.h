@@ -47,8 +47,7 @@ class UpdaterState {
   static bool IsEnterpriseManaged();
   static base::Time GetUpdaterLastStartedAU(bool is_machine);
   static base::Time GetUpdaterLastChecked(bool is_machine);
-  static base::Time GetUpdaterTimeValue(bool is_machine,
-                                        const wchar_t* value_name);
+
   static int GetUpdatePolicy();
 
   static std::string NormalizeTimeDelta(const base::TimeDelta& delta);
