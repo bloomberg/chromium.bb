@@ -62,9 +62,9 @@ First columns are: running total, address, pss
              ** symbol gap 3 (end of section)
 43774268 t@0x28f1e0   69124   third_party/icu/ucnv_ext.c
              foo_bar
-43779986 t@0x28f000   5718    third_party/icu/ucnv_ext.c
+43779986 t@0x28f000   5718    {no path}
              ** symbol gap 0
-43784026 t@0x2a1000   4040    third_party/container.c
+43784026 t@0x2a1000   4040    {no path}
              ** symbol gap 1
 43784474 t@0x28f000   448     third_party/icu/ucnv_ext.c
              ucnv_extMatchFromU
@@ -127,7 +127,7 @@ First columns are: running total, address, pss
              google::protobuf::internal::pLinuxKernelCmpxchg
 43785377 d@0x2de7004  4       third_party/container.c
              google::protobuf::internal::pLinuxKernelMemoryBarrier
-43785380 r@0x284e364  3       base/page_allocator.cc
+43785380 r@0x284e364  3       {no path}
              ** symbol gap 2
 43785380 b@0x0        262144  third_party/fft_float.cc
              ff_cos_131072

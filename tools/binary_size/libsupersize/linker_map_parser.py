@@ -218,8 +218,7 @@ class MapFileParser(object):
                     sym = models.Symbol(
                         section_name, 0,
                         address=address,
-                        name='** symbol gap %d' % symbol_gap_count,
-                        object_path=path)
+                        name='** symbol gap %d' % symbol_gap_count)
                     symbol_gap_count += 1
                     syms.append(sym)
 
