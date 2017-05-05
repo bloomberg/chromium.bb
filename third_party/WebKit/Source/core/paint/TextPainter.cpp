@@ -10,6 +10,7 @@
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutItem.h"
+#include "core/paint/AppliedDecorationPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
@@ -22,42 +23,6 @@
 #include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
-
-TextPainter::TextPainter(GraphicsContext& context,
-                         const Font& font,
-                         const TextRun& run,
-                         const LayoutPoint& text_origin,
-                         const LayoutRect& text_bounds,
-                         bool horizontal)
-    : graphics_context_(context),
-      font_(font),
-      run_(run),
-      text_origin_(text_origin),
-      text_bounds_(text_bounds),
-      horizontal_(horizontal),
-      emphasis_mark_offset_(0),
-      combined_text_(0),
-      ellipsis_offset_(0) {}
-
-TextPainter::~TextPainter() {}
-
-void TextPainter::SetEmphasisMark(const AtomicString& emphasis_mark,
-                                  TextEmphasisPosition position) {
-  emphasis_mark_ = emphasis_mark;
-  const SimpleFontData* font_data = font_.PrimaryFont();
-  DCHECK(font_data);
-
-  if (!font_data || emphasis_mark.IsNull()) {
-    emphasis_mark_offset_ = 0;
-  } else if (position == kTextEmphasisPositionOver) {
-    emphasis_mark_offset_ = -font_data->GetFontMetrics().Ascent() -
-                            font_.EmphasisMarkDescent(emphasis_mark);
-  } else {
-    DCHECK(position == kTextEmphasisPositionUnder);
-    emphasis_mark_offset_ = font_data->GetFontMetrics().Descent() +
-                            font_.EmphasisMarkAscent(emphasis_mark);
-  }
-}
 
 void TextPainter::Paint(unsigned start_offset,
                         unsigned end_offset,
@@ -84,139 +49,6 @@ void TextPainter::Paint(unsigned start_offset,
     else
       PaintInternal<kPaintEmphasisMark>(start_offset, end_offset, length);
   }
-}
-
-// static
-void TextPainter::UpdateGraphicsContext(
-    GraphicsContext& context,
-    const Style& text_style,
-    bool horizontal,
-    GraphicsContextStateSaver& state_saver) {
-  TextDrawingModeFlags mode = context.TextDrawingMode();
-  if (text_style.stroke_width > 0) {
-    TextDrawingModeFlags new_mode = mode | kTextModeStroke;
-    if (mode != new_mode) {
-      if (!state_saver.Saved())
-        state_saver.Save();
-      context.SetTextDrawingMode(new_mode);
-      mode = new_mode;
-    }
-  }
-
-  if (mode & kTextModeFill && text_style.fill_color != context.FillColor())
-    context.SetFillColor(text_style.fill_color);
-
-  if (mode & kTextModeStroke) {
-    if (text_style.stroke_color != context.StrokeColor())
-      context.SetStrokeColor(text_style.stroke_color);
-    if (text_style.stroke_width != context.StrokeThickness())
-      context.SetStrokeThickness(text_style.stroke_width);
-  }
-
-  if (text_style.shadow) {
-    if (!state_saver.Saved())
-      state_saver.Save();
-    context.SetDrawLooper(text_style.shadow->CreateDrawLooper(
-        DrawLooperBuilder::kShadowIgnoresAlpha, text_style.current_color,
-        horizontal));
-  }
-}
-
-Color TextPainter::TextColorForWhiteBackground(Color text_color) {
-  int distance_from_white = DifferenceSquared(text_color, Color::kWhite);
-  // semi-arbitrarily chose 65025 (255^2) value here after a few tests;
-  return distance_from_white > 65025 ? text_color : text_color.Dark();
-}
-
-// static
-TextPainter::Style TextPainter::TextPaintingStyle(
-    LineLayoutItem line_layout_item,
-    const ComputedStyle& style,
-    const PaintInfo& paint_info) {
-  TextPainter::Style text_style;
-  bool is_printing = paint_info.IsPrinting();
-
-  if (paint_info.phase == kPaintPhaseTextClip) {
-    // When we use the text as a clip, we only care about the alpha, thus we
-    // make all the colors black.
-    text_style.current_color = Color::kBlack;
-    text_style.fill_color = Color::kBlack;
-    text_style.stroke_color = Color::kBlack;
-    text_style.emphasis_mark_color = Color::kBlack;
-    text_style.stroke_width = style.TextStrokeWidth();
-    text_style.shadow = 0;
-  } else {
-    text_style.current_color = style.VisitedDependentColor(CSSPropertyColor);
-    text_style.fill_color =
-        line_layout_item.ResolveColor(style, CSSPropertyWebkitTextFillColor);
-    text_style.stroke_color =
-        line_layout_item.ResolveColor(style, CSSPropertyWebkitTextStrokeColor);
-    text_style.emphasis_mark_color = line_layout_item.ResolveColor(
-        style, CSSPropertyWebkitTextEmphasisColor);
-    text_style.stroke_width = style.TextStrokeWidth();
-    text_style.shadow = style.TextShadow();
-
-    // Adjust text color when printing with a white background.
-    DCHECK(line_layout_item.GetDocument().Printing() == is_printing ||
-           RuntimeEnabledFeatures::printBrowserEnabled());
-    bool force_background_to_white =
-        BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(
-            style, line_layout_item.GetDocument());
-    if (force_background_to_white) {
-      text_style.fill_color =
-          TextColorForWhiteBackground(text_style.fill_color);
-      text_style.stroke_color =
-          TextColorForWhiteBackground(text_style.stroke_color);
-      text_style.emphasis_mark_color =
-          TextColorForWhiteBackground(text_style.emphasis_mark_color);
-    }
-
-    // Text shadows are disabled when printing. http://crbug.com/258321
-    if (is_printing)
-      text_style.shadow = 0;
-  }
-
-  return text_style;
-}
-
-TextPainter::Style TextPainter::SelectionPaintingStyle(
-    LineLayoutItem line_layout_item,
-    bool have_selection,
-    const PaintInfo& paint_info,
-    const TextPainter::Style& text_style) {
-  const LayoutObject& layout_object =
-      *LineLayoutAPIShim::ConstLayoutObjectFrom(line_layout_item);
-  TextPainter::Style selection_style = text_style;
-  bool uses_text_as_clip = paint_info.phase == kPaintPhaseTextClip;
-  bool is_printing = paint_info.IsPrinting();
-
-  if (have_selection) {
-    if (!uses_text_as_clip) {
-      selection_style.fill_color = layout_object.SelectionForegroundColor(
-          paint_info.GetGlobalPaintFlags());
-      selection_style.emphasis_mark_color =
-          layout_object.SelectionEmphasisMarkColor(
-              paint_info.GetGlobalPaintFlags());
-    }
-
-    if (const ComputedStyle* pseudo_style =
-            layout_object.GetCachedPseudoStyle(kPseudoIdSelection)) {
-      selection_style.stroke_color =
-          uses_text_as_clip
-              ? Color::kBlack
-              : layout_object.ResolveColor(*pseudo_style,
-                                           CSSPropertyWebkitTextStrokeColor);
-      selection_style.stroke_width = pseudo_style->TextStrokeWidth();
-      selection_style.shadow =
-          uses_text_as_clip ? 0 : pseudo_style->TextShadow();
-    }
-
-    // Text shadows are disabled when printing. http://crbug.com/258321
-    if (is_printing)
-      selection_style.shadow = 0;
-  }
-
-  return selection_style;
 }
 
 template <TextPainter::PaintInternalStep step>
@@ -261,7 +93,6 @@ void TextPainter::ClipDecorationsStripe(float upper,
                                         float stripe_width,
                                         float dilation) {
   TextRunPaintInfo text_run_paint_info(run_);
-
   if (!run_.length())
     return;
 
@@ -271,22 +102,7 @@ void TextPainter::ClipDecorationsStripe(float upper,
       graphics_context_.FillFlags(),
       std::make_tuple(upper, upper + stripe_width), text_intercepts);
 
-  for (auto intercept : text_intercepts) {
-    FloatPoint clip_origin(text_origin_);
-    FloatRect clip_rect(
-        clip_origin + FloatPoint(intercept.begin_, upper),
-        FloatSize(intercept.end_ - intercept.begin_, stripe_width));
-    clip_rect.InflateX(dilation);
-    // We need to ensure the clip rectangle is covering the full underline
-    // extent. For horizontal drawing, using enclosingIntRect would be
-    // sufficient, since we can clamp to full device pixels that way. However,
-    // for vertical drawing, we have a transformation applied, which breaks the
-    // integers-equal-device pixels assumption, so vertically inflating by 1
-    // pixel makes sure we're always covering. This should only be done on the
-    // clipping rectangle, not when computing the glyph intersects.
-    clip_rect.InflateY(1.0);
-    graphics_context_.ClipOut(clip_rect);
-  }
+  DecorationsStripeIntercepts(upper, stripe_width, dilation, text_intercepts);
 }
 
 void TextPainter::PaintEmphasisMarkForCombinedText() {
@@ -308,6 +124,64 @@ void TextPainter::PaintEmphasisMarkForCombinedText() {
                                       text_run_paint_info, emphasis_mark_,
                                       emphasis_mark_text_origin);
   graphics_context_.ConcatCTM(Rotation(text_bounds_, kCounterclockwise));
+}
+
+TextPainter::Style TextPainter::SelectionPaintingStyle(
+    LineLayoutItem line_layout_item,
+    bool have_selection,
+    const PaintInfo& paint_info,
+    const TextPainterBase::Style& text_style) {
+  const LayoutObject& layout_object =
+      *LineLayoutAPIShim::ConstLayoutObjectFrom(line_layout_item);
+  TextPainterBase::Style selection_style = text_style;
+  bool uses_text_as_clip = paint_info.phase == kPaintPhaseTextClip;
+  bool is_printing = paint_info.IsPrinting();
+
+  if (have_selection) {
+    if (!uses_text_as_clip) {
+      selection_style.fill_color = layout_object.SelectionForegroundColor(
+          paint_info.GetGlobalPaintFlags());
+      selection_style.emphasis_mark_color =
+          layout_object.SelectionEmphasisMarkColor(
+              paint_info.GetGlobalPaintFlags());
+    }
+
+    if (const ComputedStyle* pseudo_style =
+            layout_object.GetCachedPseudoStyle(kPseudoIdSelection)) {
+      selection_style.stroke_color =
+          uses_text_as_clip
+              ? Color::kBlack
+              : layout_object.ResolveColor(*pseudo_style,
+                                           CSSPropertyWebkitTextStrokeColor);
+      selection_style.stroke_width = pseudo_style->TextStrokeWidth();
+      selection_style.shadow =
+          uses_text_as_clip ? 0 : pseudo_style->TextShadow();
+    }
+
+    // Text shadows are disabled when printing. http://crbug.com/258321
+    if (is_printing)
+      selection_style.shadow = 0;
+  }
+
+  return selection_style;
+}
+
+void TextPainter::PaintDecorationUnderOrOverLine(
+    GraphicsContext& context,
+    const DecorationInfo& decoration_info,
+    const AppliedTextDecoration& decoration,
+    int line_offset,
+    float decoration_offset) {
+  AppliedDecorationPainter decoration_painter(
+      context, decoration_info, line_offset, decoration, decoration_offset, 1);
+  if (decoration_info.style->GetTextDecorationSkip() & kTextDecorationSkipInk) {
+    FloatRect decoration_bounds = decoration_painter.Bounds();
+    ClipDecorationsStripe(-decoration_info.baseline + decoration_bounds.Y() -
+                              decoration_info.local_origin.Y(),
+                          decoration_bounds.Height(),
+                          decoration_info.thickness);
+  }
+  decoration_painter.Paint();
 }
 
 }  // namespace blink

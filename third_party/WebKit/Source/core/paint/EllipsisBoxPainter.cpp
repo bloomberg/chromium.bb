@@ -62,7 +62,7 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
     return;
 
   TextPainter::Style text_style = TextPainter::TextPaintingStyle(
-      ellipsis_box_.GetLineLayoutItem(), style, paint_info);
+      ellipsis_box_.GetLineLayoutItem().GetDocument(), style, paint_info);
   TextRun text_run = ConstructTextRun(font, ellipsis_box_.EllipsisStr(), style,
                                       TextRun::kAllowTrailingExpansion);
   LayoutPoint text_origin(
