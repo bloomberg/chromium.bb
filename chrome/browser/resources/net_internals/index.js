@@ -9,7 +9,6 @@
 // <include src="tab_switcher_view.js">
 // <include src="import_view.js">
 // <include src="capture_view.js">
-// <include src="export_view.js">
 // <include src="http_cache_view.js">
 // <include src="hsts_view.js">
 // <include src="browser_bridge.js">

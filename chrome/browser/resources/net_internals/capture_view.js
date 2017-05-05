@@ -30,13 +30,6 @@ var CaptureView = (function() {
     $(CaptureView.RESET_BUTTON_ID).onclick =
         this.onResetButtonClicked_.bind(this);
 
-    if (byteLoggingCheckbox.checked) {
-      // The code to display a warning on ExportView relies on bytelogging
-      // being off by default. If this ever changes, the code will need to
-      // be updated.
-      throw 'Not expecting byte logging to be enabled!';
-    }
-
     new MouseOverHelp(
         CaptureView.LIMIT_HELP_ID, CaptureView.LIMIT_HELP_HOVER_ID);
 
@@ -87,16 +80,6 @@ var CaptureView = (function() {
 
       if (byteLoggingCheckbox.checked) {
         g_browser.setCaptureMode('IncludeSocketBytes');
-
-        // Once we enable byte logging, all bets are off on what gets captured.
-        // Have the export view warn that the "strip cookies" option is
-        // ineffective from this point on.
-        //
-        // In theory we could clear this warning after unchecking the box and
-        // then deleting all the events which had been captured. We don't
-        // currently do that; if you want the warning to go away, will need to
-        // reload.
-        ExportView.getInstance().showPrivacyWarning();
       } else {
         g_browser.setCaptureMode('IncludeCookiesAndCredentials');
       }

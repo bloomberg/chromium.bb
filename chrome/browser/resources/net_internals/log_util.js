@@ -54,24 +54,6 @@ log_util = (function() {
   }
 
   /**
-   * Returns a new log dump created using the polled data and date from the
-   * |oldLogDump|.  The other parts of the log dump come from current
-   * net-internals state.
-   */
-  function createUpdatedLogDump(userComments, oldLogDump, privacyStripping) {
-    var numericDate = null;
-    if (oldLogDump.constants.clientInfo &&
-        oldLogDump.constants.clientInfo.numericDate) {
-      numericDate = oldLogDump.constants.clientInfo.numericDate;
-    }
-    var logDump = createLogDump(
-        userComments, Constants,
-        EventsTracker.getInstance().getAllCapturedEvents(),
-        oldLogDump.polledData, getTabData_(), numericDate, privacyStripping);
-    return JSON.stringify(logDump);
-  }
-
-  /**
    * Creates a full log dump using |polledData| and the return value of each
    * tab's saveState function and passes it to |callback|.
    */
@@ -290,7 +272,6 @@ log_util = (function() {
 
   // Exports.
   return {
-    createUpdatedLogDump: createUpdatedLogDump,
     createLogDumpAsync: createLogDumpAsync,
     loadLogFile: loadLogFile
   };
