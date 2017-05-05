@@ -44,6 +44,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
                      const SkBitmap& primary_icon,
                      const SkBitmap& badge_icon,
                      int event_request_id,
+                     bool is_webapk,
                      webapk::InstallSource webapk_install_source);
 
   // Creates an infobar and delegate for promoting the installation of an

@@ -25,15 +25,30 @@ struct ShortcutInfo {
   enum Source {
     SOURCE_UNKNOWN = 0,
     SOURCE_ADD_TO_HOMESCREEN_DEPRECATED = 1,
+
+    // Used for legacy PWAs added via the banner.
     SOURCE_APP_BANNER = 2,
     SOURCE_BOOKMARK_NAVIGATOR_WIDGET = 3,
     SOURCE_BOOKMARK_SHORTCUT_WIDGET = 4,
+
+    // Used for legacy and WebAPKs launched from a notification.
     SOURCE_NOTIFICATION = 5,
+
+    // Used for WebAPKs added via the menu item.
     SOURCE_ADD_TO_HOMESCREEN_PWA = 6,
+
+    // Used for legacy PWAs added via the menu item.
     SOURCE_ADD_TO_HOMESCREEN_STANDALONE = 7,
+
+    // Used for bookmark-type shortcuts that launch the tabbed browser.
     SOURCE_ADD_TO_HOMESCREEN_SHORTCUT = 8,
+
+    // Used for WebAPKs launched via an external intent.
     SOURCE_EXTERNAL_INTENT = 9,
-    SOURCE_COUNT = 10
+
+    // Used for WebAPK PWAs added via the banner.
+    SOURCE_APP_BANNER_WEBAPK = 10,
+    SOURCE_COUNT = 11
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);
