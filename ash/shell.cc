@@ -982,8 +982,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
 
+  // Forward user activity from the window server to |user_activity_detector_|.
   // The connector is unavailable in some tests.
-  if (config == Config::MASH && shell_delegate_->GetShellConnector()) {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS &&
+      shell_delegate_->GetShellConnector()) {
     ui::mojom::UserActivityMonitorPtr user_activity_monitor;
     shell_delegate_->GetShellConnector()->BindInterface(ui::mojom::kServiceName,
                                                         &user_activity_monitor);
