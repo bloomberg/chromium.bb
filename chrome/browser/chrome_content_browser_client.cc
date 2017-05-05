@@ -1447,7 +1447,16 @@ bool ChromeContentBrowserClient::
     ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
         const GURL& url,
         content::SiteInstance* parent_site_instance) {
-  return IsNTPSiteInstance(parent_site_instance);
+  if (IsNTPSiteInstance(parent_site_instance))
+    return true;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return ChromeContentBrowserClientExtensionsPart::
+      ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+          url, parent_site_instance);
+#else
+  return false;
+#endif
 }
 
 bool ChromeContentBrowserClient::IsSuitableHost(

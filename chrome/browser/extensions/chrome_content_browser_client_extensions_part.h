@@ -71,6 +71,10 @@ class ChromeContentBrowserClientExtensionsPart
   static std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
       content::BrowserContext* browser_context);
 
+  static bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
+      const GURL& url,
+      content::SiteInstance* parent_site_instance);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,
                            ShouldAllowOpenURLMetricsForEmptySiteURL);
