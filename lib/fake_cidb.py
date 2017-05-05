@@ -12,6 +12,7 @@ import itertools
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import clactions
+from chromite.lib import failure_message_lib
 
 
 class FakeCIDBConnection(object):
@@ -172,12 +173,14 @@ class FakeCIDBConnection(object):
                     outer_failure_id=None,
                     extra_info=None):
     failure_id = len(self.failureTable)
-    values = {'build_stage_id': build_stage_id,
+    values = {'id': failure_id,
+              'build_stage_id': build_stage_id,
               'exception_type': exception_type,
               'exception_message': exception_message,
               'exception_category': exception_category,
               'outer_failure_id': outer_failure_id,
-              'extra_info': extra_info}
+              'extra_info': extra_info,
+              'timestamp': None}
     self.failureTable[failure_id] = values
     return failure_id
 
@@ -397,6 +400,30 @@ class FakeCIDBConnection(object):
         return self._TrimStatus(row)
 
     return None
+
+  def GetBuildsFailures(self, build_ids):
+    """Gets the failure entries for all listed build_ids.
+
+    Args:
+      build_ids: list of build ids of the builds to fetch failures for.
+
+    Returns:
+      A list of failure_message_lib.StageFailure instances.
+    """
+    stage_failures = []
+    for build_id in build_ids:
+      b_dict = self.buildTable[build_id]
+      bs_table = {k: v for k, v in self.buildStageTable.iteritems()
+                  if v['build_id'] == build_id}
+
+      for f_dict in self.failureTable.values():
+        if f_dict['build_stage_id'] in bs_table:
+          bs_dict = bs_table[f_dict['build_stage_id']]
+          stage_failures.append(
+              failure_message_lib.StageFailure.GetStageFailureFromDicts(
+                  f_dict, bs_dict, b_dict))
+
+    return stage_failures
 
   def HasFailureMsgForStage(self, build_stage_id):
     """Determine whether a build stage has failure messages in failureTable.

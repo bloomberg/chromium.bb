@@ -31,6 +31,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import failures_lib
+from chromite.lib import fake_cidb
 from chromite.lib import results_lib
 from chromite.lib import patch_unittest
 from chromite.lib import timeout_util
@@ -866,6 +867,42 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
     stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, [])
     stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
         mock.ANY, sanity=False, no_stat=set(), changes=self.changes)
+
+
+class PreCQCompletionStageTest(generic_stages_unittest.AbstractStageTestCase):
+  """PreCQCompletionStage tests"""
+  BOT_ID = 'lumpy-pre-cq'
+
+  def ConstructStage(self):
+    sync_stage = mock.Mock()
+    return completion_stages.PreCQCompletionStage(
+        self._run, sync_stage, success=True)
+
+  def _Prepare(self, bot_id=None, **kwargs):
+    super(PreCQCompletionStageTest, self)._Prepare(bot_id, **kwargs)
+
+  def testGetBuildFailureMessage(self):
+    """Test GetBuildFailureMessage."""
+    db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(db)
+
+    build_id = db.InsertBuild('lumpy-pre-cq', constants.WATERFALL_INTERNAL, 1,
+                              'lumpy-pre-cq', 'bot_hostname',
+                              status=constants.BUILDER_STATUS_INFLIGHT)
+    stage_id = db.InsertBuildStage(build_id, 'BuildPackages', status='fail')
+    db.InsertFailure(stage_id, 'PackageBuildFailure',
+                     'Packages failed in ./build_packages: sys-apps/flashrom',
+                     exception_category='build',
+                     extra_info={"shortname": "./build_packages",
+                                 "failed_packages": ["sys-apps/flashrom"]})
+    self._Prepare(build_id=build_id)
+    stage = self.ConstructStage()
+    message = stage.GetBuildFailureMessage()
+
+    self.assertFalse(message.MatchesExceptionCategory(
+        constants.EXCEPTION_CATEGORY_LAB))
+    self.assertTrue(message.MatchesExceptionCategory(
+        constants.EXCEPTION_CATEGORY_BUILD))
 
 
 class PublishUprevChangesStageTest(

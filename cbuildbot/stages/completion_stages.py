@@ -20,6 +20,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
+from chromite.lib import failure_message_lib
 from chromite.lib import metrics
 from chromite.lib import results_lib
 from chromite.lib import timeout_util
@@ -947,9 +948,17 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
 
   def GetBuildFailureMessage(self):
     """Returns message summarizing the failures."""
-    return CreateBuildFailureMessage(self._run.config.overlays,
-                                     self._run.config.name,
-                                     self._run.ConstructDashboardURL())
+    build_id, db = self._run.GetCIDBHandle()
+    stage_failures = db.GetBuildsFailures([build_id])
+    failure_messages = (
+        failure_message_lib.FailureMessageManager.ConstructStageFailureMessages(
+            stage_failures))
+
+    return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+        self._run.config.name,
+        self._run.config.overlays,
+        self._run.ConstructDashboardURL(),
+        failure_messages)
 
   def PerformStage(self):
     # Update Gerrit and Google Storage with the Pre-CQ status.

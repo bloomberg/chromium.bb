@@ -51,6 +51,30 @@ class StageFailure(_StageFailure):
         stage_failure_message.stage_name, None, None, None, None, None, None,
         None, None, None, None, None)
 
+  @classmethod
+  def GetStageFailureFromDicts(cls, failure_dict, stage_dict, build_dict):
+    """Get StageFailure from value dictionaries.
+
+    Args:
+      failure_dict: A dict presenting values of a tuple from failureTable.
+      stage_dict: A dict presenting values of a tuple from buildStageTable.
+      build_dict: A dict presenting values of a tuple from buildTable.
+
+    Returns:
+      An instance of StageFailure.
+    """
+    return StageFailure(
+        failure_dict['id'], failure_dict['build_stage_id'],
+        failure_dict['outer_failure_id'], failure_dict['exception_type'],
+        failure_dict['exception_message'], failure_dict['exception_category'],
+        failure_dict['extra_info'], failure_dict['timestamp'],
+        stage_dict['name'], stage_dict['board'], stage_dict['status'],
+        build_dict['id'], build_dict['master_build_id'],
+        build_dict['builder_name'], build_dict['waterfall'],
+        build_dict['build_number'], build_dict['build_config'],
+        build_dict['status'], build_dict['important'],
+        build_dict['buildbucket_id'])
+
 
 class StageFailureMessage(object):
   """Message class contains information of a general stage failure.
