@@ -64,14 +64,14 @@ class ScrollingCoordinatorTest : public ::testing::Test,
         base_url_("http://www.test.com/") {
     helper_.Initialize(true, nullptr, &mock_web_view_client_, nullptr,
                        &ConfigureSettings);
-    GetWebViewImpl()->Resize(IntSize(320, 240));
+    GetWebView()->Resize(IntSize(320, 240));
 
     // macOS attaches main frame scrollbars to the VisualViewport so the
     // VisualViewport layers need to be initialized.
-    GetWebViewImpl()->UpdateAllLifecyclePhases();
+    GetWebView()->UpdateAllLifecyclePhases();
     WebFrameWidgetBase* main_frame_widget =
-        GetWebViewImpl()->MainFrameImpl()->FrameWidget();
-    main_frame_widget->SetRootGraphicsLayer(GetWebViewImpl()
+        GetWebView()->MainFrameImpl()->FrameWidget();
+    main_frame_widget->SetRootGraphicsLayer(GetWebView()
                                                 ->MainFrameImpl()
                                                 ->GetFrame()
                                                 ->View()
@@ -87,16 +87,16 @@ class ScrollingCoordinatorTest : public ::testing::Test,
   }
 
   void NavigateTo(const std::string& url) {
-    FrameTestHelpers::LoadFrame(GetWebViewImpl()->MainFrame(), url);
+    FrameTestHelpers::LoadFrame(GetWebView()->MainFrame(), url);
   }
 
   void LoadHTML(const std::string& html) {
-    FrameTestHelpers::LoadHTMLString(GetWebViewImpl()->MainFrame(), html,
+    FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrame(), html,
                                      URLTestHelpers::ToKURL("about:blank"));
   }
 
   void ForceFullCompositingUpdate() {
-    GetWebViewImpl()->UpdateAllLifecyclePhases();
+    GetWebView()->UpdateAllLifecyclePhases();
   }
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
@@ -111,13 +111,13 @@ class ScrollingCoordinatorTest : public ::testing::Test,
     return layer ? layer->PlatformLayer() : nullptr;
   }
 
-  WebViewImpl* GetWebViewImpl() const { return helper_.WebView(); }
+  WebViewBase* GetWebView() const { return helper_.WebView(); }
   LocalFrame* GetFrame() const {
     return helper_.WebView()->MainFrameImpl()->GetFrame();
   }
 
   WebLayerTreeView* GetWebLayerTreeView() const {
-    return GetWebViewImpl()->LayerTreeView();
+    return GetWebView()->LayerTreeView();
   }
 
  protected:
@@ -137,7 +137,7 @@ class ScrollingCoordinatorTest : public ::testing::Test,
 INSTANTIATE_TEST_CASE_P(All, ScrollingCoordinatorTest, ::testing::Bool());
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
-  GetWebViewImpl()->Resize(WebSize(800, 600));
+  GetWebView()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
   ForceFullCompositingUpdate();
 
@@ -167,9 +167,9 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
 }
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
-  GetWebViewImpl()->Resize(WebSize(800, 600));
+  GetWebView()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
-  GetWebViewImpl()->GetSettings()->SetThreadedScrollingEnabled(false);
+  GetWebView()->GetSettings()->SetThreadedScrollingEnabled(false);
   ForceFullCompositingUpdate();
 
   // Make sure the scrolling coordinator is active.
@@ -816,7 +816,7 @@ TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
 
 TEST_P(ScrollingCoordinatorTest,
        FixedPositionLosingBackingShouldTriggerMainThreadScroll) {
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   RegisterMockedHttpURLLoad("fixed-position-losing-backing.html");
   NavigateTo(base_url_ + "fixed-position-losing-backing.html");
   ForceFullCompositingUpdate();
@@ -842,8 +842,8 @@ TEST_P(ScrollingCoordinatorTest,
 }
 
 TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
-  GetWebViewImpl()->SetDeviceScaleFactor(2.f);
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+  GetWebView()->SetDeviceScaleFactor(2.f);
   RegisterMockedHttpURLLoad("custom_scrollbar.html");
   NavigateTo(base_url_ + "custom_scrollbar.html");
   ForceFullCompositingUpdate();
@@ -971,7 +971,7 @@ TEST_P(ScrollingCoordinatorTest,
 // kHasNonLayerViewportConstrainedObject should be updated on all frames
 TEST_P(ScrollingCoordinatorTest,
        RecalculateMainThreadScrollingReasonsUponResize) {
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   RegisterMockedHttpURLLoad("has-non-layer-viewport-constrained-objects.html");
   NavigateTo(base_url_ + "has-non-layer-viewport-constrained-objects.html");
   ForceFullCompositingUpdate();
@@ -1062,8 +1062,7 @@ class NonCompositedMainThreadScrollingReasonTest
   }
   void TestNonCompositedReasons(const std::string& target,
                                 const uint32_t reason) {
-    GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
-        false);
+    GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
     Document* document = GetFrame()->GetDocument();
     Element* container = document->getElementById("scroller1");
     container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
@@ -1108,8 +1107,7 @@ class NonCompositedMainThreadScrollingReasonTest
 
     if ((reason & kLCDTextRelatedReasons) &&
         !(reason & ~kLCDTextRelatedReasons)) {
-      GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
-          true);
+      GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
       ForceFullCompositingUpdate();
       EXPECT_FALSE(
           scrollable_area->GetNonCompositedMainThreadScrollingReasons());
@@ -1150,7 +1148,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipTest) {
 
 TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   uint32_t clip_reason = MainThreadScrollingReason::kHasClipRelatedProperty;
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   Document* document = GetFrame()->GetDocument();
   // Test ancestor with ClipPath
   Element* element = document->body();
@@ -1209,7 +1207,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, BoxShadowTest) {
 }
 
 TEST_P(NonCompositedMainThreadScrollingReasonTest, StackingContextTest) {
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
 
   Document* document = GetFrame()->GetDocument();
   Element* container = document->getElementById("scroller1");
@@ -1224,11 +1222,11 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, StackingContextTest) {
   EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
               MainThreadScrollingReason::kIsNotStackingContextAndLCDText);
 
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   ForceFullCompositingUpdate();
   EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
                MainThreadScrollingReason::kIsNotStackingContextAndLCDText);
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
 
   // Adding "contain: paint" to force a stacking context leads to promotion.
   container->setAttribute("style", "contain: paint", ASSERT_NO_EXCEPTION);
@@ -1243,7 +1241,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest,
   // LCDTextRelatedReasons only. For elements with other
   // NonCompositedReasons, we don't create scrollingLayer for their
   // CompositedLayerMapping therefore they don't get composited.
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   Document* document = GetFrame()->GetDocument();
   Element* container = document->getElementById("scroller1");
   ASSERT_TRUE(container);

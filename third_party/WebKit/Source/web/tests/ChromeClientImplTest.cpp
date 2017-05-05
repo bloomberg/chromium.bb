@@ -38,14 +38,11 @@
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "web/ChromeClientImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
-
-void SetCurrentInputEventForTest(const WebInputEvent* event) {
-  WebViewImpl::current_input_event_ = event;
-}
 
 namespace {
 
@@ -69,8 +66,8 @@ class GetNavigationPolicyTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    web_view_ = ToWebViewImpl(
-        WebView::Create(&web_view_client_, kWebPageVisibilityStateVisible));
+    web_view_ = static_cast<WebViewBase*>(
+        WebViewBase::Create(&web_view_client_, kWebPageVisibilityStateVisible));
     web_view_->SetMainFrame(WebLocalFrame::Create(
         WebTreeScopeType::kDocument, &web_frame_client_, nullptr, nullptr));
     chrome_client_impl_ =
@@ -87,10 +84,10 @@ class GetNavigationPolicyTest : public testing::Test {
     WebMouseEvent event(WebInputEvent::kMouseUp, modifiers,
                         WebInputEvent::kTimeStampForTesting);
     event.button = button;
-    SetCurrentInputEventForTest(&event);
+    web_view_->SetCurrentInputEventForTest(&event);
     chrome_client_impl_->SetToolbarsVisible(!as_popup);
     chrome_client_impl_->Show(kNavigationPolicyIgnore);
-    SetCurrentInputEventForTest(0);
+    web_view_->SetCurrentInputEventForTest(0);
     return result_;
   }
 
@@ -102,7 +99,7 @@ class GetNavigationPolicyTest : public testing::Test {
  protected:
   WebNavigationPolicy result_;
   TestWebViewClient web_view_client_;
-  WebViewImpl* web_view_;
+  WebViewBase* web_view_;
   FrameTestHelpers::TestWebFrameClient web_frame_client_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
 };
@@ -251,8 +248,8 @@ class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
 class CreateWindowTest : public testing::Test {
  protected:
   void SetUp() override {
-    web_view_ = ToWebViewImpl(
-        WebView::Create(&web_view_client_, kWebPageVisibilityStateVisible));
+    web_view_ = static_cast<WebViewBase*>(
+        WebViewBase::Create(&web_view_client_, kWebPageVisibilityStateVisible));
     main_frame_ = WebLocalFrame::Create(WebTreeScopeType::kDocument,
                                         &web_frame_client_, nullptr, nullptr);
     web_view_->SetMainFrame(main_frame_);
@@ -263,7 +260,7 @@ class CreateWindowTest : public testing::Test {
   void TearDown() override { web_view_->Close(); }
 
   ViewCreatingClient web_view_client_;
-  WebViewImpl* web_view_;
+  WebViewBase* web_view_;
   WebLocalFrame* main_frame_;
   FrameTestHelpers::TestWebFrameClient web_frame_client_;
   Persistent<ChromeClientImpl> chrome_client_impl_;

@@ -5,6 +5,7 @@
 #include "core/animation/ElementAnimation.h"
 #include "core/css/PropertyDescriptor.h"
 #include "core/css/PropertyRegistration.h"
+#include "core/page/Page.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/web/WebScriptSource.h"
 #include "web/WebLocalFrameImpl.h"

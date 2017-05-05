@@ -34,6 +34,7 @@
 #include "core/page/Page.h"
 #include "core/page/TouchDisambiguation.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/PtrUtil.h"
@@ -55,7 +56,7 @@ namespace blink {
 
 namespace {
 
-GestureEventWithHitTestResults GetTargetedEvent(WebViewImpl* web_view_impl,
+GestureEventWithHitTestResults GetTargetedEvent(WebViewBase* web_view_impl,
                                                 WebGestureEvent& touch_event) {
   WebGestureEvent scaled_event = TransformWebGestureEvent(
       web_view_impl->MainFrameImpl()->GetFrameView(), touch_event);
@@ -77,7 +78,7 @@ std::string RegisterMockedURLLoad() {
 TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(url, true);
+  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url, true);
   int page_width = 640;
   int page_height = 480;
   web_view_impl->Resize(WebSize(page_width, page_height));
@@ -149,7 +150,7 @@ FakeCompositingWebViewClient* CompositingWebViewClient() {
 TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
       url, true, 0, CompositingWebViewClient());
 
   int page_width = 640;
@@ -193,7 +194,7 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
 
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl =
+  WebViewBase* web_view_impl =
       web_view_helper.InitializeAndLoad(url, true, 0, web_view_client.get());
 
   int page_width = 640;
@@ -233,7 +234,7 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
 TEST(LinkHighlightImplTest, multipleHighlights) {
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
       url, true, 0, CompositingWebViewClient());
 
   int page_width = 640;

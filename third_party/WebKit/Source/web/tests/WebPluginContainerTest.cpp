@@ -48,6 +48,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebMouseWheelEvent.h"
@@ -1058,7 +1059,7 @@ TEST_F(WebPluginContainerTest, NeedsWheelEvents) {
   TestPluginWebFrameClient
       plugin_web_frame_client;  // Must outlive webViewHelper
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", true, &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);

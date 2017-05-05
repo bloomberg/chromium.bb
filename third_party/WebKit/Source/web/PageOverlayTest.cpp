@@ -76,17 +76,17 @@ class PageOverlayTest : public ::testing::Test {
         compositing_mode == kAcceleratedCompositing
             ? EnableAcceleratedCompositing
             : DisableAcceleratedCompositing);
-    GetWebViewImpl()->Resize(WebSize(kViewportWidth, kViewportHeight));
-    GetWebViewImpl()->UpdateAllLifecyclePhases();
+    GetWebView()->Resize(WebSize(kViewportWidth, kViewportHeight));
+    GetWebView()->UpdateAllLifecyclePhases();
     ASSERT_EQ(compositing_mode == kAcceleratedCompositing,
-              GetWebViewImpl()->IsAcceleratedCompositingActive());
+              GetWebView()->IsAcceleratedCompositingActive());
   }
 
-  WebViewImpl* GetWebViewImpl() const { return helper_.WebView(); }
+  WebViewBase* GetWebView() const { return helper_.WebView(); }
 
   std::unique_ptr<PageOverlay> CreateSolidYellowOverlay() {
     return PageOverlay::Create(
-        GetWebViewImpl()->MainFrameImpl(),
+        GetWebView()->MainFrameImpl(),
         WTF::MakeUnique<SolidColorOverlay>(SK_ColorYELLOW));
   }
 
@@ -117,12 +117,12 @@ class MockCanvas : public SkCanvas {
 
 TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
   Initialize(kAcceleratedCompositing);
-  GetWebViewImpl()->LayerTreeView()->SetViewportSize(
+  GetWebView()->LayerTreeView()->SetViewportSize(
       WebSize(kViewportWidth, kViewportHeight));
 
   std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
   page_overlay->Update();
-  GetWebViewImpl()->UpdateAllLifecyclePhases();
+  GetWebView()->UpdateAllLifecyclePhases();
 
   // Ideally, we would get results from the compositor that showed that this
   // page overlay actually winds up getting drawn on top of the rest.
@@ -153,7 +153,7 @@ TEST_F(PageOverlayTest, PageOverlay_VisualRect) {
   Initialize(kAcceleratedCompositing);
   std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
   page_overlay->Update();
-  GetWebViewImpl()->UpdateAllLifecyclePhases();
+  GetWebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(0, 0, kViewportWidth, kViewportHeight),
             page_overlay->VisualRect());
 }

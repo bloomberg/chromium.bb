@@ -44,7 +44,7 @@ class CompositorWorkerTest
   void SetUp() override {
     helper_.Initialize(true, nullptr, &mock_web_view_client_, nullptr,
                        &ConfigureSettings);
-    GetWebViewImpl()->Resize(IntSize(320, 240));
+    GetWebView()->Resize(IntSize(320, 240));
   }
 
   ~CompositorWorkerTest() override {
@@ -54,12 +54,11 @@ class CompositorWorkerTest
   }
 
   void NavigateTo(const String& url) {
-    FrameTestHelpers::LoadFrame(GetWebViewImpl()->MainFrame(),
-                                url.Utf8().data());
+    FrameTestHelpers::LoadFrame(GetWebView()->MainFrame(), url.Utf8().data());
   }
 
   void ForceFullCompositingUpdate() {
-    GetWebViewImpl()->UpdateAllLifecyclePhases();
+    GetWebView()->UpdateAllLifecyclePhases();
   }
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
@@ -91,7 +90,7 @@ class CompositorWorkerTest
     return web_scroll_layer;
   }
 
-  WebViewImpl* GetWebViewImpl() const { return helper_.WebView(); }
+  WebViewBase* GetWebView() const { return helper_.WebView(); }
   LocalFrame* GetFrame() const {
     return helper_.WebView()->MainFrameImpl()->GetFrame();
   }

@@ -9,6 +9,7 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebDocument.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,7 +97,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
   RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
                                 testing::WebTestDataPath(),
                                 WebString::FromUTF8(file_name));
-  WebViewImpl* web_view =
+  WebViewBase* web_view =
       web_view_helper_.Initialize(true, 0, nullptr, &client);
   web_view->Resize(WebSize(800, 1200));
   LoadFrame(web_view->MainFrame(), base_url_ + file_name);

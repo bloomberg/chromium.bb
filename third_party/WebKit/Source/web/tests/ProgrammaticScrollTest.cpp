@@ -44,17 +44,16 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   RegisterMockedHttpURLLoad("long_scroll.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebView* web_view = web_view_helper.InitializeAndLoad(
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "long_scroll.html", true, 0, 0);
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
-  WebViewImpl* web_view_impl = ToWebViewImpl(web_view);
-  FrameLoader& loader = web_view_impl->MainFrameImpl()->GetFrame()->Loader();
+  FrameLoader& loader = web_view->MainFrameImpl()->GetFrame()->Loader();
   loader.GetDocumentLoader()->SetLoadType(kFrameLoadTypeBackForward);
 
-  web_view_impl->SetPageScaleFactor(3.0f);
-  web_view_impl->MainFrame()->SetScrollOffset(WebSize(0, 500));
+  web_view->SetPageScaleFactor(3.0f);
+  web_view->MainFrame()->SetScrollOffset(WebSize(0, 500));
   loader.GetDocumentLoader()->GetInitialScrollState().was_scrolled_by_user =
       false;
   loader.GetDocumentLoader()->GetHistoryItem()->SetPageScaleFactor(2);
@@ -69,25 +68,24 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   loader.RestoreScrollPositionAndViewState();
 
   // Expect that both scroll and scale were restored.
-  EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(200, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(2.0f, web_view->PageScaleFactor());
+  EXPECT_EQ(200, web_view->MainFrameImpl()->GetScrollOffset().height);
 }
 
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   RegisterMockedHttpURLLoad("long_scroll.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebView* web_view = web_view_helper.InitializeAndLoad(
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "long_scroll.html", true, 0, 0);
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
-  WebViewImpl* web_view_impl = ToWebViewImpl(web_view);
-  FrameLoader& loader = web_view_impl->MainFrameImpl()->GetFrame()->Loader();
+  FrameLoader& loader = web_view->MainFrameImpl()->GetFrame()->Loader();
   loader.GetDocumentLoader()->SetLoadType(kFrameLoadTypeBackForward);
 
-  web_view_impl->SetPageScaleFactor(3.0f);
-  web_view_impl->MainFrame()->SetScrollOffset(WebSize(0, 500));
+  web_view->SetPageScaleFactor(3.0f);
+  web_view->MainFrame()->SetScrollOffset(WebSize(0, 500));
   loader.GetDocumentLoader()->GetInitialScrollState().was_scrolled_by_user =
       false;
   loader.GetDocumentLoader()->GetHistoryItem()->SetPageScaleFactor(0);
@@ -99,8 +97,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   loader.RestoreScrollPositionAndViewState();
 
   // Expect that only the scroll position was restored.
-  EXPECT_EQ(3.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(400, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(3.0f, web_view->PageScaleFactor());
+  EXPECT_EQ(400, web_view->MainFrameImpl()->GetScrollOffset().height);
 }
 
 }  // namespace blink

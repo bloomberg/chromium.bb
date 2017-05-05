@@ -190,7 +190,7 @@ WebViewHelper::~WebViewHelper() {
   Reset();
 }
 
-WebViewImpl* WebViewHelper::InitializeWithOpener(
+WebViewBase* WebViewHelper::InitializeWithOpener(
     WebFrame* opener,
     bool enable_javascript,
     TestWebFrameClient* web_frame_client,
@@ -205,8 +205,8 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
     web_view_client = DefaultWebViewClient();
   if (!web_widget_client)
     web_widget_client = web_view_client->WidgetClient();
-  web_view_ =
-      WebViewImpl::Create(web_view_client, kWebPageVisibilityStateVisible);
+  web_view_ = static_cast<WebViewBase*>(
+      WebView::Create(web_view_client, kWebPageVisibilityStateVisible));
   web_view_->GetSettings()->SetJavaScriptEnabled(enable_javascript);
   web_view_->GetSettings()->SetPluginsEnabled(true);
   // Enable (mocked) network loads of image URLs, as this simplifies
@@ -236,7 +236,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   return web_view_;
 }
 
-WebViewImpl* WebViewHelper::Initialize(
+WebViewBase* WebViewHelper::Initialize(
     bool enable_javascript,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
@@ -247,7 +247,7 @@ WebViewImpl* WebViewHelper::Initialize(
                               update_settings_func);
 }
 
-WebViewImpl* WebViewHelper::InitializeAndLoad(
+WebViewBase* WebViewHelper::InitializeAndLoad(
     const std::string& url,
     bool enable_javascript,
     TestWebFrameClient* web_frame_client,
