@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/android_overlay.h"
-#include "media/base/android/android_overlay_factory.h"
 #include "media/gpu/android_video_surface_chooser.h"
 #include "media/gpu/media_gpu_export.h"
 
@@ -23,13 +22,11 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   ~AndroidVideoSurfaceChooserImpl() override;
 
   // AndroidVideoSurfaceChooser
-  void Initialize(
-      UseOverlayCB use_overlay_cb,
-      UseSurfaceTextureCB use_surface_texture_cb,
-      StopUsingOverlayImmediatelyCB stop_immediately_cb,
-      std::unique_ptr<AndroidOverlayFactory> initial_factory) override;
-  void ReplaceOverlayFactory(
-      std::unique_ptr<AndroidOverlayFactory> factory) override;
+  void Initialize(UseOverlayCB use_overlay_cb,
+                  UseSurfaceTextureCB use_surface_texture_cb,
+                  StopUsingOverlayImmediatelyCB stop_immediately_cb,
+                  AndroidOverlayFactoryCB initial_factory) override;
+  void ReplaceOverlayFactory(AndroidOverlayFactoryCB factory) override;
 
  private:
   // AndroidOverlay callbacks.
@@ -51,7 +48,7 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   // or a surface texture.
   bool client_notification_pending_ = false;
 
-  std::unique_ptr<AndroidOverlayFactory> overlay_factory_;
+  AndroidOverlayFactoryCB overlay_factory_;
 
   base::WeakPtrFactory<AndroidVideoSurfaceChooserImpl> weak_factory_;
 

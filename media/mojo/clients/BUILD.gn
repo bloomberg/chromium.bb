@@ -45,8 +45,6 @@ source_set("clients") {
     sources += [
       "mojo_android_overlay.cc",
       "mojo_android_overlay.h",
-      "mojo_android_overlay_factory.cc",
-      "mojo_android_overlay_factory.h",
     ]
   }
 

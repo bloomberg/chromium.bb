@@ -25,7 +25,7 @@ class MojoAndroidOverlay : public AndroidOverlay,
  public:
   MojoAndroidOverlay(
       service_manager::mojom::InterfaceProvider* interface_provider,
-      const AndroidOverlay::Config& config,
+      AndroidOverlayConfig config,
       const base::UnguessableToken& routing_token);
 
   ~MojoAndroidOverlay() override;
@@ -40,7 +40,7 @@ class MojoAndroidOverlay : public AndroidOverlay,
 
  private:
   service_manager::mojom::InterfaceProvider* interface_provider_;
-  AndroidOverlay::Config config_;
+  AndroidOverlayConfig config_;
   mojom::AndroidOverlayProviderPtr provider_ptr_;
   mojom::AndroidOverlayPtr overlay_ptr_;
   std::unique_ptr<mojo::Binding<mojom::AndroidOverlayClient>> binding_;

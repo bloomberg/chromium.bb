@@ -6,8 +6,4 @@
 
 namespace media {
 
-AndroidOverlay::Config::Config() = default;
-AndroidOverlay::Config::Config(const AndroidOverlay::Config&) = default;
-AndroidOverlay::Config::~Config() = default;
-
 }  // namespace media
