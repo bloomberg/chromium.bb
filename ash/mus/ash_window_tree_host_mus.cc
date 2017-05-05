@@ -88,9 +88,11 @@ void AshWindowTreeHostMus::UpdateRootWindowSizeInPixels(
 
 ui::EventDispatchDetails AshWindowTreeHostMus::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {
-  input_method_handler()->SetPostIME(true);
+  // input_method_handler() can be null when using IME service with --mus.
+  if (input_method_handler())
+    input_method_handler()->SetPostIME(true);
   ui::EventDispatchDetails details = SendEventToSink(event);
-  if (!details.dispatcher_destroyed)
+  if (input_method_handler() && !details.dispatcher_destroyed)
     input_method_handler()->SetPostIME(false);
   return details;
 }

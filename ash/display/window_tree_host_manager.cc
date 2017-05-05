@@ -824,9 +824,9 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   AshWindowTreeHost* ash_host =
       AshWindowTreeHost::Create(params_with_bounds).release();
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  // In mash input method is hosted by the browser process, so we don't need to
-  // create and set it here.
-  if (Shell::GetAshConfig() != Config::MASH) {
+  // When using IME service, input method is hosted by the browser process, so
+  // we don't need to create and set it here.
+  if (!Shell::ShouldUseIMEService()) {
     DCHECK(!host->has_input_method());
     if (!input_method_) {  // Singleton input method instance for Ash.
       input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());

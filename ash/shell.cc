@@ -16,6 +16,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/app_list/app_list_delegate_impl.h"
 #include "ash/ash_constants.h"
+#include "ash/ash_switches.h"
 #include "ash/aura/shell_port_classic.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
@@ -307,6 +308,14 @@ const aura::Window* Shell::GetContainer(const aura::Window* root_window,
 // static
 Config Shell::GetAshConfig() {
   return Get()->shell_port_->GetAshConfig();
+}
+
+// static
+bool Shell::ShouldUseIMEService() {
+  return Shell::GetAshConfig() == Config::MASH ||
+         (Shell::GetAshConfig() == Config::MUS &&
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kUseIMEService));
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -935,8 +944,9 @@ void Shell::Init(const ShellInitParams& init_params) {
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
   maximize_mode_controller_ = base::MakeUnique<MaximizeModeController>();
 
-  if (config == Config::CLASSIC || config == Config::MUS) {
-    // Not applicable to mash as events are already routed to InputMethod first.
+  if (!ShouldUseIMEService()) {
+    // Not applicable when using IME service as events are already routed to
+    // InputMethod first.
     AddPreTargetHandler(
         window_tree_host_manager_->input_method_event_handler());
   }
