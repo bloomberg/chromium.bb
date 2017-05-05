@@ -761,10 +761,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetPepperVolume(int32_t pp_instance, double volume);
 #endif  // ENABLE_PLUGINS
 
-  mojom::URLLoaderFactory* GetURLLoaderFactory() {
-    return url_loader_factory_.get();
-  }
-
  protected:
   explicit RenderFrameImpl(const CreateParams& params);
 

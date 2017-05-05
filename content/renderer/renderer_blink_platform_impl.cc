@@ -63,7 +63,6 @@
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 #include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
-#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
 #include "content/renderer/webclipboard_impl.h"
@@ -308,33 +307,21 @@ std::unique_ptr<blink::WebURLLoader>
 RendererBlinkPlatformImpl::CreateURLLoader() {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
 
-  const bool network_service_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService);
-
-  mojom::URLLoaderFactory* factory = nullptr;
-  if (!network_service_enabled) {
-    if (child_thread) {
+  mojom::URLLoaderFactory* factory =
+      url_loader_factory_ ? url_loader_factory_.get()
+                          : network_service_url_loader_factory_.get();
+  if (!factory && child_thread) {
+    bool network_service_enabled =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableNetworkService);
+    if (network_service_enabled) {
+      connector_->BindInterface(mojom::kNetworkServiceName,
+                                &network_service_url_loader_factory_);
+      factory = network_service_url_loader_factory_.get();
+    } else {
       child_thread->channel()->GetRemoteAssociatedInterface(
           &url_loader_factory_);
-    }
-    factory = url_loader_factory_.get();
-  } else {
-    // If there's a URLLoaderFactory attached to the frame, use it.
-    // TODO(yhirano|scottmg): Make the URLLoaderFactory always a per-frame
-    // thing? See https://crbug.com/712913.
-    blink::WebLocalFrame* const web_frame =
-        blink::WebLocalFrame::FrameForCurrentContext();
-    RenderFrameImpl* render_frame =
-        static_cast<RenderFrameImpl*>(RenderFrame::FromWebFrame(web_frame));
-    if (render_frame && render_frame->GetURLLoaderFactory()) {
-      factory = render_frame->GetURLLoaderFactory();
-    } else {
-      if (!network_service_url_loader_factory_) {
-        connector_->BindInterface(mojom::kNetworkServiceName,
-                                  &network_service_url_loader_factory_);
-      }
-      factory = network_service_url_loader_factory_.get();
+      factory = url_loader_factory_.get();
     }
   }
 

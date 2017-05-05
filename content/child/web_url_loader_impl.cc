@@ -634,6 +634,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   else
     extra_data = &empty_extra_data;
   extra_data->CopyToResourceRequest(resource_request.get());
+  if (extra_data->url_loader_factory_override())
+    url_loader_factory_ = extra_data->url_loader_factory_override();
 
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
