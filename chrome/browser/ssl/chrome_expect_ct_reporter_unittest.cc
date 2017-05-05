@@ -324,7 +324,9 @@ class ChromeExpectCTReporterWaitTest : public ::testing::Test {
     base::RunLoop run_loop;
     network_delegate_.set_url_request_destroyed_callback(
         run_loop.QuitClosure());
-    reporter->OnExpectCTFailed(host_port, report_uri, ssl_info);
+    reporter->OnExpectCTFailed(host_port, report_uri, ssl_info.cert.get(),
+                               ssl_info.unverified_cert.get(),
+                               ssl_info.signed_certificate_timestamps);
     run_loop.Run();
   }
 
@@ -363,7 +365,9 @@ TEST(ChromeExpectCTReporterTest, FeatureDisabled) {
   net::HostPortPair host_port("example.test", 443);
   GURL report_uri("http://example-report.test");
 
-  reporter.OnExpectCTFailed(host_port, report_uri, ssl_info);
+  reporter.OnExpectCTFailed(host_port, report_uri, ssl_info.cert.get(),
+                            ssl_info.unverified_cert.get(),
+                            ssl_info.signed_certificate_timestamps);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
 
@@ -383,8 +387,8 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
 
-  reporter.OnExpectCTFailed(net::HostPortPair("example.test", 443), GURL(),
-                            net::SSLInfo());
+  reporter.OnExpectCTFailed(net::HostPortPair(), GURL(), nullptr, nullptr,
+                            net::SignedCertificateTimestampAndStatusList());
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
 
@@ -482,7 +486,9 @@ TEST(ChromeExpectCTReporterTest, SendReport) {
   GURL report_uri("http://example-report.test");
 
   // Check that the report is sent and contains the correct information.
-  reporter.OnExpectCTFailed(host_port, report_uri, ssl_info);
+  reporter.OnExpectCTFailed(host_port, report_uri, ssl_info.cert.get(),
+                            ssl_info.unverified_cert.get(),
+                            ssl_info.signed_certificate_timestamps);
   EXPECT_EQ(report_uri, sender->latest_report_uri());
   EXPECT_FALSE(sender->latest_serialized_report().empty());
   EXPECT_EQ("application/json; charset=utf-8", sender->latest_content_type());

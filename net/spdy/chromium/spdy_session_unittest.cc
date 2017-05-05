@@ -5945,6 +5945,49 @@ TEST(CanPoolTest, CanPool) {
       &tss, ssl_info, "www.example.org", "mail.google.com"));
 }
 
+TEST(CanPoolTest, CanPoolExpectCT) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+  // Load a cert that is valid for:
+  //   www.example.org
+  //   mail.example.org
+  //   mail.example.com
+
+  TransportSecurityState tss;
+  SSLInfo ssl_info;
+  ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ssl_info.unverified_cert = ssl_info.cert;
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_info.is_issued_by_known_root = true;
+
+  EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, "www.example.org",
+                                   "www.example.org"));
+
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+
+  // A different Expect-CT enabled host should not be allowed to pool.
+  tss.AddExpectCT("mail.example.org", expiry, true, GURL());
+  EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, "www.example.org",
+                                    "mail.example.org"));
+  // A report-only Expect-CT configuration should not prevent pooling.
+  tss.AddExpectCT("mail.example.org", expiry, false,
+                  GURL("https://report.test"));
+  EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, "www.example.org",
+                                   "mail.example.org"));
+  // If Expect-CT becomes enabled for the same host for which the connection was
+  // already made, subsequent connections to that host should not be allowed to
+  // pool.
+  tss.AddExpectCT("www.example.org", expiry, true, GURL());
+  EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, "www.example.org",
+                                    "www.example.org"));
+}
+
 TEST(CanPoolTest, CanNotPoolWithCertErrors) {
   // Load a cert that is valid for:
   //   www.example.org
