@@ -216,6 +216,7 @@ source_set("browser") {
     "../common/service_manager/child_connection.h",
     "../zygote/zygote_linux.cc",
     "../zygote/zygote_linux.h",
+    "../zygote/zygote_main.h",
     "../zygote/zygote_main_linux.cc",
     "accessibility/accessibility_tree_formatter.cc",
     "accessibility/accessibility_tree_formatter.h",
