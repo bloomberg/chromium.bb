@@ -46,7 +46,7 @@ cr.define('print_preview', function() {
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
-          assert(this.select_), 'change', this.onSelectChange_.bind(this));
+          this.select_, 'change', this.onSelectChange_.bind(this));
       this.tracker.add(
           this.colorTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -65,11 +65,11 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {HTMLSelectElement} Select element containing the color options.
+     * @return {!HTMLSelectElement} Select element containing the color options.
      * @private
      */
     get select_() {
-      return /** @type {HTMLSelectElement} */(
+      return /** @type {!HTMLSelectElement} */(
           this.getChildElement('.color-settings-select'));
     },
 

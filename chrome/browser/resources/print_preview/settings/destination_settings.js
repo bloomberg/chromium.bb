@@ -150,9 +150,9 @@ cr.define('print_preview', function() {
       }
 
       setIsVisible(
-          assert(this.getChildElement('.throbber-container')),
+          this.getChildElement('.throbber-container'),
           this.destinationStore_.isAutoSelectDestinationInProgress);
-      setIsVisible(assert(destinationSettingsBoxEl), !!destination);
+      setIsVisible(destinationSettingsBoxEl, !!destination);
     },
 
     onSelectedDestinationNameSet_: function() {

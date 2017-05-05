@@ -81,7 +81,7 @@ cr.define('print_preview', function() {
      * @private
      */
     getButton_: function() {
-      return assert(this.getChildElement('.advanced-options-settings-button'));
+      return this.getChildElement('.advanced-options-settings-button');
     },
 
     /**
