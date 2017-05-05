@@ -107,7 +107,9 @@ void CronetInitOnInitThread(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
   base::CommandLine::Init(0, nullptr);
   DCHECK(!base::MessageLoop::current());
   DCHECK(!g_init_message_loop);
-  g_init_message_loop = new base::MessageLoop();
+  g_init_message_loop =
+      new base::MessageLoop(base::MessageLoop::Type::TYPE_JAVA);
+  static_cast<base::MessageLoopForUI*>(g_init_message_loop)->Start();
   DCHECK(!g_network_change_notifier);
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());

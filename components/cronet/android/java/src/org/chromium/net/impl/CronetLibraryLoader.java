@@ -110,7 +110,7 @@ public class CronetLibraryLoader {
     /**
      * Run {@code r} on the initialization thread.
      */
-    static void postToInitThread(Runnable r) {
+    public static void postToInitThread(Runnable r) {
         if (onInitThread()) {
             r.run();
         } else {
