@@ -32,8 +32,6 @@ class DisplayAndroidManager : public display::ScreenBase {
   void UpdateDisplay(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& jobject,
                      jint sdkDisplayId,
-                     jint physicalWidth,
-                     jint physicalHeight,
                      jint width,
                      jint height,
                      jfloat dipScale,

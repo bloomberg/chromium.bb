@@ -138,13 +138,9 @@ public class AwLegacyQuirksTest extends AwTestBase {
         DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
                 getInstrumentation().getTargetContext());
         float dipScale = displayAndroid.getDipScale();
-        float physicalDisplayWidth = displayAndroid.getPhysicalDisplayWidth() != 0
-                                     ? displayAndroid.getPhysicalDisplayWidth()
-                                     : displayAndroid.getDisplayWidth();
+        float physicalDisplayWidth = displayAndroid.getDisplayWidth();
         float cssDisplayWidth = physicalDisplayWidth / dipScale;
-        float physicalDisplayHeight = displayAndroid.getPhysicalDisplayHeight() != 0
-                                      ? displayAndroid.getPhysicalDisplayHeight()
-                                      : displayAndroid.getDisplayHeight();
+        float physicalDisplayHeight = displayAndroid.getDisplayHeight();
         float cssDisplayHeight = physicalDisplayHeight / dipScale;
 
         float screenWidth = Integer.parseInt(
