@@ -25,7 +25,7 @@ var test = function()
         testSourceFrame = sourceFrame;
         InspectorTest.addResult("Main resource was shown.");
         InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
-        InspectorTest.debuggerModel.disableDebugger();
+        InspectorTest.debuggerModel._disableDebugger();
     }
 
     function step3()
@@ -35,7 +35,7 @@ var test = function()
         InspectorTest.setBreakpoint(testSourceFrame, 8, "", true);
         InspectorTest.addResult("Breakpoint added");
         InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
-        InspectorTest.debuggerModel.enableDebugger();
+        InspectorTest.debuggerModel._enableDebugger();
     }
 
     function step4()
@@ -54,7 +54,7 @@ var test = function()
     {
         InspectorTest.addResult("Disable debugger again");
         InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step7, this);
-        InspectorTest.debuggerModel.disableDebugger();
+        InspectorTest.debuggerModel._disableDebugger();
     }
 
     function step7()
@@ -64,7 +64,7 @@ var test = function()
         breakpoint.remove();
         InspectorTest.addResult("Breakpoint removed");
         InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
-        InspectorTest.debuggerModel.enableDebugger();
+        InspectorTest.debuggerModel._enableDebugger();
     }
 
     function step8()

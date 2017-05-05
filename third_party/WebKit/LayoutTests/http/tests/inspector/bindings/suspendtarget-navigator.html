@@ -1,0 +1,46 @@
+<head>
+<script src="../inspector-test.js"></script>
+<script src="./bindings-test.js"></script>
+
+<script>
+
+async function test()
+{
+    var sourcesNavigator = new Sources.SourcesNavigatorView();
+    sourcesNavigator.show(UI.inspectorView.element);
+
+    InspectorTest.markStep('initialWorkspace');
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('attachFramesAndWaitForSourceMaps');
+    await Promise.all([
+        InspectorTest.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
+        InspectorTest.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
+        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
+        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+    ]);
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('Suspending targets.');
+    await SDK.targetManager.suspendAllTargets();
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('Resuming targets.');
+    await Promise.all([
+        SDK.targetManager.resumeAllTargets(),
+        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
+        InspectorTest.waitForSourceMap('sourcemap-style.css.map')
+    ]);
+
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Verify that navigator is rendered properly when targets are suspended and resumed.
+</p>
+</body>
