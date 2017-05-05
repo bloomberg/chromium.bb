@@ -248,7 +248,6 @@ EXPERIMENT_LIST="
     cdef
     var_tx
     rect_tx
-    ref_mv
     tpl_mv
     dual_filter
     convolve_round
