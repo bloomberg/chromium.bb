@@ -101,13 +101,18 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
                                           const int subpel_x,
                                           const int subpel_y,
                                           const struct scale_factors *sf, int w,
-                                          int h, int ref,
+                                          int h, ConvolveParams *conv_params,
 #if CONFIG_DUAL_FILTER
                                           const InterpFilter *interp_filter,
 #else
                                           const InterpFilter interp_filter,
 #endif
                                           int xs, int ys, int bd) {
+  const int ref = conv_params->ref;
+  // ref > 0 means this is the second reference frame
+  // first reference frame's prediction result is already in dst
+  // therefore we need to average the first and second results
+  const int avg = ref > 0;
 #if CONFIG_DUAL_FILTER
   const InterpFilterParams interp_filter_params_x =
       av1_get_interp_filter_params(interp_filter[1 + 2 * ref]);
@@ -119,21 +124,35 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
   const InterpFilterParams interp_filter_params_y = interp_filter_params_x;
 #endif
 
-  if (interp_filter_params_x.taps == SUBPEL_TAPS &&
-      interp_filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2) {
-    const int16_t *kernel_x =
-        av1_get_interp_filter_subpel_kernel(interp_filter_params_x, subpel_x);
-    const int16_t *kernel_y =
-        av1_get_interp_filter_subpel_kernel(interp_filter_params_y, subpel_y);
-    sf->highbd_predict[subpel_x != 0][subpel_y != 0][ref](
-        src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h, bd);
-  } else {
-    // ref > 0 means this is the second reference frame
-    // first reference frame's prediction result is already in dst
-    // therefore we need to average the first and second results
-    const int avg = ref > 0;
+  if (has_scale(xs, ys)) {
     av1_highbd_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
                         subpel_x, xs, subpel_y, ys, avg, bd);
+  } else if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
+#if CONFIG_CONVOLVE_ROUND
+    av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
+#if CONFIG_DUAL_FILTER
+                                  interp_filter,
+#else   // CONFIG_DUAL_FILTER
+                                  &interp_filter,
+#endif  // CONFIG_DUAL_FILTER
+                                  subpel_x, xs, subpel_y, ys, conv_params, bd);
+#else
+    assert(0);
+#endif  // CONFIG_CONVOLVE_ROUND
+  } else {
+    if (interp_filter_params_x.taps == SUBPEL_TAPS &&
+        interp_filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2) {
+      const int16_t *kernel_x =
+          av1_get_interp_filter_subpel_kernel(interp_filter_params_x, subpel_x);
+      const int16_t *kernel_y =
+          av1_get_interp_filter_subpel_kernel(interp_filter_params_y, subpel_y);
+      sf->highbd_predict[subpel_x != 0][subpel_y != 0][ref](
+          src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h,
+          bd);
+    } else {
+      av1_highbd_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
+                          subpel_x, xs, subpel_y, ys, avg, bd);
+    }
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
@@ -417,7 +436,7 @@ static INLINE void av1_make_inter_predictor(
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
-                           sf, w, h, conv_params->ref, interp_filter, xs, ys,
+                           sf, w, h, conv_params, interp_filter, xs, ys,
                            xd->bd);
     return;
   }
