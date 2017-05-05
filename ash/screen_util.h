@@ -30,11 +30,15 @@ class ASH_EXPORT ScreenUtil {
   // Returns the display's work area bounds in parent coordinates.
   static gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window);
 
- private:
-  ScreenUtil() {}
-  ~ScreenUtil() {}
+  // Returns the bounds of the physical display containing the shelf for
+  // |window|. Physical displays can differ from logical displays in unified
+  // desktop mode.
+  // TODO(oshima): Consider using physical displays in window layout, instead of
+  // root windows, and only use logical display in display management code.
+  static gfx::Rect GetDisplayBoundsWithShelf(aura::Window* window);
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenUtil);
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScreenUtil);
 };
 
 }  // namespace ash

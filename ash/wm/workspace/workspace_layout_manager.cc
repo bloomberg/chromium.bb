@@ -9,6 +9,7 @@
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
@@ -21,7 +22,6 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
@@ -40,7 +40,8 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(WmWindow* window)
     : window_(window),
       root_window_(window->GetRootWindow()),
       root_window_controller_(root_window_->GetRootWindowController()),
-      work_area_in_parent_(wm::GetDisplayWorkAreaBoundsInParent(window_)),
+      work_area_in_parent_(
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_->aura_window())),
       is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr),
       keyboard_observer_(this) {
   Shell::Get()->AddShellObserver(this);
@@ -290,7 +291,8 @@ void WorkspaceLayoutManager::OnDisplayMetricsChanged(
   if (window_->GetDisplayNearestWindow().id() != display.id())
     return;
 
-  const gfx::Rect work_area(wm::GetDisplayWorkAreaBoundsInParent(window_));
+  const gfx::Rect work_area(
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_->aura_window()));
   if (work_area != work_area_in_parent_) {
     const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
     AdjustAllWindowsBoundsForWorkAreaChange(&event);
@@ -345,7 +347,8 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
   DCHECK(event->type() == wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
          event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
 
-  work_area_in_parent_ = wm::GetDisplayWorkAreaBoundsInParent(window_);
+  work_area_in_parent_ =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_->aura_window());
 
   // Don't do any adjustments of the insets while we are in screen locked mode.
   // This would happen if the launcher was auto hidden before the login screen

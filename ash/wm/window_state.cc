@@ -8,12 +8,12 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/screen_util.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "ui/aura/window.h"
@@ -346,7 +346,8 @@ void WindowState::SetBoundsInScreen(const gfx::Rect& bounds_in_screen) {
 void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
   if (is_dragged() || !IsSnapped())
     return;
-  gfx::Rect maximized_bounds = GetMaximizedWindowBoundsInParent(window_);
+  gfx::Rect maximized_bounds =
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window_->aura_window());
   if (GetStateType() == WINDOW_STATE_TYPE_LEFT_SNAPPED)
     bounds->set_x(maximized_bounds.x());
   else if (GetStateType() == WINDOW_STATE_TYPE_RIGHT_SNAPPED)
@@ -405,7 +406,8 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
 }
 
 void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
-  gfx::Rect work_area_in_parent = GetDisplayWorkAreaBoundsInParent(window_);
+  gfx::Rect work_area_in_parent =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_->aura_window());
   gfx::Rect child_bounds(bounds);
   AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
   SetBoundsDirect(child_bounds);

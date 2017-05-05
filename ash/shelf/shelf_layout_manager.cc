@@ -12,6 +12,7 @@
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -25,7 +26,6 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -43,6 +43,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -191,8 +192,8 @@ bool ShelfLayoutManager::IsVisible() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
-  WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
-  gfx::Rect rect(wm::GetDisplayBoundsInParent(shelf_window));
+  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
+  gfx::Rect rect(ScreenUtil::GetDisplayBoundsInParent(shelf_window));
   return SelectValueForShelfAlignment(
       gfx::Rect(rect.x(), rect.bottom() - kShelfSize, rect.width(), kShelfSize),
       gfx::Rect(rect.x(), rect.y(), kShelfSize, rect.height()),
@@ -671,8 +672,9 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
     shelf_size = 0;
   }
 
-  WmWindow* shelf_window = WmWindow::Get(shelf_widget_->GetNativeWindow());
-  gfx::Rect available_bounds = wm::GetDisplayBoundsWithShelf(shelf_window);
+  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
+  gfx::Rect available_bounds =
+      ScreenUtil::GetDisplayBoundsWithShelf(shelf_window);
   available_bounds.Inset(0, chromevox_panel_height_, 0, 0);
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
   int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
@@ -749,16 +751,17 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   available_bounds.Subtract(target_bounds->shelf_bounds_in_root);
   available_bounds.Subtract(keyboard_bounds_);
 
-  WmWindow* root = shelf_window->GetRootWindow();
-  user_work_area_bounds_ = root->ConvertRectToScreen(available_bounds);
+  aura::Window* root = shelf_window->GetRootWindow();
+  ::wm::ConvertRectToScreen(root, &available_bounds);
+  user_work_area_bounds_ = available_bounds;
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   bool horizontal = wm_shelf_->IsHorizontalAlignment();
-  WmWindow* window = WmWindow::Get(shelf_widget_->GetNativeWindow());
-  gfx::Rect available_bounds = wm::GetDisplayBoundsWithShelf(window);
+  aura::Window* window = shelf_widget_->GetNativeWindow();
+  gfx::Rect available_bounds = ScreenUtil::GetDisplayBoundsWithShelf(window);
   int resistance_free_region = 0;
 
   if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&

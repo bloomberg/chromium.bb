@@ -12,6 +12,7 @@
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/default_window_resizer.h"
@@ -19,7 +20,6 @@
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/two_step_edge_cycler.h"
 #include "ash/wm_window.h"
@@ -516,7 +516,8 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
 }
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(gfx::Rect* bounds) {
-  gfx::Rect work_area(wm::GetDisplayWorkAreaBoundsInParent(GetTarget()));
+  gfx::Rect work_area(
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget()->aura_window()));
   int initial_size = PrimaryAxisSize(details().initial_bounds_in_parent.size());
   int current_size = PrimaryAxisSize(bounds->size());
   int start = PrimaryAxisCoordinate(bounds->right(), bounds->bottom());
@@ -922,11 +923,13 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total display area, not the area of a single
   // display.
-  gfx::Rect area(wm::GetDisplayWorkAreaBoundsInParent(GetTarget()));
+  gfx::Rect area(
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget()->aura_window()));
   if (details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
     // Increase tolerance for touch-snapping near the screen edges. This is only
     // necessary when the work area left or right edge is same as screen edge.
-    gfx::Rect display_bounds(wm::GetDisplayBoundsInParent(GetTarget()));
+    gfx::Rect display_bounds(
+        ScreenUtil::GetDisplayBoundsInParent(GetTarget()->aura_window()));
     int inset_left = 0;
     if (area.x() == display_bounds.x())
       inset_left = kScreenEdgeInsetForTouchDrag;
@@ -947,7 +950,8 @@ bool WorkspaceWindowResizer::AreBoundsValidSnappedBounds(
     const gfx::Rect& bounds_in_parent) const {
   DCHECK(snapped_type == wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ||
          snapped_type == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED);
-  gfx::Rect snapped_bounds = wm::GetDisplayWorkAreaBoundsInParent(GetTarget());
+  gfx::Rect snapped_bounds =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget()->aura_window());
   if (snapped_type == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED)
     snapped_bounds.set_x(snapped_bounds.right() - bounds_in_parent.width());
   snapped_bounds.set_width(bounds_in_parent.width());

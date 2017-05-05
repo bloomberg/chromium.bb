@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "ash/screen_util.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -172,7 +172,8 @@ void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
       keyboard_controller->keyboard_visible()) {
     keyboard_bounds = keyboard_controller->current_keyboard_bounds();
   }
-  gfx::Rect bounds = wm::GetDisplayBoundsWithShelf(window_state->window());
+  gfx::Rect bounds = ScreenUtil::GetDisplayBoundsWithShelf(
+      window_state->window()->aura_window());
   bounds.set_height(bounds.height() - keyboard_bounds.height());
 
   VLOG(1) << "Updating window bounds to: " << bounds.ToString();

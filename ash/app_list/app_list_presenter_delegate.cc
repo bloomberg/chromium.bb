@@ -16,7 +16,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
@@ -38,7 +37,8 @@ namespace {
 // that height (so that the app list never starts above the top of the screen).
 gfx::Point GetCenterOfDisplayForWindow(WmWindow* window, int minimum_height) {
   DCHECK(window);
-  gfx::Rect bounds = wm::GetDisplayBoundsWithShelf(window);
+  gfx::Rect bounds =
+      ScreenUtil::GetDisplayBoundsWithShelf(window->aura_window());
   bounds = window->GetRootWindow()->ConvertRectToScreen(bounds);
 
   // If the virtual keyboard is active, subtract it from the display bounds, so

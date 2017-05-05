@@ -4,13 +4,13 @@
 
 #include "ash/wm/window_positioner.h"
 
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -134,7 +134,8 @@ void SetBoundsAnimated(WmWindow* window,
 // Move |window| into the center of the screen - or restore it to the previous
 // position.
 void AutoPlaceSingleWindow(WmWindow* window, bool animated) {
-  gfx::Rect work_area = wm::GetDisplayWorkAreaBoundsInParent(window);
+  gfx::Rect work_area =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window->aura_window());
   gfx::Rect bounds = window->GetBounds();
   const gfx::Rect* user_defined_area =
       window->GetWindowState()->pre_auto_manage_window_bounds();
@@ -317,7 +318,8 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(WmWindow* added_window) {
       added_window_state->bounds_changed_by_user()) {
     if (added_window_state->minimum_visibility()) {
       // Guarantee minimum visibility within the work area.
-      gfx::Rect work_area = wm::GetDisplayWorkAreaBoundsInParent(added_window);
+      gfx::Rect work_area = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+          added_window->aura_window());
       gfx::Rect bounds = added_window->GetBounds();
       gfx::Rect new_bounds = bounds;
       wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area, &new_bounds);
@@ -342,7 +344,8 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(WmWindow* added_window) {
   }
 
   gfx::Rect other_bounds = other_shown_window->GetBounds();
-  gfx::Rect work_area = wm::GetDisplayWorkAreaBoundsInParent(added_window);
+  gfx::Rect work_area =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(added_window->aura_window());
   bool move_other_right =
       other_bounds.CenterPoint().x() > work_area.x() + work_area.width() / 2;
 

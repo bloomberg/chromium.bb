@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -16,7 +17,6 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -250,7 +250,8 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       }
       return true;
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE: {
-      gfx::Rect work_area = GetDisplayWorkAreaBoundsInParent(window);
+      gfx::Rect work_area =
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window->aura_window());
 
       // Maximize vertically if:
       // - The window does not have a max height defined.
@@ -281,7 +282,8 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
         return true;
       if (!window_state->IsNormalOrSnapped())
         return true;
-      gfx::Rect work_area = GetDisplayWorkAreaBoundsInParent(window);
+      gfx::Rect work_area =
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window->aura_window());
       if (window_state->IsNormalStateType() &&
           window_state->HasRestoreBounds() &&
           (window->GetBounds().width() == work_area.width() &&
@@ -369,7 +371,8 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       // Use entire display instead of workarea. The logic ensures 30%
       // visibility which should be enough to see where the window gets
       // moved.
-      gfx::Rect display_area = GetDisplayBoundsInParent(window);
+      gfx::Rect display_area =
+          ScreenUtil::GetDisplayBoundsInParent(window->aura_window());
       int min_width = bounds.width() * wm::kMinimumPercentOnScreenArea;
       int min_height = bounds.height() * wm::kMinimumPercentOnScreenArea;
       wm::AdjustBoundsToEnsureWindowVisibility(display_area, min_width,
@@ -386,7 +389,8 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
         return true;
       }
       gfx::Rect work_area_in_parent =
-          GetDisplayWorkAreaBoundsInParent(window_state->window());
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+              window_state->window()->aura_window());
       gfx::Rect bounds = window_state->window()->GetTargetBounds();
       // When display bounds has changed, make sure the entire window is fully
       // visible.
@@ -412,7 +416,8 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
         return true;
       }
       gfx::Rect work_area_in_parent =
-          GetDisplayWorkAreaBoundsInParent(window_state->window());
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+              window_state->window()->aura_window());
       gfx::Rect bounds = window_state->window()->GetTargetBounds();
       if (!window_state->window()->GetTransientParent()) {
         wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
@@ -451,13 +456,13 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
   DCHECK(!window_state->is_dragged());
   DCHECK(!window_state->allow_set_bounds_direct());
   if (window_state->IsMaximized()) {
-    window_state->SetBoundsDirect(
-        GetMaximizedWindowBoundsInParent(window_state->window()));
+    window_state->SetBoundsDirect(ScreenUtil::GetMaximizedWindowBoundsInParent(
+        window_state->window()->aura_window()));
     return true;
   }
   if (window_state->IsFullscreen()) {
-    window_state->SetBoundsDirect(
-        GetDisplayBoundsInParent(window_state->window()));
+    window_state->SetBoundsDirect(ScreenUtil::GetDisplayBoundsInParent(
+        window_state->window()->aura_window()));
     return true;
   }
   return false;
@@ -471,7 +476,8 @@ void DefaultState::SetBounds(WindowState* window_state,
     window_state->SetBoundsDirect(event->requested_bounds());
   } else if (window_state->IsSnapped()) {
     gfx::Rect work_area_in_parent =
-        GetDisplayWorkAreaBoundsInParent(window_state->window());
+        ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+            window_state->window()->aura_window());
     gfx::Rect child_bounds(event->requested_bounds());
     wm::AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
     window_state->AdjustSnappedBounds(&child_bounds);
@@ -591,7 +597,8 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
 
     case WINDOW_STATE_TYPE_DEFAULT:
     case WINDOW_STATE_TYPE_NORMAL: {
-      gfx::Rect work_area_in_parent = GetDisplayWorkAreaBoundsInParent(window);
+      gfx::Rect work_area_in_parent =
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window->aura_window());
       if (window_state->HasRestoreBounds()) {
         bounds_in_parent = window_state->GetRestoreBoundsInParent();
         // Check if the |window|'s restored size is bigger than the working area
@@ -618,13 +625,15 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
       break;
     }
     case WINDOW_STATE_TYPE_MAXIMIZED:
-      bounds_in_parent = GetMaximizedWindowBoundsInParent(window);
+      bounds_in_parent =
+          ScreenUtil::GetMaximizedWindowBoundsInParent(window->aura_window());
       break;
 
     case WINDOW_STATE_TYPE_FULLSCREEN:
     case WINDOW_STATE_TYPE_PINNED:
     case WINDOW_STATE_TYPE_TRUSTED_PINNED:
-      bounds_in_parent = GetDisplayBoundsInParent(window);
+      bounds_in_parent =
+          ScreenUtil::GetDisplayBoundsInParent(window->aura_window());
       break;
 
     case WINDOW_STATE_TYPE_MINIMIZED:
@@ -691,7 +700,8 @@ void DefaultState::CenterWindow(WindowState* window_state) {
     window_state->SetRestoreBoundsInScreen(center_in_screen);
     window_state->Restore();
   } else {
-    gfx::Rect center_in_parent = GetDisplayWorkAreaBoundsInParent(window);
+    gfx::Rect center_in_parent =
+        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window->aura_window());
     center_in_parent.ClampToCenteredSize(window->GetBounds().size());
     window_state->SetBoundsDirectAnimated(center_in_parent);
   }
