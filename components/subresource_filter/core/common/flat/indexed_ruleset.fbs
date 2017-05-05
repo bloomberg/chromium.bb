@@ -1,0 +1,22 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// TODO(pkalinnikov): Make including by absolute path work.
+include "url_pattern_index.fbs";
+
+namespace subresource_filter.flat;
+
+// The top-level data structure used to store URL rules.
+table IndexedRuleset {
+  // The index of all blacklist URL rules.
+  blacklist_index : UrlPatternIndex;
+
+  // The index of all whitelist URL rules, except pure deactivation rules.
+  whitelist_index : UrlPatternIndex;
+
+  // The index of all whitelist URL rules with activation options.
+  deactivation_index : UrlPatternIndex;
+}
+
+root_type IndexedRuleset;

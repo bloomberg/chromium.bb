@@ -20,7 +20,7 @@
 #include <ostream>
 
 #include "base/logging.h"
-#include "components/subresource_filter/core/common/flat/rules_generated.h"
+#include "components/subresource_filter/core/common/flat/url_pattern_index_generated.h"
 #include "components/subresource_filter/core/common/fuzzy_pattern_matching.h"
 #include "components/subresource_filter/core/common/string_splitter.h"
 #include "url/gurl.h"

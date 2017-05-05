@@ -11,6 +11,8 @@
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace subresource_filter {
 
@@ -163,7 +165,7 @@ class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
     activation_state.generic_blocking_rules_disabled =
         generic_blocking_rules_disabled;
     return activation_state;
-  };
+  }
 
   const MemoryMappedRuleset* ruleset() { return ruleset_.get(); }
 
