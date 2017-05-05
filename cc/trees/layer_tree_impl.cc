@@ -1699,8 +1699,6 @@ void LayerTreeImpl::RegisterScrollLayer(LayerImpl* layer) {
       std::pair<int, int>(layer->scroll_clip_layer_id(), layer->id()));
 
   DidUpdateScrollState(layer->id());
-
-  layer->set_needs_show_scrollbars(true);
 }
 
 void LayerTreeImpl::UnregisterScrollLayer(LayerImpl* layer) {
