@@ -36,6 +36,7 @@ Action taken: WindowUndocked
 recordPanelShown:
 {
     audits : 7
+    audits2 : 18
     console : 8
     drawer-animations : 11
     drawer-console : 10
