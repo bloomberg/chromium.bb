@@ -319,8 +319,7 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
 
   base::Value entry1("abcdefghijklmnopabcdefghijklmnop");
   auto entry1_dict = base::MakeUnique<base::DictionaryValue>();
-  entry1_dict->Set(ash::launcher::kPinnedAppsPrefAppIDPath,
-                   entry1.CreateDeepCopy());
+  entry1_dict->Set(kPinnedAppsPrefAppIDPath, entry1.CreateDeepCopy());
   expected_pinned_apps.Append(std::move(entry1_dict));
   list.Append(entry1.CreateDeepCopy());
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,

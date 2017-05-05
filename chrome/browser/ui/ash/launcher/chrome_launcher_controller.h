@@ -35,6 +35,7 @@ class ArcAppDeferredLauncherController;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
 class ChromeLauncherControllerUserSwitchObserver;
+class ChromeLauncherPrefsObserver;
 class GURL;
 class Profile;
 class LauncherControllerHelper;
@@ -43,9 +44,6 @@ namespace ash {
 struct ShelfItem;
 class ShelfModel;
 class WmShelf;
-namespace launcher {
-class ChromeLauncherPrefsObserver;
-}  // namespace launcher
 }  // namespace ash
 
 namespace content {
@@ -443,7 +441,7 @@ class ChromeLauncherController
   std::unique_ptr<ChromeLauncherControllerUserSwitchObserver>
       user_switch_observer_;
 
-  std::unique_ptr<ash::launcher::ChromeLauncherPrefsObserver> prefs_observer_;
+  std::unique_ptr<ChromeLauncherPrefsObserver> prefs_observer_;
 
   std::unique_ptr<ArcAppDeferredLauncherController> arc_deferred_launcher_;
 

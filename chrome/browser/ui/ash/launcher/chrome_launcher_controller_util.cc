@@ -55,8 +55,7 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     const base::DictionaryValue* app = nullptr;
     std::string app_id_or_package;
     if (pref->GetDictionary(index, &app) &&
-        app->GetString(ash::launcher::kPinnedAppsPrefAppIDPath,
-                       &app_id_or_package) &&
+        app->GetString(kPinnedAppsPrefAppIDPath, &app_id_or_package) &&
         (app_id == app_id_or_package ||
          arc_app_packege_name == app_id_or_package)) {
       return AppListControllerDelegate::PIN_FIXED;
