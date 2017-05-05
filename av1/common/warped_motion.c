@@ -984,18 +984,16 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
     for (j = p_col; j < p_col + p_width; j += 8) {
       int32_t x4, y4, ix4, sx4, iy4, sy4;
       if (subsampling_x)
-        x4 = ROUND_POWER_OF_TWO_SIGNED(
-            mat[2] * 2 * (j + 4) + mat[3] * 2 * (i + 4) + mat[0] +
-                (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-            1);
+        x4 = (mat[2] * 4 * (j + 4) + mat[3] * 4 * (i + 4) + mat[0] * 2 +
+              (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS))) /
+             4;
       else
         x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
 
       if (subsampling_y)
-        y4 = ROUND_POWER_OF_TWO_SIGNED(
-            mat[4] * 2 * (j + 4) + mat[5] * 2 * (i + 4) + mat[1] +
-                (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-            1);
+        y4 = (mat[4] * 4 * (j + 4) + mat[5] * 4 * (i + 4) + mat[1] * 2 +
+              (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS))) /
+             4;
       else
         y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
 
@@ -1229,18 +1227,16 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
     for (j = p_col; j < p_col + p_width; j += 8) {
       int32_t x4, y4, ix4, sx4, iy4, sy4;
       if (subsampling_x)
-        x4 = ROUND_POWER_OF_TWO_SIGNED(
-            mat[2] * 2 * (j + 4) + mat[3] * 2 * (i + 4) + mat[0] +
-                (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-            1);
+        x4 = (mat[2] * 4 * (j + 4) + mat[3] * 4 * (i + 4) + mat[0] * 2 +
+              (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS))) /
+             4;
       else
         x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
 
       if (subsampling_y)
-        y4 = ROUND_POWER_OF_TWO_SIGNED(
-            mat[4] * 2 * (j + 4) + mat[5] * 2 * (i + 4) + mat[1] +
-                (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-            1);
+        y4 = (mat[4] * 4 * (j + 4) + mat[5] * 4 * (i + 4) + mat[1] * 2 +
+              (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS))) /
+             4;
       else
         y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
 

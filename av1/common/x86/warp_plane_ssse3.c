@@ -232,18 +232,16 @@ void av1_warp_affine_ssse3(const int32_t *mat, const uint8_t *ref, int width,
 
       int32_t x4, y4, ix4, sx4, iy4, sy4;
       if (subsampling_x)
-        x4 = ROUND_POWER_OF_TWO_SIGNED(
-            mat[2] * 2 * dst_x + mat[3] * 2 * dst_y + mat[0] +
-                (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-            1);
+        x4 = (mat[2] * 4 * dst_x + mat[3] * 4 * dst_y + mat[0] * 2 +
+              (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS))) /
+             4;
       else
         x4 = mat[2] * dst_x + mat[3] * dst_y + mat[0];
 
       if (subsampling_y)
-        y4 = ROUND_POWER_OF_TWO_SIGNED(
-            mat[4] * 2 * dst_x + mat[5] * 2 * dst_y + mat[1] +
-                (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-            1);
+        y4 = (mat[4] * 4 * dst_x + mat[5] * 4 * dst_y + mat[1] * 2 +
+              (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS))) /
+             4;
       else
         y4 = mat[4] * dst_x + mat[5] * dst_y + mat[1];
 
