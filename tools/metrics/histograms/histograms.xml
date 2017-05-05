@@ -77346,10 +77346,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.ArrayBufferBigAllocations" units="MB">
+  <obsolete>
+    Deprecated 5/2017 in Issue 704922. Replaced by
+    V8.ArrayBufferLargeAllocations.
+  </obsolete>
   <owner>bradnelson@chromium.org</owner>
   <owner>titzer@chromium.org</owner>
   <owner>kschimpf@chromium.org</owner>
   <summary>Number of bytes requested in an array buffer allocation.</summary>
+</histogram>
+
+<histogram name="V8.ArrayBufferLargeAllocations" units="MB">
+  <owner>bradnelson@chromium.org</owner>
+  <owner>titzer@chromium.org</owner>
+  <owner>kschimpf@chromium.org</owner>
+  <summary>
+    Number of bytes requested in array buffer allocations greater than one
+    megabyte.
+  </summary>
 </histogram>
 
 <histogram name="V8.ArrayBufferNewSizeFailures" units="MB">
