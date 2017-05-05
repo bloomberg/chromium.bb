@@ -69,9 +69,7 @@ const CGFloat kMenuItemHeight = 48;
                    action:@selector(closeToolsMenu)
          forControlEvents:UIControlEventTouchUpInside];
     if (item.action) {
-      id target =
-          (item.action == @selector(showFindInPage)) ? self.dispatcher : nil;
-      [menuButton addTarget:target
+      [menuButton addTarget:self.dispatcher
                      action:item.action
            forControlEvents:UIControlEventTouchUpInside];
     }
