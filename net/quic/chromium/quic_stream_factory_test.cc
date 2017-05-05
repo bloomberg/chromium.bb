@@ -158,8 +158,9 @@ std::vector<PoolingTestParams> GetPoolingTestParams() {
 
 class QuicHttpStreamPeer {
  public:
-  static QuicChromiumClientSession* GetSession(HttpStream* stream) {
-    return static_cast<QuicHttpStream*>(stream)->session_.get();
+  static QuicChromiumClientSession::Handle* GetSessionHandle(
+      HttpStream* stream) {
+    return static_cast<QuicHttpStream*>(stream)->quic_session();
   }
 };
 
@@ -783,7 +784,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
                                  /*cert_verify_flags=*/0, url_, "GET", net_log_,
                                  callback_.callback()));
   // Will reset stream 3.
-  stream = request.CreateStream();
+  stream = request2.CreateStream();
 
   EXPECT_TRUE(stream.get());
 
@@ -4696,11 +4697,11 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
   std::unique_ptr<HttpStream> stream2 = request2.CreateStream();
   EXPECT_TRUE(stream2.get());
 
-  QuicChromiumClientSession* session1 =
-      QuicHttpStreamPeer::GetSession(stream1.get());
-  QuicChromiumClientSession* session2 =
-      QuicHttpStreamPeer::GetSession(stream2.get());
-  EXPECT_EQ(session1, session2);
+  QuicChromiumClientSession::Handle* session1 =
+      QuicHttpStreamPeer::GetSessionHandle(stream1.get());
+  QuicChromiumClientSession::Handle* session2 =
+      QuicHttpStreamPeer::GetSessionHandle(stream2.get());
+  EXPECT_TRUE(session1->SharesSameSession(*session2));
   EXPECT_EQ(QuicServerId(host_port_pair_, privacy_mode_),
             session1->server_id());
 
@@ -4879,11 +4880,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
   std::unique_ptr<HttpStream> stream2 = request2.CreateStream();
   EXPECT_TRUE(stream2.get());
 
-  QuicChromiumClientSession* session1 =
-      QuicHttpStreamPeer::GetSession(stream1.get());
-  QuicChromiumClientSession* session2 =
-      QuicHttpStreamPeer::GetSession(stream2.get());
-  EXPECT_EQ(session1, session2);
+  QuicChromiumClientSession::Handle* session1 =
+      QuicHttpStreamPeer::GetSessionHandle(stream1.get());
+  QuicChromiumClientSession::Handle* session2 =
+      QuicHttpStreamPeer::GetSessionHandle(stream2.get());
+  EXPECT_TRUE(session1->SharesSameSession(*session2));
 
   EXPECT_EQ(QuicServerId(origin1_, privacy_mode_), session1->server_id());
 
@@ -4954,11 +4955,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DifferentPrivacyMode) {
   // |request2| does not pool to the first session, because PrivacyMode does not
   // match.  Instead, another session is opened to the same destination, but
   // with a different QuicServerId.
-  QuicChromiumClientSession* session1 =
-      QuicHttpStreamPeer::GetSession(stream1.get());
-  QuicChromiumClientSession* session2 =
-      QuicHttpStreamPeer::GetSession(stream2.get());
-  EXPECT_NE(session1, session2);
+  QuicChromiumClientSession::Handle* session1 =
+      QuicHttpStreamPeer::GetSessionHandle(stream1.get());
+  QuicChromiumClientSession::Handle* session2 =
+      QuicHttpStreamPeer::GetSessionHandle(stream2.get());
+  EXPECT_FALSE(session1->SharesSameSession(*session2));
 
   EXPECT_EQ(QuicServerId(origin1_, PRIVACY_MODE_DISABLED),
             session1->server_id());
@@ -5037,11 +5038,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
   // |request2| does not pool to the first session, because the certificate does
   // not match.  Instead, another session is opened to the same destination, but
   // with a different QuicServerId.
-  QuicChromiumClientSession* session1 =
-      QuicHttpStreamPeer::GetSession(stream1.get());
-  QuicChromiumClientSession* session2 =
-      QuicHttpStreamPeer::GetSession(stream2.get());
-  EXPECT_NE(session1, session2);
+  QuicChromiumClientSession::Handle* session1 =
+      QuicHttpStreamPeer::GetSessionHandle(stream1.get());
+  QuicChromiumClientSession::Handle* session2 =
+      QuicHttpStreamPeer::GetSessionHandle(stream2.get());
+  EXPECT_FALSE(session1->SharesSameSession(*session2));
 
   EXPECT_EQ(QuicServerId(origin1_, privacy_mode_), session1->server_id());
   EXPECT_EQ(QuicServerId(origin2_, privacy_mode_), session2->server_id());

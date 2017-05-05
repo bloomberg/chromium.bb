@@ -103,9 +103,9 @@ class TestQuicConnection : public QuicConnection {
 class AutoClosingStream : public QuicHttpStream {
  public:
   explicit AutoClosingStream(
-      const base::WeakPtr<QuicChromiumClientSession>& session,
+      std::unique_ptr<QuicChromiumClientSession::Handle> session,
       HttpServerProperties* http_server_properties)
-      : QuicHttpStream(session, http_server_properties) {}
+      : QuicHttpStream(std::move(session), http_server_properties) {}
 
   void OnHeadersAvailable(const SpdyHeaderBlock& headers,
                           size_t frame_len) override {
@@ -322,17 +322,18 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         /*socket_performance_watcher=*/nullptr, net_log_.bound().net_log()));
     session_->Initialize();
     TestCompletionCallback callback;
+
     session_->CryptoConnect(callback.callback());
     stream_.reset(use_closing_stream_
-                      ? new AutoClosingStream(session_->GetWeakPtr(),
+                      ? new AutoClosingStream(session_->CreateHandle(),
                                               &http_server_properties_)
-                      : new QuicHttpStream(session_->GetWeakPtr(),
+                      : new QuicHttpStream(session_->CreateHandle(),
                                            &http_server_properties_));
 
     promised_stream_.reset(use_closing_stream_
-                               ? new AutoClosingStream(session_->GetWeakPtr(),
+                               ? new AutoClosingStream(session_->CreateHandle(),
                                                        &http_server_properties_)
-                               : new QuicHttpStream(session_->GetWeakPtr(),
+                               : new QuicHttpStream(session_->CreateHandle(),
                                                     &http_server_properties_));
 
     push_promise_[":path"] = "/bar";
@@ -721,7 +722,7 @@ TEST_P(QuicHttpStreamTest, LoadTimingTwoRequests) {
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
   // Start a second request.
-  QuicHttpStream stream2(session_->GetWeakPtr(), &http_server_properties_);
+  QuicHttpStream stream2(session_->CreateHandle(), &http_server_properties_);
   TestCompletionCallback callback2;
   EXPECT_EQ(OK,
             stream2.InitializeStream(&request_, DEFAULT_PRIORITY,
