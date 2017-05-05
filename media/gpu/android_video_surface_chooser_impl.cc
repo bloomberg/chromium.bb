@@ -15,7 +15,7 @@ void AndroidVideoSurfaceChooserImpl::Initialize(
     UseOverlayCB use_overlay_cb,
     UseSurfaceTextureCB use_surface_texture_cb,
     StopUsingOverlayImmediatelyCB stop_immediately_cb,
-    std::unique_ptr<AndroidOverlayFactory> initial_factory) {
+    AndroidOverlayFactoryCB initial_factory) {
   use_overlay_cb_ = std::move(use_overlay_cb);
   use_surface_texture_cb_ = std::move(use_surface_texture_cb);
   stop_immediately_cb_ = std::move(stop_immediately_cb);
@@ -39,7 +39,7 @@ void AndroidVideoSurfaceChooserImpl::Initialize(
 }
 
 void AndroidVideoSurfaceChooserImpl::ReplaceOverlayFactory(
-    std::unique_ptr<AndroidOverlayFactory> factory) {
+    AndroidOverlayFactoryCB factory) {
   // If we have an overlay, then we should transition away from it.  It
   // doesn't matter if we have a new factory or no factory; the old overlay goes
   // with the old factory.
@@ -69,7 +69,7 @@ void AndroidVideoSurfaceChooserImpl::ReplaceOverlayFactory(
   // a SurfaceTexture then be unable to switch.  Perhaps there should be a
   // pre-M implementation of this class that guarantees that it won't change
   // between the two.
-  AndroidOverlay::Config config;
+  AndroidOverlayConfig config;
   // We bind all of our callbacks with weak ptrs, since we don't know how long
   // the client will hold on to overlays.  They could, in principle, show up
   // long after the client is destroyed too, if codec destruction hangs.
@@ -85,7 +85,7 @@ void AndroidVideoSurfaceChooserImpl::ReplaceOverlayFactory(
   // set via the natural size, and this is ignored anyway.  The client should
   // provide this.
   config.rect = gfx::Rect(0, 0, 1, 1);
-  overlay_ = overlay_factory_->CreateOverlay(config);
+  overlay_ = overlay_factory_.Run(std::move(config));
 }
 
 void AndroidVideoSurfaceChooserImpl::OnOverlayReady(AndroidOverlay* overlay) {

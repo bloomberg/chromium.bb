@@ -17,7 +17,7 @@ class ContentVideoViewOverlay
  public:
   // |config| is ignored except for callbacks.  Callbacks will not be called
   // before this returns.
-  ContentVideoViewOverlay(int surface_id, const AndroidOverlay::Config& config);
+  ContentVideoViewOverlay(int surface_id, AndroidOverlayConfig config);
   ~ContentVideoViewOverlay() override;
 
   // AndroidOverlay (via ContentVideoViewOverlayAllocator::Client)
@@ -36,7 +36,7 @@ class ContentVideoViewOverlay
 
  private:
   int surface_id_;
-  AndroidOverlay::Config config_;
+  AndroidOverlayConfig config_;
   gl::ScopedJavaSurface surface_;
 
   base::WeakPtrFactory<ContentVideoViewOverlay> weak_factory_;

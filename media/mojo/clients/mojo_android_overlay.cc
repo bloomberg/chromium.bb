@@ -11,9 +11,9 @@ namespace media {
 
 MojoAndroidOverlay::MojoAndroidOverlay(
     service_manager::mojom::InterfaceProvider* interface_provider,
-    const AndroidOverlay::Config& config,
+    AndroidOverlayConfig config,
     const base::UnguessableToken& routing_token)
-    : interface_provider_(interface_provider), config_(config) {
+    : interface_provider_(interface_provider), config_(std::move(config)) {
   // Connect to the provider service.
   mojom::AndroidOverlayProviderPtr provider_ptr;
   service_manager::GetInterface<mojom::AndroidOverlayProvider>(
@@ -57,7 +57,7 @@ const base::android::JavaRef<jobject>& MojoAndroidOverlay::GetJavaSurface()
 void MojoAndroidOverlay::OnSurfaceReady(uint64_t surface_key) {
   // TODO(liberato): ask binder for the surface here, and fill in |surface_|.
   received_surface_ = true;
-  config_.ready_cb.Run(this);
+  config_.is_ready(this);
 }
 
 void MojoAndroidOverlay::OnDestroyed() {
@@ -65,9 +65,9 @@ void MojoAndroidOverlay::OnDestroyed() {
   // gotten a surface.  Regardless, the overlay cannot be used.
 
   if (!received_surface_)
-    config_.failed_cb.Run(this);
+    config_.is_failed(this);
   else
-    config_.destroyed_cb.Run(this);
+    config_.is_destroyed(this);
 
   // Note: we do not delete |overlay_ptr_| here.  Our client must delete us to
   // signal that we should do that, since it still might be in use.

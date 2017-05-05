@@ -27,7 +27,7 @@ class MockAndroidOverlay : public testing::StrictMock<AndroidOverlay>,
   // Set |config_|.  Sometimes, it's convenient to do this after construction,
   // especially if one must create the overlay before the factory provides it
   // via CreateOverlay.  That's helpful to set test expectations.
-  void SetConfig(const Config& config);
+  void SetConfig(AndroidOverlayConfig config);
 
   // Set of callbacks that we provide to control the overlay once you've handed
   // off ownership of it.  Will return false if the overlay has been destroyed.
@@ -52,7 +52,7 @@ class MockAndroidOverlay : public testing::StrictMock<AndroidOverlay>,
   void OnSurfaceDestroyed();
 
   // Initial configuration, mostly for callbacks.
-  Config config_;
+  std::unique_ptr<AndroidOverlayConfig> config_;
 
   base::WeakPtrFactory<MockAndroidOverlay> weak_factory_;
 
