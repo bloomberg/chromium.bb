@@ -30,6 +30,51 @@ function createAndAddStreams(count) {
 }
 
 /**
+ * Verifies that the peer connection's getSenders() returns one sender per local
+ * track, that there are no duplicates and that object identity is preserved.
+ *
+ * Returns "ok-senders-verified" on success.
+ */
+function verifyRtpSenders(expectedNumTracks = null) {
+  if (expectedNumTracks != null &&
+      peerConnection_().getSenders().length != expectedNumTracks) {
+    throw failTest('getSenders().length != expectedNumTracks');
+  }
+  if (!arrayEquals_(peerConnection_().getSenders(),
+                    peerConnection_().getSenders())) {
+    throw failTest('One getSenders() call is not equal to the next.');
+  }
+
+  let localTracks = new Set();
+  peerConnection_().getLocalStreams().forEach(function(stream) {
+    stream.getTracks().forEach(function(track) {
+      localTracks.add(track);
+    });
+  });
+  if (peerConnection_().getSenders().length != localTracks.size)
+    throw failTest('The number of senders and tracks are not the same.');
+
+  let senders = new Set();
+  let senderTracks = new Set();
+  peerConnection_().getSenders().forEach(function(sender) {
+    if (sender == null)
+      throw failTest('sender is null or undefined.');
+    if (sender.track == null)
+      throw failTest('sender.track is null or undefined.');
+    senders.add(sender);
+    senderTracks.add(sender.track);
+  });
+  if (senderTracks.size != senders.size)
+    throw failTest('senderTracks.size != senders.size');
+
+  if (!setEquals_(senderTracks, localTracks)) {
+    throw failTest('The set of sender tracks is not equal to the set of ' +
+                   'stream tracks.');
+  }
+  returnToTest('ok-senders-verified');
+}
+
+/**
  * Verifies that the peer connection's getReceivers() returns one receiver per
  * remote track, that there are no duplicates and that object identity is
  * preserved.

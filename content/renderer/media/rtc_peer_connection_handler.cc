@@ -30,6 +30,7 @@
 #include "content/renderer/media/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
+#include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -44,6 +45,7 @@
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
 #include "third_party/WebKit/public/platform/WebRTCLegacyStats.h"
 #include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
+#include "third_party/WebKit/public/platform/WebRTCRtpSender.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
@@ -1649,6 +1651,47 @@ void RTCPeerConnectionHandler::GetStats(
       base::Bind(&GetRTCStatsOnSignalingThread,
           base::ThreadTaskRunnerHandle::Get(), native_peer_connection_,
           base::Passed(&callback)));
+}
+
+blink::WebVector<std::unique_ptr<blink::WebRTCRtpSender>>
+RTCPeerConnectionHandler::GetSenders() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::getSenders");
+  std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> webrtc_senders =
+      native_peer_connection_->GetSenders();
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpSender>> web_senders(
+      webrtc_senders.size());
+  for (size_t i = 0; i < web_senders.size(); ++i) {
+    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track =
+        webrtc_senders[i]->track();
+    std::unique_ptr<blink::WebMediaStreamTrack> web_track;
+
+    if (webrtc_track) {
+      std::string track_id = webrtc_track->id();
+      bool is_audio_track = (webrtc_track->kind() ==
+                             webrtc::MediaStreamTrackInterface::kAudioKind);
+      for (const auto& stream_adapter : local_streams_) {
+        blink::WebVector<blink::WebMediaStreamTrack> tracks;
+        if (is_audio_track)
+          stream_adapter->web_stream().AudioTracks(tracks);
+        else
+          stream_adapter->web_stream().VideoTracks(tracks);
+        for (const blink::WebMediaStreamTrack& track : tracks) {
+          if (track.Id() == track_id.c_str()) {
+            web_track.reset(new blink::WebMediaStreamTrack(track));
+            break;
+          }
+        }
+        if (web_track)
+          break;
+      }
+      DCHECK(web_track);
+    }
+
+    web_senders[i] = base::MakeUnique<RTCRtpSender>(webrtc_senders[i].get(),
+                                                    std::move(web_track));
+  }
+  return web_senders;
 }
 
 blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>>

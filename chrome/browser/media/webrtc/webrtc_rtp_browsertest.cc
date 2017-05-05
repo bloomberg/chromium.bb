@@ -19,6 +19,8 @@ class WebRtcRtpBrowserTest : public WebRtcTestBase {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "RTCRtpSender");
   }
 
  protected:
@@ -31,6 +33,21 @@ class WebRtcRtpBrowserTest : public WebRtcTestBase {
   content::WebContents* left_tab_;
   content::WebContents* right_tab_;
 };
+
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, GetSenders) {
+  StartServerAndOpenTabs();
+
+  SetupPeerconnectionWithoutLocalStream(left_tab_);
+  CreateAndAddStreams(left_tab_, 3);
+
+  SetupPeerconnectionWithoutLocalStream(right_tab_);
+  CreateAndAddStreams(right_tab_, 1);
+
+  NegotiateCall(left_tab_, right_tab_);
+
+  VerifyRtpSenders(left_tab_, 6);
+  VerifyRtpSenders(right_tab_, 2);
+}
 
 IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, GetReceivers) {
   StartServerAndOpenTabs();

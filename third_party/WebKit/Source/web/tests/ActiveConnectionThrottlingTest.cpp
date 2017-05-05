@@ -9,6 +9,7 @@
 #include "public/platform/WebRTCError.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCRtpReceiver.h"
+#include "public/platform/WebRTCRtpSender.h"
 #include "public/platform/WebRTCSessionDescription.h"
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,6 +81,10 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void RemoveStream(const WebMediaStream&) override {}
   void GetStats(const WebRTCStatsRequest&) override {}
   void GetStats(std::unique_ptr<WebRTCStatsReportCallback>) override {}
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpSender>> GetSenders()
+      override {
+    return blink::WebVector<std::unique_ptr<blink::WebRTCRtpSender>>();
+  }
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> GetReceivers()
       override {
     return blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>>();

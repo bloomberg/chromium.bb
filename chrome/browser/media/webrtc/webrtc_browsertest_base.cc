@@ -568,6 +568,16 @@ void WebRtcTestBase::CreateAndAddStreams(content::WebContents* tab,
           "createAndAddStreams(" + base::SizeTToString(count) + ")", tab));
 }
 
+void WebRtcTestBase::VerifyRtpSenders(
+    content::WebContents* tab,
+    base::Optional<size_t> expected_num_tracks) const {
+  std::string javascript =
+      expected_num_tracks ? "verifyRtpSenders(" +
+                                base::SizeTToString(*expected_num_tracks) + ")"
+                          : "verifyRtpSenders()";
+  EXPECT_EQ("ok-senders-verified", ExecuteJavascript(javascript, tab));
+}
+
 void WebRtcTestBase::VerifyRtpReceivers(
     content::WebContents* tab,
     base::Optional<size_t> expected_num_tracks) const {
