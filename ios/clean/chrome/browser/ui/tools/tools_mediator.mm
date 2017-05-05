@@ -4,7 +4,7 @@
 
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
 
-#import "ios/clean/chrome/browser/ui/actions/settings_actions.h"
+#import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_actions.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_consumer.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
@@ -68,7 +68,7 @@
   menuItems[8].title = @"Request Desktop Site";
 
   menuItems[9].title = @"Settings";
-  menuItems[9].action = @selector(showSettings:);
+  menuItems[9].action = @selector(showSettings);
 
   menuItems[10].title = @"Help";
 
