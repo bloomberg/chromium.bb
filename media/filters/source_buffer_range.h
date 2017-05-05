@@ -16,14 +16,15 @@
 
 namespace media {
 
-// Helper class representing a range of buffered data. All buffers in a
-// SourceBufferRange are ordered sequentially in decode timestamp order with no
-// gaps.
+// Helper class representing a continuous range of buffered data in the
+// presentation timeline. All buffers in a SourceBufferRange are ordered
+// sequentially in decode timestamp order with no gaps.
 class SourceBufferRange {
  public:
-  // Returns the maximum distance in time between any buffer seen in this
-  // stream. Used to estimate the duration of a buffer if its duration is not
-  // known.
+  // Returns the maximum distance in time between any buffer seen in the stream
+  // of which this range is a part. Used to estimate the duration of a buffer if
+  // its duration is not known, and in GetFudgeRoom() for determining whether a
+  // time or coded frame is close enough to be considered part of this range.
   typedef base::Callback<base::TimeDelta()> InterbufferDistanceCB;
 
   typedef StreamParser::BufferQueue BufferQueue;
@@ -37,22 +38,13 @@ class SourceBufferRange {
     ALLOW_GAPS
   };
 
-  // Return the config ID for the buffer at |timestamp|. Precondition: callers
-  // must first verify CanSeekTo(timestamp) == true.
-  int GetConfigIdAtTime(DecodeTimestamp timestamp);
-
-  // Return true if all buffers in range of [start, end] have the same config
-  // ID. Precondition: callers must first verify that
-  // CanSeekTo(start) ==  CanSeekTo(end) == true.
-  bool SameConfigThruRange(DecodeTimestamp start, DecodeTimestamp end);
-
   // Sequential buffers with the same decode timestamp make sense under certain
   // conditions, typically when the first buffer is a keyframe. Due to some
   // atypical media append behaviors where a new keyframe might have the same
-  // timestamp as a previous non-keyframe, the playback of the sequence might
-  // involve some throwaway decode work. This method supports detecting this
-  // situation so that callers can log warnings (it returns true in this case
-  // only).
+  // decode timestamp as a previous non-keyframe, the playback of the sequence
+  // might involve some throwaway decode work. This method supports detecting
+  // this situation so that callers can log warnings (it returns true in this
+  // case only).
   // For all other cases, including more typical same-DTS sequences, this method
   // returns false. Examples of typical situations where DTS of two consecutive
   // frames can be equal:
@@ -106,6 +98,15 @@ class SourceBufferRange {
   // Updates |next_buffer_index_| to point to the Buffer containing |timestamp|.
   // Assumes |timestamp| is valid and in this range.
   void Seek(DecodeTimestamp timestamp);
+
+  // Return the config ID for the buffer at |timestamp|. Precondition: callers
+  // must first verify CanSeekTo(timestamp) == true.
+  int GetConfigIdAtTime(DecodeTimestamp timestamp);
+
+  // Return true if all buffers in range of [start, end] have the same config
+  // ID. Precondition: callers must first verify that
+  // CanSeekTo(start) ==  CanSeekTo(end) == true.
+  bool SameConfigThruRange(DecodeTimestamp start, DecodeTimestamp end);
 
   // Updates |next_buffer_index_| to point to next keyframe after or equal to
   // |timestamp|.
