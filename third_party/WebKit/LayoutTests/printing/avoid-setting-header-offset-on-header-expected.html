@@ -17,7 +17,7 @@ if (window.testRunner)
     testRunner.setPrinting();
 </script>
 <!-- crbug.com/702605: Header uses offset intended for rows. The first header row should be at the top of the first page. -->
-<table>
+<table cellspacing="0">
     <tr>
       <td>header 1</td>
       <td>header 2</td>
@@ -103,15 +103,15 @@ if (window.testRunner)
       <td>2-16</td>
       <td>3-16</td>
     </tr>
-    <tr class="header">
-      <td>header 1</td>
-      <td>header 2</td>
-      <td>header 3</td>
-    </tr>
     <tr>
       <td>1-17</td>
       <td>2-17</td>
       <td>3-17</td>
+    </tr>
+    <tr class="header">
+      <td>header 1</td>
+      <td>header 2</td>
+      <td>header 3</td>
     </tr>
     <tr>
       <td>1-18</td>

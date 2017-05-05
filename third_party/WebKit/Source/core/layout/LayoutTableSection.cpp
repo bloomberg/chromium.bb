@@ -828,6 +828,14 @@ void LayoutTableSection::UpdateBaselineForCell(LayoutTableCell* cell,
   }
 }
 
+int LayoutTableSection::VBorderSpacingBeforeFirstRow() const {
+  // We ignore the border-spacing on any non-top section, as it is already
+  // included in the previous section's last row position.
+  if (this != Table()->TopSection())
+    return 0;
+  return Table()->VBorderSpacing();
+}
+
 int LayoutTableSection::CalcRowLogicalHeight() {
 #if DCHECK_IS_ON()
   SetLayoutNeededForbiddenScope layout_forbidden_scope(*this);
@@ -842,13 +850,7 @@ int LayoutTableSection::CalcRowLogicalHeight() {
   LayoutState state(*this);
 
   row_pos_.resize(grid_.size() + 1);
-
-  // We ignore the border-spacing on any non-top section as it is already
-  // included in the previous section's last row position.
-  if (this == Table()->TopSection())
-    row_pos_[0] = Table()->VBorderSpacing();
-  else
-    row_pos_[0] = 0;
+  row_pos_[0] = VBorderSpacingBeforeFirstRow();
 
   SpanningLayoutTableCells row_span_cells;
 
@@ -962,7 +964,7 @@ void LayoutTableSection::UpdateLayout() {
   LayoutState state(*this);
 
   const Vector<int>& column_pos = Table()->EffectiveColumnPositions();
-  LayoutUnit row_logical_top;
+  LayoutUnit row_logical_top(VBorderSpacingBeforeFirstRow());
 
   SubtreeLayoutScope layouter(*this);
   for (unsigned r = 0; r < grid_.size(); ++r) {
