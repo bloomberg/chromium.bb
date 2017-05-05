@@ -22431,6 +22431,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.DriverBugTestResultsPerEntry"
+    enum="GpuDriverBugWorkaroundEntry">
+  <owner>jbauman@chromium.org</owner>
+  <owner>vmiura@chromium.org</owner>
+  <owner>kbr@chromium.org</owner>
+  <owner>zmo@chromium.org</owner>
+  <summary>
+    For every entry in the gpu driver bug list that is hit on a machine, this
+    records the id. Entry 0 is the total number of times that data is recorded.
+    It should be recorded whenever new GPU information is received: on startup,
+    whenever a GPU process launches, and whenever the active GPU changes.
+  </summary>
+</histogram>
+
 <histogram name="GPU.EGLDisplayType" enum="EGLDisplayType">
   <owner>jbauman@chromium.org</owner>
   <summary>The display type used to ask for an EGLDisplay.</summary>
