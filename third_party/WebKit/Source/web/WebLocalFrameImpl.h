@@ -34,6 +34,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
@@ -84,7 +85,7 @@ class WebVector;
 // Implementation of WebFrame, note that this is a reference counted object.
 class WEB_EXPORT WebLocalFrameImpl final
     : public GarbageCollectedFinalized<WebLocalFrameImpl>,
-      NON_EXPORTED_BASE(public WebLocalFrame) {
+      NON_EXPORTED_BASE(public WebLocalFrameBase) {
  public:
   // WebFrame methods:
   // TODO(dcheng): Fix sorting here; a number of method have been moved to
