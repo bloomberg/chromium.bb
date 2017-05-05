@@ -1287,8 +1287,8 @@ void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
                                          encode_block_pass1, &args);
 }
 
-void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize,
-                   const int mi_row, const int mi_col) {
+void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
+                   int mi_col) {
   MACROBLOCKD *const xd = &x->e_mbd;
   struct optimize_ctx ctx;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -1535,8 +1535,8 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCKD *xd, int plane,
 
 void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
                                   BLOCK_SIZE bsize, int plane,
-                                  int enable_optimize_b, const int mi_row,
-                                  const int mi_col) {
+                                  int enable_optimize_b, int mi_row,
+                                  int mi_col) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   ENTROPY_CONTEXT ta[2 * MAX_MIB_SIZE] = { 0 };
   ENTROPY_CONTEXT tl[2 * MAX_MIB_SIZE] = { 0 };
