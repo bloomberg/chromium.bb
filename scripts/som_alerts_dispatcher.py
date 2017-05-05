@@ -227,15 +227,17 @@ def GenerateAlertStage(build, stage, exceptions, aborted,
                               logs_links, stage_links, notes)
 
 
-def GenerateBuildAlert(build, slave_stages, exceptions, messages, severity, now,
+def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
+                       severity, now,
                        logdog_client, milo_client, allow_experimental=False):
   """Generate an alert for a single build.
 
   Args:
     build: Dictionary of build details from CIDB.
-    slave_stages: Dictionary of stage details from CIDB.
+    slave_stages: A list of dictionaries of stage details from CIDB.
     exceptions: A list of instances of failure_message_lib.StageFailure.
     messages: A list of build message dictionaries from CIDB.
+    annotations: A list of dictionaries of build annotations from CIDB.
     severity: Sheriff-o-Matic severity to use for the alert.
     now: Current datettime.
     logdog_client: logdog.LogdogClient object.
@@ -280,6 +282,11 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, severity, now,
                    build['builder_name'], build['build_number'])),
   ]
 
+  notes = [
+      ('Annotation: %(failure_category)s(%(failure_message)s) '
+       '%(blame_url)s %(notes)s') % a for a in annotations
+  ]
+
   # TODO: Gather similar failures.
   # TODO: Report of how many builds failed in a row.
   builders = [som.AlertedBuilder(build['builder_name'], dashboard_url,
@@ -315,7 +322,7 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, severity, now,
   return som.Alert(key, alert_name, alert_name, int(severity),
                    ToEpoch(now), ToEpoch(build['finish_time'] or now),
                    links, [], 'cros-failure',
-                   som.CrosBuildFailure(stages, builders))
+                   som.CrosBuildFailure(notes, stages, builders))
 
 
 def GenerateAlertsSummary(db, builds=None,
@@ -369,14 +376,19 @@ def GenerateAlertsSummary(db, builds=None,
     if len(statuses):
       stages = db.GetSlaveStages(master['id'])
       exceptions = db.GetSlaveFailures(master['id'])
-      logging.info('%s %s (id %d): %d slaves, %d slave stages, %d messages',
+      annotations = db.GetAnnotationsForBuilds(
+          [master['id']]).get(master['id'], [])
+      logging.info(('%s %s (id %d): %d slaves, %d slave stages, '
+                    '%d messages, %d annotations'),
                    waterfall, build_config, master['id'],
-                   len(statuses), len(stages), len(messages))
+                   len(statuses), len(stages), len(messages),
+                   len(annotations))
     else:
       # Didn't find any slaves, so treat as a singular build.
       statuses = [master]
       stages = db.GetBuildStages(master['id'])
       exceptions = db.GetBuildsFailures([master['id']])
+      annotations = []
       logging.info('%s %s (id %d): single build, %d stages, %d messages',
                    waterfall, build_config, master['id'],
                    len(stages), len(messages))
@@ -384,9 +396,10 @@ def GenerateAlertsSummary(db, builds=None,
     # Look for failing and inflight (signifying timeouts) slave builds.
     for build in sorted(statuses, key=lambda s: s['builder_name']):
       funcs.append(lambda build_=build, stages_=stages, exceptions_=exceptions,
-                          messages_=messages, severity_=severity:
+                          messages_=messages, annotations_=annotations,
+                          severity_=severity:
                    GenerateBuildAlert(build_, stages_, exceptions_, messages_,
-                                      severity_,
+                                      annotations_, severity_,
                                       now, logdog_client, milo_client,
                                       allow_experimental=allow_experimental))
 

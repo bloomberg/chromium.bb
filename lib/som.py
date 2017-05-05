@@ -81,7 +81,8 @@ class CrosStageFailure(object):
 
 class CrosBuildFailure(object):
   """JSON structure with details on a build that failed."""
-  def __init__(self, stages, builders):
+  def __init__(self, notes, stages, builders):
+    self.notes = notes
     self.stages = stages
     self.builders = builders
 
