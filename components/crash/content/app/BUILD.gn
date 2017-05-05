@@ -238,7 +238,6 @@ source_set("unit_tests") {
       ":run_as_crashpad_handler",
       "//breakpad:client",
       "//third_party/crashpad/crashpad/client:client",
-      "//third_party/crashpad/crashpad/compat",
       "//third_party/crashpad/crashpad/snapshot:snapshot",
       "//third_party/crashpad/crashpad/util",
     ]

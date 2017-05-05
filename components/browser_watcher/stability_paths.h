@@ -7,16 +7,27 @@
 
 #include "base/files/file_path.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include <winsock2.h>
+#endif  // defined(OS_WIN)
 
 namespace browser_watcher {
 
 #if defined(OS_WIN)
 
-// Returns the the stability debugging directory.
+// Returns the stability debugging directory.
 base::FilePath GetStabilityDir(const base::FilePath& user_data_dir);
 
-// On success, |path| contains the path to the stability debugging information
-// file for |process|.
+// Returns the stability debugging path, which is based on pid and creation time
+// to ensure uniqueness in the face of pid recycling.
+base::FilePath GetStabilityFileForProcess(base::ProcessId pid,
+                                          timeval creation_time,
+                                          const base::FilePath& user_data_dir);
+
+// On success, returns true and |path| contains the path to the stability file.
+// On failure, returns false.
 bool GetStabilityFileForProcess(const base::Process& process,
                                 const base::FilePath& user_data_dir,
                                 base::FilePath* path);
