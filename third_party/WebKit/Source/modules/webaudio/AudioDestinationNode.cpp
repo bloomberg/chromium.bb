@@ -29,6 +29,7 @@
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/Atomics.h"
 
 namespace blink {
@@ -46,6 +47,8 @@ void AudioDestinationHandler::Render(AudioBus* source_bus,
                                      AudioBus* destination_bus,
                                      size_t number_of_frames,
                                      const AudioIOPosition& output_position) {
+  TRACE_EVENT0("webaudio", "AudioDestinationHandler::Render");
+
   // We don't want denormals slowing down any of the audio processing
   // since they can very seriously hurt performance.  This will take care of all
   // AudioNodes because they all process within this scope.

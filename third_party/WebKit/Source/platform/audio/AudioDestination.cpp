@@ -34,6 +34,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/PushPullFIFO.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
@@ -100,6 +101,9 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
                               double delay,
                               double delay_timestamp,
                               size_t prior_frames_skipped) {
+  TRACE_EVENT1("webaudio", "AudioDestination::Render",
+               "callback_buffer_size", number_of_frames);
+
   // This method is called by AudioDeviceThread.
   DCHECK(!IsRenderingThread());
 
@@ -135,6 +139,9 @@ void AudioDestination::RequestRenderOnWebThread(size_t frames_requested,
                                                 double delay,
                                                 double delay_timestamp,
                                                 size_t prior_frames_skipped) {
+  TRACE_EVENT1("webaudio", "AudioDestination::RequestRenderOnWebThread",
+               "frames_to_render", frames_to_render);
+
   // This method is called by WebThread.
   DCHECK(IsRenderingThread());
 
@@ -176,6 +183,7 @@ void AudioDestination::Start() {
 
   // Start the "audio device" after the rendering thread is ready.
   if (web_audio_device_ && !is_playing_) {
+    TRACE_EVENT0("webaudio", "AudioDestination::Start");
     rendering_thread_ =
         Platform::Current()->CreateThread("WebAudio Rendering Thread");
     web_audio_device_->Start();
@@ -189,6 +197,7 @@ void AudioDestination::Stop() {
   // This assumes stopping the "audio device" is synchronous and dumping the
   // rendering thread is safe after that.
   if (web_audio_device_ && is_playing_) {
+    TRACE_EVENT0("webaudio", "AudioDestination::Stop");
     web_audio_device_->Stop();
     rendering_thread_.reset();
     is_playing_ = false;
