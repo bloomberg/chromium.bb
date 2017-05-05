@@ -808,6 +808,8 @@ enum CellType {
     case CELL_OTHER_DEVICES_SIGNED_OUT:
       subview = [[SignedOutView alloc] initWithFrame:CGRectZero];
       [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromRecentTabs"));
       break;
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF:
       subview = [[SignedInSyncOffView alloc] initWithFrame:CGRectZero
@@ -837,6 +839,8 @@ enum CellType {
       [configurator configureSigninPromoView:signinPromoView];
       subview = signinPromoView;
       [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromRecentTabs"));
       break;
     }
     case CELL_OTHER_DEVICES_SYNC_IN_PROGRESS:

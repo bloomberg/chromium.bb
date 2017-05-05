@@ -64,11 +64,6 @@ const CGFloat kDesiredHeight = 180;
     // clang-format on
     ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
                                       LayoutOptionForRTLSupport(), self);
-
-    // SignedOutView is always shown directly when created, and its parent view
-    // |reloadData| isn't called when the user is not signed-in.
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Impression_FromRecentTabs"));
   }
   return self;
 }
