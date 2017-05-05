@@ -42,11 +42,11 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.content_public.common.MediaMetadata;
 
 import java.util.ArrayList;

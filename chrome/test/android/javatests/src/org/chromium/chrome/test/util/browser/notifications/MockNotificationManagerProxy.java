@@ -6,8 +6,8 @@ package org.chromium.chrome.test.util.browser.notifications;
 
 import android.app.Notification;
 
-import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 
 import java.util.ArrayList;
 import java.util.Iterator;

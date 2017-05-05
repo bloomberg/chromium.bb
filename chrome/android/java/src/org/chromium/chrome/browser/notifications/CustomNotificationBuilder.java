@@ -24,6 +24,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.Date;

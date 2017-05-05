@@ -32,8 +32,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
-import org.chromium.chrome.browser.notifications.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.content_public.common.MediaMetadata;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 

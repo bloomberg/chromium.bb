@@ -8,6 +8,8 @@ import android.app.Notification;
 import android.content.Context;
 import android.os.Build;
 
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+
 /**
  * Builds a notification using the standard Notification.BigTextStyle layout.
  */
