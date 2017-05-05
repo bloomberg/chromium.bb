@@ -34,6 +34,7 @@
 #include "media/base/media.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
+#include "media/cdm/cdm_manager.h"
 #include "media/gpu/android_video_surface_chooser_impl.h"
 #include "media/gpu/avda_picture_buffer_manager.h"
 #include "media/gpu/content_video_view_overlay.h"
@@ -43,10 +44,6 @@
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
-
-#if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-#include "media/mojo/services/mojo_cdm_service.h"  // nogncheck
-#endif
 
 #define NOTIFY_ERROR(error_code, error_message)      \
   do {                                               \
@@ -1413,7 +1410,7 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
 #else
   // Store the CDM to hold a reference to it.
   cdm_for_reference_holding_only_ =
-      MojoCdmService::LegacyGetCdm(config_.cdm_id);
+      CdmManager::GetInstance()->GetCdm(config_.cdm_id);
   DCHECK(cdm_for_reference_holding_only_);
 
   // On Android platform the CdmContext must be a MediaDrmBridgeCdmContext.

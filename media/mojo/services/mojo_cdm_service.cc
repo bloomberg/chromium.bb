@@ -16,69 +16,17 @@
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/key_systems.h"
+#include "media/cdm/cdm_manager.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "url/gurl.h"
 
 namespace media {
 
-namespace {
-
-// Manages all CDMs created by MojoCdmService. Can only have one instance per
-// process, so we use a thread-safe static to achieve this.
-class CdmManager {
- public:
-  CdmManager() {}
-  ~CdmManager() {}
-
-  // Returns the CDM associated with |cdm_id|. Can be called on any thread.
-  scoped_refptr<ContentDecryptionModule> GetCdm(int cdm_id) {
-    base::AutoLock lock(lock_);
-    auto iter = cdm_map_.find(cdm_id);
-    return iter == cdm_map_.end() ? nullptr : iter->second;
-  }
-
-  // Registers the |cdm| for |cdm_id|.
-  void RegisterCdm(int cdm_id,
-                   const scoped_refptr<ContentDecryptionModule>& cdm) {
-    base::AutoLock lock(lock_);
-    DCHECK(!cdm_map_.count(cdm_id));
-    cdm_map_[cdm_id] = cdm;
-  }
-
-  // Unregisters the CDM associated with |cdm_id|.
-  void UnregisterCdm(int cdm_id) {
-    base::AutoLock lock(lock_);
-    DCHECK(cdm_map_.count(cdm_id));
-    cdm_map_.erase(cdm_id);
-  }
-
- private:
-  // Lock to protect |cdm_map_|.
-  base::Lock lock_;
-  std::map<int, scoped_refptr<ContentDecryptionModule>> cdm_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(CdmManager);
-};
-
-CdmManager* GetManager() {
-  static CdmManager* manager = new CdmManager();
-  return manager;
-}
-
-}  // namespace
-
 using SimpleMojoCdmPromise = MojoCdmPromise<>;
 using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
 
 int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
-
-// static
-scoped_refptr<ContentDecryptionModule> MojoCdmService::LegacyGetCdm(
-    int cdm_id) {
-  DVLOG(1) << __func__ << ": " << cdm_id;
-  return GetManager()->GetCdm(cdm_id);
-}
 
 MojoCdmService::MojoCdmService(base::WeakPtr<MojoCdmServiceContext> context,
                                CdmFactory* cdm_factory)
@@ -94,7 +42,7 @@ MojoCdmService::~MojoCdmService() {
   if (cdm_id_ == CdmContext::kInvalidCdmId)
     return;
 
-  GetManager()->UnregisterCdm(cdm_id_);
+  CdmManager::GetInstance()->UnregisterCdm(cdm_id_);
 
   if (context_)
     context_->UnregisterCdm(cdm_id_);
@@ -196,7 +144,7 @@ void MojoCdmService::OnCdmCreated(
   cdm_id_ = next_cdm_id_++;
 
   context_->RegisterCdm(cdm_id_, this);
-  GetManager()->RegisterCdm(cdm_id_, cdm);
+  CdmManager::GetInstance()->RegisterCdm(cdm_id_, cdm);
 
   // If |cdm| has a decryptor, create the MojoDecryptorService
   // and pass the connection back to the client.
