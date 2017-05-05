@@ -58,8 +58,9 @@ enum TouchBarAction {
   TOUCH_BAR_ACTION_COUNT
 };
 
-// The touch bar's identifier.
+// Touch bar identifiers.
 NSString* const kBrowserWindowTouchBarId = @"browser-window";
+NSString* const kTabFullscreenTouchBarId = @"tab-fullscreen";
 
 // Touch bar items identifiers.
 NSString* const kBackForwardTouchId = @"BACK-FWD";
@@ -108,11 +109,10 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
   return button;
 }
 
-NSString* GetTouchBarId() {
+NSString* GetTouchBarId(NSString* touch_bar_id) {
   NSString* chrome_bundle_id =
       base::SysUTF8ToNSString(base::mac::BaseBundleID());
-  return [NSString
-      stringWithFormat:@"%@.%@", chrome_bundle_id, kBrowserWindowTouchBarId];
+  return [NSString stringWithFormat:@"%@.%@", chrome_bundle_id, touch_bar_id];
 }
 
 TouchBarAction TouchBarActionFromCommand(int command) {
@@ -181,7 +181,10 @@ class HomePrefNotificationBridge {
   std::unique_ptr<HomePrefNotificationBridge> notificationBridge_;
 }
 
-// Creates and return the back and forward segmented buttons.
+// Creates and returns a touch bar for tab fullscreen mode.
+- (NSTouchBar*)createTabFullscreenTouchBar;
+
+// Creates and returns the back and forward segmented buttons.
 - (NSView*)backOrForwardTouchBarView;
 
 // Creates and returns the search button.
@@ -193,8 +196,10 @@ class HomePrefNotificationBridge {
 @synthesize isPageLoading = isPageLoading_;
 @synthesize isStarred = isStarred_;
 
-+ (NSString*)touchBarIdForItemId:(NSString*)id {
-  return [NSString stringWithFormat:@"%@-%@", GetTouchBarId(), id];
++ (NSString*)identifierForTouchBarId:(NSString*)touchBarId
+                              itemId:(NSString*)itemId {
+  return
+      [NSString stringWithFormat:@"%@-%@", GetTouchBarId(touchBarId), itemId];
 }
 
 - (instancetype)initWithBrowser:(Browser*)browser
@@ -220,26 +225,16 @@ class HomePrefNotificationBridge {
   if (!base::FeatureList::IsEnabled(features::kBrowserTouchBar))
     return nil;
 
+  // When in tab fullscreen, we should show a touch bar containing only
+  // items associated with that mode. Since the toolbar is hidden, only
+  // the option to exit fullscreen should show up.
+  if ([bwc_ isFullscreenForTabContentOrExtension])
+    return [self createTabFullscreenTouchBar];
+
   base::scoped_nsobject<NSTouchBar> touchBar(
       [[NSClassFromString(@"NSTouchBar") alloc] init]);
-  [touchBar setCustomizationIdentifier:GetTouchBarId()];
+  [touchBar setCustomizationIdentifier:GetTouchBarId(kBrowserWindowTouchBarId)];
   [touchBar setDelegate:self];
-
-  // When in tab fullscreen, only the option to exit fullscreen should show up
-  // on the touch bar since the toolbar is hidden in that state.
-  if ([bwc_ isFullscreenForTabContentOrExtension]) {
-    if ([touchBar respondsToSelector:
-        @selector(setEscapeKeyReplacementItemIdentifier:)]) {
-      [touchBar setEscapeKeyReplacementItemIdentifier:
-                    [BrowserWindowTouchBar
-                        touchBarIdForItemId:kExitFullscreenTouchId]];
-      [touchBar setDefaultItemIdentifiers:@[
-        [BrowserWindowTouchBar
-            touchBarIdForItemId:kFullscreenOriginLabelTouchId]
-      ]];
-    }
-    return touchBar.autorelease();
-  }
 
   NSMutableArray* customIdentifiers = [NSMutableArray arrayWithCapacity:7];
   NSMutableArray* defaultIdentifiers = [NSMutableArray arrayWithCapacity:6];
@@ -250,7 +245,9 @@ class HomePrefNotificationBridge {
   ];
 
   for (NSString* item in touchBarItems) {
-    NSString* itemIdentifier = [BrowserWindowTouchBar touchBarIdForItemId:item];
+    NSString* itemIdentifier =
+        [BrowserWindowTouchBar identifierForTouchBarId:kBrowserWindowTouchBarId
+                                                itemId:item];
     [customIdentifiers addObject:itemIdentifier];
 
     // Don't add the home button if it's not shown in the toolbar.
@@ -342,6 +339,27 @@ class HomePrefNotificationBridge {
   }
 
   return touchBarItem.autorelease();
+}
+
+- (NSTouchBar*)createTabFullscreenTouchBar {
+  base::scoped_nsobject<NSTouchBar> touchBar(
+      [[NSClassFromString(@"NSTouchBar") alloc] init]);
+  [touchBar setDelegate:self];
+
+  if ([touchBar respondsToSelector:@selector
+                (setEscapeKeyReplacementItemIdentifier:)]) {
+    [touchBar setEscapeKeyReplacementItemIdentifier:
+                  [BrowserWindowTouchBar
+                      identifierForTouchBarId:kTabFullscreenTouchBarId
+                                       itemId:kExitFullscreenTouchId]];
+    [touchBar setDefaultItemIdentifiers:@[
+      [BrowserWindowTouchBar
+          identifierForTouchBarId:kTabFullscreenTouchBarId
+                           itemId:kFullscreenOriginLabelTouchId]
+    ]];
+  }
+
+  return touchBar.autorelease();
 }
 
 - (NSView*)backOrForwardTouchBarView {
