@@ -3,4 +3,6 @@ robertshield@chromium.org
 # For early browser process security and nt_registry:
 pennymac@chromium.org
 
-# COMPONENT: Internals>Core
+# TEAM: security-dev@chromium.org
+# COMPONENT: Internals>EarlyLoadingFramework
+
