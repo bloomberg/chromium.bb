@@ -3,7 +3,7 @@
   <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-function test()
+async function test()
 {
     var messages = [];
     function collectMessages(message)
@@ -13,15 +13,17 @@ function test()
     Protocol.TargetBase.prototype._dumpProtocolMessage = collectMessages;
     Protocol.InspectorBackend.Options.dumpInspectorProtocolMessages = 1;
     messages.push("--> SDK.targetManager.suspendAllTargets();");
-    SDK.targetManager.suspendAllTargets();
+    await SDK.targetManager.suspendAllTargets();
     messages.push("");
     messages.push("--> SDK.targetManager.resumeAllTargets();");
-    SDK.targetManager.resumeAllTargets();
+    await SDK.targetManager.resumeAllTargets();
     messages.push("");
     messages.push("--> done");
     Protocol.InspectorBackend.Options.dumpInspectorProtocolMessages = 0;
     for (var i = 0; i < messages.length; ++i) {
         var message = messages[i];
+        if (message.startsWith('backend'))
+            continue;
         message = message.replace(/"id":\d+,/, '"id":<number>,');
         InspectorTest.addResult(message);
     }
