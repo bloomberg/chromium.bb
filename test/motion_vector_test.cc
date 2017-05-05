@@ -17,12 +17,6 @@
 #include "test/yuv_video_source.h"
 
 namespace {
-#if defined(__has_feature)
-#if __has_feature(address_sanitizer)
-#define BUILDING_WITH_ASAN
-#endif
-#endif
-
 #define MAX_EXTREME_MV 1
 #define MIN_EXTREME_MV 2
 
@@ -85,16 +79,11 @@ TEST_P(MotionVectorTestLarge, OverallTest) {
   int width = 3840;
   int height = 2160;
 
-#ifdef BUILDING_WITH_ASAN
-  // On the 32-bit system, if using 4k test clip, an "out of memory" error
-  // occurs because of the AddressSanitizer instrumentation memory overhead.
-  // Here, reduce the test clip's resolution while testing on 32-bit system
-  // and AddressSanitizer is enabled.
+  // Reduce the test clip's resolution while testing on 32-bit system.
   if (sizeof(void *) == 4) {
     width = 2048;
     height = 1080;
   }
-#endif
 
   cfg_.rc_target_bitrate = 24000;
   cfg_.g_profile = 0;
