@@ -28,10 +28,6 @@ namespace translate {
 
 namespace {
 
-// Feature flag for "Translate UI Redesign" project.
-const base::Feature kTranslateCompactUI{"TranslateCompactUI",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Counts used to decide whether infobars should be shown.
 // Android and iOS implementations do not offer a drop down (for space reasons),
 // so we are more aggressive about showing the shortcut to never translate.
@@ -51,6 +47,9 @@ const int kNeverTranslateMinCount = 3;
 #endif
 
 }  // namespace
+
+const base::Feature kTranslateCompactUI{"TranslateCompactUI",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::kNoIndex;
 

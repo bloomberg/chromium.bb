@@ -21997,6 +21997,7 @@ from previous Chrome versions.
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
   <int value="1594247626" label="ContentSuggestionsSettings:enabled"/>
+  <int value="1600926040" label="TranslateCompactUI:enabled"/>
   <int value="1605611615" label="enable-webrtc-srtp-aes-gcm"/>
   <int value="1612446645" label="enable-weak-memorycache"/>
   <int value="1612871297" label="WebPayments:disabled"/>
@@ -22040,6 +22041,7 @@ from previous Chrome versions.
   <int value="1783837132" label="enable-threaded-gpu-rasterization"/>
   <int value="1785093465" label="enable-document-passive-event-listeners"/>
   <int value="1786229999" label="disable-md-downloads"/>
+  <int value="1786386775" label="TranslateCompactUI:disabled"/>
   <int value="1791904609" label="disable-autofill-keyboard-accessory-view"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1809940714" label="SpeculativeLaunchServiceWorker:disabled"/>

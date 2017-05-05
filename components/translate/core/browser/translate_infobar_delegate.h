@@ -29,6 +29,9 @@ class InfoBarManager;
 
 namespace translate {
 
+// Feature flag for "Translate Compact Infobar UI" project.
+extern const base::Feature kTranslateCompactUI;
+
 class TranslateDriver;
 class TranslateManager;
 
