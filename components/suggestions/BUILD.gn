@@ -6,6 +6,8 @@ static_library("suggestions") {
   sources = [
     "blacklist_store.cc",
     "blacklist_store.h",
+    "features.cc",
+    "features.h",
     "image_encoder.h",
     "image_manager.cc",
     "image_manager.h",

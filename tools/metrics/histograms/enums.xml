@@ -21849,6 +21849,7 @@ from previous Chrome versions.
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1070164693" label="MidiManagerDynamicInstantiation:disabled"/>
   <int value="1070300488" label="disable-webgl"/>
+  <int value="1074359194" label="UseSuggestionsEvenIfFew:enabled"/>
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1090377940" label="enable-quic-https"/>
@@ -22069,6 +22070,7 @@ from previous Chrome versions.
   <int value="1865799183" label="javascript-harmony"/>
   <int value="1866079109" label="team-drives"/>
   <int value="1867085340" label="brotli-encoding:enabled"/>
+  <int value="1874604540" label="UseSuggestionsEvenIfFew:disabled"/>
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>

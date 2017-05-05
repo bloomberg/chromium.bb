@@ -66,6 +66,7 @@
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/ssl_config/ssl_config_switches.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/suggestions/features.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -2831,6 +2832,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowCertLinkOnPageInfoDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kShowCertLink)},
 #endif
+
+    {"use-suggestions-even-if-few",
+     flag_descriptions::kUseSuggestionsEvenIfFewFeatureName,
+     flag_descriptions::kUseSuggestionsEvenIfFewFeatureDescription, kOsAll,
+     FEATURE_VALUE_TYPE(suggestions::kUseSuggestionsEvenIfFewFeature)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

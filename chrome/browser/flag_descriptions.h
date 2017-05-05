@@ -3384,6 +3384,11 @@ extern const char kEnableHeapProfilingModePseudo[];
 extern const char kEnableHeapProfilingModeNative[];
 extern const char kEnableHeapProfilingTaskProfiler[];
 
+// Name and description of the flag allowing the usage of a small set of
+// server-side suggestions in NTP tiles.
+extern const char kUseSuggestionsEvenIfFewFeatureName[];
+extern const char kUseSuggestionsEvenIfFewFeatureDescription[];
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_
