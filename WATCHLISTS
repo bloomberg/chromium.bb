@@ -1322,10 +1322,6 @@
       'filepath': 'third_party/WebKit/Source/core/dom/custom/' \
                   '|third_party/WebKit/Source/bindings/v8/.*CustomElement',
     },
-    'blink_device_light': {
-      'filepath': 'third_party/WebKit/Source/modules/device_light/' \
-                  '|third_party/WebKit/LayoutTests/fast/dom/DeviceLight/'
-    },
     'blink_device_orientation': {
       'filepath': 'third_party/WebKit/Source/modules/device_orientation/' \
                   '|third_party/WebKit/LayoutTests/device_orientation/' \
@@ -1723,8 +1719,6 @@
     'blink_css_regions': ['ChromiumBugTracker@adobe.com'],
     'blink_custom_elements': ['dglazkov+blink@chromium.org',
                               'dominicc+watchlist@chromium.org'],
-    'blink_device_light': ['mlamouri+watch-blink@chromium.org',
-                           'timvolodine@chromium.org'],
     'blink_device_orientation': ['mlamouri+watch-blink@chromium.org',
                                  'timvolodine@chromium.org'],
     'blink_devtools': ['apavlov+blink@chromium.org',
