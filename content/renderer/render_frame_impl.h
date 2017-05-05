@@ -1379,7 +1379,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Whether or not this RenderFrame is currently pasting.
   bool is_pasting_;
 
-  // Whether we must stop creating nested message loops for modal dialogs. This
+  // Whether we must stop creating nested run loops for modal dialogs. This
   // is necessary because modal dialogs have a ScopedPageLoadDeferrer on the
   // stack that interferes with swapping out.
   bool suppress_further_dialogs_;

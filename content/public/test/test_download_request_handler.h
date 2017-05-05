@@ -237,7 +237,7 @@ class TestDownloadRequestHandler : public base::NonThreadSafe {
   //   different runs of the same test.
   //
   // * Initialization of the handler synchronously runs a task on the
-  //   BrowserThread::IO thread using a nested message loop. Only construct an
+  //   BrowserThread::IO thread using a nested run loop. Only construct an
   //   instance of this object after browser threads have been initialized.
   TestDownloadRequestHandler();
 

@@ -275,7 +275,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   //  2. Request comes from a page with a secure origin or from an extension.
   if (screen_capture_enabled && origin_is_secure) {
     // Get title of the calling application prior to showing the message box.
-    // chrome::ShowQuestionMessageBox() starts a nested message loop which may
+    // chrome::ShowQuestionMessageBox() starts a nested run loop which may
     // allow |web_contents| to be destroyed on the UI thread before the messag
     // box is closed. See http://crbug.com/326690.
     base::string16 application_title =

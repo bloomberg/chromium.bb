@@ -274,7 +274,7 @@ class StartProvisionalLoadObserver : public content::WebContentsObserver {
     }
   }
 
-  // Run a nested message loop until navigation to the expected URL has started.
+  // Run a nested run loop until navigation to the expected URL has started.
   void Wait() {
     if (url_seen_)
       return;

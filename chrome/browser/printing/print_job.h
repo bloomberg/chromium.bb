@@ -125,7 +125,7 @@ class PrintJob : public PrintJobWorkerOwner,
   // eventual deadlock.
   void ControlledWorkerShutdown();
 
-  // Called at shutdown when running a nested message loop.
+  // Called at shutdown when running a nested run loop.
   void Quit();
 
   void HoldUntilStopIsCalled();
@@ -167,7 +167,7 @@ class PrintJob : public PrintJobWorkerOwner,
   std::vector<int> pdf_page_mapping_;
 #endif  // defined(OS_WIN)
 
-  // Used at shutdown so that we can quit a nested message loop.
+  // Used at shutdown so that we can quit a nested run loop.
   base::WeakPtrFactory<PrintJob> quit_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintJob);

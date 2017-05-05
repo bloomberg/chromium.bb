@@ -183,7 +183,7 @@ class TabDragController : public views::WidgetObserver,
   // Indicates what should happen after invoking DragBrowserToNewTabStrip().
   enum DragBrowserResultType {
     // The caller should return immediately. This return value is used if a
-    // nested message loop was created or we're in a nested message loop and
+    // nested run loop was created or we're in a nested run loop and
     // need to exit it.
     DRAG_BROWSER_RESULT_STOP,
 
@@ -303,7 +303,7 @@ class TabDragController : public views::WidgetObserver,
   // runs a nested move loop.
   void DetachIntoNewBrowserAndRunMoveLoop(const gfx::Point& point_in_screen);
 
-  // Runs a nested message loop that handles moving the current
+  // Runs a nested run loop that handles moving the current
   // Browser. |drag_offset| is the offset from the window origin and is used in
   // calculating the location of the window offset from the cursor while
   // dragging.

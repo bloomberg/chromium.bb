@@ -27,7 +27,7 @@ class MenuRunnerImplInterface {
       int32_t run_types,
       const base::Closure& on_menu_closed_callback);
 
-  // Returns true if we're in a nested message loop running the menu.
+  // Returns true if we're in a nested run loop running the menu.
   virtual bool IsRunning() const = 0;
 
   // See description above class for details.

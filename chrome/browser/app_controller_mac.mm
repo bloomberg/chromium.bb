@@ -944,7 +944,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   }
 
   // Ignore commands during session restore's browser creation.  It uses a
-  // nested message loop and commands dispatched during this operation cause
+  // nested run loop and commands dispatched during this operation cause
   // havoc.
   if (SessionRestore::IsRestoring(lastProfile) &&
       base::RunLoop::IsNestedOnCurrentThread()) {

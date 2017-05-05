@@ -129,7 +129,7 @@ void TouchActionTest::RunTouchActionTest(std::string file) {
   TouchActionTrackingWebWidgetClient client;
 
   // runTouchActionTest() loads a document in a frame, setting up a
-  // nested message loop. Should any Oilpan GC happen while it is in
+  // nested run loop. Should any Oilpan GC happen while it is in
   // effect, the implicit assumption that we're outside any event
   // loop (=> there being no pointers on the stack needing scanning)
   // when that GC strikes will no longer hold.

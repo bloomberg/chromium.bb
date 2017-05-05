@@ -117,7 +117,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
     frame.Loader().ForceSandboxFlags(
         opener_frame.GetSecurityContext()->GetSandboxFlags());
 
-  // This call may suspend the execution by running nested message loop.
+  // This call may suspend the execution by running nested run loop.
   probe::windowCreated(&opener_frame, &frame);
   created = true;
   return &frame;

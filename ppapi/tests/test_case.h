@@ -197,7 +197,7 @@ class TestCase {
       // Now give the loop a chance to clean up.
       loop_.PostQuit(true /* should_destroy */);
       loop_.Run();
-      // Tell the main thread to quit its nested message loop, now that the test
+      // Tell the main thread to quit its nested run loop, now that the test
       // is complete.
       TestCase::QuitMainMessageLoop(instance_);
     }

@@ -502,7 +502,7 @@ void DragDropController::AnimationEnded(const gfx::Animation* animation) {
   if (!IsDragDropInProgress())
     drag_image_.reset();
   if (pending_long_tap_) {
-    // If not in a nested message loop, we can forward the long tap right now.
+    // If not in a nested run loop, we can forward the long tap right now.
     if (!should_block_during_drag_drop_) {
       ForwardPendingLongTap();
     } else {

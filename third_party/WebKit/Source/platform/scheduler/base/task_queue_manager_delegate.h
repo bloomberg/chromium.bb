@@ -24,7 +24,7 @@ class PLATFORM_EXPORT TaskQueueManagerDelegate
   // a nested task).
   virtual bool IsNested() const = 0;
 
-  // A NestingObserver is notified when a nested message loop begins. The
+  // A NestingObserver is notified when a nested run loop begins. The
   // observers are notified before the first task is processed.
   virtual void AddNestingObserver(base::RunLoop::NestingObserver* observer) = 0;
 

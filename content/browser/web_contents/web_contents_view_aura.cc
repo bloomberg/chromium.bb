@@ -952,7 +952,7 @@ void WebContentsViewAura::StartDragging(
   }
 
   // Grab a weak pointer to the RenderWidgetHost, since it can be destroyed
-  // during the drag and drop nested message loop in StartDragAndDrop.
+  // during the drag and drop nested run loop in StartDragAndDrop.
   // For example, the RenderWidgetHost can be deleted if a cross-process
   // transfer happens while dragging, since the RenderWidgetHost is deleted in
   // that case.

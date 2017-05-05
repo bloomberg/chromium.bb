@@ -32,7 +32,7 @@ class XScopedEventSelector;
 
 namespace views {
 
-// Runs a nested message loop and grabs the mouse. This is used to implement
+// Runs a nested run loop and grabs the mouse. This is used to implement
 // dragging.
 class X11WholeScreenMoveLoop : public X11MoveLoop,
                                public ui::PlatformEventDispatcher {
@@ -64,7 +64,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
 
   X11MoveLoopDelegate* delegate_;
 
-  // Are we running a nested message loop from RunMoveLoop()?
+  // Are we running a nested run loop from RunMoveLoop()?
   bool in_move_loop_;
   std::unique_ptr<ui::ScopedEventDispatcher> nested_dispatcher_;
 

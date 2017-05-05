@@ -55,7 +55,7 @@ void DragBookmarks(Profile* profile,
                    ui::DragDropTypes::DragEventSource source) {
   DCHECK(!nodes.empty());
 
-  // Allow nested message loop so we get DnD events as we drag this around.
+  // Allow nested run loop so we get DnD events as we drag this around.
   base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
       base::MessageLoop::current());
 

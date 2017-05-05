@@ -50,7 +50,7 @@ struct DragDropControllerMus::CurrentDragState {
   // OSExchangeData supplied to StartDragAndDrop().
   const ui::OSExchangeData& drag_data;
 
-  // StartDragDrop() runs a nested message loop. This closure is used to quit
+  // StartDragDrop() runs a nested run loop. This closure is used to quit
   // the run loop when the drag completes.
   base::Closure runloop_quit_closure;
 };

@@ -989,7 +989,7 @@ void PrintWebViewHelper::ScriptedPrint(bool user_initiated) {
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   // The class is not designed to handle recursive messages. This is not
   // expected during regular flow. However, during rendering of content for
-  // printing, lower level code may run nested message loop. E.g. PDF may has
+  // printing, lower level code may run nested run loop. E.g. PDF may has
   // script to show message box http://crbug.com/502562. In that moment browser
   // may receive updated printer capabilities and decide to restart print
   // preview generation. When this happened message handling function may

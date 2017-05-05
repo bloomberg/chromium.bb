@@ -113,7 +113,7 @@ bool PreventWindowFromPinning(HWND hwnd) {
 }
 
 // TODO(calamity): investigate moving this out of the UI thread as COM
-// operations may spawn nested message loops which can cause issues.
+// operations may spawn nested run loops which can cause issues.
 void SetAppDetailsForWindow(const base::string16& app_id,
                             const base::FilePath& app_icon_path,
                             int app_icon_index,

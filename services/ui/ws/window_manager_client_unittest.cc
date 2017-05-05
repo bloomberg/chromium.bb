@@ -304,7 +304,7 @@ class WindowServerTest : public WindowServerTestBase {
 
   std::unique_ptr<ClientAreaChange> WaitForClientAreaToChange() {
     client_area_change_ = base::MakeUnique<ClientAreaChange>();
-    // The nested message loop is quit in OnWmSetClientArea(). Client area
+    // The nested run loop is quit in OnWmSetClientArea(). Client area
     // changes don't route through the window, only the WindowManagerDelegate.
     if (!WindowServerTestBase::DoRunLoopWithTimeout()) {
       client_area_change_.reset();

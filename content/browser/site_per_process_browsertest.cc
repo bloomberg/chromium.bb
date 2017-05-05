@@ -447,7 +447,7 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
 
   ~RenderFrameHostCreatedObserver() override;
 
-  // Runs a nested message loop and blocks until the expected number of
+  // Runs a nested run loop and blocks until the expected number of
   // RenderFrameHosts is created.
   void Wait();
 

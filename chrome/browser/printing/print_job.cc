@@ -150,7 +150,7 @@ void PrintJob::Stop() {
   DCHECK(RunsTasksOnCurrentThread());
 
   if (quit_factory_.HasWeakPtrs()) {
-    // In case we're running a nested message loop to wait for a job to finish,
+    // In case we're running a nested run loop to wait for a job to finish,
     // and we finished before the timeout, quit the nested loop right away.
     Quit();
     quit_factory_.InvalidateWeakPtrs();

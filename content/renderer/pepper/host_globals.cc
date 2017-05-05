@@ -148,7 +148,7 @@ void HostGlobals::LogWithSource(PP_Instance instance,
                                 const std::string& value) {
   PepperPluginInstanceImpl* instance_object =
       HostGlobals::Get()->GetInstance(instance);
-  // It's possible to process this message in a nested message loop while
+  // It's possible to process this message in a nested run loop while
   // detaching a Document…
   // TODO(dcheng): Make it so this can't happen. https://crbug.com/561683
   if (instance_object &&

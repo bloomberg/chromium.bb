@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
 /**
  * Handles processing messages in nested run loops.
  *
- * Android does not support nested message loops by default. While running
+ * Android does not support nested run loops by default. While running
  * in nested mode, we use reflection to retreive messages from the MessageQueue
  * and dispatch them.
  */

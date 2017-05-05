@@ -24,7 +24,7 @@ namespace chrome {
 namespace {
 
 // Responsible for invoking TaskbarList::SetOverlayIcon(). The call to
-// TaskbarList::SetOverlayIcon() runs a nested message loop that proves
+// TaskbarList::SetOverlayIcon() runs a nested run loop that proves
 // problematic when called on the UI thread. Additionally it seems the call may
 // take a while to complete. For this reason we call it on a worker thread.
 //

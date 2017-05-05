@@ -461,7 +461,7 @@ TEST_F(DesktopAuraWidgetTest, TopLevelOwnedPopupRepositionTest) {
 
 // The following code verifies we can correctly destroy a Widget from a mouse
 // enter/exit. We could test move/drag/enter/exit but in general we don't run
-// nested message loops from such events, nor has the code ever really dealt
+// nested run loops from such events, nor has the code ever really dealt
 // with this situation.
 
 // Generates two moves (first generates enter, second real move), a press, drag

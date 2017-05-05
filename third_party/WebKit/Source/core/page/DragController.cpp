@@ -373,7 +373,7 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
         TryDHTMLDrag(drag_data, drag_session.operation, local_root);
     // Do not continue if m_documentUnderMouse has been reset by tryDHTMLDrag.
     // tryDHTMLDrag fires dragenter event. The event listener that listens
-    // to this event may create a nested message loop (open a modal dialog),
+    // to this event may create a nested run loop (open a modal dialog),
     // which could process dragleave event and reset m_documentUnderMouse in
     // dragExited.
     if (!document_under_mouse_)

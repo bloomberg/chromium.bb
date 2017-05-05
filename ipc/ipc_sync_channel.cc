@@ -674,7 +674,7 @@ void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
     }
 
     if (should_pump_messages)
-      WaitForReplyWithNestedMessageLoop(context);  // Run a nested message loop.
+      WaitForReplyWithNestedMessageLoop(context);  // Run a nested run loop.
 
     break;
   }

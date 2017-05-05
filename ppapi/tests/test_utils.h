@@ -44,14 +44,14 @@ uint16_t GetPort(const pp::NetAddress& addr);
 // event to complete. For example, you can use it to wait for a callback on a
 // PPP interface, which will "Signal" the event and make the loop quit.
 // "Wait()" will return immediately if it has already been signalled. Otherwise,
-// it will run a nested message loop (using PPB_Testing.RunMessageLoop) and will
+// it will run a nested run loop (using PPB_Testing.RunMessageLoop) and will
 // return only after it has been signalled.
 // Example:
 //  std::string TestFullscreen::TestNormalToFullscreen() {
 //    pp::Fullscreen screen_mode(instance);
 //    screen_mode.SetFullscreen(true);
 //    SimulateUserGesture();
-//    // Let DidChangeView run in a nested message loop.
+//    // Let DidChangeView run in a nested run loop.
 //    nested_event_.Wait();
 //    Pass();
 //  }
@@ -68,7 +68,7 @@ class NestedEvent {
   explicit NestedEvent(PP_Instance instance)
       : instance_(instance), waiting_(false), signalled_(false) {
   }
-  // Run a nested message loop and wait until Signal() is called. If Signal()
+  // Run a nested run loop and wait until Signal() is called. If Signal()
   // has already been called, return immediately without running a nested loop.
   void Wait();
   // Signal the NestedEvent. If Wait() has been called, quit the message loop.

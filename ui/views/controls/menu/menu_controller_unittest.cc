@@ -153,7 +153,7 @@ class TestEventHandler : public ui::EventHandler {
 };
 
 #if defined(USE_AURA)
-// A DragDropClient which does not trigger a nested message loop. Instead a
+// A DragDropClient which does not trigger a nested run loop. Instead a
 // callback is triggered during StartDragAndDrop in order to allow testing.
 class TestDragDropClient : public aura::client::DragDropClient {
  public:

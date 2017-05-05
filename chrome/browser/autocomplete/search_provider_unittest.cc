@@ -192,7 +192,7 @@ class SearchProviderTest : public testing::Test,
   // If we're waiting for the provider to finish, this exits the message loop.
   void OnProviderUpdate(bool updated_matches) override;
 
-  // Runs a nested message loop until provider_ is done. The message loop is
+  // Runs a nested run loop until provider_ is done. The message loop is
   // exited by way of OnProviderUpdate.
   void RunTillProviderDone();
 
