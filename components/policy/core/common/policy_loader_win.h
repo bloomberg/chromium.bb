@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_WIN_H_
 
 #include <windows.h>
+
 #include <userenv.h>
 
 #include <memory>
@@ -27,7 +28,7 @@ class SequencedTaskRunner;
 namespace policy {
 
 class AppliedGPOListProvider;
-class PolicyLoadStatusSample;
+class PolicyLoadStatusSampler;
 class PolicyMap;
 class RegistryDict;
 
@@ -74,7 +75,7 @@ class POLICY_EXPORT PolicyLoaderWin
   // result in |policy|.
   bool ReadPRegFile(const base::FilePath& preg_file,
                     RegistryDict* policy,
-                    PolicyLoadStatusSample* status);
+                    PolicyLoadStatusSampler* status);
 
   // Loads and parses GPO policy in |policy_object_list| for scope |scope|. If
   // successful, stores the result in |policy| and returns true. Returns false
@@ -83,14 +84,14 @@ class POLICY_EXPORT PolicyLoaderWin
   bool LoadGPOPolicy(PolicyScope scope,
                      PGROUP_POLICY_OBJECT policy_object_list,
                      RegistryDict* policy,
-                     PolicyLoadStatusSample* status);
+                     PolicyLoadStatusSampler* status);
 
   // Queries Windows for applied group policy and writes the result to |policy|.
   // This is the preferred way to obtain GPO data, there are reports of abuse
   // of the registry GPO keys by 3rd-party software.
   bool ReadPolicyFromGPO(PolicyScope scope,
                          RegistryDict* policy,
-                         PolicyLoadStatusSample* status);
+                         PolicyLoadStatusSampler* status);
 
   // Parses Chrome policy from |gpo_dict| for the given |scope| and |level| and
   // merges it into |chrome_policy_map|.

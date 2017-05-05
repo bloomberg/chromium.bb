@@ -37,18 +37,17 @@ POLICY_EXPORT extern const char kPRegFileHeader[8];
 POLICY_EXPORT bool ReadFile(const base::FilePath& file_path,
                             const base::string16& root,
                             RegistryDict* dict,
-                            PolicyLoadStatusSample* status_sample);
+                            PolicyLoadStatusSampler* status);
 
 // Similar to ReadFile, but reads from |preg_data| of length |preg_data_size|
-// instead of a file, and writes status to the enum PolicyLoadStatus, which does
-// not record UMA stats, unlike |PolicyLoadStatusSample|. |debug_name| is
-// printed out along with error messages. Used internally and for testing only.
-// All other callers should use ReadFile instead.
+// instead of a file. |debug_name| is printed out along with error messages.
+// Used internally and for testing only. All other callers should use ReadFile
+// instead.
 POLICY_EXPORT bool ReadDataInternal(const uint8_t* preg_data,
                                     size_t preg_data_size,
                                     const base::string16& root,
                                     RegistryDict* dict,
-                                    PolicyLoadStatus* status,
+                                    PolicyLoadStatusSampler* status,
                                     const std::string& debug_name);
 
 }  // namespace preg_parser

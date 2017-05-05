@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "components/policy/policy_export.h"
 
-namespace base {
-class HistogramBase;
-}
-
 namespace policy {
 
 // UMA histogram enum for policy load status. Don't change existing constants,
@@ -44,22 +40,35 @@ enum PolicyLoadStatus {
   POLICY_LOAD_STATUS_SIZE
 };
 
-// A helper for generating policy load status UMA statistics that'll collect
-// histogram samples for a policy load operation and records histogram samples
-// for the status codes that were seen on destruction.
-class POLICY_EXPORT PolicyLoadStatusSample {
+// A helper for collecting statuses for a policy load operation.
+class POLICY_EXPORT PolicyLoadStatusSampler {
  public:
-  PolicyLoadStatusSample();
-  ~PolicyLoadStatusSample();
+  using StatusSet = std::bitset<POLICY_LOAD_STATUS_SIZE>;
+
+  PolicyLoadStatusSampler();
+  virtual ~PolicyLoadStatusSampler();
 
   // Adds a status code.
   void Add(PolicyLoadStatus status);
 
- private:
-  std::bitset<POLICY_LOAD_STATUS_SIZE> status_bits_;
-  base::HistogramBase* histogram_;
+  // Returns a set with all statuses.
+  const StatusSet& GetStatusSet() const { return status_bits_; }
 
-  DISALLOW_COPY_AND_ASSIGN(PolicyLoadStatusSample);
+ private:
+  StatusSet status_bits_;
+  DISALLOW_COPY_AND_ASSIGN(PolicyLoadStatusSampler);
+};
+
+// A helper for generating policy load status UMA statistics. On destruction,
+// records histogram samples for the collected status codes.
+class POLICY_EXPORT PolicyLoadStatusUmaReporter
+    : public PolicyLoadStatusSampler {
+ public:
+  PolicyLoadStatusUmaReporter();
+  ~PolicyLoadStatusUmaReporter() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PolicyLoadStatusUmaReporter);
 };
 
 }  // namespace policy

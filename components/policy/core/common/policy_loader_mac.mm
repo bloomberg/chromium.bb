@@ -70,7 +70,7 @@ std::unique_ptr<PolicyBundle> PolicyLoaderMac::Load() {
   PolicyMap& chrome_policy =
       bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
 
-  PolicyLoadStatusSample status;
+  PolicyLoadStatusUmaReporter status;
   bool policy_present = false;
   const Schema* schema =
       schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
