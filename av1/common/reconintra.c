@@ -1842,9 +1842,8 @@ static void build_intra_predictors_high(
   uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
   DECLARE_ALIGNED(16, uint16_t, left_data[MAX_TX_SIZE * 2 + 16]);
   DECLARE_ALIGNED(16, uint16_t, above_data[MAX_TX_SIZE * 2 + 16]);
-  uint16_t *above_row = above_data + 16;
-  uint16_t *left_col = left_data + 16;
-  const uint16_t *const_above_row = above_row;
+  uint16_t *const above_row = above_data + 16;
+  uint16_t *const left_col = left_data + 16;
   const int bs = tx_size_wide[tx_size];
   int need_left = extend_modes[mode] & NEED_LEFT;
   int need_above = extend_modes[mode] & NEED_ABOVE;
@@ -1970,7 +1969,7 @@ static void build_intra_predictors_high(
 #if CONFIG_FILTER_INTRA
   if (filter_intra_mode_info->use_filter_intra_mode[plane != 0]) {
     highbd_filter_intra_predictors(filter_intra_mode, dst, dst_stride, bs,
-                                   const_above_row, left_col, xd->bd);
+                                   above_row, left_col, xd->bd);
     return;
   }
 #endif  // CONFIG_FILTER_INTRA
@@ -1982,7 +1981,7 @@ static void build_intra_predictors_high(
     if (plane == 0 && av1_is_intra_filter_switchable(p_angle))
       filter = xd->mi[0]->mbmi.intra_filter;
 #endif  // CONFIG_INTRA_INTERP
-    highbd_dr_predictor(dst, dst_stride, bs, const_above_row, left_col,
+    highbd_dr_predictor(dst, dst_stride, bs, above_row, left_col,
 #if CONFIG_INTRA_INTERP
                         filter,
 #endif  // CONFIG_INTRA_INTERP
@@ -1994,10 +1993,9 @@ static void build_intra_predictors_high(
   // predict
   if (mode == DC_PRED) {
     dc_pred_high[n_left_px > 0][n_top_px > 0][tx_size](
-        dst, dst_stride, const_above_row, left_col, xd->bd);
+        dst, dst_stride, above_row, left_col, xd->bd);
   } else {
-    pred_high[mode][tx_size](dst, dst_stride, const_above_row, left_col,
-                             xd->bd);
+    pred_high[mode][tx_size](dst, dst_stride, above_row, left_col, xd->bd);
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
@@ -2012,9 +2010,8 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   const uint8_t *above_ref = ref - ref_stride;
   DECLARE_ALIGNED(16, uint8_t, left_data[MAX_TX_SIZE * 2 + 16]);
   DECLARE_ALIGNED(16, uint8_t, above_data[MAX_TX_SIZE * 2 + 16]);
-  uint8_t *above_row = above_data + 16;
-  uint8_t *left_col = left_data + 16;
-  const uint8_t *const_above_row = above_row;
+  uint8_t *const above_row = above_data + 16;
+  uint8_t *const left_col = left_data + 16;
   const int bs = tx_size_wide[tx_size];
   int need_left = extend_modes[mode] & NEED_LEFT;
   int need_above = extend_modes[mode] & NEED_ABOVE;
@@ -2138,8 +2135,8 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 
 #if CONFIG_FILTER_INTRA
   if (filter_intra_mode_info->use_filter_intra_mode[plane != 0]) {
-    filter_intra_predictors(filter_intra_mode, dst, dst_stride, bs,
-                            const_above_row, left_col);
+    filter_intra_predictors(filter_intra_mode, dst, dst_stride, bs, above_row,
+                            left_col);
     return;
   }
 #endif  // CONFIG_FILTER_INTRA
@@ -2150,7 +2147,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     if (plane == 0 && av1_is_intra_filter_switchable(p_angle))
       filter = xd->mi[0]->mbmi.intra_filter;
 #endif  // CONFIG_INTRA_INTERP
-    dr_predictor(dst, dst_stride, tx_size, const_above_row, left_col,
+    dr_predictor(dst, dst_stride, tx_size, above_row, left_col,
 #if CONFIG_INTRA_INTERP
                  filter,
 #endif  // CONFIG_INTRA_INTERP
@@ -2165,14 +2162,14 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     // CFL predict its own DC_PRED for Chromatic planes
     if (plane == AOM_PLANE_Y) {
 #endif
-      dc_pred[n_left_px > 0][n_top_px > 0][tx_size](dst, dst_stride,
-                                                    const_above_row, left_col);
+      dc_pred[n_left_px > 0][n_top_px > 0][tx_size](dst, dst_stride, above_row,
+                                                    left_col);
 #if CONFIG_CFL
     }
 #endif
 
   } else {
-    pred[mode][tx_size](dst, dst_stride, const_above_row, left_col);
+    pred[mode][tx_size](dst, dst_stride, above_row, left_col);
   }
 }
 
