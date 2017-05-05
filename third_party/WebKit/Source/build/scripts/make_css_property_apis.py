@@ -78,7 +78,7 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
             # This list contains duplicate entries, but is only used to check if a method is
             # implemented for an api_class.
             self.methods_for_classes[classname] += property_['api_methods']
-            self._outputs[classname + '.h'] = self.generate_property_api_h_builder(classname)
+            self._outputs[classname + '.h'] = self.generate_property_api_h_builder(classname, property_['name'])
 
         # Stores a list of classes with elements (index, classname, [propertyIDs, ..], [api_methods, ...]).
         self._api_classes = []
@@ -124,11 +124,12 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
         }
 
     # Provides a function object given the classname of the property.
-    def generate_property_api_h_builder(self, api_classname):
+    def generate_property_api_h_builder(self, api_classname, property_name):
         @template_expander.use_jinja('CSSPropertyAPIFiles.h.tmpl')
         def generate_property_api_h():
             return {
                 'api_classname': api_classname,
+                'property_name': property_name,
                 'methods_for_class': self.methods_for_classes[api_classname],
                 'all_api_methods': self.all_api_methods,
             }
