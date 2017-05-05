@@ -196,7 +196,9 @@ void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
   data_use_measurement::DataUseUserData::AttachToFetcher(
       current_fetcher_.get(),
       data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
-  current_fetcher_->SetLoadFlags(net::LOAD_BYPASS_PROXY);
+  current_fetcher_->SetLoadFlags(net::LOAD_BYPASS_PROXY |
+                                 net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES);
   current_fetcher_->SetUploadData("application/x-protobuf", serialized_request);
   current_fetcher_->SetRequestContext(url_request_context_);
   // |current_fetcher_| should not retry on 5xx errors since the server may

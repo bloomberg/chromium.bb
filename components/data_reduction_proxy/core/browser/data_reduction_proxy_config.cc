@@ -249,7 +249,9 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher_.get(),
         data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
-    fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
+    fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY |
+                           net::LOAD_DO_NOT_SEND_COOKIES |
+                           net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher_->SetRequestContext(url_request_context_getter_.get());
     // Configure max retries to be at most kMaxRetries times for 5xx errors.
     static const int kMaxRetries = 5;
@@ -304,7 +306,9 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher_.get(),
         data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
-    fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE);
+    fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE |
+                           net::LOAD_DO_NOT_SEND_COOKIES |
+                           net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher_->SetRequestContext(url_request_context_getter_.get());
     // |fetcher| should not retry on 5xx errors.
     fetcher_->SetAutomaticallyRetryOn5xx(false);
