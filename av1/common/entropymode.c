@@ -927,7 +927,7 @@ static const aom_prob default_delta_lf_probs[DELTA_LF_PROBS] = { 220, 220,
                                                                  220 };
 #if CONFIG_EC_MULTISYMBOL
 static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
-  28160, 32120, 32677, 32768, 0
+  AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0
 };
 #endif
 #endif
