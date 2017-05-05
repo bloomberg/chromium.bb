@@ -35,39 +35,41 @@
 
 extern const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8];
 
-typedef void (*ProjectPointsFunc)(int32_t *mat, int *points, int *proj,
+typedef void (*ProjectPointsFunc)(const int32_t *mat, int *points, int *proj,
                                   const int n, const int stride_points,
                                   const int stride_proj,
                                   const int subsampling_x,
                                   const int subsampling_y);
 
-void project_points_translation(int32_t *mat, int *points, int *proj,
+void project_points_translation(const int32_t *mat, int *points, int *proj,
                                 const int n, const int stride_points,
                                 const int stride_proj, const int subsampling_x,
                                 const int subsampling_y);
 
-void project_points_rotzoom(int32_t *mat, int *points, int *proj, const int n,
-                            const int stride_points, const int stride_proj,
-                            const int subsampling_x, const int subsampling_y);
+void project_points_rotzoom(const int32_t *mat, int *points, int *proj,
+                            const int n, const int stride_points,
+                            const int stride_proj, const int subsampling_x,
+                            const int subsampling_y);
 
-void project_points_affine(int32_t *mat, int *points, int *proj, const int n,
-                           const int stride_points, const int stride_proj,
-                           const int subsampling_x, const int subsampling_y);
+void project_points_affine(const int32_t *mat, int *points, int *proj,
+                           const int n, const int stride_points,
+                           const int stride_proj, const int subsampling_x,
+                           const int subsampling_y);
 
-void project_points_hortrapezoid(int32_t *mat, int *points, int *proj,
+void project_points_hortrapezoid(const int32_t *mat, int *points, int *proj,
                                  const int n, const int stride_points,
                                  const int stride_proj, const int subsampling_x,
                                  const int subsampling_y);
-void project_points_vertrapezoid(int32_t *mat, int *points, int *proj,
+void project_points_vertrapezoid(const int32_t *mat, int *points, int *proj,
                                  const int n, const int stride_points,
                                  const int stride_proj, const int subsampling_x,
                                  const int subsampling_y);
-void project_points_homography(int32_t *mat, int *points, int *proj,
+void project_points_homography(const int32_t *mat, int *points, int *proj,
                                const int n, const int stride_points,
                                const int stride_proj, const int subsampling_x,
                                const int subsampling_y);
 
-void project_points(WarpedMotionParams *wm_params, int *points, int *proj,
+void project_points(const WarpedMotionParams *wm_params, int *points, int *proj,
                     const int n, const int stride_points, const int stride_proj,
                     const int subsampling_x, const int subsampling_y);
 
@@ -75,7 +77,7 @@ double av1_warp_erroradv(WarpedMotionParams *wm,
 #if CONFIG_HIGHBITDEPTH
                          int use_hbd, int bd,
 #endif  // CONFIG_HIGHBITDEPTH
-                         uint8_t *ref, int width, int height, int stride,
+                         const uint8_t *ref, int width, int height, int stride,
                          uint8_t *dst, int p_col, int p_row, int p_width,
                          int p_height, int p_stride, int subsampling_x,
                          int subsampling_y, int x_scale, int y_scale);
@@ -84,7 +86,7 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #if CONFIG_HIGHBITDEPTH
                     int use_hbd, int bd,
 #endif  // CONFIG_HIGHBITDEPTH
-                    uint8_t *ref, int width, int height, int stride,
+                    const uint8_t *ref, int width, int height, int stride,
                     uint8_t *pred, int p_col, int p_row, int p_width,
                     int p_height, int p_stride, int subsampling_x,
                     int subsampling_y, int x_scale, int y_scale, int comp_avg);
