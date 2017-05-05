@@ -501,26 +501,6 @@ static bool IsValidAnimationPropertyList(const CSSValueList& value_list) {
   return true;
 }
 
-static CSSValueList* ConsumeAnimationPropertyList(
-    CSSPropertyID property,
-    CSSParserTokenRange& range,
-    const CSSParserContext* context,
-    bool use_legacy_parsing) {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  do {
-    CSSValue* value =
-        ConsumeAnimationValue(property, range, context, use_legacy_parsing);
-    if (!value)
-      return nullptr;
-    list->Append(*value);
-  } while (ConsumeCommaIncludingWhitespace(range));
-  if (property == CSSPropertyTransitionProperty &&
-      !IsValidAnimationPropertyList(*list))
-    return nullptr;
-  DCHECK(list->length());
-  return list;
-}
-
 bool CSSPropertyParser::ConsumeAnimationShorthand(
     const StylePropertyShorthand& shorthand,
     bool use_legacy_parsing,
@@ -1689,19 +1669,40 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumeLocale(range_);
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
+      return ConsumeCommaSeparatedList(ConsumeTime, range_, kValueRangeAll);
     case CSSPropertyAnimationDirection:
+      return ConsumeCommaSeparatedList(
+          ConsumeIdent<CSSValueNormal, CSSValueAlternate, CSSValueReverse,
+                       CSSValueAlternateReverse>,
+          range_);
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
+      return ConsumeCommaSeparatedList(ConsumeTime, range_,
+                                       kValueRangeNonNegative);
     case CSSPropertyAnimationFillMode:
+      return ConsumeCommaSeparatedList(
+          ConsumeIdent<CSSValueNone, CSSValueForwards, CSSValueBackwards,
+                       CSSValueBoth>,
+          range_);
     case CSSPropertyAnimationIterationCount:
+      return ConsumeCommaSeparatedList(ConsumeAnimationIterationCount, range_);
     case CSSPropertyAnimationName:
+      return ConsumeCommaSeparatedList(
+          ConsumeAnimationName, range_, context_,
+          unresolved_property == CSSPropertyAliasWebkitAnimationName);
     case CSSPropertyAnimationPlayState:
-    case CSSPropertyTransitionProperty:
+      return ConsumeCommaSeparatedList(
+          ConsumeIdent<CSSValueRunning, CSSValuePaused>, range_);
+    case CSSPropertyTransitionProperty: {
+      CSSValueList* list =
+          ConsumeCommaSeparatedList(ConsumeTransitionProperty, range_);
+      if (!list || !IsValidAnimationPropertyList(*list))
+        return nullptr;
+      return list;
+    }
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
-      return ConsumeAnimationPropertyList(
-          property, range_, context_,
-          unresolved_property == CSSPropertyAliasWebkitAnimationName);
+      return ConsumeCommaSeparatedList(ConsumeAnimationTimingFunction, range_);
     case CSSPropertyGridColumnGap:
     case CSSPropertyGridRowGap:
       return ConsumeLengthOrPercent(range_, context_->Mode(),
