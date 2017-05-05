@@ -37,32 +37,16 @@ static_library("apps") {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
     deps = [
-      "//chrome/app/theme:theme_resources",
       "//components/keyed_service/content",
       "//content/public/browser",
       "//content/public/common",
+      "//extensions/browser",
       "//extensions/common",
       "//extensions/common/api",
-      "//skia",
     ]
 
     if (is_chromeos) {
       deps += [ "//components/user_manager" ]
-    }
-  }
-
-  if (toolkit_views) {
-    sources += [
-      "ui/views/app_window_frame_view.cc",
-      "ui/views/app_window_frame_view.h",
-    ]
-    deps += [
-      "//cc/paint",
-      "//ui/strings",
-      "//ui/views",
-    ]
-    if (enable_extensions) {
-      deps += [ "//extensions/browser" ]
     }
   }
 
