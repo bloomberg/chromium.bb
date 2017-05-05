@@ -27,13 +27,13 @@ script_dir="$(dirname "${0}")"
 source "${script_dir}/variables.sh"
 
 codesign_display_and_verify() {
-  path=${1}
-  shift
+  args=("${@}")
+  path=${args[0]}
 
   # --verbose can go up to 6 for --display, but that just shows the hash of each
   # ordinary page in the executable, which is more noise than anything else.
   codesign --display --verbose=5 -r- "${path}"
-  codesign --verify --verbose=6 "${@}" "${path}"
+  codesign --verify --verbose=6 "${args[@]:1}" "${path}"
 }
 
 if [[ ${#} -ne 3 && ${#} -ne 4 ]]; then
@@ -91,6 +91,7 @@ crashpad_handler="${framework}/Helpers/crashpad_handler"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
 app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
+widevine_plugin="${framework}/Libraries/WidevineCdm/_platform_specific/mac_x64/widevinecdmadapter.plugin"
 
 codesign_with_options "${crashpad_handler}" \
                       "${enforcement_flags_helpers}" \
@@ -115,6 +116,12 @@ codesign_with_options "${notification_service}" \
                       "${enforcement_flags_helpers}" \
                       "com.google.Chrome.framework.AlertNotificationService"
 
+# Only sign widevine plugin if it is present in the bundle.
+# ${enforcement_flags*} are meaningless for dynamic libraries.
+if [[ -f "${widevine_plugin}" ]]; then
+  codesign_with_options "${widevine_plugin}" "" "widevinecdmadapter"
+fi
+
 # The framework is a dylib, so ${enforcement_flags_helpers} are meaningless.
 codesign_with_options "${framework}" "" "com.google.Chrome.framework"
 
@@ -122,7 +129,10 @@ codesign_with_options "${helper_app}" \
                       "${enforcement_flags_app}" \
                       "com.google.Chrome.helper"
 
-# Show the signatures and verify everything.
+if [[ -f "${widevine_plugin}" ]]; then
+  codesign_display_and_verify "${widevine_plugin}"
+fi
+
 codesign_display_and_verify "${crashpad_handler}" --deep
 codesign_display_and_verify "${app_mode_loader}" --ignore-resources
 codesign_display_and_verify "${notification_service}" --deep
