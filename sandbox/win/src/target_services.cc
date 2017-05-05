@@ -55,7 +55,7 @@ bool FlushCachedRegHandles() {
 bool CsrssDisconnectCleanup() {
   HANDLE csr_port_heap = FindCsrPortHeap();
   if (!csr_port_heap) {
-    LOG(ERROR) << "Failed to find CSR Port heap handle";
+    DLOG(ERROR) << "Failed to find CSR Port heap handle";
     return false;
   }
   HeapDestroy(csr_port_heap);

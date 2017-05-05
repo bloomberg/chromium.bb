@@ -48,12 +48,12 @@ HANDLE FindCsrPortHeap() {
     HANDLE handle = all_heaps[i];
     DWORD flags = 0;
     if (!HeapFlags(handle, &flags)) {
-      LOG(ERROR) << "Unable to get flags for this heap";
+      DLOG(ERROR) << "Unable to get flags for this heap";
       continue;
     }
     if ((flags & HEAP_CLASS_MASK) == HEAP_CLASS_8) {
       if (nullptr != csr_port_heap) {
-        LOG(ERROR) << "Found multiple suitable CSR Port heaps";
+        DLOG(ERROR) << "Found multiple suitable CSR Port heaps";
         return nullptr;
       }
       csr_port_heap = handle;
