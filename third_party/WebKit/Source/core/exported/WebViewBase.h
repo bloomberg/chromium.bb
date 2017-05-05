@@ -5,6 +5,7 @@
 #ifndef WebViewBase_h
 #define WebViewBase_h
 
+#include "core/page/EventWithHitTestResults.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/RefCounted.h"
 #include "public/platform/WebDisplayMode.h"
@@ -15,6 +16,7 @@
 namespace blink {
 
 class AnimationWorkletProxyClient;
+class BrowserControls;
 class ChromeClient;
 class CompositorAnimationHost;
 class CompositorWorkerProxyClient;
@@ -24,6 +26,7 @@ class DevToolsEmulator;
 class Frame;
 class GraphicsLayer;
 class HitTestResult;
+class LinkHighlightImpl;
 class Page;
 class PaintLayerCompositor;
 class PagePopup;
@@ -62,6 +65,9 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
 
   virtual Page* GetPage() const = 0;
   virtual Frame* FocusedCoreFrame() const = 0;
+
+  // PLATFORM_EXPORT static WebViewBase* Create(WebViewClient*,
+  //                                            WebPageVisibilityState);
 
   static WebViewBase* FromPage(Page*);
   static HashSet<WebViewBase*>& AllInstances();
@@ -179,6 +185,43 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   virtual HitTestResult CoreHitTestResultAt(const WebPoint&) = 0;
 
   virtual class ChromeClient& ChromeClient() const = 0;
+
+  // These methods are consumed by test code only.
+  virtual BrowserControls& GetBrowserControls() = 0;
+  virtual Element* FocusedElement() const = 0;
+  virtual void EnableFakePageScaleAnimationForTesting(bool) = 0;
+  virtual bool FakeDoubleTapAnimationPendingForTesting() const = 0;
+  virtual void AnimateDoubleTapZoom(const IntPoint&) = 0;
+  virtual WebRect ComputeBlockBound(const WebPoint&, bool ignore_clipping) = 0;
+  virtual void ComputeScaleAndScrollForBlockRect(
+      const WebPoint& hit_point,
+      const WebRect& block_rect,
+      float padding,
+      float default_scale_when_already_legible,
+      float& scale,
+      WebPoint& scroll) = 0;
+  virtual float FakePageScaleAnimationPageScaleForTesting() const = 0;
+  virtual bool FakePageScaleAnimationUseAnchorForTesting() const = 0;
+  virtual IntPoint FakePageScaleAnimationTargetPositionForTesting() const = 0;
+  virtual void ComputeScaleAndScrollForFocusedNode(
+      Node* focused_node,
+      bool zoom_in_to_legible_scale,
+      float& scale,
+      IntPoint& scroll,
+      bool& need_animation) = 0;
+  virtual bool HasHorizontalScrollbar() = 0;
+  virtual bool HasVerticalScrollbar() = 0;
+  virtual TransformationMatrix GetDeviceEmulationTransformForTesting()
+      const = 0;
+  virtual bool MatchesHeuristicsForGpuRasterizationForTesting() const = 0;
+  virtual Node* BestTapNode(
+      const GestureEventWithHitTestResults& targeted_tap_event) = 0;
+  virtual void EnableTapHighlightAtPoint(
+      const GestureEventWithHitTestResults& targeted_tap_event) = 0;
+  virtual LinkHighlightImpl* GetLinkHighlight(int) = 0;
+  virtual unsigned NumLinkHighlights() = 0;
+  virtual void EnableTapHighlights(HeapVector<Member<Node>>&) = 0;
+  virtual void SetCurrentInputEventForTest(const WebInputEvent*) = 0;
 };
 }
 

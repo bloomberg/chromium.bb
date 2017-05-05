@@ -119,17 +119,17 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl =
+  WebViewBase* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name, true);
-  web_view_impl->GetSettings()->SetViewportEnabled(true);
+  web_view->GetSettings()->SetViewportEnabled(true);
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view->Resize(WebSize(page_width, page_height));
+  web_view->UpdateAllLifecyclePhases();
 
-  web_view_impl->SetPageScaleFactor(2);
+  web_view->SetPageScaleFactor(2);
 
-  FrameView* view = ToLocalFrame(web_view_impl->GetPage()->MainFrame())->View();
+  FrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
   {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
@@ -348,19 +348,19 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl =
+  WebViewBase* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name, true);
-  web_view_impl->GetSettings()->SetViewportEnabled(true);
+  web_view->GetSettings()->SetViewportEnabled(true);
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view->Resize(WebSize(page_width, page_height));
+  web_view->UpdateAllLifecyclePhases();
 
-  web_view_impl->SetPageScaleFactor(2);
-  web_view_impl->MainFrameImpl()->SetInputEventsTransformForEmulation(
+  web_view->SetPageScaleFactor(2);
+  web_view->MainFrameImpl()->SetInputEventsTransformForEmulation(
       IntSize(10, 20), 1.5);
 
-  FrameView* view = ToLocalFrame(web_view_impl->GetPage()->MainFrame())->View();
+  FrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
   {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
@@ -623,14 +623,14 @@ TEST(WebInputEventConversionTest, InputEventsConversions) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl =
+  WebViewBase* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name, true);
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view->Resize(WebSize(page_width, page_height));
+  web_view->UpdateAllLifecyclePhases();
 
-  FrameView* view = ToLocalFrame(web_view_impl->GetPage()->MainFrame())->View();
+  FrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
   {
     WebGestureEvent web_gesture_event(WebInputEvent::kGestureTap,
                                       WebInputEvent::kNoModifiers,
@@ -662,19 +662,19 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl =
+  WebViewBase* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name, true);
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view->Resize(WebSize(page_width, page_height));
+  web_view->UpdateAllLifecyclePhases();
 
-  web_view_impl->SetPageScaleFactor(2);
+  web_view->SetPageScaleFactor(2);
 
   IntPoint visual_offset(35, 60);
-  web_view_impl->GetPage()->GetVisualViewport().SetLocation(visual_offset);
+  web_view->GetPage()->GetVisualViewport().SetLocation(visual_offset);
 
-  FrameView* view = ToLocalFrame(web_view_impl->GetPage()->MainFrame())->View();
+  FrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
   {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
@@ -763,18 +763,18 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl =
+  WebViewBase* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name, true);
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view->Resize(WebSize(page_width, page_height));
+  web_view->UpdateAllLifecyclePhases();
 
-  FrameView* view = ToLocalFrame(web_view_impl->GetPage()->MainFrame())->View();
+  FrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
   FloatSize elastic_overscroll(10, -20);
-  web_view_impl->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
-                                     elastic_overscroll, 1.0f, 0.0f);
+  web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
+                                elastic_overscroll, 1.0f, 0.0f);
 
   // Just elastic overscroll.
   {
@@ -804,9 +804,9 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   // but ensure that if it were to, the overscroll would be applied after the
   // pinch-zoom).
   float page_scale = 2;
-  web_view_impl->SetPageScaleFactor(page_scale);
+  web_view->SetPageScaleFactor(page_scale);
   IntPoint visual_offset(35, 60);
-  web_view_impl->GetPage()->GetVisualViewport().SetLocation(visual_offset);
+  web_view->GetPage()->GetVisualViewport().SetLocation(visual_offset);
   {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
                                   WebInputEvent::kNoModifiers,
@@ -839,18 +839,18 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl =
+  WebViewBase* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name, true);
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view->Resize(WebSize(page_width, page_height));
+  web_view->UpdateAllLifecyclePhases();
 
   FloatSize elastic_overscroll(10, -20);
-  web_view_impl->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
-                                     elastic_overscroll, 1.0f, 0.0f);
+  web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
+                                elastic_overscroll, 1.0f, 0.0f);
   FrameTestHelpers::ReloadFrame(web_view_helper.WebView()->MainFrame());
-  FrameView* view = ToLocalFrame(web_view_impl->GetPage()->MainFrame())->View();
+  FrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
   // Just elastic overscroll.
   {

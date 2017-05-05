@@ -31,6 +31,11 @@
 #ifndef FrameTestHelpers_h
 #define FrameTestHelpers_h
 
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <memory>
+#include <string>
+#include "core/exported/WebViewBase.h"
 #include "core/frame/Settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -43,11 +48,6 @@
 #include "public/web/WebRemoteFrameClient.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
-#include "web/WebViewImpl.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <memory>
-#include <string>
 
 namespace blink {
 
@@ -207,7 +207,7 @@ class WebViewHelper {
   // Creates and initializes the WebView. Implicitly calls reset() first. If
   // a WebFrameClient or a WebViewClient are passed in, they must outlive the
   // WebViewHelper.
-  WebViewImpl* InitializeWithOpener(
+  WebViewBase* InitializeWithOpener(
       WebFrame* opener,
       bool enable_javascript = false,
       TestWebFrameClient* = nullptr,
@@ -216,7 +216,7 @@ class WebViewHelper {
       void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Same as initializeWithOpener(), but always sets the opener to null.
-  WebViewImpl* Initialize(bool enable_javascript = false,
+  WebViewBase* Initialize(bool enable_javascript = false,
                           TestWebFrameClient* = nullptr,
                           TestWebViewClient* = nullptr,
                           TestWebWidgetClient* = nullptr,
@@ -224,7 +224,7 @@ class WebViewHelper {
 
   // Same as initialize() but also performs the initial load of the url. Only
   // returns once the load is complete.
-  WebViewImpl* InitializeAndLoad(
+  WebViewBase* InitializeAndLoad(
       const std::string& url,
       bool enable_javascript = false,
       TestWebFrameClient* = nullptr,
@@ -236,10 +236,10 @@ class WebViewHelper {
 
   void Reset();
 
-  WebViewImpl* WebView() const { return web_view_; }
+  WebViewBase* WebView() const { return web_view_; }
 
  private:
-  WebViewImpl* web_view_;
+  WebViewBase* web_view_;
   SettingOverrider* setting_overrider_;
   UseMockScrollbarSettings mock_scrollbar_settings_;
   TestWebViewClient* test_web_view_client_;

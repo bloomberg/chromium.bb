@@ -170,7 +170,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
 }
 
 TEST_F(DocumentLoaderTest, isCommittedButEmpty) {
-  WebViewImpl* web_view_impl =
+  WebViewBase* web_view_impl =
       web_view_helper_.InitializeAndLoad("about:blank", true);
   EXPECT_TRUE(ToLocalFrame(web_view_impl->GetPage()->MainFrame())
                   ->Loader()

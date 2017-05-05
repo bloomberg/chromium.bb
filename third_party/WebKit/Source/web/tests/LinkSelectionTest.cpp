@@ -12,6 +12,7 @@
 #include "platform/Cursor.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/web/WebSettings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +50,7 @@ class LinkSelectionTestBase : public ::testing::Test {
   String GetSelectionText();
 
   FrameTestHelpers::WebViewHelper helper_;
-  WebViewImpl* web_view_ = nullptr;
+  WebViewBase* web_view_ = nullptr;
   Persistent<WebLocalFrameImpl> main_frame_ = nullptr;
 };
 

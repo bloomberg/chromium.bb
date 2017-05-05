@@ -272,11 +272,10 @@ class ColorOverlay final : public PageOverlay::Delegate {
 
 WebView* WebView::Create(WebViewClient* client,
                          WebPageVisibilityState visibility_state) {
-  // Pass the WebViewImpl's self-reference to the caller.
   return WebViewImpl::Create(client, visibility_state);
 }
 
-WebViewImpl* WebViewImpl::Create(WebViewClient* client,
+WebViewBase* WebViewImpl::Create(WebViewClient* client,
                                  WebPageVisibilityState visibility_state) {
   // Pass the WebViewImpl's self-reference to the caller.
   return AdoptRef(new WebViewImpl(client, visibility_state)).LeakRef();
@@ -1767,8 +1766,8 @@ WebViewBase* WebViewBase::FromPage(Page* page) {
   return WebViewImpl::FromPage(page);
 }
 
-WebViewImpl* WebViewImpl::FromPage(Page* page) {
-  return page ? static_cast<WebViewImpl*>(page->GetChromeClient().WebView())
+WebViewBase* WebViewImpl::FromPage(Page* page) {
+  return page ? static_cast<WebViewBase*>(page->GetChromeClient().WebView())
               : nullptr;
 }
 

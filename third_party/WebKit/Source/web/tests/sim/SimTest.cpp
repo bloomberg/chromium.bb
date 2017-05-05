@@ -26,7 +26,7 @@ SimTest::SimTest() : web_view_client_(compositor_), web_frame_client_(*this) {
   LayoutTestSupport::SetMockThemeEnabledForTest(true);
   ScrollbarTheme::SetMockScrollbarsEnabled(true);
   web_view_helper_.Initialize(true, &web_frame_client_, &web_view_client_);
-  compositor_.SetWebViewImpl(WebView());
+  compositor_.SetWebView(WebView());
   page_.SetPage(WebView().GetPage());
 }
 
@@ -57,7 +57,7 @@ Document& SimTest::GetDocument() {
   return *WebView().MainFrameImpl()->GetFrame()->GetDocument();
 }
 
-WebViewImpl& SimTest::WebView() {
+WebViewBase& SimTest::WebView() {
   return *web_view_helper_.WebView();
 }
 

@@ -20,11 +20,13 @@
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/graphics/CompositorElementId.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -166,7 +168,7 @@ class VisualViewportTest
     return webScrollLayer;
   }
 
-  WebViewImpl* webViewImpl() const { return m_helper.WebView(); }
+  WebViewBase* webViewImpl() const { return m_helper.WebView(); }
   LocalFrame* frame() const {
     return m_helper.WebView()->MainFrameImpl()->GetFrame();
   }
@@ -2115,7 +2117,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
       fakeCompositingWebViewClient =
           WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl = webViewHelper.Initialize(
+  WebViewBase* webViewImpl = webViewHelper.Initialize(
       true, nullptr, fakeCompositingWebViewClient.get(), nullptr,
       &configureAndroidCompositing);
 
@@ -2198,7 +2200,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   RuntimeEnabledFeatures::setInertTopControlsEnabled(true);
 
   FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl = webViewHelper.Initialize(
+  WebViewBase* webViewImpl = webViewHelper.Initialize(
       true, nullptr, nullptr, nullptr, &configureAndroidNonCompositing);
 
   int pageWidth = 640;
@@ -2304,7 +2306,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
       fakeCompositingWebViewClient =
           WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl = webViewHelper.Initialize(
+  WebViewBase* webViewImpl = webViewHelper.Initialize(
       true, nullptr, fakeCompositingWebViewClient.get(), nullptr,
       &configureAndroidCompositing);
 
@@ -2388,7 +2390,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
       fakeCompositingWebViewClient =
           WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl = webViewHelper.Initialize(
+  WebViewBase* webViewImpl = webViewHelper.Initialize(
       true, nullptr, fakeCompositingWebViewClient.get(), nullptr,
       &configureAndroidCompositing);
 

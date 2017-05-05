@@ -22,6 +22,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebRemoteFrame.h"
@@ -56,16 +57,16 @@ class RootScrollerTest : public ::testing::Test {
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  WebViewImpl* Initialize(const std::string& page_name,
+  WebViewBase* Initialize(const std::string& page_name,
                           FrameTestHelpers::TestWebViewClient* client) {
     return InitializeInternal(base_url_ + page_name, client);
   }
 
-  WebViewImpl* Initialize(const std::string& page_name) {
+  WebViewBase* Initialize(const std::string& page_name) {
     return InitializeInternal(base_url_ + page_name, &client_);
   }
 
-  WebViewImpl* Initialize() {
+  WebViewBase* Initialize() {
     return InitializeInternal("about:blank", &client_);
   }
 
@@ -96,20 +97,18 @@ class RootScrollerTest : public ::testing::Test {
     RunPendingTasks();
   }
 
-  WebViewImpl* GetWebViewImpl() const { return helper_.WebView(); }
+  WebViewBase* GetWebView() const { return helper_.WebView(); }
 
   Page& GetPage() const { return *helper_.WebView()->GetPage(); }
 
   LocalFrame* MainFrame() const {
-    return GetWebViewImpl()->MainFrameImpl()->GetFrame();
+    return GetWebView()->MainFrameImpl()->GetFrame();
   }
 
-  WebLocalFrame* MainWebFrame() const {
-    return GetWebViewImpl()->MainFrameImpl();
-  }
+  WebLocalFrame* MainWebFrame() const { return GetWebView()->MainFrameImpl(); }
 
   FrameView* MainFrameView() const {
-    return GetWebViewImpl()->MainFrameImpl()->GetFrame()->View();
+    return GetWebView()->MainFrameImpl()->GetFrame()->View();
   }
 
   VisualViewport& GetVisualViewport() const {
@@ -155,7 +154,7 @@ class RootScrollerTest : public ::testing::Test {
     return WebCoalescedInputEvent(event);
   }
 
-  WebViewImpl* InitializeInternal(const std::string& url,
+  WebViewBase* InitializeInternal(const std::string& url,
                                   FrameTestHelpers::TestWebViewClient* client) {
     RuntimeEnabledFeatures::setSetRootScrollerEnabled(true);
 
@@ -163,12 +162,12 @@ class RootScrollerTest : public ::testing::Test {
                               &ConfigureSettings);
 
     // Initialize browser controls to be shown.
-    GetWebViewImpl()->ResizeWithBrowserControls(IntSize(400, 400), 50, true);
-    GetWebViewImpl()->GetBrowserControls().SetShownRatio(1);
+    GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, true);
+    GetWebView()->GetBrowserControls().SetShownRatio(1);
 
     MainFrameView()->UpdateAllLifecyclePhases();
 
-    return GetWebViewImpl();
+    return GetWebView();
   }
 
   std::string base_url_;
@@ -242,14 +241,14 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
   // makes it 400x450 so max scroll is 550px.
   double maximum_scroll = 550;
 
-  GetWebViewImpl()->HandleInputEvent(
+  GetWebView()->HandleInputEvent(
       GenerateTouchGestureEvent(WebInputEvent::kGestureScrollBegin));
 
   {
     // Scrolling over the #container DIV should cause the browser controls to
     // hide.
     EXPECT_FLOAT_EQ(1, GetBrowserControls().ShownRatio());
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0,
                                   -GetBrowserControls().Height()));
     EXPECT_FLOAT_EQ(0, GetBrowserControls().ShownRatio());
@@ -257,7 +256,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
 
   {
     // Make sure we're actually scrolling the DIV and not the FrameView.
-    GetWebViewImpl()->HandleInputEvent(GenerateTouchGestureEvent(
+    GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -100));
     EXPECT_FLOAT_EQ(100, container->scrollTop());
     EXPECT_FLOAT_EQ(0, MainFrameView()->GetScrollOffset().Height());
@@ -268,7 +267,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     // overscroll.
     EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50),
                                       WebFloatPoint(100, 100), WebFloatSize()));
-    GetWebViewImpl()->HandleInputEvent(GenerateTouchGestureEvent(
+    GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -500));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
     EXPECT_FLOAT_EQ(0, MainFrameView()->GetScrollOffset().Height());
@@ -279,45 +278,45 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     // Continue the gesture overscroll.
     EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 20), WebFloatSize(0, 70),
                                       WebFloatPoint(100, 100), WebFloatSize()));
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -20));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
     EXPECT_FLOAT_EQ(0, MainFrameView()->GetScrollOffset().Height());
     Mock::VerifyAndClearExpectations(&client);
   }
 
-  GetWebViewImpl()->HandleInputEvent(
+  GetWebView()->HandleInputEvent(
       GenerateTouchGestureEvent(WebInputEvent::kGestureScrollEnd));
 
   {
     // Make sure a new gesture scroll still won't scroll the frameview and
     // overscrolls.
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollBegin));
 
     EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 30), WebFloatSize(0, 30),
                                       WebFloatPoint(100, 100), WebFloatSize()));
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -30));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
     EXPECT_FLOAT_EQ(0, MainFrameView()->GetScrollOffset().Height());
     Mock::VerifyAndClearExpectations(&client);
 
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollEnd));
   }
 
   {
     // Scrolling up should show the browser controls.
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollBegin));
 
     EXPECT_FLOAT_EQ(0, GetBrowserControls().ShownRatio());
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, 30));
     EXPECT_FLOAT_EQ(0.6, GetBrowserControls().ShownRatio());
 
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollEnd));
   }
 
@@ -684,8 +683,8 @@ TEST_F(RootScrollerTest, RemoteMainFrame) {
   // Initialization: Set the main frame to be a RemoteFrame and add a local
   // child.
   {
-    GetWebViewImpl()->SetMainFrame(remote_client.GetFrame());
-    WebRemoteFrame* root = GetWebViewImpl()->MainFrame()->ToWebRemoteFrame();
+    GetWebView()->SetMainFrame(remote_client.GetFrame());
+    WebRemoteFrame* root = GetWebView()->MainFrame()->ToWebRemoteFrame();
     root->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
     WebFrameOwnerProperties properties;
     local_frame = FrameTestHelpers::CreateLocalChild(
@@ -845,7 +844,7 @@ TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   Initialize();
 
   WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebViewImpl()->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrame(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  body, html {"
@@ -864,7 +863,7 @@ TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
                                    "</div>",
                                    base_url);
 
-  GetWebViewImpl()->ResizeWithBrowserControls(IntSize(400, 400), 50, true);
+  GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, true);
   MainFrameView()->UpdateAllLifecyclePhases();
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
@@ -880,21 +879,21 @@ TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   // scroll offset should shrink.
   ASSERT_EQ(1000 - 400, container_scroller->MaximumScrollOffset().Height());
 
-  GetWebViewImpl()->HandleInputEvent(
+  GetWebView()->HandleInputEvent(
       GenerateTouchGestureEvent(WebInputEvent::kGestureScrollBegin));
   ASSERT_EQ(1, GetBrowserControls().ShownRatio());
-  GetWebViewImpl()->HandleInputEvent(GenerateTouchGestureEvent(
+  GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
       WebInputEvent::kGestureScrollUpdate, 0, -GetBrowserControls().Height()));
   ASSERT_EQ(0, GetBrowserControls().ShownRatio());
   EXPECT_EQ(1000 - 450, container_scroller->MaximumScrollOffset().Height());
 
-  GetWebViewImpl()->HandleInputEvent(
+  GetWebView()->HandleInputEvent(
       GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -3000));
   EXPECT_EQ(1000 - 450, container_scroller->GetScrollOffset().Height());
 
-  GetWebViewImpl()->HandleInputEvent(
+  GetWebView()->HandleInputEvent(
       GenerateTouchGestureEvent(WebInputEvent::kGestureScrollEnd));
-  GetWebViewImpl()->ResizeWithBrowserControls(IntSize(400, 450), 50, false);
+  GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, false);
   EXPECT_EQ(1000 - 450, container_scroller->MaximumScrollOffset().Height());
 }
 
@@ -904,7 +903,7 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
   ScrollableArea* container_scroller;
 
   {
-    GetWebViewImpl()->ResizeWithBrowserControls(IntSize(250, 1000), 0, true);
+    GetWebView()->ResizeWithBrowserControls(IntSize(250, 1000), 0, true);
     MainFrameView()->UpdateAllLifecyclePhases();
 
     Element* container =
@@ -926,12 +925,12 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
     int scroll_x = 250 * 4;
     int scroll_y = 1000 * 4;
 
-    GetWebViewImpl()->SetPageScaleFactor(2);
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->SetPageScaleFactor(2);
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollBegin));
-    GetWebViewImpl()->HandleInputEvent(GenerateTouchGestureEvent(
+    GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
         WebInputEvent::kGestureScrollUpdate, -scroll_x, -scroll_y));
-    GetWebViewImpl()->HandleInputEvent(
+    GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollEnd));
 
     // The visual viewport should be 1.5 screens scrolled so that the target
@@ -945,7 +944,7 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
   }
 
   // Now do a rotation resize.
-  GetWebViewImpl()->ResizeWithBrowserControls(IntSize(1000, 250), 50, false);
+  GetWebView()->ResizeWithBrowserControls(IntSize(1000, 250), 50, false);
   MainFrameView()->UpdateAllLifecyclePhases();
 
   // The visual viewport should remain fully filled by the target.

@@ -101,7 +101,7 @@ class WEB_EXPORT WebViewImpl final
       public WebScheduler::InterventionReporter,
       public WebViewScheduler::WebViewSchedulerSettings {
  public:
-  static WebViewImpl* Create(WebViewClient*, WebPageVisibilityState);
+  static WebViewBase* Create(WebViewClient*, WebPageVisibilityState);
 
   // WebWidget methods:
   void Close() override;
@@ -274,7 +274,7 @@ class WEB_EXPORT WebViewImpl final
   void SetZoomFactorOverride(float) override;
   void SetCompositorDeviceScaleFactorOverride(float) override;
   void SetDeviceEmulationTransform(const TransformationMatrix&) override;
-  TransformationMatrix GetDeviceEmulationTransformForTesting() const;
+  TransformationMatrix GetDeviceEmulationTransformForTesting() const override;
 
   Color BaseBackgroundColor() const override;
   bool BackgroundColorOverrideEnabled() const override {
@@ -287,9 +287,9 @@ class WEB_EXPORT WebViewImpl final
   Frame* FocusedCoreFrame() const override;
 
   // Returns the currently focused Element or null if no element has focus.
-  Element* FocusedElement() const;
+  Element* FocusedElement() const override;
 
-  static WebViewImpl* FromPage(Page*);
+  static WebViewBase* FromPage(Page*);
 
   WebViewClient* Client() override { return client_; }
 
@@ -379,6 +379,9 @@ class WEB_EXPORT WebViewImpl final
   static const WebInputEvent* CurrentInputEvent() {
     return current_input_event_;
   }
+  void SetCurrentInputEventForTest(const WebInputEvent* event) override {
+    current_input_event_ = event;
+  }
 
   GraphicsLayer* RootGraphicsLayer() override;
   void RegisterViewportLayersWithCompositor() override;
@@ -404,34 +407,35 @@ class WEB_EXPORT WebViewImpl final
       float padding,
       float default_scale_when_already_legible,
       float& scale,
-      WebPoint& scroll);
-  Node* BestTapNode(const GestureEventWithHitTestResults& targeted_tap_event);
+      WebPoint& scroll) override;
+  Node* BestTapNode(
+      const GestureEventWithHitTestResults& targeted_tap_event) override;
   void EnableTapHighlightAtPoint(
-      const GestureEventWithHitTestResults& targeted_tap_event);
-  void EnableTapHighlights(HeapVector<Member<Node>>&);
+      const GestureEventWithHitTestResults& targeted_tap_event) override;
+  void EnableTapHighlights(HeapVector<Member<Node>>&) override;
   void ComputeScaleAndScrollForFocusedNode(Node* focused_node,
                                            bool zoom_in_to_legible_scale,
                                            float& scale,
                                            IntPoint& scroll,
-                                           bool& need_animation);
+                                           bool& need_animation) override;
 
-  void AnimateDoubleTapZoom(const IntPoint&);
+  void AnimateDoubleTapZoom(const IntPoint&) override;
 
   void ResolveTapDisambiguation(double timestamp_seconds,
                                 WebPoint tap_viewport_offset,
                                 bool is_long_press) override;
 
-  void EnableFakePageScaleAnimationForTesting(bool);
-  bool FakeDoubleTapAnimationPendingForTesting() const {
+  void EnableFakePageScaleAnimationForTesting(bool) override;
+  bool FakeDoubleTapAnimationPendingForTesting() const override {
     return double_tap_zoom_pending_;
   }
-  IntPoint FakePageScaleAnimationTargetPositionForTesting() const {
+  IntPoint FakePageScaleAnimationTargetPositionForTesting() const override {
     return fake_page_scale_animation_target_position_;
   }
-  float FakePageScaleAnimationPageScaleForTesting() const {
+  float FakePageScaleAnimationPageScaleForTesting() const override {
     return fake_page_scale_animation_page_scale_factor_;
   }
-  bool FakePageScaleAnimationUseAnchorForTesting() const {
+  bool FakePageScaleAnimationUseAnchorForTesting() const override {
     return fake_page_scale_animation_use_anchor_;
   }
 
@@ -443,26 +447,26 @@ class WEB_EXPORT WebViewImpl final
   void SendResizeEventAndRepaint();
 
   // Exposed for testing purposes.
-  bool HasHorizontalScrollbar();
-  bool HasVerticalScrollbar();
+  bool HasHorizontalScrollbar() override;
+  bool HasVerticalScrollbar() override;
 
   // Exposed for tests.
-  unsigned NumLinkHighlights() { return link_highlights_.size(); }
-  LinkHighlightImpl* GetLinkHighlight(int i) {
+  unsigned NumLinkHighlights() override { return link_highlights_.size(); }
+  LinkHighlightImpl* GetLinkHighlight(int i) override {
     return link_highlights_[i].get();
   }
 
   WebSettingsImpl* SettingsImpl() override;
 
   // Returns the bounding box of the block type node touched by the WebPoint.
-  WebRect ComputeBlockBound(const WebPoint&, bool ignore_clipping);
+  WebRect ComputeBlockBound(const WebPoint&, bool ignore_clipping) override;
 
   WebLayerTreeView* LayerTreeView() const override { return layer_tree_view_; }
   CompositorAnimationHost* AnimationHost() const override {
     return animation_host_.get();
   }
 
-  bool MatchesHeuristicsForGpuRasterizationForTesting() const {
+  bool MatchesHeuristicsForGpuRasterizationForTesting() const override {
     return matches_heuristics_for_gpu_rasterization_;
   }
 
@@ -470,7 +474,7 @@ class WEB_EXPORT WebViewImpl final
                                   WebBrowserControlsState current,
                                   bool animate) override;
 
-  BrowserControls& GetBrowserControls();
+  BrowserControls& GetBrowserControls() override;
   // Called anytime browser controls layout height or content offset have
   // changed.
   void DidUpdateBrowserControls() override;
@@ -536,7 +540,6 @@ class WEB_EXPORT WebViewImpl final
   friend class WebView;  // So WebView::Create can call our constructor
   friend class WebViewFrameWidget;
   friend class WTF::RefCounted<WebViewImpl>;
-  friend void SetCurrentInputEventForTest(const WebInputEvent*);
 
   explicit WebViewImpl(WebViewClient*, WebPageVisibilityState);
   ~WebViewImpl() override;

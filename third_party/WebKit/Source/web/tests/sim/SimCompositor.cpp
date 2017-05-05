@@ -4,6 +4,7 @@
 
 #include "web/tests/sim/SimCompositor.h"
 
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -14,7 +15,6 @@
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 
 namespace blink {
@@ -47,7 +47,7 @@ SimCompositor::SimCompositor()
     : needs_begin_frame_(false),
       defer_commits_(true),
       has_selection_(false),
-      web_view_impl_(0),
+      web_view_(0),
       last_frame_time_monotonic_(0) {
   FrameView::SetInitialTracksPaintInvalidationsForTesting(true);
 }
@@ -56,8 +56,8 @@ SimCompositor::~SimCompositor() {
   FrameView::SetInitialTracksPaintInvalidationsForTesting(false);
 }
 
-void SimCompositor::SetWebViewImpl(WebViewImpl& web_view_impl) {
-  web_view_impl_ = &web_view_impl;
+void SimCompositor::SetWebView(WebViewBase& web_view) {
+  web_view_ = &web_view;
 }
 
 void SimCompositor::SetNeedsBeginFrame() {
@@ -77,7 +77,7 @@ void SimCompositor::ClearSelection() {
 }
 
 SimDisplayItemList SimCompositor::BeginFrame(double time_delta_in_seconds) {
-  DCHECK(web_view_impl_);
+  DCHECK(web_view_);
   DCHECK(!defer_commits_);
   DCHECK(needs_begin_frame_);
   DCHECK_GT(time_delta_in_seconds, 0);
@@ -85,10 +85,10 @@ SimDisplayItemList SimCompositor::BeginFrame(double time_delta_in_seconds) {
 
   last_frame_time_monotonic_ += time_delta_in_seconds;
 
-  web_view_impl_->BeginFrame(last_frame_time_monotonic_);
-  web_view_impl_->UpdateAllLifecyclePhases();
+  web_view_->BeginFrame(last_frame_time_monotonic_);
+  web_view_->UpdateAllLifecyclePhases();
 
-  LocalFrame* root = web_view_impl_->MainFrameImpl()->GetFrame();
+  LocalFrame* root = web_view_->MainFrameImpl()->GetFrame();
 
   SimDisplayItemList display_list;
   PaintFrames(*root, display_list);
