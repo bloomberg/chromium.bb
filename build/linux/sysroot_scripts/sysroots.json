@@ -28,11 +28,5 @@
         "Sha1Sum": "79f2c9fd33caf8c5c90a4621a80c379c747a8f7e",
         "SysrootDir": "debian_jessie_mips-sysroot",
         "Tarball": "debian_jessie_mips_sysroot.tgz"
-    },
-    "trusty_arm": {
-        "Revision": "501a18940d0a78a40306050946032cbf8f14e7c0",
-        "Sha1Sum": "b73dd0b9318def5bb9ccdd1d2eafd324797f3048",
-        "SysrootDir": "ubuntu_trusty_arm-sysroot",
-        "Tarball": "ubuntu_trusty_arm_sysroot.tgz"
     }
 }
