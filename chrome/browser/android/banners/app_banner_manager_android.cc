@@ -38,14 +38,18 @@ std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
     const GURL& manifest_url,
     const content::Manifest& manifest,
     const GURL& primary_icon_url,
-    const GURL& badge_icon_url) {
+    const GURL& badge_icon_url,
+    bool is_webapk) {
   auto shortcut_info = base::MakeUnique<ShortcutInfo>(GURL());
   if (!manifest.IsEmpty()) {
     shortcut_info->UpdateFromManifest(manifest);
     shortcut_info->manifest_url = manifest_url;
     shortcut_info->best_primary_icon_url = primary_icon_url;
     shortcut_info->best_badge_icon_url = badge_icon_url;
-    shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
+    if (is_webapk)
+      shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER_WEBAPK);
+    else
+      shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
   }
 
   shortcut_info->ideal_splash_image_size_in_px =
@@ -243,8 +247,8 @@ void AppBannerManagerAndroid::ShowBanner() {
     if (AppBannerInfoBarDelegateAndroid::Create(
             contents, GetWeakPtr(), app_title_,
             CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_,
-                               badge_icon_url_),
-            primary_icon_, badge_icon_, event_request_id(),
+                               badge_icon_url_, can_install_webapk_),
+            primary_icon_, badge_icon_, event_request_id(), can_install_webapk_,
             webapk::INSTALL_SOURCE_BANNER)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);

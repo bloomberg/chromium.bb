@@ -20587,7 +20587,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Menu item (PWA)"/>
   <int value="7" label="Menu item (standalone)"/>
   <int value="8" label="Menu item (shortcut)"/>
-  <int value="9" label="External intent"/>
+  <int value="9" label="External intent (WebAPK)"/>
+  <int value="10" label="App banner (WebAPK)"/>
 </enum>
 
 <enum name="LaunchIntentFlags" type="int">

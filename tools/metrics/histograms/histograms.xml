@@ -25389,11 +25389,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Chrome.
 
     The Menu item bucket is deprecated as of M57, and will only contain records
-    up until M56.
+    for shortcuts added to the homescreen until M56.
 
     For M57+, the Menu item (standalone) bucket contains all launch intents
     originating from the add to homescreen menu item that launch to standalone
-    mode and *are not* PWAs. These are sites which do not meet the PWA
+    mode and *are not* WebAPKs. These are sites which do not meet the PWA
     eligibility criteria, but have an app manifest that specifies either
     standalone or fullscreen display. This bucket also contains PWA *and*
     non-PWA intents that were added to the homescreen *prior* to M57, as we

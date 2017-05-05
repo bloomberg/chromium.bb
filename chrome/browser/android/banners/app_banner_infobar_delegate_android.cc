@@ -13,7 +13,6 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -55,8 +54,8 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
     int event_request_id,
+    bool is_webapk,
     webapk::InstallSource webapk_install_source) {
-  bool is_webapk = ChromeWebApkHost::CanInstallWebApk();
   const GURL url = shortcut_info->url;
   auto infobar_delegate =
       base::WrapUnique(new banners::AppBannerInfoBarDelegateAndroid(
