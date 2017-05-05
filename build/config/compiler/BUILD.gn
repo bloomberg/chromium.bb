@@ -1449,8 +1449,10 @@ config("optimize") {
     # Favor size over speed, /O1 must be before the common flags. The GYP
     # build also specifies /Os and /GF but these are implied by /O1.
     cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
-  } else if (optimize_for_size) {
+  } else if (optimize_for_size && !is_nacl) {
     # Favor size over speed.
+    # TODO(crbug.com/718650): Fix -Os in PNaCl compiler and remove the is_nacl
+    # guard above.
     cflags = [ "-Os" ] + common_optimize_on_cflags
   } else {
     cflags = [ "-O2" ] + common_optimize_on_cflags
@@ -1464,8 +1466,10 @@ config("optimize_no_wpo") {
     # Favor size over speed, /O1 must be before the common flags. The GYP
     # build also specifies /Os and /GF but these are implied by /O1.
     cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
-  } else if (optimize_for_size) {
+  } else if (optimize_for_size && !is_nacl) {
     # Favor size over speed.
+    # TODO(crbug.com/718650): Fix -Os in PNaCl compiler and remove the is_nacl
+    # guard above.
     cflags = [ "-Os" ] + common_optimize_on_cflags
   } else if (optimize_for_fuzzing) {
     cflags = [ "-O1" ] + common_optimize_on_cflags
