@@ -94,11 +94,21 @@ namespace {
 // space handling may be weird.
 bool WARN_UNUSED_RESULT IsDisplayingText(Browser* browser,
                                          const std::string& text) {
-  std::string command = base::StringPrintf(
-      "var textContent = document.body.innerText.toLowerCase();"
-      "var hasText = textContent.indexOf('%s'.toLowerCase()) >= 0;"
-      "domAutomationController.send(hasText);",
-      text.c_str());
+  // clang-format off
+  std::string command = base::StringPrintf(R"(
+    function isNodeVisible(node) {
+      if (!node || node.classList.contains('hidden'))
+        return false;
+      if (!node.parentElement)
+        return true;
+      // Otherwise, we must check all parent nodes
+      return isNodeVisible(node.parentElement);
+    }
+    var node = document.evaluate("//*[contains(text(),'%s')]", document,
+      null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    domAutomationController.send(isNodeVisible(node));
+  )", text.c_str());
+  // clang-format on
   bool result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       browser->tab_strip_model()->GetActiveWebContents(), command, &result));
@@ -1120,8 +1130,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   EXPECT_EQ(2, interceptor()->requests());
 
   ToggleHelpBox(browser());
-  EXPECT_TRUE(IsDisplayingText(browser(), l10n_util::GetStringUTF8(
-      IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER)));
+  EXPECT_TRUE(IsDisplayingText(
+      browser(), l10n_util::GetStringUTF8(
+                     IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER)));
 
   content::WebContents* web_contents =
     browser()->tab_strip_model()->GetActiveWebContents();
@@ -1129,8 +1140,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("document.getElementById('reload-button').click();"));
   nav_observer.Wait();
-  EXPECT_FALSE(IsDisplayingText(browser(), l10n_util::GetStringUTF8(
-      IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER)));
+  EXPECT_FALSE(IsDisplayingText(
+      browser(), l10n_util::GetStringUTF8(
+                     IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER)));
 }
 
 // Make sure that a same document navigation does not cause issues with the
