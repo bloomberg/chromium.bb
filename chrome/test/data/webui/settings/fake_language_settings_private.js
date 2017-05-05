@@ -285,5 +285,56 @@ cr.define('settings', function() {
     onInputMethodRemoved: new FakeChromeEvent(),
   };
 
-  return {FakeLanguageSettingsPrivate: FakeLanguageSettingsPrivate};
+  // List of language-related preferences suitable for testing.
+  function getFakeLanguagePrefs() {
+    var fakePrefs = [{
+      key: 'intl.app_locale',
+      type: chrome.settingsPrivate.PrefType.STRING,
+      value: 'en-US',
+    }, {
+      key: 'intl.accept_languages',
+      type: chrome.settingsPrivate.PrefType.STRING,
+      value: 'en-US,sw',
+    }, {
+      key: 'spellcheck.dictionaries',
+      type: chrome.settingsPrivate.PrefType.LIST,
+      value: ['en-US'],
+    }, {
+      key: 'translate.enabled',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: true,
+    }, {
+      key: 'translate_blocked_languages',
+      type: chrome.settingsPrivate.PrefType.LIST,
+      value: ['en-US'],
+    }];
+    if (cr.isChromeOS) {
+      fakePrefs.push({
+        key: 'settings.language.preferred_languages',
+        type: chrome.settingsPrivate.PrefType.STRING,
+        value: 'en-US,sw',
+      });
+      fakePrefs.push({
+        key: 'settings.language.preload_engines',
+        type: chrome.settingsPrivate.PrefType.STRING,
+        value: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng,' +
+               '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
+      });
+      fakePrefs.push({
+        key: 'settings.language.enabled_extension_imes',
+        type: chrome.settingsPrivate.PrefType.STRING,
+        value: '',
+      });
+      fakePrefs.push({
+        key: 'settings.language.ime_menu_activated',
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: false,
+      });
+    }
+    return fakePrefs;
+  }
+  return {
+    FakeLanguageSettingsPrivate: FakeLanguageSettingsPrivate,
+    getFakeLanguagePrefs: getFakeLanguagePrefs,
+  };
 });

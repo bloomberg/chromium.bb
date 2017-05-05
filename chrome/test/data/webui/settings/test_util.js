@@ -41,8 +41,29 @@ cr.define('test_util', function() {
     });
   }
 
+  /**
+   * Data-binds two Polymer properties using the property-changed events and
+   * set/notifyPath API. Useful for testing components which would normally be
+   * used together.
+   * @param {!HTMLElement} el1
+   * @param {!HTMLElement} el2
+   * @param {string} property
+   */
+  function fakeDataBind(el1, el2, property) {
+    var forwardChange = function(el, event) {
+      if (event.detail.hasOwnProperty('path'))
+        el.notifyPath(event.detail.path, event.detail.value);
+      else
+        el.set(property, event.detail.value);
+    };
+    // Add the listeners symmetrically. Polymer will prevent recursion.
+    el1.addEventListener(property + '-changed', forwardChange.bind(null, el2));
+    el2.addEventListener(property + '-changed', forwardChange.bind(null, el1));
+  }
+
   return {
     eventToPromise: eventToPromise,
+    fakeDataBind: fakeDataBind,
     whenAttributeIs: whenAttributeIs,
   };
 });

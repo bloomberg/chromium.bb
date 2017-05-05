@@ -1272,10 +1272,12 @@ CrSettingsLanguagesTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js',
+    'test_util.js',
     'test_browser_proxy.js',
     'fake_language_settings_private.js',
     'fake_settings_private.js',
     'fake_input_method_private.js',
+    'test_languages_browser_proxy.js',
     'languages_tests.js',
   ]),
 };
@@ -1283,6 +1285,47 @@ CrSettingsLanguagesTest.prototype = {
 // Flaky on Win and Linux, see http://crbug/692356.
 TEST_F('CrSettingsLanguagesTest', 'All', function() {
   mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsLanguagesPageTest() {}
+
+CrSettingsLanguagesPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/languages_page/languages_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../fake_chrome_event.js',
+    'test_util.js',
+    'test_browser_proxy.js',
+    'fake_settings_private.js',
+    'fake_language_settings_private.js',
+    'fake_input_method_private.js',
+    'test_languages_browser_proxy.js',
+    'languages_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsLanguagesPageTest', 'AddLanguagesDialog', function() {
+  mocha.grep(assert(languages_page_tests.TestNames.AddLanguagesDialog)).run();
+});
+
+TEST_F('CrSettingsLanguagesPageTest', 'LanguageMenu', function() {
+  mocha.grep(assert(languages_page_tests.TestNames.LanguageMenu)).run();
+});
+
+TEST_F('CrSettingsLanguagesPageTest', 'InputMethods', function() {
+  mocha.grep(assert(languages_page_tests.TestNames.InputMethods)).run();
+});
+
+TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
+  mocha.grep(assert(languages_page_tests.TestNames.Spellcheck)).run();
 });
 
 /**

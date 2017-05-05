@@ -113,7 +113,6 @@ js2gtest("browser_tests_js_webui") {
       "settings/basic_page_browsertest.js",
       "settings/cr_settings_browsertest.js",
       "settings/help_page_browsertest.js",
-      "settings/languages_page_browsertest.js",
       "settings/on_startup_browsertest.js",
       "settings/passwords_and_autofill_fake_data.js",
       "settings/passwords_and_forms_browsertest.js",

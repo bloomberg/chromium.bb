@@ -3,108 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('settings-languages', function() {
-  /**
-   * @constructor
-   * @implements {settings.LanguagesBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
-   */
-  var TestLanguagesBrowserProxy = function() {
-    var methodNames = [];
-    if (cr.isChromeOS || cr.isWindows)
-      methodNames.push('getProspectiveUILanguage');
-
-    settings.TestBrowserProxy.call(this, methodNames);
-
-    /** @private {!LanguageSettingsPrivate} */
-    this.languageSettingsPrivate_ = new settings.FakeLanguageSettingsPrivate();
-
-    /** @private {!InputMethodPrivate} */
-    this.inputMethodPrivate_ = new settings.FakeInputMethodPrivate();
-  };
-
-  TestLanguagesBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
-
-    /** @override */
-    getLanguageSettingsPrivate: function() {
-      return this.languageSettingsPrivate_;
-    },
-
-    /** @override */
-    getInputMethodPrivate: function() {
-      return this.inputMethodPrivate_;
-    },
-  };
-
-  if (cr.isChromeOS || cr.isWindows) {
-    /** @override */
-    TestLanguagesBrowserProxy.prototype.getProspectiveUILanguage =
-        function() {
-      this.methodCalled('getProspectiveUILanguage');
-      return Promise.resolve('en-US');
-    };
-  }
-
-  /**
-   * Data-binds two Polymer properties using the property-changed events and
-   * set/notifyPath API. Useful for testing components which would normally be
-   * used together.
-   * @param {!HTMLElement} el1
-   * @param {!HTMLElement} el2
-   * @param {string} property
-   */
-  function fakeDataBind(el1, el2, property) {
-    var forwardChange = function(el, event) {
-      if (event.detail.hasOwnProperty('path'))
-        el.notifyPath(event.detail.path, event.detail.value);
-      else
-        el.set(property, event.detail.value);
-    };
-    // Add the listeners symmetrically. Polymer will prevent recursion.
-    el1.addEventListener(property + '-changed', forwardChange.bind(null, el2));
-    el2.addEventListener(property + '-changed', forwardChange.bind(null, el1));
-  }
-
   suite('settings-languages', function() {
-    function getFakePrefs() {
-      var fakePrefs = [{
-        key: 'intl.app_locale',
-        type: chrome.settingsPrivate.PrefType.STRING,
-        value: 'en-US',
-      }, {
-        key: 'intl.accept_languages',
-        type: chrome.settingsPrivate.PrefType.STRING,
-        value: 'en-US,sw',
-      }, {
-        key: 'spellcheck.dictionaries',
-        type: chrome.settingsPrivate.PrefType.LIST,
-        value: ['en-US'],
-      }, {
-        key: 'translate_blocked_languages',
-        type: chrome.settingsPrivate.PrefType.LIST,
-        value: ['en-US'],
-      }];
-      if (cr.isChromeOS) {
-        fakePrefs.push({
-          key: 'settings.language.preferred_languages',
-          type: chrome.settingsPrivate.PrefType.STRING,
-          value: 'en-US,sw',
-        });
-        fakePrefs.push({
-          key: 'settings.language.preload_engines',
-          type: chrome.settingsPrivate.PrefType.STRING,
-          value: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng,' +
-                 '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
-        });
-        fakePrefs.push({
-          key: 'settings.language.enabled_extension_imes',
-          type: chrome.settingsPrivate.PrefType.STRING,
-          value: '',
-        });
-      }
-      return fakePrefs;
-    }
-
     /**
      * @param {!Array<string>} expected
      */
@@ -128,12 +27,13 @@ cr.define('settings-languages', function() {
 
     setup(function() {
       var settingsPrefs = document.createElement('settings-prefs');
-      var settingsPrivate = new settings.FakeSettingsPrivate(getFakePrefs());
+      var settingsPrivate =
+          new settings.FakeSettingsPrivate(settings.getFakeLanguagePrefs());
       settingsPrefs.initialize(settingsPrivate);
       document.body.appendChild(settingsPrefs);
 
       // Setup test browser proxy.
-      browserProxy = new TestLanguagesBrowserProxy();
+      browserProxy = new settings.TestLanguagesBrowserProxy();
       settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
 
       // Setup fake languageSettingsPrivate API.
@@ -143,7 +43,7 @@ cr.define('settings-languages', function() {
       languageHelper = document.createElement('settings-languages');
 
       // Prefs would normally be data-bound to settings-languages.
-      fakeDataBind(settingsPrefs, languageHelper, 'prefs');
+      test_util.fakeDataBind(settingsPrefs, languageHelper, 'prefs');
 
       document.body.appendChild(languageHelper);
       return languageHelper.whenReady().then(function() {
