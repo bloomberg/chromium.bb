@@ -35,11 +35,6 @@
           "object": "LayoutText #text",
           "rect": [300, 301, 80, 178],
           "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [151, 87, 1, 1],
-          "reason": "subtree"
         }
       ]
     }

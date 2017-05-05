@@ -80,45 +80,45 @@ void PaintPropertyTreeBuilderTest::TearDown() {
   Settings::SetMockScrollbarsEnabled(false);
 }
 
-#define CHECK_VISUAL_RECT(expected, sourceObject, ancestorObject, slopFactor) \
-  do {                                                                        \
-    if ((sourceObject)->HasLayer() && (ancestorObject)->HasLayer()) {         \
-      LayoutRect source((sourceObject)->LocalVisualRect());                   \
-      source.MoveBy((sourceObject)->PaintOffset());                           \
-      auto contents_properties = (ancestorObject)->ContentsProperties();      \
-      FloatClipRect actual_float_rect((FloatRect(source)));                   \
-      GeometryMapper::SourceToDestinationVisualRect(                          \
-          *(sourceObject)->LocalBorderBoxProperties(), contents_properties,   \
-          actual_float_rect);                                                 \
-      LayoutRect actual(actual_float_rect.Rect());                            \
-      actual.MoveBy(-(ancestorObject)->PaintOffset());                        \
-      SCOPED_TRACE("GeometryMapper: ");                                       \
-      EXPECT_EQ(expected, actual);                                            \
-    }                                                                         \
-                                                                              \
-    if (slopFactor == LayoutUnit::Max())                                      \
-      break;                                                                  \
-    LayoutRect slow_path_rect = (sourceObject)->LocalVisualRect();            \
-    (sourceObject)                                                            \
-        ->MapToVisualRectInAncestorSpace(ancestorObject, slow_path_rect);     \
-    if (slopFactor) {                                                         \
-      LayoutRect inflated_expected = LayoutRect(expected);                    \
-      inflated_expected.Inflate(slopFactor);                                  \
-      SCOPED_TRACE(String::Format(                                            \
-          "Old path rect: %s, Expected: %s, Inflated expected: %s",           \
-          slow_path_rect.ToString().Ascii().data(),                           \
-          expected.ToString().Ascii().data(),                                 \
-          inflated_expected.ToString().Ascii().data()));                      \
-      EXPECT_TRUE(slow_path_rect.Contains(LayoutRect(expected)));             \
-      EXPECT_TRUE(inflated_expected.Contains(slow_path_rect));                \
-    } else {                                                                  \
-      SCOPED_TRACE("Slow path: ");                                            \
-      EXPECT_EQ(expected, slow_path_rect);                                    \
-    }                                                                         \
+#define CHECK_VISUAL_RECT(expected, source_object, ancestor, slop_factor)      \
+  do {                                                                         \
+    if ((source_object)->HasLayer() && (ancestor)->HasLayer()) {               \
+      LayoutRect source((source_object)->LocalVisualRect());                   \
+      source.MoveBy((source_object)->PaintOffset());                           \
+      auto contents_properties = (ancestor)->ContentsProperties();             \
+      FloatClipRect actual_float_rect((FloatRect(source)));                    \
+      GeometryMapper::SourceToDestinationVisualRect(                           \
+          *(source_object)->LocalBorderBoxProperties(), contents_properties,   \
+          actual_float_rect);                                                  \
+      LayoutRect actual(actual_float_rect.Rect());                             \
+      actual.MoveBy(-(ancestor)->PaintOffset());                               \
+      SCOPED_TRACE("GeometryMapper: ");                                        \
+      EXPECT_EQ(expected, actual);                                             \
+    }                                                                          \
+                                                                               \
+    if (slop_factor == LayoutUnit::Max())                                      \
+      break;                                                                   \
+    LayoutRect slow_path_rect = (source_object)->LocalVisualRect();            \
+    (source_object)->MapToVisualRectInAncestorSpace(ancestor, slow_path_rect); \
+    if (slop_factor) {                                                         \
+      LayoutRect inflated_expected = LayoutRect(expected);                     \
+      inflated_expected.Inflate(slop_factor);                                  \
+      SCOPED_TRACE(String::Format(                                             \
+          "Slow path rect: %s, Expected: %s, Inflated expected: %s",           \
+          slow_path_rect.ToString().Ascii().data(),                            \
+          expected.ToString().Ascii().data(),                                  \
+          inflated_expected.ToString().Ascii().data()));                       \
+      EXPECT_TRUE(LayoutRect(EnclosingIntRect(slow_path_rect))                 \
+                      .Contains(LayoutRect(expected)));                        \
+      EXPECT_TRUE(inflated_expected.Contains(slow_path_rect));                 \
+    } else {                                                                   \
+      SCOPED_TRACE("Slow path: ");                                             \
+      EXPECT_EQ(expected, slow_path_rect);                                     \
+    }                                                                          \
   } while (0)
 
-#define CHECK_EXACT_VISUAL_RECT(expected, sourceObject, ancestorObject) \
-  CHECK_VISUAL_RECT(expected, sourceObject, ancestorObject, 0)
+#define CHECK_EXACT_VISUAL_RECT(expected, source_object, ancestor) \
+  CHECK_VISUAL_RECT(expected, source_object, ancestor, 0)
 
 INSTANTIATE_TEST_CASE_P(All, PaintPropertyTreeBuilderTest, ::testing::Bool());
 
@@ -1765,6 +1765,67 @@ TEST_P(PaintPropertyTreeBuilderTest,
                                LayoutUnit(0.7) + LayoutUnit(0.7),
                                LayoutUnit(40), LayoutUnit(40)),
                     c, frame_view->GetLayoutView(), 1);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       NonTranslationTransformShouldResetSubpixelPaintOffset) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  * { margin: 0; }"
+      "  div { position: relative; }"
+      "  #a {"
+      "    width: 70px;"
+      "    height: 70px;"
+      "    left: 0.9px;"
+      "    top: 0.9px;"
+      "  }"
+      "  #b {"
+      "    width: 40px;"
+      "    height: 40px;"
+      "    transform: scale(10);"
+      "    transform-origin: 0 0;"
+      "  }"
+      "  #c {"
+      "    width: 40px;"
+      "    height: 40px;"
+      "    left: 0.6px;"
+      "    top: 0.6px;"
+      "  }"
+      "</style>"
+      "<div id='a'>"
+      "  <div id='b'>"
+      "    <div id='c'></div>"
+      "  </div>"
+      "</div>");
+  FrameView* frame_view = GetDocument().View();
+
+  LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
+  const ObjectPaintProperties* b_properties = b->PaintProperties();
+  EXPECT_EQ(TransformationMatrix().Scale(10),
+            b_properties->Transform()->Matrix());
+  // The paint offset transform should not be snapped.
+  EXPECT_EQ(TransformationMatrix().Translate(1, 1),
+            b_properties->Transform()->Parent()->Matrix());
+  EXPECT_EQ(LayoutPoint(), b->PaintOffset());
+  // Visual rects via the non-paint properties system use enclosingIntRect
+  // before applying transforms, because they are computed bottom-up and
+  // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
+  CHECK_VISUAL_RECT(LayoutRect(LayoutUnit(1), LayoutUnit(1), LayoutUnit(400),
+                               LayoutUnit(400)),
+                    b, frame_view->GetLayoutView(), 1);
+
+  // c's painting should start at c_offset.
+  LayoutObject* c = GetDocument().getElementById("c")->GetLayoutObject();
+  LayoutUnit c_offset = LayoutUnit(0.6);
+  EXPECT_EQ(LayoutPoint(c_offset, c_offset), c->PaintOffset());
+  // Visual rects via the non-paint properties system use enclosingIntRect
+  // before applying transforms, because they are computed bottom-up and
+  // therefore can't apply pixel snapping. Therefore apply a slop of 1px
+  // in the transformed space (c_offset * 10 in view space) and 1px in the
+  // view space.
+  CHECK_VISUAL_RECT(LayoutRect(c_offset * 10 + 1, c_offset * 10 + 1,
+                               LayoutUnit(400), LayoutUnit(400)),
+                    c, frame_view->GetLayoutView(), c_offset * 10 + 1);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,

@@ -833,12 +833,18 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
   LayoutPoint delta;
   paint_layer_.ConvertToLayerCoords(painting_info.root_layer, delta);
   delta.MoveBy(fragment_translation);
+  delta += painting_info.sub_pixel_accumulation;
+  IntPoint rounded_delta = RoundedIntPoint(delta);
+
   TransformationMatrix transform(
       paint_layer_.RenderableTransform(painting_info.GetGlobalPaintFlags()));
-  IntPoint rounded_delta = RoundedIntPoint(delta);
   transform.PostTranslate(rounded_delta.X(), rounded_delta.Y());
-  LayoutSize adjusted_sub_pixel_accumulation =
-      painting_info.sub_pixel_accumulation + (delta - rounded_delta);
+
+  LayoutSize new_sub_pixel_accumulation;
+  if (transform.IsIdentityOrTranslation())
+    new_sub_pixel_accumulation += delta - rounded_delta;
+  // Otherwise discard the sub-pixel remainder because paint offset can't be
+  // transformed by a non-translation transform.
 
   // TODO(jbroman): Put the real transform origin here, instead of using a
   // matrix with the origin baked in.
@@ -852,7 +858,7 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
       &paint_layer_,
       LayoutRect(EnclosingIntRect(
           transform.Inverse().MapRect(painting_info.paint_dirty_rect))),
-      painting_info.GetGlobalPaintFlags(), adjusted_sub_pixel_accumulation);
+      painting_info.GetGlobalPaintFlags(), new_sub_pixel_accumulation);
   transformed_painting_info.ancestor_has_clip_path_clipping =
       painting_info.ancestor_has_clip_path_clipping;
 
