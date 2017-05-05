@@ -1495,6 +1495,12 @@ extern const char kPullToRefreshEffectName[];
 // Description of the flag for the pull-to-refresh effect.
 extern const char kPullToRefreshEffectDescription[];
 
+// Name of the flag for the translate compact infobar.
+extern const char kTranslateCompactUIName[];
+
+// Description of the flag for translate compact infobar.
+extern const char kTranslateCompactUIDescription[];
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)

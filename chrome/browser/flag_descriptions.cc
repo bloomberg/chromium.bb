@@ -1347,6 +1347,11 @@ const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
 const char kPullToRefreshEffectDescription[] =
     "Page reloads triggered by vertically overscrolling content.";
 
+const char kTranslateCompactUIName[] = "New Translate Infobar";
+
+const char kTranslateCompactUIDescription[] =
+    "Enable the new Translate compact infobar UI.";
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
