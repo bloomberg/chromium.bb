@@ -44,6 +44,9 @@ class ViewMatrix {
   // Returns the scale of this matrix.
   float GetScale() const;
 
+  // Sets the offset.
+  void SetOffset(const Point& offset);
+
   // Adjust the matrix M to M' such that:
   // M * p_a = p_b => M' * p_a = scale * (p_b - pivot) + pivot
   void PostScale(const Point& pivot, float scale);
