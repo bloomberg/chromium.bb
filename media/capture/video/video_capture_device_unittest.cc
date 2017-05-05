@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -212,8 +213,7 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
   typedef VideoCaptureDevice::Client Client;
 
   VideoCaptureDeviceTest()
-      : loop_(new base::MessageLoop()),
-        device_descriptors_(new VideoCaptureDeviceDescriptors()),
+      : device_descriptors_(new VideoCaptureDeviceDescriptors()),
         video_capture_client_(new MockVideoCaptureClient(
             base::Bind(&VideoCaptureDeviceTest::OnFrameCaptured,
                        base::Unretained(this)))),
@@ -314,7 +314,7 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
-  const std::unique_ptr<base::MessageLoop> loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<MockVideoCaptureClient> video_capture_client_;
