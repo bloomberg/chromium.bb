@@ -1018,6 +1018,9 @@ config("default_warnings") {
         "-Wno-unknown-pragmas",  # http://crbug.com/505314
         "-Wno-microsoft-cast",  # http://crbug.com/550065
       ]
+      if (llvm_force_head_revision) {
+        cflags += [ "-Wno-microsoft-enum-forward-reference" ]  # http://crbug.com/718880
+      }
     }
   } else {
     if (is_mac && !is_nacl) {
