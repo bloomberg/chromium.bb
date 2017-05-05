@@ -35,6 +35,9 @@ class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
     if (!owner->document_url_.is_valid())
       return;
 
+    if (!owner->delegate_)
+      return;
+
     requested_ = true;
 
     // Note that the callback passed into
@@ -44,7 +47,6 @@ class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
     // EnumerateDevicesCallbackBody() to ensure that we always call |callback|
     // asynchronously.
     sync_call_ = true;
-    DCHECK(owner->delegate_);
     owner->delegate_->EnumerateDevices(
         owner->device_type_, owner->document_url_,
         base::Bind(&ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
@@ -91,9 +93,11 @@ class PepperDeviceEnumerationHostHelper::ScopedMonitoringRequest
     if (!owner_->document_url_.is_valid())
       return;
 
+    if (!owner->delegate_)
+      return;
+
     requested_ = true;
 
-    DCHECK(owner_->delegate_);
     // |callback| is never called synchronously by StartMonitoringDevices(),
     // so it is OK to pass it directly, even if |callback| destroys |this|.
     subscription_id_ = owner_->delegate_->StartMonitoringDevices(
