@@ -82,12 +82,14 @@ https://cs.chromium.org/chromium/src/storage/browser/blob/blob_memory_controller
 **In-Memory Storage Limit**
 
 * If the architecture is x64 and NOT Chrome OS or Android: `2GB`
-* Otherwise: `total_physical_memory / 5`
+* If Chrome OS: `total_physical_memory / 5`
+* If Android: `total_physical_memory / 100`
+
 
 **Disk Storage Limit**
 
 * If Chrome OS: `disk_size / 2`
-* If Android: `disk_size / 20`
+* If Android: `6 * disk_size / 100`
 * Else: `disk_size / 10`
 
 Note: Chrome OS's disk is part of the user partition, which is separate from the
@@ -102,16 +104,14 @@ we use is:
 
 ## Example Limits
 
-(All sizes in GB)
-
 | Device | Ram | In-Memory Limit | Disk | Disk Limit | Min Disk Availability |
 | --- | --- | --- | --- | --- | --- |
-| Cast | 0.5 | 0.1 | 0 | 0 | 0 |
-| Android Minimal | 0.5 | 0.1 | 8 | 0.4 | 0.2 |
-| Android Fat | 2 | 0.4 | 32 | 1.5 | 0.8 |
-| CrOS | 2 | 0.4 | 8 | 4 | 0.8 |
-| Desktop 32 | 3 | 0.6 | 500 | 50 | 1.2 |
-| Desktop 64 | 4 | 2 | 500 | 50 | 4 |
+| Cast | 512 MB | 102 MB | 0 | 0 | 0 |
+| Android Minimal | 512 MB | 5 MB | 8 GB | 491 MB | 10 MB |
+| Android Fat | 2 GB | 20 MB | 32 GB | 1.9 GB | 40 MB |
+| CrOS | 2 GB | 409 MB | 8 GB | 4 GB | 0.8 GB |
+| Desktop 32 | 3 GB | 614 MB | 500 GB | 50 GB | 1.2 GB |
+| Desktop 64 | 4 GB | 2 GB | 500 GB | 50 GB | 4 GB |
 
 # Common Pitfalls
 
@@ -128,7 +128,7 @@ the renderer can get rid of the data.
 ## Leaking Blob References
 
 If the blob object in Javascript is kept around, then the data will never be
-cleaned up in the backend. This will unnecessarily us memory, so make sure to
+cleaned up in the backend. This will unnecessarily use memory, so make sure to
 dereference blob objects if they are no longer needed.
 
 Similarily if a URL is created for a blob, this will keep the blob data around
