@@ -83,7 +83,6 @@ base::LazyInstance<IdToAgentMap>::Leaky
 
 DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
     : RenderFrameObserver(frame),
-      is_attached_(false),
       is_devtools_client_(false),
       paused_(false),
       frame_(frame),
@@ -235,7 +234,7 @@ void DevToolsAgent::SendChunkedProtocolMessage(IPC::Sender* sender,
 
 void DevToolsAgent::OnAttach(const std::string& host_id, int session_id) {
   GetWebAgent()->Attach(WebString::FromUTF8(host_id), session_id);
-  is_attached_ = true;
+  session_ids_.insert(session_id);
 }
 
 void DevToolsAgent::OnReattach(const std::string& host_id,
@@ -243,12 +242,12 @@ void DevToolsAgent::OnReattach(const std::string& host_id,
                                const std::string& agent_state) {
   GetWebAgent()->Reattach(WebString::FromUTF8(host_id), session_id,
                           WebString::FromUTF8(agent_state));
-  is_attached_ = true;
+  session_ids_.insert(session_id);
 }
 
-void DevToolsAgent::OnDetach() {
-  GetWebAgent()->Detach();
-  is_attached_ = false;
+void DevToolsAgent::OnDetach(int session_id) {
+  GetWebAgent()->Detach(session_id);
+  session_ids_.erase(session_id);
 }
 
 void DevToolsAgent::OnDispatchOnInspectorBackend(int session_id,
@@ -299,7 +298,13 @@ WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
 }
 
 bool DevToolsAgent::IsAttached() {
-  return is_attached_;
+  return !!session_ids_.size();
+}
+
+void DevToolsAgent::DetachAllSessions() {
+  for (int session_id : session_ids_)
+    GetWebAgent()->Detach(session_id);
+  session_ids_.clear();
 }
 
 void DevToolsAgent::GotManifest(int session_id,
@@ -307,7 +312,7 @@ void DevToolsAgent::GotManifest(int session_id,
                                 const GURL& manifest_url,
                                 const Manifest& manifest,
                                 const ManifestDebugInfo& debug_info) {
-  if (!is_attached_)
+  if (!IsAttached())
     return;
 
   std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());

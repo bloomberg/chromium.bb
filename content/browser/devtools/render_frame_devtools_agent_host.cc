@@ -196,7 +196,7 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Detach(int session_id) {
-  host_->Send(new DevToolsAgentMsg_Detach(host_->GetRoutingID()));
+  host_->Send(new DevToolsAgentMsg_Detach(host_->GetRoutingID(), session_id));
   RevokePolicy();
   attached_ = false;
 }

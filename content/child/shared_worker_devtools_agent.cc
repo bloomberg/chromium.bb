@@ -91,8 +91,8 @@ void SharedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
                                WebString::FromUTF8(state));
 }
 
-void SharedWorkerDevToolsAgent::OnDetach() {
-  webworker_->DetachDevTools();
+void SharedWorkerDevToolsAgent::OnDetach(int session_id) {
+  webworker_->DetachDevTools(session_id);
 }
 
 void SharedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(

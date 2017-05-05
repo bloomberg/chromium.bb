@@ -39,7 +39,7 @@ void WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 
 void WorkerDevToolsAgentHost::DetachSession(int session_id) {
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
-    host->Send(new DevToolsAgentMsg_Detach(worker_id_.second));
+    host->Send(new DevToolsAgentMsg_Detach(worker_id_.second, session_id));
   OnAttachedStateChanged(false);
   if (state_ == WORKER_INSPECTED) {
     state_ = WORKER_UNINSPECTED;

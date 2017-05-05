@@ -61,8 +61,8 @@ void EmbeddedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
                                WebString::FromUTF8(state));
 }
 
-void EmbeddedWorkerDevToolsAgent::OnDetach() {
-  webworker_->DetachDevTools();
+void EmbeddedWorkerDevToolsAgent::OnDetach(int session_id) {
+  webworker_->DetachDevTools(session_id);
 }
 
 void EmbeddedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(

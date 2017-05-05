@@ -216,10 +216,10 @@ void WebEmbeddedWorkerImpl::ReattachDevTools(const WebString& host_id,
   ResumeStartup();
 }
 
-void WebEmbeddedWorkerImpl::DetachDevTools() {
+void WebEmbeddedWorkerImpl::DetachDevTools(int session_id) {
   WebDevToolsAgent* devtools_agent = main_frame_->DevToolsAgent();
   if (devtools_agent)
-    devtools_agent->Detach();
+    devtools_agent->Detach(session_id);
 }
 
 void WebEmbeddedWorkerImpl::DispatchDevToolsMessage(int session_id,

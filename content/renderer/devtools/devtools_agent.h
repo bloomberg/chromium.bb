@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_AGENT_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -53,6 +54,7 @@ class CONTENT_EXPORT DevToolsAgent
   blink::WebDevToolsAgent* GetWebAgent();
 
   bool IsAttached();
+  void DetachAllSessions();
 
  private:
   friend class DevToolsAgentTest;
@@ -83,7 +85,7 @@ class CONTENT_EXPORT DevToolsAgent
   void OnReattach(const std::string& host_id,
                   int session_id,
                   const std::string& agent_state);
-  void OnDetach();
+  void OnDetach(int session_id);
   void OnDispatchOnInspectorBackend(int session_id,
                                     int call_id,
                                     const std::string& method,
@@ -99,9 +101,8 @@ class CONTENT_EXPORT DevToolsAgent
                    const Manifest& manifest,
                    const ManifestDebugInfo& debug_info);
 
-  bool is_attached_;
+  std::set<int> session_ids_;
   bool is_devtools_client_;
-  bool paused_in_mouse_move_;
   bool paused_;
   RenderFrameImpl* frame_;
   base::Callback<void(int, int, const std::string&, const std::string&)>

@@ -90,7 +90,7 @@ IPC_MESSAGE_ROUTED3(DevToolsAgentMsg_Reattach,
                     std::string /* agent_state */)
 
 // Tells agent that there is no longer a client host connected to it.
-IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_Detach)
+IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_Detach, int /* session_id */)
 
 // WebKit-level transport.
 IPC_MESSAGE_ROUTED4(DevToolsAgentMsg_DispatchOnInspectorBackend,
