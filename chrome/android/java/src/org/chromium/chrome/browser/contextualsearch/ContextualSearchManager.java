@@ -1416,10 +1416,15 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                     mContext.setResolveProperties(
                             mPolicy.getHomeCountry(mActivity), mPolicy.maySendBasePageUrl());
                 }
-
-                mInternalStateController.notifyStartingWorkOn(InternalState.GATHERING_SURROUNDINGS);
-                nativeGatherSurroundingText(
-                        mNativeContextualSearchManagerPtr, mContext, getBaseWebContents());
+                WebContents webContents = getBaseWebContents();
+                if (webContents != null) {
+                    mInternalStateController.notifyStartingWorkOn(
+                            InternalState.GATHERING_SURROUNDINGS);
+                    nativeGatherSurroundingText(
+                            mNativeContextualSearchManagerPtr, mContext, webContents);
+                } else {
+                    mInternalStateController.reset(StateChangeReason.UNKNOWN);
+                }
             }
 
             /** Starts the process of deciding if we'll suppress the current Tap gesture or not. */
