@@ -68,7 +68,8 @@ class AudioManagerBase::CompareByParams {
  public:
   explicit CompareByParams(const DispatcherParams* dispatcher)
       : dispatcher_(dispatcher) {}
-  bool operator()(DispatcherParams* dispatcher_in) const {
+  bool operator()(
+      const std::unique_ptr<DispatcherParams>& dispatcher_in) const {
     // We will reuse the existing dispatcher when:
     // 1) Unified IO is not used, input_params and output_params of the
     //    existing dispatcher are the same as the requested dispatcher.
@@ -277,16 +278,14 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     }
   }
 
-  DispatcherParams* dispatcher_params =
-      new DispatcherParams(params, output_params, output_device_id);
+  std::unique_ptr<DispatcherParams> dispatcher_params =
+      base::MakeUnique<DispatcherParams>(params, output_params,
+                                         output_device_id);
 
-  AudioOutputDispatchers::iterator it =
-      std::find_if(output_dispatchers_.begin(), output_dispatchers_.end(),
-                   CompareByParams(dispatcher_params));
-  if (it != output_dispatchers_.end()) {
-    delete dispatcher_params;
+  auto it = std::find_if(output_dispatchers_.begin(), output_dispatchers_.end(),
+                         CompareByParams(dispatcher_params.get()));
+  if (it != output_dispatchers_.end())
     return (*it)->dispatcher->CreateStreamProxy();
-  }
 
   const base::TimeDelta kCloseDelay =
       base::TimeDelta::FromSeconds(kStreamCloseDelaySeconds);
@@ -308,8 +307,8 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   }
 
   dispatcher_params->dispatcher = std::move(dispatcher);
-  output_dispatchers_.push_back(dispatcher_params);
-  return dispatcher_params->dispatcher->CreateStreamProxy();
+  output_dispatchers_.push_back(std::move(dispatcher_params));
+  return output_dispatchers_.back()->dispatcher->CreateStreamProxy();
 }
 
 void AudioManagerBase::ShowAudioInputSettings() {
