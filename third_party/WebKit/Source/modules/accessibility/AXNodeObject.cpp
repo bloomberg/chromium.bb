@@ -1025,8 +1025,10 @@ bool AXNodeObject::IsInPageLinkTarget() const {
     return html_element->HasName() || html_element->HasID();
   }
 
-  if (element->HasID() && (IsLandmarkRelated() || isHTMLDivElement(element)))
+  if (element->HasID() && (IsLandmarkRelated() || isHTMLSpanElement(element) ||
+                           isHTMLDivElement(element))) {
     return true;
+  }
   return false;
 }
 
@@ -2492,8 +2494,8 @@ void AXNodeObject::TextChanged() {
 }
 
 void AXNodeObject::UpdateAccessibilityRole() {
-  bool ignored_status = AccessibilityIsIgnored();
   role_ = DetermineAccessibilityRole();
+  bool ignored_status = AccessibilityIsIgnored();
 
   // The AX hierarchy only needs to be updated if the ignored status of an
   // element has changed.

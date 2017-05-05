@@ -12,6 +12,9 @@ android.webkit.WebView focusable focused scrollable
 ++++android.view.View clickable name='Anchor with content'
 ++android.view.View
 ++++android.view.View clickable name='Anchor with ID'
-++android.view.View name='After empty span'
-++android.view.View name='Span with content'
+++android.view.View
+++++android.view.View
+++++android.view.View name='After empty span'
+++android.view.View
+++++android.view.View name='Span with content'
 ++android.view.View name='Paragraph with content'
