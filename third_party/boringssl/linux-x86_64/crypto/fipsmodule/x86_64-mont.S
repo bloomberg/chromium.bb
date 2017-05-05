@@ -1,41 +1,42 @@
 #if defined(__x86_64__) && !defined(OPENSSL_NO_ASM)
 .text	
 
+.extern	OPENSSL_ia32cap_P
+.hidden OPENSSL_ia32cap_P
 
-
-.globl	_bn_mul_mont
-.private_extern _bn_mul_mont
-
-.p2align	4
-_bn_mul_mont:
-
+.globl	bn_mul_mont
+.hidden bn_mul_mont
+.type	bn_mul_mont,@function
+.align	16
+bn_mul_mont:
+.cfi_startproc	
 	movl	%r9d,%r9d
 	movq	%rsp,%rax
-
+.cfi_def_cfa_register	%rax
 	testl	$3,%r9d
-	jnz	L$mul_enter
+	jnz	.Lmul_enter
 	cmpl	$8,%r9d
-	jb	L$mul_enter
+	jb	.Lmul_enter
 	cmpq	%rsi,%rdx
-	jne	L$mul4x_enter
+	jne	.Lmul4x_enter
 	testl	$7,%r9d
-	jz	L$sqr8x_enter
-	jmp	L$mul4x_enter
+	jz	.Lsqr8x_enter
+	jmp	.Lmul4x_enter
 
-.p2align	4
-L$mul_enter:
+.align	16
+.Lmul_enter:
 	pushq	%rbx
-
+.cfi_offset	%rbx,-16
 	pushq	%rbp
-
+.cfi_offset	%rbp,-24
 	pushq	%r12
-
+.cfi_offset	%r12,-32
 	pushq	%r13
-
+.cfi_offset	%r13,-40
 	pushq	%r14
-
+.cfi_offset	%r14,-48
 	pushq	%r15
-
+.cfi_offset	%r15,-56
 
 	negq	%r9
 	movq	%rsp,%r11
@@ -56,20 +57,20 @@ L$mul_enter:
 	leaq	(%r10,%r11,1),%rsp
 	movq	(%rsp),%r11
 	cmpq	%r10,%rsp
-	ja	L$mul_page_walk
-	jmp	L$mul_page_walk_done
+	ja	.Lmul_page_walk
+	jmp	.Lmul_page_walk_done
 
-.p2align	4
-L$mul_page_walk:
+.align	16
+.Lmul_page_walk:
 	leaq	-4096(%rsp),%rsp
 	movq	(%rsp),%r11
 	cmpq	%r10,%rsp
-	ja	L$mul_page_walk
-L$mul_page_walk_done:
+	ja	.Lmul_page_walk
+.Lmul_page_walk_done:
 
 	movq	%rax,8(%rsp,%r9,8)
-
-L$mul_body:
+.cfi_escape	0x0f,0x0a,0x77,0x08,0x79,0x00,0x38,0x1e,0x22,0x06,0x23,0x08
+.Lmul_body:
 	movq	%rdx,%r12
 	movq	(%r8),%r8
 	movq	(%r12),%rbx
@@ -93,10 +94,10 @@ L$mul_body:
 	movq	%rdx,%r13
 
 	leaq	1(%r15),%r15
-	jmp	L$1st_enter
+	jmp	.L1st_enter
 
-.p2align	4
-L$1st:
+.align	16
+.L1st:
 	addq	%rax,%r13
 	movq	(%rsi,%r15,8),%rax
 	adcq	$0,%rdx
@@ -106,7 +107,7 @@ L$1st:
 	movq	%r13,-16(%rsp,%r15,8)
 	movq	%rdx,%r13
 
-L$1st_enter:
+.L1st_enter:
 	mulq	%rbx
 	addq	%rax,%r11
 	movq	(%rcx,%r15,8),%rax
@@ -116,7 +117,7 @@ L$1st_enter:
 
 	mulq	%rbp
 	cmpq	%r9,%r15
-	jne	L$1st
+	jne	.L1st
 
 	addq	%rax,%r13
 	movq	(%rsi),%rax
@@ -134,9 +135,9 @@ L$1st_enter:
 	movq	%rdx,(%rsp,%r9,8)
 
 	leaq	1(%r14),%r14
-	jmp	L$outer
-.p2align	4
-L$outer:
+	jmp	.Louter
+.align	16
+.Louter:
 	movq	(%r12,%r14,8),%rbx
 	xorq	%r15,%r15
 	movq	%r8,%rbp
@@ -157,10 +158,10 @@ L$outer:
 	movq	%rdx,%r13
 
 	leaq	1(%r15),%r15
-	jmp	L$inner_enter
+	jmp	.Linner_enter
 
-.p2align	4
-L$inner:
+.align	16
+.Linner:
 	addq	%rax,%r13
 	movq	(%rsi,%r15,8),%rax
 	adcq	$0,%rdx
@@ -170,7 +171,7 @@ L$inner:
 	movq	%r13,-16(%rsp,%r15,8)
 	movq	%rdx,%r13
 
-L$inner_enter:
+.Linner_enter:
 	mulq	%rbx
 	addq	%rax,%r11
 	movq	(%rcx,%r15,8),%rax
@@ -182,7 +183,7 @@ L$inner_enter:
 
 	mulq	%rbp
 	cmpq	%r9,%r15
-	jne	L$inner
+	jne	.Linner
 
 	addq	%rax,%r13
 	movq	(%rsi),%rax
@@ -203,20 +204,21 @@ L$inner_enter:
 
 	leaq	1(%r14),%r14
 	cmpq	%r9,%r14
-	jb	L$outer
+	jb	.Louter
 
 	xorq	%r14,%r14
 	movq	(%rsp),%rax
 	leaq	(%rsp),%rsi
 	movq	%r9,%r15
-	jmp	L$sub
-.p2align	4
-L$sub:	sbbq	(%rcx,%r14,8),%rax
+	jmp	.Lsub
+.align	16
+.Lsub:
+	sbbq	(%rcx,%r14,8),%rax
 	movq	%rax,(%rdi,%r14,8)
 	movq	8(%rsi,%r14,8),%rax
 	leaq	1(%r14),%r14
 	decq	%r15
-	jnz	L$sub
+	jnz	.Lsub
 
 	sbbq	$0,%rax
 	xorq	%r14,%r14
@@ -226,56 +228,56 @@ L$sub:	sbbq	(%rcx,%r14,8),%rax
 	andq	%rax,%rcx
 	movq	%r9,%r15
 	orq	%rcx,%rsi
-.p2align	4
-L$copy:
+.align	16
+.Lcopy:
 	movq	(%rsi,%r14,8),%rax
 	movq	%r14,(%rsp,%r14,8)
 	movq	%rax,(%rdi,%r14,8)
 	leaq	1(%r14),%r14
 	subq	$1,%r15
-	jnz	L$copy
+	jnz	.Lcopy
 
 	movq	8(%rsp,%r9,8),%rsi
-
+.cfi_def_cfa	%rsi,8
 	movq	$1,%rax
 	movq	-48(%rsi),%r15
-
+.cfi_restore	%r15
 	movq	-40(%rsi),%r14
-
+.cfi_restore	%r14
 	movq	-32(%rsi),%r13
-
+.cfi_restore	%r13
 	movq	-24(%rsi),%r12
-
+.cfi_restore	%r12
 	movq	-16(%rsi),%rbp
-
+.cfi_restore	%rbp
 	movq	-8(%rsi),%rbx
-
+.cfi_restore	%rbx
 	leaq	(%rsi),%rsp
-
-L$mul_epilogue:
+.cfi_def_cfa_register	%rsp
+.Lmul_epilogue:
 	.byte	0xf3,0xc3
-
-
-
-.p2align	4
+.cfi_endproc	
+.size	bn_mul_mont,.-bn_mul_mont
+.type	bn_mul4x_mont,@function
+.align	16
 bn_mul4x_mont:
-
+.cfi_startproc	
 	movl	%r9d,%r9d
 	movq	%rsp,%rax
-
-L$mul4x_enter:
+.cfi_def_cfa_register	%rax
+.Lmul4x_enter:
 	pushq	%rbx
-
+.cfi_offset	%rbx,-16
 	pushq	%rbp
-
+.cfi_offset	%rbp,-24
 	pushq	%r12
-
+.cfi_offset	%r12,-32
 	pushq	%r13
-
+.cfi_offset	%r13,-40
 	pushq	%r14
-
+.cfi_offset	%r14,-48
 	pushq	%r15
-
+.cfi_offset	%r15,-56
 
 	negq	%r9
 	movq	%rsp,%r11
@@ -288,19 +290,19 @@ L$mul4x_enter:
 	leaq	(%r10,%r11,1),%rsp
 	movq	(%rsp),%r11
 	cmpq	%r10,%rsp
-	ja	L$mul4x_page_walk
-	jmp	L$mul4x_page_walk_done
+	ja	.Lmul4x_page_walk
+	jmp	.Lmul4x_page_walk_done
 
-L$mul4x_page_walk:
+.Lmul4x_page_walk:
 	leaq	-4096(%rsp),%rsp
 	movq	(%rsp),%r11
 	cmpq	%r10,%rsp
-	ja	L$mul4x_page_walk
-L$mul4x_page_walk_done:
+	ja	.Lmul4x_page_walk
+.Lmul4x_page_walk_done:
 
 	movq	%rax,8(%rsp,%r9,8)
-
-L$mul4x_body:
+.cfi_escape	0x0f,0x0a,0x77,0x08,0x79,0x00,0x38,0x1e,0x22,0x06,0x23,0x08
+.Lmul4x_body:
 	movq	%rdi,16(%rsp,%r9,8)
 	movq	%rdx,%r12
 	movq	(%r8),%r8
@@ -339,9 +341,9 @@ L$mul4x_body:
 	adcq	$0,%rdx
 	movq	%rdi,(%rsp)
 	movq	%rdx,%r13
-	jmp	L$1st4x
-.p2align	4
-L$1st4x:
+	jmp	.L1st4x
+.align	16
+.L1st4x:
 	mulq	%rbx
 	addq	%rax,%r10
 	movq	-16(%rcx,%r15,8),%rax
@@ -403,7 +405,7 @@ L$1st4x:
 	movq	%rdi,-32(%rsp,%r15,8)
 	movq	%rdx,%r13
 	cmpq	%r9,%r15
-	jb	L$1st4x
+	jb	.L1st4x
 
 	mulq	%rbx
 	addq	%rax,%r10
@@ -442,8 +444,8 @@ L$1st4x:
 	movq	%rdi,(%rsp,%r15,8)
 
 	leaq	1(%r14),%r14
-.p2align	2
-L$outer4x:
+.align	4
+.Louter4x:
 	movq	(%r12,%r14,8),%rbx
 	xorq	%r15,%r15
 	movq	(%rsp),%r10
@@ -479,9 +481,9 @@ L$outer4x:
 	adcq	$0,%rdx
 	movq	%rdi,(%rsp)
 	movq	%rdx,%r13
-	jmp	L$inner4x
-.p2align	4
-L$inner4x:
+	jmp	.Linner4x
+.align	16
+.Linner4x:
 	mulq	%rbx
 	addq	%rax,%r10
 	movq	-16(%rcx,%r15,8),%rax
@@ -551,7 +553,7 @@ L$inner4x:
 	movq	%rdi,-32(%rsp,%r15,8)
 	movq	%rdx,%r13
 	cmpq	%r9,%r15
-	jb	L$inner4x
+	jb	.Linner4x
 
 	mulq	%rbx
 	addq	%rax,%r10
@@ -597,7 +599,7 @@ L$inner4x:
 	movq	%rdi,(%rsp,%r15,8)
 
 	cmpq	%r9,%r14
-	jb	L$outer4x
+	jb	.Louter4x
 	movq	16(%rsp,%r9,8),%rdi
 	leaq	-4(%r9),%r15
 	movq	0(%rsp),%rax
@@ -611,9 +613,9 @@ L$inner4x:
 	movq	16(%rsi),%rbx
 	movq	24(%rsi),%rbp
 	sbbq	8(%rcx),%rdx
-	jmp	L$sub4x
-.p2align	4
-L$sub4x:
+	jmp	.Lsub4x
+.align	16
+.Lsub4x:
 	movq	%rax,0(%rdi,%r14,8)
 	movq	%rdx,8(%rdi,%r14,8)
 	sbbq	16(%rcx,%r14,8),%rbx
@@ -628,7 +630,7 @@ L$sub4x:
 	sbbq	40(%rcx,%r14,8),%rdx
 	leaq	4(%r14),%r14
 	decq	%r15
-	jnz	L$sub4x
+	jnz	.Lsub4x
 
 	movq	%rax,0(%rdi,%r14,8)
 	movq	32(%rsi,%r14,8),%rax
@@ -651,9 +653,9 @@ L$sub4x:
 	movdqu	(%rsi),%xmm1
 	movdqa	%xmm0,(%rsp)
 	movdqu	%xmm1,(%rdi)
-	jmp	L$copy4x
-.p2align	4
-L$copy4x:
+	jmp	.Lcopy4x
+.align	16
+.Lcopy4x:
 	movdqu	16(%rsi,%r14,1),%xmm2
 	movdqu	32(%rsi,%r14,1),%xmm1
 	movdqa	%xmm0,16(%rsp,%r14,1)
@@ -662,54 +664,55 @@ L$copy4x:
 	movdqu	%xmm1,32(%rdi,%r14,1)
 	leaq	32(%r14),%r14
 	decq	%r15
-	jnz	L$copy4x
+	jnz	.Lcopy4x
 
 	movdqu	16(%rsi,%r14,1),%xmm2
 	movdqa	%xmm0,16(%rsp,%r14,1)
 	movdqu	%xmm2,16(%rdi,%r14,1)
 	movq	8(%rsp,%r9,8),%rsi
-
+.cfi_def_cfa	%rsi, 8
 	movq	$1,%rax
 	movq	-48(%rsi),%r15
-
+.cfi_restore	%r15
 	movq	-40(%rsi),%r14
-
+.cfi_restore	%r14
 	movq	-32(%rsi),%r13
-
+.cfi_restore	%r13
 	movq	-24(%rsi),%r12
-
+.cfi_restore	%r12
 	movq	-16(%rsi),%rbp
-
+.cfi_restore	%rbp
 	movq	-8(%rsi),%rbx
-
+.cfi_restore	%rbx
 	leaq	(%rsi),%rsp
-
-L$mul4x_epilogue:
+.cfi_def_cfa_register	%rsp
+.Lmul4x_epilogue:
 	.byte	0xf3,0xc3
+.cfi_endproc	
+.size	bn_mul4x_mont,.-bn_mul4x_mont
+.extern	bn_sqr8x_internal
+.hidden bn_sqr8x_internal
 
-
-
-
-
-.p2align	5
+.type	bn_sqr8x_mont,@function
+.align	32
 bn_sqr8x_mont:
-
+.cfi_startproc	
 	movq	%rsp,%rax
-
-L$sqr8x_enter:
+.cfi_def_cfa_register	%rax
+.Lsqr8x_enter:
 	pushq	%rbx
-
+.cfi_offset	%rbx,-16
 	pushq	%rbp
-
+.cfi_offset	%rbp,-24
 	pushq	%r12
-
+.cfi_offset	%r12,-32
 	pushq	%r13
-
+.cfi_offset	%r13,-40
 	pushq	%r14
-
+.cfi_offset	%r14,-48
 	pushq	%r15
-
-L$sqr8x_prologue:
+.cfi_offset	%r15,-56
+.Lsqr8x_prologue:
 
 	movl	%r9d,%r10d
 	shll	$3,%r9d
@@ -727,20 +730,20 @@ L$sqr8x_prologue:
 	subq	%rsi,%r11
 	andq	$4095,%r11
 	cmpq	%r11,%r10
-	jb	L$sqr8x_sp_alt
+	jb	.Lsqr8x_sp_alt
 	subq	%r11,%rbp
 	leaq	-64(%rbp,%r9,2),%rbp
-	jmp	L$sqr8x_sp_done
+	jmp	.Lsqr8x_sp_done
 
-.p2align	5
-L$sqr8x_sp_alt:
+.align	32
+.Lsqr8x_sp_alt:
 	leaq	4096-64(,%r9,2),%r10
 	leaq	-64(%rbp,%r9,2),%rbp
 	subq	%r10,%r11
 	movq	$0,%r10
 	cmovcq	%r10,%r11
 	subq	%r11,%rbp
-L$sqr8x_sp_done:
+.Lsqr8x_sp_done:
 	andq	$-64,%rbp
 	movq	%rsp,%r11
 	subq	%rbp,%r11
@@ -748,30 +751,30 @@ L$sqr8x_sp_done:
 	leaq	(%r11,%rbp,1),%rsp
 	movq	(%rsp),%r10
 	cmpq	%rbp,%rsp
-	ja	L$sqr8x_page_walk
-	jmp	L$sqr8x_page_walk_done
+	ja	.Lsqr8x_page_walk
+	jmp	.Lsqr8x_page_walk_done
 
-.p2align	4
-L$sqr8x_page_walk:
+.align	16
+.Lsqr8x_page_walk:
 	leaq	-4096(%rsp),%rsp
 	movq	(%rsp),%r10
 	cmpq	%rbp,%rsp
-	ja	L$sqr8x_page_walk
-L$sqr8x_page_walk_done:
+	ja	.Lsqr8x_page_walk
+.Lsqr8x_page_walk_done:
 
 	movq	%r9,%r10
 	negq	%r9
 
 	movq	%r8,32(%rsp)
 	movq	%rax,40(%rsp)
-
-L$sqr8x_body:
+.cfi_escape	0x0f,0x05,0x77,0x28,0x06,0x23,0x08
+.Lsqr8x_body:
 
 .byte	102,72,15,110,209
 	pxor	%xmm0,%xmm0
 .byte	102,72,15,110,207
 .byte	102,73,15,110,218
-	call	_bn_sqr8x_internal
+	call	bn_sqr8x_internal
 
 
 
@@ -781,10 +784,10 @@ L$sqr8x_body:
 	movq	%r9,%rdx
 .byte	102,72,15,126,207
 	sarq	$3+2,%rcx
-	jmp	L$sqr8x_sub
+	jmp	.Lsqr8x_sub
 
-.p2align	5
-L$sqr8x_sub:
+.align	32
+.Lsqr8x_sub:
 	movq	0(%rbx),%r12
 	movq	8(%rbx),%r13
 	movq	16(%rbx),%r14
@@ -801,7 +804,7 @@ L$sqr8x_sub:
 	movq	%r15,24(%rdi)
 	leaq	32(%rdi),%rdi
 	incq	%rcx
-	jnz	L$sqr8x_sub
+	jnz	.Lsqr8x_sub
 
 	sbbq	$0,%rax
 	leaq	(%rbx,%r9,1),%rbx
@@ -811,11 +814,11 @@ L$sqr8x_sub:
 	pxor	%xmm0,%xmm0
 	pshufd	$0,%xmm1,%xmm1
 	movq	40(%rsp),%rsi
+.cfi_def_cfa	%rsi,8
+	jmp	.Lsqr8x_cond_copy
 
-	jmp	L$sqr8x_cond_copy
-
-.p2align	5
-L$sqr8x_cond_copy:
+.align	32
+.Lsqr8x_cond_copy:
 	movdqa	0(%rbx),%xmm2
 	movdqa	16(%rbx),%xmm3
 	leaq	32(%rbx),%rbx
@@ -837,27 +840,27 @@ L$sqr8x_cond_copy:
 	movdqu	%xmm4,-32(%rdi)
 	movdqu	%xmm5,-16(%rdi)
 	addq	$32,%r9
-	jnz	L$sqr8x_cond_copy
+	jnz	.Lsqr8x_cond_copy
 
 	movq	$1,%rax
 	movq	-48(%rsi),%r15
-
+.cfi_restore	%r15
 	movq	-40(%rsi),%r14
-
+.cfi_restore	%r14
 	movq	-32(%rsi),%r13
-
+.cfi_restore	%r13
 	movq	-24(%rsi),%r12
-
+.cfi_restore	%r12
 	movq	-16(%rsi),%rbp
-
+.cfi_restore	%rbp
 	movq	-8(%rsi),%rbx
-
+.cfi_restore	%rbx
 	leaq	(%rsi),%rsp
-
-L$sqr8x_epilogue:
+.cfi_def_cfa_register	%rsp
+.Lsqr8x_epilogue:
 	.byte	0xf3,0xc3
-
-
+.cfi_endproc	
+.size	bn_sqr8x_mont,.-bn_sqr8x_mont
 .byte	77,111,110,116,103,111,109,101,114,121,32,77,117,108,116,105,112,108,105,99,97,116,105,111,110,32,102,111,114,32,120,56,54,95,54,52,44,32,67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97,112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
-.p2align	4
+.align	16
 #endif

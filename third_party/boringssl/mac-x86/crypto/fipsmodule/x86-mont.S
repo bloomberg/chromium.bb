@@ -1,5 +1,5 @@
 #if defined(__i386__)
-.file	"src/crypto/bn/asm/x86-mont.S"
+.file	"src/crypto/fipsmodule/bn/asm/x86-mont.S"
 .text
 .globl	_bn_mul_mont
 .private_extern	_bn_mul_mont

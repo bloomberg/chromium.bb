@@ -1721,7 +1721,8 @@ rsaz_1024_gather5_avx2:
 .type	rsaz_avx2_eligible,@function
 .align	32
 rsaz_avx2_eligible:
-	movl	OPENSSL_ia32cap_P+8(%rip),%eax
+	leaq	OPENSSL_ia32cap_P(%rip),%rax
+	movl	8(%rax),%eax
 	movl	$524544,%ecx
 	movl	$0,%edx
 	andl	%eax,%ecx

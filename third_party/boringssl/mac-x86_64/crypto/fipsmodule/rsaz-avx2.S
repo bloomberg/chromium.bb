@@ -1720,7 +1720,8 @@ L$SEH_end_rsaz_1024_gather5:
 
 .p2align	5
 _rsaz_avx2_eligible:
-	movl	_OPENSSL_ia32cap_P+8(%rip),%eax
+	leaq	_OPENSSL_ia32cap_P(%rip),%rax
+	movl	8(%rax),%eax
 	movl	$524544,%ecx
 	movl	$0,%edx
 	andl	%eax,%ecx

@@ -1814,7 +1814,8 @@ global	rsaz_avx2_eligible
 
 ALIGN	32
 rsaz_avx2_eligible:
-	mov	eax,DWORD[((OPENSSL_ia32cap_P+8))]
+	lea	rax,[OPENSSL_ia32cap_P]
+	mov	eax,DWORD[8+rax]
 	mov	ecx,524544
 	mov	edx,0
 	and	ecx,eax
