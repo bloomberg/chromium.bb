@@ -37,10 +37,14 @@ class CastPage(page.Page):
           'window.document.getElementById("media-router-container").' +
           'shadowRoot.getElementById("container-header").shadowRoot.' +
           'getElementById("close-button").click();')
-    except exceptions.DevtoolsTargetCrashException:
+    except (exceptions.DevtoolsTargetCrashException,
+            exceptions.EvaluateException):
       # Ignore the crash exception, this exception is caused by the js
       # code which closes the dialog, it is expected.
+      # Ignore the evaluate exception, this exception maybe caused by the dialog
+      # is closed/closing when the JS is executing.
       pass
+
 
   def CloseExistingRoute(self, action_runner, sink_name):
     """Closes the existing route if it exists, otherwise does nothing."""
