@@ -1,0 +1,34 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
+<link rel="import" href="chrome://bookmarks/edit_dialog.html">
+<link rel="import" href="chrome://bookmarks/store_client.html">
+
+<dom-module id="bookmarks-command-manager">
+  <template>
+    <dialog is="cr-action-menu" id="dropdown" on-mousedown="onMenuMousedown_">
+      <button class="dropdown-item"
+          command="edit"
+          hidden$="[[!canExecute('edit', menuIds_)]]"
+          on-tap="onCommandClick_">
+        [[getEditActionLabel_(menuIds_)]]
+      </button>
+      <button class="dropdown-item"
+          command="copy"
+          hidden$="[[!canExecute('copy', menuIds_)]]"
+          on-tap="onCommandClick_">
+        $i18n{menuCopyURL}
+      </button>
+      <button class="dropdown-item"
+          command="delete"
+          hidden$="[[!canExecute('delete', menuIds_)]]"
+          on-tap="onCommandClick_">
+        $i18n{menuDelete}
+      </button>
+    </dialog>
+    <template is="cr-lazy-render" id="editDialog">
+      <bookmarks-edit-dialog></bookmarks-edit-dialog>
+    </template>
+  </template>
+  <script src="chrome://bookmarks/command_manager.js"></script>
+</dom-module>

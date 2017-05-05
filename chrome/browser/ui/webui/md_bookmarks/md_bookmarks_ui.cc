@@ -80,6 +80,10 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("api_listener.js", IDR_MD_BOOKMARKS_API_LISTENER_JS);
   source->AddResourcePath("app.html", IDR_MD_BOOKMARKS_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_BOOKMARKS_APP_JS);
+  source->AddResourcePath("command_manager.html",
+                          IDR_MD_BOOKMARKS_COMMAND_MANAGER_HTML);
+  source->AddResourcePath("command_manager.js",
+                          IDR_MD_BOOKMARKS_COMMAND_MANAGER_JS);
   source->AddResourcePath("constants.html", IDR_MD_BOOKMARKS_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_MD_BOOKMARKS_CONSTANTS_JS);
   source->AddResourcePath("dnd_manager.html",

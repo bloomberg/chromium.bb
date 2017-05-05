@@ -55,6 +55,20 @@ TEST_F('MaterialBookmarksAppTest', 'All', function() {
   mocha.run();
 });
 
+function MaterialBookmarksCommandManagerTest() {}
+
+MaterialBookmarksCommandManagerTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'command_manager_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksCommandManagerTest', 'All', function() {
+  mocha.run();
+});
+
 function MaterialBookmarksDNDManagerTest() {}
 
 MaterialBookmarksDNDManagerTest.prototype = {
