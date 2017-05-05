@@ -55,7 +55,7 @@ class WebURLRequest;
 class WebWorkerContentSettingsClientProxy;
 struct WebPluginParams;
 struct WebURLError;
-}
+}  // namespace blink
 
 namespace gfx {
 class ICCProfile;
@@ -97,7 +97,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // returns false, the content layer will create the plugin.
   virtual bool OverrideCreatePlugin(
       RenderFrame* render_frame,
-      blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params,
       blink::WebPlugin** plugin);
 

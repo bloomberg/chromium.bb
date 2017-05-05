@@ -12,7 +12,6 @@ class FilePath;
 }
 
 namespace blink {
-class WebLocalFrame;
 struct WebPluginParams;
 }
 
@@ -29,7 +28,6 @@ class NonLoadablePluginPlaceholder {
   // Creates a non-loadable plugin placeholder for platforms without plugins.
   static plugins::PluginPlaceholder* CreateNotSupportedPlugin(
       content::RenderFrame* render_frame,
-      blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params);
 
   static plugins::PluginPlaceholder* CreateErrorPlugin(

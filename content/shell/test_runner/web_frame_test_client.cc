@@ -370,11 +370,10 @@ void WebFrameTestClient::DidChangeSelection(bool is_empty_callback) {
 }
 
 blink::WebPlugin* WebFrameTestClient::CreatePlugin(
-    blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) {
   if (TestPlugin::IsSupportedMimeType(params.mime_type))
-    return TestPlugin::create(frame, params, delegate_);
-  return delegate_->CreatePluginPlaceholder(frame, params);
+    return TestPlugin::Create(params, delegate_);
+  return delegate_->CreatePluginPlaceholder(params);
 }
 
 void WebFrameTestClient::ShowContextMenu(

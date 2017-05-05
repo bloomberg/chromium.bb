@@ -36,7 +36,6 @@
 namespace blink {
 
 class WebDragData;
-class WebFrame;
 class WebInputEvent;
 class WebPluginContainer;
 class WebURLResponse;
@@ -44,7 +43,7 @@ struct WebPluginParams;
 
 class FakeWebPlugin : public WebPlugin {
  public:
-  FakeWebPlugin(WebFrame*, const WebPluginParams&);
+  explicit FakeWebPlugin(const WebPluginParams&);
 
   // WebPlugin methods:
   bool Initialize(WebPluginContainer*) override;
@@ -82,7 +81,6 @@ class FakeWebPlugin : public WebPlugin {
   WebPluginContainer* Container() const { return container_; }
 
  private:
-  WebFrame* frame_;
   WebPluginContainer* container_;
 };
 

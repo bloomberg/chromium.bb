@@ -32,8 +32,7 @@
 
 namespace blink {
 
-FakeWebPlugin::FakeWebPlugin(WebFrame* frame, const WebPluginParams& params)
-    : frame_(frame) {}
+FakeWebPlugin::FakeWebPlugin(const WebPluginParams& params) {}
 
 FakeWebPlugin::~FakeWebPlugin() {}
 
@@ -43,8 +42,7 @@ bool FakeWebPlugin::Initialize(WebPluginContainer* container) {
 }
 
 void FakeWebPlugin::Destroy() {
-  container_ = 0;
-  frame_ = 0;
+  container_ = nullptr;
   delete this;
 }
 

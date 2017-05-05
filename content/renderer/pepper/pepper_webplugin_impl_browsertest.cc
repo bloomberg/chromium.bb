@@ -166,14 +166,13 @@ class PepperWebPluginImplBrowserTest
   class MockContentRendererClient : public ContentRendererClient {
    public:
     bool OverrideCreatePlugin(RenderFrame* render_frame,
-                              blink::WebLocalFrame* frame,
                               const blink::WebPluginParams& params,
                               blink::WebPlugin** plugin) override {
       current_test_->throttler_ =
           new PluginInstanceThrottlerImpl(RenderFrame::DONT_RECORD_DECISION);
       current_test_->throttler_->AddObserver(current_test_);
       *plugin = render_frame->CreatePlugin(
-          frame, GetPluginInfo().ToWebPluginInfo(), params,
+          GetPluginInfo().ToWebPluginInfo(), params,
           base::WrapUnique(current_test_->throttler_));
       return *plugin;
     }

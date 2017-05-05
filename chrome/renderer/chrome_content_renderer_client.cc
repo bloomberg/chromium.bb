@@ -625,7 +625,6 @@ SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
 
 bool ChromeContentRendererClient::OverrideCreatePlugin(
     content::RenderFrame* render_frame,
-    WebLocalFrame* frame,
     const WebPluginParams& params,
     WebPlugin** plugin) {
   std::string orig_mime_type = params.mime_type.Utf8();
@@ -640,13 +639,15 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromeViewHostMsg_GetPluginInfo_Output output;
   render_frame->Send(new ChromeViewHostMsg_GetPluginInfo(
-      render_frame->GetRoutingID(), url, frame->Top()->GetSecurityOrigin(),
-      orig_mime_type, &output));
-  *plugin = CreatePlugin(render_frame, frame, params, output);
+      render_frame->GetRoutingID(), url,
+      render_frame->GetWebFrame()->Top()->GetSecurityOrigin(), orig_mime_type,
+      &output));
+  *plugin = CreatePlugin(render_frame, params, output);
 #else  // !BUILDFLAG(ENABLE_PLUGINS)
   PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
-  *plugin = NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
-                render_frame, frame, params)->plugin();
+  auto* placeholder = NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
+      render_frame, params);
+  *plugin = placeholder->plugin();
 
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
   return true;
@@ -655,8 +656,9 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
 WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
     content::RenderFrame* render_frame,
     const base::FilePath& plugin_path) {
-  return NonLoadablePluginPlaceholder::CreateErrorPlugin(render_frame,
-                                                         plugin_path)->plugin();
+  auto* placeholder = NonLoadablePluginPlaceholder::CreateErrorPlugin(
+      render_frame, plugin_path);
+  return placeholder->plugin();
 }
 
 void ChromeContentRendererClient::DeferMediaLoad(
@@ -683,9 +685,9 @@ void ChromeContentRendererClient::DeferMediaLoad(
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+// static
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
     content::RenderFrame* render_frame,
-    WebLocalFrame* frame,
     const WebPluginParams& original_params,
     const ChromeViewHostMsg_GetPluginInfo_Output& output) {
   const WebPluginInfo& info = output.plugin;
@@ -704,15 +706,15 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       orig_mime_type == content::kBrowserPluginMimeType) {
     PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
     placeholder = ChromePluginPlaceholder::CreateLoadableMissingPlugin(
-        render_frame, frame, original_params);
+        render_frame, original_params);
   } else {
     // TODO(bauerb): This should be in content/.
     WebPluginParams params(original_params);
-    for (size_t i = 0; i < info.mime_types.size(); ++i) {
-      if (info.mime_types[i].mime_type == actual_mime_type) {
-        AppendParams(info.mime_types[i].additional_param_names,
-                     info.mime_types[i].additional_param_values,
-                     &params.attribute_names, &params.attribute_values);
+    for (const auto& mime_type : info.mime_types) {
+      if (mime_type.mime_type == actual_mime_type) {
+        AppendParams(mime_type.additional_param_names,
+                     mime_type.additional_param_values, &params.attribute_names,
+                     &params.attribute_values);
         break;
       }
     }
@@ -738,13 +740,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
-    auto create_blocked_plugin = [&render_frame, &frame, &params, &info,
-                                  &identifier, &group_name](
-        int template_id, const base::string16& message) {
+    auto create_blocked_plugin = [&render_frame, &params, &info, &identifier,
+                                  &group_name](int template_id,
+                                               const base::string16& message) {
       return ChromePluginPlaceholder::CreateBlockedPlugin(
-          render_frame, frame, params, info, identifier, group_name,
-          template_id, message, PowerSaverInfo());
+          render_frame, params, info, identifier, group_name, template_id,
+          message, PowerSaverInfo());
     };
+    WebLocalFrame* frame = render_frame->GetWebFrame();
     switch (status) {
       case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
         NOTREACHED();
@@ -829,7 +832,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             !power_saver_info.poster_attribute.empty() ||
             power_saver_info.power_saver_enabled) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-              render_frame, frame, params, info, identifier, group_name,
+              render_frame, params, info, identifier, group_name,
               power_saver_info.poster_attribute.empty()
                   ? IDR_BLOCKED_PLUGIN_HTML
                   : IDR_PLUGIN_POSTER_HTML,
@@ -847,7 +850,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 
         // Same-origin and whitelisted-origin plugins skip the placeholder.
-        return render_frame->CreatePlugin(frame, info, params, nullptr);
+        return render_frame->CreatePlugin(info, params, nullptr);
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,

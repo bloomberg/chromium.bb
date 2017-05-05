@@ -438,7 +438,6 @@ class CONTENT_EXPORT RenderFrameImpl
                       const ContextMenuParams& params) override;
   void CancelContextMenu(int request_id) override;
   blink::WebPlugin* CreatePlugin(
-      blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
       std::unique_ptr<PluginInstanceThrottler> throttler) override;
@@ -499,8 +498,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetHostZoomLevel(const GURL& url, double zoom_level) override;
 
   // blink::WebFrameClient implementation:
-  blink::WebPlugin* CreatePlugin(blink::WebLocalFrame* frame,
-                                 const blink::WebPluginParams& params) override;
+  blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
   blink::WebMediaPlayer* CreateMediaPlayer(
       const blink::WebMediaPlayerSource& source,
       blink::WebMediaPlayerClient* client,

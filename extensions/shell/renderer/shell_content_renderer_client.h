@@ -34,7 +34,6 @@ class ShellContentRendererClient : public content::ContentRendererClient {
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RenderViewCreated(content::RenderView* render_view) override;
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
-                            blink::WebLocalFrame* frame,
                             const blink::WebPluginParams& params,
                             blink::WebPlugin** plugin) override;
   blink::WebPlugin* CreatePluginReplacement(

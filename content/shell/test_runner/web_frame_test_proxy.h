@@ -58,12 +58,11 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
 
   // WebFrameClient implementation.
   blink::WebPlugin* CreatePlugin(
-      blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params) override {
-    blink::WebPlugin* plugin = test_client()->CreatePlugin(frame, params);
+    blink::WebPlugin* plugin = test_client()->CreatePlugin(params);
     if (plugin)
       return plugin;
-    return Base::CreatePlugin(frame, params);
+    return Base::CreatePlugin(params);
   }
 
   blink::WebScreenOrientationClient* GetWebScreenOrientationClient() override {

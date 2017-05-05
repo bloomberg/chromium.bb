@@ -157,7 +157,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void ResolveBeforeInstallPromptPromise(
       const std::string& platform) override;
   blink::WebPlugin* CreatePluginPlaceholder(
-    blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) override;
   float GetDeviceScaleFactor() const override;
   void RunIdleTasks(const base::Closure& callback) override;

@@ -285,7 +285,6 @@ class WebTestDelegate {
       const std::string& platform) = 0;
 
   virtual blink::WebPlugin* CreatePluginPlaceholder(
-      blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params) = 0;
 
   virtual float GetDeviceScaleFactor() const = 0;
@@ -301,6 +300,9 @@ class WebTestDelegate {
   // Indicates if the navigation was initiated by the browser or renderer.
   virtual bool IsNavigationInitiatedByRenderer(
       const blink::WebURLRequest& request) = 0;
+
+ protected:
+  virtual ~WebTestDelegate() {}
 };
 
 }  // namespace test_runner

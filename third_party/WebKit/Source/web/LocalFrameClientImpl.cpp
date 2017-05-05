@@ -31,6 +31,8 @@
 
 #include "web/LocalFrameClientImpl.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
@@ -106,8 +108,6 @@
 #include "web/WebDevToolsFrontendImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -733,8 +733,7 @@ PluginView* LocalFrameClientImpl::CreatePlugin(
   params.attribute_values = param_values;
   params.load_manually = load_manually;
 
-  WebPlugin* web_plugin =
-      web_frame_->Client()->CreatePlugin(web_frame_, params);
+  WebPlugin* web_plugin = web_frame_->Client()->CreatePlugin(params);
   if (!web_plugin)
     return nullptr;
 

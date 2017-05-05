@@ -15,7 +15,6 @@
 #include "ui/gfx/codec/png_codec.h"
 
 PluginPreroller::PluginPreroller(content::RenderFrame* render_frame,
-                                 blink::WebLocalFrame* frame,
                                  const blink::WebPluginParams& params,
                                  const content::WebPluginInfo& info,
                                  const std::string& identifier,
@@ -23,7 +22,6 @@ PluginPreroller::PluginPreroller(content::RenderFrame* render_frame,
                                  const base::string16& message,
                                  content::PluginInstanceThrottler* throttler)
     : RenderFrameObserver(render_frame),
-      frame_(frame),
       params_(params),
       info_(info),
       identifier_(identifier),
@@ -66,7 +64,7 @@ void PluginPreroller::OnThrottleStateChange() {
 
   ChromePluginPlaceholder* placeholder =
       ChromePluginPlaceholder::CreateBlockedPlugin(
-          render_frame(), frame_, params_, info_, identifier_, name_,
+          render_frame(), params_, info_, identifier_, name_,
           IDR_PLUGIN_POSTER_HTML, message_, power_saver_info);
   placeholder->SetPremadePlugin(throttler_);
   placeholder->AllowLoading();

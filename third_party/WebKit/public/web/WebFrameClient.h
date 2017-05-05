@@ -117,9 +117,7 @@ class BLINK_EXPORT WebFrameClient {
   // Factory methods -----------------------------------------------------
 
   // May return null.
-  virtual WebPlugin* CreatePlugin(WebLocalFrame*, const WebPluginParams&) {
-    return 0;
-  }
+  virtual WebPlugin* CreatePlugin(const WebPluginParams&) { return nullptr; }
 
   // May return null.
   // WebContentDecryptionModule* may be null if one has not yet been set.
@@ -128,11 +126,11 @@ class BLINK_EXPORT WebFrameClient {
                                             WebMediaPlayerEncryptedMediaClient*,
                                             WebContentDecryptionModule*,
                                             const WebString& sink_id) {
-    return 0;
+    return nullptr;
   }
 
   // May return null.
-  virtual WebMediaSession* CreateMediaSession() { return 0; }
+  virtual WebMediaSession* CreateMediaSession() { return nullptr; }
 
   // May return null.
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
@@ -149,7 +147,7 @@ class BLINK_EXPORT WebFrameClient {
   // May return null.
   virtual WebWorkerContentSettingsClientProxy*
   CreateWorkerContentSettingsClientProxy() {
-    return 0;
+    return nullptr;
   }
 
   // Returns a new WebWorkerFetchContext for a dedicated worker. Ownership of
@@ -164,14 +162,14 @@ class BLINK_EXPORT WebFrameClient {
   virtual WebExternalPopupMenu* CreateExternalPopupMenu(
       const WebPopupMenuInfo&,
       WebExternalPopupMenuClient*) {
-    return 0;
+    return nullptr;
   }
 
   // Services ------------------------------------------------------------
 
   // A frame specific cookie jar.  May return null, in which case
   // WebKitPlatformSupport::cookieJar() will be called to access cookies.
-  virtual WebCookieJar* CookieJar() { return 0; }
+  virtual WebCookieJar* CookieJar() { return nullptr; }
 
   // Returns a blame context for attributing work belonging to this frame.
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
@@ -322,7 +320,7 @@ class BLINK_EXPORT WebFrameClient {
     WebContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy;
 
-    NavigationPolicyInfo(WebURLRequest& url_request)
+    explicit NavigationPolicyInfo(WebURLRequest& url_request)
         : extra_data(nullptr),
           url_request(url_request),
           navigation_type(kWebNavigationTypeOther),
@@ -480,12 +478,12 @@ class BLINK_EXPORT WebFrameClient {
   // Push API ---------------------------------------------------
 
   // Used to access the embedder for the Push API.
-  virtual WebPushClient* PushClient() { return 0; }
+  virtual WebPushClient* PushClient() { return nullptr; }
 
   // Presentation API ----------------------------------------------------
 
   // Used to access the embedder for the Presentation API.
-  virtual WebPresentationClient* PresentationClient() { return 0; }
+  virtual WebPresentationClient* PresentationClient() { return nullptr; }
 
   // InstalledApp API ----------------------------------------------------
 
@@ -519,7 +517,7 @@ class BLINK_EXPORT WebFrameClient {
       WebColorChooserClient*,
       const WebColor&,
       const WebVector<WebColorSuggestion>&) {
-    return 0;
+    return nullptr;
   }
 
   // Displays a modal alert dialog containing the given message. Returns
@@ -671,11 +669,11 @@ class BLINK_EXPORT WebFrameClient {
   virtual void WillStartUsingPeerConnectionHandler(
       WebRTCPeerConnectionHandler*) {}
 
-  virtual WebUserMediaClient* UserMediaClient() { return 0; }
+  virtual WebUserMediaClient* UserMediaClient() { return nullptr; }
 
   // Encrypted Media -------------------------------------------------
 
-  virtual WebEncryptedMediaClient* EncryptedMediaClient() { return 0; }
+  virtual WebEncryptedMediaClient* EncryptedMediaClient() { return nullptr; }
 
   // User agent ------------------------------------------------------
 
@@ -702,7 +700,7 @@ class BLINK_EXPORT WebFrameClient {
 
   // Access the embedder API for (client-based) screen orientation client .
   virtual WebScreenOrientationClient* GetWebScreenOrientationClient() {
-    return 0;
+    return nullptr;
   }
 
   // Accessibility -------------------------------------------------------

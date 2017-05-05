@@ -26,7 +26,6 @@ SkBitmap* ContentRendererClient::GetSadWebViewBitmap() {
 
 bool ContentRendererClient::OverrideCreatePlugin(
     RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params,
     blink::WebPlugin** plugin) {
   return false;

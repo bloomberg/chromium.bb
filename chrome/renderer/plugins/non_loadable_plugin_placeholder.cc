@@ -21,7 +21,6 @@
 plugins::PluginPlaceholder*
 NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
     content::RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -34,7 +33,7 @@ NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
   std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
   // PluginPlaceholder will destroy itself when its WebViewPlugin is going away.
-  return new plugins::PluginPlaceholder(render_frame, frame, params, html_data);
+  return new plugins::PluginPlaceholder(render_frame, params, html_data);
 }
 
 // static
@@ -53,7 +52,7 @@ plugins::PluginPlaceholder* NonLoadablePluginPlaceholder::CreateErrorPlugin(
   blink::WebPluginParams params;
   // PluginPlaceholder will destroy itself when its WebViewPlugin is going away.
   plugins::PluginPlaceholder* plugin =
-      new plugins::PluginPlaceholder(render_frame, nullptr, params, html_data);
+      new plugins::PluginPlaceholder(render_frame, params, html_data);
 
   content::RenderThread::Get()->Send(new ChromeViewHostMsg_CouldNotLoadPlugin(
       plugin->routing_id(), file_path));
