@@ -406,6 +406,7 @@ _arm_internal_release_boards = frozenset([
     'beaglebone',
     'beaglebone_servo',
     'bob',
+    'cobblepot',
     'daisy',
     'daisy_skate',
     'daisy_spring',
@@ -627,6 +628,7 @@ _lakitu_boards = frozenset([
 ])
 
 _loonix_boards = frozenset([
+    'cobblepot',
     'gonzo',
     'lasilla-ground',
     'lasilla-sky',
