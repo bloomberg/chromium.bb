@@ -18,10 +18,21 @@ Polymer({
     /** @private {function(!Event)} */
     this.boundOnOpenItemMenu_ = this.onOpenItemMenu_.bind(this);
     document.addEventListener('open-item-menu', this.boundOnOpenItemMenu_);
+
+    /** @private {function(!Event)} */
+    this.boundOnKeydown_ = this.onKeydown_.bind(this);
+    document.addEventListener('keydown', this.boundOnKeydown_);
+
+    /** @private {Object<Command, string>} */
+    this.shortcuts_ = {};
+    this.shortcuts_[Command.EDIT] = cr.isMac ? 'enter' : 'f2';
+    this.shortcuts_[Command.COPY] = cr.isMac ? 'meta+c' : 'ctrl+c';
+    this.shortcuts_[Command.DELETE] = cr.isMac ? 'delete backspace' : 'delete';
   },
 
   detached: function() {
     document.removeEventListener('open-item-menu', this.boundOnOpenItemMenu_);
+    document.removeEventListener('keydown', this.boundOnKeydown_);
   },
 
   /**
@@ -68,7 +79,7 @@ Polymer({
               return !!node.url;
             });
       case Command.DELETE:
-        return true;
+        return itemIds.size > 0;
       default:
         return false;
     }
@@ -139,6 +150,27 @@ Polymer({
   onCommandClick_: function(e) {
     this.closeCommandMenu();
     this.handle(e.target.getAttribute('command'), assert(this.menuIds_));
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onKeydown_: function(e) {
+    var selection = this.getState().selection.items;
+    // TODO(tsergeant): Prevent keyboard shortcuts when a dialog is open or text
+    // field is focused.
+    for (var commandName in this.shortcuts_) {
+      var shortcut = this.shortcuts_[commandName];
+      if (Polymer.IronA11yKeysBehavior.keyboardEventMatchesKeys(e, shortcut) &&
+          this.canExecute(commandName, selection)) {
+        this.handle(commandName, selection);
+
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+    }
   },
 
   /**
