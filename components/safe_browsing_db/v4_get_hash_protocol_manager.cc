@@ -17,6 +17,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -301,8 +302,41 @@ void V4GetHashProtocolManager::GetFullHashes(
   net::HttpRequestHeaders headers;
   GetHashUrlAndHeaders(req_base64, &gethash_url, &headers);
 
-  std::unique_ptr<net::URLFetcher> owned_fetcher = net::URLFetcher::Create(
-      url_fetcher_id_++, gethash_url, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("safe_browsing_v4_get_hash", R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "When Safe Browsing detects that a URL might be dangerous based on "
+            "its local database, it sends a partial hash of that URL to Google "
+            "to verify it before showing a warning to the user. This partial "
+            "hash does not expose the URL to Google."
+          trigger:
+            "When a resource URL matches the local hash-prefix database of "
+            "potential threats (malware, phishing etc), and the full-hash "
+            "result is not already cached, this will be sent."
+          data:
+             "The 32-bit hash prefix of any potentially bad URLs. The URLs "
+             "themselves are not sent."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "Safe Browsing cookie store"
+          setting:
+            "Users can disable Safe Browsing by unchecking 'Protect you and "
+            "your device from dangerous sites' in Chromium settings under "
+            "Privacy. The feature is enabled by default."
+          chrome_policy {
+            SafeBrowsingEnabled {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingEnabled: false
+            }
+          }
+        })");
+  std::unique_ptr<net::URLFetcher> owned_fetcher =
+      net::URLFetcher::Create(url_fetcher_id_++, gethash_url,
+                              net::URLFetcher::GET, this, traffic_annotation);
   net::URLFetcher* fetcher = owned_fetcher.get();
   pending_hash_requests_[fetcher].reset(new FullHashCallbackInfo(
       cached_full_hash_infos, prefixes_to_request, std::move(owned_fetcher),

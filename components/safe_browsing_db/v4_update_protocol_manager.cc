@@ -17,6 +17,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -311,8 +312,37 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   net::HttpRequestHeaders headers;
   GetUpdateUrlAndHeaders(req_base64, &update_url, &headers);
 
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      url_fetcher_id_++, update_url, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("safe_browsing_g4_update", R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "Safe Browsing issues a request to Google every 30 minutes or so "
+            "to get the latest database of hashes of bad URLs."
+          trigger:
+            "On a timer, approximately every 30 minutes."
+          data:
+             "The state of the local DB is sent so the server can send just "
+             "the changes. This doesn't include any user data."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "Safe Browsing cookie store"
+          setting:
+            "Users can disable Safe Browsing by unchecking 'Protect you and "
+            "your device from dangerous sites' in Chromium settings under "
+            "Privacy. The feature is enabled by default."
+          chrome_policy {
+            SafeBrowsingEnabled {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingEnabled: false
+            }
+          }
+        })");
+  std::unique_ptr<net::URLFetcher> fetcher =
+      net::URLFetcher::Create(url_fetcher_id_++, update_url,
+                              net::URLFetcher::GET, this, traffic_annotation);
   fetcher->SetExtraRequestHeaders(headers.ToString());
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
