@@ -741,7 +741,7 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_POPUP_PERMISSION_TITLE" desc="Title of the permission to display pop-up windows [CHAR-LIMIT=32]">
         Pop-ups
       </message>
-      <message name="IDS_SUBRESOURCE_FILTER_PERMISSION_TITLE" desc="Title for the subresource filter permission [CHAR-LIMIT=32]">
+      <message name="IDS_SUBRESOURCE_FILTER_PERMISSION_TITLE" desc="Title for the subresource filter permission [CHAR-LIMIT=32]" translateable="false">
          Subresource Filter
       </message>
       <message name="IDS_PUSH_NOTIFICATIONS_PERMISSION_TITLE" desc="Title for the permission for showing push notifications [CHAR-LIMIT=32]">

@@ -12093,13 +12093,13 @@ read aloud to screenreader users to announce that a completion is available.">
       Chrome has blocked parts of this site to protect you from potentially deceptive content.
     </message>
 
-    <message name="IDS_SUBRESOURCE_FILTER_HEADER" desc="Header for the subresource filter setting on the Content Settings dialog.">
+    <message name="IDS_SUBRESOURCE_FILTER_HEADER" desc="Header for the subresource filter setting on the Content Settings dialog." translateable="false">
        Subresource Filter
     </message>
-    <message name="IDS_SUBRESOURCE_FILTER_ALLOW_RADIO" desc="A radio button on the Content Settings dialog to allow subresource filter use.">
+    <message name="IDS_SUBRESOURCE_FILTER_ALLOW_RADIO" desc="A radio button on the Content Settings dialog to allow subresource filter use." translateable="false">
       Allow the Subresource Filter to perform filtering
     </message>
-    <message name="IDS_SUBRESOURCE_FILTER_BLOCK_RADIO" desc="A radio button on the Content Settings dialog to block subresource filter use on all sites.">
+    <message name="IDS_SUBRESOURCE_FILTER_BLOCK_RADIO" desc="A radio button on the Content Settings dialog to block subresource filter use on all sites." translateable="false">
       Do not allow Subresource Filter to perform filtering
     </message>
     <if expr="is_win">
