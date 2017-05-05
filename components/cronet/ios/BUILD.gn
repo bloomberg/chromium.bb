@@ -14,6 +14,12 @@ import("//url/features.gni")
 
 assert(!is_component_build, "Cronet requires static library build.")
 
+group("cronet_consumer_group") {
+  deps = [
+    "//components/cronet/ios/cronet_consumer",
+  ]
+}
+
 process_version("cronet_version_header") {
   template_file = "//components/cronet/version.h.in"
   sources = [

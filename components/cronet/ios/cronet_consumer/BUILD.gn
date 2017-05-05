@@ -4,12 +4,12 @@
 
 import("//build/config/ios/rules.gni")
 
-ios_app_bundle("crnet_consumer") {
-  info_plist = "crnet-consumer-Info.plist"
+ios_app_bundle("cronet_consumer") {
+  info_plist = "cronet-consumer-Info.plist"
 
   deps = [
-    "//base",
-    "//ios/crnet:crnet_framework+link",
+    "//base:base",
+    "//components/cronet/ios:cronet_framework+link",
 
     # All shared libraries must have the sanitizer deps to properly link in
     # asan mode (this target will be empty in other cases).
@@ -17,14 +17,14 @@ ios_app_bundle("crnet_consumer") {
   ]
 
   sources = [
-    "crnet_consumer_app_delegate.h",
-    "crnet_consumer_app_delegate.mm",
-    "crnet_consumer_view_controller.h",
-    "crnet_consumer_view_controller.m",
+    "cronet_consumer_app_delegate.h",
+    "cronet_consumer_app_delegate.mm",
+    "cronet_consumer_view_controller.h",
+    "cronet_consumer_view_controller.m",
     "main.mm",
   ]
 
-  bundle_deps = [ "//ios/crnet:crnet_framework+bundle" ]
+  bundle_deps = [ "//components/cronet/ios:cronet_framework+bundle" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

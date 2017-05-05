@@ -5,11 +5,11 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "crnet_consumer_app_delegate.h"
+#import "cronet_consumer_app_delegate.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   @autoreleasepool {
     return UIApplicationMain(
-        argc, argv, nil, NSStringFromClass([CrNetConsumerAppDelegate class]));
+        argc, argv, nil, NSStringFromClass([CronetConsumerAppDelegate class]));
   }
 }
