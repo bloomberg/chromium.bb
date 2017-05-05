@@ -21,11 +21,9 @@ const char kPluginPlaceholderDataURL[] = "data:text/html,pluginplaceholderdata";
 
 PluginPlaceholderBase::PluginPlaceholderBase(
     content::RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params,
     const std::string& html_data)
     : content::RenderFrameObserver(render_frame),
-      frame_(frame),
       plugin_params_(params),
       plugin_(WebViewPlugin::Create(render_frame->GetRenderView(),
                                     this,
@@ -113,23 +111,15 @@ void PluginPlaceholderBase::HideCallback() {
   HidePlugin();
 }
 
-void PluginPlaceholderBase::OnDestruct() {
-  frame_ = NULL;
-}
-
-blink::WebLocalFrame* PluginPlaceholderBase::GetFrame() {
-  return frame_;
-}
+void PluginPlaceholderBase::OnDestruct() {}
 
 // static
 gin::WrapperInfo PluginPlaceholder::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
-                                     blink::WebLocalFrame* frame,
                                      const blink::WebPluginParams& params,
                                      const std::string& html_data)
-    : PluginPlaceholderBase(render_frame, frame, params, html_data) {
-}
+    : PluginPlaceholderBase(render_frame, params, html_data) {}
 
 PluginPlaceholder::~PluginPlaceholder() {
 }

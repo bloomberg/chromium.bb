@@ -30,7 +30,6 @@
 #include "third_party/WebKit/public/platform/WebTouchPoint.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -110,11 +109,9 @@ blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
 
 }  // namespace
 
-TestPlugin::TestPlugin(blink::WebFrame* frame,
-                       const blink::WebPluginParams& params,
+TestPlugin::TestPlugin(const blink::WebPluginParams& params,
                        WebTestDelegate* delegate)
-    : frame_(frame),
-      delegate_(delegate),
+    : delegate_(delegate),
       container_(nullptr),
       gl_(nullptr),
       color_texture_(0),
@@ -212,7 +209,6 @@ void TestPlugin::Destroy() {
   context_provider_.reset();
 
   container_ = nullptr;
-  frame_ = nullptr;
 
   blink::Platform::Current()
       ->MainThread()
@@ -587,10 +583,9 @@ bool TestPlugin::HandleDragStatusUpdate(
   return false;
 }
 
-TestPlugin* TestPlugin::create(blink::WebFrame* frame,
-                               const blink::WebPluginParams& params,
+TestPlugin* TestPlugin::Create(const blink::WebPluginParams& params,
                                WebTestDelegate* delegate) {
-  return new TestPlugin(frame, params, delegate);
+  return new TestPlugin(params, delegate);
 }
 
 const blink::WebString& TestPlugin::MimeType() {

@@ -49,10 +49,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
 
  protected:
   LoadablePluginPlaceholder(content::RenderFrame* render_frame,
-                            blink::WebLocalFrame* frame,
                             const blink::WebPluginParams& params,
                             const std::string& html_data);
-
   ~LoadablePluginPlaceholder() override;
 
   void MarkPluginEssential(

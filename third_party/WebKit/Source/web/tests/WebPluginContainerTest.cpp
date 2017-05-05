@@ -57,7 +57,6 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
-#include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebPluginParams.h"
 #include "public/web/WebPrintParams.h"
@@ -109,9 +108,8 @@ namespace {
 template <typename T>
 class CustomPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
-  WebPlugin* CreatePlugin(WebLocalFrame* frame,
-                          const WebPluginParams& params) override {
-    return new T(frame, params);
+  WebPlugin* CreatePlugin(const WebPluginParams& params) override {
+    return new T(params);
   }
 };
 
@@ -121,12 +119,9 @@ class TestPluginWebFrameClient;
 // as markup text.
 class TestPlugin : public FakeWebPlugin {
  public:
-  TestPlugin(WebFrame* frame,
-             const WebPluginParams& params,
+  TestPlugin(const WebPluginParams& params,
              TestPluginWebFrameClient* test_client)
-      : FakeWebPlugin(frame, params) {
-    test_client_ = test_client;
-  }
+      : FakeWebPlugin(params), test_client_(test_client) {}
 
   bool HasSelection() const override { return true; }
   WebString SelectionAsText() const override { return WebString("x"); }
@@ -136,21 +131,20 @@ class TestPlugin : public FakeWebPlugin {
   void PrintPage(int page_number, WebCanvas*) override;
 
  private:
-  TestPluginWebFrameClient* test_client_;
+  TestPluginWebFrameClient* const test_client_;
 };
 
 class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
-  WebPlugin* CreatePlugin(WebLocalFrame* frame,
-                          const WebPluginParams& params) override {
+  WebPlugin* CreatePlugin(const WebPluginParams& params) override {
     if (params.mime_type == "application/x-webkit-test-webplugin" ||
         params.mime_type == "application/pdf")
-      return new TestPlugin(frame, params, this);
-    return WebFrameClient::CreatePlugin(frame, params);
+      return new TestPlugin(params, this);
+    return WebFrameClient::CreatePlugin(params);
   }
 
  public:
   void OnPrintPage() { printed_page_ = true; }
-  bool PrintedAtLeastOnePage() { return printed_page_; }
+  bool PrintedAtLeastOnePage() const { return printed_page_; }
 
  private:
   bool printed_page_ = false;
@@ -455,9 +449,8 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
 // A class to facilitate testing that events are correctly received by plugins.
 class EventTestPlugin : public FakeWebPlugin {
  public:
-  EventTestPlugin(WebFrame* frame, const WebPluginParams& params)
-      : FakeWebPlugin(frame, params),
-        last_event_type_(WebInputEvent::kUndefined) {}
+  explicit EventTestPlugin(const WebPluginParams& params)
+      : FakeWebPlugin(params), last_event_type_(WebInputEvent::kUndefined) {}
 
   WebInputEventResult HandleInputEvent(const WebInputEvent& event,
                                        WebCursorInfo&) override {
@@ -941,21 +934,21 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest) {
   // Plugin that checks isRectTopmost in destroy().
   class TopmostPlugin : public FakeWebPlugin {
    public:
-    TopmostPlugin(WebFrame* frame, const WebPluginParams& params)
-        : FakeWebPlugin(frame, params) {}
+    explicit TopmostPlugin(const WebPluginParams& params)
+        : FakeWebPlugin(params) {}
 
     bool IsRectTopmost() { return Container()->IsRectTopmost(topmost_rect); }
 
     void Destroy() override {
-      // In destroy, isRectTopmost is no longer valid.
+      // In destroy, IsRectTopmost is no longer valid.
       EXPECT_FALSE(Container()->IsRectTopmost(topmost_rect));
       FakeWebPlugin::Destroy();
     }
   };
 
   RegisterMockedURL("plugin_container.html");
-  CustomPluginWebFrameClient<TopmostPlugin>
-      plugin_web_frame_client;  // Must outlive webViewHelper.
+  // The client must outlive WebViewHelper.
+  CustomPluginWebFrameClient<TopmostPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", true, &plugin_web_frame_client);
@@ -986,8 +979,8 @@ namespace {
 
 class CompositedPlugin : public FakeWebPlugin {
  public:
-  CompositedPlugin(WebLocalFrame* frame, const WebPluginParams& params)
-      : FakeWebPlugin(frame, params),
+  explicit CompositedPlugin(const WebPluginParams& params)
+      : FakeWebPlugin(params),
         layer_(Platform::Current()->CompositorSupport()->CreateLayer()) {}
 
   WebLayer* GetWebLayer() const { return layer_.get(); }

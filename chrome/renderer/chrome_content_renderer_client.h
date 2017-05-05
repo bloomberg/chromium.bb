@@ -111,7 +111,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   SkBitmap* GetSadPluginBitmap() override;
   SkBitmap* GetSadWebViewBitmap() override;
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
-                            blink::WebLocalFrame* frame,
                             const blink::WebPluginParams& params,
                             blink::WebPlugin** plugin) override;
   blink::WebPlugin* CreatePluginReplacement(
@@ -202,7 +201,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #if BUILDFLAG(ENABLE_PLUGINS)
   static blink::WebPlugin* CreatePlugin(
       content::RenderFrame* render_frame,
-      blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params,
       const ChromeViewHostMsg_GetPluginInfo_Output& output);
 #endif

@@ -19,7 +19,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
-class WebFrame;
 class WebGraphicsContext3DProvider;
 class WebLayer;
 struct WebPluginParams;
@@ -53,8 +52,7 @@ class WebTestDelegate;
 // 'accepts-touch' plugin parameter (defaults to false).
 class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
  public:
-  static TestPlugin* create(blink::WebFrame* frame,
-                            const blink::WebPluginParams& params,
+  static TestPlugin* Create(const blink::WebPluginParams& params,
                             WebTestDelegate* delegate);
   ~TestPlugin() override;
 
@@ -98,9 +96,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
       std::unique_ptr<cc::SingleReleaseCallback>* release_callback) override;
 
  private:
-  TestPlugin(blink::WebFrame* frame,
-             const blink::WebPluginParams& params,
-             WebTestDelegate* delegate);
+  TestPlugin(const blink::WebPluginParams& params, WebTestDelegate* delegate);
 
   enum Primitive { PrimitiveNone, PrimitiveTriangle };
 
@@ -148,7 +144,6 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   // Functions for drawing scene in Software.
   void DrawSceneSoftware(void* memory);
 
-  blink::WebFrame* frame_;
   WebTestDelegate* delegate_;
   blink::WebPluginContainer* container_;
 

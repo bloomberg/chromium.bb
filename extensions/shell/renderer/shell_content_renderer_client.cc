@@ -80,7 +80,6 @@ void ShellContentRendererClient::RenderViewCreated(
 
 bool ShellContentRendererClient::OverrideCreatePlugin(
     content::RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params,
     blink::WebPlugin** plugin) {
   // Allow the content module to create the plugin.

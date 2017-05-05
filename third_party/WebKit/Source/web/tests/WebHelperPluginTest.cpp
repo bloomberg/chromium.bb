@@ -17,8 +17,8 @@ namespace {
 
 class FakePlaceholderWebPlugin : public FakeWebPlugin {
  public:
-  FakePlaceholderWebPlugin(WebFrame* frame, const WebPluginParams& params)
-      : FakeWebPlugin(frame, params) {}
+  explicit FakePlaceholderWebPlugin(const WebPluginParams& params)
+      : FakeWebPlugin(params) {}
   ~FakePlaceholderWebPlugin() override {}
 
   bool IsPlaceholder() override { return true; }
@@ -29,10 +29,9 @@ class WebHelperPluginFrameClient : public FrameTestHelpers::TestWebFrameClient {
   WebHelperPluginFrameClient() : create_placeholder_(false) {}
   ~WebHelperPluginFrameClient() override {}
 
-  WebPlugin* CreatePlugin(WebLocalFrame* frame,
-                          const WebPluginParams& params) override {
-    return create_placeholder_ ? new FakePlaceholderWebPlugin(frame, params)
-                               : new FakeWebPlugin(frame, params);
+  WebPlugin* CreatePlugin(const WebPluginParams& params) override {
+    return create_placeholder_ ? new FakePlaceholderWebPlugin(params)
+                               : new FakeWebPlugin(params);
   }
 
   void SetCreatePlaceholder(bool create_placeholder) {

@@ -59,10 +59,9 @@ void LoadablePluginPlaceholder::SetPremadePlugin(
 
 LoadablePluginPlaceholder::LoadablePluginPlaceholder(
     RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params,
     const std::string& html_data)
-    : PluginPlaceholderBase(render_frame, frame, params, html_data),
+    : PluginPlaceholderBase(render_frame, params, html_data),
       heuristic_run_before_(false),
       is_blocked_for_tinyness_(false),
       is_blocked_for_background_tab_(false),

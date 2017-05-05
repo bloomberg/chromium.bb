@@ -138,7 +138,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
   // plugin was found. |throttler| may be empty.
   virtual blink::WebPlugin* CreatePlugin(
-      blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
       std::unique_ptr<PluginInstanceThrottler> throttler) = 0;
