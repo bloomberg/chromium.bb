@@ -105,6 +105,10 @@ if (is_chromeos) {
       # TODO(sky): verify if we need this.
       "//services/ui/ime/test_ime_driver:manifest",
     ]
+
+    if (enable_nacl) {
+      embedded_services += [ "//components/nacl/loader:nacl_loader_manifest" ]
+    }
   }
 
   catalog_cpp_source("chrome_mus_catalog") {
