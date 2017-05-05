@@ -22,6 +22,10 @@ async function test()
     await SDK.targetManager.suspendAllTargets();
     snapshot = InspectorTest.dumpWorkspace(snapshot);
 
+    InspectorTest.markStep('detachFrame');
+    await InspectorTest.detachFrame('frame1', '_test_detachFrame.js');
+    snapshot = InspectorTest.dumpWorkspace(snapshot);
+
     InspectorTest.markStep('Resuming targets.');
     await Promise.all([
         SDK.targetManager.resumeAllTargets(),

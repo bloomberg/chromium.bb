@@ -41,6 +41,29 @@ top
 
 Running: Suspending targets.
 top
+  127.0.0.1:8000
+    inspector
+      bindings
+        suspendtarget-navigator.html
+  frame1 (sourcemap-frame.html)
+    127.0.0.1:8000
+      inspector/bindings/resources
+        sourcemap-frame.html
+  frame2 (sourcemap-frame.html)
+    127.0.0.1:8000
+      inspector/bindings/resources
+        sourcemap-frame.html
+
+Running: detachFrame
+top
+  127.0.0.1:8000
+    inspector
+      bindings
+        suspendtarget-navigator.html
+  frame2 (sourcemap-frame.html)
+    127.0.0.1:8000
+      inspector/bindings/resources
+        sourcemap-frame.html
 
 Running: Resuming targets.
 top
@@ -50,14 +73,6 @@ top
         suspendtarget-navigator.html
         bindings-test.js
       inspector-test.js
-  frame1 (sourcemap-frame.html)
-    127.0.0.1:8000
-      inspector/bindings/resources
-        sourcemap-frame.html
-        sourcemap-script.js
-        sourcemap-typescript.ts
-        sourcemap-sass.scss
-        sourcemap-style.css
   frame2 (sourcemap-frame.html)
     127.0.0.1:8000
       inspector/bindings/resources
