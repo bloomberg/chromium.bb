@@ -168,7 +168,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_38, true)
 
 // If true, enable QUIC v39.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_39, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_39, true)
 
 // If true, on client side, 8-byte connection ID in public header is read and
 // written in big endian.
