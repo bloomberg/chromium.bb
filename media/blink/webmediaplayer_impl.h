@@ -457,8 +457,19 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // handling a src= or MSE based playback.
   void RecordUnderflowDuration(base::TimeDelta duration);
 
+  // Called by the data source when loading progresses.
+  // Can be called quite often.
+  void OnProgress();
+
+  // Returns true when we estimate that we can play the rest of the media
+  // without buffering.
+  bool CanPlayThrough();
+
   // Records |natural_size| to MediaLog and video height to UMA.
   void RecordVideoNaturalSize(const gfx::Size& natural_size);
+
+  // Takes ownership of |tick_clock|
+  void SetTickClockForTest(base::TickClock* tick_clock);
 
   blink::WebLocalFrame* frame_;
 
@@ -584,6 +595,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
+  std::unique_ptr<base::TickClock> tick_clock_;
+
   BufferedDataSourceHostImpl buffered_data_source_host_;
   linked_ptr<UrlIndex> url_index_;
 
@@ -684,8 +697,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // when a preroll attempt began.
   bool preroll_attempt_pending_;
   base::TimeTicks preroll_attempt_start_time_;
-
-  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Monitors the player events.
   base::WeakPtr<MediaObserver> observer_;

@@ -6,8 +6,12 @@
 #define MEDIA_BLINK_BUFFERED_DATA_SOURCE_HOST_IMPL_H_
 
 #include <stdint.h>
+#include <deque>
 
+#include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/base/ranges.h"
 #include "media/blink/interval_map.h"
@@ -35,7 +39,8 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHost {
 class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
     : public BufferedDataSourceHost {
  public:
-  BufferedDataSourceHostImpl();
+  BufferedDataSourceHostImpl(base::Closure progress_cb,
+                             base::TickClock* tick_clock);
   ~BufferedDataSourceHostImpl() override;
 
   // BufferedDataSourceHost implementation.
@@ -50,7 +55,23 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
 
   bool DidLoadingProgress();
 
+  // Returns true if we have enough buffered bytes to play from now
+  // until the end of media
+  bool CanPlayThrough(base::TimeDelta current_position,
+                      base::TimeDelta media_duration,
+                      double playback_rate) const;
+
+  // Caller must make sure |tick_clock| is valid for lifetime of this object.
+  void SetTickClockForTest(base::TickClock* tick_clock);
+
  private:
+  // Returns number of bytes not yet loaded in the given interval.
+  int64_t UnloadedBytesInInterval(const Interval<int64_t>& interval) const;
+
+  // Returns an estimate of the download rate.
+  // Returns 0.0 if an estimate cannot be made.
+  double DownloadRate() const;
+
   // Total size of the data source.
   int64_t total_bytes_;
 
@@ -62,6 +83,16 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
   // DidLoadingProgress().
   bool did_loading_progress_;
 
+  // Contains how much we had downloaded at a given time.
+  // Pruned to contain roughly the last 10 seconds of data.
+  std::deque<std::pair<base::TimeTicks, uint64_t>> download_history_;
+  base::Closure progress_cb_;
+
+  base::TickClock* tick_clock_;
+
+  FRIEND_TEST_ALL_PREFIXES(BufferedDataSourceHostImplTest, CanPlayThrough);
+  FRIEND_TEST_ALL_PREFIXES(BufferedDataSourceHostImplTest,
+                           CanPlayThroughSmallAdvances);
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSourceHostImpl);
 };
 

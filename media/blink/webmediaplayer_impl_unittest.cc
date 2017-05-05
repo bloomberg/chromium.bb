@@ -254,7 +254,9 @@ class WebMediaPlayerImplTest : public testing::Test {
   void SetPaused(bool is_paused) { wmpi_->paused_ = is_paused; }
   void SetSeeking(bool is_seeking) { wmpi_->seeking_ = is_seeking; }
   void SetEnded(bool is_ended) { wmpi_->ended_ = is_ended; }
-  void SetTickClock(base::TickClock* clock) { wmpi_->tick_clock_.reset(clock); }
+  void SetTickClock(base::TickClock* clock) {
+    wmpi_->SetTickClockForTest(clock);
+  }
 
   void SetFullscreen(bool is_fullscreen) {
     wmpi_->overlay_enabled_ = is_fullscreen;
