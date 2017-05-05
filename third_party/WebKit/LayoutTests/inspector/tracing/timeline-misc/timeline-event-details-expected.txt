@@ -1,0 +1,5 @@
+Checks the Product property in details pane for a node with URL.
+
+Script: www.google.com:1337
+Product: Google CDN
+
