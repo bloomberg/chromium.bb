@@ -1077,7 +1077,13 @@ TEST_P(QuicNetworkTransactionTest, RetryMisdirectedRequest) {
   http_server_properties_.SetAlternativeService(server, alternative_service,
                                                 expiration);
 
-  // First try: alternative job uses QUIC, gets 421 Misdirected Request error.
+  // First try: The alternative job uses QUIC and reports an HTTP 421
+  // Misdirected Request error.  The main job uses TCP, but |http_data| below is
+  // paused at Connect(), so it will never exit the socket pool. This ensures
+  // that the alternate job always wins the race and keeps whether the
+  // |http_data| exits the socket pool before the main job is aborted
+  // deterministic. The first main job gets aborted without the socket pool ever
+  // dispensing the socket, making it available for the second try.
   MockQuicData mock_quic_data;
   QuicStreamOffset request_header_offset = 0;
   mock_quic_data.AddWrite(
@@ -1093,31 +1099,42 @@ TEST_P(QuicNetworkTransactionTest, RetryMisdirectedRequest) {
   mock_quic_data.AddRead(ASYNC, OK);
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
-  // First try: main job uses TCP, connection fails.
-  // (A hanging connection would not work here, because the main Job on the
-  // second try would pool to that socket and hang.)
-  StaticSocketDataProvider failing_data;
-  MockConnect failing_connect(SYNCHRONOUS, ERR_CONNECTION_CLOSED);
-  failing_data.set_connect_data(failing_connect);
-  socket_factory_.AddSocketDataProvider(&failing_data);
-  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
-
-  // Second try: there is only one job, which succeeds over HTTP/1.1.
-  // There is no open TCP socket (the previous TCP connection got closed), so a
-  // new one is opened.
+  // Second try: The main job uses TCP, and there is no alternate job. Once the
+  // Connect() is unblocked, |http_data| will leave the socket pool, binding to
+  // the main job of the second request. It then succeeds over HTTP/1.1.
   // Note that if there was an alternative QUIC Job created for the second try,
   // that would read these data, and would fail with ERR_QUIC_PROTOCOL_ERROR.
   // Therefore this test ensures that no alternative Job is created on retry.
-  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello!"),
-                      MockRead(ASYNC, OK)};
-  StaticSocketDataProvider http_data(reads, arraysize(reads), nullptr, 0);
+  MockWrite writes[] = {MockWrite(ASYNC, 0, "GET / HTTP/1.1\r\n"),
+                        MockWrite(ASYNC, 1, "Host: mail.example.org\r\n"),
+                        MockWrite(ASYNC, 2, "Connection: keep-alive\r\n\r\n")};
+  MockRead reads[] = {MockRead(ASYNC, 3, "HTTP/1.1 200 OK\r\n\r\n"),
+                      MockRead(ASYNC, 4, "hello!"), MockRead(ASYNC, OK, 5)};
+  SequencedSocketData http_data(MockConnect(ASYNC, ERR_IO_PENDING) /* pause */,
+                                reads, arraysize(reads), writes,
+                                arraysize(writes));
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  // Retry logic hides ERR_MISDIRECTED_REQUEST: transaction succeeds.
   CreateSession();
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
-  RunTransaction(&trans);
+
+  // Run until |mock_quic_data| has failed and |http_data| has paused.
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  base::RunLoop().RunUntilIdle();
+
+  // |mock_quic_data| must have run to completion.
+  EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
+
+  // Now that the QUIC data has been consumed, unblock |http_data|.
+  http_data.socket()->OnConnectComplete(MockConnect());
+
+  // The retry logic must hide the 421 status. The transaction succeeds on
+  // |http_data|.
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
   CheckWasHttpResponse(&trans);
   CheckResponsePort(&trans, 443);
   CheckResponseData(&trans, "hello!");
