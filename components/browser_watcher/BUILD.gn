@@ -79,25 +79,24 @@ if (is_win) {
       "//third_party/crashpad/crashpad/util",
     ]
   }
-}
 
-static_library("stability_client") {
-  sources = [
-    "features.cc",
-    "features.h",
-    "stability_data_names.cc",
-    "stability_data_names.h",
-    "stability_debugging.cc",
-    "stability_debugging.h",
-    "stability_paths.cc",
-    "stability_paths.h",
-  ]
-  deps = [
-    "//base",
-  ]
-}
+  static_library("stability_client") {
+    sources = [
+      "features.cc",
+      "features.h",
+      "stability_data_names.cc",
+      "stability_data_names.h",
+      "stability_debugging.cc",
+      "stability_debugging.h",
+      "stability_paths.cc",
+      "stability_paths.h",
+    ]
+    deps = [
+      "//base",
+      "//third_party/crashpad/crashpad/util",
+    ]
+  }
 
-if (is_win) {
   source_set("unit_tests") {
     testonly = true
     sources = [
@@ -126,7 +125,6 @@ if (is_win) {
       "//third_party/crashpad/crashpad/client",
 
       # TODO(manzagop): remove this lib once Crashpad writes the minidumps.
-      "//third_party/crashpad/crashpad/compat",
       "//third_party/crashpad/crashpad/minidump",
       "//third_party/crashpad/crashpad/snapshot",
       "//third_party/crashpad/crashpad/util",

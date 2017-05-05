@@ -100,7 +100,6 @@ static_library("metrics") {
     ":call_stack_profile_params",
     "//base",
     "//base:base_static",
-    "//components/browser_watcher:stability_client",
     "//components/prefs",
     "//components/variations",
     "//third_party/zlib:compression_utils",
@@ -122,6 +121,7 @@ static_library("metrics") {
 
   if (is_win) {
     sources -= [ "machine_id_provider_stub.cc" ]
+    deps += [ "//components/browser_watcher:stability_client" ]
   }
 }
 
