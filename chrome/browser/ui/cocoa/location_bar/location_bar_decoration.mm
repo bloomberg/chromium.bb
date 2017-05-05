@@ -16,10 +16,9 @@
 
 namespace {
 
-// Color values for the bubble decoration divider.
-const CGFloat kDividerAlpha = 38.0;
-const CGFloat kDividerGrayScale = 0.0;
-const CGFloat kDividerIncognitoGrayScale = 1.0;
+// Gray values for the bubble decoration divider.
+const CGFloat kDividerGray = 0xFFA6A6A6;
+const CGFloat kDividerGrayIncognito = 0xFFDFDFDF;
 
 // Color values for the hover and pressed background.
 const SkColor kHoverBackgroundColor = 0x14000000;
@@ -409,10 +408,10 @@ SkColor LocationBarDecoration::GetMaterialIconColor(
 
 NSColor* LocationBarDecoration::GetDividerColor(
     bool location_bar_is_dark) const {
-  CGFloat gray_scale =
-      location_bar_is_dark ? kDividerIncognitoGrayScale : kDividerGrayScale;
-  return
-      [NSColor colorWithCalibratedWhite:gray_scale alpha:kDividerAlpha / 255.0];
+  if (location_bar_is_dark) {
+    return skia::SkColorToSRGBNSColor(kDividerGrayIncognito);
+  }
+  return skia::SkColorToSRGBNSColor(kDividerGray);
 }
 
 const gfx::VectorIcon* LocationBarDecoration::GetMaterialVectorIcon() const {
