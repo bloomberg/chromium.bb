@@ -1302,9 +1302,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 }
 
-// TODO(csilv): Update this for uber page. http://crbug.com/111579.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       DISABLED_NavigateFromDefaultToHistoryInSameTab) {
+                       NavigateFromDefaultToHistoryInSameTab) {
   {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -1313,7 +1312,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(GURL(chrome::kChromeUIHistoryFrameURL),
+  EXPECT_EQ(GURL(chrome::kChromeUIHistoryURL),
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 

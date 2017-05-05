@@ -24,15 +24,6 @@ const char kEnableMaterialDesignPolicyPageDescription[] =
     "If enabled, the chrome://md-policy URL loads the Material Design "
     "policy page.";
 
-//  Material Design version of chrome://history
-
-const char kEnableMaterialDesignHistoryName[] =
-    "Enable Material Design history";
-
-const char kEnableMaterialDesignHistoryDescription[] =
-    "If enabled, the chrome://history/ URL loads the Material Design "
-    "history page.";
-
 //  Material Design version of chrome://settings
 
 const char kEnableMaterialDesignSettingsName[] =
@@ -2731,17 +2722,6 @@ const char kCrosCompUpdatesName[] = "Chrome OS Flash Component Updates";
 
 const char kCrosCompUpdatesDescription[] =
     "Enable Flash component updates for Chrome OS.";
-
-//  Native Android History chrome://flags strings
-
-#if defined(OS_ANDROID)
-
-const char kNativeAndroidHistoryManager[] = "Native Android History";
-
-const char kNativeAndroidHistoryManagerDescription[] =
-    "Show the native Android UI for browsing history.";
-
-#endif  // defined(OS_ANDROID)
 
 //  Play Services LSD permission prompt chrome://flags strings
 

@@ -38,13 +38,11 @@ class UberUIBrowserTest : public WebUIBrowserTest {
     return result;
   }
 
-  void RunJs(const char* js) {
-    ASSERT_TRUE(content::ExecuteScript(GetWebContents(), js));
-  }
-
-  void SelectTab() {
-    RunJs("var data = {pageId: 'history'};"
-          "uber.invokeMethodOnWindow(this, 'changeSelection', data);");
+  void SelectTab(const std::string& name) {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetWebContents(),
+        std::string("var data = {pageId: '") + name + "'};" +
+            "uber.invokeMethodOnWindow(this, 'changeSelection', data);"));
   }
 
  private:
@@ -55,69 +53,34 @@ class UberUIBrowserTest : public WebUIBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(UberUIBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, HistoryOverride) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIUberFrameURL));
-
-  RunJs("var overrideCalled = false;"
-        "var uber_frame = {"
-        "  setNavigationOverride: function() {"
-        "    overrideCalled = true;"
-        "  },"
-        "};");
-
-  scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder()
-          .SetManifest(
-              extensions::DictionaryBuilder()
-                  .Set("name", "History Override")
-                  .Set("version", "1")
-                  .Set("manifest_version", 2)
-                  .Set("permission",
-                       extensions::ListBuilder().Append("history").Build())
-                  .Build())
-          .Build();
-
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-                                  browser()->profile())->extension_service();
-  // Load extension. UberUI overrides history navigation.
-  // In this test, injected script will be called instead.
-  service->AddExtension(extension.get());
-
-  EXPECT_TRUE(GetJsBool("overrideCalled"));
-}
-
 IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, EnableMdExtensionsHidesExtensions) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kMaterialDesignExtensions);
+  scoped_feature_list.InitWithFeatures({features::kMaterialDesignExtensions},
+                                       {features::kMaterialDesignSettings});
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIUberFrameURL));
-  SelectTab();
+  SelectTab("settings");
   EXPECT_TRUE(GetJsBool("$('extensions').hidden"));
-}
-
-IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, EnableMdHistoryHidesHistory) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kMaterialDesignHistory);
-
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIUberFrameURL));
-  SelectTab();
-  EXPECT_TRUE(GetJsBool("$('history').hidden"));
 }
 
 IN_PROC_BROWSER_TEST_F(UberUIBrowserTest, EnableMdSettingsHidesSettings) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kMaterialDesignSettings);
+  scoped_feature_list.InitWithFeatures({features::kMaterialDesignSettings},
+                                       {features::kMaterialDesignExtensions});
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIUberFrameURL));
-  SelectTab();
+  SelectTab("extensions");
   EXPECT_TRUE(GetJsBool("$('settings').hidden && $('help').hidden"));
 }
 
 IN_PROC_BROWSER_TEST_F(UberUIBrowserTest,
                        EnableSettingsWindowHidesSettingsAndHelp) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kMaterialDesignSettings);
+
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableSettingsWindow);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIUberFrameURL));
-  SelectTab();
+  SelectTab("extensions");
   EXPECT_TRUE(GetJsBool("$('settings').hidden && $('help').hidden"));
 }

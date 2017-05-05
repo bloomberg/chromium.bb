@@ -275,7 +275,8 @@ bool DataUseUITabModel::ConvertTransitionType(
       *transition_type = DataUseTabModel::TRANSITION_BOOKMARK;
       return true;
     case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
-      if (gurl == kChromeUIHistoryFrameURL || gurl == kChromeUIHistoryURL) {
+      if (gurl == kDeprecatedChromeUIHistoryFrameURL ||
+          gurl == kChromeUIHistoryURL) {
         // History menu.
         *transition_type = DataUseTabModel::TRANSITION_HISTORY_ITEM;
         return true;

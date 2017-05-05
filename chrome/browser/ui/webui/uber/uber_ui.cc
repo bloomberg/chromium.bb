@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
-#include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,8 +29,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension_set.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -57,28 +54,10 @@ content::WebUIDataSource* CreateUberHTMLSource() {
   source->AddString("extensionsHost", chrome::kChromeUIExtensionsHost);
   source->AddString("helpFrameURL", chrome::kChromeUIHelpFrameURL);
   source->AddString("helpHost", chrome::kChromeUIHelpHost);
-  source->AddString("historyFrameURL", chrome::kChromeUIHistoryFrameURL);
-  source->AddString("historyHost", chrome::kChromeUIHistoryHost);
   source->AddString("settingsFrameURL", chrome::kChromeUISettingsFrameURL);
   source->AddString("settingsHost", chrome::kChromeUISettingsHost);
 
   return source;
-}
-
-// Determines whether the user has an active extension of the given type.
-bool HasExtensionType(content::BrowserContext* browser_context,
-                      const std::string& extension_type) {
-  const extensions::ExtensionSet& extension_set =
-      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions();
-  for (extensions::ExtensionSet::const_iterator iter = extension_set.begin();
-       iter != extension_set.end(); ++iter) {
-    const extensions::URLOverrides::URLOverrideMap& map =
-        extensions::URLOverrides::GetChromeURLOverrides(iter->get());
-    if (base::ContainsKey(map, extension_type))
-      return true;
-  }
-
-  return false;
 }
 
 content::WebUIDataSource* CreateUberFrameHTMLSource(
@@ -108,16 +87,8 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
   source->AddString("helpHost", chrome::kChromeUIHelpHost);
   source->AddLocalizedString("helpDisplayName", IDS_ABOUT_TITLE);
-  source->AddString("historyHost", chrome::kChromeUIHistoryHost);
-  source->AddLocalizedString("historyDisplayName", IDS_HISTORY_TITLE);
   source->AddString("settingsHost", chrome::kChromeUISettingsHost);
   source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
-  bool overrides_history =
-      HasExtensionType(browser_context, chrome::kChromeUIHistoryHost);
-  source->AddString("overridesHistory", overrides_history ? "yes" : "no");
-  source->AddBoolean("hideHistory", base::FeatureList::IsEnabled(
-                                        features::kMaterialDesignHistory) &&
-                                        !overrides_history);
 
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyChildSrc("child-src chrome:;");
@@ -125,16 +96,6 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
   source->AddBoolean("profileIsGuest", profile->IsGuestSession());
 
   return source;
-}
-
-void UpdateHistoryNavigation(content::WebUI* web_ui) {
-  bool overrides_history =
-      HasExtensionType(web_ui->GetWebContents()->GetBrowserContext(),
-                       chrome::kChromeUIHistoryHost);
-  web_ui->CallJavascriptFunctionUnsafe(
-      "uber_frame.setNavigationOverride",
-      base::Value(chrome::kChromeUIHistoryHost),
-      base::Value(overrides_history ? "yes" : "no"));
 }
 
 }  // namespace
@@ -152,7 +113,6 @@ void SubframeLogger::DidFinishNavigation(
   const GURL& url = navigation_handle->GetURL();
   if (url == chrome::kChromeUIExtensionsFrameURL ||
       url == chrome::kChromeUIHelpFrameURL ||
-      url == chrome::kChromeUIHistoryFrameURL ||
       url == chrome::kChromeUISettingsFrameURL ||
       url == chrome::kChromeUIUberFrameURL) {
     webui::LogWebUIUrl(url);
@@ -168,8 +128,6 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
                   chrome::kChromeUIExtensionsHost);
   RegisterSubpage(chrome::kChromeUIHelpFrameURL,
                   chrome::kChromeUIHelpHost);
-  RegisterSubpage(chrome::kChromeUIHistoryFrameURL,
-                  chrome::kChromeUIHistoryHost);
   RegisterSubpage(chrome::kChromeUISettingsFrameURL,
                   chrome::kChromeUISettingsHost);
   RegisterSubpage(chrome::kChromeUIUberFrameURL,
@@ -218,36 +176,12 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
 
 // UberFrameUI
 
-UberFrameUI::UberFrameUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
-      extension_registry_observer_(this) {
+UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context,
                                 CreateUberFrameHTMLSource(browser_context));
-
-  // Register as an observer for when extensions are loaded and unloaded.
-  extension_registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(browser_context));
 }
 
 UberFrameUI::~UberFrameUI() {
-}
-
-void UberFrameUI::OnExtensionLoaded(content::BrowserContext* browser_context,
-                                    const extensions::Extension* extension) {
-  // We listen for notifications that indicate an extension has been loaded
-  // (i.e., has been installed and/or enabled) or unloaded (i.e., has been
-  // uninstalled and/or disabled). If one of these events has occurred, then
-  // we must update the behavior of the History navigation element so that
-  // it opens the history extension if one is installed and enabled or
-  // opens the default history page if one is uninstalled or disabled.
-  UpdateHistoryNavigation(web_ui());
-}
-
-void UberFrameUI::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionReason reason) {
-  UpdateHistoryNavigation(web_ui());
 }

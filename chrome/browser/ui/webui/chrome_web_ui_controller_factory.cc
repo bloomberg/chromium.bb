@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/suggestions/suggestions_ui.h"
+#include "chrome/browser/ui/history_ui.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
 #include "chrome/browser/ui/webui/help/help_ui.h"
-#include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/identity_internals_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
@@ -340,8 +340,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<FlagsUI>;
   if (url.host_piece() == chrome::kChromeUIGCMInternalsHost)
     return &NewWebUI<GCMInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUIHistoryFrameHost)
-    return &NewWebUI<HistoryUI>;
   if (url.host_piece() == chrome::kChromeUIInstantHost)
     return &NewWebUI<InstantUI>;
   if (url.host_piece() == chrome::kChromeUIInterstitialHost)
@@ -433,11 +431,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       base::FeatureList::IsEnabled(features::kMaterialDesignExtensions)) {
     return &NewWebUI<extensions::ExtensionsUI>;
   }
-  // Material Design history is on its own host, rather than on an Uber page.
-  if (base::FeatureList::IsEnabled(features::kMaterialDesignHistory) &&
-      url.host_piece() == chrome::kChromeUIHistoryHost) {
+  if (url.host_piece() == chrome::kChromeUIHistoryHost)
     return &NewWebUI<MdHistoryUI>;
-  }
   // Material Design Settings gets its own host, if enabled.
   if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings) &&
       url.host_piece() == chrome::kChromeUISettingsHost) {
@@ -797,8 +792,9 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUIFlagsHost)
     return FlagsUI::GetFaviconResourceBytes(scale_factor);
 
+  // TODO(dbeam): does this actually need to exist on all platforms?
   if (page_url.host_piece() == chrome::kChromeUIHistoryHost)
-    return HistoryUI::GetFaviconResourceBytes(scale_factor);
+    return history_ui::GetFaviconResourceBytes(scale_factor);
 
 #if !defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS)

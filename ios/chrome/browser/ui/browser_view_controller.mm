@@ -273,12 +273,8 @@ enum HeaderBehaviour {
 const CGFloat kIPadFindBarOverlap = 11;
 
 bool IsURLAllowedInIncognito(const GURL& url) {
-  // Most URLs are allowed in incognito; the following are exceptions.
-  if (!url.SchemeIs(kChromeUIScheme))
-    return true;
-  std::string url_host = url.host();
-  return url_host != kChromeUIHistoryHost &&
-         url_host != kChromeUIHistoryFrameHost;
+  // Most URLs are allowed in incognito; the following is an exception.
+  return !(url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIHistoryHost);
 }
 
 // Temporary key to use when storing native controllers vended to tabs before
@@ -3103,13 +3099,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     DCHECK(![self hasControllerForURL:url]);
     // In any other case the PageNotAvailableController is returned.
     nativeController = [[PageNotAvailableController alloc] initWithUrl:url];
-    if (url_host == kChromeUIHistoryFrameHost) {
-      base::mac::ObjCCastStrict<PageNotAvailableController>(nativeController)
-          .descriptionText = l10n_util::GetNSStringFWithFixup(
-          IDS_IOS_HISTORY_URL_NOT_AVAILABLE,
-          base::UTF8ToUTF16(kChromeUIHistoryURL),
-          l10n_util::GetStringUTF16(IDS_HISTORY_SHOW_HISTORY));
-    }
   }
   // If a native controller is vended before its tab is added to the tab model,
   // use the temporary key and add it under the new tab's tabId in the
@@ -3709,7 +3698,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 
   // NOTE: This check for the Crash Host URL is here to avoid the URL from
-  // ending up in the history causign the app to crash at every subsequent
+  // ending up in the history causing the app to crash at every subsequent
   // restart.
   if (url.host() == kChromeUIBrowserCrashHost) {
     [self induceBrowserCrash];

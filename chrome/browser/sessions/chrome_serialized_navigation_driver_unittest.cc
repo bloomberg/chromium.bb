@@ -107,3 +107,6 @@ TEST_F(ChromeSerializedNavigationDriverTest, SanitizeWithReferrerPolicyNever) {
   EXPECT_EQ(blink::kWebReferrerPolicyDefault, navigation.referrer_policy());
   EXPECT_EQ(page_state.ToEncodedData(), navigation.encoded_page_state());
 }
+
+// TODO(dbeam): add tests for clearing session restore state from new Material
+// Design URLs that we're pulling out of the uber page.

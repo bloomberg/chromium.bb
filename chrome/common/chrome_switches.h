@@ -154,7 +154,6 @@ extern const char kForceEnableMetricsReporting[];
 extern const char kForceFirstRun[];
 extern const char kForceLocalNtp[];
 extern const char kForceVariationIds[];
-extern const char kHistoryEnableGroupByDomain[];
 extern const char kHomePage[];
 extern const char kHostResolverRetryAttempts[];
 extern const char kHostRules[];

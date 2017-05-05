@@ -60,9 +60,6 @@
 #include "chrome/common/chrome_features.h"
 #endif
 
-// Number of chars to truncate titles when making them "short".
-static const size_t kShortTitleLength = 300;
-
 using bookmarks::BookmarkModel;
 
 namespace {
@@ -133,8 +130,7 @@ void GetDeviceNameAndType(const browser_sync::ProfileSyncService* sync_service,
 
 // Formats |entry|'s URL and title and adds them to |result|.
 void SetHistoryEntryUrlAndTitle(BrowsingHistoryService::HistoryEntry* entry,
-                                base::DictionaryValue* result,
-                                bool limit_title_length) {
+                                base::DictionaryValue* result) {
   result->SetString("url", entry->url.spec());
 
   bool using_url_as_the_title = false;
@@ -155,9 +151,14 @@ void SetHistoryEntryUrlAndTitle(BrowsingHistoryService::HistoryEntry* entry,
       base::i18n::AdjustStringForLocaleDirection(&title_to_set);
   }
 
-  result->SetString("title",
-      limit_title_length ? title_to_set.substr(0, kShortTitleLength)
-                         : title_to_set);
+#if !defined(OS_ANDROID)
+  // Number of chars to truncate titles when making them "short".
+  static const size_t kShortTitleLength = 300;
+  if (title_to_set.size() > kShortTitleLength)
+    title_to_set.resize(kShortTitleLength);
+#endif
+
+  result->SetString("title", title_to_set);
 }
 
 // Converts |entry| to a DictionaryValue to be owned by the caller.
@@ -165,10 +166,9 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
     BrowsingHistoryService::HistoryEntry* entry,
     BookmarkModel* bookmark_model,
     SupervisedUserService* supervised_user_service,
-    const browser_sync::ProfileSyncService* sync_service,
-    bool limit_title_length) {
+    const browser_sync::ProfileSyncService* sync_service) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  SetHistoryEntryUrlAndTitle(entry, result.get(), limit_title_length);
+  SetHistoryEntryUrlAndTitle(entry, result.get());
 
   base::string16 domain = url_formatter::IDNToUnicode(entry->url.host());
   // When the domain is empty, use the scheme instead. This allows for a
@@ -488,17 +488,12 @@ void BrowsingHistoryHandler::OnQueryComplete(
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
-  bool is_md = false;
-#if !defined(OS_ANDROID)
-  is_md = base::FeatureList::IsEnabled(::features::kMaterialDesignHistory);
-#endif
-
   // Convert the result vector into a ListValue.
   base::ListValue results_value;
   for (std::vector<BrowsingHistoryService::HistoryEntry>::iterator it =
            results->begin(); it != results->end(); ++it) {
-    std::unique_ptr<base::Value> value(HistoryEntryToValue(&(*it),
-        bookmark_model, supervised_user_service, sync_service, is_md));
+    std::unique_ptr<base::Value> value(HistoryEntryToValue(
+        &(*it), bookmark_model, supervised_user_service, sync_service));
     results_value.Append(std::move(value));
   }
 

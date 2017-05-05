@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -21,8 +20,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -284,18 +281,14 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
   LoadAndWaitForFile("history_length_test_page_21.html");
 }
 
-// http://crbug.com/22111 (linux), http://crbug.com/530246 (win)
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_HistorySearchXSS DISABLED_HistorySearchXSS
-#else
-#define MAYBE_HistorySearchXSS HistorySearchXSS
-#endif
-IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, MAYBE_HistorySearchXSS) {
-  // TODO(tsergeant): Enable this test on MD History once it is possible to pass
-  // in a query via URL (crbug.com/619799).
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kMaterialDesignHistory);
-
+// TODO(crbug.com/22111): Disabled because of flakiness and because for a while
+// MD history didn't support #q=searchTerm. Now that it does support these type
+// of URLs (crbug.com/619799), this test could be re-enabled if somebody goes
+// through the effort to wait for the various stages of the page loading.
+// The loading strategy of the new, Polymer version of chrome://history is
+// sophisticated and multi-part, so we'd need to wait on or ensure a few things
+// are happening before running the test.
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, DISABLED_HistorySearchXSS) {
   GURL url(std::string(chrome::kChromeUIHistoryURL) +
       "#q=%3Cimg%20src%3Dx%3Ax%20onerror%3D%22document.title%3D'XSS'%22%3E");
   ui_test_utils::NavigateToURL(browser(), url);

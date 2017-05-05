@@ -2118,9 +2118,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-md-feedback", flag_descriptions::kEnableMaterialDesignFeedbackName,
      flag_descriptions::kEnableMaterialDesignFeedbackDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignFeedback)},
-    {"enable-md-history", flag_descriptions::kEnableMaterialDesignHistoryName,
-     flag_descriptions::kEnableMaterialDesignHistoryDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kMaterialDesignHistory)},
     {"enable-md-incognito-ntp",
      flag_descriptions::kMaterialDesignIncognitoNTPName,
      flag_descriptions::kMaterialDesignIncognitoNTPDescription, kOsDesktop,
@@ -2195,9 +2192,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebfontsInterventionTriggerName,
      flag_descriptions::kEnableWebfontsInterventionTriggerDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebFontsInterventionTrigger)},
-    {"enable-grouped-history", flag_descriptions::kEnableGroupedHistoryName,
-     flag_descriptions::kEnableGroupedHistoryDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kHistoryEnableGroupByDomain)},
     {"ssl-version-max", flag_descriptions::kSslVersionMaxName,
      flag_descriptions::kSslVersionMaxDescription, kOsAll,
      MULTI_VALUE_TYPE(kSSLVersionMaxChoices)},
@@ -2592,10 +2586,6 @@ const FeatureEntry kFeatureEntries[] = {
          // Must be AutofillCreditCardDropdownVariations to prevent DCHECK crash
          // when the flag is manually enabled in a local build.
          "AutofillCreditCardDropdownVariations")},
-    {"native-android-history-manager",
-     flag_descriptions::kNativeAndroidHistoryManager,
-     flag_descriptions::kNativeAndroidHistoryManagerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kNativeAndroidHistoryManager)},
 #endif  // OS_ANDROID
     {"enable-autofill-credit-card-last-used-date-display",
      flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplay,

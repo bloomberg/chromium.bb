@@ -314,10 +314,6 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
 const base::Feature kAndroidAutofillAccessibility{
     "AndroidAutofillAccessibility", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// A browsing history manager implementation for Android.
-const base::Feature kNativeAndroidHistoryManager{
-  "AndroidHistoryManager", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // FeatureList definition for the Seccomp field trial.
 const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

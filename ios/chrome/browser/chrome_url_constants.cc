@@ -36,7 +36,6 @@ const char kChromeUIExternalFileHost[] = "external-file";
 const char kChromeUIFlagsHost[] = "flags";
 const char kChromeUIGCMInternalsHost[] = "gcm-internals";
 const char kChromeUIHistogramHost[] = "histograms";
-const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUINewTabHost[] = "newtab";
