@@ -279,7 +279,7 @@
   "enterprise.platformKeys": {
     "channel": "stable",
     "platforms": ["chromeos"],
-    "extension_types": ["extension", "legacy_packaged_app"],
+    "extension_types": ["extension", "platform_app", "legacy_packaged_app"],
     "location": "policy"
   },
   "enterprise.platformKeysPrivate": {
