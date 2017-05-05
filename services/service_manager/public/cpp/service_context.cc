@@ -41,12 +41,7 @@ ServiceContext::ServiceContext(
 ServiceContext::~ServiceContext() {}
 
 void ServiceContext::SetQuitClosure(const base::Closure& closure) {
-  if (service_quit_) {
-    // CAUTION: May delete |this|.
-    closure.Run();
-  } else {
-    quit_closure_ = closure;
-  }
+  quit_closure_ = closure;
 }
 
 void ServiceContext::RequestQuit() {
@@ -61,7 +56,6 @@ void ServiceContext::DisconnectFromServiceManager() {
 }
 
 void ServiceContext::QuitNow() {
-  service_quit_ = true;
   if (binding_.is_bound())
     binding_.Close();
   if (!quit_closure_.is_null()) {

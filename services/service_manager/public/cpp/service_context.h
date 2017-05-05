@@ -129,14 +129,6 @@ class ServiceContext : public mojom::Service {
   // is unbound and therefore invalid until OnStart() is called.
   mojom::ServiceControlAssociatedPtr service_control_;
 
-  // The Service may call QuitNow() before SetConnectionLostClosure(), and the
-  // latter is expected to invoke the closure immediately in that case. This is
-  // used to track that condition.
-  //
-  // TODO(rockot): Figure out who depends on this behavior and make them stop.
-  // It's weird and shouldn't be necessary.
-  bool service_quit_ = false;
-
   // The closure to run when QuitNow() is invoked. May delete |this|.
   base::Closure quit_closure_;
 
