@@ -412,7 +412,8 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher.get(),
       data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
-  fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY);
+  fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY | net::LOAD_DO_NOT_SEND_COOKIES |
+                        net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->SetUploadData("application/x-protobuf", request_body);
   DCHECK(url_request_context_getter_);
   fetcher->SetRequestContext(url_request_context_getter_);
