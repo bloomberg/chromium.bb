@@ -31,6 +31,7 @@
 #include "chrome/test/base/menu_model_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sessions/core/persistent_tab_restore_service.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
@@ -157,6 +158,13 @@ class RecentTabsSubMenuModelTest
   RecentTabsSubMenuModelTest() {}
 
   void SetUp() override {
+    // Set up our mock sync service factory before the sync service (and any
+    // other services that depend on it) gets created.
+    will_create_browser_context_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+                base::Bind(OnWillCreateBrowserContextServices));
+
     BrowserWithTestWindowTest::SetUp();
 
     local_device_ = base::MakeUnique<syncer::LocalDeviceInfoProviderMock>(
@@ -166,8 +174,7 @@ class RecentTabsSubMenuModelTest
     sync_prefs_ = base::MakeUnique<syncer::SyncPrefs>(profile()->GetPrefs());
 
     mock_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
-        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), BuildMockProfileSyncService));
+        ProfileSyncServiceFactory::GetForProfile(profile()));
 
     EXPECT_CALL(*mock_sync_service_, AddObserver(_))
         .WillRepeatedly(Invoke(&fake_sync_service_observer_list_,
@@ -241,6 +248,16 @@ class RecentTabsSubMenuModelTest
   }
 
  private:
+  static void OnWillCreateBrowserContextServices(
+      content::BrowserContext* context) {
+    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+        context, BuildMockProfileSyncService);
+  }
+
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
+
   std::unique_ptr<syncer::LocalDeviceInfoProviderMock> local_device_;
   DummyRouter dummy_router_;
   std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
