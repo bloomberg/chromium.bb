@@ -23,12 +23,12 @@ FakeVideoDecoder::FakeVideoDecoder(const std::string& decoder_name,
       total_bytes_decoded_(0),
       fail_to_initialize_(false),
       weak_factory_(this) {
-  DVLOG(1) << __func__;
+  DVLOG(1) << decoder_name_ << ": " << __func__;
   DCHECK_GE(decoding_delay, 0);
 }
 
 FakeVideoDecoder::~FakeVideoDecoder() {
-  DVLOG(1) << __func__;
+  DVLOG(1) << decoder_name_ << ": " << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == STATE_UNINITIALIZED)
@@ -57,7 +57,7 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   CdmContext* cdm_context,
                                   const InitCB& init_cb,
                                   const OutputCB& output_cb) {
-  DVLOG(1) << __func__;
+  DVLOG(1) << decoder_name_ << ": " << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());
   DCHECK(held_decode_callbacks_.empty())
@@ -82,9 +82,11 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   if (fail_to_initialize_) {
+    DVLOG(1) << decoder_name_ << ": Initialization failed.";
     state_ = STATE_ERROR;
     init_cb_.RunOrHold(false);
   } else {
+    DVLOG(1) << decoder_name_ << ": Initialization succeeded.";
     state_ = STATE_NORMAL;
     init_cb_.RunOrHold(true);
   }

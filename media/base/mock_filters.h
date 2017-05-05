@@ -179,7 +179,8 @@ class MockDemuxerStream : public DemuxerStream {
 
 class MockVideoDecoder : public VideoDecoder {
  public:
-  MockVideoDecoder();
+  explicit MockVideoDecoder(
+      const std::string& decoder_name = "MockVideoDecoder");
   virtual ~MockVideoDecoder();
 
   // VideoDecoder implementation.
@@ -197,12 +198,14 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
 
  private:
+  std::string decoder_name_;
   DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);
 };
 
 class MockAudioDecoder : public AudioDecoder {
  public:
-  MockAudioDecoder();
+  explicit MockAudioDecoder(
+      const std::string& decoder_name = "MockAudioDecoder");
   virtual ~MockAudioDecoder();
 
   // AudioDecoder implementation.
@@ -218,6 +221,7 @@ class MockAudioDecoder : public AudioDecoder {
   MOCK_METHOD1(Reset, void(const base::Closure&));
 
  private:
+  std::string decoder_name_;
   DISALLOW_COPY_AND_ASSIGN(MockAudioDecoder);
 };
 

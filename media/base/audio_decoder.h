@@ -43,7 +43,11 @@ class MEDIA_EXPORT AudioDecoder {
   // depends on |this|.
   virtual ~AudioDecoder();
 
-  // Returns the name of the decoder for logging purpose.
+  // Returns the name of the decoder for logging and decoder selection purposes.
+  // This name should be available immediately after construction (e.g. before
+  // Initialize() is called). It should also be stable in the sense that the
+  // name does not change across multiple constructions.
+  // TODO(xhwang): Rename this method since the name is not only for display.
   virtual std::string GetDisplayName() const = 0;
 
   // Initializes an AudioDecoder with |config|, executing the |init_cb| upon
