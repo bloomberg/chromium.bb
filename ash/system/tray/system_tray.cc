@@ -127,8 +127,8 @@ class SystemBubbleWrapper {
                 TrayBubbleView::InitParams* init_params,
                 bool is_persistent) {
     DCHECK(anchor);
-    LoginStatus login_status =
-        Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
+    const LoginStatus login_status =
+        Shell::Get()->session_controller()->login_status();
     bubble_->InitView(anchor, login_status, init_params);
     bubble_->bubble_view()->set_anchor_view_insets(anchor_insets);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_->bubble_view()));
@@ -293,9 +293,8 @@ void SystemTray::AddTrayItem(std::unique_ptr<SystemTrayItem> item) {
   SystemTrayItem* item_ptr = item.get();
   items_.push_back(std::move(item));
 
-  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
-  views::View* tray_item =
-      item_ptr->CreateTrayView(delegate->GetUserLoginStatus());
+  views::View* tray_item = item_ptr->CreateTrayView(
+      Shell::Get()->session_controller()->login_status());
   item_ptr->UpdateAfterShelfAlignmentChange();
 
   if (tray_item) {
@@ -433,13 +432,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            BubbleCreationType creation_type,
                            bool persistent) {
   // No system tray bubbles in kiosk mode.
-  SystemTrayDelegate* system_tray_delegate =
-      Shell::Get()->system_tray_delegate();
-  if (system_tray_delegate->GetUserLoginStatus() == LoginStatus::KIOSK_APP ||
-      system_tray_delegate->GetUserLoginStatus() ==
-          LoginStatus::ARC_KIOSK_APP) {
+  if (Shell::Get()->session_controller()->IsKioskSession())
     return;
-  }
 
   // Destroy any existing bubble and create a new one.
   SystemTrayBubble::BubbleType bubble_type =

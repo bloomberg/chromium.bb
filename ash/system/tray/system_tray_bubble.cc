@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/system/tray/system_tray.h"
@@ -142,7 +143,7 @@ void SystemTrayBubble::UpdateView(
 
   items_ = items;
   bubble_type_ = bubble_type;
-  CreateItemViews(Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
+  CreateItemViews(Shell::Get()->session_controller()->login_status());
 
   // Close bubble view if we failed to create the item view.
   if (!bubble_view_->has_children()) {

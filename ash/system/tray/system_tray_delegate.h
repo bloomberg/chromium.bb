@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/login_status.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
@@ -47,9 +46,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Called after SystemTray has been instantiated.
   virtual void Initialize();
-
-  // Gets information about the active user.
-  virtual LoginStatus GetUserLoginStatus() const;
 
   // Shows login UI to add other users to this session.
   virtual void ShowUserLogin();

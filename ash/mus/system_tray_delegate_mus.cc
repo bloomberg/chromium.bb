@@ -4,8 +4,6 @@
 
 #include "ash/mus/system_tray_delegate_mus.h"
 
-#include "ash/session/session_controller.h"
-#include "ash/shell.h"
 #include "ash/system/networking_config_delegate.h"
 
 namespace ash {
@@ -34,10 +32,6 @@ SystemTrayDelegateMus::SystemTrayDelegateMus()
     : networking_config_delegate_(new StubNetworkingConfigDelegate) {}
 
 SystemTrayDelegateMus::~SystemTrayDelegateMus() {
-}
-
-LoginStatus SystemTrayDelegateMus::GetUserLoginStatus() const {
-  return Shell::Get()->session_controller()->login_status();
 }
 
 NetworkingConfigDelegate* SystemTrayDelegateMus::GetNetworkingConfigDelegate()

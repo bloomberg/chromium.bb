@@ -10,7 +10,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/session/logout_confirmation_dialog.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/location.h"
 #include "base/time/default_tick_clock.h"
@@ -91,7 +90,7 @@ void LogoutConfirmationController::OnDialogClosed() {
 }
 
 void LogoutConfirmationController::OnLastWindowClosed() {
-  if (Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
+  if (Shell::Get()->session_controller()->login_status() !=
       LoginStatus::PUBLIC) {
     return;
   }

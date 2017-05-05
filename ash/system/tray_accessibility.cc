@@ -7,6 +7,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -14,7 +15,6 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
@@ -91,7 +91,7 @@ uint32_t GetAccessibilityState() {
 }
 
 LoginStatus GetCurrentLoginStatus() {
-  return Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
+  return Shell::Get()->session_controller()->login_status();
 }
 
 }  // namespace

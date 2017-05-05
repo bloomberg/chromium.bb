@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "ash/login_status.h"
-#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/time/time.h"
 
@@ -34,10 +32,6 @@ void TestSystemTrayDelegate::SetCurrentIME(const IMEInfo& info) {
 
 void TestSystemTrayDelegate::SetAvailableIMEList(const IMEInfoList& list) {
   ime_list_ = list;
-}
-
-LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
-  return Shell::Get()->session_controller()->login_status();
 }
 
 bool TestSystemTrayDelegate::GetSessionStartTime(

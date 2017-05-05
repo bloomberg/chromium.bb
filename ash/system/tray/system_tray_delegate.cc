@@ -15,10 +15,6 @@ SystemTrayDelegate::~SystemTrayDelegate() {}
 
 void SystemTrayDelegate::Initialize() {}
 
-LoginStatus SystemTrayDelegate::GetUserLoginStatus() const {
-  return LoginStatus::NOT_LOGGED_IN;
-}
-
 void SystemTrayDelegate::ShowUserLogin() {}
 
 void SystemTrayDelegate::GetCurrentIME(IMEInfo* info) {}

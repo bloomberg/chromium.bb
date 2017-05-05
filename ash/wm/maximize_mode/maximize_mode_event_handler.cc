@@ -6,7 +6,6 @@
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -55,13 +54,8 @@ bool MaximizeModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   }
 
   // Do not exit fullscreen in kiosk mode.
-  SystemTrayDelegate* system_tray_delegate =
-      Shell::Get()->system_tray_delegate();
-  if (system_tray_delegate->GetUserLoginStatus() == LoginStatus::KIOSK_APP ||
-      system_tray_delegate->GetUserLoginStatus() ==
-          LoginStatus::ARC_KIOSK_APP) {
+  if (Shell::Get()->session_controller()->IsKioskSession())
     return false;
-  }
 
   WMEvent toggle_fullscreen(WM_EVENT_TOGGLE_FULLSCREEN);
   window->GetWindowState()->OnWMEvent(&toggle_fullscreen);

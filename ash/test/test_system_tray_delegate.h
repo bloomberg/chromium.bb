@@ -32,7 +32,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   void SetAvailableIMEList(const IMEInfoList& list);
 
   // SystemTrayDelegate:
-  LoginStatus GetUserLoginStatus() const override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void GetCurrentIME(IMEInfo* info) override;

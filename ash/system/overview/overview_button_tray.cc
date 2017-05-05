@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -107,10 +106,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
       !session_controller->IsScreenLocked() &&
       session_controller->GetSessionState() ==
           session_manager::SessionState::ACTIVE &&
-      shell->system_tray_delegate()->GetUserLoginStatus() !=
-          LoginStatus::KIOSK_APP &&
-      shell->system_tray_delegate()->GetUserLoginStatus() !=
-          LoginStatus::ARC_KIOSK_APP);
+      !session_controller->IsKioskSession());
 }
 
 }  // namespace ash

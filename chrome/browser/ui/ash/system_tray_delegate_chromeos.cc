@@ -104,7 +104,8 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
   // Register notifications on construction so that events such as
   // PROFILE_CREATED do not get missed if they happen before Initialize().
   registrar_.reset(new content::NotificationRegistrar);
-  if (GetUserLoginStatus() == ash::LoginStatus::NOT_LOGGED_IN) {
+  if (SystemTrayClient::GetUserLoginStatus() ==
+      ash::LoginStatus::NOT_LOGGED_IN) {
     registrar_->Add(this,
                     chrome::NOTIFICATION_SESSION_STARTED,
                     content::NotificationService::AllSources());
@@ -162,10 +163,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
-}
-
-ash::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
-  return SystemTrayClient::GetUserLoginStatus();
 }
 
 void SystemTrayDelegateChromeOS::ShowUserLogin() {
