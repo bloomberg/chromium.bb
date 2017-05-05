@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Reduce number of log messages by logging each NOTIMPLEMENTED() only once.
+// // This has to be before any other includes, else default is picked up.
+// // See base/logging.h for details on this.
+// #define NOTIMPLEMENTED_POLICY 5
+
 #include "media/capture/video/linux/video_capture_device_factory_linux.h"
 
 #include <errno.h>
@@ -29,17 +34,17 @@
 
 namespace media {
 
+namespace {
+
 // USB VID and PID are both 4 bytes long.
-static const size_t kVidPidSize = 4;
+const size_t kVidPidSize = 4;
 
 // /sys/class/video4linux/video{N}/device is a symlink to the corresponding
 // USB device info directory.
-static const char kVidPathTemplate[] =
-    "/sys/class/video4linux/%s/device/../idVendor";
-static const char kPidPathTemplate[] =
-    "/sys/class/video4linux/%s/device/../idProduct";
+const char kVidPathTemplate[] = "/sys/class/video4linux/%s/device/../idVendor";
+const char kPidPathTemplate[] = "/sys/class/video4linux/%s/device/../idProduct";
 
-static bool ReadIdFile(const std::string& path, std::string* id) {
+bool ReadIdFile(const std::string& path, std::string* id) {
   char id_buf[kVidPidSize];
   FILE* file = fopen(path.c_str(), "rb");
   if (!file)
@@ -52,7 +57,7 @@ static bool ReadIdFile(const std::string& path, std::string* id) {
   return true;
 }
 
-static bool HasUsableFormats(int fd, uint32_t capabilities) {
+bool HasUsableFormats(int fd, uint32_t capabilities) {
   if (!(capabilities & V4L2_CAP_VIDEO_CAPTURE))
     return false;
 
@@ -72,10 +77,10 @@ static bool HasUsableFormats(int fd, uint32_t capabilities) {
   return false;
 }
 
-static std::list<float> GetFrameRateList(int fd,
-                                         uint32_t fourcc,
-                                         uint32_t width,
-                                         uint32_t height) {
+std::list<float> GetFrameRateList(int fd,
+                                  uint32_t fourcc,
+                                  uint32_t width,
+                                  uint32_t height) {
   std::list<float> frame_rates;
 
   v4l2_frmivalenum frame_interval = {};
@@ -105,9 +110,9 @@ static std::list<float> GetFrameRateList(int fd,
   return frame_rates;
 }
 
-static void GetSupportedFormatsForV4L2BufferType(
+void GetSupportedFormatsForV4L2BufferType(
     int fd,
-    media::VideoCaptureFormats* supported_formats) {
+    VideoCaptureFormats* supported_formats) {
   v4l2_fmtdesc v4l2_format = {};
   v4l2_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FMT, &v4l2_format)) == 0;
@@ -144,6 +149,8 @@ static void GetSupportedFormatsForV4L2BufferType(
     }
   }
 }
+
+}  // namespace
 
 VideoCaptureDeviceFactoryLinux::VideoCaptureDeviceFactoryLinux(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
