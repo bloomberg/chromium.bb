@@ -584,6 +584,22 @@ WebString WebDevToolsAgentImpl::EvaluateInWebInspectorOverlay(
   return overlay_agent_->EvaluateInOverlayForTest(script);
 }
 
+void WebDevToolsAgentImpl::PaintOverlay() {
+  if (overlay_agent_)
+    overlay_agent_->PaintOverlay();
+}
+
+void WebDevToolsAgentImpl::LayoutOverlay() {
+  if (overlay_agent_)
+    overlay_agent_->LayoutOverlay();
+}
+
+bool WebDevToolsAgentImpl::HandleInputEvent(const WebInputEvent& event) {
+  if (overlay_agent_)
+    return overlay_agent_->HandleInputEvent(event);
+  return false;
+}
+
 bool WebDevToolsAgentImpl::CacheDisabled() {
   if (!network_agent_)
     return false;

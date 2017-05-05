@@ -161,7 +161,6 @@
 #include "web/DedicatedWorkerMessagingProxyProviderImpl.h"
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
-#include "web/InspectorOverlayAgent.h"
 #include "web/LinkHighlightImpl.h"
 #include "web/PageOverlay.h"
 #include "web/PrerendererClientImpl.h"
@@ -433,12 +432,6 @@ WebViewImpl::~WebViewImpl() {
 WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
   WebLocalFrameImpl* main_frame = MainFrameImpl();
   return main_frame ? main_frame->DevToolsAgentImpl() : nullptr;
-}
-
-InspectorOverlayAgent* WebViewImpl::GetInspectorOverlay() {
-  if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
-    return devtools->OverlayAgent();
-  return nullptr;
 }
 
 WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
@@ -2038,13 +2031,8 @@ void WebViewImpl::UpdateAllLifecyclePhases() {
   PageWidgetDelegate::UpdateAllLifecyclePhases(*page_,
                                                *MainFrameImpl()->GetFrame());
 
-  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
-    overlay->UpdateAllLifecyclePhases();
-    // TODO(chrishtr): integrate paint into the overlay's lifecycle.
-    if (overlay->GetPageOverlay() &&
-        overlay->GetPageOverlay()->GetGraphicsLayer())
-      overlay->GetPageOverlay()->GetGraphicsLayer()->Paint(nullptr);
-  }
+  if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
+    devtools->PaintOverlay();
   if (page_color_overlay_)
     page_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
 
@@ -2181,8 +2169,8 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   if (dev_tools_emulator_->HandleInputEvent(input_event))
     return WebInputEventResult::kHandledSuppressed;
 
-  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
-    if (overlay->HandleInputEvent(input_event))
+  if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl()) {
+    if (devtools->HandleInputEvent(input_event))
       return WebInputEventResult::kHandledSuppressed;
   }
 
@@ -4160,11 +4148,8 @@ AnimationWorkletProxyClient* WebViewImpl::CreateAnimationWorkletProxyClient() {
 void WebViewImpl::UpdatePageOverlays() {
   if (page_color_overlay_)
     page_color_overlay_->Update();
-  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
-    PageOverlay* inspector_page_overlay = overlay->GetPageOverlay();
-    if (inspector_page_overlay)
-      inspector_page_overlay->Update();
-  }
+  if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
+    devtools->LayoutOverlay();
 }
 
 float WebViewImpl::DeviceScaleFactor() const {

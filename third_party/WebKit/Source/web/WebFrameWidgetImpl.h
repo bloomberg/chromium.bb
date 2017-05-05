@@ -51,7 +51,6 @@ namespace blink {
 class CompositorAnimationHost;
 class Frame;
 class Element;
-class InspectorOverlayAgent;
 class LocalFrame;
 class PaintLayerCompositor;
 class UserGestureToken;
@@ -183,8 +182,6 @@ class WebFrameWidgetImpl final
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
-
-  InspectorOverlayAgent* GetInspectorOverlay();
 
   // This method returns the focused frame belonging to this WebWidget, that
   // is, a focused frame with the same local root as the one corresponding

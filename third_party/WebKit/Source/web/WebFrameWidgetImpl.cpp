@@ -68,8 +68,6 @@
 #include "web/CompositorMutatorImpl.h"
 #include "web/CompositorWorkerProxyClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
-#include "web/InspectorOverlayAgent.h"
-#include "web/PageOverlay.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebInputMethodControllerImpl.h"
@@ -252,13 +250,8 @@ void WebFrameWidgetImpl::UpdateAllLifecyclePhases() {
   if (!local_root_)
     return;
 
-  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
-    overlay->UpdateAllLifecyclePhases();
-    // TODO(chrishtr): integrate paint into the overlay's lifecycle.
-    if (overlay->GetPageOverlay() &&
-        overlay->GetPageOverlay()->GetGraphicsLayer())
-      overlay->GetPageOverlay()->GetGraphicsLayer()->Paint(nullptr);
-  }
+  if (WebDevToolsAgentImpl* devtools = local_root_->DevToolsAgentImpl())
+    devtools->PaintOverlay();
   PageWidgetDelegate::UpdateAllLifecyclePhases(*GetPage(),
                                                *local_root_->GetFrame());
   UpdateLayerTreeBackgroundColor();
@@ -364,9 +357,11 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
   if (!GetPage())
     return WebInputEventResult::kNotHandled;
 
-  if (InspectorOverlayAgent* overlay = GetInspectorOverlay()) {
-    if (overlay->HandleInputEvent(input_event))
-      return WebInputEventResult::kHandledSuppressed;
+  if (local_root_) {
+    if (WebDevToolsAgentImpl* devtools = local_root_->DevToolsAgentImpl()) {
+      if (devtools->HandleInputEvent(input_event))
+        return WebInputEventResult::kHandledSuppressed;
+    }
   }
 
   // Report the event to be NOT processed by WebKit, so that the browser can
@@ -1193,14 +1188,6 @@ HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
           doc_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
-}
-
-InspectorOverlayAgent* WebFrameWidgetImpl::GetInspectorOverlay() {
-  if (!local_root_)
-    return nullptr;
-  if (WebDevToolsAgentImpl* devtools = local_root_->DevToolsAgentImpl())
-    return devtools->OverlayAgent();
-  return nullptr;
 }
 
 LocalFrame* WebFrameWidgetImpl::FocusedLocalFrameInWidget() const {
