@@ -45,16 +45,16 @@ class CORE_EXPORT CompositingReasonFinder {
   static bool RequiresCompositingForTransformAnimation(const ComputedStyle&);
   static bool RequiresCompositingForTransform(const LayoutObject&);
 
+  bool RequiresCompositingForScrollDependentPosition(
+      const PaintLayer*,
+      bool ignore_lcd_text) const;
+
  private:
   bool IsMainFrame() const;
 
   CompositingReasons NonStyleDeterminedDirectReasons(
       const PaintLayer*,
       bool ignore_lcd_text) const;
-  bool RequiresCompositingForScrollDependentPosition(
-      const PaintLayer*,
-      bool ignore_lcd_text) const;
-
   LayoutView& layout_view_;
   CompositingTriggerFlags compositing_triggers_;
 };
