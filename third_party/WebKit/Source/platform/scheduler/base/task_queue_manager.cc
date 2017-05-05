@@ -172,7 +172,7 @@ void TaskQueueManager::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
   }
 }
 
-void TaskQueueManager::OnBeginNestedMessageLoop() {
+void TaskQueueManager::OnBeginNestedRunLoop() {
   // We just entered a nested message loop, make sure there's a DoWork posted or
   // the system will grind to a halt.
   {
@@ -184,7 +184,7 @@ void TaskQueueManager::OnBeginNestedMessageLoop() {
   // When a nested message loop starts, task time observers may want to ignore
   // the current task.
   for (auto& observer : task_time_observers_)
-    observer.OnBeginNestedMessageLoop();
+    observer.OnBeginNestedRunLoop();
 
   delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
 }

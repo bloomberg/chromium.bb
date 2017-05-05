@@ -160,7 +160,7 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
 
   estimator.OnTopLevelTaskStarted(time);
   time += base::TimeDelta::FromMilliseconds(20000);
-  estimator.OnBeginNestedMessageLoop();
+  estimator.OnBeginNestedRunLoop();
   estimator.OnTopLevelTaskCompleted(time);
 
   // Perform an additional task after the nested message loop. A 1 second task

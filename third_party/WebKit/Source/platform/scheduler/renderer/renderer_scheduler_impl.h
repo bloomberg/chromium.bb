@@ -136,7 +136,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void DidProcessTask(TaskQueue* task_queue,
                       double start_time,
                       double end_time) override;
-  void OnBeginNestedMessageLoop() override;
+  void OnBeginNestedRunLoop() override;
 
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time) override;

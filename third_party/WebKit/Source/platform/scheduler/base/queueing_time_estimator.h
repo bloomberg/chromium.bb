@@ -31,7 +31,7 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
    public:
     void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
     void OnTopLevelTaskCompleted(Client* client, base::TimeTicks task_end_time);
-    void OnBeginNestedMessageLoop();
+    void OnBeginNestedRunLoop();
 
     base::TimeDelta current_expected_queueing_time;
     base::TimeDelta window_duration;
@@ -48,7 +48,7 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
 
   void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
   void OnTopLevelTaskCompleted(base::TimeTicks task_end_time);
-  void OnBeginNestedMessageLoop();
+  void OnBeginNestedRunLoop();
 
   // Returns all state except for the current |client_|.
   const State& GetState() const { return state_; }

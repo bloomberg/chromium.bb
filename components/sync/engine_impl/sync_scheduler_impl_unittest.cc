@@ -310,7 +310,7 @@ void RecordSyncShareImpl(SyncShareTimes* times) {
 
 ACTION_P2(RecordSyncShare, times, success) {
   RecordSyncShareImpl(times);
-  if (base::MessageLoop::current()->is_running())
+  if (base::RunLoop::IsRunningOnCurrentThread())
     QuitLoopNow();
   return success;
 }
@@ -319,7 +319,7 @@ ACTION_P3(RecordSyncShareMultiple, times, quit_after, success) {
   RecordSyncShareImpl(times);
   EXPECT_LE(times->size(), quit_after);
   if (times->size() >= quit_after &&
-      base::MessageLoop::current()->is_running()) {
+      base::RunLoop::IsRunningOnCurrentThread()) {
     QuitLoopNow();
   }
   return success;

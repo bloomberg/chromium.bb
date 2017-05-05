@@ -77,8 +77,8 @@ void QueueingTimeEstimator::OnTopLevelTaskCompleted(
   state_.OnTopLevelTaskCompleted(client_, task_end_time);
 }
 
-void QueueingTimeEstimator::OnBeginNestedMessageLoop() {
-  state_.OnBeginNestedMessageLoop();
+void QueueingTimeEstimator::OnBeginNestedRunLoop() {
+  state_.OnBeginNestedRunLoop();
 }
 
 void QueueingTimeEstimator::State::OnTopLevelTaskStarted(
@@ -124,7 +124,7 @@ void QueueingTimeEstimator::State::OnTopLevelTaskCompleted(
   current_task_start_time = base::TimeTicks();
 }
 
-void QueueingTimeEstimator::State::OnBeginNestedMessageLoop() {
+void QueueingTimeEstimator::State::OnBeginNestedRunLoop() {
   in_nested_message_loop_ = true;
 }
 

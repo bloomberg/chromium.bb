@@ -139,7 +139,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
       EXPECT_EQ(status_, base::File::FILE_OK);
       complete_ = true;
       status_ = status;
-      if (base::MessageLoop::current()->is_running())
+      if (base::RunLoop::IsRunningOnCurrentThread())
         base::MessageLoop::current()->QuitWhenIdle();
     }
   }

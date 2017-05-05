@@ -158,7 +158,7 @@ void ServiceProviderTestHelper::OnResponse(
     std::unique_ptr<dbus::Response> response) {
   response_ = std::move(response);
   response_received_ = true;
-  if (base::MessageLoop::current()->is_running())
+  if (base::RunLoop::IsRunningOnCurrentThread())
     base::MessageLoop::current()->QuitWhenIdle();
 }
 

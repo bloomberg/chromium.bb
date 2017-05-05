@@ -218,7 +218,7 @@ void BrowserThreadImpl::Init() {
       identifier_ == BrowserThread::PROCESS_LAUNCHER ||
       identifier_ == BrowserThread::CACHE) {
     // Nesting and task observers are not allowed on redirected threads.
-    message_loop()->DisallowNesting();
+    base::RunLoop::DisallowNestingOnCurrentThread();
     message_loop()->DisallowTaskObservers();
   }
 

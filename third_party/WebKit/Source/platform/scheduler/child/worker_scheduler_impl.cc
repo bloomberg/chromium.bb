@@ -154,7 +154,7 @@ void WorkerSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
   load_tracker_.RecordTaskTime(start_time_ticks, end_time_ticks);
 }
 
-void WorkerSchedulerImpl::OnBeginNestedMessageLoop() {}
+void WorkerSchedulerImpl::OnBeginNestedRunLoop() {}
 
 }  // namespace scheduler
 }  // namespace blink

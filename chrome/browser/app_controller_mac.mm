@@ -15,9 +15,9 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -947,8 +947,9 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   // nested message loop and commands dispatched during this operation cause
   // havoc.
   if (SessionRestore::IsRestoring(lastProfile) &&
-      base::MessageLoop::current()->IsNested())
+      base::RunLoop::IsNestedOnCurrentThread()) {
     return;
+  }
 
   NSInteger tag = [sender tag];
 

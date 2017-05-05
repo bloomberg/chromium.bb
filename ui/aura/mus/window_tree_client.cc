@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "cc/base/switches.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
@@ -86,16 +88,16 @@ struct WindowPortPropertyDataMus : public ui::PropertyData {
 
 // Handles acknowledgment of an input event, either immediately when a nested
 // message loop starts, or upon destruction.
-class EventAckHandler : public base::MessageLoop::NestingObserver {
+class EventAckHandler : public base::RunLoop::NestingObserver {
  public:
   explicit EventAckHandler(std::unique_ptr<EventResultCallback> ack_callback)
       : ack_callback_(std::move(ack_callback)) {
     DCHECK(ack_callback_);
-    base::MessageLoop::current()->AddNestingObserver(this);
+    base::RunLoop::AddNestingObserverOnCurrentThread(this);
   }
 
   ~EventAckHandler() override {
-    base::MessageLoop::current()->RemoveNestingObserver(this);
+    base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
     if (ack_callback_) {
       ack_callback_->Run(handled_ ? ui::mojom::EventResult::HANDLED
                                   : ui::mojom::EventResult::UNHANDLED);
@@ -104,8 +106,8 @@ class EventAckHandler : public base::MessageLoop::NestingObserver {
 
   void set_handled(bool handled) { handled_ = handled; }
 
-  // base::MessageLoop::NestingObserver:
-  void OnBeginNestedMessageLoop() override {
+  // base::RunLoop::NestingObserver:
+  void OnBeginNestedRunLoop() override {
     // Acknowledge the event immediately if a nested message loop starts.
     // Otherwise we appear unresponsive for the life of the nested message loop.
     if (ack_callback_) {

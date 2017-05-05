@@ -35,10 +35,8 @@ class PLATFORM_EXPORT SchedulerTqmDelegateImpl : public SchedulerTqmDelegate {
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
-  void AddNestingObserver(
-      base::MessageLoop::NestingObserver* observer) override;
-  void RemoveNestingObserver(
-      base::MessageLoop::NestingObserver* observer) override;
+  void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;
+  void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
   base::TimeTicks NowTicks() override;
 
  protected:
