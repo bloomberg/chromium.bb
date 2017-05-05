@@ -558,12 +558,13 @@
       this._lastVisibleIndexVal = null;
 
       // Random access.
-      if (Math.abs(delta) > this._physicalSize) {
+      if (Math.abs(delta) > this._physicalSize && this._physicalSize > 0) {
         delta = delta - this._scrollOffset;
         var idxAdjustment = Math.round(delta / this._physicalAverage) * this._itemsPerRow;
-        this._physicalTop = this._physicalTop + delta;
         this._virtualStart = this._virtualStart + idxAdjustment;
         this._physicalStart = this._physicalStart + idxAdjustment;
+        // Estimate new physical offset.
+        this._physicalTop = Math.floor(this._virtualStart / this._itemsPerRow) * this._physicalAverage;
         this._update();
       } else {
         var reusables = this._getReusables(isScrollingDown);
@@ -1543,7 +1544,7 @@
       }
       var onScreenInstance = onScreenItem._templateInstance;
       var offScreenInstance = this._offscreenFocusedItem._templateInstance;
-      // Restores the physical item only when it has the same model 
+      // Restores the physical item only when it has the same model
       // as the offscreen one. Use key for comparison since users can set
       // a new item via set('items.idx').
       if (onScreenInstance.__key__ === offScreenInstance.__key__) {
@@ -1555,6 +1556,7 @@
         // Hide the physical item that backfills.
         this.translate3d(0, HIDDEN_Y, 0, this._focusBackfillItem);
       } else {
+        this._removeFocusedItem();
         this._focusBackfillItem = null;
       }
       this._offscreenFocusedItem = null;
