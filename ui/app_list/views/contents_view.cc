@@ -49,6 +49,10 @@ class SearchAnswerContainerView : public views::View {
       search_results_page_view_->Layout();
   }
 
+  const char* GetClassName() const override {
+    return "SearchAnswerContainerView";
+  }
+
  private:
   views::View* const search_results_page_view_;
 

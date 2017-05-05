@@ -43,7 +43,7 @@ void RecordRequestResult(SearchAnswerRequestResult request_result) {
 
 class SearchAnswerWebView : public views::WebView {
  public:
-  SearchAnswerWebView(content::BrowserContext* browser_context)
+  explicit SearchAnswerWebView(content::BrowserContext* browser_context)
       : WebView(browser_context) {}
 
   // views::WebView overrides:
@@ -61,6 +61,8 @@ class SearchAnswerWebView : public views::WebView {
       }
     }
   }
+
+  const char* GetClassName() const override { return "SearchAnswerWebView"; }
 
  private:
   // Time when the answer became visible to the user.
