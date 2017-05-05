@@ -30,16 +30,16 @@ VoidCallbackFunction* VoidCallbackFunction::Create(ScriptState* scriptState, v8:
 
 VoidCallbackFunction::VoidCallbackFunction(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : script_state_(scriptState),
-    m_callback(scriptState->GetIsolate(), this, callback) {
-  DCHECK(!m_callback.IsEmpty());
+    callback_(scriptState->GetIsolate(), this, callback) {
+  DCHECK(!callback_.IsEmpty());
 }
 
 DEFINE_TRACE_WRAPPERS(VoidCallbackFunction) {
-  visitor->TraceWrappers(m_callback.Cast<v8::Value>());
+  visitor->TraceWrappers(callback_.Cast<v8::Value>());
 }
 
 bool VoidCallbackFunction::call(ScriptWrappable* scriptWrappable) {
-  if (m_callback.IsEmpty())
+  if (callback_.IsEmpty())
     return false;
 
   if (!script_state_->ContextIsValid())
@@ -66,7 +66,7 @@ bool VoidCallbackFunction::call(ScriptWrappable* scriptWrappable) {
   exceptionCatcher.SetVerbose(true);
 
   v8::Local<v8::Value> v8ReturnValue;
-  if (!V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  if (!V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                     context,
                                     thisValue,
                                     0,

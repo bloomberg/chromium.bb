@@ -69,7 +69,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
   // statement, if any, or onto the next overall step otherwise. Otherwise,
   // the error callback did not return false, or there was no error callback.
   // Jump to the last step in the overall steps.
-  if (!V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+  if (!V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
                                     ExecutionContext::From(script_state_.Get()),
                                     script_state_->GetContext()->Global(),
                                     WTF_ARRAY_LENGTH(argv), argv, isolate)
