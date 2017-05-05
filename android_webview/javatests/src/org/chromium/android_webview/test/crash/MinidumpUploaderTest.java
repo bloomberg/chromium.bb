@@ -15,34 +15,23 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.CrashTestCase;
-import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
-import org.chromium.components.minidump_uploader.MinidumpUploadCallableTest;
 import org.chromium.components.minidump_uploader.MinidumpUploadTestUtility;
 import org.chromium.components.minidump_uploader.MinidumpUploader;
 import org.chromium.components.minidump_uploader.MinidumpUploaderDelegate;
 import org.chromium.components.minidump_uploader.MinidumpUploaderImpl;
 import org.chromium.components.minidump_uploader.TestMinidumpUploaderImpl;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
-import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 /**
- * Instrumentation tests for MinidumpUploader.
+ * Instrumentation tests for WebView's implementation of MinidumpUploaderDelegate, and the
+ * interoperability of WebView's minidump-copying and minidump-uploading logic.
  */
 public class MinidumpUploaderTest extends CrashTestCase {
-    private static final String TAG = "MinidumpUploaderTest";
     private static final String BOUNDARY = "TESTBOUNDARY";
 
     @Override
@@ -67,49 +56,6 @@ public class MinidumpUploaderTest extends CrashTestCase {
             ThreadUtils.assertOnUiThread();
             callback.onReceiveValue(mEnabled);
         }
-    }
-
-    /**
-     * Test to ensure the minidump uploading mechanism behaves as expected when we fail to upload
-     * minidumps.
-     */
-    @MediumTest
-    public void testFailUploadingMinidumps() throws IOException {
-        final CrashReportingPermissionManager permManager =
-                new MockCrashReportingPermissionManager() {
-                    {
-                        mIsInSample = true;
-                        mIsUserPermitted = true;
-                        mIsNetworkAvailable = false; // Will cause us to fail uploads
-                        mIsEnabledForTests = false;
-                    }
-                };
-        MinidumpUploader minidumpUploader =
-                new TestMinidumpUploaderImpl(getExistingCacheDir(), permManager);
-
-        File firstFile = createMinidumpFileInCrashDir("1_abc.dmp0");
-        File secondFile = createMinidumpFileInCrashDir("12_abc.dmp0");
-        String triesBelowMaxString = ".try" + (MinidumpUploaderImpl.MAX_UPLOAD_TRIES_ALLOWED - 1);
-        String maxTriesString = ".try" + MinidumpUploaderImpl.MAX_UPLOAD_TRIES_ALLOWED;
-        File justBelowMaxTriesFile =
-                createMinidumpFileInCrashDir("belowmaxtries.dmp0" + triesBelowMaxString);
-        File maxTriesFile = createMinidumpFileInCrashDir("maxtries.dmp0" + maxTriesString);
-
-        File expectedFirstFile = new File(mCrashDir, firstFile.getName() + ".try1");
-        File expectedSecondFile = new File(mCrashDir, secondFile.getName() + ".try1");
-        File expectedJustBelowMaxTriesFile = new File(mCrashDir,
-                justBelowMaxTriesFile.getName().replace(triesBelowMaxString, maxTriesString));
-
-        MinidumpUploadTestUtility.uploadMinidumpsSync(
-                minidumpUploader, true /* expectReschedule */);
-        assertFalse(firstFile.exists());
-        assertFalse(secondFile.exists());
-        assertFalse(justBelowMaxTriesFile.exists());
-        assertTrue(expectedFirstFile.exists());
-        assertTrue(expectedSecondFile.exists());
-        assertTrue(expectedJustBelowMaxTriesFile.exists());
-        // This file should have been left untouched.
-        assertTrue(maxTriesFile.exists());
     }
 
     /**
@@ -143,240 +89,6 @@ public class MinidumpUploaderTest extends CrashTestCase {
         // Ensure that we don't crash when trying to upload minidumps without a crash directory.
         MinidumpUploadTestUtility.uploadMinidumpsSync(
                 minidumpUploader, false /* expectReschedule */);
-    }
-
-    private interface MinidumpUploadCallableCreator {
-        MinidumpUploadCallable createCallable(File minidumpFile, File logfile);
-    }
-
-    private MinidumpUploaderImpl createCallableListMinidumpUploader(
-            final List<MinidumpUploadCallableCreator> callables, final boolean userPermitted) {
-        return new TestMinidumpUploaderImpl(getExistingCacheDir(), null) {
-            private int mIndex = 0;
-
-            @Override
-            public MinidumpUploadCallable createMinidumpUploadCallable(
-                    File minidumpFile, File logfile) {
-                if (mIndex >= callables.size()) {
-                    fail("Should not create callable number " + mIndex);
-                }
-                return callables.get(mIndex++).createCallable(minidumpFile, logfile);
-            }
-        };
-    }
-
-    @MediumTest
-    public void testFailingThenPassingUpload() throws IOException {
-        final CrashReportingPermissionManager permManager =
-                new MockCrashReportingPermissionManager() {
-                    { mIsEnabledForTests = true; }
-                };
-        List<MinidumpUploadCallableCreator> callables = new ArrayList<>();
-        callables.add(new MinidumpUploadCallableCreator() {
-            @Override
-            public MinidumpUploadCallable createCallable(File minidumpFile, File logfile) {
-                return new MinidumpUploadCallable(
-                        minidumpFile, logfile, new FailingHttpUrlConnectionFactory(), permManager);
-            }
-        });
-        callables.add(new MinidumpUploadCallableCreator() {
-            @Override
-            public MinidumpUploadCallable createCallable(File minidumpFile, File logfile) {
-                return new MinidumpUploadCallable(minidumpFile, logfile,
-                        new MinidumpUploadCallableTest.TestHttpURLConnectionFactory(), permManager);
-            }
-        });
-        MinidumpUploader minidumpUploader = createCallableListMinidumpUploader(
-                callables, permManager.isUsageAndCrashReportingPermittedByUser());
-
-        File firstFile = createMinidumpFileInCrashDir("firstFile.dmp0");
-        File secondFile = createMinidumpFileInCrashDir("secondFile.dmp0");
-
-        MinidumpUploadTestUtility.uploadMinidumpsSync(
-                minidumpUploader, true /* expectReschedule */);
-        assertFalse(firstFile.exists());
-        assertFalse(secondFile.exists());
-        File expectedSecondFile;
-        // Not sure which minidump will fail and which will succeed, so just ensure one was uploaded
-        // and the other one failed.
-        if (new File(mCrashDir, firstFile.getName() + ".try1").exists()) {
-            expectedSecondFile = new File(mCrashDir, secondFile.getName().replace(".dmp", ".up"));
-        } else {
-            File uploadedFirstFile =
-                    new File(mCrashDir, firstFile.getName().replace(".dmp", ".up"));
-            assertTrue(uploadedFirstFile.exists());
-            expectedSecondFile = new File(mCrashDir, secondFile.getName() + ".try1");
-        }
-        assertTrue(expectedSecondFile.exists());
-    }
-
-    private static class StallingHttpUrlConnectionFactory implements HttpURLConnectionFactory {
-        private final CountDownLatch mStopStallingLatch;
-        private final boolean mSucceed;
-
-        private class StallingOutputStream extends OutputStream {
-            @Override
-            public void write(int b) throws IOException {
-                try {
-                    mStopStallingLatch.await();
-                } catch (InterruptedException e) {
-                    throw new InterruptedIOException(e.toString());
-                }
-                if (!mSucceed) {
-                    throw new IOException();
-                }
-            }
-        }
-
-        public StallingHttpUrlConnectionFactory(CountDownLatch stopStallingLatch, boolean succeed) {
-            mStopStallingLatch = stopStallingLatch;
-            mSucceed = succeed;
-        }
-
-        public HttpURLConnection createHttpURLConnection(String url) {
-            try {
-                return new MinidumpUploadCallableTest.TestHttpURLConnection(new URL(url)) {
-                    @Override
-                    public OutputStream getOutputStream() {
-                        return new StallingOutputStream();
-                    }
-                };
-            } catch (MalformedURLException e) {
-                return null;
-            }
-        }
-    }
-
-    /**
-     * Minidump uploader implementation that stalls minidump-uploading until a given CountDownLatch
-     * counts down.
-     */
-    private static class StallingMinidumpUploaderImpl extends TestMinidumpUploaderImpl {
-        CountDownLatch mStopStallingLatch;
-        boolean mSuccessfulUpload;
-
-        public StallingMinidumpUploaderImpl(File cacheDir,
-                CrashReportingPermissionManager permissionManager, CountDownLatch stopStallingLatch,
-                boolean successfulUpload) {
-            super(cacheDir, permissionManager);
-            mStopStallingLatch = stopStallingLatch;
-            mSuccessfulUpload = successfulUpload;
-        }
-
-        @Override
-        public MinidumpUploadCallable createMinidumpUploadCallable(
-                File minidumpFile, File logfile) {
-            return new MinidumpUploadCallable(minidumpFile, logfile,
-                    new StallingHttpUrlConnectionFactory(mStopStallingLatch, mSuccessfulUpload),
-                    mDelegate.createCrashReportingPermissionManager());
-        }
-    }
-
-    private static class FailingHttpUrlConnectionFactory implements HttpURLConnectionFactory {
-        public HttpURLConnection createHttpURLConnection(String url) {
-            return null;
-        }
-    }
-
-    /**
-     * Test that ensures we can interrupt the MinidumpUploader when uploading minidumps.
-     */
-    @MediumTest
-    public void testCancelMinidumpUploadsFailedUpload() throws IOException {
-        testCancellation(false /* successfulUpload */);
-    }
-
-    /**
-     * Test that ensures interrupting our upload-job will not interrupt the first upload.
-     */
-    @MediumTest
-    public void testCancelingWontCancelFirstUpload() throws IOException {
-        testCancellation(true /* successfulUpload */);
-    }
-
-    private void testCancellation(final boolean successfulUpload) throws IOException {
-        final CrashReportingPermissionManager permManager =
-                new MockCrashReportingPermissionManager() {
-                    { mIsEnabledForTests = true; }
-                };
-        final CountDownLatch stopStallingLatch = new CountDownLatch(1);
-        MinidumpUploaderImpl minidumpUploader = new StallingMinidumpUploaderImpl(
-                getExistingCacheDir(), permManager, stopStallingLatch, successfulUpload);
-
-        File firstFile = createMinidumpFileInCrashDir("123_abc.dmp0");
-        File expectedFirstUploadFile =
-                new File(mCrashDir, firstFile.getName().replace(".dmp", ".up"));
-        File expectedFirstRetryFile = new File(mCrashDir, firstFile.getName() + ".try1");
-
-        // This is run on the UI thread to avoid failing any assertOnUiThread assertions.
-        MinidumpUploadTestUtility.uploadAllMinidumpsOnUiThread(minidumpUploader,
-                new MinidumpUploader.UploadsFinishedCallback() {
-                    @Override
-                    public void uploadsFinished(boolean reschedule) {
-                        if (successfulUpload) {
-                            assertFalse(reschedule);
-                        } else {
-                            fail("This method shouldn't be called when a canceled upload fails.");
-                        }
-                    }
-                },
-                // Block until job posted - otherwise the worker thread might not have been created
-                // before we try to join it.
-                true /* blockUntilJobPosted */);
-        minidumpUploader.cancelUploads();
-        stopStallingLatch.countDown();
-        // Wait until our job finished.
-        try {
-            minidumpUploader.joinWorkerThreadForTesting();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (successfulUpload) {
-            // When the upload succeeds we expect the file to be renamed.
-            assertFalse(firstFile.exists());
-            assertTrue(expectedFirstUploadFile.exists());
-            assertFalse(expectedFirstRetryFile.exists());
-        } else {
-            // When the upload fails we won't change the minidump at all.
-            assertTrue(firstFile.exists());
-            assertFalse(expectedFirstUploadFile.exists());
-            assertFalse(expectedFirstRetryFile.exists());
-        }
-    }
-
-    /**
-     * Ensure that canceling an upload that fails causes a reschedule.
-     */
-    @MediumTest
-    public void testCancelFailedUploadCausesReschedule() throws IOException {
-        final CrashReportingPermissionManager permManager =
-                new MockCrashReportingPermissionManager() {
-                    { mIsEnabledForTests = true; }
-                };
-        final CountDownLatch stopStallingLatch = new CountDownLatch(1);
-        MinidumpUploaderImpl minidumpUploader =
-                new StallingMinidumpUploaderImpl(getExistingCacheDir(), permManager,
-                        stopStallingLatch, false /* successfulUpload */);
-
-        createMinidumpFileInCrashDir("123_abc.dmp0");
-
-        MinidumpUploader.UploadsFinishedCallback crashingCallback =
-                new MinidumpUploader.UploadsFinishedCallback() {
-                    @Override
-                    public void uploadsFinished(boolean reschedule) {
-                        // We don't guarantee whether uploadsFinished is called after a job has been
-                        // cancelled, but if it is, it should indicate that we want to reschedule
-                        // the job.
-                        assertTrue(reschedule);
-                    }
-                };
-
-        // This is run on the UI thread to avoid failing any assertOnUiThread assertions.
-        MinidumpUploadTestUtility.uploadAllMinidumpsOnUiThread(minidumpUploader, crashingCallback);
-        // Ensure we tell JobScheduler to reschedule the job.
-        assertTrue(minidumpUploader.cancelUploads());
-        stopStallingLatch.countDown();
     }
 
     /**
