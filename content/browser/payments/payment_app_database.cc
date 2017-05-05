@@ -203,6 +203,19 @@ void PaymentAppDatabase::WritePaymentInstrument(
           base::Passed(std::move(callback))));
 }
 
+void PaymentAppDatabase::ClearPaymentInstruments(
+    const GURL& scope,
+    ClearPaymentInstrumentsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->FindReadyRegistrationForPattern(
+      scope,
+      base::Bind(
+          &PaymentAppDatabase::DidFindRegistrationToClearPaymentInstruments,
+          weak_ptr_factory_.GetWeakPtr(), scope,
+          base::Passed(std::move(callback))));
+}
+
 void PaymentAppDatabase::DidFindRegistrationToWriteManifest(
     payments::mojom::PaymentAppManifestPtr manifest,
     const WriteManifestCallback& callback,
@@ -523,6 +536,59 @@ void PaymentAppDatabase::DidWritePaymentInstrument(
       status == SERVICE_WORKER_OK
           ? PaymentHandlerStatus::SUCCESS
           : PaymentHandlerStatus::STORAGE_OPERATION_FAILED);
+}
+
+void PaymentAppDatabase::DidFindRegistrationToClearPaymentInstruments(
+    const GURL& scope,
+    ClearPaymentInstrumentsCallback callback,
+    ServiceWorkerStatusCode status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(PaymentHandlerStatus::NO_ACTIVE_WORKER);
+    return;
+  }
+
+  KeysOfPaymentInstruments(
+      scope,
+      base::BindOnce(&PaymentAppDatabase::DidGetKeysToClearPaymentInstruments,
+                     weak_ptr_factory_.GetWeakPtr(), registration->id(),
+                     std::move(callback)));
+}
+
+void PaymentAppDatabase::DidGetKeysToClearPaymentInstruments(
+    int64_t registration_id,
+    ClearPaymentInstrumentsCallback callback,
+    const std::vector<std::string>& keys,
+    PaymentHandlerStatus status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status != PaymentHandlerStatus::SUCCESS) {
+    std::move(callback).Run(PaymentHandlerStatus::NOT_FOUND);
+    return;
+  }
+
+  std::vector<std::string> keys_with_prefix;
+  for (const auto& key : keys) {
+    keys_with_prefix.push_back(CreatePaymentInstrumentKey(key));
+    keys_with_prefix.push_back(CreatePaymentInstrumentKeyInfoKey(key));
+  }
+
+  service_worker_context_->ClearRegistrationUserData(
+      registration_id, keys_with_prefix,
+      base::Bind(&PaymentAppDatabase::DidClearPaymentInstruments,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::DidClearPaymentInstruments(
+    ClearPaymentInstrumentsCallback callback,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return std::move(callback).Run(status == SERVICE_WORKER_OK
+                                     ? PaymentHandlerStatus::SUCCESS
+                                     : PaymentHandlerStatus::NOT_FOUND);
 }
 
 }  // namespace content
