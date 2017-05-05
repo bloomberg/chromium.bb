@@ -454,7 +454,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(
   } else {
     state.Style()->SetTextAlign(state.ParentStyle()->GetTextAlign());
   }
-  state.Style()->SetTextAlignIsInherited(false);
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyTextIndent(
