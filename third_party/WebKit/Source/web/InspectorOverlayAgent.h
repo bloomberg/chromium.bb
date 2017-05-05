@@ -120,10 +120,9 @@ class InspectorOverlayAgent final
   void PageLayoutInvalidated(bool resized);
   void ShowReloadingBlanket();
   void HideReloadingBlanket();
-  // Does not yet include paint.
-  void UpdateAllLifecyclePhases();
-  PageOverlay* GetPageOverlay() { return page_overlay_.get(); };
   String EvaluateInOverlayForTest(const String&);
+  void PaintOverlay();
+  void LayoutOverlay();
 
  private:
   class InspectorOverlayChromeClient;
@@ -159,6 +158,7 @@ class InspectorOverlayAgent final
   void Invalidate();
   void ScheduleUpdate();
   void ClearInternal();
+  void UpdateAllLifecyclePhases();
 
   bool HandleMouseDown();
   bool HandleMouseUp();

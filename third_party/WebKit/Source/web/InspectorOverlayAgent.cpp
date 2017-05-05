@@ -510,6 +510,18 @@ void InspectorOverlayAgent::Invalidate() {
   page_overlay_->Update();
 }
 
+void InspectorOverlayAgent::PaintOverlay() {
+  UpdateAllLifecyclePhases();
+  // TODO(chrishtr): integrate paint into the overlay's lifecycle.
+  if (page_overlay_ && page_overlay_->GetGraphicsLayer())
+    page_overlay_->GetGraphicsLayer()->Paint(nullptr);
+}
+
+void InspectorOverlayAgent::LayoutOverlay() {
+  if (page_overlay_)
+    page_overlay_->Update();
+}
+
 void InspectorOverlayAgent::UpdateAllLifecyclePhases() {
   if (IsEmpty())
     return;

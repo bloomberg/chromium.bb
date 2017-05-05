@@ -74,8 +74,10 @@ class WebDevToolsAgentImpl final
 
   void WillBeDestroyed();
   WebDevToolsAgentClient* Client() { return client_; }
-  InspectorOverlayAgent* OverlayAgent() const { return overlay_agent_.Get(); }
   void FlushProtocolNotifications();
+  void PaintOverlay();
+  void LayoutOverlay();
+  bool HandleInputEvent(const WebInputEvent&);
 
   // Instrumentation from web/ layer.
   void DidCommitLoadForLocalFrame(LocalFrame*);
@@ -85,6 +87,7 @@ class WebDevToolsAgentImpl final
   void DidRemovePageOverlay(const GraphicsLayer*);
   void LayerTreeViewChanged(WebLayerTreeView*);
   void RootLayerCleared();
+  bool CacheDisabled() override;
 
   // WebDevToolsAgent implementation.
   void Attach(const WebString& host_id, int session_id) override;
@@ -100,7 +103,6 @@ class WebDevToolsAgentImpl final
   void InspectElementAt(int session_id, const WebPoint&) override;
   void FailedToRequestDevTools() override;
   WebString EvaluateInWebInspectorOverlay(const WebString& script) override;
-  bool CacheDisabled() override;
 
  private:
   WebDevToolsAgentImpl(WebLocalFrameImpl*,
