@@ -184,7 +184,9 @@ remoting.DesktopConnectedView.prototype.initUI_ = function() {
       scrollerElement || document.body,
       this.plugin_.hostDesktop(),
       this.host_.options,
-      this.logger_);
+      this.logger_,
+      this.plugin_.hasCapability(
+          remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION));
 
   if (remoting.windowFrame) {
     remoting.windowFrame.setDesktopConnectedView(this);

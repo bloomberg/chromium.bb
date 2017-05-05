@@ -28,7 +28,7 @@ var remoting = remoting || {};
  * @implements {base.Disposable}
  */
   remoting.DesktopViewport = function(rootElement, hostDesktop, hostOptions,
-                                      logger) {
+                                      logger, sendInitialResolution) {
   /** @private */
   this.rootElement_ = rootElement;
   /** @private */
@@ -61,7 +61,7 @@ var remoting = remoting || {};
         this.hostDesktop_, remoting.HostDesktop.Events.sizeChanged,
         this.onDesktopSizeChanged_.bind(this)));
 
-  if (this.hostOptions_.getResizeToClient()) {
+  if (this.hostOptions_.getResizeToClient() || sendInitialResolution) {
     this.resizeHostDesktop_();
   } else {
     this.onDesktopSizeChanged_();
