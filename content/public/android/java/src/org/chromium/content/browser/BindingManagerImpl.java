@@ -100,7 +100,7 @@ class BindingManagerImpl implements BindingManager {
 
         void addConnection(ManagedConnection managedConnection) {
             ManagedChildProcessConnection connection = managedConnection.mConnection;
-            if (connection != null && connection.isSandboxed()) {
+            if (connection.isSandboxed()) {
                 managedConnection.addModerateBinding();
                 if (connection.isModerateBindingBound()) {
                     addConnectionImpl(managedConnection);
@@ -111,8 +111,7 @@ class BindingManagerImpl implements BindingManager {
         }
 
         void removeConnection(ManagedConnection managedConnection) {
-            ManagedChildProcessConnection connection = managedConnection.mConnection;
-            if (connection != null && connection.isSandboxed()) {
+            if (managedConnection.mConnection.isSandboxed()) {
                 removeConnectionImpl(managedConnection);
             }
         }
@@ -184,14 +183,11 @@ class BindingManagerImpl implements BindingManager {
 
     /**
      * Wraps ManagedChildProcessConnection keeping track of additional information needed to manage
-     * the bindings of the connection. The reference to ManagedChildProcessConnection is cleared
-     * when the connection goes away, but ManagedConnection itself is kept (until overwritten by a
-     * new entry for the same pid).
+     * the bindings of the connection. It goes away when the connection goes away.
      */
     private class ManagedConnection {
-        // Set in constructor, cleared in clearConnection() (on a separate thread).
-        // Need to keep a local reference to avoid it being cleared while using it.
-        private ManagedChildProcessConnection mConnection;
+        // The connection to the service.
+        private final ManagedChildProcessConnection mConnection;
 
         // True iff there is a strong binding kept on the service because it is working in
         // foreground.
@@ -206,38 +202,33 @@ class BindingManagerImpl implements BindingManager {
          * @return true if the binding was removed.
          */
         private boolean removeInitialBinding() {
-            ManagedChildProcessConnection connection = mConnection;
-            if (connection == null || !connection.isInitialBindingBound()) return false;
+            if (!mConnection.isInitialBindingBound()) return false;
 
-            connection.removeInitialBinding();
+            mConnection.removeInitialBinding();
             return true;
         }
 
         /** Adds a strong service binding. */
         private void addStrongBinding() {
-            ManagedChildProcessConnection connection = mConnection;
-            if (connection == null) return;
-
-            connection.addStrongBinding();
+            mConnection.addStrongBinding();
             if (mModerateBindingPool != null) mModerateBindingPool.removeConnection(this);
         }
 
         /** Removes a strong service binding. */
         private void removeStrongBinding(final boolean keepAsModerate) {
-            final ManagedChildProcessConnection connection = mConnection;
             // We have to fail gracefully if the strong binding is not present, as on low-end the
             // binding could have been removed by dropOomBindings() when a new service was started.
-            if (connection == null || !connection.isStrongBindingBound()) return;
+            if (!mConnection.isStrongBindingBound()) return;
 
             // This runnable performs the actual unbinding. It will be executed synchronously when
             // on low-end devices and posted with a delay otherwise.
             Runnable doUnbind = new Runnable() {
                 @Override
                 public void run() {
-                    if (connection.isStrongBindingBound()) {
-                        connection.removeStrongBinding();
+                    if (mConnection.isStrongBindingBound()) {
+                        mConnection.removeStrongBinding();
                         if (keepAsModerate) {
-                            addConnectionToModerateBindingPool(connection);
+                            addConnectionToModerateBindingPool(mConnection);
                         }
                     }
                 }
@@ -263,17 +254,13 @@ class BindingManagerImpl implements BindingManager {
 
         /** Removes the moderate service binding. */
         private void removeModerateBinding() {
-            ManagedChildProcessConnection connection = mConnection;
-            if (connection == null || !connection.isModerateBindingBound()) return;
-            connection.removeModerateBinding();
+            if (!mConnection.isModerateBindingBound()) return;
+            mConnection.removeModerateBinding();
         }
 
         /** Adds the moderate service binding. */
         private void addModerateBinding() {
-            ManagedChildProcessConnection connection = mConnection;
-            if (connection == null) return;
-
-            connection.addModerateBinding();
+            mConnection.addModerateBinding();
         }
 
         /**
@@ -282,10 +269,7 @@ class BindingManagerImpl implements BindingManager {
          */
         private void dropBindings() {
             assert mIsLowMemoryDevice;
-            ManagedChildProcessConnection connection = mConnection;
-            if (connection == null) return;
-
-            connection.dropOomBindings();
+            mConnection.dropOomBindings();
         }
 
         ManagedConnection(ManagedChildProcessConnection connection) {
@@ -319,19 +303,15 @@ class BindingManagerImpl implements BindingManager {
          * Sets or removes additional binding when the service is main service during the embedder
          * background period.
          */
-        void setBoundForBackgroundPeriod(boolean nextBound) {
-            if (!mBoundForBackgroundPeriod && nextBound) {
+        void setBoundForBackgroundPeriod(boolean boundForBackgroundPeriod) {
+            if (boundForBackgroundPeriod == mBoundForBackgroundPeriod) return;
+
+            if (boundForBackgroundPeriod) {
                 addStrongBinding();
-            } else if (mBoundForBackgroundPeriod && !nextBound) {
+            } else {
                 removeStrongBinding(false);
             }
-
-            mBoundForBackgroundPeriod = nextBound;
-        }
-
-        void clearConnection() {
-            if (mModerateBindingPool != null) mModerateBindingPool.removeConnection(this);
-            mConnection = null;
+            mBoundForBackgroundPeriod = boundForBackgroundPeriod;
         }
     }
 
@@ -342,10 +322,10 @@ class BindingManagerImpl implements BindingManager {
     // used to add additional binding on it when the embedder goes to background. On low-end, this
     // is also used to drop process bindings when a new one is created, making sure that only one
     // renderer process at a time is protected from oom killing.
-    private ManagedConnection mLastInForeground;
+    private ManagedConnection mLastConnectionInForeground;
 
     // The connection bound with additional binding in onSentToBackground().
-    private ManagedConnection mBoundForBackgroundPeriod;
+    private ManagedConnection mConnectionBoundForBackgroundPeriod;
 
     // Whether this instance is used on testing.
     private final boolean mOnTesting;
@@ -392,13 +372,13 @@ class BindingManagerImpl implements BindingManager {
             return;
         }
 
-        if (inForeground && mIsLowMemoryDevice && mLastInForeground != null
-                && mLastInForeground != managedConnection) {
-            mLastInForeground.dropBindings();
+        if (inForeground && mIsLowMemoryDevice && mLastConnectionInForeground != null
+                && mLastConnectionInForeground != managedConnection) {
+            mLastConnectionInForeground.dropBindings();
         }
 
         managedConnection.setInForeground(inForeground);
-        if (inForeground) mLastInForeground = managedConnection;
+        if (inForeground) mLastConnectionInForeground = managedConnection;
     }
 
     @Override
@@ -417,12 +397,12 @@ class BindingManagerImpl implements BindingManager {
     @Override
     public void onSentToBackground() {
         assert LauncherThread.runningOnLauncherThread();
-        assert mBoundForBackgroundPeriod == null;
-        // mLastInForeground can be null at this point as the embedding application could be
-        // used in foreground without spawning any renderers.
-        if (mLastInForeground != null) {
-            mLastInForeground.setBoundForBackgroundPeriod(true);
-            mBoundForBackgroundPeriod = mLastInForeground;
+        assert mConnectionBoundForBackgroundPeriod == null;
+        // mLastConnectionInForeground can be null at this point as the embedding application could
+        // be used in foreground without spawning any renderers.
+        if (mLastConnectionInForeground != null) {
+            mLastConnectionInForeground.setBoundForBackgroundPeriod(true);
+            mConnectionBoundForBackgroundPeriod = mLastConnectionInForeground;
         }
         if (mModerateBindingPool != null) mModerateBindingPool.onSentToBackground(mOnTesting);
     }
@@ -430,9 +410,9 @@ class BindingManagerImpl implements BindingManager {
     @Override
     public void onBroughtToForeground() {
         assert LauncherThread.runningOnLauncherThread();
-        if (mBoundForBackgroundPeriod != null) {
-            mBoundForBackgroundPeriod.setBoundForBackgroundPeriod(false);
-            mBoundForBackgroundPeriod = null;
+        if (mConnectionBoundForBackgroundPeriod != null) {
+            mConnectionBoundForBackgroundPeriod.setBoundForBackgroundPeriod(false);
+            mConnectionBoundForBackgroundPeriod = null;
         }
         if (mModerateBindingPool != null) mModerateBindingPool.onBroughtToForeground();
     }
@@ -441,10 +421,16 @@ class BindingManagerImpl implements BindingManager {
     public void removeConnection(int pid) {
         assert LauncherThread.runningOnLauncherThread();
         ManagedConnection managedConnection = mManagedConnections.get(pid);
-        if (managedConnection != null) {
-            mManagedConnections.remove(pid);
-            managedConnection.clearConnection();
+        if (managedConnection == null) return;
+
+        mManagedConnections.remove(pid);
+        if (mLastConnectionInForeground == managedConnection) {
+            mLastConnectionInForeground = null;
         }
+        if (mConnectionBoundForBackgroundPeriod == managedConnection) {
+            mConnectionBoundForBackgroundPeriod = null;
+        }
+        if (mModerateBindingPool != null) mModerateBindingPool.removeConnection(managedConnection);
     }
 
     /** @return true iff the connection reference is no longer held */
