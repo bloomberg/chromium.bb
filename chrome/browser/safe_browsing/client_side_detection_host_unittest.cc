@@ -47,7 +47,7 @@ using ::testing::NotNull;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using content::BrowserThread;
 using content::RenderFrameHostTester;
@@ -284,8 +284,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     }
     if (get_valid_cached_result) {
       EXPECT_CALL(*csd_service_, GetValidCachedResult(url, NotNull()))
-          .WillOnce(DoAll(SetArgumentPointee<1>(true),
-                          Return(*get_valid_cached_result)));
+          .WillOnce(
+              DoAll(SetArgPointee<1>(true), Return(*get_valid_cached_result)));
     }
     if (is_in_cache) {
       EXPECT_CALL(*csd_service_, IsInCache(url)).WillOnce(Return(*is_in_cache));

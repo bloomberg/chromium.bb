@@ -5824,7 +5824,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
-     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+     .WillOnce(SetArgPointee<1>(kNewServiceId));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
   cmd.Init(kNewClientId);
@@ -5854,7 +5854,7 @@ TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_,
               %(gl_func_name)s(%(gl_args_with_new_id)s));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
-     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+     .WillOnce(SetArgPointee<1>(kNewServiceId));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
   cmd.Init(%(args_with_new_id)s);
@@ -6073,7 +6073,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     valid_test = """
 TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
   cmds::%(name)s* cmd = GetImmediateAs<cmds::%(name)s>();
   GLuint temp = kNewClientId;
   SpecializedSetup<cmds::%(name)s, 0>(true);
@@ -8354,7 +8354,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   SpecializedSetup<cmds::%(name)s, 0>(true);
 %(expect_len_code)s
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s))
-      .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),
+      .WillOnce(DoAll(SetArgPointee<2>(strlen(kInfo)),
                       SetArrayArgument<3>(kInfo, kInfo + strlen(kInfo) + 1)));
   cmds::%(name)s cmd;
   cmd.Init(%(args)s);
@@ -8383,7 +8383,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
     if get_len_func and get_len_func[0:2] == 'gl':
       sub['expect_len_code'] = (
         "  EXPECT_CALL(*gl_, %s(%s, %s, _))\n"
-        "      .WillOnce(SetArgumentPointee<2>(strlen(kInfo) + 1));") % (
+        "      .WillOnce(SetArgPointee<2>(strlen(kInfo) + 1));") % (
             get_len_func[2:], id_name, get_len_enum)
     self.WriteValidUnitTest(func, f, valid_test, sub, *extras)
 

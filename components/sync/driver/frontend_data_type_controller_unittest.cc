@@ -27,7 +27,7 @@ using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
 using testing::Return;
-using testing::SetArgumentPointee;
+using testing::SetArgPointee;
 using testing::StrictMock;
 
 namespace syncer {
@@ -89,7 +89,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary())
         .WillOnce(Return(true));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
-        .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
+        .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels(_, _))
         .WillOnce(Return(SyncError()));
     EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
@@ -146,7 +146,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary())
       .WillOnce(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(false), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels(_, _))
       .WillOnce(Return(SyncError()));
   EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
@@ -184,7 +184,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary())
       .WillOnce(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels(_, _))
       .WillOnce(Return(
           SyncError(FROM_HERE, SyncError::DATATYPE_ERROR, "error", BOOKMARKS)));
@@ -205,7 +205,7 @@ TEST_F(SyncFrontendDataTypeControllerTest,
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
-      .WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
+      .WillRepeatedly(DoAll(SetArgPointee<0>(false), Return(false)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   Start();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());

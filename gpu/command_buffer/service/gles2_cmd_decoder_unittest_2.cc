@@ -26,7 +26,7 @@ using ::testing::MatcherCast;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrEq;
 
 namespace gpu {
@@ -614,25 +614,21 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramInfoLog, 0>(
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
-      .WillOnce(SetArgumentPointee<2>(1));
-  EXPECT_CALL(*gl_,
-      GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(strlen(log) + 1))
+      .WillOnce(SetArgPointee<2>(1));
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(strlen(log) + 1))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_,
-      GetProgramInfoLog(kServiceProgramId, strlen(log) + 1, _, _))
-      .WillOnce(DoAll(
-          SetArgumentPointee<2>(strlen(log)),
-          SetArrayArgument<3>(log, log + strlen(log) + 1)))
+  EXPECT_CALL(*gl_, GetProgramInfoLog(kServiceProgramId, strlen(log) + 1, _, _))
+      .WillOnce(DoAll(SetArgPointee<2>(strlen(log)),
+                      SetArrayArgument<3>(log, log + strlen(log) + 1)))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTES, _))
-      .WillOnce(SetArgumentPointee<2>(0));
+      .WillOnce(SetArgPointee<2>(0));
   EXPECT_CALL(
-      *gl_,
-      GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(0));
+      *gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(0));
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORMS, _))
-      .WillOnce(SetArgumentPointee<2>(0));
+      .WillOnce(SetArgPointee<2>(0));
 
   Program* program = GetProgram(client_program_id_);
   ASSERT_TRUE(program != NULL);
@@ -730,19 +726,17 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::LinkProgram, 0>(
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
-      .WillOnce(SetArgumentPointee<2>(1));
-  EXPECT_CALL(*gl_,
-      GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(0))
+      .WillOnce(SetArgPointee<2>(1));
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(0))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTES, _))
-      .WillOnce(SetArgumentPointee<2>(0));
+      .WillOnce(SetArgPointee<2>(0));
   EXPECT_CALL(
-      *gl_,
-      GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(0));
+      *gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
+      .WillOnce(SetArgPointee<2>(0));
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORMS, _))
-      .WillOnce(SetArgumentPointee<2>(0));
+      .WillOnce(SetArgPointee<2>(0));
 
   cmds::AttachShader attach_cmd;
   attach_cmd.Init(client_program_id_, kClientVertexShaderId);

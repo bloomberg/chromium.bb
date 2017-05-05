@@ -23,7 +23,7 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Return;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 
 namespace media {
@@ -174,7 +174,7 @@ TEST_F(FFmpegGlueTest, Seek) {
   EXPECT_CALL(*protocol_, SetPosition(16))
       .WillOnce(Return(true));
   EXPECT_CALL(*protocol_, GetPosition(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(8), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(8), Return(true)));
 
   EXPECT_EQ(AVERROR(EIO), Seek(-16, SEEK_SET));
   EXPECT_EQ(8, Seek(16, SEEK_SET));
@@ -185,16 +185,16 @@ TEST_F(FFmpegGlueTest, Seek) {
       .WillOnce(Return(false));
 
   EXPECT_CALL(*protocol_, GetPosition(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(8), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(8), Return(true)));
   EXPECT_CALL(*protocol_, SetPosition(16))
       .WillOnce(Return(false));
 
   EXPECT_CALL(*protocol_, GetPosition(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(8), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(8), Return(true)));
   EXPECT_CALL(*protocol_, SetPosition(16))
       .WillOnce(Return(true));
   EXPECT_CALL(*protocol_, GetPosition(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(16), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(16), Return(true)));
 
   EXPECT_EQ(AVERROR(EIO), Seek(8, SEEK_CUR));
   EXPECT_EQ(AVERROR(EIO), Seek(8, SEEK_CUR));
@@ -206,16 +206,16 @@ TEST_F(FFmpegGlueTest, Seek) {
       .WillOnce(Return(false));
 
   EXPECT_CALL(*protocol_, GetSize(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(16), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(16), Return(true)));
   EXPECT_CALL(*protocol_, SetPosition(8))
       .WillOnce(Return(false));
 
   EXPECT_CALL(*protocol_, GetSize(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(16), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(16), Return(true)));
   EXPECT_CALL(*protocol_, SetPosition(8))
       .WillOnce(Return(true));
   EXPECT_CALL(*protocol_, GetPosition(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(8), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(8), Return(true)));
 
   EXPECT_EQ(AVERROR(EIO), Seek(-8, SEEK_END));
   EXPECT_EQ(AVERROR(EIO), Seek(-8, SEEK_END));
@@ -226,7 +226,7 @@ TEST_F(FFmpegGlueTest, Seek) {
       .WillOnce(Return(false));
 
   EXPECT_CALL(*protocol_, GetSize(_))
-      .WillOnce(DoAll(SetArgumentPointee<0>(16), Return(true)));
+      .WillOnce(DoAll(SetArgPointee<0>(16), Return(true)));
 
   EXPECT_EQ(AVERROR(EIO), Seek(0, AVSEEK_SIZE));
   EXPECT_EQ(16, Seek(0, AVSEEK_SIZE));

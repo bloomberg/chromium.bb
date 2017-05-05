@@ -23,7 +23,7 @@ using testing::DoAll;
 using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
-using testing::SetArgumentPointee;
+using testing::SetArgPointee;
 using testing::StrictMock;
 
 namespace gpu {

@@ -42,7 +42,7 @@ using ::testing::InSequence;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::WithParamInterface;
 using ::testing::_;
