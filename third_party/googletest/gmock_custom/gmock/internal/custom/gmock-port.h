@@ -14,14 +14,12 @@ namespace std {
 // <20120322 below implies pre-4.7.0. In addition we blacklist several version
 // that released after 4.7.0 from pre-4.7.0 branch. 20120702 implies 4.5.4, and
 // 20121127 implies 4.6.4.
-#if defined(__GLIBCXX__) &&   \
-  (__GLIBCXX__ < 20120322 ||  \
-   __GLIBCXX__ == 20120702 || \
-   __GLIBCXX__ == 20121127)
+#if defined(__GLIBCXX__) &&                               \
+    (__GLIBCXX__ < 20120322 || __GLIBCXX__ == 20120702 || \
+     __GLIBCXX__ == 20121127)
 template <typename T>
 using is_default_constructible = std::is_constructible<T>;
 #endif
-
 }
 
 #endif  // TESTING_GMOCK_CUSTOM_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
