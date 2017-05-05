@@ -1410,6 +1410,12 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames) &&
       !cmd_line->HasSwitch(switches::kDisableGpuCompositing) &&
       !gpu_channel_host->gpu_info().software_rendering;
+#elif defined(OS_WIN)
+      !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames) &&
+      !cmd_line->HasSwitch(switches::kDisableGpuCompositing) &&
+      !gpu_channel_host->gpu_info().software_rendering &&
+      (cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames) ||
+       gpu_channel_host->gpu_info().supports_overlays);
 #else
       cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
 #endif
