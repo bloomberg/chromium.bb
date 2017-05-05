@@ -114,15 +114,14 @@ void CSSImageGeneratorValue::PutImage(const IntSize& size,
 
 PassRefPtr<Image> CSSImageGeneratorValue::GetImage(
     const LayoutObject& layout_object,
-    const IntSize& size,
-    float zoom) {
+    const IntSize& size) {
   switch (GetClassType()) {
     case kCrossfadeClass:
       return ToCSSCrossfadeValue(this)->GetImage(layout_object, size);
     case kLinearGradientClass:
       return ToCSSLinearGradientValue(this)->GetImage(layout_object, size);
     case kPaintClass:
-      return ToCSSPaintValue(this)->GetImage(layout_object, size, zoom);
+      return ToCSSPaintValue(this)->GetImage(layout_object, size);
     case kRadialGradientClass:
       return ToCSSRadialGradientValue(this)->GetImage(layout_object, size);
     case kConicGradientClass:

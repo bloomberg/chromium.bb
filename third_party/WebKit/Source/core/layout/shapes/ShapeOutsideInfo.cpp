@@ -170,8 +170,7 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
 
   DCHECK(!style_image->IsPendingImage());
   RefPtr<Image> image =
-      style_image->GetImage(layout_box_, FlooredIntSize(image_size),
-                            layout_box_.Style()->EffectiveZoom());
+      style_image->GetImage(layout_box_, FlooredIntSize(image_size));
 
   return Shape::CreateRasterShape(image.Get(), shape_image_threshold,
                                   image_rect, margin_rect, writing_mode,

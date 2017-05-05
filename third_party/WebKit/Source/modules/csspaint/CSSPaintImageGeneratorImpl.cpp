@@ -52,10 +52,8 @@ void CSSPaintImageGeneratorImpl::SetDefinition(CSSPaintDefinition* definition) {
 PassRefPtr<Image> CSSPaintImageGeneratorImpl::Paint(
     const LayoutObject& layout_object,
     const IntSize& size,
-    float zoom,
     const CSSStyleValueVector* data) {
-  return definition_ ? definition_->Paint(layout_object, size, zoom, data)
-                     : nullptr;
+  return definition_ ? definition_->Paint(layout_object, size, data) : nullptr;
 }
 
 const Vector<CSSPropertyID>&

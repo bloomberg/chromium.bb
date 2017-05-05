@@ -69,10 +69,10 @@ CSSPaintDefinition::~CSSPaintDefinition() {}
 PassRefPtr<Image> CSSPaintDefinition::Paint(
     const LayoutObject& layout_object,
     const IntSize& size,
-    float zoom,
     const CSSStyleValueVector* paint_arguments) {
   DCHECK(paint_arguments);
 
+  float zoom = layout_object.StyleRef().EffectiveZoom();
   const IntSize specified_size = GetSpecifiedSize(size, zoom);
 
   ScriptState::Scope scope(script_state_.Get());

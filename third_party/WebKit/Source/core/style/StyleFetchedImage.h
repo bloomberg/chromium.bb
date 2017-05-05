@@ -62,8 +62,7 @@ class StyleFetchedImage final : public StyleImage,
   void ImageNotifyFinished(ImageResourceContent*) override;
   String DebugName() const override { return "StyleFetchedImage"; }
   PassRefPtr<Image> GetImage(const LayoutObject&,
-                             const IntSize&,
-                             float zoom) const override;
+                             const IntSize&) const override;
   bool KnownToBeOpaque(const LayoutObject&) const override;
   ImageResourceContent* CachedImage() const override;
 

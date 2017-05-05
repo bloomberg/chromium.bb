@@ -80,8 +80,7 @@ class StylePendingImage final : public StyleImage {
   void AddClient(LayoutObject*) override {}
   void RemoveClient(LayoutObject*) override {}
   PassRefPtr<Image> GetImage(const LayoutObject&,
-                             const IntSize&,
-                             float) const override {
+                             const IntSize&) const override {
     NOTREACHED();
     return nullptr;
   }
