@@ -48,9 +48,8 @@ void HistoryLoginHandler::ProfileInfoChanged() {
   if (!signin_callback_.is_null())
     signin_callback_.Run();
 
-  if (IsJavascriptAllowed()) {
+  if (IsJavascriptAllowed())
     CallJavascriptFunction("updateSignInState", base::Value(signed_in));
-  }
 }
 
 void HistoryLoginHandler::HandleStartSignInFlow(

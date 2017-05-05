@@ -23,10 +23,6 @@
 #include "content/public/common/content_features.h"
 #include "extensions/features/features.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/md_history_ui.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #endif
@@ -57,9 +53,15 @@ bool WillHandleBrowserAboutURL(GURL* url,
 
   std::string host(url->host());
   std::string path;
+
   // Replace about with chrome-urls.
   if (host == chrome::kChromeUIAboutHost)
     host = chrome::kChromeUIChromeURLsHost;
+
+  // Legacy redirect from chrome://history-frame to chrome://history.
+  if (host == chrome::kDeprecatedChromeUIHistoryFrameHost)
+    host = chrome::kChromeUIHistoryHost;
+
   // Replace cache with view-http-cache.
   if (host == chrome::kChromeUICacheHost) {
     host = content::kChromeUINetworkViewCacheHost;
@@ -87,25 +89,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   // Redirect chrome://history.
   } else if (host == chrome::kChromeUIHistoryHost) {
-#if defined(OS_ANDROID)
-    // TODO(twellington): remove this after native Android history launches.
-    // See http://crbug.com/654071.
-    if (!base::FeatureList::IsEnabled(features::kNativeAndroidHistoryManager)) {
-      // On Android, redirect directly to chrome://history-frame since
-      // uber page is unsupported.
-      host = chrome::kChromeUIHistoryFrameHost;
-    }
-#else
-    // Material design history is handled on the top-level chrome://history
-    // host.
-    if (base::FeatureList::IsEnabled(features::kMaterialDesignHistory)) {
-      host = chrome::kChromeUIHistoryHost;
-      path = url->path();
-    } else {
-      host = chrome::kChromeUIUberHost;
-      path = chrome::kChromeUIHistoryHost + url->path();
-    }
-#endif
+    path = url->path();
   // Redirect chrome://settings, unless MD settings is enabled.
   } else if (host == chrome::kChromeUISettingsHost) {
     if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {

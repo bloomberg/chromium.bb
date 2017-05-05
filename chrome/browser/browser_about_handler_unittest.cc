@@ -130,6 +130,19 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
   TestWillHandleBrowserAboutURL(test_cases);
 }
 
+TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForHistory) {
+  TestWillHandleBrowserAboutURL(std::vector<AboutURLTestCase>({
+      {GURL("about:history"), GURL("chrome://history/")},
+      {GURL("about:history-frame"), GURL("chrome://history/")},
+      {GURL("chrome://history"), GURL("chrome://history/")},
+      {GURL("chrome://history-frame"), GURL("chrome://history/")},
+      {GURL("chrome://history/"), GURL("chrome://history/")},
+      {GURL("chrome://history-frame/"), GURL("chrome://history/")},
+      {GURL("chrome://history/?q=foo"), GURL("chrome://history/?q=foo")},
+      {GURL("chrome://history-frame/?q=foo"), GURL("chrome://history/?q=foo")},
+  }));
+}
+
 // Ensure that minor BrowserAboutHandler fixup to a URL does not cause us to
 // keep a separate virtual URL, which would not be updated on redirects.
 // See https://crbug.com/449829.

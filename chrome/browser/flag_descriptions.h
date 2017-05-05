@@ -33,14 +33,6 @@ extern const char kEnableMaterialDesignPolicyPageName[];
 // Description for the flag to enable the material design policy page.
 extern const char kEnableMaterialDesignPolicyPageDescription[];
 
-//  Material Design version of chrome://history
-
-// Name for the flag to enable the material design history page.
-extern const char kEnableMaterialDesignHistoryName[];
-
-// Description for the flag to enable the material design history page.
-extern const char kEnableMaterialDesignHistoryDescription[];
-
 //  Material Design version of chrome://settings
 
 // Name for the flag to enable the material design settings page.
@@ -2959,18 +2951,6 @@ extern const char kCrosCompUpdatesName[];
 
 // Description for the flag to enable Chrome OS component flash updates
 extern const char kCrosCompUpdatesDescription[];
-
-//  Native Android History chrome://flags strings
-
-#if defined(OS_ANDROID)
-
-// Name of the flag that enables the native Android history UI.
-extern const char kNativeAndroidHistoryManager[];
-
-// Description of the flag that enables the native Android history UI.
-extern const char kNativeAndroidHistoryManagerDescription[];
-
-#endif  // defined(OS_ANDROID)
 
 //  Play Services LSD permission prompt chrome://flags strings
 

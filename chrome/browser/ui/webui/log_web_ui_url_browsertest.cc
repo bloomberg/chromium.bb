@@ -43,9 +43,9 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    // Disable MD History to test non-MD history page.
+    // Disable MD Settings to test non-MD settings page.
     scoped_feature_list_.InitAndDisableFeature(
-        features::kMaterialDesignHistory);
+        features::kMaterialDesignSettings);
   }
 
  private:
@@ -55,76 +55,20 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(LogWebUIUrlTest);
 };
 
-IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestHistoryFrame) {
-  GURL history_frame_url(chrome::kChromeUIHistoryFrameURL);
+IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestSettingsFrame) {
+  GURL settings_frame_url(chrome::kChromeUISettingsFrameURL);
 
-  ui_test_utils::NavigateToURL(browser(), history_frame_url);
+  ui_test_utils::NavigateToURL(browser(), settings_frame_url);
 
-  uint32_t history_frame_url_hash = base::Hash(history_frame_url.spec());
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 1)));
+  uint32_t settings_frame_url_hash = base::Hash(settings_frame_url.spec());
+  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(settings_frame_url_hash, 1)));
 
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
 
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 2)));
+  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(settings_frame_url_hash, 2)));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestUberPage) {
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  base::string16 history_title = l10n_util::GetStringUTF16(IDS_HISTORY_TITLE);
-
-  {
-    content::TitleWatcher title_watcher(tab, history_title);
-    ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
-    ASSERT_EQ(history_title, title_watcher.WaitAndGetTitle());
-  }
-
-  std::string scheme(content::kChromeUIScheme);
-  GURL uber_url(scheme + "://" + chrome::kChromeUIUberHost);
-  uint32_t uber_url_hash = base::Hash(uber_url.spec());
-
-  GURL uber_frame_url(chrome::kChromeUIUberFrameURL);
-  uint32_t uber_frame_url_hash = base::Hash(uber_frame_url.spec());
-
-  GURL history_frame_url(chrome::kChromeUIHistoryFrameURL);
-  uint32_t history_frame_url_hash = base::Hash(history_frame_url.spec());
-
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 1),
-                                        Bucket(uber_frame_url_hash, 1),
-                                        Bucket(uber_url_hash, 1)));
-
-  {
-    content::TitleWatcher title_watcher(tab, history_title);
-    chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-    ASSERT_EQ(history_title, title_watcher.WaitAndGetTitle());
-  }
-
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 2),
-                                        Bucket(uber_frame_url_hash, 2),
-                                        Bucket(uber_url_hash, 2)));
-
-  {
-    // Pretend a user clicked on "Extensions".
-    base::string16 extensions_title =
-        l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
-    content::TitleWatcher title_watcher(tab, extensions_title);
-    std::string javascript =
-        "uber.invokeMethodOnWindow(window, 'showPage', {pageId: 'extensions'})";
-    ASSERT_TRUE(content::ExecuteScript(tab, javascript));
-    ASSERT_EQ(extensions_title, title_watcher.WaitAndGetTitle());
-  }
-
-  GURL extensions_frame_url(chrome::kChromeUIExtensionsFrameURL);
-  uint32_t extensions_frame_url_hash = base::Hash(extensions_frame_url.spec());
-
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(extensions_frame_url_hash, 1),
-                                        Bucket(history_frame_url_hash, 2),
-                                        Bucket(uber_frame_url_hash, 2),
-                                        Bucket(uber_url_hash, 2)));
-}
-
 IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestExtensionsPage) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -150,6 +94,25 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestExtensionsPage) {
   uint32_t extensions_frame_url_hash = base::Hash(extensions_frame_url.spec());
 
   EXPECT_THAT(GetSamples(), ElementsAre(Bucket(extensions_frame_url_hash, 1),
+                                        Bucket(uber_frame_url_hash, 1),
+                                        Bucket(uber_url_hash, 1)));
+
+  {
+    // Pretend a user clicked on "Settings".
+    base::string16 settings_title =
+        l10n_util::GetStringUTF16(IDS_SETTINGS_SETTINGS);
+    content::TitleWatcher title_watcher(tab, settings_title);
+    std::string javascript =
+        "uber.invokeMethodOnWindow(window, 'showPage', {pageId: 'settings'})";
+    ASSERT_TRUE(content::ExecuteScript(tab, javascript));
+    ASSERT_EQ(settings_title, title_watcher.WaitAndGetTitle());
+  }
+
+  GURL settings_frame_url(chrome::kChromeUISettingsFrameURL);
+  uint32_t settings_frame_url_hash = base::Hash(settings_frame_url.spec());
+
+  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(extensions_frame_url_hash, 1),
+                                        Bucket(settings_frame_url_hash, 1),
                                         Bucket(uber_frame_url_hash, 1),
                                         Bucket(uber_url_hash, 1)));
 }

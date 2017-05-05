@@ -115,7 +115,4 @@ const char kIOSIgnoreCertificateErrors[] = "ignore-certificate-errors";
 const char kIOSTestingFixedHttpPort[] = "testing-fixed-http-port";
 const char kIOSTestingFixedHttpsPort[] = "testing-fixed-https-port";
 
-// Enables grouping websites by domain and filtering them by period.
-const char kHistoryEnableGroupByDomain[] = "enable-grouped-history";
-
 }  // namespace switches

@@ -34,21 +34,6 @@
             ]
         }
     ],
-    "AndroidHistoryManager": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AndroidHistoryManager"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidSpellChecker": [
         {
             "platforms": [

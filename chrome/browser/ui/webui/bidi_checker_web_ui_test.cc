@@ -144,7 +144,7 @@ void DISABLED_WebUIBidiCheckerBrowserTestRTL::TearDownOnMainThread() {
 // Tests
 
 //==============================
-// chrome://settings/history
+// chrome://history
 //==============================
 
 static void SetupHistoryPageTest(Browser* browser,
@@ -165,13 +165,13 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestLTR,
   SetupHistoryPageTest(browser(),
                        "http://www.ynet.co.il",
                        "\xD7\x91\xD7\x93\xD7\x99\xD7\xA7\xD7\x94\x21");
-  RunBidiCheckerOnPage(chrome::kChromeUIHistoryFrameURL);
+  RunBidiCheckerOnPage(chrome::kChromeUIHistoryURL);
 }
 
 IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestRTL,
                        TestHistoryPage) {
   SetupHistoryPageTest(browser(), "http://www.google.com", "Google");
-  RunBidiCheckerOnPage(chrome::kChromeUIHistoryFrameURL);
+  RunBidiCheckerOnPage(chrome::kChromeUIHistoryURL);
 }
 
 //==============================
@@ -723,18 +723,4 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestLTR, TestHelpFrame) {
 
 IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestRTL, TestHelpFrame) {
   RunBidiCheckerOnPage(chrome::kChromeUIHelpFrameURL);
-}
-
-//==============================
-// chrome://history-frame
-//==============================
-
-IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestLTR,
-                       TestHistoryFrame) {
-  RunBidiCheckerOnPage(chrome::kChromeUIHistoryFrameURL);
-}
-
-IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestRTL,
-                       TestHistoryFrame) {
-  RunBidiCheckerOnPage(chrome::kChromeUIHistoryFrameURL);
 }

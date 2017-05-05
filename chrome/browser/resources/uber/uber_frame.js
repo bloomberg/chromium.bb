@@ -42,14 +42,6 @@ cr.define('uber_frame', function() {
     if (e.target.classList.contains('selected'))
       return;
 
-    // Extensions can override Uber content (e.g., if the user has a history
-    // extension, it should display when the 'History' navigation is clicked).
-    if (e.currentTarget.getAttribute('override') == 'yes') {
-      window.open('chrome://' + e.currentTarget.getAttribute('controls'),
-          '_blank');
-      return;
-    }
-
     uber.invokeMethodOnParent('showPage',
        {pageId: e.currentTarget.getAttribute('controls')});
 
@@ -109,7 +101,6 @@ cr.define('uber_frame', function() {
     $('settings').hidden = hideSettingsAndHelp;
     $('help').hidden = hideSettingsAndHelp;
     $('extensions').hidden = loadTimeData.getBoolean('hideExtensions');
-    $('history').hidden = loadTimeData.getBoolean('hideHistory');
   }
 
   /**
@@ -158,25 +149,7 @@ cr.define('uber_frame', function() {
     return document.querySelector('.iframe-container.selected');
   }
 
-  /**
-   * Finds the <li> element whose 'controls' attribute is |controls| and sets
-   * its 'override' attribute to |override|.
-   * @param {string} controls The value of the 'controls' attribute of the
-   *     element to change.
-   * @param {string} override The value to set for the 'override' attribute of
-   *     that element (either 'yes' or 'no').
-   */
-  function setNavigationOverride(controls, override) {
-    var navItem =
-        document.querySelector('li[controls="' + controls + '"]');
-    navItem.setAttribute('override', override);
-  }
-
-  return {
-    onLoad: onLoad,
-    setNavigationOverride: setNavigationOverride,
-  };
-
+  return {onLoad: onLoad};
 });
 
 document.addEventListener('DOMContentLoaded', uber_frame.onLoad);

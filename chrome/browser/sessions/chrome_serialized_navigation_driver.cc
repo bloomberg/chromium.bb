@@ -76,28 +76,16 @@ void ChromeSerializedNavigationDriver::Sanitize(
             .ToEncodedData());
   }
 
-  if (base::FeatureList::IsEnabled(features::kNativeAndroidHistoryManager) &&
-      navigation->virtual_url().SchemeIs(content::kChromeUIScheme) &&
+  if (navigation->virtual_url().SchemeIs(content::kChromeUIScheme) &&
       (navigation->virtual_url().host_piece() == chrome::kChromeUIHistoryHost ||
        navigation->virtual_url().host_piece() ==
-           chrome::kChromeUIHistoryFrameHost)) {
+           chrome::kDeprecatedChromeUIHistoryFrameHost)) {
     // Rewrite the old history Web UI to the new android native history.
     navigation->set_virtual_url(GURL(chrome::kChromeUINativeHistoryURL));
     navigation->set_original_request_url(navigation->virtual_url());
     navigation->set_encoded_page_state(
         content::PageState::CreateFromURL(navigation->virtual_url())
             .ToEncodedData());
-  } else if (!base::FeatureList::IsEnabled(
-                 features::kNativeAndroidHistoryManager) &&
-             navigation->virtual_url().SchemeIs(
-                 chrome::kChromeUINativeScheme) &&
-             navigation->virtual_url().host_piece() ==
-                 chrome::kChromeUIHistoryHost) {
-    // If the android native history UI has been disabled, redirect
-    // chrome-native://history to the old web UI.
-    navigation->set_virtual_url(GURL(chrome::kChromeUIHistoryURL));
-    navigation->set_original_request_url(navigation->virtual_url());
-    navigation->set_encoded_page_state(std::string());
   }
 #endif  // defined(OS_ANDROID)
 }

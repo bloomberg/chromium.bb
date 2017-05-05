@@ -190,10 +190,6 @@ extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
     "AcknowledgeNtpOverrideOnDeactivate", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables or disables the Material Design version of chrome://history.
-const base::Feature kMaterialDesignHistory{"MaterialDesignHistory",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // The material redesign of the Incognito NTP.
 const base::Feature kMaterialDesignIncognitoNTP{
     "MaterialDesignIncognitoNTP", base::FEATURE_DISABLED_BY_DEFAULT};

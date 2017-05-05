@@ -489,7 +489,7 @@ TEST_F(DataUseUITabModelTest, ConvertTransitionType) {
 
       // Navigating history.
       {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_TOPLEVEL),
-       kChromeUIHistoryFrameURL, true,
+       kDeprecatedChromeUIHistoryFrameURL, true,
        DataUseTabModel::TRANSITION_HISTORY_ITEM},
       {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_TOPLEVEL),
        kChromeUIHistoryURL, true, DataUseTabModel::TRANSITION_HISTORY_ITEM},

@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -29,8 +28,6 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/find_in_page_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -351,56 +348,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoAudibleAlertOnFrameChange) {
   ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
 
   EXPECT_EQ(1u, GetFindBarAudibleAlertsForBrowser(browser()));
-}
-
-// Verify search for text within special URLs such as chrome:history,
-// chrome://downloads, data directory
-#if defined(OS_MACOSX) || defined(OS_WIN)
-// Disabled on Mac due to http://crbug.com/419987
-// Disabled on Win due to http://crbug.com/661013
-#define MAYBE_SearchWithinSpecialURL \
-        DISABLED_SearchWithinSpecialURL
-#else
-#define MAYBE_SearchWithinSpecialURL \
-        SearchWithinSpecialURL
-#endif
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_SearchWithinSpecialURL) {
-  // TODO(tsergeant): Get this test working on MD History, which loads very
-  // asynchronously and causes this test to fail.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kMaterialDesignHistory);
-
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  base::FilePath data_dir =
-      ui_test_utils::GetTestFilePath(base::FilePath(), base::FilePath());
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(data_dir));
-  EXPECT_EQ(1, FindInPageASCII(web_contents, "downloads",
-                               kFwd, kIgnoreCase, NULL));
-
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
-
-  // The history page does an async request to the history service and then
-  // updates the renderer. So we make a query as well, and by the time it comes
-  // back we know the data is on its way to the renderer.
-  FlushHistoryService();
-
-  base::string16 query(data_dir.LossyDisplayName());
-  EXPECT_EQ(1,
-            ui_test_utils::FindInPage(web_contents, query,
-                                      kFwd, kIgnoreCase, NULL, NULL));
-
-  GURL download_url = ui_test_utils::GetTestUrl(
-      base::FilePath().AppendASCII("downloads"),
-      base::FilePath().AppendASCII("a_zip_file.zip"));
-  ui_test_utils::DownloadURL(browser(), download_url);
-
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
-  FlushHistoryService();
-  ASSERT_TRUE(content::ExecuteScript(web_contents, "Polymer.dom.flush();"));
-  EXPECT_EQ(1, FindInPageASCII(web_contents, download_url.spec(),
-                               kFwd, kIgnoreCase, NULL));
 }
 
 // Verify search selection coordinates. The data file used is set-up such that

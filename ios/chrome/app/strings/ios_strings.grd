@@ -674,9 +674,6 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_HISTORY_SYNC_LEARN_MORE_URL" translateable="false">
         https://support.google.com/chrome/?p=sync_history&amp;hl=[GRITLANGCODE]
       </message>
-      <message name="IDS_IOS_HISTORY_URL_NOT_AVAILABLE" desc="The text displayed when a user navigates to the history URL to redirect them to accessing history via the tools menu.">
-        <ph name="HISTORY_URL">$1<ex>chrome://history-frame</ex></ph> is not available. To access your browsing history, select "<ph name="SHOW_HISTORY">$2<ex>History</ex></ph>" from the tools menu.
-      </message>
       <message name="IDS_IOS_HTTP_LOGIN_DIALOG_PASSWORD_PLACEHOLDER" desc="The placeholder text for the password on the http login dialog [Length: 20em] [iOS only]">
         Password
       </message>

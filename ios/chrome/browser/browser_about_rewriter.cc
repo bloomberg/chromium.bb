@@ -18,7 +18,6 @@ const struct HostReplacement {
   const char* new_host_name;
 } kHostReplacements[] = {
     {"about", kChromeUIChromeURLsHost},
-    {"history", kChromeUIHistoryFrameHost},
     {"sync", kChromeUISyncInternalsHost},
 };
 

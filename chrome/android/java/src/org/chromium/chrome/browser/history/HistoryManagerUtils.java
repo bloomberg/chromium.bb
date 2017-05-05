@@ -10,34 +10,16 @@ import android.content.Intent;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.base.PageTransition;
 
 /**
  * Utility methods for the browsing history manager.
  */
 public class HistoryManagerUtils {
-    private static final Object NATIVE_HISTORY_ENABLED_LOCK = new Object();
-    private static Boolean sNativeHistoryEnabled;
-
-    /**
-    * @return Whether the Android-specific browsing history manager is enabled.
-    */
-    public static boolean isAndroidHistoryManagerEnabled() {
-        synchronized (NATIVE_HISTORY_ENABLED_LOCK) {
-            if (sNativeHistoryEnabled == null) {
-                sNativeHistoryEnabled = ChromeFeatureList.isEnabled("AndroidHistoryManager");
-            }
-        }
-
-        return sNativeHistoryEnabled;
-    }
-
     /**
      * Opens the browsing history manager.
      *
@@ -46,11 +28,6 @@ public class HistoryManagerUtils {
      *            {@link HistoryManager}.
      */
     public static void showHistoryManager(ChromeActivity activity, Tab tab) {
-        if (!isAndroidHistoryManagerEnabled()) {
-            tab.loadUrl(new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));
-            return;
-        }
-
         Context appContext = ContextUtils.getApplicationContext();
         if (activity.getBottomSheet() != null) {
             activity.getBottomSheetContentController().showContentAndOpenSheet(R.id.action_history);

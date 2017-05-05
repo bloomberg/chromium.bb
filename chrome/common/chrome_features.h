@@ -109,8 +109,6 @@ extern const base::Feature kMaterialDesignExtensions;
 extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate;
 #endif
 
-extern const base::Feature kMaterialDesignHistory;
-
 extern const base::Feature kMaterialDesignIncognitoNTP;
 
 extern const base::Feature kMaterialDesignSettings;

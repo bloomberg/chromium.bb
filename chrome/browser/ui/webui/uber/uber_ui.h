@@ -8,19 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "extensions/browser/extension_registry_observer.h"
-
-namespace content {
-class BrowserContext;
-}
-
-namespace extensions {
-class ExtensionRegistry;
-}
 
 // Logs visits to subframe URLs (e.g. chrome://settings-frame).
 class SubframeLogger : public content::WebContentsObserver {
@@ -67,25 +57,10 @@ class UberUI : public content::WebUIController {
   DISALLOW_COPY_AND_ASSIGN(UberUI);
 };
 
-class UberFrameUI : public content::WebUIController,
-                    public extensions::ExtensionRegistryObserver {
+class UberFrameUI : public content::WebUIController {
  public:
   explicit UberFrameUI(content::WebUI* web_ui);
   ~UberFrameUI() override;
-
- private:
-  // extensions::ExtensionRegistryObserver implementation.
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const extensions::Extension* extension,
-                           extensions::UnloadedExtensionReason reason) override;
-
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(UberFrameUI);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_UBER_UBER_UI_H_

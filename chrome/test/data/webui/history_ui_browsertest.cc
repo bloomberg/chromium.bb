@@ -13,14 +13,8 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 
-HistoryUIBrowserTest::HistoryUIBrowserTest()
-    : history_(NULL),
-      baseline_time_(base::Time::Now().LocalMidnight()),
-      nav_entry_id_(0) {
-}
-
-HistoryUIBrowserTest::~HistoryUIBrowserTest() {
-}
+HistoryUIBrowserTest::HistoryUIBrowserTest() : history_(nullptr) {}
+HistoryUIBrowserTest::~HistoryUIBrowserTest() {}
 
 void HistoryUIBrowserTest::SetUpOnMainThread() {
   WebUIBrowserTest::SetUpOnMainThread();
@@ -30,26 +24,7 @@ void HistoryUIBrowserTest::SetUpOnMainThread() {
   ui_test_utils::WaitForHistoryToLoad(history_);
 }
 
-void HistoryUIBrowserTest::AddPageToHistory(
-    int hour_offset, const std::string& url, const std::string& title) {
-  // We need the ID scope and page ID so that the visit tracker can find it.
-  const history::ContextID id_scope = reinterpret_cast<history::ContextID>(1);
-
-  base::Time time = baseline_time_ + base::TimeDelta::FromHours(hour_offset);
-  GURL gurl = GURL(url);
-  history_->AddPage(gurl, time, id_scope, nav_entry_id_++, GURL(),
-                    history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-                    history::SOURCE_BROWSED, false);
-  history_->SetPageTitle(gurl, base::UTF8ToUTF16(title));
-}
-
 void HistoryUIBrowserTest::SetDeleteAllowed(bool allowed) {
   browser()->profile()->GetPrefs()->
       SetBoolean(prefs::kAllowDeletingBrowserHistory, allowed);
 }
-
-void HistoryUIBrowserTest::ClearAcceptLanguages() {
-  browser()->profile()->GetPrefs()->
-      SetString(prefs::kAcceptLanguages, "");
-}
-
