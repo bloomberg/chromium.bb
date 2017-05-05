@@ -29,6 +29,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -76,6 +77,37 @@ base::TimeDelta GetNextUpdateIntervalFromFinch() {
   return base::TimeDelta::FromMinutes(finch_next_update_interval_minutes);
 }
 
+constexpr net::NetworkTrafficAnnotationTag
+    kChunkBackupRequestTrafficAnnotation = net::DefineNetworkTrafficAnnotation(
+        "safe_browsing_chunk_backup_request",
+        R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "Safe Browsing updates its local database of bad sites every 30 "
+            "minutes or so. It aims to keep all users up-to-date with the same "
+            "set of hash-prefixes of bad URLs."
+          trigger:
+            "On a timer, approximately every 30 minutes."
+          data:
+            "The state of the local DB is sent so the server can send just the "
+            "changes. This doesn't include any user data."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "Safe Browsing cookie store"
+          setting:
+            "Users can disable Safe Browsing by unchecking 'Protect you and "
+            "your device from dangerous sites' in Chromium settings under "
+            "Privacy. The feature is enabled by default."
+          chrome_policy {
+            SafeBrowsingEnabled {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingEnabled: false
+            }
+          }
+        })");
 }  // namespace
 
 namespace safe_browsing {
@@ -219,8 +251,41 @@ void SafeBrowsingProtocolManager::GetFullHash(
     return;
   }
   GURL gethash_url = GetHashUrl(reporting_level);
-  std::unique_ptr<net::URLFetcher> fetcher_ptr = net::URLFetcher::Create(
-      url_fetcher_id_++, gethash_url, net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("safe_browsing_get_full_hash", R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "When Safe Browsing detects that a URL might be dangerous based on "
+            "its local database, it sends a partial hash of that URL to Google "
+            "to verify it before showing a warning to the user. This partial "
+            "hash does not expose the URL to Google."
+          trigger:
+            "When a resource URL matches the local hash-prefix database of "
+            "potential threats (malware, phishing etc), and the full-hash "
+            "result is not already cached, this will be sent."
+          data:
+             "The 32-bit hash prefix of any potentially bad URLs. The URLs "
+             "themselves are not sent."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "Safe Browsing cookie store"
+          setting:
+            "Users can disable Safe Browsing by unchecking 'Protect you and "
+            "your device from dangerous sites' in Chromium settings under "
+            "Privacy. The feature is enabled by default."
+          chrome_policy {
+            SafeBrowsingEnabled {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingEnabled: false
+            }
+          }
+        })");
+  std::unique_ptr<net::URLFetcher> fetcher_ptr =
+      net::URLFetcher::Create(url_fetcher_id_++, gethash_url,
+                              net::URLFetcher::POST, this, traffic_annotation);
   net::URLFetcher* fetcher = fetcher_ptr.get();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::SAFE_BROWSING);
@@ -588,8 +653,37 @@ bool SafeBrowsingProtocolManager::IssueBackupUpdateRequest(
   backup_update_reason_ = backup_update_reason;
 
   GURL backup_update_url = BackupUpdateUrl(backup_update_reason);
-  request_ = net::URLFetcher::Create(url_fetcher_id_++, backup_update_url,
-                                     net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("safe_browsing_backup_request", R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "Safe Browsing issues multi-step update requests to Google every "
+            "30 minutes or so to get the latest database of hashes of bad URLs."
+          trigger:
+            "On a timer, approximately every 30 minutes."
+          data:
+            "The state of the local DB is sent so the server can send just the "
+            "changes. This doesn't include any user data."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "Safe Browsing cookie store"
+          setting:
+            "Users can disable Safe Browsing by unchecking 'Protect you and "
+            "your device from dangerous sites' in Chromium settings under "
+            "Privacy. The feature is enabled by default."
+          chrome_policy {
+            SafeBrowsingEnabled {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingEnabled: false
+            }
+          }
+        })");
+  request_ =
+      net::URLFetcher::Create(url_fetcher_id_++, backup_update_url,
+                              net::URLFetcher::POST, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
@@ -617,7 +711,8 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   GURL chunk_url = NextChunkUrl(next_chunk.url);
   request_type_ = CHUNK_REQUEST;
   request_ = net::URLFetcher::Create(url_fetcher_id_++, chunk_url,
-                                     net::URLFetcher::GET, this);
+                                     net::URLFetcher::GET, this,
+                                     kChunkBackupRequestTrafficAnnotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
@@ -670,7 +765,8 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
 
   GURL update_url = UpdateUrl(extended_reporting_level);
   request_ = net::URLFetcher::Create(url_fetcher_id_++, update_url,
-                                     net::URLFetcher::POST, this);
+                                     net::URLFetcher::POST, this,
+                                     kChunkBackupRequestTrafficAnnotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
