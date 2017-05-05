@@ -210,7 +210,6 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
 // Test some of the basic fields.
 TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   // Enable error console for testing.
-  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
   FeatureSwitch::ScopedOverride error_console_override(
       FeatureSwitch::error_console(), true);
   profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);

@@ -102,9 +102,6 @@ class ExtensionServiceTestBase : public testing::Test {
   // Initializes an ExtensionService without extensions enabled.
   void InitializeExtensionServiceWithExtensionsDisabled();
 
-  // Resets the browser thread bundle to one with |options|.
-  void ResetThreadBundle(int options);
-
   // Helpers to check the existence and values of extension prefs.
   size_t GetPrefKeyCount();
   void ValidatePrefKeyCount(size_t count);
@@ -163,9 +160,6 @@ class ExtensionServiceTestBase : public testing::Test {
 
  private:
   void CreateExtensionService(const ExtensionServiceInitParams& params);
-
-  // Whether or not the thread bundle was reset in the test.
-  bool did_reset_thread_bundle_;
 
   // The directory into which extensions are installed.
   base::FilePath extensions_install_dir_;
