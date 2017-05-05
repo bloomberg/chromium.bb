@@ -15,6 +15,8 @@
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace subresource_filter {
 

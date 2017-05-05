@@ -1,3 +1,7 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 namespace subresource_filter.flat;
 
 // Corresponds to subresource_filter::proto::UrlPatternType.
@@ -89,16 +93,4 @@ table UrlPatternIndex {
   fallback_rules : [UrlRule];
 }
 
-// The top-level data structure used to store URL rules.
-table IndexedRuleset {
-  // The index of all blacklist URL rules.
-  blacklist_index : UrlPatternIndex;
-
-  // The index of all whitelist URL rules, except pure activation rules.
-  whitelist_index : UrlPatternIndex;
-
-  // The index of all whitelist URL rules with activation options.
-  activation_index : UrlPatternIndex;
-}
-
-root_type IndexedRuleset;
+root_type UrlPatternIndex;

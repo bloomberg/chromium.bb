@@ -26,7 +26,8 @@ def CheckIndexedRulesetVersion(input_api, output_api):
       continue
     basename = input_api.basename(path)
 
-    if basename.endswith('.fbs') or basename == 'indexed_ruleset.cc':
+    if (basename == 'indexed_ruleset.cc' or basename == 'url_pattern_index.cc'
+        or basename.endswith('.fbs')):
       indexed_ruleset_changed = True
     if basename == 'indexed_ruleset.cc':
       for (_, line) in affected_file.ChangedContents():

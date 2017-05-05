@@ -34,6 +34,8 @@ static_library("common") {
     "unindexed_ruleset.h",
     "url_pattern.cc",
     "url_pattern.h",
+    "url_pattern_index.cc",
+    "url_pattern_index.h",
   ]
 
   public_deps = [
