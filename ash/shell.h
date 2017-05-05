@@ -258,6 +258,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
 
   static Config GetAshConfig();
+  static bool ShouldUseIMEService();
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.

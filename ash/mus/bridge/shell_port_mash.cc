@@ -50,6 +50,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
 #include "ash/wm_window.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -489,7 +490,7 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
       window_manager_->window_manager_client()->CreateInitParamsForNewDisplay();
   aura_init_params.display_id = init_params.display_id;
   aura_init_params.display_init_params = std::move(display_params);
-  aura_init_params.use_classic_ime = true;
+  aura_init_params.use_classic_ime = !Shell::ShouldUseIMEService();
   return base::MakeUnique<AshWindowTreeHostMus>(std::move(aura_init_params));
 }
 
