@@ -16,6 +16,7 @@ blink_modules_sources("webaudio") {
     "AudioBasicProcessorHandler.h",
     "AudioBuffer.cpp",
     "AudioBuffer.h",
+    "AudioBufferCallback.h",
     "AudioBufferSourceNode.cpp",
     "AudioBufferSourceNode.h",
     "AudioContext.cpp",
