@@ -94,6 +94,9 @@ CONSOLE MESSAGE: line 138:     getter x
 CONSOLE MESSAGE: line 138:     getter y
 CONSOLE MESSAGE: line 138:     getter z
 CONSOLE MESSAGE: line 138:     method constructor
+CONSOLE MESSAGE: line 138:     setter x
+CONSOLE MESSAGE: line 138:     setter y
+CONSOLE MESSAGE: line 138:     setter z
 CONSOLE MESSAGE: line 138: interface CSSSimpleLength : CSSLengthValue
 CONSOLE MESSAGE: line 138:     getter type
 CONSOLE MESSAGE: line 138:     getter value

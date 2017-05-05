@@ -8,7 +8,7 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSScale : CSSTransformComponent {
-    readonly attribute double x;
-    readonly attribute double y;
-    readonly attribute double z;
+    attribute double x;
+    attribute double y;
+    attribute double z;
 };
