@@ -2332,12 +2332,15 @@ static void restore_context(MACROBLOCK *x,
   int mi_width = mi_size_wide[bsize];
   int mi_height = mi_size_high[bsize];
   for (p = 0; p < MAX_MB_PLANE; p++) {
-    memcpy(xd->above_context[p] + ((mi_col * 2) >> xd->plane[p].subsampling_x),
+    int tx_col;
+    int tx_row;
+    tx_col = mi_col << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
+    tx_row = (mi_row & MAX_MIB_MASK) << (MI_SIZE_LOG2 - tx_size_high_log2[0]);
+    memcpy(xd->above_context[p] + (tx_col >> xd->plane[p].subsampling_x),
            ctx->a + num_4x4_blocks_wide * p,
            (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_wide) >>
                xd->plane[p].subsampling_x);
-    memcpy(xd->left_context[p] +
-               ((mi_row & MAX_MIB_MASK) * 2 >> xd->plane[p].subsampling_y),
+    memcpy(xd->left_context[p] + (tx_row >> xd->plane[p].subsampling_y),
            ctx->l + num_4x4_blocks_high * p,
            (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_high) >>
                xd->plane[p].subsampling_y);
@@ -2376,13 +2379,16 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
 
   // buffer the above/left context information of the block in search.
   for (p = 0; p < MAX_MB_PLANE; ++p) {
+    int tx_col;
+    int tx_row;
+    tx_col = mi_col << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
+    tx_row = (mi_row & MAX_MIB_MASK) << (MI_SIZE_LOG2 - tx_size_high_log2[0]);
     memcpy(ctx->a + num_4x4_blocks_wide * p,
-           xd->above_context[p] + (mi_col * 2 >> xd->plane[p].subsampling_x),
+           xd->above_context[p] + (tx_col >> xd->plane[p].subsampling_x),
            (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_wide) >>
                xd->plane[p].subsampling_x);
     memcpy(ctx->l + num_4x4_blocks_high * p,
-           xd->left_context[p] +
-               ((mi_row & MAX_MIB_MASK) * 2 >> xd->plane[p].subsampling_y),
+           xd->left_context[p] + (tx_row >> xd->plane[p].subsampling_y),
            (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_high) >>
                xd->plane[p].subsampling_y);
   }

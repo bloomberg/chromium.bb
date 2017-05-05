@@ -155,7 +155,8 @@ int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
     for (i = 0; i < MAX_MB_PLANE; i++) {
       aom_free(cm->above_context[i]);
       cm->above_context[i] = (ENTROPY_CONTEXT *)aom_calloc(
-          2 * aligned_mi_cols, sizeof(*cm->above_context[0]));
+          aligned_mi_cols << (MI_SIZE_LOG2 - tx_size_wide_log2[0]),
+          sizeof(*cm->above_context[0]));
       if (!cm->above_context[i]) goto fail;
     }
 

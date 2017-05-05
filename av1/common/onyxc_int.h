@@ -570,8 +570,9 @@ static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col) {
       if (pd->subsampling_x && (mi_col & 0x01)) mi_col -= 1;
     }
 #endif
-    int above_idx = mi_col * 2;
-    int left_idx = (mi_row * 2) & MAX_MIB_MASK_2;
+    int above_idx = mi_col << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
+    int left_idx = (mi_row & MAX_MIB_MASK)
+                   << (MI_SIZE_LOG2 - tx_size_high_log2[0]);
     pd->above_context = &xd->above_context[i][above_idx >> pd->subsampling_x];
     pd->left_context = &xd->left_context[i][left_idx >> pd->subsampling_y];
   }
@@ -856,8 +857,8 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
   const int width = mi_col_end - mi_col_start;
   const int aligned_width = ALIGN_POWER_OF_TWO(width, cm->mib_size_log2);
 
-  const int offset_y = 2 * mi_col_start;
-  const int width_y = 2 * aligned_width;
+  const int offset_y = mi_col_start << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
+  const int width_y = width << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
   const int offset_uv = offset_y >> cm->subsampling_x;
   const int width_uv = width_y >> cm->subsampling_x;
 
