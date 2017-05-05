@@ -1211,6 +1211,11 @@ const char kEnableDataReductionProxySiteBreakdownName[] =
 const char kEnableDataReductionProxySiteBreakdownDescription[] =
     "Enable the site breakdown on the Data Saver settings page.";
 
+const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
+
+const char kEnableOfflinePreviewsDescription[] =
+    "Enable showing offline page previews on slow networks.";
+
 #endif  // defined(OS_ANDROID)
 
 const char kLcdTextName[] = "LCD text antialiasing";

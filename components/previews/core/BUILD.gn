@@ -11,6 +11,8 @@ static_library("core") {
     "previews_decider.h",
     "previews_experiments.cc",
     "previews_experiments.h",
+    "previews_features.cc",
+    "previews_features.h",
     "previews_io_data.cc",
     "previews_io_data.h",
     "previews_opt_out_store.h",

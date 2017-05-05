@@ -57,6 +57,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/previews/core/previews_features.h"
 #include "components/proximity_auth/switches.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
@@ -1872,6 +1873,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          data_reduction_proxy::features::kDataReductionSiteBreakdown)},
+    {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
+     flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},
 #endif  // OS_ANDROID
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhost,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,

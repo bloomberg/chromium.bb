@@ -21083,6 +21083,7 @@ from previous Chrome versions.
   <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1937077699" label="http-form-warning"/>
   <int value="-1934673791" label="gl-composited-texture-quad-border"/>
+  <int value="-1933425042" label="OfflinePreviews:enabled"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>
@@ -21653,6 +21654,7 @@ from previous Chrome versions.
   <int value="328722396" label="NTPCondensedLayout:disabled"/>
   <int value="330138076" label="enable-clear-browsing-data-counters"/>
   <int value="332391072" label="cs-contextual-cards-bar-integration"/>
+  <int value="334802038" label="OfflinePreviews:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="358399482" label="enable-high-dpi-fixed-position-compositing"/>

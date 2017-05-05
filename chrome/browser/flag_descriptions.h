@@ -1355,6 +1355,12 @@ extern const char kEnableDataReductionProxySiteBreakdownName[];
 // Saver settings page.
 extern const char kEnableDataReductionProxySiteBreakdownDescription[];
 
+// An about:flags experiment title to enable offline page previews.
+extern const char kEnableOfflinePreviewsName[];
+
+// Describes an about:flags experiment to enable offline page previews.
+extern const char kEnableOfflinePreviewsDescription[];
+
 #endif  // defined(OS_ANDROID)
 
 // Name of about:flags option for LCD text.
