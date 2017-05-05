@@ -51,10 +51,11 @@
         <h2>$i18n{searchEnginesExtension}</h2>
       </div>
       <iron-list id="extensions" class="extension-engines fixed-height-list"
-          selectable items="[[extensions]]">
+          items="[[extensions]]">
         <template>
           <settings-omnibox-extension-entry engine="[[item]]"
-              tabindex$="[[tabIndex]]">
+              tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
+              last-focused="{{omniboxExtensionlastFocused_}}">
           </settings-omnibox-extension-entry>
         </template>
       </iron-list>

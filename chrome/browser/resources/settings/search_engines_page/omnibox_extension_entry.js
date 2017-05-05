@@ -14,6 +14,8 @@ Polymer({
     engine: Object,
   },
 
+  behaviors: [FocusRowBehavior],
+
   /** @private {?settings.ExtensionControlBrowserProxy} */
   browserProxy_: null,
 
