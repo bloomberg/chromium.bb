@@ -134,14 +134,14 @@ crbug.com/616905 virtual/mojo-loading/http/tests/history/cross-origin-redirect-o
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-blockable.html [ Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-none.html [ Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.html [ Timeout ]
+crbug.com/623268 http/tests/inspector-protocol/request-referrer-policy.html [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-blockable.html [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-none.html [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.html [ Timeout ]
-crbug.com/623268 http/tests/inspector/change-iframe-src.html [ Timeout ]
-crbug.com/623268 http/tests/inspector/console-cross-origin-iframe-logging.html [ Timeout ]
+crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-referrer-policy.html [ Timeout ]
+crbug.com/623268 http/tests/inspector/console-cross-origin-iframe-logging.html [ Failure ]
 crbug.com/623268 http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
-crbug.com/623268 virtual/mojo-loading/http/tests/inspector/change-iframe-src.html [ Timeout ]
-crbug.com/623268 virtual/mojo-loading/http/tests/inspector/console-cross-origin-iframe-logging.html [ Timeout ]
+crbug.com/623268 virtual/mojo-loading/http/tests/inspector/console-cross-origin-iframe-logging.html [ Failure ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector/inspect-iframe-from-different-domain.html [ Timeout ]
 
 # https://crbug.com/623210 - DevTools extensions load in separate process in layout tests.
