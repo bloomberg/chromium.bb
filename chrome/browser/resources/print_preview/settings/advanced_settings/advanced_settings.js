@@ -70,12 +70,12 @@ cr.define('print_preview', function() {
       print_preview.Overlay.prototype.enterDocument.call(this);
 
       this.tracker.add(
-          assert(this.getChildElement('.button-strip .cancel-button')),
+          this.getChildElement('.button-strip .cancel-button'),
           'click',
           this.cancel.bind(this));
 
       this.tracker.add(
-          assert(this.getChildElement('.button-strip .done-button')),
+          this.getChildElement('.button-strip .done-button'),
           'click',
           this.onApplySettings_.bind(this));
 
@@ -87,7 +87,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     decorateInternal: function() {
-      this.searchBox_.render(assert(this.getChildElement('.search-box-area')));
+      this.searchBox_.render(this.getChildElement('.search-box-area'));
     },
 
     /** @override */
@@ -145,11 +145,10 @@ cr.define('print_preview', function() {
           lastVisibleItemWithBubble = item;
       });
       setIsVisible(
-          assert(this.getChildElement('.no-settings-match-hint')),
+          this.getChildElement('.no-settings-match-hint'),
           !atLeastOneMatch);
       setIsVisible(
-          assert(this.getChildElement(
-              '.' + AdvancedSettings.Classes_.EXTRA_PADDING)),
+          this.getChildElement('.' + AdvancedSettings.Classes_.EXTRA_PADDING),
           !!lastVisibleItemWithBubble);
     },
 
@@ -173,8 +172,8 @@ cr.define('print_preview', function() {
       }.bind(this));
       this.items_ = [];
 
-      var extraPadding =
-          this.getChildElement('.' + AdvancedSettings.Classes_.EXTRA_PADDING);
+      var extraPadding = this.element_.querySelector(
+          '.' + AdvancedSettings.Classes_.EXTRA_PADDING);
       if (extraPadding)
         extraPadding.parentNode.removeChild(extraPadding);
 
@@ -191,11 +190,11 @@ cr.define('print_preview', function() {
         var item = new print_preview.AdvancedSettingsItem(
             this.printTicketStore_, capability);
         this.addChild(item);
-        item.render(assert(settingsEl));
+        item.render(settingsEl);
         this.items_.push(item);
       }.bind(this));
 
-      var searchBoxArea = assert(this.getChildElement('.search-box-area'));
+      var searchBoxArea = this.getChildElement('.search-box-area');
       if (this.items_.length <= 1) {
         setIsVisible(searchBoxArea, false);
       } else {
