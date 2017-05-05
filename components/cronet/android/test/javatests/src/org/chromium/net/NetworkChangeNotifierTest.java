@@ -12,8 +12,8 @@ import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.system.Os;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.impl.CronetLibraryLoader;
 
 import java.io.FileDescriptor;
 import java.net.InetAddress;
@@ -77,7 +77,7 @@ public class NetworkChangeNotifierTest extends CronetTestBase {
         }
 
         // Simulate network change which should abort connect jobs
-        ThreadUtils.postOnUiThread(new Runnable() {
+        CronetLibraryLoader.postToInitThread(new Runnable() {
             @Override
             public void run() {
                 NetworkChangeNotifier.getInstance().notifyObserversOfConnectionTypeChange(
