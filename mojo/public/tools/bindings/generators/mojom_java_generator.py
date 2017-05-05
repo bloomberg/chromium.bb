@@ -403,39 +403,7 @@ def TempDir():
     shutil.rmtree(dirname)
 
 class Generator(generator.Generator):
-
-  java_filters = {
-    'array_expected_length': GetArrayExpectedLength,
-    'array': GetArrayKind,
-    'constant_value': ConstantValue,
-    'decode_method': DecodeMethod,
-    'default_value': DefaultValue,
-    'encode_method': EncodeMethod,
-    'expression_to_text': ExpressionToText,
-    'has_method_without_response': HasMethodWithoutResponse,
-    'has_method_with_response': HasMethodWithResponse,
-    'interface_response_name': GetInterfaceResponseName,
-    'is_array_kind': mojom.IsArrayKind,
-    'is_any_handle_kind': mojom.IsAnyHandleKind,
-    "is_enum_kind": mojom.IsEnumKind,
-    'is_interface_request_kind': mojom.IsInterfaceRequestKind,
-    'is_map_kind': mojom.IsMapKind,
-    'is_nullable_kind': mojom.IsNullableKind,
-    'is_pointer_array_kind': IsPointerArrayKind,
-    'is_reference_kind': mojom.IsReferenceKind,
-    'is_struct_kind': mojom.IsStructKind,
-    'is_union_array_kind': IsUnionArrayKind,
-    'is_union_kind': mojom.IsUnionKind,
-    'java_class_for_enum': GetJavaClassForEnum,
-    'java_true_false': GetJavaTrueFalse,
-    'java_type': GetJavaType,
-    'method_ordinal_name': GetMethodOrdinalName,
-    'name': GetNameForElement,
-    'new_array': NewArray,
-    'ucc': lambda x: UpperCamelCase(x.name),
-  }
-
-  def GetJinjaExports(self):
+  def _GetJinjaExports(self):
     return {
       'package': GetPackage(self.module),
     }
@@ -444,73 +412,102 @@ class Generator(generator.Generator):
   def GetTemplatePrefix():
     return "java_templates"
 
-  @classmethod
-  def GetFilters(cls):
-    return cls.java_filters
+  def GetFilters(self):
+    java_filters = {
+      'array_expected_length': GetArrayExpectedLength,
+      'array': GetArrayKind,
+      'constant_value': ConstantValue,
+      'decode_method': DecodeMethod,
+      'default_value': DefaultValue,
+      'encode_method': EncodeMethod,
+      'expression_to_text': ExpressionToText,
+      'has_method_without_response': HasMethodWithoutResponse,
+      'has_method_with_response': HasMethodWithResponse,
+      'interface_response_name': GetInterfaceResponseName,
+      'is_array_kind': mojom.IsArrayKind,
+      'is_any_handle_kind': mojom.IsAnyHandleKind,
+      "is_enum_kind": mojom.IsEnumKind,
+      'is_interface_request_kind': mojom.IsInterfaceRequestKind,
+      'is_map_kind': mojom.IsMapKind,
+      'is_nullable_kind': mojom.IsNullableKind,
+      'is_pointer_array_kind': IsPointerArrayKind,
+      'is_reference_kind': mojom.IsReferenceKind,
+      'is_struct_kind': mojom.IsStructKind,
+      'is_union_array_kind': IsUnionArrayKind,
+      'is_union_kind': mojom.IsUnionKind,
+      'java_class_for_enum': GetJavaClassForEnum,
+      'java_true_false': GetJavaTrueFalse,
+      'java_type': GetJavaType,
+      'method_ordinal_name': GetMethodOrdinalName,
+      'name': GetNameForElement,
+      'new_array': NewArray,
+      'ucc': lambda x: UpperCamelCase(x.name),
+    }
+    return java_filters
 
-  def GetJinjaExportsForInterface(self, interface):
-    exports = self.GetJinjaExports()
+  def _GetJinjaExportsForInterface(self, interface):
+    exports = self._GetJinjaExports()
     exports.update({'interface': interface})
     return exports
 
   @UseJinja('enum.java.tmpl')
-  def GenerateEnumSource(self, enum):
-    exports = self.GetJinjaExports()
+  def _GenerateEnumSource(self, enum):
+    exports = self._GetJinjaExports()
     exports.update({'enum': enum})
     return exports
 
   @UseJinja('struct.java.tmpl')
-  def GenerateStructSource(self, struct):
-    exports = self.GetJinjaExports()
+  def _GenerateStructSource(self, struct):
+    exports = self._GetJinjaExports()
     exports.update({'struct': struct})
     return exports
 
   @UseJinja('union.java.tmpl')
-  def GenerateUnionSource(self, union):
-    exports = self.GetJinjaExports()
+  def _GenerateUnionSource(self, union):
+    exports = self._GetJinjaExports()
     exports.update({'union': union})
     return exports
 
   @UseJinja('interface.java.tmpl')
-  def GenerateInterfaceSource(self, interface):
-    return self.GetJinjaExportsForInterface(interface)
+  def _GenerateInterfaceSource(self, interface):
+    return self._GetJinjaExportsForInterface(interface)
 
   @UseJinja('interface_internal.java.tmpl')
-  def GenerateInterfaceInternalSource(self, interface):
-    return self.GetJinjaExportsForInterface(interface)
+  def _GenerateInterfaceInternalSource(self, interface):
+    return self._GetJinjaExportsForInterface(interface)
 
   @UseJinja('constants.java.tmpl')
-  def GenerateConstantsSource(self, module):
-    exports = self.GetJinjaExports()
+  def _GenerateConstantsSource(self, module):
+    exports = self._GetJinjaExports()
     exports.update({'main_entity': GetConstantsMainEntityName(module),
                     'constants': module.constants})
     return exports
 
-  def DoGenerateFiles(self):
+  def _DoGenerateFiles(self):
     fileutil.EnsureDirectoryExists(self.output_dir)
 
     # Keep this above the others as .GetStructs() changes the state of the
     # module, annotating structs with required information.
     for struct in self.GetStructs():
-      self.Write(self.GenerateStructSource(struct),
+      self.Write(self._GenerateStructSource(struct),
                  '%s.java' % GetNameForElement(struct))
 
     for union in self.module.unions:
-      self.Write(self.GenerateUnionSource(union),
+      self.Write(self._GenerateUnionSource(union),
                  '%s.java' % GetNameForElement(union))
 
     for enum in self.module.enums:
-      self.Write(self.GenerateEnumSource(enum),
+      self.Write(self._GenerateEnumSource(enum),
                  '%s.java' % GetNameForElement(enum))
 
     for interface in self.GetInterfaces():
-      self.Write(self.GenerateInterfaceSource(interface),
+      self.Write(self._GenerateInterfaceSource(interface),
                  '%s.java' % GetNameForElement(interface))
-      self.Write(self.GenerateInterfaceInternalSource(interface),
+      self.Write(self._GenerateInterfaceInternalSource(interface),
                  '%s_Internal.java' % GetNameForElement(interface))
 
     if self.module.constants:
-      self.Write(self.GenerateConstantsSource(self.module),
+      self.Write(self._GenerateConstantsSource(self.module),
                  '%s.java' % GetConstantsMainEntityName(self.module))
 
   def GenerateFiles(self, unparsed_args):
@@ -529,13 +526,13 @@ class Generator(generator.Generator):
     zip_filename = os.path.join(self.output_dir, basename)
     with TempDir() as temp_java_root:
       self.output_dir = os.path.join(temp_java_root, package_path)
-      self.DoGenerateFiles();
+      self._DoGenerateFiles();
       build_utils.ZipDir(zip_filename, temp_java_root)
 
     if args.java_output_directory:
       # If requested, generate the java files directly into indicated directory.
       self.output_dir = os.path.join(args.java_output_directory, package_path)
-      self.DoGenerateFiles();
+      self._DoGenerateFiles();
 
   def GetJinjaParameters(self):
     return {
