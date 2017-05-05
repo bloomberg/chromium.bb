@@ -129,7 +129,6 @@ var MainView = (function() {
         // bar to indicate we're no longer capturing events.  Also disable
         // hiding cookies, so if the log dump has them, they'll be displayed.
         this.topBarView_.switchToSubView('loaded').setFileName(opt_fileName);
-        $(ExportView.PRIVACY_STRIPPING_CHECKBOX_ID).checked = false;
         SourceTracker.getInstance().setPrivacyStripping(false);
       } else {
         // Otherwise, the "Stop Capturing" button was presumably pressed.
@@ -181,7 +180,6 @@ var MainView = (function() {
       // the running OS should be created, so they can load log dumps from other
       // OSes.
       addTab(CaptureView);
-      addTab(ExportView);
       addTab(ImportView);
       addTab(ProxyView);
       addTab(EventsView);
@@ -228,9 +226,29 @@ var MainView = (function() {
       if (!parsed)
         return;
 
+      if (parsed.tabHash == "#export") {
+        // The #export tab was removed in M60, after having been
+        // deprecated since M58. In case anyone *still* has URLs
+        // bookmarked to this, inform them and redirect.
+        // TODO(eroman): Delete this around M62.
+        parsed.tabHash = undefined;
+
+        // Done on a setTimeout so it doesn't block the initial
+        // page load (confirm() is synchronous).
+        setTimeout(() => {
+          var navigateToNetExport = confirm(
+              "#export was removed\nDo you want to navigate to " +
+              "chrome://net-export/ instead?");
+          if (navigateToNetExport) {
+            window.location.href = "chrome://net-export";
+            return;
+          }
+        });
+      }
+
       if (!parsed.tabHash) {
-        // Default to the export tab.
-        parsed.tabHash = ExportView.TAB_HASH;
+        // Default to the events tab.
+        parsed.tabHash = EventsView.TAB_HASH;
       }
 
       var tabId = this.hashToTabId_[parsed.tabHash];
