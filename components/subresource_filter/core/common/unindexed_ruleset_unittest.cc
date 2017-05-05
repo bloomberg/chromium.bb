@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
+#include "components/subresource_filter/core/common/url_rule_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -21,35 +21,10 @@ namespace subresource_filter {
 
 namespace {
 
-bool IsEqual(const proto::UrlRule& first, const proto::UrlRule& second) {
-  // Note: The domain list is omitted for simplicity.
-  return first.semantics() == second.semantics() &&
-         first.source_type() == second.source_type() &&
-         first.element_types() == second.element_types() &&
-         first.activation_types() == second.activation_types() &&
-         first.url_pattern_type() == second.url_pattern_type() &&
-         first.anchor_left() == second.anchor_left() &&
-         first.anchor_right() == second.anchor_right() &&
-         first.match_case() == second.match_case() &&
-         first.url_pattern() == second.url_pattern();
-}
+using namespace testing;
 
-proto::UrlRule CreateRule(const UrlPattern& url_pattern,
-                          proto::SourceType source_type,
-                          bool is_whitelist) {
-  proto::UrlRule rule;
-  rule.set_semantics(is_whitelist ? proto::RULE_SEMANTICS_WHITELIST
-                                  : proto::RULE_SEMANTICS_BLACKLIST);
-
-  rule.set_source_type(source_type);
-  rule.set_element_types(proto::ELEMENT_TYPE_ALL);
-
-  rule.set_url_pattern_type(url_pattern.type());
-  rule.set_anchor_left(url_pattern.anchor_left());
-  rule.set_anchor_right(url_pattern.anchor_right());
-  rule.set_match_case(url_pattern.match_case());
-  rule.set_url_pattern(url_pattern.url_pattern().as_string());
-  return rule;
+bool IsEqual(const proto::UrlRule& lhs, const proto::UrlRule& rhs) {
+  return lhs.SerializeAsString() == rhs.SerializeAsString();
 }
 
 // The helper class used for building UnindexedRulesets.
@@ -76,8 +51,13 @@ class UnindexedRulesetTestBuilder {
 
   bool AddUrlRule(const UrlPattern& url_pattern,
                   proto::SourceType source_type,
-                  bool is_whitelist) {
-    url_rules_.push_back(CreateRule(url_pattern, source_type, is_whitelist));
+                  bool is_whitelist = false) {
+    auto rule = MakeUrlRule(url_pattern);
+    if (is_whitelist)
+      rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+    rule.set_source_type(source_type);
+
+    url_rules_.push_back(rule);
     return !ruleset_writer_.had_error() &&
            ruleset_writer_.AddUrlRule(url_rules_.back());
   }
@@ -85,7 +65,7 @@ class UnindexedRulesetTestBuilder {
   bool AddUrlRules(int number_of_rules) {
     for (int i = 0; i < number_of_rules; ++i) {
       std::string url_pattern = "example" + base::IntToString(i) + ".com";
-      if (!AddUrlRule(UrlPattern(url_pattern), proto::SOURCE_TYPE_ANY, i & 1))
+      if (!AddUrlRule(UrlPattern(url_pattern), kAnyParty, i & 1))
         return false;
     }
     return true;
@@ -147,8 +127,7 @@ TEST(UnindexedRulesetTest, EmptyRuleset) {
 
 TEST(UnindexedRulesetTest, OneUrlRule) {
   UnindexedRulesetTestBuilder builder;
-  EXPECT_TRUE(builder.AddUrlRule(UrlPattern("example.com"),
-                                 proto::SOURCE_TYPE_THIRD_PARTY, false));
+  EXPECT_TRUE(builder.AddUrlRule(UrlPattern("example.com"), kThirdParty));
   EXPECT_TRUE(builder.Finish());
   EXPECT_TRUE(IsRulesetValid(builder.ruleset_contents(), builder.url_rules()));
 }
