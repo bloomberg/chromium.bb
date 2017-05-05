@@ -5124,6 +5124,24 @@ static int gm_get_params_cost(WarpedMotionParams *gm,
   }
   return (params_cost << AV1_PROB_COST_SHIFT);
 }
+
+static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
+                              int frame) {
+  (void)num_refs_using_gm;
+  (void)frame;
+  switch (sf->gm_search_type) {
+    case GM_FULL_SEARCH: return 1;
+    case GM_REDUCED_REF_SEARCH:
+#if CONFIG_EXT_REFS
+      return !(frame == LAST2_FRAME || frame == LAST3_FRAME);
+#else
+      return (num_refs_using_gm < 2);
+#endif  // CONFIG_EXT_REFS
+    case GM_DISABLE_SEARCH: return 0;
+    default: assert(0);
+  }
+  return 1;
+}
 #endif  // CONFIG_GLOBAL_MOTION
 
 static void encode_frame_internal(AV1_COMP *cpi) {
@@ -5154,9 +5172,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 #if CONFIG_GLOBAL_MOTION
   av1_zero(rdc->global_motion_used);
+  av1_zero(cpi->gmparams_cost);
   if (cpi->common.frame_type == INTER_FRAME && cpi->source &&
       !cpi->global_motion_search_done) {
-    YV12_BUFFER_CONFIG *ref_buf;
+    YV12_BUFFER_CONFIG *ref_buf[TOTAL_REFS_PER_FRAME];
     int frame;
     double params_by_motion[RANSAC_NUM_MOTIONS * (MAX_PARAMDIM - 1)];
     const double *params_this_motion;
@@ -5166,10 +5185,20 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     static const double kIdentityParams[MAX_PARAMDIM - 1] = {
       0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
     };
+    int num_refs_using_gm = 0;
 
     for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-      ref_buf = get_ref_frame_buffer(cpi, frame);
-      if (ref_buf) {
+      ref_buf[frame] = get_ref_frame_buffer(cpi, frame);
+      int pframe;
+      // check for duplicate buffer
+      for (pframe = LAST_FRAME; pframe < frame; ++pframe) {
+        if (ref_buf[frame] == ref_buf[pframe]) break;
+      }
+      if (pframe < frame) {
+        memcpy(&cm->global_motion[frame], &cm->global_motion[pframe],
+               sizeof(WarpedMotionParams));
+      } else if (ref_buf[frame] &&
+                 do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame)) {
         TransformationType model;
         aom_clear_system_state();
         for (model = ROTZOOM; model < GLOBAL_TRANS_TYPES_ENC; ++model) {
@@ -5182,7 +5211,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           }
 
           compute_global_motion_feature_based(
-              model, cpi->source, ref_buf,
+              model, cpi->source, ref_buf[frame],
 #if CONFIG_HIGHBITDEPTH
               cpi->common.bit_depth,
 #endif  // CONFIG_HIGHBITDEPTH
@@ -5200,10 +5229,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_HIGHBITDEPTH
                   xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_HIGHBITDEPTH
-                  ref_buf->y_buffer, ref_buf->y_width, ref_buf->y_height,
-                  ref_buf->y_stride, cpi->source->y_buffer,
-                  cpi->source->y_width, cpi->source->y_height,
-                  cpi->source->y_stride, 3);
+                  ref_buf[frame]->y_buffer, ref_buf[frame]->y_width,
+                  ref_buf[frame]->y_height, ref_buf[frame]->y_stride,
+                  cpi->source->y_buffer, cpi->source->y_width,
+                  cpi->source->y_height, cpi->source->y_stride, 3);
               if (erroradv_this_motion < best_erroradvantage) {
                 best_erroradvantage = erroradv_this_motion;
                 // Save the wm_params modified by refine_integerized_param()
@@ -5237,11 +5266,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                                      cm->allow_high_precision_mv))) {
             set_default_warp_params(&cm->global_motion[frame]);
           }
-
           if (cm->global_motion[frame].wmtype != IDENTITY) break;
         }
         aom_clear_system_state();
       }
+      if (cm->global_motion[frame].wmtype != IDENTITY) num_refs_using_gm++;
       cpi->gmparams_cost[frame] =
           gm_get_params_cost(&cm->global_motion[frame],
                              &cm->prev_frame->global_motion[frame],

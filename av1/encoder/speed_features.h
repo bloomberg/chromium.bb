@@ -251,6 +251,14 @@ typedef struct MESH_PATTERN {
   int interval;
 } MESH_PATTERN;
 
+#if CONFIG_GLOBAL_MOTION
+typedef enum {
+  GM_FULL_SEARCH,
+  GM_REDUCED_REF_SEARCH,
+  GM_DISABLE_SEARCH
+} GM_SEARCH_TYPE;
+#endif  // CONFIG_GLOBAL_MOTION
+
 typedef struct SPEED_FEATURES {
   MV_SPEED_FEATURES mv;
 
@@ -470,6 +478,10 @@ typedef struct SPEED_FEATURES {
   // Whether to compute distortion in the image domain (slower but
   // more accurate), or in the transform domain (faster but less acurate).
   int use_transform_domain_distortion;
+
+#if CONFIG_GLOBAL_MOTION
+  GM_SEARCH_TYPE gm_search_type;
+#endif  // CONFIG_GLOBAL_MOTION
 } SPEED_FEATURES;
 
 struct AV1_COMP;
