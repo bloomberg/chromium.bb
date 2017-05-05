@@ -49,7 +49,8 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
 
   // Referenced surface IDs that aren't currently known to the surface manager
   // or do not have an active CompsotiorFrame block this frame.
-  for (const SurfaceId& surface_id : pending_frame.metadata.embedded_surfaces) {
+  for (const SurfaceId& surface_id :
+       pending_frame.metadata.activation_dependencies) {
     Surface* surface_dependency = surface_manager_->GetSurfaceForId(surface_id);
     if (!surface_dependency || !surface_dependency->HasActiveFrame())
       blocked_surfaces_from_dependency_[surface_id].insert(
@@ -123,9 +124,10 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
 
   const CompositorFrame& pending_frame = surface->GetPendingFrame();
 
-  DCHECK(!pending_frame.metadata.embedded_surfaces.empty());
+  DCHECK(!pending_frame.metadata.activation_dependencies.empty());
 
-  for (const SurfaceId& surface_id : pending_frame.metadata.embedded_surfaces) {
+  for (const SurfaceId& surface_id :
+       pending_frame.metadata.activation_dependencies) {
     auto it = blocked_surfaces_from_dependency_.find(surface_id);
     if (it == blocked_surfaces_from_dependency_.end())
       continue;

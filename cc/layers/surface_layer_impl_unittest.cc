@@ -171,7 +171,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
-  EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id));
+  EXPECT_THAT(data.activation_dependencies, UnorderedElementsAre(surface_id));
 
   const QuadList& quads = render_pass->quad_list;
   ASSERT_EQ(1u, quads.size());
@@ -243,8 +243,9 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   {
     AppendQuadsData data;
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
-    // The the primary SurfaceInfo will be added to embedded_surfaces.
-    EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id1));
+    // The the primary SurfaceInfo will be added to activation_dependencies.
+    EXPECT_THAT(data.activation_dependencies,
+                UnorderedElementsAre(surface_id1));
   }
 
   // Update the fallback SurfaceInfo and re-emit DrawQuads.
@@ -252,8 +253,9 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
     AppendQuadsData data;
     surface_layer_impl->SetFallbackSurfaceInfo(fallback_surface_info2);
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
-    // The the primary SurfaceInfo will be added to embedded_surfaces.
-    EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id1));
+    // The the primary SurfaceInfo will be added to activation_dependencies.
+    EXPECT_THAT(data.activation_dependencies,
+                UnorderedElementsAre(surface_id1));
   }
 
   ASSERT_EQ(4u, render_pass->quad_list.size());
@@ -328,10 +330,10 @@ TEST(SurfaceLayerImplTest,
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
   // As the primary and fallback SurfaceInfos match, there is no reason to
-  // add the primary surface ID to |embedded_surfaces| because it is not an
-  // unresolved dependency. The fallback surface will already be added as a
+  // add the primary surface ID to |activation_dependencies| because it is not
+  // an unresolved dependency. The fallback surface will already be added as a
   // reference in referenced_surfaces.
-  EXPECT_THAT(data.embedded_surfaces, testing::IsEmpty());
+  EXPECT_THAT(data.activation_dependencies, testing::IsEmpty());
 
   ASSERT_EQ(1u, render_pass->quad_list.size());
   const SurfaceDrawQuad* surface_draw_quad1 =

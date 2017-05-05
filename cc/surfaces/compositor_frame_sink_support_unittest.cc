@@ -75,12 +75,14 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
       LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
-CompositorFrame MakeCompositorFrame(std::vector<SurfaceId> embedded_surfaces,
-                                    std::vector<SurfaceId> referenced_surfaces,
-                                    TransferableResourceArray resource_list) {
+CompositorFrame MakeCompositorFrame(
+    std::vector<SurfaceId> activation_dependencies,
+    std::vector<SurfaceId> referenced_surfaces,
+    TransferableResourceArray resource_list) {
   CompositorFrame compositor_frame = test::MakeCompositorFrame();
   compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
-  compositor_frame.metadata.embedded_surfaces = std::move(embedded_surfaces);
+  compositor_frame.metadata.activation_dependencies =
+      std::move(activation_dependencies);
   compositor_frame.metadata.referenced_surfaces =
       std::move(referenced_surfaces);
   compositor_frame.resource_list = std::move(resource_list);
@@ -92,23 +94,24 @@ CompositorFrame MakeCompositorFrame() {
                              TransferableResourceArray());
 }
 
-CompositorFrame MakeCompositorFrame(std::vector<SurfaceId> embedded_surfaces) {
-  return MakeCompositorFrame(embedded_surfaces, embedded_surfaces,
+CompositorFrame MakeCompositorFrame(
+    std::vector<SurfaceId> activation_dependencies) {
+  return MakeCompositorFrame(activation_dependencies, activation_dependencies,
                              TransferableResourceArray());
 }
 
 CompositorFrame MakeCompositorFrame(
-    std::vector<SurfaceId> embedded_surfaces,
+    std::vector<SurfaceId> activation_dependencies,
     std::vector<SurfaceId> referenced_surfaces) {
-  return MakeCompositorFrame(std::move(embedded_surfaces),
+  return MakeCompositorFrame(std::move(activation_dependencies),
                              std::move(referenced_surfaces),
                              TransferableResourceArray());
 }
 
 CompositorFrame MakeCompositorFrameWithResources(
-    std::vector<SurfaceId> embedded_surfaces,
+    std::vector<SurfaceId> activation_dependencies,
     TransferableResourceArray resource_list) {
-  return MakeCompositorFrame(embedded_surfaces, embedded_surfaces,
+  return MakeCompositorFrame(activation_dependencies, activation_dependencies,
                              std::move(resource_list));
 }
 

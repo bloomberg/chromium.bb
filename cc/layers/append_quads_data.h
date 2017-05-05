@@ -30,8 +30,10 @@ class CC_EXPORT AppendQuadsData {
   int64_t checkerboarded_no_recording_content_area = 0;
   // This is the area within interest rect.
   int64_t checkerboarded_needs_raster_content_area = 0;
-  // This is the set of surface IDs embedded in SurfaceDrawQuads.
-  std::vector<SurfaceId> embedded_surfaces;
+  // This is the set of surface IDs that must have corresponding
+  // active CompositorFrames so that this CompositorFrame can
+  // activate.
+  std::vector<SurfaceId> activation_dependencies;
 };
 
 }  // namespace cc

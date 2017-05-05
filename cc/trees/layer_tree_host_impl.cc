@@ -951,9 +951,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         layer->set_was_ever_ready_since_last_transform_animation(true);
       }
     }
-    frame->embedded_surfaces.insert(frame->embedded_surfaces.end(),
-                                    append_quads_data.embedded_surfaces.begin(),
-                                    append_quads_data.embedded_surfaces.end());
+    frame->activation_dependencies.insert(
+        frame->activation_dependencies.end(),
+        append_quads_data.activation_dependencies.begin(),
+        append_quads_data.activation_dependencies.end());
   }
 
   // If CommitToActiveTree() is true, then we wait to draw until
@@ -1700,7 +1701,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   metadata.may_contain_video = frame->may_contain_video;
-  metadata.embedded_surfaces = std::move(frame->embedded_surfaces);
+  metadata.activation_dependencies = std::move(frame->activation_dependencies);
   active_tree()->FinishSwapPromises(&metadata);
   for (auto& latency : metadata.latency_info) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",

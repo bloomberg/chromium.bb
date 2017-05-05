@@ -75,7 +75,8 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
       fallback_surface_info_.id() != primary_surface_info_.id();
   if (primary && needs_fallback) {
     // Add the primary surface ID as a dependency.
-    append_quads_data->embedded_surfaces.push_back(primary_surface_info_.id());
+    append_quads_data->activation_dependencies.push_back(
+        primary_surface_info_.id());
     // We can use the same SharedQuadState as the primary SurfaceDrawQuad if
     // we don't need a different transform on the fallback.
     bool use_common_shared_quad_state =

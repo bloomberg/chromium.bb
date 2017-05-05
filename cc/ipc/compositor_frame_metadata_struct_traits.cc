@@ -45,7 +45,7 @@ bool StructTraits<cc::mojom::CompositorFrameMetadataDataView,
   return data.ReadSelection(&out->selection) &&
          data.ReadLatencyInfo(&out->latency_info) &&
          data.ReadReferencedSurfaces(&out->referenced_surfaces) &&
-         data.ReadEmbeddedSurfaces(&out->embedded_surfaces) &&
+         data.ReadActivationDependencies(&out->activation_dependencies) &&
          data.ReadBeginFrameAck(&out->begin_frame_ack);
 }
 
