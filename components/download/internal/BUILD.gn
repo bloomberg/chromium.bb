@@ -14,6 +14,8 @@ static_library("internal") {
   ]
 
   sources = [
+    "config.cc",
+    "config.h",
     "download_service_impl.cc",
     "download_service_impl.h",
   ]

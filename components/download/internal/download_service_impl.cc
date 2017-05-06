@@ -10,10 +10,12 @@ namespace download {
 DownloadService* DownloadService::Create(
     const base::FilePath& storage_dir,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
-  return new DownloadServiceImpl();
+  return new DownloadServiceImpl(Configuration::CreateFromFinch());
 }
 
-DownloadServiceImpl::DownloadServiceImpl() = default;
+DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Configuration> config)
+    : config_(std::move(config)) {}
+
 DownloadServiceImpl::~DownloadServiceImpl() = default;
 
 void DownloadServiceImpl::StartDownload(const DownloadParams& download_params) {

@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_DOWNLOAD_SERVICE_IMPL_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_DOWNLOAD_SERVICE_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "components/download/internal/config.h"
 #include "components/download/public/download_service.h"
 
 namespace download {
@@ -18,7 +20,7 @@ struct SchedulingParams;
 // The internal implementation of the DownloadService.
 class DownloadServiceImpl : public DownloadService {
  public:
-  DownloadServiceImpl();
+  DownloadServiceImpl(std::unique_ptr<Configuration> config);
   ~DownloadServiceImpl() override;
 
   // DownloadService implementation.
@@ -30,6 +32,8 @@ class DownloadServiceImpl : public DownloadService {
                               const SchedulingParams& params) override;
 
  private:
+  std::unique_ptr<Configuration> config_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadServiceImpl);
 };
 
