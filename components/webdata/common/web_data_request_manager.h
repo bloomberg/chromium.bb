@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 
+#include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -40,7 +41,7 @@ class WebDataRequest {
 
   // Returns |true| if the request is active and |false| if the request has been
   // cancelled or has already completed.
-  bool IsActive() const;
+  bool IsActive();
 
  private:
   // For access to the web request mutable state under the manager's lock.
@@ -48,17 +49,19 @@ class WebDataRequest {
 
   // Private constructor called for WebDataRequestManager::NewRequest.
   WebDataRequest(WebDataRequestManager* manager,
-                 WebDataServiceConsumer* consumer);
+                 WebDataServiceConsumer* consumer,
+                 WebDataServiceBase::Handle handle);
 
-  // Internal debugging helper to assert that the request is active and that the
-  // manager's lock is held by the current thread.
-  void AssertThreadSafe() const;
+  // Retrieves the manager set in the constructor, if the request is still
+  // active, or nullptr if the request is inactive. The returned value may
+  // change between calls.
+  WebDataRequestManager* GetManager();
 
   // Retrieves the |consumer_| set in the constructor.
-  WebDataServiceConsumer* GetConsumer() const;
+  WebDataServiceConsumer* GetConsumer();
 
   // Retrieves the original task runner of the request.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
   // Marks the current request as inactive, either due to cancellation or
   // completion.
@@ -67,16 +70,16 @@ class WebDataRequest {
   // Tracks task runner that the request originated on.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Used to notify manager if request is cancelled. Uses a raw ptr instead of
-  // a ref_ptr so that it can be set to null when a request is cancelled or
-  // completed.
-  WebDataRequestManager* manager_;
+  // The manager associated with this request. This is stored as a raw (untyped)
+  // pointer value because it does double duty as the flag indicating whether or
+  // not this request is active (non-nullptr => active).
+  base::subtle::AtomicWord atomic_manager_;
 
   // The originator of the service request.
-  WebDataServiceConsumer* consumer_;
+  WebDataServiceConsumer* const consumer_;
 
   // Identifier for this request.
-  WebDataServiceBase::Handle handle_;
+  const WebDataServiceBase::Handle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataRequest);
 };
@@ -103,10 +106,6 @@ class WebDataRequestManager
   // Invoked by the WebDataService when |request| has been completed.
   void RequestCompleted(std::unique_ptr<WebDataRequest> request,
                         std::unique_ptr<WDTypedResult> result);
-
-  // A debugging aid to assert that the pending_lock_ is held by the current
-  // thread.
-  void AssertLockedByCurrentThread() const;
 
  private:
   friend class base::RefCountedThreadSafe<WebDataRequestManager>;
