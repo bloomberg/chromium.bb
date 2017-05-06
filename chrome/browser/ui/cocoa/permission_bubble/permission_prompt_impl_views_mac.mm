@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_controller.h"
@@ -24,8 +25,8 @@ views::View* PermissionPromptImpl::GetAnchorView() {
 }
 
 gfx::Point PermissionPromptImpl::GetAnchorPoint() {
-  return gfx::ScreenPointFromNSPoint(
-      [PermissionBubbleController getAnchorPointForBrowser:browser_]);
+  return gfx::ScreenPointFromNSPoint(GetPermissionBubbleAnchorPointForBrowser(
+      browser_, HasVisibleLocationBarForBrowser(browser_)));
 }
 
 views::BubbleBorder::Arrow PermissionPromptImpl::GetAnchorArrow() {
