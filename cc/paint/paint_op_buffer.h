@@ -21,7 +21,6 @@
 // See: third_party/skia/src/core/SkLiteDL.h.
 
 namespace cc {
-
 class DisplayItemList;
 
 class CC_PAINT_EXPORT ThreadsafeMatrix : public SkMatrix {

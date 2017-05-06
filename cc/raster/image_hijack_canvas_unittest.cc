@@ -88,6 +88,29 @@ TEST(ImageHijackCanvasTest, ImagesToSkipAreSkipped) {
   canvas.drawRect(SkRect::MakeXYWH(10, 10, 10, 10), paint);
 }
 
+TEST(ImageHijackCanvasTest, ClippedOpsAreSkipped) {
+  testing::StrictMock<MockImageDecodeCache> image_decode_cache;
+  ImageIdFlatSet images_to_skip;
+  gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
+  ImageHijackCanvas canvas(100, 100, &image_decode_cache, &images_to_skip,
+                           target_color_space);
+  SkPaint paint;
+  SkRect draw_rect = SkRect::MakeXYWH(200, 200, 100, 100);
+  sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(10, 10));
+  canvas.drawImage(image, 200, 200, &paint);
+  canvas.drawImageRect(image, SkRect::MakeXYWH(0, 0, 10, 10), draw_rect,
+                       &paint);
+  paint.setShader(image->makeShader(SkShader::kClamp_TileMode,
+                                    SkShader::kClamp_TileMode, nullptr));
+  canvas.drawRect(draw_rect, paint);
+  SkPath path;
+  path.addRect(draw_rect, SkPath::kCW_Direction);
+  canvas.drawPath(path, paint);
+  canvas.drawOval(draw_rect, paint);
+  canvas.drawArc(draw_rect, 0, 40, true, paint);
+  canvas.drawRRect(SkRRect::MakeRect(draw_rect), paint);
+}
+
 }  // namespace
 
 }  // namespace cc

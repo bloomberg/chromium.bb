@@ -164,6 +164,11 @@ class CC_PAINT_EXPORT DisplayItemList
     return items_.end();
   }
 
+  void GatherDiscardableImages(DiscardableImageStore* image_store) const;
+  const DiscardableImageMap& discardable_image_map_for_testing() const {
+    return image_map_;
+  }
+
   bool has_discardable_images() const { return has_discardable_images_; }
 
  private:
