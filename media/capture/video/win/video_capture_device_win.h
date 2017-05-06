@@ -76,6 +76,7 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
       std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
   void TakePhoto(TakePhotoCallback callback) override;
+  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
 
  private:
   enum InternalState {
