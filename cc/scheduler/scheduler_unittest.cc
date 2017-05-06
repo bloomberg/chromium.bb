@@ -402,13 +402,9 @@ class SchedulerTest : public testing::Test {
     // it will be already in the task queue.
     if (scheduler_->begin_frame_source() ==
         fake_external_begin_frame_source_.get()) {
-      // Run pending task for previous deadline first.
-      task_runner_->RunPendingTasks();
       EXPECT_TRUE(scheduler_->begin_frames_expected());
       SendNextBeginFrame();
     } else {
-      // Begin frame might be queued up and posted after the previous deadline
-      // runs so run tasks until we get to the next frame.
       task_runner_->RunTasksWhile(client_->FrameHasNotAdvancedCallback());
     }
   }
@@ -3604,11 +3600,10 @@ TEST_F(SchedulerTest, BeginFrameAckForBeginFrameBeforeLastDeadline) {
   client_->Reset();
 
   // Send the next BeginFrame before the previous one's deadline was executed.
-  // This will wait for the previous deadline after which no further BeginFrames
-  // will be needed, and the new BeginFrame should be dropped.
+  // This should trigger the previous BeginFrame's deadline synchronously,
+  // during which tiles will be prepared. As a result of that, no further
+  // BeginFrames will be needed, and the new BeginFrame should be dropped.
   BeginFrameArgs args = SendNextBeginFrame();
-
-  task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 0, 3);
   EXPECT_ACTION("RemoveObserver(this)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
@@ -3775,65 +3770,6 @@ TEST_F(SchedulerTest,
       BeginFrameAck(args.source_id, args.sequence_number,
                     latest_confirmed_sequence_number, has_damage),
       fake_external_begin_frame_source_->LastAckForObserver(scheduler_.get()));
-}
-
-TEST_F(SchedulerTest, BeginFrameWhilePreviousDeadlinePending) {
-  SetUpScheduler(EXTERNAL_BFS);
-
-  scheduler_->SetNeedsRedraw();
-
-  client_->Reset();
-  EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionBeginMainFrameNotExpectedUntil", client_, 1, 2);
-
-  // Do not run pending deadline but send a new begin frame. The begin frame is
-  // saved and run when the previous frame is over.
-  client_->Reset();
-  SendNextBeginFrame();
-  EXPECT_NO_ACTION(client_);
-
-  task_runner_->RunPendingTasks();
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
-
-  // The saved begin frame is posted as a task.
-  client_->Reset();
-  task_runner_->RunPendingTasks();
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionBeginMainFrameNotExpectedUntil", client_, 1, 2);
-}
-
-TEST_F(SchedulerTest, IncomingBeginFrameReplacesSavedBeginFrame) {
-  SetUpScheduler(EXTERNAL_BFS);
-
-  scheduler_->SetNeedsRedraw();
-
-  client_->Reset();
-  EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionBeginMainFrameNotExpectedUntil", client_, 1, 2);
-
-  // Send two BeginFrames while deadline is pending.
-  client_->Reset();
-  SendNextBeginFrame();
-  EXPECT_NO_ACTION(client_);
-
-  SendNextBeginFrame();
-  EXPECT_NO_ACTION(client_);
-
-  task_runner_->RunPendingTasks();
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
-
-  // Only the last BeginFrame runs.
-  client_->Reset();
-  task_runner_->RunPendingTasks();
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionBeginMainFrameNotExpectedUntil", client_, 1, 2);
-
-  client_->Reset();
-  task_runner_->RunPendingTasks();
-  EXPECT_ACTION("RemoveObserver(this)", client_, 0, 2);
-  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
 }
 
 }  // namespace
