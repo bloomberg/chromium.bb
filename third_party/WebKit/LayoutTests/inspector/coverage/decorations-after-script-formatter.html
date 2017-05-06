@@ -16,7 +16,7 @@ async function test()
     await UI.inspectorView.showPanel("sources");
     await InspectorTest.sourceDecorated("coverage.js");
 
-    var decoratorPromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "decorate");
+    var decoratorPromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
     var editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
     for (action of editorActions) {
         if (action instanceof Sources.ScriptFormatterEditorAction) {

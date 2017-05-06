@@ -3,23 +3,23 @@ PASS
 Tests the coverage highlight in sources after the recording finishes.
 
 0: + function outer(index) {
-1: + 
-2: *   function inner1(a) {
+1: - 
+2: -   function inner1(a) {
 3: -     return a + 1;
-4: *   }
-5: + 
+4: -   }
+5: - 
 6: +   function inner2(a) {
 7: +     return a + 2;
 8: +   }
-9: + 
-10: *   function inner3(a) { return a + 3; } function inner4(a) { return a + 4; } function inner5(a) { return a + 5; }
-11: + 
+9: - 
+10: +   function inner3(a) { return a + 3; } function inner4(a) { return a + 4; } function inner5(a) { return a + 5; }
+11: - 
 12: +   return [inner1, inner2, inner3, inner4, inner5][index];
-13: * }
+13: + }
 14: - 
-15: * function performActions() {
+15: + function performActions() {
 16: +   return outer(1)(0) + outer(3)(0);
-17: * } function outer2() {
+17: + } function outer2() {
 18: -   return outer(0)(0);
 19: - }
 20: - 
