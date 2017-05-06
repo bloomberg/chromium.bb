@@ -6,7 +6,9 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -174,6 +176,13 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
     AddAccelerator(i->first);
+
+  if (!ash_util::IsRunningInMash() &&
+      ash::Shell::Get()->HasPrimaryStatusArea()) {
+    ash::Shell::Get()->system_tray_notifier()->AddStatusAreaFocusObserver(this);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 WebUILoginView::~WebUILoginView() {
@@ -188,7 +197,10 @@ WebUILoginView::~WebUILoginView() {
 
   if (!ash_util::IsRunningInMash() &&
       ash::Shell::Get()->HasPrimaryStatusArea()) {
-    ash::Shell::Get()->GetPrimarySystemTray()->SetNextFocusableView(nullptr);
+    ash::Shell::Get()->system_tray_notifier()->RemoveStatusAreaFocusObserver(
+        this);
+    ash::StatusAreaWidgetDelegate::GetPrimaryInstance()
+        ->set_default_last_focusable_child(false);
   } else {
     NOTIMPLEMENTED();
   }
@@ -507,7 +519,8 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
 
   ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
   if (tray && tray->GetWidget()->IsVisible() && tray->visible()) {
-    tray->SetNextFocusableView(this);
+    ash::StatusAreaWidgetDelegate::GetPrimaryInstance()
+        ->set_default_last_focusable_child(reverse);
     ash::Shell::Get()->focus_cycler()->RotateFocus(
         reverse ? ash::FocusCycler::BACKWARD : ash::FocusCycler::FORWARD);
   } else {
@@ -542,6 +555,10 @@ bool WebUILoginView::PreHandleGestureEvent(
   return event.GetType() == blink::WebGestureEvent::kGesturePinchBegin ||
          event.GetType() == blink::WebGestureEvent::kGesturePinchUpdate ||
          event.GetType() == blink::WebGestureEvent::kGesturePinchEnd;
+}
+
+void WebUILoginView::OnFocusOut(bool reverse) {
+  AboutToRequestFocusFromTabTraversal(reverse);
 }
 
 void WebUILoginView::OnLoginPromptVisible() {
