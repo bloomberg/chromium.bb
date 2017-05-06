@@ -64,6 +64,8 @@ if (is_android) {
   android_library("shape_detection_java") {
     java_files = [
       "android/java/src/org/chromium/shape_detection/BarcodeDetectionImpl.java",
+      "android/java/src/org/chromium/shape_detection/FaceDetectionImpl.java",
+      "android/java/src/org/chromium/shape_detection/FaceDetectionProviderImpl.java",
       "android/java/src/org/chromium/shape_detection/InterfaceRegistrar.java",
       "android/java/src/org/chromium/shape_detection/TextDetectionImpl.java",
     ]
