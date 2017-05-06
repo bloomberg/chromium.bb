@@ -1617,14 +1617,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="CVC field not detected"/>
   <int value="2" label="CVC value not filled in detected CVC field"/>
   <int value="3" label="Invalid CVC value filled in detected CVC field"/>
-  <int value="4" label="Upload not offered, no address available"/>
-  <int value="5" label="Upload not offered, no name available"/>
-  <int value="6"
+  <int value="4"
+      label="Upload not offered, no recently used address profile available"/>
+  <int value="5" label="Upload not offered, no address profile available"/>
+  <int value="6" label="Upload not offered, no name available"/>
+  <int value="7"
       label="Upload not offered, addresses had conflicting zip codes"/>
-  <int value="7" label="Upload not offered, no zip code available"/>
-  <int value="8"
+  <int value="8" label="Upload not offered, no zip code available"/>
+  <int value="9"
       label="Upload not offered, card and/or addresses had conflicting names"/>
-  <int value="9" label="Upload not offered, get upload details RPC failed"/>
+  <int value="10" label="Upload not offered, get upload details RPC failed"/>
 </enum>
 
 <enum name="AutofillCreditCardInfoBar" type="int">

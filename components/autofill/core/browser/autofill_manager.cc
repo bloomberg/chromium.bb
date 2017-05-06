@@ -1260,8 +1260,6 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
 
     pending_upload_request_url_ = GURL(submitted_form.source_url());
 
-    // Both the CVC and address checks are done.  Conform to the legacy order of
-    // reporting on CVC then address.
     should_cvc_be_requested_ = false;
     if (upload_request_.cvc.empty()) {
       should_cvc_be_requested_ =
@@ -1299,16 +1297,21 @@ int AutofillManager::GetProfilesForCreditCardUpload(
   const base::Time now = AutofillClock::Now();
   const base::TimeDelta fifteen_minutes = base::TimeDelta::FromMinutes(15);
   int upload_decision_metrics = 0;
+  bool has_profile = false;
 
   // First, collect all of the addresses used recently.
   for (AutofillProfile* profile : personal_data_->GetProfiles()) {
+    has_profile = true;
     if ((now - profile->use_date()) < fifteen_minutes ||
         (now - profile->modification_date()) < fifteen_minutes) {
       candidate_profiles.push_back(*profile);
     }
   }
   if (candidate_profiles.empty()) {
-    upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS;
+    upload_decision_metrics |=
+        has_profile
+            ? AutofillMetrics::UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS
+            : AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE;
     *rappor_metric_name = "Autofill.CardUploadNotOfferedNoAddress";
   }
 
@@ -1383,7 +1386,7 @@ int AutofillManager::GetProfilesForCreditCardUpload(
 
   // If none of the candidate addresses have a zip, the candidate set is
   // invalid.
-  if (verified_zip.empty())
+  if (verified_zip.empty() && !candidate_profiles.empty())
     upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
 
   if (!upload_decision_metrics)
