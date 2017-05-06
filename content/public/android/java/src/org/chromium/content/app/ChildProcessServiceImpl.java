@@ -40,7 +40,6 @@ import org.chromium.content.common.IGpuProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
 
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class implements all of the functionality for {@link ChildProcessService} which owns an
@@ -56,6 +55,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ChildProcessServiceImpl {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
     private static final String TAG = "ChildProcessService";
+
+    // Only for a check that create is only called once.
+    private static boolean sCreateCalled;
 
     // Lock that protects the following members.
     private final Object mBinderLock = new Object();
@@ -77,7 +79,6 @@ public class ChildProcessServiceImpl {
     // Child library process type.
     private int mLibraryProcessType;
 
-    private static AtomicReference<Context> sContext = new AtomicReference<>(null);
     private boolean mLibraryInitialized;
 
     /**
@@ -165,23 +166,20 @@ public class ChildProcessServiceImpl {
     // The ClassLoader for the host context.
     private ClassLoader mHostClassLoader;
 
-    /* package */ static Context getContext() {
-        return sContext.get();
-    }
-
     /**
      * Loads Chrome's native libraries and initializes a ChildProcessServiceImpl.
      * @param context The application context.
      * @param hostContext The host context the library should be loaded with (i.e. Chrome).
      */
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD") // For sCreateCalled check.
     @UsedByReflection("WebApkSandboxedProcessService")
     public void create(final Context context, final Context hostContext) {
         mHostClassLoader = hostContext.getClassLoader();
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
-        if (sContext.get() != null) {
+        if (sCreateCalled) {
             throw new RuntimeException("Illegal child process reuse.");
         }
-        sContext.set(context);
+        sCreateCalled = true;
 
         // Initialize the context for the application that owns this ChildProcessServiceImpl object.
         ContextUtils.initApplicationContext(context);
