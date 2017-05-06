@@ -336,6 +336,8 @@ void RecordDownloadConnectionSecurity(const GURL& download_url,
 void RecordDownloadSourcePageTransitionType(
     const base::Optional<ui::PageTransition>& transition);
 
+void RecordDownloadHttpResponseCode(int response_code);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_

@@ -13951,6 +13951,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.HttpResponseCode" enum="HttpResponseCode">
+  <owner>xingliu@chromium.org</owner>
+  <summary>The count of HTTP Response codes for download requests.</summary>
+</histogram>
+
 <histogram name="Download.InterruptedAtEndError" enum="NetErrorCodes">
   <owner>asanka@chromium.org</owner>
   <summary>

@@ -12,6 +12,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "net/http/http_content_disposition.h"
+#include "net/http/http_util.h"
 
 namespace content {
 
@@ -930,6 +931,13 @@ void RecordDownloadSourcePageTransitionType(
       "Download.PageTransition",
       ui::PageTransitionStripQualifier(page_transition.value()),
       ui::PAGE_TRANSITION_LAST_CORE + 1);
+}
+
+void RecordDownloadHttpResponseCode(int response_code) {
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+      "Download.HttpResponseCode",
+      net::HttpUtil::MapStatusCodeForHistogram(response_code),
+      net::HttpUtil::GetStatusCodesForHistogram());
 }
 
 }  // namespace content
