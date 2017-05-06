@@ -1,0 +1,62 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for automation_predicate.js.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function AutomationPredicateUnitTest () {
+  testing.Test.call(this);
+};
+
+AutomationPredicateUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  extraLibraries: [
+    'automation_predicate.js',
+  ],
+
+  /** @override */
+  browsePreload: DUMMY_URL,
+};
+
+TEST_F('AutomationPredicateUnitTest', 'IsInteresting', function() {
+  chrome.automation = {
+    RoleType: {
+      DESKTOP: 'desktop', ROOT_WEB_AREA: 'rootWebArea', TAB: 'tab',
+      TAB_LIST: 'tabList', WEB_VIEW: 'webView'
+    },
+    StateType: {FOCUSABLE: 'focusable', OFFSCREEN: 'offscreen'}
+  };
+
+  // Testing focusable.
+  let loc1 = {left: 0, top: 0, width: 0, height: 0};
+  let node1 = {location: loc1, state: {}};
+  let node2 = {location: loc1, state: {focusable: false}};
+  let node3 = {location: loc1, state: {focusable: true}};
+  assertFalse(AutomationPredicate.isInteresting(node1));
+  assertFalse(AutomationPredicate.isInteresting(node2));
+  assertTrue(AutomationPredicate.isInteresting(node3));
+
+  // Testing onscreen.
+  let loc2 = {left: -1, top: 0, width: 0, height: 0};
+  let loc3 = {left: 0, top: -1, width: 0, height: 0};
+  let node4 = {location: loc2, state: {focusable: true}};
+  let node5 = {location: loc3, state: {focusable: true}};
+  let node6 = {location: loc1, state: {focusable: true, offscreen: true}}
+  assertFalse(AutomationPredicate.isInteresting(node4));
+  assertFalse(AutomationPredicate.isInteresting(node5));
+  assertFalse(AutomationPredicate.isInteresting(node6));
+
+  // Testing if tab.
+  let node7 = {location: loc1, role: 'desktop', state: {}};
+  let node8 = {location: loc1, role: 'tabList', state: {}};
+  let node9 =
+      {location: loc1, parent: node8, root: node7, role: 'tab', state: {}};
+  assertFalse(AutomationPredicate.isInteresting(node7));
+  assertFalse(AutomationPredicate.isInteresting(node8));
+  assertTrue(AutomationPredicate.isInteresting(node9));
+});

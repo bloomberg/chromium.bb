@@ -27,6 +27,7 @@ run_jsbundler("switch_access_copied_files") {
   sources = [
     "auto_scan_manager.js",
     "automation_manager.js",
+    "automation_predicate.js",
     "background.js",
     "keyboard_handler.js",
     "options.css",
@@ -53,10 +54,12 @@ js2gtest("switch_access_webuijs_tests") {
   test_type = "webui"
   sources = [
     "auto_scan_manager_unittest.gtestjs",
+    "automation_predicate_unittest.gtestjs",
     "tree_walker_unittest.gtestjs",
   ]
   extra_js_files = [
     "auto_scan_manager.js",
+    "automation_predicate.js",
     "tree_walker.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

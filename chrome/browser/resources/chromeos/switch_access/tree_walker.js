@@ -3,50 +3,94 @@
 // found in the LICENSE file.
 
 /**
- * Class to move to the appropriate node in the accessibility tree.
+ * Class to move to the appropriate node in the accessibility tree. Stays in a
+ * subtree determined by restrictions passed to it.
  *
  * @constructor
+ * @param {!chrome.automation.AutomationNode} start
+ * @param {!chrome.automation.AutomationNode} scope
+ * @param {!AutomationTreeWalker.Restriction} restrictions
  */
-function AutomationTreeWalker() {};
+function AutomationTreeWalker(start, scope, restrictions) {
+  /**
+   * Currently highlighted node.
+   *
+   * @private {!chrome.automation.AutomationNode}
+   */
+  this.node_ = start;
+
+  /**
+   * The root of the subtree that the user is navigating through.
+   *
+   * @private {!chrome.automation.AutomationNode}
+   */
+  this.scope_ = scope;
+
+  /**
+   * Function that returns true for a node that is a leaf of the current
+   * subtree.
+   *
+   * @private {!AutomationTreeWalker.Unary}
+   */
+  this.leafPred_ = restrictions.leaf;
+
+  /**
+   * Function that returns true for a node in the current subtree that should
+   * be visited.
+   *
+   * @private {!AutomationTreeWalker.Unary}
+   */
+  this.visitPred_ = restrictions.visit;
+};
+
+/**
+ * @typedef {{leaf: AutomationTreeWalker.Unary,
+ *            visit: AutomationTreeWalker.Unary}}
+ */
+AutomationTreeWalker.Restriction;
+
+/**
+ * @typedef {function(!chrome.automation.AutomationNode) : boolean}
+ */
+AutomationTreeWalker.Unary;
 
 AutomationTreeWalker.prototype = {
   /**
-   * Return the next/previous interesting node from |start|. If no interesting
-   * node is found, return the first/last interesting node. If |doNext| is true,
-   * will search for next node. Otherwise, will search for previous node.
+   * Set this.node_ to the next/previous interesting node within the current
+   * scope and return it. If no interesting node is found, return the
+   * first/last interesting node. If |doNext| is true, will search for next
+   * node. Otherwise, will search for previous node.
    *
-   * @param {chrome.automation.AutomationNode} start
-   * @param {chrome.automation.AutomationNode} root
    * @param {boolean} doNext
    * @return {chrome.automation.AutomationNode}
    */
-  moveToNode: function(start, root, doNext) {
-    let node = start;
+  moveToNode: function(doNext) {
+    let node = this.node_;
+    do {
+      node = doNext ? this.getNextNode_(node) : this.getPreviousNode_(node);
+    } while (node && !this.visitPred_(node));
     if (node) {
-      do {
-        node = doNext ? this.getNextNode_(node) : this.getPreviousNode_(node);
-      } while (node && !this.isInteresting_(node));
-      if (node)
-        return node;
+      this.node_ = node;
+      return node;
     }
 
-    if (root) {
-      console.log(
-          'Restarting search for node at ' + (doNext ? 'first' : 'last'));
-      node = doNext ? root.firstChild : this.getYoungestDescendant_(root);
-      while (node && !this.isInteresting_(node))
-        node = doNext ? this.getNextNode_(node) : this.getPreviousNode_(node);
-      if (node)
-        return node;
+    console.log('Restarting search for node at ' + (doNext ? 'first' : 'last'));
+    node = doNext ? this.scope_ : this.getYoungestDescendant_(this.scope_);
+    while (node && !this.visitPred_(node))
+      node = doNext ? this.getNextNode_(node) : this.getPreviousNode_(node);
+    if (node) {
+      this.node_ = node;
+      return node;
     }
 
     console.log('Found no interesting nodes to visit.');
     return null;
   },
 
+
   /**
    * Given a flat list of nodes in pre-order, get the node that comes after
-   * |node|.
+   * |node| within the current scope.
    *
    * @param {!chrome.automation.AutomationNode} node
    * @return {!chrome.automation.AutomationNode|undefined}
@@ -55,8 +99,13 @@ AutomationTreeWalker.prototype = {
   getNextNode_: function(node) {
     // Check for child.
     let child = node.firstChild;
-    if (child)
+    if (child && !this.leafPred_(node))
       return child;
+
+    // Has no children, and if node is root of subtree, don't check siblings
+    // or parent.
+    if (node === this.scope_)
+      return undefined;
 
     // No child. Check for right-sibling.
     let sibling = node.nextSibling;
@@ -65,7 +114,7 @@ AutomationTreeWalker.prototype = {
 
     // No right-sibling. Get right-sibling of closest ancestor.
     let ancestor = node.parent;
-    while (ancestor) {
+    while (ancestor && ancestor !== this.scope_) {
       let aunt = ancestor.nextSibling;
       if (aunt)
         return aunt;
@@ -78,13 +127,17 @@ AutomationTreeWalker.prototype = {
 
   /**
    * Given a flat list of nodes in pre-order, get the node that comes before
-   * |node|.
+   * |node| within the current scope.
    *
    * @param {!chrome.automation.AutomationNode} node
    * @return {!chrome.automation.AutomationNode|undefined}
    * @private
    */
   getPreviousNode_: function(node) {
+    // If node is root of subtree, there is no previous node.
+    if (node === this.scope_)
+      return undefined;
+
     // Check for left-sibling. If a left-sibling exists, return its youngest
     // descendant if it has one, or otherwise return the sibling.
     let sibling = node.previousSibling;
@@ -92,56 +145,30 @@ AutomationTreeWalker.prototype = {
       return this.getYoungestDescendant_(sibling) || sibling;
 
     // No left-sibling. Return parent if it exists; otherwise return undefined.
-    return node.parent;
+    //return node.parent;
+    let parent = node.parent;
+    if (parent)
+      return parent;
+
+    return undefined;
   },
 
   /**
-   * Get the youngest descendant of |node| if it has one.
+   * Get the youngest descendant of |node|, if it has one, within the current
+   * scope.
    *
    * @param {!chrome.automation.AutomationNode} node
    * @return {!chrome.automation.AutomationNode|undefined}
    * @private
    */
   getYoungestDescendant_: function(node) {
-    if (!node.lastChild)
+    if (!node.lastChild || this.leafPred_(node))
       return undefined;
 
-    while (node.lastChild)
+    while (node.lastChild && !this.leafPred_(node))
       node = node.lastChild;
 
     return node;
-  },
-
-  /**
-   * Returns true if |node| is interesting.
-   *
-   * @param {!chrome.automation.AutomationNode} node
-   * @return {boolean}
-   * @private
-   */
-  isInteresting_: function(node) {
-    let loc = node.location;
-    let parent = node.parent;
-    let root = node.root;
-    let role = node.role;
-    let state = node.state;
-
-    // Skip things that are offscreen
-    if (state[chrome.automation.StateType.OFFSCREEN]
-        || loc.top < 0 || loc.left < 0)
-      return false;
-
-    if (parent) {
-      // crbug.com/710559
-      // Work around for browser tabs
-      if (role === chrome.automation.RoleType.TAB
-          && parent.role === chrome.automation.RoleType.TAB_LIST
-          && root.role === chrome.automation.RoleType.DESKTOP)
-        return true;
-    }
-
-    // The general rule that applies to everything.
-    return state[chrome.automation.StateType.FOCUSABLE] === true;
   },
 
   /**
