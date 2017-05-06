@@ -18446,6 +18446,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent until rules storage delegate gets ready.</summary>
 </histogram>
 
+<histogram
+    name="Extensions.DeclarativeWebRequest.WebViewRequestDeclarativeRules"
+    enum="BooleanDeclarativeRules">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    Whether a network request from a guest webview has any declarative web
+    request rules that need to be evaluated. Emitted whenever a network request
+    from a guest webview is received at the network layer.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DepricatedExternalJsonCount">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
