@@ -266,7 +266,8 @@ MediaStreamDispatcher* PepperMediaDeviceManager::GetMediaStreamDispatcher()
 const ::mojom::MediaDevicesDispatcherHostPtr&
 PepperMediaDeviceManager::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
-    DCHECK(render_frame());
+    CHECK(render_frame());
+    CHECK(render_frame()->GetRemoteInterfaces());
     render_frame()->GetRemoteInterfaces()->GetInterface(
         mojo::MakeRequest(&media_devices_dispatcher_));
   }
