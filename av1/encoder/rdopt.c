@@ -2501,6 +2501,11 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
         centroids[i] = lb + (2 * i + 1) * (ub - lb) / n / 2;
       av1_k_means(data, centroids, color_map, rows * cols, n, 1, max_itr);
       k = av1_remove_duplicates(centroids, n);
+      if (k < PALETTE_MIN_SIZE) {
+        // Too few unique colors to create a palette. And DC_PRED will work well
+        // for that case anyway. So skip.
+        continue;
+      }
 
 #if CONFIG_HIGHBITDEPTH
       if (cpi->common.use_highbitdepth)
