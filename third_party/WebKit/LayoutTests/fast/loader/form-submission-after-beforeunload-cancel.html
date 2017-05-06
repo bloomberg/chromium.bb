@@ -5,6 +5,13 @@ if (window.testRunner) {
     testRunner.setShouldStayOnPageAfterHandlingBeforeUnload(true);
 }
 
+// JavaScript onbeforeunload dialogs require a user gesture.
+if (window.eventSender) {
+    eventSender.mouseMoveTo(5, 5);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+
 _confirmationDialogDisplayedOnce = false;
 
 window.onbeforeunload = function() {

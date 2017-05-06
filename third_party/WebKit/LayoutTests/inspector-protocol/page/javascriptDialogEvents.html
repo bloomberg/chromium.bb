@@ -5,6 +5,13 @@
 
 testRunner.setShouldStayOnPageAfterHandlingBeforeUnload(true);
 
+// JavaScript onbeforeunload dialogs require a user gesture.
+if (window.eventSender) {
+    eventSender.mouseMoveTo(5, 5);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+
 window.onbeforeunload = onBeforeUnload;
 
 function onBeforeUnload()

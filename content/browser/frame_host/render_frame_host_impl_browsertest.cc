@@ -247,7 +247,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       "document.body.appendChild(iframe);"
       "iframe.contentWindow.onbeforeunload=function(e){return 'x'};";
   EXPECT_TRUE(content::ExecuteScript(wc, script));
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(WaitForLoadStop(wc));
+  // JavaScript onbeforeunload dialogs require a user gesture.
+  for (auto* frame : wc->GetAllFrames())
+    frame->ExecuteJavaScriptWithUserGestureForTests(base::string16());
 
   // Force a process switch by going to a privileged page. The beforeunload
   // timer will be started on the top-level frame but will be paused while the
@@ -275,6 +278,45 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // out. If this waiting for the load stop works, this test won't time out.
   EXPECT_TRUE(WaitForLoadStop(wc));
   EXPECT_EQ(web_ui_page, wc->GetLastCommittedURL());
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+// Tests that a gesture is required in a frame before it can request a
+// beforeunload dialog.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       BeforeUnloadDialogRequiresGesture) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestJavaScriptDialogManager dialog_manager;
+  wc->SetDelegate(&dialog_manager);
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("render_frame_host", "beforeunload.html")));
+  // Disable the hang monitor, otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer.
+  wc->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+
+  // Reload. There should be no beforeunload dialog because there was no gesture
+  // on the page. If there was, this WaitForLoadStop call will hang.
+  wc->GetController().Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(wc));
+
+  // Give the page a user gesture and try reloading again. This time there
+  // should be a dialog. If there is no dialog, the call to Wait will hang.
+  wc->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      base::string16());
+  wc->GetController().Reload(ReloadType::NORMAL, false);
+  dialog_manager.Wait();
+
+  // Answer the dialog.
+  dialog_manager.callback().Run(true, base::string16());
+  EXPECT_TRUE(WaitForLoadStop(wc));
+
+  // The reload should have cleared the user gesture bit, so upon leaving again
+  // there should be no beforeunload dialog.
+  shell()->LoadURL(GURL("about:blank"));
+  EXPECT_TRUE(WaitForLoadStop(wc));
 
   wc->SetDelegate(nullptr);
   wc->SetJavaScriptDialogManagerForTesting(nullptr);
