@@ -101,6 +101,10 @@ void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents);
 // navigations should be refactored to do EXPECT_TRUE(WaitForLoadStop()).
 bool WaitForLoadStop(WebContents* web_contents);
 
+// If a test uses a beforeunload dialog, it must be prepared to avoid flakes.
+// This function collects everything that needs to be done.
+void PrepContentsForBeforeUnloadTest(WebContents* web_contents);
+
 #if defined(USE_AURA) || defined(OS_ANDROID)
 // If WebContent's view is currently being resized, this will wait for the ack
 // from the renderer that the resize is complete and for the

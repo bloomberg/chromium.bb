@@ -3171,6 +3171,15 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   if (!GetFrame() || before_unload_event->returnValue().IsNull())
     return true;
 
+  if (!GetFrame()->HasReceivedUserGesture()) {
+    AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel,
+        "Blocked attempt to show a 'beforeunload' confirmation panel for a "
+        "frame that never had a user gesture since its load. "
+        "https://www.chromestatus.com/feature/5082396709879808"));
+    return true;
+  }
+
   if (did_allow_navigation) {
     AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kErrorMessageLevel,

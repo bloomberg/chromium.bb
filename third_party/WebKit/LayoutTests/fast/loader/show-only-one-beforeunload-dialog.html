@@ -7,6 +7,13 @@
         testRunner.waitUntilDone();
     }
 
+    // JavaScript onbeforeunload dialogs require a user gesture.
+    if (window.eventSender) {
+        eventSender.mouseMoveTo(5, 5);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+    }
+
     window.onload = function()
     {
         window.setTimeout("window.location.href = 'resources/notify-done.html';", 0);

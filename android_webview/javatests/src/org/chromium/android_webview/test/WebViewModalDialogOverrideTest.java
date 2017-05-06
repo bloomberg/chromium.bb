@@ -14,6 +14,7 @@ import android.support.test.filters.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
+import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 
@@ -176,6 +177,8 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
         loadDataSync(awContents, client.getOnPageFinishedHelper(), BEFORE_UNLOAD_URL,
                 "text/html", false);
         enableJavaScriptOnUiThread(awContents);
+        // JavaScript onbeforeunload dialogs require a user gesture.
+        AwTestTouchUtils.simulateTouchCenterOfView(view);
 
         // Don't wait synchronously because we don't leave the page.
         int currentCallCount = jsBeforeUnloadHelper.getCallCount();

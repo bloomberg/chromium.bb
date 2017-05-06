@@ -471,6 +471,18 @@ bool WaitForLoadStop(WebContents* web_contents) {
   return IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL);
 }
 
+void PrepContentsForBeforeUnloadTest(WebContents* web_contents) {
+  for (auto* frame : web_contents->GetAllFrames()) {
+    // JavaScript onbeforeunload dialogs are ignored unless the frame received a
+    // user gesture. Make sure the frames have user gestures.
+    frame->ExecuteJavaScriptWithUserGestureForTests(base::string16());
+
+    // Disable the hang monitor, otherwise there will be a race between the
+    // beforeunload dialog and the beforeunload hang timer.
+    frame->DisableBeforeUnloadHangMonitorForTesting();
+  }
+}
+
 bool IsLastCommittedEntryOfPageType(WebContents* web_contents,
                                     content::PageType page_type) {
   NavigationEntry* last_entry =

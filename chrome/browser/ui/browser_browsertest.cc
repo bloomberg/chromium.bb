@@ -630,9 +630,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   GURL beforeunload_url(embedded_test_server()->GetURL("/beforeunload.html"));
   ui_test_utils::NavigateToURL(browser(), beforeunload_url);
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  // Disable the hang monitor, otherwise there will be a race between the
-  // beforeunload dialog and the beforeunload hang timer.
-  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+  content::PrepContentsForBeforeUnloadTest(contents);
 
   // Start a navigation to trigger the beforeunload dialog.
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
@@ -723,9 +721,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  // Disable the hang monitor, otherwise there will be a race between the
-  // beforeunload dialog and the beforeunload hang timer.
-  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+  content::PrepContentsForBeforeUnloadTest(contents);
 
   // Navigate to another page, but click cancel in the dialog.  Make sure that
   // the throbber stops spinning.
@@ -847,9 +843,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
   GURL url(embedded_test_server()->GetURL("/beforeunload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  // Disable the hang monitor, otherwise there will be a race between the
-  // beforeunload dialog and the beforeunload hang timer.
-  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+  content::PrepContentsForBeforeUnloadTest(contents);
 
   // Navigate to a URL that redirects to another process and approve the
   // beforeunload dialog that pops up.
@@ -879,9 +873,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
       base::FilePath::kCurrentDirectory), base::FilePath(kBeforeUnloadFile)));
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  // Disable the hang monitor, otherwise there will be a race between the
-  // beforeunload dialog and the beforeunload hang timer.
-  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+  content::PrepContentsForBeforeUnloadTest(contents);
 
   // Navigate to a page that triggers a cross-site transition.
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -953,9 +945,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  // Disable the hang monitor, otherwise there will be a race between the
-  // beforeunload dialog and the beforeunload hang timer.
-  contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+  content::PrepContentsForBeforeUnloadTest(contents);
 
   // Reload the page, and check that we get a "before reload" dialog.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
@@ -1026,6 +1016,8 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
   // In the first browser, set up a page that has a beforeunload handler.
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
   ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::PrepContentsForBeforeUnloadTest(contents);
 
   // Open a second browser window at about:blank.
   ui_test_utils::BrowserAddedObserver browser_added_observer;

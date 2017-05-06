@@ -881,6 +881,8 @@ class CONTENT_EXPORT WebContentsImpl
                            JavaScriptDialogsInMainAndSubframes);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            IframeBeforeUnloadParentHang);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           BeforeUnloadDialogRequiresGesture);
 
   // So |find_request_manager_| can be accessed for testing.
   friend class FindRequestManagerTest;

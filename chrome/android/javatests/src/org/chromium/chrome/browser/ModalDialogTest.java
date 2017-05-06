@@ -14,6 +14,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -23,6 +24,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content_public.browser.GestureStateListener;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -167,6 +169,35 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
         assertEquals("Invalid return value.", '"' + promptText + '"', resultString);
     }
 
+    private static class TapGestureStateListener extends GestureStateListener {
+        private CallbackHelper mCallbackHelper = new CallbackHelper();
+
+        public int getCallCount() {
+            return mCallbackHelper.getCallCount();
+        }
+
+        public void waitForTap(int currentCallCount) throws InterruptedException, TimeoutException {
+            mCallbackHelper.waitForCallback(currentCallCount);
+        }
+
+        @Override
+        public void onSingleTap(boolean consumed) {
+            mCallbackHelper.notifyCalled();
+        }
+    }
+
+    /**
+     * Taps on a view and waits for a callback.
+     */
+    private void tapViewAndWait() throws InterruptedException, TimeoutException {
+        final TapGestureStateListener tapGestureStateListener = new TapGestureStateListener();
+        int callCount = tapGestureStateListener.getCallCount();
+        getActivity().getCurrentContentViewCore().addGestureStateListener(tapGestureStateListener);
+
+        singleClickView(getActivity().getActivityTab().getView());
+        tapGestureStateListener.waitForTap(callCount);
+    }
+
     /**
      * Verifies beforeunload dialogs are shown and they block/allow navigation
      * as appropriate.
@@ -176,6 +207,8 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
     public void testBeforeUnloadDialog()
             throws InterruptedException, TimeoutException, ExecutionException {
         loadUrl(BEFORE_UNLOAD_URL);
+        // JavaScript onbeforeunload dialogs require a user gesture.
+        tapViewAndWait();
         executeJavaScriptAndWaitForDialog("history.back();");
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
@@ -206,8 +239,11 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
      */
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testBeforeUnloadOnReloadDialog() throws InterruptedException, ExecutionException {
+    public void testBeforeUnloadOnReloadDialog()
+            throws InterruptedException, TimeoutException, ExecutionException {
         loadUrl(BEFORE_UNLOAD_URL);
+        // JavaScript onbeforeunload dialogs require a user gesture.
+        tapViewAndWait();
         executeJavaScriptAndWaitForDialog("window.location.reload();");
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();

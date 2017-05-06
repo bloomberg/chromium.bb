@@ -388,9 +388,7 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
     ASSERT_TRUE(content::ExecuteScript(web_contents->GetRenderViewHost(),
         "window.addEventListener('beforeunload',"
         "function(event) { event.returnValue = 'Foo'; });"));
-    // Disable the hang monitor, otherwise there will be a race between the
-    // beforeunload dialog and the beforeunload hang timer.
-    web_contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+    content::PrepContentsForBeforeUnloadTest(web_contents);
   }
 
   void RunBeforeUnloadSanityTest(bool is_docked,

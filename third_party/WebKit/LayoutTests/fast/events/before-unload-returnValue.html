@@ -6,6 +6,13 @@
 if (window.testRunner)
     testRunner.setShouldStayOnPageAfterHandlingBeforeUnload(true);
 
+// JavaScript onbeforeunload dialogs require a user gesture.
+if (window.eventSender) {
+    eventSender.mouseMoveTo(5, 5);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+
 window.onload = function() {
     window.location.href = "resources/does-not-exist.html";
     setTimeout(finishJSTest, 0);
