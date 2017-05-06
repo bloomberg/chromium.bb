@@ -96,14 +96,7 @@ class NET_EXPORT ParsedCertificate
   // Accessor for struct containing raw fields of the TbsCertificate.
   const ParsedTbsCertificate& tbs() const { return tbs_; }
 
-  // Returns true if the signatureAlgorithm of the Certificate is supported and
-  // valid.
-  bool has_valid_supported_signature_algorithm() const {
-    return signature_algorithm_ != nullptr;
-  }
-
   // Returns the signatureAlgorithm of the Certificate (not the tbsCertificate).
-  // Must not be called if has_valid_supported_signature_algorithm() is false.
   const SignatureAlgorithm& signature_algorithm() const {
     DCHECK(signature_algorithm_);
     return *signature_algorithm_;
