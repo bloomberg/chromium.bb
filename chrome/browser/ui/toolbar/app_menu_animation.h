@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_ANIMATION_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_ANIMATION_H_
+#ifndef CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ANIMATION_H_
+#define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ANIMATION_H_
 
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -15,19 +15,27 @@ class Canvas;
 class PointF;
 }  // namespace gfx
 
-class AppMenuButton;
+// Delegate class for AppMenuAnimation. The delegate is expected to
+// handle animation events and invalidate the platform's view.
+class AppMenuAnimationDelegate {
+ public:
+  // Called when the animation has started/ended.
+  virtual void AppMenuAnimationStarted() = 0;
+  virtual void AppMenuAnimationEnded() = 0;
+
+  // Schedules a redraw of the icon.
+  virtual void InvalidateIcon() = 0;
+};
 
 // This class is used for animating and drawing the app menu icon.
 class AppMenuAnimation : public gfx::AnimationDelegate {
  public:
-  AppMenuAnimation(AppMenuButton* owner, SkColor initial_color);
+  AppMenuAnimation(AppMenuAnimationDelegate* owner, SkColor initial_color);
 
   ~AppMenuAnimation() override;
 
   // Paints the app menu icon.
   void PaintAppMenu(gfx::Canvas* canvas, const gfx::Rect& bounds);
-
-  void set_target_color(SkColor target_color) { target_color_ = target_color; }
 
   // Starts the animation if it's not already running.
   void StartAnimation();
@@ -35,6 +43,8 @@ class AppMenuAnimation : public gfx::AnimationDelegate {
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
+
+  void set_target_color(SkColor target_color) { target_color_ = target_color; }
 
  private:
   // This class is used to represent and paint a dot on the app menu.
@@ -53,7 +63,8 @@ class AppMenuAnimation : public gfx::AnimationDelegate {
                SkColor final_color,
                gfx::Canvas* canvas,
                const gfx::Rect& bounds,
-               const gfx::SlideAnimation* animation);
+               const gfx::SlideAnimation* animation,
+               AppMenuAnimationDelegate* delegate);
 
    private:
     // The delay before the dot starts animating in ms.
@@ -67,7 +78,7 @@ class AppMenuAnimation : public gfx::AnimationDelegate {
     DISALLOW_COPY_AND_ASSIGN(AppMenuDot);
   };
 
-  AppMenuButton* const owner_;
+  AppMenuAnimationDelegate* const delegate_;
 
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
@@ -86,4 +97,4 @@ class AppMenuAnimation : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(AppMenuAnimation);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_ANIMATION_H_
+#endif  // CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ANIMATION_H_

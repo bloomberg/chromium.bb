@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/toolbar/app_menu_animation.h"
+#include "chrome/browser/ui/toolbar/app_menu_animation.h"
 
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_flags.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -21,6 +20,9 @@ constexpr float kCloseDurationMs = 283.0f;
 
 // Duration of the color animation in ms.
 constexpr float kColorDurationMs = 100.0f;
+
+// The radius of each dot in the icon.
+constexpr float kDotRadius = 2.0f;
 
 // The % the top and bottom dots need to be offset from the middle.
 constexpr float kDotYOffset = 0.32f;
@@ -63,7 +65,8 @@ void AppMenuAnimation::AppMenuDot::Paint(const gfx::PointF& center_point,
                                          SkColor target_color,
                                          gfx::Canvas* canvas,
                                          const gfx::Rect& bounds,
-                                         const gfx::SlideAnimation* animation) {
+                                         const gfx::SlideAnimation* animation,
+                                         AppMenuAnimationDelegate* delegate) {
   bool is_opening = animation->IsShowing();
   float total_duration = is_opening ? kOpenDurationMs : kCloseDurationMs;
   float width_duration =
@@ -115,17 +118,17 @@ void AppMenuAnimation::AppMenuDot::Paint(const gfx::PointF& center_point,
 
   cc::PaintFlags flags;
   flags.setColor(color);
-  flags.setStrokeWidth(bounds.height() * kCloseStroke);
+  flags.setStrokeWidth(dot_height);
   flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-
-  gfx::SizeF dot_size = gfx::SizeF(dot_width, dot_height);
-  canvas->DrawRoundRect(gfx::RectF(point, dot_size), 2.0, flags);
+  canvas->DrawRoundRect(gfx::RectF(point, gfx::SizeF(dot_width, dot_height)),
+                        kDotRadius, flags);
 }
 
-AppMenuAnimation::AppMenuAnimation(AppMenuButton* owner, SkColor initial_color)
-    : owner_(owner),
+AppMenuAnimation::AppMenuAnimation(AppMenuAnimationDelegate* delegate,
+                                   SkColor initial_color)
+    : delegate_(delegate),
       animation_(base::MakeUnique<gfx::SlideAnimation>(this)),
       bottom_dot_(base::TimeDelta(),
                   kBottomWidthOpenInterval,
@@ -155,18 +158,18 @@ void AppMenuAnimation::PaintAppMenu(gfx::Canvas* canvas,
   bottom_point.Offset(0, y_offset);
 
   middle_dot_.Paint(middle_point, start_color_, target_color_, canvas, bounds,
-                    animation_.get());
+                    animation_.get(), delegate_);
   top_dot_.Paint(top_point, start_color_, target_color_, canvas, bounds,
-                 animation_.get());
+                 animation_.get(), delegate_);
   bottom_dot_.Paint(bottom_point, start_color_, target_color_, canvas, bounds,
-                    animation_.get());
+                    animation_.get(), delegate_);
 }
 
 void AppMenuAnimation::StartAnimation() {
   if (!animation_->is_animating()) {
     animation_->SetSlideDuration(kOpenDurationMs);
     animation_->Show();
-    owner_->AppMenuAnimationStarted();
+    delegate_->AppMenuAnimationStarted();
   }
 }
 
@@ -178,9 +181,9 @@ void AppMenuAnimation::AnimationEnded(const gfx::Animation* animation) {
     start_color_ = target_color_;
   }
 
-  owner_->AppMenuAnimationEnded();
+  delegate_->AppMenuAnimationEnded();
 }
 
 void AppMenuAnimation::AnimationProgressed(const gfx::Animation* animation) {
-  owner_->SchedulePaint();
+  delegate_->InvalidateIcon();
 }
