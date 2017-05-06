@@ -5,9 +5,19 @@
 package org.chromium.chrome.browser.download;
 
 import android.Manifest.permission;
+import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.support.v7.app.AlertDialog;
+import android.view.View;
+import android.widget.TextView;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 /**
  * Java counterpart of android DownloadController.
@@ -106,24 +116,78 @@ public class DownloadController {
     /**
      * Returns whether file access is allowed.
      *
-     * @param windowAndroid WindowAndroid to access file system.
      * @return true if allowed, or false otherwise.
      */
     @CalledByNative
-    private boolean hasFileAccess(WindowAndroid windowAndroid) {
-        return windowAndroid.hasPermission(permission.WRITE_EXTERNAL_STORAGE);
+    private boolean hasFileAccess() {
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (activity instanceof ChromeActivity) {
+            return ((ChromeActivity) activity)
+                    .getWindowAndroid()
+                    .hasPermission(permission.WRITE_EXTERNAL_STORAGE);
+        }
+        return false;
     }
 
-    /**
-     * Notify the results of a file access request.
-     * @param callbackId The ID of the callback.
-     * @param granted Whether access was granted.
-     */
-    public void onRequestFileAccessResult(long callbackId, boolean granted) {
-        nativeOnRequestFileAccessResult(callbackId, granted);
+    @CalledByNative
+    private void requestFileAccess(final long callbackId) {
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (!(activity instanceof ChromeActivity)) {
+            nativeOnAcquirePermissionResult(callbackId, false, null);
+            return;
+        }
+
+        final WindowAndroid windowAndroid = ((ChromeActivity) activity).getWindowAndroid();
+        if (windowAndroid == null) {
+            nativeOnAcquirePermissionResult(callbackId, false, null);
+            return;
+        }
+
+        if (!windowAndroid.canRequestPermission(permission.WRITE_EXTERNAL_STORAGE)) {
+            nativeOnAcquirePermissionResult(callbackId, false,
+                    windowAndroid.isPermissionRevokedByPolicy(permission.WRITE_EXTERNAL_STORAGE)
+                            ? null
+                            : permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+
+        View view = activity.getLayoutInflater().inflate(R.layout.update_permissions_dialog, null);
+        TextView dialogText = (TextView) view.findViewById(R.id.text);
+        dialogText.setText(R.string.missing_storage_permission_download_education_text);
+
+        final PermissionCallback permissionCallback = new PermissionCallback() {
+            @Override
+            public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
+                nativeOnAcquirePermissionResult(callbackId,
+                        grantResults.length > 0
+                                && grantResults[0] == PackageManager.PERMISSION_GRANTED,
+                        null);
+            }
+        };
+
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+                        .setView(view)
+                        .setPositiveButton(R.string.infobar_update_permissions_button_text,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        windowAndroid.requestPermissions(
+                                                new String[] {permission.WRITE_EXTERNAL_STORAGE},
+                                                permissionCallback);
+                                    }
+                                })
+                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                nativeOnAcquirePermissionResult(callbackId, false, null);
+                            }
+                        });
+        builder.create().show();
     }
 
     // native methods
     private native void nativeInit();
-    private native void nativeOnRequestFileAccessResult(long callbackId, boolean granted);
+    private native void nativeOnAcquirePermissionResult(
+            long callbackId, boolean granted, String permissionToUpdate);
 }

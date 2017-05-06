@@ -28,7 +28,7 @@ void MockDownloadController::StartContextMenuDownload(
 }
 
 void MockDownloadController::AcquireFileAccessPermission(
-    content::WebContents* web_contents,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(cb, approve_file_access_request_));
