@@ -43,7 +43,7 @@ struct CONTENT_EXPORT WebPluginMimeType {
   std::vector<base::string16> additional_param_values;
 };
 
-// Describes an available NPAPI or Pepper plugin.
+// Describes an available Pepper plugin.
 struct CONTENT_EXPORT WebPluginInfo {
   enum PluginType {
     PLUGIN_TYPE_PEPPER_IN_PROCESS,

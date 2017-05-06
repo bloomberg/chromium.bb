@@ -433,7 +433,7 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderAccessibility* GetRenderAccessibility() override;
   int GetRoutingID() override;
   blink::WebLocalFrame* GetWebFrame() override;
-  WebPreferences& GetWebkitPreferences() override;
+  const WebPreferences& GetWebkitPreferences() override;
   int ShowContextMenu(ContextMenuClient* client,
                       const ContextMenuParams& params) override;
   void CancelContextMenu(int request_id) override;
@@ -1451,7 +1451,7 @@ class CONTENT_EXPORT RenderFrameImpl
     blink::WebFormElement form;
     blink::WebSourceLocation source_location;
 
-    PendingNavigationInfo(const NavigationPolicyInfo& info);
+    explicit PendingNavigationInfo(const NavigationPolicyInfo& info);
   };
 
   // PlzNavigate: Contains information about a pending navigation to be sent to

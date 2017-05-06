@@ -1976,7 +1976,7 @@ float RenderViewImpl::GetDeviceScaleFactor() const {
   return device_scale_factor_;
 }
 
-WebPreferences& RenderViewImpl::GetWebkitPreferences() {
+const WebPreferences& RenderViewImpl::GetWebkitPreferences() {
   return webkit_preferences_;
 }
 

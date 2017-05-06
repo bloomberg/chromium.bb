@@ -16,7 +16,7 @@ class Rect;
 namespace content {
 
 // Paints the sad plugin to the given canvas for the given plugin bounds. This
-// is used by both the NPAPI and the PPAPI out-of-process plugin impls.
+// is used by PPAPI out-of-process plugin impls.
 void PaintSadPlugin(blink::WebCanvas* canvas,
                     const gfx::Rect& plugin_rect,
                     const SkBitmap& sad_plugin_bitmap);
