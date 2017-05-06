@@ -24,13 +24,29 @@ class OriginTrialsTest : public GarbageCollectedFinalized<OriginTrialsTest>,
   static OriginTrialsTest* Create() { return new OriginTrialsTest(); }
   virtual ~OriginTrialsTest() = default;
 
-  bool normalAttribute();
-  static bool staticAttribute();
+  bool normalAttribute() { return true; }
+  static bool staticAttribute() { return true; }
+  bool normalMethod() { return true; }
+  static bool staticMethod() { return true; }
+  static const unsigned short kConstant = 1;
 
   bool throwingAttribute(ScriptState*, ExceptionState&);
-  bool unconditionalAttribute();
 
-  static const unsigned short kConstant = 1;
+  bool unconditionalAttribute() { return true; }
+  static bool staticUnconditionalAttribute() { return true; }
+  bool unconditionalMethod() { return true; }
+  static bool staticUnconditionalMethod() { return true; }
+  static const unsigned short kUnconditionalConstant = 99;
+
+  bool secureUnconditionalAttribute() { return true; }
+  static bool secureStaticUnconditionalAttribute() { return true; }
+  bool secureUnconditionalMethod() { return true; }
+  static bool secureStaticUnconditionalMethod() { return true; }
+
+  bool secureAttribute() { return true; }
+  static bool secureStaticAttribute() { return true; }
+  bool secureMethod() { return true; }
+  static bool secureStaticMethod() { return true; }
 
   DECLARE_TRACE();
 

@@ -9,7 +9,14 @@ partial interface OriginTrialsTest {
     const unsigned short CONSTANT_PARTIAL = 2;
     readonly attribute boolean normalAttributePartial;
     static readonly attribute boolean staticAttributePartial;
-    boolean methodPartial();
+    boolean normalMethodPartial();
     static boolean staticMethodPartial();
-};
 
+    // These are only available in a secure context.
+    // TODO(crbug.com/695123): Add [SecureContext] extended attribute when fixed
+    //   to work with [OriginTrialEnabled]
+    readonly attribute boolean secureAttributePartial;
+    static readonly attribute boolean secureStaticAttributePartial;
+    boolean secureMethodPartial();
+    static boolean secureStaticMethodPartial();
+};
