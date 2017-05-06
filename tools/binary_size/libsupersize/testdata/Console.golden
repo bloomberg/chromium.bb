@@ -11,8 +11,8 @@ by_path = text_syms.GroupBySourcePath(depth=2)
 Print(by_path.WhereBiggerThan(1024))
 
 # Show all non-vtable generated symbols
-generated_syms = size_info.symbols.WhereIsGenerated()
-Print(generated_syms.WhereNameMatches(r"vtable").Inverted())
+generated_syms = size_info.symbols.WhereGeneratedByToolchain()
+Print(generated_syms.WhereNameMatches(r"vtable").Inverted().Sorted())
 
 # Show all symbols that have "print" in their name or path, except
 # those within components/.

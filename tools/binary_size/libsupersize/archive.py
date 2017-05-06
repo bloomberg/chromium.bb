@@ -143,22 +143,24 @@ def _NormalizeObjectPath(path):
 
 
 def _NormalizeSourcePath(path):
+  """Returns (is_generated, normalized_path)"""
   if path.startswith('gen/'):
     # Convert gen/third_party/... -> third_party/...
-    return path[4:]
+    return True, path[4:]
   if path.startswith('../../'):
     # Convert ../../third_party/... -> third_party/...
-    return path[6:]
-  return path
+    return False, path[6:]
+  return True, path
 
 
 def _SourcePathForObjectPath(object_path, source_mapper):
+  """Returns (is_generated, normalized_path)"""
   # We don't have source info for prebuilt .a files.
   if not os.path.isabs(object_path) and not object_path.startswith('..'):
     source_path = source_mapper.FindSourceForPath(object_path)
     if source_path:
       return _NormalizeSourcePath(source_path)
-  return ''
+  return False, ''
 
 
 def _ExtractSourcePaths(raw_symbols, source_mapper):
@@ -167,7 +169,8 @@ def _ExtractSourcePaths(raw_symbols, source_mapper):
   for symbol in raw_symbols:
     object_path = symbol.object_path
     if object_path and not symbol.source_path:
-      symbol.source_path = _SourcePathForObjectPath(object_path, source_mapper)
+      symbol.generated_source, symbol.source_path = (
+          _SourcePathForObjectPath(object_path, source_mapper))
 
 
 def _ComputeAnscestorPath(path_list):
@@ -231,9 +234,10 @@ def _ComputeAnscestorPathsAndNormalizeObjectPaths(
       num_path_mismatches += 1
 
     if source_mapper:
-      source_paths = [
+      tups = [
           _SourcePathForObjectPath(p, source_mapper) for p in object_paths]
-      symbol.source_path = _ComputeAnscestorPath(source_paths)
+      symbol.source_path = _ComputeAnscestorPath(t[1] for t in tups)
+      symbol.generated_source = all(t[0] for t in tups)
 
     object_paths = [_NormalizeObjectPath(p) for p in object_paths]
     symbol.object_path = _ComputeAnscestorPath(object_paths)
