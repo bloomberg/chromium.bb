@@ -581,16 +581,6 @@ bool ElementHasFullscreenAncestorStyle(content::RenderFrameHost* host,
   return has_style;
 }
 
-// Set the allowFullscreen attribute on the <iframe> element identified by
-// |frame_id|.
-void SetAllowFullscreenForFrame(content::RenderFrameHost* host,
-                                const std::string& frame_id) {
-  EXPECT_TRUE(ExecuteScript(
-      host, base::StringPrintf(
-                "document.getElementById('%s').allowFullscreen = true;",
-                frame_id.c_str())));
-}
-
 // Add a listener that will send back a message whenever the (prefixed)
 // fullscreenchange event fires.  The message will be "fullscreenchange",
 // followed by a space and the provided |id|.
@@ -745,8 +735,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // paths on the Blink side.
 void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
     FullscreenExitMethod exit_method) {
-  GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(b(a))"));
+  GURL main_url(embedded_test_server()->GetURL("a.com",
+                                               "/cross_site_iframe_factory."
+                                               "html?a(b{allowfullscreen}(a{"
+                                               "allowfullscreen}))"));
   ui_test_utils::NavigateToURL(browser(), main_url);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -762,10 +754,6 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   observer.Wait();
   EXPECT_EQ(embedded_test_server()->GetURL("a.com", "/fullscreen_frame.html"),
             grandchild->GetLastCommittedURL());
-
-  // Add allowFullscreen attribute to both <iframe> elements.
-  SetAllowFullscreenForFrame(main_frame, "child-0");
-  SetAllowFullscreenForFrame(child, "child-0");
 
   // Make fullscreenchange events in all three frames send a message.
   AddFullscreenChangeListener(main_frame, "main_frame");
@@ -882,8 +870,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // fullscreen exit path.
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
                        FullscreenElementInMultipleSubframes) {
+  // Allow fullscreen in all iframes descending to |c_middle|.
   GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(a(b,b(c(c))))"));
+      "a.com",
+      "/cross_site_iframe_factory.html?a(a{allowfullscreen}(b,b{"
+      "allowfullscreen}(c{allowfullscreen}(c{allowfullscreen}))))"));
   ui_test_utils::NavigateToURL(browser(), main_url);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -894,13 +885,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::RenderFrameHost* b_second = ChildFrameAt(a_bottom, 1);
   content::RenderFrameHost* c_top = ChildFrameAt(b_second, 0);
   content::RenderFrameHost* c_middle = ChildFrameAt(c_top, 0);
-
-  // Allow fullscreen in all iframes descending to |c_middle|.  This relies on
-  // IDs that cross_site_iframe_factory assigns to child frames.
-  SetAllowFullscreenForFrame(a_top, "child-0");
-  SetAllowFullscreenForFrame(a_bottom, "child-1");
-  SetAllowFullscreenForFrame(b_second, "child-0");
-  SetAllowFullscreenForFrame(c_top, "child-0");
 
   // Navigate |c_middle| to a page that has a fullscreenable <div> and another
   // frame.
