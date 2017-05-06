@@ -1528,6 +1528,8 @@ IN_PROC_BROWSER_TEST_P(MediaCanPlayNewVp9TypeTest,
             CanPlay(mime_prefix + "codecs=\"vp09.00.10.08\"'"));
   EXPECT_EQ(new_vp9_probably,
             CanPlay(mime_prefix + "codecs=\"vp09.00.10.08.00.01.01.01.00\"'"));
+  EXPECT_EQ(new_vp9_probably,
+            CanPlay(mime_prefix + "codecs=\"vp09.00.10.08.01.02.02.02.00\"'"));
 
   // Platform support is sadly ambiguous for profiles > 0.
   // TODO(chcunningham): Plumb proper querying of platform support - give a firm
