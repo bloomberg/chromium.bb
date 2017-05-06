@@ -1999,6 +1999,13 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     return true;
   }
 
+  if (is_web_view_guest) {
+    const bool has_declarative_rules = !relevant_registries.empty();
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.DeclarativeWebRequest.WebViewRequestDeclarativeRules",
+        has_declarative_rules);
+  }
+
   base::Time start = base::Time::Now();
 
   bool deltas_created = false;

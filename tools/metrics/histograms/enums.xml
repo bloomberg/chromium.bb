@@ -2626,6 +2626,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Data Reduction Proxy"/>
 </enum>
 
+<enum name="BooleanDeclarativeRules" type="int">
+  <int value="0" label="No declarative rules"/>
+  <int value="1" label="Has declarative rules"/>
+</enum>
+
 <enum name="BooleanDefault" type="int">
   <int value="0" label="Not Default"/>
   <int value="1" label="Default"/>
