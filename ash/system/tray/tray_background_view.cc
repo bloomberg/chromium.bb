@@ -9,6 +9,9 @@
 #include "ash/ash_constants.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell.h"
+#include "ash/system/status_area_widget_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_event_filter.h"
@@ -240,10 +243,10 @@ void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  // Return focus to the login view. See crbug.com/120500.
-  views::View* v = GetNextFocusableView();
-  if (v)
-    v->AboutToRequestFocusFromTabTraversal(reverse);
+  StatusAreaWidgetDelegate* delegate =
+      StatusAreaWidgetDelegate::GetPrimaryInstance();
+  if (delegate && delegate->ShouldFocusOut(reverse))
+    Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
 }
 
 std::unique_ptr<views::InkDropRipple> TrayBackgroundView::CreateInkDropRipple()

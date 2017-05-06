@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/shell_observer.h"
+#include "ash/system/status_area_focus_observer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -45,7 +46,8 @@ class WebUILoginView : public views::View,
                        public content::WebContentsDelegate,
                        public content::NotificationObserver,
                        public ChromeWebModalDialogManagerDelegate,
-                       public web_modal::WebContentsModalDialogHost {
+                       public web_modal::WebContentsModalDialogHost,
+                       public ash::StatusAreaFocusObserver {
  public:
   struct WebViewSettings {
     // If true, this will check for and consume a preloaded views::WebView
@@ -163,6 +165,9 @@ class WebUILoginView : public views::View,
                                   content::MediaStreamType type) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
+
+  // Overridden from ash::StatusAreaFocusObserver.
+  void OnFocusOut(bool reverse) override;
 
   // Performs series of actions when login prompt is considered
   // to be ready and visible.
