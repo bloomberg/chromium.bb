@@ -239,6 +239,11 @@ bool IsPrintPreviewUrl(base::StringPiece url) {
   return url.starts_with(kChromePrint);
 }
 
+void ScaleFloatPoint(float scale, pp::FloatPoint* point) {
+  point->set_x(point->x() * scale);
+  point->set_y(point->y() * scale);
+}
+
 void ScalePoint(float scale, pp::Point* point) {
   point->set_x(static_cast<int>(point->x() * scale));
   point->set_y(static_cast<int>(point->y() * scale));
@@ -575,8 +580,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
 }
 
 bool OutOfProcessInstance::HandleInputEvent(const pp::InputEvent& event) {
-  // To simplify things, convert the event into device coordinates if it is
-  // a mouse event.
+  // To simplify things, convert the event into device coordinates.
   pp::InputEvent event_device_res(event);
   {
     pp::MouseInputEvent mouse_event(event);
@@ -584,6 +588,8 @@ bool OutOfProcessInstance::HandleInputEvent(const pp::InputEvent& event) {
       pp::Point point = mouse_event.GetPosition();
       pp::Point movement = mouse_event.GetMovement();
       ScalePoint(device_scale_, &point);
+      point.set_x(point.x() - available_area_.x());
+
       ScalePoint(device_scale_, &movement);
       mouse_event =
           pp::MouseInputEvent(this, event.GetType(), event.GetTimeStamp(),
@@ -592,28 +598,39 @@ bool OutOfProcessInstance::HandleInputEvent(const pp::InputEvent& event) {
       event_device_res = mouse_event;
     }
   }
+  {
+    pp::TouchInputEvent touch_event(event);
+    if (!touch_event.is_null()) {
+      pp::TouchInputEvent new_touch_event = pp::TouchInputEvent(
+          this, touch_event.GetType(), touch_event.GetTimeStamp(),
+          touch_event.GetModifiers());
 
-  pp::InputEvent offset_event(event_device_res);
-  switch (offset_event.GetType()) {
-    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-    case PP_INPUTEVENT_TYPE_MOUSEUP:
-    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-    case PP_INPUTEVENT_TYPE_MOUSEENTER:
-    case PP_INPUTEVENT_TYPE_MOUSELEAVE: {
-      pp::MouseInputEvent mouse_event(event_device_res);
-      pp::MouseInputEvent mouse_event_dip(event);
-      pp::Point point = mouse_event.GetPosition();
-      point.set_x(point.x() - available_area_.x());
-      offset_event = pp::MouseInputEvent(
-          this, event.GetType(), event.GetTimeStamp(), event.GetModifiers(),
-          mouse_event.GetButton(), point, mouse_event.GetClickCount(),
-          mouse_event.GetMovement());
-      break;
+      for (uint32_t i = 0;
+           i < touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_TARGETTOUCHES);
+           i++) {
+        pp::TouchPoint touch_point =
+            touch_event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, i);
+
+        pp::FloatPoint point = touch_point.position();
+
+        // Account for the scroll position. Touch events are in DOM coordinates
+        // where mouse events appear to be in screen coordinates.
+        point.set_x(scroll_offset_.x() + point.x());
+        point.set_y(scroll_offset_.y() + point.y());
+        ScaleFloatPoint(device_scale_, &point);
+
+        point.set_x(point.x() - available_area_.x());
+
+        new_touch_event.AddTouchPoint(
+            PP_TOUCHLIST_TYPE_TARGETTOUCHES,
+            {touch_point.id(), point, touch_point.radii(),
+             touch_point.rotation_angle(), touch_point.pressure()});
+      }
+      event_device_res = new_touch_event;
     }
-    default:
-      break;
   }
-  if (engine_->HandleEvent(offset_event))
+
+  if (engine_->HandleEvent(event_device_res))
     return true;
 
   // Middle click is used for scrolling and is handled by the container page.
@@ -658,13 +675,13 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
   }
 
   if (!stop_scrolling_) {
-    pp::Point scroll_offset(view.GetScrollOffset());
+    scroll_offset_ = view.GetScrollOffset();
     // Because view messages come from the DOM, the coordinates of the viewport
     // are 0-based (i.e. they do not correspond to the viewport's coordinates in
     // JS), so we need to subtract the toolbar height to convert them into
     // viewport coordinates.
-    pp::FloatPoint scroll_offset_float(scroll_offset.x(),
-                                       scroll_offset.y() - top_toolbar_height_);
+    pp::FloatPoint scroll_offset_float(
+        scroll_offset_.x(), scroll_offset_.y() - top_toolbar_height_);
     scroll_offset_float = BoundScrollOffsetToDocument(scroll_offset_float);
     engine_->ScrolledToXPosition(scroll_offset_float.x() * device_scale_);
     engine_->ScrolledToYPosition(scroll_offset_float.y() * device_scale_);
@@ -961,6 +978,10 @@ void OutOfProcessInstance::DidOpenPreview(int32_t result) {
   }
 }
 
+void OutOfProcessInstance::OnClientTouchTimerFired(int32_t id) {
+  engine_->OnTouchTimerCallback(id);
+}
+
 void OutOfProcessInstance::OnClientTimerFired(int32_t id) {
   engine_->OnCallback(id);
 }
@@ -1247,6 +1268,12 @@ pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
   }
 
   return CreateURLLoaderInternal();
+}
+
+void OutOfProcessInstance::ScheduleTouchTimerCallback(int id, int delay_in_ms) {
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
+      &OutOfProcessInstance::OnClientTouchTimerFired);
+  pp::Module::Get()->core()->CallOnMainThread(delay_in_ms, callback, id);
 }
 
 void OutOfProcessInstance::ScheduleCallback(int id, int delay_in_ms) {

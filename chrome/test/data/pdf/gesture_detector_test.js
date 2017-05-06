@@ -212,6 +212,43 @@ chrome.test.runTests(function() {
       chrome.test.assertTrue(pinchUpdateEvent.defaultPrevented);
 
       chrome.test.succeed();
+    },
+
+    function testWasTwoFingerTouch() {
+      let stubElement = new StubElement();
+      let gestureDetector = new GestureDetector(stubElement);
+
+
+      chrome.test.assertFalse(gestureDetector.wasTwoFingerTouch(),
+          "Should not have two finger touch before first touch event.");
+
+      stubElement.sendEvent(new MockTouchEvent('touchstart', [
+        {clientX: 0, clientY: 0}
+      ]));
+      chrome.test.assertFalse(gestureDetector.wasTwoFingerTouch(),
+          "Should not have a two finger touch with one touch.");
+
+      stubElement.sendEvent(new MockTouchEvent('touchstart', [
+        {clientX: 0, clientY: 0},
+        {clientX: 2, clientY: 2}
+      ]));
+      chrome.test.assertTrue(gestureDetector.wasTwoFingerTouch(),
+          "Should have a two finger touch.");
+
+      // Make sure we keep |wasTwoFingerTouch| true after the end event.
+      stubElement.sendEvent(new MockTouchEvent('touchend', []));
+      chrome.test.assertTrue(gestureDetector.wasTwoFingerTouch(),
+          "Should maintain two finger touch after touchend.");
+
+      stubElement.sendEvent(new MockTouchEvent('touchstart', [
+        {clientX: 0, clientY: 0},
+        {clientX: 2, clientY: 2},
+        {clientX: 4, clientY: 4}
+      ]));
+      chrome.test.assertFalse(gestureDetector.wasTwoFingerTouch(),
+          "Should not have two finger touch with 3 touches.");
+
+      chrome.test.succeed();
     }
   ];
 }());

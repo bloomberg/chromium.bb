@@ -58,6 +58,7 @@ class PreviewModeClient : public PDFEngine::Client {
   std::string ShowFileSelectionDialog() override;
   pp::URLLoader CreateURLLoader() override;
   void ScheduleCallback(int id, int delay_in_ms) override;
+  void ScheduleTouchTimerCallback(int id, int delay_in_ms) override;
   void SearchString(const base::char16* string,
                     const base::char16* term,
                     bool case_sensitive,

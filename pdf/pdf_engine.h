@@ -140,9 +140,12 @@ class PDFEngine {
     // Creates and returns new URL loader for partial document requests.
     virtual pp::URLLoader CreateURLLoader() = 0;
 
-    // Calls the client's OnCallback() function in delay_in_ms with the given
-    // id.
+    // Calls the client's OnCallback() function in |delay_in_ms| with the given
+    // |id|.
     virtual void ScheduleCallback(int id, int delay_in_ms) = 0;
+    // Calls the client's OnTouchTimerCallback() function in |delay_in_ms| with
+    // the given |id|.
+    virtual void ScheduleTouchTimerCallback(int id, int delay_in_ms) = 0;
 
     // Searches the given string for "term" and returns the results.  Unicode-
     // aware.
@@ -251,6 +254,8 @@ class PDFEngine {
   virtual void SetGrayscale(bool grayscale) = 0;
   // Callback for timer that's set with ScheduleCallback().
   virtual void OnCallback(int id) = 0;
+  // Callback for timer that's set with ScheduleTouchTimerCallback().
+  virtual void OnTouchTimerCallback(int id) = 0;
   // Get the number of characters on a given page.
   virtual int GetCharCount(int page_index) = 0;
   // Get the bounds in page pixels of a character on a given page.
