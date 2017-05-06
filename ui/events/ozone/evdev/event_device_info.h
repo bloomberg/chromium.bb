@@ -69,6 +69,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   void SetAbsMtSlots(unsigned int code, const std::vector<int32_t>& values);
   void SetAbsMtSlot(unsigned int code, unsigned int slot, uint32_t value);
   void SetDeviceType(InputDeviceType type);
+  void SetId(uint16_t vendor_id, uint16_t product_id);
 
   // Check events this device can generate.
   bool HasEventType(unsigned int type) const;
@@ -138,6 +139,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
 
   // Determine whether there's a touchscreen on this device.
   bool HasTouchscreen() const;
+
+  // Determine whether there's a gamepad on this device.
+  bool HasGamepad() const;
 
   // The device type (internal or external.)
   InputDeviceType device_type() const { return device_type_; }

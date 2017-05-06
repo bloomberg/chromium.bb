@@ -59,6 +59,8 @@ struct DeviceCapabilities {
 bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
                               EventDeviceInfo* devinfo);
 
+extern const DeviceCapabilities kXboxGamepad;
+extern const DeviceCapabilities kiBuffaloGamepad;
 extern const DeviceCapabilities kLinkKeyboard;
 extern const DeviceCapabilities kLinkTouchscreen;
 extern const DeviceCapabilities kLinkTouchpad;

@@ -83,6 +83,8 @@ if (use_ozone) {
       "evdev/event_thread_evdev.cc",
       "evdev/event_thread_evdev.h",
       "evdev/events_ozone_evdev_export.h",
+      "evdev/gamepad_event_converter_evdev.cc",
+      "evdev/gamepad_event_converter_evdev.h",
       "evdev/input_controller_evdev.cc",
       "evdev/input_controller_evdev.h",
       "evdev/input_device_factory_evdev.cc",
@@ -120,6 +122,14 @@ if (use_ozone) {
       "evdev/touch_filter/single_position_touch_noise_filter.cc",
       "evdev/touch_filter/single_position_touch_noise_filter.h",
       "evdev/touch_filter/touch_filter.h",
+      "gamepad/gamepad_event.cc",
+      "gamepad/gamepad_event.h",
+      "gamepad/gamepad_mapping.cc",
+      "gamepad/gamepad_mapping.h",
+      "gamepad/gamepad_observer.h",
+      "gamepad/gamepad_provider_ozone.cc",
+      "gamepad/gamepad_provider_ozone.h",
+      "gamepad/webgamepad_constants.h",
     ]
 
     defines = [ "EVENTS_OZONE_EVDEV_IMPLEMENTATION" ]

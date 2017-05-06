@@ -251,6 +251,11 @@ void EventDeviceInfo::SetDeviceType(InputDeviceType type) {
   device_type_ = type;
 }
 
+void EventDeviceInfo::SetId(uint16_t vendor_id, uint16_t product_id) {
+  vendor_id_ = vendor_id;
+  product_id_ = product_id;
+}
+
 bool EventDeviceInfo::HasEventType(unsigned int type) const {
   if (type > EV_MAX)
     return false;
@@ -425,6 +430,23 @@ bool EventDeviceInfo::HasTablet() const {
 
 bool EventDeviceInfo::HasTouchscreen() const {
   return HasAbsXY() && HasDirect();
+}
+
+bool EventDeviceInfo::HasGamepad() const {
+  if (!HasEventType(EV_KEY))
+    return false;
+
+  // If the device has gamepad button, and it's not keyboard or tablet, it will
+  // be considered to be a gamepad. Note: this WILL have false positives and
+  // false negatives. A concrete solution will use ID_INPUT_JOYSTICK with some
+  // patch removing false positives.
+  bool support_gamepad_btn = false;
+  for (int key = BTN_JOYSTICK; key <= BTN_THUMBR; ++key) {
+    if (HasKeyEvent(key))
+      support_gamepad_btn = true;
+  }
+
+  return support_gamepad_btn && !HasTablet() && !HasKeyboard();
 }
 
 EventDeviceInfo::LegacyAbsoluteDeviceType

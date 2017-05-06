@@ -101,6 +101,10 @@ bool EventConverterEvdev::HasPen() const {
   return false;
 }
 
+bool EventConverterEvdev::HasGamepad() const {
+  return false;
+}
+
 bool EventConverterEvdev::HasCapsLockLed() const {
   return false;
 }

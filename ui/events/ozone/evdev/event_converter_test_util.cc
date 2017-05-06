@@ -34,6 +34,7 @@ class TestDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   ~TestDeviceEventDispatcherEvdev() override {}
 
   // DeviceEventDispatcher:
+
   void DispatchKeyEvent(const KeyEventParams& params) override {
     event_factory_evdev_->DispatchKeyEvent(params);
   }
@@ -83,6 +84,15 @@ class TestDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   }
   void DispatchStylusStateChanged(StylusState stylus_state) override {
     event_factory_evdev_->DispatchStylusStateChanged(stylus_state);
+  }
+
+  void DispatchGamepadEvent(const GamepadEvent& event) override {
+    event_factory_evdev_->DispatchGamepadEvent(event);
+  }
+
+  void DispatchGamepadDevicesUpdated(
+      const std::vector<InputDevice>& devices) override {
+    event_factory_evdev_->DispatchGamepadDevicesUpdated(devices);
   }
 
  private:
