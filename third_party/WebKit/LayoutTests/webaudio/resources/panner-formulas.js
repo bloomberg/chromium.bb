@@ -5,25 +5,30 @@
 
 function linearDistance(panner, x, y, z) {
     var distance = Math.sqrt(x * x + y * y + z * z);
-    distance = Math.min(distance, panner.maxDistance);
-    var rolloff = panner.rolloffFactor;
-    var gain = (1 - rolloff * (distance - panner.refDistance) / (panner.maxDistance - panner.refDistance));
+    var dref = Math.min(panner.refDistance, panner.maxDistance);
+    var dmax = Math.max(panner.refDistance, panner.maxDistance);
+    distance = Math.max(Math.min(distance, dmax), dref);
+    var rolloff = Math.max(Math.min(panner.rolloffFactor, 1), 0);
+    if (dref === dmax)
+      return 1 - rolloff;
+
+    var gain = (1 - rolloff * (distance - dref) / (dmax - dref));
 
     return gain;
 }
 
 function inverseDistance(panner, x, y, z) {
     var distance = Math.sqrt(x * x + y * y + z * z);
-    distance = Math.min(distance, panner.maxDistance);
+    distance = Math.max(distance, panner.refDistance);
     var rolloff = panner.rolloffFactor;
-    var gain = panner.refDistance / (panner.refDistance + rolloff * (distance - panner.refDistance));
+    var gain = panner.refDistance / (panner.refDistance + rolloff * (Math.max(distance, panner.refDistance) - panner.refDistance));
 
     return gain;
 }
 
 function exponentialDistance(panner, x, y, z) {
     var distance = Math.sqrt(x * x + y * y + z * z);
-    distance = Math.min(distance, panner.maxDistance);
+    distance = Math.max(distance, panner.refDistance);
     var rolloff = panner.rolloffFactor;
     var gain = Math.pow(distance / panner.refDistance, -rolloff);
 

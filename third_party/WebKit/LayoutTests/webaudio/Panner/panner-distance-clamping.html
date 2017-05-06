@@ -189,16 +189,20 @@
         // destination.
         var merger = new ChannelMergerNode(context, {numberOfInputs: 2});
 
-        src.connect(pannerTest).connect(splitTest).connect(merger, 0, 0);;
+        src.connect(pannerTest).connect(splitTest).connect(merger, 0, 0);
         src.connect(pannerRef).connect(splitRef).connect(merger, 0, 1);
 
         merger.connect(context.destination);
 
         // Move the panner some distance away. Arbitrarily select the x
-        // direction.  For the reference panner, manually clamp the distance to
-        // lie between refDistance and maxDistance.
-        var xRef = Math.min(Math.max(options.distance, pannerRef.refDistance),
-          pannerRef.maxDistance);
+        // direction.  For the reference panner, manually clamp the distance.
+        // All models clamp the distance to a minimum of refDistance.  Only the
+        // linear model also clamps to a maximum of maxDistance.
+        var xRef = Math.max(options.distance, pannerRef.refDistance);
+
+        if (pannerRef.distanceModel === "linear") {
+          xRef = Math.min(xRef, pannerRef.maxDistance);
+        }
 
         var xTest = options.distance;
 
