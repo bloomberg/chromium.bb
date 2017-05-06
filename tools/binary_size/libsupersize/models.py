@@ -55,6 +55,7 @@ FLAG_STARTUP = 2
 FLAG_UNLIKELY = 4
 FLAG_REL = 8
 FLAG_REL_LOCAL = 16
+FLAG_GENERATED_SOURCE = 32
 
 
 class SizeInfo(object):
@@ -136,6 +137,17 @@ class BaseSymbol(object):
     return bool(self.flags & FLAG_ANONYMOUS)
 
   @property
+  def generated_source(self):
+    return bool(self.flags & FLAG_GENERATED_SOURCE)
+
+  @generated_source.setter
+  def generated_source(self, value):
+    if value:
+      self.flags |= FLAG_GENERATED_SOURCE
+    else:
+      self.flags &= ~FLAG_GENERATED_SOURCE
+
+  @property
   def num_aliases(self):
     return len(self.aliases) if self.aliases else 1
 
@@ -155,6 +167,8 @@ class BaseSymbol(object):
       parts.append('rel')
     if flags & FLAG_REL_LOCAL:
       parts.append('rel.loc')
+    if flags & FLAG_GENERATED_SOURCE:
+      parts.append('gen')
     # Not actually a part of flags, but useful to show it here.
     if self.aliases:
       parts.append('{} aliases'.format(self.num_aliases))
@@ -166,10 +180,9 @@ class BaseSymbol(object):
   def IsGroup(self):
     return False
 
-  def IsGenerated(self):
-    # TODO(agrieve): Also match generated functions such as:
-    #     startup._GLOBAL__sub_I_page_allocator.cc
-    return self.name.endswith(']') and not self.name.endswith('[]')
+  def IsGeneratedByToolchain(self):
+    return '.' in self.name or (
+        self.name.endswith(']') and not self.name.endswith('[]'))
 
 
 class Symbol(BaseSymbol):
@@ -302,22 +315,22 @@ class SymbolGroup(BaseSymbol):
 
   @property
   def address(self):
-    first = self._symbols[0].address
+    first = self._symbols[0].address if self else 0
     return first if all(s.address == first for s in self._symbols) else 0
 
   @property
   def flags(self):
-    first = self._symbols[0].flags
+    first = self._symbols[0].flags if self else 0
     return first if all(s.flags == first for s in self._symbols) else 0
 
   @property
   def object_path(self):
-    first = self._symbols[0].object_path
+    first = self._symbols[0].object_path if self else ''
     return first if all(s.object_path == first for s in self._symbols) else ''
 
   @property
   def source_path(self):
-    first = self._symbols[0].source_path
+    first = self._symbols[0].source_path if self else ''
     return first if all(s.source_path == first for s in self._symbols) else ''
 
   def IterUniqueSymbols(self):
@@ -430,12 +443,19 @@ class SymbolGroup(BaseSymbol):
       ret.section_name = section
     return ret
 
-  def WhereIsGenerated(self):
-    return self.Filter(lambda s: s.IsGenerated())
+  def WhereSourceIsGenerated(self):
+    return self.Filter(lambda s: s.generated_source)
+
+  def WhereGeneratedByToolchain(self):
+    return self.Filter(lambda s: s.IsGeneratedByToolchain())
 
   def WhereNameMatches(self, pattern):
     regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
     return self.Filter(lambda s: regex.search(s.name))
+
+  def WhereFullNameMatches(self, pattern):
+    regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
+    return self.Filter(lambda s: regex.search(s.full_name or s.name))
 
   def WhereObjectPathMatches(self, pattern):
     regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
@@ -469,6 +489,9 @@ class SymbolGroup(BaseSymbol):
       end = start + 1
     return self.Filter(lambda s: s.address >= start and s.address < end)
 
+  def WhereHasPath(self):
+    return self.Filter(lambda s: s.source_path or s.object_path)
+
   def WhereHasAnyAttribution(self):
     return self.Filter(lambda s: s.name or s.source_path or s.object_path)
 
@@ -488,6 +511,8 @@ class SymbolGroup(BaseSymbol):
 
   def GroupBy(self, func, min_count=0):
     """Returns a SymbolGroup of SymbolGroups, indexed by |func|.
+
+    Symbols within each subgroup maintain their relative ordering.
 
     Args:
       func: Grouping function. Passed a symbol and returns a string for the

@@ -102,10 +102,10 @@ First columns are: running total, address, pss
              flags={}  name=** symbol gap 3 (end of section)
 43784029 t@0x28f1e0   pss=69124  padding=4  size_without_padding=69120
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={unlikely}  name=foo_bar
+             flags={unlikely,gen}  name=foo_bar
 43784477 t@0x28f000   pss=448  padding=0  size_without_padding=448
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={}  name=ucnv_extMatchFromU
+             flags={gen}  name=ucnv_extMatchFromU
                         full_name=ucnv_extMatchFromU(int const*, int, unsigned short const*, int, unsigned short const*, int, unsigned int*, signed char, signed char)
 43784629 d@0x2de7008  pss=152  padding=0  size_without_padding=152
              source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
@@ -116,7 +116,7 @@ First columns are: running total, address, pss
                         full_name=blink::PaintChunker::releasePaintChunks() [clone .part.1]
 43784779 d@0x2c176f0  pss=56  padding=0  size_without_padding=56
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={}  name=ChromeMainDelegate [vtable]
+             flags={gen}  name=ChromeMainDelegate [vtable]
 43784835 d@0x2cd8500  pss=56  padding=0  size_without_padding=56
              source_path=third_party/paint.cc 	object_path=third_party/WebKit.a/PaintChunker.o
              flags={}  name=ChromeMainDelegateAndroid [vtable]
@@ -128,7 +128,7 @@ First columns are: running total, address, pss
              flags={anon}  name=kAnimationFrameTimeHistogramClassPath
 43784970 t@0x2a0000   pss=24  padding=32  size_without_padding=16
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={2 aliases}  name=BazAlias
+             flags={gen,2 aliases}  name=BazAlias
                         full_name=BazAlias(bool)
 43784994 t@0x2a0000   pss=24  padding=32  size_without_padding=16
              source_path= 	object_path=
@@ -153,7 +153,7 @@ First columns are: running total, address, pss
                         full_name=extFromUUseMapping(aj, int)
 43785200 t@0x28f1c8   pss=28  padding=8  size_without_padding=20
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={startup}  name=_GLOBAL__sub_I_SkDeviceProfile.cpp
+             flags={startup,gen}  name=_GLOBAL__sub_I_SkDeviceProfile.cpp
 43785228 t@0x28d948   pss=28  padding=0  size_without_padding=28
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={startup}  name=_GLOBAL__sub_I_pacing_sender.cc
@@ -163,7 +163,7 @@ First columns are: running total, address, pss
                         full_name=blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&)
 43785280 d@0x2c17728  pss=24  padding=0  size_without_padding=24
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={}  name=chrome::mojom::FieldTrialRecorder [vtable]
+             flags={gen}  name=chrome::mojom::FieldTrialRecorder [vtable]
 43785304 d@0x2cd8538  pss=24  padding=0  size_without_padding=24
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={}  name=mojo::MessageReceiver [vtable]
@@ -217,11 +217,11 @@ First columns are: running total, address, pss
              flags={}  name=ff_cos_65536
 43785380 b@0x2dffe80  pss=200  padding=196  size_without_padding=4
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={}  name=SaveHistogram::atomic_histogram_pointer
+             flags={gen}  name=SaveHistogram::atomic_histogram_pointer
                         full_name=SaveHistogram(_JNIEnv*, base::android::JavaParamRef<_jobject*> const&, base::android::JavaParamRef<_jstring*> const&, base::android::JavaParamRef<_jlongArray*> const&, int)::atomic_histogram_pointer
 43785380 b@0x2dffda0  pss=28  padding=0  size_without_padding=28
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={}  name=g_chrome_content_browser_client
+             flags={gen}  name=g_chrome_content_browser_client
 43785380 b@0x2dffe84  pss=4  padding=0  size_without_padding=4
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={anon}  name=g_AnimationFrameTimeHistogram_clazz
+             flags={anon,gen}  name=g_AnimationFrameTimeHistogram_clazz
