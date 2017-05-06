@@ -20,5 +20,9 @@ message UserEventSpecifics {
   // The |global_id| field of the associated navigation, if there is one.
   optional int64 navigation_id = 2;
 
+  // On startup we generate a new random id to identify which FieldTrialEvents
+  // other events belonged to.
+  optional fixed64 session_id = 3;
+
   // TODO(skym): Wrap actual event payloads in a oneof.
 }

@@ -6,9 +6,26 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/sync/model/metadata_batch.h"
 
 namespace syncer {
+
+namespace {
+
+std::unique_ptr<ModelTypeChangeProcessor> CreateAndAssignProcessor(
+    RecordingModelTypeChangeProcessor** processor_address,
+    ModelType type,
+    ModelTypeSyncBridge* bridge) {
+  auto processor = base::MakeUnique<RecordingModelTypeChangeProcessor>();
+  *processor_address = processor.get();
+  // Not all compilers are smart enough to up cast during copy elision, so we
+  // explicitly create a correctly typed unique_ptr.
+  return base::WrapUnique(processor.release());
+}
+
+}  // namespace
 
 RecordingModelTypeChangeProcessor::RecordingModelTypeChangeProcessor() {}
 
@@ -39,6 +56,14 @@ bool RecordingModelTypeChangeProcessor::IsTrackingMetadata() {
 void RecordingModelTypeChangeProcessor::SetIsTrackingMetadata(
     bool is_tracking) {
   is_tracking_metadata_ = is_tracking;
+}
+
+// static
+ModelTypeSyncBridge::ChangeProcessorFactory
+RecordingModelTypeChangeProcessor::FactoryForBridgeTest(
+    RecordingModelTypeChangeProcessor** processor_address) {
+  return base::Bind(&CreateAndAssignProcessor,
+                    base::Unretained(processor_address));
 }
 
 }  //  namespace syncer

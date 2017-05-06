@@ -11,6 +11,7 @@
 #include <string>
 
 #include "components/sync/model/fake_model_type_change_processor.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
 
@@ -40,6 +41,14 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   const std::set<std::string>& delete_set() const { return delete_set_; }
 
   MetadataBatch* metadata() const { return metadata_.get(); }
+
+  // Returns a callback that constructs a processor and assigns a raw pointer to
+  // the given address. The caller must ensure that the address passed in is
+  // still valid whenever the callback is run. This can be useful for tests that
+  // want to verify the RecordingModelTypeChangeProcessor was given data by the
+  // bridge they are testing.
+  static ModelTypeSyncBridge::ChangeProcessorFactory FactoryForBridgeTest(
+      RecordingModelTypeChangeProcessor** processor_address);
 
  private:
   std::multimap<std::string, std::unique_ptr<EntityData>> put_multimap_;
