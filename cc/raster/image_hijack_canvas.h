@@ -56,6 +56,7 @@ class CC_EXPORT ImageHijackCanvas : public SkNWayCanvas {
 
   bool ShouldSkipImage(const SkImage* image) const;
   bool ShouldSkipImageInPaint(const SkPaint& paint) const;
+  bool QuickRejectDraw(const SkRect& rect, const SkPaint* paint) const;
 
   ImageDecodeCache* image_decode_cache_;
   const ImageIdFlatSet* images_to_skip_;

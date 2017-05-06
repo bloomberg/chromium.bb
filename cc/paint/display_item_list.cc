@@ -19,6 +19,7 @@
 #include "cc/paint/clip_display_item.h"
 #include "cc/paint/clip_path_display_item.h"
 #include "cc/paint/compositing_display_item.h"
+#include "cc/paint/discardable_image_store.h"
 #include "cc/paint/drawing_display_item.h"
 #include "cc/paint/filter_display_item.h"
 #include "cc/paint/float_clip_display_item.h"
@@ -532,9 +533,22 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
   gfx::Rect bounds = rtree_.GetBounds();
   DiscardableImageMap::ScopedMetadataGenerator generator(
       &image_map_, gfx::Size(bounds.right(), bounds.bottom()));
-  auto* canvas = generator.canvas();
-  for (const auto& item : items_)
-    RasterItem(item, canvas, nullptr);
+  GatherDiscardableImages(generator.image_store());
+}
+
+void DisplayItemList::GatherDiscardableImages(
+    DiscardableImageStore* image_store) const {
+  // TODO(khushalsagar): Could we avoid this if the data was already stored in
+  // the |image_map_|?
+  SkCanvas* canvas = image_store->GetNoDrawCanvas();
+  for (const auto& item : items_) {
+    if (item.type == DisplayItem::DRAWING) {
+      const auto& drawing_item = static_cast<const DrawingDisplayItem&>(item);
+      image_store->GatherDiscardableImages(drawing_item.picture.get());
+    } else {
+      RasterItem(item, canvas, nullptr);
+    }
+  }
 }
 
 void DisplayItemList::GetDiscardableImagesInRect(
