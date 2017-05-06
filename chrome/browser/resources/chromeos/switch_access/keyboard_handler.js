@@ -48,8 +48,8 @@ KeyboardHandler.prototype = {
         this.switchAccess_.moveToNode(false);
         break;
       case '3':
-        console.log('3 = do default on element');
-        this.switchAccess_.doDefault();
+        console.log('3 = select element');
+        this.switchAccess_.selectCurrentNode();
         break;
       case '4':
         this.switchAccess_.showOptionsPage();

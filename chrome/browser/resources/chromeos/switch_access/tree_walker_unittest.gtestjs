@@ -76,6 +76,17 @@ AutomationTreeWalkerUnitTest.prototype = {
       leaf4: leaf4,
       leaf5: leaf5
     };
+  },
+
+  getDefaultRestrictions: function() {
+    return {
+      leaf: function(node) {
+        return false;
+      },
+      visit: function(node) {
+        return node.state.focusable === true;
+      },
+    }
   }
 };
 
@@ -86,7 +97,8 @@ TEST_F('AutomationTreeWalkerUnitTest', 'MoveToNode', function() {
   };
 
   let t = this.getSampleTree();
-  let treeWalker = new AutomationTreeWalker();
+  let treeWalker =
+      new AutomationTreeWalker(t.root, t.root, this.getDefaultRestrictions());
 
   let interesting = {focusable: true};
   t.leaf1.state = interesting;
@@ -95,29 +107,24 @@ TEST_F('AutomationTreeWalkerUnitTest', 'MoveToNode', function() {
   t.leaf5.state = interesting;
 
   // Move to next node.
-  assertEquals(t.leaf1, treeWalker.moveToNode(t.root, t.root, true));
-  assertEquals(t.leaf1, treeWalker.moveToNode(t.middle1, t.root, true));
-  assertEquals(t.leaf2, treeWalker.moveToNode(t.leaf1, t.root, true));
-  assertEquals(t.middle2, treeWalker.moveToNode(t.leaf2, t.root, true));
-  assertEquals(t.middle2, treeWalker.moveToNode(t.leaf3, t.root, true));
-  assertEquals(t.leaf5, treeWalker.moveToNode(t.middle2, t.root, true));
-  assertEquals(t.leaf5, treeWalker.moveToNode(t.leaf4, t.root, true));
-  assertEquals(t.leaf1, treeWalker.moveToNode(t.leaf5, t.root, true));
+  assertEquals(t.leaf1, treeWalker.moveToNode(true));
+  assertEquals(t.leaf2, treeWalker.moveToNode(true));
+  assertEquals(t.middle2, treeWalker.moveToNode(true));
+  assertEquals(t.leaf5, treeWalker.moveToNode(true));
+  assertEquals(t.leaf1, treeWalker.moveToNode(true));
 
   // Move to previous node.
-  assertEquals(t.middle2, treeWalker.moveToNode(t.leaf5, t.root, false));
-  assertEquals(t.middle2, treeWalker.moveToNode(t.leaf4, t.root, false));
-  assertEquals(t.leaf2, treeWalker.moveToNode(t.middle2, t.root, false));
-  assertEquals(t.leaf2, treeWalker.moveToNode(t.leaf3, t.root, false));
-  assertEquals(t.leaf1, treeWalker.moveToNode(t.leaf2, t.root, false));
-  assertEquals(t.leaf5, treeWalker.moveToNode(t.leaf1, t.root, false));
-  assertEquals(t.leaf5, treeWalker.moveToNode(t.middle1, t.root, false));
-  assertEquals(t.leaf5, treeWalker.moveToNode(t.root, t.root, false));
+  assertEquals(t.leaf5, treeWalker.moveToNode(false));
+  assertEquals(t.middle2, treeWalker.moveToNode(false));
+  assertEquals(t.leaf2, treeWalker.moveToNode(false));
+  assertEquals(t.leaf1, treeWalker.moveToNode(false));
+  assertEquals(t.leaf5, treeWalker.moveToNode(false));
 });
 
 TEST_F('AutomationTreeWalkerUnitTest', 'GetNextNode', function() {
   let t = this.getSampleTree();
-  let treeWalker = new AutomationTreeWalker();
+  let treeWalker =
+      new AutomationTreeWalker(t.root, t.root, this.getDefaultRestrictions());
 
   let order =
       [t.root, t.middle1, t.leaf1, t.leaf2, t.leaf3,
@@ -132,7 +139,8 @@ TEST_F('AutomationTreeWalkerUnitTest', 'GetNextNode', function() {
 
 TEST_F('AutomationTreeWalkerUnitTest', 'GetPreviousNode', function() {
   let t = this.getSampleTree();
-  let treeWalker = new AutomationTreeWalker();
+  let treeWalker =
+      new AutomationTreeWalker(t.root, t.root, this.getDefaultRestrictions());
 
   let order =
       [t.leaf5, t.leaf4, t.middle2, t.leaf3, t.leaf2,
@@ -147,7 +155,8 @@ TEST_F('AutomationTreeWalkerUnitTest', 'GetPreviousNode', function() {
 
 TEST_F('AutomationTreeWalkerUnitTest', 'GetYoungestDescendant', function() {
   let t = this.getSampleTree();
-  let treeWalker = new AutomationTreeWalker();
+  let treeWalker =
+      new AutomationTreeWalker(t.root, t.root, this.getDefaultRestrictions());
 
   assertEquals(t.leaf5, treeWalker.getYoungestDescendant_(t.root));
   assertEquals(t.leaf3, treeWalker.getYoungestDescendant_(t.middle1));
@@ -157,39 +166,4 @@ TEST_F('AutomationTreeWalkerUnitTest', 'GetYoungestDescendant', function() {
   assertEquals(undefined, treeWalker.getYoungestDescendant_(t.leaf3));
   assertEquals(undefined, treeWalker.getYoungestDescendant_(t.leaf4));
   assertEquals(undefined, treeWalker.getYoungestDescendant_(t.leaf5));
-});
-
-TEST_F('AutomationTreeWalkerUnitTest', 'IsInteresting', function() {
-  chrome.automation = {
-    RoleType: {DESKTOP: 'desktop', TAB: 'tab', TAB_LIST: 'tabList'},
-    StateType: {FOCUSABLE: 'focusable', OFFSCREEN: 'offscreen'}
-  };
-
-  let treeWalker = new AutomationTreeWalker();
-
-  // Testing focusable.
-  let loc1 = {left: 0, top: 0, width: 0, height: 0};
-  let node1 = {location: loc1, state: {}};
-  let node2 = {location: loc1, state: {focusable: false}};
-  let node3 = {location: loc1, state: {focusable: true}};
-  assertFalse(treeWalker.isInteresting_(node1));
-  assertFalse(treeWalker.isInteresting_(node2));
-  assertTrue(treeWalker.isInteresting_(node3));
-
-  // Testing onscreen.
-  let loc2 = {left: -1, top: 0, width: 0, height: 0};
-  let loc3 = {left: 0, top: -1, width: 0, height: 0};
-  let node4 = {location: loc2, state: {focusable: true}};
-  let node5 = {location: loc3, state: {focusable: true}};
-  assertFalse(treeWalker.isInteresting_(node4));
-  assertFalse(treeWalker.isInteresting_(node5));
-
-  // Testing if tab.
-  let node6 = {location: loc1, role: 'desktop', state: {}};
-  let node7 = {location: loc1, role: 'tabList', state: {}};
-  let node8 =
-      {location: loc1, parent: node7, root: node6, role: 'tab', state: {}};
-  assertFalse(treeWalker.isInteresting_(node6));
-  assertFalse(treeWalker.isInteresting_(node7));
-  assertTrue(treeWalker.isInteresting_(node8));
 });

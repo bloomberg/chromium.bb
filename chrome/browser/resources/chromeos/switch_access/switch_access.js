@@ -75,8 +75,8 @@ SwitchAccess.prototype = {
    *
    * @override
    */
-  doDefault: function() {
-    this.automationManager_.doDefault();
+  selectCurrentNode: function() {
+    this.automationManager_.selectCurrentNode();
   },
 
   /**

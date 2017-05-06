@@ -10,18 +10,34 @@
  */
 function AutomationManager() {
   /**
-   * Currently selected node.
+   * Currently highlighted node.
    *
    * @private {chrome.automation.AutomationNode}
    */
   this.node_ = null;
 
   /**
-   * Root node (i.e., the desktop).
+   * The root of the subtree that the user is navigating through.
    *
    * @private {chrome.automation.AutomationNode}
    */
-  this.root_ = null;
+  this.scope_ = null;
+
+  /**
+   * The desktop node.
+   *
+   * @private {chrome.automation.AutomationNode}
+   */
+  this.desktop_ = null;
+
+  /**
+   * A stack of past scopes. Allows user to traverse back to previous groups
+   * after selecting one or more groups. The most recent group is at the end
+   * of the array.
+   *
+   * @private {Array<chrome.automation.AutomationNode>}
+   */
+  this.scopeStack_ = [];
 
   /**
    * Moves to the appropriate node in the accessibility tree.
@@ -35,17 +51,17 @@ function AutomationManager() {
 
 AutomationManager.prototype = {
   /**
-   * Set this.node_ and this.root_ to the desktop node, and initialize the
-   * tree walker.
+   * Set this.node_, this.root_, and this.desktop_ to the desktop node, and
+   * creates an initial tree walker.
    *
    * @private
    */
   init_: function() {
-    this.treeWalker_ = new AutomationTreeWalker();
-
     chrome.automation.getDesktop(function(desktop) {
       this.node_ = desktop;
-      this.root_ = desktop;
+      this.scope_ = desktop;
+      this.desktop_ = desktop;
+      this.treeWalker_ = this.createTreeWalker_(desktop);
       console.log('AutomationNode for desktop is loaded');
       this.printNode_(this.node_);
     }.bind(this));
@@ -60,7 +76,10 @@ AutomationManager.prototype = {
    * @param {boolean} doNext
    */
   moveToNode: function(doNext) {
-    let node = this.treeWalker_.moveToNode(this.node_, this.root_, doNext);
+    if (!this.treeWalker_)
+      return;
+
+    let node = this.treeWalker_.moveToNode(doNext);
     if (node) {
       this.node_ = node;
       this.printNode_(this.node_);
@@ -69,13 +88,75 @@ AutomationManager.prototype = {
   },
 
   /**
-   * Perform the default action on the currently selected node.
+   * Select the currently highlighted node. If the node is the current scope,
+   * go back to the previous scope (i.e., create a new tree walker rooted at
+   * the previous scope). If the node is a group other than the current scope,
+   * create a new tree walker for the new subtree the user is scanning through.
+   * Otherwise, meaning the node is interesting, perform the default action on
+   * it.
    */
-  doDefault: function() {
-    if (!this.node_)
+  selectCurrentNode: function() {
+    if (!this.node_ || !this.scope_ || !this.treeWalker_)
       return;
 
+    if (this.node_ === this.scope_) {
+      // Don't let user select the top-level root node (i.e., the desktop node).
+      if (this.scopeStack_.length === 0)
+        return;
+
+      // Find a previous scope that is still valid.
+      let oldScope;
+      do {
+        oldScope = this.scopeStack_.pop();
+      } while (oldScope && !oldScope.role);
+
+      // oldScope will always be valid here, so this will always be true.
+      if (oldScope) {
+        this.scope_ = oldScope;
+        this.treeWalker_ = this.createTreeWalker_(this.scope_, this.node_);
+      }
+      return;
+    }
+
+    if (AutomationPredicate.isGroup(this.node_, this.scope_)) {
+      this.scopeStack_.push(this.scope_);
+      this.scope_ = this.node_;
+      this.treeWalker_ = this.createTreeWalker_(this.scope_);
+      this.moveToNode(true);
+      return;
+    }
+
     this.node_.doDefault();
+  },
+
+  /**
+   * Create an AutomationTreeWalker for the subtree with |scope| as its root.
+   * If |opt_start| is defined, the tree walker will start walking the tree
+   * from |opt_start|; otherwise, it will start from |scope|.
+   *
+   * @param {!chrome.automation.AutomationNode} scope
+   * @param {!chrome.automation.AutomationNode=} opt_start
+   * @return {!AutomationTreeWalker}
+   */
+  createTreeWalker_: function(scope, opt_start) {
+    // If no explicit start node, start walking the tree from |scope|.
+    let start = opt_start || scope;
+
+    let leafPred = function(node) {
+      return (node !== scope && AutomationPredicate.isSubtreeLeaf(node, scope))
+          || !AutomationPredicate.isInterestingSubtree(node);
+    };
+    let visitPred = function(node) {
+      // Avoid visiting the top-level root node (i.e., the desktop node).
+      return node !== this.desktop_
+          && AutomationPredicate.isSubtreeLeaf(node, scope);
+    }.bind(this);
+
+    let restrictions = {
+      leaf: leafPred,
+      visit: visitPred
+    };
+    return new AutomationTreeWalker(start, scope, restrictions);
   },
 
   // TODO(elichtenberg): Move print functions to a custom logger class. Only

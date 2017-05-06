@@ -17,7 +17,7 @@ function SwitchAccessInterface() {
 SwitchAccessInterface.prototype = {
   moveToNode: function(doNext) {},
 
-  doDefault: function() {},
+  selectCurrentNode: function() {},
 
   showOptionsPage: function() {},
 
