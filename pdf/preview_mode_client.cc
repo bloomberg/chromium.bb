@@ -115,6 +115,10 @@ void PreviewModeClient::ScheduleCallback(int id, int delay_in_ms) {
   NOTREACHED();
 }
 
+void PreviewModeClient::ScheduleTouchTimerCallback(int id, int delay_in_ms) {
+  NOTREACHED();
+}
+
 void PreviewModeClient::SearchString(const base::char16* string,
                                      const base::char16* term,
                                      bool case_sensitive,

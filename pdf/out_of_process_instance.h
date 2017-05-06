@@ -84,6 +84,7 @@ class OutOfProcessInstance : public pp::Instance,
 
   // Called when the timer is fired.
   void OnClientTimerFired(int32_t id);
+  void OnClientTouchTimerFired(int32_t id);
 
   // Called to print without re-entrancy issues.
   void OnPrint(int32_t);
@@ -120,6 +121,7 @@ class OutOfProcessInstance : public pp::Instance,
   std::string ShowFileSelectionDialog() override;
   pp::URLLoader CreateURLLoader() override;
   void ScheduleCallback(int id, int delay_in_ms) override;
+  void ScheduleTouchTimerCallback(int id, int delay_in_ms) override;
   void SearchString(const base::char16* string,
                     const base::char16* term,
                     bool case_sensitive,
@@ -228,6 +230,8 @@ class OutOfProcessInstance : public pp::Instance,
   // Size of entire document in pixels (i.e. if each page is 800 pixels high and
   // there are 10 pages, the height will be 8000).
   pp::Size document_size_;
+  // The scroll offset in CSS pixels.
+  pp::Point scroll_offset_;
 
   // Enumeration of pinch states.
   // This should match PinchPhase enum in
