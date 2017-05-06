@@ -419,7 +419,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
           URLDataManagerBackend::CreateProtocolHandler(
               browser_context_->GetResourceContext(),
-              browser_context_->IsOffTheRecord(),
               blob_storage_context).release());
   std::vector<std::string> additional_webui_schemes;
   GetContentClient()->browser()->GetAdditionalWebUISchemes(
@@ -432,13 +431,13 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
         linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
             URLDataManagerBackend::CreateProtocolHandler(
                 browser_context_->GetResourceContext(),
-                browser_context_->IsOffTheRecord(),
                 blob_storage_context).release());
   }
+
   protocol_handlers[kChromeDevToolsScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          CreateDevToolsProtocolHandler(browser_context_->GetResourceContext(),
-                                        browser_context_->IsOffTheRecord()));
+          CreateDevToolsProtocolHandler(
+              browser_context_->GetResourceContext()));
 
   URLRequestInterceptorScopedVector request_interceptors;
   request_interceptors.push_back(ServiceWorkerRequestHandler::CreateInterceptor(
