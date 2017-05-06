@@ -1,10 +1,10 @@
 ﻿Name
 
-   CHROMIUM_get_sync_values
+   CHROMIUM_sync_control
 
 Name Strings
 
-   EGL_CHROMIUM_get_sync_values
+   EGL_CHROMIUM_sync_control
 
 Contact
 
@@ -16,7 +16,7 @@ Status
 
 Version
 
-   Last Modified Date: N/A   Revision: 1.0
+   Version 2, 2017-05-05
 
    Based on GLX_OML_sync_control Revision 6.0
 
@@ -129,3 +129,13 @@ New State
 New Implementation Dependent State
 
    None
+
+Revision History
+
+    Version 2, 2015-05-05 (Chad Versace)
+       - Rename to EGL_CHROMIUM_sync_control from EGL_CHROMIUM_get_sync_values.
+         EGL_CHROMIUM_sync_control is the de facto extension name because all
+         users query that extension string.
+
+    Version 1, 2014-08-15 (Stéphane Marchesin)
+       - Initial draft, based on GLX_OML_sync_control revision 6.0.
