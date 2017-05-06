@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -238,6 +239,28 @@ class CertificateReportingServiceTestHelper {
   uint8_t server_private_key_[32];
 
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceTestHelper);
+};
+
+// Class to test reporting events histogram for CertificateReportingService.
+// We can't use a simple HistogramTester, as we need to wait until test teardown
+// to check the histogram contents. This ensures that all in-flight requests
+// are torn down by the time we check the histograms.
+class EventHistogramTester {
+ public:
+  EventHistogramTester();
+  ~EventHistogramTester();
+
+  void SetExpectedValues(int submitted,
+                         int failed,
+                         int successful,
+                         int dropped);
+
+ private:
+  int submitted_ = 0;
+  int failed_ = 0;
+  int successful_ = 0;
+  int dropped_ = 0;
+  base::HistogramTester histogram_tester_;
 };
 
 }  // namespace certificate_reporting_test_utils

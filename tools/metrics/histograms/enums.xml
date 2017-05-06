@@ -3570,6 +3570,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="0" label="Root Certificate"/>
 </enum>
 
+<enum name="CertificateReportOutcome" type="int">
+  <int value="0" label="REPORT_SUBMITTED"/>
+  <int value="1" label="REPORT_FAILED"/>
+  <int value="2" label="REPORT_SUCCESSFUL"/>
+  <int value="3" label="REPORT_DROPPED_OR_IGNORED"/>
+</enum>
+
 <enum name="CertificateTransparencyDnsQueryStatus" type="int">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="FAILED_UNKNOWN"/>
