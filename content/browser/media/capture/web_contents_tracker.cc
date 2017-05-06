@@ -107,10 +107,13 @@ void WebContentsTracker::OnPossibleTargetChange(bool force_callback_run) {
 void WebContentsTracker::MaybeDoCallback(bool was_still_tracking) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!callback_.is_null())
-    callback_.Run(was_still_tracking);
+  // Notify of a size change just before notifying of a new target. This allows
+  // the downstream implementation to capture the first frame from the new
+  // target at the correct resolution. http://crbug.com/704277
   if (was_still_tracking)
     MaybeDoResizeCallback();
+  if (!callback_.is_null())
+    callback_.Run(was_still_tracking);
 }
 
 void WebContentsTracker::MaybeDoResizeCallback() {
