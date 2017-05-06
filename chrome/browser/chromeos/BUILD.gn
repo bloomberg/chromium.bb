@@ -709,6 +709,7 @@ source_set("chromeos") {
     "lock_screen_apps/state_controller.cc",
     "lock_screen_apps/state_controller.h",
     "lock_screen_apps/state_observer.h",
+    "lock_screen_apps/types.h",
     "login/app_launch_controller.cc",
     "login/app_launch_controller.h",
     "login/app_launch_signin_screen.cc",

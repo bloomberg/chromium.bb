@@ -55,7 +55,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/libc_close_tracking.h"
-#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -607,12 +606,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 
-  if (lock_screen_apps::StateController::IsEnabled()) {
-    lock_screen_apps_state_controller_ =
-        base::MakeUnique<lock_screen_apps::StateController>();
-    lock_screen_apps_state_controller_->Initialize();
-  }
-
   if (immediate_login) {
     const std::string cryptohome_id =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
@@ -865,8 +858,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   chromeos::ResourceReporter::GetInstance()->StopMonitoring();
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
-
-  lock_screen_apps_state_controller_.reset();
 
   // This must be shut down before |arc_service_launcher_|.
   NoteTakingHelper::Shutdown();

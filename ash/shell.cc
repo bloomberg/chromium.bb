@@ -85,7 +85,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/touch/ash_touch_transform_controller.h"
-#include "ash/tray_action/tray_action.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -567,7 +566,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       shutdown_controller_(base::MakeUnique<ShutdownController>()),
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
-      tray_action_(base::MakeUnique<TrayAction>()),
       vpn_list_(base::MakeUnique<VpnList>()),
       window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
       window_selector_controller_(base::MakeUnique<WindowSelectorController>()),
