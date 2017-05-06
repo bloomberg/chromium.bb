@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_CHOOSER_BUBBLE_UI_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_CHOOSER_BUBBLE_UI_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_CHOOSER_BUBBLE_UI_H_
+#define CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_CHOOSER_BUBBLE_UI_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "components/bubble/bubble_ui.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/bubble/bubble_border.h"
 
 namespace views {
+class BubbleDialogDelegateView;
 class View;
 }
 
@@ -19,16 +21,16 @@ class Browser;
 class ChooserController;
 class ChooserBubbleUiViewDelegate;
 
-// ChooserBubbleUiView implements a chooser-based permission model,
+// ChooserBubbleUi implements a chooser-based permission model,
 // it uses table view to show a list of items (such as usb devices, etc.)
 // for user to grant permission. It can be used by the WebUSB or WebBluetooth
 // APIs. It is owned by the BubbleController, which is owned by the
 // BubbleManager.
-class ChooserBubbleUiView : public BubbleUi {
+class ChooserBubbleUi : public BubbleUi {
  public:
-  ChooserBubbleUiView(Browser* browser,
-                      std::unique_ptr<ChooserController> chooser_controller);
-  ~ChooserBubbleUiView() override;
+  ChooserBubbleUi(Browser* browser,
+                  std::unique_ptr<ChooserController> chooser_controller);
+  ~ChooserBubbleUi() override;
 
   // BubbleUi:
   void Show(BubbleReference bubble_reference) override;
@@ -36,14 +38,18 @@ class ChooserBubbleUiView : public BubbleUi {
   void UpdateAnchorPosition() override;
 
  private:
+  // These functions have separate implementations for Views-based and
+  // Cocoa-based browsers, to allow this bubble to be used in either.
+  void CreateAndShow(views::BubbleDialogDelegateView* delegate);
   views::View* GetAnchorView();
+  gfx::Point GetAnchorPoint();
   views::BubbleBorder::Arrow GetAnchorArrow();
 
   Browser* browser_;  // Weak.
   // Weak. Owned by its parent view.
   ChooserBubbleUiViewDelegate* chooser_bubble_ui_view_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChooserBubbleUiView);
+  DISALLOW_COPY_AND_ASSIGN(ChooserBubbleUi);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_CHOOSER_BUBBLE_UI_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_CHOOSER_BUBBLE_UI_H_

@@ -10,7 +10,6 @@
 #include <cmath>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,20 +17,15 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
+#import "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
 #import "chrome/browser/ui/cocoa/device_chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "components/bubble/bubble_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
-
-std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
-  return base::MakeUnique<ChooserBubbleUiCocoa>(browser_,
-                                                std::move(chooser_controller_));
-}
 
 @interface ChooserBubbleUiController
     : BaseBubbleController<NSTableViewDataSource, NSTableViewDelegate> {
@@ -226,23 +220,12 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (NSPoint)getExpectedAnchorPoint {
-  NSPoint anchor;
-  if ([self hasLocationBar]) {
-    LocationBarViewMac* locationBar =
-        [[[self getExpectedParentWindow] windowController] locationBarBridge];
-    anchor = locationBar->GetPageInfoBubblePoint();
-  } else {
-    // Center the bubble if there's no location bar.
-    NSRect contentFrame = [[[self getExpectedParentWindow] contentView] frame];
-    anchor = NSMakePoint(NSMidX(contentFrame), NSMaxY(contentFrame));
-  }
-
-  return ui::ConvertPointFromWindowToScreen([self getExpectedParentWindow],
-                                            anchor);
+  return GetPermissionBubbleAnchorPointForBrowser(browser_,
+                                                  [self hasLocationBar]);
 }
 
 - (bool)hasLocationBar {
-  return browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+  return HasVisibleLocationBarForBrowser(browser_);
 }
 
 - (info_bubble::BubbleArrowLocation)getExpectedArrowLocation {
