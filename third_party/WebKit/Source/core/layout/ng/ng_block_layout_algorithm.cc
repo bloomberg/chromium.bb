@@ -223,10 +223,14 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     if (child->IsBlock()) {
       EPosition position = child->Style().GetPosition();
       if (position == EPosition::kAbsolute || position == EPosition::kFixed) {
-        // TODO(ikilpatrick): curr_margin_strut_ shouldn't be included if there
-        // is no content size yet? See floats-wrap-inside-inline-006.
         NGLogicalOffset offset = {border_and_padding_.inline_start,
-                                  content_size_ + curr_margin_strut_.Sum()};
+                                  content_size_};
+
+        // We only include the margin strut in the OOF static-position if we
+        // know we aren't going to be a zero-block-size fragment.
+        if (container_builder_.BfcOffset())
+          offset.block_offset += curr_margin_strut_.Sum();
+
         container_builder_.AddOutOfFlowChildCandidate(ToNGBlockNode(child),
                                                       offset);
         NGBlockChildIterator::Entry entry = child_iterator.NextChild();
@@ -391,7 +395,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
   else if (IsLegacyBlock(*child))
     child_bfc_offset = PositionLegacy(child_space);
   else if (container_builder_.BfcOffset())
-    child_bfc_offset = PositionWithParentBfc();
+    child_bfc_offset = PositionWithParentBfc(fragment);
 
   NGLogicalOffset logical_offset = CalculateLogicalOffset(child_bfc_offset);
 
@@ -473,10 +477,19 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithBfcOffset(
   return fragment.BfcOffset().value();
 }
 
-NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc() {
+NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
+    const NGBoxFragment& fragment) {
+  // The child must be an in-flow zero-block-size fragment, use its end margin
+  // strut for positioning.
+  DCHECK(!fragment.BfcOffset());
+  DCHECK_EQ(fragment.BlockSize(), LayoutUnit());
+
+  NGMarginStrut margin_strut = fragment.EndMarginStrut();
+  margin_strut.Append(curr_child_margins_.block_end);
+
   curr_bfc_offset_ +=
       {border_and_padding_.inline_start + curr_child_margins_.inline_start,
-       curr_margin_strut_.Sum()};
+       margin_strut.Sum()};
   return curr_bfc_offset_;
 }
 
