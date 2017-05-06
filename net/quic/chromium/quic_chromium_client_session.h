@@ -206,7 +206,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       STATE_REQUEST_STREAM_COMPLETE,
     };
 
-    StreamRequest(std::unique_ptr<QuicChromiumClientSession::Handle> session,
+    // |session| must outlive this request.
+    StreamRequest(QuicChromiumClientSession::Handle* session,
                   bool requires_confirmation);
 
     void OnIOComplete(int rv);
@@ -227,7 +228,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // if |session_| is destroyed while the stream request is still pending.
     void OnRequestCompleteFailure(int rv);
 
-    std::unique_ptr<QuicChromiumClientSession::Handle> session_;
+    QuicChromiumClientSession::Handle* session_;
     const bool requires_confirmation_;
     CompletionCallback callback_;
     QuicChromiumClientStream* stream_;

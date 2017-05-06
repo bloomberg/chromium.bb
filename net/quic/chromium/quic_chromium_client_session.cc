@@ -297,7 +297,7 @@ int QuicChromiumClientSession::Handle::RequestStream(
   // base::MakeUnique does not work because the StreamRequest constructor
   // is private.
   stream_request_ = std::unique_ptr<StreamRequest>(
-      new StreamRequest(session_->CreateHandle(), requires_confirmation));
+      new StreamRequest(this, requires_confirmation));
   return stream_request_->StartRequest(callback);
 }
 
@@ -347,7 +347,7 @@ int QuicChromiumClientSession::Handle::GetPeerAddress(
 }
 
 QuicChromiumClientSession::StreamRequest::StreamRequest(
-    std::unique_ptr<QuicChromiumClientSession::Handle> session,
+    QuicChromiumClientSession::Handle* session,
     bool requires_confirmation)
     : session_(std::move(session)),
       requires_confirmation_(requires_confirmation),
