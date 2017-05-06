@@ -884,7 +884,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
           xd->mi[0]->mbmi.tx_size = TX_4X4;
           xd->mi[0]->mbmi.ref_frame[0] = LAST_FRAME;
           xd->mi[0]->mbmi.ref_frame[1] = NONE_FRAME;
-          av1_build_inter_predictors_sby(xd, mb_row * mb_scale,
+          av1_build_inter_predictors_sby(cm, xd, mb_row * mb_scale,
                                          mb_col * mb_scale, NULL, bsize);
           av1_encode_sby_pass1(cm, x, bsize);
           sum_mvr += mv.row;

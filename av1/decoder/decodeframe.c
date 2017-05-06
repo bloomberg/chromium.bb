@@ -875,13 +875,13 @@ static void dec_predict_b_extend(
                          (c >> xd->plane[2].subsampling_x);
 
   if (!b_sub8x8)
-    av1_build_inter_predictors_sb_extend(xd,
+    av1_build_inter_predictors_sb_extend(&pbi->common, xd,
 #if CONFIG_EXT_INTER
                                          mi_row_ori, mi_col_ori,
 #endif  // CONFIG_EXT_INTER
                                          mi_row_pred, mi_col_pred, bsize_pred);
   else
-    av1_build_inter_predictors_sb_sub8x8_extend(xd,
+    av1_build_inter_predictors_sb_sub8x8_extend(&pbi->common, xd,
 #if CONFIG_EXT_INTER
                                                 mi_row_ori, mi_col_ori,
 #endif  // CONFIG_EXT_INTER
@@ -1645,7 +1645,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     } else {
       // Prediction
-      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL,
+      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL,
                                     AOMMAX(bsize, BLOCK_8X8));
 
       // Reconstruction
@@ -1755,9 +1755,9 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     }
 
 #if CONFIG_CB4X4
-    av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
+    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
 #else
-    av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL,
+    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL,
                                   AOMMAX(bsize, BLOCK_8X8));
 #endif
 
