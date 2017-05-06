@@ -61,11 +61,11 @@ InspectorTest.TestFileSystem.prototype = {
 
     addFileMapping: function(urlPrefix, pathPrefix)
     {
-        var fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
+        var fileSystemMapping = new Persistence.FileSystemMapping(Workspace.isolatedFileSystemManager);
         fileSystemMapping.addFileSystem(this.fileSystemPath);
         fileSystemMapping.addFileMapping(this.fileSystemPath, urlPrefix, pathPrefix);
         fileSystemMapping.dispose();
-        Workspace.fileSystemMapping._loadFromSettings();
+        Persistence.fileSystemMapping._loadFromSettings();
     },
 
     /**

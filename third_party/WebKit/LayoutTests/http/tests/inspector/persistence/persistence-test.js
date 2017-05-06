@@ -49,7 +49,7 @@ InspectorTest.addFooJSFile = function(fs)
 
 InspectorTest.forceUseDefaultMapping = function() {
     Persistence.persistence._setMappingForTest((bindingCreated, bindingRemoved) => {
-        return new Persistence.DefaultMapping(Workspace.workspace, Workspace.fileSystemMapping, bindingCreated, bindingRemoved);
+        return new Persistence.DefaultMapping(Workspace.workspace, Persistence.fileSystemMapping, bindingCreated, bindingRemoved);
     });
 }
 
