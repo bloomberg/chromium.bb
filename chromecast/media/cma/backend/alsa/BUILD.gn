@@ -134,15 +134,48 @@ source_set("test_support") {
   ]
 }
 
-shared_library("libcast_governor_1.0") {
+test("slew_volume_unittests") {
   sources = [
-    "post_processors/governor_shlib.cc",
+    "slew_volume_unittests.cc",
   ]
+  deps = [
+    ":slew_volume",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//media",
+    "//testing/gtest",
+  ]
+}
 
+shared_library("libcast_governor_1.0") {
+  deps = [
+    ":governor",
+  ]
+}
+
+test("libcast_governor_unittests") {
+  sources = [
+    "post_processors/governor_unittest.cc",
+  ]
+  deps = [
+    ":governor",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//media",
+    "//testing/gtest",
+  ]
+}
+
+source_set("governor") {
+  sources = [
+    "post_processors/governor.cc",
+    "post_processors/governor.h",
+  ]
   deps = [
     ":slew_volume",
     "//base",
     "//chromecast/base",
     "//chromecast/public/media",
   ]
+  public_configs = [ "//chromecast/public:public_config" ]
 }

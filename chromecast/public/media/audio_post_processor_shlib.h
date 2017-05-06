@@ -6,6 +6,7 @@
 #define CHROMECAST_PUBLIC_MEDIA_AUDIO_POST_PROCESSOR_SHLIB_H_
 
 #include <string>
+#include <vector>
 
 #include "chromecast_export.h"
 
