@@ -83,15 +83,13 @@ void OnPolicyError() {
 
 It2MeNativeMessagingHost::It2MeNativeMessagingHost(
     bool needs_elevation,
-    policy::PolicyService* policy_service,
+    std::unique_ptr<PolicyWatcher> policy_watcher,
     std::unique_ptr<ChromotingHostContext> context,
     std::unique_ptr<It2MeHostFactory> factory)
     : needs_elevation_(needs_elevation),
       host_context_(std::move(context)),
       factory_(std::move(factory)),
-      policy_service_(policy_service),
-      policy_watcher_(PolicyWatcher::Create(policy_service_,
-                                            host_context_->file_task_runner())),
+      policy_watcher_(std::move(policy_watcher)),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
@@ -195,7 +193,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (!policy_received_) {
-    DCHECK(pending_connect_.is_null());
+    DCHECK(!pending_connect_);
     pending_connect_ =
         base::Bind(&It2MeNativeMessagingHost::ProcessConnect, weak_ptr_,
                    base::Passed(&message), base::Passed(&response));
@@ -317,9 +315,10 @@ void It2MeNativeMessagingHost::ProcessConnect(
 #endif  // !defined(NDEBUG)
 
   // Create the It2Me host and start connecting.
-  it2me_host_ = factory_->CreateIt2MeHost(
-      host_context_->Copy(), policy_service_, weak_ptr_,
-      std::move(signal_strategy), username, directory_bot_jid);
+  it2me_host_ = factory_->CreateIt2MeHost(host_context_->Copy(), weak_ptr_,
+                                          std::move(signal_strategy), username,
+                                          directory_bot_jid);
+  it2me_host_->OnPolicyUpdate(policy_watcher_->GetCurrentPolicies());
   it2me_host_->Connect();
 
   SendMessageToClient(std::move(response));
@@ -469,30 +468,33 @@ std::string It2MeNativeMessagingHost::HostStateToString(
 
 void It2MeNativeMessagingHost::OnPolicyUpdate(
     std::unique_ptr<base::DictionaryValue> policies) {
-  if (policy_received_) {
-    // Don't dynamically change how the host operates since we don't have a good
-    // way to communicate changes to the user.
-    return;
-  }
-
-  bool allow_elevated_host = false;
-  if (!policies->GetBoolean(
-          policy::key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
-          &allow_elevated_host)) {
-    LOG(WARNING) << "Failed to retrieve elevated host policy value.";
-  }
+  // Don't dynamically change the elevation status since we don't have a good
+  // way to communicate changes to the user.
+  if (!policy_received_) {
+    bool allow_elevated_host = false;
+    if (!policies->GetBoolean(
+            policy::key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
+            &allow_elevated_host)) {
+      LOG(WARNING) << "Failed to retrieve elevated host policy value.";
+    }
 #if defined(OS_WIN)
-  LOG(INFO) << "Allow UiAccess for Remote Assistance: " << allow_elevated_host;
+    LOG(INFO) << "Allow UiAccess for Remote Assistance: "
+              << allow_elevated_host;
 #endif  // defined(OS_WIN)
 
-  policy_received_ = true;
+    policy_received_ = true;
 
-  // If |allow_elevated_host| is false, then we will fall back to using a host
-  // running in the current context regardless of the elevation request.  This
-  // may not be ideal, but is still functional.
-  needs_elevation_ = needs_elevation_ && allow_elevated_host;
-  if (!pending_connect_.is_null()) {
-    base::ResetAndReturn(&pending_connect_).Run();
+    // If |allow_elevated_host| is false, then we will fall back to using a host
+    // running in the current context regardless of the elevation request.  This
+    // may not be ideal, but is still functional.
+    needs_elevation_ = needs_elevation_ && allow_elevated_host;
+    if (pending_connect_) {
+      base::ResetAndReturn(&pending_connect_).Run();
+    }
+  }
+
+  if (it2me_host_.get()) {
+    it2me_host_->OnPolicyUpdate(std::move(policies));
   }
 }
 

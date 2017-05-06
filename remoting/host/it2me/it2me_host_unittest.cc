@@ -19,7 +19,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/policy/core/common/fake_async_policy_loader.h"
 #include "components/policy/policy_constants.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -172,9 +171,6 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
 
   scoped_refptr<It2MeHost> it2me_host_;
-  // The FakeAsyncPolicyLoader is owned by it2me_host_, but we retain a raw
-  // pointer so we can control the policy contents.
-  policy::FakeAsyncPolicyLoader* policy_loader_ = nullptr;
 
   base::WeakPtrFactory<It2MeHostTest> weak_factory_;
 
@@ -198,16 +194,14 @@ void It2MeHostTest::SetUp() {
   std::unique_ptr<FakeIt2MeDialogFactory> dialog_factory(
       new FakeIt2MeDialogFactory());
   dialog_factory_ = dialog_factory.get();
-  policy_loader_ =
-      new policy::FakeAsyncPolicyLoader(base::ThreadTaskRunnerHandle::Get());
   it2me_host_ = new It2MeHost(
       std::move(host_context),
-      PolicyWatcher::CreateFromPolicyLoaderForTesting(
-          base::WrapUnique(policy_loader_)),
       std::move(dialog_factory), weak_factory_.GetWeakPtr(),
       base::WrapUnique(
           new FakeSignalStrategy(SignalingAddress("fake_local_jid"))),
       kTestUserName, "fake_bot_jid");
+
+  it2me_host_->OnPolicyUpdate(PolicyWatcher::GetDefaultPolicies());
 }
 
 void It2MeHostTest::TearDown() {
@@ -230,17 +224,11 @@ void It2MeHostTest::OnValidationComplete(const base::Closure& resume_callback,
 void It2MeHostTest::SetPolicies(
     std::initializer_list<std::pair<base::StringPiece, const base::Value&>>
         policies) {
-  policy::PolicyBundle bundle;
-  policy::PolicyMap& map = bundle.Get(
-      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+  auto dictionary = base::MakeUnique<base::DictionaryValue>();
   for (const auto& policy : policies) {
-    map.Set(policy.first.as_string(), policy::POLICY_LEVEL_MANDATORY,
-            policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
-            policy.second.CreateDeepCopy(), nullptr);
+    dictionary->Set(policy.first, policy.second.CreateDeepCopy());
   }
-  policy_loader_->SetPolicies(bundle);
-  policy_loader_->PostReloadOnBackgroundThread(true);
-  base::RunLoop().RunUntilIdle();
+  it2me_host_->OnPolicyUpdate(std::move(dictionary));
 }
 
 void It2MeHostTest::StartupHostStateHelper(const base::Closure& quit_closure) {

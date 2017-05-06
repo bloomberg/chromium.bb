@@ -985,6 +985,7 @@ static_library("extensions") {
       "//components/constrained_window",
       "//components/drive",
       "//components/user_manager",
+      "//remoting/base",
       "//remoting/host",
       "//remoting/host/it2me:common",
       "//third_party/protobuf:protobuf_lite",

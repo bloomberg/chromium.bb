@@ -5,6 +5,7 @@ include_rules = [
   "+components/guest_view/common",
   "+device/hid",
    # Enable remote assistance on Chrome OS
+  "+remoting/base",
   "+remoting/host",
 ]
 

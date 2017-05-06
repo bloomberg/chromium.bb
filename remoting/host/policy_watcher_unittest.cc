@@ -239,6 +239,7 @@ class PolicyWatcherTest : public testing::Test {
     return policy_watcher_->GetPolicySchema();
   }
 
+  // TODO(jamiewalch): Update this to use PolicyWatcher::GetDefaultValues()
   const base::DictionaryValue& GetDefaultValues() {
     return *(policy_watcher_->default_values_);
   }
@@ -767,6 +768,20 @@ TEST_F(PolicyWatcherTest, DeprecatedEmpty) {
               OnPolicyUpdatePtr(IsPolicies(&GetDefaultValues())));
   SetPolicies(deprecated_empty_strings_);
   StartWatching();
+}
+
+TEST_F(PolicyWatcherTest, GetCurrentPolicies) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_false_)));
+
+  StartWatching();
+  SetPolicies(nat_false_);
+  std::unique_ptr<base::DictionaryValue> current_policies =
+      policy_watcher_->GetCurrentPolicies();
+  ASSERT_TRUE(*current_policies == nat_false_others_default_);
 }
 
 }  // namespace remoting

@@ -21,6 +21,7 @@
 #include "remoting/host/logging.h"
 #include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
+#include "remoting/host/policy_watcher.h"
 #include "remoting/host/resources.h"
 #include "remoting/host/usage_stats_consent.h"
 
@@ -186,8 +187,10 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
           message_loop.task_runner(), run_loop.QuitClosure()));
+  std::unique_ptr<PolicyWatcher> policy_watcher =
+      PolicyWatcher::Create(nullptr, context->file_task_runner());
   std::unique_ptr<extensions::NativeMessageHost> host(
-      new It2MeNativeMessagingHost(needs_elevation, /*policy_service=*/nullptr,
+      new It2MeNativeMessagingHost(needs_elevation, std::move(policy_watcher),
                                    std::move(context), std::move(factory)));
 
   host->Start(native_messaging_pipe.get());

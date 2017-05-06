@@ -37,7 +37,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
                                  public extensions::NativeMessageHost {
  public:
   It2MeNativeMessagingHost(bool needs_elevation,
-                           policy::PolicyService* policy_service,
+                           std::unique_ptr<PolicyWatcher> policy_watcher,
                            std::unique_ptr<ChromotingHostContext> host_context,
                            std::unique_ptr<It2MeHostFactory> host_factory);
   ~It2MeNativeMessagingHost() override;
@@ -77,7 +77,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // Callback for DelegatingSignalStrategy.
   void SendOutgoingIq(const std::string& iq);
 
-  // Called when initial policies are read.
+  // Called when initial policies are read and when they change.
   void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
 
   // Returns whether the request was successfully sent to the elevated host.
@@ -115,8 +115,6 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // that on startup, we do not accidentally start a connection before we have
   // queried our policy restrictions.
   bool policy_received_ = false;
-
-  policy::PolicyService* policy_service_ = nullptr;
 
   // Used to retrieve Chrome policies set for the local machine.
   std::unique_ptr<PolicyWatcher> policy_watcher_;
