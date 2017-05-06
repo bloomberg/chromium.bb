@@ -95,7 +95,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //   BFC Offset is known here because of the padding.
   //   <div style="padding: 1px">
   //     <div id="empty-div" style="margins: 1px"></div>
-  NGLogicalOffset PositionWithParentBfc();
+  NGLogicalOffset PositionWithParentBfc(const NGBoxFragment&);
 
   NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space);
 
