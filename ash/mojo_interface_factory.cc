@@ -18,6 +18,7 @@
 #include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/tray_action/tray_action.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/bind.h"
@@ -96,6 +97,12 @@ void BindTouchViewRequestOnMainThread(
   Shell::Get()->maximize_mode_controller()->BindRequest(std::move(request));
 }
 
+void BindTrayActionRequestOnMainThread(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::TrayActionRequest request) {
+  Shell::Get()->tray_action()->BindRequest(std::move(request));
+}
+
 void BindVpnListRequestOnMainThread(
     const service_manager::BindSourceInfo& source_info,
     mojom::VpnListRequest request) {
@@ -139,6 +146,8 @@ void RegisterInterfaces(
   registry->AddInterface(base::Bind(&BindSystemTrayRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindTouchViewRequestOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindTrayActionRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindVpnListRequestOnMainThread),
                          main_thread_task_runner);

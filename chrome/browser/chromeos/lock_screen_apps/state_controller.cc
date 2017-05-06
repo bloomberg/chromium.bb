@@ -4,29 +4,67 @@
 
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 
-#include "base/bind.h"
+#include <utility>
+
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
-#include "base/location.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
+
+using ash::mojom::TrayActionState;
 
 namespace lock_screen_apps {
 
 namespace {
 
-base::LazyInstance<StateController>::Leaky g_instance =
-    LAZY_INSTANCE_INITIALIZER;
+StateController* g_instance = nullptr;
 
 }  // namespace
 
 // static
+bool StateController::IsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableLockScreenApps);
+}
+
+// static
 StateController* StateController::Get() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableLockScreenApps)) {
-    return nullptr;
+  DCHECK(g_instance || !IsEnabled());
+  return g_instance;
+}
+
+StateController::StateController() : binding_(this) {
+  DCHECK(!g_instance);
+  DCHECK(IsEnabled());
+
+  g_instance = this;
+}
+
+StateController::~StateController() {
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
+
+void StateController::SetTrayActionPtrForTesting(
+    ash::mojom::TrayActionPtr tray_action_ptr) {
+  tray_action_ptr_ = std::move(tray_action_ptr);
+}
+
+void StateController::FlushTrayActionForTesting() {
+  tray_action_ptr_.FlushForTesting();
+}
+
+void StateController::Initialize() {
+  // The tray action ptr might be set previously if the client was being created
+  // for testing.
+  if (!tray_action_ptr_) {
+    service_manager::Connector* connector =
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector->BindInterface(ash::mojom::kServiceName, &tray_action_ptr_);
   }
-  return g_instance.Pointer();
+  tray_action_ptr_->SetClient(binding_.CreateInterfacePtrAndBind(),
+                              lock_screen_note_state_);
 }
 
 void StateController::AddObserver(StateObserver* observer) {
@@ -37,53 +75,49 @@ void StateController::RemoveObserver(StateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-ActionState StateController::GetActionState(Action action) const {
-  DCHECK_EQ(Action::kNewNote, action);
-  return new_note_state_;
+TrayActionState StateController::GetLockScreenNoteState() const {
+  return lock_screen_note_state_;
 }
 
-bool StateController::HandleAction(Action action) {
-  DCHECK_EQ(Action::kNewNote, action);
-
-  if (new_note_state_ != ActionState::kAvailable &&
-      new_note_state_ != ActionState::kHidden) {
-    return false;
+void StateController::RequestNewLockScreenNote() {
+  if (lock_screen_note_state_ != TrayActionState::kAvailable) {
+    return;
   }
 
-  // TODO(tbarzic): Implement this.
-  NOTIMPLEMENTED();
-  return true;
+  // TODO(tbarzic): Implement this properly.
+  UpdateLockScreenNoteState(TrayActionState::kActive);
 }
 
 void StateController::MoveToBackground() {
-  UpdateActionState(Action::kNewNote, ActionState::kHidden);
+  UpdateLockScreenNoteState(TrayActionState::kBackground);
 }
 
-StateController::StateController() {}
+void StateController::SetLockScreenNoteStateForTesting(
+    ash::mojom::TrayActionState state) {
+  lock_screen_note_state_ = state;
+}
 
-StateController::~StateController() {}
-
-bool StateController::UpdateActionState(Action action,
-                                        ActionState action_state) {
-  DCHECK_EQ(Action::kNewNote, action);
-
-  const ActionState old_state = GetActionState(action);
-  if (old_state == action_state)
+bool StateController::UpdateLockScreenNoteState(TrayActionState state) {
+  const TrayActionState old_state = GetLockScreenNoteState();
+  if (old_state == state)
     return false;
 
-  if (action_state == ActionState::kHidden && old_state != ActionState::kActive)
+  // Action state can be moved to background only if the action is currently
+  // active.
+  if (state == TrayActionState::kBackground &&
+      old_state != TrayActionState::kActive)
     return false;
 
-  new_note_state_ = action_state;
-  NotifyStateChanged(Action::kNewNote);
+  lock_screen_note_state_ = state;
+  NotifyLockScreenNoteStateChanged();
   return true;
 }
 
-void StateController::NotifyStateChanged(Action action) {
-  DCHECK_EQ(Action::kNewNote, action);
-
+void StateController::NotifyLockScreenNoteStateChanged() {
   for (auto& observer : observers_)
-    observer.OnLockScreenAppsStateChanged(Action::kNewNote, new_note_state_);
+    observer.OnLockScreenNoteStateChanged(lock_screen_note_state_);
+
+  tray_action_ptr_->UpdateLockScreenNoteState(lock_screen_note_state_);
 }
 
 }  // namespace lock_screen_apps
