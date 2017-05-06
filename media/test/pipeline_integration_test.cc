@@ -102,7 +102,8 @@ const char kVideoOnlyWebM[] = "video/webm; codecs=\"vp8\"";
 const char kADTS[] = "audio/aac";
 const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
 const char kMP4VideoAVC3[] = "video/mp4; codecs=\"avc3.64001f\"";
-const char kMP4VideoVP9[] = "video/mp4; codecs=\"vp09.00.10.08.01.05.01\"";
+const char kMP4VideoVP9[] =
+    "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
 const char kMP4VideoHEVC1[] = "video/mp4; codecs=\"hvc1.1.6.L93.B0\"";
 const char kMP4VideoHEVC2[] = "video/mp4; codecs=\"hev1.1.6.L93.B0\"";
 const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
