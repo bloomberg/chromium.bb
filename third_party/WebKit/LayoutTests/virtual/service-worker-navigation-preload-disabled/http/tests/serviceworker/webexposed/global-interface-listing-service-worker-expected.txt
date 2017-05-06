@@ -1352,7 +1352,6 @@ interface WebGL2RenderingContext
     attribute STENCIL_CLEAR_VALUE
     attribute STENCIL_FAIL
     attribute STENCIL_FUNC
-    attribute STENCIL_INDEX
     attribute STENCIL_INDEX8
     attribute STENCIL_PASS_DEPTH_FAIL
     attribute STENCIL_PASS_DEPTH_PASS
@@ -1953,7 +1952,6 @@ interface WebGLRenderingContext
     attribute STENCIL_CLEAR_VALUE
     attribute STENCIL_FAIL
     attribute STENCIL_FUNC
-    attribute STENCIL_INDEX
     attribute STENCIL_INDEX8
     attribute STENCIL_PASS_DEPTH_FAIL
     attribute STENCIL_PASS_DEPTH_PASS

@@ -196,7 +196,7 @@ deps = {
     Var('chromium_git') + '/external/bidichecker/lib.git' + '@' + '97f2aa645b74c28c57eca56992235c79850fa9e0',
 
   'src/third_party/webgl/src':
-    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '239528772a1362d0e0c2d1cb2f256f19d6e0c1c1',
+    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'c91689d6df5536fefaa07a459c80c210bd580a1b',
 
   'src/third_party/webdriver/pylib':
     Var('chromium_git') + '/external/selenium/py.git' + '@' + '5fd78261a75fe08d27ca4835fb6c5ce4b42275bd',

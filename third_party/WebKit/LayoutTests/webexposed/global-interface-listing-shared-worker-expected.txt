@@ -1361,7 +1361,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute STENCIL_CLEAR_VALUE
 [Worker]     attribute STENCIL_FAIL
 [Worker]     attribute STENCIL_FUNC
-[Worker]     attribute STENCIL_INDEX
 [Worker]     attribute STENCIL_INDEX8
 [Worker]     attribute STENCIL_PASS_DEPTH_FAIL
 [Worker]     attribute STENCIL_PASS_DEPTH_PASS
@@ -1963,7 +1962,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute STENCIL_CLEAR_VALUE
 [Worker]     attribute STENCIL_FAIL
 [Worker]     attribute STENCIL_FUNC
-[Worker]     attribute STENCIL_INDEX
 [Worker]     attribute STENCIL_INDEX8
 [Worker]     attribute STENCIL_PASS_DEPTH_FAIL
 [Worker]     attribute STENCIL_PASS_DEPTH_PASS
