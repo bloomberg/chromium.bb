@@ -1303,7 +1303,10 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
   // our weak refs.
   weak_this_factory_.InvalidateWeakPtrs();
   GetManager()->StopTimer(this);
-  ReleaseCodecAndBundle();
+  // We only release the codec here, in case codec allocation is in progress.
+  // We don't want to modify |codec_config_|.  Note that the ref will sill be
+  // dropped when it completes, or when we delete |this|.
+  ReleaseCodec();
 
   delete this;
 }
@@ -1395,7 +1398,8 @@ void AndroidVideoDecodeAccelerator::OnStopUsingOverlayImmediately(
 
   // If we're currently asynchronously configuring a codec, it will be destroyed
   // when configuration completes and it notices that |state_| has changed to
-  // SURFACE_DESTROYED.
+  // SURFACE_DESTROYED.  It's safe to modify |codec_config_| here, since we
+  // checked above for WAITING_FOR_CODEC.
   state_ = SURFACE_DESTROYED;
   ReleaseCodecAndBundle();
 
@@ -1657,6 +1661,7 @@ bool AndroidVideoDecodeAccelerator::IsMediaCodecSoftwareDecodingForbidden()
 
 bool AndroidVideoDecodeAccelerator::UpdateSurface() {
   DCHECK(incoming_overlay_);
+  DCHECK_NE(state_, WAITING_FOR_CODEC);
 
   // Start surface creation.  Note that if we're called via surfaceDestroyed,
   // then this must complete synchronously or it will DCHECK.  Otherwise, we
