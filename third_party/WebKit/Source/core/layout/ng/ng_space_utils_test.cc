@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_space_utils.h"
 
 #include "core/layout/ng/ng_base_layout_algorithm_test.h"
+#include "core/layout/ng/ng_block_node.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {

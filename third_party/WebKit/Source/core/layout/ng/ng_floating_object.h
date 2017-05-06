@@ -8,7 +8,6 @@
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
