@@ -572,6 +572,8 @@ static_library("sync") {
     "syncable/write_transaction.h",
     "syncable/write_transaction_info.cc",
     "syncable/write_transaction_info.h",
+    "user_events/user_event_sync_bridge.cc",
+    "user_events/user_event_sync_bridge.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -940,6 +942,7 @@ source_set("unit_tests") {
     "syncable/syncable_enum_conversions_unittest.cc",
     "syncable/syncable_id_unittest.cc",
     "syncable/syncable_unittest.cc",
+    "user_events/user_event_sync_bridge_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
