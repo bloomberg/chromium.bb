@@ -2497,14 +2497,24 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     for (n = colors > PALETTE_MAX_SIZE ? PALETTE_MAX_SIZE : colors; n >= 2;
          --n) {
-      for (i = 0; i < n; ++i)
-        centroids[i] = lb + (2 * i + 1) * (ub - lb) / n / 2;
-      av1_k_means(data, centroids, color_map, rows * cols, n, 1, max_itr);
-      k = av1_remove_duplicates(centroids, n);
-      if (k < PALETTE_MIN_SIZE) {
-        // Too few unique colors to create a palette. And DC_PRED will work well
-        // for that case anyway. So skip.
-        continue;
+      if (colors == PALETTE_MIN_SIZE) {
+        // Special case: These colors automatically become the centroids.
+        assert(colors == n);
+        assert(colors == 2);
+        centroids[0] = lb;
+        centroids[1] = ub;
+        k = 2;
+      } else {
+        for (i = 0; i < n; ++i) {
+          centroids[i] = lb + (2 * i + 1) * (ub - lb) / n / 2;
+        }
+        av1_k_means(data, centroids, color_map, rows * cols, n, 1, max_itr);
+        k = av1_remove_duplicates(centroids, n);
+        if (k < PALETTE_MIN_SIZE) {
+          // Too few unique colors to create a palette. And DC_PRED will work
+          // well for that case anyway. So skip.
+          continue;
+        }
       }
 
 #if CONFIG_HIGHBITDEPTH
