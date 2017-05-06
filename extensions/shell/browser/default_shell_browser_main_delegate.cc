@@ -4,9 +4,11 @@
 
 #include "extensions/shell/browser/default_shell_browser_main_delegate.h"
 
+#include "apps/launcher.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/string_tokenizer.h"
 #include "build/build_config.h"
 #include "extensions/common/switches.h"
@@ -43,22 +45,25 @@ void DefaultShellBrowserMainDelegate::Start(
                            base::CommandLine::StringType::const_iterator>
         tokenizer(path_list, FILE_PATH_LITERAL(","));
 
-    std::string launch_id;
+    const Extension* launch_app = nullptr;
     while (tokenizer.GetNext()) {
       base::FilePath app_absolute_dir =
           base::MakeAbsoluteFilePath(base::FilePath(tokenizer.token()));
 
       const Extension* extension = extension_system->LoadApp(app_absolute_dir);
-      if (!extension)
-        continue;
-      if (launch_id.empty())
-        launch_id = extension->id();
+      if (extension && !launch_app)
+        launch_app = extension;
     }
 
-    if (!launch_id.empty())
-      extension_system->LaunchApp(launch_id);
-    else
+    if (launch_app) {
+      base::FilePath current_directory;
+      base::PathService::Get(base::DIR_CURRENT, &current_directory);
+      apps::LaunchPlatformAppWithCommandLineAndLaunchId(
+          browser_context, launch_app, launch_app->id(), *command_line,
+          current_directory, SOURCE_COMMAND_LINE);
+    } else {
       LOG(ERROR) << "Could not load any apps.";
+    }
   } else {
     LOG(ERROR) << "--" << switches::kLoadApps
                << " unset; boredom is in your future";
