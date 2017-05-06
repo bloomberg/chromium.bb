@@ -11,6 +11,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceRegistry;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
+import org.chromium.shape_detection.mojom.FaceDetectionProvider;
 import org.chromium.shape_detection.mojom.TextDetection;
 
 @JNINamespace("shape_detection")
@@ -23,6 +24,8 @@ class InterfaceRegistrar {
                 CoreImpl.getInstance().acquireNativeHandle(nativeHandle).toMessagePipeHandle());
         registry.addInterface(
                 BarcodeDetection.MANAGER, new BarcodeDetectionImpl.Factory(applicationContext));
+        registry.addInterface(FaceDetectionProvider.MANAGER,
+                new FaceDetectionProviderImpl.Factory(applicationContext));
         registry.addInterface(
                 TextDetection.MANAGER, new TextDetectionImpl.Factory(applicationContext));
     }

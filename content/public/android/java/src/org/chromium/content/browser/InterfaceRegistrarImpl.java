@@ -10,7 +10,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.androidoverlay.AndroidOverlayProviderImpl;
 import org.chromium.content.browser.installedapp.InstalledAppProviderFactory;
-import org.chromium.content.browser.shapedetection.FaceDetectionProviderImpl;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -19,7 +18,6 @@ import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.media.mojom.AndroidOverlayProvider;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceRegistry;
-import org.chromium.shape_detection.mojom.FaceDetectionProvider;
 
 @JNINamespace("content")
 class InterfaceRegistrarImpl {
@@ -68,8 +66,6 @@ class InterfaceRegistrarImpl {
         @Override
         public void registerInterfaces(
                 InterfaceRegistry registry, final Context applicationContext) {
-            registry.addInterface(FaceDetectionProvider.MANAGER,
-                    new FaceDetectionProviderImpl.Factory(applicationContext));
             registry.addInterface(AndroidOverlayProvider.MANAGER,
                     new AndroidOverlayProviderImpl.Factory(applicationContext));
             // TODO(avayvod): Register the PresentationService implementation here.

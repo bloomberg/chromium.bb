@@ -35,13 +35,15 @@ void ShapeDetectionService::OnStart() {
   registry_.AddInterface(
       GetJavaInterfaces()->CreateInterfaceFactory<mojom::BarcodeDetection>());
   registry_.AddInterface(
+      GetJavaInterfaces()
+          ->CreateInterfaceFactory<mojom::FaceDetectionProvider>());
+  registry_.AddInterface(
       GetJavaInterfaces()->CreateInterfaceFactory<mojom::TextDetection>());
 #else
   registry_.AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
   registry_.AddInterface(base::Bind(&TextDetectionImpl::Create));
-#endif
-
   registry_.AddInterface(base::Bind(&FaceDetectionProviderImpl::Create));
+#endif
 }
 
 void ShapeDetectionService::OnBindInterface(
