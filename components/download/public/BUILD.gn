@@ -14,6 +14,8 @@ source_set("public") {
     "download_params.cc",
     "download_params.h",
     "download_service.h",
+    "features.cc",
+    "features.h",
   ]
 
   deps = [
