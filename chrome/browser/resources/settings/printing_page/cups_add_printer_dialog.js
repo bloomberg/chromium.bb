@@ -135,7 +135,7 @@ Polymer({
           printerName: '',
           printerPPDPath: '',
           printerProtocol: 'ipp',
-          printerQueue: 'ipp/print',
+          printerQueue: '',
           printerStatus: '',
         };
       },
@@ -155,6 +155,10 @@ Polymer({
 
   /** @private */
   switchToManufacturerDialog_: function() {
+    // Set the default printer queue to be "ipp/print".
+    if (!this.newPrinter.printerQueue)
+      this.set('newPrinter.printerQueue', 'ipp/print');
+
     this.$$('add-printer-dialog').close();
     this.fire('open-manufacturer-model-dialog');
   },
@@ -171,7 +175,7 @@ Polymer({
    * @private
    */
   onProtocolChange_: function(event) {
-    this.newPrinter.printerProtocol = event.target.value;
+    this.set('newPrinter.printerProtocol', event.target.value);
   },
 });
 
@@ -236,7 +240,7 @@ Polymer({
    * @private
    */
   printerPPDPathChanged_: function(path) {
-    this.newPrinter.printerPPDPath = path;
+    this.set('newPrinter.printerPPDPath', path);
     this.$$('paper-input').value = this.getBaseName_(path);
   },
 
