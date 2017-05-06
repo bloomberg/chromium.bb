@@ -11,7 +11,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -77,40 +76,19 @@ public class ContextSelectionClient implements SelectionClient {
     public void onSelectionChanged(String selection) {}
 
     @Override
-    public void onSelectionEvent(int eventType, float posXPix, float posYPix) {
-        switch (eventType) {
-            case SelectionEventType.SELECTION_HANDLES_SHOWN:
-                // This event is sent when the long press is detected which causes
-                // selection to appear for the first time. Temporarily hiding the
-                // handles that happens e.g. during scroll does not affect this event.
-                requestSurroundingText(SUGGEST_AND_CLASSIFY);
-                break;
-
-            case SelectionEventType.SELECTION_HANDLES_CLEARED:
-                // The ActionMode should be stopped when this event comes.
-                cancelAllRequests();
-                break;
-
-            case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-                // This event is sent after a user stopped dragging one of the
-                // selection handles, i.e. stopped modifying the selection.
-                requestSurroundingText(CLASSIFY);
-                break;
-
-            default:
-                break; // ignore
-        }
-    }
+    public void onSelectionEvent(int eventType, float posXPix, float posYPix) {}
 
     @Override
     public void showUnhandledTapUIIfNeeded(int x, int y) {}
 
     @Override
-    public boolean sendsSelectionPopupUpdates() {
+    public boolean requestSelectionPopupUpdates(boolean shouldSuggest) {
+        requestSurroundingText(shouldSuggest ? SUGGEST_AND_CLASSIFY : CLASSIFY);
         return true;
     }
 
-    private void cancelAllRequests() {
+    @Override
+    public void cancelAllRequests() {
         if (mNativeContextSelectionClient != 0) {
             nativeCancelAllRequests(mNativeContextSelectionClient);
         }

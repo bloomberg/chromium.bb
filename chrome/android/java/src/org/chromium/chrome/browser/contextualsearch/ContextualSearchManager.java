@@ -1209,9 +1209,12 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     @Override
-    public boolean sendsSelectionPopupUpdates() {
+    public boolean requestSelectionPopupUpdates(boolean shouldSuggest) {
         return false;
     }
+
+    @Override
+    public void cancelAllRequests() {}
 
     // TODO(donnd): add handling of an ACK to selectWordAroundCaret (crbug.com/435778 has details).
 
