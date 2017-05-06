@@ -59,9 +59,23 @@ void WriteHandle(int handle_index,
                  base::Pickle* msg) {
   SerializedHandle::WriteHeader(handle.header(), msg);
 
-  if (handle.type() != SerializedHandle::INVALID) {
+  if (handle.type() == SerializedHandle::SHARED_MEMORY) {
     // Now write the handle itself in POSIX style.
-    // See ParamTraits<FileDescriptor>::Read for where these values are read.
+    // This serialization must be kept in sync with
+    // ParamTraits<SharedMemoryHandle>::Write and
+    // ParamTraits<UnguessableToken>::Write.
+    if (handle.shmem().IsValid()) {
+      msg->WriteBool(true);  // valid == true
+      msg->WriteInt(handle_index);
+      msg->WriteUInt64(handle.shmem().GetGUID().GetHighForSerialization());
+      msg->WriteUInt64(handle.shmem().GetGUID().GetLowForSerialization());
+    } else {
+      msg->WriteBool(false);  // valid == false
+    }
+  } else if (handle.type() != SerializedHandle::INVALID) {
+    // Now write the handle itself in POSIX style.
+    // This serialization must be kept in sync with
+    // ParamTraits<FileDescriptor>::Write.
     msg->WriteBool(true);  // valid == true
     msg->WriteInt(handle_index);
   }

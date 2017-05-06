@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/unguessable_token.h"
 
 // On POSIX, the fd is shared using the mapping in GlobalDescriptors.
 #if defined(OS_POSIX) && !defined(OS_NACL)
@@ -1137,7 +1138,9 @@ bool FieldTrialList::CreateTrialsFromHandleSwitch(
     const std::string& handle_switch) {
   int field_trial_handle = std::stoi(handle_switch);
   HANDLE handle = reinterpret_cast<HANDLE>(field_trial_handle);
-  SharedMemoryHandle shm_handle(handle);
+  // TODO(erikchen): Plumb a GUID for this SharedMemoryHandle.
+  // https://crbug.com/713763.
+  SharedMemoryHandle shm_handle(handle, base::UnguessableToken::Create());
   return FieldTrialList::CreateTrialsFromSharedMemoryHandle(shm_handle);
 }
 #endif
@@ -1155,7 +1158,10 @@ bool FieldTrialList::CreateTrialsFromDescriptor(int fd_key) {
   if (fd == -1)
     return false;
 
-  SharedMemoryHandle shm_handle(FileDescriptor(fd, true));
+  // TODO(erikchen): Plumb a GUID for this SharedMemoryHandle.
+  // https://crbug.com/713763.
+  SharedMemoryHandle shm_handle(FileDescriptor(fd, true),
+                                base::UnguessableToken::Create());
 
   bool result = FieldTrialList::CreateTrialsFromSharedMemoryHandle(shm_handle);
   DCHECK(result);

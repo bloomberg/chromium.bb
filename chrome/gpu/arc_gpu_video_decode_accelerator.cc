@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
+#include "base/unguessable_token.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 
@@ -295,9 +296,14 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
         return;
       }
       CreateInputRecord(bitstream_buffer_id, index, metadata.timestamp);
+      // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
+      // TODO(erikchen): This fd comes from a mojo::ScopedHandle in
+      // GpuArcVideoService::BindSharedMemory. That should be passed through,
+      // rather than pulling out the fd. https://crbug.com/713763.
+      base::UnguessableToken guid = base::UnguessableToken::Create();
       vda_->Decode(media::BitstreamBuffer(
           bitstream_buffer_id,
-          base::SharedMemoryHandle(base::FileDescriptor(dup_fd, true)),
+          base::SharedMemoryHandle(base::FileDescriptor(dup_fd, true), guid),
           metadata.bytes_used, input_info->offset));
       break;
     }

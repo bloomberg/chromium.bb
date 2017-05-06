@@ -114,18 +114,21 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
   if (read_only)
     *read_only = flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY;
 
+  // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
+  base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT);
   *memory_handle = base::SharedMemoryHandle(
-      static_cast<mach_port_t>(platform_handle.value), num_bytes);
+      static_cast<mach_port_t>(platform_handle.value), num_bytes, guid);
 #elif defined(OS_POSIX)
   CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR);
   *memory_handle = base::SharedMemoryHandle(
-      base::FileDescriptor(static_cast<int>(platform_handle.value), false));
+      base::FileDescriptor(static_cast<int>(platform_handle.value), false),
+      guid);
 #elif defined(OS_WIN)
   CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE);
-  *memory_handle =
-      base::SharedMemoryHandle(reinterpret_cast<HANDLE>(platform_handle.value));
+  *memory_handle = base::SharedMemoryHandle(
+      reinterpret_cast<HANDLE>(platform_handle.value), guid);
 #endif
 
   return MOJO_RESULT_OK;
