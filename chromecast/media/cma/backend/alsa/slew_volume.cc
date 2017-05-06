@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/backend/alsa/slew_volume.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include "base/logging.h"
 #include "media/base/vector_math.h"
@@ -14,7 +15,51 @@ namespace {
 // The time to slew from current volume to target volume.
 const int kMaxSlewTimeMs = 100;
 const int kDefaultSampleRate = 44100;
-}
+
+}  // namespace
+
+struct FMACTraits {
+  static void ProcessBulkData(const float* src,
+                              float volume,
+                              int frames,
+                              float* dest) {
+    ::media::vector_math::FMAC(src, volume, frames, dest);
+  }
+
+  static void ProcessSingleDatum(const float* src, float volume, float* dest) {
+    (*dest) += (*src) * volume;
+  }
+
+  static void ProcessZeroVolume(const float* src, int frames, float* dest) {}
+
+  static void ProcessUnityVolume(const float* src, int frames, float* dest) {
+    ProcessBulkData(src, 1.0, frames, dest);
+  }
+};
+
+struct FMULTraits {
+  static void ProcessBulkData(const float* src,
+                              float volume,
+                              int frames,
+                              float* dest) {
+    ::media::vector_math::FMUL(src, volume, frames, dest);
+  }
+
+  static void ProcessSingleDatum(const float* src, float volume, float* dest) {
+    (*dest) = (*src) * volume;
+  }
+
+  static void ProcessZeroVolume(const float* src, int frames, float* dest) {
+    std::memset(dest, 0, frames * sizeof(*dest));
+  }
+
+  static void ProcessUnityVolume(const float* src, int frames, float* dest) {
+    if (src == dest) {
+      return;
+    }
+    std::memcpy(dest, src, frames * sizeof(*dest));
+  }
+};
 
 namespace chromecast {
 namespace media {
@@ -24,11 +69,11 @@ SlewVolume::SlewVolume() : SlewVolume(kMaxSlewTimeMs) {}
 SlewVolume::SlewVolume(int max_slew_time_ms)
     : sample_rate_(kDefaultSampleRate),
       max_slew_time_ms_(max_slew_time_ms),
-      max_slew_per_sample_(1000.0 / (max_slew_time_ms_ * sample_rate_)) {
-  LOG(INFO) << "Creating a slew volume: " << max_slew_time_ms;
-}
+      max_slew_per_sample_(1000.0 / (max_slew_time_ms_ * sample_rate_)) {}
 
 void SlewVolume::SetSampleRate(int sample_rate) {
+  DCHECK_GT(sample_rate, 0);
+
   sample_rate_ = sample_rate;
   SetVolume(volume_scale_);
 }
@@ -49,6 +94,8 @@ void SlewVolume::SetVolume(double volume_scale) {
 }
 
 void SlewVolume::SetMaxSlewTimeMs(int max_slew_time_ms) {
+  DCHECK_GE(max_slew_time_ms, 0);
+
   max_slew_time_ms_ = max_slew_time_ms;
 }
 
@@ -58,6 +105,21 @@ void SlewVolume::Interrupted() {
 }
 
 void SlewVolume::ProcessFMAC(bool repeat_transition,
+                             const float* src,
+                             int frames,
+                             float* dest) {
+  ProcessData<FMACTraits>(repeat_transition, src, frames, dest);
+}
+
+void SlewVolume::ProcessFMUL(bool repeat_transition,
+                             const float* src,
+                             int frames,
+                             float* dest) {
+  ProcessData<FMULTraits>(repeat_transition, src, frames, dest);
+}
+
+template <typename Traits>
+void SlewVolume::ProcessData(bool repeat_transition,
                              const float* src,
                              int frames,
                              float* dest) {
@@ -82,13 +144,20 @@ void SlewVolume::ProcessFMAC(bool repeat_transition,
 
   if (current_volume_ == volume_scale_) {
     if (current_volume_ == 0.0) {
+      Traits::ProcessZeroVolume(src, frames, dest);
       return;
     }
-    ::media::vector_math::FMAC(src, current_volume_, frames, dest);
+    if (current_volume_ == 1.0) {
+      Traits::ProcessUnityVolume(src, frames, dest);
+      return;
+    }
+    Traits::ProcessBulkData(src, current_volume_, frames, dest);
     return;
-  } else if (current_volume_ < volume_scale_) {
+  }
+
+  if (current_volume_ < volume_scale_) {
     do {
-      (*dest) += (*src) * current_volume_;
+      Traits::ProcessSingleDatum(src, current_volume_, dest);
       ++src;
       ++dest;
       --frames;
@@ -97,7 +166,7 @@ void SlewVolume::ProcessFMAC(bool repeat_transition,
     current_volume_ = std::min(current_volume_, volume_scale_);
   } else {  // current_volume_ > volume_scale_
     do {
-      (*dest) += (*src) * current_volume_;
+      Traits::ProcessSingleDatum(src, current_volume_, dest);
       ++src;
       ++dest;
       --frames;
@@ -105,68 +174,17 @@ void SlewVolume::ProcessFMAC(bool repeat_transition,
     } while (current_volume_ > volume_scale_ && frames);
     current_volume_ = std::max(current_volume_, volume_scale_);
   }
-
-  if (frames) {
-    for (int f = 0; f < frames; ++f) {
-      dest[f] += src[f] * current_volume_;
-    }
+  while (frames && (reinterpret_cast<uintptr_t>(src) &
+                    (::media::vector_math::kRequiredAlignment - 1))) {
+    Traits::ProcessSingleDatum(src, current_volume_, dest);
+    ++src;
+    ++dest;
+    --frames;
   }
-}
-
-// Scaling samples naively like this takes 0.2% of the CPU's time @ 44100hz
-// on pineapple.
-// Assumes 2 channel audio.
-bool SlewVolume::ProcessInterleaved(int32_t* data, int frames) {
-  DCHECK(data);
-
   if (!frames) {
-    return true;
+    return;
   }
-
-  interrupted_ = false;
-  if (current_volume_ == volume_scale_) {
-    if (current_volume_ == 1.0) {
-      return true;
-    }
-    for (int i = 0; i < 2 * frames; ++i) {
-      data[i] *= current_volume_;
-    }
-    return true;
-  } else if (current_volume_ < volume_scale_) {
-    do {
-      (*data) *= current_volume_;
-      ++data;
-      (*data) *= current_volume_;
-      ++data;
-      --frames;
-      current_volume_ += max_slew_per_sample_;
-    } while (current_volume_ < volume_scale_ && frames);
-    current_volume_ = std::min(current_volume_, volume_scale_);
-  } else {
-    do {
-      (*data) *= current_volume_;
-      ++data;
-      (*data) *= current_volume_;
-      ++data;
-      --frames;
-      current_volume_ -= max_slew_per_sample_;
-    } while (current_volume_ > volume_scale_ && frames);
-    current_volume_ = std::max(current_volume_, volume_scale_);
-  }
-
-  if (current_volume_ == 1.0) {
-    return true;
-  }
-
-  if (current_volume_ == 0.0) {
-    std::fill_n(data, frames * 2, 0);
-    return true;
-  }
-
-  for (int i = 0; i < 2 * frames; ++i) {
-    data[i] *= current_volume_;
-  }
-  return true;
+  Traits::ProcessBulkData(src, current_volume_, frames, dest);
 }
 
 }  // namespace media

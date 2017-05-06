@@ -37,10 +37,23 @@ class SlewVolume {
                    int frames,
                    float* dest);
 
+  // Processes a single channel of float data
+  // dest[i] = src[i] * volume_scaling.
+  // ProcessFMUL will be called once for each channel of audio present.
+  // |repeat_transition| should be true for channels 2 through n.
   // Assumes 2 channels.
-  bool ProcessInterleaved(int32_t* data, int frames);
+  void ProcessFMUL(bool repeat_transition,
+                   const float* src,
+                   int frames,
+                   float* dest);
 
  private:
+  template <typename Traits>
+  void ProcessData(bool repeat_transition,
+                   const float* src,
+                   int frames,
+                   float* dest);
+
   double sample_rate_;
   double volume_scale_ = 1.0;
   double current_volume_ = 1.0;
