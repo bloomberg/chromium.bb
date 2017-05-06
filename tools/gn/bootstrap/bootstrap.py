@@ -435,6 +435,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/memory/ref_counted.cc',
       'base/memory/ref_counted_memory.cc',
       'base/memory/singleton.cc',
+      'base/memory/shared_memory_handle.cc',
       'base/memory/shared_memory_helper.cc',
       'base/memory/weak_ptr.cc',
       'base/message_loop/incoming_task_queue.cc',
@@ -563,6 +564,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/trace_event/tracing_agent.cc',
       'base/tracked_objects.cc',
       'base/tracking_info.cc',
+      'base/unguessable_token.cc',
       'base/values.cc',
       'base/vlog.cc',
   ])

@@ -620,6 +620,8 @@ void ParamTraits<base::FileDescriptor>::GetSize(base::PickleSizer* sizer,
 
 void ParamTraits<base::FileDescriptor>::Write(base::Pickle* m,
                                               const param_type& p) {
+  // This serialization must be kept in sync with
+  // nacl_ipc_adapater.cc:WriteHandle().
   const bool valid = p.fd >= 0;
   WriteParam(m, valid);
 
@@ -677,54 +679,13 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* sizer,
                                                     const param_type& p) {
-  GetParamSize(sizer, p.GetMemoryObject());
-  uint32_t dummy = 0;
-  GetParamSize(sizer, dummy);
-}
-
-void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
-                                                  const param_type& p) {
-  MachPortMac mach_port_mac(p.GetMemoryObject());
-  ParamTraits<MachPortMac>::Write(m, mach_port_mac);
-  size_t size = 0;
-  bool result = p.GetSize(&size);
-  DCHECK(result);
-  ParamTraits<uint32_t>::Write(m, static_cast<uint32_t>(size));
-
-  // If the caller intended to pass ownership to the IPC stack, release a
-  // reference.
-  if (p.OwnershipPassesToIPC())
-    p.Close();
-}
-
-bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
-                                                 base::PickleIterator* iter,
-                                                 param_type* r) {
-  MachPortMac mach_port_mac;
-  if (!ParamTraits<MachPortMac>::Read(m, iter, &mach_port_mac))
-    return false;
-
-  uint32_t size;
-  if (!ParamTraits<uint32_t>::Read(m, iter, &size))
-    return false;
-
-  *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
-                                static_cast<size_t>(size));
-  return true;
-}
-
-void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
-                                                std::string* l) {
-  l->append("Mach port: ");
-  LogParam(p.GetMemoryObject(), l);
-}
-
-#elif defined(OS_WIN)
-void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* s,
-                                                    const param_type& p) {
-  GetParamSize(s, p.IsValid());
-  if (p.IsValid())
-    GetParamSize(s, p.GetHandle());
+  GetParamSize(sizer, p.IsValid());
+  if (p.IsValid()) {
+    GetParamSize(sizer, p.GetMemoryObject());
+    GetParamSize(sizer, p.GetGUID());
+    uint32_t dummy = 0;
+    GetParamSize(sizer, dummy);
+  }
 }
 
 void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
@@ -735,8 +696,15 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
   if (!valid)
     return;
 
-  HandleWin handle_win(p.GetHandle(), HandleWin::DUPLICATE);
-  ParamTraits<HandleWin>::Write(m, handle_win);
+  MachPortMac mach_port_mac(p.GetMemoryObject());
+  WriteParam(m, mach_port_mac);
+  DCHECK(!p.GetGUID().is_empty());
+  WriteParam(m, p.GetGUID());
+
+  size_t size = 0;
+  bool result = p.GetSize(&size);
+  DCHECK(result);
+  ParamTraits<uint32_t>::Write(m, static_cast<uint32_t>(size));
 
   // If the caller intended to pass ownership to the IPC stack, release a
   // reference.
@@ -755,27 +723,105 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
   if (!valid)
     return true;
 
-  HandleWin handle_win;
-  if (!ParamTraits<HandleWin>::Read(m, iter, &handle_win))
+  MachPortMac mach_port_mac;
+  if (!ReadParam(m, iter, &mach_port_mac))
     return false;
-  *r = base::SharedMemoryHandle(handle_win.get_handle());
+
+  base::UnguessableToken guid;
+  if (!ReadParam(m, iter, &guid))
+    return false;
+
+  uint32_t size;
+  if (!ParamTraits<uint32_t>::Read(m, iter, &size))
+    return false;
+
+  *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
+                                static_cast<size_t>(size), guid);
   return true;
 }
 
 void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
                                                 std::string* l) {
+  l->append("Mach port: ");
+  LogParam(p.GetMemoryObject(), l);
+  l->append("GUID: ");
+  ParamTraits<base::UnguessableToken>::Log(p.GetGUID(), l);
+}
+
+#elif defined(OS_WIN)
+void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* s,
+                                                    const param_type& p) {
+  GetParamSize(s, p.IsValid());
+  if (p.IsValid()) {
+    GetParamSize(s, p.GetHandle());
+    GetParamSize(s, p.GetGUID());
+  }
+}
+
+void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
+                                                  const param_type& p) {
+  const bool valid = p.IsValid();
+  WriteParam(m, valid);
+
+  if (!valid)
+    return;
+
+  HandleWin handle_win(p.GetHandle(), HandleWin::DUPLICATE);
+  WriteParam(m, handle_win);
+
+  // If the caller intended to pass ownership to the IPC stack, release a
+  // reference.
+  if (p.OwnershipPassesToIPC())
+    p.Close();
+
+  DCHECK(!p.GetGUID().is_empty());
+  WriteParam(m, p.GetGUID());
+}
+
+bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
+                                                 base::PickleIterator* iter,
+                                                 param_type* r) {
+  *r = base::SharedMemoryHandle();
+
+  bool valid;
+  if (!ReadParam(m, iter, &valid))
+    return false;
+  if (!valid)
+    return true;
+
+  HandleWin handle_win;
+  if (!ReadParam(m, iter, &handle_win))
+    return false;
+
+  base::UnguessableToken guid;
+  if (!ReadParam(m, iter, &guid))
+    return false;
+
+  *r = base::SharedMemoryHandle(handle_win.get_handle(), guid);
+  return true;
+}
+
+void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
+                                                std::string* l) {
+  l->append("HANDLE: ");
   LogParam(p.GetHandle(), l);
+  l->append("GUID: ");
+  ParamTraits<base::UnguessableToken>::Log(p.GetGUID(), l);
 }
 #elif defined(OS_POSIX)
 void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* sizer,
                                                     const param_type& p) {
   GetParamSize(sizer, p.IsValid());
-  if (p.IsValid())
+  if (p.IsValid()) {
     sizer->AddAttachment();
+    GetParamSize(sizer, p.GetGUID());
+  }
 }
 
 void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
                                                   const param_type& p) {
+  // This serialization must be kept in sync with
+  // nacl_ipc_adapater.cc:WriteHandle().
   const bool valid = p.IsValid();
   WriteParam(m, valid);
 
@@ -791,6 +837,8 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
             new internal::PlatformFileAttachment(p.GetHandle())))
       NOTREACHED();
   }
+  DCHECK(!p.GetGUID().is_empty());
+  WriteParam(m, p.GetGUID());
 }
 
 bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
@@ -814,10 +862,16 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
     return false;
   }
 
-  *r = base::SharedMemoryHandle(base::FileDescriptor(
-      static_cast<internal::PlatformFileAttachment*>(attachment.get())
-          ->TakePlatformFile(),
-      true));
+  base::UnguessableToken guid;
+  if (!ReadParam(m, iter, &guid))
+    return false;
+
+  *r = base::SharedMemoryHandle(
+      base::FileDescriptor(
+          static_cast<internal::PlatformFileAttachment*>(attachment.get())
+              ->TakePlatformFile(),
+          true),
+      guid);
   return true;
 }
 
@@ -828,6 +882,8 @@ void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
   } else {
     l->append(base::StringPrintf("FD(%d)", p.GetHandle()));
   }
+  l->append("GUID: ");
+  ParamTraits<base::UnguessableToken>::Log(p.GetGUID(), l);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
@@ -1086,6 +1142,8 @@ void ParamTraits<base::UnguessableToken>::Write(base::Pickle* m,
                                                 const param_type& p) {
   DCHECK(!p.is_empty());
 
+  // This serialization must be kept in sync with
+  // nacl_ipc_adapater.cc:WriteHandle().
   ParamTraits<uint64_t>::Write(m, p.GetHighForSerialization());
   ParamTraits<uint64_t>::Write(m, p.GetLowForSerialization());
 }

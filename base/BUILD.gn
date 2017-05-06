@@ -507,6 +507,7 @@ component("base") {
     "memory/scoped_vector.h",
     "memory/shared_memory.h",
     "memory/shared_memory_android.cc",
+    "memory/shared_memory_handle.cc",
     "memory/shared_memory_handle.h",
     "memory/shared_memory_handle_mac.cc",
     "memory/shared_memory_handle_win.cc",

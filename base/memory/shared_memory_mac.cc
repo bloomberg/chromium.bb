@@ -25,6 +25,7 @@
 #include "base/scoped_generic.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
@@ -74,7 +75,7 @@ bool MakeMachSharedMemoryHandleReadOnly(SharedMemoryHandle* new_handle,
   if (kr != KERN_SUCCESS)
     return false;
 
-  *new_handle = SharedMemoryHandle(named_right, size);
+  *new_handle = SharedMemoryHandle(named_right, size, handle.GetGUID());
   return true;
 }
 
@@ -149,7 +150,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     return false;
 
   if (options.type == SharedMemoryHandle::MACH) {
-    shm_ = SharedMemoryHandle(options.size);
+    shm_ = SharedMemoryHandle(options.size, UnguessableToken::Create());
     requested_size_ = options.size;
     return shm_.IsValid();
   }
@@ -187,9 +188,10 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   int readonly_mapped_file = -1;
   result = PrepareMapFile(std::move(fp), std::move(readonly_fd), &mapped_file,
                           &readonly_mapped_file);
-  shm_ = SharedMemoryHandle(FileDescriptor(mapped_file, false));
-  readonly_shm_ =
-      SharedMemoryHandle(FileDescriptor(readonly_mapped_file, false));
+  shm_ = SharedMemoryHandle(FileDescriptor(mapped_file, false),
+                            UnguessableToken::Create());
+  readonly_shm_ = SharedMemoryHandle(
+      FileDescriptor(readonly_mapped_file, false), shm_.GetGUID());
   return result;
 }
 
@@ -237,8 +239,8 @@ bool SharedMemory::Unmap() {
 SharedMemoryHandle SharedMemory::handle() const {
   switch (shm_.type_) {
     case SharedMemoryHandle::POSIX:
-      return SharedMemoryHandle(
-          FileDescriptor(shm_.file_descriptor_.fd, false));
+      return SharedMemoryHandle(FileDescriptor(shm_.file_descriptor_.fd, false),
+                                shm_.GetGUID());
     case SharedMemoryHandle::MACH:
       return shm_;
   }

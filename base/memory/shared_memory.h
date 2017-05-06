@@ -63,8 +63,10 @@ struct BASE_EXPORT SharedMemoryCreateOptions {
   bool share_read_only = false;
 };
 
-// Platform abstraction for shared memory.  Provides a C++ wrapper
-// around the OS primitive for a memory mapped file.
+// Platform abstraction for shared memory.
+// SharedMemory consumes a SharedMemoryHandle [potentially one that it created]
+// to map a shared memory OS resource into the virtual address space of the
+// current process.
 class BASE_EXPORT SharedMemory {
  public:
   SharedMemory();

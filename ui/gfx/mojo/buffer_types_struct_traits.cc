@@ -128,11 +128,17 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
           mojo::UnwrapPlatformFile(std::move(handle), &platform_file);
       if (unwrap_result != MOJO_RESULT_OK)
         return false;
+      // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
+      // TODO(erikchen): During serialization, the SharedMemoryHandle is
+      // decomposed on Linux into a file_descriptor. The serialization path
+      // should be changed to serialize a Mojo shared buffer instead.
+      // https://crbug.com/713763.
+      base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_WIN)
-      out->handle = base::SharedMemoryHandle(platform_file);
+      out->handle = base::SharedMemoryHandle(platform_file, guid);
 #else
-      out->handle =
-          base::SharedMemoryHandle(base::FileDescriptor(platform_file, true));
+      out->handle = base::SharedMemoryHandle(
+          base::FileDescriptor(platform_file, true), guid);
 #endif
 #endif  // defined(OS_MACOSX)
     }

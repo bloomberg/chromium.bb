@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/unguessable_token.h"
 
 namespace {
 
@@ -240,8 +241,9 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
                          rand_values[2], rand_values[3]);
   }
   DCHECK(!name_.empty());
-  shm_ = SharedMemoryHandle(CreateFileMappingWithReducedPermissions(
-      &sa, rounded_size, name_.c_str()));
+  shm_ = SharedMemoryHandle(
+      CreateFileMappingWithReducedPermissions(&sa, rounded_size, name_.c_str()),
+      UnguessableToken::Create());
   if (!shm_.IsValid()) {
     // The error is logged within CreateFileMappingWithReducedPermissions().
     return false;
@@ -279,8 +281,18 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
     access |= FILE_MAP_WRITE;
   name_ = ASCIIToUTF16(name);
   read_only_ = read_only;
+
+  // This form of sharing shared memory is deprecated. https://crbug.com/345734.
+  // However, we can't get rid of it without a significant refactor because its
+  // used to communicate between two versions of the same service process, very
+  // early in the life cycle.
+  // Technically, we should also pass the GUID from the original shared memory
+  // region. We don't do that - this means that we will overcount this memory,
+  // which thankfully isn't relevant since Chrome only communicates with a
+  // single version of the service process.
   shm_ = SharedMemoryHandle(
-      OpenFileMapping(access, false, name_.empty() ? nullptr : name_.c_str()));
+      OpenFileMapping(access, false, name_.empty() ? nullptr : name_.c_str()),
+      UnguessableToken::Create());
   if (!shm_.IsValid())
     return false;
   // If a name specified assume it's an external section.
@@ -332,7 +344,7 @@ SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
                          FILE_MAP_READ | SECTION_QUERY, FALSE, 0)) {
     return SharedMemoryHandle();
   }
-  SharedMemoryHandle handle = SharedMemoryHandle(result);
+  SharedMemoryHandle handle = SharedMemoryHandle(result, shm_.GetGUID());
   handle.SetOwnershipPassesToIPC(true);
   return handle;
 }

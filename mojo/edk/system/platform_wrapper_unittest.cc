@@ -161,18 +161,20 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer, PlatformWrapperTest,
   bool read_only = flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE;
   EXPECT_FALSE(read_only);
 
+  // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
+  base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      static_cast<mach_port_t>(os_buffer.value), size);
+      static_cast<mach_port_t>(os_buffer.value), size, guid);
 #elif defined(OS_POSIX)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      base::FileDescriptor(static_cast<int>(os_buffer.value), false));
+      base::FileDescriptor(static_cast<int>(os_buffer.value), false), guid);
 #elif defined(OS_WIN)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      reinterpret_cast<HANDLE>(os_buffer.value));
+      reinterpret_cast<HANDLE>(os_buffer.value), guid);
 #endif
 
   base::SharedMemory memory(memory_handle, read_only);

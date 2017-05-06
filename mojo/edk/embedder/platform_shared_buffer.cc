@@ -233,14 +233,16 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
     ScopedPlatformHandle platform_handle) {
   DCHECK(!shared_memory_);
 
+  // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
+  base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_WIN)
-  base::SharedMemoryHandle handle(platform_handle.release().handle);
+  base::SharedMemoryHandle handle(platform_handle.release().handle, guid);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  base::SharedMemoryHandle handle;
-  handle = base::SharedMemoryHandle(platform_handle.release().port, num_bytes_);
+  base::SharedMemoryHandle handle = base::SharedMemoryHandle(
+      platform_handle.release().port, num_bytes_, guid);
 #else
   base::SharedMemoryHandle handle(
-      base::FileDescriptor(platform_handle.release().handle, false));
+      base::FileDescriptor(platform_handle.release().handle, false), guid);
 #endif
 
   shared_memory_.reset(new base::SharedMemory(handle, read_only_));
@@ -255,14 +257,16 @@ bool PlatformSharedBuffer::InitFromPlatformHandlePair(
   return false;
 #else  // defined(OS_MACOSX)
 
+  // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
+  base::UnguessableToken guid = base::UnguessableToken::Create();
 #if defined(OS_WIN)
-  base::SharedMemoryHandle handle(rw_platform_handle.release().handle);
-  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle);
+  base::SharedMemoryHandle handle(rw_platform_handle.release().handle, guid);
+  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle, guid);
 #else  // defined(OS_WIN)
   base::SharedMemoryHandle handle(
-      base::FileDescriptor(rw_platform_handle.release().handle, false));
+      base::FileDescriptor(rw_platform_handle.release().handle, false), guid);
   base::SharedMemoryHandle ro_handle(
-      base::FileDescriptor(ro_platform_handle.release().handle, false));
+      base::FileDescriptor(ro_platform_handle.release().handle, false), guid);
 #endif  // defined(OS_WIN)
 
   DCHECK(!shared_memory_);

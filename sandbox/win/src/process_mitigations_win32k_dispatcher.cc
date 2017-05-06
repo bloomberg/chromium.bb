@@ -8,6 +8,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/strings/string16.h"
+#include "base/unguessable_token.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/interceptors.h"
@@ -28,7 +29,8 @@ base::SharedMemoryHandle GetSharedMemoryHandle(const ClientInfo& client_info,
                          &result_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
     result_handle = nullptr;
   }
-  return base::SharedMemoryHandle(result_handle);
+  return base::SharedMemoryHandle(result_handle,
+                                  base::UnguessableToken::Create());
 }
 
 }  // namespace
