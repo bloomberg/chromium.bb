@@ -2487,7 +2487,7 @@ blink::WebLocalFrame* RenderFrameImpl::GetWebFrame() {
   return frame_;
 }
 
-WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
+const WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
   return render_view_->GetWebkitPreferences();
 }
 

@@ -115,7 +115,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual blink::WebLocalFrame* GetWebFrame() = 0;
 
   // Gets WebKit related preferences associated with this frame.
-  virtual WebPreferences& GetWebkitPreferences() = 0;
+  virtual const WebPreferences& GetWebkitPreferences() = 0;
 
   // Shows a context menu with the given information. The given client will
   // be called with the result.
@@ -135,8 +135,8 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // menu is closed.
   virtual void CancelContextMenu(int request_id) = 0;
 
-  // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
-  // plugin was found. |throttler| may be empty.
+  // Create a new Pepper plugin depending on |info|. Returns NULL if no plugin
+  // was found. |throttler| may be empty.
   virtual blink::WebPlugin* CreatePlugin(
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
