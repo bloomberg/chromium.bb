@@ -253,6 +253,11 @@ bool DownloadRequestCore::OnResponseStarted(
                                            save_info_.get())
           : DOWNLOAD_INTERRUPT_REASON_NONE;
 
+  if (request()->response_headers()) {
+    RecordDownloadHttpResponseCode(
+        request()->response_headers()->response_code());
+  }
+
   std::unique_ptr<DownloadCreateInfo> create_info =
       CreateDownloadCreateInfo(result);
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
