@@ -12,7 +12,6 @@ import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.widget.RadioButtonLayout;
 
@@ -36,15 +35,7 @@ public class DefaultSearchEngineDialogHelper implements OnCheckedChangeListener,
 
         /** Determine what search engines will be listed. */
         protected List<TemplateUrl> getSearchEngines() {
-            if (mDialogType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING) {
-                TemplateUrlService instance = TemplateUrlService.getInstance();
-                assert instance.isLoaded();
-                return instance.getSearchEngines();
-            } else {
-                // TODO(dfalcantara): Handle the new user case.
-                assert false;
-                return null;
-            }
+            return LocaleManager.getInstance().getSearchEnginesForPromoDialog(mDialogType);
         }
 
         /** Called when the search engine the user selected is confirmed to be the one they want. */
