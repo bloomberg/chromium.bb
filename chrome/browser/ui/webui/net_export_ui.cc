@@ -300,10 +300,13 @@ void NetExportMessageHandler::FileSelected(const base::FilePath& path,
                                            void* params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(select_file_dialog_);
-  select_file_dialog_ = nullptr;
   *last_save_dir.Pointer() = path.DirName();
 
   file_writer_->StartNetLog(path, capture_mode_, GetURLRequestContexts());
+
+  // IMPORTANT: resetting the dialog may lead to the deletion of |path|, so keep
+  // this line last.
+  select_file_dialog_ = nullptr;
 }
 
 void NetExportMessageHandler::FileSelectionCanceled(void* params) {
