@@ -17,6 +17,23 @@ Inside of which, then, are created the two leaf iframes:
   <iframe src="http://c.com:1234/cross_site_iframe_factory.html?c()">
   <iframe src="http://d.com:1234/cross_site_iframe_factory.html?d()">
 
+Add iframe options by enclosing them in '{' and '}' characters after the
+hostname (multiple options can be separated with commas):
+
+  cross_site_iframe_factory.html?a(b{allowfullscreen}(),c{sandbox-allow-scripts}(d))
+
+Will create two iframes:
+
+  <iframe src="http://a.com:1234/cross_site_iframe_factory.html?b()" allowfullscreen>
+  <iframe src="http://c.com:1234/cross_site_iframe_factory.html?c{sandbox-allow-scripts}(d())" sandbox="allow-scripts">
+
+These options are supported:
+
+  allowfullscreen
+  allowpaymentrequest
+  allow-{featurename} - Adds {featurename} to the "allow" attribute
+  sandbox-{flagname} - Adds {flagname} to the "sandbox" attribute
+
 To make this page work, your browsertest needs a MockHostResolver, like:
 
   void SetUpOnMainThread() override {
@@ -92,6 +109,34 @@ function canonicalizeSite(siteString) {
 }
 
 /**
+ * Parses the list of iframe options and applies them to the provided element.
+ */
+function applyIFrameOptions(element, options) {
+  var sandboxArguments = [];
+  var allowFeatures = [];
+  for (var option of options) {
+    if (option == "allowfullscreen") {
+      element.allowFullscreen = true;
+    }
+    if (option == "allowpaymentrequest") {
+      element.allowPaymentRequest = true;
+    }
+    if (option.startsWith("sandbox-")) {
+      sandboxArguments.push(option.slice(8));
+    }
+    if (option.startsWith("allow-")) {
+      allowFeatures.push(option.slice(6))
+    }
+  }
+  if (sandboxArguments.length) {
+    element.sandbox = sandboxArguments.join(" ");
+  }
+  if (allowFeatures.length) {
+    element.allow = allowFeatures.join(" ");
+  }
+}
+
+/**
  * Simple recursive layout heuristic, since frames can't size themselves.
  * This scribbles .layoutX and .layoutY properties into |tree|.
  */
@@ -143,7 +188,7 @@ function main() {
   layout(frameTree);
 
   for (var i = 0; i < frameTree.children.length; i++) {
-    // Compute the URL for this iframe .
+    // Compute the URL for this iframe.
     var site = canonicalizeSite(frameTree.children[i].value);
     var subtreeString = TreeParserUtil.flatten(frameTree.children[i]);
     var url = '';
@@ -154,13 +199,17 @@ function main() {
     url += window.location.pathname;                     // path (preserved)
     url += '?' + encodeURIComponent(subtreeString);      // query
 
-    // Add the iframe to the document.
+    // Construct the iframe.
     var iframe = document.createElement('iframe');
     iframe.src = url;
     iframe.id = "child-" + i;
     iframe.style.borderColor = borderColorForSite(site);
     iframe.width = frameTree.children[i].layoutX;
     iframe.height = frameTree.children[i].layoutY;
+    // Apply any additional attributes.
+    applyIFrameOptions(iframe, frameTree.children[i].attributes);
+
+    // Add the iframe to the document.
     document.body.appendChild(iframe);
   }
 }

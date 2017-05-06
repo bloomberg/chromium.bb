@@ -10,31 +10,48 @@
  * escaping. But there's nothing really iframe-specific here. See below for some
  * examples of the grammar and the parser output.
  *
- * @example <caption>Basic syntax: an identifier followed by arg list.</caption>
- * TreeParserUtil.parse('abc ()');  // returns { value: 'abc', children: [] }
+ * @example <caption>Basic syntax: an identifier, optionally followed by a list
+ * of attributes, optionally followed by a list of children.</caption>
+ * // returns { value: 'abc', attributes: [], children: [] }
+ * TreeParserUtil.parse('abc {} ()');
  *
- * @example <caption>The arg list is optional. Dots are legal in ids.</caption>
- * TreeParserUtil.parse('b.com');  // returns { value: 'b.com', children: [] }
+ * @example <caption>Both the attribute and child lists are optional. Dots and
+ * hyphens are legal in ids.</caption>
+ * // returns { value: 'example-b.com', attributes: [], children: [] }
+ * TreeParserUtil.parse('example-b.com');
  *
- * @example <caption>Commas separate children in the arg list.</caption>
- * // returns { value: 'b', children: [
- * //           { value: 'c', children: [] },
- * //           { value: 'd', children: [] }
+ * @example <caption>Attributes are identifiers as well, separated by commas.
+ * </caption>
+ * // returns { value: 'abc', attributes: ['attr-1', 'attr-2'], children: [] }
+ * TreeParserUtil.parse('abc {attr-1, attr-2}');
+ *
+ * @example <caption>Commas separate children in the child list.</caption>
+ * // returns { value: 'b', attributes: [], children: [
+ * //           { value: 'c', attributes: [], children: [] },
+ * //           { value: 'd', attributes: [], children: [] }
  * //         ]}
  * TreeParserUtil.parse('b (c, d)';
  *
  * @example <caption>Children can have children, and so on.</caption>
- * // returns { value: 'e', children: [
- * //           { value: 'f', children: [
- * //             { value: 'g', children: [
- * //               { value: 'h', children: [] },
- * //               { value: 'i', children: [
- * //                 { value: 'j', children: [] }
+ * // returns { value: 'e', attributes: [], children: [
+ * //           { value: 'f', attributes: [], children: [
+ * //             { value: 'g', attributes: [], children: [
+ * //               { value: 'h', attributes: [], children: [] },
+ * //               { value: 'i', attributes: [], children: [
+ * //                 { value: 'j', attributes: [], children: [] }
  * //               ]},
  * //             ]}
  * //           ]}
  * //         ]}
  * TreeParserUtil.parse('e(f(g(h(),i(j))))';
+ *
+ * @example <caption>Attributes can be applied to children at any level of
+ * nesting.</caption>
+ * // returns { value: 'b', attributes: ['red', 'blue'], children: [
+ * //           { value: 'c', attributes: [], children: [] },
+ * //           { value: 'd', attributes: ['green'], children: [] }
+ * //         ]}
+ * TreeParserUtil.parse('b{red,blue}(c,d{green})';
  *
  * @example <caption>flatten() converts a [sub]tree back to a string.</caption>
  * var tree = TreeParserUtil.parse('b.com (c.com(e.com), d.com)');
@@ -62,7 +79,10 @@ var TreeParserUtil = (function() {
    * used to forward a subtree as an argument to a nested document.
    */
   function flatten(tree) {
-    return tree.value + '(' + tree.children.map(flatten).join(',') + ')';
+    var result = tree.value;
+    if (tree.attributes && tree.attributes.length)
+      result += '{' + tree.attributes.join(",") + "}";
+    return result + '(' + tree.children.map(flatten).join(',') + ')';
   }
 
   /**
@@ -74,7 +94,7 @@ var TreeParserUtil = (function() {
    * @return {Array.<string>} The resulting token stream.
    */
   function lex(input) {
-    return input.split(/(\s+|\(|\)|,)/).reduce(
+    return input.split(/(\s+|\(|\)|{|}|,)/).reduce(
       function (resultArray, token) {
         var trimmed = token.trim();
         if (trimmed) {
@@ -84,13 +104,13 @@ var TreeParserUtil = (function() {
       }, []);
   }
 
-
   /**
-   * Consumes from the stream an identifier and optional child list, returning
-   * its parsed representation.
+   * Consumes from the stream an identifier with optional attribute and child
+   * lists, returning its parsed representation.
    */
   function takeIdAndChild(tokenStream) {
     return { value: takeIdentifier(tokenStream),
+             attributes: takeAttributeList(tokenStream),
              children: takeChildList(tokenStream) };
   }
 
@@ -101,9 +121,49 @@ var TreeParserUtil = (function() {
     if (tokenStream.length == 0)
       throw new Error('Expected an identifier, but found end-of-stream.');
     var token = tokenStream.shift();
-    if (!token.match(/[a-zA-Z0-9.-]+/))
+    if (!token.match(/^[a-zA-Z0-9.-]+$/))
       throw new Error('Expected an identifier, but found "' + token + '".');
     return token;
+  }
+
+  /**
+   * Consumes an optional attribute list from the token stream, returning a list
+   * of the parsed attribute identifiers.
+   */
+  function takeAttributeList(tokenStream) {
+    // Remove the next token from the stream if it matches |token|.
+    function tryToEatA(token) {
+      if (tokenStream[0] == token) {
+        tokenStream.shift();
+        return true;
+      }
+      return false;
+    }
+
+    // Bare identifier case, as in 'b' in the input '(a (b, c))'
+    if (!tryToEatA('{'))
+      return [];
+
+    // Empty list case, as in 'b' in the input 'a (b {}, c)'.
+    if (tryToEatA('}')) {
+      return [];
+    }
+
+    // List with at least one entry.
+    var result = [ takeIdentifier(tokenStream) ];
+
+    // Additional entries allowed with comma.
+    while (tryToEatA(',')) {
+      result.push(takeIdentifier(tokenStream));
+    }
+
+    // End of list.
+    if (tryToEatA('}')) {
+      return result;
+    }
+    if (tokenStream.length == 0)
+      throw new Error('Expected "}" or ",", but found end-of-stream.');
+    throw new Error('Expected "}" or ",", but found "' + tokenStream[0] + '".');
   }
 
   /**
