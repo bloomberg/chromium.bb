@@ -80,6 +80,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // Returns true if the converter is used for a pen device.
   virtual bool HasPen() const;
 
+  // Returns true if the converter is used for a device with gamepad input.
+  virtual bool HasGamepad() const;
+
   // Returns true if the converter is used for a device with a caps lock LED.
   virtual bool HasCapsLockLed() const;
 

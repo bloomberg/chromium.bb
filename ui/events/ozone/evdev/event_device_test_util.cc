@@ -79,6 +79,70 @@ bool ParseBitfield(const std::string& bitfield,
 
 }  // namespace
 
+// Captured from Xbox 360 gamepad.
+const DeviceAbsoluteAxis kXboxGamepadAbsAxes[] = {
+    {ABS_X, {0, -32768, 32767, 16, 128}},
+    {ABS_Y, {0, -32768, 32767, 16, 128}},
+    {ABS_Z, {0, 0, 255, 0, 0}},
+    {ABS_RX, {0, -32768, 32767, 16, 128}},
+    {ABS_RY, {0, -32768, 32767, 16, 128}},
+    {ABS_RZ, {0, 0, 255, 0, 0}},
+    {ABS_HAT0X, {0, -1, 1, 0, 0}},
+    {ABS_HAT0Y, {0, -1, 1, 0, 0}}};
+
+const DeviceCapabilities kXboxGamepad = {
+    /* path */
+    "/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2:1.0/"
+    "input/input38/event11",
+    /* name */ "Microsoft X-Box 360 pad",
+    /* phys */ "usb-0000:00:14.0-2.2/input0",
+    /* uniq */ "",
+    /* bustype */ "0011",
+    /* vendor */ "045e",
+    /* product */ "028e",
+    /* version */ "0114",
+    /* prop */ "0",
+    /* ev */ "20000b",
+    /* key */ "7cdb000000000000 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "3003f",
+    /* msc */ "0",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kXboxGamepadAbsAxes,
+    arraysize(kXboxGamepadAbsAxes),
+};
+
+// Captured from iBuffalo gamepad.
+const DeviceAbsoluteAxis kiBuffaloGamepadAbsAxes[] = {
+    {ABS_X, {128, 0, 255, 0, 15}},
+    {ABS_Y, {128, 0, 255, 0, 15}}};
+
+const DeviceCapabilities kiBuffaloGamepad = {
+    /* path */
+    "/devices/pci0000:00/0000:00:14.0/usb3/3-14/3-14:1.0/0003:0583:2060.0011/"
+    "input/input30/event14",
+    /* name */ "USB,2-axis 8-button gamepad",
+    /* phys */ "usb-0000:00:14.0-14/input0",
+    /* uniq */ "",
+    /* bustype */ "0011",
+    /* vendor */ "0583",
+    /* product */ "2060",
+    /* version */ "0110",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "ff00000000 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "3",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kiBuffaloGamepadAbsAxes,
+    arraysize(kiBuffaloGamepadAbsAxes),
+};
+
 // Captured from Chromebook Pixel.
 const DeviceCapabilities kLinkKeyboard = {
     /* path */ "/sys/devices/platform/i8042/serio0/input/input6/event6",
@@ -498,6 +562,13 @@ bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
   sscanf(capabilities.bustype, "%x", &bustype);
   devinfo->SetDeviceType(InputDeviceTypeFromBusType(bustype));
 
+  int vendor_id = 0;
+  int product_id = 0;
+
+  sscanf(capabilities.vendor, "%x", &vendor_id);
+  sscanf(capabilities.product, "%x", &product_id);
+  devinfo->SetId(static_cast<uint16_t>(vendor_id),
+                 static_cast<uint16_t>(product_id));
   return true;
 }
 

@@ -23,6 +23,7 @@
 #include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"
 #include "ui/events/ozone/evdev/input_injector_evdev.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
+#include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
 
 namespace ui {
 
@@ -83,6 +84,12 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
                               event_factory_evdev_, params));
   }
 
+  void DispatchGamepadEvent(const GamepadEvent& event) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchGamepadEvent,
+                              event_factory_evdev_, event));
+  }
+
   void DispatchKeyboardDevicesUpdated(
       const std::vector<InputDevice>& devices) override {
     ui_thread_runner_->PostTask(
@@ -122,6 +129,13 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
                               event_factory_evdev_, stylus_state));
   }
 
+  void DispatchGamepadDevicesUpdated(
+      const std::vector<InputDevice>& devices) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchGamepadDevicesUpdated,
+                              event_factory_evdev_, devices));
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_runner_;
   base::WeakPtr<EventFactoryEvdev> event_factory_evdev_;
@@ -159,6 +173,7 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
                                      DeviceManager* device_manager,
                                      KeyboardLayoutEngine* keyboard_layout)
     : device_manager_(device_manager),
+      gamepad_provider_(GamepadProviderOzone::GetInstance()),
       keyboard_(&modifiers_,
                 keyboard_layout,
                 base::Bind(&EventFactoryEvdev::DispatchUiEvent,
@@ -345,6 +360,10 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   }
 }
 
+void EventFactoryEvdev::DispatchGamepadEvent(const GamepadEvent& event) {
+  gamepad_provider_->DispatchGamepadEvent(event);
+}
+
 void EventFactoryEvdev::DispatchUiEvent(Event* event) {
   // DispatchEvent takes PlatformEvent which is void*. This function
   // wraps it with the real type.
@@ -396,6 +415,12 @@ void EventFactoryEvdev::DispatchStylusStateChanged(StylusState stylus_state) {
   DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   observer->OnStylusStateChanged(stylus_state);
 };
+
+void EventFactoryEvdev::DispatchGamepadDevicesUpdated(
+    const std::vector<InputDevice>& devices) {
+  TRACE_EVENT0("evdev", "EventFactoryEvdev::DispatchGamepadDevicesUpdated");
+  gamepad_provider_->DispatchGamepadDevicesUpdated(devices);
+}
 
 void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
   if (event.device_type() != DeviceEvent::INPUT)
