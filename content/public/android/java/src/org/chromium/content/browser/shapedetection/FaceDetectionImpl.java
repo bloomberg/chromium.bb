@@ -43,14 +43,14 @@ public class FaceDetectionImpl implements FaceDetection {
         // TODO(xianglu): https://crbug.com/670028 homogeneize overflow checking.
         if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
             Log.d(TAG, "Invalid argument(s).");
-            callback.call(new FaceDetectionResult());
+            callback.call(new FaceDetectionResult[0]);
             return;
         }
 
         ByteBuffer imageBuffer = frameData.map(0, numPixels * 4, MapFlags.none());
         if (imageBuffer.capacity() <= 0) {
             Log.d(TAG, "Failed to map from SharedBufferHandle.");
-            callback.call(new FaceDetectionResult());
+            callback.call(new FaceDetectionResult[0]);
             return;
         }
 
@@ -88,25 +88,25 @@ public class FaceDetectionImpl implements FaceDetection {
                 // findFaces() will stop at |mMaxFaces|.
                 final int numberOfFaces = detector.findFaces(unPremultipliedBitmap, detectedFaces);
 
-                FaceDetectionResult faceDetectionResult = new FaceDetectionResult();
-                faceDetectionResult.boundingBoxes = new RectF[numberOfFaces];
+                FaceDetectionResult[] faceArray = new FaceDetectionResult[numberOfFaces];
+
                 for (int i = 0; i < numberOfFaces; i++) {
+                    faceArray[i] = new FaceDetectionResult();
+
                     final Face face = detectedFaces[i];
                     final PointF midPoint = new PointF();
                     face.getMidPoint(midPoint);
                     final float eyesDistance = face.eyesDistance();
 
-                    RectF boundingBox = new RectF();
-                    boundingBox.x = midPoint.x - eyesDistance;
-                    boundingBox.y = midPoint.y - eyesDistance;
-                    boundingBox.width = 2 * eyesDistance;
-                    boundingBox.height = 2 * eyesDistance;
-
+                    faceArray[i].boundingBox = new RectF();
+                    faceArray[i].boundingBox.x = midPoint.x - eyesDistance;
+                    faceArray[i].boundingBox.y = midPoint.y - eyesDistance;
+                    faceArray[i].boundingBox.width = 2 * eyesDistance;
+                    faceArray[i].boundingBox.height = 2 * eyesDistance;
                     // TODO(xianglu): Consider adding Face.confidence and Face.pose.
-                    faceDetectionResult.boundingBoxes[i] = boundingBox;
                 }
 
-                callback.call(faceDetectionResult);
+                callback.call(faceArray);
             }
         });
     }

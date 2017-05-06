@@ -1340,6 +1340,7 @@ interface DetectedBarcode
 interface DetectedFace
     attribute @@toStringTag
     getter boundingBox
+    getter landmarks
     method constructor
 interface DetectedText
     attribute @@toStringTag

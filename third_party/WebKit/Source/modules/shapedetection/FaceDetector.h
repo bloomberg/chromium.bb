@@ -34,8 +34,9 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector,
                          mojo::ScopedSharedBufferHandle,
                          int image_width,
                          int image_height) override;
-  void OnDetectFaces(ScriptPromiseResolver*,
-                     shape_detection::mojom::blink::FaceDetectionResultPtr);
+  void OnDetectFaces(
+      ScriptPromiseResolver*,
+      Vector<shape_detection::mojom::blink::FaceDetectionResultPtr>);
   void OnFaceServiceConnectionError();
 
   shape_detection::mojom::blink::FaceDetectionPtr face_service_;
