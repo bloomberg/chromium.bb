@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOCK_SCREEN_APPS_STATE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_LOCK_SCREEN_APPS_STATE_OBSERVER_H_
 
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "chrome/browser/chromeos/lock_screen_apps/types.h"
 
 namespace lock_screen_apps {
 
@@ -16,8 +16,9 @@ class StateObserver {
 
   // Invoked when the state of support for app provided lock screen actions
   // changes.
-  virtual void OnLockScreenNoteStateChanged(
-      ash::mojom::TrayActionState state) = 0;
+  // |states|: Maps actions supported by the platform to their current state.
+  virtual void OnLockScreenAppsStateChanged(Action action,
+                                            ActionState state) = 0;
 };
 
 }  // namespace lock_screen_apps

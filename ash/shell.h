@@ -157,7 +157,6 @@ class SystemTrayDelegate;
 class SystemTrayNotifier;
 class ToplevelWindowEventHandler;
 class ToastManager;
-class TrayAction;
 class TrayBluetoothHelper;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
@@ -345,7 +344,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
-  TrayAction* tray_action() { return tray_action_.get(); }
   VpnList* vpn_list() { return vpn_list_.get(); }
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
@@ -693,7 +691,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<ToastManager> toast_manager_;
-  std::unique_ptr<TrayAction> tray_action_;
   std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;

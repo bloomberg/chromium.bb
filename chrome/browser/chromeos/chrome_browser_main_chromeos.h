@@ -14,10 +14,6 @@
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chromeos/system/version_loader.h"
 
-namespace lock_screen_apps {
-class StateController;
-}
-
 namespace session_manager {
 class SessionManager;
 }
@@ -101,9 +97,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;
 
   std::unique_ptr<memory::MemoryKillsMonitor::Handle> memory_kills_monitor_;
-
-  std::unique_ptr<lock_screen_apps::StateController>
-      lock_screen_apps_state_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };
