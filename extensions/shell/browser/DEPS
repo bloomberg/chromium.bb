@@ -1,5 +1,4 @@
 include_rules = [
-  "+apps",
   "+chromeos",
   "+components/keyed_service",
   "+components/nacl/browser",

@@ -1,4 +1,7 @@
 include_rules = [
+  # The apps module has dependencies on chrome.
+  "-apps",
+
   # Individual subdirectories should have their own DEPS that include
   # their allowed directories.
   "-extensions/shell",
