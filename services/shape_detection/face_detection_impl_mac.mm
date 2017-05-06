@@ -16,13 +16,13 @@ namespace {
 
 void RunCallbackWithFaces(
     const shape_detection::mojom::FaceDetection::DetectCallback& callback,
-    shape_detection::mojom::FaceDetectionResultPtr faces) {
-  callback.Run(std::move(faces));
+    std::vector<shape_detection::mojom::FaceDetectionResultPtr> results) {
+  callback.Run(std::move(results));
 }
 
 void RunCallbackWithNoFaces(
     const shape_detection::mojom::FaceDetection::DetectCallback& callback) {
-  callback.Run(shape_detection::mojom::FaceDetectionResult::New());
+  callback.Run(std::vector<shape_detection::mojom::FaceDetectionResultPtr>());
 }
 
 }  // anonymous namespace
@@ -62,8 +62,7 @@ void FaceDetectionImplMac::Detect(mojo::ScopedSharedBufferHandle frame_data,
 
   NSArray* const features = [detector_ featuresInImage:ci_image];
 
-  shape_detection::mojom::FaceDetectionResultPtr faces =
-      shape_detection::mojom::FaceDetectionResult::New();
+  std::vector<mojom::FaceDetectionResultPtr> results;
   for (CIFaceFeature* const f in features) {
     // In the default Core Graphics coordinate space, the origin is located
     // in the lower-left corner, and thus |ci_image| is flipped vertically.
@@ -71,9 +70,35 @@ void FaceDetectionImplMac::Detect(mojo::ScopedSharedBufferHandle frame_data,
     gfx::RectF boundingbox(f.bounds.origin.x,
                            height - f.bounds.origin.y - f.bounds.size.height,
                            f.bounds.size.width, f.bounds.size.height);
-    faces->bounding_boxes.push_back(boundingbox);
+
+    auto face = shape_detection::mojom::FaceDetectionResult::New();
+    face->bounding_box = std::move(boundingbox);
+
+    if (f.hasLeftEyePosition) {
+      auto landmark = shape_detection::mojom::Landmark::New();
+      landmark->type = shape_detection::mojom::LandmarkType::EYE;
+      landmark->location =
+          gfx::PointF(f.leftEyePosition.x, height - f.leftEyePosition.y);
+      face->landmarks.push_back(std::move(landmark));
+    }
+    if (f.hasRightEyePosition) {
+      auto landmark = shape_detection::mojom::Landmark::New();
+      landmark->type = shape_detection::mojom::LandmarkType::EYE;
+      landmark->location =
+          gfx::PointF(f.rightEyePosition.x, height - f.rightEyePosition.y);
+      face->landmarks.push_back(std::move(landmark));
+    }
+    if (f.hasMouthPosition) {
+      auto landmark = shape_detection::mojom::Landmark::New();
+      landmark->type = shape_detection::mojom::LandmarkType::MOUTH;
+      landmark->location =
+          gfx::PointF(f.mouthPosition.x, height - f.mouthPosition.y);
+      face->landmarks.push_back(std::move(landmark));
+    }
+
+    results.push_back(std::move(face));
   }
-  scoped_callback.Run(std::move(faces));
+  scoped_callback.Run(std::move(results));
 }
 
 }  // namespace shape_detection

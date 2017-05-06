@@ -11,6 +11,7 @@
 namespace blink {
 
 class DOMRect;
+class Landmark;
 
 class MODULES_EXPORT DetectedFace final : public GarbageCollected<DetectedFace>,
                                           public ScriptWrappable {
@@ -19,14 +20,19 @@ class MODULES_EXPORT DetectedFace final : public GarbageCollected<DetectedFace>,
  public:
   static DetectedFace* Create();
   static DetectedFace* Create(DOMRect*);
+  static DetectedFace* Create(DOMRect*, const HeapVector<Landmark>&);
 
   DOMRect* boundingBox() const;
+  const HeapVector<Landmark>& landmarks() const;
+
   DECLARE_TRACE();
 
  private:
   explicit DetectedFace(DOMRect*);
+  DetectedFace(DOMRect*, const HeapVector<Landmark>&);
 
   Member<DOMRect> bounding_box_;
+  HeapVector<Landmark> landmarks_;
 };
 
 }  // namespace blink

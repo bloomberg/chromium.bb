@@ -37,10 +37,15 @@ class FaceDetectionImplMacTest : public TestWithParam<bool> {
  public:
   ~FaceDetectionImplMacTest() override {}
 
-  void DetectCallback(mojom::FaceDetectionResultPtr results) {
-    Detection(results->bounding_boxes.size());
+  void DetectCallback(std::vector<mojom::FaceDetectionResultPtr> results) {
+    ASSERT_EQ(1u, results.size());
+    ASSERT_EQ(3u, results[0]->landmarks.size());
+    EXPECT_EQ(mojom::LandmarkType::EYE, results[0]->landmarks[0]->type);
+    EXPECT_EQ(mojom::LandmarkType::EYE, results[0]->landmarks[1]->type);
+    EXPECT_EQ(mojom::LandmarkType::MOUTH, results[0]->landmarks[2]->type);
+    Detection();
   }
-  MOCK_METHOD1(Detection, void(size_t));
+  MOCK_METHOD0(Detection, void(void));
 
   std::unique_ptr<FaceDetectionImplMac> impl_;
   const base::MessageLoop message_loop_;
@@ -90,7 +95,7 @@ TEST_P(FaceDetectionImplMacTest, ScanOneFace) {
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
   // Send the image to Detect() and expect the response in callback.
-  EXPECT_CALL(*this, Detection(1)).WillOnce(RunClosure(quit_closure));
+  EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(quit_closure));
   impl_->Detect(std::move(handle), size.width(), size.height(),
                 base::Bind(&FaceDetectionImplMacTest::DetectCallback,
                            base::Unretained(this)));

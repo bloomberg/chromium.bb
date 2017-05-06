@@ -45,6 +45,10 @@ function FaceDetectorDetectionResultTest(detectionResult, mock) {
   const GREEN_PIXEL = 0xFF00FF00;
   assert_equals(imageReceivedByMock[0], GREEN_PIXEL, "Pixel color");
   assert_equals(detectionResult.length, 3, "Number of faces");
+  assert_equals(detectionResult[0].landmarks.length, 1, "Number of landmarks");
+  assert_object_equals(detectionResult[0].landmarks[0],
+                      {type : 'eye', location : {x : 4.0, y : 5.0}},
+                      "landmark #1");
 }
 
 function BarcodeDetectorDetectionResultTest(detectionResult, mock) {

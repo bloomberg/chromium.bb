@@ -8,11 +8,21 @@ module shape_detection.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
+// https://wicg.github.io/shape-detection-api/#enumdef-landmarktype
+enum LandmarkType { MOUTH, EYE };
+
+// https://wicg.github.io/shape-detection-api/#dictdef-landmark
+struct Landmark {
+  gfx.mojom.PointF location;
+  LandmarkType type;
+};
+
 // Since "//ui/gfx/geometry/mojo" is not exposed to blink, we need to declare
 // a wrapper struct, so that gfx.mojom.RectF will not be directly referenced
 // inside Blink, and browser can still use gfx types.
 struct FaceDetectionResult {
-  array<gfx.mojom.RectF> bounding_boxes;
+  gfx.mojom.RectF bounding_box;
+  array<Landmark> landmarks;
 };
 
 struct FaceDetectorOptions {
@@ -25,5 +35,5 @@ interface FaceDetection {
   // row-major order.
   // TODO(mcasas): Consider using mojo::Bitmap here, https://crbug.com/665488.
   Detect(handle<shared_buffer> frame_data, uint32 width, uint32 height)
-    => (FaceDetectionResult result);
+    => (array<FaceDetectionResult> results);
 };

@@ -48,13 +48,23 @@ let mockFaceDetectionProviderReady = define(
       let receivedStruct = mojo.mapBuffer(frame_data, 0, width*height*4, 0);
       this.buffer_data_ = new Uint32Array(receivedStruct.buffer);
       return Promise.resolve({
-        result: {
-          bounding_boxes: [
-            { x : 1.0, y: 1.0, width: 100.0, height: 100.0 },
-            { x : 2.0, y: 2.0, width: 200.0, height: 200.0 },
-            { x : 3.0, y: 3.0, width: 300.0, height: 300.0 },
-          ]
-        }
+        results: [
+          {
+            bounding_box: {x: 1.0, y: 1.0, width: 100.0, height: 100.0},
+            landmarks: [{
+              type: faceDetection.LandmarkType.EYE,
+              location: {x: 4.0, y: 5.0}
+            }]
+          },
+          {
+            bounding_box: {x: 2.0, y: 2.0, width: 200.0, height: 200.0},
+            landmarks: []
+          },
+          {
+            bounding_box: {x: 3.0, y: 3.0, width: 300.0, height: 300.0},
+            landmarks: []
+          },
+        ]
       });
       mojo.unmapBuffer(receivedStruct.buffer);
     }

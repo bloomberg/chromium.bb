@@ -7,8 +7,10 @@
 #include "core/dom/DOMException.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "modules/imagecapture/Point2D.h"
 #include "modules/shapedetection/DetectedFace.h"
 #include "modules/shapedetection/FaceDetectorOptions.h"
+#include "modules/shapedetection/Landmark.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom-blink.h"
@@ -57,16 +59,33 @@ ScriptPromise FaceDetector::DoDetect(
 
 void FaceDetector::OnDetectFaces(
     ScriptPromiseResolver* resolver,
-    shape_detection::mojom::blink::FaceDetectionResultPtr
-        face_detection_result) {
+    Vector<shape_detection::mojom::blink::FaceDetectionResultPtr>
+        face_detection_results) {
   DCHECK(face_service_requests_.Contains(resolver));
   face_service_requests_.erase(resolver);
 
   HeapVector<Member<DetectedFace>> detected_faces;
-  for (const auto& bounding_box : face_detection_result->bounding_boxes) {
+  for (const auto& face : face_detection_results) {
+    HeapVector<Landmark> landmarks;
+    for (const auto& landmark : face->landmarks) {
+      Point2D location;
+      location.setX(landmark->location->x);
+      location.setY(landmark->location->y);
+      Landmark web_landmark;
+      web_landmark.setLocation(location);
+      if (landmark->type == shape_detection::mojom::blink::LandmarkType::EYE) {
+        web_landmark.setType("eye");
+      } else if (landmark->type ==
+                 shape_detection::mojom::blink::LandmarkType::MOUTH) {
+        web_landmark.setType("mouth");
+      }
+      landmarks.push_back(web_landmark);
+    }
+
     detected_faces.push_back(DetectedFace::Create(
-        DOMRect::Create(bounding_box->x, bounding_box->y, bounding_box->width,
-                        bounding_box->height)));
+        DOMRect::Create(face->bounding_box->x, face->bounding_box->y,
+                        face->bounding_box->width, face->bounding_box->height),
+        landmarks));
   }
 
   resolver->Resolve(detected_faces);
