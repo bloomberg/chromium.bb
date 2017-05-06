@@ -18,16 +18,17 @@
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_animation.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_animation.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -36,7 +37,9 @@
 #include "ui/views/metrics.h"
 
 namespace {
-const float kIconSize = 16;
+
+constexpr float kIconSize = 16;
+
 }  // namespace
 
 // static
@@ -158,6 +161,19 @@ void AppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
   AnimateIconIfPossible();
 }
 
+void AppMenuButton::AppMenuAnimationStarted() {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+}
+
+void AppMenuButton::AppMenuAnimationEnded() {
+  DestroyLayer();
+}
+
+void AppMenuButton::InvalidateIcon() {
+  SchedulePaint();
+}
+
 void AppMenuButton::UpdateIcon(bool should_animate) {
   SkColor severity_color = gfx::kPlaceholderColor;
   SkColor toolbar_icon_color =
@@ -224,15 +240,6 @@ void AppMenuButton::AnimateIconIfPossible() {
   }
 
   animation_->StartAnimation();
-}
-
-void AppMenuButton::AppMenuAnimationStarted() {
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-}
-
-void AppMenuButton::AppMenuAnimationEnded() {
-  DestroyLayer();
 }
 
 const char* AppMenuButton::GetClassName() const {

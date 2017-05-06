@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/toolbar/app_menu_animation.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -23,10 +24,11 @@ class LabelButtonBorder;
 class MenuListener;
 }
 
-class AppMenuAnimation;
 class ToolbarView;
 
-class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
+class AppMenuButton : public views::MenuButton,
+                      public TabStripModelObserver,
+                      public AppMenuAnimationDelegate {
  public:
   explicit AppMenuButton(ToolbarView* toolbar_view);
   ~AppMenuButton() override;
@@ -64,6 +66,11 @@ class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
                      int index,
                      bool foreground) override;
 
+  // AppMenuAnimationDelegate:
+  void AppMenuAnimationStarted() override;
+  void AppMenuAnimationEnded() override;
+  void InvalidateIcon() override;
+
   // Updates the presentation according to |severity_| and the theme provider.
   // If |should_animate| is true, the icon should animate.
   void UpdateIcon(bool should_animate);
@@ -75,11 +82,6 @@ class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
   // Animates the icon if possible. The icon will not animate if the severity
   // level is none, |animation_| is nullptr or |should_use_new_icon_| is false.
   void AnimateIconIfPossible();
-
-  // Methods called by AppMenuAnimation when the animation has started/ended.
-  // The layer is managed inside these methods.
-  void AppMenuAnimationStarted();
-  void AppMenuAnimationEnded();
 
   // Opens the app menu immediately during a drag-and-drop operation.
   // Used only in testing.
