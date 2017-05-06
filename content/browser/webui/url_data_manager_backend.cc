@@ -45,7 +45,6 @@
 #include "net/base/net_errors.h"
 #include "net/filter/gzip_source_stream.h"
 #include "net/filter/source_stream.h"
-#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request.h"
@@ -69,34 +68,6 @@ const char kNetworkErrorKey[] = "netError";
 bool SchemeIsInSchemes(const std::string& scheme,
                        const std::vector<std::string>& schemes) {
   return std::find(schemes.begin(), schemes.end(), scheme) != schemes.end();
-}
-
-// Returns whether |url| passes some sanity checks and is a valid GURL.
-bool CheckURLIsValid(const GURL& url) {
-  std::vector<std::string> additional_schemes;
-  DCHECK(url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme) ||
-         (GetContentClient()->browser()->GetAdditionalWebUISchemes(
-              &additional_schemes),
-          SchemeIsInSchemes(url.scheme(), additional_schemes)));
-
-  if (!url.is_valid()) {
-    NOTREACHED();
-    return false;
-  }
-
-  return true;
-}
-
-// Parse |url| to get the path which will be used to resolve the request. The
-// path is the remaining portion after the scheme and hostname.
-void URLToRequestPath(const GURL& url, std::string* path) {
-  const std::string& spec = url.possibly_invalid_spec();
-  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-  // + 1 to skip the slash at the beginning of the path.
-  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
-
-  if (offset < static_cast<int>(spec.size()))
-    path->assign(spec.substr(offset));
 }
 
 // Returns a value of 'Origin:' header for the |request| if the header is set.
@@ -134,11 +105,9 @@ void CopyData(const scoped_refptr<net::IOBuffer>& buf,
 // calls back once the data is available.
 class URLRequestChromeJob : public net::URLRequestJob {
  public:
-  // |is_incognito| set when job is generated from an incognito profile.
   URLRequestChromeJob(net::URLRequest* request,
                       net::NetworkDelegate* network_delegate,
-                      URLDataManagerBackend* backend,
-                      bool is_incognito);
+                      URLDataManagerBackend* backend);
 
   // net::URLRequestJob implementation.
   void Start() override;
@@ -155,69 +124,12 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // for us.  |bytes| may be null, indicating an error.
   void DataAvailable(base::RefCountedMemory* bytes);
 
-  // Returns a weak pointer to the job.
-  base::WeakPtr<URLRequestChromeJob> AsWeakPtr();
-
-  void set_mime_type(const std::string& mime_type) {
-    mime_type_ = mime_type;
-  }
-
-  void set_allow_caching(bool allow_caching) {
-    allow_caching_ = allow_caching;
-  }
-
-  void set_add_content_security_policy(bool add_content_security_policy) {
-    add_content_security_policy_ = add_content_security_policy;
-  }
-
-  void set_content_security_policy_object_source(
-      const std::string& data) {
-    content_security_policy_object_source_ = data;
-  }
-
-  void set_content_security_policy_script_source(
-      const std::string& data) {
-    content_security_policy_script_source_ = data;
-  }
-
-  void set_content_security_policy_child_source(
-      const std::string& data) {
-    content_security_policy_child_source_ = data;
-  }
-
-  void set_content_security_policy_style_source(
-      const std::string& data) {
-    content_security_policy_style_source_ = data;
-  }
-
-  void set_content_security_policy_image_source(
-      const std::string& data) {
-    content_security_policy_image_source_ = data;
-  }
-
-  void set_deny_xframe_options(bool deny_xframe_options) {
-    deny_xframe_options_ = deny_xframe_options;
-  }
-
-  void set_send_content_type_header(bool send_content_type_header) {
-    send_content_type_header_ = send_content_type_header;
-  }
-
-  void set_access_control_allow_origin(const std::string& value) {
-    access_control_allow_origin_ = value;
-  }
-
   void set_is_gzipped(bool is_gzipped) {
     is_gzipped_ = is_gzipped;
   }
 
   void SetReplacements(const ui::TemplateReplacements* replacements) {
     replacements_ = replacements;
-  }
-
-  // Returns true when job was generated from an incognito profile.
-  bool is_incognito() const {
-    return is_incognito_;
   }
 
  private:
@@ -255,32 +167,6 @@ class URLRequestChromeJob : public net::URLRequestJob {
   int pending_buf_size_;
   std::string mime_type_;
 
-  // If true, set a header in the response to prevent it from being cached.
-  bool allow_caching_;
-
-  // If true, set the Content Security Policy (CSP) header.
-  bool add_content_security_policy_;
-
-  // These are used with the CSP.
-  std::string content_security_policy_script_source_;
-  std::string content_security_policy_object_source_;
-  std::string content_security_policy_child_source_;
-  std::string content_security_policy_style_source_;
-  std::string content_security_policy_image_source_;
-
-  // If true, sets  the "X-Frame-Options: DENY" header.
-  bool deny_xframe_options_;
-
-  // If true, sets the "Content-Type: <mime-type>" header.
-  bool send_content_type_header_;
-
-  // If not empty, "Access-Control-Allow-Origin:" is set to the value of this
-  // string.
-  std::string access_control_allow_origin_;
-
-  // True when job is generated from an incognito profile.
-  const bool is_incognito_;
-
   // True when gzip encoding should be used. NOTE: this requires the original
   // resources in resources.pak use compress="gzip".
   bool is_gzipped_;
@@ -298,17 +184,11 @@ class URLRequestChromeJob : public net::URLRequestJob {
 
 URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
                                          net::NetworkDelegate* network_delegate,
-                                         URLDataManagerBackend* backend,
-                                         bool is_incognito)
+                                         URLDataManagerBackend* backend)
     : net::URLRequestJob(request, network_delegate),
       data_offset_(0),
       data_available_status_(net::OK),
       pending_buf_size_(0),
-      allow_caching_(true),
-      add_content_security_policy_(true),
-      deny_xframe_options_(true),
-      send_content_type_header_(false),
-      is_incognito_(is_incognito),
       is_gzipped_(false),
       replacements_(nullptr),
       backend_(backend),
@@ -359,43 +239,11 @@ bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
 
 void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   DCHECK(!info->headers.get());
-  // Set the headers so that requests serviced by ChromeURLDataManager return a
-  // status code of 200. Without this they return a 0, which makes the status
-  // indistiguishable from other error types. Instant relies on getting a 200.
-  info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
-
-  // Determine the least-privileged content security policy header, if any,
-  // that is compatible with a given WebUI URL, and append it to the existing
-  // response headers.
-  if (add_content_security_policy_) {
-    std::string base = kChromeURLContentSecurityPolicyHeaderBase;
-    base.append(content_security_policy_script_source_);
-    base.append(content_security_policy_object_source_);
-    base.append(content_security_policy_child_source_);
-    base.append(content_security_policy_style_source_);
-    base.append(content_security_policy_image_source_);
-    info->headers->AddHeader(base);
-  }
-
-  if (deny_xframe_options_)
-    info->headers->AddHeader(kChromeURLXFrameOptionsHeader);
-
-  if (!allow_caching_)
-    info->headers->AddHeader("Cache-Control: no-cache");
-
-  if (send_content_type_header_ && !mime_type_.empty()) {
-    std::string content_type =
-        base::StringPrintf("%s:%s", net::HttpRequestHeaders::kContentType,
-                           mime_type_.c_str());
-    info->headers->AddHeader(content_type);
-  }
-
-  if (!access_control_allow_origin_.empty()) {
-    info->headers->AddHeader("Access-Control-Allow-Origin: " +
-                             access_control_allow_origin_);
-    info->headers->AddHeader("Vary: Origin");
-  }
-
+  URLDataSourceImpl* source = backend_->GetDataSourceFromURL(request()->url());
+  std::string path;
+  URLDataManagerBackend::URLToRequestPath(request()->url(), &path);
+  info->headers = URLDataManagerBackend::GetHeaders(
+      source, path, GetOriginHeaderValue(request()));
   if (is_gzipped_)
     info->headers->AddHeader("Content-Encoding: gzip");
 }
@@ -410,7 +258,7 @@ std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {
   }
 
   if (replacements_) {
-    source_stream = content::I18nSourceStream::Create(
+    source_stream = I18nSourceStream::Create(
         std::move(source_stream), net::SourceStream::TYPE_NONE, replacements_);
   }
 
@@ -418,7 +266,7 @@ std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {
 }
 
 void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {
-  set_mime_type(mime_type);
+  mime_type_ = mime_type;
   NotifyHeadersComplete();
 }
 
@@ -439,10 +287,6 @@ void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
     if (result != net::ERR_IO_PENDING)
       ReadRawDataComplete(result);
   }
-}
-
-base::WeakPtr<URLRequestChromeJob> URLRequestChromeJob::AsWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 int URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
@@ -477,8 +321,8 @@ int URLRequestChromeJob::PostReadTask(scoped_refptr<net::IOBuffer> buf,
       FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&CopyData, base::RetainedRef(buf), buf_size, data_,
                  data_offset_),
-      base::Bind(&URLRequestChromeJob::ReadRawDataComplete, AsWeakPtr(),
-                 buf_size));
+      base::Bind(&URLRequestChromeJob::ReadRawDataComplete,
+                 weak_factory_.GetWeakPtr(), buf_size));
   data_offset_ += buf_size;
 
   return net::ERR_IO_PENDING;
@@ -531,12 +375,9 @@ bool IsValidNetworkErrorCode(int error_code) {
 class ChromeProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  // |is_incognito| should be set for incognito profiles.
   ChromeProtocolHandler(ResourceContext* resource_context,
-                        bool is_incognito,
                         ChromeBlobStorageContext* blob_storage_context)
       : resource_context_(resource_context),
-        is_incognito_(is_incognito),
         blob_storage_context_(blob_storage_context) {}
   ~ChromeProtocolHandler() override {}
 
@@ -590,7 +431,7 @@ class ChromeProtocolHandler
     // Fall back to using a custom handler
     return new URLRequestChromeJob(
         request, network_delegate,
-        GetURLDataManagerForResourceContext(resource_context_), is_incognito_);
+        GetURLDataManagerForResourceContext(resource_context_));
   }
 
   bool IsSafeRedirectTarget(const GURL& location) const override {
@@ -601,8 +442,6 @@ class ChromeProtocolHandler
   // These members are owned by ProfileIOData, which owns this ProtocolHandler.
   ResourceContext* const resource_context_;
 
-  // True when generated from an incognito profile.
-  const bool is_incognito_;
   ChromeBlobStorageContext* blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeProtocolHandler);
@@ -628,10 +467,9 @@ URLDataManagerBackend::~URLDataManagerBackend() {
 std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 URLDataManagerBackend::CreateProtocolHandler(
     ResourceContext* resource_context,
-    bool is_incognito,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK(resource_context);
-  return base::MakeUnique<ChromeProtocolHandler>(resource_context, is_incognito,
+  return base::MakeUnique<ChromeProtocolHandler>(resource_context,
                                                  blob_storage_context);
 }
 
@@ -672,6 +510,7 @@ bool URLDataManagerBackend::HasPendingJob(
 
 bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
                                          URLRequestChromeJob* job) {
+  // NOTE: this duplicates code in web_ui_url_loader_factory.cc's URLLoaderImpl.
   if (!CheckURLIsValid(request->url()))
     return false;
 
@@ -679,8 +518,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   if (!source)
     return false;
 
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (!source->source()->ShouldServiceRequest(
           request->url(), info ? info->GetContext() : nullptr,
           info ? info->GetChildID() : -1)) {
@@ -694,23 +532,6 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   RequestID request_id = next_request_id_++;
   pending_requests_.insert(std::make_pair(request_id, job));
 
-  job->set_allow_caching(source->source()->AllowCaching());
-  job->set_add_content_security_policy(
-      source->source()->ShouldAddContentSecurityPolicy());
-  job->set_content_security_policy_script_source(
-      source->source()->GetContentSecurityPolicyScriptSrc());
-  job->set_content_security_policy_object_source(
-      source->source()->GetContentSecurityPolicyObjectSrc());
-  job->set_content_security_policy_child_source(
-      source->source()->GetContentSecurityPolicyChildSrc());
-  job->set_content_security_policy_style_source(
-      source->source()->GetContentSecurityPolicyStyleSrc());
-  job->set_content_security_policy_image_source(
-      source->source()->GetContentSecurityPolicyImgSrc());
-  job->set_deny_xframe_options(
-      source->source()->ShouldDenyXFrameOptions());
-  job->set_send_content_type_header(
-      source->source()->ShouldServeMimeTypeAsContentTypeHeader());
   job->set_is_gzipped(source->source()->IsGzipped(path));
 
   // TODO(dschuyler): improve filtering of which resource to run template
@@ -718,15 +539,6 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   std::string mime_type = source->source()->GetMimeType(path);
   if (mime_type == "text/html")
     job->SetReplacements(source->GetReplacements());
-
-  std::string origin = GetOriginHeaderValue(request);
-  if (!origin.empty()) {
-    std::string header =
-        source->source()->GetAccessControlAllowOriginForOrigin(origin);
-    DCHECK(header.empty() || header == origin || header == "*" ||
-           header == "null");
-    job->set_access_control_allow_origin(header);
-  }
 
   // Also notifies that the headers are complete.
   job->MimeTypeAvailable(mime_type);
@@ -810,13 +622,90 @@ void URLDataManagerBackend::DataAvailable(RequestID request_id,
   }
 }
 
+scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
+    URLDataSourceImpl* source_impl,
+    const std::string& path,
+    const std::string& origin) {
+  // Set the headers so that requests serviced by ChromeURLDataManager return a
+  // status code of 200. Without this they return a 0, which makes the status
+  // indistiguishable from other error types. Instant relies on getting a 200.
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+  if (!source_impl)
+    return headers;
+
+  URLDataSource* source = source_impl->source();
+  // Determine the least-privileged content security policy header, if any,
+  // that is compatible with a given WebUI URL, and append it to the existing
+  // response headers.
+  if (source->ShouldAddContentSecurityPolicy()) {
+    std::string base = kChromeURLContentSecurityPolicyHeaderBase;
+    base.append(source->GetContentSecurityPolicyScriptSrc());
+    base.append(source->GetContentSecurityPolicyObjectSrc());
+    base.append(source->GetContentSecurityPolicyChildSrc());
+    base.append(source->GetContentSecurityPolicyStyleSrc());
+    base.append(source->GetContentSecurityPolicyImgSrc());
+    headers->AddHeader(base);
+  }
+
+  if (source->ShouldDenyXFrameOptions())
+    headers->AddHeader(kChromeURLXFrameOptionsHeader);
+
+  if (!source->AllowCaching())
+    headers->AddHeader("Cache-Control: no-cache");
+
+  std::string mime_type = source->GetMimeType(path);
+  if (source->ShouldServeMimeTypeAsContentTypeHeader() && !mime_type.empty()) {
+    std::string content_type = base::StringPrintf(
+        "%s:%s", net::HttpRequestHeaders::kContentType, mime_type.c_str());
+    headers->AddHeader(content_type);
+  }
+
+  if (!origin.empty()) {
+    std::string header = source->GetAccessControlAllowOriginForOrigin(origin);
+    DCHECK(header.empty() || header == origin || header == "*" ||
+           header == "null");
+    if (!header.empty()) {
+      headers->AddHeader("Access-Control-Allow-Origin: " + header);
+      headers->AddHeader("Vary: Origin");
+    }
+  }
+
+  return headers;
+}
+
+bool URLDataManagerBackend::CheckURLIsValid(const GURL& url) {
+  std::vector<std::string> additional_schemes;
+  DCHECK(url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme) ||
+         (GetContentClient()->browser()->GetAdditionalWebUISchemes(
+              &additional_schemes),
+          SchemeIsInSchemes(url.scheme(), additional_schemes)));
+
+  if (!url.is_valid()) {
+    NOTREACHED();
+    return false;
+  }
+
+  return true;
+}
+
+void URLDataManagerBackend::URLToRequestPath(const GURL& url,
+                                             std::string* path) {
+  const std::string& spec = url.possibly_invalid_spec();
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+  // + 1 to skip the slash at the beginning of the path.
+  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
+
+  if (offset < static_cast<int>(spec.size()))
+    path->assign(spec.substr(offset));
+}
+
 namespace {
 
 class DevToolsJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  // |is_incognito| should be set for incognito profiles.
-  DevToolsJobFactory(ResourceContext* resource_context, bool is_incognito);
+  explicit DevToolsJobFactory(ResourceContext* resource_context);
   ~DevToolsJobFactory() override;
 
   net::URLRequestJob* MaybeCreateJob(
@@ -828,15 +717,11 @@ class DevToolsJobFactory
   // which owns this ProtocolHandler.
   ResourceContext* const resource_context_;
 
-  // True when generated from an incognito profile.
-  const bool is_incognito_;
-
   DISALLOW_COPY_AND_ASSIGN(DevToolsJobFactory);
 };
 
-DevToolsJobFactory::DevToolsJobFactory(ResourceContext* resource_context,
-                                       bool is_incognito)
-    : resource_context_(resource_context), is_incognito_(is_incognito) {
+DevToolsJobFactory::DevToolsJobFactory(ResourceContext* resource_context)
+    : resource_context_(resource_context) {
   DCHECK(resource_context_);
 }
 
@@ -847,15 +732,14 @@ DevToolsJobFactory::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   return new URLRequestChromeJob(
       request, network_delegate,
-      GetURLDataManagerForResourceContext(resource_context_), is_incognito_);
+      GetURLDataManagerForResourceContext(resource_context_));
 }
 
 }  // namespace
 
 net::URLRequestJobFactory::ProtocolHandler* CreateDevToolsProtocolHandler(
-    ResourceContext* resource_context,
-    bool is_incognito) {
-  return new DevToolsJobFactory(resource_context, is_incognito);
+    ResourceContext* resource_context) {
+  return new DevToolsJobFactory(resource_context);
 }
 
 }  // namespace content

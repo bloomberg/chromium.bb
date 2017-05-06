@@ -20,16 +20,6 @@ namespace content {
 
 namespace {
 
-WebContents* GetWebContentsFromFTNID(int frame_tree_node_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (!frame_tree_node)
-    return nullptr;
-
-  return WebContentsImpl::FromFrameTreeNode(frame_tree_node);
-}
-
 int FrameTreeNodeIdFromHostIds(int render_process_host_id,
                                int render_frame_host_id) {
   RenderFrameHost* render_frame_host =
@@ -203,7 +193,7 @@ ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
   // ID should be used to access the WebContents.
   if (frame_tree_node_id_ != -1) {
     DCHECK(IsBrowserSideNavigationEnabled());
-    return base::Bind(&GetWebContentsFromFTNID, frame_tree_node_id_);
+    return base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id_);
   }
 
   // In other cases, use the RenderProcessHost ID + RenderFrameHost ID to get

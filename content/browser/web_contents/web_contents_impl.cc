@@ -327,7 +327,7 @@ WebContents* WebContents::FromFrameTreeNodeId(int frame_tree_node_id) {
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (!frame_tree_node)
     return nullptr;
-  return FromRenderFrameHost(frame_tree_node->current_frame_host());
+  return WebContentsImpl::FromFrameTreeNode(frame_tree_node);
 }
 
 void WebContents::SetScreenOrientationDelegate(

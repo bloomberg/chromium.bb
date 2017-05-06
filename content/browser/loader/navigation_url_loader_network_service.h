@@ -73,11 +73,12 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   void ConnectURLLoaderFactory(
       std::unique_ptr<service_manager::Connector> connector);
 
-  mojom::URLLoaderFactory& GetURLLoaderFactory();
+  mojom::URLLoaderFactory* GetURLLoaderFactory();
 
   NavigationURLLoaderDelegate* delegate_;
 
   mojo::Binding<mojom::URLLoaderClient> binding_;
+  std::unique_ptr<NavigationRequestInfo> request_info_;
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
   scoped_refptr<ResourceResponse> response_;
   SSLStatus ssl_status_;
