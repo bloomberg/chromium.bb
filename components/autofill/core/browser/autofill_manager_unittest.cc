@@ -41,10 +41,12 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -76,7 +78,6 @@ using testing::Return;
 using testing::SaveArg;
 
 namespace autofill {
-
 namespace {
 
 const int kDefaultPageID = 137;
@@ -87,6 +88,9 @@ const char kUTF8MidlineEllipsis[] =
     "\xE2\x80\xA2\xE2\x80\x86"
     "\xE2\x80\xA2\xE2\x80\x86"
     "\xE2\x80\xA2\xE2\x80\x86";
+
+const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
+const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
 
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -172,7 +176,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   void AddProfile(std::unique_ptr<AutofillProfile> profile) {
-    profile->set_modification_date(base::Time::Now());
+    profile->set_modification_date(AutofillClock::Now());
     web_profiles_.push_back(std::move(profile));
   }
 
@@ -5197,16 +5201,11 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoProfileAvailable) {
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
   // Verify that the correct histogram entries are logged.
-  ExpectCardUploadDecision(histogram_tester,
-                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
-  ExpectCardUploadDecision(histogram_tester,
-                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
+  ExpectUniqueCardUploadDecision(
+      histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE);
   // Verify that the correct UKM was logged.
-  ExpectMetric(internal::kUKMCardUploadDecisionMetricName,
-               internal::kUKMCardUploadDecisionEntryName,
-               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS |
-               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE,
-               1 /* expected_num_matching_entries */);
+  ExpectCardUploadDecisionUkm(
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -5217,6 +5216,62 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoProfileAvailable) {
       "Autofill.CardUploadNotOfferedNoAddress", &sample, &type));
   EXPECT_EQ("myform.com", sample);
   EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
+}
+
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_UploadCreditCard_NoRecentlyUsedProfile \
+  DISABLED_UploadCreditCard_NoRecentlyUsedProfile
+#else
+#define MAYBE_UploadCreditCard_NoRecentlyUsedProfile \
+  UploadCreditCard_NoRecentlyUsedProfile
+#endif
+TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoRecentlyUsedProfile) {
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+
+  EnableUkmLogging();
+  personal_data_.ClearAutofillProfiles();
+  autofill_manager_->set_credit_card_upload_enabled(true);
+
+  // Create, fill and submit an address form in order to establish a profile.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen({address_form});
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set the current time to another value.
+  test_clock.SetNow(kMuchLaterTime);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("11");
+  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+
+  // Neither a local save nor an upload should happen in this case.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+
+  // Verify that the correct histogram entry (and only that) was logged.
+  ExpectUniqueCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS);
+  // Verify that the correct UKM was logged.
+  ExpectCardUploadDecisionUkm(
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -5259,16 +5314,13 @@ TEST_F(AutofillManagerTest,
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(histogram_tester,
                            AutofillMetrics::CVC_VALUE_NOT_FOUND);
-  ExpectCardUploadDecision(histogram_tester,
-                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
-  ExpectCardUploadDecision(histogram_tester,
-                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
+  ExpectCardUploadDecision(
+      histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE);
   // Verify that the correct UKM was logged.
   ExpectMetric(internal::kUKMCardUploadDecisionMetricName,
                internal::kUKMCardUploadDecisionEntryName,
                AutofillMetrics::CVC_VALUE_NOT_FOUND |
-                   AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS |
-                   AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE,
+               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE,
                1 /* expected_num_matching_entries */);
 
   rappor::TestRapporServiceImpl* rappor_service =
