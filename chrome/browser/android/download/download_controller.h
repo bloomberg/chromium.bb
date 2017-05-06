@@ -23,10 +23,6 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 
-namespace ui {
-class WindowAndroid;
-}
-
 namespace content {
 class WebContents;
 }
@@ -42,7 +38,7 @@ class DownloadController : public DownloadControllerBase {
 
   // DownloadControllerBase implementation.
   void AcquireFileAccessPermission(
-      content::WebContents* web_contents,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const AcquireFileAccessPermissionCallback& callback) override;
   void CreateAndroidDownload(
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
@@ -65,6 +61,11 @@ class DownloadController : public DownloadControllerBase {
   };
   static void RecordDownloadCancelReason(DownloadCancelReason reason);
 
+  // Callback when user permission prompt finishes. Args: whether file access
+  // permission is acquired, which permission to update.
+  typedef base::Callback<void(bool, const std::string&)>
+      AcquirePermissionCallback;
+
  private:
   struct JavaObject;
   friend struct base::DefaultSingletonTraits<DownloadController>;
@@ -72,7 +73,7 @@ class DownloadController : public DownloadControllerBase {
   ~DownloadController() override;
 
   // Helper method for implementing AcquireFileAccessPermission().
-  bool HasFileAccessPermission(ui::WindowAndroid* window_android);
+  bool HasFileAccessPermission();
 
   // DownloadControllerBase implementation.
   void OnDownloadStarted(content::DownloadItem* download_item) override;

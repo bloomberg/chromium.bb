@@ -51,14 +51,9 @@ void CanDownloadOnUIThread(
     std::unique_ptr<DownloadResourceThrottle::DownloadRequestInfo> info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_ANDROID)
-  content::WebContents* contents = info->web_contents_getter.Run();
-  if (contents) {
-    DownloadControllerBase::Get()->AcquireFileAccessPermission(
-        contents, base::Bind(&OnAcquireFileAccessPermissionDone,
-                             base::Passed(std::move(info))));
-  } else {
-    OnAcquireFileAccessPermissionDone(std::move(info), false);
-  }
+  DownloadControllerBase::Get()->AcquireFileAccessPermission(
+      info->web_contents_getter, base::Bind(&OnAcquireFileAccessPermissionDone,
+                                            base::Passed(std::move(info))));
 #else
   CanDownload(std::move(info));
 #endif
