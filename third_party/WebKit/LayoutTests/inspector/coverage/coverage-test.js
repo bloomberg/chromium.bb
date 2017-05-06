@@ -18,7 +18,7 @@ InspectorTest.stopCoverage = function()
 InspectorTest.sourceDecorated = async function(source)
 {
     await UI.inspectorView.showPanel("sources");
-    var decoratePromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "decorate");
+    var decoratePromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
     var sourceFrame = await new Promise(fulfill => InspectorTest.showScriptSource(source, fulfill));
     await decoratePromise;
     return sourceFrame;
@@ -43,7 +43,7 @@ InspectorTest.findCoverageNodeForURL = function(url)
 
 InspectorTest.dumpDecorationsInSourceFrame = function(sourceFrame)
 {
-    var markerMap = new Map([['used', '+'], ['unused', '-'], ['mixed', '*']]);
+    var markerMap = new Map([['used', '+'], ['unused', '-']]);
 
     var codeMirror = sourceFrame.textEditor.codeMirror();
     for (var line = 0; line < codeMirror.lineCount(); ++line) {

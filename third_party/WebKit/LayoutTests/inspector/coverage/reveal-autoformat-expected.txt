@@ -6,9 +6,9 @@ The below should be formatted
 0: - .this-line-needs-to-be-longer-than-five-hundred-symbols {
 1: - }
 2: - 
-3: * body {
+3: + body {
 4: +     background-color: lightblue;
-5: * }
+5: + }
 6: - 
 7: - .class {
 8: -     color: red;
@@ -19,9 +19,9 @@ The below should be formatted
 13: -     font-style: italic;
 14: - }
 15: - 
-16: * #id {
+16: + #id {
 17: +     color: blue
-18: * }
+18: + }
 19: - 
 20: - notUsed {
 21: -     color: black
@@ -41,7 +41,7 @@ The below should be formatted
 The below should NOT be formatted
 0: + body {
 1: +     background-color: lightblue;
-2: * }
+2: + }
 3: - 
 4: - .class {
 5: -     color: red;
@@ -50,8 +50,8 @@ The below should NOT be formatted
 8: - .class2 {    color:green;font-style: italic;
 9: - }
 10: - 
-11: * #id {  color: blue
-12: * }
+11: + #id {  color: blue
+12: + }
 13: - 
 14: - notUsed {color: black}
 15: - 
