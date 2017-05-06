@@ -16,6 +16,7 @@ import subprocess
 import sys
 
 import archive
+import canned_queries
 import describe
 import diff
 import file_format
@@ -25,7 +26,7 @@ import paths
 
 
 # Number of lines before using less for Print().
-_THRESHOLD_FOR_PAGER = 30
+_THRESHOLD_FOR_PAGER = 50
 
 
 @contextlib.contextmanager
@@ -68,10 +69,11 @@ class _Session(object):
   def __init__(self, size_infos, lazy_paths):
     self._variables = {
         'Print': self._PrintFunc,
-        'Diff': diff.Diff,
+        'Diff': self._DiffFunc,
         'Disassemble': self._DisassembleFunc,
         'ExpandRegex': match_util.ExpandRegexIdentifierPlaceholder,
         'ShowExamples': self._ShowExamplesFunc,
+        'canned_queries': canned_queries.CannedQueries(size_infos),
     }
     self._lazy_paths = lazy_paths
     self._size_infos = size_infos
@@ -82,18 +84,32 @@ class _Session(object):
       for i, size_info in enumerate(size_infos):
         self._variables['size_info%d' % (i + 1)] = size_info
 
-  def _PrintFunc(self, obj, verbose=False, recursive=False, use_pager=None,
+  def _DiffFunc(self, before=None, after=None, cluster=True):
+    """Diffs two SizeInfo objects. Returns a SizeInfoDiff.
+
+    Args:
+      before: Defaults to first size_infos[0].
+      after: Defaults to second size_infos[1].
+      cluster: When True, calls SymbolGroup.Cluster() after diffing. This
+          generally reduces noise.
+    """
+    before = before if before is not None else self._size_infos[0]
+    after = after if after is not None else self._size_infos[1]
+    return diff.Diff(before, after, cluster=cluster)
+
+  def _PrintFunc(self, obj=None, verbose=False, recursive=False, use_pager=None,
                  to_file=None):
     """Prints out the given Symbol / SymbolGroup / SymbolDiff / SizeInfo.
 
     Args:
-      obj: The object to be printed.
+      obj: The object to be printed. Defaults to size_infos[-1].
       verbose: Show more detailed output.
       recursive: Print children of nested SymbolGroups.
       use_pager: Pipe output through `less`. Ignored when |obj| is a Symbol.
           default is to automatically pipe when output is long.
       to_file: Rather than print to stdio, write to the given file.
     """
+    obj = obj if obj is not None else self._size_infos[-1]
     lines = describe.GenerateLines(obj, verbose=verbose, recursive=recursive)
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
 
@@ -140,6 +156,7 @@ class _Session(object):
     proc.kill()
 
   def _ShowExamplesFunc(self):
+    print self._CreateBanner()
     print '\n'.join([
         '# Show pydoc for main types:',
         'import models',
@@ -150,7 +167,7 @@ class _Session(object):
         '',
         '# Show two levels of .text, grouped by first two subdirectories',
         'text_syms = size_info.symbols.WhereInSection("t")',
-        'by_path = text_syms.GroupBySourcePath(depth=2)',
+        'by_path = text_syms.GroupByPath(depth=2)',
         'Print(by_path.WhereBiggerThan(1024))',
         '',
         '# Show all non-vtable generated symbols',
@@ -167,6 +184,13 @@ class _Session(object):
         '# Diff two .size files and save result to a file:',
         'Print(Diff(size_info1, size_info2), to_file="output.txt")',
         '',
+        '# View per-component breakdowns, then drill into the last entry.',
+        'c = canned_queries.CategorizeByChromeComponent()',
+        'Print(c)',
+        'Print(c[-1].GroupByPath(depth=2).Sorted())',
+        '',
+        '# For even more inspiration, look at canned_queries.py',
+        '# (and feel free to add your own!).',
     ])
 
   def _CreateBanner(self):
@@ -177,6 +201,8 @@ class _Session(object):
                               if m[0] != '_' and m not in symbol_group_keys)
     symbol_group_keys = sorted(m for m in symbol_group_keys
                                if m not in symbol_keys)
+    canned_queries_keys = sorted(m for m in dir(canned_queries.CannedQueries)
+                                 if m[0] != '_')
     functions = sorted(k for k in self._variables if k[0].isupper())
     variables = sorted(k for k in self._variables if k[0].islower())
     return '\n'.join([
@@ -185,8 +211,12 @@ class _Session(object):
         '',
         'SizeInfo: %s' % ', '.join(symbol_info_keys),
         'Symbol: %s' % ', '.join(symbol_keys),
+        '',
         'SymbolGroup (extends Symbol): %s' % ', '.join(symbol_group_keys),
+        '',
         'SymbolDiff (extends SymbolGroup): %s' % ', '.join(symbol_diff_keys),
+        '',
+        'canned_queries: %s' % ', '.join(canned_queries_keys),
         '',
         'Functions: %s' % ', '.join('%s()' % f for f in functions),
         'Variables: %s' % ', '.join(variables),

@@ -53,8 +53,8 @@ def _SaveSizeInfoToFile(size_info, file_obj):
   _LogSize(file_obj, 'paths')  # For libchrome, adds 200kb.
 
   # Symbol counts by section.
-  by_section = models.SymbolGroup(size_info.symbols)
-  by_section = by_section.GroupBySectionName().SortedByName()
+  by_section = size_info.symbols.GroupBySectionName().Sorted(
+      key=lambda s:(s[0].IsBss(), s[0].address, s.name))
   file_obj.write('%s\n' % '\t'.join(g.name for g in by_section))
   file_obj.write('%s\n' % '\t'.join(str(len(g)) for g in by_section))
 

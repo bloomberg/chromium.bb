@@ -157,6 +157,8 @@ class IntegrationTest(unittest.TestCase):
       query = [
           'ShowExamples()',
           'ExpandRegex("_foo_")',
+          'canned_queries.CategorizeGenerated()',
+          'canned_queries.CategorizeByChromeComponent()',
           'Print(size_info, to_file=%r)' % output_file.name,
       ]
       ret = _RunApp('console', [size_file.name, '--query', '; '.join(query)])
