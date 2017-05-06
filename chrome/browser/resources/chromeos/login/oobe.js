@@ -356,6 +356,15 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     /**
+     * Reloads localized strings for the eula page.
+     * @param {!Object} data New dictionary with changed eula i18n values.
+     */
+    reloadEulaContent: function(data) {
+      loadTimeData.overrideValues(data);
+      i18nTemplate.process(document, loadTimeData);
+    },
+
+    /**
      * Updates localized content of the screens.
      * Should be executed on language change.
      */

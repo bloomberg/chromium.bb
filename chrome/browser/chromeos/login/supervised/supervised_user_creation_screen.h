@@ -16,6 +16,7 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/login/secure_module_util_chromeos.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;
@@ -122,6 +123,7 @@ class SupervisedUserCreationScreen
  private:
   void ApplyPicture();
   void OnGetSupervisedUsers(const base::DictionaryValue* users);
+  void UpdateSecureModuleMessages(::login::SecureModuleUsed secure_module_used);
 
   SupervisedUserCreationScreenHandler* view_;
 
