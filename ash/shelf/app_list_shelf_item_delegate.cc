@@ -16,7 +16,8 @@ namespace ash {
 namespace {
 
 // An app id for the app list, used to identify the shelf item.
-static constexpr char kAppListId[] = "AppListId";
+// Generated as crx_file::id_util::GenerateId("org.chromium.applist")
+static constexpr char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
 
 }  // namespace
 
