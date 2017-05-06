@@ -349,7 +349,6 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
 
  private:
   void SetFakeDevicePolicy() {
-    device_policy()->policy_data().set_username(PolicyBuilder::kFakeUsername);
     device_policy()->policy_data().set_public_key_version(
         kFakePolicyPublicKeyVersion);
     device_policy()->Build();
@@ -359,7 +358,6 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
   static void MakeTestComponentPolicyBuilder(ComponentPolicyBuilder* builder) {
     builder->policy_data().set_policy_type(
         dm_protocol::kChromeSigninExtensionPolicyType);
-    builder->policy_data().set_username(PolicyBuilder::kFakeUsername);
     builder->policy_data().set_settings_entity_id(kTestExtensionId);
     builder->policy_data().set_public_key_version(kFakePolicyPublicKeyVersion);
     builder->payload().set_download_url(kFakePolicyUrl);
