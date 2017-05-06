@@ -44,6 +44,10 @@ Scheduler::Scheduler(
   TRACE_EVENT1("cc", "Scheduler::Scheduler", "settings", settings_.AsValue());
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeeded());
+
+  begin_impl_frame_deadline_closure_ = base::Bind(
+      &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
+
   ProcessScheduledActions();
 }
 
@@ -226,53 +230,19 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
 
   bool needs_begin_frames = state_machine_.BeginFrameNeeded();
   if (needs_begin_frames && !observing_begin_frame_source_) {
-    StartObservingBeginFrameSource();
+    observing_begin_frame_source_ = true;
+    if (begin_frame_source_)
+      begin_frame_source_->AddObserver(this);
+    devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_, true);
   } else if (!needs_begin_frames && observing_begin_frame_source_) {
-    StopObservingBeginFrameSource();
+    observing_begin_frame_source_ = false;
+    if (begin_frame_source_)
+      begin_frame_source_->RemoveObserver(this);
+    missed_begin_frame_task_.Cancel();
+    BeginImplFrameNotExpectedSoon();
+    devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
+                                                     false);
   }
-
-  if (missed_begin_frame_args_.IsValid()) {
-    DCHECK(observing_begin_frame_source_);
-    DCHECK(missed_begin_frame_task_.IsCancelled());
-    missed_begin_frame_task_.Reset(base::Bind(&Scheduler::BeginImplFrameMissed,
-                                              weak_factory_.GetWeakPtr(),
-                                              missed_begin_frame_args_));
-    missed_begin_frame_args_ = BeginFrameArgs();
-    task_runner_->PostTask(FROM_HERE, missed_begin_frame_task_.callback());
-  }
-}
-
-void Scheduler::StartObservingBeginFrameSource() {
-  observing_begin_frame_source_ = true;
-
-  if (begin_frame_source_)
-    begin_frame_source_->AddObserver(this);
-
-  devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_, true);
-}
-
-void Scheduler::StopObservingBeginFrameSource() {
-  observing_begin_frame_source_ = false;
-
-  if (begin_frame_source_)
-    begin_frame_source_->RemoveObserver(this);
-
-  missed_begin_frame_task_.Cancel();
-
-  if (missed_begin_frame_args_.IsValid()) {
-    // We need to confirm the ignored BeginFrame, since we don't have updates.
-    // To persist the confirmation for future BeginFrameAcks, we let the state
-    // machine know about the BeginFrame.
-    state_machine_.OnBeginFrameDroppedNotObserving(
-        missed_begin_frame_args_.source_id,
-        missed_begin_frame_args_.sequence_number);
-    SendBeginFrameAck(missed_begin_frame_args_, kBeginFrameSkipped);
-    missed_begin_frame_args_ = BeginFrameArgs();
-  }
-
-  BeginImplFrameNotExpectedSoon();
-
-  devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_, false);
 }
 
 void Scheduler::OnBeginFrameSourcePausedChanged(bool paused) {
@@ -311,20 +281,14 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
     return true;
   }
 
-  // Cancel any pending missed begin frame task because we're either handling
-  // this begin frame immediately or saving it as a missed frame for which we
-  // will post a new task.
-  missed_begin_frame_task_.Cancel();
-
-  // Save args if we're inside ProcessScheduledActions or the middle of a frame.
-  // At the end of ProcessScheduledActions and at the end of the current frame,
-  // we will post a task to handle the missed begin frame.
-  bool inside_begin_frame =
-      state_machine_.begin_impl_frame_state() ==
-      SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME;
-  if (inside_process_scheduled_actions_ || inside_begin_frame) {
-    missed_begin_frame_args_ = args;
-    missed_begin_frame_args_.type = BeginFrameArgs::MISSED;
+  if (inside_process_scheduled_actions_) {
+    // The BFS can send a missed begin frame inside AddObserver. We can't handle
+    // a begin frame inside ProcessScheduledActions so post a task.
+    DCHECK_EQ(args.type, BeginFrameArgs::MISSED);
+    DCHECK(missed_begin_frame_task_.IsCancelled());
+    missed_begin_frame_task_.Reset(base::Bind(
+        &Scheduler::BeginImplFrameWithDeadline, base::Unretained(this), args));
+    task_runner_->PostTask(FROM_HERE, missed_begin_frame_task_.callback());
     return true;
   }
 
@@ -352,39 +316,55 @@ void Scheduler::OnDrawForCompositorFrameSink(bool resourceless_software_draw) {
   state_machine_.SetResourcelessSoftwareDraw(false);
 }
 
-void Scheduler::BeginImplFrameMissed(const BeginFrameArgs& args) {
-  // The storage for the args is owned by the task so copy them before canceling
-  // the task.
-  BeginFrameArgs copy_args = args;
-  missed_begin_frame_task_.Cancel();
-  BeginImplFrameWithDeadline(copy_args);
-}
-
 void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
-  DCHECK(!inside_process_scheduled_actions_);
-  DCHECK_EQ(state_machine_.begin_impl_frame_state(),
-            SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
+  // The storage for |args| is owned by the missed begin frame task. Therefore
+  // save |args| before cancelling the task either here or in the deadline.
+  BeginFrameArgs adjusted_args = args;
+  // Cancel the missed begin frame task in case the BFS sends a begin frame
+  // before the missed frame task runs.
+  missed_begin_frame_task_.Cancel();
 
   base::TimeTicks now = Now();
 
   // Discard missed begin frames if they are too late.
-  if (args.type == BeginFrameArgs::MISSED && now > args.deadline) {
+  if (adjusted_args.type == BeginFrameArgs::MISSED &&
+      now > adjusted_args.deadline) {
     skipped_last_frame_missed_exceeded_deadline_ = true;
-    SendBeginFrameAck(args, kBeginFrameSkipped);
+    SendBeginFrameAck(adjusted_args, kBeginFrameSkipped);
     return;
   }
 
   skipped_last_frame_missed_exceeded_deadline_ = false;
 
+  // Run the previous deadline if any.
+  if (state_machine_.begin_impl_frame_state() ==
+      SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME) {
+    OnBeginImplFrameDeadline();
+    // We may not need begin frames any longer.
+    if (!observing_begin_frame_source_) {
+      // We need to confirm the ignored BeginFrame, since we don't have updates.
+      // To persist the confirmation for future BeginFrameAcks, we let the state
+      // machine know about the BeginFrame.
+      state_machine_.OnBeginFrameDroppedNotObserving(args.source_id,
+                                                     args.sequence_number);
+      SendBeginFrameAck(adjusted_args, kBeginFrameSkipped);
+      return;
+    }
+  }
+  DCHECK_EQ(state_machine_.begin_impl_frame_state(),
+            SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
+
   bool main_thread_is_in_high_latency_mode =
       state_machine_.main_thread_missed_last_deadline();
   TRACE_EVENT2("cc,benchmark", "Scheduler::BeginImplFrame", "args",
-               args.AsValue(), "main_thread_missed_last_deadline",
+               adjusted_args.AsValue(), "main_thread_missed_last_deadline",
                main_thread_is_in_high_latency_mode);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "MainThreadLatency", main_thread_is_in_high_latency_mode);
 
-  BeginFrameArgs adjusted_args = args;
+  DCHECK_EQ(state_machine_.begin_impl_frame_state(),
+            SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
+
   adjusted_args.deadline -= compositor_timing_history_->DrawDurationEstimate();
   adjusted_args.deadline -= kDeadlineFudgeFactor;
 
@@ -453,14 +433,10 @@ void Scheduler::BeginImplFrameSynchronous(const BeginFrameArgs& args) {
 
 void Scheduler::FinishImplFrame() {
   state_machine_.OnBeginImplFrameIdle();
-
-  // Call this before ProcessScheduledActions because we might send an ack for
-  // missed begin frame there.
-  SendBeginFrameAck(begin_impl_frame_tracker_.Current(), kBeginFrameFinished);
-
   ProcessScheduledActions();
 
   client_->DidFinishImplFrame();
+  SendBeginFrameAck(begin_main_frame_args_, kBeginFrameFinished);
   begin_impl_frame_tracker_.Finish();
 }
 
@@ -511,8 +487,8 @@ void Scheduler::ScheduleBeginImplFrameDeadline() {
   // The synchronous compositor does not post a deadline task.
   DCHECK(!settings_.using_synchronous_renderer_compositor);
 
-  begin_impl_frame_deadline_task_.Reset(base::Bind(
-      &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr()));
+  begin_impl_frame_deadline_task_.Cancel();
+  begin_impl_frame_deadline_task_.Reset(begin_impl_frame_deadline_closure_);
 
   begin_impl_frame_deadline_mode_ =
       state_machine_.CurrentBeginImplFrameDeadlineMode();
@@ -720,6 +696,8 @@ Scheduler::AsValue() const {
 }
 
 void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
+  base::TimeTicks now = Now();
+
   state->BeginDictionary("state_machine");
   state_machine_.AsValueInto(state);
   state->EndDictionary();
@@ -751,12 +729,8 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetDouble("now_to_deadline_scheduled_at_ms",
                    (deadline_scheduled_at_ - Now()).InMillisecondsF());
 
-  state->BeginDictionary("begin_impl_frame_tracker");
-  begin_impl_frame_tracker_.AsValueInto(state);
-  state->EndDictionary();
-
-  state->BeginDictionary("missed_begin_frame_args");
-  missed_begin_frame_args_.AsValueInto(state);
+  state->BeginDictionary("begin_impl_frame_args");
+  begin_impl_frame_tracker_.AsValueInto(now, state);
   state->EndDictionary();
 
   state->BeginDictionary("begin_frame_observer_state");
