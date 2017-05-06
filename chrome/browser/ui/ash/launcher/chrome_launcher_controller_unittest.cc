@@ -122,16 +122,18 @@ using extensions::UnloadedExtensionReason;
 using arc::mojom::OrientationLock;
 
 namespace {
-const char* offline_gmail_url = "https://mail.google.com/mail/mu/u";
-const char* gmail_url = "https://mail.google.com/mail/u";
-const char* kGmailLaunchURL = "https://mail.google.com/mail/ca";
+constexpr char kOfflineGmailUrl[] = "https://mail.google.com/mail/mu/u";
+constexpr char kGmailUrl[] = "https://mail.google.com/mail/u";
+constexpr char kGmailLaunchURL[] = "https://mail.google.com/mail/ca";
+
+constexpr char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
 
 // An extension prefix.
-const char kCrxAppPrefix[] = "_crx_";
+constexpr char kCrxAppPrefix[] = "_crx_";
 
 // Dummy app id is used to put at least one pin record to prevent initializing
 // pin model with default apps that can affect some tests.
-const char kDummyAppId[] = "dummyappid_dummyappid_dummyappid";
+constexpr char kDummyAppId[] = "dummyappid_dummyappid_dummyappid";
 
 // ShelfModelObserver implementation that tracks what messages are invoked.
 class TestShelfModelObserver : public ash::ShelfModelObserver {
@@ -595,7 +597,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   void AddAppListLauncherItem() {
     ash::ShelfItem app_list;
-    app_list.id = ash::ShelfID("AppListId");
+    app_list.id = ash::ShelfID(kAppListId);
     app_list.type = ash::TYPE_APP_LIST;
     model_->Add(app_list);
   }
@@ -2314,7 +2316,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   {
     // Create a "windowed gmail app".
     std::unique_ptr<V1App> v1_app(
-        CreateRunningV1App(profile(), extension_misc::kGmailAppId, gmail_url));
+        CreateRunningV1App(profile(), extension_misc::kGmailAppId, kGmailUrl));
     EXPECT_EQ(3, model_->item_count());
 
     // After switching to a second user the item should be gone.
@@ -2351,7 +2353,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   {
     // Create a "windowed gmail app".
     std::unique_ptr<V1App> v1_app(
-        CreateRunningV1App(profile2, extension_misc::kGmailAppId, gmail_url));
+        CreateRunningV1App(profile2, extension_misc::kGmailAppId, kGmailUrl));
     EXPECT_EQ(2, model_->item_count());
 
     // However - switching to the user should show it.
@@ -2432,7 +2434,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   {
     // Create a "windowed gmail app".
     std::unique_ptr<V1App> v1_app(
-        CreateRunningV1App(profile(), extension_misc::kGmailAppId, gmail_url));
+        CreateRunningV1App(profile(), extension_misc::kGmailAppId, kGmailUrl));
     EXPECT_EQ(2, model_->item_count());
 
     // However - switching to the user should show it.
@@ -2996,7 +2998,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuGeneration) {
   int gmail_index = model_->ItemIndexByID(gmail_id);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[gmail_index].type);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension3_->id()));
-  launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(gmail_url));
+  launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
 
   // Check the menu content.
   ash::ShelfItem item_browser;
@@ -3011,7 +3013,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuGeneration) {
 
   // Set the gmail URL to a new tab.
   base::string16 title1 = ASCIIToUTF16("Test1");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title1);
 
   base::string16 one_menu_item[] = {title1};
   CheckAppMenu(launcher_controller_, item_gmail, 1, one_menu_item);
@@ -3024,7 +3026,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuGeneration) {
   // and another one with another gmail instance.
   chrome::NewTab(browser());
   base::string16 title3 = ASCIIToUTF16("Test3");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title3);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title3);
   base::string16 two_menu_items[] = {title1, title3};
   CheckAppMenu(launcher_controller_, item_gmail, 2, two_menu_items);
 
@@ -3056,7 +3058,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   int gmail_index = model_->ItemIndexByID(gmail_id);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[gmail_index].type);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension3_->id()));
-  launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(gmail_url));
+  launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
 
   // Check the menu content.
   ash::ShelfItem item_browser;
@@ -3071,7 +3073,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Set the gmail URL to a new tab.
   base::string16 title1 = ASCIIToUTF16("Test1");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title1);
 
   base::string16 one_menu_item[] = {title1};
   CheckAppMenu(launcher_controller_, item_gmail, 1, one_menu_item);
@@ -3318,12 +3320,12 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
   GURL gmail = GURL("https://mail.google.com/mail/u");
   const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
-  launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(gmail_url));
+  launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
   base::string16 title1 = ASCIIToUTF16("Test1");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title1);
   chrome::NewTab(browser());
   base::string16 title2 = ASCIIToUTF16("Test2");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title2);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title2);
 
   // Check that the menu is properly set.
   ash::ShelfItem item_gmail;
@@ -3366,12 +3368,12 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
   GURL gmail = GURL("https://mail.google.com/mail/u");
   const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
-  launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(gmail_url));
+  launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
   base::string16 title1 = ASCIIToUTF16("Test1");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title1);
   chrome::NewTab(browser());
   base::string16 title2 = ASCIIToUTF16("Test2");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title2);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title2);
 
   // Check that the menu is properly set.
   ash::ShelfItem item_gmail;
@@ -3451,7 +3453,7 @@ TEST_F(ChromeLauncherControllerTest, GmailMatching) {
   // Create a Gmail browser tab.
   chrome::NewTab(browser());
   base::string16 title = ASCIIToUTF16("Test");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kGmailUrl), title);
   content::WebContents* content =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -3484,8 +3486,7 @@ TEST_F(ChromeLauncherControllerTest, GmailOfflineMatching) {
   // Create a Gmail browser tab.
   chrome::NewTab(browser());
   base::string16 title = ASCIIToUTF16("Test");
-  NavigateAndCommitActiveTabWithTitle(browser(), GURL(offline_gmail_url),
-                                      title);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(kOfflineGmailUrl), title);
   content::WebContents* content =
       browser()->tab_strip_model()->GetActiveWebContents();
 

@@ -53,7 +53,8 @@ void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
   aura::Window* window = settings_browser->window()->GetNativeWindow();
   window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
   // An app id for settings windows, also used to identify the shelf item.
-  static constexpr char kSettingsId[] = "SettingsId";
+  // Generated as crx_file::id_util::GenerateId("org.chromium.settings_ui")
+  static constexpr char kSettingsId[] = "dhnmfjegnohoakobpikffnelcemaplkm";
   window->SetProperty(ash::kShelfIDKey, new ash::ShelfID(kSettingsId));
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

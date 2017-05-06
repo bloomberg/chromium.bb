@@ -15,6 +15,8 @@ namespace ash {
 
 namespace {
 
+constexpr char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
+
 // ShelfModelObserver implementation that tracks what message are invoked.
 class TestShelfModelObserver : public ShelfModelObserver {
  public:
@@ -69,7 +71,7 @@ class ShelfModelTest : public testing::Test {
 
     ShelfItem item;
     item.type = TYPE_APP_LIST;
-    item.id = ShelfID("AppListId");
+    item.id = ShelfID(kAppListId);
     model_->Add(item);
     EXPECT_EQ(1, model_->item_count());
 

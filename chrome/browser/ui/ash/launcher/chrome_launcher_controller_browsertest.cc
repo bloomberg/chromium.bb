@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -56,6 +57,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -475,7 +477,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   // Create a shortcut. The app item should be after it.
-  ash::ShelfID foo_id = CreateAppShortcutLauncherItem(ash::ShelfID("foo"));
+  ash::ShelfID foo_id = CreateAppShortcutLauncherItem(
+      ash::ShelfID(extension_misc::kYoutubeAppId));
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   EXPECT_LT(shelf_model()->ItemIndexByID(foo_id),
@@ -489,7 +492,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
 
   // New shortcuts should come after the item.
-  ash::ShelfID bar_id = CreateAppShortcutLauncherItem(ash::ShelfID("bar"));
+  ash::ShelfID bar_id = CreateAppShortcutLauncherItem(
+      ash::ShelfID(extension_misc::kGoogleDocAppId));
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   EXPECT_LT(shelf_model()->ItemIndexByID(id),
@@ -518,7 +522,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
 
   // Create a second shortcut. This will be needed to force the first one to
   // move once it gets unpinned.
-  ash::ShelfID foo_id = CreateAppShortcutLauncherItem(ash::ShelfID("foo"));
+  ash::ShelfID foo_id = CreateAppShortcutLauncherItem(
+      ash::ShelfID(extension_misc::kYoutubeAppId));
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
   EXPECT_LT(shelf_model()->ItemIndexByID(shortcut_id),
@@ -2261,14 +2266,17 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(id)->status);
 }
 
-// Checks that a opening a settings window creates a new launcher item.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsWindow) {
+// Checks that a opening a settings and task manager windows creates a new
+// launcher items.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsAndTaskManagerWindows) {
   chrome::SettingsWindowManager* settings_manager =
       chrome::SettingsWindowManager::GetInstance();
   ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
 
   // Get the number of items in the shelf and browser menu.
   int item_count = shelf_model->item_count();
+  // At least App List should exist.
+  ASSERT_GE(item_count, 1);
   size_t browser_count = NumberOfDetectedLauncherBrowsers(false);
 
   // Open a settings window. Number of browser items should remain unchanged,
@@ -2280,6 +2288,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsWindow) {
   ASSERT_TRUE(settings_browser);
   EXPECT_EQ(browser_count, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(item_count + 1, shelf_model->item_count());
+
+  chrome::ShowTaskManager(browser());
+  EXPECT_EQ(item_count + 2, shelf_model->item_count());
+
+  // Validates that all items have valid app id.
+  for (const auto& item : shelf_model->items())
+    EXPECT_TRUE(crx_file::id_util::IdIsValid(item.id.app_id));
 
   // TODO(stevenjb): Test multiprofile on Chrome OS when test support is addded.
   // crbug.com/230464.
