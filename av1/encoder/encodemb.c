@@ -115,7 +115,7 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
 #if CONFIG_EC_ADAPT
   { 10, 7 }, { 8, 5 },
 #else
-  { 10, 6 }, { 8, 5 },
+  { 10, 6 }, { 8, 6 },
 #endif
 };
 
