@@ -11,6 +11,7 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
@@ -124,6 +125,10 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGLogicalOffset BfcOffset() const { return bfc_offset_; }
 
+  Vector<RefPtr<NGFloatingObject>>& UnpositionedFloats() {
+    return unpositioned_floats_;
+  }
+
   WTF::Optional<LayoutUnit> ClearanceOffset() const {
     return clearance_offset_;
   }
@@ -150,6 +155,7 @@ class CORE_EXPORT NGConstraintSpace final
                     const NGMarginStrut& margin_strut,
                     const NGLogicalOffset& bfc_offset,
                     const std::shared_ptr<NGExclusions>& exclusions,
+                    Vector<RefPtr<NGFloatingObject>>& unpositioned_floats,
                     const WTF::Optional<LayoutUnit>& clearance_offset);
 
   NGPhysicalSize InitialContainingBlockSize() const {
@@ -186,6 +192,7 @@ class CORE_EXPORT NGConstraintSpace final
   const std::shared_ptr<NGExclusions> exclusions_;
   WTF::Optional<LayoutUnit> clearance_offset_;
   std::unique_ptr<NGLayoutOpportunityIterator> layout_opp_iter_;
+  Vector<RefPtr<NGFloatingObject>> unpositioned_floats_;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

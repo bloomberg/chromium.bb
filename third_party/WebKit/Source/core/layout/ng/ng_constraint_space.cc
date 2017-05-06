@@ -29,6 +29,7 @@ NGConstraintSpace::NGConstraintSpace(
     const NGMarginStrut& margin_strut,
     const NGLogicalOffset& bfc_offset,
     const std::shared_ptr<NGExclusions>& exclusions,
+    Vector<RefPtr<NGFloatingObject>>& unpositioned_floats,
     const WTF::Optional<LayoutUnit>& clearance_offset)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
@@ -50,7 +51,9 @@ NGConstraintSpace::NGConstraintSpace(
       bfc_offset_(bfc_offset),
       exclusions_(exclusions),
       clearance_offset_(clearance_offset),
-      layout_opp_iter_(nullptr) {}
+      layout_opp_iter_(nullptr) {
+  unpositioned_floats_.swap(unpositioned_floats);
+}
 
 RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {

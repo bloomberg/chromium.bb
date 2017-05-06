@@ -72,6 +72,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     Initialize(break_token->ItemIndex(), break_token->TextOffset());
   else
     Initialize(0, 0);
+  container_builder_.MutableUnpositionedFloats() = space->UnpositionedFloats();
 }
 
 bool NGInlineLayoutAlgorithm::IsFirstLine() const {
@@ -250,6 +251,8 @@ bool NGInlineLayoutAlgorithm::CreateLineUpToLastBreakOpportunity() {
     bfc_offset.block_offset += ConstraintSpace().MarginStrut().Sum();
     MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_offset,
                                  &container_builder_);
+    PositionPendingFloats(bfc_offset.block_offset, &container_builder_,
+                          MutableConstraintSpace());
   }
 
   // Create a list of LineItemChunk from |start| and |last_break_opportunity|.

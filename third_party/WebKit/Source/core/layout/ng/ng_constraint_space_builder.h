@@ -6,6 +6,7 @@
 #define NGConstraintSpaceBuilder_h
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_floating_object.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Optional.h"
 
@@ -47,6 +48,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGConstraintSpaceBuilder& SetIsNewFormattingContext(bool is_new_fc);
   NGConstraintSpaceBuilder& SetIsAnonymous(bool is_anonymous);
 
+  NGConstraintSpaceBuilder& SetUnpositionedFloats(
+      Vector<RefPtr<NGFloatingObject>>& unpositioned_floats);
+
   NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut);
 
   NGConstraintSpaceBuilder& SetBfcOffset(const NGLogicalOffset& offset);
@@ -87,6 +91,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGLogicalOffset bfc_offset_;
   std::shared_ptr<NGExclusions> exclusions_;
   WTF::Optional<LayoutUnit> clearance_offset_;
+  Vector<RefPtr<NGFloatingObject>> unpositioned_floats_;
 };
 
 }  // namespace blink

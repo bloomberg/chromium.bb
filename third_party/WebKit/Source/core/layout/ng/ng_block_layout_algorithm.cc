@@ -182,6 +182,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   container_builder_.SetDirection(constraint_space_->Direction());
   container_builder_.SetWritingMode(constraint_space_->WritingMode());
   container_builder_.SetSize(size);
+  container_builder_.MutableUnpositionedFloats() =
+      constraint_space_->UnpositionedFloats();
 
   NGBlockChildIterator child_iterator(Node()->FirstChild(), BreakToken());
   NGBlockChildIterator::Entry entry = child_iterator.NextChild();
@@ -583,6 +585,11 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   // 2) Floats margins are used separately to calculate floating exclusions.
   space_builder_.SetMarginStrut(child->IsFloating() ? NGMarginStrut()
                                                     : curr_margin_strut_);
+
+  if (!is_new_bfc) {
+    space_builder_.SetUnpositionedFloats(
+        container_builder_.MutableUnpositionedFloats());
+  }
 
   if (child->IsInline()) {
     // TODO(kojii): Setup space_builder_ appropriately for inline child.
