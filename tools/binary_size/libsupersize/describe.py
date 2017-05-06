@@ -29,6 +29,17 @@ def _PrettySize(size):
   return '%.1fmb' % size
 
 
+def _FormatPss(pss):
+  # Shows a decimal for small numbers to make it clear that a shared symbol has
+  # a non-zero pss.
+  if pss > 10:
+    return str(int(pss))
+  ret = str(round(pss, 1))
+  if ret.endswith('.0'):
+    ret = ret[:-2]
+  return ret
+
+
 def _DiffPrefix(diff, sym):
   if diff.IsAdded(sym):
     return '+ '
@@ -68,7 +79,7 @@ class Describer(object):
       for name in section_names:
         yield '    {}: {:,} bytes'.format(name, section_sizes[name])
 
-  def _DescribeSymbol(self, sym):
+  def _DescribeSymbol(self, sym, single_line=False):
     if sym.IsGroup():
       address = 'Group'
     else:
@@ -76,20 +87,24 @@ class Describer(object):
     if self.verbose:
       count_part = '  count=%d' % len(sym) if sym.IsGroup() else ''
       yield '{}@{:<9s}  pss={}  padding={}  size_without_padding={}{}'.format(
-          sym.section, address, int(sym.pss), sym.padding,
+          sym.section, address, _FormatPss(sym.pss), sym.padding,
           sym.size_without_padding, count_part)
       yield '    source_path={} \tobject_path={}'.format(
           sym.source_path, sym.object_path)
       if sym.name:
         yield '    flags={}  name={}'.format(sym.FlagsString(), sym.name)
         if sym.full_name:
-          yield '               full_name={}'.format(sym.full_name)
+          yield '         full_name={}'.format(sym.full_name)
       elif sym.full_name:
         yield '    flags={}  full_name={}'.format(
             sym.FlagsString(), sym.full_name)
+    elif single_line:
+      count_part = ' (count=%d)' % len(sym) if sym.IsGroup() else ''
+      yield '{}@{:<9s}  {:<7} {}{}'.format(
+          sym.section, address, _FormatPss(sym.pss), sym.name, count_part)
     else:
       yield '{}@{:<9s}  {:<7} {}'.format(
-          sym.section, address, int(sym.pss),
+          sym.section, address, _FormatPss(sym.pss),
           sym.source_path or sym.object_path or '{no path}')
       if sym.name:
         count_part = ' (count=%d)' % len(sym) if sym.IsGroup() else ''
@@ -97,23 +112,27 @@ class Describer(object):
 
   def _DescribeSymbolGroupChildren(self, group, indent=0):
     running_total = 0
-    sorted_syms = group if group.is_sorted else group.Sorted()
+    running_percent = 0
     is_diff = isinstance(group, models.SymbolDiff)
+    all_groups = all(s.IsGroup() for s in group)
 
     indent_prefix = '> ' * indent
     diff_prefix = ''
-    for s in sorted_syms:
+    total = group.pss
+    for index, s in enumerate(group):
       if group.IsBss() or not s.IsBss():
         running_total += s.pss
-      for l in self._DescribeSymbol(s):
+        running_percent = running_total / total
+      for l in self._DescribeSymbol(s, single_line=all_groups):
         if l[:4].isspace():
           indent_size = 8 + len(indent_prefix) + len(diff_prefix)
           yield '{} {}'.format(' ' * indent_size, l)
         else:
           if is_diff:
             diff_prefix = _DiffPrefix(group, s)
-          yield '{}{}{:8} {}'.format(indent_prefix, diff_prefix,
-                                     int(running_total), l)
+          yield '{}{}{:<4} {:>8} {:7} {}'.format(
+              indent_prefix, diff_prefix, str(index) + ')',
+              _FormatPss(running_total), '({:.1%})'.format(running_percent), l)
 
       if self.recursive and s.IsGroup():
         for l in self._DescribeSymbolGroupChildren(s, indent=indent + 1):
@@ -121,10 +140,15 @@ class Describer(object):
 
   def _DescribeSymbolGroup(self, group):
     total_size = group.pss
-    code_syms = group.WhereInSection('t')
-    code_size = code_syms.pss
-    ro_size = code_syms.Inverted().WhereInSection('r').pss
-    unique_paths = set(s.object_path for s in group)
+    code_size = 0
+    ro_size = 0
+    unique_paths = set()
+    for s in group.IterLeafSymbols():
+      if s.section == 't':
+        code_size += s.pss
+      elif s.section == 'r':
+        ro_size += s.pss
+      unique_paths.add(s.object_path)
     header_desc = [
         'Showing {:,} symbols ({:,} unique) with total pss: {} bytes'.format(
             len(group), group.CountUniqueSymbols(), int(total_size)),
@@ -134,7 +158,8 @@ class Describer(object):
             _PrettySize(int(total_size))),
         'Number of object files: {}'.format(len(unique_paths)),
         '',
-        'First columns are: running total, address, pss',
+        'Index, Running Total, Section@Address, PSS',
+        '-' * 60
     ]
     children_desc = self._DescribeSymbolGroupChildren(group)
     return itertools.chain(header_desc, children_desc)

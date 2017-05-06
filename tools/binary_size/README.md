@@ -1,5 +1,24 @@
 # Tools for analyzing Chrome's binary size
 
+# diagnose_bloat.py
+
+Determine the cause of binary size bloat between two commits. Works for Android
+and partially works for Linux (crbug/717550).
+
+## Example Usage:
+
+    # Build and diff HEAD^ and HEAD.
+    tools/binary_size/diagnose_bloat.py HEAD
+
+    # Diff OTHERREV and REV using downloaded build artifacts.
+    tools/binary_size/diagnose_bloat.py REV --reference-rev OTHERREV --cloud
+
+    # Build and diff all contiguous revs in range OTHERREV..REV for src/v8.
+    tools/binary_size/diagnose_bloat.py REV --reference-rev OTHERREV --subrepo v8 --all
+
+    # Display detailed usage info (there are many options).
+    tools/binary_size/diagnose_bloat.py -h
+
 # Super Size
 
 Collect, archive, and analyze Chrome's binary size.
@@ -60,34 +79,15 @@ A convenience command equivalent to: `console before.size after.size --query='Pr
 
     tools/binary_size/supersize diff before.size after.size --all
 
-# diagnose_bloat.py
-
-Determine the cause of binary size bloat between two commits. Works for Android
-and partially works for Linux (crbug/717550).
-
-## Example Usage:
-
-    # Build and diff HEAD^ and HEAD.
-    tools/binary_size/diagnose_bloat.py HEAD
-
-    # Diff OTHERREV and REV using downloaded build artifacts.
-    tools/binary_size/diagnose_bloat.py REV --reference-rev OTHERREV --cloud
-
-    # Build and diff all contiguous revs in range OTHERREV..REV for src/v8.
-    tools/binary_size/diagnose_bloat.py REV --reference-rev OTHERREV --subrepo v8 --all
-
-    # Display detailed usage info (there are many options).
-    tools/binary_size/diagnose_bloat.py -h
-
 # Roadmap for Super Size:
 
 Tracked in https://crbug.com/681694
 
+1. Better Linux support (clang/lld).
 1. More `archive` features:
 
   * Find out more about 0xffffffffffffffff addresses, and why such large
     gaps exist after them.
-  * Use nm to get the full list of symbols that share the same address.
   * Collect java symbol information
   * Collect .pak file information (using .o.whitelist files)
   * Collect .apk entry information
@@ -98,19 +98,16 @@ Tracked in https://crbug.com/681694
   * Duplicate Symbols - shows when statics in headers are an issue.
   * Overloaded Symbols - shows when overloads are excessive.
   * Per-class / namespace size (no way to distinguish class vs namespace).
-  * Per-Chrome package (Chrome-specific grouping. e.g. name prefixes).
   * CSV output (for pasting into a spreadsheet).
+  * Make Where\*() methods filter recursively on already-grouped SymbolGroups.
+  * Add symbols.SplitByNamespace() - which will be like GroupByNamespace, but be
+    recursive.
 
 1. More `html_report` features:
 
-  * Break down by other groupings (e.g. create from nested `SymbolGroups`)
+  * Break down by other groupings (Create from result of SplitByNamespace())
+  * Render as simple tree view rather than 2d boxes
 
 1. Integrate with `resource_sizes.py` so that it tracks size of major
    components separately: chrome vs blink vs skia vs v8.
-1. Speed up some steps (like normalizing names) via multiprocessing.
 1. Add dependency graph info, perhaps just on a per-file basis.
-
-# Roadmap for diagnose_bloat.py:
-1. More `diagnose_bloat.py` features:
-
-  * Add more diff types (pak files, Java symbols).
