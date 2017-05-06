@@ -126,6 +126,7 @@ class DatabaseImpl::IDBThreadHelper {
                    const base::string16& new_name);
   void Abort(int64_t transaction_id);
   void AbortWithError(int64_t transaction_id,
+                      scoped_refptr<IndexedDBCallbacks> callbacks,
                       const IndexedDBDatabaseError& error);
   void Commit(int64_t transaction_id);
   void OnGotUsageAndQuotaForCommit(int64_t transaction_id,
@@ -296,12 +297,10 @@ void DatabaseImpl::Put(
     if (!handle) {
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
                                    kInvalidBlobUuid);
-      idb_runner_->PostTask(FROM_HERE, base::Bind(&IndexedDBCallbacks::OnError,
-                                                  callbacks, error));
       idb_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&IDBThreadHelper::AbortWithError,
-                     base::Unretained(helper_), transaction_id, error));
+          FROM_HERE, base::Bind(&IDBThreadHelper::AbortWithError,
+                                base::Unretained(helper_), transaction_id,
+                                base::Passed(&callbacks), error));
       return;
     }
     UMA_HISTOGRAM_MEMORY_KB("Storage.IndexedDB.PutBlobSizeKB",
@@ -858,8 +857,12 @@ void DatabaseImpl::IDBThreadHelper::Abort(int64_t transaction_id) {
 
 void DatabaseImpl::IDBThreadHelper::AbortWithError(
     int64_t transaction_id,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     const IndexedDBDatabaseError& error) {
   DCHECK(idb_thread_checker_.CalledOnValidThread());
+
+  callbacks->OnError(error);
+
   if (!connection_->IsConnected())
     return;
 
