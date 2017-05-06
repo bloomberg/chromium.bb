@@ -6,10 +6,12 @@
 #define CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_MAC_H_
 
 #include <IOSurface/IOSurface.h>
+#include <list>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "cc/output/software_output_device.h"
+#include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/vsync_provider.h"
@@ -22,9 +24,8 @@ class Compositor;
 
 namespace content {
 
-class SoftwareOutputDeviceMac :
-    public cc::SoftwareOutputDevice,
-    public gfx::VSyncProvider {
+class CONTENT_EXPORT SoftwareOutputDeviceMac : public cc::SoftwareOutputDevice,
+                                               public gfx::VSyncProvider {
  public:
   explicit SoftwareOutputDeviceMac(ui::Compositor* compositor);
   ~SoftwareOutputDeviceMac() override;
@@ -41,30 +42,49 @@ class SoftwareOutputDeviceMac :
   void GetVSyncParameters(
       const gfx::VSyncProvider::UpdateVSyncCallback& callback) override;
 
+  // Testing methods.
+  SkRegion LastCopyRegionForTesting() const {
+    return last_copy_region_for_testing_;
+  }
+  IOSurfaceRef CurrentPaintIOSurfaceForTesting() const {
+    return current_paint_buffer_->io_surface.get();
+  }
+  size_t BufferQueueSizeForTesting() const { return buffer_queue_.size(); }
+
  private:
-  bool EnsureBuffersExist();
+  struct Buffer {
+    Buffer();
+    ~Buffer();
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+    // The damage of all BeginPaints since this buffer was the back buffer.
+    SkRegion accumulated_damage;
+  };
 
-  // Copy the pixels from the previous buffer to the new buffer.
-  void CopyPreviousBufferDamage(const SkRegion& new_damage_rect);
+  // Copy the pixels from the previous buffer to the new buffer, and union
+  // |new_damage_rect| into all |buffer_queue_|'s accumulated damages.
+  void UpdateAndCopyBufferDamage(Buffer* previous_paint_buffer,
+                                 const SkRegion& new_damage_rect);
 
-  ui::Compositor* compositor_;
+  ui::Compositor* compositor_ = nullptr;
   gfx::Size pixel_size_;
-  float scale_factor_;
+  float scale_factor_ = 1;
 
-  // This surface is double-buffered. The two buffers are in |io_surfaces_|,
-  // and the index of the current buffer is |current_buffer_|.
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surfaces_[2];
-  int current_index_;
+  // The queue of buffers. The back is the most recently painted buffer
+  // (sometimes equal to |current_paint_buffer_|), and the front is the
+  // least recently painted buffer.
+  std::list<std::unique_ptr<Buffer>> buffer_queue_;
 
-  // The previous frame's damage rectangle. Used to copy unchanged content
-  // between buffers in CopyPreviousBufferDamage.
-  SkRegion previous_buffer_damage_region_;
+  // A pointer to the last element of |buffer_queue_| during paint. It is only
+  // valid between BeginPaint and EndPaint.
+  Buffer* current_paint_buffer_ = nullptr;
 
-  // The SkCanvas wrapps the mapped current IOSurface. It is valid only between
-  // BeginPaint and EndPaint.
-  std::unique_ptr<SkCanvas> canvas_;
+  // The SkCanvas wraps the mapped |current_paint_buffer_|'s IOSurface. It is
+  // valid only between BeginPaint and EndPaint.
+  std::unique_ptr<SkCanvas> current_paint_canvas_;
 
   gfx::VSyncProvider::UpdateVSyncCallback update_vsync_callback_;
+
+  SkRegion last_copy_region_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceMac);
 };
