@@ -158,6 +158,38 @@ void PolicyWatcher::StartWatching(
   }
 }
 
+std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetCurrentPolicies() {
+  // If |old_policies_| is empty, then the PolicyService has not yet provided
+  // policies, so just return the default values. Otherwise, |old_policies_|
+  // already contains all the supported policies, defaults and overrides.
+  return old_policies_->size() == 0 ? GetDefaultPolicies()
+                                    : old_policies_->CreateDeepCopy();
+}
+
+std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
+  auto result = base::MakeUnique<base::DictionaryValue>();
+  result->SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
+  result->SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
+  result->SetBoolean(key::kRemoteAccessHostMatchUsername, false);
+  result->Set(key::kRemoteAccessHostClientDomainList,
+              base::MakeUnique<base::ListValue>());
+  result->Set(key::kRemoteAccessHostDomainList,
+              base::MakeUnique<base::ListValue>());
+  result->SetString(key::kRemoteAccessHostTalkGadgetPrefix,
+                    kDefaultHostTalkGadgetPrefix);
+  result->SetString(key::kRemoteAccessHostTokenUrl, std::string());
+  result->SetString(key::kRemoteAccessHostTokenValidationUrl, std::string());
+  result->SetString(key::kRemoteAccessHostTokenValidationCertificateIssuer,
+                    std::string());
+  result->SetBoolean(key::kRemoteAccessHostAllowClientPairing, true);
+  result->SetBoolean(key::kRemoteAccessHostAllowGnubbyAuth, true);
+  result->SetBoolean(key::kRemoteAccessHostAllowRelayedConnection, true);
+  result->SetString(key::kRemoteAccessHostUdpPortRange, "");
+  result->SetBoolean(key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
+                     false);
+  return result;
+}
+
 void PolicyWatcher::SignalPolicyError() {
   old_policies_->Clear();
   policy_error_callback_.Run();
@@ -169,36 +201,13 @@ PolicyWatcher::PolicyWatcher(
     std::unique_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
     std::unique_ptr<policy::SchemaRegistry> owned_schema_registry)
     : old_policies_(new base::DictionaryValue()),
-      default_values_(new base::DictionaryValue()),
+      default_values_(GetDefaultPolicies()),
       policy_service_(policy_service),
       owned_schema_registry_(std::move(owned_schema_registry)),
       owned_policy_provider_(std::move(owned_policy_provider)),
       owned_policy_service_(std::move(owned_policy_service)) {
   DCHECK(policy_service_);
   DCHECK(owned_schema_registry_);
-
-  // Initialize the default values for each policy.
-  default_values_->SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
-  default_values_->SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
-  default_values_->SetBoolean(key::kRemoteAccessHostMatchUsername, false);
-  default_values_->Set(key::kRemoteAccessHostClientDomainList,
-                       base::MakeUnique<base::ListValue>());
-  default_values_->Set(key::kRemoteAccessHostDomainList,
-                       base::MakeUnique<base::ListValue>());
-  default_values_->SetString(key::kRemoteAccessHostTalkGadgetPrefix,
-                             kDefaultHostTalkGadgetPrefix);
-  default_values_->SetString(key::kRemoteAccessHostTokenUrl, std::string());
-  default_values_->SetString(key::kRemoteAccessHostTokenValidationUrl,
-                             std::string());
-  default_values_->SetString(
-      key::kRemoteAccessHostTokenValidationCertificateIssuer, std::string());
-  default_values_->SetBoolean(key::kRemoteAccessHostAllowClientPairing, true);
-  default_values_->SetBoolean(key::kRemoteAccessHostAllowGnubbyAuth, true);
-  default_values_->SetBoolean(key::kRemoteAccessHostAllowRelayedConnection,
-                              true);
-  default_values_->SetString(key::kRemoteAccessHostUdpPortRange, "");
-  default_values_->SetBoolean(
-      key::kRemoteAccessHostAllowUiAccessForRemoteAssistance, false);
 }
 
 PolicyWatcher::~PolicyWatcher() {

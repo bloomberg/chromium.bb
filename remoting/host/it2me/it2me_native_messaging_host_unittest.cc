@@ -22,6 +22,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/policy/core/common/fake_async_policy_loader.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "net/base/file_stream.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -75,63 +76,14 @@ void VerifyCommonProperties(std::unique_ptr<base::DictionaryValue> response,
   EXPECT_EQ(id, int_value);
 }
 
-class FakePolicyService : public policy::PolicyService {
- public:
-  FakePolicyService();
-  ~FakePolicyService() override;
-
-  // policy::PolicyService overrides.
-  void AddObserver(policy::PolicyDomain domain,
-                   policy::PolicyService::Observer* observer) override;
-  void RemoveObserver(policy::PolicyDomain domain,
-                      policy::PolicyService::Observer* observer) override;
-  const policy::PolicyMap& GetPolicies(
-      const policy::PolicyNamespace& ns) const override;
-  bool IsInitializationComplete(policy::PolicyDomain domain) const override;
-  void RefreshPolicies(const base::Closure& callback) override;
-
- private:
-  policy::PolicyMap policy_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePolicyService);
-};
-
-FakePolicyService::FakePolicyService() {}
-
-FakePolicyService::~FakePolicyService() {}
-
-void FakePolicyService::AddObserver(policy::PolicyDomain domain,
-                                    policy::PolicyService::Observer* observer) {
-}
-
-void FakePolicyService::RemoveObserver(
-    policy::PolicyDomain domain,
-    policy::PolicyService::Observer* observer) {}
-
-const policy::PolicyMap& FakePolicyService::GetPolicies(
-    const policy::PolicyNamespace& ns) const {
-  return policy_map_;
-}
-
-bool FakePolicyService::IsInitializationComplete(
-    policy::PolicyDomain domain) const {
-  return true;
-}
-
-void FakePolicyService::RefreshPolicies(const base::Closure& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-}
-
 class MockIt2MeHost : public It2MeHost {
  public:
   MockIt2MeHost(std::unique_ptr<ChromotingHostContext> context,
-                std::unique_ptr<PolicyWatcher> policy_watcher,
                 base::WeakPtr<It2MeHost::Observer> observer,
                 std::unique_ptr<SignalStrategy> signal_strategy,
                 const std::string& username,
                 const std::string& directory_bot_jid)
       : It2MeHost(std::move(context),
-                  std::move(policy_watcher),
                   /*confirmation_dialog_factory=*/nullptr,
                   observer,
                   std::move(signal_strategy),
@@ -208,7 +160,6 @@ class MockIt2MeHostFactory : public It2MeHostFactory {
 
   scoped_refptr<It2MeHost> CreateIt2MeHost(
       std::unique_ptr<ChromotingHostContext> context,
-      policy::PolicyService* policy_service,
       base::WeakPtr<It2MeHost::Observer> observer,
       std::unique_ptr<SignalStrategy> signal_strategy,
       const std::string& username,
@@ -224,13 +175,11 @@ MockIt2MeHostFactory::~MockIt2MeHostFactory() {}
 
 scoped_refptr<It2MeHost> MockIt2MeHostFactory::CreateIt2MeHost(
     std::unique_ptr<ChromotingHostContext> context,
-    policy::PolicyService* policy_service,
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
     const std::string& directory_bot_jid) {
-  return new MockIt2MeHost(std::move(context),
-                           /*policy_watcher=*/nullptr, observer,
+  return new MockIt2MeHost(std::move(context), observer,
                            std::move(signal_strategy), username,
                            directory_bot_jid);
 }
@@ -285,19 +234,12 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
   std::unique_ptr<remoting::NativeMessagingPipe> pipe_;
 
-  std::unique_ptr<policy::PolicyService> fake_policy_service_;
-
   DISALLOW_COPY_AND_ASSIGN(It2MeNativeMessagingHostTest);
 };
 
 void It2MeNativeMessagingHostTest::SetUp() {
   test_message_loop_.reset(new base::MessageLoop());
   test_run_loop_.reset(new base::RunLoop());
-
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, the browser owns the PolicyService so simulate that here.
-  fake_policy_service_.reset(new FakePolicyService());
-#endif  // defined(OS_CHROMEOS)
 
   // Run the host on a dedicated thread.
   host_thread_.reset(new base::Thread("host_thread"));
@@ -399,14 +341,16 @@ void It2MeNativeMessagingHostTest::VerifyErrorResponse() {
 
 void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
   bool connect_response_received = false;
+  bool nat_policy_received = false;
   bool starting_received = false;
   bool requestedAccessCode_received = false;
   bool receivedAccessCode_received = false;
   bool connecting_received = false;
   bool connected_received = false;
 
-  // We expect a total of 6 messages: 1 connectResponse and 5 hostStateChanged.
-  for (int i = 0; i < 6; ++i) {
+  // We expect a total of 7 messages: 1 connectResponse, 1 natPolicyChanged,
+  // and 5 hostStateChanged.
+  for (int i = 0; i < 7; ++i) {
     std::unique_ptr<base::DictionaryValue> response =
         ReadMessageFromOutputPipe();
     ASSERT_TRUE(response);
@@ -418,6 +362,9 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
       EXPECT_FALSE(connect_response_received);
       connect_response_received = true;
       VerifyId(std::move(response), request_id);
+    } else if (type == "natPolicyChanged") {
+      EXPECT_FALSE(nat_policy_received);
+      nat_policy_received = true;
     } else if (type == "hostStateChanged") {
       std::string state;
       ASSERT_TRUE(response->GetString("state", &state));
@@ -530,11 +477,16 @@ void It2MeNativeMessagingHostTest::StartHost() {
                                std::move(output_write_file)));
 
   // Creating a native messaging host with a mock It2MeHostFactory.
+  std::unique_ptr<ChromotingHostContext> context =
+      ChromotingHostContext::Create(host_task_runner_);
+  std::unique_ptr<PolicyWatcher> policy_watcher =
+      PolicyWatcher::CreateFromPolicyLoaderForTesting(
+          base::MakeUnique<policy::FakeAsyncPolicyLoader>(
+              base::ThreadTaskRunnerHandle::Get()));
   std::unique_ptr<extensions::NativeMessageHost> it2me_host(
       new It2MeNativeMessagingHost(
-          /*needs_elevation=*/false, fake_policy_service_.get(),
-          ChromotingHostContext::Create(host_task_runner_),
-          base::WrapUnique(new MockIt2MeHostFactory())));
+          /*needs_elevation=*/false, std::move(policy_watcher),
+          std::move(context), base::WrapUnique(new MockIt2MeHostFactory())));
   it2me_host->Start(pipe_.get());
 
   pipe_->Start(std::move(it2me_host), std::move(channel));
@@ -609,7 +561,7 @@ TEST_F(It2MeNativeMessagingHostTest, Id) {
   EXPECT_EQ("42", value);
 }
 
-TEST_F(It2MeNativeMessagingHostTest, Connect) {
+TEST_F(It2MeNativeMessagingHostTest, ConnectMultiple) {
   // A new It2MeHost instance is created for every it2me session. The native
   // messaging host, on the other hand, is long lived. This test verifies
   // multiple It2Me host startup and shutdowns.

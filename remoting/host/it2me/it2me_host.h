@@ -22,10 +22,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace policy {
-class PolicyService;
-}  // namespace policy
-
 namespace remoting {
 
 class ChromotingHost;
@@ -33,7 +29,6 @@ class ChromotingHostContext;
 class DesktopEnvironmentFactory;
 class HostEventLogger;
 class HostStatusLogger;
-class PolicyWatcher;
 class RegisterSupportHostRequest;
 class RsaKeyPair;
 
@@ -65,7 +60,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   };
 
   It2MeHost(std::unique_ptr<ChromotingHostContext> context,
-            std::unique_ptr<PolicyWatcher> policy_watcher,
             std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory_,
             base::WeakPtr<It2MeHost::Observer> observer,
             std::unique_ptr<SignalStrategy> signal_strategy,
@@ -99,6 +93,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   protocol::ValidatingAuthenticator::ValidationCallback
   GetValidationCallbackForTesting();
 
+  // Called when initial policies are read and when they change.
+  void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
+
  protected:
   friend class base::RefCountedThreadSafe<It2MeHost>;
 
@@ -129,12 +126,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void OnReceivedSupportID(const std::string& support_id,
                            const base::TimeDelta& lifetime,
                            const std::string& error_message);
-
-  // Called when initial policies are read, and when they change.
-  void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
-
-  // Called when malformed policies are detected.
-  void OnPolicyError();
 
   // Handlers for NAT traversal and domain policies.
   void UpdateNatPolicy(bool nat_traversal_enabled);
@@ -168,7 +159,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   std::unique_ptr<ChromotingHost> host_;
   int failed_login_attempts_ = 0;
 
-  std::unique_ptr<PolicyWatcher> policy_watcher_;
   std::unique_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory_;
   std::unique_ptr<It2MeConfirmationDialogProxy> confirmation_dialog_proxy_;
 
@@ -203,14 +193,8 @@ class It2MeHostFactory {
   It2MeHostFactory();
   virtual ~It2MeHostFactory();
 
-  // |policy_service| is used for creating the policy watcher for new
-  // instances of It2MeHost on ChromeOS.  The caller must ensure that
-  // |policy_service| is valid throughout the lifetime of each created It2MeHost
-  // object.  This is currently possible because |policy_service| is a global
-  // singleton available from the browser process.
   virtual scoped_refptr<It2MeHost> CreateIt2MeHost(
       std::unique_ptr<ChromotingHostContext> context,
-      policy::PolicyService* policy_service,
       base::WeakPtr<It2MeHost::Observer> observer,
       std::unique_ptr<SignalStrategy> signal_strategy,
       const std::string& username,

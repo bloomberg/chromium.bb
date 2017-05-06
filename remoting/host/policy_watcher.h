@@ -59,6 +59,12 @@ class PolicyWatcher : public policy::PolicyService::Observer,
       const PolicyUpdatedCallback& policy_updated_callback,
       const PolicyErrorCallback& policy_error_callback);
 
+  // Return the current policies.
+  std::unique_ptr<base::DictionaryValue> GetCurrentPolicies();
+
+  // Return the default policies.
+  static std::unique_ptr<base::DictionaryValue> GetDefaultPolicies();
+
   // Specify a |policy_service| to borrow (on Chrome OS, from the browser
   // process) or specify nullptr to internally construct and use a new
   // PolicyService (on other OS-es). PolicyWatcher must be used on the thread on

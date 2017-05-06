@@ -28,7 +28,6 @@
 #include "remoting/host/host_status_logger.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me_desktop_environment.h"
-#include "remoting/host/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
@@ -58,7 +57,6 @@ typedef ValidatingAuthenticator::ResultCallback ValidationResultCallback;
 
 It2MeHost::It2MeHost(
     std::unique_ptr<ChromotingHostContext> host_context,
-    std::unique_ptr<PolicyWatcher> policy_watcher,
     std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
@@ -69,7 +67,6 @@ It2MeHost::It2MeHost(
       signal_strategy_(std::move(signal_strategy)),
       username_(username),
       directory_bot_jid_(directory_bot_jid),
-      policy_watcher_(std::move(policy_watcher)),
       confirmation_dialog_factory_(std::move(dialog_factory)) {
   DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
 }
@@ -77,7 +74,6 @@ It2MeHost::It2MeHost(
 It2MeHost::~It2MeHost() {
   // Check that resources that need to be torn down on the UI thread are gone.
   DCHECK(!desktop_environment_factory_.get());
-  DCHECK(!policy_watcher_.get());
 }
 
 void It2MeHost::Connect() {
@@ -91,11 +87,6 @@ void It2MeHost::Connect() {
       host_context_->network_task_runner(),
       host_context_->video_capture_task_runner(),
       host_context_->input_task_runner(), host_context_->ui_task_runner()));
-
-  // Start monitoring configured policies.
-  policy_watcher_->StartWatching(
-      base::Bind(&It2MeHost::OnPolicyUpdate, this),
-      base::Bind(&It2MeHost::OnPolicyError, this));
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
@@ -132,8 +123,6 @@ void It2MeHost::DisconnectOnNetworkThread() {
   // Post tasks to delete UI objects on the UI thread.
   host_context_->ui_task_runner()->DeleteSoon(
       FROM_HERE, desktop_environment_factory_.release());
-  host_context_->ui_task_runner()->DeleteSoon(FROM_HERE,
-                                              policy_watcher_.release());
 
   SetState(kDisconnected, "");
 }
@@ -346,11 +335,6 @@ void It2MeHost::OnPolicyUpdate(
   if (!pending_connect_.is_null()) {
     base::ResetAndReturn(&pending_connect_).Run();
   }
-}
-
-void It2MeHost::OnPolicyError() {
-  // TODO(lukasza): Report the policy error to the user.  crbug.com/433009
-  NOTIMPLEMENTED();
 }
 
 void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
@@ -588,19 +572,14 @@ It2MeHostFactory::~It2MeHostFactory() {}
 
 scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
     std::unique_ptr<ChromotingHostContext> context,
-    policy::PolicyService* policy_service,
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
     const std::string& directory_bot_jid) {
   DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
-
-  std::unique_ptr<PolicyWatcher> policy_watcher =
-      PolicyWatcher::Create(policy_service, context->file_task_runner());
-  return new It2MeHost(std::move(context), std::move(policy_watcher),
-                       base::MakeUnique<It2MeConfirmationDialogFactory>(),
-                       observer, std::move(signal_strategy), username,
-                       directory_bot_jid);
+  return new It2MeHost(
+      std::move(context), base::MakeUnique<It2MeConfirmationDialogFactory>(),
+      observer, std::move(signal_strategy), username, directory_bot_jid);
 }
 
 }  // namespace remoting

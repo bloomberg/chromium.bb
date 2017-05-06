@@ -18,13 +18,14 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
-#include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/url_pattern.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
+#include "remoting/host/policy_watcher.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -104,9 +105,12 @@ std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
               content::BrowserThread::UI),
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::FILE));
+  std::unique_ptr<remoting::PolicyWatcher> policy_watcher =
+      remoting::PolicyWatcher::Create(g_browser_process->policy_service(),
+                                      context->file_task_runner());
   std::unique_ptr<NativeMessageHost> host(
       new remoting::It2MeNativeMessagingHost(
-          /*needs_elevation=*/false, g_browser_process->policy_service(),
+          /*needs_elevation=*/false, std::move(policy_watcher),
           std::move(context), std::move(host_factory)));
   return host;
 }
