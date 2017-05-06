@@ -19,9 +19,13 @@ class OriginTrialsTestPartial final {
  public:
   static bool normalAttributePartial(OriginTrialsTest&) { return true; }
   static bool staticAttributePartial() { return true; }
-  static bool methodPartial(OriginTrialsTest&) { return true; }
+  static bool normalMethodPartial(OriginTrialsTest&) { return true; }
   static bool staticMethodPartial() { return true; }
   static const unsigned kConstantPartial = 2;
+  static bool secureAttributePartial(OriginTrialsTest&) { return true; }
+  static bool secureStaticAttributePartial() { return true; }
+  static bool secureMethodPartial(OriginTrialsTest&) { return true; }
+  static bool secureStaticMethodPartial() { return true; }
 };
 
 }  // namespace blink

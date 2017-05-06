@@ -11,15 +11,6 @@
 
 namespace blink {
 
-bool OriginTrialsTest::normalAttribute() {
-  return true;
-}
-
-// static
-bool OriginTrialsTest::staticAttribute() {
-  return true;
-}
-
 bool OriginTrialsTest::throwingAttribute(ScriptState* script_state,
                                          ExceptionState& exception_state) {
   String error_message;
@@ -31,10 +22,6 @@ bool OriginTrialsTest::throwingAttribute(ScriptState* script_state,
     return false;
   }
   return unconditionalAttribute();
-}
-
-bool OriginTrialsTest::unconditionalAttribute() {
-  return true;
 }
 
 DEFINE_TRACE(OriginTrialsTest) {}

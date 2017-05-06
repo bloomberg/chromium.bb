@@ -5,16 +5,37 @@
 interface OriginTrialsTest {
     [OriginTrialEnabled=OriginTrialsSampleAPI] readonly attribute boolean normalAttribute;
     [OriginTrialEnabled=OriginTrialsSampleAPI] static readonly attribute boolean staticAttribute;
+    [OriginTrialEnabled=OriginTrialsSampleAPI] boolean normalMethod();
+    [OriginTrialEnabled=OriginTrialsSampleAPI] static boolean staticMethod();
     [OriginTrialEnabled=OriginTrialsSampleAPI] const unsigned short CONSTANT = 1;
 
     // This attribute uses native code to test whether the trial is enabled,
     // and throws an exception in JavaScript if it is not.
     [CallWith=ScriptState, RaisesException] readonly attribute boolean throwingAttribute;
 
-    // This attribute is available whether or not the trial is enabled.
+    // These are available whether or not the trial is enabled.
     readonly attribute boolean unconditionalAttribute;
+    static readonly attribute boolean staticUnconditionalAttribute;
+    boolean unconditionalMethod();
+    static boolean staticUnconditionalMethod();
+    const unsigned short UNCONDITIONAL_CONSTANT = 99;
 
-    // This attribute mirrors |unconditionalAttribute| above, but should only be
-    // available if the trial is enabled.
-    [OriginTrialEnabled=OriginTrialsSampleAPI, ImplementedAs=unconditionalAttribute] readonly attribute boolean bindingsTest;
+    // These are available whether or not the trial is enabled, but only in a
+    // secure context
+    // TODO(crbug.com/695123): Add [SecureContext] extended attribute when fixed
+    //   to work with [OriginTrialEnabled]
+    readonly attribute boolean secureUnconditionalAttribute;
+    static readonly attribute boolean secureStaticUnconditionalAttribute;
+    boolean secureUnconditionalMethod();
+    static boolean secureStaticUnconditionalMethod();
+
+    // These are only available if the trial is enabled, as well as in secure
+    // context.
+    // TODO(crbug.com/695123): Add [SecureContext] extended attribute when fixed
+    //   to work with [OriginTrialEnabled]
+    //   e.g. [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI]
+    [OriginTrialEnabled=OriginTrialsSampleAPI] readonly attribute boolean secureAttribute;
+    [OriginTrialEnabled=OriginTrialsSampleAPI] static readonly attribute boolean secureStaticAttribute;
+    [OriginTrialEnabled=OriginTrialsSampleAPI] boolean secureMethod();
+    [OriginTrialEnabled=OriginTrialsSampleAPI] static boolean secureStaticMethod();
 };
