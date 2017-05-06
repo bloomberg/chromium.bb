@@ -10,6 +10,8 @@ component("login") {
     "localized_values_builder.h",
     "screens/screen_context.cc",
     "screens/screen_context.h",
+    "secure_module_util_chromeos.cc",
+    "secure_module_util_chromeos.h",
   ]
 
   defines = [ "LOGIN_IMPLEMENTATION" ]

@@ -90,6 +90,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void SetTpmPassword(const std::string& tmp_password) override;
   void ClearErrors() override;
   void ReloadContent(const base::DictionaryValue& dictionary) override;
+  void ReloadEulaContent(const base::DictionaryValue& dictionary) override;
   void ShowControlBar(bool show) override;
   void SetVirtualKeyboardShown(bool displayed) override;
   void SetClientAreaSize(int width, int height) override;

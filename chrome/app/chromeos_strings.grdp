@@ -2041,6 +2041,15 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_SUPERVISED_USER_TPM_ERROR_BUTTON" desc="Supervised user dialog, error page, tpm error during creation, button title">
     OK
   </message>
+  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR_TITLE" desc="Supervised user dialog, error page, secure module error during creation, title">
+    Oops, secure module error.
+  </message>
+  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR" desc="Supervised user dialog, error page, secure module error during creation, text">
+    Something is wrong with device.  To recover from this error you will need to reboot device and try again.
+  </message>
+  <message name="IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR_BUTTON" desc="Supervised user dialog, error page, secure module error during creation, button title">
+    OK
+  </message>
   <message name="IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE" desc="Supervised user dialog, error page, generic error during creation, title">
     Oops, something went wrong
   </message>
@@ -3518,7 +3527,24 @@ Press any key to continue exploring.
   <message name="IDS_EULA_TPM_DISABLED" desc="Tooltip text describing why 'System security setting' link is disabled.">
     Trusted Platform Module (TPM) chip is disabled or absent.
   </message>
-
+  <message name="IDS_EULA_SECURE_MODULE_DESCRIPTION" desc="Description of what a secure module does in the eula page.">
+    Your computer contains a secure module, which is used to implement many critical security features in Chrome OS.
+  </message>
+  <message name="IDS_EULA_SECURE_MODULE_KEY_DESCRIPTION" desc="Description of the generated secure module password in the eula page.">
+    Below is the randomly generated secure module password that has been assigned to your computer:
+  </message>
+  <message name="IDS_EULA_SECURE_MODULE_KEY_DESCRIPTION_POWERWASH" desc="Notifies users that a secure module password is unavailabe after a powerwash.">
+    The randomly generated secure module password is not available. This is normal after a Powerwash.
+  </message>
+  <message name="IDS_EULA_SECURE_MODULE_WAIT" desc="Message that is shown to users on the eula page while the secure module is being set up.">
+    The secure module is being set up. Please be patient; this may take a few minutes.
+  </message>
+  <message name="IDS_EULA_SECURE_MODULE_BUSY" desc="Message that is shown to users on the eula page while the secure module is being prepared.">
+    Secure module is being prepared, please wait (this may take a few minutes)...
+  </message>
+  <message name="IDS_EULA_SECURE_MODULE_DISABLED" desc="Tooltip text describing why 'System security setting' link is disabled.">
+    Secure module is disabled or absent.
+  </message>
   <message name="IDS_ENABLE_DEBUGGING_SCREEN_TITLE" desc="Title of the enable debugging features screen">
     Enable debugging features
   </message>

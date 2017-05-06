@@ -410,13 +410,10 @@ void SupervisedUserCreationScreen::OnCreationError(
     case SupervisedUserCreationController::CRYPTOHOME_NO_MOUNT:
     case SupervisedUserCreationController::CRYPTOHOME_FAILED_MOUNT:
     case SupervisedUserCreationController::CRYPTOHOME_FAILED_TPM:
-      title = l10n_util::GetStringUTF16(
-          IDS_CREATE_SUPERVISED_USER_TPM_ERROR_TITLE);
-      message = l10n_util::GetStringUTF16(
-          IDS_CREATE_SUPERVISED_USER_TPM_ERROR);
-      button = l10n_util::GetStringUTF16(
-          IDS_CREATE_SUPERVISED_USER_TPM_ERROR_BUTTON);
-      break;
+      ::login::GetSecureModuleUsed(
+          base::Bind(&SupervisedUserCreationScreen::UpdateSecureModuleMessages,
+                     weak_factory_.GetWeakPtr()));
+      return;
     case SupervisedUserCreationController::CLOUD_SERVER_ERROR:
     case SupervisedUserCreationController::TOKEN_WRITE_FAILED:
       title = l10n_util::GetStringUTF16(
@@ -585,6 +582,36 @@ void SupervisedUserCreationScreen::OnGetSupervisedUsers(
     ui_users->Append(std::move(ui_copy));
   }
   view_->ShowExistingSupervisedUsers(ui_users.get());
+}
+
+void SupervisedUserCreationScreen::UpdateSecureModuleMessages(
+    ::login::SecureModuleUsed secure_module_used) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::string16 title;
+  base::string16 message;
+  base::string16 button;
+  switch (secure_module_used) {
+    case ::login::SecureModuleUsed::TPM:
+      title =
+          l10n_util::GetStringUTF16(IDS_CREATE_SUPERVISED_USER_TPM_ERROR_TITLE);
+      message = l10n_util::GetStringUTF16(IDS_CREATE_SUPERVISED_USER_TPM_ERROR);
+      button = l10n_util::GetStringUTF16(
+          IDS_CREATE_SUPERVISED_USER_TPM_ERROR_BUTTON);
+      break;
+    case ::login::SecureModuleUsed::CR50:
+      title = l10n_util::GetStringUTF16(
+          IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR_TITLE);
+      message = l10n_util::GetStringUTF16(
+          IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR);
+      button = l10n_util::GetStringUTF16(
+          IDS_CREATE_SUPERVISED_USER_SECURE_MODULE_ERROR_BUTTON);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  if (view_)
+    view_->ShowErrorPage(title, message, button);
 }
 
 void SupervisedUserCreationScreen::OnPhotoTaken(
