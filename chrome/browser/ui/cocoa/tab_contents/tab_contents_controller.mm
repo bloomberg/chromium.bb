@@ -16,6 +16,7 @@
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -90,7 +91,7 @@ class FullscreenObserver : public WebContentsObserver {
   TabContentsController* delegate_;  // weak
 }
 
-- (void)updateBackgroundColor;
+- (void)updateBackgroundColorFromWindowTheme:(NSWindow*)window;
 @end
 
 @implementation TabContentsContainerView
@@ -102,7 +103,6 @@ class FullscreenObserver : public WebContentsObserver {
     base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
     [self setLayer:layer];
     [self setWantsLayer:YES];
-    [self updateBackgroundColor];
   }
   return self;
 }
@@ -135,17 +135,27 @@ class FullscreenObserver : public WebContentsObserver {
 // Update the background layer's color whenever the view needs to repaint.
 - (void)setNeedsDisplayInRect:(NSRect)rect {
   [super setNeedsDisplayInRect:rect];
-  [self updateBackgroundColor];
+  [self updateBackgroundColorFromWindowTheme:[self window]];
 }
 
-- (void)updateBackgroundColor {
+- (void)updateBackgroundColorFromWindowTheme:(NSWindow*)window {
   // This view is sometimes flashed into visibility (e.g, when closing
   // windows or opening new tabs), so ensure that the flash be the theme
   // background color in those cases.
-  SkColor skBackgroundColor = SK_ColorWHITE;
-  const ThemeProvider* theme = [[self window] themeProvider];
-  if (theme)
-    skBackgroundColor = theme->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+  const ThemeProvider* theme = [window themeProvider];
+  ThemedWindowStyle windowStyle = [window themedWindowStyle];
+  if (!theme)
+    return;
+
+  // This logic and hard-coded color value are duplicated from the function
+  // NTPResourceCache::CreateNewTabIncognitoCSS. This logic should exist in only
+  // one location.
+  // https://crbug.com/719236
+  SkColor skBackgroundColor =
+      theme->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+  bool incognito = windowStyle & THEMED_INCOGNITO;
+  if (incognito && !theme->HasCustomImage(IDR_THEME_NTP_BACKGROUND))
+    skBackgroundColor = SkColorSetRGB(0x32, 0x32, 0x32);
 
   // If the page is in fullscreen tab capture mode, change the background color
   // to be a dark tint of the new tab page's background color.
@@ -162,6 +172,10 @@ class FullscreenObserver : public WebContentsObserver {
   base::ScopedCFTypeRef<CGColorRef> cgBackgroundColor(
       skia::CGColorCreateFromSkColor(skBackgroundColor));
   [[self layer] setBackgroundColor:cgBackgroundColor];
+}
+
+- (void)viewWillMoveToWindow:(NSWindow*)newWindow {
+  [self updateBackgroundColorFromWindowTheme:newWindow];
 }
 
 - (ViewID)viewID {
