@@ -217,8 +217,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   SetEditorTextfieldValue(base::ASCIIToUTF16("4111111111111111"),
                           autofill::CREDIT_CARD_NUMBER);
   EXPECT_FALSE(IsEditorTextfieldInvalid(autofill::CREDIT_CARD_NUMBER));
-  EXPECT_EQ(base::ASCIIToUTF16(""),
-            GetErrorLabelForType(autofill::CREDIT_CARD_NUMBER));
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
@@ -315,9 +313,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   // Fixing the card number.
   SetEditorTextfieldValue(base::ASCIIToUTF16("4111111111111111"),
                           autofill::CREDIT_CARD_NUMBER);
-  // The error message has gone.
-  EXPECT_EQ(base::ASCIIToUTF16(""),
-            GetErrorLabelForType(autofill::CREDIT_CARD_NUMBER));
+  // The error has gone.
+  EXPECT_FALSE(IsEditorTextfieldInvalid(autofill::CREDIT_CARD_NUMBER));
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();

@@ -179,6 +179,10 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
 void PaymentRequestSheetController::UpdateContentView() {
   content_view_->RemoveAllChildViews(true);
   FillContentView(content_view_);
+  RelayoutPane();
+}
+
+void PaymentRequestSheetController::RelayoutPane() {
   content_view_->Layout();
   pane_->SizeToPreferredSize();
   // Now that the content and its surrounding pane are updated, force a Layout
@@ -208,6 +212,11 @@ void PaymentRequestSheetController::ButtonPressed(views::Button* sender,
                                                   const ui::Event& event) {
   switch (static_cast<PaymentRequestCommonTags>(sender->tag())) {
     case PaymentRequestCommonTags::CLOSE_BUTTON_TAG:
+      // Transfer the focus to the cancel button, so that any OnBlur actions
+      // can fully execute before CloseDialog is called.
+      dialog()
+          ->GetViewByID(static_cast<int>(DialogViewID::CANCEL_BUTTON))
+          ->RequestFocus();
       dialog()->CloseDialog();
       break;
     case PaymentRequestCommonTags::BACK_BUTTON_TAG:

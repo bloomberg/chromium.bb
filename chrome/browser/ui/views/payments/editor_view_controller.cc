@@ -18,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
@@ -26,6 +27,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
@@ -41,8 +43,32 @@ enum class EditorViewControllerTags : int {
   SAVE_BUTTON = kFirstTagValue,
 };
 
-constexpr int kNumCharactersInShortField = 8;
-constexpr int kNumCharactersInLongField = 20;
+std::unique_ptr<views::View> CreateErrorLabelView(const base::string16& error,
+                                                  const EditorField& field) {
+  std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
+
+  std::unique_ptr<views::BoxLayout> layout =
+      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  // This is the space between the input field and the error label.
+  constexpr int kErrorLabelTopPadding = 6;
+  layout->set_inside_border_insets(gfx::Insets(kErrorLabelTopPadding, 0, 0, 0));
+  view->SetLayoutManager(layout.release());
+
+  std::unique_ptr<views::Label> error_label =
+      base::MakeUnique<views::Label>(error);
+  error_label->set_id(static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) +
+                      field.type);
+  error_label->SetFontList(
+      error_label->GetDefaultFontList().DeriveWithSizeDelta(-1));
+  error_label->SetEnabledColor(error_label->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_AlertSeverityHigh));
+
+  view->AddChildView(error_label.release());
+  return view;
+}
 
 }  // namespace
 
@@ -57,11 +83,15 @@ EditorViewController::~EditorViewController() {}
 void EditorViewController::DisplayErrorMessageForField(
     const EditorField& field,
     const base::string16& error_message) {
-  const auto& label_it = error_labels_.find(field);
-  DCHECK(label_it != error_labels_.end());
-  label_it->second->SetText(error_message);
-  label_it->second->SchedulePaint();
-  dialog()->Layout();
+  const auto& label_view_it = error_labels_.find(field);
+  DCHECK(label_view_it != error_labels_.end());
+
+  label_view_it->second->RemoveAllChildViews(/*delete_children=*/true);
+  if (!error_message.empty()) {
+    label_view_it->second->AddChildView(
+        CreateErrorLabelView(error_message, field).release());
+  }
+  RelayoutPane();
 }
 
 std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
@@ -156,13 +186,9 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   std::unique_ptr<views::GridLayout> editor_layout =
       base::MakeUnique<views::GridLayout>(editor_view.get());
 
-  // The editor grid layout is padded vertically from the top and bottom, and
-  // horizontally inset like other content views. The top padding needs to be
-  // added to the top padding of the first row.
-  constexpr int kEditorVerticalInset = 16;
-  editor_layout->SetInsets(
-      kEditorVerticalInset, payments::kPaymentRequestRowHorizontalInsets,
-      kEditorVerticalInset, payments::kPaymentRequestRowHorizontalInsets);
+  // The editor grid layout is padded horizontally.
+  editor_layout->SetInsets(0, payments::kPaymentRequestRowHorizontalInsets, 0,
+                           payments::kPaymentRequestRowHorizontalInsets);
 
   views::ColumnSet* columns = editor_layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
@@ -180,9 +206,8 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   views::GridLayout* layout_handle = editor_layout.get();
   editor_view->SetLayoutManager(editor_layout.release());
   std::vector<EditorField> fields = GetFieldDefinitions();
-  for (const auto& field : fields) {
+  for (const auto& field : fields)
     CreateInputField(layout_handle, field);
-  }
 
   return editor_view;
 }
@@ -208,6 +233,7 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
   label->SetMaximumWidth(kMaximumLabelWidth);
   layout->AddView(label.release());
 
+  constexpr int kInputFieldHeight = 28;
   if (field.control_type == EditorField::ControlType::TEXTFIELD) {
     ValidatingTextfield* text_field =
         new ValidatingTextfield(CreateValidationDelegate(field));
@@ -215,11 +241,6 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
     text_field->set_controller(this);
     // Using autofill field type as a view ID (for testing).
     text_field->set_id(static_cast<int>(field.type));
-    text_field->set_default_width_in_chars(
-        field.length_hint == EditorField::LengthHint::HINT_SHORT
-            ? kNumCharactersInShortField
-            : kNumCharactersInLongField);
-
     text_fields_.insert(std::make_pair(text_field, field));
 
     // TODO(crbug.com/718582): Make the initial focus the first incomplete/empty
@@ -228,7 +249,8 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
       first_field_view_ = text_field;
 
     // |text_field| will now be owned by |row|.
-    layout->AddView(text_field);
+    layout->AddView(text_field, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0, kInputFieldHeight);
   } else if (field.control_type == EditorField::ControlType::COMBOBOX) {
     ValidatingCombobox* combobox = new ValidatingCombobox(
         GetComboboxModelForType(field.type), CreateValidationDelegate(field));
@@ -242,27 +264,22 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
       first_field_view_ = combobox;
 
     // |combobox| will now be owned by |row|.
-    layout->AddView(combobox);
+    layout->AddView(combobox, 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0, kInputFieldHeight);
   } else {
     NOTREACHED();
   }
 
-  // This is the vertical space between the input field and its error label.
-  constexpr int kInputErrorLabelPadding = 6;
-  layout->StartRowWithPadding(0, 0, 0, kInputErrorLabelPadding);
+  layout->StartRow(0, 0);
   layout->SkipColumns(1);
-  // Error label is initially empty.
-  std::unique_ptr<views::Label> error_label =
-      base::MakeUnique<views::Label>(base::ASCIIToUTF16(""));
-  error_label->set_id(static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) +
-                      field.type);
-  error_label->SetFontList(
-      error_label->GetDefaultFontList().DeriveWithSizeDelta(-1));
-  error_label->SetEnabledColor(error_label->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_AlertSeverityHigh));
-  error_labels_[field] = error_label.get();
+  std::unique_ptr<views::View> error_label_view =
+      base::MakeUnique<views::View>();
+  error_label_view->SetLayoutManager(new views::FillLayout);
+  error_labels_[field] = error_label_view.get();
+  layout->AddView(error_label_view.release());
 
-  layout->AddView(error_label.release());
+  // Bottom padding for the row.
+  layout->AddPaddingRow(0, kInputRowSpacing);
 }
 
 }  // namespace payments

@@ -86,7 +86,7 @@ class EditorViewController : public PaymentRequestSheetController,
   using ComboboxMap =
       std::unordered_map<ValidatingCombobox*, const EditorField>;
   using ErrorLabelMap =
-      std::map<const EditorField, views::Label*, EditorField::Compare>;
+      std::map<const EditorField, views::View*, EditorField::Compare>;
 
   // Does not take ownership of the arguments, which should outlive this object.
   EditorViewController(PaymentRequestSpec* spec,
