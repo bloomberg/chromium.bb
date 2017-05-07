@@ -3674,6 +3674,9 @@ static void write_tile_info(const AV1_COMMON *const cm,
     aom_wb_write_literal(wb, tile_width - 1, 6);
     aom_wb_write_literal(wb, tile_height - 1, 6);
   }
+#if CONFIG_DEPENDENT_HORZTILES
+  if (tile_height > 1) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
+#endif
 #else
   int min_log2_tile_cols, max_log2_tile_cols, ones;
   av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
@@ -3687,11 +3690,10 @@ static void write_tile_info(const AV1_COMMON *const cm,
   // rows
   aom_wb_write_bit(wb, cm->log2_tile_rows != 0);
   if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
-#endif  // CONFIG_EXT_TILE
-
 #if CONFIG_DEPENDENT_HORZTILES
   if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
 #endif
+#endif  // CONFIG_EXT_TILE
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   aom_wb_write_bit(wb, cm->loop_filter_across_tiles_enabled);

@@ -879,7 +879,11 @@ static void set_tile_info(AV1_COMP *cpi) {
 
 #if CONFIG_DEPENDENT_HORZTILES
   cm->dependent_horz_tiles = cpi->oxcf.dependent_horz_tiles;
+#if CONFIG_EXT_TILE
+  if (cm->tile_rows <= 1) cm->dependent_horz_tiles = 0;
+#else
   if (cm->log2_tile_rows == 0) cm->dependent_horz_tiles = 0;
+#endif
 #if CONFIG_TILE_GROUPS
   if (cpi->oxcf.mtu == 0) {
     cm->num_tg = cpi->oxcf.num_tile_groups;
