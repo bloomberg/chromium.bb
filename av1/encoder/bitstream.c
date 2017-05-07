@@ -4734,6 +4734,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     update_inter_compound_mode_probs(cm, probwt, header_bc);
 
     if (cm->reference_mode != COMPOUND_REFERENCE) {
+#if CONFIG_INTERINTRA
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         if (is_interintra_allowed_bsize_group(i)) {
           av1_cond_prob_diff_update(header_bc, &fc->interintra_prob[i],
@@ -4745,11 +4746,14 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
             av1_interintra_mode_tree, cm->fc->interintra_mode_prob[i],
             counts->interintra_mode[i], INTERINTRA_MODES, probwt, header_bc);
       }
+#if CONFIG_WEDGE
       for (i = 0; i < BLOCK_SIZES; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
           av1_cond_prob_diff_update(header_bc, &fc->wedge_interintra_prob[i],
                                     cm->counts.wedge_interintra[i], probwt);
       }
+#endif  // CONFIG_WEDGE
+#endif  // CONFIG_INTERINTRA
     }
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     if (cm->reference_mode != SINGLE_REFERENCE) {

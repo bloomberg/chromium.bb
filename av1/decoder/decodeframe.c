@@ -4684,6 +4684,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_EXT_INTER
     read_inter_compound_mode_probs(fc, &r);
     if (cm->reference_mode != COMPOUND_REFERENCE) {
+#if CONFIG_INTERINTRA
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         if (is_interintra_allowed_bsize_group(i)) {
           av1_diff_update_prob(&r, &fc->interintra_prob[i], ACCT_STR);
@@ -4693,11 +4694,14 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
         for (j = 0; j < INTERINTRA_MODES - 1; j++)
           av1_diff_update_prob(&r, &fc->interintra_mode_prob[i][j], ACCT_STR);
       }
+#if CONFIG_WEDGE
       for (i = 0; i < BLOCK_SIZES; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i)) {
           av1_diff_update_prob(&r, &fc->wedge_interintra_prob[i], ACCT_STR);
         }
       }
+#endif  // CONFIG_WEDGE
+#endif  // CONFIG_INTERINTRA
     }
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     if (cm->reference_mode != SINGLE_REFERENCE) {

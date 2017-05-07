@@ -789,11 +789,11 @@ static const aom_prob default_inter_singleref_comp_mode_probs
 static const aom_prob
     default_compound_type_probs[BLOCK_SIZES][COMPOUND_TYPES - 1] = {
 #if CONFIG_CB4X4
-      { 255, 255 }, { 255, 255 }, { 255, 255 },
+      { 255, 128 }, { 255, 128 }, { 255, 128 },
 #endif
-      { 208, 200 }, { 208, 200 }, { 208, 200 }, { 208, 200 }, { 208, 200 },
-      { 208, 200 }, { 216, 200 }, { 216, 200 }, { 216, 200 }, { 224, 200 },
-      { 224, 200 }, { 240, 200 }, { 240, 200 },
+      { 208, 128 }, { 208, 128 }, { 208, 128 }, { 208, 128 }, { 208, 128 },
+      { 208, 128 }, { 216, 128 }, { 216, 128 }, { 216, 128 }, { 224, 128 },
+      { 224, 128 }, { 240, 128 }, { 240, 128 },
 #if CONFIG_EXT_PARTITION
       { 255, 200 }, { 255, 200 }, { 255, 200 },
 #endif  // CONFIG_EXT_PARTITION
@@ -802,7 +802,7 @@ static const aom_prob
 static const aom_prob
     default_compound_type_probs[BLOCK_SIZES][COMPOUND_TYPES - 1] = {
 #if CONFIG_CB4X4
-      { 208 }, { 208 }, { 208 },
+      { 255 }, { 255 }, { 255 },
 #endif
       { 208 }, { 208 }, { 208 }, { 208 }, { 208 }, { 208 }, { 216 },
       { 216 }, { 216 }, { 224 }, { 224 }, { 240 }, { 240 },
@@ -814,7 +814,7 @@ static const aom_prob
 static const aom_prob
     default_compound_type_probs[BLOCK_SIZES][COMPOUND_TYPES - 1] = {
 #if CONFIG_CB4X4
-      { 208 }, { 208 }, { 208 },
+      { 255 }, { 255 }, { 255 },
 #endif
       { 208 }, { 208 }, { 208 }, { 208 }, { 208 }, { 208 }, { 216 },
       { 216 }, { 216 }, { 224 }, { 224 }, { 240 }, { 240 },
@@ -3574,6 +3574,7 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
                          counts->inter_singleref_comp_mode[i],
                          fc->inter_singleref_comp_mode_probs[i]);
 #endif  // CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_INTERINTRA
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
     if (is_interintra_allowed_bsize_group(i))
       fc->interintra_prob[i] = av1_mode_mv_merge_probs(
@@ -3584,11 +3585,14 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
         av1_interintra_mode_tree, pre_fc->interintra_mode_prob[i],
         counts->interintra_mode[i], fc->interintra_mode_prob[i]);
   }
+#if CONFIG_WEDGE
   for (i = 0; i < BLOCK_SIZES; ++i) {
     if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
       fc->wedge_interintra_prob[i] = av1_mode_mv_merge_probs(
           pre_fc->wedge_interintra_prob[i], counts->wedge_interintra[i]);
   }
+#endif  // CONFIG_WEDGE
+#endif  // CONFIG_INTERINTRA
 
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
   for (i = 0; i < BLOCK_SIZES; ++i) {
