@@ -32,6 +32,10 @@ class FakeWindowsPlatform(fakes.FakePlatform):
   def GetOSVersionName(self):
     return 'win8'
 
+  def GetOSVersionDetailString(self):
+    # Not sure whether this is accurate.
+    return 'Windows 8.1'
+
 
 class WebGLTestInfo(object):
   def __init__(self, url):
