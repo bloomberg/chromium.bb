@@ -69907,15 +69907,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SSL.CertificateErrorReportOutcome"
-    enum="CertificateReportOutcome">
-  <owner>meacer@chromium.org</owner>
-  <summary>
-    Users can opt in to send reports of certificate validation errors to Google.
-    This records the outcome whenever Chrome sends such a report.
-  </summary>
-</histogram>
-
 <histogram name="SSL.ExpectCTReportFailure" enum="NetErrorCodes">
   <obsolete>
     Deprecated as of 07/2016. Replaced with SSL.ExpectCTReportFailure2.
