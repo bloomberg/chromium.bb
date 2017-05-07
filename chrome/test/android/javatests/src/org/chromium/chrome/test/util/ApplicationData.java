@@ -45,7 +45,9 @@ public final class ApplicationData {
                 new Criteria() {
                     private boolean mDataRemoved;
 
-                    @SuppressLint("ApplySharedPref")
+                    // The lint check for calling apply() rather than commit() on a shared pref
+                    // was recently renamed.
+                    @SuppressLint({"ApplySharedPref", "CommitPrefEdits"})
                     @Override
                     public boolean isSatisfied() {
                         SharedPreferences multidexPrefs =
