@@ -63,6 +63,10 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // calls FillContentView again to re-populate it with updated views.
   void UpdateContentView();
 
+  // View controllers should call this if they have modified some layout aspect
+  // (e.g., made it taller or shorter), and want to relayout the whole pane.
+  void RelayoutPane();
+
   // Creates and returns the primary action button for this sheet. It's
   // typically a blue button with the "Pay" or "Done" labels. Subclasses may
   // return an empty std::unique_ptr (nullptr) to indicate that no primary
