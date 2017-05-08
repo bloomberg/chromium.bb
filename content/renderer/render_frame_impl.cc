@@ -3755,14 +3755,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     previews_state_ =
         extra_data ? extra_data->previews_state() : PREVIEWS_OFF;
 
-    // Set lite pages off if a lite page was not loaded for the main frame.
-    if (web_url_response
-            .HttpHeaderField(
-                WebString::FromUTF8(kChromeProxyContentTransformHeader))
-            .Utf8() != kChromeProxyLitePageDirective) {
-      previews_state_ &= ~(SERVER_LITE_PAGE_ON);
-    }
-
     if (extra_data) {
       effective_connection_type_ =
           EffectiveConnectionTypeToWebEffectiveConnectionType(
