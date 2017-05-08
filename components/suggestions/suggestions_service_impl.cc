@@ -46,37 +46,6 @@ namespace suggestions {
 
 namespace {
 
-// Establishes the different sync states that matter to SuggestionsService.
-// There are three different concepts in the sync service: initialized, sync
-// enabled and history sync enabled.
-enum SyncState {
-  // State: Sync service is not initialized, yet not disabled. History sync
-  //     state is unknown (since not initialized).
-  // Behavior: Does not issue a server request, but serves from cache if
-  //     available.
-  NOT_INITIALIZED_ENABLED,
-
-  // State: Sync service is initialized, sync is enabled and history sync is
-  //     enabled.
-  // Behavior: Update suggestions from the server. Serve from cache on timeout.
-  INITIALIZED_ENABLED_HISTORY,
-
-  // State: Sync service is disabled or history sync is disabled.
-  // Behavior: Do not issue a server request. Clear the cache. Serve empty
-  //     suggestions.
-  SYNC_OR_HISTORY_SYNC_DISABLED,
-};
-
-SyncState GetSyncState(syncer::SyncService* sync) {
-  if (!sync || !sync->CanSyncStart() || sync->IsLocalSyncEnabled())
-    return SYNC_OR_HISTORY_SYNC_DISABLED;
-  if (!sync->IsSyncActive() || !sync->ConfigurationDone())
-    return NOT_INITIALIZED_ENABLED;
-  return sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES)
-             ? INITIALIZED_ENABLED_HISTORY
-             : SYNC_OR_HISTORY_SYNC_DISABLED;
-}
-
 // Used to UMA log the state of the last response from the server.
 enum SuggestionsResponseState {
   RESPONSE_EMPTY,
@@ -150,6 +119,7 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
       token_service_(token_service),
       sync_service_(sync_service),
       sync_service_observer_(this),
+      sync_state_(INITIALIZED_ENABLED_HISTORY),
       url_request_context_(url_request_context),
       suggestions_store_(std::move(suggestions_store)),
       thumbnail_manager_(std::move(thumbnail_manager)),
@@ -157,8 +127,9 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
       scheduling_delay_(TimeDelta::FromSeconds(kDefaultSchedulingDelaySec)),
       weak_ptr_factory_(this) {
   // |sync_service_| is null if switches::kDisableSync is set (tests use that).
-  if (sync_service_)
+  if (sync_service_) {
     sync_service_observer_.Add(sync_service_);
+  }
   // Immediately get the current sync state, so we'll flush the cache if
   // necessary.
   OnStateChanged(sync_service_);
@@ -169,8 +140,9 @@ SuggestionsServiceImpl::~SuggestionsServiceImpl() {}
 bool SuggestionsServiceImpl::FetchSuggestionsData() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If sync state allows, issue a network request to refresh the suggestions.
-  if (GetSyncState(sync_service_) != INITIALIZED_ENABLED_HISTORY)
+  if (sync_state_ != INITIALIZED_ENABLED_HISTORY) {
     return false;
+  }
   IssueRequestIfNoneOngoing(BuildSuggestionsURL());
   return true;
 }
@@ -300,8 +272,38 @@ GURL SuggestionsServiceImpl::BuildSuggestionsBlacklistClearURL() {
                                  kDeviceType));
 }
 
+SuggestionsServiceImpl::SyncState SuggestionsServiceImpl::ComputeSyncState()
+    const {
+  if (!sync_service_ || !sync_service_->CanSyncStart() ||
+      sync_service_->IsLocalSyncEnabled()) {
+    return SYNC_OR_HISTORY_SYNC_DISABLED;
+  }
+  if (!sync_service_->IsSyncActive() || !sync_service_->ConfigurationDone()) {
+    return NOT_INITIALIZED_ENABLED;
+  }
+  return sync_service_->GetActiveDataTypes().Has(
+             syncer::HISTORY_DELETE_DIRECTIVES)
+             ? INITIALIZED_ENABLED_HISTORY
+             : SYNC_OR_HISTORY_SYNC_DISABLED;
+}
+
+bool SuggestionsServiceImpl::RefreshSyncState() {
+  SyncState new_sync_state = ComputeSyncState();
+  if (sync_state_ == new_sync_state) {
+    return false;
+  }
+  sync_state_ = new_sync_state;
+  return true;
+}
+
 void SuggestionsServiceImpl::OnStateChanged(syncer::SyncService* sync) {
-  switch (GetSyncState(sync_service_)) {
+  DCHECK(sync_service_ == sync);
+
+  if (!RefreshSyncState()) {
+    return;
+  }
+
+  switch (sync_state_) {
     case SYNC_OR_HISTORY_SYNC_DISABLED:
       // Cancel any ongoing request, to stop interacting with the server.
       pending_request_.reset(nullptr);

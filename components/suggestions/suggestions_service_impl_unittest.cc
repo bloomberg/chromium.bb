@@ -339,11 +339,59 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
   EXPECT_EQ(kTestFaviconUrl, suggestions_profile.suggestions(0).favicon_url());
 }
 
+TEST_F(SuggestionsServiceTest, IgnoresNoopSyncChange) {
+  std::unique_ptr<SuggestionsServiceImpl> suggestions_service(
+      CreateSuggestionsServiceWithMocks());
+  auto subscription = suggestions_service->AddCallback(base::Bind(
+      &SuggestionsServiceTest::CheckCallback, base::Unretained(this)));
+
+  SuggestionsProfile suggestions_profile = CreateSuggestionsProfile();
+  factory_.SetFakeResponse(SuggestionsServiceImpl::BuildSuggestionsURL(),
+                           suggestions_profile.SerializeAsString(),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+  // An no-op change should not result in a suggestions refresh.
+  suggestions_service->OnStateChanged(mock_sync_service_.get());
+
+  // Let any network request run (there shouldn't be one).
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure that we weren't called back.
+  EXPECT_EQ(0, suggestions_data_callback_count_);
+}
+
+TEST_F(SuggestionsServiceTest, IgnoresUninterestingSyncChange) {
+  std::unique_ptr<SuggestionsServiceImpl> suggestions_service(
+      CreateSuggestionsServiceWithMocks());
+  auto subscription = suggestions_service->AddCallback(base::Bind(
+      &SuggestionsServiceTest::CheckCallback, base::Unretained(this)));
+
+  SuggestionsProfile suggestions_profile = CreateSuggestionsProfile();
+  factory_.SetFakeResponse(SuggestionsServiceImpl::BuildSuggestionsURL(),
+                           suggestions_profile.SerializeAsString(),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+  // An uninteresting change should not result in a network request (the
+  // SyncState is INITIALIZED_ENABLED_HISTORY before and after).
+  EXPECT_CALL(*mock_sync_service_, GetActiveDataTypes())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(syncer::ModelTypeSet(
+          syncer::HISTORY_DELETE_DIRECTIVES, syncer::BOOKMARKS)));
+  suggestions_service->OnStateChanged(mock_sync_service_.get());
+
+  // Let any network request run (there shouldn't be one).
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure that we weren't called back.
+  EXPECT_EQ(0, suggestions_data_callback_count_);
+}
+
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
-  std::unique_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsServiceImpl> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_CALL(*mock_sync_service_, IsSyncActive())
       .WillRepeatedly(Return(false));
+  suggestions_service->OnStateChanged(mock_sync_service_.get());
 
   auto subscription = suggestions_service->AddCallback(base::Bind(
       &SuggestionsServiceTest::CheckCallback, base::Unretained(this)));
