@@ -23,7 +23,6 @@ translated_xibs = [
   "ContentBlockedPopups.xib",
   "ContentBlockedSimple.xib",
   "ContentProtocolHandlers.xib",
-  "ContentSubresourceFilter.xib",
   "CookieDetailsView.xib",
   "DownloadItem.xib",
   "DownloadShelf.xib",

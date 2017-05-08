@@ -6,19 +6,23 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/browser.h"
+#import "chrome/browser/ui/cocoa/subresource_filter/subresource_filter_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/common/media_stream_request.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -116,4 +120,67 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, MediaStreamBubble) {
   }
 
  [parent_ close];
+}
+
+// Subresource Filter bubble.
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
+                       InitSubresourceFilter) {
+  ContentSettingBubbleController* controller =
+      CreateBubbleController(new ContentSettingSubresourceFilterBubbleModel(
+          nullptr, web_contents(), profile()));
+  EXPECT_TRUE(controller);
+
+  SubresourceFilterBubbleController* filterController =
+      base::mac::ObjCCast<SubresourceFilterBubbleController>(controller);
+
+  EXPECT_TRUE([filterController titleLabel]);
+  NSString* label = base::SysUTF16ToNSString(
+      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE));
+  EXPECT_NSEQ([[filterController titleLabel] stringValue], label);
+
+  EXPECT_TRUE([filterController messageLabel]);
+  label = base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
+      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION));
+  EXPECT_NSEQ([[filterController messageLabel] stringValue], label);
+
+  EXPECT_TRUE([filterController manageCheckbox]);
+  label = base::SysUTF16ToNSString(
+      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
+  EXPECT_NSEQ([[filterController manageCheckbox] title], label);
+
+  EXPECT_TRUE([filterController doneButton]);
+  label = base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_OK));
+  EXPECT_NSEQ([[filterController doneButton] title], label);
+
+  [parent_ close];
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
+                       ManageCheckboxSubresourceFilter) {
+  ContentSettingSubresourceFilterBubbleModel* model =
+      new ContentSettingSubresourceFilterBubbleModel(nullptr, web_contents(),
+                                                     profile());
+  ContentSettingBubbleController* controller = CreateBubbleController(model);
+  EXPECT_TRUE(controller);
+
+  SubresourceFilterBubbleController* filterController =
+      base::mac::ObjCCast<SubresourceFilterBubbleController>(controller);
+  NSButton* manageCheckbox = [filterController manageCheckbox];
+  NSButton* doneButton = [filterController doneButton];
+
+  EXPECT_EQ([manageCheckbox state], NSOffState);
+
+  NSString* label = base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_OK));
+  EXPECT_NSEQ([doneButton title], label);
+
+  [manageCheckbox setState:NSOnState];
+  [filterController manageCheckboxChecked:manageCheckbox];
+  EXPECT_EQ([manageCheckbox state], NSOnState);
+
+  label =
+      base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_APP_MENU_RELOAD));
+  EXPECT_NSEQ([doneButton title], label);
+
+  [parent_ close];
 }

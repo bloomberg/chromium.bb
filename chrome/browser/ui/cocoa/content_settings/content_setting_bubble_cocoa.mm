@@ -16,9 +16,10 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
+#import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
+#import "chrome/browser/ui/cocoa/subresource_filter/subresource_filter_bubble_controller.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
-#import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_handle.h"
@@ -205,13 +206,15 @@ class ContentSettingBubbleWebContentsObserverBridge
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleWebContentsObserverBridge);
 };
 
-@interface ContentSettingBubbleController(Private)
+@interface ContentSettingBubbleController (Private)
 - (id)initWithModel:(ContentSettingBubbleModel*)settingsBubbleModel
         webContents:(content::WebContents*)webContents
        parentWindow:(NSWindow*)parentWindow
          decoration:(ContentSettingDecoration*)decoration
          anchoredAt:(NSPoint)anchoredAt;
-- (NSString*)getNibPathForModel:(ContentSettingBubbleModel*)model;
++ (NSString*)getNibPathForModel:(ContentSettingBubbleModel*)model;
++ (ContentSettingBubbleController*)allocControllerForModel:
+    (ContentSettingBubbleModel*)model;
 - (NSButton*)hyperlinkButtonWithFrame:(NSRect)frame
                                 title:(NSString*)title
                                  icon:(NSImage*)icon
@@ -241,12 +244,16 @@ parentWindow:(NSWindow*)parentWindow
   decoration:(ContentSettingDecoration*)decoration
   anchoredAt:(NSPoint)anchor {
   // Autoreleases itself on bubble close.
-  return [[ContentSettingBubbleController alloc]
-      initWithModel:contentSettingBubbleModel
-        webContents:webContents
-       parentWindow:parentWindow
-         decoration:decoration
-         anchoredAt:anchor];
+  ContentSettingBubbleController* controller =
+      [self allocControllerForModel:contentSettingBubbleModel];
+
+  DCHECK(controller);
+
+  return [controller initWithModel:contentSettingBubbleModel
+                       webContents:webContents
+                      parentWindow:parentWindow
+                        decoration:decoration
+                        anchoredAt:anchor];
 }
 
 struct ContentTypeToNibPath {
@@ -278,7 +285,8 @@ const ContentTypeToNibPath kNibPaths[] = {
   observerBridge_.reset(
     new ContentSettingBubbleWebContentsObserverBridge(webContents, self));
 
-  NSString* nibPath = [self getNibPathForModel:model.get()];
+  NSString* nibPath =
+      [ContentSettingBubbleController getNibPathForModel:model.get()];
 
   DCHECK_NE(0u, [nibPath length]);
 
@@ -292,7 +300,30 @@ const ContentTypeToNibPath kNibPaths[] = {
   return self;
 }
 
-- (NSString*)getNibPathForModel:(ContentSettingBubbleModel*)model {
+- (id)initWithModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
+        webContents:(content::WebContents*)webContents
+             window:(NSWindow*)window
+       parentWindow:(NSWindow*)parentWindow
+         decoration:(ContentSettingDecoration*)decoration
+         anchoredAt:(NSPoint)anchoredAt {
+  // This method takes ownership of |contentSettingBubbleModel| in all cases.
+  std::unique_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
+  DCHECK(model.get());
+  observerBridge_.reset(
+      new ContentSettingBubbleWebContentsObserverBridge(webContents, self));
+
+  contentSettingBubbleModel_ = std::move(model);
+
+  if ((self = [super initWithWindow:window
+                       parentWindow:parentWindow
+                         anchoredAt:anchoredAt])) {
+    decoration_ = decoration;
+    [self showWindow:nil];
+  }
+  return self;
+}
+
++ (NSString*)getNibPathForModel:(ContentSettingBubbleModel*)model {
   NSString* nibPath = @"";
 
   ContentSettingSimpleBubbleModel* simple_bubble = model->AsSimpleBubbleModel();
@@ -310,12 +341,25 @@ const ContentTypeToNibPath kNibPaths[] = {
   if (model->AsMediaStreamBubbleModel())
     nibPath = @"ContentBlockedMedia";
 
-  if (model->AsSubresourceFilterBubbleModel())
-    nibPath = @"ContentSubresourceFilter";
-
   if (model->AsDownloadsBubbleModel())
     nibPath = @"ContentBlockedDownloads";
   return nibPath;
+}
+
++ (ContentSettingBubbleController*)allocControllerForModel:
+    (ContentSettingBubbleModel*)model {
+  // Check if the view is expressed in xib file or not.
+  NSString* nibPath = [self getNibPathForModel:model];
+
+  // Autoreleases itself on bubble close.
+
+  if ([nibPath length] > 0u)
+    return [ContentSettingBubbleController alloc];
+
+  if (model->AsSubresourceFilterBubbleModel())
+    return [SubresourceFilterBubbleController alloc];
+
+  return nil;
 }
 
 - (void)initializeTitle {
@@ -767,14 +811,31 @@ const ContentTypeToNibPath kNibPaths[] = {
 }
 
 - (void)initManageDoneButtons {
+  if (!manageButton_ && !doneButton_)
+    return;
+
   const ContentSettingBubbleModel::BubbleContent& content =
       contentSettingBubbleModel_->bubble_content();
-  [manageButton_ setTitle:base::SysUTF16ToNSString(content.manage_text)];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitView:[manageButton_ superview]];
+
+  CGFloat requiredWidthForManageButton = 0.0;
+  if (manageButton_) {
+    [manageButton_ setTitle:base::SysUTF16ToNSString(content.manage_text)];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitView:[manageButton_ superview]];
+    requiredWidthForManageButton =
+        NSMaxX([manageButton_ frame]) + kManageDonePadding;
+  }
+
+  if (!doneButton_)
+    return;
+
+  NSString* doneLabel = base::SysUTF16ToNSString(content.done_button_text);
+  if ([doneLabel length] > 0u)
+    [doneButton_ setTitle:doneLabel];
 
   CGFloat actualWidth = NSWidth([[[self window] contentView] frame]);
-  CGFloat requiredWidth = NSMaxX([manageButton_ frame]) + kManageDonePadding +
-      NSWidth([[doneButton_ superview] frame]) - NSMinX([doneButton_ frame]);
+  CGFloat requiredWidth = requiredWidthForManageButton +
+                          NSWidth([[doneButton_ superview] frame]) -
+                          NSMinX([doneButton_ frame]);
   if (requiredWidth <= actualWidth || !doneButton_ || !manageButton_)
     return;
 
@@ -789,7 +850,10 @@ const ContentTypeToNibPath kNibPaths[] = {
 
 - (void)awakeFromNib {
   [super awakeFromNib];
+  [self layoutView];
+}
 
+- (void)layoutView {
   ContentSettingSimpleBubbleModel* simple_bubble =
       contentSettingBubbleModel_->AsSimpleBubbleModel();
 
@@ -797,8 +861,10 @@ const ContentTypeToNibPath kNibPaths[] = {
 
   // Adapt window size to bottom buttons. Do this before all other layouting.
   if ((simple_bubble && !simple_bubble->bubble_content().manage_text.empty()) ||
-      contentSettingBubbleModel_->AsDownloadsBubbleModel())
+      contentSettingBubbleModel_->AsDownloadsBubbleModel() ||
+      contentSettingBubbleModel_->AsSubresourceFilterBubbleModel()) {
     [self initManageDoneButtons];
+  }
 
   [self initializeTitle];
   [self initializeMessage];
