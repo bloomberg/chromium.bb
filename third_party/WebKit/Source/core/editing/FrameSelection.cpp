@@ -632,17 +632,16 @@ void FrameSelection::SelectAll() {
 
   Node* root = nullptr;
   Node* select_start_target = nullptr;
-  if (ComputeVisibleSelectionInDOMTreeDeprecated().IsContentEditable()) {
-    root = HighestEditableRoot(
-        ComputeVisibleSelectionInDOMTreeDeprecated().Start());
+  if (ComputeVisibleSelectionInDOMTree().IsContentEditable()) {
+    root = HighestEditableRoot(ComputeVisibleSelectionInDOMTree().Start());
     if (Node* shadow_root = NonBoundaryShadowTreeRootNode(
-            ComputeVisibleSelectionInDOMTreeDeprecated().Start()))
+            ComputeVisibleSelectionInDOMTree().Start()))
       select_start_target = shadow_root->OwnerShadowHost();
     else
       select_start_target = root;
   } else {
     root = NonBoundaryShadowTreeRootNode(
-        ComputeVisibleSelectionInDOMTreeDeprecated().Start());
+        ComputeVisibleSelectionInDOMTree().Start());
     if (root) {
       select_start_target = root->OwnerShadowHost();
     } else {

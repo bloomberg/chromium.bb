@@ -261,6 +261,7 @@ TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
   Element* select = GetDocument().createElement("select");
   GetDocument().ReplaceChild(select, GetDocument().documentElement());
+  GetDocument().UpdateStyleAndLayout();
   Selection().SelectAll();
   EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsNone())
       << "Nothing should be selected if the "
