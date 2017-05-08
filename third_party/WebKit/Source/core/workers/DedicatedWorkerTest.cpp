@@ -67,7 +67,6 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   // Emulates deprecated API use on DedicatedWorkerGlobalScope.
   void CountDeprecation(UseCounter::Feature feature) {
     EXPECT_TRUE(IsCurrentThread());
-    EXPECT_EQ(0u, GetConsoleMessageStorage()->size());
     GlobalScope()->CountDeprecation(feature);
 
     // countDeprecation() should add a warning message.
@@ -81,6 +80,38 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   }
 };
 
+class InProcessWorkerObjectProxyForTest final
+    : public InProcessWorkerObjectProxy {
+ public:
+  InProcessWorkerObjectProxyForTest(
+      const WeakPtr<InProcessWorkerMessagingProxy>& messaging_proxy_weak_ptr,
+      ParentFrameTaskRunners* parent_frame_task_runners)
+      : InProcessWorkerObjectProxy(messaging_proxy_weak_ptr,
+                                   parent_frame_task_runners),
+        reported_features_(UseCounter::kNumberOfFeatures) {
+    default_interval_in_sec_ = kDefaultIntervalInSec;
+    next_interval_in_sec_ = kNextIntervalInSec;
+    max_interval_in_sec_ = kMaxIntervalInSec;
+  }
+
+  void CountFeature(UseCounter::Feature feature) override {
+    // Any feature should be reported only one time.
+    EXPECT_FALSE(reported_features_.QuickGet(feature));
+    reported_features_.QuickSet(feature);
+    InProcessWorkerObjectProxy::CountFeature(feature);
+  }
+
+  void CountDeprecation(UseCounter::Feature feature) override {
+    // Any feature should be reported only one time.
+    EXPECT_FALSE(reported_features_.QuickGet(feature));
+    reported_features_.QuickSet(feature);
+    InProcessWorkerObjectProxy::CountDeprecation(feature);
+  }
+
+ private:
+  BitVector reported_features_;
+};
+
 class InProcessWorkerMessagingProxyForTest
     : public InProcessWorkerMessagingProxy {
  public:
@@ -88,10 +119,8 @@ class InProcessWorkerMessagingProxyForTest
       : InProcessWorkerMessagingProxy(execution_context,
                                       nullptr /* workerObject */,
                                       nullptr /* workerClients */) {
-    WorkerObjectProxy().default_interval_in_sec_ = kDefaultIntervalInSec;
-    WorkerObjectProxy().next_interval_in_sec_ = kNextIntervalInSec;
-    WorkerObjectProxy().max_interval_in_sec_ = kMaxIntervalInSec;
-
+    worker_object_proxy_ = WTF::MakeUnique<InProcessWorkerObjectProxyForTest>(
+        weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
     worker_loader_proxy_provider_ =
         WTF::MakeUnique<WorkerLoaderProxyProvider>();
     worker_thread_ = WTF::WrapUnique(new DedicatedWorkerThreadForTest(
@@ -399,6 +428,15 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   testing::EnterRunLoop();
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature1));
 
+  // API use should be reported to the Document only one time. See comments in
+  // InProcessWorkerObjectProxyForTest::CountFeature.
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+      ->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
+                          CrossThreadUnretained(GetWorkerThread()), kFeature1));
+  testing::EnterRunLoop();
+
   // This feature is randomly selected from Deprecation::deprecationMessage().
   const UseCounter::Feature kFeature2 =
       UseCounter::Feature::kPrefixedStorageInfo;
@@ -413,6 +451,15 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
   testing::EnterRunLoop();
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature2));
+
+  // API use should be reported to the Document only one time. See comments in
+  // InProcessWorkerObjectProxyForTest::CountDeprecation.
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+      ->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
+                          CrossThreadUnretained(GetWorkerThread()), kFeature2));
+  testing::EnterRunLoop();
 }
 
 }  // namespace blink

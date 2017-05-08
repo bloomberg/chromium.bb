@@ -11,6 +11,39 @@
 
 namespace blink {
 
+class MainThreadWorkletGlobalScopeForTest
+    : public MainThreadWorkletGlobalScope {
+ public:
+  MainThreadWorkletGlobalScopeForTest(LocalFrame* frame,
+                                      const KURL& url,
+                                      const String& user_agent,
+                                      RefPtr<SecurityOrigin> security_origin,
+                                      v8::Isolate* isolate)
+      : MainThreadWorkletGlobalScope(frame,
+                                     url,
+                                     user_agent,
+                                     std::move(security_origin),
+                                     isolate),
+        reported_features_(UseCounter::kNumberOfFeatures) {}
+
+  void ReportFeature(UseCounter::Feature feature) override {
+    // Any feature should be reported only one time.
+    EXPECT_FALSE(reported_features_.QuickGet(feature));
+    reported_features_.QuickSet(feature);
+    MainThreadWorkletGlobalScope::ReportFeature(feature);
+  }
+
+  void ReportDeprecation(UseCounter::Feature feature) final {
+    // Any feature should be reported only one time.
+    EXPECT_FALSE(reported_features_.QuickGet(feature));
+    reported_features_.QuickSet(feature);
+    MainThreadWorkletGlobalScope::ReportDeprecation(feature);
+  }
+
+ private:
+  BitVector reported_features_;
+};
+
 class MainThreadWorkletTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -42,6 +75,10 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
   UseCounter::Count(global_scope_, kFeature1);
   EXPECT_TRUE(UseCounter::IsCounted(document, kFeature1));
 
+  // API use should be reported to the Document only one time. See comments in
+  // MainThreadGlobalScopeForTest::ReportFeature.
+  UseCounter::Count(global_scope_, kFeature1);
+
   // This feature is randomly selected from Deprecation::deprecationMessage().
   const UseCounter::Feature kFeature2 =
       UseCounter::Feature::kPrefixedStorageInfo;
@@ -51,6 +88,10 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
   EXPECT_FALSE(UseCounter::IsCounted(document, kFeature2));
   Deprecation::CountDeprecation(global_scope_, kFeature2);
   EXPECT_TRUE(UseCounter::IsCounted(document, kFeature2));
+
+  // API use should be reported to the Document only one time. See comments in
+  // MainThreadWorkletGlobalScopeForTest::ReportDeprecation.
+  Deprecation::CountDeprecation(global_scope_, kFeature2);
 }
 
 }  // namespace blink

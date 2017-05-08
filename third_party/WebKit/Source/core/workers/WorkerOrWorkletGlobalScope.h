@@ -41,24 +41,25 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   virtual void Dispose() = 0;
 
   // Called from UseCounter to record API use in this execution context.
-  virtual void CountFeature(UseCounter::Feature) = 0;
+  void CountFeature(UseCounter::Feature);
 
   // Called from UseCounter to record deprecated API use in this execution
-  // context. Sub-classes should call addDeprecationMessage() in this function.
-  virtual void CountDeprecation(UseCounter::Feature) = 0;
+  // context.
+  void CountDeprecation(UseCounter::Feature);
 
   // May return nullptr if this global scope is not threaded (i.e.,
   // MainThreadWorkletGlobalScope) or after dispose() is called.
   virtual WorkerThread* GetThread() const = 0;
 
  protected:
-  // Adds a deprecation message to the console.
-  void AddDeprecationMessage(UseCounter::Feature);
+  virtual void ReportFeature(UseCounter::Feature) = 0;
+  virtual void ReportDeprecation(UseCounter::Feature) = 0;
 
  private:
   void RunTask(std::unique_ptr<ExecutionContextTask>, bool is_instrumented);
 
-  BitVector deprecation_warning_bits_;
+  // This is the set of features that this worker has used.
+  BitVector used_features_;
 };
 
 DEFINE_TYPE_CASTS(
