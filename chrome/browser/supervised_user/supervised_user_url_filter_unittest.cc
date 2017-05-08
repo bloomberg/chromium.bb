@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
 #include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,7 +40,7 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
     return filter_.GetEmbeddedURL(GURL(url));
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop run_loop_;
   SupervisedUserURLFilter filter_;
 };
