@@ -114,10 +114,10 @@ class TestBackgroundLoaderOffliner : public BackgroundLoaderOffliner {
 
   content::WebContents* web_contents() { return stub_->web_contents(); }
 
-  bool is_loading() { return stub_->is_loading(); }
+  bool is_loading() { return loader_ && stub_->is_loading(); }
 
  protected:
-  void ResetState() override;
+  void ResetLoader() override;
 
  private:
   background_loader::BackgroundLoaderContentsStub* stub_;
@@ -131,11 +131,9 @@ TestBackgroundLoaderOffliner::TestBackgroundLoaderOffliner(
 
 TestBackgroundLoaderOffliner::~TestBackgroundLoaderOffliner() {}
 
-void TestBackgroundLoaderOffliner::ResetState() {
-  pending_request_.reset();
+void TestBackgroundLoaderOffliner::ResetLoader() {
   stub_ = new background_loader::BackgroundLoaderContentsStub(browser_context_);
   loader_.reset(stub_);
-  content::WebContentsObserver::Observe(stub_->web_contents());
 }
 
 class BackgroundLoaderOfflinerTest : public testing::Test {
