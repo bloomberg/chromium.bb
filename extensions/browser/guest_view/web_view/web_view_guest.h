@@ -310,6 +310,8 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
 
   void ApplyAttributes(const base::DictionaryValue& params);
 
+  void SetTransparency();
+
   // Identifies the set of rules registries belonging to this guest.
   int rules_registry_id_;
 
