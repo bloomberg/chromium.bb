@@ -131,7 +131,13 @@ TEST_F(SingleSampleMetricsFactoryImplTest, DefaultSingleSampleMetricWithValue) {
       base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
-TEST_F(SingleSampleMetricsFactoryImplTest, MultithreadedMetrics) {
+// Flaky on Android N5X builders. https://crbug.com/719497
+#if defined(OS_ANDROID)
+#define MAYBE_MultithreadedMetrics DISABLED_MultithreadedMetrics
+#else
+#define MAYBE_MultithreadedMetrics MultithreadedMetrics
+#endif
+TEST_F(SingleSampleMetricsFactoryImplTest, MAYBE_MultithreadedMetrics) {
   base::HistogramTester tester;
   std::unique_ptr<base::SingleSampleMetric> metric =
       factory_->CreateCustomCountsMetric(kMetricName, kMin, kMax, kBucketCount);
