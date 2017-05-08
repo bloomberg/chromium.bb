@@ -272,6 +272,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
 
 TEST_F(SuggestionsServiceTest, IgnoresNoopSyncChange) {
   base::MockCallback<SuggestionsService::ResponseCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
   auto subscription = suggestions_service_->AddCallback(callback.Get());
 
   factory_.SetFakeResponse(SuggestionsServiceImpl::BuildSuggestionsURL(),
@@ -279,7 +280,6 @@ TEST_F(SuggestionsServiceTest, IgnoresNoopSyncChange) {
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   // An no-op change should not result in a suggestions refresh.
-  EXPECT_CALL(callback, Run(_)).Times(0);
   suggestions_service_->OnStateChanged(&mock_sync_service_);
 
   // Let any network request run (there shouldn't be one).
@@ -288,6 +288,7 @@ TEST_F(SuggestionsServiceTest, IgnoresNoopSyncChange) {
 
 TEST_F(SuggestionsServiceTest, IgnoresUninterestingSyncChange) {
   base::MockCallback<SuggestionsService::ResponseCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
   auto subscription = suggestions_service_->AddCallback(callback.Get());
 
   factory_.SetFakeResponse(SuggestionsServiceImpl::BuildSuggestionsURL(),
@@ -300,8 +301,37 @@ TEST_F(SuggestionsServiceTest, IgnoresUninterestingSyncChange) {
       .Times(AnyNumber())
       .WillRepeatedly(Return(syncer::ModelTypeSet(
           syncer::HISTORY_DELETE_DIRECTIVES, syncer::BOOKMARKS)));
-  EXPECT_CALL(callback, Run(_)).Times(0);
   suggestions_service_->OnStateChanged(&mock_sync_service_);
+
+  // Let any network request run (there shouldn't be one).
+  base::RunLoop().RunUntilIdle();
+}
+
+// During startup, the state changes from NOT_INITIALIZED_ENABLED to
+// INITIALIZED_ENABLED_HISTORY (for a signed-in user with history sync enabled).
+// This should *not* result in an automatic fetch.
+TEST_F(SuggestionsServiceTest, DoesNotFetchOnStartup) {
+  // The sync service starts out inactive.
+  EXPECT_CALL(mock_sync_service_, IsSyncActive()).WillRepeatedly(Return(false));
+  suggestions_service_->OnStateChanged(&mock_sync_service_);
+
+  ASSERT_EQ(SuggestionsServiceImpl::NOT_INITIALIZED_ENABLED,
+            suggestions_service_->ComputeSyncState());
+
+  base::MockCallback<SuggestionsService::ResponseCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
+  auto subscription = suggestions_service_->AddCallback(callback.Get());
+
+  factory_.SetFakeResponse(SuggestionsServiceImpl::BuildSuggestionsURL(),
+                           CreateSuggestionsProfile().SerializeAsString(),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+  // Sync getting enabled should not result in a fetch.
+  EXPECT_CALL(mock_sync_service_, IsSyncActive()).WillRepeatedly(Return(true));
+  suggestions_service_->OnStateChanged(&mock_sync_service_);
+
+  ASSERT_EQ(SuggestionsServiceImpl::INITIALIZED_ENABLED_HISTORY,
+            suggestions_service_->ComputeSyncState());
 
   // Let any network request run (there shouldn't be one).
   base::RunLoop().RunUntilIdle();
@@ -312,11 +342,11 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
   suggestions_service_->OnStateChanged(&mock_sync_service_);
 
   base::MockCallback<SuggestionsService::ResponseCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
   auto subscription = suggestions_service_->AddCallback(callback.Get());
 
   // Try to fetch suggestions. Since sync is not active, no network request
   // should be sent.
-  EXPECT_CALL(callback, Run(_)).Times(0);
   suggestions_service_->FetchSuggestionsData();
 
   // Let any network request run (there shouldn't be one).
@@ -351,12 +381,11 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
   token_service_.set_auto_post_fetch_response_on_message_loop(false);
 
   base::MockCallback<SuggestionsService::ResponseCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
   auto subscription = suggestions_service_->AddCallback(callback.Get());
 
   EXPECT_CALL(*mock_blacklist_store_, GetTimeUntilReadyForUpload(_))
       .WillOnce(Return(false));
-
-  EXPECT_CALL(callback, Run(_)).Times(0);
 
   suggestions_service_->FetchSuggestionsData();
 
@@ -454,12 +483,12 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
 
 TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
   base::MockCallback<SuggestionsService::ResponseCallback> callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
   auto subscription = suggestions_service_->AddCallback(callback.Get());
 
   const GURL blacklisted_url(kBlacklistedUrl);
   EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklisted_url)))
       .WillOnce(Return(false));
-  EXPECT_CALL(callback, Run(_)).Times(0);
   EXPECT_FALSE(suggestions_service_->BlacklistURL(blacklisted_url));
 }
 

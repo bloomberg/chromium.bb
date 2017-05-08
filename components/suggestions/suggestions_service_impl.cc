@@ -180,6 +180,8 @@ void SuggestionsServiceImpl::GetPageThumbnailWithURL(
 bool SuggestionsServiceImpl::BlacklistURL(const GURL& candidate_url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // TODO(treib): Do we need to check |sync_state_| here?
+
   if (!blacklist_store_->BlacklistUrl(candidate_url))
     return false;
 
@@ -196,6 +198,9 @@ bool SuggestionsServiceImpl::BlacklistURL(const GURL& candidate_url) {
 
 bool SuggestionsServiceImpl::UndoBlacklistURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(treib): Do we need to check |sync_state_| here?
+
   TimeDelta time_delta;
   if (blacklist_store_->GetTimeUntilURLReadyForUpload(url, &time_delta) &&
       time_delta > TimeDelta::FromSeconds(0) &&
@@ -211,6 +216,9 @@ bool SuggestionsServiceImpl::UndoBlacklistURL(const GURL& url) {
 
 void SuggestionsServiceImpl::ClearBlacklist() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(treib): Do we need to check |sync_state_| here?
+
   blacklist_store_->ClearBlacklist();
   callback_list_.Notify(
       GetSuggestionsDataFromCache().value_or(SuggestionsProfile()));
@@ -287,37 +295,49 @@ SuggestionsServiceImpl::SyncState SuggestionsServiceImpl::ComputeSyncState()
              : SYNC_OR_HISTORY_SYNC_DISABLED;
 }
 
-bool SuggestionsServiceImpl::RefreshSyncState() {
+SuggestionsServiceImpl::RefreshAction
+SuggestionsServiceImpl::RefreshSyncState() {
   SyncState new_sync_state = ComputeSyncState();
   if (sync_state_ == new_sync_state) {
-    return false;
+    return NO_ACTION;
   }
+
+  SyncState old_sync_state = sync_state_;
   sync_state_ = new_sync_state;
-  return true;
+
+  switch (new_sync_state) {
+    case NOT_INITIALIZED_ENABLED:
+      break;
+    case INITIALIZED_ENABLED_HISTORY:
+      // If the user just signed in, we fetch suggestions, so that hopefully the
+      // next NTP will already get them.
+      if (old_sync_state == SYNC_OR_HISTORY_SYNC_DISABLED) {
+        return FETCH_SUGGESTIONS;
+      }
+      break;
+    case SYNC_OR_HISTORY_SYNC_DISABLED:
+      // If the user signed out (or disabled history sync), we have to clear
+      // everything.
+      return CLEAR_SUGGESTIONS;
+  }
+  // Otherwise, there's nothing to do.
+  return NO_ACTION;
 }
 
 void SuggestionsServiceImpl::OnStateChanged(syncer::SyncService* sync) {
   DCHECK(sync_service_ == sync);
 
-  if (!RefreshSyncState()) {
-    return;
-  }
-
-  switch (sync_state_) {
-    case SYNC_OR_HISTORY_SYNC_DISABLED:
+  switch (RefreshSyncState()) {
+    case NO_ACTION:
+      break;
+    case CLEAR_SUGGESTIONS:
       // Cancel any ongoing request, to stop interacting with the server.
       pending_request_.reset(nullptr);
       suggestions_store_->ClearSuggestions();
       callback_list_.Notify(SuggestionsProfile());
       break;
-    case NOT_INITIALIZED_ENABLED:
-      // Keep the cache (if any), but don't refresh.
-      break;
-    case INITIALIZED_ENABLED_HISTORY:
-      // If we have any observers, issue a network request to refresh the
-      // suggestions in the cache.
-      if (!callback_list_.empty())
-        IssueRequestIfNoneOngoing(BuildSuggestionsURL());
+    case FETCH_SUGGESTIONS:
+      IssueRequestIfNoneOngoing(BuildSuggestionsURL());
       break;
   }
 }
@@ -337,6 +357,10 @@ void SuggestionsServiceImpl::SetDefaultExpiryTimestamp(
 
 void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
   // If there is an ongoing request, let it complete.
+  // This will silently swallow blacklist and clearblacklist requests if a
+  // request happens to be ongoing.
+  // TODO(treib): Queue such requests and send them after the current one
+  // completes.
   if (pending_request_.get()) {
     return;
   }

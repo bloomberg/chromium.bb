@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -90,6 +91,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, IgnoresNoopSyncChange);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
                            IgnoresUninterestingSyncChange);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, DoesNotFetchOnStartup);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
                            FetchSuggestionsDataSyncNotInitializedEnabled);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
@@ -132,6 +134,9 @@ class SuggestionsServiceImpl : public SuggestionsService,
     SYNC_OR_HISTORY_SYNC_DISABLED,
   };
 
+  // The action that should be taken as the result of a RefreshSyncState call.
+  enum RefreshAction { NO_ACTION, FETCH_SUGGESTIONS, CLEAR_SUGGESTIONS };
+
   // Helpers to build the various suggestions URLs. These are static members
   // rather than local functions in the .cc file to make them accessible to
   // tests.
@@ -143,9 +148,9 @@ class SuggestionsServiceImpl : public SuggestionsService,
   // Computes the appropriate SyncState from |sync_service_|.
   SyncState ComputeSyncState() const;
 
-  // Re-computes |sync_state_| from the sync service. Returns whether
-  // |sync_state_| was changed.
-  bool RefreshSyncState();
+  // Re-computes |sync_state_| from the sync service. Returns the action that
+  // should be taken in response.
+  RefreshAction RefreshSyncState() WARN_UNUSED_RESULT;
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
