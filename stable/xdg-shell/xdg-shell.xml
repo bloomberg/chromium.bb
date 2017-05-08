@@ -445,6 +445,11 @@
 	The window geometry is double buffered, and will be applied at the
 	time wl_surface.commit of the corresponding wl_surface is called.
 
+	When maintaining a position, the compositor should treat the (x, y)
+	coordinate of the window geometry as the top left corner of the window.
+	A client changing the (x, y) window geometry coordinate should in
+	general not alter the position of the window.
+
 	Once the window geometry of the surface is set, it is not possible to
 	unset it, and it will remain the same until set_window_geometry is
 	called again, even if a new subsurface or buffer is attached.
