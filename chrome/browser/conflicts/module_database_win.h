@@ -13,10 +13,13 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_inspector_win.h"
 #include "content/public/common/process_type.h"
+
+class ModuleDatabaseObserver;
 
 // A class that keeps track of all modules loaded across Chrome processes.
 // Drives the chrome://conflicts UI.
@@ -87,6 +90,15 @@ class ModuleDatabase {
 
   // TODO(chrisha): Module analysis code, and various accessors for use by
   // chrome://conflicts.
+
+  // Adds or removes an observer.
+  // Note that when adding an observer, OnNewModuleFound() will immediately be
+  // called once for all modules that are already loaded before returning to the
+  // caller.
+  // Must be called in the same sequence as |task_runner_|, and all
+  // notifications will be sent on that same task runner.
+  void AddObserver(ModuleDatabaseObserver* observer);
+  void RemoveObserver(ModuleDatabaseObserver* observer);
 
  private:
   friend class TestModuleDatabase;
@@ -160,6 +172,8 @@ class ModuleDatabase {
   // A map of all known running processes, and modules loaded/unloaded in
   // them.
   ProcessMap processes_;
+
+  base::ObserverList<ModuleDatabaseObserver> observer_list_;
 
   // Weak pointer factory for this object. This is used when bouncing
   // incoming events to |task_runner_|.
