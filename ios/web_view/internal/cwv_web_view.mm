@@ -17,11 +17,14 @@
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web_view/internal/cwv_html_element_internal.h"
 #import "ios/web_view/internal/cwv_navigation_action_internal.h"
+#import "ios/web_view/internal/cwv_scroll_view_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -85,6 +88,7 @@ static NSString* gUserAgentProduct = nil;
 @synthesize translationDelegate = _translationDelegate;
 @synthesize estimatedProgress = _estimatedProgress;
 @synthesize UIDelegate = _UIDelegate;
+@synthesize scrollView = _scrollView;
 
 + (NSString*)userAgentProduct {
   return gUserAgentProduct;
@@ -114,6 +118,7 @@ static NSString* gUserAgentProduct = nil;
   self = [super initWithFrame:frame];
   if (self) {
     _configuration = [configuration copy];
+    _scrollView = [[CWVScrollView alloc] init];
     [self resetWebStateWithSessionStorage:nil];
   }
   return self;
@@ -340,6 +345,8 @@ static NSString* gUserAgentProduct = nil;
   _javaScriptDialogPresenter =
       base::MakeUnique<ios_web_view::WebViewJavaScriptDialogPresenter>(self,
                                                                        nullptr);
+
+  _scrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
 
   // Initialize Translate.
   ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
