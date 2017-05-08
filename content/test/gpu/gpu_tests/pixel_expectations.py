@@ -70,3 +70,5 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
               ['mac', 'linux'], bug=719186)
+    self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
+              ['mac', 'win'], bug=719144)
