@@ -126,7 +126,6 @@ static_library("leveldatabase") {
   deps = [
     ":leveldatabase_opts.sse42",
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//third_party/re2",
     "//third_party/snappy",
   ]
