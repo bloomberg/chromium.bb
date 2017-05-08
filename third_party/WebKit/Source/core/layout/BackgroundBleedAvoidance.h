@@ -14,6 +14,11 @@ enum BackgroundBleedAvoidance {
   kBackgroundBleedClipLayer,
 };
 
+inline bool BleedAvoidanceIsClipping(BackgroundBleedAvoidance bleed_avoidance) {
+  return bleed_avoidance == kBackgroundBleedClipOnly ||
+         bleed_avoidance == kBackgroundBleedClipLayer;
+}
+
 }  // namespace blink
 
 #endif  // BackgroundBleedAvoidance_h

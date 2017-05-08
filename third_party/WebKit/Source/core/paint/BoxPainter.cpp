@@ -100,15 +100,6 @@ LayoutRect BoxPainter::BoundsForDrawingRecorder(
   return bounds;
 }
 
-namespace {
-
-bool BleedAvoidanceIsClipping(BackgroundBleedAvoidance bleed_avoidance) {
-  return bleed_avoidance == kBackgroundBleedClipOnly ||
-         bleed_avoidance == kBackgroundBleedClipLayer;
-}
-
-}  // anonymous namespace
-
 void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
