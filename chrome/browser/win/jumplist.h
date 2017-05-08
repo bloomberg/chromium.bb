@@ -151,27 +151,31 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   void OnFaviconDataAvailable(
       const favicon_base::FaviconImageResult& image_result);
 
-  // Callback for TopSites that notifies when the "Most
-  // Visited" list is available. This function updates the ShellLinkItemList
-  // objects and send another query that retrieves a favicon for each URL in
-  // the list.
+  // Callback for TopSites that notifies when the "Most Visited" list is
+  // available. This function updates the ShellLinkItemList objects and
+  // begins the process of fetching favicons for the URLs.
   void OnMostVisitedURLsAvailable(
       const history::MostVisitedURLList& data);
 
   // Callback for changes to the incognito mode availability pref.
   void OnIncognitoAvailabilityChanged();
 
-  // Helper for RunUpdate() that determines its parameters.
+  // Posts tasks to update the JumpList and delete any obsolete JumpList related
+  // folders.
   void PostRunUpdate();
-
-  // Called on a timer to invoke RunUpdateJumpList() after
-  // requests storms have subsided.
-  void DeferredRunUpdate();
 
   // history::TopSitesObserver implementation.
   void TopSitesLoaded(history::TopSites* top_sites) override;
   void TopSitesChanged(history::TopSites* top_sites,
                        ChangeReason change_reason) override;
+
+  // Called on a timer to update the most visited URLs after requests storms
+  // have subsided.
+  void DeferredTopSitesChanged();
+
+  // Called on a timer to update the "Recently Closed" category of JumpList
+  // after requests storms have subsided.
+  void DeferredTabRestoreServiceChanged();
 
   // Tracks FaviconService tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
@@ -185,8 +189,13 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // App id to associate with the jump list.
   std::wstring app_id_;
 
-  // Timer for requesting delayed updates of the jumplist.
-  base::OneShotTimer timer_;
+  // Timer for requesting delayed updates of the "Most Visited" category of
+  // jumplist.
+  base::OneShotTimer timer_most_visited_;
+
+  // Timer for requesting delayed updates of the "Recently Closed" category of
+  // jumplist.
+  base::OneShotTimer timer_recently_closed_;
 
   // Holds data that can be accessed from multiple threads.
   scoped_refptr<base::RefCountedData<JumpListData>> jumplist_data_;
