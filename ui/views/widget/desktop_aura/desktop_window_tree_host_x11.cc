@@ -1019,7 +1019,7 @@ bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
 }
 
 bool DesktopWindowTreeHostX11::ShouldWindowContentsBeTransparent() const {
-  return IsTranslucentWindowOpacitySupported();
+  return false;
 }
 
 void DesktopWindowTreeHostX11::FrameTypeChanged() {
@@ -1174,7 +1174,10 @@ bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
 }
 
 bool DesktopWindowTreeHostX11::IsTranslucentWindowOpacitySupported() const {
-  return use_argb_visual_;
+  // This function may be called before InitX11Window() (which
+  // initializes |use_argb_visual_|), so we cannot simply return
+  // |use_argb_visual_|.
+  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
 }
 
 void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
