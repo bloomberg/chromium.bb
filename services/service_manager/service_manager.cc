@@ -42,8 +42,6 @@ const char kCapability_UserID[] = "service_manager:user_id";
 const char kCapability_ClientProcess[] = "service_manager:client_process";
 const char kCapability_InstanceName[] = "service_manager:instance_name";
 const char kCapability_AllUsers[] = "service_manager:all_users";
-const char kCapability_InstancePerChild[] =
-    "service_manager:instance_per_child";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 bool Succeeded(mojom::ConnectResult result) {
@@ -1016,11 +1014,12 @@ void ServiceManager::OnServiceFactoryLost(const Identity& which) {
   service_factories_.erase(it);
 }
 
-void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
-                                       bool has_source_instance,
-                                       base::WeakPtr<Instance> source_instance,
-                                       mojom::ResolveResultPtr result,
-                                       mojom::ResolveResultPtr parent) {
+void ServiceManager::OnGotResolvedName(
+    std::unique_ptr<ConnectParams> params,
+    bool has_source_instance,
+    base::WeakPtr<Instance> source_instance,
+    mojom::ResolveResultPtr result,
+    const base::Optional<std::string>& parent_name) {
   // If this request was originated by a specific Instance and that Instance is
   // no longer around, we ignore this response.
   if (has_source_instance && !source_instance)
@@ -1104,29 +1103,20 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
       return;
     }
 
-    if (parent) {
+    if (parent_name) {
       // This service is provided by another service via a ServiceFactory.
       const std::string* target_user_id = &target.user_id();
       std::string factory_instance_name = instance_name;
 
-      auto spec_iter = parent->interface_provider_specs.find(
-          mojom::kServiceManager_ConnectorSpec);
-      if (spec_iter != parent->interface_provider_specs.end() &&
-              HasCapability(spec_iter->second, kCapability_InstancePerChild)) {
-        // If configured to start a new instance, create a random instance name
-        // for the factory so that we don't reuse an existing process.
-        factory_instance_name = base::GenerateGUID();
-      } else {
-        // Use the original user ID so the existing embedder factory can
-        // be found and used to create the new service.
-        target_user_id = &original_target.user_id();
-        Identity packaged_service_target(target);
-        packaged_service_target.set_user_id(original_target.user_id());
-        instance->set_identity(packaged_service_target);
-      }
+      // Use the original user ID so the existing embedder factory can
+      // be found and used to create the new service.
+      target_user_id = &original_target.user_id();
+      Identity packaged_service_target(target);
+      packaged_service_target.set_user_id(original_target.user_id());
+      instance->set_identity(packaged_service_target);
       instance->StartWithService(std::move(service));
 
-      Identity factory(parent->name, *target_user_id, factory_instance_name);
+      Identity factory(*parent_name, *target_user_id, factory_instance_name);
       CreateServiceWithFactory(factory, target.name(), std::move(request));
     } else {
       base::FilePath package_path;

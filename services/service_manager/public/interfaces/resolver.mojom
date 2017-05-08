@@ -31,8 +31,8 @@ interface Resolver {
   //
   // If no entry for |service_name| is found in the catalog, |result| is null.
   //
-  // If the service is provided by another service, information about the
-  // parent is given by |parent|; otherwise |parent| is null.
+  // If the service is provided by another service, the parent service's name
+  // is given by |parent_name|; otherwise |parent_name| is null.
   ResolveServiceName(string service_name)
-      => (ResolveResult? result, ResolveResult? parent);
+      => (ResolveResult? result, string? parent_name);
 };
