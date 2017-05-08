@@ -203,6 +203,17 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                          [_webView reload];
                                        }]];
 
+  // Removes the web view from the view hierarchy and deallocates it. For
+  // testing deallocation behavior, because there have been multiple crash bugs
+  // on deallocation of CWVWebView.
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:@"Deallocate web view"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [_webView removeFromSuperview];
+                                         _webView = nil;
+                                       }]];
+
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
