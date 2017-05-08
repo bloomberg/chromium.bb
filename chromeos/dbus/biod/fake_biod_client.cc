@@ -44,7 +44,8 @@ FakeBiodClient::~FakeBiodClient() {}
 
 void FakeBiodClient::SendEnrollScanDone(const std::string& fingerprint,
                                         biod::ScanResult type_result,
-                                        bool is_complete) {
+                                        bool is_complete,
+                                        int percent_complete) {
   // Enroll scan signals do nothing if an enroll session is not happening.
   if (current_session_ != FingerprintSession::ENROLL)
     return;
@@ -62,7 +63,8 @@ void FakeBiodClient::SendEnrollScanDone(const std::string& fingerprint,
   }
 
   for (auto& observer : observers_)
-    observer.BiodEnrollScanDoneReceived(type_result, is_complete);
+    observer.BiodEnrollScanDoneReceived(type_result, is_complete,
+                                        percent_complete);
 }
 
 void FakeBiodClient::SendAuthScanDone(const std::string& fingerprint,

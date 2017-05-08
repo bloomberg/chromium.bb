@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
+#include "chromeos/dbus/biod/messages.pb.h"
 #include "chromeos/dbus/biod/test_utils.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -34,11 +36,6 @@ const char kInvalidTestPath[] = "/invalid/test/path";
 // Value used to intialize string objects in tests to make it easier to
 // determine when empty values have been assigned.
 const char kInvalidString[] = "invalidString";
-
-// TODO(xiaoyinh@): Use the constant from service_constants.h
-// crbug.com/713420
-const char kBiometricsManagerPath[] =
-    "/org/chromium/BiometricsDaemon/FpcBiometricsManager";
 
 // Matcher that verifies that a dbus::Message has member |name|.
 MATCHER_P(HasMember, name, "") {
@@ -68,9 +65,10 @@ class BiodClientTest : public testing::Test {
     options.bus_type = dbus::Bus::SYSTEM;
     bus_ = new dbus::MockBus(options);
 
-    proxy_ =
-        new dbus::MockObjectProxy(bus_.get(), biod::kBiodServiceName,
-                                  dbus::ObjectPath(kBiometricsManagerPath));
+    dbus::ObjectPath fpc_bio_path = dbus::ObjectPath(base::StringPrintf(
+        "%s/%s", biod::kBiodServicePath, biod::kFpcBiometricsManagerName));
+    proxy_ = new dbus::MockObjectProxy(bus_.get(), biod::kBiodServiceName,
+                                       fpc_bio_path);
 
     // |client_|'s Init() method should request a proxy for communicating with
     // biometrics api.
@@ -115,12 +113,16 @@ class BiodClientTest : public testing::Test {
 
   // Passes a enroll scan done signal to |client_|.
   void EmitEnrollScanDoneSignal(biod::ScanResult scan_result,
-                                bool enroll_session_complete) {
+                                bool enroll_session_complete,
+                                int percent_complete) {
     dbus::Signal signal(kInterface,
                         biod::kBiometricsManagerEnrollScanDoneSignal);
     dbus::MessageWriter writer(&signal);
-    writer.AppendUint32(static_cast<uint32_t>(scan_result));
-    writer.AppendBool(enroll_session_complete);
+    biod::EnrollScanDone protobuf;
+    protobuf.set_scan_result(scan_result);
+    protobuf.set_done(enroll_session_complete);
+    protobuf.set_percent_complete(percent_complete);
+    writer.AppendProtoAsArrayOfBytes(protobuf);
     EmitSignal(&signal);
   }
 
@@ -401,12 +403,14 @@ TEST_F(BiodClientTest, TestNotifyObservers) {
 
   const biod::ScanResult scan_signal = biod::ScanResult::SCAN_RESULT_SUCCESS;
   const bool enroll_session_complete = false;
+  const int percent_complete = 0;
   const AuthScanMatches test_attempt;
   EXPECT_EQ(0, observer.NumEnrollScansReceived());
   EXPECT_EQ(0, observer.NumAuthScansReceived());
   EXPECT_EQ(0, observer.num_failures_received());
 
-  EmitEnrollScanDoneSignal(scan_signal, enroll_session_complete);
+  EmitEnrollScanDoneSignal(scan_signal, enroll_session_complete,
+                           percent_complete);
   EXPECT_EQ(1, observer.NumEnrollScansReceived());
 
   EmitAuthScanDoneSignal(scan_signal, test_attempt);
@@ -417,7 +421,8 @@ TEST_F(BiodClientTest, TestNotifyObservers) {
 
   client_->RemoveObserver(&observer);
 
-  EmitEnrollScanDoneSignal(scan_signal, enroll_session_complete);
+  EmitEnrollScanDoneSignal(scan_signal, enroll_session_complete,
+                           percent_complete);
   EmitAuthScanDoneSignal(scan_signal, test_attempt);
   EXPECT_EQ(1, observer.NumEnrollScansReceived());
   EXPECT_EQ(1, observer.NumAuthScansReceived());

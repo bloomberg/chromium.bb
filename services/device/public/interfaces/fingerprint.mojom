@@ -15,7 +15,11 @@ interface FingerprintObserver{
   // Called whenever a user attempts a scan. |scan_result| tells whether the
   // scan was succesful. |is_complete| tells whether record is complete
   // and now over.
-  OnEnrollScanDone(uint32 scan_result, bool is_complete);
+  // |percent_complete| within [0, 100] represents the percent of enrollment
+  // completion and -1 means unknown percentage.
+  OnEnrollScanDone(uint32 scan_result,
+                   bool is_complete,
+                   int32 percent_complete);
 
   // Called to indicate a bad scan of any kind, or a succesful scan. If scan
   // is successful, |matches| is a map of user id keys to a vector of
@@ -23,7 +27,8 @@ interface FingerprintObserver{
   OnAuthScanDone(uint32 scan_result, map<string, array<string>> matches);
 
   // Called during either mode to indicate a failure. Any EnrollSession record
-  // that was underway is thrown away and AuthSession will no longer be happening.
+  // that was underway is thrown away and AuthSession will no longer be
+  // happening.
   OnSessionFailed();
 };
 

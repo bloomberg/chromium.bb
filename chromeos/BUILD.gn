@@ -21,6 +21,7 @@ component("chromeos") {
   deps = [
     ":attestation_proto",
     ":authpolicy_proto",
+    ":biod_proto",
     ":cryptohome_proto",
     ":power_manager_proto",
     "//base",
@@ -498,6 +499,7 @@ static_library("test_support") {
   configs += [ "//build/config/linux/dbus" ]
   public_deps = [
     ":attestation_proto",
+    ":biod_proto",
     ":chromeos",
     ":cryptohome_proto",
     ":power_manager_proto",
@@ -568,6 +570,7 @@ static_library("test_support_without_gmock") {
   configs += [ "//build/config/linux/dbus" ]
   deps = [
     ":attestation_proto",
+    ":biod_proto",
     ":chromeos",
     ":cryptohome_proto",
     ":power_manager_proto",
@@ -593,6 +596,7 @@ test("chromeos_unittests") {
   ]
   deps = [
     ":attestation_proto",
+    ":biod_proto",
     ":cryptohome_proto",
     ":power_manager_proto",
     ":test_support",
@@ -755,4 +759,13 @@ proto_library("authpolicy_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/authpolicy"
+}
+
+proto_library("biod_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/biod/constants.proto",
+    "//third_party/cros_system_api/dbus/biod/messages.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/biod"
 }

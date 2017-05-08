@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/biod/constants.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -40,8 +41,11 @@ class CHROMEOS_EXPORT BiodClient : public DBusClient {
     // Called whenever a user attempts a scan during enrollment. |scan_result|
     // tells whether the scan was succesful. |enroll_session_complete| tells
     // whether enroll session is complete and is now over.
+    // |percent_complete| within [0, 100] represents the percent of enrollment
+    // completion and -1 means unknown percentage.
     virtual void BiodEnrollScanDoneReceived(biod::ScanResult scan_result,
-                                            bool enroll_session_complete) {}
+                                            bool enroll_session_complete,
+                                            int percent_complete) {}
 
     // Called when an authentication scan is performed. If the scan is
     // successful, |matches| will equal all the enrollment IDs that match the
