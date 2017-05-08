@@ -334,11 +334,6 @@ void DrawBleedAdjustedDRRect(GraphicsContext& context,
   }
 }
 
-bool BleedAvoidanceIsClipping(BackgroundBleedAvoidance bleed_avoidance) {
-  return bleed_avoidance == kBackgroundBleedClipOnly ||
-         bleed_avoidance == kBackgroundBleedClipLayer;
-}
-
 // The LUTs below assume specific enum values.
 static_assert(kBorderStyleNone == 0, "unexpected EBorderStyle value");
 static_assert(kBorderStyleHidden == 1, "unexpected EBorderStyle value");
