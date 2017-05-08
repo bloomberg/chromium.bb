@@ -77,6 +77,7 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
   functions->fDrawArrays = gles_bind(&GLES2Interface::DrawArrays, impl);
   functions->fDrawArraysInstanced =
       gles_bind(&GLES2Interface::DrawArraysInstancedANGLE, impl);
+  functions->fDrawBuffers = gles_bind(&GLES2Interface::DrawBuffersEXT, impl);
   functions->fDrawElements = gles_bind(&GLES2Interface::DrawElements, impl);
   functions->fDrawElementsInstanced =
       gles_bind(&GLES2Interface::DrawElementsInstancedANGLE, impl);
@@ -85,6 +86,7 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
   functions->fEnable = gles_bind(&GLES2Interface::Enable, impl);
   functions->fEnableVertexAttribArray =
       gles_bind(&GLES2Interface::EnableVertexAttribArray, impl);
+  functions->fEndQuery = gles_bind(&GLES2Interface::EndQueryEXT, impl);
   functions->fFenceSync = gles_bind(&GLES2Interface::FenceSync, impl);
   functions->fFinish = gles_bind(&GLES2Interface::Finish, impl);
   functions->fFlush = gles_bind(&GLES2Interface::Flush, impl);
@@ -102,6 +104,9 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
   functions->fGetProgramInfoLog =
       gles_bind(&GLES2Interface::GetProgramInfoLog, impl);
   functions->fGetProgramiv = gles_bind(&GLES2Interface::GetProgramiv, impl);
+  functions->fGetQueryiv = gles_bind(&GLES2Interface::GetQueryivEXT, impl);
+  functions->fGetQueryObjectuiv =
+      gles_bind(&GLES2Interface::GetQueryObjectuivEXT, impl);
   functions->fGetShaderInfoLog =
       gles_bind(&GLES2Interface::GetShaderInfoLog, impl);
   functions->fGetShaderiv = gles_bind(&GLES2Interface::GetShaderiv, impl);
@@ -130,6 +135,7 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
       gles_bind(&GLES2Interface::PopGroupMarkerEXT, impl);
   functions->fPushGroupMarker =
       gles_bind(&GLES2Interface::PushGroupMarkerEXT, impl);
+  functions->fReadBuffer = gles_bind(&GLES2Interface::ReadBuffer, impl);
   functions->fReadPixels = gles_bind(&GLES2Interface::ReadPixels, impl);
   functions->fScissor = gles_bind(&GLES2Interface::Scissor, impl);
   functions->fShaderSource = gles_bind(&GLES2Interface::ShaderSource, impl);
@@ -191,12 +197,15 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
   functions->fWaitSync = gles_bind(&GLES2Interface::WaitSync, impl);
   functions->fBindFramebuffer =
       gles_bind(&GLES2Interface::BindFramebuffer, impl);
+  functions->fBeginQuery = gles_bind(&GLES2Interface::BeginQueryEXT, impl);
   functions->fBindRenderbuffer =
       gles_bind(&GLES2Interface::BindRenderbuffer, impl);
   functions->fCheckFramebufferStatus =
       gles_bind(&GLES2Interface::CheckFramebufferStatus, impl);
   functions->fDeleteFramebuffers =
       gles_bind(&GLES2Interface::DeleteFramebuffers, impl);
+  functions->fDeleteQueries =
+      gles_bind(&GLES2Interface::DeleteQueriesEXT, impl);
   functions->fDeleteRenderbuffers =
       gles_bind(&GLES2Interface::DeleteRenderbuffers, impl);
   functions->fFramebufferRenderbuffer =
@@ -213,6 +222,7 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
       gles_bind(&GLES2Interface::GetFramebufferAttachmentParameteriv, impl);
   functions->fGetRenderbufferParameteriv =
       gles_bind(&GLES2Interface::GetRenderbufferParameteriv, impl);
+  functions->fGenQueries = gles_bind(&GLES2Interface::GenQueriesEXT, impl);
   functions->fRenderbufferStorage =
       gles_bind(&GLES2Interface::RenderbufferStorage, impl);
   functions->fRenderbufferStorageMultisample =
