@@ -12,7 +12,12 @@ cr.define('test_util', function() {
    * @return {!Promise}
    */
   function whenAttributeIs(target, attributeName, attributeValue) {
-    function isDone() { return target[attributeName] === attributeValue; }
+    function isDone() {
+      // TODO(dpapad): Following line should check for an attribute, not a
+      // property, meaning target.getAttribute(attributeName). Fix this and
+      // update callers to pass an attribute value instead.
+      return target[attributeName] === attributeValue;
+    }
 
     return isDone() ? Promise.resolve() : new Promise(function(resolve) {
       new MutationObserver(function(mutations, observer) {
