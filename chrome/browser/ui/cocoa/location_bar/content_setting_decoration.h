@@ -49,6 +49,9 @@ class ContentSettingDecoration : public ImageDecoration {
   // be friends.
   virtual void AnimationTimerFired();
 
+ protected:
+  CGFloat DividerPadding() const override;
+
  private:
   friend class ContentSettingDecorationTest;
 

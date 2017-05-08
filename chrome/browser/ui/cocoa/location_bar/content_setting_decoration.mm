@@ -327,6 +327,10 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   return true;
 }
 
+CGFloat ContentSettingDecoration::DividerPadding() const {
+  return kDividerPadding;
+}
+
 NSString* ContentSettingDecoration::GetToolTip() {
   return tooltip_.get();
 }
@@ -425,17 +429,7 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
 
     // Draw the divider if available.
     if (state() == DecorationMouseState::NONE && !active()) {
-      const CGFloat divider_x_position =
-          is_rtl ? NSMinX(background_rect) + kDividerPadding
-                 : NSMaxX(background_rect) - kDividerPadding;
-      NSBezierPath* line = [NSBezierPath bezierPath];
-      [line setLineWidth:1];
-      [line
-          moveToPoint:NSMakePoint(divider_x_position, NSMinY(background_rect))];
-      [line
-          lineToPoint:NSMakePoint(divider_x_position, NSMaxY(background_rect))];
-      [GetDividerColor(owner_->IsLocationBarDark()) set];
-      [line stroke];
+      DrawDivider(control_view, background_rect, 1.0);
     }
   } else {
     // No animation, draw the image as normal.

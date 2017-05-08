@@ -36,10 +36,6 @@ class BubbleDecoration : public LocationBarDecoration {
   NSFont* GetFont() const override;
 
  protected:
-  // Returns the amount of padding between the divider and the omnibox text.
-  // Returns 0 in non-MD since there's no divider.
-  CGFloat DividerPadding() const;
-
   // Helper returning bubble width for the given |image| and |label|
   // assuming |font_| (for sizing text).  Arguments can be nil.
   CGFloat GetWidthForImageAndLabel(NSImage* image, NSString* label);
