@@ -17,7 +17,7 @@
 
 namespace gfx {
 class Image;
-}  // namespce gfx
+}  // namespace gfx
 
 namespace suggestions {
 
