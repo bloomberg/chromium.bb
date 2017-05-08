@@ -51,4 +51,27 @@ TEST(HostSessionOptionsTest, ImportAndExport) {
   ASSERT_EQ(options.Export(), other.Export());
 }
 
+TEST(HostSessionOptionsTest, ConvertToBool) {
+  HostSessionOptions options;
+  options.Import("A:,B:x,C:true,D:TRUE,E:1,F:2,G:FALSE,H:0,I");
+  ASSERT_TRUE(*options.GetBool("A"));
+  ASSERT_FALSE(options.GetBool("B"));
+  ASSERT_TRUE(*options.GetBool("C"));
+  ASSERT_TRUE(*options.GetBool("D"));
+  ASSERT_TRUE(*options.GetBool("E"));
+  ASSERT_FALSE(options.GetBool("F"));
+  ASSERT_FALSE(*options.GetBool("G"));
+  ASSERT_FALSE(*options.GetBool("H"));
+  ASSERT_FALSE(options.GetBool("I"));
+}
+
+TEST(HostSessionOptionsTest, ConvertToint) {
+  HostSessionOptions options;
+  options.Import("A:100,B:-200,C:x,D:");
+  ASSERT_EQ(*options.GetInt("A"), 100);
+  ASSERT_EQ(*options.GetInt("B"), -200);
+  ASSERT_FALSE(options.GetInt("C"));
+  ASSERT_FALSE(options.GetInt("D"));
+}
+
 }  // namespace remoting
