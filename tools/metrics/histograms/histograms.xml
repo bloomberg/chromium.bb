@@ -49980,6 +49980,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PDF.LoadStatus" enum="PDFLoadStatus">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Tracks what happens when Chrome tries to load a PDF. This metric tracks all
+    cases, but is focused on measuring failed PDF embeds, which occur if the
+    user is on Android, or if PDF plugin is disabled.
+  </summary>
+</histogram>
+
 <histogram name="Pepper.Graphics3DHasShareGroup" units="BooleanShareGroup">
   <owner>jbauman@chromium.org</owner>
   <summary>

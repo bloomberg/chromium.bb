@@ -27167,6 +27167,12 @@ from previous Chrome versions.
   <int value="2" label="Has Bookmarks"/>
 </enum>
 
+<enum name="PDFLoadStatus" type="int">
+  <int value="0" label="Loaded a full-page PDF with PDFium"/>
+  <int value="1" label="Loaded an embedded PDF with PDFium"/>
+  <int value="2" label="Showed disabled plugin placeholder for embedded PDF"/>
+</enum>
+
 <enum name="PeerConnectionCounters" type="int">
   <int value="0" label="PeerConnection enabled with IPv4."/>
   <int value="1" label="PeerConnection enabled with Ipv6."/>

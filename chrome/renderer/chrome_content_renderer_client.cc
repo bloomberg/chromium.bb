@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_paths.h"
@@ -153,7 +154,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
 #include "components/printing/renderer/print_web_view_helper.h"
 #include "printing/print_settings.h"
@@ -815,6 +815,21 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 #endif  // !defined(DISABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
 
+        // Report PDF load metrics. Since the PDF plugin is comprised of an
+        // extension that loads a second plugin, avoid double counting by
+        // ignoring the creation of the second plugin.
+        if (info.name == ASCIIToUTF16(ChromeContentClient::kPDFPluginName) &&
+            GURL(frame->GetDocument().Url()).host_piece() !=
+                extension_misc::kPdfExtensionId) {
+          bool is_main_frame_plugin_document =
+              render_frame->IsMainFrame() &&
+              render_frame->GetWebFrame()->GetDocument().IsPluginDocument();
+          PluginUMAReporter::ReportPDFLoadStatus(
+              is_main_frame_plugin_document
+                  ? PluginUMAReporter::LOADED_FULL_PAGE_PDF_WITH_PDFIUM
+                  : PluginUMAReporter::LOADED_EMBEDDED_PDF_WITH_PDFIUM);
+        }
+
         // Delay loading plugins if prerendering.
         // TODO(mmenke):  In the case of prerendering, feed into
         //                ChromeContentRendererClient::CreatePlugin instead, to
@@ -855,6 +870,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
                                                                url);
+        if (info.name == ASCIIToUTF16(ChromeContentClient::kPDFPluginName)) {
+          PluginUMAReporter::ReportPDFLoadStatus(
+              PluginUMAReporter::
+                  SHOWED_DISABLED_PLUGIN_PLACEHOLDER_FOR_EMBEDDED_PDF);
+        }
+
         placeholder = create_blocked_plugin(
             IDR_DISABLED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_DISABLED, group_name));
