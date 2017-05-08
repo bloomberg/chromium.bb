@@ -32,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chromeos::FakeChromeUserManager;
+using session_manager::SessionState;
 
 namespace {
 
@@ -382,6 +383,7 @@ TEST_F(SessionControllerClientTest, SendUserSession) {
   session_manager_.CreateSession(
       account_id, chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
                       "user@test.com"));
+  session_manager_.SetSessionState(SessionState::ACTIVE);
   SessionControllerClient::FlushForTesting();
 
   // User session was sent.
@@ -404,8 +406,7 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
   SessionControllerClient::FlushForTesting();
 
   // Simulate the login screen. No user session yet.
-  session_manager_.SetSessionState(
-      session_manager::SessionState::LOGIN_PRIMARY);
+  session_manager_.SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_FALSE(session_controller.last_user_session());
 
   // Simulate a supervised user logging in.
@@ -419,6 +420,7 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
   session_manager_.CreateSession(
       account_id, chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
                       "child@test.com"));
+  session_manager_.SetSessionState(SessionState::ACTIVE);
   SessionControllerClient::FlushForTesting();
 
   // The session controller received session info and user session.
