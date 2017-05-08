@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
-#include "base/sys_byteorder.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/resource_context_impl.h"
@@ -33,203 +32,185 @@ class WebUIURLLoaderFactory;
 base::LazyInstance<std::map<int, std::unique_ptr<WebUIURLLoaderFactory>>>::Leaky
     g_factories = LAZY_INSTANCE_INITIALIZER;
 
-class URLLoaderImpl : public mojom::URLLoader {
- public:
-  static void Create(mojom::URLLoaderAssociatedRequest loader,
-                     const ResourceRequest& request,
-                     int frame_tree_node_id,
-                     mojo::InterfacePtrInfo<mojom::URLLoaderClient> client_info,
-                     ResourceContext* resource_context) {
-    mojom::URLLoaderClientPtr client;
-    client.Bind(std::move(client_info));
-    new URLLoaderImpl(std::move(loader), request, frame_tree_node_id,
-                      std::move(client), resource_context);
+void CallOnError(mojom::URLLoaderClientPtrInfo client_info, int error_code) {
+  mojom::URLLoaderClientPtr client;
+  client.Bind(std::move(client_info));
+
+  ResourceRequestCompletionStatus status;
+  status.error_code = error_code;
+  client->OnComplete(status);
+}
+
+void ReadData(scoped_refptr<ResourceResponse> headers,
+              const ui::TemplateReplacements* replacements,
+              bool gzipped,
+              scoped_refptr<URLDataSourceImpl> data_source,
+              mojom::URLLoaderClientPtrInfo client_info,
+              scoped_refptr<base::RefCountedMemory> bytes) {
+  if (!bytes) {
+    CallOnError(std::move(client_info), net::ERR_FAILED);
+    return;
   }
 
- private:
-  URLLoaderImpl(mojom::URLLoaderAssociatedRequest loader,
-                const ResourceRequest& request,
-                int frame_tree_node_id,
-                mojom::URLLoaderClientPtr client,
-                ResourceContext* resource_context)
-      : binding_(this, std::move(loader)),
-        client_(std::move(client)),
-        replacements_(nullptr),
-        weak_factory_(this) {
-    // NOTE: this duplicates code in URLDataManagerBackend::StartRequest.
-    if (!URLDataManagerBackend::CheckURLIsValid(request.url)) {
-      OnError(net::ERR_INVALID_URL);
-      return;
-    }
+  mojom::URLLoaderClientPtr client;
+  client.Bind(std::move(client_info));
+  client->OnReceiveResponse(headers->head, base::nullopt, nullptr);
 
-    URLDataSourceImpl* source =
-        GetURLDataManagerForResourceContext(resource_context)
-            ->GetDataSourceFromURL(request.url);
-    if (!source) {
-      OnError(net::ERR_INVALID_URL);
-      return;
-    }
+  base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
+                          bytes->size());
 
-    if (!source->source()->ShouldServiceRequest(request.url, resource_context,
-                                                -1)) {
-      OnError(net::ERR_INVALID_URL);
-      return;
-    }
-
-    std::string path;
-    URLDataManagerBackend::URLToRequestPath(request.url, &path);
-    gzipped_ = source->source()->IsGzipped(path);
-    if (source->source()->GetMimeType(path) == "text/html")
-      replacements_ = source->GetReplacements();
-
-    net::HttpRequestHeaders request_headers;
-    request_headers.AddHeadersFromString(request.headers);
-    std::string origin_header;
-    request_headers.GetHeader(net::HttpRequestHeaders::kOrigin, &origin_header);
-
-    scoped_refptr<net::HttpResponseHeaders> headers =
-        URLDataManagerBackend::GetHeaders(source, path, origin_header);
-
-    ResourceResponseHead head;
-    head.headers = headers;
-    head.mime_type = source->source()->GetMimeType(path);
-    // TODO: fill all the time related field i.e. request_time response_time
-    // request_start response_start
-    client_->OnReceiveResponse(head, base::nullopt, nullptr);
-
-    ResourceRequestInfo::WebContentsGetter wc_getter =
-        base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
-
-    // Forward along the request to the data source.
-    // TODO(jam): once we only have this code path for WebUI, and not the
-    // URLLRequestJob one, then we should switch data sources to run on the UI
-    // thread by default.
-    scoped_refptr<base::SingleThreadTaskRunner> target_runner =
-        source->source()->TaskRunnerForRequestPath(path);
-    if (!target_runner) {
-      source->source()->StartDataRequest(
-          path, wc_getter,
-          base::Bind(&URLLoaderImpl::DataAvailable,
-                     weak_factory_.GetWeakPtr()));
+  if (replacements) {
+    std::string temp_string;
+    // We won't know the the final output size ahead of time, so we have to
+    // use an intermediate string.
+    base::StringPiece source;
+    std::string temp_str;
+    if (gzipped) {
+      temp_str.resize(compression::GetUncompressedSize(input));
+      source.set(temp_str.c_str(), temp_str.size());
+      CHECK(compression::GzipUncompress(input, source));
+      gzipped = false;
     } else {
-      // The DataSource wants StartDataRequest to be called on a specific
-      // thread, usually the UI thread, for this path.
-      target_runner->PostTask(
-          FROM_HERE, base::Bind(&URLLoaderImpl::CallStartDataRequest,
-                                base::RetainedRef(source), path, wc_getter,
-                                weak_factory_.GetWeakPtr()));
+      source = input;
     }
+    temp_str = ui::ReplaceTemplateExpressions(source, *replacements);
+    bytes = base::RefCountedString::TakeString(&temp_str);
+    input.set(reinterpret_cast<const char*>(bytes->front()), bytes->size());
   }
 
-  void FollowRedirect() override { NOTREACHED(); }
-  void SetPriority(net::RequestPriority priority,
-                   int32_t intra_priority_value) override {
-    NOTREACHED();
+  uint32_t output_size =
+      gzipped ? compression::GetUncompressedSize(input) : bytes->size();
+
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = output_size;
+  mojo::DataPipe data_pipe(options);
+
+  DCHECK(data_pipe.producer_handle.is_valid());
+  DCHECK(data_pipe.consumer_handle.is_valid());
+
+  void* buffer = nullptr;
+  uint32_t num_bytes = output_size;
+  MojoResult result =
+      BeginWriteDataRaw(data_pipe.producer_handle.get(), &buffer, &num_bytes,
+                        MOJO_WRITE_DATA_FLAG_NONE);
+  CHECK_EQ(result, MOJO_RESULT_OK);
+  CHECK_EQ(num_bytes, output_size);
+
+  if (gzipped) {
+    base::StringPiece output(static_cast<char*>(buffer), num_bytes);
+    CHECK(compression::GzipUncompress(input, output));
+  } else {
+    memcpy(buffer, bytes->front(), output_size);
+  }
+  result = EndWriteDataRaw(data_pipe.producer_handle.get(), num_bytes);
+  CHECK_EQ(result, MOJO_RESULT_OK);
+
+  client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+
+  ResourceRequestCompletionStatus request_complete_data;
+  request_complete_data.error_code = net::OK;
+  request_complete_data.exists_in_cache = false;
+  request_complete_data.completion_time = base::TimeTicks::Now();
+  request_complete_data.encoded_data_length = output_size;
+  request_complete_data.encoded_body_length = output_size;
+  client->OnComplete(request_complete_data);
+}
+
+void DataAvailable(scoped_refptr<ResourceResponse> headers,
+                   const ui::TemplateReplacements* replacements,
+                   bool gzipped,
+                   scoped_refptr<URLDataSourceImpl> source,
+                   mojom::URLLoaderClientPtrInfo client_info,
+                   scoped_refptr<base::RefCountedMemory> bytes) {
+  // Since the bytes are from the memory mapped resource file, copying the
+  // data can lead to disk access.
+  // TODO(jam): once http://crbug.com/678155 is fixed, use task scheduler:
+  // base::PostTaskWithTraits(
+  //     FROM_HERE,
+  //     {base::TaskPriority::USER_BLOCKING,
+  //       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+  BrowserThread::PostTask(
+      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
+      base::BindOnce(ReadData, headers, replacements, gzipped, source,
+                     std::move(client_info), bytes));
+}
+
+void StartURLLoader(const ResourceRequest& request,
+                    int frame_tree_node_id,
+                    mojom::URLLoaderClientPtrInfo client_info,
+                    ResourceContext* resource_context) {
+  // NOTE: this duplicates code in URLDataManagerBackend::StartRequest.
+  if (!URLDataManagerBackend::CheckURLIsValid(request.url)) {
+    CallOnError(std::move(client_info), net::ERR_INVALID_URL);
+    return;
   }
 
-  static void CallStartDataRequest(
-      scoped_refptr<URLDataSourceImpl> source,
-      const std::string& path,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const base::WeakPtr<URLLoaderImpl>& weak_ptr) {
-    source->source()->StartDataRequest(
-        path, wc_getter,
-        base::Bind(URLLoaderImpl::DataAvailableOnTargetThread, weak_ptr));
+  URLDataSourceImpl* source =
+      GetURLDataManagerForResourceContext(resource_context)
+          ->GetDataSourceFromURL(request.url);
+  if (!source) {
+    CallOnError(std::move(client_info), net::ERR_INVALID_URL);
+    return;
   }
 
-  static void DataAvailableOnTargetThread(
-      const base::WeakPtr<URLLoaderImpl>& weak_ptr,
-      scoped_refptr<base::RefCountedMemory> bytes) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&URLLoaderImpl::DataAvailable, weak_ptr, bytes));
+  if (!source->source()->ShouldServiceRequest(request.url, resource_context,
+                                              -1)) {
+    CallOnError(std::move(client_info), net::ERR_INVALID_URL);
+    return;
   }
 
-  void DataAvailable(scoped_refptr<base::RefCountedMemory> bytes) {
-    if (!bytes) {
-      OnError(net::ERR_FAILED);
-      return;
-    }
+  std::string path;
+  URLDataManagerBackend::URLToRequestPath(request.url, &path);
 
-    base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
-                            bytes->size());
-    if (replacements_) {
-      std::string temp_string;
-      // We won't know the the final output size ahead of time, so we have to
-      // use an intermediate string.
-      base::StringPiece source;
-      std::string temp_str;
-      if (gzipped_) {
-        temp_str.resize(compression::GetUncompressedSize(input));
-        source.set(temp_str.c_str(), temp_str.size());
-        CHECK(compression::GzipUncompress(input, source));
-        gzipped_ = false;
-      } else {
-        source = input;
-      }
-      temp_str = ui::ReplaceTemplateExpressions(source, *replacements_);
-      bytes = base::RefCountedString::TakeString(&temp_str);
-      input.set(reinterpret_cast<const char*>(bytes->front()), bytes->size());
-    }
+  net::HttpRequestHeaders request_headers;
+  request_headers.AddHeadersFromString(request.headers);
+  std::string origin_header;
+  request_headers.GetHeader(net::HttpRequestHeaders::kOrigin, &origin_header);
 
-    uint32_t output_size =
-        gzipped_ ? compression::GetUncompressedSize(input) : bytes->size();
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      URLDataManagerBackend::GetHeaders(source, path, origin_header);
 
-    MojoCreateDataPipeOptions options;
-    options.struct_size = sizeof(MojoCreateDataPipeOptions);
-    options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-    options.element_num_bytes = 1;
-    options.capacity_num_bytes = output_size;
-    mojo::DataPipe data_pipe(options);
+  scoped_refptr<ResourceResponse> resource_response(new ResourceResponse);
+  resource_response->head.headers = headers;
+  resource_response->head.mime_type = source->source()->GetMimeType(path);
+  // TODO: fill all the time related field i.e. request_time response_time
+  // request_start response_start
 
-    DCHECK(data_pipe.producer_handle.is_valid());
-    DCHECK(data_pipe.consumer_handle.is_valid());
+  ResourceRequestInfo::WebContentsGetter wc_getter =
+      base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
 
-    void* buffer = nullptr;
-    uint32_t num_bytes = output_size;
-    MojoResult result =
-        BeginWriteDataRaw(data_pipe.producer_handle.get(), &buffer, &num_bytes,
-                          MOJO_WRITE_DATA_FLAG_NONE);
-    CHECK_EQ(result, MOJO_RESULT_OK);
-    CHECK_EQ(num_bytes, output_size);
+  bool gzipped = source->source()->IsGzipped(path);
+  const ui::TemplateReplacements* replacements = nullptr;
+  if (source->source()->GetMimeType(path) == "text/html")
+    replacements = source->GetReplacements();
+  // To keep the same behavior as the old WebUI code, we call the source to get
+  // the value for |gzipped| and |replacements| on the IO thread. Since
+  // |replacements| is owned by |source| keep a reference to it in the callback.
+  auto data_available_callback =
+      base::Bind(DataAvailable, resource_response, replacements, gzipped,
+                 base::RetainedRef(source), base::Passed(&client_info));
 
-    if (gzipped_) {
-      base::StringPiece output(static_cast<char*>(buffer), num_bytes);
-      CHECK(compression::GzipUncompress(input, output));
-    } else {
-      memcpy(buffer, bytes->front(), output_size);
-    }
-    result = EndWriteDataRaw(data_pipe.producer_handle.get(), num_bytes);
-    CHECK_EQ(result, MOJO_RESULT_OK);
-
-    client_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
-    ResourceRequestCompletionStatus request_complete_data;
-    request_complete_data.error_code = net::OK;
-    request_complete_data.exists_in_cache = false;
-    request_complete_data.completion_time = base::TimeTicks::Now();
-    request_complete_data.encoded_data_length = output_size;
-    request_complete_data.encoded_body_length = output_size;
-    client_->OnComplete(request_complete_data);
-    delete this;
+  // TODO(jam): once we only have this code path for WebUI, and not the
+  // URLLRequestJob one, then we should switch data sources to run on the UI
+  // thread by default.
+  scoped_refptr<base::SingleThreadTaskRunner> target_runner =
+      source->source()->TaskRunnerForRequestPath(path);
+  if (!target_runner) {
+    source->source()->StartDataRequest(path, wc_getter,
+                                       data_available_callback);
+    return;
   }
 
-  void OnError(int error_code) {
-    ResourceRequestCompletionStatus status;
-    status.error_code = error_code;
-    client_->OnComplete(status);
-    delete this;
-  }
-
-  mojo::AssociatedBinding<mojom::URLLoader> binding_;
-  mojom::URLLoaderClientPtr client_;
-  bool gzipped_;
-  // Replacement dictionary for i18n.
-  const ui::TemplateReplacements* replacements_;
-  base::WeakPtrFactory<URLLoaderImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderImpl);
-};
+  // The DataSource wants StartDataRequest to be called on a specific
+  // thread, usually the UI thread, for this path.
+  target_runner->PostTask(
+      FROM_HERE, base::BindOnce(&URLDataSource::StartDataRequest,
+                                base::Unretained(source->source()), path,
+                                wc_getter, data_available_callback));
+}
 
 class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
                               public FrameTreeNode::Observer {
@@ -259,9 +240,8 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&URLLoaderImpl::Create, std::move(loader), request,
-                       frame_tree_node_id_, client.PassInterface(),
-                       resource_context_));
+        base::BindOnce(&StartURLLoader, request, frame_tree_node_id_,
+                       client.PassInterface(), resource_context_));
   }
 
   void SyncLoad(int32_t routing_id,

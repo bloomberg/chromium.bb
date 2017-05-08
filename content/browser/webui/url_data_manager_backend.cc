@@ -510,7 +510,8 @@ bool URLDataManagerBackend::HasPendingJob(
 
 bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
                                          URLRequestChromeJob* job) {
-  // NOTE: this duplicates code in web_ui_url_loader_factory.cc's URLLoaderImpl.
+  // NOTE: this duplicates code in web_ui_url_loader_factory.cc's
+  // StartURLLoader.
   if (!CheckURLIsValid(request->url()))
     return false;
 
