@@ -66,6 +66,9 @@ source_set("clients") {
   ]
 
   if (is_android) {
-    deps += [ "//ui/gl:gl" ]
+    deps += [
+      "//gpu/ipc/common:common",
+      "//ui/gl:gl",
+    ]
   }
 }

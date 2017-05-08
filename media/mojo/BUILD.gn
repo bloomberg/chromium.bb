@@ -37,6 +37,13 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//ui/gfx:test_support",
   ]
+
+  if (is_android) {
+    deps += [
+      "//gpu/ipc/common:common",
+      "//ui/gl:gl",
+    ]
+  }
 }
 
 test("media_mojo_unittests") {

@@ -4,6 +4,7 @@
 
 #include "media/mojo/clients/mojo_android_overlay.h"
 
+#include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
@@ -55,8 +56,19 @@ const base::android::JavaRef<jobject>& MojoAndroidOverlay::GetJavaSurface()
 }
 
 void MojoAndroidOverlay::OnSurfaceReady(uint64_t surface_key) {
-  // TODO(liberato): ask binder for the surface here, and fill in |surface_|.
   received_surface_ = true;
+
+  // Get the surface and notify our client.
+  surface_ =
+      gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(surface_key);
+
+  // If no surface was returned, then fail instead.
+  if (surface_.IsEmpty()) {
+    config_.is_failed(this);
+    // |this| may be deleted.
+    return;
+  }
+
   config_.is_ready(this);
 }
 
