@@ -22,7 +22,7 @@ class InterThreadMessagingProxy;
 // objects then deal with safely posting the messages to the DRM thread.
 class DrmThreadProxy {
  public:
-  explicit DrmThreadProxy();
+  DrmThreadProxy();
   ~DrmThreadProxy();
 
   void BindThreadIntoMessagingProxy(InterThreadMessagingProxy* messaging_proxy);
