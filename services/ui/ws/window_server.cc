@@ -42,18 +42,7 @@ bool IsWindowConsideredWindowManagerRoot(const Display* display,
 
   const WindowManagerDisplayRoot* display_root =
       display->GetActiveWindowManagerDisplayRoot();
-  if (!display_root)
-    return false;
-
-  if (window == display_root->root())
-    return true;
-
-  // If the window manager manually creates displays then there is an extra
-  // window, the window supplied via SetDisplayRoot().
-  return !display_root->window_manager_state()
-              ->window_tree()
-              ->automatically_create_display_roots() &&
-         window->parent() == display_root->root();
+  return display_root && display_root->GetClientVisibileRoot() == window;
 }
 
 }  // namespace

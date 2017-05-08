@@ -454,15 +454,28 @@ TEST_F(WindowTreeTest, StartPointerWatcherWrongUser) {
 
 // Tests that a pointer watcher cannot watch keystrokes.
 TEST_F(WindowTreeTest, StartPointerWatcherKeyEventsDisallowed) {
-  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false);
+  TestWindowTreeBinding* other_binding;
+  WindowTree* other_tree = CreateNewTree("other_user", &other_binding);
+  other_binding->client()->tracker()->changes()->clear();
+
+  WindowTreeTestApi(other_tree).StartPointerWatcher(false);
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_pressed);
-  EXPECT_EQ(0u, wm_client()->tracker()->changes()->size());
+  EXPECT_EQ(0u, other_binding->client()->tracker()->changes()->size());
+  EXPECT_EQ("InputEvent window=0,3 event_action=7",
+            SingleChangeToDescription(*wm_client()->tracker()->changes()));
 
   WindowTreeTestApi(wm_tree()).StartPointerWatcher(false);
   ui::KeyEvent key_released(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_released);
-  EXPECT_EQ(0u, wm_client()->tracker()->changes()->size());
+  EXPECT_EQ(0u, other_binding->client()->tracker()->changes()->size());
+}
+
+TEST_F(WindowTreeTest, KeyEventSentToWindowManagerWhenNothingFocused) {
+  ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  DispatchEventAndAckImmediately(key_pressed);
+  EXPECT_EQ("InputEvent window=0,3 event_action=7",
+            SingleChangeToDescription(*wm_client()->tracker()->changes()));
 }
 
 TEST_F(WindowTreeTest, CursorChangesWhenMouseOverWindowAndWindowSetsCursor) {
