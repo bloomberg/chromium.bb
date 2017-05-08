@@ -75,10 +75,10 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
   return _requestScript;
 }
 
-- (void)loadPOSTRequest:(NSURLRequest*)request
-              inWebView:(WKWebView*)webView
-          messageRouter:(CRWWKScriptMessageRouter*)messageRouter
-      completionHandler:(void (^)(NSError*))completionHandler {
+- (WKNavigation*)loadPOSTRequest:(NSURLRequest*)request
+                       inWebView:(WKWebView*)webView
+                   messageRouter:(CRWWKScriptMessageRouter*)messageRouter
+               completionHandler:(void (^)(NSError*))completionHandler {
   DCHECK([request.HTTPMethod isEqualToString:@"POST"]);
   DCHECK(webView);
   DCHECK(messageRouter);
@@ -115,7 +115,7 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
       [NSString stringWithFormat:@"<html><script>%@%@</script></html>",
                                  self.requestScript,
                                  [self scriptToExecutePOSTRequest:request]];
-  [webView loadHTMLString:HTML baseURL:request.URL];
+  return [webView loadHTMLString:HTML baseURL:request.URL];
 }
 
 #pragma mark - Private methods.
