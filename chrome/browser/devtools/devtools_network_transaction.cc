@@ -22,10 +22,6 @@ const char
     DevToolsNetworkTransaction::kDevToolsEmulateNetworkConditionsClientId[] =
         "X-DevTools-Emulate-Network-Conditions-Client-Id";
 
-// Keep in sync with X_DevTools_Request_Id defined in HTTPNames.json5.
-const char DevToolsNetworkTransaction::kDevToolsRequestId[] =
-    "X-DevTools-Request-Id";
-
 DevToolsNetworkTransaction::DevToolsNetworkTransaction(
     DevToolsNetworkController* controller,
     std::unique_ptr<net::HttpTransaction> network_transaction)
@@ -127,7 +123,6 @@ int DevToolsNetworkTransaction::Start(const net::HttpRequestInfo* request,
         kDevToolsEmulateNetworkConditionsClientId, &client_id);
     custom_request_->extra_headers.RemoveHeader(
         kDevToolsEmulateNetworkConditionsClientId);
-    custom_request_->extra_headers.RemoveHeader(kDevToolsRequestId);
 
     if (request_->upload_data_stream) {
       custom_upload_data_stream_.reset(

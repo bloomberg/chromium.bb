@@ -703,10 +703,6 @@ void InspectorNetworkAgent::WillSendRequest(
     request.AddHTTPHeaderField(
         HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
         AtomicString(host_id_));
-
-  request.SetHTTPHeaderField(
-      HTTPNames::X_DevTools_Request_Id,
-      AtomicString(IdentifiersFactory::RequestId(identifier)));
 }
 
 void InspectorNetworkAgent::MarkResourceAsCached(unsigned long identifier) {

@@ -100,7 +100,6 @@ bool FetchUtils::IsSimpleHeader(const AtomicString& name,
       EqualIgnoringASCIICase(name, "content-language") ||
       EqualIgnoringASCIICase(
           name, HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id) ||
-      EqualIgnoringASCIICase(name, HTTPNames::X_DevTools_Request_Id) ||
       EqualIgnoringASCIICase(name, "save-data"))
     return true;
 

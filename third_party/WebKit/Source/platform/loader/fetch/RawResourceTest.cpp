@@ -587,12 +587,4 @@ TEST_F(RawResourceTest,
                                             FetchInitiatorInfo())));
 }
 
-TEST_F(RawResourceTest, CanReuseDevToolsRequestIdHeader) {
-  ResourceRequest request("data:text/html,");
-  request.SetHTTPHeaderField(HTTPNames::X_DevTools_Request_Id, "12345");
-  Resource* raw = RawResource::Create(request, Resource::kRaw);
-  EXPECT_TRUE(raw->CanReuse(FetchParameters(ResourceRequest("data:text/html,"),
-                                            FetchInitiatorInfo())));
-}
-
 }  // namespace blink
