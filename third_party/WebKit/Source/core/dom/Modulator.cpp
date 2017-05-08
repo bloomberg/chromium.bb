@@ -29,7 +29,7 @@ Modulator* Modulator::From(ScriptState* script_state) {
       static_cast<Modulator*>(per_context_data->GetData(kPerContextDataKey));
   if (!modulator) {
     if (Document* document = ToDocument(ExecutionContext::From(script_state))) {
-      modulator = ModulatorImpl::Create(script_state, *document);
+      modulator = ModulatorImpl::Create(script_state, document->Fetcher());
       Modulator::SetModulator(script_state, modulator);
     }
   }
