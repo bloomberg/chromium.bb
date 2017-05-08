@@ -2345,14 +2345,14 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
 /* checks if (r, c) has better score than previous best */
 
-#define MVC(r, c)                                                         \
-  (mvcost                                                                 \
-       ? ((mvjcost[((r) != rr) * 2 + ((c) != rc)] + mvcost[0][((r)-rr)] + \
-           mvcost[1][((c)-rc)]) *                                         \
-              error_per_bit +                                             \
-          4096) >>                                                        \
-             13                                                           \
-       : 0)
+#define MVC(r, c)                                                              \
+  (unsigned int)(mvcost                                                        \
+                     ? ((mvjcost[((r) != rr) * 2 + ((c) != rc)] +              \
+                         mvcost[0][((r)-rr)] + (int64_t)mvcost[1][((c)-rc)]) * \
+                            error_per_bit +                                    \
+                        4096) >>                                               \
+                           13                                                  \
+                     : 0)
 
 #define CHECK_BETTER(v, r, c)                             \
   if (c >= minc && c <= maxc && r >= minr && r <= maxr) { \
@@ -2935,14 +2935,14 @@ int av1_masked_full_pixel_diamond(const AV1_COMP *cpi, MACROBLOCK *x,
   vfp->osvf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), z, mask, &sse)
 
 /* checks if (r, c) has better score than previous best */
-#define MVC(r, c)                                                         \
-  (mvcost                                                                 \
-       ? ((mvjcost[((r) != rr) * 2 + ((c) != rc)] + mvcost[0][((r)-rr)] + \
-           mvcost[1][((c)-rc)]) *                                         \
-              error_per_bit +                                             \
-          4096) >>                                                        \
-             13                                                           \
-       : 0)
+#define MVC(r, c)                                                              \
+  (unsigned int)(mvcost                                                        \
+                     ? ((mvjcost[((r) != rr) * 2 + ((c) != rc)] +              \
+                         mvcost[0][((r)-rr)] + (int64_t)mvcost[1][((c)-rc)]) * \
+                            error_per_bit +                                    \
+                        4096) >>                                               \
+                           13                                                  \
+                     : 0)
 
 #define CHECK_BETTER(v, r, c)                             \
   if (c >= minc && c <= maxc && r >= minr && r <= maxr) { \
