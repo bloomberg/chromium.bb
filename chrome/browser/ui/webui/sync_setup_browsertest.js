@@ -103,9 +103,9 @@ TEST_F('SyncSetupWebUITestAsync', 'DISABLED_VerifySignIn', function() {
   this.startSyncing();
 });
 
-// This test is flaky on Linux and Windows bots. See crbug.com/579666 and
-// crbug.com/638884
-GEN('#if defined(OS_LINUX) || defined(OS_WIN)');
+// This test is flaky on Linux, Windows and Mac bots. See crbug.com/579666,
+// crbug.com/638884 and crbug.com/718947.
+GEN('#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)');
 GEN('#define MAYBE_RestoreSyncDataTypes DISABLED_RestoreSyncDataTypes');
 GEN('#else');
 GEN('#define MAYBE_RestoreSyncDataTypes RestoreSyncDataTypes');
