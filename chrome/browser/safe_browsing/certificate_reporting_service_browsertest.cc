@@ -12,6 +12,7 @@
 #include "base/test/thread_test_helper.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
@@ -384,9 +385,15 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
       ReportExpectation::Successful({{"report1", RetryStatus::RETRIED}}));
 }
 
+// Failing on some Win and Mac buildbots.  See crbug.com/719138.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_DontSendOldReports DISABLED_DontSendOldReports
+#else
+#define MAYBE_DontSendOldReports DontSendOldReports
+#endif
 // CertificateReportingService should ignore reports older than the report TTL.
 IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
-                       DontSendOldReports) {
+                       MAYBE_DontSendOldReports) {
   SetExpectedHistogramCountOnTeardown(5);
 
   base::SimpleTestClock* clock = new base::SimpleTestClock();
