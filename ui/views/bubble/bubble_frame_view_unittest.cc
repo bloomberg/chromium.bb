@@ -502,17 +502,23 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 
   using BubbleDialogDelegateView::SetAnchorView;
 
+  void set_override_snap(bool value) { override_snap_ = value; }
+
   // BubbleDialogDelegateView:
   void DeleteDelegate() override {
     // This delegate is owned by the test case itself, so it should not delete
     // itself here.
   }
-
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
-
+  bool ShouldSnapFrameWidth() const override {
+    return override_snap_.value_or(
+        BubbleDialogDelegateView::ShouldSnapFrameWidth());
+  }
   gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
 
  private:
+  base::Optional<bool> override_snap_;
+
   DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
 
@@ -566,6 +572,14 @@ TEST_F(BubbleFrameViewTest, WidthSnaps) {
   w1->Show();
   EXPECT_EQ(kTestWidth, w1->GetWindowBoundsInScreen().width());
   w1->CloseNow();
+
+  // If the DialogDelegate asks not to snap, it should not snap.
+  delegate.set_override_snap(false);
+  Widget* w2 = BubbleDialogDelegateView::CreateBubble(&delegate);
+  w2->Show();
+  EXPECT_EQ(delegate.GetPreferredSize().width(),
+            w2->GetWindowBoundsInScreen().width());
+  w2->CloseNow();
 }
 
 }  // namespace views

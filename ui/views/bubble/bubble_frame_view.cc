@@ -533,7 +533,9 @@ gfx::Size BubbleFrameView::GetSizeForClientSize(
   if (footnote_container_)
     size.Enlarge(0, footnote_container_->GetHeightForWidth(size.width()));
 
-  if (GetWidget()->widget_delegate()->AsDialogDelegate())
+  DialogDelegate* dialog_delegate =
+      GetWidget()->widget_delegate()->AsDialogDelegate();
+  if (dialog_delegate && dialog_delegate->ShouldSnapFrameWidth())
     size.set_width(LayoutProvider::Get()->GetSnappedDialogWidth(size.width()));
 
   return size;
