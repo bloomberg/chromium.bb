@@ -99,21 +99,16 @@ class BindingManagerImpl implements BindingManager {
         }
 
         void addConnection(ManagedConnection managedConnection) {
-            ManagedChildProcessConnection connection = managedConnection.mConnection;
-            if (connection.isSandboxed()) {
-                managedConnection.addModerateBinding();
-                if (connection.isModerateBindingBound()) {
-                    addConnectionImpl(managedConnection);
-                } else {
-                    removeConnectionImpl(managedConnection);
-                }
+            managedConnection.addModerateBinding();
+            if (managedConnection.mConnection.isModerateBindingBound()) {
+                addConnectionImpl(managedConnection);
+            } else {
+                removeConnectionImpl(managedConnection);
             }
         }
 
         void removeConnection(ManagedConnection managedConnection) {
-            if (managedConnection.mConnection.isSandboxed()) {
-                removeConnectionImpl(managedConnection);
-            }
+            removeConnectionImpl(managedConnection);
         }
 
         void removeAllConnections() {

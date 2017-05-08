@@ -42,6 +42,8 @@
     </activity>
     <provider android:name="org.chromium.android_webview.test.TestContentProvider"
         android:authorities="org.chromium.android_webview.test.TestContentProvider" />
+    <meta-data android:name="org.chromium.content.browser.SANDBOXED_SERVICES_NAME"
+               android:value="org.chromium.content.app.SandboxedProcessService"/>
     <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
                android:value="1"/>
     <service android:name="org.chromium.content.app.SandboxedProcessService0"

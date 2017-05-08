@@ -24,6 +24,8 @@ import org.chromium.base.process_launcher.ICallbackInt;
 import org.chromium.base.process_launcher.IChildProcessService;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -74,9 +76,9 @@ public abstract class BaseChildProcessConnection {
 
     /** Used to create specialization connection instances. */
     interface Factory {
-        BaseChildProcessConnection create(Context context, boolean sandboxed,
-                DeathCallback deathCallback, String serviceClassName,
-                Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams);
+        BaseChildProcessConnection create(Context context, DeathCallback deathCallback,
+                String serviceClassName, Bundle childProcessCommonParameters,
+                ChildProcessCreationParams creationParams);
     }
 
     /** Interface representing a connection to the Android service. Can be mocked in unit-tests. */
@@ -157,12 +159,11 @@ public abstract class BaseChildProcessConnection {
         }
     }
 
-    // Caches whether non-sandboxed and sandboxed services require an extra
     // binding flag provided via ChildProcessCreationParams.
     // TODO(mnaganov): Get rid of it after the release of the next Android SDK.
-    private static Boolean sNeedsExtrabindFlags[] = new Boolean[2];
+    private static final Map<ComponentName, Boolean> sNeedsExtrabindFlagsMap = new HashMap<>();
+
     private final Context mContext;
-    private final boolean mSandboxed;
     private final BaseChildProcessConnection.DeathCallback mDeathCallback;
     private final ComponentName mServiceName;
 
@@ -215,12 +216,11 @@ public abstract class BaseChildProcessConnection {
     // Process ID of the corresponding child process.
     private int mPid;
 
-    protected BaseChildProcessConnection(Context context, boolean sandboxed,
-            DeathCallback deathCallback, String serviceClassName,
-            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
+    protected BaseChildProcessConnection(Context context, DeathCallback deathCallback,
+            String serviceClassName, Bundle childProcessCommonParameters,
+            ChildProcessCreationParams creationParams) {
         assert LauncherThread.runningOnLauncherThread();
         mContext = context;
-        mSandboxed = sandboxed;
         mDeathCallback = deathCallback;
         String packageName =
                 creationParams != null ? creationParams.getPackageName() : context.getPackageName();
@@ -232,11 +232,6 @@ public abstract class BaseChildProcessConnection {
     public final Context getContext() {
         assert LauncherThread.runningOnLauncherThread();
         return mContext;
-    }
-
-    public final boolean isSandboxed() {
-        assert LauncherThread.runningOnLauncherThread();
-        return mSandboxed;
     }
 
     public final String getPackageName() {
@@ -477,16 +472,13 @@ public abstract class BaseChildProcessConnection {
         assert LauncherThread.runningOnLauncherThread();
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && getCreationParams() != null
                 && getCreationParams().getIsExternalService()
-                && isExportedService(isSandboxed(), getContext(), getServiceName());
+                && isExportedService(getContext(), getServiceName());
     }
 
-    private static boolean isExportedService(
-            boolean inSandbox, Context context, ComponentName serviceName) {
-        // Check for the cached value first. It is assumed that all pooled child services
-        // have identical attributes in the manifest.
-        final int arrayIndex = inSandbox ? 1 : 0;
-        if (sNeedsExtrabindFlags[arrayIndex] != null) {
-            return sNeedsExtrabindFlags[arrayIndex].booleanValue();
+    private static boolean isExportedService(Context context, ComponentName serviceName) {
+        Boolean isExported = sNeedsExtrabindFlagsMap.get(serviceName);
+        if (isExported != null) {
+            return isExported;
         }
         boolean result = false;
         try {
@@ -496,7 +488,7 @@ public abstract class BaseChildProcessConnection {
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Could not retrieve info about service %s", serviceName, e);
         }
-        sNeedsExtrabindFlags[arrayIndex] = Boolean.valueOf(result);
+        sNeedsExtrabindFlagsMap.put(serviceName, Boolean.valueOf(result));
         return result;
     }
 
