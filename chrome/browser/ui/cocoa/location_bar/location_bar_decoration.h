@@ -170,6 +170,9 @@ class LocationBarDecoration {
   static const SkColor kMaterialDarkModeTextColor;
 
  protected:
+  // Returns the amount of padding between the divider and the label text.
+  virtual CGFloat DividerPadding() const;
+
   // Gets the color used to draw the Material Design icon. The default
   // implementation satisfies most cases - few subclasses should need to
   // override.
@@ -180,8 +183,11 @@ class LocationBarDecoration {
   // decorations are assigned their icon (vs. creating it themselves).
   virtual const gfx::VectorIcon* GetMaterialVectorIcon() const;
 
-  // Gets the color used for the divider. Only used in Material design.
-  NSColor* GetDividerColor(bool location_bar_is_dark) const;
+  // Draws the decoration's vertical divider. Assumes already lock focused on
+  // the control_view.
+  void DrawDivider(NSView* control_view,
+                   NSRect decoration_frame,
+                   CGFloat alpha) const;
 
  private:
   // Called when the state of the decoration is updated.

@@ -23,9 +23,6 @@ const CGFloat kLeftSidePadding = 5.0;
 // Padding between the icon/label and bubble edges.
 const CGFloat kBubblePadding = 7.0;
 
-// Additional padding between the divider and the label.
-const CGFloat kDividerPadding = 6.0;
-
 // Padding between the icon and label.
 const CGFloat kIconLabelPadding = 4.0;
 
@@ -47,10 +44,6 @@ BubbleDecoration::BubbleDecoration() : retina_baseline_offset_(0) {
 }
 
 BubbleDecoration::~BubbleDecoration() {
-}
-
-CGFloat BubbleDecoration::DividerPadding() const {
-  return kDividerPadding;
 }
 
 CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
@@ -107,12 +100,13 @@ CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
 
 NSRect BubbleDecoration::GetBackgroundFrame(NSRect frame) {
   NSRect background_frame = NSInsetRect(frame, 0.0, kBackgroundFrameYInset);
+  const CGFloat divider_padding = DividerPadding();
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-    background_frame.origin.x += kDividerPadding;
-    background_frame.size.width -= kDividerPadding + kBackgroundFrameLeftMargin;
+    background_frame.origin.x += divider_padding;
+    background_frame.size.width -= divider_padding + kBackgroundFrameLeftMargin;
   } else {
     background_frame.origin.x += kBackgroundFrameLeftMargin;
-    background_frame.size.width -= kDividerPadding;
+    background_frame.size.width -= divider_padding;
   }
   return background_frame;
 }
@@ -137,20 +131,11 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
       text_left_offset = NSMaxX(image_rect) + kIconLabelPadding;
   }
 
-  // Draw the divider and set the text color.
-  NSBezierPath* line = [NSBezierPath bezierPath];
-  const CGFloat divider_x_position =
-      is_rtl ? NSMinX(decoration_frame) + DividerPadding()
-             : NSMaxX(decoration_frame) - DividerPadding();
+  // Draw the divider.
+  DrawDivider(control_view, decoration_frame, 1.0);
 
-  [line setLineWidth:1];
-  [line moveToPoint:NSMakePoint(divider_x_position, NSMinY(decoration_frame))];
-  [line lineToPoint:NSMakePoint(divider_x_position, NSMaxY(decoration_frame))];
-
+  // Set the text color.
   bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
-  [GetDividerColor(in_dark_mode) set];
-  [line stroke];
-
   NSColor* text_color =
       in_dark_mode ? GetDarkModeTextColor() : GetBackgroundBorderColor();
   SetTextColor(text_color);

@@ -32,9 +32,6 @@ namespace {
 // Padding between the label and icon/divider.
 CGFloat kLabelPadding = 4.0;
 
-// Divider height.
-CGFloat kDividerHeight = 16.0;
-
 // Inset for the background.
 const CGFloat kBackgroundYInset = 4.0;
 
@@ -235,37 +232,7 @@ void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
 
     // Draw the divider.
     if (state() == DecorationMouseState::NONE && !active()) {
-      NSBezierPath* line = [NSBezierPath bezierPath];
-      [line setLineWidth:line_width];
-      NSPoint divider_origin = NSZeroPoint;
-      divider_origin.x = is_rtl ? NSMinX(decoration_frame) + DividerPadding()
-                                : NSMaxX(decoration_frame) - DividerPadding();
-      // Screen pixels lay between integral coordinates in user space. If you
-      // draw a line from (16, 16) to (16, 32), Core Graphics maps that line to
-      // the pixels that lay along x=16.5. In order to achieve a line that
-      // appears to lay along x=16, CG will perform dithering. To get a crisp
-      // line, you have to specify x=16.5, so translating by 1/2 the 1-pixel
-      // line width creates the crisp line we want. We subtract to better center
-      // the line between the label and URL.
-      divider_origin.x -= line_width / 2.;
-      CGFloat divider_y_frame_offset =
-          (NSHeight(decoration_frame) - kDividerHeight) / 2.0;
-      divider_origin.y = NSMinY(decoration_frame) + divider_y_frame_offset;
-      // Adjust the divider origin by 1/2 a point to visually center the
-      // divider vertically on Retina.
-      if (line_width < 1) {
-        divider_origin.y -= 0.5;
-      }
-      [line moveToPoint:divider_origin];
-      [line relativeLineToPoint:NSMakePoint(0, kDividerHeight)];
-
-      NSColor* divider_color = GetDividerColor(in_dark_mode);
-      CGFloat divider_alpha =
-          [divider_color alphaComponent] * GetAnimationProgress();
-      divider_color = [divider_color colorWithAlphaComponent:divider_alpha];
-      [divider_color set];
-      [line stroke];
-
+      DrawDivider(control_view, decoration_frame, GetAnimationProgress());
       focus_ring_right_inset_ = DividerPadding() + line_width;
     } else {
       // When mouse-hovered, the divider isn't drawn, but the padding for it is
