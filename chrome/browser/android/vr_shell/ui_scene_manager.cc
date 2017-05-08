@@ -33,6 +33,12 @@ static constexpr float kContentVerticalOffset = -0.26;
 static constexpr float kBackplaneSize = 1000.0;
 static constexpr float kBackgroundDistanceMultiplier = 1.414;
 
+static constexpr float kFullscreenWidth = 2.88;
+static constexpr float kFullscreenHeight = 1.62;
+static constexpr float kFullscreenDistance = 3;
+static constexpr float kFullscreenVerticalOffset = -0.26;
+static constexpr vr::Colorf kFullscreenBackgroundColor = {0.1, 0.1, 0.1, 1.0};
+
 static constexpr float kSceneSize = 25.0;
 static constexpr float kSceneHeight = 4.0;
 static constexpr int kFloorGridlineCount = 40;
@@ -217,6 +223,33 @@ void UiSceneManager::OnAppButtonClicked() {
   content_rendering_enabled_ = !content_rendering_enabled_;
   scene_->SetWebVrRenderingEnabled(content_rendering_enabled_);
   browser_->OnContentPaused(!content_rendering_enabled_);
+}
+
+void UiSceneManager::OnFullscreenChanged(bool fullscreen) {
+  // Make all VR scene UI elements visible if not in WebVR or fullscreen.
+  for (UiElement* element : browser_ui_elements_) {
+    element->set_visible(!fullscreen);
+  }
+
+  // Show the content quad in full screen.
+  if (fullscreen) {
+    scene_->SetBackgroundColor(kFullscreenBackgroundColor);
+    main_content_->set_visible(true);
+    main_content_->set_translation(
+        {0, kFullscreenVerticalOffset, -kFullscreenDistance});
+    main_content_->set_size({kFullscreenWidth, kFullscreenHeight, 1});
+
+    // TODO(http://crbug.com/642937): Animate fullscreen transitions.
+  } else {
+    scene_->SetBackgroundColor(kBackgroundHorizonColor);
+    // Note that main_content_ is already visible in this case.
+    main_content_->set_translation(
+        {0, kContentVerticalOffset, -kContentDistance});
+    main_content_->set_size({kContentWidth, kContentHeight, 1});
+  }
+
+  scene_->SetBackgroundDistance(main_content_->translation().z() *
+                                -kBackgroundDistanceMultiplier);
 }
 
 void UiSceneManager::ConfigureSecurityWarnings() {

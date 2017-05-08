@@ -30,6 +30,7 @@ class UiSceneManager {
 
   void OnAppButtonClicked();
   void OnUrlChange(const GURL& gurl);
+  void OnFullscreenChanged(bool fullscreen);
 
  private:
   void CreateSecurityWarnings();

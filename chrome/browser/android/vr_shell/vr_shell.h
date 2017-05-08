@@ -94,6 +94,7 @@ class VrShell : public device::PresentingGvrDelegate,
                     bool enabled);
   bool GetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj);
+  void OnFullscreenChanged(bool enabled);
   void OnLoadProgressChanged(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              double progress);

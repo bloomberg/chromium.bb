@@ -275,6 +275,14 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                                      gl_thread_->GetSceneManager(), enabled));
 }
 
+void VrShell::OnFullscreenChanged(bool enabled) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_onFullscreenChanged(env, j_vr_shell_.obj(), enabled);
+
+  PostToGlThreadWhenReady(base::Bind(&UiSceneManager::OnFullscreenChanged,
+                                     gl_thread_->GetSceneManager(), enabled));
+}
+
 bool VrShell::GetWebVrMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return webvr_mode_;
 }
