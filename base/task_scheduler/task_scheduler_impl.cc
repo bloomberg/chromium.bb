@@ -6,11 +6,10 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -65,17 +64,12 @@ TaskSchedulerImpl::TaskSchedulerImpl(StringPiece name)
       arraysize(kEnvironmentParams) == ENVIRONMENT_COUNT,
       "The size of |kEnvironmentParams| must match ENVIRONMENT_COUNT.");
 
-  // Callback invoked by workers to re-enqueue a sequence in the appropriate
-  // PriorityQueue.
-  const auto reenqueue_sequence_callback = BindRepeating(
-      &TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
-
   for (int environment_type = 0; environment_type < ENVIRONMENT_COUNT;
        ++environment_type) {
     worker_pools_[environment_type] = MakeUnique<SchedulerWorkerPoolImpl>(
         name_ + kEnvironmentParams[environment_type].name_suffix,
-        kEnvironmentParams[environment_type].priority_hint,
-        reenqueue_sequence_callback, &task_tracker_, &delayed_task_manager_);
+        kEnvironmentParams[environment_type].priority_hint, &task_tracker_,
+        &delayed_task_manager_);
   }
 }
 
@@ -207,22 +201,6 @@ void TaskSchedulerImpl::JoinForTesting() {
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(
     const TaskTraits& traits) const {
   return worker_pools_[GetEnvironmentIndexForTraits(traits)].get();
-}
-
-void TaskSchedulerImpl::ReEnqueueSequenceCallback(
-    scoped_refptr<Sequence> sequence) {
-  DCHECK(sequence);
-
-  const SequenceSortKey sort_key = sequence->GetSortKey();
-
-  // The next task in |sequence| should run in a worker pool suited for its
-  // traits, except for the priority which is adjusted to the highest priority
-  // in |sequence|.
-  const TaskTraits traits =
-      sequence->PeekTaskTraits().WithPriority(sort_key.priority());
-
-  GetWorkerPoolForTraits(traits)->ReEnqueueSequence(std::move(sequence),
-                                                    sort_key);
 }
 
 }  // namespace internal
