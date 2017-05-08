@@ -42,6 +42,9 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
     // If nonzero, then we have registered a surface with this ID.
     private int mSurfaceId;
 
+    // Has close() been run yet?
+    private boolean mClosed;
+
     /**
      * @param client Mojo client interface.
      * @param config initial overlay configuration.
@@ -80,6 +83,10 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
     @Override
     public void close() {
         ThreadUtils.assertOnUiThread();
+
+        if (mClosed) return;
+
+        mClosed = true;
 
         // TODO(liberato): verify that this actually works, else add an explicit shutdown and hope
         // that the client calls it.

@@ -54,6 +54,8 @@ public class DialogOverlayImplTest extends ContentShellTestBase {
         public static final int CONNECTION_ERROR = 2;
         // AndroidOverlayProviderImpl.Callbacks
         public static final int RELEASED = 100;
+        // Internal to test only.
+        public static final int TEST_MARKER = 200;
 
         /**
          * Records one callback event.
@@ -107,6 +109,11 @@ public class DialogOverlayImplTest extends ContentShellTestBase {
         // thread, and it's convenient for us to keep track of it here.
         public void notifyReleased() {
             mPending.add(new Event(RELEASED));
+        }
+
+        // Inject a marker event, so that the test can checkpoint things.
+        public void injectMarkerEvent() {
+            mPending.add(new Event(TEST_MARKER));
         }
 
         // Wait for something to happen.  We enforce a timeout, since the test harness doesn't
@@ -260,5 +267,29 @@ public class DialogOverlayImplTest extends ContentShellTestBase {
         Client.Event event = mClient.nextEvent();
         Assert.assertEquals(Client.SURFACE_READY, event.which);
         Assert.assertTrue(event.surfaceKey > 0);
+    }
+
+    @SmallTest
+    @Feature({"AndroidOverlay"})
+    public void testCloseOnlyClosesOnce() {
+        // Test that trying to close an overlay more than once doesn't actually do anything.
+        final DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
+        // The first should generate RELEASED
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                overlay.close();
+            }
+        });
+        Assert.assertEquals(Client.RELEASED, mClient.nextEvent().which);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                overlay.close();
+                mClient.injectMarkerEvent();
+            }
+        });
+        Assert.assertEquals(Client.TEST_MARKER, mClient.nextEvent().which);
     }
 }
