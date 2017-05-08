@@ -27,8 +27,6 @@
 
 #include "platform/graphics/Pattern.h"
 
-#include <v8.h>
-
 #include "platform/graphics/ImagePattern.h"
 #include "platform/graphics/PaintRecordPattern.h"
 #include "platform/graphics/paint/PaintFlags.h"
@@ -49,13 +47,9 @@ PassRefPtr<Pattern> Pattern::CreatePaintRecordPattern(sk_sp<PaintRecord> record,
   return PaintRecordPattern::Create(std::move(record), repeat_mode);
 }
 
-Pattern::Pattern(RepeatMode repeat_mode, int64_t external_memory_allocated)
-    : repeat_mode_(repeat_mode), external_memory_allocated_(0) {
-  AdjustExternalMemoryAllocated(external_memory_allocated);
-}
+Pattern::Pattern(RepeatMode repeat_mode) : repeat_mode_(repeat_mode) {}
 
 Pattern::~Pattern() {
-  AdjustExternalMemoryAllocated(-external_memory_allocated_);
 }
 
 void Pattern::ApplyToFlags(PaintFlags& flags, const SkMatrix& local_matrix) {
@@ -67,14 +61,6 @@ void Pattern::ApplyToFlags(PaintFlags& flags, const SkMatrix& local_matrix) {
 
 bool Pattern::IsLocalMatrixChanged(const SkMatrix& local_matrix) const {
   return local_matrix != cached_shader_->getLocalMatrix();
-}
-
-void Pattern::AdjustExternalMemoryAllocated(int64_t delta) {
-  delta = std::max(-external_memory_allocated_, delta);
-
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(delta);
-
-  external_memory_allocated_ += delta;
 }
 
 }  // namespace blink
