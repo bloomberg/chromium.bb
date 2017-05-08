@@ -10,12 +10,9 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
-
-namespace base {
-class MessageLoop;
-}  // namespace base
 
 // A superclass for unit tests that involve running JavaScript.  This class
 // sets up V8 context and has methods that make it easy to execute scripts in
@@ -78,6 +75,8 @@ class V8UnitTest : public testing::Test {
   // Initializes paths and libraries.
   void InitPathsAndLibraries();
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   // Handle scope that is used throughout the life of this class.
   v8::HandleScope handle_scope_;
 
@@ -86,8 +85,6 @@ class V8UnitTest : public testing::Test {
 
   // User added libraries.
   std::vector<base::FilePath> user_libraries_;
-
-  std::unique_ptr<base::MessageLoop> loop_;
 };
 
 #endif  // CHROME_TEST_BASE_V8_UNIT_TEST_H_

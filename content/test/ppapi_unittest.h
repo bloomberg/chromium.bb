@@ -5,15 +5,10 @@
 #ifndef CONTENT_TEST_PPAPI_UNITTEST_H_
 #define CONTENT_TEST_PPAPI_UNITTEST_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace base {
-class MessageLoop;
-}
 
 namespace content {
 
@@ -42,11 +37,12 @@ class PpapiUnittest : public testing::Test {
   void SetViewSize(int width, int height) const;
 
  private:
-  // Note: module must be declared first since we want it to get destroyed last.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  // Note: module must be declared right after |scoped_task_environment_| since
+  // we want it to get destroyed just before |scoped_task_environment_|.
   scoped_refptr<PluginModule> module_;
   scoped_refptr<PepperPluginInstanceImpl> instance_;
-
-  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiUnittest);
 };

@@ -5,9 +5,9 @@
 #include "gin/test/file_runner.h"
 
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
@@ -59,7 +59,7 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
   std::string source;
   ASSERT_TRUE(ReadFileToString(path, &source));
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
