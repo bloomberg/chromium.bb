@@ -47,7 +47,7 @@ Print(c[-1].GroupByPath(depth=2).Sorted())
 # For even more inspiration, look at canned_queries.py
 # (and feel free to add your own!).
 Metadata:
-    elf_arch=ARM
+    elf_arch=arm
     elf_build_id=WhatAnAmazingBuildId
     elf_file_name=elf
     elf_mtime={redacted}
