@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -16,16 +17,13 @@
 namespace gcm {
 
 // Messages delivered through GCM may be encrypted according to the IETF Web
-// Push protocol, as described in draft-ietf-webpush-encryption:
+// Push protocol. We support the third draft of ietf-webpush-encryption:
 //
-// https://tools.ietf.org/html/draft-ietf-webpush-encryption
+// https://tools.ietf.org/html/draft-ietf-webpush-encryption-03
 //
 // This class implements the ability to encrypt or decrypt such messages using
 // AEAD_AES_128_GCM with a 16-octet authentication tag. The encrypted payload
-// will be stored in a single record as described in
-// draft-thomson-http-encryption:
-//
-// https://tools.ietf.org/html/draft-thomson-http-encryption
+// will be stored in a single record.
 //
 // Note that while this class is not responsible for creating or storing the
 // actual keys, it uses a key derivation function for the actual message
@@ -37,82 +35,122 @@ class GCMMessageCryptographer {
   // unique content encryption key for a given message.
   static const size_t kSaltSize;
 
-  // Creates a new cryptographer, identifying the group used for the key
-  // agreement, and the public keys of both the recipient and sender.
-  GCMMessageCryptographer(const base::StringPiece& recipient_public_key,
-                          const base::StringPiece& sender_public_key,
-                          const std::string& auth_secret);
+  // Version of the encryption scheme desired by the consumer.
+  enum class Version {
+    // https://tools.ietf.org/html/draft-ietf-webpush-encryption-03
+    DRAFT_03
 
+    // TODO(peter): Add support for ietf-webpush-encryption-08.
+  };
+
+  // Interface that different versions of the encryption scheme must implement.
+  class EncryptionScheme {
+   public:
+    virtual ~EncryptionScheme() {}
+
+    // Type of encoding to produce in GenerateInfoForContentEncoding().
+    enum class EncodingType { CONTENT_ENCRYPTION_KEY, NONCE };
+
+    // Derives the pseudo random key (PRK) to use for deriving the content
+    // encryption key and the nonce.
+    virtual std::string DerivePseudoRandomKey(
+        const base::StringPiece& ecdh_shared_secret,
+        const base::StringPiece& auth_secret) = 0;
+
+    // Generates the info string used for generating the content encryption key
+    // and the nonce used for the cryptographic transformation.
+    virtual std::string GenerateInfoForContentEncoding(
+        EncodingType type,
+        const base::StringPiece& recipient_public_key,
+        const base::StringPiece& sender_public_key) = 0;
+
+    // Creates an encryption record to contain the given |plaintext|.
+    virtual std::string CreateRecord(const base::StringPiece& plaintext) = 0;
+
+    // Verifies that the padding included in |record| is valid and removes it
+    // from the StringPiece. Returns whether the padding was valid.
+    virtual bool ValidateAndRemovePadding(base::StringPiece& record) = 0;
+  };
+
+  // Creates a new cryptographer for |version| of the encryption scheme.
+  explicit GCMMessageCryptographer(Version version);
   ~GCMMessageCryptographer();
 
-  // Encrypts |plaintext| using the |ikm| and the |salt|, both of which must be
-  // 16 octets in length. The |plaintext| will be written to a single record,
-  // and will include a 16 octet authentication tag. The encrypted result will
-  // be written to |ciphertext|, the record size to |record_size|. This
-  // implementation does not support prepending padding to the |plaintext|.
-  bool Encrypt(const base::StringPiece& plaintext,
-               const base::StringPiece& ikm,
+  // Encrypts the |plaintext| in accordance with the Web Push Encryption scheme
+  // this cryptographer represents, storing the result in |*record_size| and
+  // |*ciphertext|. Returns whether encryption was successful.
+  //
+  // |recipient_public_key|: Recipient's key as an uncompressed P-256 EC point.
+  // |sender_public_key|: Sender's key as an uncompressed P-256 EC point.
+  // |ecdh_shared_secret|: 32-byte shared secret between the key pairs.
+  // |auth_secret|: 16-byte prearranged secret between recipient and sender.
+  // |salt|: 16-byte cryptographically secure salt unique to the message.
+  // |plaintext|: The plaintext that is to be encrypted.
+  // |*record_size|: Out parameter in which the record size will be written.
+  // |*ciphertext|: Out parameter in which the ciphertext will be written.
+  bool Encrypt(const base::StringPiece& recipient_public_key,
+               const base::StringPiece& sender_public_key,
+               const base::StringPiece& ecdh_shared_secret,
+               const base::StringPiece& auth_secret,
                const base::StringPiece& salt,
+               const base::StringPiece& plaintext,
                size_t* record_size,
                std::string* ciphertext) const WARN_UNUSED_RESULT;
 
-  // Decrypts |ciphertext| using the |ikm| and the |salt|, both of which must be
-  // 16 octets in length. The result will be stored in |plaintext|. Note that
-  // there must only be a single record, per draft-thomson-http-encryption-01.
-  bool Decrypt(const base::StringPiece& ciphertext,
-               const base::StringPiece& ikm,
+  // Decrypts the |ciphertext| in accordance with the Web Push Encryption scheme
+  // this cryptographer represents, storing the result in |*plaintext|. Returns
+  // whether decryption was successful.
+  //
+  // |recipient_public_key|: Recipient's key as an uncompressed P-256 EC point.
+  // |sender_public_key|: Sender's key as an uncompressed P-256 EC point.
+  // |ecdh_shared_secret|: 32-byte shared secret between the key pairs.
+  // |auth_secret|: 16-byte prearranged secret between recipient and sender.
+  // |salt|: 16-byte cryptographically secure salt unique to the message.
+  // |ciphertext|: The ciphertext that is to be decrypted.
+  // |record_size|: Size of a single record. Must be larger than or equal to
+  //                len(plaintext) plus the ciphertext's overhead (18 bytes).
+  // |*plaintext|: Out parameter in which the plaintext will be written.
+  bool Decrypt(const base::StringPiece& recipient_public_key,
+               const base::StringPiece& sender_public_key,
+               const base::StringPiece& ecdh_shared_secret,
+               const base::StringPiece& auth_secret,
                const base::StringPiece& salt,
+               const base::StringPiece& ciphertext,
                size_t record_size,
                std::string* plaintext) const WARN_UNUSED_RESULT;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, AuthSecretAffectsIKM);
+  FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, AuthSecretAffectsPRK);
   FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, InvalidRecordPadding);
-  FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, NonceGeneration);
-  friend class GCMMessageCryptographerReferenceTest;
 
   // Size, in bytes, of the authentication tag included in the messages.
   static const size_t kAuthenticationTagBytes;
 
-  enum Mode { ENCRYPT, DECRYPT };
+  enum class Direction { ENCRYPT, DECRYPT };
 
-  // Private implementation of the encryption and decryption routines, provided
-  // by BoringSSL.
-  bool EncryptDecryptRecordInternal(Mode mode,
-                                    const base::StringPiece& input,
-                                    const base::StringPiece& key,
-                                    const base::StringPiece& nonce,
-                                    std::string* output) const;
+  // Derives the content encryption key from |ecdh_shared_secret| and |salt|.
+  std::string DeriveContentEncryptionKey(
+      const base::StringPiece& recipient_public_key,
+      const base::StringPiece& sender_public_key,
+      const base::StringPiece& ecdh_shared_secret,
+      const base::StringPiece& salt) const;
 
-  // Derives the pseuro random key (PRK) to use for deriving the content
-  // encryption key and the nonce. If |auth_secret_| is not the empty string,
-  // another HKDF will be invoked between the |key| and the |auth_secret_|.
-  std::string DerivePseudoRandomKey(const base::StringPiece& ikm) const;
-
-  // Derives the content encryption key from |prk| and |salt|.
-  std::string DeriveContentEncryptionKey(const base::StringPiece& prk,
-                                         const base::StringPiece& salt) const;
-
-  // Derives the nonce from |prk| and |salt|.
-  std::string DeriveNonce(const base::StringPiece& prk,
+  // Derives the nonce from |ecdh_shared_secret| and |salt|.
+  std::string DeriveNonce(const base::StringPiece& recipient_public_key,
+                          const base::StringPiece& sender_public_key,
+                          const base::StringPiece& ecdh_shared_secret,
                           const base::StringPiece& salt) const;
 
-  // The info parameters to the HKDFs used for deriving the content encryption
-  // key and the nonce. These contain the label of the used curve, as well as
-  // the sender and recipient's public keys.
-  std::string content_encryption_key_info_;
-  std::string nonce_info_;
+  // Private implementation of the encryption and decryption routines.
+  bool TransformRecord(Direction direction,
+                       const base::StringPiece& input,
+                       const base::StringPiece& key,
+                       const base::StringPiece& nonce,
+                       std::string* output) const;
 
-  // The pre-shared authentication secret associated with the subscription.
-  std::string auth_secret_;
-
-  // Whether an empty auth secret is acceptable when deriving the IKM. This only
-  // is the case when running tests against the reference vectors.
-  bool allow_empty_auth_secret_for_tests_ = false;
-
-  void set_allow_empty_auth_secret_for_tests(bool value) {
-    allow_empty_auth_secret_for_tests_ = value;
-  }
+  // Implementation of the encryption scheme. Set in the constructor depending
+  // on the version requested by the consumer.
+  std::unique_ptr<EncryptionScheme> encryption_scheme_;
 };
 
 }  // namespace gcm
