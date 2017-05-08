@@ -18,7 +18,7 @@
 class GURL;
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebURLLoader;
 }
 
@@ -30,7 +30,7 @@ class ResourceFetcherImpl : public ResourceFetcher {
   void SetMethod(const std::string& method) override;
   void SetBody(const std::string& body) override;
   void SetHeader(const std::string& header, const std::string& value) override;
-  void Start(blink::WebFrame* frame,
+  void Start(blink::WebLocalFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
              const Callback& callback) override;
   void SetTimeout(const base::TimeDelta& timeout) override;

@@ -29,7 +29,7 @@
 #include "mojo/public/js/constants.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
 using v8::Context;
@@ -109,7 +109,7 @@ scoped_refptr<base::RefCountedMemory> GetBuiltinModuleData(
 }
 
 std::string GetModulePrefixForBindingsType(MojoBindingsType bindings_type,
-                                           blink::WebFrame* frame) {
+                                           blink::WebLocalFrame* frame) {
   switch (bindings_type) {
     case MojoBindingsType::FOR_WEB_UI:
       return frame->GetSecurityOrigin().ToString().Utf8() + "/";
@@ -124,7 +124,7 @@ std::string GetModulePrefixForBindingsType(MojoBindingsType bindings_type,
 
 }  // namespace
 
-MojoContextState::MojoContextState(blink::WebFrame* frame,
+MojoContextState::MojoContextState(blink::WebLocalFrame* frame,
                                    v8::Local<v8::Context> context,
                                    MojoBindingsType bindings_type)
     : frame_(frame),

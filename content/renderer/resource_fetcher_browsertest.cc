@@ -26,7 +26,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using blink::WebFrame;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
 
@@ -149,7 +148,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   }
 
   void ResourceFetcherDownloadOnRenderer(const GURL& url) {
-    WebFrame* frame = GetRenderView()->GetWebView()->MainFrame();
+    blink::WebLocalFrame* frame =
+        GetRenderView()->GetWebView()->MainFrame()->ToWebLocalFrame();
 
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
@@ -165,7 +165,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   }
 
   void ResourceFetcher404OnRenderer(const GURL& url) {
-    WebFrame* frame = GetRenderView()->GetWebView()->MainFrame();
+    blink::WebLocalFrame* frame =
+        GetRenderView()->GetWebView()->MainFrame()->ToWebLocalFrame();
 
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
@@ -179,7 +180,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   }
 
   void ResourceFetcherDidFailOnRenderer() {
-    WebFrame* frame = GetRenderView()->GetWebView()->MainFrame();
+    blink::WebLocalFrame* frame =
+        GetRenderView()->GetWebView()->MainFrame()->ToWebLocalFrame();
 
     // Try to fetch a page on a site that doesn't exist.
     GURL url("http://localhost:1339/doesnotexist");
@@ -199,7 +201,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   }
 
   void ResourceFetcherTimeoutOnRenderer(const GURL& url) {
-    WebFrame* frame = GetRenderView()->GetWebView()->MainFrame();
+    blink::WebLocalFrame* frame =
+        GetRenderView()->GetWebView()->MainFrame()->ToWebLocalFrame();
 
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
@@ -218,7 +221,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   }
 
   void ResourceFetcherDeletedInCallbackOnRenderer(const GURL& url) {
-    WebFrame* frame = GetRenderView()->GetWebView()->MainFrame();
+    blink::WebLocalFrame* frame =
+        GetRenderView()->GetWebView()->MainFrame()->ToWebLocalFrame();
 
     std::unique_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
@@ -234,7 +238,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   void ResourceFetcherPost(const GURL& url) {
     const char* kBody = "Really nifty POST body!";
 
-    WebFrame* frame = GetRenderView()->GetWebView()->MainFrame();
+    blink::WebLocalFrame* frame =
+        GetRenderView()->GetWebView()->MainFrame()->ToWebLocalFrame();
 
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
@@ -252,7 +257,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
   void ResourceFetcherSetHeader(const GURL& url) {
     const char* kHeader = "Rather boring header.";
 
-    WebFrame* frame = GetRenderView()->GetWebView()->MainFrame();
+    blink::WebLocalFrame* frame =
+        GetRenderView()->GetWebView()->MainFrame()->ToWebLocalFrame();
 
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
