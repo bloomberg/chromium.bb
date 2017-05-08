@@ -3131,7 +3131,6 @@ void LayoutBlockFlow::MoveAllChildrenIncludingFloatsTo(
     LayoutBlock* to_block,
     bool full_remove_insert) {
   LayoutBlockFlow* to_block_flow = ToLayoutBlockFlow(to_block);
-  MoveAllChildrenTo(to_block_flow, full_remove_insert);
 
   // When a portion of the layout tree is being detached, anonymous blocks
   // will be combined as their children are deleted. In this process, the
@@ -3169,6 +3168,7 @@ void LayoutBlockFlow::MoveAllChildrenIncludingFloatsTo(
       to_block_flow->floating_objects_->Add(floating_object.UnsafeClone());
     }
   }
+  MoveAllChildrenTo(to_block_flow, full_remove_insert);
 }
 
 void LayoutBlockFlow::ChildBecameFloatingOrOutOfFlow(LayoutBox* child) {
