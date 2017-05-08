@@ -315,11 +315,18 @@
         flex: auto;
       }
 
+      /* For grouping elements with common flex options. */
       .settings-row {
         align-items: center;
         display: flex;
         flex-direction: row;
         max-width: 100%;
+        min-width: 0;  /* Workaround for text elision in sub-elements. */
+      }
+
+      /* Expand to fill-up available space. */
+      .settings-row.wide {
+        flex: 1;
       }
 
       .no-outline,
