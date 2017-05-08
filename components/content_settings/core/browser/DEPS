@@ -8,4 +8,5 @@ include_rules = [
   "+extensions/features",
   "+net/base",
   "+net/cookies",
+  "+services/preferences/public",
 ]

@@ -28,6 +28,8 @@
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "services/preferences/public/cpp/dictionary_value_update.h"
+#include "services/preferences/public/cpp/scoped_pref_update.h"
 
 namespace content_settings {
 
@@ -252,11 +254,11 @@ void PrefProvider::DiscardObsoletePreferences() {
     if (!prefs_->GetDictionary(info->pref_name()))
       continue;
 
-    DictionaryPrefUpdate update(prefs_, info->pref_name());
-    base::DictionaryValue* all_settings = update.Get();
+    prefs::ScopedDictionaryPrefUpdate update(prefs_, info->pref_name());
+    auto all_settings = update.Get();
     std::vector<std::string> values_to_clean;
-    for (base::DictionaryValue::Iterator i(*all_settings); !i.IsAtEnd();
-         i.Advance()) {
+    for (base::DictionaryValue::Iterator i(*all_settings->AsConstDictionary());
+         !i.IsAtEnd(); i.Advance()) {
       const base::DictionaryValue* pattern_settings = nullptr;
       bool is_dictionary = i.value().GetAsDictionary(&pattern_settings);
       DCHECK(is_dictionary);
@@ -265,7 +267,7 @@ void PrefProvider::DiscardObsoletePreferences() {
     }
 
     for (const std::string& key : values_to_clean) {
-      base::DictionaryValue* pattern_settings = nullptr;
+      std::unique_ptr<prefs::DictionaryValueUpdate> pattern_settings;
       all_settings->GetDictionaryWithoutPathExpansion(key, &pattern_settings);
       pattern_settings->RemoveWithoutPathExpansion(kObsoleteLastUsed, nullptr);
       if (pattern_settings->empty())
