@@ -426,6 +426,12 @@ void RenderWidgetHostViewMac::AcceleratedWidgetGetVSyncParameters(
 }
 
 void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted() {
+  // Set the background color for the root layer from the frame that just
+  // swapped. See RenderWidgetHostViewAura for more details. Note that this is
+  // done only after the swap has completed, so that the background is not set
+  // before the frame is up.
+  UpdateBackgroundColorFromRenderer(last_frame_root_background_color_);
+
   if (display_link_)
     display_link_->NotifyCurrentTime(base::TimeTicks::Now());
 }
@@ -1423,10 +1429,7 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
-  // Override the compositor background color. See RenderWidgetHostViewAura
-  // for more details.
-  UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
-
+  last_frame_root_background_color_ = frame.metadata.root_background_color;
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
 
   page_at_minimum_scale_ =

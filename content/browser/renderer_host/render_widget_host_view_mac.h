@@ -556,6 +556,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The background color of the web content. This color will be drawn when the
   // web content is not able to draw in time.
   SkColor background_color_ = SK_ColorTRANSPARENT;
+  SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
