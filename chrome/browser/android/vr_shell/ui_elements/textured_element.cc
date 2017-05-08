@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
 
+#include "base/trace_event/trace_event.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
@@ -17,6 +18,7 @@ TexturedElement::TexturedElement(int maximum_width)
 TexturedElement::~TexturedElement() = default;
 
 void TexturedElement::Initialize() {
+  TRACE_EVENT0("gpu", "TexturedElement::Initialize");
   glGenTextures(1, &texture_handle_);
   DCHECK(GetTexture() != nullptr);
   texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
