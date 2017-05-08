@@ -3457,7 +3457,8 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
   if (!overlay_resource_pool_) {
     overlay_resource_pool_ = ResourcePool::CreateForGpuMemoryBufferResources(
         resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
-        gfx::BufferUsage::SCANOUT, base::TimeDelta::FromSeconds(3));
+        gfx::BufferUsage::SCANOUT, base::TimeDelta::FromSeconds(3),
+        settings_->disallow_non_exact_resource_reuse);
   }
 
   Resource* resource = nullptr;

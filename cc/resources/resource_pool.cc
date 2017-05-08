@@ -24,8 +24,39 @@ using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
 
 namespace cc {
+namespace {
+bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
+                                   const gfx::Size& actual_size,
+                                   bool disallow_non_exact_reuse) {
+  const float kReuseThreshold = 2.0f;
+
+  if (disallow_non_exact_reuse)
+    return requested_size == actual_size;
+
+  // Allocating new resources is expensive, and we'd like to re-use our
+  // existing ones within reason. Allow a larger resource to be used for a
+  // smaller request.
+  if (actual_size.width() < requested_size.width() ||
+      actual_size.height() < requested_size.height())
+    return false;
+
+  // GetArea will crash on overflow, however all sizes in use are tile sizes.
+  // These are capped at ResourceProvider::max_texture_size(), and will not
+  // overflow.
+  float actual_area = actual_size.GetArea();
+  float requested_area = requested_size.GetArea();
+  // Don't use a resource that is more than |kReuseThreshold| times the
+  // requested pixel area, as we want to free unnecessarily large resources.
+  if (actual_area / requested_area > kReuseThreshold)
+    return false;
+
+  return true;
+}
+
+}  // namespace
+
 base::TimeDelta ResourcePool::kDefaultExpirationDelay =
-    base::TimeDelta::FromSeconds(1);
+    base::TimeDelta::FromSeconds(5);
 
 void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
@@ -56,12 +87,14 @@ void ResourcePool::PoolResource::OnMemoryDump(
 ResourcePool::ResourcePool(ResourceProvider* resource_provider,
                            base::SingleThreadTaskRunner* task_runner,
                            gfx::BufferUsage usage,
-                           const base::TimeDelta& expiration_delay)
+                           const base::TimeDelta& expiration_delay,
+                           bool disallow_non_exact_reuse)
     : resource_provider_(resource_provider),
       use_gpu_memory_buffers_(true),
       usage_(usage),
       task_runner_(task_runner),
       resource_expiration_delay_(expiration_delay),
+      disallow_non_exact_reuse_(disallow_non_exact_reuse),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
@@ -73,12 +106,14 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
 ResourcePool::ResourcePool(ResourceProvider* resource_provider,
                            base::SingleThreadTaskRunner* task_runner,
                            ResourceProvider::TextureHint hint,
-                           const base::TimeDelta& expiration_delay)
+                           const base::TimeDelta& expiration_delay,
+                           bool disallow_non_exact_reuse)
     : resource_provider_(resource_provider),
       use_gpu_memory_buffers_(false),
       hint_(hint),
       task_runner_(task_runner),
       resource_expiration_delay_(expiration_delay),
+      disallow_non_exact_reuse_(disallow_non_exact_reuse),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
@@ -119,7 +154,8 @@ Resource* ResourcePool::ReuseResource(const gfx::Size& size,
 
     if (resource->format() != format)
       continue;
-    if (resource->size() != size)
+    if (!ResourceMeetsSizeRequirements(size, resource->size(),
+                                       disallow_non_exact_reuse_))
       continue;
     if (resource->color_space() != color_space)
       continue;

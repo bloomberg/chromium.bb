@@ -139,7 +139,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
   // Create resource pool.
   *resource_pool =
       ResourcePool::Create(resource_provider, task_runner, texture_hint_,
-                           ResourcePool::kDefaultExpirationDelay);
+                           ResourcePool::kDefaultExpirationDelay, false);
 
   switch (raster_buffer_provider_type_) {
     case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
