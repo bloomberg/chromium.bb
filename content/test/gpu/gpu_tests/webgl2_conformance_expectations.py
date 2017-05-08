@@ -71,8 +71,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia', 'd3d11'], bug=631317)
-    self.Flaky('deqp/functional/gles3/texturefiltering/cube_combinations_*',
-        ['win', 'nvidia'], bug=712739)
     self.Fail('conformance2/rendering/' +
         'draw-with-integer-texture-base-level.html',
         ['win', 'nvidia', 'd3d11'], bug=679639)
