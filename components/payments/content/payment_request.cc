@@ -99,6 +99,14 @@ void PaymentRequest::Show() {
     return;
   }
 
+  // A tab can display only one PaymentRequest UI at a time.
+  if (!manager_->CanShow(this)) {
+    LOG(ERROR) << "A PaymentRequest UI is already showing";
+    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+    OnConnectionTerminated();
+    return;
+  }
+
   if (!state_->AreRequestedMethodsSupported()) {
     client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED);
     if (observer_for_testing_)

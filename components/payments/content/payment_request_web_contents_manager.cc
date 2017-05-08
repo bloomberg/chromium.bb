@@ -40,10 +40,24 @@ void PaymentRequestWebContentsManager::CreatePaymentRequest(
 }
 
 void PaymentRequestWebContentsManager::DestroyRequest(PaymentRequest* request) {
+  if (request == showing_)
+    showing_ = nullptr;
   payment_requests_.erase(request);
 }
 
+bool PaymentRequestWebContentsManager::CanShow(PaymentRequest* request) {
+  DCHECK(request);
+  DCHECK(payment_requests_.find(request) != payment_requests_.end());
+  if (!showing_) {
+    showing_ = request;
+    return true;
+  } else {
+    return false;
+  }
+}
+
 PaymentRequestWebContentsManager::PaymentRequestWebContentsManager(
-    content::WebContents* web_contents) {}
+    content::WebContents* web_contents)
+    : showing_(nullptr) {}
 
 }  // namespace payments
