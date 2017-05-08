@@ -636,8 +636,7 @@ void RootWindowController::InitTouchHuds() {
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {
-  return WmWindow::GetAuraWindow(
-      wm::GetWindowForFullscreenMode(WmWindow::Get(GetRootWindow())));
+  return wm::GetWindowForFullscreenMode(GetRootWindow());
 }
 
 void RootWindowController::ActivateKeyboard(
@@ -800,7 +799,8 @@ void RootWindowController::InitLayoutManagers() {
   root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
   root->SetLayoutManager(base::WrapUnique(root_window_layout_manager_));
 
-  WmWindow* default_container = GetWmContainer(kShellWindowId_DefaultContainer);
+  aura::Window* default_container =
+      GetContainer(kShellWindowId_DefaultContainer);
   // Installs WorkspaceLayoutManager on |default_container|.
   workspace_controller_.reset(new WorkspaceController(default_container));
 

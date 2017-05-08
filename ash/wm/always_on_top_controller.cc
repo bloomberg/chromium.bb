@@ -7,7 +7,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm_window.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
@@ -16,8 +15,8 @@ namespace ash {
 AlwaysOnTopController::AlwaysOnTopController(WmWindow* viewport)
     : always_on_top_container_(viewport) {
   DCHECK_NE(kShellWindowId_DefaultContainer, viewport->aura_window()->id());
-  always_on_top_container_->SetLayoutManager(
-      base::MakeUnique<WorkspaceLayoutManager>(viewport));
+  always_on_top_container_->aura_window()->SetLayoutManager(
+      new WorkspaceLayoutManager(viewport->aura_window()));
   // Container should be empty.
   DCHECK(always_on_top_container_->GetChildren().empty());
   always_on_top_container_->aura_window()->AddObserver(this);
@@ -39,12 +38,13 @@ WmWindow* AlwaysOnTopController::GetContainer(WmWindow* window) const {
 // TODO(rsadam@): Refactor so that this cast is unneeded.
 WorkspaceLayoutManager* AlwaysOnTopController::GetLayoutManager() const {
   return static_cast<WorkspaceLayoutManager*>(
-      always_on_top_container_->GetLayoutManager());
+      always_on_top_container_->aura_window()->layout_manager());
 }
 
 void AlwaysOnTopController::SetLayoutManagerForTest(
     std::unique_ptr<WorkspaceLayoutManager> layout_manager) {
-  always_on_top_container_->SetLayoutManager(std::move(layout_manager));
+  always_on_top_container_->aura_window()->SetLayoutManager(
+      layout_manager.release());
 }
 
 void AlwaysOnTopController::OnWindowHierarchyChanged(

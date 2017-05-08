@@ -1039,10 +1039,10 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) {
 }
 
 bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
-  const WmWindow* fullscreen_window = wm::GetWindowForFullscreenMode(
-      WmWindow::Get(shelf_widget_->GetNativeWindow()));
+  const aura::Window* fullscreen_window =
+      wm::GetWindowForFullscreenMode(shelf_widget_->GetNativeWindow());
   return fullscreen_window &&
-         fullscreen_window->GetWindowState()->hide_shelf_when_fullscreen();
+         wm::GetWindowState(fullscreen_window)->hide_shelf_when_fullscreen();
 }
 
 bool ShelfLayoutManager::IsShelfAutoHideForFullscreenMaximized() const {
