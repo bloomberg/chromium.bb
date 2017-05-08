@@ -281,7 +281,8 @@ external/wpt/fonts/math [ Skip ]
 external/wpt/html-longdesc [ Skip ]
 ## Owners: rijubrata.bhaumik@intel.com,mcasas@chromium.org
 # external/wpt/html-media-capture [ Pass ]
-external/wpt/http [ Skip ]
+## Owners: loading-dev@chromium.org
+# external/wpt/http [ Pass ]
 ## Owners: none; No tests in the directory.
 # external/wpt/images [ Pass ]
 external/wpt/imagebitmap-renderingcontext [ Skip ]
