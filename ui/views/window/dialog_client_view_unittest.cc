@@ -4,14 +4,16 @@
 
 #include "ui/views/window/dialog_client_view.h"
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/test/test_layout_provider.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
@@ -131,7 +133,8 @@ class DialogClientViewTest : public test::WidgetTest,
   }
 
   // Set a longer than normal Cancel label so that the minimum button width is
-  // exceeded.
+  // exceeded. The resulting width is around 160 pixels, but depends on system
+  // fonts.
   void SetLongCancelLabel() {
     cancel_label_ = base::ASCIIToUTF16("Cancel Cancel Cancel");
   }
@@ -360,9 +363,8 @@ TEST_F(DialogClientViewTest, MinMaxPreferredSize) {
 
 // Ensure button widths are linked under MD.
 TEST_F(DialogClientViewTest, LinkedWidths) {
-  ui::test::MaterialDesignControllerTestAPI md_test_api(
-      ui::MaterialDesignController::MATERIAL_NORMAL);
-  md_test_api.SetSecondaryUiMaterial(true);
+  test::TestLayoutProvider layout_provider;
+  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
   SetLongCancelLabel();
 
   SetDialogButtons(ui::DIALOG_BUTTON_OK);
@@ -372,6 +374,7 @@ TEST_F(DialogClientViewTest, LinkedWidths) {
   SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
   CheckContentsIsSetToPreferredSize();
   const int cancel_button_width = client_view()->cancel_button()->width();
+  EXPECT_LT(cancel_button_width, 200);
 
   // Ensure the single buttons have different preferred widths when alone, and
   // that the Cancel button is bigger (so that it dominates the size).
@@ -383,12 +386,14 @@ TEST_F(DialogClientViewTest, LinkedWidths) {
   // OK button should now match the bigger, cancel button.
   EXPECT_EQ(cancel_button_width, client_view()->ok_button()->width());
 
-  // But not under non-MD.
-  md_test_api.SetSecondaryUiMaterial(false);
+  // But not when the size of the cancel button exceeds the max linkable width.
+  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 100);
+  EXPECT_GT(cancel_button_width, 100);
+
   client_view()->UpdateDialogButtons();
   CheckContentsIsSetToPreferredSize();
   EXPECT_EQ(ok_button_only_width, client_view()->ok_button()->width());
-  md_test_api.SetSecondaryUiMaterial(true);
+  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
 
   // The extra view should also match, if it's a matching button type.
   LabelButton* extra_button = new LabelButton(nullptr, base::string16());

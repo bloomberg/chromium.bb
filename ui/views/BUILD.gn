@@ -711,6 +711,8 @@ static_library("test_support_internal") {
     "test/slider_test_api.h",
     "test/test_layout_manager.cc",
     "test/test_layout_manager.h",
+    "test/test_layout_provider.cc",
+    "test/test_layout_provider.h",
     "test/test_platform_native_widget.h",
     "test/test_views.cc",
     "test/test_views.h",

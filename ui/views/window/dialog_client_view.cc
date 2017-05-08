@@ -338,12 +338,13 @@ void DialogClientView::SetupLayout() {
     return;
 
   gfx::Insets insets = button_row_insets_;
+  LayoutProvider* const layout_provider = LayoutProvider::Get();
   // Support dialogs that clear |button_row_insets_| to do their own layout.
   // They expect GetDialogRelatedControlVerticalSpacing() in this case.
   // TODO(tapted): Remove this under Harmony.
   if (insets.top() == 0) {
-    const int top = LayoutProvider::Get()->GetDistanceMetric(
-        views::DISTANCE_RELATED_CONTROL_VERTICAL);
+    const int top =
+        layout_provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL);
     insets.Set(top, insets.left(), insets.bottom(), insets.right());
   }
 
@@ -355,11 +356,10 @@ void DialogClientView::SetupLayout() {
   // Button row is [ extra <pad+stretchy> second <pad> third ]. Ensure the <pad>
   // column is zero width if there isn't a button on either side.
   // GetExtraViewSpacing() handles <pad+stretchy>.
-  const int button_spacing =
-      (ok_button_ && cancel_button_)
-          ? LayoutProvider::Get()->GetDistanceMetric(
-                views::DISTANCE_RELATED_BUTTON_HORIZONTAL)
-          : 0;
+  const int button_spacing = (ok_button_ && cancel_button_)
+                                 ? layout_provider->GetDistanceMetric(
+                                       DISTANCE_RELATED_BUTTON_HORIZONTAL)
+                                 : 0;
 
   constexpr int kButtonRowId = 0;
   ColumnSet* column_set = layout->AddColumnSet(kButtonRowId);
@@ -392,18 +392,20 @@ void DialogClientView::SetupLayout() {
     }
   }
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    // If |views[0]| is non-null, it is a visible |extra_view_| and its column
-    // will be in |link[0]|. Skip that if it is not a button, or if it is a
-    // Checkbox (which extends LabelButton). Otherwise, link everything.
-    bool skip_first_link =
-        views[0] && (!CustomButton::AsCustomButton(views[0]) ||
-                     views[0]->GetClassName() == Checkbox::kViewClassName);
-    if (skip_first_link)
-      column_set->LinkColumnSizes(link[1], link[2], -1);
-    else
-      column_set->LinkColumnSizes(link[0], link[1], link[2], -1);
-  }
+  column_set->set_linked_column_size_limit(
+      layout_provider->GetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH));
+
+  // If |views[0]| is non-null, it is a visible |extra_view_| and its column
+  // will be in |link[0]|. Skip that if it is not a button, or if it is a
+  // Checkbox (which extends LabelButton). Otherwise, link everything.
+  bool skip_first_link =
+      views[0] && (!CustomButton::AsCustomButton(views[0]) ||
+                   views[0]->GetClassName() == Checkbox::kViewClassName);
+  if (skip_first_link)
+    column_set->LinkColumnSizes(link[1], link[2], -1);
+  else
+    column_set->LinkColumnSizes(link[0], link[1], link[2], -1);
+
   layout->AddPaddingRow(kFixed, insets.bottom());
 }
 

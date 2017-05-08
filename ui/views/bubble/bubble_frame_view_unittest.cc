@@ -14,6 +14,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/test/test_layout_provider.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -522,30 +523,12 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
 
-class TestLayoutProvider : public LayoutProvider {
- public:
-  TestLayoutProvider() : LayoutProvider() {}
-  ~TestLayoutProvider() override {}
-
-  // LayoutProvider:
-  int GetSnappedDialogWidth(int min_width) const override {
-    return snap_to_ ? snap_to_ : min_width;
-  }
-
-  void set_snap_to(int width) { snap_to_ = width; }
-
- private:
-  int snap_to_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLayoutProvider);
-};
-
 }  // namespace
 
 // This test ensures that if the installed LayoutProvider snaps dialog widths,
 // BubbleFrameView correctly sizes itself to that width.
 TEST_F(BubbleFrameViewTest, WidthSnaps) {
-  TestLayoutProvider provider;
+  test::TestLayoutProvider provider;
   TestBubbleDialogDelegateView delegate;
 
   Widget anchor;
@@ -564,7 +547,7 @@ TEST_F(BubbleFrameViewTest, WidthSnaps) {
   w0->CloseNow();
 
   constexpr int kTestWidth = 300;
-  provider.set_snap_to(kTestWidth);
+  provider.SetSnappedDialogWidth(kTestWidth);
 
   // The Widget's snapped width should exactly match the width returned by the
   // LayoutProvider.

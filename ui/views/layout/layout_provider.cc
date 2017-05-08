@@ -56,6 +56,10 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
 int LayoutProvider::GetDistanceMetric(int metric) const {
   DCHECK_GE(metric, VIEWS_INSETS_MAX);
   switch (metric) {
+    case DistanceMetric::DISTANCE_BUTTON_HORIZONTAL_PADDING:
+      return kButtonHorizontalPadding;
+    case DistanceMetric::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
+      return 0;
     case DistanceMetric::DISTANCE_CLOSE_BUTTON_MARGIN:
       return kCloseButtonMargin;
     case DistanceMetric::DISTANCE_RELATED_BUTTON_HORIZONTAL:
@@ -66,8 +70,6 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return kRelatedControlVerticalSpacing;
     case DistanceMetric::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH:
       return kDialogMinimumButtonWidth;
-    case DistanceMetric::DISTANCE_BUTTON_HORIZONTAL_PADDING:
-      return kButtonHorizontalPadding;
   }
   NOTREACHED();
   return 0;

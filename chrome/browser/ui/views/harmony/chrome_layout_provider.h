@@ -13,12 +13,8 @@
 #include "ui/views/layout/layout_provider.h"
 
 enum ChromeDistanceMetric {
-  // The maximum width a button can have and still influence the sizes of
-  // other linked buttons.  This allows short buttons to have linked widths
-  // without long buttons making things overly wide.
-  DISTANCE_BUTTON_MAX_LINKABLE_WIDTH = views::VIEWS_DISTANCE_END,
   // Default minimum width of a button.
-  DISTANCE_BUTTON_MINIMUM_WIDTH,
+  DISTANCE_BUTTON_MINIMUM_WIDTH = views::VIEWS_DISTANCE_END,
   // Vertical spacing between a list of multiple controls in one column.
   DISTANCE_CONTROL_LIST_VERTICAL,
   // Margin between the edge of a dialog and the left, right, or bottom of a

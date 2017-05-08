@@ -48,6 +48,10 @@ enum DistanceMetric {
 
   // The default padding to add on each side of a button's label.
   DISTANCE_BUTTON_HORIZONTAL_PADDING = VIEWS_DISTANCE_START,
+  // The maximum width a button can have and still influence the sizes of
+  // other linked buttons.  This allows short buttons to have linked widths
+  // without long buttons making things overly wide.
+  DISTANCE_BUTTON_MAX_LINKABLE_WIDTH,
   // The distance between a dialog's edge and the close button in the upper
   // trailing corner.
   DISTANCE_CLOSE_BUTTON_MARGIN,
