@@ -63937,6 +63937,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.ContextualSearchAllCapsResultsSeen"
     enum="ContextualSearchResultsSeen">
+  <obsolete>
+    Deprecated 05/2017 because it's no longer ever used.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -64578,6 +64581,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.ContextualSearchResultsSeenSelectionWasUrl"
     enum="ContextualSearchSeenByGesture">
+  <obsolete>
+    Deprecated 05/2017 because it's no longer ever used.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>

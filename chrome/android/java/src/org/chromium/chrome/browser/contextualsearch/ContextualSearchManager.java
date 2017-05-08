@@ -846,9 +846,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                     mContext.getEncoding(), surroundingText, startOffset, endOffset);
             notifyShowContextualSearch(selection);
         }
-        mSearchPanel.setWasSelectionPartOfUrl(
-                ContextualSearchSelectionController.isSelectionPartOfUrl(
-                        surroundingText, startOffset, endOffset));
     }
 
     /**
