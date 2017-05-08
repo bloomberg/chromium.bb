@@ -105,6 +105,10 @@ class SuggestionsServiceImpl : public SuggestionsService,
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, ClearBlacklist);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURL);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
+                           UndoBlacklistURLFailsIfNotInBlacklist);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
+                           UndoBlacklistURLFailsIfAlreadyCandidate);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
                            GetBlacklistedUrlBlacklistRequest);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, CheckDefaultTimeStamps);
