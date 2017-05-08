@@ -39,6 +39,7 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
@@ -2559,6 +2560,8 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     std::unique_ptr<net::URLRequest> blob_request(
         request_context->CreateRequest(blob_url, net::DEFAULT_PRIORITY,
                                        delegate.get()));
+    blob_request->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                               net::LOAD_DO_NOT_SEND_COOKIES);
 
     this->file_path_ = file_path;
     this->last_modified_ = last_modified;
