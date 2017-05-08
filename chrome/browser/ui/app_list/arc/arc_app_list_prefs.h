@@ -357,10 +357,11 @@ class ArcAppListPrefs
   void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
 
   // This checks if app is not registered yet and in this case creates
-  // non-launchable app entry.
-  void MaybeAddNonLaunchableApp(const base::Optional<std::string>& name,
-                                const std::string& package_name,
-                                const std::string& activity);
+  // non-launchable app entry. In case app is already registered then updates
+  // last launch time.
+  void HandleTaskCreated(const base::Optional<std::string>& name,
+                         const std::string& package_name,
+                         const std::string& activity);
 
   // Reveals first app from provided package in app launcher if package is newly
   // installed by user. If all apps in package are hidden then app list is not
