@@ -51,6 +51,8 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void GoBack();
   void Reload();
   void SetPrivilegedFullscreen(bool is_privileged);
+  void EnterActiveTabFullscreen();
+
   static const char kFullscreenMouseLockHTML[];
   FullscreenController* GetFullscreenController();
   ExclusiveAccessManager* GetExclusiveAccessManager();

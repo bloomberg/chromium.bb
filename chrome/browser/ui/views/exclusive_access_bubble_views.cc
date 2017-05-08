@@ -282,6 +282,23 @@ void ExclusiveAccessBubbleViews::Observe(
   UpdateMouseWatcher();
 }
 
+void ExclusiveAccessBubbleViews::OnWidgetDestroyed(views::Widget* widget) {
+  // Although SubtleNotificationView uses WIDGET_OWNS_NATIVE_WIDGET, a close can
+  // originate from the OS or some Chrome shutdown codepaths that bypass the
+  // destructor.
+  views::Widget* popup_on_stack = popup_;
+  DCHECK(popup_on_stack->HasObserver(this));
+
+  // Get ourselves destroyed. Calling ExitExclusiveAccess() won't work because
+  // the parent window might be destroyed as well, so asking it to exit
+  // fullscreen would be a bad idea.
+  bubble_view_context_->DestroyAnyExclusiveAccessBubble();
+
+  // Note: |this| is destroyed on the line above. Check that the destructor was
+  // invoked. This is safe to do since |popup_| is deleted via a posted task.
+  DCHECK(!popup_on_stack->HasObserver(this));
+}
+
 void ExclusiveAccessBubbleViews::OnWidgetVisibilityChanged(
     views::Widget* widget,
     bool visible) {

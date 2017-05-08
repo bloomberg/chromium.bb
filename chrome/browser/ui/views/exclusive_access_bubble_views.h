@@ -61,7 +61,7 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
   // Returns the root view containing |browser_view_|.
   views::View* GetBrowserRootView() const;
 
-  // ExclusiveAccessBubble overrides:
+  // ExclusiveAccessBubble:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
   gfx::Rect GetPopupRect(bool ignore_animation_state) const override;
@@ -73,12 +73,13 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
   bool IsAnimating() override;
   bool CanMouseTriggerSlideIn() const override;
 
-  // content::NotificationObserver override:
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // views::WidgetObserver override:
+  // views::WidgetObserver:
+  void OnWidgetDestroyed(views::Widget* widget) override;
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   // views::LinkListener override:

@@ -465,6 +465,7 @@ class BrowserView : public BrowserWindow,
   gfx::Rect GetClientAreaBoundsInScreen() const override;
   bool IsImmersiveModeEnabled() override;
   gfx::Rect GetTopContainerBoundsInScreen() override;
+  void DestroyAnyExclusiveAccessBubble() override;
 
   // extension::ExtensionKeybindingRegistry::Delegate overrides
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()

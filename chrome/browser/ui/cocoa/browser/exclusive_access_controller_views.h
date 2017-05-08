@@ -80,6 +80,7 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   gfx::Rect GetClientAreaBoundsInScreen() const override;
   bool IsImmersiveModeEnabled() override;
   gfx::Rect GetTopContainerBoundsInScreen() override;
+  void DestroyAnyExclusiveAccessBubble() override;
 
  private:
   BrowserWindow* GetBrowserWindow() const;
