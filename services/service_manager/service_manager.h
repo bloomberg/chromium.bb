@@ -135,7 +135,7 @@ class ServiceManager {
 
   Instance* CreateInstance(const Identity& source,
                            const Identity& target,
-                           const InterfaceProviderSpecMap& specs);
+                           InterfaceProviderSpecMap specs);
 
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);

@@ -24,7 +24,10 @@ using Name = std::string;
 struct InterfaceProviderSpec {
   InterfaceProviderSpec();
   InterfaceProviderSpec(const InterfaceProviderSpec& other);
+  InterfaceProviderSpec(InterfaceProviderSpec&& other);
   ~InterfaceProviderSpec();
+  InterfaceProviderSpec& operator=(const InterfaceProviderSpec& other);
+  InterfaceProviderSpec& operator=(InterfaceProviderSpec&& other);
   bool operator==(const InterfaceProviderSpec& other) const;
   bool operator<(const InterfaceProviderSpec& other) const;
   std::map<Capability, InterfaceSet> provides;

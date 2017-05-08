@@ -102,7 +102,7 @@ void LoadCatalogManifestIntoCache(const base::Value* root, EntryCache* cache) {
     auto entry = Entry::Deserialize(*manifest);
     if (entry) {
       if (!executable_path.empty())
-        entry->set_path(executable_path);
+        entry->set_path(std::move(executable_path));
       bool added = cache->AddRootEntry(std::move(entry));
       DCHECK(added);
     } else {
