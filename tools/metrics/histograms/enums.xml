@@ -16980,9 +16980,10 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="GeolocationSettingsDialogBackOff" type="int">
-  <int value="0" label="One week"/>
-  <int value="1" label="One month"/>
-  <int value="2" label="Three months"/>
+  <int value="0" label="No backoff"/>
+  <int value="1" label="One week"/>
+  <int value="2" label="One month"/>
+  <int value="3" label="Three months"/>
 </enum>
 
 <enum name="GeopositionErrorCode" type="int">
