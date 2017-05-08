@@ -2036,6 +2036,13 @@ public class ToolbarPhone extends ToolbarLayout
         return VisualState.NORMAL;
     }
 
+    /**
+     * @return The color that progress bar should use.
+     */
+    protected int getProgressBarColor() {
+        return getToolbarDataProvider().getPrimaryColor();
+    }
+
     protected void updateVisualsForToolbarState() {
         final boolean isIncognito = isIncognito();
 
@@ -2064,7 +2071,7 @@ public class ToolbarPhone extends ToolbarLayout
         boolean visualStateChanged = mVisualState != newVisualState;
 
         int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
-        int themeColorForProgressBar = currentPrimaryColor;
+        int themeColorForProgressBar = getProgressBarColor();
 
         // If The page is native force the use of the standard theme for the progress bar.
         if (getToolbarDataProvider() != null && getToolbarDataProvider().getTab() != null

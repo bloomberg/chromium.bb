@@ -1295,6 +1295,11 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
         super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, fullscreenManager);
+        // If the browser controls are at the bottom make sure to use theme colors for this layout
+        // specifically.
+        if (fullscreenManager.areBrowserControlsAtBottom()) {
+            for (LayoutTab t : mLayoutTabs) t.setForceDefaultThemeColor(false);
+        }
         assert mSceneLayer != null;
         mSceneLayer.pushLayers(getContext(), viewport, contentViewport, this, layerTitleCache,
                 tabContentManager, resourceManager, fullscreenManager);
