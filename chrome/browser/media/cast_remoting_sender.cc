@@ -501,6 +501,11 @@ bool CastRemotingSender::TrySendFrame(bool discard_data) {
 
   transport_->InsertFrame(ssrc_, remoting_frame);
 
+  // Start periodically sending RTCP report to receiver to prevent keepalive
+  // timeouts on receiver side during media pause.
+  if (is_first_frame_to_be_sent)
+    ScheduleNextRtcpReport();
+
   return true;
 }
 
@@ -548,6 +553,32 @@ void CastRemotingSender::SendFrameEvents() {
       base::BindOnce(&CastRemotingSender::SendFrameEvents,
                      weak_factory_.GetWeakPtr()),
       logging_flush_interval_);
+}
+
+void CastRemotingSender::ScheduleNextRtcpReport() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&CastRemotingSender::SendRtcpReport,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(media::cast::kRtcpReportIntervalMs));
+}
+
+void CastRemotingSender::SendRtcpReport() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!last_send_time_.is_null());
+
+  const base::TimeTicks now = clock_->NowTicks();
+  const base::TimeDelta time_delta = now - last_send_time_;
+  const media::cast::RtpTimeDelta rtp_delta =
+      media::cast::RtpTimeDelta::FromTimeDelta(
+          time_delta, media::cast::kRemotingRtpTimebase);
+  const media::cast::RtpTimeTicks now_as_rtp_timestamp =
+      GetRecordedRtpTimestamp(last_sent_frame_id_) + rtp_delta;
+  transport_->SendSenderReport(ssrc_, now, now_as_rtp_timestamp);
+
+  ScheduleNextRtcpReport();
 }
 
 }  // namespace cast

@@ -123,6 +123,11 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   // periodically send the frame events to renderer process for logging.
   void SendFrameEvents();
 
+  // Schedule and execute periodic sending of RTCP report to prevent keepalive
+  // timeouts on receiver side during media pause.
+  void ScheduleNextRtcpReport();
+  void SendRtcpReport();
+
   // Unique identifier for the RTP stream and this CastRemotingSender.
   const int32_t rtp_stream_id_;
 
