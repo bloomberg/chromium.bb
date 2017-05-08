@@ -307,7 +307,6 @@ static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs() {
   return harf_buzz_skia_font_funcs;
 }
 
-#if !OS(MACOSX)
 static hb_blob_t* HarfBuzzSkiaGetTable(hb_face_t* face,
                                        hb_tag_t tag,
                                        void* user_data) {
@@ -331,20 +330,25 @@ static hb_blob_t* HarfBuzzSkiaGetTable(hb_face_t* face,
                         HB_MEMORY_MODE_WRITABLE, buffer,
                         WTF::Partitions::FastFree);
 }
-#endif
 
-#if !OS(MACOSX)
 static void DeleteTypefaceStream(void* stream_asset_ptr) {
   SkStreamAsset* stream_asset =
       reinterpret_cast<SkStreamAsset*>(stream_asset_ptr);
   delete stream_asset;
 }
-#endif
 
 hb_face_t* HarfBuzzFace::CreateFace() {
 #if OS(MACOSX)
-  hb_face_t* face = hb_coretext_face_create(platform_data_->CgFont());
-#else
+  // hb_face_t needs to be instantiated using the CoreText constructor for
+  // compatibility with AAT font, in which case HarfBuzz' CoreText backend is
+  // used. If we encounter a FreeType backed SkTypeface, for variable fonts on
+  // Mac OS < 10.12, follow the regular OpenType-only codepath below.
+  if (platform_data_->CgFont()) {
+    hb_face_t* face = hb_coretext_face_create(platform_data_->CgFont());
+    DCHECK(face);
+    return face;
+  }
+#endif
   hb_face_t* face = nullptr;
 
   DEFINE_STATIC_LOCAL(BooleanHistogram, zero_copy_success_histogram,
@@ -371,7 +375,7 @@ hb_face_t* HarfBuzzFace::CreateFace() {
   } else {
     zero_copy_success_histogram.Count(true);
   }
-#endif
+
   DCHECK(face);
   return face;
 }

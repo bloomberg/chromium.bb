@@ -110,6 +110,10 @@ class PLATFORM_EXPORT FontPlatformData {
   ~FontPlatformData();
 
 #if OS(MACOSX)
+  // These methods return a nullptr for FreeType backed SkTypefaces, compare
+  // FontCustomPlatformData, which are used for variable fonts on Mac OS <
+  // 10.12. They should not return nullptr otherwise. So they allow
+  // distinguishing which backend the SkTypeface is using.
   CTFontRef CtFont() const;
   CGFontRef CgFont() const;
 #endif

@@ -37,10 +37,13 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/WebFontDecoder.h"
+#if OS(MACOSX)
+#include "platform/fonts/mac/CoreTextVariationsSupport.h"
+#endif
 #include "platform/fonts/opentype/FontSettings.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#if OS(WIN)
+#if OS(WIN) || OS(MACOSX)
 #include "third_party/skia/include/ports/SkFontMgr_empty.h"
 #endif
 #include "platform/wtf/PtrUtil.h"
@@ -74,6 +77,12 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
   if (variation_settings && variation_settings->size() < UINT16_MAX) {
 #if OS(WIN)
     sk_sp<SkFontMgr> fm(SkFontMgr_New_Custom_Empty());
+#elif OS(MACOSX)
+    sk_sp<SkFontMgr> fm;
+    if (CoreTextVersionSupportsVariations())
+      fm = SkFontMgr::RefDefault();
+    else
+      fm = SkFontMgr_New_Custom_Empty();
 #else
     sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
 #endif

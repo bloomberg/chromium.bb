@@ -167,6 +167,8 @@ CTFontRef FontPlatformData::CtFont() const {
 };
 
 CGFontRef FontPlatformData::CgFont() const {
+  if (!CtFont())
+    return nullptr;
   return CTFontCopyGraphicsFont(CtFont(), 0);
 }
 #endif

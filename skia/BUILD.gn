@@ -44,7 +44,7 @@ config("skia_config") {
 
   defines = skia_for_chromium_defines
 
-  if (is_win) {
+  if (is_win || is_mac) {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
   }
 
@@ -323,6 +323,13 @@ component("skia") {
   }
 
   # Select Skia ports.
+
+  # FreeType is needed everywhere, on Linux and Android as main font backend, on Windows and Mac as fallback backend for Variations.
+  sources += [
+    "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
+    "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
+  ]
+
   if (is_win) {
     sources += [
       "//third_party/skia/src/ports/SkFontHost_win.cpp",
@@ -368,19 +375,16 @@ component("skia") {
     ]
   }
 
-  if (is_linux || is_android || is_win) {
+  if (is_win || is_mac) {
     sources += [
-      "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
-      "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
+      # Add the FreeType custom font manager as a fallback backend for variable fonts.
+      "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
     ]
   }
 
   if (is_win) {
     sources += [
-      # Add the custom FreeType font manager to instantiate variable fonts on Windows.
-      "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
-      "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
-
       # Select the right BitmapPlatformDevice.
       "ext/raster_handle_allocator_win.cc",
     ]
@@ -405,6 +409,7 @@ component("skia") {
     ":skia_opts",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build/config/freetype",
   ]
 
   if (is_linux) {
@@ -412,7 +417,6 @@ component("skia") {
       configs += [ "//build/config/linux/pangocairo" ]
     }
     deps += [
-      "//build/config/freetype",
       "//build/linux:fontconfig",
       "//third_party/expat",
       "//third_party/icu:icuuc",
@@ -424,10 +428,6 @@ component("skia") {
       "//third_party/android_tools:cpu_features",
       "//third_party/expat",
     ]
-  }
-
-  if (is_win || is_android) {
-    deps += [ "//build/config/freetype" ]
   }
 
   if (skia_support_pdf) {
