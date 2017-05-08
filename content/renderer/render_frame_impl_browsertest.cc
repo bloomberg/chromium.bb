@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/child/web_url_loader_impl.h"
@@ -302,7 +303,7 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
       "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
 
   frame()->SaveImageFromDataURL(WebString::FromUTF8(image_data_url));
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_SaveImageFromDataURL::ID);
   EXPECT_TRUE(msg2);
@@ -311,13 +312,13 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   FrameHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
   EXPECT_EQ(std::get<2>(param1), image_data_url);
 
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
   const std::string large_data_url(1024 * 1024 * 20 - 1, 'd');
 
   frame()->SaveImageFromDataURL(WebString::FromUTF8(large_data_url));
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_SaveImageFromDataURL::ID);
   EXPECT_TRUE(msg3);
@@ -326,13 +327,13 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   FrameHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
   EXPECT_EQ(std::get<2>(param2), large_data_url);
 
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
   const std::string exceeded_data_url(1024 * 1024 * 20 + 1, 'd');
 
   frame()->SaveImageFromDataURL(WebString::FromUTF8(exceeded_data_url));
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   const IPC::Message* msg4 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_SaveImageFromDataURL::ID);
   EXPECT_FALSE(msg4);
@@ -352,7 +353,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   GetMainRenderFrame()->NavigateInternal(
       common_params, StartNavigationParams(), RequestNavigationParams(),
       std::unique_ptr<StreamOverrideParameters>());
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->ZoomLevel());
 
   // It should work even when the zoom limit is temporarily changed in the page.
@@ -363,7 +364,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   GetMainRenderFrame()->NavigateInternal(
       common_params, StartNavigationParams(), RequestNavigationParams(),
       std::unique_ptr<StreamOverrideParameters>());
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->ZoomLevel());
 }
 
@@ -400,7 +401,7 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsLater) {
   FrameMsg_SetOverlayRoutingToken token_message(0, token);
   frame()->OnMessageReceived(token_message);
 
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(overlay_routing_token_.has_value());
   ASSERT_EQ(overlay_routing_token_.value(), token);
 }
@@ -414,7 +415,7 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
 
   // The frame now has a token.  We don't care if it sends the token before
   // returning or posts a message.
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   frame()->RequestOverlayRoutingToken(
       base::Bind(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
                  base::Unretained(this)));

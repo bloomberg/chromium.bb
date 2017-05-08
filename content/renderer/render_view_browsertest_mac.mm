@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -111,7 +112,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   view->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
   output = WebFrameContentDumper::DumpWebViewAsText(view->GetWebView(),
                                                     kMaxOutputCharacters)
@@ -122,7 +123,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   view->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToBeginningOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
   output = WebFrameContentDumper::DumpWebViewAsText(view->GetWebView(),
                                                     kMaxOutputCharacters)
@@ -138,7 +139,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   view->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
   output = WebFrameContentDumper::DumpWebViewAsText(view->GetWebView(),
                                                     kMaxOutputCharacters)
@@ -149,7 +150,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   view->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToBeginningOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
   output = WebFrameContentDumper::DumpWebViewAsText(view->GetWebView(),
                                                     kMaxOutputCharacters)

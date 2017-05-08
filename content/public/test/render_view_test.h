@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -75,9 +75,6 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   ~RenderViewTest() override;
 
  protected:
-  // Spins the message loop to process all messages that are currently pending.
-  void ProcessPendingMessages();
-
   // Returns a pointer to the main frame.
   blink::WebLocalFrame* GetMainFrame();
 
@@ -190,7 +187,9 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   // blink::WebLeakDetectorClient implementation.
   void OnLeakDetectionComplete(const Result& result) override;
 
-  base::MessageLoop msg_loop_;
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   std::unique_ptr<FakeCompositorDependencies> compositor_deps_;
   std::unique_ptr<MockRenderProcess> mock_process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in
