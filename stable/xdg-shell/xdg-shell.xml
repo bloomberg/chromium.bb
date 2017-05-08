@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="xdg_shell_unstable_v6">
+<protocol name="xdg_shell">
 
   <copyright>
     Copyright © 2008-2013 Kristian Høgsberg
@@ -27,9 +27,9 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zxdg_shell_v6" version="1">
+  <interface name="xdg_wm_base" version="1">
     <description summary="create desktop-style surfaces">
-      xdg_shell allows clients to turn a wl_surface into a "real window"
+      xdg_wm_base allows clients to turn a wl_surface into a "real window"
       which can be dragged, resized, stacked, and moved around by the
       user. Everything about this interface is suited towards traditional
       desktop environments.
@@ -38,7 +38,7 @@
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
       <entry name="defunct_surfaces" value="1"
-	     summary="xdg_shell was destroyed before children"/>
+	     summary="xdg_wm_base was destroyed before children"/>
       <entry name="not_the_topmost_popup" value="2"
 	     summary="the client tried to map or destroy a non-topmost popup"/>
       <entry name="invalid_popup_parent" value="3"
@@ -50,11 +50,11 @@
     </enum>
 
     <request name="destroy" type="destructor">
-      <description summary="destroy xdg_shell">
-	Destroy this xdg_shell object.
+      <description summary="destroy xdg_wm_base">
+	Destroy this xdg_wm_base object.
 
-	Destroying a bound xdg_shell object while there are surfaces
-	still alive created by this xdg_shell object instance is illegal
+	Destroying a bound xdg_wm_base object while there are surfaces
+	still alive created by this xdg_wm_base object instance is illegal
 	and will result in a protocol error.
       </description>
     </request>
@@ -65,7 +65,7 @@
 	surfaces relative to some parent surface. See the interface description
 	and xdg_surface.get_popup for details.
       </description>
-      <arg name="id" type="new_id" interface="zxdg_positioner_v6"/>
+      <arg name="id" type="new_id" interface="xdg_positioner"/>
     </request>
 
     <request name="get_xdg_surface">
@@ -82,14 +82,14 @@
 	See the documentation of xdg_surface for more details about what an
 	xdg_surface is and how it is used.
       </description>
-      <arg name="id" type="new_id" interface="zxdg_surface_v6"/>
+      <arg name="id" type="new_id" interface="xdg_surface"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
     <request name="pong">
       <description summary="respond to a ping event">
 	A client must respond to a ping event with a pong request or
-	the client may be deemed unresponsive. See xdg_shell.ping.
+	the client may be deemed unresponsive. See xdg_wm_base.ping.
       </description>
       <arg name="serial" type="uint" summary="serial of the ping event"/>
     </request>
@@ -98,7 +98,7 @@
       <description summary="check if the client is alive">
 	The ping event asks the client if it's still alive. Pass the
 	serial specified in the event back to the compositor by sending
-	a "pong" request back with the specified serial. See xdg_shell.ping.
+	a "pong" request back with the specified serial. See xdg_wm_base.ping.
 
 	Compositors can use this to determine if the client is still
 	alive. It's unspecified what will happen if the client doesn't
@@ -106,13 +106,13 @@
 	try to respond in a reasonable amount of time.
 
 	A compositor is free to ping in any way it wants, but a client must
-	always respond to any xdg_shell object it created.
+	always respond to any xdg_wm_base object it created.
       </description>
       <arg name="serial" type="uint" summary="pass this to the pong request"/>
     </event>
   </interface>
 
-  <interface name="zxdg_positioner_v6" version="1">
+  <interface name="xdg_positioner" version="1">
     <description summary="child surface positioner">
       The xdg_positioner provides a collection of rules for the placement of a
       child surface relative to a parent surface. Rules can be defined to ensure
@@ -361,7 +361,7 @@
     </request>
   </interface>
 
-  <interface name="zxdg_surface_v6" version="1">
+  <interface name="xdg_surface" version="1">
     <description summary="desktop user interface surface base interface">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface.
@@ -416,7 +416,7 @@
 	See the documentation of xdg_toplevel for more details about what an
 	xdg_toplevel is and how it is used.
       </description>
-      <arg name="id" type="new_id" interface="zxdg_toplevel_v6"/>
+      <arg name="id" type="new_id" interface="xdg_toplevel"/>
     </request>
 
     <request name="get_popup">
@@ -427,9 +427,9 @@
 	See the documentation of xdg_popup for more details about what an
 	xdg_popup is and how it is used.
       </description>
-      <arg name="id" type="new_id" interface="zxdg_popup_v6"/>
-      <arg name="parent" type="object" interface="zxdg_surface_v6"/>
-      <arg name="positioner" type="object" interface="zxdg_positioner_v6"/>
+      <arg name="id" type="new_id" interface="xdg_popup"/>
+      <arg name="parent" type="object" interface="xdg_surface"/>
+      <arg name="positioner" type="object" interface="xdg_positioner"/>
     </request>
 
     <request name="set_window_geometry">
@@ -513,7 +513,7 @@
     </event>
   </interface>
 
-  <interface name="zxdg_toplevel_v6" version="1">
+  <interface name="xdg_toplevel" version="1">
     <description summary="toplevel surface">
       This interface defines an xdg_surface role which allows a surface to,
       among other things, set window-like properties such as maximize,
@@ -540,7 +540,7 @@
 	"auxiliary" surfaces, so that the parent is raised when the dialog
 	is raised.
       </description>
-      <arg name="parent" type="object" interface="zxdg_toplevel_v6" allow-null="true"/>
+      <arg name="parent" type="object" interface="xdg_toplevel" allow-null="true"/>
     </request>
 
     <request name="set_title">
@@ -913,7 +913,7 @@
     </event>
   </interface>
 
-  <interface name="zxdg_popup_v6" version="1">
+  <interface name="xdg_popup" version="1">
     <description summary="short-lived, popup surfaces for menus">
       A popup surface is a short-lived, temporary surface. It can be used to
       implement for example menus, popovers, tooltips and other similar user
