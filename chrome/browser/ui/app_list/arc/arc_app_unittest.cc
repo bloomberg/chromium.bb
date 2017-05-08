@@ -1014,14 +1014,16 @@ TEST_P(ArcAppModelBuilderTest, RemoveAppCleanUpFolder) {
 TEST_P(ArcAppModelBuilderTest, LastLaunchTime) {
   // Make sure we are on UI thread.
   ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
+  ASSERT_GE(fake_apps().size(), 3U);
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
-      fake_apps().begin(), fake_apps().begin() + 2));
+      fake_apps().begin(), fake_apps().begin() + 3));
   const arc::mojom::AppInfo& app1 = fake_apps()[0];
   const arc::mojom::AppInfo& app2 = fake_apps()[1];
+  const arc::mojom::AppInfo& app3 = fake_apps()[2];
   const std::string id1 = ArcAppTest::GetAppId(app1);
   const std::string id2 = ArcAppTest::GetAppId(app2);
+  const std::string id3 = ArcAppTest::GetAppId(app3);
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
@@ -1032,7 +1034,7 @@ TEST_P(ArcAppModelBuilderTest, LastLaunchTime) {
   EXPECT_EQ(base::Time(), app_info->last_launch_time);
 
   // Test direct setting last launch time.
-  base::Time now_time = base::Time::Now();
+  const base::Time now_time = base::Time::Now();
   prefs->SetLastLaunchTime(id1, now_time);
 
   app_info = prefs->GetApp(id1);
@@ -1044,14 +1046,24 @@ TEST_P(ArcAppModelBuilderTest, LastLaunchTime) {
   ASSERT_NE(nullptr, app_info.get());
   EXPECT_EQ(base::Time(), app_info->last_launch_time);
 
-  base::Time time_before = base::Time::Now();
+  const base::Time time_before = base::Time::Now();
   arc::LaunchApp(profile(), id2, ui::EF_NONE);
-  base::Time time_after = base::Time::Now();
+  const base::Time time_after = base::Time::Now();
 
   app_info = prefs->GetApp(id2);
   ASSERT_NE(nullptr, app_info.get());
   ASSERT_LE(time_before, app_info->last_launch_time);
   ASSERT_GE(time_after, app_info->last_launch_time);
+
+  // Test last launch time when app is started externally, not from App
+  // Launcher.
+  app_info = prefs->GetApp(id3);
+  ASSERT_NE(nullptr, app_info.get());
+  EXPECT_EQ(base::Time(), app_info->last_launch_time);
+  app_instance()->SendTaskCreated(0, fake_apps()[2], std::string());
+  app_info = prefs->GetApp(id3);
+  ASSERT_NE(nullptr, app_info.get());
+  EXPECT_GE(app_info->last_launch_time, now_time);
 }
 
 // Validate that arc model contains expected elements on restart.

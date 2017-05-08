@@ -773,19 +773,24 @@ void ArcAppListPrefs::OnInstanceClosed() {
   package_list_initial_refreshed_ = false;
 }
 
-void ArcAppListPrefs::MaybeAddNonLaunchableApp(
-    const base::Optional<std::string>& name,
-    const std::string& package_name,
-    const std::string& activity) {
+void ArcAppListPrefs::HandleTaskCreated(const base::Optional<std::string>& name,
+                                        const std::string& package_name,
+                                        const std::string& activity) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
-  if (IsRegistered(GetAppId(package_name, activity)))
-    return;
-
-  AddAppAndShortcut(true /* app_ready */, name.has_value() ? *name : "",
-                    package_name, activity, std::string() /* intent_uri */,
-                    std::string() /* icon_resource_id */, false /* sticky */,
-                    false /* notifications_enabled */, false /* shortcut */,
-                    false /* launchable */, arc::mojom::OrientationLock::NONE);
+  const std::string app_id = GetAppId(package_name, activity);
+  if (IsRegistered(app_id)) {
+    SetLastLaunchTime(app_id, base::Time::Now());
+  } else {
+    // Create runtime app entry that is valid for the current user session. This
+    // entry is not shown in App Launcher and only required for shelf
+    // integration.
+    AddAppAndShortcut(true /* app_ready */, name.has_value() ? *name : "",
+                      package_name, activity, std::string() /* intent_uri */,
+                      std::string() /* icon_resource_id */, false /* sticky */,
+                      false /* notifications_enabled */, false /* shortcut */,
+                      false /* launchable */,
+                      arc::mojom::OrientationLock::NONE);
+  }
 }
 
 void ArcAppListPrefs::AddAppAndShortcut(
@@ -1210,7 +1215,7 @@ void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
                                     const std::string& activity,
                                     const base::Optional<std::string>& name,
                                     const base::Optional<std::string>& intent) {
-  MaybeAddNonLaunchableApp(name, package_name, activity);
+  HandleTaskCreated(name, package_name, activity);
   for (auto& observer : observer_list_) {
     observer.OnTaskCreated(task_id,
                            package_name,
