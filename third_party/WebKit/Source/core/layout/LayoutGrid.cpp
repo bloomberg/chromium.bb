@@ -253,19 +253,8 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     // we need to clear any override size set previously, so it doesn't
     // interfere in current layout execution.
     for (auto* child = FirstInFlowChildBox(); child;
-         child = child->NextInFlowSiblingBox()) {
+         child = child->NextInFlowSiblingBox())
       child->ClearOverrideSize();
-      if (!IsOrthogonalChild(*child) ||
-          (!SizesLogicalWidthToFitContent(StyleRef().LogicalWidth()) &&
-           !StyleRef().LogicalWidth().IsIntrinsicOrAuto()))
-        continue;
-      // Additionally, we may need to clear containingBlock override sizes and
-      // force a layout of the grid items to ensure we get the same result when
-      // grid's intrinsic size is computed again in the updateLogicalWidth call
-      // bellow.
-      child->ClearContainingBlockOverrideSize();
-      child->ForceLayout();
-    }
 
     UpdateLogicalWidth();
 
