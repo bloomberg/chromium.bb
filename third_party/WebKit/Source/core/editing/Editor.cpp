@@ -228,12 +228,12 @@ EditorClient& Editor::Client() const {
 }
 
 static bool IsCaretAtStartOfWrappedLine(const FrameSelection& selection) {
-  if (!selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret())
+  if (!selection.ComputeVisibleSelectionInDOMTree().IsCaret())
     return false;
   if (selection.GetSelectionInDOMTree().Affinity() != TextAffinity::kDownstream)
     return false;
   const Position& position =
-      selection.ComputeVisibleSelectionInDOMTreeDeprecated().Start();
+      selection.ComputeVisibleSelectionInDOMTree().Start();
   return !InSameLine(PositionWithAffinity(position, TextAffinity::kUpstream),
                      PositionWithAffinity(position, TextAffinity::kDownstream));
 }
