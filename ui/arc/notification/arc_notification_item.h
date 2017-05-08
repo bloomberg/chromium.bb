@@ -5,104 +5,76 @@
 #ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_H_
 #define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_H_
 
-#include <memory>
-#include <string>
-
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "components/arc/common/notifications.mojom.h"
-#include "components/signin/core/account_id/account_id.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/arc/notification/arc_notification_manager.h"
-#include "ui/message_center/message_center.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace arc {
 
-// The class represents each ARC notification. One instance of this class
-// corresponds to one ARC notification.
 class ArcNotificationItem {
  public:
-  ArcNotificationItem(ArcNotificationManager* manager,
-                      message_center::MessageCenter* message_center,
-                      const std::string& notification_key,
-                      const AccountId& profile_id);
-  virtual ~ArcNotificationItem();
+  class Observer {
+   public:
+    // Invoked when the notification data for this item has changed.
+    virtual void OnItemDestroying() = 0;
 
-  virtual void UpdateWithArcNotificationData(
-      mojom::ArcNotificationDataPtr data);
+    // Invoked when the notification data for the item is updated.
+    virtual void OnItemUpdated() = 0;
 
-  // Methods called from ArcNotificationManager:
-  void OnClosedFromAndroid();
+   protected:
+    virtual ~Observer() = default;
+  };
 
-  // Methods called from ArcNotificationItemDelegate:
-  void Close(bool by_user);
-  void Click();
-  void ButtonClick(int button_index);
-  void OpenSettings();
-  bool IsOpeningSettingsSupported() const;
-  void ToggleExpansion();
+  virtual ~ArcNotificationItem() = default;
 
-  const std::string& notification_key() const { return notification_key_; }
+  // Called when the notification is closed on Android-side. This is called from
+  // ArcNotificationManager.
+  virtual void OnClosedFromAndroid() = 0;
+  // Called when the notification is updated on Android-side. This is called
+  // from ArcNotificationManager.
+  virtual void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data) = 0;
 
- protected:
-  static int ConvertAndroidPriority(
-      mojom::ArcNotificationPriority android_priority);
+  // Called when the notification is closed on Chrome-side. This is called from
+  // ArcNotificationDelegate.
+  virtual void Close(bool by_user) = 0;
+  // Called when the notification is clicked by user. This is called from
+  // ArcNotificationDelegate.
+  virtual void Click() = 0;
 
-  // Checks whether there is on-going |notification_|.
-  bool HasPendingNotification();
-  // Cache the |data| in |newer_data_|.
-  void CacheArcNotificationData(mojom::ArcNotificationDataPtr data);
+  // Called when the user wants to open an intrinsic setting of notification.
+  // This is called from ArcCustomNotificationView.
+  virtual void OpenSettings() = 0;
+  // Called when the user wants to toggle expansio of notification. This is
+  // called from ArcCustomNotificationView.
+  virtual void ToggleExpansion() = 0;
+  // Returns true if this notification has an intrinsic setting which shown
+  // inside the notification content area. This is called from
+  // ArcCustomNotificationView.
+  virtual bool IsOpeningSettingsSupported() const = 0;
 
-  // Sets the pending |notification_|.
-  void SetNotification(
-      std::unique_ptr<message_center::Notification> notification);
+  // Adds an observer.
+  virtual void AddObserver(Observer* observer) = 0;
+  // Removes the observer.
+  virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Add |notification_| to message center and update again if there is
-  // |newer_data_|.
-  void AddToMessageCenter();
+  // Increments |window_ref_count_| and a CreateNotificationWindow request
+  // is sent when |window_ref_count_| goes from zero to one.
+  virtual void IncrementWindowRefCount() = 0;
 
-  bool CalledOnValidThread() const;
+  // Decrements |window_ref_count_| and a CloseNotificationWindow request
+  // is sent when |window_ref_count_| goes from one to zero.
+  virtual void DecrementWindowRefCount() = 0;
 
-  const AccountId& profile_id() const { return profile_id_; }
-  const std::string& notification_id() const { return notification_id_; }
-  message_center::MessageCenter* message_center() { return message_center_; }
-  ArcNotificationManager* manager() { return manager_; }
-
-  message_center::Notification* pending_notification() {
-    return notification_.get();
-  }
-
- private:
-  void OnImageDecoded(const SkBitmap& bitmap);
-
-  ArcNotificationManager* const manager_;
-  message_center::MessageCenter* const message_center_;
-  const AccountId profile_id_;
-
-  const std::string notification_key_;
-  const std::string notification_id_;
-
-  // Stores on-going notification data during the image decoding.
-  // This field will be removed after removing async task of image decoding.
-  std::unique_ptr<message_center::Notification> notification_;
-
-  // The flag to indicate that the removing is initiated by the manager and we
-  // don't need to notify a remove event to the manager.
-  // This is true only when:
-  //   (1) the notification is being removed
-  //   (2) the removing is initiated by manager
-  bool being_removed_by_manager_ = false;
-
-  // Stores the latest notification data which is newer than the on-going data.
-  // If the on-going data is either none or the latest, this is null.
-  // This field will be removed after removing async task of image decoding.
-  mojom::ArcNotificationDataPtr newer_data_;
-
-  base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<ArcNotificationItem> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcNotificationItem);
+  // Returns the current pinned state.
+  virtual bool GetPinned() const = 0;
+  // Returns the current snapshot.
+  virtual const gfx::ImageSkia& GetSnapshot() const = 0;
+  // Returns the current expand state.
+  virtual mojom::ArcNotificationExpandState GetExpandState() const = 0;
+  // Returns the current type of shown contents.
+  virtual mojom::ArcNotificationShownContents GetShownContents() const = 0;
+  // Returns the notification key passed from Android-side.
+  virtual const std::string& GetNotificationKey() const = 0;
 };
 
 }  // namespace arc
