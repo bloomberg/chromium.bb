@@ -242,6 +242,8 @@ class WebViewHelper {
   WebViewBase* web_view_;
   SettingOverrider* setting_overrider_;
   UseMockScrollbarSettings mock_scrollbar_settings_;
+  // Non-null if the WebViewHelper owns the TestWebViewClient.
+  std::unique_ptr<TestWebViewClient> owned_test_web_view_client_;
   TestWebViewClient* test_web_view_client_;
 };
 
