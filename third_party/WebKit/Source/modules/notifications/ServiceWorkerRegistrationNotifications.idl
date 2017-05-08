@@ -5,7 +5,7 @@
 // https://notifications.spec.whatwg.org/#service-worker-api
 
 [
-    Exposed=(Window, ServiceWorker),
+    Exposed=(Window,Worker),
     RuntimeEnabled=Notifications
 ] partial interface ServiceWorkerRegistration {
     [CallWith=ScriptState, RaisesException] Promise showNotification(DOMString title, optional NotificationOptions options);
