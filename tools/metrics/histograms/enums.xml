@@ -21889,7 +21889,9 @@ from previous Chrome versions.
   <int value="1108663108" label="disable-device-discovery-notifications"/>
   <int value="1113365156" label="tab-management-experiment-type-chive"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
+  <int value="1116593018" label="CaptureThumbnailOnLoadFinished:disabled"/>
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
+  <int value="1126061778" label="CaptureThumbnailOnLoadFinished:enabled"/>
   <int value="1127183523" label="PassiveEventListenersDueToFling:enabled"/>
   <int value="1127427821" label="OmniboxEntitySuggestions:disabled"/>
   <int value="1129888794" label="ash-touch-hud"/>

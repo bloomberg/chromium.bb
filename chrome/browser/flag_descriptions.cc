@@ -3127,4 +3127,11 @@ const char kLocationHardReloadDescription[] =
     "Enable an experimental change for Location.reload() to trigger a "
     "hard-reload.";
 
+const char kCaptureThumbnailOnLoadFinishedName[] =
+    "Capture page thumbnail on load finished";
+
+const char kCaptureThumbnailOnLoadFinishedDescription[] =
+    "Capture a page thumbnail (for use on the New Tab page) when the page load "
+    "finishes, in addition to other times a thumbnail may be captured.";
+
 }  // namespace flag_descriptions

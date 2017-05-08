@@ -62,6 +62,8 @@ extern const base::Feature kBrowserTouchBar;
 extern const base::Feature kTabStripKeyboardFocus;
 #endif  // defined(OS_MACOSX)
 
+extern const base::Feature kCaptureThumbnailOnLoadFinished;
+
 extern const base::Feature kCheckInstallabilityForBannerOnLoad;
 
 #if defined(OS_WIN)

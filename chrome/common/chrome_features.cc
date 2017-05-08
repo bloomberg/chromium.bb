@@ -99,6 +99,11 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
 
 const base::Feature kTabsInCbd{"TabsInCBD", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether to capture page thumbnails when the page load finishes (in addition
+// to any other times this might happen).
+const base::Feature kCaptureThumbnailOnLoadFinished{
+    "CaptureThumbnailOnLoadFinished", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether to trigger app banner installability checks on page load.
 const base::Feature kCheckInstallabilityForBannerOnLoad{
     "CheckInstallabilityForBannerOnLoad", base::FEATURE_DISABLED_BY_DEFAULT};
