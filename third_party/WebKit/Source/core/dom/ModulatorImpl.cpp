@@ -4,7 +4,6 @@
 
 #include "core/dom/ModulatorImpl.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ModuleMap.h"
 #include "core/dom/ModuleScript.h"
@@ -19,18 +18,15 @@
 namespace blink {
 
 ModulatorImpl* ModulatorImpl::Create(RefPtr<ScriptState> script_state,
-                                     Document& document) {
-  return new ModulatorImpl(
-      std::move(script_state),
-      TaskRunnerHelper::Get(TaskType::kNetworking, &document),
-      document.Fetcher());
+                                     ResourceFetcher* resource_fetcher) {
+  return new ModulatorImpl(std::move(script_state), resource_fetcher);
 }
 
 ModulatorImpl::ModulatorImpl(RefPtr<ScriptState> script_state,
-                             RefPtr<WebTaskRunner> task_runner,
                              ResourceFetcher* fetcher)
     : script_state_(std::move(script_state)),
-      task_runner_(std::move(task_runner)),
+      task_runner_(
+          TaskRunnerHelper::Get(TaskType::kNetworking, script_state_.Get())),
       fetcher_(fetcher),
       map_(this, ModuleMap::Create(this)),
       loader_registry_(ModuleScriptLoaderRegistry::Create()),
