@@ -68,6 +68,9 @@ class VM(object):
     self.kvm_pipe_out = '%s.out' % self.kvm_monitor  # from KVM
     self.kvm_serial = '%s.serial' % self.kvm_monitor
 
+    self.remote = remote_access.RemoteDevice(remote_access.LOCALHOST,
+                                             port=ssh_port)
+
     # TODO(achuith): support nographics, snapshot, mem_path, usb_passthrough,
     # moblab, etc.
 
@@ -236,18 +239,11 @@ class VM(object):
     if not isinstance(cmd, list):
       raise VMError('cmd must be a list.')
 
-    args = ['ssh', '-o', 'UserKnownHostsFile=/dev/null',
-            '-o', 'StrictHostKeyChecking=no',
-            '-i', remote_access.TEST_PRIVATE_KEY,
-            '-p', str(self.ssh_port), 'root@localhost']
-    args.extend(cmd)
-
     if not self.dry_run:
-      return cros_build_lib.RunCommand(args, redirect_stdout=True,
-                                       combine_stdout_stderr=True,
-                                       log_output=True,
-                                       error_code_ok=True)
-
+      return self.remote.RunCommand(cmd, debug_level=logging.INFO,
+                                    combine_stdout_stderr=True,
+                                    log_output=True,
+                                    error_code_ok=True)
 
 def ParseCommandLine(argv):
   """Parse the command line.
