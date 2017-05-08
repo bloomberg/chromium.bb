@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 
 {%- for import in imports %}
-#include "{{import.module.path}}-shared-internal.h"
+#include "{{import.path}}-shared-internal.h"
 {%- endfor %}
 
 namespace mojo {

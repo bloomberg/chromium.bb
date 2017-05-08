@@ -61,9 +61,9 @@ namespace {{variant}} {
 #include "{{module.path}}-shared.h"
 {%- for import in imports %}
 {%-   if variant %}
-#include "{{"%s-%s.h"|format(import.module.path, variant)}}"
+#include "{{"%s-%s.h"|format(import.path, variant)}}"
 {%-   else %}
-#include "{{import.module.path}}.h"
+#include "{{import.path}}.h"
 {%-   endif %}
 {%- endfor %}
 {%- if not for_blink %}

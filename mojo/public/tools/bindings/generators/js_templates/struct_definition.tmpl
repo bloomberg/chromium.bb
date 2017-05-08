@@ -58,8 +58,9 @@
 {%-   set offset = packed_field|field_offset %}
 {%-   set field = packed_field.field %}
 {%-   set name = struct.name ~ '.' ~ field.name %}
-{%    if field|is_object_field or field|is_any_handle_or_interface_field or
-          field|is_enum_field %}
+{%    if field.kind|is_object_kind or
+         field.kind|is_any_handle_or_interface_kind or
+         field.kind|is_enum_kind %}
 {%      if packed_field.min_version > last_checked_version %}
 {%        set last_checked_version = packed_field.min_version %}
     // version check {{name}}
@@ -84,7 +85,7 @@
     var version = decoder.readUint32();
 {%- for byte in struct.bytes %}
 {%-   if byte.packed_fields|length >= 1 and
-         byte.packed_fields[0].field|is_bool_field %}
+         byte.packed_fields[0].field.kind|is_bool_kind %}
     packed = decoder.readUint8();
 {%-     for packed_field in byte.packed_fields %}
     val.{{packed_field.field.name}} = (packed >> {{packed_field.bit}}) & 1 ? true : false;
@@ -108,7 +109,7 @@
 
 {%- for byte in struct.bytes %}
 {%-   if byte.packed_fields|length >= 1 and
-         byte.packed_fields[0].field|is_bool_field %}
+         byte.packed_fields[0].field.kind|is_bool_kind %}
     packed = 0;
 {%-     for packed_field in byte.packed_fields %}
     packed |= (val.{{packed_field.field.name}} & 1) << {{packed_field.bit}}
