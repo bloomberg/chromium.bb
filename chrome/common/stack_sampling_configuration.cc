@@ -30,11 +30,11 @@ bool IsProfilerSupported() {
     return true;
   #endif
 #elif defined(OS_MACOSX)
-  // This is experimental, so only run on trunk.
+// Only run on canary for now.
   #if defined(GOOGLE_CHROME_BUILD)
-    return false;
+  return chrome::GetChannel() == version_info::Channel::CANARY;
   #else
-    return true;
+  return true;
   #endif
 #else
   return false;
@@ -78,7 +78,10 @@ bool StackSamplingConfiguration::IsProfilerEnabledForCurrentProcess() const {
     switch (configuration_) {
       case PROFILE_BROWSER_PROCESS:
       case PROFILE_BROWSER_AND_GPU_PROCESS:
-      case PROFILE_CONTROL:
+#if !defined(OS_MACOSX)
+      case PROFILE_CONTROL:  // The profiler is disabled for the control group
+                             // on Mac during ramp-up.
+#endif
         return true;
 
       default:
@@ -138,12 +141,14 @@ void StackSamplingConfiguration::AppendCommandLineSwitchForChildProcess(
     base::CommandLine* command_line) const {
   DCHECK(IsBrowserProcess());
 
-  if (process_type == switches::kGpuProcess &&
-      (configuration_ == PROFILE_CONTROL ||
-       configuration_ == PROFILE_GPU_PROCESS ||
-       configuration_ == PROFILE_BROWSER_AND_GPU_PROCESS)) {
+  bool enable = configuration_ == PROFILE_GPU_PROCESS ||
+                configuration_ == PROFILE_BROWSER_AND_GPU_PROCESS;
+#if !defined(OS_MACOSX)
+  // The profiler is disabled for the control group on Mac during ramp-up.
+  enable |= configuration_ == PROFILE_CONTROL;
+#endif
+  if (enable && process_type == switches::kGpuProcess)
     command_line->AppendSwitch(switches::kStartStackProfiler);
-  }
 }
 
 // static
@@ -188,23 +193,28 @@ StackSamplingConfiguration::GenerateConfiguration() {
     case version_info::Channel::UNKNOWN:
       return PROFILE_BROWSER_AND_GPU_PROCESS;
 
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
     case version_info::Channel::CANARY:
-      return ChooseConfiguration({
-        { PROFILE_BROWSER_PROCESS, 0},
-        { PROFILE_GPU_PROCESS, 0},
-        { PROFILE_BROWSER_AND_GPU_PROCESS, 80},
-        { PROFILE_CONTROL, 10},
-        { PROFILE_DISABLED, 10}
-      });
+      return ChooseConfiguration({{PROFILE_BROWSER_PROCESS, 0},
+                                  {PROFILE_GPU_PROCESS, 0},
+                                  {PROFILE_BROWSER_AND_GPU_PROCESS, 80},
+                                  {PROFILE_CONTROL, 10},
+                                  {PROFILE_DISABLED, 10}});
 
     case version_info::Channel::DEV:
-      return ChooseConfiguration({
-        { PROFILE_BROWSER_PROCESS, 0},
-        { PROFILE_GPU_PROCESS, 0},
-        { PROFILE_BROWSER_AND_GPU_PROCESS, 80},
-        { PROFILE_CONTROL, 10},
-        { PROFILE_DISABLED, 10}
-      });
+      return ChooseConfiguration({{PROFILE_BROWSER_PROCESS, 0},
+                                  {PROFILE_GPU_PROCESS, 0},
+                                  {PROFILE_BROWSER_AND_GPU_PROCESS, 80},
+                                  {PROFILE_CONTROL, 10},
+                                  {PROFILE_DISABLED, 10}});
+#elif defined(OS_MACOSX)
+    case version_info::Channel::CANARY:
+      return ChooseConfiguration({{PROFILE_BROWSER_PROCESS, 0},
+                                  {PROFILE_GPU_PROCESS, 0},
+                                  {PROFILE_BROWSER_AND_GPU_PROCESS, 10},
+                                  {PROFILE_CONTROL, 10},
+                                  {PROFILE_DISABLED, 80}});
+#endif
 
     default:
       return PROFILE_DISABLED;
