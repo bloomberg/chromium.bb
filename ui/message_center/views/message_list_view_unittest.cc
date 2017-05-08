@@ -24,6 +24,7 @@ using ::testing::ElementsAre;
 namespace message_center {
 
 static const char* kNotificationId1 = "notification id 1";
+static const char* kNotificationId2 = "notification id 2";
 
 namespace {
 
@@ -131,6 +132,8 @@ class MessageListViewTest : public views::ViewsTestBase,
 
   int& fixed_height() { return message_list_view_->fixed_height_; }
 
+  views::BoundsAnimator& animator() { return message_list_view_->animator_; }
+
   std::vector<int> ComputeRepositionOffsets(const std::vector<int>& heights,
                                             const std::vector<bool>& deleting,
                                             int target_index,
@@ -142,6 +145,11 @@ class MessageListViewTest : public views::ViewsTestBase,
   MockNotificationView* CreateNotificationView(
       const Notification& notification) {
     return new MockNotificationView(this, notification, this);
+  }
+
+  void RunPendingAnimations() {
+    while (animator().IsAnimating())
+      RunPendingMessages();
   }
 
  private:
@@ -373,6 +381,75 @@ TEST_F(MessageListViewTest, RepositionOffsets) {
               ElementsAre(top, top + 7, top + 7 + 5, top + 7 + 5 + 5));
   EXPECT_EQ(20 + insets.height() + 2, fixed_height());
   EXPECT_EQ(5 + top + 2, reposition_top());
+}
+
+TEST_F(MessageListViewTest, RemoveNotification) {
+  message_list_view()->SetBounds(0, 0, 800, 600);
+
+  // Create dummy notifications.
+  auto* notification_view = CreateNotificationView(
+      Notification(NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
+                   base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message1"),
+                   gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
+                   NotifierId(NotifierId::APPLICATION, "extension_id"),
+                   message_center::RichNotificationData(), nullptr));
+
+  message_list_view()->AddNotificationAt(notification_view, 0);
+  EXPECT_EQ(1, message_list_view()->child_count());
+  EXPECT_TRUE(message_list_view()->Contains(notification_view));
+
+  RunPendingAnimations();
+
+  message_list_view()->RemoveNotification(notification_view);
+
+  RunPendingAnimations();
+
+  EXPECT_EQ(0, message_list_view()->child_count());
+}
+
+TEST_F(MessageListViewTest, ClearAllClosableNotifications) {
+  message_list_view()->SetBounds(0, 0, 800, 600);
+
+  // Create dummy notifications.
+  auto* notification_view1 = CreateNotificationView(
+      Notification(NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
+                   base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message1"),
+                   gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
+                   NotifierId(NotifierId::APPLICATION, "extension_id"),
+                   message_center::RichNotificationData(), nullptr));
+  auto* notification_view2 = CreateNotificationView(
+      Notification(NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
+                   base::UTF8ToUTF16("title 2"), base::UTF8ToUTF16("message2"),
+                   gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
+                   NotifierId(NotifierId::APPLICATION, "extension_id"),
+                   message_center::RichNotificationData(), nullptr));
+
+  message_list_view()->AddNotificationAt(notification_view1, 0);
+  EXPECT_EQ(1, message_list_view()->child_count());
+  EXPECT_TRUE(notification_view1->visible());
+
+  RunPendingAnimations();
+
+  message_list_view()->AddNotificationAt(notification_view2, 1);
+  EXPECT_EQ(2, message_list_view()->child_count());
+  EXPECT_TRUE(notification_view2->visible());
+
+  RunPendingAnimations();
+
+  message_list_view()->ClearAllClosableNotifications(
+      message_list_view()->bounds());
+
+  RunPendingAnimations();
+
+  // TODO(yhanada): notification_view1 and notification_view2 should be deleted
+  //                here. Uncomment the below test.
+  EXPECT_TRUE(gfx::IntersectRects(notification_view1->bounds(),
+                                  message_list_view()->bounds())
+                  .IsEmpty());
+  EXPECT_TRUE(gfx::IntersectRects(notification_view2->bounds(),
+                                  message_list_view()->bounds())
+                  .IsEmpty());
+  // EXPECT_EQ(0, message_list_view()->child_count());
 }
 
 }  // namespace

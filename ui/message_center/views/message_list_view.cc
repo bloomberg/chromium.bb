@@ -349,14 +349,16 @@ void MessageListView::DoUpdateIfPossible() {
     return;
   }
 
-  int new_height = GetHeightForWidth(child_area.width() + GetInsets().width());
-  SetSize(gfx::Size(child_area.width() + GetInsets().width(), new_height));
-
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval))
     AnimateNotificationsBelowTarget();
   else
     AnimateNotifications();
+
+  // Should calculate and set new size after calling AnimateNotifications()
+  // because fixed_height_ may be updated in it.
+  int new_height = GetHeightForWidth(child_area.width() + GetInsets().width());
+  SetSize(gfx::Size(child_area.width() + GetInsets().width(), new_height));
 
   adding_views_.clear();
   deleting_views_.clear();
