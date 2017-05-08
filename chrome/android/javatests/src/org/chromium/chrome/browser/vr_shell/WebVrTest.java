@@ -250,6 +250,9 @@ public class WebVrTest extends VrTestBase {
      * Tests that focus is locked to the presenting display for purposes of VR input.
      */
     @MediumTest
+    @DisableIf.Build(message = "Flaky on L crbug.com/713781",
+            sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
+            sdk_is_less_than = Build.VERSION_CODES.M)
     public void testPresentationLocksFocus() throws InterruptedException {
         String testName = "test_presentation_locks_focus";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
