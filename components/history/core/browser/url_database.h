@@ -325,11 +325,11 @@ extern const int kLowQualityMatchAgeLimitInDays;
 // Returns the date threshold for considering an history item as significant.
 base::Time AutocompleteAgeThreshold();
 
-// Return true if |row| qualifies as an autocomplete candidate. If |time_cache|
+// Return true if |row| qualifies as an autocomplete candidate. If |threshold|
 // is_null() then this function determines a new time threshold each time it is
 // called. Since getting system time can be costly (such as for cases where
 // this function will be called in a loop over many history items), you can
-// provide a non-null |time_cache| by simply initializing |time_cache| with
+// provide a non-null |threshold| by simply initializing |threshold| with
 // AutocompleteAgeThreshold() (or any other desired time in the past).
 bool RowQualifiesAsSignificant(const URLRow& row, const base::Time& threshold);
 

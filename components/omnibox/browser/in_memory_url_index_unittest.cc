@@ -482,6 +482,20 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   EXPECT_EQ(17U, private_data.word_map_.size());
 }
 
+TEST_F(InMemoryURLIndexTest, HiddenURLRowsAreIgnored) {
+  history::URLID new_row_id = 87654321;  // Arbitrarily chosen large new row id.
+  history::URLRow new_row =
+      history::URLRow(GURL("http://hidden.com/"), new_row_id++);
+  new_row.set_last_visit(base::Time::Now());
+  new_row.set_hidden(true);
+
+  EXPECT_FALSE(UpdateURL(new_row));
+  EXPECT_EQ(0U, url_index_
+                    ->HistoryItemsForTerms(ASCIIToUTF16("hidden"),
+                                           base::string16::npos, kMaxMatches)
+                    .size());
+}
+
 TEST_F(InMemoryURLIndexTest, Retrieval) {
   // See if a very specific term gives a single result.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
