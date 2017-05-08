@@ -21,22 +21,22 @@
 
 #include <memory>
 
+namespace blink {
 namespace {
 
-using blink::ScreenWakeLock;
 using device::mojom::blink::WakeLockService;
 using device::mojom::blink::WakeLockServiceRequest;
 
 // This class allows binding interface requests to a MockWakeLockService.
-class MockInterfaceProvider : public blink::InterfaceProvider {
+class MockInterfaceProvider : public InterfaceProvider {
  public:
-  MockInterfaceProvider() : m_wakeLockStatus(false) {}
+  MockInterfaceProvider() : wake_lock_status_(false) {}
   ~MockInterfaceProvider() {}
 
   void GetInterface(const char* name, mojo::ScopedMessagePipeHandle) override;
 
-  bool wakeLockStatus() const { return m_wakeLockStatus; }
-  void setWakeLockStatus(bool status) { m_wakeLockStatus = status; }
+  bool WakeLockStatus() const { return wake_lock_status_; }
+  void SetWakeLockStatus(bool status) { wake_lock_status_ = status; }
 
  private:
   // A mock WakeLockService used to intercept calls to the mojo methods.
@@ -44,172 +44,172 @@ class MockInterfaceProvider : public blink::InterfaceProvider {
    public:
     MockWakeLockService(MockInterfaceProvider* registry,
                         WakeLockServiceRequest request)
-        : m_binding(this, std::move(request)), m_registry(registry) {}
+        : binding_(this, std::move(request)), registry_(registry) {}
     ~MockWakeLockService() {}
 
    private:
     // mojom::WakeLockService
-    void RequestWakeLock() override { m_registry->setWakeLockStatus(true); }
-    void CancelWakeLock() override { m_registry->setWakeLockStatus(false); }
+    void RequestWakeLock() override { registry_->SetWakeLockStatus(true); }
+    void CancelWakeLock() override { registry_->SetWakeLockStatus(false); }
 
-    mojo::Binding<WakeLockService> m_binding;
-    MockInterfaceProvider* const m_registry;
+    mojo::Binding<WakeLockService> binding_;
+    MockInterfaceProvider* const registry_;
   };
-  std::unique_ptr<MockWakeLockService> m_mockWakeLockService;
+  std::unique_ptr<MockWakeLockService> mock_wake_lock_service_;
 
-  bool m_wakeLockStatus;
+  bool wake_lock_status_;
 };
 
 void MockInterfaceProvider::GetInterface(const char* name,
                                          mojo::ScopedMessagePipeHandle handle) {
-  m_mockWakeLockService.reset(new MockWakeLockService(
+  mock_wake_lock_service_.reset(new MockWakeLockService(
       this, mojo::MakeRequest<WakeLockService>(std::move(handle))));
 }
 
 // A TestWebFrameClient to allow overriding the interfaceProvider() with a mock.
-class TestWebFrameClient : public blink::FrameTestHelpers::TestWebFrameClient {
+class TestWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   ~TestWebFrameClient() override = default;
-  blink::InterfaceProvider* GetInterfaceProvider() override {
-    return &m_interfaceProvider;
+  InterfaceProvider* GetInterfaceProvider() override {
+    return &interface_provider_;
   }
 
  private:
-  MockInterfaceProvider m_interfaceProvider;
+  MockInterfaceProvider interface_provider_;
 };
 
-class ScreenWakeLockTest : public testing::Test {
+class ScreenWakeLockTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_webViewHelper.Initialize(true, &m_testWebFrameClient);
-    blink::URLTestHelpers::RegisterMockedURLLoadFromBase(
-        blink::WebString::FromUTF8("http://example.com/"),
-        blink::testing::WebTestDataPath(),
-        blink::WebString::FromUTF8("foo.html"));
-    loadFrame();
+    web_view_helper_.Initialize(true, &test_web_frame_client_);
+    URLTestHelpers::RegisterMockedURLLoadFromBase(
+        WebString::FromUTF8("http://example.com/"), testing::WebTestDataPath(),
+        WebString::FromUTF8("foo.html"));
+    LoadFrame();
   }
 
   void TearDown() override {
-    blink::Platform::Current()
+    Platform::Current()
         ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
-    blink::testing::RunPendingTasks();
+    testing::RunPendingTasks();
   }
 
-  void loadFrame() {
-    blink::FrameTestHelpers::LoadFrame(m_webViewHelper.WebView()->MainFrame(),
-                                       "http://example.com/foo.html");
-    m_webViewHelper.WebView()->UpdateAllLifecyclePhases();
+  void LoadFrame() {
+    FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrame(),
+                                "http://example.com/foo.html");
+    web_view_helper_.WebView()->UpdateAllLifecyclePhases();
   }
 
-  blink::LocalFrame* frame() {
-    DCHECK(m_webViewHelper.WebView());
-    DCHECK(m_webViewHelper.WebView()->MainFrameImpl());
-    return m_webViewHelper.WebView()->MainFrameImpl()->GetFrame();
+  LocalFrame* GetFrame() {
+    DCHECK(web_view_helper_.WebView());
+    DCHECK(web_view_helper_.WebView()->MainFrameImpl());
+    return web_view_helper_.WebView()->MainFrameImpl()->GetFrame();
   }
 
-  blink::Screen* screen() {
-    DCHECK(frame());
-    DCHECK(frame()->DomWindow());
-    return frame()->DomWindow()->screen();
+  Screen* GetScreen() {
+    DCHECK(GetFrame());
+    DCHECK(GetFrame()->DomWindow());
+    return GetFrame()->DomWindow()->screen();
   }
 
-  bool screenKeepAwake() {
-    DCHECK(screen());
-    return ScreenWakeLock::keepAwake(*screen());
+  bool ScreenKeepAwake() {
+    DCHECK(GetScreen());
+    return ScreenWakeLock::keepAwake(*GetScreen());
   }
 
-  bool clientKeepScreenAwake() {
+  bool ClientKeepScreenAwake() {
     return static_cast<MockInterfaceProvider*>(
-               m_testWebFrameClient.GetInterfaceProvider())
-        ->wakeLockStatus();
+               test_web_frame_client_.GetInterfaceProvider())
+        ->WakeLockStatus();
   }
 
-  void setKeepAwake(bool keepAwake) {
-    DCHECK(screen());
-    ScreenWakeLock::setKeepAwake(*screen(), keepAwake);
+  void SetKeepAwake(bool keepAwake) {
+    DCHECK(GetScreen());
+    ScreenWakeLock::setKeepAwake(*GetScreen(), keepAwake);
     // Let the notification sink through the mojo pipes.
-    blink::testing::RunPendingTasks();
+    testing::RunPendingTasks();
   }
 
-  void show() {
-    DCHECK(m_webViewHelper.WebView());
-    m_webViewHelper.WebView()->SetVisibilityState(
-        blink::kWebPageVisibilityStateVisible, false);
+  void Show() {
+    DCHECK(web_view_helper_.WebView());
+    web_view_helper_.WebView()->SetVisibilityState(
+        kWebPageVisibilityStateVisible, false);
     // Let the notification sink through the mojo pipes.
-    blink::testing::RunPendingTasks();
+    testing::RunPendingTasks();
   }
 
-  void hide() {
-    DCHECK(m_webViewHelper.WebView());
-    m_webViewHelper.WebView()->SetVisibilityState(
-        blink::kWebPageVisibilityStateHidden, false);
+  void Hide() {
+    DCHECK(web_view_helper_.WebView());
+    web_view_helper_.WebView()->SetVisibilityState(
+        kWebPageVisibilityStateHidden, false);
     // Let the notification sink through the mojo pipes.
-    blink::testing::RunPendingTasks();
+    testing::RunPendingTasks();
   }
 
   // Order of these members is important as we need to make sure that
-  // m_testWebFrameClient outlives m_webViewHelper (destruction order)
-  TestWebFrameClient m_testWebFrameClient;
-  blink::FrameTestHelpers::WebViewHelper m_webViewHelper;
+  // test_web_frame_client_ outlives web_view_helper_ (destruction order)
+  TestWebFrameClient test_web_frame_client_;
+  FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
 TEST_F(ScreenWakeLockTest, setAndReset) {
-  ASSERT_FALSE(screenKeepAwake());
-  ASSERT_FALSE(clientKeepScreenAwake());
+  ASSERT_FALSE(ScreenKeepAwake());
+  ASSERT_FALSE(ClientKeepScreenAwake());
 
-  setKeepAwake(true);
-  EXPECT_TRUE(screenKeepAwake());
-  EXPECT_TRUE(clientKeepScreenAwake());
+  SetKeepAwake(true);
+  EXPECT_TRUE(ScreenKeepAwake());
+  EXPECT_TRUE(ClientKeepScreenAwake());
 
-  setKeepAwake(false);
-  EXPECT_FALSE(screenKeepAwake());
-  EXPECT_FALSE(clientKeepScreenAwake());
+  SetKeepAwake(false);
+  EXPECT_FALSE(ScreenKeepAwake());
+  EXPECT_FALSE(ClientKeepScreenAwake());
 }
 
 TEST_F(ScreenWakeLockTest, hideWhenSet) {
-  ASSERT_FALSE(screenKeepAwake());
-  ASSERT_FALSE(clientKeepScreenAwake());
+  ASSERT_FALSE(ScreenKeepAwake());
+  ASSERT_FALSE(ClientKeepScreenAwake());
 
-  setKeepAwake(true);
-  hide();
+  SetKeepAwake(true);
+  Hide();
 
-  EXPECT_TRUE(screenKeepAwake());
-  EXPECT_FALSE(clientKeepScreenAwake());
+  EXPECT_TRUE(ScreenKeepAwake());
+  EXPECT_FALSE(ClientKeepScreenAwake());
 }
 
 TEST_F(ScreenWakeLockTest, setWhenHidden) {
-  ASSERT_FALSE(screenKeepAwake());
-  ASSERT_FALSE(clientKeepScreenAwake());
+  ASSERT_FALSE(ScreenKeepAwake());
+  ASSERT_FALSE(ClientKeepScreenAwake());
 
-  hide();
-  setKeepAwake(true);
+  Hide();
+  SetKeepAwake(true);
 
-  EXPECT_TRUE(screenKeepAwake());
-  EXPECT_FALSE(clientKeepScreenAwake());
+  EXPECT_TRUE(ScreenKeepAwake());
+  EXPECT_FALSE(ClientKeepScreenAwake());
 }
 
 TEST_F(ScreenWakeLockTest, showWhenSet) {
-  ASSERT_FALSE(screenKeepAwake());
-  ASSERT_FALSE(clientKeepScreenAwake());
+  ASSERT_FALSE(ScreenKeepAwake());
+  ASSERT_FALSE(ClientKeepScreenAwake());
 
-  hide();
-  setKeepAwake(true);
-  show();
+  Hide();
+  SetKeepAwake(true);
+  Show();
 
-  EXPECT_TRUE(screenKeepAwake());
-  EXPECT_TRUE(clientKeepScreenAwake());
+  EXPECT_TRUE(ScreenKeepAwake());
+  EXPECT_TRUE(ClientKeepScreenAwake());
 }
 
 TEST_F(ScreenWakeLockTest, navigate) {
-  ASSERT_FALSE(screenKeepAwake());
-  ASSERT_FALSE(clientKeepScreenAwake());
+  ASSERT_FALSE(ScreenKeepAwake());
+  ASSERT_FALSE(ClientKeepScreenAwake());
 
-  setKeepAwake(true);
-  loadFrame();
+  SetKeepAwake(true);
+  LoadFrame();
 
-  EXPECT_FALSE(screenKeepAwake());
-  EXPECT_FALSE(clientKeepScreenAwake());
+  EXPECT_FALSE(ScreenKeepAwake());
+  EXPECT_FALSE(ClientKeepScreenAwake());
 }
 
 }  // namespace
+}  // namespace blink
