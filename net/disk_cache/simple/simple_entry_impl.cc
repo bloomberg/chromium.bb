@@ -42,18 +42,6 @@ namespace {
 const int64_t kMaxSparseDataSizeDivisor = 10;
 
 // Used in histograms, please only add entries at the end.
-enum ReadResult {
-  READ_RESULT_SUCCESS = 0,
-  READ_RESULT_INVALID_ARGUMENT = 1,
-  READ_RESULT_NONBLOCK_EMPTY_RETURN = 2,
-  READ_RESULT_BAD_STATE = 3,
-  READ_RESULT_FAST_EMPTY_RETURN = 4,
-  READ_RESULT_SYNC_READ_FAILURE = 5,
-  READ_RESULT_SYNC_CHECKSUM_FAILURE = 6,
-  READ_RESULT_MAX = 7,
-};
-
-// Used in histograms, please only add entries at the end.
 enum WriteResult {
   WRITE_RESULT_SUCCESS = 0,
   WRITE_RESULT_INVALID_ARGUMENT = 1,
@@ -74,7 +62,7 @@ enum HeaderSizeChange {
   HEADER_SIZE_CHANGE_MAX
 };
 
-void RecordReadResult(net::CacheType cache_type, ReadResult result) {
+void RecordReadResult(net::CacheType cache_type, SimpleReadResult result) {
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "ReadResult", cache_type, result, READ_RESULT_MAX);
 }
