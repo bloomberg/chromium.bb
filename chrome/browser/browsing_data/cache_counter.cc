@@ -32,6 +32,8 @@ const char* CacheCounter::GetPrefName() const {
 }
 
 void CacheCounter::Count() {
+  // Cancel existing requests.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   base::WeakPtr<browsing_data::ConditionalCacheCountingHelper> counter =
       browsing_data::ConditionalCacheCountingHelper::CreateForRange(
           content::BrowserContext::GetDefaultStoragePartition(profile_),

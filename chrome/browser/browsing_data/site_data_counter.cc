@@ -20,6 +20,8 @@ const char* SiteDataCounter::GetPrefName() const {
 }
 
 void SiteDataCounter::Count() {
+  // Cancel existing requests.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   base::Time begin = GetPeriodStart();
   auto done_callback =
       base::Bind(&SiteDataCounter::Done, weak_ptr_factory_.GetWeakPtr());

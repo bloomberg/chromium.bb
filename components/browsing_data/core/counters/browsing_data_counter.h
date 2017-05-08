@@ -128,7 +128,8 @@ class BrowsingDataCounter {
   // Called after the class is initialized by calling |Init|.
   virtual void OnInitialized();
 
-  // Count the data.
+  // Count the data. Call ReportResult() when finished. Tasks that are still
+  // running should be cancelled to avoid reporting old results.
   virtual void Count() = 0;
 
   // State transition methods.
