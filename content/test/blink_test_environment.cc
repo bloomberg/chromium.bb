@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "build/build_config.h"
@@ -36,20 +36,13 @@ namespace {
 
 class TestEnvironment {
  public:
-#if defined(OS_ANDROID)
-  // Android UI message loop goes through Java, so don't use it in tests.
-  typedef base::MessageLoop MessageLoopType;
-#else
-  typedef base::MessageLoopForUI MessageLoopType;
+  TestEnvironment()
+#if !defined(OS_ANDROID)
+      // On Android, Java pumps UI messages.
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI)
 #endif
-
-  TestEnvironment() {
-    main_message_loop_.reset(new MessageLoopType);
-
-    // TestBlinkWebUnitTestSupport must be instantiated after MessageLoopType.
-    blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
-    content_initializer_.reset(new content::TestContentClientInitializer());
-
+  {
     base::DiscardableMemoryAllocator::SetInstance(
         &discardable_memory_allocator_);
   }
@@ -57,14 +50,13 @@ class TestEnvironment {
   ~TestEnvironment() {
   }
 
-  TestBlinkWebUnitTestSupport* blink_platform_impl() const {
-    return blink_test_support_.get();
-  }
-
  private:
-  std::unique_ptr<MessageLoopType> main_message_loop_;
-  std::unique_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
-  std::unique_ptr<TestContentClientInitializer> content_initializer_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  // Must be instantiated after ScopedTaskEnvironment.
+  TestBlinkWebUnitTestSupport blink_test_support_;
+
+  TestContentClientInitializer content_initializer_;
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
 };
 

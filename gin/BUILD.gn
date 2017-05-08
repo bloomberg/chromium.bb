@@ -153,6 +153,7 @@ source_set("gin_test") {
     "//testing/gtest",
   ]
   deps = [
+    "//base/test:test_support",
     "//v8",
   ]
 

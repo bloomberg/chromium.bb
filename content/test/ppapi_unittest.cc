@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -78,8 +77,6 @@ PpapiUnittest::~PpapiUnittest() {
 }
 
 void PpapiUnittest::SetUp() {
-  message_loop_.reset(new base::MessageLoop());
-
   // Initialize the mock module.
   ppapi::PpapiPermissions perms;
   module_ = new PluginModule("Mock plugin", "1.0", base::FilePath(),
@@ -101,7 +98,6 @@ void PpapiUnittest::SetUp() {
 void PpapiUnittest::TearDown() {
   instance_ = NULL;
   module_ = NULL;
-  message_loop_.reset();
   PluginModule::ResetHostGlobalsForTest();
 }
 

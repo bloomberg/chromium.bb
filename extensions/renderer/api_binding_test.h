@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -58,7 +58,8 @@ class APIBindingTest : public testing::Test {
  private:
   void RunGarbageCollection();
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   std::unique_ptr<gin::IsolateHolder> isolate_holder_;
   std::unique_ptr<gin::ContextHolder> main_context_holder_;
   std::vector<std::unique_ptr<gin::ContextHolder>> additional_context_holders_;
