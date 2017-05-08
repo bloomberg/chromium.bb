@@ -343,21 +343,18 @@ void LayoutText::AbsoluteRects(Vector<IntRect>& rects,
 
 static FloatRect LocalQuadForTextBox(InlineTextBox* box,
                                      unsigned start,
-                                     unsigned end,
-                                     bool use_selection_height) {
+                                     unsigned end) {
   unsigned real_end = std::min(box->end() + 1, end);
   LayoutRect r = box->LocalSelectionRect(start, real_end);
   if (r.Height()) {
-    if (!use_selection_height) {
-      // Change the height and y position (or width and x for vertical text)
-      // because selectionRect uses selection-specific values.
-      if (box->IsHorizontal()) {
-        r.SetHeight(box->Height());
-        r.SetY(box->Y());
-      } else {
-        r.SetWidth(box->Width());
-        r.SetX(box->X());
-      }
+    // Change the height and y position (or width and x for vertical text)
+    // because selectionRect uses selection-specific values.
+    if (box->IsHorizontal()) {
+      r.SetHeight(box->Height());
+      r.SetY(box->Y());
+    } else {
+      r.SetWidth(box->Width());
+      r.SetX(box->X());
     }
     return FloatRect(r);
   }
@@ -366,8 +363,7 @@ static FloatRect LocalQuadForTextBox(InlineTextBox* box,
 
 void LayoutText::AbsoluteRectsForRange(Vector<IntRect>& rects,
                                        unsigned start,
-                                       unsigned end,
-                                       bool use_selection_height) const {
+                                       unsigned end) const {
   // Work around signed/unsigned issues. This function takes unsigneds, and is
   // often passed UINT_MAX to mean "all the way to the end". InlineTextBox
   // coordinates are unsigneds, so changing this function to take ints causes
@@ -388,16 +384,6 @@ void LayoutText::AbsoluteRectsForRange(Vector<IntRect>& rects,
     // past it
     if (start <= box->Start() && box->end() < end) {
       FloatRect r(box->FrameRect());
-      if (use_selection_height) {
-        LayoutRect selection_rect = box->LocalSelectionRect(start, end);
-        if (box->IsHorizontal()) {
-          r.SetHeight(selection_rect.Height().ToFloat());
-          r.SetY(selection_rect.Y().ToFloat());
-        } else {
-          r.SetWidth(selection_rect.Width().ToFloat());
-          r.SetX(selection_rect.X().ToFloat());
-        }
-      }
       if (!has_checked_box_in_range) {
         has_checked_box_in_range = true;
         rects.clear();
@@ -405,8 +391,7 @@ void LayoutText::AbsoluteRectsForRange(Vector<IntRect>& rects,
       rects.push_back(LocalToAbsoluteQuad(r).EnclosingBoundingBox());
     } else if ((box->Start() <= start && start <= box->end()) ||
                (box->Start() < end && end <= box->end())) {
-      FloatRect rect =
-          LocalQuadForTextBox(box, start, end, use_selection_height);
+      FloatRect rect = LocalQuadForTextBox(box, start, end);
       if (!rect.IsZero()) {
         if (!has_checked_box_in_range) {
           has_checked_box_in_range = true;
@@ -417,8 +402,7 @@ void LayoutText::AbsoluteRectsForRange(Vector<IntRect>& rects,
     } else if (!has_checked_box_in_range) {
       // FIXME: This code is wrong. It's converting local to absolute twice.
       // http://webkit.org/b/65722
-      FloatRect rect =
-          LocalQuadForTextBox(box, start, end, use_selection_height);
+      FloatRect rect = LocalQuadForTextBox(box, start, end);
       if (!rect.IsZero())
         rects.push_back(LocalToAbsoluteQuad(rect).EnclosingBoundingBox());
     }
@@ -523,7 +507,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       quads.push_back(LocalToAbsoluteQuad(FloatRect(r)));
     } else if ((box->Start() <= start && start <= box->end()) ||
                (box->Start() < end && end <= box->end())) {
-      FloatRect rect = LocalQuadForTextBox(box, start, end, false);
+      FloatRect rect = LocalQuadForTextBox(box, start, end);
       if (!rect.IsZero()) {
         if (!has_checked_box_in_range) {
           has_checked_box_in_range = true;
@@ -534,7 +518,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     } else if (!has_checked_box_in_range) {
       // consider when the offset of range is area of leading or trailing
       // whitespace
-      FloatRect rect = LocalQuadForTextBox(box, start, end, false);
+      FloatRect rect = LocalQuadForTextBox(box, start, end);
       if (!rect.IsZero())
         quads.push_back(LocalToAbsoluteQuad(rect).EnclosingBoundingBox());
     }
