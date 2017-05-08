@@ -90,8 +90,6 @@ component("wtf") {
     "HashTableDeletedValueType.h",
     "HashTraits.h",
     "HexNumber.h",
-    "InstanceCounter.cpp",
-    "InstanceCounter.h",
     "LeakAnnotations.h",
     "LinkedHashSet.h",
     "ListHashSet.h",

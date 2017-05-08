@@ -333,7 +333,6 @@ class Internals final : public GarbageCollected<Internals>,
 
   unsigned numberOfLiveNodes() const;
   unsigned numberOfLiveDocuments() const;
-  String dumpRefCountedInstanceCounts() const;
   LocalDOMWindow* OpenDummyInspectorFrontend(const String& url);
   void CloseDummyInspectorFrontend();
 

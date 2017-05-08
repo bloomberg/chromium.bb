@@ -26,10 +26,6 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/WTFExport.h"
 
-#if ENABLE(INSTANCE_COUNTER)
-#include "platform/wtf/InstanceCounter.h"
-#endif
-
 #if DCHECK_IS_ON()
 #define CHECK_REF_COUNTED_LIFECYCLE 1
 #include "platform/wtf/ThreadRestrictionVerifier.h"
@@ -155,13 +151,7 @@ class RefCounted : public RefCountedBase {
   }
 
  protected:
-#if ENABLE(INSTANCE_COUNTER)
-  RefCounted() { incrementInstanceCount<T>(static_cast<T*>(this)); }
-
-  ~RefCounted() { decrementInstanceCount<T>(static_cast<T*>(this)); }
-#else
   RefCounted() {}
-#endif
 };
 
 // Allows subclasses to use the default copy constructor.

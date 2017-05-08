@@ -145,7 +145,6 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/SchemeRegistry.h"
-#include "platform/wtf/InstanceCounter.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/dtoa.h"
@@ -1979,10 +1978,6 @@ unsigned Internals::numberOfLiveNodes() const {
 
 unsigned Internals::numberOfLiveDocuments() const {
   return InstanceCounters::CounterValue(InstanceCounters::kDocumentCounter);
-}
-
-String Internals::dumpRefCountedInstanceCounts() const {
-  return WTF::DumpRefCountedInstanceCounts();
 }
 
 bool Internals::hasGrammarMarker(Document* document,
