@@ -44,6 +44,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -78,7 +79,6 @@
 #include "public/web/WebTextCheckClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/ContextMenuAllowedScope.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
 namespace blink {
@@ -189,8 +189,8 @@ bool ContextMenuClientImpl::ShowContextMenu(const ContextMenu* default_menu,
   r.SetToShadowHostIfInRestrictedShadowRoot();
 
   LocalFrame* selected_frame = r.InnerNodeFrame();
-  WebLocalFrameImpl* selected_web_frame =
-      WebLocalFrameImpl::FromFrame(selected_frame);
+  WebLocalFrameBase* selected_web_frame =
+      WebLocalFrameBase::FromFrame(selected_frame);
 
   WebContextMenuData data;
   data.mouse_position = selected_frame->View()->ContentsToViewport(
@@ -420,8 +420,8 @@ void ContextMenuClientImpl::ClearContextMenu() {
   if (!selected_frame)
     return;
 
-  WebLocalFrameImpl* selected_web_frame =
-      WebLocalFrameImpl::FromFrame(selected_frame);
+  WebLocalFrameBase* selected_web_frame =
+      WebLocalFrameBase::FromFrame(selected_frame);
   selected_web_frame->ClearContextMenuNode();
 }
 

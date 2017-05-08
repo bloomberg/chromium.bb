@@ -31,6 +31,7 @@
 #include "web/DedicatedWorkerMessagingProxyProviderImpl.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/loader/WorkerFetchContext.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/Worker.h"
@@ -46,7 +47,6 @@
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -59,8 +59,8 @@ DedicatedWorkerMessagingProxyProviderImpl::CreateWorkerMessagingProxy(
     Worker* worker) {
   if (worker->GetExecutionContext()->IsDocument()) {
     Document* document = ToDocument(worker->GetExecutionContext());
-    WebLocalFrameImpl* web_frame =
-        WebLocalFrameImpl::FromFrame(document->GetFrame());
+    WebLocalFrameBase* web_frame =
+        WebLocalFrameBase::FromFrame(document->GetFrame());
     WorkerClients* worker_clients = WorkerClients::Create();
     ProvideIndexedDBClientToWorker(
         worker_clients, IndexedDBClientImpl::Create(*worker_clients));
