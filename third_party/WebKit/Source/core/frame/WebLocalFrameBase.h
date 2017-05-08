@@ -5,9 +5,12 @@
 #ifndef WebLocalFrameBase_h
 #define WebLocalFrameBase_h
 
+#include "core/CoreExport.h"
 #include "public/web/WebLocalFrame.h"
 
 namespace blink {
+
+class LocalFrame;
 
 // WebLocalFrameBase is a temporary class the provides a layer of abstraction
 // for WebLocalFrameImpl. Mehtods that are declared public in WebLocalFrameImpl
@@ -18,6 +21,10 @@ namespace blink {
 // modules.
 // TODO(slangley): Remove this class once WebLocalFrameImpl is in core/.
 class WebLocalFrameBase : public WebLocalFrame {
+ public:
+  CORE_EXPORT static WebLocalFrameBase* FromFrame(LocalFrame*);
+  CORE_EXPORT static WebLocalFrameBase* FromFrame(LocalFrame&);
+
  protected:
   explicit WebLocalFrameBase(WebTreeScopeType scope) : WebLocalFrame(scope) {}
 };

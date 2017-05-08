@@ -41,6 +41,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLCollection.h"
@@ -65,7 +66,6 @@
 #include "public/web/WebElementCollection.h"
 #include "public/web/WebFormElement.h"
 #include "v8/include/v8.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -106,7 +106,7 @@ WebURL WebDocument::OpenSearchDescriptionURL() const {
 }
 
 WebLocalFrame* WebDocument::GetFrame() const {
-  return WebLocalFrameImpl::FromFrame(ConstUnwrap<Document>()->GetFrame());
+  return WebLocalFrameBase::FromFrame(ConstUnwrap<Document>()->GetFrame());
 }
 
 bool WebDocument::IsHTMLDocument() const {
