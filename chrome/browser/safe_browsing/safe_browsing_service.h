@@ -165,6 +165,8 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
       const;
 
+  TriggerManager* trigger_manager() const;
+
   // Gets PasswordProtectionService by profile.
   PasswordProtectionService* GetPasswordProtectionService(
       Profile* profile) const;
@@ -231,6 +233,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<SafeBrowsingService>;
+  friend class SafeBrowsingBlockingPageTest;
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingServiceTest;
   friend class SafeBrowsingURLRequestContextGetter;
