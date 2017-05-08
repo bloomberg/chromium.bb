@@ -561,8 +561,6 @@ typedef struct macroblockd_plane {
   ((x) + (i) * (1 << (tx_size_wide_log2[0] + tx_size_high_log2[0])))
 
 typedef struct RefBuffer {
-  // TODO(dkovalev): idx is not really required and should be removed, now it
-  // is used in av1_onyxd_if.c
   int idx;
   YV12_BUFFER_CONFIG *buf;
   struct scale_factors sf;
