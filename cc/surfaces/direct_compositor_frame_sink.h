@@ -13,8 +13,6 @@
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {

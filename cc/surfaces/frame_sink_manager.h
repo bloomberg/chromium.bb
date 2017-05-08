@@ -21,7 +21,7 @@ class BeginFrameSource;
 class FrameSinkManagerClient;
 
 namespace test {
-class CompositorFrameSinkSupportTest;
+class SurfaceSynchronizationTest;
 }
 
 class CC_SURFACES_EXPORT FrameSinkManager {
@@ -35,8 +35,8 @@ class CC_SURFACES_EXPORT FrameSinkManager {
   // possibly because a renderer process has crashed.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
 
-  // SurfaceFactoryClient, hierarchy, and BeginFrameSource can be registered
-  // and unregistered in any order with respect to each other.
+  // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
+  // registered and unregistered in any order with respect to each other.
   //
   // This happens in practice, e.g. the relationship to between ui::Compositor /
   // DelegatedFrameHost is known before ui::Compositor has a surface/client).
@@ -73,7 +73,7 @@ class CC_SURFACES_EXPORT FrameSinkManager {
   }
 
  private:
-  friend class test::CompositorFrameSinkSupportTest;
+  friend class test::SurfaceSynchronizationTest;
 
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
                                          BeginFrameSource* source);
@@ -90,8 +90,9 @@ class CC_SURFACES_EXPORT FrameSinkManager {
   // considered satisfied.
   std::unordered_set<FrameSinkId, FrameSinkIdHash> valid_frame_sink_ids_;
 
-  // Begin frame source routing. Both BeginFrameSource and SurfaceFactoryClient
-  // pointers guaranteed alive by callers until unregistered.
+  // Begin frame source routing. Both BeginFrameSource and
+  // CompositorFrameSinkSupport pointers guaranteed alive by callers until
+  // unregistered.
   struct FrameSinkSourceMapping {
     FrameSinkSourceMapping();
     FrameSinkSourceMapping(const FrameSinkSourceMapping& other);

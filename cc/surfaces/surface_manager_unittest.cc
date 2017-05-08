@@ -6,9 +6,7 @@
 
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surface_resource_holder_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -184,7 +182,7 @@ TEST_F(SurfaceManagerTest, MultipleDisplays) {
 
 // This test verifies that a BeginFrameSource path to the root from a
 // FrameSinkId is preserved even if that FrameSinkId has no children
-// and does not have a corresponding SurfaceFactoryClient.
+// and does not have a corresponding FrameSinkManagerClient.
 TEST_F(SurfaceManagerTest, ParentWithoutClientRetained) {
   StubBeginFrameSource root_source;
 
@@ -201,7 +199,7 @@ TEST_F(SurfaceManagerTest, ParentWithoutClientRetained) {
   EXPECT_EQ(&root_source, root.source());
 
   // Set up initial hierarchy: root -> A -> B.
-  // Note that A does not have a SurfaceFactoryClient.
+  // Note that A does not have a FrameSinkManagerClient.
   manager_.RegisterFrameSinkHierarchy(kFrameSinkIdRoot, kFrameSinkIdA);
   manager_.RegisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdB);
   // The root's BeginFrameSource should propagate to B.
@@ -237,7 +235,7 @@ TEST_F(SurfaceManagerTest,
   FakeFrameSinkManagerClient client_c(kFrameSinkIdC, &manager_);
 
   // Set up initial hierarchy: root -> A -> B.
-  // Note that A does not have a SurfaceFactoryClient.
+  // Note that A does not have a FrameSinkManagerClient.
   manager_.RegisterFrameSinkHierarchy(kFrameSinkIdRoot, kFrameSinkIdA);
   manager_.RegisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdB);
   // The root does not yet have a BeginFrameSource so client B should not have
@@ -260,7 +258,7 @@ TEST_F(SurfaceManagerTest,
 }
 
 // In practice, registering and unregistering both parent/child relationships
-// and SurfaceFactoryClients can happen in any ordering with respect to
+// and FrameSinkManagerClients can happen in any ordering with respect to
 // each other.  These following tests verify that all the data structures
 // are properly set up and cleaned up under the four permutations of orderings
 // of this nesting.

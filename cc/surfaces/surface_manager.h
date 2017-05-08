@@ -38,9 +38,10 @@ class BeginFrameSource;
 class CompositorFrame;
 class FrameSinkManagerClient;
 class Surface;
-class SurfaceFactory;
-class SurfaceFactoryClient;
-class CompositorFrameSinkSupportTest;
+
+namespace test {
+class SurfaceSynchronizationTest;
+}
 
 class CC_SURFACES_EXPORT SurfaceManager {
  public:
@@ -66,7 +67,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   void RequestSurfaceResolution(Surface* pending_surface);
 
   std::unique_ptr<Surface> CreateSurface(
-      base::WeakPtr<SurfaceFactory> surface_factory,
+      base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
       const LocalSurfaceId& local_surface_id);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.
@@ -82,8 +83,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   bool SurfaceModified(const SurfaceId& surface_id);
 
-  // Called when a CompositorFrame is submitted to a SurfaceFactory for a given
-  // |surface_id| for the first time.
+  // Called when a CompositorFrame is submitted to a CompositorFrameSinkSupport
+  // for a given |surface_id| for the first time.
   void SurfaceCreated(const SurfaceInfo& surface_info);
 
   // Require that the given sequence number must be satisfied (using
@@ -101,8 +102,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // possibly because a renderer process has crashed.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
 
-  // SurfaceFactoryClient, hierarchy, and BeginFrameSource can be registered
-  // and unregistered in any order with respect to each other.
+  // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
+  // registered and unregistered in any order with respect to each other.
   //
   // This happens in practice, e.g. the relationship to between ui::Compositor /
   // DelegatedFrameHost is known before ui::Compositor has a surface/client).
@@ -169,7 +170,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   }
 
  private:
-  friend class CompositorFrameSinkSupportTest;
+  friend class test::SurfaceSynchronizationTest;
   friend class SurfaceManagerRefTest;
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
