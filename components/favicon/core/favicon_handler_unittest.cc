@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_simple_task_runner.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -229,7 +230,8 @@ class MockDelegate : public FaviconHandler::Delegate {
 // particular URL, the callback is called with empty database results.
 class FakeFaviconService {
  public:
-  FakeFaviconService() = default;
+  FakeFaviconService()
+      : manual_callback_task_runner_(new base::TestSimpleTaskRunner()) {}
 
   // Stores favicon with bitmap data in |results| at |page_url| and |icon_url|.
   void Store(const GURL& page_url,
@@ -272,6 +274,28 @@ class FakeFaviconService {
     return GetFaviconForPageOrIconURL(icon_url, callback, tracker);
   }
 
+  // Disables automatic callback for |url|. This is useful for emulating a
+  // DB lookup taking a long time. The callback for
+  // GetFaviconForPageOrIconURL() will be stored in |manual_callback_|.
+  void SetRunCallbackManuallyForUrl(const GURL& url) {
+    manual_callback_url_ = url;
+  }
+
+  // Returns whether an ongoing lookup exists for a url previously selected
+  // via SetRunCallbackManuallyForUrl().
+  bool HasPendingManualCallback() {
+    return manual_callback_task_runner_->HasPendingTask();
+  }
+
+  // Triggers the response for a lookup previously selected for manual
+  // triggering via SetRunCallbackManuallyForUrl().
+  bool RunCallbackManually() {
+    if (!HasPendingManualCallback())
+      return false;
+    manual_callback_task_runner_->RunPendingTasks();
+    return true;
+  }
+
  private:
   base::CancelableTaskTracker::TaskId GetFaviconForPageOrIconURL(
       const GURL& page_or_icon_url,
@@ -279,13 +303,30 @@ class FakeFaviconService {
       base::CancelableTaskTracker* tracker) {
     db_requests_.push_back(page_or_icon_url);
 
-    return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
-                             FROM_HERE,
-                             base::Bind(callback, results_[page_or_icon_url]));
+    base::Closure bound_callback =
+        base::Bind(callback, results_[page_or_icon_url]);
+
+    if (page_or_icon_url != manual_callback_url_) {
+      return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
+                               FROM_HERE, bound_callback);
+    }
+
+    // We use PostTaskAndReply() to cause |callback| being run in the current
+    // TaskRunner.
+    return tracker->PostTaskAndReply(manual_callback_task_runner_.get(),
+                                     FROM_HERE, base::Bind(&base::DoNothing),
+                                     bound_callback);
   }
 
   std::map<GURL, std::vector<favicon_base::FaviconRawBitmapResult>> results_;
   URLVector db_requests_;
+
+  // URL to disable automatic callbacks for.
+  GURL manual_callback_url_;
+
+  // Callback for GetFaviconForPageOrIconURL() request for
+  // |manual_callback_url_|.
+  scoped_refptr<base::TestSimpleTaskRunner> manual_callback_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFaviconService);
 };
@@ -422,24 +463,35 @@ TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetch) {
 // - FaviconService::GetFaviconForPageURL() callback returns before
 //   FaviconHandler::OnUpdateFaviconURL() is called.
 TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
+  // Defer the database lookup completion to control the exact timing.
+  favicon_service_.fake()->SetRunCallbackManuallyForUrl(kPageURL);
+
+  EXPECT_CALL(favicon_service_, SetFavicons(_, _, _, _)).Times(0);
+  EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, _, _, _)).Times(0);
+
+  FaviconHandler handler(&favicon_service_, &delegate_,
+                         FaviconDriverObserver::NON_TOUCH_16_DIP);
+  handler.FetchFavicon(kPageURL);
+  base::RunLoop().RunUntilIdle();
+  // Database lookup for |kPageURL| is ongoing.
+  ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
+  // Causes FaviconService lookups be faster than OnUpdateFaviconURL().
+  ASSERT_TRUE(favicon_service_.fake()->RunCallbackManually());
+  ASSERT_TRUE(VerifyAndClearExpectations());
+
   EXPECT_CALL(favicon_service_, SetFavicons(kPageURL, kIconURL16x16, FAVICON,
                                             ImageSizeIs(16, 16)));
   EXPECT_CALL(delegate_, OnFaviconUpdated(
                              kPageURL, FaviconDriverObserver::NON_TOUCH_16_DIP,
                              kIconURL16x16, /*icon_url_changed=*/true, _));
-
-  FaviconHandler handler(&favicon_service_, &delegate_,
-                         FaviconDriverObserver::NON_TOUCH_16_DIP);
-  handler.FetchFavicon(kPageURL);
-  // Causes FaviconService lookups be faster than OnUpdateFaviconURL().
-  base::RunLoop().RunUntilIdle();
+  // Feed in favicons now that the database lookup is completed.
   handler.OnUpdateFaviconURL(kPageURL,
                              {FaviconURL(kIconURL16x16, FAVICON, kEmptySizes)});
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL16x16));
   EXPECT_THAT(favicon_service_.fake()->db_requests(),
-              ElementsAre(kPageURL, kIconURL16x16));
+              ElementsAre(kIconURL16x16));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL16x16));
 }
 
 // Test that the FaviconHandler process finishes when:
@@ -448,20 +500,34 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
 // - FaviconService::GetFaviconForPageURL() callback returns after
 //   FaviconHandler::OnUpdateFaviconURL() is called.
 TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesFaster) {
-  EXPECT_CALL(favicon_service_, SetFavicons(kPageURL, kIconURL16x16, FAVICON,
-                                            ImageSizeIs(16, 16)));
-  EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL16x16, _, _));
+  // Defer the database lookup completion to control the exact timing.
+  favicon_service_.fake()->SetRunCallbackManuallyForUrl(kPageURL);
+
+  EXPECT_CALL(favicon_service_, SetFavicons(_, _, _, _)).Times(0);
+  EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, _, _, _)).Times(0);
 
   FaviconHandler handler(&favicon_service_, &delegate_,
                          FaviconDriverObserver::NON_TOUCH_16_DIP);
   handler.FetchFavicon(kPageURL);
-  ASSERT_THAT(favicon_service_.fake()->db_requests(), ElementsAre(kPageURL));
-
-  // Feed in favicons without processing posted tasks (RunUntilIdle()).
+  base::RunLoop().RunUntilIdle();
+  // Feed in favicons before completing the database lookup.
   handler.OnUpdateFaviconURL(kPageURL,
                              {FaviconURL(kIconURL16x16, FAVICON, kEmptySizes)});
+
+  ASSERT_TRUE(VerifyAndClearExpectations());
+  // Database lookup for |kPageURL| is ongoing.
+  ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
+
+  EXPECT_CALL(favicon_service_, SetFavicons(kPageURL, kIconURL16x16, FAVICON,
+                                            ImageSizeIs(16, 16)));
+  EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL16x16, _, _));
+
+  // Complete the lookup for |kPageURL|.
+  ASSERT_TRUE(favicon_service_.fake()->RunCallbackManually());
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_THAT(favicon_service_.fake()->db_requests(),
+              ElementsAre(kIconURL16x16));
   EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL16x16));
 }
 
@@ -656,8 +722,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
 }
 
 // Test that sending an icon URL update identical to the previous icon URL
-// update is a no-op.
-TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileProcessingShouldBeNoop) {
+// update during image download is a no-op.
+TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileDownloadingShouldBeNoop) {
   const GURL kSlowLoadingIconURL("http://www.google.com/slow_favicon");
 
   const std::vector<FaviconURL> favicon_urls = {
@@ -682,6 +748,8 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileProcessingShouldBeNoop) {
   // despite the ongoing download.
   handler->OnUpdateFaviconURL(kPageURL, favicon_urls);
   base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(favicon_service_.fake()->db_requests(), IsEmpty());
+  EXPECT_THAT(delegate_.downloads(), IsEmpty());
 
   // Complete the download.
   EXPECT_CALL(favicon_service_, SetFavicons(_, _, _, _));
@@ -689,6 +757,40 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileProcessingShouldBeNoop) {
   EXPECT_TRUE(delegate_.fake_downloader().RunCallbackManually());
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(delegate_.downloads(), IsEmpty());
+}
+
+// Test that sending an icon URL update identical to the previous icon URL
+// update during a database lookup is a no-op.
+TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileDatabaseLookupShouldBeNoop) {
+  const std::vector<FaviconURL> favicon_urls = {
+      FaviconURL(kIconURL64x64, FAVICON, kEmptySizes),
+  };
+
+  favicon_service_.fake()->SetRunCallbackManuallyForUrl(kIconURL64x64);
+
+  std::unique_ptr<FaviconHandler> handler = RunHandlerWithCandidates(
+      FaviconDriverObserver::NON_TOUCH_16_DIP, favicon_urls);
+
+  // Ongoing database lookup.
+  ASSERT_THAT(favicon_service_.fake()->db_requests(),
+              ElementsAre(kPageURL, kIconURL64x64));
+  ASSERT_THAT(delegate_.downloads(), IsEmpty());
+  ASSERT_TRUE(VerifyAndClearExpectations());
+  ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
+
+  // Calling OnUpdateFaviconURL() with the same icon URLs should have no effect,
+  // despite the ongoing DB lookup.
+  handler->OnUpdateFaviconURL(kPageURL, favicon_urls);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(favicon_service_.fake()->db_requests(), IsEmpty());
+  EXPECT_THAT(delegate_.downloads(), IsEmpty());
+
+  // Complete the lookup.
+  EXPECT_CALL(favicon_service_, SetFavicons(_, _, _, _));
+  EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, _, _, _));
+  EXPECT_TRUE(favicon_service_.fake()->RunCallbackManually());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL64x64));
 }
 
 // Test that calling OnUpdateFaviconUrl() with the same icon URLs as before is a
