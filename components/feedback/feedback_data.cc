@@ -65,9 +65,7 @@ void FeedbackData::SetAndCompressSystemInfo(
     ++pending_op_count_;
     AddLogs(std::move(sys_info));
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE,
-        base::TaskTraits().MayBlock().WithPriority(
-            base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&FeedbackData::CompressLogs, this),
         base::Bind(&FeedbackData::OnCompressComplete, this));
   }
@@ -81,9 +79,7 @@ void FeedbackData::SetAndCompressHistograms(
     return;
   ++pending_op_count_;
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&FeedbackData::CompressFile, this,
                  base::FilePath(kHistogramsFilename), kHistogramsAttachmentName,
                  base::Passed(&histograms)),
@@ -100,9 +96,7 @@ void FeedbackData::AttachAndCompressFileData(
   base::FilePath attached_file =
                   base::FilePath::FromUTF8Unsafe(attached_filename_);
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&FeedbackData::CompressFile, this, attached_file,
                  std::string(), base::Passed(&attached_filedata)),
       base::Bind(&FeedbackData::OnCompressComplete, this));
