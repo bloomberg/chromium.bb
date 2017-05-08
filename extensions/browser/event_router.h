@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_EVENT_ROUTER_H_
 #define EXTENSIONS_BROWSER_EVENT_ROUTER_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <utility>
@@ -201,14 +200,6 @@ class EventRouter : public KeyedService,
   friend class EventRouterFilterTest;
   friend class EventRouterTest;
 
-  // The extension and process that contains the event listener for a given
-  // event.
-  struct ListenerProcess;
-
-  // A map between an event name and a set of extensions that are listening
-  // to that event.
-  typedef std::map<std::string, std::set<ListenerProcess> > ListenerMap;
-
   // An identifier for an event dispatch that is used to prevent double dispatch
   // due to race conditions between the direct and lazy dispatch paths.
   typedef std::pair<const content::BrowserContext*, std::string>
@@ -234,13 +225,6 @@ class EventRouter : public KeyedService,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
-
-  // Returns true if the given listener map contains a event listeners for
-  // the given event. If |extension_id| is non-empty, we also check that that
-  // extension is one of the listeners.
-  bool HasEventListenerImpl(const ListenerMap& listeners,
-                            const std::string& extension_id,
-                            const std::string& event_name);
 
   // Shared by all event dispatch methods. If |restrict_to_extension_id| is
   // empty, the event is broadcast.  An event that just came off the pending
