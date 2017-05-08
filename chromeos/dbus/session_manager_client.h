@@ -294,6 +294,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   using StartArcInstanceCallback = base::Callback<void(StartArcInstanceResult)>;
   virtual void StartArcInstance(const cryptohome::Identification& cryptohome_id,
                                 bool disable_boot_completed_broadcast,
+                                bool enable_vendor_privileged,
                                 const StartArcInstanceCallback& callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes

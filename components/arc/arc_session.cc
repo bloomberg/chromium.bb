@@ -22,6 +22,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -365,10 +366,15 @@ void ArcSessionImpl::OnSocketCreated(
   bool disable_boot_completed_broadcast =
       !base::FeatureList::IsEnabled(arc::kBootCompletedBroadcastFeature);
 
+  // We only enable /vendor/priv-app when voice interaction is enabled because
+  // voice interaction service apk would be bundled in this location.
+  bool enable_vendor_privileged =
+      chromeos::switches::IsVoiceInteractionEnabled();
+
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->StartArcInstance(
-      cryptohome_id, disable_boot_completed_broadcast,
+      cryptohome_id, disable_boot_completed_broadcast, enable_vendor_privileged,
       base::Bind(&ArcSessionImpl::OnInstanceStarted, weak_factory_.GetWeakPtr(),
                  base::Passed(&socket_fd)));
 }

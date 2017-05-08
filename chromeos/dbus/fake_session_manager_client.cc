@@ -241,6 +241,7 @@ void FakeSessionManagerClient::CheckArcAvailability(
 void FakeSessionManagerClient::StartArcInstance(
     const cryptohome::Identification& cryptohome_id,
     bool disable_boot_completed_broadcast,
+    bool enable_vendor_privileged,
     const StartArcInstanceCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

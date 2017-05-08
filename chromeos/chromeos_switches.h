@@ -157,6 +157,9 @@ CHROMEOS_EXPORT bool IsGaiaIdMigrationStarted();
 // Returns true if this is a Cellular First device.
 CHROMEOS_EXPORT bool IsCellularFirstDevice();
 
+// Returns true if voice interaction is enabled.
+CHROMEOS_EXPORT bool IsVoiceInteractionEnabled();
+
 }  // namespace switches
 }  // namespace chromeos
 
