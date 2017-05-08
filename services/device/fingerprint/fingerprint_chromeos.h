@@ -58,7 +58,8 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
   // chromeos::BiodClient::Observer:
   void BiodServiceRestarted() override;
   void BiodEnrollScanDoneReceived(biod::ScanResult scan_result,
-                                  bool enroll_session_complete) override;
+                                  bool enroll_session_complete,
+                                  int percent_complete) override;
   void BiodAuthScanDoneReceived(
       biod::ScanResult scan_result,
       const chromeos::AuthScanMatches& matches) override;

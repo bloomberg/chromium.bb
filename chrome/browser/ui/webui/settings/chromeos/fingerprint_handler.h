@@ -41,7 +41,8 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler,
   // device::mojom::FingerprintObserver:
   void OnRestarted() override;
   void OnEnrollScanDone(uint32_t scan_result,
-                        bool enroll_session_complete) override;
+                        bool enroll_session_complete,
+                        int percent_complete) override;
   void OnAuthScanDone(uint32_t scan_result,
                       const AttemptMatches& matches) override;
   void OnSessionFailed() override;

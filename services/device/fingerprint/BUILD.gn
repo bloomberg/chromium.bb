@@ -27,6 +27,7 @@ component("fingerprint") {
     deps += [
       "//chromeos",
       "//dbus",
+      "//third_party/protobuf:protobuf_lite",
     ]
   } else {
     sources += [ "fingerprint_default.cc" ]

@@ -64,7 +64,8 @@ class TestBiodObserver : public BiodClient::Observer {
   // BiodClient::Observer:
   void BiodServiceRestarted() override;
   void BiodEnrollScanDoneReceived(biod::ScanResult scan_result,
-                                  bool is_complete) override;
+                                  bool is_complete,
+                                  int percent_complete) override;
   void BiodAuthScanDoneReceived(biod::ScanResult scan_result,
                                 const AuthScanMatches& matches) override;
   void BiodSessionFailedReceived() override;

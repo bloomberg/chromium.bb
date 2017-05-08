@@ -116,11 +116,13 @@ void FingerprintHandler::OnJavascriptDisallowed() {}
 void FingerprintHandler::OnRestarted() {}
 
 void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
-                                          bool enroll_session_complete) {
+                                          bool enroll_session_complete,
+                                          int percent_complete) {
   AllowJavascript();
   auto scan_attempt = base::MakeUnique<base::DictionaryValue>();
   scan_attempt->SetInteger("result", scan_result);
   scan_attempt->SetBoolean("isComplete", enroll_session_complete);
+  scan_attempt->SetInteger("percentComplete", percent_complete);
 
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::Value("on-fingerprint-scan-received"),

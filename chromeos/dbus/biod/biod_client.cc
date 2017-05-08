@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
+#include "chromeos/dbus/biod/messages.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -18,11 +20,6 @@
 namespace chromeos {
 
 namespace {
-
-// TODO(xiaoyinh@): Use the constant from service_constants.h
-// crbug.com/713420
-const char kBiometricsManagerPath[] =
-    "/org/chromium/BiometricsDaemon/FpcBiometricsManager";
 
 // D-Bus response handler for methods that use void callbacks.
 void OnVoidResponse(const VoidDBusMethodCallback& callback,
@@ -211,8 +208,9 @@ class BiodClientImpl : public BiodClient {
   void Init(dbus::Bus* bus) override {
     bus_ = bus;
 
-    biod_proxy_ = bus->GetObjectProxy(biod::kBiodServiceName,
-                                      dbus::ObjectPath(kBiometricsManagerPath));
+    dbus::ObjectPath fpc_bio_path = dbus::ObjectPath(base::StringPrintf(
+        "%s/%s", biod::kBiodServicePath, biod::kFpcBiometricsManagerName));
+    biod_proxy_ = bus->GetObjectProxy(biod::kBiodServiceName, fpc_bio_path);
 
     biod_proxy_->SetNameOwnerChangedCallback(
         base::Bind(&BiodClientImpl::NameOwnerChangedReceived,
@@ -338,21 +336,19 @@ class BiodClientImpl : public BiodClient {
 
   void EnrollScanDoneReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
-    uint32_t scan_result;
-    bool enroll_session_complete;
-    if (!reader.PopUint32(&scan_result) ||
-        !reader.PopBool(&enroll_session_complete)) {
-      LOG(ERROR) << "Error reading signal from biometrics: "
-                 << signal->ToString();
+    biod::EnrollScanDone protobuf;
+    if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
+      LOG(ERROR) << "Unable to decode protocol buffer from "
+                 << biod::kBiometricsManagerEnrollScanDoneSignal << " signal.";
       return;
     }
 
-    if (enroll_session_complete)
-      current_enroll_session_path_.reset();
+    int percent_complete =
+        protobuf.has_percent_complete() ? protobuf.percent_complete() : -1;
 
     for (auto& observer : observers_) {
-      observer.BiodEnrollScanDoneReceived(
-          static_cast<biod::ScanResult>(scan_result), enroll_session_complete);
+      observer.BiodEnrollScanDoneReceived(protobuf.scan_result(),
+                                          protobuf.done(), percent_complete);
     }
   }
 

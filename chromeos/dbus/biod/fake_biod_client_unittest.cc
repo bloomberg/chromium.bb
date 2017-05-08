@@ -63,7 +63,8 @@ class FakeBiodClientTest : public testing::Test {
     for (size_t i = 0; i < fingerprint_data.size(); ++i) {
       fake_biod_client_.SendEnrollScanDone(
           fingerprint_data[i], SCAN_RESULT_SUCCESS,
-          i == fingerprint_data.size() - 1 /* is_complete */);
+          i == fingerprint_data.size() - 1 /* is_complete */,
+          -1 /* percent_complete */);
     }
   }
 

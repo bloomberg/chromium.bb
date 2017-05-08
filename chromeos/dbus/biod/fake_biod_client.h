@@ -40,7 +40,8 @@ class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
   // is true the enroll session is finished, and the record is stored.
   void SendEnrollScanDone(const std::string& fingerprint,
                           biod::ScanResult type_result,
-                          bool is_complete);
+                          bool is_complete,
+                          int percent_complete);
   // Emulates a scan that occurs during a authentication session. |fingerprint|
   // is a string which represents the finger, and will be compared with all the
   // stored fingerprints.
