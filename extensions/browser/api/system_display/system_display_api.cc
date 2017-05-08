@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/common/api/system_display.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
@@ -175,6 +176,11 @@ bool SystemDisplayFunction::PreRunValidation(std::string* error) {
 }
 
 bool SystemDisplayFunction::ShouldRestrictToKioskAndWebUI() {
+  // Allow autotest extension to access for Chrome OS testing.
+  if (extension()->permissions_data()->HasAPIPermission(
+      APIPermission::kAutoTestPrivate)) {
+    return false;
+  }
   return true;
 }
 
