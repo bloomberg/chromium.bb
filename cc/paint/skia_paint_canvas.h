@@ -129,8 +129,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                 const SkRect& rect,
                 sk_sp<SkData> data) override;
 
-  void PlaybackPaintRecord(sk_sp<const PaintRecord> record) override;
-
   // Don't shadow non-virtual helper functions.
   using PaintCanvas::clipRect;
   using PaintCanvas::clipRRect;

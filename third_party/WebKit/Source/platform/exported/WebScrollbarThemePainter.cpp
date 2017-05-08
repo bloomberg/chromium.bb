@@ -54,7 +54,7 @@ class ScopedScrollbarPainter {
   ~ScopedScrollbarPainter() {
     canvas_->save();
     canvas_->translate(rect_.x, rect_.y);
-    canvas_->PlaybackPaintRecord(builder_.EndRecording());
+    canvas_->drawPicture(builder_.EndRecording());
     canvas_->restore();
   }
 

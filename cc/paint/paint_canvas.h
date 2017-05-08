@@ -166,6 +166,8 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void drawDisplayItemList(
       scoped_refptr<DisplayItemList> display_item_list) = 0;
 
+  // Unlike SkCanvas::drawPicture, this only plays back the PaintRecord and does
+  // not add an additional clip.  This is closer to SkPicture::playback.
   virtual void drawPicture(sk_sp<const PaintRecord> record) = 0;
 
   virtual bool isClipEmpty() const = 0;
@@ -180,14 +182,6 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void Annotate(AnnotationType type,
                         const SkRect& rect,
                         sk_sp<SkData> data) = 0;
-
-  // TODO(enne): maybe this should live on PaintRecord, but that's not
-  // possible when PaintRecord is a typedef.
-  virtual void PlaybackPaintRecord(sk_sp<const PaintRecord> record) = 0;
-
- protected:
-  friend class PaintSurface;
-  friend class PaintRecorder;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaintCanvas);
@@ -221,11 +215,6 @@ class CC_PAINT_EXPORT PaintCanvasAutoRestore {
   PaintCanvas* canvas_ = nullptr;
   int save_count_ = 0;
 };
-
-// TODO(enne): Move all these functions into PaintCanvas.  These are only
-// separate now to make the transition to concrete types easier by keeping
-// the base PaintCanvas type equivalent to the SkCanvas interface and
-// all these helper functions potentially operating on both.
 
 // Following routines are used in print preview workflow to mark the
 // preview metafile.

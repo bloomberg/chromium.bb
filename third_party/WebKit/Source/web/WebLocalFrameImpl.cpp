@@ -311,7 +311,7 @@ class ChromePrintContext : public PrintContext {
     builder.Context().SetPrinting(true);
     builder.Context().BeginRecording(bounds);
     float scale = SpoolPage(builder.Context(), page_number, bounds);
-    canvas->PlaybackPaintRecord(builder.Context().EndRecording());
+    canvas->drawPicture(builder.Context().EndRecording());
     return scale;
   }
 
@@ -373,7 +373,7 @@ class ChromePrintContext : public PrintContext {
 
       current_height += page_size_in_pixels.Height() + 1;
     }
-    canvas->PlaybackPaintRecord(context.EndRecording());
+    canvas->drawPicture(context.EndRecording());
   }
 
  protected:

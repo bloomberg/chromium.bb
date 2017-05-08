@@ -340,6 +340,7 @@ void DrawPosTextOp::RasterWithFlags(const PaintOpWithFlags* base_op,
 void DrawRecordOp::Raster(const PaintOp* base_op,
                           SkCanvas* canvas,
                           const SkMatrix& original_ctm) {
+  // Don't use drawPicture here, as it adds an implicit clip.
   auto* op = static_cast<const DrawRecordOp*>(base_op);
   op->record->playback(canvas);
 }
