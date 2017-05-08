@@ -13,7 +13,14 @@ namespace service_manager {
 InterfaceProviderSpec::InterfaceProviderSpec() {}
 InterfaceProviderSpec::InterfaceProviderSpec(
     const InterfaceProviderSpec& other) = default;
+InterfaceProviderSpec::InterfaceProviderSpec(InterfaceProviderSpec&& other) =
+    default;
 InterfaceProviderSpec::~InterfaceProviderSpec() {}
+
+InterfaceProviderSpec& InterfaceProviderSpec::operator=(
+    const InterfaceProviderSpec& other) = default;
+InterfaceProviderSpec& InterfaceProviderSpec::operator=(
+    InterfaceProviderSpec&& other) = default;
 
 bool InterfaceProviderSpec::operator==(
     const InterfaceProviderSpec& other) const {

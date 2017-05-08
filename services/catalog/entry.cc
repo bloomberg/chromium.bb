@@ -29,7 +29,7 @@ bool ReadStringSet(const base::ListValue& list_value,
       LOG(ERROR) << "Entry::Deserialize: list member must be a string";
       return false;
     }
-    string_set->insert(value);
+    string_set->insert(std::move(value));
   }
   return true;
 }
@@ -44,14 +44,23 @@ bool ReadStringSetFromValue(const base::Value& value,
   return ReadStringSet(*list_value, string_set);
 }
 
+// If |key| refers to a dictionary value within |value|, |*out| is set to that
+// DictionaryValue. Returns true if either |key| is not present or the
+// corresponding value is a dictionary.
+bool GetDictionaryValue(const base::DictionaryValue& value,
+                        base::StringPiece key,
+                        const base::DictionaryValue** out) {
+  const base::Value* entry_value = nullptr;
+  return !value.Get(key, &entry_value) || entry_value->GetAsDictionary(out);
+}
+
 bool BuildInterfaceProviderSpec(
     const base::DictionaryValue& value,
     service_manager::InterfaceProviderSpec* interface_provider_specs) {
   DCHECK(interface_provider_specs);
   const base::DictionaryValue* provides_value = nullptr;
-  if (value.HasKey(Store::kInterfaceProviderSpecs_ProvidesKey) &&
-      !value.GetDictionary(Store::kInterfaceProviderSpecs_ProvidesKey,
-                           &provides_value)) {
+  if (!GetDictionaryValue(value, Store::kInterfaceProviderSpecs_ProvidesKey,
+                          &provides_value)) {
     LOG(ERROR) << "Entry::Deserialize: "
                << Store::kInterfaceProviderSpecs_ProvidesKey
                << " must be a dictionary.";
@@ -66,14 +75,13 @@ bool BuildInterfaceProviderSpec(
                    << " capabilities dictionary";
         return false;
       }
-      interface_provider_specs->provides[it.key()] = interfaces;
+      interface_provider_specs->provides[it.key()] = std::move(interfaces);
     }
   }
 
   const base::DictionaryValue* requires_value = nullptr;
-  if (value.HasKey(Store::kInterfaceProviderSpecs_RequiresKey) &&
-      !value.GetDictionary(Store::kInterfaceProviderSpecs_RequiresKey,
-                           &requires_value)) {
+  if (!GetDictionaryValue(value, Store::kInterfaceProviderSpecs_RequiresKey,
+                          &requires_value)) {
     LOG(ERROR) << "Entry::Deserialize: "
                << Store::kInterfaceProviderSpecs_RequiresKey
                << " must be a dictionary.";
@@ -96,7 +104,7 @@ bool BuildInterfaceProviderSpec(
         return false;
       }
 
-      interface_provider_specs->requires[it.key()] = capabilities;
+      interface_provider_specs->requires[it.key()] = std::move(capabilities);
     }
   }
   return true;
@@ -130,14 +138,15 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
     LOG(ERROR) << "Entry::Deserialize: empty service name.";
     return nullptr;
   }
-  entry->set_name(name);
+  entry->set_name(std::move(name));
 
   // By default we assume a standalone service executable. The catalog may
   // override this layer based on configuration external to the service's own
   // manifest.
   base::FilePath module_path;
   base::PathService::Get(base::DIR_MODULE, &module_path);
-  entry->set_path(module_path.AppendASCII(name + kServiceExecutableExtension));
+  entry->set_path(
+      module_path.AppendASCII(entry->name() + kServiceExecutableExtension));
 
   // Human-readable name.
   std::string display_name;
@@ -146,7 +155,7 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
                << Store::kDisplayNameKey << " key";
     return nullptr;
   }
-  entry->set_display_name(display_name);
+  entry->set_display_name(std::move(display_name));
 
   // InterfaceProvider specs.
   const base::DictionaryValue* interface_provider_specs = nullptr;
@@ -172,20 +181,19 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
                  << "spec for key: " << it.key();
       return nullptr;
     }
-    entry->AddInterfaceProviderSpec(it.key(), spec);
+    entry->AddInterfaceProviderSpec(it.key(), std::move(spec));
   }
 
   // Required files.
   base::Optional<RequiredFileMap> required_files =
       catalog::RetrieveRequiredFiles(value);
   DCHECK(required_files);
-  for (const auto& iter : *required_files) {
-    entry->AddRequiredFilePath(iter.first, iter.second);
+  for (auto& iter : *required_files) {
+    entry->AddRequiredFilePath(iter.first, std::move(iter.second));
   }
 
-  if (value.HasKey(Store::kServicesKey)) {
-    const base::ListValue* services = nullptr;
-    value.GetList(Store::kServicesKey, &services);
+  const base::ListValue* services = nullptr;
+  if (value.GetList(Store::kServicesKey, &services)) {
     for (size_t i = 0; i < services->GetSize(); ++i) {
       const base::DictionaryValue* service = nullptr;
       services->GetDictionary(i, &service);
@@ -206,7 +214,7 @@ bool Entry::ProvidesCapability(const std::string& capability) const {
   if (it == interface_provider_specs_.end())
     return false;
 
-  auto connection_spec = it->second;
+  const auto& connection_spec = it->second;
   return connection_spec.provides.find(capability) !=
       connection_spec.provides.end();
 }
@@ -219,13 +227,12 @@ bool Entry::operator==(const Entry& other) const {
 
 void Entry::AddInterfaceProviderSpec(
     const std::string& name,
-    const service_manager::InterfaceProviderSpec& spec) {
-  interface_provider_specs_[name] = spec;
+    service_manager::InterfaceProviderSpec spec) {
+  interface_provider_specs_[name] = std::move(spec);
 }
 
-void Entry::AddRequiredFilePath(const std::string& name,
-                                const base::FilePath& path) {
-  required_file_paths_[name] = path;
+void Entry::AddRequiredFilePath(const std::string& name, base::FilePath path) {
+  required_file_paths_[name] = std::move(path);
 }
 
 }  // catalog
