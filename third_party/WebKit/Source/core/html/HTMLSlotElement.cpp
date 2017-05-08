@@ -213,8 +213,9 @@ void HTMLSlotElement::AttributeChanged(
   HTMLElement::AttributeChanged(params);
 }
 
-static bool WasInShadowTreeBeforeInserted(HTMLSlotElement& slot,
-                                          ContainerNode& insertion_point) {
+static bool WasInDifferentShadowTreeBeforeInserted(
+    HTMLSlotElement& slot,
+    ContainerNode& insertion_point) {
   ShadowRoot* root1 = slot.ContainingShadowRoot();
   ShadowRoot* root2 = insertion_point.ContainingShadowRoot();
   if (root1 && root2 && root1 == root2)
@@ -232,7 +233,8 @@ Node::InsertionNotificationRequest HTMLSlotElement::InsertedInto(
     // Relevant DOM Standard: https://dom.spec.whatwg.org/#concept-node-insert
     // - 6.4:  Run assign slotables for a tree with node's tree and a set
     // containing each inclusive descendant of node that is a slot.
-    if (root->IsV1() && !WasInShadowTreeBeforeInserted(*this, *insertion_point))
+    if (root->IsV1() &&
+        !WasInDifferentShadowTreeBeforeInserted(*this, *insertion_point))
       root->DidAddSlot(*this);
   }
 
