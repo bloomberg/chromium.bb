@@ -56,6 +56,7 @@ import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.PaymentComplete;
+import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentErrorReason;
@@ -321,7 +322,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private boolean mMerchantSupportsAutofillPaymentInstruments;
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
-    private CurrencyFormatter mCurrencyFormatter;
+    private Map<String, CurrencyFormatter> mCurrencyFormatterMap;
     private TabModelSelector mObservedTabModelSelector;
     private TabModel mObservedTabModel;
 
@@ -390,15 +391,18 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (sCanMakePaymentQueries == null) sCanMakePaymentQueries = new ArrayMap<>();
 
+        mCurrencyFormatterMap = new HashMap<>();
+
         recordSuccessFunnelHistograms("Initiated");
     }
 
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if (mCurrencyFormatter != null) {
+        for (CurrencyFormatter formatter : mCurrencyFormatterMap.values()) {
+            assert formatter != null;
             // Ensures the native implementation of currency formatter does not leak.
-            mCurrencyFormatter.destroy();
+            formatter.destroy();
         }
     }
 
@@ -778,28 +782,25 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return false;
         }
 
-        if (mCurrencyFormatter == null) {
-            mCurrencyFormatter = new CurrencyFormatter(details.total.amount.currency,
-                    details.total.amount.currencySystem, Locale.getDefault());
-        }
-
         if (details.total != null) {
             mRawTotal = details.total;
         }
 
+        loadCurrencyFormattersForPaymentDetails(details);
+
         if (mRawTotal != null) {
             // Total is never pending.
-            LineItem uiTotal = new LineItem(mRawTotal.label,
-                    mCurrencyFormatter.getFormattedCurrencyCode(),
-                    mCurrencyFormatter.format(mRawTotal.amount.value), /* isPending */ false);
+            CurrencyFormatter formatter = getOrCreateCurrencyFormatter(mRawTotal.amount);
+            LineItem uiTotal = new LineItem(mRawTotal.label, formatter.getFormattedCurrencyCode(),
+                    formatter.format(mRawTotal.amount.value), /* isPending */ false);
 
-            List<LineItem> uiLineItems = getLineItems(details.displayItems, mCurrencyFormatter);
+            List<LineItem> uiLineItems = getLineItems(details.displayItems);
 
             mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
         }
         mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
 
-        mUiShippingOptions = getShippingOptions(details.shippingOptions, mCurrencyFormatter);
+        mUiShippingOptions = getShippingOptions(details.shippingOptions);
 
         for (int i = 0; i < details.modifiers.length; i++) {
             PaymentDetailsModifier modifier = details.modifiers[i];
@@ -826,7 +827,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             PaymentDetailsModifier modifier = getModifier(instrument);
             instrument.setModifiedTotal(modifier == null || modifier.total == null
                             ? null
-                            : mCurrencyFormatter.format(modifier.total.amount.value));
+                            : getOrCreateCurrencyFormatter(modifier.total.amount)
+                                      .format(modifier.total.amount.value));
         }
 
         updateOrderSummary((PaymentInstrument) mPaymentMethodsSection.getSelectedItem());
@@ -840,12 +842,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         PaymentItem total = modifier == null ? null : modifier.total;
         if (total == null) total = mRawTotal;
 
-        mUiShoppingCart.setTotal(
-                new LineItem(total.label, mCurrencyFormatter.getFormattedCurrencyCode(),
-                        mCurrencyFormatter.format(total.amount.value), false /* isPending */));
-        mUiShoppingCart.setAdditionalContents(modifier == null
-                        ? null
-                        : getLineItems(modifier.additionalDisplayItems, mCurrencyFormatter));
+        CurrencyFormatter formatter = getOrCreateCurrencyFormatter(total.amount);
+        mUiShoppingCart.setTotal(new LineItem(total.label, formatter.getFormattedCurrencyCode(),
+                formatter.format(total.amount.value), false /* isPending */));
+        mUiShoppingCart.setAdditionalContents(
+                modifier == null ? null : getLineItems(modifier.additionalDisplayItems));
         mUI.updateOrderSummarySection(mUiShoppingCart);
     }
 
@@ -861,20 +862,19 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * Converts a list of payment items and returns their parsed representation.
      *
      * @param items     The payment items to parse. Can be null.
-     * @param formatter A formatter for the currency amount value.
      * @return A list of valid line items.
      */
-    private static List<LineItem> getLineItems(
-            @Nullable PaymentItem[] items, CurrencyFormatter formatter) {
+    private List<LineItem> getLineItems(@Nullable PaymentItem[] items) {
         // Line items are optional.
         if (items == null) return new ArrayList<>();
 
         List<LineItem> result = new ArrayList<>(items.length);
         for (int i = 0; i < items.length; i++) {
             PaymentItem item = items[i];
-
-            result.add(new LineItem(
-                    item.label, "", formatter.format(item.amount.value), item.pending));
+            CurrencyFormatter formatter = getOrCreateCurrencyFormatter(item.amount);
+            result.add(new LineItem(item.label,
+                    isMixedOrChangedCurrency() ? formatter.getFormattedCurrencyCode() : "",
+                    formatter.format(item.amount.value), item.pending));
         }
 
         return Collections.unmodifiableList(result);
@@ -884,11 +884,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * Converts a list of shipping options and returns their parsed representation.
      *
      * @param options   The raw shipping options to parse. Can be null.
-     * @param formatter A formatter for the currency amount value.
      * @return The UI representation of the shipping options.
      */
-    private static SectionInformation getShippingOptions(
-            @Nullable PaymentShippingOption[] options, CurrencyFormatter formatter) {
+    private SectionInformation getShippingOptions(@Nullable PaymentShippingOption[] options) {
         // Shipping options are optional.
         if (options == null || options.length == 0) {
             return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS);
@@ -898,13 +896,73 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         int selectedItemIndex = SectionInformation.NO_SELECTION;
         for (int i = 0; i < options.length; i++) {
             PaymentShippingOption option = options[i];
+            CurrencyFormatter formatter = getOrCreateCurrencyFormatter(option.amount);
+            String currencyPrefix = isMixedOrChangedCurrency()
+                    ? formatter.getFormattedCurrencyCode() + "\u0020"
+                    : "";
             result.add(new PaymentOption(option.id, option.label,
-                    formatter.format(option.amount.value), null));
+                    currencyPrefix + formatter.format(option.amount.value), null));
             if (option.selected) selectedItemIndex = i;
         }
 
         return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS, selectedItemIndex,
                 Collections.unmodifiableList(result));
+    }
+
+    /**
+     * Load required currency formatter for a given PaymentDetails.
+     *
+     * Note that the cache (mCurrencyFormatterMap) is not cleared for
+     * updated payment details so as to indicate the currency has been changed.
+     *
+     * @param details The given payment details.
+     */
+    private void loadCurrencyFormattersForPaymentDetails(PaymentDetails details) {
+        if (details.total != null) {
+            getOrCreateCurrencyFormatter(details.total.amount);
+        }
+
+        if (details.displayItems != null) {
+            for (PaymentItem item : details.displayItems) {
+                getOrCreateCurrencyFormatter(item.amount);
+            }
+        }
+
+        if (details.shippingOptions != null) {
+            for (PaymentShippingOption option : details.shippingOptions) {
+                getOrCreateCurrencyFormatter(option.amount);
+            }
+        }
+
+        if (details.modifiers != null) {
+            for (PaymentDetailsModifier modifier : details.modifiers) {
+                getOrCreateCurrencyFormatter(modifier.total.amount);
+                for (PaymentItem displayItem : modifier.additionalDisplayItems) {
+                    getOrCreateCurrencyFormatter(displayItem.amount);
+                }
+            }
+        }
+    }
+
+    private boolean isMixedOrChangedCurrency() {
+        return mCurrencyFormatterMap.size() > 1;
+    }
+
+    /**
+     * Gets currency formatter for a given PaymentCurrencyAmount,
+     * creates one if no existing instance is found.
+     *
+     * @amount The given payment amount.
+     */
+    private CurrencyFormatter getOrCreateCurrencyFormatter(PaymentCurrencyAmount amount) {
+        String key = amount.currency + amount.currencySystem;
+        CurrencyFormatter formatter = mCurrencyFormatterMap.get(key);
+        if (formatter == null) {
+            formatter = new CurrencyFormatter(
+                    amount.currency, amount.currencySystem, Locale.getDefault());
+            mCurrencyFormatterMap.put(key, formatter);
+        }
+        return formatter;
     }
 
     /**
