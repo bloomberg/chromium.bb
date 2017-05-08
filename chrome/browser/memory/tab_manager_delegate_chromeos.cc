@@ -330,10 +330,6 @@ void TabManagerDelegate::OnBrowserSetLastActive(Browser* browser) {
   AdjustFocusedTabScore(pid);
 }
 
-// TODO(cylee): Remove this function if Android process OOM score settings
-// is moved back to Android.
-// For example, negotiate non-overlapping OOM score ranges so Chrome and Android
-// can set OOM score for processes in their own world.
 void TabManagerDelegate::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
