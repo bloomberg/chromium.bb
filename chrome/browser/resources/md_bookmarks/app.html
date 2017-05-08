@@ -31,8 +31,17 @@
       }
 
       #splitter {
+        box-sizing: border-box;
         cursor: e-resize;
         flex: 0 0 var(--splitter-width);
+        opacity: 0;
+      }
+
+      #splitter:hover,
+      #splitter.splitter-active {
+        -webkit-border-start: 1px solid rgba(0, 0, 0, 0.1);
+        opacity: 1;
+        transition: opacity 100ms ease-out;
       }
 
       :host-context([dir='rtl']) #splitter {

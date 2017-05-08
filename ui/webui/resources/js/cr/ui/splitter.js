@@ -233,11 +233,15 @@ cr.define('cr.ui', function() {
      */
     handleSplitterDragStart: function() {
       // Use the computed width style as the base so that we can ignore what
-      // box sizing the element has.
+      // box sizing the element has. Add the difference between offset and
+      // client widths to account for any scrollbars.
       var targetElement = this.getResizeTarget_();
       var doc = targetElement.ownerDocument;
       this.startWidth_ =
-          parseFloat(doc.defaultView.getComputedStyle(targetElement).width);
+          parseFloat(doc.defaultView.getComputedStyle(targetElement).width) +
+          targetElement.offsetWidth - targetElement.clientWidth;
+
+      this.classList.add('splitter-active');
     },
 
     /**
@@ -265,6 +269,8 @@ cr.define('cr.ui', function() {
           parseFloat(doc.defaultView.getComputedStyle(targetElement).width);
       if (this.startWidth_ != computedWidth)
         cr.dispatchSimpleEvent(this, 'resize');
+
+      this.classList.remove('splitter-active');
     },
   };
 
