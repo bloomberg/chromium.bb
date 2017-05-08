@@ -1269,6 +1269,9 @@ static void idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
   else if (eob <= 34)
     // non-zero coeff only in upper-left 8x8
     aom_idct32x32_34_add(input, dest, stride);
+  else if (eob <= 135)
+    // non-zero coeff only in upper-left 16x16
+    aom_idct32x32_135_add(input, dest, stride);
 #endif
   else
     aom_idct32x32_1024_add(input, dest, stride);

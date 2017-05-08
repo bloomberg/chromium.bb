@@ -158,7 +158,7 @@ void av1_idct16_avx2(__m256i *in) {
 }
 
 static void idct16(__m256i *in) {
-  mm256_transpose_16x16(in);
+  mm256_transpose_16x16(in, in);
   av1_idct16_avx2(in);
 }
 
@@ -340,7 +340,7 @@ static void iadst16_avx2(__m256i *in) {
 }
 
 static void iadst16(__m256i *in) {
-  mm256_transpose_16x16(in);
+  mm256_transpose_16x16(in, in);
   iadst16_avx2(in);
 }
 
@@ -358,7 +358,7 @@ static void flip_col(uint8_t **dest, int *stride, int rows) {
 }
 
 static void iidtx16(__m256i *in) {
-  mm256_transpose_16x16(in);
+  mm256_transpose_16x16(in, in);
   txfm_scaling16_avx2(Sqrt2, in);
 }
 #endif
@@ -445,5 +445,5 @@ void av1_iht16x16_256_add_avx2(const tran_low_t *input, uint8_t *dest,
 #endif  // CONFIG_EXT_TX
     default: assert(0); break;
   }
-  write_buffer_16x16(in, stride, dest);
+  store_buffer_16xN(in, stride, dest, 16);
 }

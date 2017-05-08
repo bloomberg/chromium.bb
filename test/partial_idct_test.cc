@@ -428,6 +428,14 @@ const PartialInvTxfmParam avx2_partial_idct_tests[] = {
              &wrapper<aom_idct16x16_10_add_avx2>, TX_16X16, 10, 8, 1),
   make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
              &wrapper<aom_idct16x16_1_add_avx2>, TX_16X16, 1, 8, 1),
+  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
+             &wrapper<aom_idct32x32_1024_add_avx2>, TX_32X32, 1024, 8, 1),
+  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
+             &wrapper<aom_idct32x32_135_add_avx2>, TX_32X32, 135, 8, 1),
+  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
+             &wrapper<aom_idct32x32_34_add_avx2>, TX_32X32, 34, 8, 1),
+  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
+             &wrapper<aom_idct32x32_1_add_avx2>, TX_32X32, 1, 8, 1),
 };
 
 INSTANTIATE_TEST_CASE_P(AVX2, PartialIDctTest,

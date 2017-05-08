@@ -52,12 +52,12 @@ static INLINE void recon_and_store(const __m256i *res, uint8_t *output) {
 }
 
 #define IDCT_ROUNDING_POS (6)
-static INLINE void write_buffer_16x16(__m256i *in, const int stride,
-                                      uint8_t *output) {
+static INLINE void store_buffer_16xN(__m256i *in, const int stride,
+                                     uint8_t *output, int num) {
   const __m256i rounding = _mm256_set1_epi16(1 << (IDCT_ROUNDING_POS - 1));
   int i = 0;
 
-  while (i < 16) {
+  while (i < num) {
     in[i] = _mm256_adds_epi16(in[i], rounding);
     in[i] = _mm256_srai_epi16(in[i], IDCT_ROUNDING_POS);
     recon_and_store(&in[i], output + i * stride);
