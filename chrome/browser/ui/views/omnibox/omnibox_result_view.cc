@@ -18,6 +18,7 @@
 #include <algorithm>  // NOLINT
 
 #include "base/i18n/bidi_line_iterator.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -724,7 +726,10 @@ int OmniboxResultView::GetVerticalMargin() const {
   // here. This minimum is larger for hybrid mouse/touch devices to ensure an
   // adequately sized touch target.
   using Md = ui::MaterialDesignController;
-  const int kIconVerticalPad = Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4;
+  const int kIconVerticalPad = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kUIExperiments,
+      OmniboxFieldTrial::kUIExperimentsVerticalMarginParam,
+      Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
   const int min_height = LocationBarView::kIconWidth + 2 * kIconVerticalPad;
 
   return std::max(kVerticalPadding, (min_height - GetTextHeight()) / 2);
