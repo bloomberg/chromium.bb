@@ -168,6 +168,7 @@
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/media_features.h"
+#include "media/renderers/default_renderer_factory.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/support.h"
@@ -272,11 +273,6 @@
 
 #if defined(ENABLE_MOJO_RENDERER)
 #include "media/mojo/clients/mojo_renderer_factory.h"  // nogncheck
-#endif
-
-#if !defined(ENABLE_MOJO_RENDERER) || \
-    BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-#include "media/renderers/default_renderer_factory.h"  // nogncheck
 #endif
 
 #if defined(ENABLE_MOJO_AUDIO_DECODER) || defined(ENABLE_MOJO_VIDEO_DECODER)
@@ -2919,42 +2915,39 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   factory_selector->SetUseMediaPlayer(UseMediaPlayerRenderer(url));
 #endif  // defined(OS_ANDROID)
 
-  // |factory_type| will be overwritten in all possible path below, and the
-  // DEFAULT value is not accurate. However, this prevents the compiler from
-  // issuing a -Wsometimes-uninitialized warning.
-  // TODO(tguilbert): Remove |factory_type|, and clean up the logic. The work is
-  // already completed and incrementally being submitted. See crbug.com/663503.
-  auto factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
-  std::unique_ptr<media::RendererFactory> media_renderer_factory;
-
+  bool use_mojo_renderer_factory = false;
 #if defined(ENABLE_MOJO_RENDERER)
 #if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMojoRenderer)) {
-    media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-        media_log.get(), GetDecoderFactory(),
-        base::Bind(&RenderThreadImpl::GetGpuFactories,
-                   base::Unretained(render_thread)));
-
-    factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
-  }
-#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-  if (!media_renderer_factory) {
-    media_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
-        base::Bind(&RenderThreadImpl::GetGpuFactories,
-                   base::Unretained(render_thread)),
-        GetMediaInterfaceProvider());
-
-    factory_type = media::RendererFactorySelector::FactoryType::MOJO;
-  }
+  use_mojo_renderer_factory =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMojoRenderer);
 #else
-  media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-      media_log.get(), GetDecoderFactory(),
-      base::Bind(&RenderThreadImpl::GetGpuFactories,
-                 base::Unretained(render_thread)));
+  use_mojo_renderer_factory = true;
+#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
+  if (use_mojo_renderer_factory) {
+    factory_selector->AddFactory(
+        media::RendererFactorySelector::FactoryType::MOJO,
+        base::MakeUnique<media::MojoRendererFactory>(
+            base::Bind(&RenderThreadImpl::GetGpuFactories,
+                       base::Unretained(render_thread)),
+            GetMediaInterfaceProvider()));
 
-  factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
+    factory_selector->SetBaseFactoryType(
+        media::RendererFactorySelector::FactoryType::MOJO);
+  }
 #endif  // defined(ENABLE_MOJO_RENDERER)
+
+  if (!use_mojo_renderer_factory) {
+    factory_selector->AddFactory(
+        media::RendererFactorySelector::FactoryType::DEFAULT,
+        base::MakeUnique<media::DefaultRendererFactory>(
+            media_log.get(), GetDecoderFactory(),
+            base::Bind(&RenderThreadImpl::GetGpuFactories,
+                       base::Unretained(render_thread))));
+
+    factory_selector->SetBaseFactoryType(
+        media::RendererFactorySelector::FactoryType::DEFAULT);
+  }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   auto courier_factory =
@@ -2974,9 +2967,6 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
 
   if (!url_index_.get() || url_index_->frame() != frame_)
     url_index_.reset(new media::UrlIndex(frame_));
-
-  factory_selector->AddFactory(factory_type, std::move(media_renderer_factory));
-  factory_selector->SetBaseFactoryType(factory_type);
 
   std::unique_ptr<media::WebMediaPlayerParams> params(
       new media::WebMediaPlayerParams(
