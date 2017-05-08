@@ -59,21 +59,24 @@ void RemoteFrameView::UpdateRemoteViewportIntersection() {
   // even if there are RemoteFrame ancestors in the frame tree.
   LayoutRect rect(0, 0, frame_rect_.Width(), frame_rect_.Height());
   rect.Move(remote_frame_->OwnerLayoutObject()->ContentBoxOffset());
-  if (!remote_frame_->OwnerLayoutObject()->MapToVisualRectInAncestorSpace(
-          nullptr, rect))
-    return;
-  IntRect root_visible_rect = local_root_view->VisibleContentRect();
-  IntRect viewport_intersection(rect);
-  viewport_intersection.Intersect(root_visible_rect);
-  viewport_intersection.Move(-local_root_view->ScrollOffsetInt());
+  IntRect viewport_intersection;
+  if (remote_frame_->OwnerLayoutObject()->MapToVisualRectInAncestorSpace(
+          nullptr, rect)) {
+    IntRect root_visible_rect = local_root_view->VisibleContentRect();
+    IntRect intersected_rect(rect);
+    intersected_rect.Intersect(root_visible_rect);
+    intersected_rect.Move(-local_root_view->ScrollOffsetInt());
 
-  // Translate the intersection rect from the root frame's coordinate space
-  // to the remote frame's coordinate space.
-  viewport_intersection = ConvertFromRootFrame(viewport_intersection);
+    // Translate the intersection rect from the root frame's coordinate space
+    // to the remote frame's coordinate space.
+    viewport_intersection = ConvertFromRootFrame(intersected_rect);
+  }
+
   if (viewport_intersection != last_viewport_intersection_) {
     remote_frame_->Client()->UpdateRemoteViewportIntersection(
         viewport_intersection);
   }
+
   last_viewport_intersection_ = viewport_intersection;
 }
 
@@ -112,8 +115,6 @@ void RemoteFrameView::FrameRectsChanged() {
   if (parent_)
     new_rect = parent_->ConvertToRootFrame(parent_->ContentsToFrame(new_rect));
   remote_frame_->Client()->FrameRectsChanged(new_rect);
-
-  UpdateRemoteViewportIntersection();
 }
 
 void RemoteFrameView::Hide() {

@@ -50,12 +50,12 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
   IntRect ConvertFromContainingFrameViewBase(const IntRect&) const override;
 
+  void UpdateRemoteViewportIntersection();
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit RemoteFrameView(RemoteFrame*);
-
-  void UpdateRemoteViewportIntersection();
 
   // The properties and handling of the cycle between RemoteFrame
   // and its RemoteFrameView corresponds to that between LocalFrame
