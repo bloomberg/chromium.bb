@@ -2674,13 +2674,12 @@ bool Internals::cursorUpdatePending() const {
 
 DOMArrayBuffer* Internals::serializeObject(
     PassRefPtr<SerializedScriptValue> value) const {
-  String string_value = value->ToWireString();
-  DOMArrayBuffer* buffer = DOMArrayBuffer::CreateUninitializedOrNull(
-      string_value.length(), sizeof(UChar));
-  if (buffer) {
-    string_value.CopyTo(static_cast<UChar*>(buffer->Data()), 0,
-                        string_value.length());
-  }
+  StringView view = value->GetWireData();
+  DCHECK(view.Is8Bit());
+  DOMArrayBuffer* buffer =
+      DOMArrayBuffer::CreateUninitializedOrNull(view.length(), sizeof(LChar));
+  if (buffer)
+    memcpy(buffer->Data(), view.Characters8(), view.length());
   return buffer;
 }
 

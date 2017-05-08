@@ -41,6 +41,7 @@
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/StringView.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "v8/include/v8.h"
 
@@ -118,6 +119,10 @@ class CORE_EXPORT SerializedScriptValue
 
   String ToWireString() const;
   void ToWireBytes(Vector<char>&) const;
+
+  StringView GetWireData() const {
+    return StringView(data_buffer_.get(), data_buffer_size_);
+  }
 
   // Deserializes the value (in the current context). Returns a null value in
   // case of failure.
