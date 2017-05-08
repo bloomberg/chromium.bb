@@ -31,10 +31,11 @@
 
   <interface name="xdg_wm_base" version="1">
     <description summary="create desktop-style surfaces">
-      xdg_wm_base allows clients to turn a wl_surface into a "real window"
-      which can be dragged, resized, stacked, and moved around by the
-      user. Everything about this interface is suited towards traditional
-      desktop environments.
+      The xdg_wm_base interface is exposed as a global object enabling clients
+      to turn their wl_surfaces into windows in a desktop environment. It
+      defines the basic functionality needed for clients and the compositor to
+      create windows that can be dragged, resized, maximized, etc, as well as
+      creating transient windows such as popup menus.
     </description>
 
     <enum name="error">
