@@ -13,7 +13,6 @@
 #include "ui/aura/window_observer.h"
 
 namespace ash {
-class WmWindow;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventHandler;
 class WorkspaceLayoutManager;
@@ -24,7 +23,7 @@ class WorkspaceLayoutManagerBackdropDelegate;
 class ASH_EXPORT WorkspaceController : public aura::WindowObserver {
  public:
   // Installs WorkspaceLayoutManager on |viewport|.
-  explicit WorkspaceController(WmWindow* viewport);
+  explicit WorkspaceController(aura::Window* viewport);
   ~WorkspaceController() override;
 
   // Returns the current window state.
@@ -46,7 +45,7 @@ class ASH_EXPORT WorkspaceController : public aura::WindowObserver {
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  WmWindow* viewport_;
+  aura::Window* viewport_;
   std::unique_ptr<WorkspaceEventHandler> event_handler_;
 
   // Owned by |viewport_|.

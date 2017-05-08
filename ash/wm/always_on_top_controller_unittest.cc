@@ -37,7 +37,7 @@ class VirtualKeyboardAlwaysOnTopControllerTest : public AshTestBase {
 
 class TestLayoutManager : public WorkspaceLayoutManager {
  public:
-  explicit TestLayoutManager(WmWindow* window)
+  explicit TestLayoutManager(aura::Window* window)
       : WorkspaceLayoutManager(window), keyboard_bounds_changed_(false) {}
 
   ~TestLayoutManager() override {}
@@ -63,8 +63,7 @@ TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanged) {
   aura::Window* always_on_top_container =
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
   // Install test layout manager.
-  TestLayoutManager* manager =
-      new TestLayoutManager(WmWindow::Get(always_on_top_container));
+  TestLayoutManager* manager = new TestLayoutManager(always_on_top_container);
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   // Deactivates keyboard to unregister existing listeners.
   controller->DeactivateKeyboard(keyboard_controller);

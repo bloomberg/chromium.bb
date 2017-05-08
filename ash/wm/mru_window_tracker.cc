@@ -76,7 +76,8 @@ MruWindowTracker::WindowList BuildWindowListInternal(
     for (auto ix = mru_windows->rbegin(); ix != mru_windows->rend(); ++ix) {
       // Exclude windows in non-switchable containers and those which cannot
       // be activated.
-      if (!wm::IsSwitchableContainer((*ix)->GetParent()) ||
+      if (((*ix)->GetParent() &&
+           !wm::IsSwitchableContainer((*ix)->GetParent()->aura_window())) ||
           !should_include_window_predicate.Run(*ix)) {
         continue;
       }

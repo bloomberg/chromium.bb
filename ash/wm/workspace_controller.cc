@@ -18,7 +18,6 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/wm_window.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -35,38 +34,39 @@ const int kInitialAnimationDurationMS = 200;
 
 }  // namespace
 
-WorkspaceController::WorkspaceController(WmWindow* viewport)
+WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport),
-      event_handler_(ShellPort::Get()->CreateWorkspaceEventHandler(viewport)),
+      event_handler_(ShellPort::Get()->CreateWorkspaceEventHandler(
+          WmWindow::Get(viewport))),
       layout_manager_(new WorkspaceLayoutManager(viewport)) {
-  viewport_->aura_window()->AddObserver(this);
-  viewport_->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
-  viewport_->SetLayoutManager(base::WrapUnique(layout_manager_));
+  viewport_->AddObserver(this);
+  ::wm::SetWindowVisibilityAnimationTransition(viewport_, ::wm::ANIMATE_NONE);
+  viewport_->SetLayoutManager(layout_manager_);
 }
 
 WorkspaceController::~WorkspaceController() {
   if (!viewport_)
     return;
 
-  viewport_->aura_window()->RemoveObserver(this);
+  viewport_->RemoveObserver(this);
   viewport_->SetLayoutManager(nullptr);
 }
 
 wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
-  if (!viewport_ || !viewport_->GetRootWindowController()->HasShelf())
+  if (!viewport_ || !RootWindowController::ForWindow(viewport_)->HasShelf())
     return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 
-  const WmWindow* fullscreen = wm::GetWindowForFullscreenMode(viewport_);
-  if (fullscreen && !fullscreen->GetWindowState()->ignored_by_shelf())
+  const aura::Window* fullscreen = wm::GetWindowForFullscreenMode(viewport_);
+  if (fullscreen && !wm::GetWindowState(fullscreen)->ignored_by_shelf())
     return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
 
-  const gfx::Rect shelf_bounds(WmShelf::ForWindow(viewport_)->GetIdealBounds());
+  const gfx::Rect shelf_bounds(
+      WmShelf::ForWindow(WmWindow::Get(viewport_))->GetIdealBounds());
   bool window_overlaps_launcher = false;
   // The default container may contain windows that may overlap the launcher
   // shelf and affect its transparency.
   aura::Window* container =
-      viewport_->GetRootWindow()->aura_window()->GetChildById(
-          kShellWindowId_DefaultContainer);
+      viewport_->GetRootWindow()->GetChildById(kShellWindowId_DefaultContainer);
   for (aura::Window* window : container->children()) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_state->ignored_by_shelf() ||
@@ -86,7 +86,7 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
 void WorkspaceController::DoInitialAnimation() {
   viewport_->Show();
 
-  ui::Layer* layer = viewport_->GetLayer();
+  ui::Layer* layer = viewport_->layer();
   layer->SetOpacity(0.0f);
   SetTransformForScaleAnimation(layer, LAYER_SCALE_ANIMATION_ABOVE);
 
@@ -117,8 +117,8 @@ void WorkspaceController::SetMaximizeBackdropDelegate(
 }
 
 void WorkspaceController::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(WmWindow::Get(window), viewport_);
-  viewport_->aura_window()->RemoveObserver(this);
+  DCHECK_EQ(window, viewport_);
+  viewport_->RemoveObserver(this);
   viewport_ = nullptr;
   // Destroy |event_handler_| too as it depends upon |window|.
   event_handler_.reset();

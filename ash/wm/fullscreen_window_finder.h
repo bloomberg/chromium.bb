@@ -7,15 +7,16 @@
 
 #include "ash/ash_export.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
-
-class WmWindow;
-
 namespace wm {
 
 // Returns the topmost window or one of its transient parents, if any of them
 // are in fullscreen mode. This searches for a window in the root of |context|.
-ASH_EXPORT WmWindow* GetWindowForFullscreenMode(WmWindow* context);
+ASH_EXPORT aura::Window* GetWindowForFullscreenMode(aura::Window* context);
 
 }  // namespace wm
 }  // namespace ash
