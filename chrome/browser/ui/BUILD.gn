@@ -2975,6 +2975,8 @@ split_static_library("ui") {
         "cocoa/styled_text_field.mm",
         "cocoa/styled_text_field_cell.h",
         "cocoa/styled_text_field_cell.mm",
+        "cocoa/subresource_filter/subresource_filter_bubble_controller.h",
+        "cocoa/subresource_filter/subresource_filter_bubble_controller.mm",
         "cocoa/tab_contents/favicon_util_mac.h",
         "cocoa/tab_contents/favicon_util_mac.mm",
         "cocoa/tab_contents/overlayable_contents_controller.h",

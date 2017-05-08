@@ -55,7 +55,7 @@ using MediaMenuPartsMap =
 
 // Manages a "content blocked" bubble.
 @interface ContentSettingBubbleController : OmniboxDecorationBubbleController {
- @private
+ @protected
   IBOutlet NSTextField* titleLabel_;
   IBOutlet NSTextField* messageLabel_;
   IBOutlet NSMatrix* allowBlockRadioGroup_;
@@ -64,12 +64,14 @@ using MediaMenuPartsMap =
   IBOutlet NSButton* doneButton_;
   IBOutlet NSButton* loadButton_;
 
+  std::unique_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
+
+ @private
   // The container for the bubble contents of the geolocation bubble.
   IBOutlet NSView* contentsContainer_;
 
   IBOutlet NSTextField* blockedResourcesField_;
 
-  std::unique_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
   std::unique_ptr<ContentSettingBubbleWebContentsObserverBridge>
       observerBridge_;
   content_setting_bubble::PopupLinks popupLinks_;
@@ -79,6 +81,17 @@ using MediaMenuPartsMap =
   ContentSettingDecoration* decoration_;  // weak
 }
 
+// Initializes the controller using the model. Takes ownership of
+// |settingsBubbleModel| but not of the other objects. This is intended to be
+// invoked by subclasses and most callers should invoke the showForModel
+// convenience constructor.
+- (id)initWithModel:(ContentSettingBubbleModel*)settingsBubbleModel
+        webContents:(content::WebContents*)webContents
+             window:(NSWindow*)window
+       parentWindow:(NSWindow*)parentWindow
+         decoration:(ContentSettingDecoration*)decoration
+         anchoredAt:(NSPoint)anchoredAt;
+
 // Creates and shows a content blocked bubble. Takes ownership of
 // |contentSettingBubbleModel| but not of the other objects.
 + (ContentSettingBubbleController*)
@@ -87,6 +100,9 @@ showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
 parentWindow:(NSWindow*)parentWindow
   decoration:(ContentSettingDecoration*)decoration
   anchoredAt:(NSPoint)anchoredAt;
+
+// Initializes the layout of all the UI elements.
+- (void)layoutView;
 
 // Callback for the "don't block / continue blocking" radio group.
 - (IBAction)allowBlockToggled:(id)sender;
