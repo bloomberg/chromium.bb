@@ -72,6 +72,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                            &interp_filter,
 #endif  // CONFIG_DUAL_FILTER
                            subpel_x, xs, subpel_y, ys, conv_params);
+    conv_params->do_post_rounding = 1;
 #else
     assert(0);
 #endif  // CONFIG_CONVOLVE_ROUND
@@ -136,6 +137,7 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
                                   &interp_filter,
 #endif  // CONFIG_DUAL_FILTER
                                   subpel_x, xs, subpel_y, ys, conv_params, bd);
+    conv_params->do_post_rounding = 1;
 #else
     assert(0);
 #endif  // CONFIG_CONVOLVE_ROUND

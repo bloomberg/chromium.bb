@@ -33,6 +33,7 @@ typedef struct ConvolveParams {
   int round_0;
   int round_1;
   int plane;
+  int do_post_rounding;
 } ConvolveParams;
 
 static INLINE ConvolveParams get_conv_params(int ref, int plane) {
@@ -40,6 +41,7 @@ static INLINE ConvolveParams get_conv_params(int ref, int plane) {
   conv_params.ref = ref;
   conv_params.round = CONVOLVE_OPT_ROUND;
   conv_params.plane = plane;
+  conv_params.do_post_rounding = 0;
   return conv_params;
 }
 struct AV1Common;
@@ -73,6 +75,7 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int plane,
   conv_params.dst = dst;
   conv_params.dst_stride = dst_stride;
   conv_params.plane = plane;
+  conv_params.do_post_rounding = 0;
   return conv_params;
 }
 
