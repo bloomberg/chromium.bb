@@ -63,6 +63,8 @@ const char* MediaLicensesCounter::GetPrefName() const {
 
 void MediaLicensesCounter::Count() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Cancel existing requests.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   scoped_refptr<storage::FileSystemContext> filesystem_context =
       make_scoped_refptr(
           content::BrowserContext::GetDefaultStoragePartition(profile_)
