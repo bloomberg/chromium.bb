@@ -25,7 +25,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.height_ = height;
-  };
+  }
 
   Size.prototype = {
     /** @return {number} Width of the size. */

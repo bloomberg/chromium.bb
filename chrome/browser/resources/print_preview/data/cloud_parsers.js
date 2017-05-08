@@ -6,7 +6,7 @@ cr.define('cloudprint', function() {
   'use strict';
 
   /** Namespace which contains a method to parse cloud destinations directly. */
-  function CloudDestinationParser() {};
+  function CloudDestinationParser() {}
 
   /**
    * Enumeration of cloud destination field names.
@@ -56,7 +56,7 @@ cr.define('cloudprint', function() {
    * response.
    * @param {!Object} json Object that represents a Google Cloud Print search or
    *     printer response.
-   * @param {!print_preview.Destination.Origin} origin The origin of the
+   * @param {!print_preview.DestinationOrigin} origin The origin of the
    *     response.
    * @param {string} account The account this destination is registered for or
    *     empty string, if origin != COOKIES.
@@ -72,7 +72,7 @@ cr.define('cloudprint', function() {
     var tags = json[CloudDestinationParser.Field_.TAGS] || [];
     var connectionStatus =
         json[CloudDestinationParser.Field_.CONNECTION_STATUS] ||
-        print_preview.Destination.ConnectionStatus.UNKNOWN;
+        print_preview.DestinationConnectionStatus.UNKNOWN;
     var optionalParams = {
       account: account,
       tags: tags,
@@ -102,22 +102,22 @@ cr.define('cloudprint', function() {
    * Parses the destination type.
    * @param {string} typeStr Destination type given by the Google Cloud Print
    *     server.
-   * @return {!print_preview.Destination.Type} Destination type.
+   * @return {!print_preview.DestinationType} Destination type.
    * @private
    */
   CloudDestinationParser.parseType_ = function(typeStr) {
     if (typeStr == CloudDestinationParser.CloudType_.ANDROID ||
         typeStr == CloudDestinationParser.CloudType_.IOS) {
-      return print_preview.Destination.Type.MOBILE;
+      return print_preview.DestinationType.MOBILE;
     } else if (typeStr == CloudDestinationParser.CloudType_.DOCS) {
-      return print_preview.Destination.Type.GOOGLE_PROMOTED;
+      return print_preview.DestinationType.GOOGLE_PROMOTED;
     } else {
-      return print_preview.Destination.Type.GOOGLE;
+      return print_preview.DestinationType.GOOGLE;
     }
   };
 
   /** Namespace which contains a method to parse printer sharing invitation. */
-  function InvitationParser() {};
+  function InvitationParser() {}
 
   /**
    * Enumeration of invitation field names.
@@ -176,7 +176,7 @@ cr.define('cloudprint', function() {
 
     var destination = cloudprint.CloudDestinationParser.parse(
         json[InvitationParser.Field_.PRINTER],
-        print_preview.Destination.Origin.COOKIES,
+        print_preview.DestinationOrigin.COOKIES,
         account);
 
     return new print_preview.Invitation(

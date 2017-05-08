@@ -17,7 +17,7 @@ cr.define('print_preview.ticket_items', function() {
     print_preview.ticket_items.TicketItem.call(
         this, null /* appState */, null /* field */,
         null /* destinationStore */, documentInfo);
-  };
+  }
 
   Rasterize.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,

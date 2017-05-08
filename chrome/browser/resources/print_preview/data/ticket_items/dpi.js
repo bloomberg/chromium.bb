@@ -18,9 +18,9 @@ cr.define('print_preview.ticket_items', function() {
     print_preview.ticket_items.TicketItem.call(
         this,
         appState,
-        print_preview.AppState.Field.DPI,
+        print_preview.AppStateField.DPI,
         destinationStore);
-  };
+  }
 
   Dpi.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,

@@ -1184,7 +1184,7 @@ cr.define('print_preview', function() {
         return true;
       var selectedDest = this.destinationStore_.selectedDestination;
       return !!selectedDest &&
-             selectedDest.origin == print_preview.Destination.Origin.LOCAL &&
+             selectedDest.origin == print_preview.DestinationOrigin.LOCAL &&
              selectedDest.id !=
                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
     },
@@ -1271,6 +1271,7 @@ cr.define('print_preview', function() {
 
 // <include src="data/page_number_set.js">
 // <include src="data/destination.js">
+// <include src="data/destination_match.js">
 // <include src="data/local_parsers.js">
 // <include src="data/cloud_parsers.js">
 // <include src="data/destination_store.js">

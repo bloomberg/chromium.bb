@@ -89,7 +89,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isInitialized_ = false;
-  };
+  }
 
   /**
    * Event types dispatched by this data model.

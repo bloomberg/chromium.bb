@@ -28,7 +28,7 @@ cr.define('print_preview.ticket_items', function() {
     print_preview.ticket_items.TicketItem.call(
         this,
         appState,
-        print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED,
+        print_preview.AppStateField.IS_HEADER_FOOTER_ENABLED,
         null /*destinationStore*/,
         documentInfo);
 
@@ -57,7 +57,7 @@ cr.define('print_preview.ticket_items', function() {
     this.landscape_ = landscape;
 
     this.addEventListeners_();
-  };
+  }
 
   /**
    * Minimum height of page in microns to allow headers and footers. Should
@@ -107,7 +107,7 @@ cr.define('print_preview.ticket_items', function() {
       } else {
         margins = this.getDocumentInfoInternal().margins;
       }
-      var orientEnum = print_preview.ticket_items.CustomMargins.Orientation;
+      var orientEnum = print_preview.ticket_items.CustomMarginsOrientation;
       return margins == null ||
              margins.get(orientEnum.TOP) > 0 ||
              margins.get(orientEnum.BOTTOM) > 0;

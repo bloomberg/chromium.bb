@@ -37,7 +37,7 @@ cr.define('print_preview.ticket_items', function() {
     print_preview.ticket_items.TicketItem.call(
         this,
         appState,
-        print_preview.AppState.Field.MARGINS_TYPE,
+        print_preview.AppStateField.MARGINS_TYPE,
         null /*destinationStore*/,
         documentInfo);
 
@@ -47,7 +47,7 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     this.customMargins_ = customMargins;
-  };
+  }
 
   MarginsType.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,

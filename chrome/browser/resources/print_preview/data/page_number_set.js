@@ -18,7 +18,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.pageNumberSet_ = pageListToPageSet(pageNumberList);
-  };
+  }
 
   PageNumberSet.prototype = {
     /** @return {number} The number of page numbers in the set. */

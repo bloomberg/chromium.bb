@@ -21,10 +21,10 @@ cr.define('print_preview.ticket_items', function() {
     print_preview.ticket_items.TicketItem.call(
         this,
         appState,
-        print_preview.AppState.Field.SCALING,
+        print_preview.AppStateField.SCALING,
         destinationStore,
         documentInfo);
-  };
+  }
 
   Scaling.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,
@@ -32,7 +32,7 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     wouldValueBeValid: function(value) {
       return true;
-   },
+    },
 
     /** @override */
     isValueEqual: function(value) {

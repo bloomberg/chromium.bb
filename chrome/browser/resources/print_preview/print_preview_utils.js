@@ -152,7 +152,7 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
  * See pageRangeTextToPageRanges for details.
  * @param {string} pageRangeText The text to be checked.
  * @param {number} totalPageCount The total number of pages.
- * @return {Array<number>} A list of all pages.
+ * @return {!Array<number>} A list of all pages.
  */
 function pageRangeTextToPageList(pageRangeText, totalPageCount) {
   var pageRanges = pageRangeTextToPageRanges(pageRangeText, totalPageCount);

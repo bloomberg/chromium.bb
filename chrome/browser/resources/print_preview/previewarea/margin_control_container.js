@@ -63,13 +63,13 @@ cr.define('print_preview', function() {
     /**
      * Convenience array that contains all of the margin controls.
      * @type {!Object<
-     *     !print_preview.ticket_items.CustomMargins.Orientation,
+     *     !print_preview.ticket_items.CustomMarginsOrientation,
      *     !print_preview.MarginControl>}
      * @private
      */
     this.controls_ = {};
-    for (var key in print_preview.ticket_items.CustomMargins.Orientation) {
-      var orientation = print_preview.ticket_items.CustomMargins.Orientation[
+    for (var key in print_preview.ticket_items.CustomMarginsOrientation) {
+      var orientation = print_preview.ticket_items.CustomMarginsOrientation[
           key];
       var control = new print_preview.MarginControl(orientation);
       this.controls_[orientation] = control;
@@ -121,16 +121,16 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * @param {!print_preview.ticket_items.CustomMargins.Orientation} orientation
+   * @param {!print_preview.ticket_items.CustomMarginsOrientation} orientation
    *     Orientation value to test.
    * @return {boolean} Whether the given orientation is TOP or BOTTOM.
    * @private
    */
   MarginControlContainer.isTopOrBottom_ = function(orientation) {
     return orientation ==
-        print_preview.ticket_items.CustomMargins.Orientation.TOP ||
+        print_preview.ticket_items.CustomMarginsOrientation.TOP ||
         orientation ==
-            print_preview.ticket_items.CustomMargins.Orientation.BOTTOM;
+            print_preview.ticket_items.CustomMarginsOrientation.BOTTOM;
   };
 
   MarginControlContainer.prototype = {

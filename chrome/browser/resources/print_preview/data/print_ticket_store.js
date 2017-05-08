@@ -59,7 +59,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.measurementSystem_ = new print_preview.MeasurementSystem(
-        ',', '.', print_preview.MeasurementSystem.UnitType.IMPERIAL);
+        ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
 
     /**
      * Collate ticket item.
@@ -225,7 +225,7 @@ cr.define('print_preview', function() {
     this.isInitialized_ = false;
 
     this.addEventListeners_();
-  };
+  }
 
   /**
    * Event types dispatched by the print ticket store.
@@ -329,7 +329,7 @@ cr.define('print_preview', function() {
      * Initializes the print ticket store. Dispatches an INITIALIZE event.
      * @param {string} thousandsDelimeter Delimeter of the thousands place.
      * @param {string} decimalDelimeter Delimeter of the decimal point.
-     * @param {!print_preview.MeasurementSystem.UnitType} unitType Type of unit
+     * @param {!print_preview.MeasurementSystemUnitType} unitType Type of unit
      *     of the local measurement system.
      * @param {boolean} selectionOnly Whether only selected content should be
      *     printed.
@@ -342,81 +342,81 @@ cr.define('print_preview', function() {
 
       // Initialize ticket with user's previous values.
       if (this.appState_.hasField(
-          print_preview.AppState.Field.IS_COLOR_ENABLED)) {
+          print_preview.AppStateField.IS_COLOR_ENABLED)) {
         this.color_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.IS_COLOR_ENABLED)));
+            print_preview.AppStateField.IS_COLOR_ENABLED)));
       }
-      if (this.appState_.hasField(print_preview.AppState.Field.DPI)) {
+      if (this.appState_.hasField(print_preview.AppStateField.DPI)) {
         this.dpi_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.DPI)));
+            print_preview.AppStateField.DPI)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.IS_DUPLEX_ENABLED)) {
+          print_preview.AppStateField.IS_DUPLEX_ENABLED)) {
         this.duplex_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.IS_DUPLEX_ENABLED)));
+            print_preview.AppStateField.IS_DUPLEX_ENABLED)));
       }
-      if (this.appState_.hasField(print_preview.AppState.Field.MEDIA_SIZE)) {
+      if (this.appState_.hasField(print_preview.AppStateField.MEDIA_SIZE)) {
         this.mediaSize_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.MEDIA_SIZE)));
+            print_preview.AppStateField.MEDIA_SIZE)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.IS_LANDSCAPE_ENABLED)) {
+          print_preview.AppStateField.IS_LANDSCAPE_ENABLED)) {
         this.landscape_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.IS_LANDSCAPE_ENABLED)));
+            print_preview.AppStateField.IS_LANDSCAPE_ENABLED)));
       }
       // Initialize margins after landscape because landscape may reset margins.
-      if (this.appState_.hasField(print_preview.AppState.Field.MARGINS_TYPE)) {
+      if (this.appState_.hasField(print_preview.AppStateField.MARGINS_TYPE)) {
         this.marginsType_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.MARGINS_TYPE)));
+            print_preview.AppStateField.MARGINS_TYPE)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.CUSTOM_MARGINS)) {
+          print_preview.AppStateField.CUSTOM_MARGINS)) {
         this.customMargins_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.CUSTOM_MARGINS)));
+            print_preview.AppStateField.CUSTOM_MARGINS)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED)) {
+          print_preview.AppStateField.IS_HEADER_FOOTER_ENABLED)) {
         this.headerFooter_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED)));
+            print_preview.AppStateField.IS_HEADER_FOOTER_ENABLED)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.IS_COLLATE_ENABLED)) {
+          print_preview.AppStateField.IS_COLLATE_ENABLED)) {
         this.collate_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.IS_COLLATE_ENABLED)));
+            print_preview.AppStateField.IS_COLLATE_ENABLED)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.IS_FIT_TO_PAGE_ENABLED)) {
+          print_preview.AppStateField.IS_FIT_TO_PAGE_ENABLED)) {
         this.fitToPage_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.IS_FIT_TO_PAGE_ENABLED)));
+            print_preview.AppStateField.IS_FIT_TO_PAGE_ENABLED)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.SCALING)) {
+          print_preview.AppStateField.SCALING)) {
         this.scaling_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.SCALING)));
+            print_preview.AppStateField.SCALING)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED)) {
+          print_preview.AppStateField.IS_CSS_BACKGROUND_ENABLED)) {
         this.cssBackground_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
-            print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED)));
+            print_preview.AppStateField.IS_CSS_BACKGROUND_ENABLED)));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.VENDOR_OPTIONS)) {
+          print_preview.AppStateField.VENDOR_OPTIONS)) {
         this.vendorItems_.updateValue(
             /** @type {!Object<string>} */(this.appState_.getField(
-            print_preview.AppState.Field.VENDOR_OPTIONS)));
-    }
+            print_preview.AppStateField.VENDOR_OPTIONS)));
+      }
     },
 
     /**
@@ -441,7 +441,7 @@ cr.define('print_preview', function() {
     /**
      * Creates an object that represents a Google Cloud Print print ticket.
      * @param {!print_preview.Destination} destination Destination to print to.
-     * @return {!Object} Google Cloud Print print ticket.
+     * @return {string} Google Cloud Print print ticket.
      */
     createPrintTicket: function(destination) {
       assert(!destination.isLocal ||
@@ -491,7 +491,7 @@ cr.define('print_preview', function() {
         // adjust it for page content, see Landscape.isCapabilityAvailable().
         // We can improve results if we set AUTO here.
         if (this.landscape.hasOption('AUTO'))
-          cjt.print.page_orientation = { type: 'AUTO' };
+          cjt.print.page_orientation = {type: 'AUTO'};
       } else if (this.landscape.isUserEdited()) {
         cjt.print.page_orientation =
             {type: this.landscape.getValue() ? 'LANDSCAPE' : 'PORTRAIT'};

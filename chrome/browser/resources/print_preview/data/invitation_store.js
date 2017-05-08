@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/**
+ * @enum {number}
+ * @private
+ */
+print_preview.InvitationStoreLoadStatus = {
+  IN_PROGRESS: 1,
+  DONE: 2,
+  FAILED: 3
+};
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -29,7 +41,7 @@ cr.define('print_preview', function() {
     /**
      * Maps user account to the flag whether the invitations for this account
      * were successfully loaded.
-     * @private {!Object<print_preview.InvitationStore.LoadStatus_>}
+     * @private {!Object<print_preview.InvitationStoreLoadStatus>}
      */
     this.loadStatus_ = {};
 
@@ -41,7 +53,7 @@ cr.define('print_preview', function() {
 
     /**
      * Used to fetch and process invitations.
-     * @private {print_preview.CloudPrintInterface}
+     * @private {cloudprint.CloudPrintInterface}
      */
     this.cloudPrintInterface_ = null;
 
@@ -51,7 +63,7 @@ cr.define('print_preview', function() {
      * @private {print_preview.Invitation}
      */
     this.invitationInProgress_ = null;
-  };
+  }
 
   /**
    * Event types dispatched by the data store.
@@ -62,16 +74,6 @@ cr.define('print_preview', function() {
         'print_preview.InvitationStore.INVITATION_PROCESSED',
     INVITATION_SEARCH_DONE:
         'print_preview.InvitationStore.INVITATION_SEARCH_DONE'
-  };
-
-  /**
-   * @enum {number}
-   * @private
-   */
-  InvitationStore.LoadStatus_ = {
-    IN_PROGRESS: 1,
-    DONE: 2,
-    FAILED: 3
   };
 
   InvitationStore.prototype = {
@@ -96,7 +98,7 @@ cr.define('print_preview', function() {
 
     /**
      * Sets the invitation store's Google Cloud Print interface.
-     * @param {!print_preview.CloudPrintInterface} cloudPrintInterface Interface
+     * @param {!cloudprint.CloudPrintInterface} cloudPrintInterface Interface
      *     to set.
      */
     setCloudPrintInterface: function(cloudPrintInterface) {
@@ -127,7 +129,7 @@ cr.define('print_preview', function() {
         return;
       if (this.loadStatus_.hasOwnProperty(this.userInfo_.activeUser)) {
         if (this.loadStatus_[this.userInfo_.activeUser] ==
-            InvitationStore.LoadStatus_.DONE) {
+            print_preview.InvitationStoreLoadStatus.DONE) {
           cr.dispatchSimpleEvent(
               this, InvitationStore.EventType.INVITATION_SEARCH_DONE);
         }
@@ -135,7 +137,7 @@ cr.define('print_preview', function() {
       }
 
       this.loadStatus_[this.userInfo_.activeUser] =
-          InvitationStore.LoadStatus_.IN_PROGRESS;
+          print_preview.InvitationStoreLoadStatus.IN_PROGRESS;
       this.cloudPrintInterface_.invites(this.userInfo_.activeUser);
     },
 
@@ -145,7 +147,7 @@ cr.define('print_preview', function() {
      * @param {boolean} accept Whether to accept this invitation.
      */
     processInvitation: function(invitation, accept) {
-      if (!!this.invitationInProgress_)
+      if (this.invitationInProgress_)
         return;
       this.invitationInProgress_ = invitation;
       this.cloudPrintInterface_.processInvite(invitation, accept);
@@ -173,7 +175,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintInvitesDone_: function(event) {
-      this.loadStatus_[event.user] = InvitationStore.LoadStatus_.DONE;
+      this.loadStatus_[event.user] =
+          print_preview.InvitationStoreLoadStatus.DONE;
       this.invitations_[event.user] = event.invitations;
 
       cr.dispatchSimpleEvent(
@@ -186,7 +189,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintInvitesFailed_: function(event) {
-      this.loadStatus_[event.user] = InvitationStore.LoadStatus_.FAILED;
+      this.loadStatus_[event.user] =
+          print_preview.InvitationStoreLoadStatus.FAILED;
     },
 
     /**

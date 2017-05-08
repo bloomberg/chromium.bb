@@ -99,7 +99,7 @@ cr.define('print_preview', function() {
     onConfigureRequestAccepted: function() {
       // It must be a Chrome OS CUPS printer which hasn't been set up before.
       assert(
-          this.destination_.origin == print_preview.Destination.Origin.CROS &&
+          this.destination_.origin == print_preview.DestinationOrigin.CROS &&
           !this.destination_.capabilities);
       this.updateConfiguringMessage_(true);
     },
@@ -207,7 +207,7 @@ cr.define('print_preview', function() {
       setIsVisible(
           this.getChildElement('.register-promo'),
           this.destination_.connectionStatus ==
-              print_preview.Destination.ConnectionStatus.UNREGISTERED);
+              print_preview.DestinationConnectionStatus.UNREGISTERED);
 
       if (cr.isChromeOS) {
         // Reset the configuring messages for CUPS printers.
@@ -277,7 +277,7 @@ cr.define('print_preview', function() {
      */
     onDestinationActivated_: function() {
       if (this.destination_.connectionStatus !=
-              print_preview.Destination.ConnectionStatus.UNREGISTERED) {
+              print_preview.DestinationConnectionStatus.UNREGISTERED) {
         var selectEvt = new Event(DestinationListItem.EventType.SELECT);
         selectEvt.destination = this.destination_;
         this.eventTarget_.dispatchEvent(selectEvt);
