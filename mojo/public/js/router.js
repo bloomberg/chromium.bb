@@ -153,8 +153,9 @@ define("mojo/public/js/router", [
           var ok = endpoint.client.handleIncomingMessage(message,
               messageValidator);
 
-          if (!ok) {
-            this.handleInvalidIncomingMessage_();
+          // Handle invalid cached incoming message.
+          if (!validator.isTestingMode() && !ok) {
+            this.connector_.handleError(true, true);
           }
         }
       }).bind(this));
@@ -235,10 +236,6 @@ define("mojo/public/js/router", [
         ok = endpoint.client.handleIncomingMessage(message, messageValidator);
       }
     }
-
-    if (!ok) {
-      this.handleInvalidIncomingMessage_();
-    }
     return ok;
   };
 
@@ -252,17 +249,6 @@ define("mojo/public/js/router", [
 
   Router.prototype.waitForNextMessageForTesting = function() {
     this.connector_.waitForNextMessageForTesting();
-  };
-
-  Router.prototype.handleInvalidIncomingMessage_ = function(message) {
-    if (!validator.isTestingMode()) {
-      // TODO(yzshen): Consider notifying the embedder.
-      // TODO(yzshen): This should also trigger connection error handler.
-      // Consider making accept() return a boolean and let the connector deal
-      // with this, as the C++ code does.
-      this.close();
-      return;
-    }
   };
 
   Router.prototype.onPeerAssociatedEndpointClosed = function(interfaceId,
