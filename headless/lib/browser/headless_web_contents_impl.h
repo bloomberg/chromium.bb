@@ -60,6 +60,10 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   bool GetFrameTreeNodeIdForDevToolsAgentHostId(
       const std::string& devtools_agent_host_id,
       int* frame_tree_node_id) const override;
+  std::string GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
+      int process_id,
+      int frame_tree_node_id) const override;
+  int GetMainFrameRenderProcessId() const override;
 
   // HeadlessDevToolsTarget implementation:
   bool AttachClient(HeadlessDevToolsClient* client) override;
@@ -99,14 +103,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   HeadlessWindowTreeHost* window_tree_host() const {
     return window_tree_host_.get();
   }
-
-  // Returns the devtools frame id corresponding to the |frame_tree_node_id|, if
-  // any.  Note this relies on an IPC sent from blink during navigation.
-  std::string GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
-      int process_id,
-      int frame_tree_node_id) const;
-
-  int GetMainFrameRenderProcessId() const;
 
  private:
   // Takes ownership of |web_contents|.
