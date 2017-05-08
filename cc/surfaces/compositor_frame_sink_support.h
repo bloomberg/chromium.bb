@@ -14,10 +14,10 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
+#include "cc/surfaces/pending_frame_observer.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
-#include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_resource_holder.h"
 #include "cc/surfaces/surface_resource_holder_client.h"
 #include "cc/surfaces/surfaces_export.h"
 
@@ -27,10 +27,10 @@ class CompositorFrameSinkSupportClient;
 class SurfaceManager;
 
 class CC_SURFACES_EXPORT CompositorFrameSinkSupport
-    : public SurfaceFactoryClient,
-      public BeginFrameObserver,
+    : public BeginFrameObserver,
       public SurfaceResourceHolderClient,
-      public FrameSinkManagerClient {
+      public FrameSinkManagerClient,
+      public PendingFrameObserver {
  public:
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       CompositorFrameSinkSupportClient* client,
@@ -44,18 +44,13 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  Surface* current_surface_for_testing() {
-    return surface_factory_->current_surface_for_testing();
-  }
+  Surface* current_surface_for_testing() { return current_surface_.get(); }
+  SurfaceManager* surface_manager() { return surface_manager_; }
+  bool needs_sync_points() { return needs_sync_points_; }
 
   const ReferencedSurfaceTracker& ReferenceTrackerForTesting() const {
     return reference_tracker_;
   }
-
-  // SurfaceFactoryClient implementation.
-  void ReferencedSurfacesChanged(
-      const LocalSurfaceId& local_surface_id,
-      const std::vector<SurfaceId>* active_referenced_surfaces) override;
 
   // SurfaceResourceHolderClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;
@@ -71,13 +66,19 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
   void ClaimTemporaryReference(const SurfaceId& surface_id);
 
+  // TODO(staraz): Move the following 3 methods to private.
+  void ReceiveFromChild(const TransferableResourceArray& resources);
+  void RefResources(const TransferableResourceArray& resources);
+  void UnrefResources(const ReturnedResourceArray& resources);
+
  protected:
   CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
                              const FrameSinkId& frame_sink_id,
                              bool is_root,
-                             bool handles_frame_sink_id_invalidation);
+                             bool handles_frame_sink_id_invalidation,
+                             bool needs_sync_points);
 
-  void Init(SurfaceManager* surface_manager, bool needs_sync_points);
+  void Init(SurfaceManager* surface_manager);
 
  private:
   // Update surface references with SurfaceManager for current CompositorFrame
@@ -89,6 +90,9 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   void AddTopLevelRootReference(const SurfaceId& surface_id);
   void RemoveTopLevelRootReference(const SurfaceId& surface_id);
+  void ReferencedSurfacesChanged(
+      const LocalSurfaceId& local_surface_id,
+      const std::vector<SurfaceId>* active_referenced_surfaces);
 
   void DidReceiveCompositorFrameAck();
   void WillDrawSurface(const LocalSurfaceId& local_surface_id,
@@ -99,7 +103,18 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
+  // PendingFrameObserver implementation.
+  void OnSurfaceActivated(Surface* surface) override;
+  void OnSurfaceDependenciesChanged(
+      Surface* surface,
+      const base::flat_set<SurfaceId>& added_dependencies,
+      const base::flat_set<SurfaceId>& removed_dependencies) override;
+  void OnSurfaceDiscarded(Surface* surface) override;
+
   void UpdateNeedsBeginFramesInternal();
+  std::unique_ptr<Surface> CreateSurface(
+      const LocalSurfaceId& local_surface_id);
+  void DestroyCurrentSurface();
 
   CompositorFrameSinkSupportClient* const client_;
 
@@ -107,7 +122,9 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId frame_sink_id_;
 
-  std::unique_ptr<SurfaceFactory> surface_factory_;
+  SurfaceResourceHolder surface_resource_holder_;
+
+  std::unique_ptr<Surface> current_surface_;
   // Counts the number of CompositorFrames that have been submitted and have not
   // yet received an ACK.
   int ack_pending_count_ = 0;
@@ -130,6 +147,8 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   ReferencedSurfaceTracker reference_tracker_;
 
   const bool is_root_;
+  const bool needs_sync_points_;
+  bool seen_first_frame_activation_ = false;
 
   // TODO(staraz): Remove this flag once ui::Compositor no longer needs to call
   // RegisterFrameSinkId().

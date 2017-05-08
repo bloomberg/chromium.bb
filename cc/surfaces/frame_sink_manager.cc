@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
-#include "cc/surfaces/surface_factory_client.h"
 
 #if DCHECK_IS_ON()
 #include <sstream>
@@ -28,8 +27,8 @@ FrameSinkManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {}
 FrameSinkManager::FrameSinkManager() {}
 
 FrameSinkManager::~FrameSinkManager() {
-  // All surface factory clients should be unregistered prior to SurfaceManager
-  // destruction.
+  // All CompositorFrameSinks should be unregistered prior to
+  // SurfaceManager destruction.
   DCHECK_EQ(clients_.size(), 0u);
   DCHECK_EQ(registered_sources_.size(), 0u);
 }
@@ -207,7 +206,7 @@ void FrameSinkManager::UnregisterFrameSinkHierarchy(
   }
   DCHECK(found_child);
 
-  // The SurfaceFactoryClient and hierarchy can be registered/unregistered
+  // The CompositorFrameSinkSupport and hierarchy can be registered/unregistered
   // in either order, so empty frame_sink_source_map entries need to be
   // checked when removing either clients or relationships.
   if (!iter->second.has_children() && !clients_.count(parent_frame_sink_id) &&

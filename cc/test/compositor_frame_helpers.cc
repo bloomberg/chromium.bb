@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/test/compositor_frame_helpers.h"
+
 #include "cc/output/compositor_frame.h"
 
 namespace cc {
@@ -23,6 +24,20 @@ CompositorFrame MakeEmptyCompositorFrame() {
       BeginFrameArgs::kStartingFrameNumber;
   frame.metadata.device_scale_factor = 1;
   return frame;
+}
+
+CompositorFrame MakeCompositorFrame(
+    std::vector<SurfaceId> activation_dependencies,
+    std::vector<SurfaceId> referenced_surfaces,
+    TransferableResourceArray resource_list) {
+  CompositorFrame compositor_frame = test::MakeCompositorFrame();
+  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
+  compositor_frame.metadata.activation_dependencies =
+      std::move(activation_dependencies);
+  compositor_frame.metadata.referenced_surfaces =
+      std::move(referenced_surfaces);
+  compositor_frame.resource_list = std::move(resource_list);
+  return compositor_frame;
 }
 
 }  // namespace test

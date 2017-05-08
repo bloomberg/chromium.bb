@@ -6,13 +6,18 @@
 
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
+#include "cc/resources/resource_provider.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
+#include "cc/test/mock_compositor_frame_sink_support_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,1409 +29,761 @@ using testing::_;
 using testing::Eq;
 
 namespace cc {
+namespace test {
 namespace {
 
-constexpr FrameSinkId kDisplayFrameSink(2, 0);
-constexpr FrameSinkId kParentFrameSink(3, 0);
-constexpr FrameSinkId kChildFrameSink1(65563, 0);
-constexpr FrameSinkId kChildFrameSink2(65564, 0);
-constexpr FrameSinkId kArbitraryFrameSink(1337, 7331);
+constexpr bool kIsRoot = true;
+constexpr bool kIsChildRoot = false;
+constexpr bool kHandlesFrameSinkIdInvalidation = true;
+constexpr bool kNeedsSyncPoints = true;
 
-class MockCompositorFrameSinkSupportClient
+constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+constexpr FrameSinkId kAnotherArbitraryFrameSinkId(2, 2);
+constexpr FrameSinkId kYetAnotherArbitraryFrameSinkId(3, 3);
+
+const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
+const base::UnguessableToken kArbitrarySourceId1 =
+    base::UnguessableToken::Deserialize(0xdead, 0xbeef);
+const base::UnguessableToken kArbitrarySourceId2 =
+    base::UnguessableToken::Deserialize(0xdead, 0xbee0);
+
+gpu::SyncToken GenTestSyncToken(int id) {
+  gpu::SyncToken token;
+  token.Set(gpu::CommandBufferNamespace::GPU_IO, 0,
+            gpu::CommandBufferId::FromUnsafeValue(id), 1);
+  return token;
+}
+
+class FakeCompositorFrameSinkSupportClient
     : public CompositorFrameSinkSupportClient {
  public:
-  MockCompositorFrameSinkSupportClient() {
-    ON_CALL(*this, ReclaimResources(_))
-        .WillByDefault(Invoke(
-            this,
-            &MockCompositorFrameSinkSupportClient::ReclaimResourcesInternal));
-    ON_CALL(*this, DidReceiveCompositorFrameAck(_))
-        .WillByDefault(Invoke(
-            this,
-            &MockCompositorFrameSinkSupportClient::ReclaimResourcesInternal));
+  FakeCompositorFrameSinkSupportClient() = default;
+  ~FakeCompositorFrameSinkSupportClient() override = default;
+
+  void DidReceiveCompositorFrameAck(
+      const ReturnedResourceArray& resources) override {
+    InsertResources(resources);
   }
 
-  ReturnedResourceArray& last_returned_resources() {
-    return last_returned_resources_;
+  void OnBeginFrame(const BeginFrameArgs& args) override {}
+
+  void ReclaimResources(const ReturnedResourceArray& resources) override {
+    InsertResources(resources);
   }
 
-  // CompositorFrameSinkSupportClient implementation.
-  MOCK_METHOD1(DidReceiveCompositorFrameAck,
-               void(const ReturnedResourceArray&));
-  MOCK_METHOD1(OnBeginFrame, void(const BeginFrameArgs&));
-  MOCK_METHOD1(ReclaimResources, void(const ReturnedResourceArray&));
-  MOCK_METHOD2(WillDrawSurface, void(const LocalSurfaceId&, const gfx::Rect&));
+  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override {}
+
+  void clear_returned_resources() { returned_resources_.clear(); }
+  const ReturnedResourceArray& returned_resources() {
+    return returned_resources_;
+  }
 
  private:
-  void ReclaimResourcesInternal(const ReturnedResourceArray& resources) {
-    last_returned_resources_ = resources;
+  void InsertResources(const ReturnedResourceArray& resources) {
+    returned_resources_.insert(returned_resources_.end(), resources.begin(),
+                               resources.end());
   }
 
-  ReturnedResourceArray last_returned_resources_;
+  ReturnedResourceArray returned_resources_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkSupportClient);
 };
-
-std::vector<SurfaceId> empty_surface_ids() {
-  return std::vector<SurfaceId>();
-}
-
-SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
-  return SurfaceId(
-      frame_sink_id,
-      LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
-}
-
-CompositorFrame MakeCompositorFrame(
-    std::vector<SurfaceId> activation_dependencies,
-    std::vector<SurfaceId> referenced_surfaces,
-    TransferableResourceArray resource_list) {
-  CompositorFrame compositor_frame = test::MakeCompositorFrame();
-  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);
-  compositor_frame.metadata.activation_dependencies =
-      std::move(activation_dependencies);
-  compositor_frame.metadata.referenced_surfaces =
-      std::move(referenced_surfaces);
-  compositor_frame.resource_list = std::move(resource_list);
-  return compositor_frame;
-}
-
-CompositorFrame MakeCompositorFrame() {
-  return MakeCompositorFrame(empty_surface_ids(), empty_surface_ids(),
-                             TransferableResourceArray());
-}
-
-CompositorFrame MakeCompositorFrame(
-    std::vector<SurfaceId> activation_dependencies) {
-  return MakeCompositorFrame(activation_dependencies, activation_dependencies,
-                             TransferableResourceArray());
-}
-
-CompositorFrame MakeCompositorFrame(
-    std::vector<SurfaceId> activation_dependencies,
-    std::vector<SurfaceId> referenced_surfaces) {
-  return MakeCompositorFrame(std::move(activation_dependencies),
-                             std::move(referenced_surfaces),
-                             TransferableResourceArray());
-}
-
-CompositorFrame MakeCompositorFrameWithResources(
-    std::vector<SurfaceId> activation_dependencies,
-    TransferableResourceArray resource_list) {
-  return MakeCompositorFrame(activation_dependencies, empty_surface_ids(),
-                             std::move(resource_list));
-}
-
-TransferableResource MakeResource(ResourceId id,
-                                  ResourceFormat format,
-                                  uint32_t filter,
-                                  const gfx::Size& size) {
-  TransferableResource resource;
-  resource.id = id;
-  resource.format = format;
-  resource.filter = filter;
-  resource.size = size;
-  return resource;
-}
-
-}  // namespace
 
 class CompositorFrameSinkSupportTest : public testing::Test,
                                        public SurfaceObserver {
  public:
   CompositorFrameSinkSupportTest()
-      : surface_manager_(SurfaceManager::LifetimeType::REFERENCES) {}
-  ~CompositorFrameSinkSupportTest() override {}
-
-  CompositorFrameSinkSupport& display_support() { return *supports_[0]; }
-  Surface* display_surface() {
-    return display_support().current_surface_for_testing();
+      : support_(
+            CompositorFrameSinkSupport::Create(&fake_support_client_,
+                                               &manager_,
+                                               kArbitraryFrameSinkId,
+                                               kIsRoot,
+                                               kHandlesFrameSinkIdInvalidation,
+                                               kNeedsSyncPoints)),
+        local_surface_id_(3, kArbitraryToken),
+        frame_sync_token_(GenTestSyncToken(4)),
+        consumer_sync_token_(GenTestSyncToken(5)) {
+    manager_.AddObserver(this);
+  }
+  ~CompositorFrameSinkSupportTest() override {
+    manager_.RemoveObserver(this);
+    support_->EvictFrame();
   }
 
-  CompositorFrameSinkSupport& parent_support() { return *supports_[1]; }
-  Surface* parent_surface() {
-    return parent_support().current_surface_for_testing();
-  }
-  const ReferencedSurfaceTracker& parent_reference_tracker() {
-    return parent_support().ReferenceTrackerForTesting();
+  const SurfaceId& last_created_surface_id() const {
+    return last_created_surface_id_;
   }
 
-  CompositorFrameSinkSupport& child_support1() { return *supports_[2]; }
-  Surface* child_surface1() {
-    return child_support1().current_surface_for_testing();
+  // SurfaceObserver implementation.
+  void OnSurfaceCreated(const SurfaceInfo& surface_info) override {
+    last_created_surface_id_ = surface_info.id();
+    last_surface_info_ = surface_info;
+  }
+  void OnSurfaceDamaged(const SurfaceId& id, bool* changed) override {
+    *changed = true;
   }
 
-  CompositorFrameSinkSupport& child_support2() { return *supports_[3]; }
-  Surface* child_surface2() {
-    return child_support2().current_surface_for_testing();
+  void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
+                                          size_t num_resource_ids) {
+    CompositorFrame frame = MakeCompositorFrame();
+    for (size_t i = 0u; i < num_resource_ids; ++i) {
+      TransferableResource resource;
+      resource.id = resource_ids[i];
+      resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+      resource.mailbox_holder.sync_token = frame_sync_token_;
+      frame.resource_list.push_back(resource);
+    }
+    support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+    EXPECT_EQ(last_created_surface_id_.local_surface_id(), local_surface_id_);
   }
 
-  CompositorFrameSinkSupport& support(int index) { return *supports_[index]; }
-  Surface* surface(int index) {
-    return support(index).current_surface_for_testing();
+  void UnrefResources(ResourceId* ids_to_unref,
+                      int* counts_to_unref,
+                      size_t num_ids_to_unref) {
+    ReturnedResourceArray unref_array;
+    for (size_t i = 0; i < num_ids_to_unref; ++i) {
+      ReturnedResource resource;
+      resource.sync_token = consumer_sync_token_;
+      resource.id = ids_to_unref[i];
+      resource.count = counts_to_unref[i];
+      unref_array.push_back(resource);
+    }
+    support_->UnrefResources(unref_array);
   }
 
-  SurfaceManager& surface_manager() { return surface_manager_; }
-
-  // Returns all the references where |surface_id| is the parent.
-  const SurfaceManager::SurfaceIdSet& GetChildReferences(
-      const SurfaceId& surface_id) {
-    return surface_manager().parent_to_child_refs_[surface_id];
+  void CheckReturnedResourcesMatchExpected(ResourceId* expected_returned_ids,
+                                           int* expected_returned_counts,
+                                           size_t expected_resources,
+                                           gpu::SyncToken expected_sync_token) {
+    const ReturnedResourceArray& actual_resources =
+        fake_support_client_.returned_resources();
+    ASSERT_EQ(expected_resources, actual_resources.size());
+    for (size_t i = 0; i < expected_resources; ++i) {
+      ReturnedResource resource = actual_resources[i];
+      EXPECT_EQ(expected_sync_token, resource.sync_token);
+      EXPECT_EQ(expected_returned_ids[i], resource.id);
+      EXPECT_EQ(expected_returned_counts[i], resource.count);
+    }
+    fake_support_client_.clear_returned_resources();
   }
 
-  // Returns true if there is a temporary reference for |surface_id|.
-  bool HasTemporaryReference(const SurfaceId& surface_id) {
-    return surface_manager().HasTemporaryReference(surface_id);
-  }
-
-  SurfaceDependencyTracker& dependency_tracker() {
-    return *surface_manager_.dependency_tracker();
-  }
-
-  FakeExternalBeginFrameSource* begin_frame_source() {
-    return begin_frame_source_.get();
-  }
-
-  // testing::Test:
-  void SetUp() override {
-    testing::Test::SetUp();
-    constexpr bool is_root = true;
-    constexpr bool is_child_root = false;
-    constexpr bool handles_frame_sink_id_invalidation = true;
-    constexpr bool needs_sync_points = true;
-    begin_frame_source_ =
-        base::MakeUnique<FakeExternalBeginFrameSource>(0.f, false);
-    surface_manager_.SetDependencyTracker(
-        base::MakeUnique<SurfaceDependencyTracker>(&surface_manager_,
-                                                   begin_frame_source_.get()));
-    surface_manager_.AddObserver(this);
-    supports_.push_back(CompositorFrameSinkSupport::Create(
-        &support_client_, &surface_manager_, kDisplayFrameSink, is_root,
-        handles_frame_sink_id_invalidation, needs_sync_points));
-    supports_.push_back(CompositorFrameSinkSupport::Create(
-        &support_client_, &surface_manager_, kParentFrameSink, is_child_root,
-        handles_frame_sink_id_invalidation, needs_sync_points));
-    supports_.push_back(CompositorFrameSinkSupport::Create(
-        &support_client_, &surface_manager_, kChildFrameSink1, is_child_root,
-        handles_frame_sink_id_invalidation, needs_sync_points));
-    supports_.push_back(CompositorFrameSinkSupport::Create(
-        &support_client_, &surface_manager_, kChildFrameSink2, is_child_root,
-        handles_frame_sink_id_invalidation, needs_sync_points));
-
-    // Normally, the BeginFrameSource would be registered by the Display. We
-    // register it here so that BeginFrames are received by the display support,
-    // for use in the PassesOnBeginFrameAcks test. Other supports do not receive
-    // BeginFrames, since the frame sink hierarchy is not set up in this test.
-    surface_manager_.RegisterBeginFrameSource(begin_frame_source_.get(),
-                                              kDisplayFrameSink);
-  }
-
-  void TearDown() override {
-    surface_manager_.RemoveObserver(this);
-    surface_manager_.SetDependencyTracker(nullptr);
-    surface_manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
-
-    // SurfaceDependencyTracker depends on this BeginFrameSource and so it must
-    // be destroyed AFTER the dependency tracker is destroyed.
-    begin_frame_source_.reset();
-
-    supports_.clear();
-
-    damaged_surfaces_.clear();
-  }
-
-  bool IsSurfaceDamaged(const SurfaceId& surface_id) const {
-    return damaged_surfaces_.count(surface_id) > 0;
-  }
-
-  // SurfaceObserver implementation:
-  void OnSurfaceCreated(const SurfaceInfo& surface_info) override {}
-  void OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) override {
-    damaged_surfaces_.insert(surface_id);
+  void RefCurrentFrameResources() {
+    Surface* surface = manager_.GetSurfaceForId(
+        SurfaceId(support_->frame_sink_id(), local_surface_id_));
+    support_->RefResources(surface->GetActiveFrame().resource_list);
   }
 
  protected:
-  testing::NiceMock<MockCompositorFrameSinkSupportClient> support_client_;
+  SurfaceManager manager_;
+  FakeCompositorFrameSinkSupportClient fake_support_client_;
+  std::unique_ptr<CompositorFrameSinkSupport> support_;
+  LocalSurfaceId local_surface_id_;
+  SurfaceId last_created_surface_id_;
+  SurfaceInfo last_surface_info_;
 
- private:
-  base::flat_set<SurfaceId> damaged_surfaces_;
-  SurfaceManager surface_manager_;
-  std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
-  std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
+  // This is the sync token submitted with the frame. It should never be
+  // returned to the client.
+  const gpu::SyncToken frame_sync_token_;
 
-  DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkSupportTest);
+  // This is the sync token returned by the consumer. It should always be
+  // returned to the client.
+  const gpu::SyncToken consumer_sync_token_;
 };
 
-// The display root surface should have a surface reference from the top-level
-// root added/removed when a CompositorFrame is submitted with a new SurfaceId.
-TEST_F(CompositorFrameSinkSupportTest, RootSurfaceReceivesReferences) {
-  const SurfaceId display_id_first = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId display_id_second = MakeSurfaceId(kDisplayFrameSink, 2);
+// Tests submitting a frame with resources followed by one with no resources
+// with no resource provider action in between.
+TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
+  ResourceId first_frame_ids[] = {1, 2, 3};
+  SubmitCompositorFrameWithResources(first_frame_ids,
+                                     arraysize(first_frame_ids));
 
-  // Submit a CompositorFrame for the first display root surface.
-  display_support().SubmitCompositorFrame(display_id_first.local_surface_id(),
-                                          MakeCompositorFrame());
+  // All of the resources submitted in the first frame are still in use at this
+  // time by virtue of being in the pending frame, so none can be returned to
+  // the client yet.
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+  fake_support_client_.clear_returned_resources();
 
-  // A surface reference from the top-level root is added and there shouldn't be
-  // a temporary reference.
-  EXPECT_FALSE(HasTemporaryReference(display_id_first));
-  EXPECT_THAT(GetChildReferences(surface_manager().GetRootSurfaceId()),
-              UnorderedElementsAre(display_id_first));
+  // The second frame references no resources of first frame and thus should
+  // make all resources of first frame available to be returned.
+  SubmitCompositorFrameWithResources(NULL, 0);
 
-  // Submit a CompositorFrame for the second display root surface.
-  display_support().SubmitCompositorFrame(display_id_second.local_surface_id(),
-                                          MakeCompositorFrame());
+  ResourceId expected_returned_ids[] = {1, 2, 3};
+  int expected_returned_counts[] = {1, 1, 1};
+  // Resources were never consumed so no sync token should be set.
+  CheckReturnedResourcesMatchExpected(
+      expected_returned_ids, expected_returned_counts,
+      arraysize(expected_returned_counts), gpu::SyncToken());
 
-  // A surface reference from the top-level root to |display_id_second| should
-  // be added and the reference to |display_root_first| removed.
-  EXPECT_FALSE(HasTemporaryReference(display_id_second));
-  EXPECT_THAT(GetChildReferences(surface_manager().GetRootSurfaceId()),
-              UnorderedElementsAre(display_id_second));
+  ResourceId third_frame_ids[] = {4, 5, 6};
+  SubmitCompositorFrameWithResources(third_frame_ids,
+                                     arraysize(third_frame_ids));
 
-  // Surface |display_id_first| is unreachable and should get deleted.
-  EXPECT_EQ(nullptr, surface_manager().GetSurfaceForId(display_id_first));
+  // All of the resources submitted in the third frame are still in use at this
+  // time by virtue of being in the pending frame, so none can be returned to
+  // the client yet.
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+  fake_support_client_.clear_returned_resources();
+
+  // The forth frame references no resources of third frame and thus should
+  // make all resources of third frame available to be returned.
+  ResourceId forth_frame_ids[] = {7, 8, 9};
+  SubmitCompositorFrameWithResources(forth_frame_ids,
+                                     arraysize(forth_frame_ids));
+
+  ResourceId forth_expected_returned_ids[] = {4, 5, 6};
+  int forth_expected_returned_counts[] = {1, 1, 1};
+  // Resources were never consumed so no sync token should be set.
+  CheckReturnedResourcesMatchExpected(
+      forth_expected_returned_ids, forth_expected_returned_counts,
+      arraysize(forth_expected_returned_counts), gpu::SyncToken());
 }
 
-// The parent Surface is blocked on |child_id1| and |child_id2|.
-TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedOnTwo) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
-
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id1, child_id2}, empty_surface_ids()));
-
-  // parent_support is blocked on |child_id1| and |child_id2|.
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id1, child_id2));
-
-  // Submit a CompositorFrame without any dependencies to |child_id1|.
-  // parent_support should now only be blocked on |child_id2|.
-  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
-
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
-
-  // Submit a CompositorFrame without any dependencies to |child_id2|.
-  // parent_support should be activated.
-  child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
-
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-}
-
-// The parent Surface is blocked on |child_id2| which is blocked on |child_id3|.
-TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedChain) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
-
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id1}, empty_surface_ids()));
-
-  // parent_support is blocked on |child_id1|.
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id1));
-  // The parent should not report damage until it activates.
-  EXPECT_FALSE(IsSurfaceDamaged(parent_id));
-
-  child_support1().SubmitCompositorFrame(
-      child_id1.local_surface_id(),
-      MakeCompositorFrame({child_id2}, empty_surface_ids()));
-
-  // child_support1 should now be blocked on |child_id2|.
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(child_surface1()->HasActiveFrame());
-  EXPECT_TRUE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
-  // The parent and child should not report damage until they activate.
-  EXPECT_FALSE(IsSurfaceDamaged(parent_id));
-  EXPECT_FALSE(IsSurfaceDamaged(child_id1));
-
-  // The parent should still be blocked on |child_id1| because it's pending.
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id1));
-
-  // Submit a CompositorFrame without any dependencies to |child_id2|.
-  // parent_support should be activated.
-  child_support2().SubmitCompositorFrame(
-      child_id2.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
-
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-
-  // child_surface1 should now be active.
-  EXPECT_TRUE(child_surface1()->HasActiveFrame());
-  EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
-
-  // parent_surface should now be active.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-
-  // All three surfaces |parent_id|, |child_id1|, and |child_id2| should
-  // now report damage. This would trigger a new display frame.
-  EXPECT_TRUE(IsSurfaceDamaged(parent_id));
-  EXPECT_TRUE(IsSurfaceDamaged(child_id1));
-  EXPECT_TRUE(IsSurfaceDamaged(child_id2));
-}
-
-// parent_surface and child_surface1 are blocked on |child_id2|.
+// Tests submitting a frame with resources followed by one with no resources
+// with the resource provider holding everything alive.
 TEST_F(CompositorFrameSinkSupportTest,
-       DisplayCompositorLockingTwoBlockedOnOne) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+       ResourceLifetimeSimpleWithProviderHoldingAlive) {
+  ResourceId first_frame_ids[] = {1, 2, 3};
+  SubmitCompositorFrameWithResources(first_frame_ids,
+                                     arraysize(first_frame_ids));
 
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id2}, empty_surface_ids()));
+  // All of the resources submitted in the first frame are still in use at this
+  // time by virtue of being in the pending frame, so none can be returned to
+  // the client yet.
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+  fake_support_client_.clear_returned_resources();
 
-  // parent_support is blocked on |child_id2|.
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
+  // Hold on to everything.
+  RefCurrentFrameResources();
 
-  // child_support1 should now be blocked on |child_id2|.
-  child_support1().SubmitCompositorFrame(
-      child_id1.local_surface_id(),
-      MakeCompositorFrame({child_id2}, empty_surface_ids()));
+  // The second frame references no resources and thus should make all resources
+  // available to be returned as soon as the resource provider releases them.
+  SubmitCompositorFrameWithResources(NULL, 0);
 
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(child_surface1()->HasActiveFrame());
-  EXPECT_TRUE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+  fake_support_client_.clear_returned_resources();
 
-  // The parent should still be blocked on |child_id2|.
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
+  int release_counts[] = {1, 1, 1};
+  UnrefResources(first_frame_ids, release_counts, arraysize(first_frame_ids));
 
-  // Submit a CompositorFrame without any dependencies to |child_id2|.
-  // parent_support should be activated.
-  child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+  // None is returned to the client since DidReceiveCompositorAck is not
+  // invoked.
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
 
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-
-  // child_surface1 should now be active.
-  EXPECT_TRUE(child_surface1()->HasActiveFrame());
-  EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
-
-  // parent_surface should now be active.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
+  // Submitting an empty frame causes previous resources referenced by the
+  // previous frame to be returned to client.
+  SubmitCompositorFrameWithResources(nullptr, 0);
+  ResourceId expected_returned_ids[] = {1, 2, 3};
+  int expected_returned_counts[] = {1, 1, 1};
+  CheckReturnedResourcesMatchExpected(
+      expected_returned_ids, expected_returned_counts,
+      arraysize(expected_returned_counts), consumer_sync_token_);
 }
 
-// parent_surface is blocked on |child_id1|, and child_surface2 is blocked on
-// |child_id2| until the deadline hits.
-TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingDeadlineHits) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+// Tests referencing a resource, unref'ing it to zero, then using it again
+// before returning it to the client.
+TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
+  ResourceId first_frame_ids[] = {7};
+  SubmitCompositorFrameWithResources(first_frame_ids,
+                                     arraysize(first_frame_ids));
 
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id1}, empty_surface_ids()));
+  // This removes all references to resource id 7.
+  SubmitCompositorFrameWithResources(NULL, 0);
 
-  // parent_support is blocked on |child_id1|.
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id1));
+  // This references id 7 again.
+  SubmitCompositorFrameWithResources(first_frame_ids,
+                                     arraysize(first_frame_ids));
 
-  child_support1().SubmitCompositorFrame(
-      child_id1.local_surface_id(),
-      MakeCompositorFrame({child_id2}, empty_surface_ids()));
+  // This removes it again.
+  SubmitCompositorFrameWithResources(NULL, 0);
 
-  // child_support1 should now be blocked on |child_id2|.
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(child_surface1()->HasActiveFrame());
-  EXPECT_TRUE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
+  // Now it should be returned.
+  // We don't care how many entries are in the returned array for 7, so long as
+  // the total returned count matches the submitted count.
+  const ReturnedResourceArray& returned =
+      fake_support_client_.returned_resources();
+  size_t return_count = 0;
+  for (size_t i = 0; i < returned.size(); ++i) {
+    EXPECT_EQ(7u, returned[i].id);
+    return_count += returned[i].count;
+  }
+  EXPECT_EQ(2u, return_count);
+}
 
-  // The parent should still be blocked on |child_id1| because it's pending.
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id1));
+// Tests having resources referenced multiple times, as if referenced by
+// multiple providers.
+TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
+  ResourceId first_frame_ids[] = {3, 4};
+  SubmitCompositorFrameWithResources(first_frame_ids,
+                                     arraysize(first_frame_ids));
 
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  // Ref resources from the first frame twice.
+  RefCurrentFrameResources();
+  RefCurrentFrameResources();
 
-  for (int i = 0; i < 3; ++i) {
-    begin_frame_source()->TestOnBeginFrame(args);
-    // There is still a looming deadline! Eeek!
-    EXPECT_TRUE(dependency_tracker().has_deadline());
+  ResourceId second_frame_ids[] = {4, 5};
+  SubmitCompositorFrameWithResources(second_frame_ids,
+                                     arraysize(second_frame_ids));
 
-    // parent_support is still blocked on |child_id1|.
-    EXPECT_FALSE(parent_surface()->HasActiveFrame());
-    EXPECT_TRUE(parent_surface()->HasPendingFrame());
-    EXPECT_THAT(parent_surface()->blocking_surfaces(),
-                UnorderedElementsAre(child_id1));
+  // Ref resources from the second frame 3 times.
+  RefCurrentFrameResources();
+  RefCurrentFrameResources();
+  RefCurrentFrameResources();
 
-    // child_support1 is still blocked on |child_id2|.
-    EXPECT_FALSE(child_surface1()->HasActiveFrame());
-    EXPECT_TRUE(child_surface1()->HasPendingFrame());
-    EXPECT_THAT(child_surface1()->blocking_surfaces(),
-                UnorderedElementsAre(child_id2));
+  // Submit a frame with no resources to remove all current frame refs from
+  // submitted resources.
+  SubmitCompositorFrameWithResources(NULL, 0);
+
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+  fake_support_client_.clear_returned_resources();
+
+  // Expected current refs:
+  //  3 -> 2
+  //  4 -> 2 + 3 = 5
+  //  5 -> 3
+  {
+    SCOPED_TRACE("unref all 3");
+    ResourceId ids_to_unref[] = {3, 4, 5};
+    int counts[] = {1, 1, 1};
+    UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
+
+    EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+    fake_support_client_.clear_returned_resources();
+
+    UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
+    SubmitCompositorFrameWithResources(nullptr, 0);
+    ResourceId expected_returned_ids[] = {3};
+    int expected_returned_counts[] = {1};
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
   }
 
-  begin_frame_source()->TestOnBeginFrame(args);
+  // Expected refs remaining:
+  //  4 -> 3
+  //  5 -> 1
+  {
+    SCOPED_TRACE("unref 4 and 5");
+    ResourceId ids_to_unref[] = {4, 5};
+    int counts[] = {1, 1};
+    UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
+    SubmitCompositorFrameWithResources(nullptr, 0);
 
-  // The deadline has passed.
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-
-  // parent_surface has been activated.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-
-  // child_surface1 has been activated.
-  EXPECT_TRUE(child_surface1()->HasActiveFrame());
-  EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
-}
-
-// Verifies that the deadline does not reset if we submit CompositorFrames
-// to new Surfaces with unresolved dependencies.
-TEST_F(CompositorFrameSinkSupportTest,
-       DisplayCompositorLockingFramesSubmittedAfterDeadlineSet) {
-  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
-  for (int i = 0; i < 3; ++i) {
-    LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
-    support(i).SubmitCompositorFrame(
-        local_surface_id,
-        MakeCompositorFrame({arbitrary_id}, empty_surface_ids()));
-    // The deadline has been set.
-    EXPECT_TRUE(dependency_tracker().has_deadline());
-
-    // support(i) should be blocked on arbitrary_id.
-    EXPECT_FALSE(surface(i)->HasActiveFrame());
-    EXPECT_TRUE(surface(i)->HasPendingFrame());
-    EXPECT_THAT(surface(i)->blocking_surfaces(),
-                UnorderedElementsAre(arbitrary_id));
-
-    // Issue a BeginFrame to get closer to the deadline.
-    begin_frame_source()->TestOnBeginFrame(args);
+    ResourceId expected_returned_ids[] = {5};
+    int expected_returned_counts[] = {1};
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
   }
 
-  // The deadline hits and all the Surfaces should activate.
-  begin_frame_source()->TestOnBeginFrame(args);
-  for (int i = 0; i < 3; ++i) {
-    EXPECT_TRUE(surface(i)->HasActiveFrame());
-    EXPECT_FALSE(surface(i)->HasPendingFrame());
-    EXPECT_THAT(surface(i)->blocking_surfaces(), IsEmpty());
+  // Now, just 2 refs remaining on resource 4. Unref both at once and make sure
+  // the returned count is correct.
+  {
+    SCOPED_TRACE("unref only 4");
+    ResourceId ids_to_unref[] = {4};
+    int counts[] = {2};
+    UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
+    SubmitCompositorFrameWithResources(nullptr, 0);
+
+    ResourceId expected_returned_ids[] = {4};
+    int expected_returned_counts[] = {2};
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
   }
 }
 
-// This test verifies at the Surface activates once a CompositorFrame is
-// submitted that has no unresolved dependencies.
-TEST_F(CompositorFrameSinkSupportTest,
-       DisplayCompositorLockingNewFrameOverridesOldDependencies) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
+  ResourceId first_frame_ids[] = {1, 2, 3};
+  SubmitCompositorFrameWithResources(first_frame_ids,
+                                     arraysize(first_frame_ids));
 
-  // Submit a CompositorFrame that depends on |arbitrary_id|.
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({arbitrary_id}, empty_surface_ids()));
+  // All of the resources submitted in the first frame are still in use at this
+  // time by virtue of being in the pending frame, so none can be returned to
+  // the client yet.
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+  fake_support_client_.clear_returned_resources();
 
-  // Verify that the CompositorFrame is blocked on |arbitrary_id|.
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(arbitrary_id));
+  // The second frame references some of the same resources, but some different
+  // ones. We expect to receive back resource 1 with a count of 1 since it was
+  // only referenced by the first frame.
+  ResourceId second_frame_ids[] = {2, 3, 4};
+  SubmitCompositorFrameWithResources(second_frame_ids,
+                                     arraysize(second_frame_ids));
+  {
+    SCOPED_TRACE("second frame");
+    ResourceId expected_returned_ids[] = {1};
+    int expected_returned_counts[] = {1};
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), gpu::SyncToken());
+  }
 
-  // Submit a CompositorFrame that has no dependencies.
-  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame());
+  // The third frame references a disjoint set of resources, so we expect to
+  // receive back all resources from the first and second frames. Resource IDs 2
+  // and 3 will have counts of 2, since they were used in both frames, and
+  // resource ID 4 will have a count of 1.
+  ResourceId third_frame_ids[] = {10, 11, 12, 13};
+  SubmitCompositorFrameWithResources(third_frame_ids,
+                                     arraysize(third_frame_ids));
 
-  // Verify that the CompositorFrame has been activated.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
+  {
+    SCOPED_TRACE("third frame");
+    ResourceId expected_returned_ids[] = {2, 3, 4};
+    int expected_returned_counts[] = {2, 2, 1};
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), gpu::SyncToken());
+  }
+
+  // Simulate a ResourceProvider taking a ref on all of the resources.
+  RefCurrentFrameResources();
+
+  ResourceId fourth_frame_ids[] = {12, 13};
+  SubmitCompositorFrameWithResources(fourth_frame_ids,
+                                     arraysize(fourth_frame_ids));
+
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+
+  RefCurrentFrameResources();
+
+  // All resources are still being used by the external reference, so none can
+  // be returned to the client.
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+
+  // Release resources associated with the first RefCurrentFrameResources() call
+  // first.
+  {
+    ResourceId ids_to_unref[] = {10, 11, 12, 13};
+    int counts[] = {1, 1, 1, 1};
+    UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
+  }
+
+  // Nothing is returned to the client yet since DidReceiveCompositorFrameAck
+  // is not invoked.
+  {
+    SCOPED_TRACE("fourth frame, first unref");
+    CheckReturnedResourcesMatchExpected(nullptr, nullptr, 0,
+                                        consumer_sync_token_);
+  }
+
+  {
+    ResourceId ids_to_unref[] = {12, 13};
+    int counts[] = {1, 1};
+    UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
+  }
+
+  // Resources 12 and 13 are still in use by the current frame, so they
+  // shouldn't be available to be returned.
+  EXPECT_EQ(0u, fake_support_client_.returned_resources().size());
+
+  // If we submit an empty frame, however, they should become available.
+  // Resources that were previously unref'd also return at this point.
+  SubmitCompositorFrameWithResources(NULL, 0u);
+
+  {
+    SCOPED_TRACE("fourth frame, second unref");
+    ResourceId expected_returned_ids[] = {10, 11, 12, 13};
+    int expected_returned_counts[] = {1, 1, 2, 2};
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
+  }
 }
 
-// This test verifies that a pending CompositorFrame does not affect surface
-// references. A new surface from a child will continue to exist as a temporary
-// reference until the parent's frame activates.
-TEST_F(CompositorFrameSinkSupportTest,
-       OnlyActiveFramesAffectSurfaceReferences) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
+  MockCompositorFrameSinkSupportClient mock_client;
+  std::unique_ptr<CompositorFrameSinkSupport> support =
+      CompositorFrameSinkSupport::Create(
+          &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(6, kArbitraryToken);
+  support->SubmitCompositorFrame(local_surface_id, MakeCompositorFrame());
 
-  // child_support1 submits a CompositorFrame without any dependencies.
-  // DidReceiveCompositorFrameAck should call on immediate activation.
-  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(1);
-  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-
-  // Verify that the child surface is not blocked.
-  EXPECT_TRUE(child_surface1()->HasActiveFrame());
-  EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
-
-  // Verify that there's a temporary reference for |child_id1|.
-  EXPECT_TRUE(HasTemporaryReference(child_id1));
-
-  // parent_support submits a CompositorFrame that depends on |child_id1|
-  // (which is already active) and |child_id2|. Thus, the parent should not
-  // activate immediately. DidReceiveCompositorFrameAck should not be called
-  // immediately because the parent CompositorFrame is also blocked on
-  // |child_id2|.
-  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(0);
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id2}, {child_id1}));
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
-  EXPECT_THAT(GetChildReferences(parent_id), IsEmpty());
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-
-  // Verify that there's a temporary reference for |child_id1| that still
-  // exists.
-  EXPECT_TRUE(HasTemporaryReference(child_id1));
-
-  // child_support2 submits a CompositorFrame without any dependencies.
-  // Both the child and the parent should immediately ACK CompositorFrames
-  // on activation.
-  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(2);
-  child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-
-  // Verify that the child surface is not blocked.
-  EXPECT_TRUE(child_surface1()->HasActiveFrame());
-  EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
-
-  // Verify that the parent surface's CompositorFrame has activated and that the
-  // temporary reference has been replaced by a permanent one.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-  EXPECT_FALSE(HasTemporaryReference(child_id1));
-  EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
+  EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(_))
+      .WillOnce(testing::InvokeWithoutArgs([&support, &mock_client]() {
+        LocalSurfaceId new_id(7, base::UnguessableToken::Create());
+        support->SubmitCompositorFrame(new_id, MakeCompositorFrame());
+      }))
+      .WillRepeatedly(testing::Return());
+  support->EvictFrame();
 }
 
-// This test verifies that we do not double count returned resources when a
-// CompositorFrame starts out as pending, then becomes active, and then is
-// replaced with another active CompositorFrame.
-TEST_F(CompositorFrameSinkSupportTest,
-       DisplayCompositorLockingResourcesOnlyReturnedOnce) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+// Tests doing an EvictFrame before shutting down the factory.
+TEST_F(CompositorFrameSinkSupportTest, EvictFrame) {
+  MockCompositorFrameSinkSupportClient mock_client;
+  std::unique_ptr<CompositorFrameSinkSupport> support =
+      CompositorFrameSinkSupport::Create(
+          &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
+  SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id);
 
-  // The parent submits a CompositorFrame that depends on |child_id| before the
-  // child submits a CompositorFrame. The CompositorFrame also has resources in
-  // its resource list.
-  TransferableResource resource =
-      MakeResource(1337 /* id */, ALPHA_8 /* format */, 1234 /* filter */,
-                   gfx::Size(1234, 5678));
-  TransferableResourceArray resource_list = {resource};
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrameWithResources({child_id}, resource_list));
-
-  // Verify that the CompositorFrame is blocked on |child_id|.
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id));
-
-  child_support1().SubmitCompositorFrame(
-      child_id.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
-
-  // Verify that the child CompositorFrame activates immediately.
-  EXPECT_TRUE(child_surface1()->HasActiveFrame());
-  EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
-
-  // Verify that the parent has activated.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-
-  // The parent submits a CompositorFrame without any dependencies. That frame
-  // should activate immediately, replacing the earlier frame. The resource from
-  // the earlier frame should be returned to the client.
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(), MakeCompositorFrame({empty_surface_ids()}));
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-  ReturnedResource returned_resource = resource.ToReturnedResource();
-  EXPECT_THAT(support_client_.last_returned_resources(),
-              UnorderedElementsAre(returned_resource));
-}
-
-// The parent Surface is blocked on |child_id2| which is blocked on |child_id3|.
-// child_support1 evicts its blocked Surface. The parent surface should
-// activate.
-TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithPendingFrame) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
-
-  // Submit a CompositorFrame that depends on |child_id1|.
-  parent_support().SubmitCompositorFrame(
-      parent_id1.local_surface_id(),
-      MakeCompositorFrame({child_id1}, empty_surface_ids()));
-
-  // Verify that the CompositorFrame is blocked on |child_id1|.
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id1));
-
-  // Submit a CompositorFrame that depends on |child_id2|.
-  child_support1().SubmitCompositorFrame(
-      child_id1.local_surface_id(),
-      MakeCompositorFrame({child_id2}, empty_surface_ids()));
-
-  // Verify that the CompositorFrame is blocked on |child_id2|.
-  EXPECT_FALSE(child_surface1()->HasActiveFrame());
-  EXPECT_TRUE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
-
-  // Evict child_support1's current Surface.
-  // TODO(fsamuel): EvictFrame => EvictCurrentSurface.
-  child_support1().EvictFrame();
-
-  // The parent Surface should immediately activate.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-}
-
-// This test verifies that if a surface has both a pending and active
-// CompositorFrame and the pending CompositorFrame activates, replacing the
-// existing active CompositorFrame, then the surface reference hierarchy will be
-// updated allowing garbage collection of surfaces that are no longer
-// referenced.
-TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
-
-  // The parent submits a CompositorFrame that depends on |child_id1| before the
-  // child submits a CompositorFrame.
-  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(0);
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id1}, empty_surface_ids()));
-
-  // Verify that the CompositorFrame is blocked on |child_id|.
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id1));
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-
-  // Verify that no references are added while the CompositorFrame is pending.
-  EXPECT_THAT(GetChildReferences(parent_id), IsEmpty());
-
-  // DidReceiveCompositorFrameAck should get called twice: once for the child
-  // and once for the now active parent CompositorFrame.
-  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(2);
-  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-
-  // Verify that the child CompositorFrame activates immediately.
-  EXPECT_TRUE(child_surface1()->HasActiveFrame());
-  EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
-
-  // Verify that the parent Surface has activated.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-
-  // Submit a new parent CompositorFrame to add a reference.
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame(empty_surface_ids(), {child_id1}));
-
-  // Verify that the parent Surface has activated.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-
-  // Verify that there is no temporary reference for the child and that
-  // the reference from the parent to the child still exists.
-  EXPECT_FALSE(HasTemporaryReference(child_id1));
-  EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
-
-  // The parent submits another CompositorFrame that depends on |child_id2|.
-  // Submitting a pending CompositorFrame will not trigger a CompositorFrameAck.
-  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(0);
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id2}, empty_surface_ids()));
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-
-  // The parent surface should now have both a pending and activate
-  // CompositorFrame. Verify that the set of child references from
-  // |parent_id| are only from the active CompositorFrame.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(),
-              UnorderedElementsAre(child_id2));
-  EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
-
-  child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
-
-  // Verify that the parent Surface has activated and no longer has a pending
-  // CompositorFrame. Also verify that |child_id1| is no longer a child
-  // reference of |parent_id|.
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
-  // The parent will not immediately refer to the child until it submits a new
-  // CompositorFrame with the reference.
-  EXPECT_THAT(GetChildReferences(parent_id), IsEmpty());
-}
-
-// Checks whether the latency info are moved to the new surface from the old
-// one when LocalSurfaceId changes. No frame has unresolved dependencies.
-TEST_F(CompositorFrameSinkSupportTest,
-       LatencyInfoCarriedOverOnResize_NoUnresolvedDependencies) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const ui::LatencyComponentType latency_type1 =
-      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
-  const int64_t latency_id1 = 234;
-  const int64_t latency_sequence_number1 = 5645432;
-  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
-  const int64_t latency_id2 = 31434351;
-  const int64_t latency_sequence_number2 = 663788;
-
-  // Submit a frame with latency info
-  ui::LatencyInfo info;
-  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
-
-  CompositorFrame frame = MakeCompositorFrame();
-  frame.metadata.latency_info.push_back(info);
-
-  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
-                                         std::move(frame));
-
-  // Verify that the old surface has an active frame and no pending frame.
-  Surface* old_surface = surface_manager().GetSurfaceForId(parent_id1);
-  ASSERT_NE(nullptr, old_surface);
-  EXPECT_TRUE(old_surface->HasActiveFrame());
-  EXPECT_FALSE(old_surface->HasPendingFrame());
-
-  // Submit another frame with some other latency info and a different
-  // LocalSurfaceId.
-  ui::LatencyInfo info2;
-  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
-
-  CompositorFrame frame2 = MakeCompositorFrame();
-  frame2.metadata.latency_info.push_back(info2);
-
-  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
-                                         std::move(frame2));
-
-  // Verify that the new surface has an active frame and no pending frames.
-  Surface* surface = surface_manager().GetSurfaceForId(parent_id2);
-  ASSERT_NE(nullptr, surface);
-  EXPECT_TRUE(surface->HasActiveFrame());
-  EXPECT_FALSE(surface->HasPendingFrame());
-
-  // Verify that the new surface has both latency info elements.
-  std::vector<ui::LatencyInfo> info_list;
-  surface->TakeLatencyInfo(&info_list);
-  EXPECT_EQ(2u, info_list.size());
-
-  ui::LatencyInfo aggregated_latency_info = info_list[0];
-  aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
-
-  // Two components are the original ones, and the third one is
-  // DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, logged on compositor frame
-  // submit.
-  EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
-
-  ui::LatencyInfo::LatencyComponent comp1;
-  EXPECT_TRUE(
-      aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
-  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
-  EXPECT_TRUE(
-      aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
-  EXPECT_TRUE(aggregated_latency_info.FindLatency(
-      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
-}
-
-// Checks whether the latency info are moved to the new surface from the old
-// one when LocalSurfaceId changes. Old surface has unresolved dependencies.
-TEST_F(CompositorFrameSinkSupportTest,
-       LatencyInfoCarriedOverOnResize_OldSurfaceHasPendingAndActiveFrame) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
-
-  const ui::LatencyComponentType latency_type1 =
-      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
-  const int64_t latency_id1 = 234;
-  const int64_t latency_sequence_number1 = 5645432;
-  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
-  const int64_t latency_id2 = 31434351;
-  const int64_t latency_sequence_number2 = 663788;
-
-  // Submit a frame with no unresolved dependecy.
-  ui::LatencyInfo info;
-  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
-
-  CompositorFrame frame = MakeCompositorFrame();
-  frame.metadata.latency_info.push_back(info);
-
-  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
-                                         std::move(frame));
-
-  // Submit a frame with unresolved dependencies.
-  ui::LatencyInfo info2;
-  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
-
-  CompositorFrame frame2 = MakeCompositorFrame({child_id}, empty_surface_ids());
-  frame2.metadata.latency_info.push_back(info2);
-
-  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
-                                         std::move(frame2));
-
-  // Verify that the old surface has both an active and a pending frame.
-  Surface* old_surface = surface_manager().GetSurfaceForId(parent_id1);
-  ASSERT_NE(nullptr, old_surface);
-  EXPECT_TRUE(old_surface->HasActiveFrame());
-  EXPECT_TRUE(old_surface->HasPendingFrame());
-
-  // Submit a frame with a new local surface id.
-  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
-                                         MakeCompositorFrame());
-
-  // Verify that the new surface has an active frame only.
-  Surface* surface = surface_manager().GetSurfaceForId(parent_id2);
-  ASSERT_NE(nullptr, surface);
-  EXPECT_TRUE(surface->HasActiveFrame());
-  EXPECT_FALSE(surface->HasPendingFrame());
-
-  // Verify that the new surface has latency info from both active and pending
-  // frame of the old surface.
-  std::vector<ui::LatencyInfo> info_list;
-  surface->TakeLatencyInfo(&info_list);
-  EXPECT_EQ(2u, info_list.size());
-
-  ui::LatencyInfo aggregated_latency_info = info_list[0];
-  aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
-
-  // Two components are the original ones, and the third one is
-  // DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, logged on compositor frame
-  // submit.
-  EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
-
-  ui::LatencyInfo::LatencyComponent comp1;
-  EXPECT_TRUE(
-      aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
-  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
-  EXPECT_TRUE(
-      aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
-  EXPECT_TRUE(aggregated_latency_info.FindLatency(
-      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
-}
-
-// Checks whether the latency info are moved to the new surface from the old
-// one when LocalSurfaceId changes. The new surface has unresolved dependencies.
-TEST_F(CompositorFrameSinkSupportTest,
-       LatencyInfoCarriedOverOnResize_NewSurfaceHasPendingFrame) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
-
-  const ui::LatencyComponentType latency_type1 =
-      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
-  const int64_t latency_id1 = 234;
-  const int64_t latency_sequence_number1 = 5645432;
-  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
-  const int64_t latency_id2 = 31434351;
-  const int64_t latency_sequence_number2 = 663788;
-
-  // Submit a frame with no unresolved dependencies.
-  ui::LatencyInfo info;
-  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
-
-  CompositorFrame frame = MakeCompositorFrame();
-  frame.metadata.latency_info.push_back(info);
-
-  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
-                                         std::move(frame));
-
-  // Verify that the old surface has an active frame only.
-  Surface* old_surface = surface_manager().GetSurfaceForId(parent_id1);
-  ASSERT_NE(nullptr, old_surface);
-  EXPECT_TRUE(old_surface->HasActiveFrame());
-  EXPECT_FALSE(old_surface->HasPendingFrame());
-
-  // Submit a frame with a new local surface id and with unresolved
-  // dependencies.
-  ui::LatencyInfo info2;
-  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
-
-  CompositorFrame frame2 = MakeCompositorFrame({child_id}, empty_surface_ids());
-  frame2.metadata.latency_info.push_back(info2);
-
-  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
-                                         std::move(frame2));
-
-  // Verify that the new surface has a pending frame and no active frame.
-  Surface* surface = surface_manager().GetSurfaceForId(parent_id2);
-  ASSERT_NE(nullptr, surface);
-  EXPECT_TRUE(surface->HasPendingFrame());
-  EXPECT_FALSE(surface->HasActiveFrame());
-
-  // Resolve the dependencies. The frame in parent's surface must become active.
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
-  EXPECT_FALSE(surface->HasPendingFrame());
-  EXPECT_TRUE(surface->HasActiveFrame());
-
-  // Both latency info elements must exist in the now-activated frame of the
-  // new surface.
-  std::vector<ui::LatencyInfo> info_list;
-  surface->TakeLatencyInfo(&info_list);
-  EXPECT_EQ(2u, info_list.size());
-
-  ui::LatencyInfo aggregated_latency_info = info_list[0];
-  aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
-
-  // Two components are the original ones, and the third one is
-  // DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, logged on compositor frame
-  // submit.
-  EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
-
-  ui::LatencyInfo::LatencyComponent comp1;
-  EXPECT_TRUE(
-      aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
-  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
-  EXPECT_TRUE(
-      aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
-  EXPECT_TRUE(aggregated_latency_info.FindLatency(
-      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
-}
-
-TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-
-  // Request BeginFrames.
-  display_support().SetNeedsBeginFrame(true);
-
-  // Issue a BeginFrame.
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
-  begin_frame_source()->TestOnBeginFrame(args);
-
-  // Check that the support forwards a BeginFrameDidNotSwap ack to the
-  // BeginFrameSource.
-  BeginFrameAck ack(0, 1, 1, false);
-  display_support().BeginFrameDidNotSwap(ack);
-  EXPECT_EQ(ack, begin_frame_source()->LastAckForObserver(&display_support()));
-
-  // Issue another BeginFrame.
-  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2);
-  begin_frame_source()->TestOnBeginFrame(args);
-
-  // Check that the support forwards the BeginFrameAck attached
-  // to a CompositorFrame to the BeginFrameSource.
-  BeginFrameAck ack2(0, 2, 2, true);
-  CompositorFrame frame = MakeCompositorFrame();
-  frame.metadata.begin_frame_ack = ack2;
-  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
-                                          std::move(frame));
-  EXPECT_EQ(ack2, begin_frame_source()->LastAckForObserver(&display_support()));
-}
-
-// Checks that resources and ack are sent together if possible.
-TEST_F(CompositorFrameSinkSupportTest, ReturnResourcesWithAck) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   TransferableResource resource;
-  resource.id = 1234;
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrameWithResources(empty_surface_ids(), {resource}));
+  resource.id = 1;
+  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  CompositorFrame frame = MakeCompositorFrame();
+  frame.resource_list.push_back(resource);
+  support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id);
+  local_surface_id_ = LocalSurfaceId();
+
+  ReturnedResourceArray returned_resources = {resource.ToReturnedResource()};
+  EXPECT_TRUE(manager_.GetSurfaceForId(id));
+  EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
+      .Times(1);
+  support->EvictFrame();
+  EXPECT_FALSE(manager_.GetSurfaceForId(id));
+}
+
+// Tests doing an EvictSurface which has unregistered dependency.
+TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceDependencyUnRegistered) {
+  MockCompositorFrameSinkSupportClient mock_client;
+  std::unique_ptr<CompositorFrameSinkSupport> support =
+      CompositorFrameSinkSupport::Create(
+          &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
+
+  TransferableResource resource;
+  resource.id = 1;
+  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  CompositorFrame frame = MakeCompositorFrame();
+  frame.resource_list.push_back(resource);
+  support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id);
+  local_surface_id_ = LocalSurfaceId();
+
+  SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
+  Surface* surface = manager_.GetSurfaceForId(surface_id);
+  surface->AddDestructionDependency(
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+
+  ReturnedResourceArray returned_resource = {resource.ToReturnedResource()};
+
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resource))
+      .Times(1);
+  support->EvictFrame();
+  EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
+}
+
+// Tests doing an EvictSurface which has registered dependency.
+TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceDependencyRegistered) {
+  MockCompositorFrameSinkSupportClient mock_client;
+  std::unique_ptr<CompositorFrameSinkSupport> support =
+      CompositorFrameSinkSupport::Create(
+          &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
+
+  TransferableResource resource;
+  resource.id = 1;
+  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  CompositorFrame frame = MakeCompositorFrame();
+  frame.resource_list.push_back(resource);
+  uint32_t execute_count = 0;
+  support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id);
+  local_surface_id_ = LocalSurfaceId();
+
+  manager_.RegisterFrameSinkId(kYetAnotherArbitraryFrameSinkId);
+
+  SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
+  Surface* surface = manager_.GetSurfaceForId(surface_id);
+  surface->AddDestructionDependency(
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+
   ReturnedResourceArray returned_resources;
-  TransferableResource::ReturnResources({resource}, &returned_resources);
-  EXPECT_CALL(support_client_, ReclaimResources(_)).Times(0);
-  EXPECT_CALL(support_client_,
-              DidReceiveCompositorFrameAck(Eq(returned_resources)));
-  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame());
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  support->EvictFrame();
+  EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
+  EXPECT_EQ(0u, execute_count);
+
+  returned_resources.push_back(resource.ToReturnedResource());
+  EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
+      .Times(1);
+  manager_.SatisfySequence(SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+  EXPECT_FALSE(manager_.GetSurfaceForId(surface_id));
 }
 
-// Verifies that if a surface is marked destroyed and a new frame arrives for
-// it, it will be recovered.
-TEST_F(CompositorFrameSinkSupportTest, SurfaceResurrection) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
+TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
+  LocalSurfaceId local_surface_id2(5, kArbitraryToken);
+  std::unique_ptr<CompositorFrameSinkSupport> support2 =
+      CompositorFrameSinkSupport::Create(
+          &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
+          kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
+  support2->SubmitCompositorFrame(local_surface_id2, MakeCompositorFrame());
 
-  // Create the child surface by submitting a frame to it.
-  EXPECT_EQ(nullptr, surface_manager().GetSurfaceForId(child_id));
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
+  // Check that waiting before the sequence is satisfied works.
+  manager_.GetSurfaceForId(id2)->AddDestructionDependency(
+      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+  support2->EvictFrame();
 
-  // Verify that the child surface is created.
-  Surface* surface = surface_manager().GetSurfaceForId(child_id);
-  EXPECT_NE(nullptr, surface);
+  DCHECK(manager_.GetSurfaceForId(id2));
+  manager_.SatisfySequence(SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+  manager_.SatisfySequence(SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 6));
+  DCHECK(!manager_.GetSurfaceForId(id2));
 
-  // Add a reference from the parent to the child.
-  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame({child_id}));
-
-  // Attempt to destroy the child surface. The surface must still exist since
-  // the parent needs it but it will be marked as destroyed.
-  child_support1().EvictFrame();
-  surface = surface_manager().GetSurfaceForId(child_id);
-  EXPECT_NE(nullptr, surface);
-  EXPECT_TRUE(surface->destroyed());
-
-  // Child submits another frame to the same local surface id that is marked
-  // destroyed.
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
-
-  // Verify that the surface that was marked destroyed is recovered and is being
-  // used again.
-  Surface* surface2 = surface_manager().GetSurfaceForId(child_id);
-  EXPECT_EQ(surface, surface2);
-  EXPECT_FALSE(surface2->destroyed());
+  // Check that waiting after the sequence is satisfied works.
+  support2->SubmitCompositorFrame(local_surface_id2, MakeCompositorFrame());
+  DCHECK(manager_.GetSurfaceForId(id2));
+  manager_.GetSurfaceForId(id2)->AddDestructionDependency(
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
+  support2->EvictFrame();
+  DCHECK(!manager_.GetSurfaceForId(id2));
 }
 
-// Verifies that if a LocalSurfaceId belonged to a surface that doesn't exist
-// anymore, it can still be reused for new surfaces.
-TEST_F(CompositorFrameSinkSupportTest, LocalSurfaceIdIsReusable) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
+// Tests that Surface ID namespace invalidation correctly allows
+// Sequences to be ignored.
+TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
+  FrameSinkId frame_sink_id(1234, 5678);
 
-  // Submit the first frame. Creates the surface.
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
-  EXPECT_NE(nullptr, surface_manager().GetSurfaceForId(child_id));
+  LocalSurfaceId local_surface_id(5, kArbitraryToken);
+  SurfaceId id(support_->frame_sink_id(), local_surface_id);
+  support_->SubmitCompositorFrame(local_surface_id, MakeCompositorFrame());
 
-  // Add a reference from parent.
-  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame({child_id}));
+  manager_.RegisterFrameSinkId(frame_sink_id);
+  manager_.GetSurfaceForId(id)->AddDestructionDependency(
+      SurfaceSequence(frame_sink_id, 4));
 
-  // Remove the reference from parant. This allows us to destroy the surface.
-  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame());
+  support_->EvictFrame();
 
-  // Destroy the surface.
-  child_support1().EvictFrame();
-  EXPECT_EQ(nullptr, surface_manager().GetSurfaceForId(child_id));
+  // Verify the dependency has prevented the surface from getting destroyed.
+  EXPECT_TRUE(manager_.GetSurfaceForId(id));
 
-  // Submit another frame with the same local surface id. This should work fine
-  // and a new surface must be created.
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
-  EXPECT_NE(nullptr, surface_manager().GetSurfaceForId(child_id));
+  manager_.InvalidateFrameSinkId(frame_sink_id);
+
+  // Verify that the invalidated namespace caused the unsatisfied sequence
+  // to be ignored.
+  EXPECT_FALSE(manager_.GetSurfaceForId(id));
 }
 
-// This test verifies that a crash does not occur if garbage collection is
-// triggered during surface dependency resolution. This test triggers garbage
-// collection during surface resolution, by causing an activation to remove
-// a surface subtree from the root. Both the old subtree and the new
-// activated subtree refer to the same dependency. The old subtree was activated
-// by deadline, and the new subtree was activated by a dependency finally
-// resolving.
-TEST_F(CompositorFrameSinkSupportTest, DependencyTrackingGarbageCollection) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
-
-  parent_support().SubmitCompositorFrame(
-      parent_id1.local_surface_id(),
-      MakeCompositorFrame({child_id}, empty_surface_ids()));
-  display_support().SubmitCompositorFrame(
-      display_id.local_surface_id(),
-      MakeCompositorFrame({parent_id1}, empty_surface_ids()));
-
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
-
-  // Advance BeginFrames to trigger a deadline.
-  for (int i = 0; i < 3; ++i) {
-    begin_frame_source()->TestOnBeginFrame(args);
-    EXPECT_TRUE(dependency_tracker().has_deadline());
+TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
+  LocalSurfaceId local_surface_id2(5, kArbitraryToken);
+  SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
+  std::unique_ptr<CompositorFrameSinkSupport> support2 =
+      CompositorFrameSinkSupport::Create(
+          &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
+          kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+  // Give id2 a frame that references local_surface_id_.
+  {
+    std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
+    CompositorFrame frame = MakeCompositorFrame();
+    frame.render_pass_list.push_back(std::move(render_pass));
+    frame.metadata.referenced_surfaces.push_back(
+        SurfaceId(support_->frame_sink_id(), local_surface_id_));
+    support2->SubmitCompositorFrame(local_surface_id2, std::move(frame));
+    EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id2);
   }
-  begin_frame_source()->TestOnBeginFrame(args);
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-
-  EXPECT_TRUE(display_surface()->HasActiveFrame());
-  EXPECT_FALSE(display_surface()->HasPendingFrame());
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-
-  parent_support().SubmitCompositorFrame(
-      parent_id2.local_surface_id(),
-      MakeCompositorFrame({child_id}, empty_surface_ids()));
-  display_support().SubmitCompositorFrame(
-      display_id.local_surface_id(),
-      MakeCompositorFrame({parent_id2}, empty_surface_ids()));
-
-  // The display surface now has two CompositorFrames. One that is pending,
-  // indirectly blocked on child_id and one that is active, also indirectly
-  // referring to child_id, but activated due to the deadline above.
-  EXPECT_TRUE(display_surface()->HasActiveFrame());
-  EXPECT_TRUE(display_surface()->HasPendingFrame());
-
-  // Submitting a CompositorFrame will trigger garbage collection of the
-  // |parent_id1| subtree. This should not crash.
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
-}
-
-// This test verifies that a crash does not occur if garbage collection is
-// triggered when a deadline forces frame activation. This test triggers garbage
-// collection during deadline activation by causing the activation of a display
-// frame to replace a previously activated display frame that was referring to
-// a now-unreachable surface subtree. That subtree gets garbage collected during
-// deadline activation. SurfaceDependencyTracker is also tracking a surface
-// from that subtree due to an unresolved dependency. This test verifies that
-// this dependency resolution does not crash.
-TEST_F(CompositorFrameSinkSupportTest, GarbageCollectionOnDeadline) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
-
-  // |parent_id1| is blocked on |child_id|.
-  parent_support().SubmitCompositorFrame(
-      parent_id1.local_surface_id(),
-      MakeCompositorFrame({child_id}, empty_surface_ids()));
-
-  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
-                                          MakeCompositorFrame({parent_id1}));
-
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_TRUE(display_surface()->HasPendingFrame());
-  EXPECT_FALSE(display_surface()->HasActiveFrame());
-
-  // Advance BeginFrames to trigger a deadline. This activates the
-  // CompositorFrame submitted above.
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
-  for (int i = 0; i < 3; ++i) {
-    begin_frame_source()->TestOnBeginFrame(args);
-    EXPECT_TRUE(dependency_tracker().has_deadline());
+  manager_.GetSurfaceForId(id2)->AddDestructionDependency(
+      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+  support2->EvictFrame();
+  // Give local_surface_id_ a frame that references id2.
+  {
+    std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
+    CompositorFrame frame = MakeCompositorFrame();
+    frame.render_pass_list.push_back(std::move(render_pass));
+    frame.metadata.referenced_surfaces.push_back(id2);
+    support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   }
-  begin_frame_source()->TestOnBeginFrame(args);
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(display_surface()->HasPendingFrame());
-  EXPECT_TRUE(display_surface()->HasActiveFrame());
+  support_->EvictFrame();
+  EXPECT_TRUE(manager_.GetSurfaceForId(id2));
+  // local_surface_id_ should be retained by reference from id2.
+  EXPECT_TRUE(manager_.GetSurfaceForId(
+      SurfaceId(support_->frame_sink_id(), local_surface_id_)));
 
-  // By submitting a display CompositorFrame, and replacing the parent's
-  // CompositorFrame with another surface ID, parent_id1 becomes unreachable and
-  // a candidate for garbage collection.
-  display_support().SubmitCompositorFrame(
-      display_id.local_surface_id(),
-      MakeCompositorFrame({parent_id2}, empty_surface_ids()));
+  // Satisfy last destruction dependency for id2.
+  manager_.SatisfySequence(SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
 
-  // Now |parent_id1| is only kept alive by the active |display_id| frame.
-  parent_support().SubmitCompositorFrame(
-      parent_id2.local_surface_id(),
-      MakeCompositorFrame({child_id}, empty_surface_ids()));
+  // id2 and local_surface_id_ are in a reference cycle that has no surface
+  // sequences holding on to it, so they should be destroyed.
+  EXPECT_TRUE(!manager_.GetSurfaceForId(id2));
+  EXPECT_TRUE(!manager_.GetSurfaceForId(
+      SurfaceId(support_->frame_sink_id(), local_surface_id_)));
 
-  // SurfaceDependencyTracker should now be tracking |display_id|, |parent_id1|
-  // and |parent_id2|. By activating the pending |display_id| frame by deadline,
-  // |parent_id1| becomes unreachable and is garbage collected while
-  // SurfaceDependencyTracker is in the process of activating surfaces. This
-  // should not cause a crash or use-after-free.
-  for (int i = 0; i < 3; ++i) {
-    begin_frame_source()->TestOnBeginFrame(args);
-    EXPECT_TRUE(dependency_tracker().has_deadline());
+  local_surface_id_ = LocalSurfaceId();
+}
+
+void CopyRequestTestCallback(bool* called,
+                             std::unique_ptr<CopyOutputResult> result) {
+  *called = true;
+}
+
+TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
+  {
+    std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
+    CompositorFrame frame = MakeCompositorFrame();
+    frame.render_pass_list.push_back(std::move(render_pass));
+    frame.metadata.referenced_surfaces.push_back(
+        SurfaceId(support_->frame_sink_id(), local_surface_id_));
+    support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+    EXPECT_EQ(last_created_surface_id().local_surface_id(), local_surface_id_);
   }
-  begin_frame_source()->TestOnBeginFrame(args);
-  EXPECT_FALSE(dependency_tracker().has_deadline());
+
+  bool called1 = false;
+  std::unique_ptr<CopyOutputRequest> request;
+  request = CopyOutputRequest::CreateRequest(
+      base::Bind(&CopyRequestTestCallback, &called1));
+  request->set_source(kArbitrarySourceId1);
+
+  support_->RequestCopyOfSurface(std::move(request));
+  EXPECT_FALSE(called1);
+
+  bool called2 = false;
+  request = CopyOutputRequest::CreateRequest(
+      base::Bind(&CopyRequestTestCallback, &called2));
+  request->set_source(kArbitrarySourceId2);
+
+  support_->RequestCopyOfSurface(std::move(request));
+  // Callbacks have different sources so neither should be called.
+  EXPECT_FALSE(called1);
+  EXPECT_FALSE(called2);
+
+  bool called3 = false;
+  request = CopyOutputRequest::CreateRequest(
+      base::Bind(&CopyRequestTestCallback, &called3));
+  request->set_source(kArbitrarySourceId1);
+
+  support_->RequestCopyOfSurface(std::move(request));
+  // Two callbacks are from source1, so the first should be called.
+  EXPECT_TRUE(called1);
+  EXPECT_FALSE(called2);
+  EXPECT_FALSE(called3);
+
+  support_->EvictFrame();
+  local_surface_id_ = LocalSurfaceId();
+  EXPECT_TRUE(called1);
+  EXPECT_TRUE(called2);
+  EXPECT_TRUE(called3);
 }
 
-// This test verifies that a CompositorFrame will only blocked on embedded
-// surfaces but not on other retained surface IDs in the CompositorFrame.
-TEST_F(CompositorFrameSinkSupportTest, OnlyBlockOnEmbeddedSurfaces) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+// Check whether the SurfaceInfo object is created and populated correctly
+// after the frame submission.
+TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
+  CompositorFrame frame = MakeCompositorFrame();
 
-  // Submitting a CompositorFrame with |parent_id2| so that the display
-  // CompositorFrame can hold a reference to it.
-  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+  auto render_pass = RenderPass::Create();
+  render_pass->SetNew(1, gfx::Rect(5, 6), gfx::Rect(), gfx::Transform());
+  frame.render_pass_list.push_back(std::move(render_pass));
 
-  display_support().SubmitCompositorFrame(
-      display_id.local_surface_id(),
-      MakeCompositorFrame({parent_id1}, {parent_id2}));
+  render_pass = RenderPass::Create();
+  render_pass->SetNew(2, gfx::Rect(7, 8), gfx::Rect(), gfx::Transform());
+  frame.render_pass_list.push_back(std::move(render_pass));
 
-  EXPECT_TRUE(display_surface()->HasPendingFrame());
-  EXPECT_FALSE(display_surface()->HasActiveFrame());
-  EXPECT_TRUE(dependency_tracker().has_deadline());
+  frame.metadata.device_scale_factor = 2.5f;
 
-  // Verify that the display CompositorFrame will only block on |parent_id1| but
-  // not |parent_id2|.
-  EXPECT_THAT(display_surface()->blocking_surfaces(),
-              UnorderedElementsAre(parent_id1));
-  // Verify that the display surface holds no references while its
-  // CompositorFrame is pending.
-  EXPECT_THAT(GetChildReferences(display_id), IsEmpty());
-
-  // Submitting a CompositorFrame with |parent_id1| should unblock the display
-  // CompositorFrame.
-  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
-                                         MakeCompositorFrame());
-
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(display_surface()->HasPendingFrame());
-  EXPECT_TRUE(display_surface()->HasActiveFrame());
-  EXPECT_THAT(display_surface()->blocking_surfaces(), IsEmpty());
+  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+  SurfaceId expected_surface_id(support_->frame_sink_id(), local_surface_id_);
+  EXPECT_EQ(expected_surface_id, last_surface_info_.id());
+  EXPECT_EQ(2.5f, last_surface_info_.device_scale_factor());
+  EXPECT_EQ(gfx::Size(7, 8), last_surface_info_.size_in_pixels());
 }
 
-// This test verifies that a late arriving CompositorFrame activates immediately
-// and does not trigger a new deadline.
-TEST_F(CompositorFrameSinkSupportTest, LateArrivingDependency) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+}  // namespace
 
-  display_support().SubmitCompositorFrame(
-      display_id.local_surface_id(),
-      MakeCompositorFrame({parent_id1}, empty_surface_ids()));
-
-  EXPECT_TRUE(display_surface()->HasPendingFrame());
-  EXPECT_FALSE(display_surface()->HasActiveFrame());
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-
-  // Advance BeginFrames to trigger a deadline. This activates the
-  // CompositorFrame submitted above.
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
-  for (int i = 0; i < 3; ++i) {
-    begin_frame_source()->TestOnBeginFrame(args);
-    EXPECT_TRUE(dependency_tracker().has_deadline());
-  }
-  begin_frame_source()->TestOnBeginFrame(args);
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(display_surface()->HasPendingFrame());
-  EXPECT_TRUE(display_surface()->HasActiveFrame());
-
-  // A late arriving CompositorFrame should activate immediately without
-  // scheduling a deadline and without waiting for dependencies to resolve.
-  parent_support().SubmitCompositorFrame(
-      parent_id1.local_surface_id(),
-      MakeCompositorFrame({child_id1}, empty_surface_ids()));
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-}
-
-// This test verifies that CompositorFrames submitted to a surface referenced
-// by a parent CompositorFrame as a fallback will be rejected and ACK'ed
-// immediately.
-TEST_F(CompositorFrameSinkSupportTest, FallbackSurfacesClosed) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  // This is the fallback child surface that the parent holds a reference to.
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  // This is the primary child surface that the parent wants to block on.
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
-
-  // child_support1 submits a CompositorFrame without any dependencies.
-  // DidReceiveCompositorFrameAck should call on immediate activation.
-  // However, resources will not be returned because this frame is a candidate
-  // for display.
-  TransferableResource resource =
-      MakeResource(1337 /* id */, ALPHA_8 /* format */, 1234 /* filter */,
-                   gfx::Size(1234, 5678));
-  ReturnedResourceArray returned_resources;
-  TransferableResource::ReturnResources({resource}, &returned_resources);
-
-  EXPECT_CALL(support_client_,
-              DidReceiveCompositorFrameAck(Eq(ReturnedResourceArray())));
-  child_support1().SubmitCompositorFrame(
-      child_id1.local_surface_id(),
-      MakeCompositorFrameWithResources(empty_surface_ids(), {resource}));
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-
-  // The parent is blocked on |child_id2| and references |child_id1|. The
-  // surface corresponding to |child_id1| will not accept new CompositorFrames
-  // while the parent CompositorFrame is blocked.
-  parent_support().SubmitCompositorFrame(
-      parent_id1.local_surface_id(),
-      MakeCompositorFrame({child_id2}, {child_id1}));
-  EXPECT_TRUE(dependency_tracker().has_deadline());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
-
-  // Resources will be returned immediately because |child_id1|'s surface is
-  // closed.
-  TransferableResource resource2 =
-      MakeResource(1246 /* id */, ALPHA_8 /* format */, 1357 /* filter */,
-                   gfx::Size(8765, 4321));
-  ReturnedResourceArray returned_resources2;
-  TransferableResource::ReturnResources({resource2}, &returned_resources2);
-  EXPECT_CALL(support_client_,
-              DidReceiveCompositorFrameAck(Eq(returned_resources2)));
-  child_support1().SubmitCompositorFrame(
-      child_id1.local_surface_id(),
-      MakeCompositorFrameWithResources(empty_surface_ids(), {resource2}));
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-
-  // Advance BeginFrames to trigger a deadline. This activates the
-  // CompositorFrame submitted to the parent.
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
-  for (int i = 0; i < 3; ++i) {
-    begin_frame_source()->TestOnBeginFrame(args);
-    EXPECT_TRUE(dependency_tracker().has_deadline());
-  }
-  begin_frame_source()->TestOnBeginFrame(args);
-  EXPECT_FALSE(dependency_tracker().has_deadline());
-  EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_TRUE(parent_surface()->HasActiveFrame());
-
-  // Resources will be returned immediately because |child_id1|'s surface is
-  // closed forever.
-  EXPECT_CALL(support_client_,
-              DidReceiveCompositorFrameAck(Eq(returned_resources2)));
-  child_support1().SubmitCompositorFrame(
-      child_id1.local_surface_id(),
-      MakeCompositorFrameWithResources(empty_surface_ids(), {resource2}));
-  testing::Mock::VerifyAndClearExpectations(&support_client_);
-}
+}  // namespace test
 
 }  // namespace cc

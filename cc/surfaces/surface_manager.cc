@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/direct_surface_reference_factory.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_info.h"
 
 #if DCHECK_IS_ON()
@@ -75,18 +75,20 @@ void SurfaceManager::RequestSurfaceResolution(Surface* pending_surface) {
 }
 
 std::unique_ptr<Surface> SurfaceManager::CreateSurface(
-    base::WeakPtr<SurfaceFactory> surface_factory,
+    base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
     const LocalSurfaceId& local_surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(local_surface_id.is_valid() && surface_factory);
+  DCHECK(local_surface_id.is_valid() && compositor_frame_sink_support);
 
-  SurfaceId surface_id(surface_factory->frame_sink_id(), local_surface_id);
+  SurfaceId surface_id(compositor_frame_sink_support->frame_sink_id(),
+                       local_surface_id);
 
   // If no surface with this SurfaceId exists, simply create the surface and
   // return.
   auto surface_iter = surface_map_.find(surface_id);
   if (surface_iter == surface_map_.end()) {
-    auto surface = base::MakeUnique<Surface>(surface_id, surface_factory);
+    auto surface =
+        base::MakeUnique<Surface>(surface_id, compositor_frame_sink_support);
     surface_map_[surface->surface_id()] = surface.get();
     return surface;
   }
@@ -108,7 +110,8 @@ std::unique_ptr<Surface> SurfaceManager::CreateSurface(
   std::unique_ptr<Surface> surface = std::move(*it);
   surfaces_to_destroy_.erase(it);
   surface->set_destroyed(false);
-  DCHECK_EQ(surface_factory.get(), surface->factory().get());
+  DCHECK_EQ(compositor_frame_sink_support.get(),
+            surface->compositor_frame_sink_support().get());
   return surface;
 }
 

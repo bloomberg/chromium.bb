@@ -11,12 +11,10 @@ SurfaceResourceHolder::SurfaceResourceHolder(
     SurfaceResourceHolderClient* client)
     : client_(client) {}
 
-SurfaceResourceHolder::~SurfaceResourceHolder() {
-}
+SurfaceResourceHolder::~SurfaceResourceHolder() = default;
 
 SurfaceResourceHolder::ResourceRefs::ResourceRefs()
-    : refs_received_from_child(0), refs_holding_resource_alive(0) {
-}
+    : refs_received_from_child(0), refs_holding_resource_alive(0) {}
 
 void SurfaceResourceHolder::Reset() {
   resource_id_info_map_.clear();
@@ -24,10 +22,8 @@ void SurfaceResourceHolder::Reset() {
 
 void SurfaceResourceHolder::ReceiveFromChild(
     const TransferableResourceArray& resources) {
-  for (TransferableResourceArray::const_iterator it = resources.begin();
-       it != resources.end();
-       ++it) {
-    ResourceRefs& ref = resource_id_info_map_[it->id];
+  for (const auto& resource : resources) {
+    ResourceRefs& ref = resource_id_info_map_[resource.id];
     ref.refs_holding_resource_alive++;
     ref.refs_received_from_child++;
   }
