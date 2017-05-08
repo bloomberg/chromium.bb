@@ -48,9 +48,6 @@ class ArcVoiceInteractionFrameworkService
   void ShowMetalayer(const base::Closure& closed);
   void HideMetalayer();
 
-  // Whether enable-voice-interaction switch is present.
-  static bool IsVoiceInteractionEnabled();
-
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
 
