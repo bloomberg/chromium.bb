@@ -5328,6 +5328,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                               cm->width == cm->prev_frame->buf.y_width &&
                               cm->height == cm->prev_frame->buf.y_height &&
                               !cm->intra_only && !cm->prev_frame->intra_only;
+  } else {
+    cm->use_prev_frame_mvs = 0;
   }
 #else
   cm->use_prev_frame_mvs =
