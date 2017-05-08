@@ -3,6 +3,7 @@ include_rules = [
   # See comment in content/DEPS for which components are allowed.
   "+components/discardable_memory/client",
   "+components/metrics",
+  "+components/metrics:single_sample_metrics",
   "+components/payments",
   "+components/scheduler",
   "+components/url_formatter",
