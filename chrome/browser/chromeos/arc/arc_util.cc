@@ -246,7 +246,11 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
   DCHECK(!callback.is_null());
 
   // If ARC is not available, skip the check.
-  if (!IsArcAvailable()) {
+  // This shortcut is just for merginally improving the log-in performance on
+  // old devices without ARC. We can always safely remove the following 4 lines
+  // without changing any functionality when, say, the code clarity becomes
+  // more important in the future.
+  if (!IsArcAvailable() && !IsArcKioskAvailable()) {
     callback.Run();
     return;
   }
