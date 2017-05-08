@@ -824,7 +824,7 @@ public class ContentViewCore
 
     private void setTouchScrollInProgress(boolean inProgress) {
         mTouchScrollInProgress = inProgress;
-        mSelectionPopupController.setScrollInProgress(isScrollInProgress());
+        mSelectionPopupController.setScrollInProgress(inProgress, isScrollInProgress());
     }
 
     @SuppressWarnings("unused")
