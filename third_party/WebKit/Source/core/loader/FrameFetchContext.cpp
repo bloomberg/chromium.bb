@@ -693,7 +693,7 @@ MHTMLArchive* FrameFetchContext::Archive() const {
   DCHECK(!IsMainFrame());
   // TODO(nasko): How should this work with OOPIF?
   // The MHTMLArchive is parsed as a whole, but can be constructed from frames
-  // in mutliple processes. In that case, which process should parse it and how
+  // in multiple processes. In that case, which process should parse it and how
   // should the output be spread back across multiple processes?
   if (!GetFrame()->Tree().Parent()->IsLocalFrame())
     return nullptr;
