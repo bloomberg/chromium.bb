@@ -250,7 +250,8 @@ bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(
     bool accept,
     const base::string16* prompt_override) {
   if (dialog_) {
-    CloseDialog(accept, prompt_override ? *prompt_override : base::string16(),
+    CloseDialog(accept,
+                prompt_override ? *prompt_override : dialog_->GetUserInput(),
                 DismissalCause::HANDLE_DIALOG_CALLED);
     return true;
   }

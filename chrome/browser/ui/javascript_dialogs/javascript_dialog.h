@@ -32,6 +32,9 @@ class JavaScriptDialog {
   // one.
   virtual void CloseDialogWithoutCallback() = 0;
 
+  // Returns the current value of the user input for a prompt dialog.
+  virtual base::string16 GetUserInput() = 0;
+
  protected:
   explicit JavaScriptDialog(content::WebContents* parent_web_contents);
 

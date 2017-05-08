@@ -32,6 +32,7 @@ class JavaScriptDialogCocoa : public JavaScriptDialog {
 
   // JavaScriptDialog:
   void CloseDialogWithoutCallback() override;
+  base::string16 GetUserInput() override;
 
  private:
   JavaScriptDialogCocoa(

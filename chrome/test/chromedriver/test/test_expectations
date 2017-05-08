@@ -101,10 +101,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1674
     'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1792
-    'AlertsTest.testPromptShouldUseDefaultValueIfNoKeysSent',
-    'UnexpectedAlertBehaviorTest.canAcceptUnhandledAlert',
-    'UnexpectedAlertBehaviorTest.canSpecifyUnhandledAlertBehaviourUsingCapabilities',
 ]
 _REVISION_NEGATIVE_FILTER['58'] = (
     _REVISION_NEGATIVE_FILTER['HEAD'] + [
