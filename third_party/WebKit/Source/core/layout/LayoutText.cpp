@@ -1024,7 +1024,7 @@ static float MinWordFragmentWidthForBreakAll(
     EWordBreak break_all_or_break_word) {
   DCHECK_GT(length, 0);
   LazyLineBreakIterator break_iterator(layout_text->GetText(),
-                                       LocaleForLineBreakIterator(style));
+                                       style.LocaleForLineBreakIterator());
   int next_breakable = -1;
   float min = std::numeric_limits<float>::max();
   int end = start + length;
@@ -1094,30 +1094,6 @@ static float MaxWordFragmentWidth(LayoutText* layout_text,
   return max_fragment_width + layout_text->HyphenWidth(font, text_direction);
 }
 
-AtomicString LocaleForLineBreakIterator(const ComputedStyle& style) {
-  LineBreakIteratorMode mode = LineBreakIteratorMode::kDefault;
-  switch (style.GetLineBreak()) {
-    default:
-      NOTREACHED();
-    // Fall through.
-    case kLineBreakAuto:
-    case kLineBreakAfterWhiteSpace:
-      return style.Locale();
-    case kLineBreakNormal:
-      mode = LineBreakIteratorMode::kNormal;
-      break;
-    case kLineBreakStrict:
-      mode = LineBreakIteratorMode::kStrict;
-      break;
-    case kLineBreakLoose:
-      mode = LineBreakIteratorMode::kLoose;
-      break;
-  }
-  if (const LayoutLocale* locale = style.GetFontDescription().Locale())
-    return locale->LocaleWithBreakKeyword(mode);
-  return style.Locale();
-}
-
 void LayoutText::ComputePreferredLogicalWidths(
     float lead_width,
     HashSet<const SimpleFontData*>& fallback_fonts,
@@ -1147,7 +1123,7 @@ void LayoutText::ComputePreferredLogicalWidths(
   float word_spacing = style_to_use.WordSpacing();
   int len = TextLength();
   LazyLineBreakIterator break_iterator(
-      text_, LocaleForLineBreakIterator(style_to_use));
+      text_, style_to_use.LocaleForLineBreakIterator());
   bool needs_word_spacing = false;
   bool ignoring_spaces = false;
   bool is_space = false;

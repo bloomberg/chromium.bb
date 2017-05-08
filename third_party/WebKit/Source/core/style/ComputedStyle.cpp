@@ -1583,6 +1583,27 @@ void ComputedStyle::ClearResetDirectives() {
     it->value.ClearReset();
 }
 
+AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
+  LineBreakIteratorMode mode = LineBreakIteratorMode::kDefault;
+  switch (GetLineBreak()) {
+    case kLineBreakAuto:
+    case kLineBreakAfterWhiteSpace:
+      return Locale();
+    case kLineBreakNormal:
+      mode = LineBreakIteratorMode::kNormal;
+      break;
+    case kLineBreakStrict:
+      mode = LineBreakIteratorMode::kStrict;
+      break;
+    case kLineBreakLoose:
+      mode = LineBreakIteratorMode::kLoose;
+      break;
+  }
+  if (const LayoutLocale* locale = GetFontDescription().Locale())
+    return locale->LocaleWithBreakKeyword(mode);
+  return Locale();
+}
+
 Hyphenation* ComputedStyle::GetHyphenation() const {
   return GetHyphens() == kHyphensAuto
              ? GetFontDescription().LocaleOrDefault().GetHyphenation()

@@ -744,7 +744,7 @@ ALWAYS_INLINE int LastBreakablePositionForBreakAll(LineLayoutText text,
                                                    int start,
                                                    int end) {
   LazyLineBreakIterator line_break_iterator(text.GetText(),
-                                            LocaleForLineBreakIterator(style));
+                                            style.LocaleForLineBreakIterator());
   int last_breakable_position = 0, next_breakable_position = -1;
   for (int i = start;; i = next_breakable_position + 1) {
     line_break_iterator.IsBreakable(i, next_breakable_position,
@@ -804,7 +804,7 @@ ALWAYS_INLINE bool BreakingContext::RewindToFirstMidWordBreak(
   int end = CanMidWordBreakBefore(text) ? start : start + 1;
   if (break_all) {
     LazyLineBreakIterator line_break_iterator(
-        text.GetText(), LocaleForLineBreakIterator(style));
+        text.GetText(), style.LocaleForLineBreakIterator());
     int next_breakable = -1;
     line_break_iterator.IsBreakable(end, next_breakable,
                                     LineBreakType::kBreakAll);
@@ -996,7 +996,7 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
     layout_text_info_.text_ = layout_text;
     layout_text_info_.font_ = &font;
     layout_text_info_.line_break_iterator_.ResetStringAndReleaseIterator(
-        layout_text.GetText(), LocaleForLineBreakIterator(style));
+        layout_text.GetText(), style.LocaleForLineBreakIterator());
   } else if (layout_text_info_.font_ != &font) {
     layout_text_info_.font_ = &font;
   }
