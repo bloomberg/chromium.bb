@@ -81,7 +81,6 @@ class ImageResource::ImageResourceInfoImpl final
   const ResourceResponse& GetResponse() const override {
     return resource_->GetResponse();
   }
-  ResourceStatus GetStatus() const override { return resource_->GetStatus(); }
   bool ShouldShowPlaceholder() const override {
     return resource_->ShouldShowPlaceholder();
   }
@@ -336,8 +335,8 @@ void ImageResource::DecodeError(bool all_data_received) {
     Loader()->DidFinishLoading(MonotonicallyIncreasingTime(), size, size, size);
   } else {
     auto result = GetContent()->UpdateImage(
-        nullptr, ImageResourceContent::kClearImageAndNotifyObservers,
-        all_data_received);
+        nullptr, GetStatus(),
+        ImageResourceContent::kClearImageAndNotifyObservers, all_data_received);
     DCHECK_EQ(result, ImageResourceContent::UpdateImageResult::kNoDecodeError);
   }
 
@@ -347,6 +346,11 @@ void ImageResource::DecodeError(bool all_data_received) {
 void ImageResource::UpdateImageAndClearBuffer() {
   UpdateImage(Data(), ImageResourceContent::kClearAndUpdateImage, true);
   ClearData();
+}
+
+void ImageResource::NotifyStartLoad() {
+  CHECK_EQ(GetStatus(), ResourceStatus::kPending);
+  GetContent()->NotifyStartLoad();
 }
 
 void ImageResource::Finish(double load_finish_time) {
@@ -579,8 +583,9 @@ void ImageResource::UpdateImage(
     PassRefPtr<SharedBuffer> shared_buffer,
     ImageResourceContent::UpdateImageOption update_image_option,
     bool all_data_received) {
-  auto result = GetContent()->UpdateImage(
-      std::move(shared_buffer), update_image_option, all_data_received);
+  auto result =
+      GetContent()->UpdateImage(std::move(shared_buffer), GetStatus(),
+                                update_image_option, all_data_received);
   if (result == ImageResourceContent::UpdateImageResult::kShouldDecodeError) {
     // In case of decode error, we call imageNotifyFinished() iff we don't
     // initiate reloading:

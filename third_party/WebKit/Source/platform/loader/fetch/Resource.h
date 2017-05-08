@@ -332,9 +332,26 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void ReloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
                                               ReloadLoFiOrPlaceholderPolicy) {}
 
+  // Used to notify ImageResourceContent of the start of actual loading.
+  // JavaScript calls or client/observer notifications are disallowed inside
+  // notifyStartLoad().
+  virtual void NotifyStartLoad() {}
+
   static const char* ResourceTypeToString(
       Type,
       const AtomicString& fetch_initiator_name);
+
+  class ProhibitAddRemoveClientInScope : public AutoReset<bool> {
+   public:
+    ProhibitAddRemoveClientInScope(Resource* resource)
+        : AutoReset(&resource->is_add_remove_client_prohibited_, true) {}
+  };
+
+  class RevalidationStartForbiddenScope : public AutoReset<bool> {
+   public:
+    RevalidationStartForbiddenScope(Resource* resource)
+        : AutoReset(&resource->is_revalidation_start_forbidden_, true) {}
+  };
 
  protected:
   Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
@@ -394,18 +411,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   SharedBuffer* Data() const { return data_.Get(); }
   void ClearData();
-
-  class ProhibitAddRemoveClientInScope : public AutoReset<bool> {
-   public:
-    ProhibitAddRemoveClientInScope(Resource* resource)
-        : AutoReset(&resource->is_add_remove_client_prohibited_, true) {}
-  };
-
-  class RevalidationStartForbiddenScope : public AutoReset<bool> {
-   public:
-    RevalidationStartForbiddenScope(Resource* resource)
-        : AutoReset(&resource->is_revalidation_start_forbidden_, true) {}
-  };
 
  private:
   class ResourceCallback;
