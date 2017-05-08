@@ -4,11 +4,13 @@
 
 #include "core/workers/MainThreadWorklet.h"
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
 #include "core/workers/WorkletPendingTasks.h"
@@ -18,7 +20,8 @@ namespace blink {
 
 MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {}
 
-// Implementation of the "addModule(moduleURL, options)" algorithm:
+// Implementation of the first half of the "addModule(moduleURL, options)"
+// algorithm:
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
                                            const String& module_url) {
@@ -50,7 +53,24 @@ ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
 
   // Step 5: "Return promise, and then continue running this algorithm in
   // parallel."
-  // TODO(nhiroki): Make the following sequence async.
+  // |kUnspecedLoading| is used here because this is a part of script module
+  // loading.
+  TaskRunnerHelper::Get(TaskType::kUnspecedLoading, script_state)
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&MainThreadWorklet::FetchAndInvokeScript,
+                           WrapPersistent(this), module_url_record,
+                           WrapPersistent(resolver)));
+  return promise;
+}
+
+// Implementation of the second half of the "addModule(moduleURL, options)"
+// algorithm:
+// https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
+void MainThreadWorklet::FetchAndInvokeScript(const KURL& module_url_record,
+                                             ScriptPromiseResolver* resolver) {
+  DCHECK(IsMainThread());
+  if (!GetExecutionContext())
+    return;
 
   // Step 6: "Let credentialOptions be the credentials member of options."
   // TODO(nhiroki): Implement credentialOptions (https://crbug.com/710837).
@@ -93,7 +113,6 @@ ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
   // TODO(nhiroki): Queue a task instead of executing this here.
   GetWorkletGlobalScopeProxy()->FetchAndInvokeScript(module_url_record,
                                                      pending_tasks);
-  return promise;
 }
 
 void MainThreadWorklet::ContextDestroyed(ExecutionContext* execution_context) {
