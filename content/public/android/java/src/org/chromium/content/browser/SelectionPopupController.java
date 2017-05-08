@@ -387,9 +387,13 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         }
     }
 
-    void setScrollInProgress(boolean inProgress) {
-        mScrollInProgress = inProgress;
-        hideActionMode(inProgress);
+    void setScrollInProgress(boolean touchScrollInProgress, boolean scrollInProgress) {
+        mScrollInProgress = scrollInProgress;
+
+        // The active fling count reflected in |scrollInProgress| isn't reliable with WebView,
+        // so only use the active touch scroll signal for hiding. The fling animation
+        // movement will naturally hide the ActionMode by invalidating its content rect.
+        hideActionMode(touchScrollInProgress);
     }
 
     /**
