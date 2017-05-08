@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -17,50 +17,61 @@
 
       // Task: Calling suspend with no argument, negative time or the time
       // beyond the maximum render duration reject the promise.
-      audit.defineTask('suspend-invalid-argument', function (done) {
-        var context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+      audit.define('suspend-invalid-argument', (task, should) => {
+        var context =
+            new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
-        Should('context.suspend()', context.suspend()).beRejected();
-        Should('context.suspend(-1.0)', context.suspend(-1.0)).beRejected();
-        Should('context.suspend(2.0)', context.suspend(2.0)).beRejected();
+        should(context.suspend(), 'context.suspend()').beRejected();
+        should(context.suspend(-1.0), 'context.suspend(-1.0)').beRejected();
+        should(context.suspend(2.0), 'context.suspend(2.0)').beRejected();
 
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
       // Task: Scheduling a suspend in the past should be rejected.
-      audit.defineTask('suspend-in-the-past', function (done) {
-        var context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+      audit.define('suspend-in-the-past', (task, should) => {
+        var context =
+            new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
-        context.suspend(0.5).then(function () {
+        context.suspend(0.5).then(function() {
+          should(
+              context.suspend(context.currentTime - 0.1),
+              'Scheduling a suspend in the past')
+              .beRejected();
 
-          Should('Scheduling a suspend in the past',
-            context.suspend(context.currentTime - 0.1)).beRejected();
-
-          Should('Scheduling a suspend in the future',
-            context.suspend(context.currentTime + 0.1).then(function () {
-              context.resume();
-            })).beResolved();
+          should(context
+                     .suspend(
+                         context.currentTime + 0.1,
+                         'Scheduling a suspend in the future')
+                     .then(function() {
+                       context.resume();
+                     }))
+              .beResolved();
 
           context.resume();
         });
 
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
       // Task: suspending after rendering is finished must be rejected with the
       // properly clamped frame/time information.
-      audit.defineTask('suspend-after-render-completion', function (done) {
-        var context = new OfflineAudioContext(
-            1, sampleRate * renderDuration, sampleRate);
-        context.startRendering().then(function () {
-            Should('Scheduling a suspend after the render completion',
-              context.suspend(renderDuration)).beRejected();
-        }).then(done);
+      audit.define('suspend-after-render-completion', (task, should) => {
+        var context =
+            new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+        context.startRendering()
+            .then(function() {
+              should(
+                  context.suspend(renderDuration),
+                  'Scheduling a suspend after the render completion')
+                  .beRejected();
+            })
+            .then(() => task.done());
       });
 
       // Task: Calling multiple suspends at the same rendering quantum should
       // reject the promise.
-      audit.defineTask('identical-suspend-time', function(done) {
+      audit.define('identical-suspend-time', (task, should) => {
         var context =
             new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
@@ -69,25 +80,26 @@
         var suspendTime1 = renderQuantum / sampleRate;
         var suspendTime2 = 1.5 * renderQuantum / sampleRate;
 
-        Should(
-            'Scheduling a suspend at frame ' + suspendTime1 * sampleRate,
-            () => context.suspend(suspendTime1).then(() => context.resume()))
+        should(
+            () => context.suspend(suspendTime1).then(() => context.resume()),
+            'Scheduling a suspend at frame ' + suspendTime1 * sampleRate)
             .notThrow();
 
-        Should(
-            'Scheduling another suspend at the same rendering quantum',
-            context.suspend(suspendTime2))
+        should(
+            context.suspend(suspendTime2),
+            'Scheduling another suspend at the same rendering quantum')
             .beRejected();
 
-        context.startRendering().then(done);
+        context.startRendering().then(() => task.done());
       });
 
       // Task: Resuming a running context should be resolved.
-      audit.defineTask('resume-before-suspend', function (done) {
+      audit.define('resume-before-suspend', (task, should) => {
 
         // Make the render length 5 times longer to minimize the flakiness.
         var longRenderDuration = renderDuration * 5;
-        var context = new OfflineAudioContext(1, sampleRate * longRenderDuration, sampleRate);
+        var context = new OfflineAudioContext(
+            1, sampleRate * longRenderDuration, sampleRate);
 
         // Create dummy audio graph to slow the rendering.
         var osc = context.createOscillator();
@@ -104,32 +116,34 @@
         osc.start();
 
         // A suspend is scheduled at the 90% of the render duration.
-        Should(
-            'Scheduling a suspend at ' + longRenderDuration * 0.9 + ' seconds',
+        should(
             () => {
               // Test is finished when this suspend resolves.
-              context.suspend(longRenderDuration * 0.9).then(done);
-            })
+              context.suspend(longRenderDuration * 0.9).then(() => task.done());
+            },
+            'Scheduling a suspend at ' + longRenderDuration * 0.9 + ' seconds')
             .notThrow();
-        
+
         // We have to start rendering to get the time running.
         context.startRendering();
 
         // Then call resume() immediately after the rendering starts. Resuming
         // a context that is already running should be resolved.
-        Should('Resuming a running context', context.resume())
-        .beResolved();
+        should(context.resume(), 'Resuming a running context').beResolved();
       });
 
-      // Task: Calling resume on a context that is not started should reject the promise.
-      audit.defineTask('resume-without-suspend', function (done) {
-        var context = new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
+      // Task: Calling resume on a context that is not started should reject the
+      // promise.
+      audit.define('resume-without-suspend', (task, should) => {
+        var context =
+            new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
-        Should('Resuming a context without starting it', context.resume())
-          .beRejected().then(done);
+        should(context.resume(), 'Resuming a context without starting it')
+            .beRejected()
+            .then(() => task.done());
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
 
   </body>

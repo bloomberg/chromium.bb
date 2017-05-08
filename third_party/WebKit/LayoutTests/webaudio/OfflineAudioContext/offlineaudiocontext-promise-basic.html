@@ -3,7 +3,7 @@
   <head>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>OfflineAudioContext.startRendering Promise</title>
   </head>
 
@@ -19,23 +19,27 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask('reject-promise', function (done) {
-        // Create a context and verify that calling startRendering more than once causes a rejected
-        // promise.
-        var context = new OfflineAudioContext(contextChannels, renderFrames, sampleRate);
+      audit.define('reject-promise', (task, should) => {
+        // Create a context and verify that calling startRendering more than
+        // once causes a rejected promise.
+        var context =
+            new OfflineAudioContext(contextChannels, renderFrames, sampleRate);
         context.startRendering();
-        Should('Promise from calling startRendering twice',
-          context.startRendering())
-          .beRejected()
-          .then(done);
+        should(
+            context.startRendering(),
+            'Promise from calling startRendering twice')
+            .beRejected()
+            .then(() => task.done());
       });
 
-      audit.defineTask('promise-results', function (done) {
-        // Create an offline context and verify that buffer returned by the promise matches the
-        // expected results.
-        context = new OfflineAudioContext(contextChannels, renderFrames, sampleRate);
+      audit.define('promise-results', (task, should) => {
+        // Create an offline context and verify that buffer returned by the
+        // promise matches the expected results.
+        context =
+            new OfflineAudioContext(contextChannels, renderFrames, sampleRate);
 
-        var buffer = context.createBuffer(contextChannels, renderFrames, sampleRate);
+        var buffer =
+            context.createBuffer(contextChannels, renderFrames, sampleRate);
         for (var k = 0; k < renderFrames; ++k) {
           buffer.getChannelData(0)[k] = 1;
           buffer.getChannelData(1)[k] = 2;
@@ -46,40 +50,28 @@
         source.connect(context.destination);
         source.start();
 
-        context.startRendering().then(handlePromise).then(done);
+        context.startRendering()
+            .then(buffer => {
+              return handlePromise(should, buffer);
+            })
+            .then(() => task.done());
       });
-      
-      audit.runTasks();
-      
-      function handlePromise(buffer)
-      {
-        renderedData = buffer;
-        var success = true;
 
-        Should("context.state", context.state)
-          .beEqualTo("closed");
-        Should("renderedData.numberOfChannels", renderedData.numberOfChannels)
-          .beEqualTo(contextChannels);
-        Should("renderedData.length", renderedData.length)
-          .beEqualTo(renderFrames);
+      audit.run();
 
-        for (var channel = 0; channel < contextChannels; ++channel) {
-          var data = renderedData.getChannelData(channel);
-          for (var k = 0; k < renderFrames; ++k) {
-            if (data[k] != channel + 1) {
-              success = false;
-              badChannel = channel;
-              badFrame = k;
-              break;
-            }
-          }
-          if (!success)
-            break;
+      function handlePromise(should, renderedData) {
+        should(context.state, 'context.state').beEqualTo('closed');
+        should(renderedData.numberOfChannels, 'renderedData.numberOfChannels')
+            .beEqualTo(contextChannels);
+        should(renderedData.length, 'renderedData.length')
+            .beEqualTo(renderFrames);
+
+        for (let channel = 0; channel < renderedData.numberOfChannels;
+             ++channel) {
+          should(
+              renderedData.getChannelData(channel), `Output channel ${channel}`)
+              .beConstantValueOf(channel + 1);
         }
-
-        Should('OfflineAudioContext.startRendering promise rendered data',
-          success)
-          .summarize('correctly', 'incorrectly');
       }
     </script>
     
