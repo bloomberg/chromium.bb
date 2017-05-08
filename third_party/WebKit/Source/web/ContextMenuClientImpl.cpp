@@ -107,7 +107,7 @@ static bool IsWhiteSpaceOrPunctuation(UChar c) {
 static String SelectMisspellingAsync(LocalFrame* selected_frame,
                                      String& description) {
   VisibleSelection selection =
-      selected_frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+      selected_frame->Selection().ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())
     return String();
 
