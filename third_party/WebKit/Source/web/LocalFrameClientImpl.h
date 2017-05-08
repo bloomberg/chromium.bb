@@ -232,6 +232,11 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool IsLocalFrameClientImpl() const override { return true; }
   WebDevToolsAgentImpl* DevToolsAgent();
 
+  // An MHTML Archive is a set of resources, including iframes, that is parsed
+  // as a whole. This function tells whether of not an archive exists and should
+  // be used for loading a subframe.
+  bool IsLoadedAsMHTMLArchive() const;
+
   // The WebFrame that owns this object and manages its lifetime. Therefore,
   // the web frame object is guaranteed to exist.
   Member<WebLocalFrameImpl> web_frame_;

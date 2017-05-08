@@ -5643,11 +5643,17 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     }
   }
 
+  // When an MHTML Archive is present, it should be used to serve iframe content
+  // instead of doing a network request.
+  bool use_archive =
+      (info.archive_status == NavigationPolicyInfo::ArchiveStatus::Present) &&
+      !url.SchemeIs(url::kDataScheme);
+
   // PlzNavigate: if the navigation is not synchronous, send it to the browser.
   // This includes navigations with no request being sent to the network stack.
   if (IsBrowserSideNavigationEnabled() &&
       info.url_request.CheckForBrowserSideNavigation() &&
-      ShouldMakeNetworkRequestForURL(url)) {
+      ShouldMakeNetworkRequestForURL(url) && !use_archive) {
     if (info.default_policy == blink::kWebNavigationPolicyCurrentTab) {
       // The BeginNavigation() call happens in didStartProvisionalLoad(). We
       // need to save information about the navigation here.

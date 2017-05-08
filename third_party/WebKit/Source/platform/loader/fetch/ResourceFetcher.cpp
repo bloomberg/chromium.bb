@@ -417,7 +417,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
   } else {
     ArchiveResource* archive_resource =
         archive_->SubresourceForURL(params.Url());
-    // Fall back to the network if the archive doesn't contain the resource.
+    // The archive doesn't contain the resource, the request must be aborted.
     if (!archive_resource)
       return nullptr;
     data = archive_resource->Data();
@@ -597,13 +597,19 @@ Resource* ResourceFetcher::RequestResource(
                                     params.Options().initiator_info.name);
   }
 
+  // An URL with the "cid" scheme can only be handled by an MHTML Archive.
+  // Abort the request when there is none.
+  if (resource_request.Url().ProtocolIs(kContentIdScheme) && !archive_) {
+    return nullptr;
+  }
+
   bool is_data_url = resource_request.Url().ProtocolIsData();
   bool is_static_data = is_data_url || substitute_data.IsValid() || archive_;
   if (is_static_data) {
     resource = ResourceForStaticData(params, factory, substitute_data);
     // Abort the request if the archive doesn't contain the resource, except in
     // the case of data URLs which might have resources such as fonts that need
-    // to be decoded only on demand.  These data URLs are allowed to be
+    // to be decoded only on demand. These data URLs are allowed to be
     // processed using the normal ResourceFetcher machinery.
     if (!resource && !is_data_url && archive_)
       return nullptr;

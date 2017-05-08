@@ -320,6 +320,11 @@ class BLINK_EXPORT WebFrameClient {
     WebContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy;
 
+    // Specify whether or not a MHTML Archive can be used to load a subframe
+    // resource instead of doing a network request.
+    enum class ArchiveStatus { Absent, Present };
+    ArchiveStatus archive_status;
+
     explicit NavigationPolicyInfo(WebURLRequest& url_request)
         : extra_data(nullptr),
           url_request(url_request),
@@ -330,7 +335,8 @@ class BLINK_EXPORT WebFrameClient {
           is_client_redirect(false),
           is_cache_disabled(false),
           should_check_main_world_content_security_policy(
-              kWebContentSecurityPolicyDispositionCheck) {}
+              kWebContentSecurityPolicyDispositionCheck),
+          archive_status(ArchiveStatus::Absent) {}
   };
 
   virtual WebNavigationPolicy DecidePolicyForNavigation(

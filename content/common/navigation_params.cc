@@ -32,6 +32,15 @@ bool ShouldMakeNetworkRequestForURL(const GURL& url) {
       return false;
   }
 
+  // For you information, even though a "data:" url doesn't generate actual
+  // network requests, it is handled by the network stack and so must return
+  // true. The reason is that a few "data:" urls can't be handled locally. For
+  // instance:
+  // - the ones that result in downloads.
+  // - the ones that are invalid. An error page must be served instead.
+  // - the ones that have an unsupported MIME type.
+  // - the ones that target the top-level frame on Android.
+
   return true;
 }
 
