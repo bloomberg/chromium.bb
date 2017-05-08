@@ -133,23 +133,6 @@ class ScopedComPtr {
     return hr;
   }
 
-  // Checks if the identity of |other| and this object is the same.
-  bool IsSameObject(IUnknown* other) {
-    if (!other && !ptr_)
-      return true;
-
-    if (!other || !ptr_)
-      return false;
-
-    ScopedComPtr<IUnknown> my_identity;
-    CopyTo(IID_PPV_ARGS(my_identity.Receive()));
-
-    ScopedComPtr<IUnknown> other_identity;
-    other->QueryInterface(IID_PPV_ARGS(other_identity.Receive()));
-
-    return my_identity == other_identity;
-  }
-
   // Provides direct access to the interface.
   // Here we use a well known trick to make sure we block access to
   // IUnknown methods so that something bad like this doesn't happen:
