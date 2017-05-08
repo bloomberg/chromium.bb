@@ -115,7 +115,6 @@ PassRefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
   box_data_.Init();
-  visual_data_.Init();
   rare_non_inherited_data_.Init();
   rare_non_inherited_data_.Access()->deprecated_flexible_box_.Init();
   rare_non_inherited_data_.Access()->flexible_box_.Init();
@@ -136,7 +135,6 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
     : ComputedStyleBase(o),
       RefCounted<ComputedStyle>(),
       box_data_(o.box_data_),
-      visual_data_(o.visual_data_),
       rare_non_inherited_data_(o.rare_non_inherited_data_),
       rare_inherited_data_(o.rare_inherited_data_),
       inherited_data_(o.inherited_data_),
@@ -330,7 +328,6 @@ void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
 void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
   ComputedStyleBase::CopyNonInheritedFromCached(other);
   box_data_ = other.box_data_;
-  visual_data_ = other.visual_data_;
   rare_non_inherited_data_ = other.rare_non_inherited_data_;
 
   // The flags are copied one-by-one because they contain
@@ -471,7 +468,6 @@ bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
   // compare everything except the pseudoStyle pointer
   return ComputedStyleBase::NonInheritedEqual(other) &&
          box_data_ == other.box_data_ &&
-         visual_data_ == other.visual_data_ &&
          rare_non_inherited_data_ == other.rare_non_inherited_data_ &&
          svg_style_->NonInheritedEqual(*other.svg_style_);
 }
@@ -1057,7 +1053,8 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
         inherited_data_->visited_link_color_ !=
             other.inherited_data_->visited_link_color_ ||
         HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal() ||
-        visual_data_->text_decoration != other.visual_data_->text_decoration) {
+        visual_data_->text_decoration_ !=
+            other.visual_data_->text_decoration_) {
       diff.SetTextDecorationOrColorChanged();
     } else {
       if (rare_non_inherited_data_.Get() !=
@@ -1102,11 +1099,11 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
     }
   }
 
-  bool has_clip = HasOutOfFlowPosition() && !visual_data_->has_auto_clip;
+  bool has_clip = HasOutOfFlowPosition() && !visual_data_->has_auto_clip_;
   bool other_has_clip =
-      other.HasOutOfFlowPosition() && !other.visual_data_->has_auto_clip;
+      other.HasOutOfFlowPosition() && !other.visual_data_->has_auto_clip_;
   if (has_clip != other_has_clip ||
-      (has_clip && visual_data_->clip != other.visual_data_->clip))
+      (has_clip && visual_data_->clip_ != other.visual_data_->clip_))
     diff.SetCSSClipChanged();
 }
 
