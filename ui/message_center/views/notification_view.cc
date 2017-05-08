@@ -408,10 +408,6 @@ void NotificationView::RequestFocusOnCloseButton() {
     close_button_->RequestFocus();
 }
 
-bool NotificationView::IsPinned() const {
-  return !close_button_;
-}
-
 void NotificationView::CreateOrUpdateTitleView(
     const Notification& notification) {
   if (notification.title().empty()) {
