@@ -1049,17 +1049,6 @@ int BrowserMainLoop::CreateThreads() {
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::FILE");
-
-#if defined(OS_WIN)
-        // On Windows, the FILE thread needs to have a UI message loop which
-        // pumps messages in such a way that Google Update can communicate back
-        // to us.
-        // TODO(robliao): Need to support COM in TaskScheduler before
-        // redirecting the FILE thread on Windows. http://crbug.com/662122
-        thread_to_start = &file_thread_;
-        options = ui_message_loop_options;
-        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-#else
         if (redirect_thread) {
           non_ui_non_io_task_runner_traits = kUserVisibleTraits;
         } else {
@@ -1067,7 +1056,6 @@ int BrowserMainLoop::CreateThreads() {
           options = io_message_loop_options;
           options.timer_slack = base::TIMER_SLACK_MAXIMUM;
         }
-#endif
         break;
       case BrowserThread::PROCESS_LAUNCHER:
         TRACE_EVENT_BEGIN1("startup",
@@ -1138,9 +1126,21 @@ int BrowserMainLoop::CreateThreads() {
       if (!message_loop && !(*thread_to_start)->StartWithOptions(options))
         LOG(FATAL) << "Failed to start the browser thread: id == " << id;
     } else {
-      scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner =
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              non_ui_non_io_task_runner_traits);
+      scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner;
+#if defined(OS_WIN)
+      // On Windows, the FILE thread needs to have a UI message loop which
+      // pumps messages in such a way that Google Update can communicate back
+      // to us. The COM STA task runner provides this service.
+      redirection_task_runner =
+          (thread_id == BrowserThread::FILE)
+              ? base::CreateCOMSTATaskRunnerWithTraits(
+                    non_ui_non_io_task_runner_traits)
+              : base::CreateSingleThreadTaskRunnerWithTraits(
+                    non_ui_non_io_task_runner_traits);
+#else   // defined(OS_WIN)
+      redirection_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+          non_ui_non_io_task_runner_traits);
+#endif  // defined(OS_WIN)
       DCHECK(redirection_task_runner);
       BrowserThreadImpl::RedirectThreadIDToTaskRunner(
           id, std::move(redirection_task_runner));
