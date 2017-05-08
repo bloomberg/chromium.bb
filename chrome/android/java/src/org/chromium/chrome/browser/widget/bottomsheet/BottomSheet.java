@@ -641,6 +641,9 @@ public class BottomSheet
      * @param content The {@link BottomSheetContent} to show.
      */
     public void showContent(final BottomSheetContent content) {
+        // If an animation is already running, end it.
+        if (mContentSwapAnimatorSet != null) mContentSwapAnimatorSet.end();
+
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
@@ -652,9 +655,6 @@ public class BottomSheet
                 ? mSheetContent.getToolbarView()
                 : mDefaultToolbarView;
         View oldContent = mSheetContent != null ? mSheetContent.getContentView() : null;
-
-        // If an animation is already running, end it.
-        if (mContentSwapAnimatorSet != null) mContentSwapAnimatorSet.end();
 
         List<Animator> animators = new ArrayList<>();
         mContentSwapAnimatorSet = new AnimatorSet();
