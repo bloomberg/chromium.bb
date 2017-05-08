@@ -10,6 +10,7 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/api/LayoutItem.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -19,7 +20,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "web/WebInputEventConversion.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
@@ -132,7 +132,7 @@ void RemoteFrameClientImpl::ForwardPostMessage(
     LocalFrame* source_frame) const {
   if (web_frame_->Client())
     web_frame_->Client()->ForwardPostMessage(
-        WebLocalFrameImpl::FromFrame(source_frame), web_frame_,
+        WebLocalFrameBase::FromFrame(source_frame), web_frame_,
         WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
 }
 
@@ -148,7 +148,7 @@ void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
 void RemoteFrameClientImpl::AdvanceFocus(WebFocusType type,
                                          LocalFrame* source) {
   web_frame_->Client()->AdvanceFocus(type,
-                                     WebLocalFrameImpl::FromFrame(source));
+                                     WebLocalFrameBase::FromFrame(source));
 }
 
 void RemoteFrameClientImpl::VisibilityChanged(bool visible) {

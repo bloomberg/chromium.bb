@@ -11,6 +11,10 @@
 namespace blink {
 
 class LocalFrame;
+class Node;
+class WebFrameClient;
+class WebTextCheckClient;
+class WebViewBase;
 
 // WebLocalFrameBase is a temporary class the provides a layer of abstraction
 // for WebLocalFrameImpl. Mehtods that are declared public in WebLocalFrameImpl
@@ -24,6 +28,12 @@ class WebLocalFrameBase : public WebLocalFrame {
  public:
   CORE_EXPORT static WebLocalFrameBase* FromFrame(LocalFrame*);
   CORE_EXPORT static WebLocalFrameBase* FromFrame(LocalFrame&);
+
+  virtual WebViewBase* ViewImpl() const = 0;
+  virtual WebFrameClient* Client() const = 0;
+  virtual WebTextCheckClient* TextCheckClient() const = 0;
+  virtual void SetContextMenuNode(Node*) = 0;
+  virtual void ClearContextMenuNode() = 0;
 
  protected:
   explicit WebLocalFrameBase(WebTreeScopeType scope) : WebLocalFrame(scope) {}

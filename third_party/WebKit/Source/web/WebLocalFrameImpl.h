@@ -360,7 +360,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   static WebPluginContainerImpl* CurrentPluginContainer(LocalFrame*,
                                                         Node* = nullptr);
 
-  WebViewBase* ViewImpl() const;
+  WebViewBase* ViewImpl() const override;
 
   FrameView* GetFrameView() const {
     return GetFrame() ? GetFrame()->View() : 0;
@@ -391,7 +391,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   // Otherwise, disallow scrolling.
   void SetCanHaveScrollbars(bool) override;
 
-  WebFrameClient* Client() const { return client_; }
+  WebFrameClient* Client() const override { return client_; }
   void SetClient(WebFrameClient* client) { client_ = client; }
 
   ContentSettingsClient& GetContentSettingsClient() {
@@ -407,7 +407,9 @@ class WEB_EXPORT WebLocalFrameImpl final
   static void SelectWordAroundPosition(LocalFrame*, VisiblePosition);
 
   TextCheckerClient& GetTextCheckerClient() const;
-  WebTextCheckClient* TextCheckClient() const { return text_check_client_; }
+  WebTextCheckClient* TextCheckClient() const override {
+    return text_check_client_;
+  }
 
   TextFinder* GetTextFinder() const;
   // Returns the text finder object if it already exists.
@@ -428,8 +430,8 @@ class WEB_EXPORT WebLocalFrameImpl final
   }
 
   WebNode ContextMenuNode() const { return context_menu_node_.Get(); }
-  void SetContextMenuNode(Node* node) { context_menu_node_ = node; }
-  void ClearContextMenuNode() { context_menu_node_.Clear(); }
+  void SetContextMenuNode(Node* node) override { context_menu_node_ = node; }
+  void ClearContextMenuNode() override { context_menu_node_.Clear(); }
 
   DECLARE_TRACE();
 
