@@ -161,6 +161,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.Toast;
+import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
@@ -1904,8 +1905,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         } else if (id == R.id.open_webapk_id) {
             Context context = ContextUtils.getApplicationContext();
             String packageName = WebApkValidator.queryWebApkPackage(context, currentTab.getUrl());
-            Intent launchIntent =
-                    context.getPackageManager().getLaunchIntentForPackage(packageName);
+            Intent launchIntent = WebApkNavigationClient.createLaunchWebApkIntent(
+                    packageName, currentTab.getUrl());
             boolean launchFailed = false;
             if (launchIntent != null) {
                 try {
