@@ -258,8 +258,14 @@ bool PictureLayer::ShouldUseTransformedRasterization() const {
   const TransformTree& transform_tree =
       layer_tree_host()->property_trees()->transform_tree;
   DCHECK(!transform_tree.needs_update());
-  if (transform_tree.Node(transform_tree_index())
-          ->to_screen_is_potentially_animated)
+  auto* transform_node = transform_tree.Node(transform_tree_index());
+  DCHECK(transform_node);
+  // TODO(pdr): This is a workaround for https://crbug.com/708951 to avoid
+  // crashing when there's no transform node. This workaround should be removed.
+  if (!transform_node)
+    return false;
+
+  if (transform_node->to_screen_is_potentially_animated)
     return false;
 
   const gfx::Transform& to_screen =
