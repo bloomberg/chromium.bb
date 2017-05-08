@@ -372,7 +372,6 @@ libvpx_srcs_x86_assembly = [
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_mfqe_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_sse2.asm",
-  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_temporal_filter_apply_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/add_noise_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/deblock_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_intrapred_sse2.asm",
@@ -433,11 +432,13 @@ libvpx_srcs_x86_ssse3 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/inv_txfm_ssse3.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_ssse3.c",
 ]
-libvpx_srcs_x86_sse4_1 =
-    [ "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c" ]
+libvpx_srcs_x86_sse4_1 = [
+  "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/temporal_filter_sse4.c",
+]
 libvpx_srcs_x86_avx = [ "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c" ]
 libvpx_srcs_x86_avx2 = [
-  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_intrin_avx2.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_convolve_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/loopfilter_avx2.c",
@@ -818,7 +819,6 @@ libvpx_srcs_x86_64_assembly = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_quantize_ssse3_x86_64.asm",
-  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_temporal_filter_apply_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/add_noise_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_ssse3_x86_64.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/deblock_sse2.asm",
@@ -884,11 +884,13 @@ libvpx_srcs_x86_64_ssse3 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/inv_txfm_ssse3.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_ssse3.c",
 ]
-libvpx_srcs_x86_64_sse4_1 =
-    [ "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c" ]
+libvpx_srcs_x86_64_sse4_1 = [
+  "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/temporal_filter_sse4.c",
+]
 libvpx_srcs_x86_64_avx = [ "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c" ]
 libvpx_srcs_x86_64_avx2 = [
-  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_intrin_avx2.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_convolve_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/loopfilter_avx2.c",
@@ -1438,6 +1440,7 @@ libvpx_srcs_arm_neon = [
   "//third_party/libvpx/source/libvpx/vp9/decoder/vp9_dthread.c",
   "//third_party/libvpx/source/libvpx/vp9/decoder/vp9_dthread.h",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_dct_neon.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_denoiser_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_error_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_quantize_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/vp9_alt_ref_aq.c",
@@ -2004,6 +2007,7 @@ libvpx_srcs_arm_neon_cpu_detect_neon = [
   "//third_party/libvpx/source/libvpx/vp9/common/arm/neon/vp9_iht4x4_add_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/common/arm/neon/vp9_iht8x8_add_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_dct_neon.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_denoiser_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_error_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_quantize_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/avg_neon.c",
@@ -2230,6 +2234,7 @@ libvpx_srcs_arm64 = [
   "//third_party/libvpx/source/libvpx/vp9/decoder/vp9_dthread.c",
   "//third_party/libvpx/source/libvpx/vp9/decoder/vp9_dthread.h",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_dct_neon.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_denoiser_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_error_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/arm/neon/vp9_quantize_neon.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/vp9_alt_ref_aq.c",
