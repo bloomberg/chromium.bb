@@ -32,9 +32,6 @@ bool IsMethodSafe(const std::string& method) {
          method == "TRACE";
 }
 
-// Keep in sync with X_DevTools_Request_Id defined in HTTPNames.json5.
-const char kDevtoolsRequestId[] = "X-DevTools-Request-Id";
-
 }  // namespace
 
 uint64_t GenericURLRequestJob::next_request_id_ = 0;
@@ -66,9 +63,6 @@ void GenericURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   extra_request_headers_ = headers;
-
-  // TODO(alexclarke): Remove kDevtoolsRequestId
-  extra_request_headers_.RemoveHeader(kDevtoolsRequestId);
 }
 
 void GenericURLRequestJob::Start() {

@@ -46,7 +46,6 @@ class DevToolsNetworkTransaction
     : public net::HttpTransaction {
  public:
   static const char kDevToolsEmulateNetworkConditionsClientId[];
-  static const char kDevToolsRequestId[];
 
   DevToolsNetworkTransaction(
       DevToolsNetworkController* controller,
