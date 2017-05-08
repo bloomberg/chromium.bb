@@ -17,6 +17,7 @@ import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -158,9 +159,11 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
 
     /*
      * Verify that when the AwContentsClient calls handleJsBeforeUnload
+     * Flaky (crbug/719308)
      */
     @MediumTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure
     public void testOverrideBeforeUnloadHandling() throws Throwable {
         final CallbackHelper jsBeforeUnloadHelper = new CallbackHelper();
         TestAwContentsClient client = new TestAwContentsClient() {
