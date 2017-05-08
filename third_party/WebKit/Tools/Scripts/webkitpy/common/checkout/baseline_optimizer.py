@@ -36,7 +36,6 @@ _log = logging.getLogger(__name__)
 
 
 class BaselineOptimizer(object):
-    ROOT_LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
 
     def __init__(self, host, port, port_names):
         self._filesystem = host.filesystem
@@ -45,8 +44,10 @@ class BaselineOptimizer(object):
         for port_name in port_names:
             self._ports[port_name] = host.port_factory.get(port_name)
 
-        self._webkit_base = port.webkit_base()
         self._layout_tests_dir = port.layout_tests_dir()
+        self._parent_of_tests = self._filesystem.dirname(self._layout_tests_dir)
+        self._layout_tests_dir_name = self._filesystem.relpath(
+            self._layout_tests_dir, self._parent_of_tests)
 
         # Only used by unit tests.
         self.new_results_by_directory = []
@@ -158,10 +159,10 @@ class BaselineOptimizer(object):
             _log.debug('    (Nothing to add)')
 
     def _platform(self, filename):
-        platform_dir = self.ROOT_LAYOUT_TESTS_DIRECTORY + self._filesystem.sep + 'platform' + self._filesystem.sep
+        platform_dir = self._layout_tests_dir_name + self._filesystem.sep + 'platform' + self._filesystem.sep
         if filename.startswith(platform_dir):
             return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
-        platform_dir = self._filesystem.join(self._webkit_base, platform_dir)
+        platform_dir = self._filesystem.join(self._parent_of_tests, platform_dir)
         if filename.startswith(platform_dir):
             return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
         return '(generic)'
@@ -190,8 +191,8 @@ class BaselineOptimizer(object):
     def _baseline_root(self, baseline_name):
         virtual_suite = self._virtual_suite(baseline_name)
         if virtual_suite:
-            return self._filesystem.join(self.ROOT_LAYOUT_TESTS_DIRECTORY, virtual_suite.name)
-        return self.ROOT_LAYOUT_TESTS_DIRECTORY
+            return self._filesystem.join(self._layout_tests_dir_name, virtual_suite.name)
+        return self._layout_tests_dir_name
 
     def _baseline_search_path(self, port, baseline_name):
         virtual_suite = self._virtual_suite(baseline_name)
@@ -209,7 +210,7 @@ class BaselineOptimizer(object):
         """Returns a list of paths to check for baselines in order."""
         baseline_search_path = self._baseline_search_path(port, baseline_name)
         baseline_root = self._baseline_root(baseline_name)
-        relative_paths = [self._filesystem.relpath(path, self._webkit_base) for path in baseline_search_path]
+        relative_paths = [self._filesystem.relpath(path, self._parent_of_tests) for path in baseline_search_path]
         return relative_paths + [baseline_root]
 
     def _join_directory(self, directory, baseline_name):
@@ -226,7 +227,7 @@ class BaselineOptimizer(object):
             baseline_name_without_virtual = baseline_name[len(virtual_suite.name) + 1:]
         else:
             baseline_name_without_virtual = baseline_name
-        return self._filesystem.join(self._webkit_base, directory, baseline_name_without_virtual)
+        return self._filesystem.join(self._parent_of_tests, directory, baseline_name_without_virtual)
 
     def _results_by_port_name(self, results_by_directory, baseline_name):
         results_by_port_name = {}
@@ -241,7 +242,7 @@ class BaselineOptimizer(object):
     def _directories_immediately_preceding_root(self, baseline_name):
         directories = set()
         for port in self._ports.values():
-            directory = self._filesystem.relpath(self._baseline_search_path(port, baseline_name)[-1], self._webkit_base)
+            directory = self._filesystem.relpath(self._baseline_search_path(port, baseline_name)[-1], self._parent_of_tests)
             directories.add(directory)
         return directories
 

@@ -38,20 +38,20 @@ class BaselineOptimizerTest(unittest.TestCase):
     def _assert_optimization(self, results_by_directory, directory_to_new_results, baseline_dirname='', host=None):
         host = host or MockHost()
         fs = host.filesystem
-        webkit_base = WebKitFinder(fs).webkit_base()
+        layout_tests_dir = WebKitFinder(fs).layout_tests_dir()
         baseline_name = 'mock-baseline-expected.txt'
         fs.write_text_file(
-            fs.join(webkit_base, 'LayoutTests', 'VirtualTestSuites'),
+            fs.join(layout_tests_dir, 'VirtualTestSuites'),
             '[{"prefix": "gpu", "base": "fast/canvas", "args": ["--foo"]}]')
 
         for dirname, contents in results_by_directory.items():
-            fs.write_binary_file(fs.join(webkit_base, 'LayoutTests', dirname, baseline_name), contents)
+            fs.write_binary_file(fs.join(layout_tests_dir, dirname, baseline_name), contents)
 
         baseline_optimizer = BaselineOptimizer(host, host.port_factory.get(), host.port_factory.all_port_names())
         self.assertTrue(baseline_optimizer.optimize(fs.join(baseline_dirname, baseline_name)))
 
         for dirname, contents in directory_to_new_results.items():
-            path = fs.join(webkit_base, 'LayoutTests', dirname, baseline_name)
+            path = fs.join(layout_tests_dir, dirname, baseline_name)
             if contents is not None:
                 self.assertEqual(fs.read_binary_file(path), contents)
 
