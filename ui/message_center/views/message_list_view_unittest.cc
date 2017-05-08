@@ -448,4 +448,45 @@ TEST_F(MessageListViewTest, ClearAllClosableNotifications) {
   EXPECT_EQ(0, message_list_view()->child_count());
 }
 
+// Regression test for crbug.com/713983
+TEST_F(MessageListViewTest, RemoveWhileClearAll) {
+  message_list_view()->SetBounds(0, 0, 800, 600);
+
+  // Create dummy notifications.
+  auto* notification_view1 = CreateNotificationView(
+      Notification(NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
+                   base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message1"),
+                   gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
+                   NotifierId(NotifierId::APPLICATION, "extension_id"),
+                   message_center::RichNotificationData(), nullptr));
+  auto* notification_view2 = CreateNotificationView(
+      Notification(NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId2),
+                   base::UTF8ToUTF16("title 2"), base::UTF8ToUTF16("message2"),
+                   gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
+                   NotifierId(NotifierId::APPLICATION, "extension_id"),
+                   message_center::RichNotificationData(), nullptr));
+
+  message_list_view()->AddNotificationAt(notification_view1, 0);
+  EXPECT_EQ(1, message_list_view()->child_count());
+
+  RunPendingAnimations();
+
+  message_list_view()->AddNotificationAt(notification_view2, 1);
+  EXPECT_EQ(2, message_list_view()->child_count());
+
+  RunPendingAnimations();
+
+  // Call RemoveNotification()
+  EXPECT_TRUE(message_list_view()->Contains(notification_view2));
+  message_list_view()->RemoveNotification(notification_view2);
+
+  // Call "Clear All" while notification_view2 is still in message_list_view.
+  EXPECT_TRUE(message_list_view()->Contains(notification_view2));
+  message_list_view()->ClearAllClosableNotifications(
+      message_list_view()->bounds());
+
+  RunPendingAnimations();
+  EXPECT_EQ(0, message_list_view()->child_count());
+}
+
 }  // namespace
