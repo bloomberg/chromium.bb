@@ -210,7 +210,7 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
 
   // Submit the form.
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
@@ -230,7 +230,7 @@ TEST_F(FormAutocompleteTest, SubmitEventPrevented) {
       "var form = document.forms[0];"
       "form.onsubmit = function(event) { event.preventDefault(); };"
       "document.querySelector('input[type=submit]').click();");
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  false /* expect_submitted_message */);
@@ -259,7 +259,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_NoLongerVisible) {
 
   // Simulate an Ajax request completing.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
@@ -293,7 +293,7 @@ TEST_F(FormAutocompleteTest,
 
   // Simulate an Ajax request completing.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
@@ -334,7 +334,7 @@ TEST_F(FormAutocompleteTest, MAYBE_NoLongerVisibleBothNoActions) {
 
   // Simulate an Ajax request completing.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
@@ -362,7 +362,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_NoLongerVisible_NoAction) {
 
   // Simulate an Ajax request completing.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
@@ -386,7 +386,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_StillVisible) {
 
   // Simulate an Ajax request completing.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   // No submission messages sent.
   VerifyNoSubmitMessagesReceived(fake_driver_);
@@ -409,7 +409,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_NoFormInteractionInvisible) {
 
   // Simulate an Ajax request completing without prior user interaction.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   // No submission messages sent.
   VerifyNoSubmitMessagesReceived(fake_driver_);
@@ -434,7 +434,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormIsInvisible) {
 
   // Simulate an Ajax request completing.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "John", "Smith",
                                  true /* expect_submitted_message */);
@@ -457,7 +457,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormStillVisible) {
 
   // Simulate an Ajax request completing.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   // No submission messages sent.
   VerifyNoSubmitMessagesReceived(fake_driver_);
@@ -488,7 +488,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FormlessElements) {
 
   // Simulate AJAX request.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Kirby", "Puckett",
                                  /* expect_submitted_message = */ true);
@@ -598,7 +598,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
 
   // Submit the form.
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
@@ -615,7 +615,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
 
   // Submit the form.
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
@@ -640,12 +640,12 @@ TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
   ExecuteJavaScriptForTests(
       "document.getElementById('myForm')."
       "setAttribute('autocomplete', 'off');");
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(form.AutoComplete());
 
   // Submit the form.
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
-  ProcessPendingMessages();
+  base::RunLoop().RunUntilIdle();
 
   VerifyReceivedRendererMessages(fake_driver_, "Rick", "Deckard",
                                  true /* expect_submitted_message */);
