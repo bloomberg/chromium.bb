@@ -1,10 +1,10 @@
-importScripts('../../resources/testharness.js');
+importScripts('/resources/testharness.js');
 
 let echo_output = null;
 
 // Tests importing a script that sets |echo_output| to the query string.
 function test_import(str) {
-  importScripts('echo.php?' + str);
+  importScripts('import-scripts-echo.py?msg=' + str);
   assert_equals(echo_output, str);
 }
 
@@ -17,10 +17,13 @@ self.addEventListener('install', () => {
   });
 
 self.addEventListener('message', e => {
-    test_import('root-and-message');
-    test_import('install-and-message');
-    // TODO(falken): This should fail. The spec disallows importing a non-cached
-    // script like this but currently Chrome and Firefox allow it.
-    test_import('message');
-    e.source.postMessage('OK');
+    var error = null;
+
+    try {
+      importScripts('import-scripts-echo.py?msg=' + e.data);
+    } catch (e) {
+      error = e && e.name;
+    }
+
+    e.source.postMessage({ error: error, value: echo_output });
   });
