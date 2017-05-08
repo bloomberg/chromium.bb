@@ -172,6 +172,11 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   settings.gpu_memory_policy.priority_cutoff_when_visible =
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 
+  settings.disallow_non_exact_resource_reuse =
+      command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
+  settings.renderer_settings.disallow_non_exact_resource_reuse =
+      settings.disallow_non_exact_resource_reuse;
+
   base::TimeTicks before_create = base::TimeTicks::Now();
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();

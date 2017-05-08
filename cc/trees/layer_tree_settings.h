@@ -107,6 +107,11 @@ class CC_EXPORT LayerTreeSettings {
   // Indicates the case when a sub-frame gets its own LayerTree because it's
   // rendered in a different process from its ancestor frames.
   bool is_layer_tree_for_subframe = false;
+
+  // Determines whether we disallow non-exact matches when finding resources
+  // in ResourcePool. Only used for layout or pixel tests, as non-deterministic
+  // resource sizes can lead to floating point error and noise in these tests.
+  bool disallow_non_exact_resource_reuse = false;
 };
 
 }  // namespace cc

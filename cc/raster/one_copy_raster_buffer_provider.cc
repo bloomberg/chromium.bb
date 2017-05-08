@@ -240,7 +240,7 @@ void OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
       playback_settings, previous_content_id, new_content_id);
 
   CopyOnWorkerThread(staging_buffer.get(), resource_lock, sync_token,
-                     raster_source, previous_content_id, new_content_id);
+                     raster_source, raster_full_rect);
 
   staging_pool_.ReleaseStagingBuffer(std::move(staging_buffer));
 }
@@ -312,8 +312,7 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
     ResourceProvider::ScopedWriteLockGL* resource_lock,
     const gpu::SyncToken& sync_token,
     const RasterSource* raster_source,
-    uint64_t previous_content_id,
-    uint64_t new_content_id) {
+    const gfx::Rect& rect_to_copy) {
   ContextProvider::ScopedContextLock scoped_context(worker_context_provider_);
   gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
   DCHECK(gl);
@@ -375,22 +374,21 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
                                       resource_texture_id);
   } else {
     int bytes_per_row = ResourceUtil::UncheckedWidthInBytes<int>(
-        resource_lock->size().width(), resource_lock->format());
+        rect_to_copy.width(), resource_lock->format());
     int chunk_size_in_rows =
         std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
     // Align chunk size to 4. Required to support compressed texture formats.
     chunk_size_in_rows = MathUtil::UncheckedRoundUp(chunk_size_in_rows, 4);
     int y = 0;
-    int height = resource_lock->size().height();
+    int height = rect_to_copy.height();
     while (y < height) {
       // Copy at most |chunk_size_in_rows|.
       int rows_to_copy = std::min(chunk_size_in_rows, height - y);
       DCHECK_GT(rows_to_copy, 0);
 
-      gl->CopySubTextureCHROMIUM(staging_buffer->texture_id, 0, GL_TEXTURE_2D,
-                                 resource_texture_id, 0, 0, y, 0, y,
-                                 resource_lock->size().width(), rows_to_copy,
-                                 false, false, false);
+      gl->CopySubTextureCHROMIUM(
+          staging_buffer->texture_id, 0, GL_TEXTURE_2D, resource_texture_id, 0,
+          0, y, 0, y, rect_to_copy.width(), rows_to_copy, false, false, false);
       y += rows_to_copy;
 
       // Increment |bytes_scheduled_since_last_flush_| by the amount of memory

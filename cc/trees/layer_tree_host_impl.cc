@@ -2247,7 +2247,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
                              ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                             ResourcePool::kDefaultExpirationDelay);
+                             ResourcePool::kDefaultExpirationDelay,
+                             settings_.disallow_non_exact_resource_reuse);
 
     *raster_buffer_provider =
         BitmapRasterBufferProvider::Create(resource_provider_.get());
@@ -2262,7 +2263,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     *resource_pool = ResourcePool::Create(
         resource_provider_.get(), GetTaskRunner(),
         ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
-        ResourcePool::kDefaultExpirationDelay);
+        ResourcePool::kDefaultExpirationDelay,
+        settings_.disallow_non_exact_resource_reuse);
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
@@ -2287,7 +2289,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     *resource_pool = ResourcePool::CreateForGpuMemoryBufferResources(
         resource_provider_.get(), GetTaskRunner(),
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-        ResourcePool::kDefaultExpirationDelay);
+        ResourcePool::kDefaultExpirationDelay,
+        settings_.disallow_non_exact_resource_reuse);
 
     *raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
         resource_provider_.get(),
@@ -2298,7 +2301,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   *resource_pool =
       ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
                            ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                           ResourcePool::kDefaultExpirationDelay);
+                           ResourcePool::kDefaultExpirationDelay,
+                           settings_.disallow_non_exact_resource_reuse);
 
   const int max_copy_texture_chromium_size =
       compositor_context_provider->ContextCapabilities()

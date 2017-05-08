@@ -117,5 +117,10 @@ const char kCCLayerTreeTestLongTimeout[] = "cc-layer-tree-test-long-timeout";
 // Makes pixel tests write their output instead of read it.
 const char kCCRebaselinePixeltests[] = "cc-rebaseline-pixeltests";
 
+// Disable re-use of non-exact resources to fulfill ResourcePool requests.
+// Intended only for use in layout or pixel tests to reduce noise.
+const char kDisallowNonExactResourceReuse[] =
+    "disallow-non-exact-resource-reuse";
+
 }  // namespace switches
 }  // namespace cc

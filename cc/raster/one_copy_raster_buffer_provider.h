@@ -110,8 +110,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
                           ResourceProvider::ScopedWriteLockGL* resource_lock,
                           const gpu::SyncToken& sync_token,
                           const RasterSource* raster_source,
-                          uint64_t previous_content_id,
-                          uint64_t new_content_id);
+                          const gfx::Rect& rect_to_copy);
   gfx::BufferUsage StagingBufferUsage() const;
 
   ContextProvider* const compositor_context_provider_;

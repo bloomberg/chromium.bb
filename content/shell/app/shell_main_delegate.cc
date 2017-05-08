@@ -212,6 +212,8 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.AppendSwitch(switches::kDisableGpuRasterization);
     }
 
+    command_line.AppendSwitch(cc::switches::kDisallowNonExactResourceReuse);
+
     // Unless/until WebM files are added to the media layout tests, we need to
     // avoid removing MP4/H264/AAC so that layout tests can run on Android.
 #if !defined(OS_ANDROID)

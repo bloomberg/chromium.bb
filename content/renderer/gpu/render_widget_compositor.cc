@@ -543,6 +543,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.software_memory_policy.num_resources_limit =
       base::SharedMemory::GetHandleLimit() / 3;
 
+  settings.disallow_non_exact_resource_reuse =
+      cmd.HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
+  settings.renderer_settings.disallow_non_exact_resource_reuse =
+      settings.disallow_non_exact_resource_reuse;
+
   return settings;
 }
 
