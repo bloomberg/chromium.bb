@@ -27,8 +27,18 @@ class HostSessionOptions final {
   void Append(const std::string& key, const std::string& value);
 
   // Retrieves the value of |key|. Returns a true Optional if |key| has been
-  // found, value of the Optional wil be set to corresponding value.
+  // found, value of the Optional will be set to corresponding value.
   base::Optional<std::string> Get(const std::string& key) const;
+
+  // Retrieves the value of |key|. Returns a true Optional if |key| has been
+  // found and the corresponding value can be converted to a boolean value.
+  // "true", "1" or empty will be converted to true, "false" or "0" will be
+  // converted to false.
+  base::Optional<bool> GetBool(const std::string& key) const;
+
+  // Retrieves the value of |key|. Returns a true Optional if |key| has been
+  // found and the corresponding value can be converted to an integer.
+  base::Optional<int> GetInt(const std::string& key) const;
 
   // Returns a string to represent current instance. Consumers can rebuild an
   // exactly same instance with Import() function.

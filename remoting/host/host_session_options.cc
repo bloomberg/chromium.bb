@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
@@ -52,6 +53,41 @@ base::Optional<std::string> HostSessionOptions::Get(
     return base::nullopt;
   }
   return it->second;
+}
+
+base::Optional<bool> HostSessionOptions::GetBool(const std::string& key) const {
+  base::Optional<std::string> value = Get(key);
+  if (!value) {
+    return base::nullopt;
+  }
+
+  const std::string lowercase_value = base::ToLowerASCII(*value);
+  if (lowercase_value.empty() ||
+      lowercase_value == "true" ||
+      lowercase_value == "1") {
+    return true;
+  }
+  if (lowercase_value == "false" || lowercase_value == "0") {
+    return false;
+  }
+  LOG(WARNING) << "Unexpected option received " << *value
+               << " which cannot be converted to bool.";
+  return base::nullopt;
+}
+
+base::Optional<int> HostSessionOptions::GetInt(const std::string& key) const {
+  base::Optional<std::string> value = Get(key);
+  if (!value) {
+    return base::nullopt;
+  }
+
+  int result;
+  if (base::StringToInt(*value, &result)) {
+    return result;
+  }
+  LOG(WARNING) << "Unexpected option received " << *value
+               << " which cannot be converted to integer.";
+  return base::nullopt;
 }
 
 std::string HostSessionOptions::Export() const {
