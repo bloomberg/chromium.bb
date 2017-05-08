@@ -19,7 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
@@ -195,8 +195,7 @@ CreateWhitelistsFromSiteListsForTesting(
   return builder.Build();
 }
 
-std::unique_ptr<SupervisedUserURLFilter::Contents>
-LoadWhitelistsOnBlockingPoolThread(
+std::unique_ptr<SupervisedUserURLFilter::Contents> LoadWhitelistsAsyncThread(
     const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
   FilterBuilder builder;
   for (const scoped_refptr<SupervisedUserSiteList>& site_list : site_lists)
@@ -238,9 +237,12 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
       google_amp_viewer_path_regex_(kGoogleAmpViewerPathPattern),
       google_web_cache_query_regex_(kGoogleWebCacheQueryPattern),
       blocking_task_runner_(
-          BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+          base::CreateTaskRunnerWithTraits(
+              base::TaskTraits()
+                  .MayBlock()
+                  .WithPriority(base::TaskPriority::BACKGROUND)
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
               .get()),
       weak_ptr_factory_(this) {
   DCHECK(amp_cache_path_regex_.ok());
@@ -481,7 +483,7 @@ void SupervisedUserURLFilter::LoadWhitelists(
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&LoadWhitelistsOnBlockingPoolThread, site_lists),
+      base::Bind(&LoadWhitelistsAsyncThread, site_lists),
       base::Bind(&SupervisedUserURLFilter::SetContents,
                  weak_ptr_factory_.GetWeakPtr()));
 }
