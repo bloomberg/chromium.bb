@@ -517,56 +517,54 @@ v8::Local<v8::FunctionTemplate>
 SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     v8::Isolate* isolate,
     v8::Local<v8::String> name) {
-  if (name->Equals(
-          v8::String::NewFromUtf8(isolate, "CheckIsUserSignedInToChromeAs")))
+  // Extract the name for easier comparison.
+  std::string name_str;
+  if (name->Length() > 0)
+    name->WriteUtf8(base::WriteInto(&name_str, name->Length() + 1));
+
+  if (name_str == "CheckIsUserSignedInToChromeAs")
     return v8::FunctionTemplate::New(isolate, CheckIsUserSignedInToChromeAs);
-  if (name->Equals(
-          v8::String::NewFromUtf8(isolate, "CheckIsUserSyncingHistory")))
+  if (name_str == "CheckIsUserSyncingHistory")
     return v8::FunctionTemplate::New(isolate, CheckIsUserSyncingHistory);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "DeleteMostVisitedItem")))
+  if (name_str == "DeleteMostVisitedItem")
     return v8::FunctionTemplate::New(isolate, DeleteMostVisitedItem);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetMostVisitedItems")))
+  if (name_str == "GetMostVisitedItems")
     return v8::FunctionTemplate::New(isolate, GetMostVisitedItems);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetMostVisitedItemData")))
+  if (name_str == "GetMostVisitedItemData")
     return v8::FunctionTemplate::New(isolate, GetMostVisitedItemData);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetQuery")))
+  if (name_str == "GetQuery")
     return v8::FunctionTemplate::New(isolate, GetQuery);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetRightToLeft")))
+  if (name_str == "GetRightToLeft")
     return v8::FunctionTemplate::New(isolate, GetRightToLeft);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetSearchRequestParams")))
+  if (name_str == "GetSearchRequestParams")
     return v8::FunctionTemplate::New(isolate, GetSearchRequestParams);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetSuggestionToPrefetch")))
+  if (name_str == "GetSuggestionToPrefetch")
     return v8::FunctionTemplate::New(isolate, GetSuggestionToPrefetch);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetThemeBackgroundInfo")))
+  if (name_str == "GetThemeBackgroundInfo")
     return v8::FunctionTemplate::New(isolate, GetThemeBackgroundInfo);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "IsFocused")))
+  if (name_str == "IsFocused")
     return v8::FunctionTemplate::New(isolate, IsFocused);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "IsInputInProgress")))
+  if (name_str == "IsInputInProgress")
     return v8::FunctionTemplate::New(isolate, IsInputInProgress);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "IsKeyCaptureEnabled")))
+  if (name_str == "IsKeyCaptureEnabled")
     return v8::FunctionTemplate::New(isolate, IsKeyCaptureEnabled);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "LogEvent")))
+  if (name_str == "LogEvent")
     return v8::FunctionTemplate::New(isolate, LogEvent);
-  if (name->Equals(
-          v8::String::NewFromUtf8(isolate, "LogMostVisitedImpression"))) {
+  if (name_str == "LogMostVisitedImpression")
     return v8::FunctionTemplate::New(isolate, LogMostVisitedImpression);
-  }
-  if (name->Equals(
-          v8::String::NewFromUtf8(isolate, "LogMostVisitedNavigation"))) {
+  if (name_str == "LogMostVisitedNavigation")
     return v8::FunctionTemplate::New(isolate, LogMostVisitedNavigation);
-  }
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "Paste")))
+  if (name_str == "Paste")
     return v8::FunctionTemplate::New(isolate, Paste);
-  if (name->Equals(
-          v8::String::NewFromUtf8(isolate, "StartCapturingKeyStrokes")))
+  if (name_str == "StartCapturingKeyStrokes")
     return v8::FunctionTemplate::New(isolate, StartCapturingKeyStrokes);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "StopCapturingKeyStrokes")))
+  if (name_str == "StopCapturingKeyStrokes")
     return v8::FunctionTemplate::New(isolate, StopCapturingKeyStrokes);
-  if (name->Equals(
-          v8::String::NewFromUtf8(isolate, "UndoAllMostVisitedDeletions")))
+  if (name_str == "UndoAllMostVisitedDeletions")
     return v8::FunctionTemplate::New(isolate, UndoAllMostVisitedDeletions);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "UndoMostVisitedDeletion")))
+  if (name_str == "UndoMostVisitedDeletion")
     return v8::FunctionTemplate::New(isolate, UndoMostVisitedDeletion);
+
   return v8::Local<v8::FunctionTemplate>();
 }
 
