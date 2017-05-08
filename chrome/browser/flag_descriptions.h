@@ -252,6 +252,13 @@ extern const char kTopChromeMdMaterial[];
 // Top Chrome material hybrid design option (for touchscreens).
 extern const char kTopChromeMdMaterialHybrid[];
 
+// Title of the flag which enables site details in MD settings.
+extern const char kSiteDetails[];
+
+// Description of the flag which enables or disables site details in MD
+// settings.
+extern const char kSiteDetailsDescription[];
+
 // Title of the flag which enables the site settings all sites list and site
 // details.
 extern const char kSiteSettings[];

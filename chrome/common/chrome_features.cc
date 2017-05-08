@@ -300,6 +300,11 @@ const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables UI in MD Settings to view content settings grouped by
+// origin.
+const base::Feature kSiteDetails{"SiteDetails",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(SYZYASAN)
 // Enable the deferred free mechanism in the syzyasan module, which helps the
 // performance by deferring some work on the critical path to a background
