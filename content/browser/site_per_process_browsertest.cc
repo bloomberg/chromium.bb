@@ -8865,6 +8865,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       child->current_frame_host()->GetView(),
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
 
+  // Make sure that the child frame has submitted a compositor frame.
+  WaitForChildFrameSurfaceReady(child->current_frame_host());
+
   // Send a postMessage from the child to its parent.  This verifies that the
   // parent's proxy in the child's SiteInstance was also restored.
   base::string16 expected_title(base::UTF8ToUTF16("I am alive!"));
