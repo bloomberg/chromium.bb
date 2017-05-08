@@ -182,7 +182,8 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
 TEST_F(NotificationPlatformBridgeLinuxTest, SetUpAndTearDown) {}
 
-TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
+// Frequently triggers a data race. Disabled as flaky: https://crbug.com/719485
+TEST_F(NotificationPlatformBridgeLinuxTest, DISABLED_NotifyAndCloseFormat) {
   EXPECT_CALL(*mock_notification_proxy_.get(),
               MockCallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(1));
