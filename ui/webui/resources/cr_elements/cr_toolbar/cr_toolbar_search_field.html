@@ -128,8 +128,8 @@
         -webkit-margin-start: var(--cr-control-spacing);
       }
     </style>
-    <template is="dom-if" if="[[isSpinnerShown_]]">
-      <paper-spinner-lite active>
+    <template is="dom-if" id="spinnerTemplate">
+      <paper-spinner-lite active="[[isSpinnerShown_]]">
       </paper-spinner-lite>
     </template>
     <paper-icon-button id="icon" icon="cr:search" title="[[label]]"

@@ -94,7 +94,10 @@ Polymer({
    * @private
    */
   computeIsSpinnerShown_: function() {
-    return this.spinnerActive && this.showingSearch;
+    var showSpinner = this.spinnerActive && this.showingSearch;
+    if (showSpinner)
+      this.$.spinnerTemplate.if = true;
+    return showSpinner;
   },
 
   /** @private */
