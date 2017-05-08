@@ -369,12 +369,6 @@ void DOMSelection::setBaseAndExtent(Node* base_node,
 
   ClearCachedRangeIfSelectionOfDocument();
 
-  // TODO(editing-dev): Once SVG USE element doesn't modify DOM tree, we
-  // should get rid of this update layout call.
-  // See http://crbug.com/566281
-  // See "svg/text/textpath-reference-crash.html"
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
   Position base_position(base_node, base_offset);
   Position extent_position(extent_node, extent_offset);
   Range* new_range = Range::Create(base_node->GetDocument());
