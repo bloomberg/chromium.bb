@@ -251,7 +251,6 @@ CrSettingsPeoplePageLockScreenTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  //browsePreload: 'chrome://md-settings/settings_main/settings_main.html',
   browsePreload: 'chrome://md-settings/people_page/lock_screen.html',
 
   /** @override */
@@ -1428,11 +1427,10 @@ TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
 
 // Times out on Windows Tests (dbg). See https://crbug.com/651296.
 // Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
-GEN('#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)' +
-    ' || defined(OS_MACOSX)');
-GEN('#define MAYBE_MainPage_All DISABLED_All');
+GEN('#if !defined(NDEBUG)')
+GEN('#define MAYBE_MainPage_All DISABLED_MainPage_All');
 GEN('#else');
-GEN('#define MAYBE_MainPage_All All');
+GEN('#define MAYBE_MainPage_All MainPage_All');
 GEN('#endif');
 
 /**
@@ -1451,6 +1449,7 @@ CrSettingsMainPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'test_browser_proxy.js',
+    'test_util.js',
     'settings_main_test.js',
   ]),
 };

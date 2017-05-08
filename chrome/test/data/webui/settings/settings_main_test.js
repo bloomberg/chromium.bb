@@ -169,15 +169,20 @@ cr.define('settings_main_page', function() {
        * Asserts the visibility of the basic and advanced pages.
        * @param {string} Expected 'display' value for the basic page.
        * @param {string} Expected 'display' value for the advanced page.
+       * @return {!Promise}
        */
       function assertPageVisibility(expectedBasic, expectedAdvanced) {
         Polymer.dom.flush();
         var page = settingsMain.$$('settings-basic-page');
         assertEquals(
-            expectedBasic, page.$$('#basicPage').style.display);
-        assertEquals(
-            expectedAdvanced,
-            page.$$('#advancedPageTemplate').get().style.display);
+            expectedBasic, getComputedStyle(page.$$('#basicPage')).display);
+
+        return page.$$('#advancedPageTemplate').get().then(
+            function(advancedPage) {
+              assertEquals(
+                  expectedAdvanced,
+                  getComputedStyle(advancedPage).display);
+        });
       }
 
       // TODO(michaelpg): It would be better not to drill into
@@ -199,7 +204,7 @@ cr.define('settings_main_page', function() {
           searchManager.setMatchesFound(false);
           return settingsMain.searchContents('');
         }).then(function() {
-          assertPageVisibility(expectedBasic, expectedAdvanced);
+          return assertPageVisibility(expectedBasic, expectedAdvanced);
         });
       }
 
@@ -207,7 +212,7 @@ cr.define('settings_main_page', function() {
         // Simulating searching while the advanced page is collapsed.
         settingsMain.currentRouteChanged(settings.Route.BASIC);
         Polymer.dom.flush();
-        return assertPageVisibilityAfterSearch('', 'none');
+        return assertPageVisibilityAfterSearch('block', 'none');
       });
 
       // Ensure that clearing the search results restores both "basic" and
@@ -216,7 +221,7 @@ cr.define('settings_main_page', function() {
       test('exiting search mode, advanced expanded', function() {
         settings.navigateTo(settings.Route.SITE_SETTINGS);
         Polymer.dom.flush();
-        return assertPageVisibilityAfterSearch('', '');
+        return assertPageVisibilityAfterSearch('block', 'block');
       });
 
       // Ensure that searching, then entering a subpage, then going back
@@ -235,7 +240,7 @@ cr.define('settings_main_page', function() {
 
           // Simulate clicking the left arrow to go back to the search results.
           settings.navigateTo(settings.Route.BASIC);
-          assertPageVisibility('', '');
+          return assertPageVisibility('block', 'block');
         });
       });
 
@@ -244,14 +249,25 @@ cr.define('settings_main_page', function() {
         settings.navigateTo(settings.Route.PRIVACY);
         Polymer.dom.flush();
 
-        var advancedToggle =
-            getToggleContainer().querySelector('#advancedToggle');
-        assertTrue(!!advancedToggle);
+        var basicPage = settingsMain.$$('settings-basic-page');
+        var advancedPage = null;
+        return basicPage.$$('#advancedPageTemplate').get().then(
+            function(advanced) {
+              advancedPage = advanced;
+              return assertPageVisibility('block', 'block');
+            }).then(function() {
+              var whenHidden = test_util.whenAttributeIs(
+                  advancedPage, 'hidden', true);
 
-        MockInteractions.tap(advancedToggle);
-        Polymer.dom.flush();
+              var advancedToggle =
+                  getToggleContainer().querySelector('#advancedToggle');
+              assertTrue(!!advancedToggle);
+              MockInteractions.tap(advancedToggle);
 
-        assertPageVisibility('', 'none');
+              return whenHidden;
+            }).then(function() {
+              return assertPageVisibility('block', 'none');
+            });
       });
 
       test('navigating to a basic page does not collapse advanced', function() {
@@ -263,7 +279,7 @@ cr.define('settings_main_page', function() {
         settings.navigateTo(settings.Route.PEOPLE);
         Polymer.dom.flush();
 
-        assertPageVisibility('', '');
+        return assertPageVisibility('block', 'block');
       });
     });
   }
