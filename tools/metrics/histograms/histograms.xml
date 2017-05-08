@@ -74801,15 +74801,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tabs.StateTransfer.Time" units="ms">
+  <obsolete>
+    Deprecated as of 4/2017.
+  </obsolete>
   <owner>kouhei@chromium.org</owner>
   <owner>tzik@chromium.org</owner>
   <summary>
     Tabs.StateTransfer.TimeA_B measures the time a tab was in state A before it
     transferred to state B.
   </summary>
-  <details>
-    kouhei@ and tzik@ will remove some variation of these once M46 hits stable.
-  </details>
 </histogram>
 
 <histogram name="Tabs.SwitchFromCloseLatency" units="ms">

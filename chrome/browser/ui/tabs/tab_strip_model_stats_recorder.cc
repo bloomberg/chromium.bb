@@ -46,7 +46,6 @@ class TabStripModelStatsRecorder::TabInfo
 
  private:
   TabState current_state_ = TabState::INITIAL;
-  base::TimeTicks last_state_modified_;
   base::TimeTicks creation_time_ = base::TimeTicks::Now();
 
   static const char kKey[];
@@ -68,9 +67,6 @@ void TabStripModelStatsRecorder::TabInfo::UpdateState(TabState new_state) {
   if (current_state_ == TabState::CLOSED)
     return;
 
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta delta = now - last_state_modified_;
-
   switch (current_state_) {
     case TabState::INITIAL:
       break;
@@ -80,22 +76,6 @@ void TabStripModelStatsRecorder::TabInfo::UpdateState(TabState new_state) {
                                 static_cast<int>(TabState::MAX));
       break;
     case TabState::INACTIVE:
-      switch (new_state) {
-        case TabState::INITIAL:
-        case TabState::INACTIVE:
-        case TabState::MAX:
-          NOTREACHED();
-          break;
-        case TabState::ACTIVE:
-          UMA_HISTOGRAM_LONG_TIMES_100(
-              "Tabs.StateTransfer.Time_Inactive_Active", delta);
-          break;
-        case TabState::CLOSED:
-          UMA_HISTOGRAM_LONG_TIMES_100(
-              "Tabs.StateTransfer.Time_Inactive_Closed", delta);
-          break;
-      }
-
       UMA_HISTOGRAM_ENUMERATION("Tabs.StateTransfer.Target_Inactive",
                                 static_cast<int>(new_state),
                                 static_cast<int>(TabState::MAX));
@@ -109,10 +89,9 @@ void TabStripModelStatsRecorder::TabInfo::UpdateState(TabState new_state) {
   if (new_state == TabState::CLOSED) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Tabs.FineTiming.TimeBetweenTabCreatedAndSameTabClosed",
-        now - creation_time_);
+        base::TimeTicks::Now() - creation_time_);
   }
 
-  last_state_modified_ = now;
   current_state_ = new_state;
 }
 
