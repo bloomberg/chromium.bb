@@ -7,9 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
-#include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/url_bar.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
@@ -58,6 +58,7 @@ UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
   CreateBackground();
   CreateContentQuad();
   CreateSecurityWarnings();
+  CreateUrlBar();
 }
 
 UiSceneManager::~UiSceneManager() {}
@@ -178,6 +179,18 @@ void UiSceneManager::CreateBackground() {
   scene_->SetBackgroundColor(horizon);
 }
 
+void UiSceneManager::CreateUrlBar() {
+  // TODO(cjgrant): Incorporate final size and position.
+  // TODO(cjgrant): Add the loading progress indicator element.
+  auto element = base::MakeUnique<UrlBar>(512);
+  element->set_id(AllocateId());
+  element->set_translation({0, -0.9, -1.8});
+  element->set_size({0.9, 0, 1});
+  url_bar_ = element.get();
+  browser_ui_elements_.push_back(element.get());
+  scene_->AddUiElement(std::move(element));
+}
+
 base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -221,6 +234,10 @@ void UiSceneManager::ConfigureSecurityWarnings() {
 
 void UiSceneManager::OnSecurityWarningTimer() {
   transient_security_warning_->set_visible(false);
+}
+
+void UiSceneManager::OnUrlChange(const GURL& gurl) {
+  url_bar_->SetURL(gurl);
 }
 
 int UiSceneManager::AllocateId() {
