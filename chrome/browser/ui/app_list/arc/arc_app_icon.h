@@ -45,8 +45,27 @@ class ArcAppIcon {
   ~ArcAppIcon();
 
   const std::string& app_id() const { return app_id_; }
-  gfx::Image image() const { return image_; }
   const gfx::ImageSkia& image_skia() const { return image_skia_; }
+
+  // Disables async safe decoding requests when unit tests are executed. This is
+  // done to avoid two problems. Problems come because icons are decoded at a
+  // separate process created by ImageDecoder. ImageDecoder has 5 seconds delay
+  // to stop since the last request (see its kBatchModeTimeoutSeconds for more
+  // details). This is unacceptably long for unit tests because the test
+  // framework waits until external process is finished. Another problem happens
+  // when we issue a decoding request, but the process has not started its
+  // processing yet by the time when a test exits. This might cause situation
+  // when g_one_utility_thread_lock from in_process_utility_thread.cc gets
+  // released in an acquired state which is crash condition in debug builds.
+  static void DisableSafeDecodingForTesting();
+
+ private:
+  friend class ArcAppIconLoader;
+  friend class ArcAppModelBuilder;
+
+  class Source;
+  class DecodeRequest;
+  struct ReadResult;
 
   // Icon loading is performed in several steps. It is initiated by
   // LoadImageForScaleFactor request that specifies a required scale factor.
@@ -65,23 +84,6 @@ class ArcAppIcon {
   // LoadImageForScaleFactor again.
   void LoadForScaleFactor(ui::ScaleFactor scale_factor);
 
-  // Disables async safe decoding requests when unit tests are executed. This is
-  // done to avoid two problems. Problems come because icons are decoded at a
-  // separate process created by ImageDecoder. ImageDecoder has 5 seconds delay
-  // to stop since the last request (see its kBatchModeTimeoutSeconds for more
-  // details). This is unacceptably long for unit tests because the test
-  // framework waits until external process is finished. Another problem happens
-  // when we issue a decoding request, but the process has not started its
-  // processing yet by the time when a test exits. This might cause situation
-  // when g_one_utility_thread_lock from in_process_utility_thread.cc gets
-  // released in an acquired state which is crash condition in debug builds.
-  static void DisableSafeDecodingForTesting();
-
- private:
-  class Source;
-  class DecodeRequest;
-  struct ReadResult;
-
   void MaybeRequestIcon(ui::ScaleFactor scale_factor);
   static std::unique_ptr<ArcAppIcon::ReadResult> ReadOnFileThread(
       ui::ScaleFactor scale_factor,
@@ -98,10 +100,6 @@ class ArcAppIcon {
 
   Source* source_ = nullptr;  // Owned by ImageSkia storage.
   gfx::ImageSkia image_skia_;
-
-  // The image wrapper around |image_skia_|.
-  // Note: this is reset each time a new representation is loaded.
-  gfx::Image image_;
 
   // Contains pending image decode requests.
   std::vector<std::unique_ptr<DecodeRequest>> decode_requests_;
