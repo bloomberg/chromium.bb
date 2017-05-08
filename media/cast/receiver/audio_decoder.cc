@@ -60,6 +60,13 @@ class AudioDecoder::ImplBase
     std::unique_ptr<AudioBus> decoded_audio =
         Decode(encoded_frame->mutable_bytes(),
                static_cast<int>(encoded_frame->data.size()));
+    if (!decoded_audio) {
+      VLOG(2) << "Decoding of frame " << encoded_frame->frame_id << " failed.";
+      cast_environment_->PostTask(
+          CastEnvironment::MAIN, FROM_HERE,
+          base::Bind(callback, base::Passed(&decoded_audio), false));
+      return;
+    }
 
     std::unique_ptr<FrameEvent> event(new FrameEvent());
     event->timestamp = cast_environment_->Clock()->NowTicks();

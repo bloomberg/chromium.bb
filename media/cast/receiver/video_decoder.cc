@@ -60,6 +60,12 @@ class VideoDecoder::ImplBase
     const scoped_refptr<VideoFrame> decoded_frame = Decode(
         encoded_frame->mutable_bytes(),
         static_cast<int>(encoded_frame->data.size()));
+    if (!decoded_frame) {
+      VLOG(2) << "Decoding of frame " << encoded_frame->frame_id << " failed.";
+      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+                                  base::Bind(callback, decoded_frame, false));
+      return;
+    }
     decoded_frame->set_timestamp(
         encoded_frame->rtp_timestamp.ToTimeDelta(kVideoFrequency));
 
