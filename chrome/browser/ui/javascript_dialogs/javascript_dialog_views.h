@@ -36,6 +36,7 @@ class JavaScriptDialogViews : public JavaScriptDialog,
 
   // JavaScriptDialog:
   void CloseDialogWithoutCallback() override;
+  base::string16 GetUserInput() override;
 
   // views::DialogDelegate:
   int GetDefaultDialogButton() const override;

@@ -34,6 +34,10 @@ void JavaScriptDialogViews::CloseDialogWithoutCallback() {
   GetWidget()->Close();
 }
 
+base::string16 JavaScriptDialogViews::GetUserInput() {
+  return message_box_view_->GetInputText();
+}
+
 int JavaScriptDialogViews::GetDefaultDialogButton() const {
   return ui::DIALOG_BUTTON_OK;
 }

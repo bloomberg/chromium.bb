@@ -111,3 +111,91 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
 
   // No crash is good news.
 }
+
+class JavaScriptCallbackHelper {
+ public:
+  JavaScriptDialogTabHelper::DialogClosedCallback GetCallback() {
+    return base::Bind(&JavaScriptCallbackHelper::DialogClosed,
+                      base::Unretained(this));
+  }
+
+  bool last_success() { return last_success_; }
+  base::string16 last_input() { return last_input_; }
+
+ private:
+  void DialogClosed(bool success, const base::string16& user_input) {
+    last_success_ = success;
+    last_input_ = user_input;
+  }
+
+  bool last_success_;
+  base::string16 last_input_;
+};
+
+// Tests to make sure HandleJavaScriptDialog works correctly.
+IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, HandleJavaScriptDialog) {
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(tab);
+
+  JavaScriptCallbackHelper callback_helper;
+  JavaScriptDialogTabHelper::DialogClosedCallback callback =
+      callback_helper.GetCallback();
+
+  // alert
+  bool did_suppress = false;
+  js_helper->RunJavaScriptDialog(
+      tab, GURL(), content::JAVASCRIPT_DIALOG_TYPE_ALERT, base::string16(),
+      base::string16(), callback, &did_suppress);
+  ASSERT_TRUE(js_helper->IsShowingDialogForTesting());
+  js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+  ASSERT_FALSE(js_helper->IsShowingDialogForTesting());
+  ASSERT_TRUE(callback_helper.last_success());
+  ASSERT_EQ(base::string16(), callback_helper.last_input());
+
+  // confirm
+  for (auto response : {true, false}) {
+    js_helper->RunJavaScriptDialog(
+        tab, GURL(), content::JAVASCRIPT_DIALOG_TYPE_CONFIRM, base::string16(),
+        base::string16(), callback, &did_suppress);
+    ASSERT_TRUE(js_helper->IsShowingDialogForTesting());
+    js_helper->HandleJavaScriptDialog(tab, response, nullptr);
+    ASSERT_FALSE(js_helper->IsShowingDialogForTesting());
+    ASSERT_EQ(response, callback_helper.last_success());
+    ASSERT_EQ(base::string16(), callback_helper.last_input());
+  }
+
+  // prompt, cancel
+  js_helper->RunJavaScriptDialog(
+      tab, GURL(), content::JAVASCRIPT_DIALOG_TYPE_PROMPT, base::string16(),
+      base::string16(), callback, &did_suppress);
+  ASSERT_TRUE(js_helper->IsShowingDialogForTesting());
+  js_helper->HandleJavaScriptDialog(tab, false, nullptr);
+  ASSERT_FALSE(js_helper->IsShowingDialogForTesting());
+  ASSERT_FALSE(callback_helper.last_success());
+  ASSERT_EQ(base::string16(), callback_helper.last_input());
+
+  base::string16 value1 = base::ASCIIToUTF16("abc");
+  base::string16 value2 = base::ASCIIToUTF16("123");
+
+  // prompt, ok + override
+  js_helper->RunJavaScriptDialog(
+      tab, GURL(), content::JAVASCRIPT_DIALOG_TYPE_PROMPT, base::string16(),
+      value1, callback, &did_suppress);
+  ASSERT_TRUE(js_helper->IsShowingDialogForTesting());
+  js_helper->HandleJavaScriptDialog(tab, true, &value2);
+  ASSERT_FALSE(js_helper->IsShowingDialogForTesting());
+  ASSERT_TRUE(callback_helper.last_success());
+  ASSERT_EQ(value2, callback_helper.last_input());
+
+  // prompt, ok + no override
+  js_helper->RunJavaScriptDialog(
+      tab, GURL(), content::JAVASCRIPT_DIALOG_TYPE_PROMPT, base::string16(),
+      value1, callback, &did_suppress);
+  ASSERT_TRUE(js_helper->IsShowingDialogForTesting());
+  js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+  ASSERT_FALSE(js_helper->IsShowingDialogForTesting());
+  ASSERT_TRUE(callback_helper.last_success());
+  ASSERT_EQ(value1, callback_helper.last_input());
+}
