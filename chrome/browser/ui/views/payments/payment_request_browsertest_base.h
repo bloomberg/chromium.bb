@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_
 
+#include <iosfwd>
 #include <list>
 #include <memory>
 #include <string>
@@ -23,7 +24,6 @@
 #include "components/payments/mojom/payment_request.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -36,10 +36,6 @@ class WebContents;
 
 namespace service_manager {
 struct BindSourceInfo;
-}
-
-namespace views {
-class Widget;
 }
 
 namespace payments {
@@ -64,8 +60,30 @@ class PersonalDataLoadedObserverMock
 class PaymentRequestBrowserTestBase
     : public InProcessBrowserTest,
       public PaymentRequest::ObserverForTest,
-      public PaymentRequestDialogView::ObserverForTest,
-      public views::WidgetObserver {
+      public PaymentRequestDialogView::ObserverForTest {
+ public:
+  // Various events that can be waited on by the DialogEventObserver.
+  enum DialogEvent : int {
+    DIALOG_OPENED,
+    DIALOG_CLOSED,
+    ORDER_SUMMARY_OPENED,
+    PAYMENT_METHOD_OPENED,
+    SHIPPING_ADDRESS_SECTION_OPENED,
+    SHIPPING_OPTION_SECTION_OPENED,
+    CREDIT_CARD_EDITOR_OPENED,
+    SHIPPING_ADDRESS_EDITOR_OPENED,
+    CONTACT_INFO_EDITOR_OPENED,
+    BACK_NAVIGATION,
+    BACK_TO_PAYMENT_SHEET_NAVIGATION,
+    CONTACT_INFO_OPENED,
+    EDITOR_VIEW_UPDATED,
+    CAN_MAKE_PAYMENT_CALLED,
+    ERROR_MESSAGE_SHOWN,
+    SPEC_DONE_UPDATING,
+    CVC_PROMPT_SHOWN,
+    NOT_SUPPORTED_ERROR,
+  };
+
  protected:
   // Test will open a browser window to |test_file_path| (relative to
   // chrome/test/data/payments).
@@ -82,6 +100,7 @@ class PaymentRequestBrowserTestBase
   // PaymentRequest::ObserverForTest:
   void OnCanMakePaymentCalled() override;
   void OnNotSupportedError() override;
+  void OnConnectionTerminated() override;
 
   // PaymentRequestDialogView::ObserverForTest:
   void OnDialogOpened() override;
@@ -99,10 +118,6 @@ class PaymentRequestBrowserTestBase
   void OnErrorMessageShown() override;
   void OnSpecDoneUpdating() override;
   void OnCvcPromptShown() override;
-
-  // views::WidgetObserver
-  // Effective way to be warned of all dialog closures.
-  void OnWidgetDestroyed(views::Widget* widget) override;
 
   // Will call JavaScript to invoke the PaymentRequest dialog and verify that
   // it's open.
@@ -199,28 +214,6 @@ class PaymentRequestBrowserTestBase
     delegate_->SetRegionDataLoader(region_data_loader);
   }
 
-  // Various events that can be waited on by the DialogEventObserver.
-  enum DialogEvent : int {
-    DIALOG_OPENED,
-    DIALOG_CLOSED,
-    ORDER_SUMMARY_OPENED,
-    PAYMENT_METHOD_OPENED,
-    SHIPPING_ADDRESS_SECTION_OPENED,
-    SHIPPING_OPTION_SECTION_OPENED,
-    CREDIT_CARD_EDITOR_OPENED,
-    SHIPPING_ADDRESS_EDITOR_OPENED,
-    CONTACT_INFO_EDITOR_OPENED,
-    BACK_NAVIGATION,
-    BACK_TO_PAYMENT_SHEET_NAVIGATION,
-    CONTACT_INFO_OPENED,
-    EDITOR_VIEW_UPDATED,
-    CAN_MAKE_PAYMENT_CALLED,
-    ERROR_MESSAGE_SHOWN,
-    SPEC_DONE_UPDATING,
-    CVC_PROMPT_SHOWN,
-    NOT_SUPPORTED_ERROR,
-  };
-
   // DialogEventObserver is used to wait on specific events that may have
   // occured before the call to Wait(), or after, in which case a RunLoop is
   // used.
@@ -272,5 +265,9 @@ class PaymentRequestBrowserTestBase
 };
 
 }  // namespace payments
+
+std::ostream& operator<<(
+    std::ostream& out,
+    payments::PaymentRequestBrowserTestBase::DialogEvent event);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_

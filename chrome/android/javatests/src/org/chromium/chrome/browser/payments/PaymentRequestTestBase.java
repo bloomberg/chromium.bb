@@ -128,8 +128,10 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         mCanMakePaymentQueryResponded = new CallbackHelper();
         mViewCoreRef = new AtomicReference<>();
         mWebContentsRef = new AtomicReference<>();
-        mTestFilePath = UrlUtils.getIsolatedTestFilePath(
-                String.format("chrome/test/data/payments/%s", testFileName));
+        mTestFilePath = testFileName.startsWith("data:")
+                ? testFileName
+                : UrlUtils.getIsolatedTestFilePath(
+                          String.format("chrome/test/data/payments/%s", testFileName));
     }
 
     @Override
@@ -159,6 +161,17 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
     protected void openPageAndClickNodeAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, ExecutionException, TimeoutException {
+        openPage();
+        clickNodeAndWait(nodeId, helper);
+    }
+
+    protected void openPageAndClickNode(String nodeId)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        openPage();
+        DOMUtils.clickNode(mViewCoreRef.get(), nodeId);
+    }
+
+    private void openPage() throws InterruptedException, ExecutionException, TimeoutException {
         onMainActivityStarted();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -171,7 +184,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
             }
         });
         assertWaitForPageScaleFactorMatch(1);
-        clickNodeAndWait(nodeId, helper);
     }
 
     protected void reTriggerUIAndWait(

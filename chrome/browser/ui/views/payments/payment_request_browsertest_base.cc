@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -81,7 +82,10 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
 }
 
 void PaymentRequestBrowserTestBase::NavigateTo(const std::string& file_path) {
-  ui_test_utils::NavigateToURL(browser(), https_server()->GetURL(file_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               file_path.find("data:") == 0U
+                                   ? GURL(file_path)
+                                   : https_server()->GetURL(file_path));
 }
 
 void PaymentRequestBrowserTestBase::SetIncognito() {
@@ -100,6 +104,11 @@ void PaymentRequestBrowserTestBase::OnCanMakePaymentCalled() {
 void PaymentRequestBrowserTestBase::OnNotSupportedError() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::NOT_SUPPORTED_ERROR);
+}
+
+void PaymentRequestBrowserTestBase::OnConnectionTerminated() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::DIALOG_CLOSED);
 }
 
 void PaymentRequestBrowserTestBase::OnDialogOpened() {
@@ -177,11 +186,6 @@ void PaymentRequestBrowserTestBase::OnCvcPromptShown() {
     event_observer_->Observe(DialogEvent::CVC_PROMPT_SHOWN);
 }
 
-void PaymentRequestBrowserTestBase::OnWidgetDestroyed(views::Widget* widget) {
-  if (event_observer_)
-    event_observer_->Observe(DialogEvent::DIALOG_CLOSED);
-}
-
 void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
   ResetEventObserver(DialogEvent::DIALOG_OPENED);
 
@@ -210,7 +214,8 @@ void PaymentRequestBrowserTestBase::ExpectBodyContains(
       web_contents, extract_contents_js, &contents));
   for (const std::string& expected_string : expected_strings) {
     EXPECT_NE(std::string::npos, contents.find(expected_string))
-        << "String not present: " << expected_string;
+        << "String \"" << expected_string
+        << "\" is not present in the content \"" << contents << "\"";
   }
 }
 
@@ -406,8 +411,7 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   DCHECK(web_contents);
   std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
       base::MakeUnique<TestChromePaymentRequestDelegate>(
-          web_contents, this /* observer */, this /* widget_observer */,
-          is_incognito_, is_valid_ssl_);
+          web_contents, this /* observer */, is_incognito_, is_valid_ssl_);
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents, std::move(delegate),
@@ -661,3 +665,66 @@ void PaymentRequestBrowserTestBase::WaitForObservedEvent() {
 }
 
 }  // namespace payments
+
+std::ostream& operator<<(
+    std::ostream& out,
+    payments::PaymentRequestBrowserTestBase::DialogEvent event) {
+  using DialogEvent = payments::PaymentRequestBrowserTestBase::DialogEvent;
+  switch (event) {
+    case DialogEvent::DIALOG_OPENED:
+      out << "DIALOG_OPENED";
+      break;
+    case DialogEvent::DIALOG_CLOSED:
+      out << "DIALOG_CLOSED";
+      break;
+    case DialogEvent::ORDER_SUMMARY_OPENED:
+      out << "ORDER_SUMMARY_OPENED";
+      break;
+    case DialogEvent::PAYMENT_METHOD_OPENED:
+      out << "PAYMENT_METHOD_OPENED";
+      break;
+    case DialogEvent::SHIPPING_ADDRESS_SECTION_OPENED:
+      out << "SHIPPING_ADDRESS_SECTION_OPENED";
+      break;
+    case DialogEvent::SHIPPING_OPTION_SECTION_OPENED:
+      out << "SHIPPING_OPTION_SECTION_OPENED";
+      break;
+    case DialogEvent::CREDIT_CARD_EDITOR_OPENED:
+      out << "CREDIT_CARD_EDITOR_OPENED";
+      break;
+    case DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED:
+      out << "SHIPPING_ADDRESS_EDITOR_OPENED";
+      break;
+    case DialogEvent::CONTACT_INFO_EDITOR_OPENED:
+      out << "CONTACT_INFO_EDITOR_OPENED";
+      break;
+    case DialogEvent::BACK_NAVIGATION:
+      out << "BACK_NAVIGATION";
+      break;
+    case DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION:
+      out << "BACK_TO_PAYMENT_SHEET_NAVIGATION";
+      break;
+    case DialogEvent::CONTACT_INFO_OPENED:
+      out << "CONTACT_INFO_OPENED";
+      break;
+    case DialogEvent::EDITOR_VIEW_UPDATED:
+      out << "EDITOR_VIEW_UPDATED";
+      break;
+    case DialogEvent::CAN_MAKE_PAYMENT_CALLED:
+      out << "CAN_MAKE_PAYMENT_CALLED";
+      break;
+    case DialogEvent::ERROR_MESSAGE_SHOWN:
+      out << "ERROR_MESSAGE_SHOWN";
+      break;
+    case DialogEvent::SPEC_DONE_UPDATING:
+      out << "SPEC_DONE_UPDATING";
+      break;
+    case DialogEvent::CVC_PROMPT_SHOWN:
+      out << "CVC_PROMPT_SHOWN";
+      break;
+    case DialogEvent::NOT_SUPPORTED_ERROR:
+      out << "NOT_SUPPORTED_ERROR";
+      break;
+  }
+  return out;
+}
