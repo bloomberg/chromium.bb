@@ -330,7 +330,6 @@ class ContentSettingSubresourceFilterBubbleModel
   // ContentSettingBubbleModel:
   void SetTitle() override;
   void SetManageText() override;
-  void OnManageLinkClicked() override;
   void OnManageCheckboxChecked(bool is_checked) override;
   ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
       override;
