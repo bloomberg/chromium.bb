@@ -128,24 +128,53 @@ base::string16 CreateNotificationTitle(const Notification& notification) {
   return title;
 }
 
+bool IsPersistentNotification(const Notification& notification) {
+  return notification.never_timeout() ||
+         notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS;
+}
+
 base::string16 CreateNotificationContext(const Notification& notification,
                                          bool requires_attribution) {
   if (!requires_attribution)
     return notification.context_message();
 
-  base::string16 context =
+  // Mac OS notifications don't provide a good way to elide the domain (or tell
+  // you the maximum width of the subtitle field). We have experimentally
+  // determined the maximum number of characters that fit using the widest
+  // possible character (m). If the domain fits in those character we show it
+  // completely. Otherwise we use eTLD + 1.
+
+  // These numbers have been obtained through experimentation on various
+  // Mac OS platforms.
+
+  // Corresponds to the string "mmmmmmmmmmmmmm"
+  constexpr size_t kMaxDomainLenghtAlert = 14;
+
+  // Corresponds to the string "mmmmmmmmmmmmmmmmmmmmm"
+  constexpr size_t kMaxDomainLenghtBanner = 21;
+
+  size_t max_characters = IsPersistentNotification(notification)
+                              ? kMaxDomainLenghtAlert
+                              : kMaxDomainLenghtBanner;
+
+  base::string16 origin = url_formatter::FormatOriginForSecurityDisplay(
+      url::Origin(notification.origin_url()),
+      url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+
+  if (origin.size() <= max_characters)
+    return origin;
+
+  // Too long, use etld+1
+  base::string16 etldplusone =
       base::UTF8ToUTF16(net::registry_controlled_domains::GetDomainAndRegistry(
           notification.origin_url(),
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
 
   // localhost, raw IPs etc. are not handled by GetDomainAndRegistry.
-  if (context.empty()) {
-    context = url_formatter::FormatOriginForSecurityDisplay(
-        url::Origin(notification.origin_url()),
-        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-  }
+  if (etldplusone.empty())
+    return origin;
 
-  return context;
+  return etldplusone;
 }
 }  // namespace
 
@@ -268,9 +297,7 @@ void NotificationPlatformBridgeMac::Display(
   // Send persistent notifications to the XPC service so they
   // can be displayed as alerts. Chrome itself can only display
   // banners.
-  // Progress Notifications are always considered persistent.
-  if (notification.never_timeout() ||
-      notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
+  if (IsPersistentNotification(notification)) {
     NSDictionary* dict = [builder buildDictionary];
     [alert_dispatcher_ dispatchNotification:dict];
   } else {
