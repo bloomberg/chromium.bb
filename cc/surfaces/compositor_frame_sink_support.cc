@@ -319,14 +319,8 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
     TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
     surface->RunDrawCallback();
   }
+  surface_manager_->SurfaceActivated(surface);
 }
-
-void CompositorFrameSinkSupport::OnSurfaceDependenciesChanged(
-    Surface* surface,
-    const base::flat_set<SurfaceId>& added_dependencies,
-    const base::flat_set<SurfaceId>& removed_dependencies) {}
-
-void CompositorFrameSinkSupport::OnSurfaceDiscarded(Surface* surface) {}
 
 void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
   if (!begin_frame_source_)
@@ -347,12 +341,10 @@ std::unique_ptr<Surface> CompositorFrameSinkSupport::CreateSurface(
   seen_first_frame_activation_ = false;
   std::unique_ptr<Surface> surface = surface_manager_->CreateSurface(
       weak_factory_.GetWeakPtr(), local_surface_id);
-  surface->AddObserver(this);
   return surface;
 }
 
 void CompositorFrameSinkSupport::DestroyCurrentSurface() {
-  current_surface_->RemoveObserver(this);
   surface_manager_->DestroySurface(std::move(current_surface_));
 }
 

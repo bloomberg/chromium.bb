@@ -14,7 +14,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/pending_frame_observer.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_resource_holder_client.h"
 
@@ -30,14 +29,13 @@ Surface::Surface(
     : surface_id_(id),
       previous_frame_surface_id_(id),
       compositor_frame_sink_support_(std::move(compositor_frame_sink_support)),
+      surface_manager_(compositor_frame_sink_support_->surface_manager()),
       frame_index_(kFrameIndexStart),
       destroyed_(false) {}
 
 Surface::~Surface() {
   ClearCopyRequests();
-  for (auto& observer : observers_)
-    observer.OnSurfaceDiscarded(this);
-  observers_.Clear();
+  surface_manager_->SurfaceDiscarded(this);
 
   UnrefFrameResourcesAndRunDrawCallback(std::move(pending_frame_data_));
   UnrefFrameResourcesAndRunDrawCallback(std::move(active_frame_data_));
@@ -99,9 +97,7 @@ void Surface::QueueFrame(CompositorFrame frame,
       bool is_fallback_surface =
           frame_sink_ids_for_dependencies.count(surface_id.frame_sink_id()) > 0;
       if (is_fallback_surface) {
-        Surface* surface =
-            compositor_frame_sink_support_->surface_manager()->GetSurfaceForId(
-                surface_id);
+        Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
         DCHECK(surface);
         surface->Close();
       }
@@ -110,8 +106,7 @@ void Surface::QueueFrame(CompositorFrame frame,
         FrameData(std::move(frame), callback, will_draw_callback);
     // Ask the surface manager to inform |this| when its dependencies are
     // resolved.
-    compositor_frame_sink_support_->surface_manager()->RequestSurfaceResolution(
-        this);
+    surface_manager_->RequestSurfaceResolution(this);
   } else {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(FrameData(std::move(frame), callback, will_draw_callback));
@@ -156,14 +151,6 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
 
   // All blockers have been cleared. The surface can be activated now.
   ActivatePendingFrame();
-}
-
-void Surface::AddObserver(PendingFrameObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void Surface::RemoveObserver(PendingFrameObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void Surface::ActivatePendingFrameForDeadline() {
@@ -227,16 +214,14 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
   UnrefFrameResourcesAndRunDrawCallback(std::move(previous_frame_data));
 
-  for (auto& observer : observers_)
-    observer.OnSurfaceActivated(this);
+  compositor_frame_sink_support_->OnSurfaceActivated(this);
 }
 
 void Surface::UpdateBlockingSurfaces(bool has_previous_pending_frame,
                                      const CompositorFrame& current_frame) {
   // If there is no SurfaceDependencyTracker installed then the |current_frame|
   // does not block on anything.
-  if (!compositor_frame_sink_support_->surface_manager()
-           ->dependency_tracker()) {
+  if (!surface_manager_->dependency_tracker()) {
     blocking_surfaces_.clear();
     return;
   }
@@ -245,9 +230,7 @@ void Surface::UpdateBlockingSurfaces(bool has_previous_pending_frame,
 
   for (const SurfaceId& surface_id :
        current_frame.metadata.activation_dependencies) {
-    Surface* surface =
-        compositor_frame_sink_support_->surface_manager()->GetSurfaceForId(
-            surface_id);
+    Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
     // If a referenced surface does not have a corresponding active frame in the
     // display compositor, then it blocks this frame.
     if (!surface || !surface->HasActiveFrame())
@@ -272,10 +255,8 @@ void Surface::UpdateBlockingSurfaces(bool has_previous_pending_frame,
 
     // If there is a change in the dependency set, then inform observers.
     if (!added_dependencies.empty() || !removed_dependencies.empty()) {
-      for (auto& observer : observers_) {
-        observer.OnSurfaceDependenciesChanged(this, added_dependencies,
-                                              removed_dependencies);
-      }
+      surface_manager_->SurfaceDependenciesChanged(this, added_dependencies,
+                                                   removed_dependencies);
     }
   }
 

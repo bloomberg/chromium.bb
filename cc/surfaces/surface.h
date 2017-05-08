@@ -21,7 +21,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/pending_frame_observer.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
@@ -65,9 +64,6 @@ class CC_SURFACES_EXPORT Surface {
 
   // Notifies the Surface that a blocking SurfaceId now has an active frame.
   void NotifySurfaceIdAvailable(const SurfaceId& surface_id);
-
-  void AddObserver(PendingFrameObserver* observer);
-  void RemoveObserver(PendingFrameObserver* observer);
 
   // Called if a deadline has been hit and this surface is not yet active but
   // it's marked as respecting deadlines.
@@ -163,6 +159,7 @@ class CC_SURFACES_EXPORT Surface {
   const SurfaceId surface_id_;
   SurfaceId previous_frame_surface_id_;
   base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support_;
+  SurfaceManager* const surface_manager_;
 
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;
@@ -172,7 +169,6 @@ class CC_SURFACES_EXPORT Surface {
   std::vector<SurfaceSequence> destruction_dependencies_;
 
   base::flat_set<SurfaceId> blocking_surfaces_;
-  base::ObserverList<PendingFrameObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

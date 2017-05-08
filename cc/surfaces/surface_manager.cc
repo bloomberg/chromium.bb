@@ -478,6 +478,26 @@ void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
     observer.OnSurfaceCreated(surface_info);
 }
 
+void SurfaceManager::SurfaceActivated(Surface* surface) {
+  if (dependency_tracker_)
+    dependency_tracker_->OnSurfaceActivated(surface);
+}
+
+void SurfaceManager::SurfaceDependenciesChanged(
+    Surface* surface,
+    const base::flat_set<SurfaceId>& added_dependencies,
+    const base::flat_set<SurfaceId>& removed_dependencies) {
+  if (dependency_tracker_) {
+    dependency_tracker_->OnSurfaceDependenciesChanged(
+        surface, added_dependencies, removed_dependencies);
+  }
+}
+
+void SurfaceManager::SurfaceDiscarded(Surface* surface) {
+  if (dependency_tracker_)
+    dependency_tracker_->OnSurfaceDiscarded(surface);
+}
+
 void SurfaceManager::UnregisterSurface(const SurfaceId& surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SurfaceMap::iterator it = surface_map_.find(surface_id);
