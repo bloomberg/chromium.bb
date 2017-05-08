@@ -16,6 +16,8 @@ import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.util.Base64;
 
+import com.google.protobuf.nano.MessageNano;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -183,6 +185,15 @@ public class GeolocationHeader {
     /** The maximum age in milliseconds of a location before we'll request a refresh. */
     private static final int REFRESH_LOCATION_AGE = 5 * 60 * 1000;  // 5 minutes
 
+    /** The X-Geo header prefix, preceding any location descriptors */
+    private static final String XGEO_HEADER_PREFIX = "X-Geo: ";
+
+    /** The location descriptor prefix used in the X-Geo header to specify a proto wire encoding */
+    private static final String LOCATION_PROTO_PREFIX = "w ";
+
+    /** The location descriptor prefix used in the X-Geo header to specify an ASCII encoding */
+    private static final String LOCATION_ASCII_PREFIX = "a ";
+
     /** The time of the first location refresh. Contains Long.MAX_VALUE if not set. */
     private static long sFirstLocationTime = Long.MAX_VALUE;
 
@@ -301,9 +312,9 @@ public class GeolocationHeader {
         // Timestamp in microseconds since the UNIX epoch.
         long timestamp = location.getTime() * 1000;
         // Latitude times 1e7.
-        int latitude = (int) (location.getLatitude() * 10000000);
+        int latitudeE7 = (int) (location.getLatitude() * 10000000);
         // Longitude times 1e7.
-        int longitude = (int) (location.getLongitude() * 10000000);
+        int longitudeE7 = (int) (location.getLongitude() * 10000000);
         // Radius of 68% accuracy in mm.
         int radius = (int) (location.getAccuracy() * 1000);
 
@@ -311,10 +322,35 @@ public class GeolocationHeader {
         // https://goto.google.com/partner_location_proto
         String locationAscii = String.format(Locale.US,
                 "role:1 producer:12 timestamp:%d latlng{latitude_e7:%d longitude_e7:%d} radius:%d",
-                timestamp, latitude, longitude, radius);
-        String locationBase64 = new String(Base64.encode(locationAscii.getBytes(), Base64.NO_WRAP));
+                timestamp, latitudeE7, longitudeE7, radius);
+        String locationAsciiEncoding =
+                new String(Base64.encode(locationAscii.getBytes(), Base64.NO_WRAP));
 
-        return "X-Geo: a " + locationBase64;
+        boolean isXGeoVisibleNetworksEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.XGEO_VISIBLE_NETWORKS);
+        if (!isXGeoVisibleNetworksEnabled) {
+            return XGEO_HEADER_PREFIX + LOCATION_ASCII_PREFIX + locationAsciiEncoding;
+        }
+
+        // Create a LatLng for the coordinates.
+        PartnerLocationDescriptor.LatLng latlng = new PartnerLocationDescriptor.LatLng();
+        latlng.latitudeE7 = latitudeE7;
+        latlng.longitudeE7 = longitudeE7;
+
+        // Populate a LocationDescriptor with the LatLng.
+        PartnerLocationDescriptor.LocationDescriptor locationDescriptor =
+                new PartnerLocationDescriptor.LocationDescriptor();
+        locationDescriptor.latlng = latlng;
+        // Include role, producer, timestamp and radius.
+        locationDescriptor.role = PartnerLocationDescriptor.CURRENT_LOCATION;
+        locationDescriptor.producer = PartnerLocationDescriptor.DEVICE_LOCATION;
+        locationDescriptor.timestamp = timestamp;
+        locationDescriptor.radius = (float) radius;
+
+        String locationProtoEncoding = Base64.encodeToString(
+                MessageNano.toByteArray(locationDescriptor), Base64.NO_WRAP | Base64.URL_SAFE);
+
+        return XGEO_HEADER_PREFIX + LOCATION_PROTO_PREFIX + locationProtoEncoding;
     }
 
     @CalledByNative

@@ -167,6 +167,7 @@ android_library("chrome_java") {
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
     ":document_tab_model_info_proto_java",
+    ":partner_location_descriptor_proto_java",
     "//base:base_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
@@ -321,6 +322,13 @@ proto_java_library("document_tab_model_info_proto_java") {
   ]
 }
 
+proto_java_library("partner_location_descriptor_proto_java") {
+  proto_path = "java/src/org/chromium/chrome/browser/omnibox/geo"
+  sources = [
+    "$proto_path/partner_location_descriptor.proto",
+  ]
+}
+
 java_cpp_template("resource_id_javagen") {
   sources = [
     "java/ResourceId.template",
@@ -423,6 +431,7 @@ android_library("chrome_test_java") {
   }
 
   deps = [
+    ":partner_location_descriptor_proto_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:app_hooks_java",
@@ -474,6 +483,7 @@ android_library("chrome_test_java") {
     "//third_party/WebKit/public:android_mojo_bindings_java",
     "//third_party/WebKit/public:blink_headers_java",
     "//third_party/WebKit/public:mojo_bindings_java",
+    "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_support_design_java",
