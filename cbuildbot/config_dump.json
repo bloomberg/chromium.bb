@@ -19528,6 +19528,24 @@
         ],
         "vm_tests": []
     },
+    "reef-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "boards": [
+            "reef"
+        ]
+    },
+    "reef-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "reef"
+        ]
+    },
+    "reef-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "reef"
+        ]
+    },
     "reef-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [

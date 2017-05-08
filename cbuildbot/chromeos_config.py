@@ -1798,6 +1798,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'nyan_big',
       'peach_pit',
       'peppy',
+      'reef',
       'sentry',
       'squawks',
       'terra',
