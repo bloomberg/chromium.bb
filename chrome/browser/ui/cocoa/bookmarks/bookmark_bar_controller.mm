@@ -864,8 +864,12 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
   const int kIconSize = 8;
   SkColor vectorIconColor = forDarkMode ? SkColorSetA(SK_ColorWHITE, 0xCC)
                                         : gfx::kChromeIconGrey;
-  return NSImageFromImageSkia(
+  NSImage* image = NSImageFromImageSkia(
       gfx::CreateVectorIcon(kOverflowChevronIcon, kIconSize, vectorIconColor));
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    return cocoa_l10n_util::FlippedImage(image);
+  else
+    return image;
 }
 
 #pragma mark Private Methods
