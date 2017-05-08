@@ -67,3 +67,6 @@ class PixelExpectations(GpuTestExpectations):
               ['mac', ('intel', 0x0a2e)], bug=718183)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
               ['mac', ('intel', 0x0a2e)], bug=718183)
+
+    self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
+              ['mac', 'linux'], bug=719186)
