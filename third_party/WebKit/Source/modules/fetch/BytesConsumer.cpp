@@ -13,6 +13,7 @@
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefPtr.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -114,6 +115,13 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
     Chunk(const char* data, size_t size) {
       buffer_.ReserveInitialCapacity(size);
       buffer_.Append(data, size);
+      // Report buffer size to V8 so GC can be triggered appropriately.
+      v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+          static_cast<int64_t>(buffer_.size()));
+    }
+    ~Chunk() {
+      v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+          -static_cast<int64_t>(buffer_.size()));
     }
     const char* data() const { return buffer_.data(); }
     size_t size() const { return buffer_.size(); }
