@@ -7,10 +7,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -406,7 +405,9 @@ std::ostream& operator<<(std::ostream& stream,
 
 class DiskMountManagerTest : public testing::Test {
  public:
-  DiskMountManagerTest() : scoped_task_scheduler_(&message_loop_) {}
+  DiskMountManagerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~DiskMountManagerTest() override {}
 
   // Sets up test dbus tread manager and disks mount manager.
@@ -483,8 +484,7 @@ class DiskMountManagerTest : public testing::Test {
   std::unique_ptr<MockDiskMountManagerObserver> observer_;
 
  private:
-  base::MessageLoopForUI message_loop_;
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Tests that the observer gets notified on attempt to format non existent mount

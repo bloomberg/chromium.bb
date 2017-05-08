@@ -50,7 +50,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/launcher/unit_test_launcher.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1822,12 +1822,11 @@ class VDATestSuite : public base::TestSuite {
     // which uses COM. We need the thread to be a UI thread.
     // On Ozone, the backend initializes the event system using a UI
     // thread.
-    base::MessageLoopForUI main_loop;
+    base::test::ScopedTaskEnvironment scoped_task_environment(
+        base::test::ScopedTaskEnvironment::MainThreadType::UI);
 #else
-    base::MessageLoop main_loop;
+    base::test::ScopedTaskEnvironment scoped_task_environment;
 #endif  // OS_WIN || USE_OZONE
-
-    base::test::ScopedTaskScheduler scoped_task_scheduler(&main_loop);
 
     media::g_env =
         reinterpret_cast<media::VideoDecodeAcceleratorTestEnvironment*>(
