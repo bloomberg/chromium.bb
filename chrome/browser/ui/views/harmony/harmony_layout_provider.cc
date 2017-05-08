@@ -57,8 +57,8 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
              2 * GetDistanceMetric(views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
     case views::DISTANCE_BUTTON_HORIZONTAL_PADDING:
       return kHarmonyLayoutUnit;
-    case DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
-      return kHarmonyLayoutUnit * 8;
+    case views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
+      return kHarmonyLayoutUnit * 7;
     case DISTANCE_RELATED_LABEL_HORIZONTAL:
       return kHarmonyLayoutUnit;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:

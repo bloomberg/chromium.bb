@@ -26,8 +26,6 @@ ChromeLayoutProvider::CreateLayoutProvider() {
 
 int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
   switch (metric) {
-    case DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
-      return 0;
     case DISTANCE_BUTTON_MINIMUM_WIDTH:
       return views::kMinimumButtonWidth;
     case DISTANCE_CONTROL_LIST_VERTICAL:
