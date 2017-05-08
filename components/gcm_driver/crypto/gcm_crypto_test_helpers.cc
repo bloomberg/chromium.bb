@@ -44,13 +44,14 @@ bool CreateEncryptedPayloadForTesting(const base::StringPiece& payload,
   const size_t salt_size = GCMMessageCryptographer::kSaltSize;
   crypto::RandBytes(base::WriteInto(&salt, salt_size + 1), salt_size);
 
-  GCMMessageCryptographer cryptographer(peer_public_key, public_key,
-                                        auth_secret.as_string());
+  GCMMessageCryptographer cryptographer(
+      GCMMessageCryptographer::Version::DRAFT_03);
 
   size_t record_size;
   std::string ciphertext;
 
-  if (!cryptographer.Encrypt(payload, shared_secret, salt, &record_size,
+  if (!cryptographer.Encrypt(peer_public_key, public_key, shared_secret,
+                             auth_secret, salt, payload, &record_size,
                              &ciphertext)) {
     return false;
   }
