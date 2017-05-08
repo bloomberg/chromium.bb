@@ -1,4 +1,4 @@
-elf_arch=ARM
+elf_arch=arm
 elf_build_id=WhatAnAmazingBuildId
 elf_file_name=elf
 elf_mtime={redacted}

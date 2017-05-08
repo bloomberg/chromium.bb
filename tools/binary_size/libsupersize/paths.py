@@ -18,8 +18,10 @@ class LazyPaths(object):
     self._tool_prefix = tool_prefix
     self._output_directory = output_directory
     self._any_path_within_output_directory = any_path_within_output_directory
-    self._output_directory_status = _STATUS_DETECTED if output_directory else 0
-    self._tool_prefix_status = _STATUS_DETECTED if tool_prefix else 0
+    self._output_directory_status = (
+        _STATUS_DETECTED if output_directory is not None else 0)
+    self._tool_prefix_status = (
+        _STATUS_DETECTED if tool_prefix is not None else 0)
 
   @property
   def tool_prefix(self):
