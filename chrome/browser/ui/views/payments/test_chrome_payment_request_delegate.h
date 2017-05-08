@@ -15,10 +15,6 @@ namespace content {
 class WebContents;
 }
 
-namespace views {
-class WidgetObserver;
-}
-
 namespace payments {
 
 class PaymentRequest;
@@ -29,7 +25,6 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   TestChromePaymentRequestDelegate(
       content::WebContents* web_contents,
       PaymentRequestDialogView::ObserverForTest* observer,
-      views::WidgetObserver* widget_observer,
       bool is_incognito,
       bool is_valid_ssl);
 
@@ -52,7 +47,6 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   autofill::RegionDataLoader* region_data_loader_;
 
   PaymentRequestDialogView::ObserverForTest* observer_;
-  views::WidgetObserver* widget_observer_;
   bool is_incognito_;
   bool is_valid_ssl_;
 

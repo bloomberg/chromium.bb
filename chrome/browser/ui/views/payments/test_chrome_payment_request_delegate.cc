@@ -7,21 +7,17 @@
 #include <utility>
 
 #include "content/public/browser/web_contents.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace payments {
 
 TestChromePaymentRequestDelegate::TestChromePaymentRequestDelegate(
     content::WebContents* web_contents,
     PaymentRequestDialogView::ObserverForTest* observer,
-    views::WidgetObserver* widget_observer,
     bool is_incognito,
     bool is_valid_ssl)
     : ChromePaymentRequestDelegate(web_contents),
       region_data_loader_(nullptr),
       observer_(observer),
-      widget_observer_(widget_observer),
       is_incognito_(is_incognito),
       is_valid_ssl_(is_valid_ssl) {}
 
@@ -29,11 +25,6 @@ void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   PaymentRequestDialogView* dialog_view =
       new PaymentRequestDialogView(request, observer_);
   dialog_view->ShowDialog();
-
-  // The widget is now valid, so register its observer.
-  views::Widget* widget = dialog_view->GetWidget();
-  widget->AddObserver(widget_observer_);
-
   dialog_ = std::move(dialog_view);
 }
 

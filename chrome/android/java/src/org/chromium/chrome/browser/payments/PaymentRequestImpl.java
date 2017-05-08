@@ -428,6 +428,16 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mRequestPayerEmail = options != null && options.requestPayerEmail;
         mShippingType = options == null ? PaymentShippingType.SHIPPING : options.shippingType;
 
+        if (!OriginSecurityChecker.isSchemeCryptographic(mWebContents.getLastCommittedUrl())
+                && !OriginSecurityChecker.isOriginLocalhostOrFile(
+                           mWebContents.getLastCommittedUrl())) {
+            Log.d(TAG, "Only localhost, file://, and cryptographic scheme origins allowed");
+            // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
+            // "NotSupportedError".
+            onAllPaymentAppsCreated();
+            return;
+        }
+
         PaymentRequestMetrics.recordRequestedInformationHistogram(
                 mRequestPayerEmail, mRequestPayerPhone, mRequestShipping, mRequestPayerName);
 
