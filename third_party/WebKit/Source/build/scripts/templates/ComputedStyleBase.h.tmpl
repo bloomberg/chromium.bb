@@ -33,6 +33,11 @@
 
 namespace blink {
 
+{% for subgroup in computed_style.subgroups %}
+{{define_field_group_class(subgroup)|indent(2)}}
+
+{% endfor %}
+
 // The generated portion of ComputedStyle. For more info, see the header comment
 // in ComputedStyle.h.
 class CORE_EXPORT ComputedStyleBase {
@@ -102,11 +107,6 @@ class CORE_EXPORT ComputedStyleBase {
   {% for field in computed_style.all_fields %}
   // {{field.property_name}}
   {{field_templates[field.field_template].decl_public_methods(field)|indent(2)}}
-
-  {% endfor %}
- private:
-  {% for subgroup in computed_style.subgroups %}
-  {{define_field_group_class(subgroup)|indent(2)}}
 
   {% endfor %}
 
