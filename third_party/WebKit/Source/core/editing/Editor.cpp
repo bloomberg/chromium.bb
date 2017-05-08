@@ -186,7 +186,7 @@ Editor::RevealSelectionScope::~RevealSelectionScope() {
 // |SelectionInDOMTree| instead of |VisibleSelection|.
 VisibleSelection Editor::SelectionForCommand(Event* event) {
   VisibleSelection selection =
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
   if (!event)
     return selection;
   // If the target is a text control, and the current selection is outside of
