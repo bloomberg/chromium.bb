@@ -12,11 +12,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 #include "chrome/common/crash_keys.h"
-#include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 
@@ -31,7 +30,7 @@ namespace {
 // nullptr if a dictionary could not be generated.
 std::unique_ptr<base::DictionaryValue>
 GetPrinterCapabilitiesOnBlockingPoolThread(const std::string& device_name) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!device_name.empty());
 
   scoped_refptr<PrintBackend> print_backend(
@@ -85,7 +84,7 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::AssertIOAllowed();
 
   const auto printer_name_description =
       GetPrinterNameAndDescription(basic_info);
