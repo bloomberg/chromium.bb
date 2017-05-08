@@ -1,7 +1,8 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -95,7 +96,7 @@
                            hotwordInfo_.alwaysOn)]]"
                 on-change="onHotwordSearchEnableChange_">
             </settings-toggle-button>
-            <div class="layout horizontal center"
+            <div class="settings-row"
                 hidden$="[[!getShowHotwordSearchRetrain_(hotwordInfo_.*)]]">
               <div class="separator"></div>
               <paper-button on-tap="onRetrainTap_" class="secondary-button">
