@@ -8,7 +8,6 @@
 #include <tuple>
 
 #include "base/bind.h"
-#include "chrome/browser/conflicts/module_database_observer_win.h"
 
 namespace {
 
@@ -151,18 +150,6 @@ void ModuleDatabase::OnProcessEnded(uint32_t process_id,
   }
 
   DeleteProcessInfo(process_id, creation_time);
-}
-
-void ModuleDatabase::AddObserver(ModuleDatabaseObserver* observer) {
-  observer_list_.AddObserver(observer);
-  for (const auto& module : modules_) {
-    if (module.second.inspection_result)
-      observer->OnNewModuleFound(module.first, module.second);
-  }
-}
-
-void ModuleDatabase::RemoveObserver(ModuleDatabaseObserver* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 // static
@@ -350,13 +337,8 @@ void ModuleDatabase::OnModuleInspected(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   auto it = modules_.find(module_key);
-  if (it == modules_.end())
-    return;
-
-  it->second.inspection_result = std::move(inspection_result);
-
-  for (auto& observer : observer_list_)
-    observer.OnNewModuleFound(it->first, it->second);
+  if (it != modules_.end())
+    it->second.inspection_result = std::move(inspection_result);
 }
 
 // ModuleDatabase::ProcessInfoKey ----------------------------------------------
