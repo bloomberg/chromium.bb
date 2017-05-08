@@ -862,21 +862,6 @@
             ]
         }
     ],
-    "EnableCsrssLockdown": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableCsrssLockdown"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableGoogleCachedCopyTextExperiment": [
         {
             "platforms": [
