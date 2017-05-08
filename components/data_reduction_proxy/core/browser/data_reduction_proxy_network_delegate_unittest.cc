@@ -133,7 +133,8 @@ const Client kClient = Client::UNKNOWN;
 class TestLoFiDecider : public LoFiDecider {
  public:
   TestLoFiDecider()
-      : should_request_lofi_resource_(false),
+      : should_be_client_lofi_(false),
+        should_request_lofi_resource_(false),
         ignore_is_using_data_reduction_proxy_check_(false) {}
   ~TestLoFiDecider() override {}
 
@@ -143,6 +144,10 @@ class TestLoFiDecider : public LoFiDecider {
 
   void SetIsUsingLoFi(bool should_request_lofi_resource) {
     should_request_lofi_resource_ = should_request_lofi_resource;
+  }
+
+  void SetIsUsingClientLoFi(bool should_be_client_lofi) {
+    should_be_client_lofi_ = should_be_client_lofi;
   }
 
   void MaybeSetAcceptTransformHeader(
@@ -189,11 +194,16 @@ class TestLoFiDecider : public LoFiDecider {
     return should_request_lofi_resource_;
   }
 
+  bool IsClientLoFiImageRequest(const net::URLRequest& request) const override {
+    return should_be_client_lofi_;
+  }
+
   void ignore_is_using_data_reduction_proxy_check() {
     ignore_is_using_data_reduction_proxy_check_ = true;
   }
 
  private:
+  bool should_be_client_lofi_;
   bool should_request_lofi_resource_;
   bool ignore_is_using_data_reduction_proxy_check_;
 };
@@ -208,6 +218,8 @@ class TestLoFiUIService : public LoFiUIService {
   void OnLoFiReponseReceived(const net::URLRequest& request) override {
     on_lofi_response_ = true;
   }
+
+  void ClearResponse() { on_lofi_response_ = false; }
 
  private:
   bool on_lofi_response_;
@@ -361,6 +373,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   void VerifyDidNotifyLoFiResponse(bool lofi_response) const {
     EXPECT_EQ(lofi_response, lofi_ui_service_->DidNotifyLoFiResponse());
   }
+
+  void ClearLoFiUIService() { lofi_ui_service_->ClearResponse(); }
 
   void VerifyDataReductionProxyData(const net::URLRequest& request,
                                     bool data_reduction_proxy_used,
@@ -1301,11 +1315,12 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
   // Enable Lo-Fi.
   const struct {
     bool lofi_response;
-  } tests[] = {
-      {false}, {true},
-  };
+    bool was_server;
+  } tests[] = {{false, false}, {true, true}, {true, false}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (const auto& test : tests) {
+    lofi_decider()->SetIsUsingClientLoFi(false);
+    ClearLoFiUIService();
     std::string response_headers =
         "HTTP/1.1 200 OK\r\n"
         "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
@@ -1313,15 +1328,19 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
         "Via: 1.1 Chrome-Compression-Proxy\r\n"
         "x-original-content-length: 200\r\n";
 
-    if (tests[i].lofi_response)
-      response_headers += "Chrome-Proxy-Content-Transform: empty-image\r\n";
+    if (test.lofi_response) {
+      if (test.was_server)
+        response_headers += "Chrome-Proxy-Content-Transform: empty-image\r\n";
+      else
+        lofi_decider()->SetIsUsingClientLoFi(true);
+    }
 
     response_headers += "\r\n";
     auto request =
         FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
-    EXPECT_EQ(tests[i].lofi_response,
+    EXPECT_EQ(test.was_server,
               DataReductionProxyData::GetData(*request)->lofi_received());
-    VerifyDidNotifyLoFiResponse(tests[i].lofi_response);
+    VerifyDidNotifyLoFiResponse(test.lofi_response);
   }
 }
 

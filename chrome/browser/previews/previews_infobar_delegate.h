@@ -21,10 +21,12 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // The type of the infobar. It controls the strings and what UMA data is
   // recorded for the infobar.
+  // TODO(ryansturm): Combine PreviewsInfoBarType with previews::PreviewsType.
+  // crbug.com/704335
   enum PreviewsInfoBarType {
-    LOFI,      // Server-side image replacement.
-    LITE_PAGE, // Server-side page rewrite.
-    OFFLINE,   // Offline copy of the page.
+    LOFI,       // Image placeholders (both server and client implementations).
+    LITE_PAGE,  // Server-side page rewrite.
+    OFFLINE,    // Offline copy of the page.
   };
 
   typedef base::Callback<void(bool opt_out)> OnDismissPreviewsInfobarCallback;
