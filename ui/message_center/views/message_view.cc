@@ -152,15 +152,18 @@ bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void MessageView::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
   views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
 void MessageView::OnFocus() {
+  views::View::OnFocus();
   // We paint a focus indicator.
   SchedulePaint();
 }
 
 void MessageView::OnBlur() {
+  views::View::OnBlur();
   // We paint a focus indicator.
   SchedulePaint();
 }
