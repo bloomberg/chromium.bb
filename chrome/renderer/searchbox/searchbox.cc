@@ -305,7 +305,7 @@ bool SearchBox::GenerateImageURLFromTransientURL(const GURL& transient_url,
 
 void SearchBox::GetMostVisitedItems(
     std::vector<InstantMostVisitedItemIDPair>* items) const {
-  return most_visited_items_cache_.GetCurrentItems(items);
+  most_visited_items_cache_.GetCurrentItems(items);
 }
 
 bool SearchBox::GetMostVisitedItemWithID(
