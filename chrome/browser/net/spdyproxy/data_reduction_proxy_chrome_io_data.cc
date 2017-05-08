@@ -12,6 +12,9 @@
 #include "chrome/browser/net/spdyproxy/chrome_data_use_group_provider.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -21,9 +24,15 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_ui_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -37,6 +46,20 @@ using data_reduction_proxy::DataReductionProxyParams;
 
 namespace {
 
+// Adds the preview navigation to the black list.
+void AddPreviewNavigationToBlackListCallback(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    previews::PreviewsType type,
+    bool opt_out) {
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+  if (previews_service && previews_service->previews_ui_service()) {
+    previews_service->previews_ui_service()->AddPreviewNavigation(url, type,
+                                                                  opt_out);
+  }
+}
+
 // If this is the first Lo-Fi response for a page load, a
 // PreviewsInfoBarDelegate is created, which handles showing Lo-Fi UI.
 void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
@@ -44,7 +67,12 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   PreviewsInfoBarDelegate::Create(
       web_contents, PreviewsInfoBarDelegate::LOFI,
       true /* is_data_saver_user */,
-      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
+      base::Bind(&AddPreviewNavigationToBlackListCallback,
+                 web_contents->GetBrowserContext(),
+                 web_contents->GetController()
+                     .GetLastCommittedEntry()
+                     ->GetRedirectChain()[0],
+                 previews::PreviewsType::LOFI));
 }
 
 } // namespace

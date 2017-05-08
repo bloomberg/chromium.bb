@@ -380,8 +380,15 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
                                                               net_error);
 
   net::HttpRequestHeaders request_headers;
-  if (data_reduction_proxy_io_data_ && request->response_headers() &&
-      IsEmptyImagePreview(*(request->response_headers()))) {
+  bool server_lofi = data_reduction_proxy_io_data_ &&
+                     request->response_headers() &&
+                     IsEmptyImagePreview(*(request->response_headers()));
+  bool client_lofi =
+      data_reduction_proxy_io_data_ &&
+      data_reduction_proxy_io_data_->lofi_decider() &&
+      data_reduction_proxy_io_data_->lofi_decider()->IsClientLoFiImageRequest(
+          *request);
+  if (server_lofi || client_lofi) {
     data_reduction_proxy_io_data_->lofi_ui_service()->OnLoFiReponseReceived(
         *request);
   } else if (data_reduction_proxy_io_data_ && request->response_headers() &&

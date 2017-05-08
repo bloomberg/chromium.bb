@@ -794,4 +794,28 @@ TEST_F(ContentLoFiDeciderTest, NoTransformDoesNotAddHeader) {
   EXPECT_FALSE(headers.HasHeader(chrome_proxy_accept_transform_header()));
 }
 
+TEST_F(ContentLoFiDeciderTest, RequestIsClientSideLoFiMainFrameTest) {
+  std::unique_ptr<net::URLRequest> request = CreateRequestByType(
+      content::RESOURCE_TYPE_MAIN_FRAME, true, content::CLIENT_LOFI_ON);
+  std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
+      new data_reduction_proxy::ContentLoFiDecider());
+  EXPECT_FALSE(lofi_decider->IsClientLoFiImageRequest(*request));
+}
+
+TEST_F(ContentLoFiDeciderTest, RequestIsNotClientSideLoFiImageTest) {
+  std::unique_ptr<net::URLRequest> request = CreateRequestByType(
+      content::RESOURCE_TYPE_IMAGE, true, content::PREVIEWS_NO_TRANSFORM);
+  std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
+      new data_reduction_proxy::ContentLoFiDecider());
+  EXPECT_FALSE(lofi_decider->IsClientLoFiImageRequest(*request));
+}
+
+TEST_F(ContentLoFiDeciderTest, RequestIsClientSideLoFiImageTest) {
+  std::unique_ptr<net::URLRequest> request = CreateRequestByType(
+      content::RESOURCE_TYPE_IMAGE, true, content::CLIENT_LOFI_ON);
+  std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
+      new data_reduction_proxy::ContentLoFiDecider());
+  EXPECT_TRUE(lofi_decider->IsClientLoFiImageRequest(*request));
+}
+
 }  // namespace data_reduction_proxy
