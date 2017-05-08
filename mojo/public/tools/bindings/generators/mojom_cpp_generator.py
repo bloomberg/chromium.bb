@@ -41,7 +41,7 @@ class _NameFormatter(object):
     self._variant = variant
 
   def Format(self, separator, prefixed=False, internal=False,
-             include_variant=False, add_same_module_namespaces=False,
+             include_variant=False, omit_namespace_for_module=None,
              flatten_nested_kind=False):
     """Formats the name according to the given configuration.
 
@@ -51,15 +51,15 @@ class _NameFormatter(object):
       internal: Returns the name in the "internal" namespace.
       include_variant: Whether to include variant as namespace. If |internal| is
           True, then this flag is ignored and variant is not included.
-      add_same_module_namespaces: Includes all namespaces even if the token is
-          from the same module as the current mojom file.
+      omit_namespace_for_module: If the token is from the specified module,
+          don't add the namespaces of the module to the name.
       flatten_nested_kind: It is allowed to define enums inside structs and
           interfaces. If this flag is set to True, this method concatenates the
           parent kind and the nested kind with '_', instead of treating the
           parent kind as a scope."""
 
     parts = []
-    if self._ShouldIncludeNamespace(add_same_module_namespaces):
+    if self._ShouldIncludeNamespace(omit_namespace_for_module):
       if prefixed:
         parts.append("")
       parts.extend(self._GetNamespace())
@@ -68,16 +68,16 @@ class _NameFormatter(object):
     parts.extend(self._GetName(internal, flatten_nested_kind))
     return separator.join(parts)
 
-  def FormatForCpp(self, add_same_module_namespaces=False, internal=False,
+  def FormatForCpp(self, omit_namespace_for_module=None, internal=False,
                    flatten_nested_kind=False):
     return self.Format(
         "::", prefixed=True,
-        add_same_module_namespaces=add_same_module_namespaces,
+        omit_namespace_for_module=omit_namespace_for_module,
         internal=internal, include_variant=True,
         flatten_nested_kind=flatten_nested_kind)
 
   def FormatForMojom(self):
-    return self.Format(".", add_same_module_namespaces=True)
+    return self.Format(".")
 
   def _MapKindName(self, token, internal):
     if not internal:
@@ -110,15 +110,14 @@ class _NameFormatter(object):
     name_parts.append(self._MapKindName(self._token, internal))
     return name_parts
 
-  def _ShouldIncludeNamespace(self, add_same_module_namespaces):
-    return add_same_module_namespaces or self._token.imported_from
+  def _ShouldIncludeNamespace(self, omit_namespace_for_module):
+    return self._token.module and (
+        not omit_namespace_for_module or
+        self._token.module.path != omit_namespace_for_module.path)
 
   def _GetNamespace(self):
-    if self._token.imported_from:
-      return NamespaceToArray(self._token.imported_from["namespace"])
-    elif hasattr(self._token, "module"):
+    if self._token.module:
       return NamespaceToArray(self._token.module.namespace)
-    return []
 
 
 def NamespaceToArray(namespace):
@@ -126,9 +125,8 @@ def NamespaceToArray(namespace):
 
 
 def GetWtfHashFnNameForEnum(enum):
-  return _NameFormatter(
-      enum, None).Format("_", internal=True, add_same_module_namespaces=True,
-                         flatten_nested_kind=True) + "HashFn"
+  return _NameFormatter(enum, None).Format("_", internal=True,
+                                           flatten_nested_kind=True) + "HashFn"
 
 
 def IsNativeOnlyKind(kind):
@@ -150,48 +148,6 @@ def AllEnumValues(enum):
 
 def GetCppPodType(kind):
   return _kind_to_cpp_type[kind]
-
-
-def GetCppDataViewType(kind, qualified=False):
-  def _GetName(input_kind):
-    return _NameFormatter(input_kind, None).FormatForCpp(
-        add_same_module_namespaces=qualified, flatten_nested_kind=True)
-
-  if mojom.IsEnumKind(kind):
-    return _GetName(kind)
-  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
-    return "%sDataView" % _GetName(kind)
-  if mojom.IsArrayKind(kind):
-    return "mojo::ArrayDataView<%s>" % GetCppDataViewType(kind.kind, qualified)
-  if mojom.IsMapKind(kind):
-    return ("mojo::MapDataView<%s, %s>" % (
-        GetCppDataViewType(kind.key_kind, qualified),
-        GetCppDataViewType(kind.value_kind, qualified)))
-  if mojom.IsStringKind(kind):
-    return "mojo::StringDataView"
-  if mojom.IsInterfaceKind(kind):
-    return "%sPtrDataView" % _GetName(kind)
-  if mojom.IsInterfaceRequestKind(kind):
-    return "%sRequestDataView" % _GetName(kind.kind)
-  if mojom.IsAssociatedInterfaceKind(kind):
-    return "%sAssociatedPtrInfoDataView" % _GetName(kind.kind)
-  if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "%sAssociatedRequestDataView" % _GetName(kind.kind)
-  if mojom.IsGenericHandleKind(kind):
-    return "mojo::ScopedHandle"
-  if mojom.IsDataPipeConsumerKind(kind):
-    return "mojo::ScopedDataPipeConsumerHandle"
-  if mojom.IsDataPipeProducerKind(kind):
-    return "mojo::ScopedDataPipeProducerHandle"
-  if mojom.IsMessagePipeKind(kind):
-    return "mojo::ScopedMessagePipeHandle"
-  if mojom.IsSharedBufferKind(kind):
-    return "mojo::ScopedSharedBufferHandle"
-  return _kind_to_cpp_type[kind]
-
-
-def GetUnmappedTypeForSerializer(kind):
-  return GetCppDataViewType(kind, qualified=True)
 
 
 def RequiresContextForDataView(kind):
@@ -361,7 +317,7 @@ class Generator(generator.Generator):
       "contains_handles_or_interfaces": mojom.ContainsHandlesOrInterfaces,
       "contains_move_only_members": self._ContainsMoveOnlyMembers,
       "cpp_wrapper_param_type": self._GetCppWrapperParamType,
-      "cpp_data_view_type": GetCppDataViewType,
+      "cpp_data_view_type": self._GetCppDataViewType,
       "cpp_field_type": self._GetCppFieldType,
       "cpp_union_field_type": self._GetCppUnionFieldType,
       "cpp_pod_type": GetCppPodType,
@@ -401,7 +357,7 @@ class Generator(generator.Generator):
       "passes_associated_kinds": mojom.PassesAssociatedKinds,
       "struct_constructors": self._GetStructConstructors,
       "under_to_camel": generator.UnderToCamel,
-      "unmapped_type_for_serializer": GetUnmappedTypeForSerializer,
+      "unmapped_type_for_serializer": self._GetUnmappedTypeForSerializer,
       "wtf_hash_fn_name_for_enum": GetWtfHashFnNameForEnum,
     }
     return cpp_filters
@@ -461,14 +417,14 @@ class Generator(generator.Generator):
                       add_same_module_namespaces=False):
     return _NameFormatter(kind, self.variant).FormatForCpp(
         internal=internal, flatten_nested_kind=flatten_nested_kind,
-        add_same_module_namespaces=add_same_module_namespaces)
+        omit_namespace_for_module = (None if add_same_module_namespaces
+                                          else self.module))
 
   def _GetQualifiedNameForKind(self, kind, internal=False,
                                flatten_nested_kind=False, include_variant=True):
     return _NameFormatter(
         kind, self.variant if include_variant else None).FormatForCpp(
-            internal=internal, add_same_module_namespaces=True,
-            flatten_nested_kind=flatten_nested_kind)
+            internal=internal, flatten_nested_kind=flatten_nested_kind)
 
   def _GetFullMojomNameForKind(self, kind):
     return _NameFormatter(kind, self.variant).FormatForMojom()
@@ -806,3 +762,45 @@ class Generator(generator.Generator):
 
     return "new mojo::internal::ContainerValidateParams(%s)" % (
         self._GetContainerValidateParamsCtorArgs(kind))
+
+  def _GetCppDataViewType(self, kind, qualified=False):
+    def _GetName(input_kind):
+      return _NameFormatter(input_kind, None).FormatForCpp(
+          omit_namespace_for_module=(None if qualified else self.module),
+          flatten_nested_kind=True)
+
+    if mojom.IsEnumKind(kind):
+      return _GetName(kind)
+    if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+      return "%sDataView" % _GetName(kind)
+    if mojom.IsArrayKind(kind):
+      return "mojo::ArrayDataView<%s>" % (
+          self._GetCppDataViewType(kind.kind, qualified))
+    if mojom.IsMapKind(kind):
+      return ("mojo::MapDataView<%s, %s>" % (
+          self._GetCppDataViewType(kind.key_kind, qualified),
+          self._GetCppDataViewType(kind.value_kind, qualified)))
+    if mojom.IsStringKind(kind):
+      return "mojo::StringDataView"
+    if mojom.IsInterfaceKind(kind):
+      return "%sPtrDataView" % _GetName(kind)
+    if mojom.IsInterfaceRequestKind(kind):
+      return "%sRequestDataView" % _GetName(kind.kind)
+    if mojom.IsAssociatedInterfaceKind(kind):
+      return "%sAssociatedPtrInfoDataView" % _GetName(kind.kind)
+    if mojom.IsAssociatedInterfaceRequestKind(kind):
+      return "%sAssociatedRequestDataView" % _GetName(kind.kind)
+    if mojom.IsGenericHandleKind(kind):
+      return "mojo::ScopedHandle"
+    if mojom.IsDataPipeConsumerKind(kind):
+      return "mojo::ScopedDataPipeConsumerHandle"
+    if mojom.IsDataPipeProducerKind(kind):
+      return "mojo::ScopedDataPipeProducerHandle"
+    if mojom.IsMessagePipeKind(kind):
+      return "mojo::ScopedMessagePipeHandle"
+    if mojom.IsSharedBufferKind(kind):
+      return "mojo::ScopedSharedBufferHandle"
+    return _kind_to_cpp_type[kind]
+
+  def _GetUnmappedTypeForSerializer(self, kind):
+    return self._GetCppDataViewType(kind, qualified=True)

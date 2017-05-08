@@ -54,7 +54,7 @@ namespace {{namespace}} {
 #include "mojo/public/cpp/bindings/string_data_view.h"
 #include "{{module.path}}-shared-internal.h"
 {%- for import in imports %}
-#include "{{import.module.path}}-shared.h"
+#include "{{import.path}}-shared.h"
 {%- endfor %}
 
 {{namespace_begin()}}

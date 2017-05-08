@@ -222,41 +222,19 @@ def _Kind(kinds, spec, scope):
   kinds[spec] = kind
   return kind
 
-def _KindFromImport(original_kind, imported_from):
-  """Used with 'import module' - clones the kind imported from the given
-  module's namespace. Only used with Structs, Unions, Interfaces and Enums."""
-  kind = copy.copy(original_kind)
-  # |shared_definition| is used to store various properties (see
-  # |AddSharedProperty()| in module.py), including |imported_from|. We don't
-  # want the copy to share these with the original, so copy it if necessary.
-  if hasattr(original_kind, 'shared_definition'):
-    kind.shared_definition = copy.copy(original_kind.shared_definition)
-  kind.imported_from = imported_from
-  return kind
-
 def _Import(module, import_module):
-  import_item = {}
-  import_item['module_name'] = import_module.name
-  import_item['namespace'] = import_module.namespace
-  import_item['module'] = import_module
-
   # Copy the struct kinds from our imports into the current module.
   importable_kinds = (mojom.Struct, mojom.Union, mojom.Enum, mojom.Interface)
   for kind in import_module.kinds.itervalues():
     if (isinstance(kind, importable_kinds) and
-        kind.imported_from is None):
-      kind = _KindFromImport(kind, import_item)
+        kind.module.path == import_module.path):
       module.kinds[kind.spec] = kind
   # Ditto for values.
   for value in import_module.values.itervalues():
-    if value.imported_from is None:
-      # Values don't have shared definitions (since they're not nullable), so no
-      # need to do anything special.
-      value = copy.copy(value)
-      value.imported_from = import_item
+    if value.module.path == import_module.path:
       module.values[value.GetSpec()] = value
 
-  return import_item
+  return import_module
 
 def _Struct(module, parsed_struct):
   """
