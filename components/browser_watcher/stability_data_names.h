@@ -10,12 +10,14 @@ namespace browser_watcher {
 // Alphabetical list of stability data names.
 extern const char kStabilityChannel[];
 extern const char kStabilityExecutionPhase[];
+extern const char kStabilityKeepAlive[];
 extern const char kStabilityPlatform[];
 extern const char kStabilityProduct[];
 extern const char kStabilityReporterChannel[];
 extern const char kStabilityReporterPlatform[];
 extern const char kStabilityReporterProduct[];
 extern const char kStabilityReporterVersion[];
+extern const char kStabilityRestartAllowed[];
 extern const char kStabilitySpecialBuild[];
 extern const char kStabilityStartTimestamp[];
 extern const char kStabilityVersion[];

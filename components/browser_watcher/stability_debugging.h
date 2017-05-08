@@ -12,6 +12,7 @@
 namespace browser_watcher {
 
 // Adds or updates the global stability user data.
+void SetStabilityDataBool(base::StringPiece name, bool value);
 void SetStabilityDataInt(base::StringPiece name, int64_t value);
 
 }  // namespace browser_watcher
