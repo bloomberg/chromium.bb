@@ -22,6 +22,12 @@ void AddEntry(const Entry& entry, std::vector<mojom::EntryPtr>* ary) {
   ary->push_back(std::move(entry_ptr));
 }
 
+base::Optional<std::string> GetNameFromEntry(const Entry* entry) {
+  if (!entry)
+    return base::nullopt;
+  return entry->name();
+}
+
 }  // namespace
 
 Instance::Instance(EntryCache* system_cache,
@@ -47,17 +53,16 @@ void Instance::ResolveServiceName(const std::string& service_name,
   const Entry* entry = system_cache_->GetEntry(service_name);
   if (entry) {
     callback.Run(service_manager::mojom::ResolveResult::From(entry),
-                 service_manager::mojom::ResolveResult::From(entry->parent()));
+                 GetNameFromEntry(entry->parent()));
     return;
   } else if (service_manifest_provider_) {
     auto manifest = service_manifest_provider_->GetManifest(service_name);
     if (manifest) {
       auto entry = Entry::Deserialize(*manifest);
       if (entry) {
-        callback.Run(
-            service_manager::mojom::ResolveResult::From(
-                const_cast<const Entry*>(entry.get())),
-            service_manager::mojom::ResolveResult::From(entry->parent()));
+        callback.Run(service_manager::mojom::ResolveResult::From(
+                         const_cast<const Entry*>(entry.get())),
+                     GetNameFromEntry(entry->parent()));
 
         bool added = system_cache_->AddRootEntry(std::move(entry));
         DCHECK(added);
@@ -69,7 +74,7 @@ void Instance::ResolveServiceName(const std::string& service_name,
   }
 
   LOG(ERROR) << "Unable to locate service manifest for " << service_name;
-  callback.Run(nullptr, nullptr);
+  callback.Run(nullptr, base::nullopt);
 }
 
 void Instance::GetEntries(const base::Optional<std::vector<std::string>>& names,
