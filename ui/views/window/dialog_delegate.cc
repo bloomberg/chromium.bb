@@ -132,6 +132,10 @@ void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
   button->SetIsDefault(is_default);
 }
 
+bool DialogDelegate::ShouldSnapFrameWidth() const {
+  return true;
+}
+
 int DialogDelegate::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }

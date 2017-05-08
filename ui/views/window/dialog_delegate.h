@@ -88,6 +88,10 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // the typical.
   virtual void UpdateButton(LabelButton* button, ui::DialogButton type);
 
+  // Returns true if this dialog should snap the frame width based on the
+  // LayoutProvider's snapping.
+  virtual bool ShouldSnapFrameWidth() const;
+
   // Overridden from ui::DialogModel:
   int GetDialogButtons() const override;
   int GetDefaultDialogButton() const override;
