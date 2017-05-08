@@ -29,6 +29,7 @@
 
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/FetchContext.h"
@@ -431,6 +432,8 @@ Resource* ResourceFetcher::ResourceForStaticData(
                                       params.Options(), params.Charset());
   resource->SetNeedsSynchronousCacheHit(substitute_data.ForceSynchronousLoad());
   // FIXME: We should provide a body stream here.
+  resource->SetStatus(ResourceStatus::kPending);
+  resource->NotifyStartLoad();
   resource->ResponseReceived(response, nullptr);
   resource->SetDataBufferingPolicy(kBufferData);
   if (data->size())
@@ -451,6 +454,8 @@ Resource* ResourceFetcher::ResourceForBlockedRequest(
     ResourceRequestBlockedReason blocked_reason) {
   Resource* resource = factory.Create(params.GetResourceRequest(),
                                       params.Options(), params.Charset());
+  resource->SetStatus(ResourceStatus::kPending);
+  resource->NotifyStartLoad();
   resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
       params.Url(), blocked_reason));
   return resource;
@@ -1339,44 +1344,59 @@ void ResourceFetcher::MoveResourceLoaderToNonBlocking(ResourceLoader* loader) {
 bool ResourceFetcher::StartLoad(Resource* resource) {
   DCHECK(resource);
   DCHECK(resource->StillNeedsLoad());
-  if (!Context().ShouldLoadNewResource(resource->GetType())) {
-    GetMemoryCache()->Remove(resource);
-    return false;
-  }
 
   ResourceRequest request(resource->GetResourceRequest());
-  ResourceResponse response;
+  ResourceLoader* loader = nullptr;
 
-  blink::probe::PlatformSendRequest probe(&Context(), resource->Identifier(),
-                                          request, response,
-                                          resource->Options().initiator_info);
+  {
+    // Forbids JavaScript/addClient/removeClient/revalidation until start()
+    // to prevent unintended state transitions.
+    Resource::ProhibitAddRemoveClientInScope
+        prohibit_add_remove_client_in_scope(resource);
+    Resource::RevalidationStartForbiddenScope
+        revalidation_start_forbidden_scope(resource);
+    ScriptForbiddenScope script_forbidden_scope;
 
-  Context().DispatchWillSendRequest(resource->Identifier(), request, response,
-                                    resource->Options().initiator_info);
+    if (!Context().ShouldLoadNewResource(resource->GetType())) {
+      GetMemoryCache()->Remove(resource);
+      return false;
+    }
 
-  // TODO(shaochuan): Saving modified ResourceRequest back to |resource|, remove
-  // once dispatchWillSendRequest() takes const ResourceRequest.
-  // crbug.com/632580
-  resource->SetResourceRequest(request);
+    ResourceResponse response;
 
-  // Resource requests from suborigins should not be intercepted by the service
-  // worker of the physical origin. This has the effect that, for now,
-  // suborigins do not work with service workers. See
-  // https://w3c.github.io/webappsec-suborigins/.
-  SecurityOrigin* source_origin = Context().GetSecurityOrigin();
-  if (source_origin && source_origin->HasSuborigin())
-    request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+    blink::probe::PlatformSendRequest probe(&Context(), resource->Identifier(),
+                                            request, response,
+                                            resource->Options().initiator_info);
 
-  ResourceLoader* loader = ResourceLoader::Create(this, resource);
-  if (resource->ShouldBlockLoadEvent())
-    loaders_.insert(loader);
-  else
-    non_blocking_loaders_.insert(loader);
+    Context().DispatchWillSendRequest(resource->Identifier(), request, response,
+                                      resource->Options().initiator_info);
 
-  StorePerformanceTimingInitiatorInformation(resource);
-  resource->SetFetcherSecurityOrigin(source_origin);
+    // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
+    // remove once dispatchWillSendRequest() takes const ResourceRequest.
+    // crbug.com/632580
+    resource->SetResourceRequest(request);
 
-  loader->ActivateCacheAwareLoadingIfNeeded(request);
+    // Resource requests from suborigins should not be intercepted by the
+    // service worker of the physical origin. This has the effect that, for now,
+    // suborigins do not work with service workers. See
+    // https://w3c.github.io/webappsec-suborigins/.
+    SecurityOrigin* source_origin = Context().GetSecurityOrigin();
+    if (source_origin && source_origin->HasSuborigin())
+      request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+
+    loader = ResourceLoader::Create(this, resource);
+    if (resource->ShouldBlockLoadEvent())
+      loaders_.insert(loader);
+    else
+      non_blocking_loaders_.insert(loader);
+
+    StorePerformanceTimingInitiatorInformation(resource);
+    resource->SetFetcherSecurityOrigin(source_origin);
+
+    resource->NotifyStartLoad();
+    loader->ActivateCacheAwareLoadingIfNeeded(request);
+  }
+
   loader->Start(request);
   return true;
 }

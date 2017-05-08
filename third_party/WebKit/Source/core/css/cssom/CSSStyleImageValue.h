@@ -70,7 +70,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   ResourceStatus Status() const override {
     if (IsCachePending())
       return ResourceStatus::kNotStarted;
-    return image_value_->CachedImage()->CachedImage()->GetStatus();
+    return image_value_->CachedImage()->CachedImage()->GetContentStatus();
   }
 
   const CSSImageValue* CssImageValue() const { return image_value_.Get(); };

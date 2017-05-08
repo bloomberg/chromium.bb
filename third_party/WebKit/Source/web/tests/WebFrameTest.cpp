@@ -10887,7 +10887,7 @@ TEST_F(WebFrameTest, ImageDocumentDecodeError) {
       ToLocalFrame(helper.WebView()->GetPage()->MainFrame())->GetDocument();
   EXPECT_TRUE(document->IsImageDocument());
   EXPECT_EQ(ResourceStatus::kDecodeError,
-            ToImageDocument(document)->CachedImage()->GetStatus());
+            ToImageDocument(document)->CachedImage()->GetContentStatus());
 }
 
 // Ensure that the root layer -- whose size is ordinarily derived from the
