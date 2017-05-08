@@ -4,8 +4,8 @@
 
 namespace cronet {
 
-// Starts Cronet if it hasn't already been started. Will always update Cronet
-// to point test.example.com" to "localhost:|port|".
-void StartCronetIfNecessary(int port);
+// Starts Cronet, or restarts if Cronet is already running.  Will have Cronet
+// point test.example.com" to "localhost:|port|".
+void StartCronet(int port);
 
 }  // namespace cronet

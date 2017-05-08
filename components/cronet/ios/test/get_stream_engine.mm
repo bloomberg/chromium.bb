@@ -8,11 +8,22 @@
 #include "components/cronet/ios/test/start_cronet.h"
 #include "components/grpc_support/test/get_stream_engine.h"
 
+@interface Cronet (ExposedForTesting)
++ (void)shutdownForTesting;
+@end
+
 namespace grpc_support {
 
 stream_engine* GetTestStreamEngine(int port) {
-  cronet::StartCronetIfNecessary(port);
   return [Cronet getGlobalEngine];
+}
+
+void StartTestStreamEngine(int port) {
+  cronet::StartCronet(port);
+}
+
+void ShutdownTestStreamEngine() {
+  [Cronet shutdownForTesting];
 }
 
 }  // namespace grpc_support

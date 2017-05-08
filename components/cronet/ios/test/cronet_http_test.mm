@@ -21,6 +21,10 @@
 
 #include "url/gurl.h"
 
+@interface Cronet (ExposedForTesting)
++ (void)shutdownForTesting;
+@end
+
 @interface TestDelegate : NSObject<NSURLSessionDataDelegate,
                                    NSURLSessionDelegate,
                                    NSURLSessionTaskDelegate>
@@ -140,7 +144,7 @@ class HttpTest : public ::testing::Test {
     [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
       return YES;
     }];
-    StartCronetIfNecessary(grpc_support::GetQuicTestServerPort());
+    StartCronet(grpc_support::GetQuicTestServerPort());
     [Cronet registerHttpProtocolHandler];
     NSURLSessionConfiguration* config =
         [NSURLSessionConfiguration ephemeralSessionConfiguration];
@@ -157,6 +161,9 @@ class HttpTest : public ::testing::Test {
   void TearDown() override {
     grpc_support::ShutdownQuicTestServer();
     TestServer::Shutdown();
+
+    [Cronet stopNetLog];
+    [Cronet shutdownForTesting];
   }
 
   // Launches the supplied |task| and blocks until it completes, with a timeout
