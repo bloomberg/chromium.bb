@@ -4,18 +4,21 @@
 
 #include <memory>
 
+#include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "media/base/mock_filters.h"
 #include "media/mojo/clients/mojo_android_overlay.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/android/scoped_java_surface.h"
+#include "ui/gl/android/surface_texture.h"
 
 using ::testing::_;
 using ::testing::StrictMock;
@@ -104,10 +107,21 @@ class MojoAndroidOverlayTest : public ::testing::Test {
                                    base::Unretained(&callbacks_));
     config_.destroyed_cb = base::Bind(&MockClientCallbacks::OnDestroyed,
                                       base::Unretained(&callbacks_));
+
+    // Make sure that we have an implementation of GpuSurfaceLookup.
+    gpu::GpuSurfaceTracker::Get();
   }
 
   void TearDown() override {
     overlay_client_.reset();
+
+    // If we registered a surface, then unregister it.
+    if (surface_texture_) {
+      gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_key_);
+      // Drop the surface before the surface texture.
+      surface_ = gl::ScopedJavaSurface();
+    }
+
     base::RunLoop().RunUntilIdle();
   }
 
@@ -137,9 +151,22 @@ class MojoAndroidOverlayTest : public ::testing::Test {
   // Notify |overlay_client_| that the surface is ready.
   void CreateSurface() {
     EXPECT_CALL(callbacks_, OnReady(overlay_client_.get()));
-    const int surface_key = 123;
-    mock_provider_.client_->OnSurfaceReady(surface_key);
+
+    // We have to actually add a valid surface, else the client will get mad
+    // when it tries to retrieve it.
+    surface_texture_ = gl::SurfaceTexture::Create(0);
+    surface_ = gl::ScopedJavaSurface(surface_texture_.get());
+    surface_key_ = gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
+        gpu::GpuSurfaceTracker::SurfaceRecord(gfx::kNullAcceleratedWidget,
+                                              surface_.j_surface().obj()));
+
+    mock_provider_.client_->OnSurfaceReady(surface_key_);
     base::RunLoop().RunUntilIdle();
+
+    // Verify that we actually got back the right surface.
+    JNIEnv* env = base::android::AttachCurrentThread();
+    ASSERT_TRUE(env->IsSameObject(surface_.j_surface().obj(),
+                                  overlay_client_->GetJavaSurface().obj()));
   }
 
   // Destroy the overlay.  This includes onSurfaceDestroyed cases.
@@ -165,6 +192,14 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 
   // The client under test.
   std::unique_ptr<AndroidOverlay> overlay_client_;
+
+  // If we create a surface, then these are the SurfaceTexture that owns it,
+  // the surface itself, and the key that we registered with GpuSurfaceLookup,
+  // respectively.  We could probably mock out GpuSurfaceLookup, but we'd still
+  // have to provide a (mock) ScopedJavaSurface, which isn't easy.
+  scoped_refptr<gl::SurfaceTexture> surface_texture_;
+  gl::ScopedJavaSurface surface_;
+  int surface_key_ = 0;
 
   // Inital config for |CreateOverlay|.
   // Set to sane values, but feel free to modify before CreateOverlay().
