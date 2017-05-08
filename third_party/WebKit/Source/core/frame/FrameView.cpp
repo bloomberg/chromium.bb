@@ -4926,8 +4926,11 @@ void FrameView::UpdateViewportIntersectionsForSubtree(
 
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    if (child->IsRemoteFrame()) {
+      if (RemoteFrameView* view = ToRemoteFrame(child)->View())
+        view->UpdateRemoteViewportIntersection();
       continue;
+    }
     if (FrameView* view = ToLocalFrame(child)->View())
       view->UpdateViewportIntersectionsForSubtree(target_state);
   }
