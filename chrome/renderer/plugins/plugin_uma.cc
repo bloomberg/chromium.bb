@@ -66,6 +66,12 @@ PluginUMAReporter* PluginUMAReporter::GetInstance() {
   return base::Singleton<PluginUMAReporter>::get();
 }
 
+// static
+void PluginUMAReporter::ReportPDFLoadStatus(PDFLoadStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PDF.LoadStatus", status,
+                            PluginUMAReporter::PDF_LOAD_STATUS_COUNT);
+}
+
 void PluginUMAReporter::ReportPluginMissing(const std::string& plugin_mime_type,
                                             const GURL& plugin_src) {
   report_sender_->SendPluginUMA(MISSING_PLUGIN,
