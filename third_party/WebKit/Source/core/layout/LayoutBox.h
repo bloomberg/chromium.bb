@@ -728,12 +728,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ClearContainingBlockOverrideSize();
   void ClearOverrideContainingBlockContentLogicalHeight();
 
-  LayoutUnit ExtraInlineOffset() const;
-  LayoutUnit ExtraBlockOffset() const;
-  void SetExtraInlineOffset(LayoutUnit inline_offest);
-  void SetExtraBlockOffset(LayoutUnit block_offest);
-  void ClearExtraInlineAndBlockOffests();
-
   LayoutSize OffsetFromContainer(const LayoutObject*) const override;
 
   LayoutUnit AdjustBorderBoxLogicalWidthForBoxSizing(float width) const;
