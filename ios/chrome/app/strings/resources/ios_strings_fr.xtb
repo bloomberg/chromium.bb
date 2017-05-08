@@ -53,7 +53,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="1820259098641718022">Page ajoutée à la liste de lecture</translation>
 <translation id="1876721852596493031">Envoyer les données d'utilisation</translation>
 <translation id="1886928167269928266">Depuis le début</translation>
-<translation id="1894451531427596130">Contrôlez cela dans les <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
 <translation id="1911619930368729126">Importer dans Google Drive</translation>
 <translation id="1941314575388338491">Appuyez deux fois pour copier.</translation>
 <translation id="1952728750904661634">Se connecter avec un compte géré</translation>
@@ -97,6 +96,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Réinit. param. Traduction</translation>
 <translation id="285960592395650245">Relancer téléchargement</translation>
+<translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Masqué, Mot de passe</translation>
 <translation id="2898963176829412617">Nouveau dossier…</translation>
 <translation id="2903493209154104877">Adresses</translation>
@@ -109,7 +109,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3024255823539804759">Dernières 24 heures</translation>
 <translation id="3037605927509011580">Aie aie aie</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> n'est pas disponible. Pour accéder à votre historique de navigation, sélectionnez "<ph name="SHOW_HISTORY" />" dans le menu "Outils".</translation>
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3151924044251363314">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Tout marquer…</translation>

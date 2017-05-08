@@ -54,7 +54,6 @@
 <translation id="1820259098641718022">به فهرست خواندن اضافه شد</translation>
 <translation id="1876721852596493031">ارسال داده استفاده</translation>
 <translation id="1886928167269928266">از ابتدا</translation>
-<translation id="1894451531427596130">کنترل نحوه عملکرد آن در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">‏بارگذاری در Google Drive</translation>
 <translation id="1941314575388338491">برای کپی کردن دو ضربه سریع بزنید.</translation>
 <translation id="1952728750904661634">ورود به سیستم با حساب مدیریت‌شده</translation>
@@ -98,6 +97,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />، <ph name="STATE" />، <ph name="URL" /></translation>
 <translation id="2843803966603263712">‏بازنشانی تنظیم Translate</translation>
 <translation id="285960592395650245">تلاش مجدد برای بارگیری</translation>
+<translation id="2870560284913253234">سایت</translation>
 <translation id="2871695793448672541">گذرواژه پنهان</translation>
 <translation id="2898963176829412617">پوشه جدید…</translation>
 <translation id="2903493209154104877">آدرس‌ها</translation>
@@ -110,7 +110,6 @@
 <translation id="2989805286512600854">باز کردن در برگهٔ جدید</translation>
 <translation id="3024255823539804759">روز گذشته</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> در‌دسترس نیست. برای دسترسی به سابقه مرورتان، «<ph name="SHOW_HISTORY" />» را از منوی ابزار‌ها انتخاب کنید.</translation>
 <translation id="3112556859945124369">علامت‌گذاری...</translation>
 <translation id="3151924044251363314">‏فقط فردی که عبارت عبور شما را دارد می‌تواند اطلاعات رمزگذاری‌شده شما را بخواند. این عبارت عبور به Google ارسال یا در سرورهای آن ذخیره نمی‌شود. اگر عبارت عبورتان را فراموش کنید، باید همگام‌سازی را بازنشانی کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">علامت‌گذاری همه...</translation>

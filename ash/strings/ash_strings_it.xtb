@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta a sinistra)</translation>
 <translation id="1346748346194534595">Destra</translation>
-<translation id="137180024469554212">Disattiva blocco rotazione</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1467432559032391204">Sinistra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
+<translation id="1856813161013948396">Salta la schermata di blocco toccando semplicemente il sensore di impronte digitali. Fai clic per configurare.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La scorciatoia per aprire Task Manager è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Verticale</translation>
 <translation id="207439088875642105">Si tratta di un account di minori gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Interrompi la trasmissione di <ph name="TAB_NAME" /> su <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
@@ -81,7 +82,6 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3126069444801937830">Riavvia per aggiornare</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="315116470104423982">Dati mobili</translation>
-<translation id="3157169093162779309">Attiva blocco rotazione</translation>
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="3335772982573114336">Nuova nota</translation>
@@ -204,6 +204,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="7034339000180558234">Trasmissione di <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="7052914147756339792">Imposta sfondo...</translation>
 <translation id="7066646422045619941">Questa rete è stata disattivata dall'amministratore.</translation>
+<translation id="7067196344162293536">Ruota in modo automatico</translation>
 <translation id="7097613348211027502">ChromeVox (lettura vocale) attivo.
 Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
@@ -271,4 +272,5 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="923686485342484400">Premi due volte Control Maiusc Q per uscire.</translation>
 <translation id="939252827960237676">Salvataggio dello screenshot non riuscito</translation>
 <translation id="945522503751344254">Invia feedback</translation>
+<translation id="98515147261107953">Orizzontale</translation>
 </translationbundle>

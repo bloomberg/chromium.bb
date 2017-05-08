@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">Добавихте към списъка за четене</translation>
 <translation id="1876721852596493031">Send Usage Data</translation>
 <translation id="1886928167269928266">Самото начало</translation>
-<translation id="1894451531427596130">Контролирайте това поведение от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Качване в Google Диск</translation>
 <translation id="1941314575388338491">Докоснете двукратно, за да копирате.</translation>
 <translation id="1952728750904661634">Влизане с управляван профил</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Настр. за Преводач: Нулир.</translation>
 <translation id="285960592395650245">Нов опит за изтегляне</translation>
+<translation id="2870560284913253234">Сайт</translation>
 <translation id="2871695793448672541">Скрита парола</translation>
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2903493209154104877">Адреси</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">Отваряне в нов раздел</translation>
 <translation id="3024255823539804759">Последния ден</translation>
 <translation id="3037605927509011580">Ужас!</translation>
-<translation id="3050311348724540835">Няма достъп до <ph name="HISTORY_URL" />. За да отворите историята си на сърфиране, изберете „<ph name="SHOW_HISTORY" />“ от менюто с инструменти.</translation>
 <translation id="3112556859945124369">Означаване…</translation>
 <translation id="3151924044251363314">Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи да нулирате синхронизирането. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Означаване на всички…</translation>

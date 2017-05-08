@@ -53,7 +53,6 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1876721852596493031">Enviar Dados de Uso</translation>
 <translation id="1886928167269928266">Desde sempre</translation>
-<translation id="1894451531427596130">Controle esta funcionalidade nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Carregar p/ Google Drive</translation>
 <translation id="1941314575388338491">Toque duas vezes para copiar.</translation>
 <translation id="1952728750904661634">Iniciar sessão com uma conta gerida</translation>
@@ -97,6 +96,7 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Repor def. de tradutor</translation>
 <translation id="285960592395650245">Repetir transferência</translation>
+<translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Palavra-passe oculta</translation>
 <translation id="2898963176829412617">Nova pasta…</translation>
 <translation id="2903493209154104877">Endereços</translation>
@@ -109,7 +109,6 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="2989805286512600854">Abrir num Novo Separador</translation>
 <translation id="3024255823539804759">Dia anterior</translation>
 <translation id="3037605927509011580">Ah, bolas!!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> não está disponível. Para aceder ao histórico de navegação, selecione "<ph name="SHOW_HISTORY" />" no menu de ferramentas.</translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3151924044251363314">Apenas alguém que conheça a sua frase de acesso pode ler os seus dados encriptados. A frase de acesso não é enviada para a Google nem armazenada pela mesma. Se se esquecer da frase de acesso ou pretender alterar esta definição, tem de repor a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marcar tudo…</translation>
@@ -365,7 +364,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433678324664858900">Mostrar Sugestões</translation>
 <translation id="8458397775385147834">1 item eliminado</translation>
-<translation id="8487700953926739672">Disponível off-line</translation>
+<translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8517375800490286174">Licenças de Código Aberto</translation>
 <translation id="8524799873541103884">Separadores <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>

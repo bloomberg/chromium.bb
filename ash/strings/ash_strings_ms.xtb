@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Peranti USB-C (port kiri)</translation>
 <translation id="1346748346194534595">Kanan</translation>
-<translation id="137180024469554212">Lumpuhkan kunci putaran</translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi dimatikan.</translation>
+<translation id="1856813161013948396">Langkau skrin kunci dengan mengetik penderia cap jari. Klik untuk mengkonfigurasi.</translation>
 <translation id="1864454756846565995">Peranti USB-C (port belakang)</translation>
 <translation id="1882897271359938046">Mencerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengurus tugas telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Peranti ini diuruskan oleh <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Potret</translation>
 <translation id="207439088875642105">Ini ialah akaun kanak-kanak yang diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Berhenti menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
@@ -80,7 +81,6 @@
 <translation id="3126069444801937830">Mulakan semula untuk mengemas kini</translation>
 <translation id="3147142846278915599">Pelancar (menyegerakkan apl...)</translation>
 <translation id="315116470104423982">Data mudah alih</translation>
-<translation id="3157169093162779309">Dayakan kunci putaran</translation>
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
 <translation id="3294437725009624529">Tetamu</translation>
 <translation id="3335772982573114336">Nota baharu</translation>
@@ -203,6 +203,7 @@
 <translation id="7034339000180558234">Menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Tetapkan kertas dinding...</translation>
 <translation id="7066646422045619941">Rangkaian ini dilumpuhkan oleh pentadbir anda.</translation>
+<translation id="7067196344162293536">Auto putar</translation>
 <translation id="7097613348211027502">ChromeVox (maklum balas pertuturan) didayakan.
 Tekan Ctrl+Alt+Z untuk melumpuhkan.</translation>
 <translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
@@ -270,4 +271,5 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="923686485342484400">Tekan Tekan Shift Q dua kali untuk keluar.</translation>
 <translation id="939252827960237676">Gagal menyimpan tangkapan skrin</translation>
 <translation id="945522503751344254">Hantar maklum balas</translation>
+<translation id="98515147261107953">Lanskap</translation>
 </translationbundle>

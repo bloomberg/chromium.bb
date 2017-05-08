@@ -169,8 +169,8 @@
 <translation id="2800204403141299078">هیچ عنصر متفاوت دیگری نیست.</translation>
 <translation id="2800780099804980316">عنوان سطح ۱ قبلی وجود ندارد.</translation>
 <translation id="280499067616661124">‏«پیدا کردن در صفحه» ChromeVox</translation>
-<translation id="2808001342598757276">روشن کردن صفحه‌نمایش</translation>
-<translation id="2811019999044652585">‏برای رفتن به قسمت‌های دیگر صفحه‌نمایش، مثل نوارهای ابزار یا سینی سیستم، روی Control+Forward فشار دهید. در Chromebook، کلید Forward دقیقاً‌ در بالای کلید عدد ۲ قرار دارد.</translation>
+<translation id="2808001342598757276">روشن کردن صفحه</translation>
+<translation id="2811019999044652585">‏برای رفتن به قسمت‌های دیگر صفحه، مثل نوارهای ابزار یا سینی سیستم، روی Control+Forward فشار دهید. در Chromebook، کلید Forward دقیقاً‌ در بالای کلید عدد ۲ قرار دارد.</translation>
 <translation id="2811204574343810641">ردیف</translation>
 <translation id="2816654101880605877">اسلایدر بعدی موجود نیست.</translation>
 <translation id="2841013758207633010">زمان</translation>
@@ -520,7 +520,7 @@
 <translation id="5623842676595125836">گزارش</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">جدول قبلی موجود نیست.</translation>
-<translation id="5653397561111110475">‏استفاده از قابلیت‌های دسترس‌پذیری صفحه‌نمایش لمسی Chromebook</translation>
+<translation id="5653397561111110475">‏استفاده از قابلیت‌های دسترس‌پذیری صفحه لمسی Chromebook</translation>
 <translation id="5655682562155942719">پرش از فرمان‌ها</translation>
 <translation id="56637627897541303">قسمت نوشتاری</translation>
 <translation id="5678161956734658133">mled</translation>
@@ -573,7 +573,7 @@
 <translation id="6006050241733874051">فرم</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{اریب وارو}one{# اریب وارو}other{# اریب وارو}}</translation>
 <translation id="6037602951055904232">حرکت به جلو</translation>
-<translation id="6044160928851315051">تاریک کردن صفحه‌نمایش</translation>
+<translation id="6044160928851315051">تاریک کردن صفحه</translation>
 <translation id="6082768461603900813">پیمایش ساده</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">پایان سلول.</translation>

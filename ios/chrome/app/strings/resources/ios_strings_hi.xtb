@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">पठन सूची में जोड़ा गया</translation>
 <translation id="1876721852596493031">उपयोग डेटा भेजें</translation>
 <translation id="1886928167269928266">शुरुआत से</translation>
-<translation id="1894451531427596130">इसके <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में काम करने का तरीका नियंत्रित करें</translation>
 <translation id="1911619930368729126">Google डिस्क पर अपलोड करें</translation>
 <translation id="1941314575388338491">कॉपी करने के लिए डबल टैप करें.</translation>
 <translation id="1952728750904661634">प्रबंधित खाते से प्रवेश करें</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">अनुवाद सेटिंग रीसेट करें</translation>
 <translation id="285960592395650245">पुन: डाउनलोड करके देखें</translation>
+<translation id="2870560284913253234">साइट</translation>
 <translation id="2871695793448672541">छिपा हुआ पासवर्ड</translation>
 <translation id="2898963176829412617">नया फ़ोल्डर…</translation>
 <translation id="2903493209154104877">पते</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">नए टैब में खोलें</translation>
 <translation id="3024255823539804759">पिछला दिन</translation>
 <translation id="3037605927509011580">हे भगवान!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> उपलब्ध नहीं है. अपना ब्राउज़िंग इतिहास एक्सेस करने के लिए, टूल मेनू में से "<ph name="SHOW_HISTORY" />" चुनें</translation>
 <translation id="3112556859945124369">चिह्नित करें...</translation>
 <translation id="3151924044251363314">आपके एन्क्रिप्ट किए गए डेटा को केवल वही व्यक्ति पढ़ सकता है जिसके पास आपका पासफ़्रेज़ है. Google द्वारा पासफ़्रेज़ भेजा या संग्रहित नहीं किया जाता. यदि आप अपना पासफ़्रेज़ भूल जाते हैं या यह सेटिंग बदलना चाहते हैं, तो आपको समन्वयन को रीसेट करना होगा. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">सभी को चिह्नित करें...</translation>

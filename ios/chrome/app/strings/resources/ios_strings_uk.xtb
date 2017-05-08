@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">Додано в список читання</translation>
 <translation id="1876721852596493031">Надсилати статистику</translation>
 <translation id="1886928167269928266">Весь період</translation>
-<translation id="1894451531427596130">Керуйте цими параметрами в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Завантажити на Google Диск</translation>
 <translation id="1941314575388338491">Двічі торкніться, щоб скопіювати.</translation>
 <translation id="1952728750904661634">Увійти в керований обліковий запис</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Скинути налаштування</translation>
 <translation id="285960592395650245">Повторити завантаження</translation>
+<translation id="2870560284913253234">Сайт</translation>
 <translation id="2871695793448672541">Прихований пароль</translation>
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2903493209154104877">Адреси</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">Відкрити в новій вкладці</translation>
 <translation id="3024255823539804759">Останній день</translation>
 <translation id="3037605927509011580">От халепа!</translation>
-<translation id="3050311348724540835">URL-адреса <ph name="HISTORY_URL" /> недоступна. Щоб відкрити історію перегляду, натисніть "<ph name="SHOW_HISTORY" />" в меню "Інструменти".</translation>
 <translation id="3112556859945124369">Позначити…</translation>
 <translation id="3151924044251363314">Ваші зашифровані дані можуть переглядати лише користувачі, які знають вашу парольну фразу. Парольна фраза не надсилається й не зберігається в Google. Якщо ви забули її або хочете змінити це налаштування, скиньте синхронізацію. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Позначити всі…</translation>

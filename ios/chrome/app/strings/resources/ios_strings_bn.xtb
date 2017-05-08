@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">পড়ার তালিকায় যোগ করা হয়েছে</translation>
 <translation id="1876721852596493031">ব্যবহারের ডেটা পাঠান</translation>
 <translation id="1886928167269928266">শুরুর সময়</translation>
-<translation id="1894451531427596130">এটি কিভাবে কাজ করে তা <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> থেকে নিয়ন্ত্রণ করুন</translation>
 <translation id="1911619930368729126">Google ড্রাইভে আপলোড করুন</translation>
 <translation id="1941314575388338491">কপি করতে দুবার আলতো চাপুন।</translation>
 <translation id="1952728750904661634">পরিচালিত অ্যাকাউন্ট দিয়ে প্রবেশ করুন</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">অনুবাদ সেটিংস আবার সেট করুন</translation>
 <translation id="285960592395650245">আবার ডাউনলোডের চেষ্টা করুন</translation>
+<translation id="2870560284913253234">সাইট</translation>
 <translation id="2871695793448672541">লুকানো, পাসওয়ার্ড</translation>
 <translation id="2898963176829412617">নতুন ফোল্ডার...</translation>
 <translation id="2903493209154104877">ঠিকানা</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">নতুন ট্যাবে খুলুন</translation>
 <translation id="3024255823539804759">গত দিন</translation>
 <translation id="3037605927509011580">ইস!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> উপলব্ধ নয়। আপনার ব্রাউজিং ইতিহাস অ্যাক্সেস করতে, সরঞ্জামগুলি মেনু থেকে "<ph name="SHOW_HISTORY" />" নির্বাচন করুন।</translation>
 <translation id="3112556859945124369">চিহ্নিত করুন…</translation>
 <translation id="3151924044251363314">শুধুমাত্র আপনার পাসফ্রেজ সহ কোনো ব্যক্তি আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন৷ পাসফ্রেজটি Google এ পাঠানো হয় না বা এর দ্বারা সংরক্ষণ করা হয় না৷ যদি আপনি আপনার পাসফ্রেজ ভুলে যান, তাহলে আপনাকে সিঙ্ক আবার সেট করতে হবে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">সবগুলি চিহ্নিত করুন…</translation>

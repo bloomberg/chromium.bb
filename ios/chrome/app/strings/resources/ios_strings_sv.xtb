@@ -53,7 +53,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="1820259098641718022">Har lagts till i läslistan</translation>
 <translation id="1876721852596493031">Skicka statistik</translation>
 <translation id="1886928167269928266">Tidens början</translation>
-<translation id="1894451531427596130">Styr hur det fungerar i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
 <translation id="1911619930368729126">Ladda upp till Google Drive</translation>
 <translation id="1941314575388338491">Tryck snabbt två gånger om du vill kopiera informationen.</translation>
 <translation id="1952728750904661634">Logga in med ett hanterat konto</translation>
@@ -97,6 +96,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Återställ översättningsinställningar</translation>
 <translation id="285960592395650245">Försök ladda ned</translation>
+<translation id="2870560284913253234">Webbplats</translation>
 <translation id="2871695793448672541">Dolt, lösenord</translation>
 <translation id="2898963176829412617">Ny mapp ...</translation>
 <translation id="2903493209154104877">Adresser</translation>
@@ -109,7 +109,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2989805286512600854">Öppna i ny flik</translation>
 <translation id="3024255823539804759">Senaste dagen</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> är inte tillgänglig. Välj <ph name="SHOW_HISTORY" /> från verktygsmenyn för att öppna webbhistoriken.</translation>
 <translation id="3112556859945124369">Markera …</translation>
 <translation id="3151924044251363314">Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenfrasen skickas inte till och sparas inte av Google. Om du glömmer lösenfrasen måste du återställa synkroniseringen. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Markera alla …</translation>

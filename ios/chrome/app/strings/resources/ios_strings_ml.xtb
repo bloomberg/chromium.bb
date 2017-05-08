@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">വായനാ ലിസ്റ്റിൽ ചേർത്തു</translation>
 <translation id="1876721852596493031">ഉപയോഗ ഡാറ്റ അയയ്ക്കൂ</translation>
 <translation id="1886928167269928266">തുടക്കം മുതൽ</translation>
-<translation id="1894451531427596130">ഇത് പ്രവർത്തിക്കുന്ന രീതി <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> നിയന്ത്രിക്കുക</translation>
 <translation id="1911619930368729126">Google ഡ്രൈവിലേക്ക് അപ്‌ലോഡുചെയ്യുക</translation>
 <translation id="1941314575388338491">പകർത്താൻ രണ്ടുതവണ ടാപ്പുചെയ്യുക.</translation>
 <translation id="1952728750904661634">മാനേജുചെയ്‌ത അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">വിവർത്തന ക്രമീകരണങ്ങൾ പുനഃസജ്ജമാക്കുക</translation>
 <translation id="285960592395650245">വീണ്ടും ഡൗൺലോഡുചെയ്യാൻ ശ്രമിക്കുക</translation>
+<translation id="2870560284913253234">സൈറ്റ്</translation>
 <translation id="2871695793448672541">മറച്ചിരിക്കുന്ന പാസ്‌വേഡ്</translation>
 <translation id="2898963176829412617">പുതിയ ഫോൾഡർ…</translation>
 <translation id="2903493209154104877">വിലാസങ്ങള്‍‌</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">പുതിയ ടാബില്‍ തുറക്കുക</translation>
 <translation id="3024255823539804759">കഴിഞ്ഞ ദിവസത്തെ</translation>
 <translation id="3037605927509011580">കഷ്ടം!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> ലഭ്യമല്ല. നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ആക്‌സസ് ചെയ്യാൻ, ടൂളുകൾ മെനുവിൽ നിന്ന് "<ph name="SHOW_HISTORY" />" തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="3112556859945124369">അടയാളപ്പെടുത്തുക…</translation>
 <translation id="3151924044251363314">നിങ്ങളുടെ പാസ്‌ഫ്രെയ്‌സുള്ള ഒരാൾക്ക് മാത്രമേ എൻക്രിപ്‌റ്റുചെയ്‌ത ഡാറ്റ വായിക്കാനാവൂ. Google-ലേക്ക് പാസ്‌ഫ്രെയ്‌സ് അയയ്‌ക്കുകയോ Google അത് സൂക്ഷിക്കുകയോ ഇല്ല. പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോവുകയോ ഈ ക്രമീകരണം മാറ്റണമെന്നുണ്ടെങ്കിലോ നിങ്ങൾ സമന്വയം റീസെറ്റുചെയ്യേണ്ടതുണ്ട്. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">എല്ലാം അടയാളപ്പെടുത്തുക…</translation>

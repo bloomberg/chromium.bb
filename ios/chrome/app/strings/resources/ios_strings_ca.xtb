@@ -53,7 +53,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="1820259098641718022">S'ha afegit a la llista de lectura</translation>
 <translation id="1876721852596493031">Envia les dades d'ús</translation>
 <translation id="1886928167269928266">Des de l'inici</translation>
-<translation id="1894451531427596130">Controleu-ne el funcionament a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Penja a Google Drive</translation>
 <translation id="1941314575388338491">Feu doble toc per copiar-ho.</translation>
 <translation id="1952728750904661634">Inicieu la sessió amb un compte gestionat</translation>
@@ -97,6 +96,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Restableix config. traducció</translation>
 <translation id="285960592395650245">Torna a baixar</translation>
+<translation id="2870560284913253234">Lloc</translation>
 <translation id="2871695793448672541">Contrasenya amagada</translation>
 <translation id="2898963176829412617">Carpeta nova…</translation>
 <translation id="2903493209154104877">Adreces</translation>
@@ -109,7 +109,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2989805286512600854">Obre en una pestanya nova</translation>
 <translation id="3024255823539804759">Ahir</translation>
 <translation id="3037605927509011580">Oh, no!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> no està disponible. Per accedir al vostre historial de navegació, seleccioneu <ph name="SHOW_HISTORY" /> al menú d'eines.</translation>
 <translation id="3112556859945124369">Marca com a…</translation>
 <translation id="3151924044251363314">Només els usuaris que sàpiguen la vostra frase de contrasenya poden llegir les dades que encripteu. La frase de contrasenya no s'envia a Google, i Google tampoc no l'emmagatzema. Si l'oblideu o voleu canviar aquesta configuració, heu de restablir la sincronització. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marca-ho tot com a…</translation>

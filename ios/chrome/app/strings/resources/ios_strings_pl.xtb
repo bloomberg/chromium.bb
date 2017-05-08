@@ -53,7 +53,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="1820259098641718022">Dodano do listy Do przeczytania</translation>
 <translation id="1876721852596493031">Wysyłaj dane na temat użytkowania</translation>
 <translation id="1886928167269928266">Od początku</translation>
-<translation id="1894451531427596130">Określ działanie w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Prześlij na Dysk Google</translation>
 <translation id="1941314575388338491">Kliknij dwukrotnie, by skopiować.</translation>
 <translation id="1952728750904661634">Zaloguj się na konto zarządzane</translation>
@@ -97,6 +96,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Zresetuj ustawienia tłumaczenia</translation>
 <translation id="285960592395650245">Ponów pobieranie</translation>
+<translation id="2870560284913253234">Witryna</translation>
 <translation id="2871695793448672541">Ukryte, hasło</translation>
 <translation id="2898963176829412617">Nowy folder…</translation>
 <translation id="2903493209154104877">Adresy</translation>
@@ -109,7 +109,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2989805286512600854">Otwórz w nowej karcie</translation>
 <translation id="3024255823539804759">Ostatni dzień</translation>
 <translation id="3037605927509011580">Kurza twarz!</translation>
-<translation id="3050311348724540835">Adres <ph name="HISTORY_URL" /> jest niedostępny. Aby uzyskać dostęp do historii przeglądania, wybierz „<ph name="SHOW_HISTORY" />” z menu narzędzi.</translation>
 <translation id="3112556859945124369">Oznacz…</translation>
 <translation id="3151924044251363314">Twoje zaszyfrowane dane może odczytać tylko ktoś znający hasło. Google nie otrzyma Twojego hasła ani nie będzie go przechowywać. Jeśli je zapomnisz lub zechcesz zmienić to ustawienie, musisz zresetować synchronizację. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Oznacz wszystko…</translation>

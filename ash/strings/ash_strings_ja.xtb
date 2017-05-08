@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />（<ph name="ANNOTATION" />）</translation>
 <translation id="1293264513303784526">USB-C デバイス（左側面のポート）</translation>
 <translation id="1346748346194534595">右</translation>
-<translation id="137180024469554212">回転ロックを無効にする</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1467432559032391204">左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />（HDMI / DP）</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
+<translation id="1856813161013948396">指紋認証センサーをタップして画面のロックを解除できます。設定するにはクリックしてください。</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
 <translation id="1919743966458266018">タスク マネージャを起動するショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="2049639323467105390">この端末は <ph name="DOMAIN" /> によって管理されています。</translation>
+<translation id="2050339315714019657">縦</translation>
 <translation id="207439088875642105">これは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> によって管理されている子供向けのアカウントです</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> への <ph name="TAB_NAME" /> のキャストを停止する</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
@@ -81,7 +82,6 @@
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="3147142846278915599">ランチャー（アプリを同期中...）</translation>
 <translation id="315116470104423982">モバイル データ</translation>
-<translation id="3157169093162779309">回転ロックを有効にする</translation>
 <translation id="3236488194889173876">利用できるモバイル ネットワークがありません</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="3335772982573114336">新しいメモ</translation>
@@ -204,6 +204,7 @@
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
 <translation id="7052914147756339792">壁紙を設定...</translation>
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
+<translation id="7067196344162293536">自動回転</translation>
 <translation id="7097613348211027502">ChromeVox（音声フィードバック）が有効です。
 無効にするには Ctrl+Alt+Z を押してください。</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
@@ -271,4 +272,5 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>
 <translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
+<translation id="98515147261107953">横</translation>
 </translationbundle>

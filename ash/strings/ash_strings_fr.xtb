@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Appareil USB de type C (port situé sur la gauche de l'appareil)</translation>
 <translation id="1346748346194534595">Vers la droite</translation>
-<translation id="137180024469554212">Désactiver le verrouillage de la rotation</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
+<translation id="1856813161013948396">Désactivez l'écran de verrouillage en appuyant sur le lecteur d'empreinte digitale. Cliquez pour configurer.</translation>
 <translation id="1864454756846565995">Appareil USB de type C (port situé sur l'arrière de l'appareil)</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Le raccourci permettant d'ouvrir le gestionnaire de tâches a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Cet appareil est géré par <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Portrait</translation>
 <translation id="207439088875642105">Il s'agit d'un compte pour enfants géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="2122028596993374965">Arrêter de diffuser <ph name="TAB_NAME" /> sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
@@ -81,7 +82,6 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3126069444801937830">Redémarrer pour mettre à jour</translation>
 <translation id="3147142846278915599">Lanceur d'applications (synchronisation des applications en cours…)</translation>
 <translation id="315116470104423982">Données mobiles</translation>
-<translation id="3157169093162779309">Activer le verrouillage de la rotation</translation>
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
 <translation id="3294437725009624529">Invité</translation>
 <translation id="3335772982573114336">Nouvelle note</translation>
@@ -204,6 +204,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="7034339000180558234">Diffusion de l'onglet "<ph name="TAB_NAME" />" sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="7052914147756339792">Définir un fond d'écran…</translation>
 <translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
+<translation id="7067196344162293536">Rotation automatique</translation>
 <translation id="7097613348211027502">ChromeVox (commentaires audio) est activé.
 Appuyez sur les touches Ctrl + Alt + Z pour le désactiver.</translation>
 <translation id="7098389117866926363">Appareil USB de type C (port situé sur l'arrière de l'appareil, à gauche)</translation>
@@ -271,4 +272,5 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="939252827960237676">Échec d'enregistrement de la capture d'écran.</translation>
 <translation id="945522503751344254">Envoyer le commentaire</translation>
+<translation id="98515147261107953">Paysage</translation>
 </translationbundle>

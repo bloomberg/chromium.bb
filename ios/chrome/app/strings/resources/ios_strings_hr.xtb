@@ -53,7 +53,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="1820259098641718022">Dodano na popis za čitanje</translation>
 <translation id="1876721852596493031">Slanje pod. o upot.</translation>
 <translation id="1886928167269928266">Od početka</translation>
-<translation id="1894451531427596130">Načinom na koji to funkcionira možete upravljati u <ph name="BEGIN_LINK" />postavkama<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Prenesi na Google disk</translation>
 <translation id="1941314575388338491">Dodirnite dvaput da biste kopirali.</translation>
 <translation id="1952728750904661634">Prijavite se upravljanim računom</translation>
@@ -97,6 +96,7 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Vrati Prevoditelj na zadano</translation>
 <translation id="285960592395650245">Pokušaj preuzeti ponovo</translation>
+<translation id="2870560284913253234">Web lokacija</translation>
 <translation id="2871695793448672541">Sakriveno, zaporka</translation>
 <translation id="2898963176829412617">Nova mapa…</translation>
 <translation id="2903493209154104877">Adrese</translation>
@@ -109,7 +109,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2989805286512600854">Otvori u novoj kartici</translation>
 <translation id="3024255823539804759">Od proteklog dana</translation>
 <translation id="3037605927509011580">O, ne!</translation>
-<translation id="3050311348724540835">Veza <ph name="HISTORY_URL" /> nije dostupna. Da biste pristupili povijesti pregledavanja, odaberite "<ph name="SHOW_HISTORY" />" u izborniku s alatima.</translation>
 <translation id="3112556859945124369">Označi...</translation>
 <translation id="3151924044251363314">Samo osoba koja ima vašu šifru može čitati vaše kriptirane podatke. Šifra se ne šalje Googleu i ne pohranjuje na njemu. Ako je zaboravite ili želite promijeniti tu postavku, morat ćete poništiti sinkronizaciju. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Označi sve...</translation>

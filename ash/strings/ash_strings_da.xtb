@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">USB-C-enhed (venstre port)</translation>
 <translation id="1346748346194534595">Højre</translation>
-<translation id="137180024469554212">Deaktiver låsning af rotation</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
+<translation id="1856813161013948396">Spring låseskærmen over med et tryk på fingeraftrykslæseren. Klik for at konfigurere.</translation>
 <translation id="1864454756846565995">USB-C-enhed (port bagpå)</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Genvejen til at åbne Jobliste er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Denne enhed administreres af <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Stående</translation>
 <translation id="207439088875642105">Dette er en børnekonto, som administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Stop med at caste <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
@@ -81,7 +82,6 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
 <translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
 <translation id="315116470104423982">Mobildata</translation>
-<translation id="3157169093162779309">Aktivér låsning af rotation</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="3335772982573114336">Ny note</translation>
@@ -204,6 +204,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="7034339000180558234">Caster <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Vælg baggrund...</translation>
 <translation id="7066646422045619941">Din administrator har deaktiveret dette netværk.</translation>
+<translation id="7067196344162293536">Automatisk rotering</translation>
 <translation id="7097613348211027502">ChromeVox (talefeedback) er aktiveret.
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
@@ -271,4 +272,5 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="923686485342484400">Tryk på Control+Shift+Q to gange for at logge ud.</translation>
 <translation id="939252827960237676">Screenshottet kunne ikke gemmes</translation>
 <translation id="945522503751344254">Send feedback</translation>
+<translation id="98515147261107953">Liggende</translation>
 </translationbundle>

@@ -24,7 +24,7 @@
 <translation id="4115165561519362854">El administrador de este equipo requiere que <ph name="EXTENSION_NAME" /> tenga como mínimo la versión <ph name="EXTENSION_VERSION" />. No se puede habilitar hasta que se haya actualizado a esa versión (o superior).</translation>
 <translation id="4233778200880751280">No se ha podido cargar la página de información (<ph name="ABOUT_PAGE" />).</translation>
 <translation id="4811956658694082538">No se ha podido instalar el paquete porque se ha producido un fallo en el proceso de ejecución de una utilidad. Reinicia Chrome y vuelve a intentarlo.</translation>
-<translation id="5026754133087629784">Vista web: <ph name="WEBVIEW_TAG_NAME" /></translation>
+<translation id="5026754133087629784">WebView: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5436430103864390185">No se admiten las ventanas con formas.</translation>
 <translation id="5456409301717116725">Esta extensión incluye el archivo de clave "<ph name="KEY_PATH" />". Probablemente no quieras incluir este archivo.</translation>

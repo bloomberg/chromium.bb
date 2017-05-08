@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">リーディング リストに追加しました</translation>
 <translation id="1876721852596493031">使用状況データ送信</translation>
 <translation id="1886928167269928266">始めから</translation>
-<translation id="1894451531427596130">[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] でこの動作を管理します</translation>
 <translation id="1911619930368729126">ドライブにアップロード</translation>
 <translation id="1941314575388338491">ダブルタップしてコピー。</translation>
 <translation id="1952728750904661634">管理対象アカウントでログインする</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />、<ph name="STATE" />、<ph name="URL" /></translation>
 <translation id="2843803966603263712">翻訳設定をリセット</translation>
 <translation id="285960592395650245">ダウンロードを再試行</translation>
+<translation id="2870560284913253234">サイト</translation>
 <translation id="2871695793448672541">非表示のパスワード</translation>
 <translation id="2898963176829412617">新しいフォルダ...</translation>
 <translation id="2903493209154104877">住所</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">新しいタブで開く</translation>
 <translation id="3024255823539804759">過去 1 日</translation>
 <translation id="3037605927509011580">エラー</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> は利用できません。閲覧履歴に移動するには、ツールメニューの [<ph name="SHOW_HISTORY" />] を選択してください。</translation>
 <translation id="3112556859945124369">マーク...</translation>
 <translation id="3151924044251363314">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、同期をリセットする必要があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">すべてマーク...</translation>

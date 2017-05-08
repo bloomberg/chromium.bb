@@ -7,7 +7,6 @@
 <translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>
 <translation id="1080790410959514870">您即將登出由 <ph name="DOMAIN_NAME" /> 所管理的帳戶。儲存在這個裝置上的 Chrome 資料將因此遭到刪除，但這些資料仍會保留在您的 Google 帳戶中。</translation>
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
-<translation id="1117638547758781293">子資源篩選器</translation>
 <translation id="1121094540300013208">使用資料和當機報告</translation>
 <translation id="1137305377394488060">過去 1 小時</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
@@ -97,7 +96,7 @@
 <translation id="1943432128510653496">儲存密碼</translation>
 <translation id="1944384637046898011">使用截至 <ph name="TIME" />前設定的 Google 密碼為所有資料加密</translation>
 <translation id="1946005195648379376">控制 Google 如何使用您的瀏覽紀錄，為您提供個人化的搜尋服務和其他各項 Google 服務。</translation>
-<translation id="1966710179511230534">請更新您的登入詳細資料。</translation>
+<translation id="1966710179511230534">請更新你的登入詳細資料。</translation>
 <translation id="1974060860693918893">進階</translation>
 <translation id="1984937141057606926">允許 (第三方網站除外)</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> 要求配對</translation>
@@ -232,8 +231,8 @@
 <translation id="3522247891732774234">有可用的更新。更多選項</translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3542235761944717775">可用空間：<ph name="KILOBYTES" /> KB</translation>
-<translation id="3549644494707163724">使用您的通關密語對所有已同步處理的資料進行加密</translation>
-<translation id="3549657413697417275">搜尋您的紀錄</translation>
+<translation id="3549644494707163724">使用你的通關密語對所有已同步處理的資料進行加密</translation>
+<translation id="3549657413697417275">搜尋你的紀錄</translation>
 <translation id="3557336313807607643">新增為聯絡人</translation>
 <translation id="3583454905526475291">無法啟動應用程式</translation>
 <translation id="3587482841069643663">全部</translation>
@@ -306,6 +305,7 @@
 <translation id="4269820728363426813">複製連結網址</translation>
 <translation id="4275663329226226506">媒體</translation>
 <translation id="4278390842282768270">允許</translation>
+<translation id="42981349822642051">展開</translation>
 <translation id="4300272766492248925">開啟應用程式</translation>
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
@@ -331,7 +331,7 @@
 <translation id="4587589328781138893">網站</translation>
 <translation id="4605958867780575332">已移除項目：<ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">開啟 <ph name="WEBAPK_NAME" /></translation>
-<translation id="4645575059429386691">您的家長已停用這項功能</translation>
+<translation id="4645575059429386691">你的家長已停用這項功能</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
@@ -383,7 +383,7 @@
 <translation id="515227803646670480">清除儲存的資料</translation>
 <translation id="5152843274749979095">尚未安裝系統支援的應用程式</translation>
 <translation id="5161254044473106830">請輸入標題</translation>
-<translation id="5164482624172255778">下次造訪這個網站時，需要 Google Chrome 為您翻譯其中的<ph name="LANGUAGE" />網頁嗎？</translation>
+<translation id="5164482624172255778">下次造訪這個網站時，需要 Google Chrome 為你翻譯其中的<ph name="LANGUAGE" />網頁嗎？</translation>
 <translation id="5168917394043976756">開啟導覽匣</translation>
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="5184329579814168207">在 Chrome 中開啟</translation>
@@ -445,7 +445,7 @@
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
 <translation id="5719837394786370183">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁都不會保留在瀏覽器紀錄、Cookie 儲存庫或搜尋紀錄中。不過，系統會將您下載的檔案或建立的書籤全部予以保留。
 
-然而，您並沒有因此隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽行為。</translation>
+不過，這並不代表您完全沒有瀏覽紀錄。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽活動。</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="572392919096807438">記住我的決定</translation>
 <translation id="5726692708398506830">放大網頁上的所有內容</translation>
@@ -725,7 +725,6 @@
 <translation id="857509777403223202">系統即將顯示更多文章供你閱覽，陪你度過美好的夜晚！</translation>
 <translation id="857943718398505171">已允許 (建議)</translation>
 <translation id="8583805026567836021">正在清除帳戶資料</translation>
-<translation id="85969253066007694">你和你的家長可以在<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中管理這項功能的運作方式</translation>
 <translation id="8617240290563765734">開啟這項下載內容中指定的建議網址？</translation>
 <translation id="862875433388403934">其他應用程式必須以新的裝置憑證重新取得授權，才能順利播放已下載的內容 (例如電影、音樂等)。
 
@@ -743,7 +742,6 @@
 <translation id="8748850008226585750">內容已隱藏</translation>
 <translation id="8788968922598763114">重新開啟最近關閉的分頁</translation>
 <translation id="8812260976093120287">在部分網站上，你可以在你的裝置上使用上述支援的付款應用程式付款。</translation>
-<translation id="8812942424849541387">您可以在「<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />」頁面中管理這項功能的運作方式</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="883635517171802338">禁止網站顯示彈出式視窗 (建議)</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -763,7 +761,7 @@
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
 <translation id="8993760627012879038">在無痕模式下開啟新分頁</translation>
 <translation id="8998729206196772491">您即將使用由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶登入，並授權該網域的管理員控管您的 Chrome 資料。您的資料會與這個帳戶建立永久連結。登出 Chrome 後，系統會將您的資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
-<translation id="9019902583201351841">您的家長已停用這項功能</translation>
+<translation id="9019902583201351841">你的家長已停用這項功能</translation>
 <translation id="9038649477754266430">使用預測查詢字串服務，讓系統更快載入網頁</translation>
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9060538597317784206">前往 Play 商店查看「<ph name="APP_NAME" />」應用程式。評分：<ph name="APP_RATING" />。</translation>

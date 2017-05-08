@@ -7,7 +7,6 @@
 <translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" />에서 관리하는 계정에서 로그아웃합니다. 로그아웃하면 이 기기에 저장된 Chrome 데이터는 삭제되지만 Google 계정에는 데이터가 남습니다.</translation>
 <translation id="1111673857033749125">다른 기기에서 저장한 북마크가 여기에 표시됩니다.</translation>
-<translation id="1117638547758781293">하위 리소스 필터</translation>
 <translation id="1121094540300013208">사용 및 비정상 종료 보고서</translation>
 <translation id="1137305377394488060">지난 1시간</translation>
 <translation id="1145536944570833626">기존 데이터 삭제</translation>
@@ -306,6 +305,7 @@
 <translation id="4269820728363426813">링크 주소 복사</translation>
 <translation id="4275663329226226506">미디어</translation>
 <translation id="4278390842282768270">허용됨</translation>
+<translation id="42981349822642051">펼치기</translation>
 <translation id="4300272766492248925">앱 열기</translation>
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
@@ -326,7 +326,7 @@
 <translation id="4535858793016067060">Android 보안 설정에서 '알 수 없는 출처'를 사용 설정하여 '홈 화면에 향상된 기능 추가' 실험실 기능을 사용해 보세요. 사용해 본 후에는 이 설정을 사용 중지하시기 바랍니다.</translation>
 <translation id="4558311620361989323">웹페이지 단축키</translation>
 <translation id="4572422548854449519">관리 계정에 로그인</translation>
-<translation id="4581964774250883625">시크릿 모드로 전환되었습니다.</translation>
+<translation id="4581964774250883625">시크릿 모드로 전환됨</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{#분 전}other{#분 전}}</translation>
 <translation id="4587589328781138893">사이트</translation>
 <translation id="4605958867780575332"><ph name="ITEM_TITLE" /> 삭제됨</translation>
@@ -725,7 +725,6 @@
 <translation id="857509777403223202">더 많은 콘텐츠가 표시될 예정이니 기대해주세요. 즐거운 저녁 시간 보내세요.</translation>
 <translation id="857943718398505171">허용(권장)</translation>
 <translation id="8583805026567836021">계정 데이터 지우기</translation>
-<translation id="85969253066007694">나와 부모님이 <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 작동 방식을 조정할 수 있음</translation>
 <translation id="8617240290563765734">다운로드한 콘텐츠에 지정된 추천 URL을 여시겠습니까?</translation>
 <translation id="862875433388403934">다른 애플리케이션에서 다운로드한 콘텐츠(영화, 음악 등)는 해당 애플리케이션이 새로운 기기 사용자 인증 정보를 기반으로 라이선스를 다시 취득해야 재생할 수 있습니다.
 
@@ -743,7 +742,6 @@
 <translation id="8748850008226585750">숨겨진 콘텐츠</translation>
 <translation id="8788968922598763114">마지막으로 닫은 탭 다시 열기</translation>
 <translation id="8812260976093120287">일부 웹사이트에서는 위의 결제 앱을 사용하여 내 기기에서 결제할 수 있습니다.</translation>
-<translation id="8812942424849541387"><ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 작동 방식을 조정하세요.</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="883635517171802338">사이트에서 팝업을 표시하지 못하도록 차단(권장)</translation>
 <translation id="8847988622838149491">USB</translation>

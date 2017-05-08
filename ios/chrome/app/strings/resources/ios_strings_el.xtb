@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">Προστέθηκε στη λίστα ανάγνωσης</translation>
 <translation id="1876721852596493031">Αποστ. δεδομ. χρήσης</translation>
 <translation id="1886928167269928266">Από την αρχή</translation>
-<translation id="1894451531427596130">Ελέγξτε τον τρόπο λειτουργίας στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Μεταφόρ.στο Google Drive</translation>
 <translation id="1941314575388338491">Πατήστε δύο φορές για αντιγραφή.</translation>
 <translation id="1952728750904661634">Σύνδεση με διαχειριζόμενο λογαριασμό</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Επαν.ρυθ.μετάφ.</translation>
 <translation id="285960592395650245">Επανάληψη λήψης</translation>
+<translation id="2870560284913253234">Ιστότοπος</translation>
 <translation id="2871695793448672541">Κρυφός κωδικός</translation>
 <translation id="2898963176829412617">Νέος φάκελος…</translation>
 <translation id="2903493209154104877">Διευθύνσεις</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">Άνοιγμα σε Νέα Καρτέλα</translation>
 <translation id="3024255823539804759">Τελευταία ημέρα</translation>
 <translation id="3037605927509011580">Όπα! Κάτι πήγε στραβά!</translation>
-<translation id="3050311348724540835">Το <ph name="HISTORY_URL" /> δεν είναι διαθέσιμο. Για να μεταβείτε στο ιστορικό περιήγησής σας, επιλέξτε "<ph name="SHOW_HISTORY" />" από το μενού εργαλείων.</translation>
 <translation id="3112556859945124369">Επισήμανση…</translation>
 <translation id="3151924044251363314">Μόνο κάποιος που γνωρίζει τη φράση πρόσβασής σας μπορεί να διαβάσει τα κρυπτογραφημένα δεδομένα σας. Η φράση πρόσβασης δεν αποστέλλεται ούτε αποθηκεύεται στην Google. Εάν ξεχάσετε τη φράση πρόσβασής σας ή θέλετε να αλλάξετε αυτήν τη ρύθμιση, θα χρειαστεί να επαναφέρετε το συγχρονισμό. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Επισήμανση όλων…</translation>

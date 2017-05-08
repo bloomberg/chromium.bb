@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (puerto izquierdo)</translation>
 <translation id="1346748346194534595">Derecha</translation>
-<translation id="137180024469554212">Inhabilitar bloqueo de rotación</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi desactivada</translation>
+<translation id="1856813161013948396">Para omitir la pantalla bloqueada, presiona el sensor de huellas digitales. Haz clic para configurar esta función.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Se modificó el acceso directo para abrir el administrador de tareas. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> administra esta cuenta.</translation>
+<translation id="2050339315714019657">Vertical</translation>
 <translation id="207439088875642105">Esta es una cuenta para niños administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="2122028596993374965">Detener la transmisión de <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Cargador de baja potencia</translation>
@@ -81,7 +82,6 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="3126069444801937830">Reinicia para actualizar.</translation>
 <translation id="3147142846278915599">Selector (sincronizando aplicaciones…)</translation>
 <translation id="315116470104423982">Datos móviles</translation>
-<translation id="3157169093162779309">Habilitar bloqueo de rotación</translation>
 <translation id="3236488194889173876">No hay redes móviles disponibles</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="3335772982573114336">Nueva nota</translation>
@@ -204,6 +204,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="7034339000180558234">Transmitiendo <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
 <translation id="7066646422045619941">El administrador inhabilitó esta red.</translation>
+<translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7097613348211027502">ChromeVox (comentarios por voz) está habilitado. Presiona Ctrl + Alt + Z para inhabilitarlo.</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (puerto izquierdo en la parte posterior)</translation>
 <translation id="7129360219436193655">Modo de puntero láser</translation>
@@ -270,4 +271,5 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="923686485342484400">Presiona Control Mayús Q dos veces para salir.</translation>
 <translation id="939252827960237676">No se pudo guardar la captura de pantalla.</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
+<translation id="98515147261107953">Horizontal</translation>
 </translationbundle>

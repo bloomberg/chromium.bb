@@ -53,7 +53,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="1820259098641718022">Aggiunta all'elenco di lettura</translation>
 <translation id="1876721852596493031">Invia dati di utilizzo</translation>
 <translation id="1886928167269928266">Tutto</translation>
-<translation id="1894451531427596130">Controlla come funziona nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Carica su Google Drive</translation>
 <translation id="1941314575388338491">Tocca due volte per copiare.</translation>
 <translation id="1952728750904661634">Accedi con l'account gestito</translation>
@@ -97,6 +96,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Reimposta impostazioni traduzione</translation>
 <translation id="285960592395650245">Riprova a scaricare</translation>
+<translation id="2870560284913253234">Sito</translation>
 <translation id="2871695793448672541">Nascosta, password</translation>
 <translation id="2898963176829412617">Nuova cartella…</translation>
 <translation id="2903493209154104877">Indirizzi</translation>
@@ -109,7 +109,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2989805286512600854">Apri in un'altra scheda</translation>
 <translation id="3024255823539804759">Ultimo giorno</translation>
 <translation id="3037605927509011580">Uffa!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> non disponibile. Per accedere alla tua cronologia di navigazione, seleziona "<ph name="SHOW_HISTORY" />" dal menu Strumenti.</translation>
 <translation id="3112556859945124369">Segna come…</translation>
 <translation id="3151924044251363314">Soltanto chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphrase non viene inviata a Google né memorizzata. Se dimentichi la passphrase o vuoi modificare questa impostazione, dovrai reimpostare la sincronizzazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Segna tutti come...</translation>

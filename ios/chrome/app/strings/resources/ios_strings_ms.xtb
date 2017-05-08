@@ -53,7 +53,6 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="1820259098641718022">Ditambahkan pada Senarai Bacaan</translation>
 <translation id="1876721852596493031">Hantar Data Penggunaan</translation>
 <translation id="1886928167269928266">Permulaan Masa</translation>
-<translation id="1894451531427596130">Kawal cara ciri ini berfungsi dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Muat naik ke Google Drive</translation>
 <translation id="1941314575388338491">Ketik dua kali untuk menyalin.</translation>
 <translation id="1952728750904661634">Log masuk dengan akaun terurus</translation>
@@ -97,6 +96,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Tetapkan semula tetapan terjemahan</translation>
 <translation id="285960592395650245">Cuba Semula Muat Turun</translation>
+<translation id="2870560284913253234">Tapak</translation>
 <translation id="2871695793448672541">Disembunyikan, Kata Laluan</translation>
 <translation id="2898963176829412617">Folder Baharu…</translation>
 <translation id="2903493209154104877">Alamat</translation>
@@ -109,7 +109,6 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2989805286512600854">Buka dalam Tab Baharu</translation>
 <translation id="3024255823539804759">Sehari Yang Lalu</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> tidak tersedia. Untuk mengakses sejarah semakan imbas anda, pilih "<ph name="SHOW_HISTORY" />" daripada menu alatan.</translation>
 <translation id="3112556859945124369">Tandakan...</translation>
 <translation id="3151924044251363314">Hanya orang yang mempunyai ungkapan laluan anda boleh membaca data anda yang disulitkan. Ungkapan laluan tidak dihantar atau disimpan oleh Google. Jika anda terlupa ungkapan laluan atau ingin menukar tetapan ini, anda perlu menetapkan semula penyegerakan. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Tandakan Semua...</translation>

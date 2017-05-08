@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">పఠన జాబితాకు జోడించబడింది</translation>
 <translation id="1876721852596493031">వినియోగ డేటాను పంపు</translation>
 <translation id="1886928167269928266">ప్రారంభ సమయం</translation>
-<translation id="1894451531427596130"><ph name="BEGIN_LINK" />సెట్టింగ్‌ల<ph name="END_LINK" />లో ఇది పని చేసే విధానాన్ని నియంత్రించండి</translation>
 <translation id="1911619930368729126">Google డిస్క్‌కి అప్‌. చే.</translation>
 <translation id="1941314575388338491">కాపీ చేయడానికి రెండుసార్లు నొక్కండి.</translation>
 <translation id="1952728750904661634">నిర్వహిత ఖాతాతో సైన్ ఇన్ చేయండి</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">అనువాద సెట్టింగ్‌లను రీసెట్ చేయి</translation>
 <translation id="285960592395650245">డౌన్‌. మళ్లీ ప్రయత్నించు</translation>
+<translation id="2870560284913253234">సైట్</translation>
 <translation id="2871695793448672541">దాచబడింది, పాస్‌వర్డ్</translation>
 <translation id="2898963176829412617">కొత్త ఫోల్డర్…</translation>
 <translation id="2903493209154104877">చిరునామాలు</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">క్రొత్త టాబ్‌లో తెరువు</translation>
 <translation id="3024255823539804759">గత రోజు</translation>
 <translation id="3037605927509011580">ఆవ్, స్నాప్!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> అందుబాటులో లేదు. మీ బ్రౌజింగ్ చరిత్రను ప్రాప్యత చేయడానికి, సాధనాల మెనులో "<ph name="SHOW_HISTORY" />" ఎంచుకోండి.</translation>
 <translation id="3112556859945124369">గుర్తు పెట్టు…</translation>
 <translation id="3151924044251363314">మీ రహస్య పదబంధాన్ని కలిగి ఉన్నవారు మాత్రమే మీ గుప్తీకరించిన డేటాను చదవగలరు. రహస్య పదబంధం ఎవరికీ పంపబడదు లేదా Googleలో నిల్వ చేయబడదు. మీరు మీ రహస్య పదబంధాన్ని మర్చిపోతే లేదా ఈ సెట్టింగ్‌ను మార్చాలనుకుంటే, సమకాలీకరణను రీసెట్ చేయాల్సి ఉంటుంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">అన్నీ గుర్తు పెట్టు…</translation>
