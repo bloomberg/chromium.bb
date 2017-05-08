@@ -54,6 +54,15 @@
 // DONT_CREATE_THREADS should only be used when the options specify at least
 // one real thread other than the main thread.
 //
+// TestBrowserThreadBundle may be instantiated in a scope where there is already
+// a base::test::ScopedTaskEnvironment. In that case, it will use the
+// MessageLoop and the TaskScheduler provided by this
+// base::test::ScopedTaskEnvironment instead of creating its own. The ability to
+// have a base::test::ScopedTaskEnvironment and a TestBrowserThreadBundle in the
+// same scope is useful when a fixture that inherits from a fixture that
+// provides a base::test::ScopedTaskEnvironment needs to add support for browser
+// threads.
+//
 // Basic usage:
 //
 //   class MyTestFixture : public testing::Test {
