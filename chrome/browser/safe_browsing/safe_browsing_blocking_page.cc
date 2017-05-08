@@ -7,14 +7,17 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
+#include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
@@ -121,11 +124,13 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       sb_error_ui()->CanShowExtendedReportingOption()) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    threat_details_ = ThreatDetails::NewThreatDetails(
-        ui_manager, web_contents, unsafe_resources[0],
-        profile->GetRequestContext(),
-        HistoryServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS));
+    threat_details_ =
+        g_browser_process->safe_browsing_service()
+            ->trigger_manager()
+            ->StartCollectingThreatDetails(
+                web_contents, unsafe_resources[0], profile->GetRequestContext(),
+                HistoryServiceFactory::GetForProfile(
+                    profile, ServiceAccessType::EXPLICIT_ACCESS));
   }
 }
 

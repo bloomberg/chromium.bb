@@ -12,6 +12,7 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
@@ -119,14 +120,30 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     ResetUserResponse();
     SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
+
+    safe_browsing::TestSafeBrowsingServiceFactory sb_service_factory;
+    sb_service_factory.SetTestUIManager(ui_manager_.get());
+    auto* safe_browsing_service =
+        sb_service_factory.CreateSafeBrowsingService();
+    // A profile was created already but SafeBrowsingService wasn't around to
+    // get notified of it, so include that notification now.
+    safe_browsing_service->AddPrefService(
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+            ->GetPrefs());
+    TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
+        safe_browsing_service);
+    g_browser_process->safe_browsing_service()->Initialize();
   }
 
   void TearDown() override {
     // Release the UI manager before the BrowserThreads are destroyed.
     ui_manager_ = NULL;
+    TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
+    TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
     // Clean up singleton reference (crbug.com/110594).
     ThreatDetails::RegisterFactory(NULL);
