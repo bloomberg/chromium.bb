@@ -87,6 +87,31 @@ long_option(const struct weston_option *options, int count, char *arg)
 }
 
 static int
+long_option_with_arg(const struct weston_option *options, int count, char *arg,
+		     char *param)
+{
+	int k, len;
+
+	for (k = 0; k < count; k++) {
+		if (!options[k].name)
+			continue;
+
+		len = strlen(options[k].name);
+		if (strncmp(options[k].name, arg + 2, len) != 0)
+			continue;
+
+		/* Since long_option() should handle all booleans, we should
+		 * never reach this
+		 */
+		assert(options[k].type != WESTON_OPTION_BOOLEAN);
+
+		return handle_option(options + k, param);
+	}
+
+	return 0;
+}
+
+static int
 short_option(const struct weston_option *options, int count, char *arg)
 {
 	int k;
@@ -148,6 +173,13 @@ parse_options(const struct weston_option *options,
 				if (long_option(options, count, argv[i]))
 					continue;
 
+				/* ...also handle --foo bar */
+				if (i + 1 < *argc &&
+				    long_option_with_arg(options, count,
+							 argv[i], argv[i+1])) {
+					i++;
+					continue;
+				}
 			} else {
 				/* Short option, e.g -f or -f42 */
 				if (short_option(options, count, argv[i]))
