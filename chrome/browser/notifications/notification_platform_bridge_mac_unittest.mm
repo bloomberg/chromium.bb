@@ -434,37 +434,43 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayETLDPlusOne) {
 
   notification = CreateBanner("Title", "Context", "https://mail.appspot.com",
                               "Button 1", nullptr);
-
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id2",
                   "profile_id", false, *notification);
+
   notification = CreateBanner("Title", "Context", "https://tests.peter.sh",
                               "Button 1", nullptr);
-
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id3",
+                  "profile_id", false, *notification);
+
+  notification = CreateBanner(
+      "Title", "Context",
+      "https://somereallylongsubdomainthatactuallyisanaliasfortests.peter.sh/",
+      "Button 1", nullptr);
+  bridge->Display(NotificationCommon::PERSISTENT, "notification_id4",
                   "profile_id", false, *notification);
 
   notification = CreateBanner("Title", "Context", "http://localhost:8080",
                               "Button 1", nullptr);
-
-  bridge->Display(NotificationCommon::PERSISTENT, "notification_id4",
+  bridge->Display(NotificationCommon::PERSISTENT, "notification_id5",
                   "profile_id", false, *notification);
 
   notification = CreateBanner("Title", "Context", "https://93.186.186.172",
                               "Button 1", nullptr);
-
-  bridge->Display(NotificationCommon::PERSISTENT, "notification_id5",
+  bridge->Display(NotificationCommon::PERSISTENT, "notification_id6",
                   "profile_id", false, *notification);
 
   NSArray* notifications = [notification_center() deliveredNotifications];
-  EXPECT_EQ(5u, [notifications count]);
+  EXPECT_EQ(6u, [notifications count]);
   NSUserNotification* delivered_notification = [notifications objectAtIndex:0];
   EXPECT_NSEQ(@"test.co.uk", [delivered_notification subtitle]);
   delivered_notification = [notifications objectAtIndex:1];
   EXPECT_NSEQ(@"mail.appspot.com", [delivered_notification subtitle]);
   delivered_notification = [notifications objectAtIndex:2];
-  EXPECT_NSEQ(@"peter.sh", [delivered_notification subtitle]);
+  EXPECT_NSEQ(@"tests.peter.sh", [delivered_notification subtitle]);
   delivered_notification = [notifications objectAtIndex:3];
-  EXPECT_NSEQ(@"localhost:8080", [delivered_notification subtitle]);
+  EXPECT_NSEQ(@"peter.sh", [delivered_notification subtitle]);
   delivered_notification = [notifications objectAtIndex:4];
+  EXPECT_NSEQ(@"localhost:8080", [delivered_notification subtitle]);
+  delivered_notification = [notifications objectAtIndex:5];
   EXPECT_NSEQ(@"93.186.186.172", [delivered_notification subtitle]);
 }
