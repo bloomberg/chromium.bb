@@ -102,6 +102,10 @@ config_ctx = config_item_context(BaseConfig)
 def ChromiumGitURL(_c, *pieces):
   return '/'.join(('https://chromium.googlesource.com',) + pieces)
 
+# TODO(phajdan.jr): Move to proper repo and add coverage.
+def ChromeInternalGitURL(_c, *pieces):  # pragma: no cover
+  return '/'.join(('https://chrome-internal.googlesource.com',) + pieces)
+
 @config_ctx()
 def android(c):
   c.target_os.add('android')
