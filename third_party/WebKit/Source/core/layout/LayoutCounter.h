@@ -68,6 +68,7 @@ class LayoutCounter final : public LayoutText {
   void UpdateCounter();
 
   const char* GetName() const override { return "LayoutCounter"; }
+  bool CanBeSelectionLeaf() const final { return false; }
 
  protected:
   void WillBeDestroyed() override;
