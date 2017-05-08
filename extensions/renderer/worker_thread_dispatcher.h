@@ -47,8 +47,16 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver {
   void RemoveWorkerData(int64_t service_worker_version_id);
 
  private:
+  static bool HandlesMessageOnWorkerThread(const IPC::Message& message);
+  static void ForwardIPC(int worker_thread_id, const IPC::Message& message);
+
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
+
+  void OnMessageReceivedOnWorkerThread(int worker_thread_id,
+                                       const IPC::Message& message);
+
+  base::TaskRunner* GetTaskRunnerFor(int worker_thread_id);
 
   // IPC handlers.
   void OnResponseWorker(int worker_thread_id,
@@ -59,6 +67,10 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver {
 
   // IPC sender. Belongs to the render thread, but thread safe.
   scoped_refptr<IPC::SyncMessageFilter> message_filter_;
+
+  using IDToTaskRunnerMap = std::map<base::PlatformThreadId, base::TaskRunner*>;
+  IDToTaskRunnerMap task_runner_map_;
+  base::Lock task_runner_map_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadDispatcher);
 };

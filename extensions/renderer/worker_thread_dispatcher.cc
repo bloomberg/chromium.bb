@@ -5,6 +5,7 @@
 #include "extensions/renderer/worker_thread_dispatcher.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"
 #include "content/public/child/worker_thread.h"
@@ -24,20 +25,6 @@ base::LazyInstance<WorkerThreadDispatcher>::DestructorAtExit g_instance =
     LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<base::ThreadLocalPointer<extensions::ServiceWorkerData>>::
     DestructorAtExit g_data_tls = LAZY_INSTANCE_INITIALIZER;
-
-void OnResponseOnWorkerThread(int request_id,
-                              bool succeeded,
-                              const std::unique_ptr<base::ListValue>& response,
-                              const std::string& error) {
-  // TODO(devlin): Using the RequestSender directly here won't work with
-  // NativeExtensionBindingsSystem (since there is no associated RequestSender
-  // in that case). We should instead be going
-  // ExtensionBindingsSystem::HandleResponse().
-  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
-  WorkerThreadDispatcher::GetRequestSender()->HandleWorkerResponse(
-      request_id, data->service_worker_version_id(), succeeded, *response,
-      error);
-}
 
 ServiceWorkerData* GetServiceWorkerData() {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
@@ -96,14 +83,51 @@ V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
   return GetServiceWorkerData()->v8_schema_registry();
 }
 
+// static
+bool WorkerThreadDispatcher::HandlesMessageOnWorkerThread(
+    const IPC::Message& message) {
+  return message.type() == ExtensionMsg_ResponseWorker::ID;
+}
+
+// static
+void WorkerThreadDispatcher::ForwardIPC(int worker_thread_id,
+                                        const IPC::Message& message) {
+  WorkerThreadDispatcher::Get()->OnMessageReceivedOnWorkerThread(
+      worker_thread_id, message);
+}
+
 bool WorkerThreadDispatcher::OnControlMessageReceived(
     const IPC::Message& message) {
+  if (HandlesMessageOnWorkerThread(message)) {
+    int worker_thread_id = base::kInvalidThreadId;
+    bool found = base::PickleIterator(message).ReadInt(&worker_thread_id);
+    CHECK(found && worker_thread_id > 0);
+    base::TaskRunner* runner = GetTaskRunnerFor(worker_thread_id);
+    bool task_posted = runner->PostTask(
+        FROM_HERE, base::Bind(&WorkerThreadDispatcher::ForwardIPC,
+                              worker_thread_id, message));
+    DCHECK(task_posted) << "Could not PostTask IPC to worker thread.";
+    return true;
+  }
+  return false;
+}
+
+void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(
+    int worker_thread_id,
+    const IPC::Message& message) {
+  CHECK_EQ(content::WorkerThread::GetCurrentId(), worker_thread_id);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WorkerThreadDispatcher, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ResponseWorker, OnResponseWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
+  CHECK(handled);
+}
+
+base::TaskRunner* WorkerThreadDispatcher::GetTaskRunnerFor(
+    int worker_thread_id) {
+  base::AutoLock lock(task_runner_map_lock_);
+  return task_runner_map_[worker_thread_id];
 }
 
 bool WorkerThreadDispatcher::Send(IPC::Message* message) {
@@ -115,11 +139,14 @@ void WorkerThreadDispatcher::OnResponseWorker(int worker_thread_id,
                                               bool succeeded,
                                               const base::ListValue& response,
                                               const std::string& error) {
-  content::WorkerThread::PostTask(
-      worker_thread_id,
-      base::Bind(&OnResponseOnWorkerThread, request_id, succeeded,
-                 // TODO(lazyboy): Can we avoid CreateDeepCopy()?
-                 base::Passed(response.CreateDeepCopy()), error));
+  // TODO(devlin): Using the RequestSender directly here won't work with
+  // NativeExtensionBindingsSystem (since there is no associated RequestSender
+  // in that case). We should instead be going
+  // ExtensionBindingsSystem::HandleResponse().
+  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  WorkerThreadDispatcher::GetRequestSender()->HandleWorkerResponse(
+      request_id, data->service_worker_version_id(), succeeded, response,
+      error);
 }
 
 void WorkerThreadDispatcher::AddWorkerData(
@@ -140,6 +167,15 @@ void WorkerThreadDispatcher::AddWorkerData(
         service_worker_version_id, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);
   }
+
+  int worker_thread_id = base::PlatformThread::CurrentId();
+  DCHECK_EQ(content::WorkerThread::GetCurrentId(), worker_thread_id);
+  {
+    base::AutoLock lock(task_runner_map_lock_);
+    auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
+    CHECK(task_runner);
+    task_runner_map_[worker_thread_id] = task_runner;
+  }
 }
 
 void WorkerThreadDispatcher::RemoveWorkerData(
@@ -149,6 +185,13 @@ void WorkerThreadDispatcher::RemoveWorkerData(
     DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
     delete data;
     g_data_tls.Pointer()->Set(nullptr);
+  }
+
+  int worker_thread_id = base::PlatformThread::CurrentId();
+  DCHECK_EQ(content::WorkerThread::GetCurrentId(), worker_thread_id);
+  {
+    base::AutoLock lock(task_runner_map_lock_);
+    task_runner_map_.erase(worker_thread_id);
   }
 }
 
