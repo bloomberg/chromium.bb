@@ -24,8 +24,7 @@ public interface ContextualSearchRankerLogger {
         PREVIOUS_28DAY_IMPRESSIONS_COUNT,
         PREVIOUS_28DAY_CTR_PERCENT,
         SELECTION_LENGTH,
-        SELECTION_FIRST_CHAR,
-        SELECTION_WAS_ALL_CAPS
+        SELECTION_FIRST_CHAR
     }
 
     /**

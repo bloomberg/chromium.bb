@@ -613,13 +613,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         mPanelMetrics.setDidSearchInvolvePromo();
     }
 
-    /**
-     * @param wasPartOfUrl Whether the selected text was part of a URL.
-     */
-    public void setWasSelectionPartOfUrl(boolean wasPartOfUrl) {
-        mPanelMetrics.setWasSelectionPartOfUrl(wasPartOfUrl);
-    }
-
     // ============================================================================================
     // Panel Rendering
     // ============================================================================================
