@@ -8,19 +8,31 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
+#include "ios/web/public/navigation_manager.h"
+
+// Describes the mode of the Sad Tab, whether it should offer an attempt to
+// reload content, or whether it should offer a way to provide feedback.
+enum class SadTabViewMode {
+  RELOAD = 0,  // A mode which allows the user to attempt a reload
+  FEEDBACK,    // A mode which allows the user to provide feedback
+};
 
 // The view used to show "sad tab" content to the user when WKWebView's renderer
 // process crashes.
 @interface SadTabView : UIView
 
-// Designated initializer.  |reloadHandler| will be called when the reload
-// button is tapped and must not be nil.
-- (instancetype)initWithReloadHandler:(ProceduralBlock)reloadHandler
+// Designated initializer. |navigationManager| allows the view to execute
+// actions such as a reload if necessary.
+- (instancetype)initWithMode:(SadTabViewMode)mode
+           navigationManager:(web::NavigationManager*)navigationManager
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+
+// Determines the type of Sad Tab information that will be displayed.
+@property(nonatomic, readonly) SadTabViewMode mode;
 
 @end
 
