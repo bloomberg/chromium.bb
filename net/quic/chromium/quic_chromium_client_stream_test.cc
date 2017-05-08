@@ -270,6 +270,7 @@ class QuicChromiumClientStreamTest
   }
 
   QuicCryptoClientConfig crypto_config_;
+  testing::StrictMock<MockDelegate> delegate2_;
   testing::StrictMock<MockDelegate> delegate_;
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
@@ -615,16 +616,68 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
 TEST_P(QuicChromiumClientStreamTest, HeadersBeforeDelegate) {
   // We don't use stream_ because we want an incoming server push
   // stream.
-  QuicChromiumClientStream* stream = new QuicChromiumClientStream(
-      GetNthServerInitiatedStreamId(0), &session_, NetLogWithSource());
-  session_.ActivateStream(base::WrapUnique(stream));
+  QuicStreamId stream_id = GetNthServerInitiatedStreamId(0);
+  QuicChromiumClientStream* stream2 =
+      new QuicChromiumClientStream(stream_id, &session_, NetLogWithSource());
+  session_.ActivateStream(base::WrapUnique(stream2));
 
   InitializeHeaders();
-  stream->SetDelegate(&delegate_);
-  ProcessHeadersFull(headers_);
 
-  // Times(2) because OnClose will be called for stream and stream_.
-  EXPECT_CALL(delegate_, OnClose()).Times(2);
+  // Receive the headers before the delegate is set.
+  QuicHeaderList header_list = AsHeaderList(headers_);
+  stream2->OnStreamHeaderList(true, header_list.uncompressed_header_bytes(),
+                              header_list);
+  EXPECT_TRUE(delegate2_.headers_.empty());
+
+  // Now set the delegate and verify that the headers are delivered.
+  EXPECT_CALL(delegate2_, OnHeadersAvailableMock(
+                              _, header_list.uncompressed_header_bytes()));
+  stream2->SetDelegate(&delegate2_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(headers_, delegate2_.headers_);
+
+  // Both delegates should be notified that theirs streams are closed.
+  EXPECT_CALL(delegate2_, OnClose());
+  EXPECT_CALL(delegate_, OnClose());
+}
+
+TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeDelegate) {
+  // We don't use stream_ because we want an incoming server push
+  // stream.
+  QuicStreamId stream_id = GetNthServerInitiatedStreamId(0);
+  QuicChromiumClientStream* stream2 =
+      new QuicChromiumClientStream(stream_id, &session_, NetLogWithSource());
+  session_.ActivateStream(base::WrapUnique(stream2));
+
+  InitializeHeaders();
+
+  // Receive the headers and data before the delegate is set.
+  QuicHeaderList header_list = AsHeaderList(headers_);
+  stream2->OnStreamHeaderList(false, header_list.uncompressed_header_bytes(),
+                              header_list);
+  EXPECT_TRUE(delegate2_.headers_.empty());
+  const char data[] = "hello world!";
+  stream2->OnStreamFrame(QuicStreamFrame(stream_id, /*fin=*/false,
+                                         /*offset=*/0, data));
+
+  // Now set the delegate and verify that the headers are delivered, but
+  // not the data, which needs to be read explicitly.
+  EXPECT_CALL(delegate2_, OnHeadersAvailableMock(
+                              _, header_list.uncompressed_header_bytes()));
+  stream2->SetDelegate(&delegate2_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(headers_, delegate2_.headers_);
+  base::RunLoop().RunUntilIdle();
+
+  // Now explicitly read the data.
+  int data_len = arraysize(data) - 1;
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(data_len + 1));
+  ASSERT_EQ(data_len, stream2->Read(buffer.get(), data_len + 1));
+  EXPECT_EQ(QuicStringPiece(data), QuicStringPiece(buffer->data(), data_len));
+
+  // Both delegates should be notified that theirs streams are closed.
+  EXPECT_CALL(delegate2_, OnClose());
+  EXPECT_CALL(delegate_, OnClose());
 }
 
 }  // namespace
