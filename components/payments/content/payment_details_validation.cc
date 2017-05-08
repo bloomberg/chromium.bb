@@ -35,11 +35,6 @@ bool validateShippingOptionOrPaymentItem(
     return false;
   }
 
-  if (total && item->amount->currency != total->amount->currency) {
-    *error_message = "Currencies must all be equal";
-    return false;
-  }
-
   if (item->amount->currency_system.empty()) {
     *error_message = "Currency system can't be empty";
     return false;
