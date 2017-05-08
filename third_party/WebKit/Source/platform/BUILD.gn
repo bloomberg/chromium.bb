@@ -711,6 +711,8 @@ component("platform") {
     "fonts/linux/FontPlatformDataLinux.cpp",
     "fonts/linux/FontRenderStyle.cpp",
     "fonts/linux/FontRenderStyle.h",
+    "fonts/mac/CoreTextVariationsSupport.cpp",
+    "fonts/mac/CoreTextVariationsSupport.h",
     "fonts/mac/FontCacheMac.mm",
     "fonts/mac/FontFamilyMatcherMac.h",
     "fonts/mac/FontFamilyMatcherMac.mm",

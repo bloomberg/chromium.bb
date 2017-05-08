@@ -3351,7 +3351,6 @@ crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug1055-2.htm
 crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure ]
 
 # Sheriff failures 2017-05-02
-crbug.com/693065 [ Mac ] fast/text/variable-fonts/variable-gpos-m2b.html [ Failure ]
 crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
 crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Crash ]
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
