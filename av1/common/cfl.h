@@ -68,5 +68,5 @@ void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
                int col, TX_SIZE tx_size);
 
 double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
-                int col, TX_SIZE tx_size);
+                int col, int width, int height);
 #endif  // AV1_COMMON_CFL_H_

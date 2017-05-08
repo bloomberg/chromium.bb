@@ -1581,7 +1581,7 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
   uint8_t tmp_pix[MAX_SB_SQUARE];
   // Load CfL Prediction over the entire block
   const double y_avg =
-      cfl_load(cfl, tmp_pix, MAX_SB_SIZE, 0, 0, max_txsize_lookup[bsize]);
+      cfl_load(cfl, tmp_pix, MAX_SB_SIZE, 0, 0, block_width, block_height);
 
   int dist_u, dist_v;
   int dist_u_neg, dist_v_neg;

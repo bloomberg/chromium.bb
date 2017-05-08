@@ -102,13 +102,13 @@ double cfl_ind_to_alpha(const MB_MODE_INFO *const mbmi,
 void cfl_predict_block(const CFL_CTX *cfl, uint8_t *dst, int dst_stride,
                        int row, int col, TX_SIZE tx_size, int dc_pred,
                        double alpha) {
-  const int tx_block_width = tx_size_wide[tx_size];
-  const int tx_block_height = tx_size_high[tx_size];
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
 
-  const double y_avg = cfl_load(cfl, dst, dst_stride, row, col, tx_size);
+  const double y_avg = cfl_load(cfl, dst, dst_stride, row, col, width, height);
 
-  for (int j = 0; j < tx_block_height; j++) {
-    for (int i = 0; i < tx_block_width; i++) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
       dst[i] = (uint8_t)(alpha * (dst[i] - y_avg) + dc_pred + 0.5);
     }
     dst += dst_stride;
@@ -150,9 +150,7 @@ void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
 
 // Load from the CfL pixel buffer into output
 double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
-                int col, TX_SIZE tx_size) {
-  const int tx_width = tx_size_wide[tx_size];
-  const int tx_height = tx_size_high[tx_size];
+                int col, int width, int height) {
   const int sub_x = cfl->subsampling_x;
   const int sub_y = cfl->subsampling_y;
   const int tx_off_log2 = tx_size_wide_log2[0];
@@ -169,12 +167,12 @@ double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
   // TODO(ltrudeau) add support for 4:2:2
   if (sub_y == 0 && sub_x == 0) {
     y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << tx_off_log2];
-    int uv_width = (col << tx_off_log2) + tx_width;
+    int uv_width = (col << tx_off_log2) + width;
     diff_width = uv_width - cfl->y_width;
-    int uv_height = (row << tx_off_log2) + tx_width;
+    int uv_height = (row << tx_off_log2) + width;
     diff_height = uv_height - cfl->y_height;
-    for (int j = 0; j < tx_height; j++) {
-      for (int i = 0; i < tx_width; i++) {
+    for (int j = 0; j < height; j++) {
+      for (int i = 0; i < width; i++) {
         // In 4:4:4, pixels match 1 to 1
         output[output_row_offset + i] = y_pix[pred_row_offset + i];
       }
@@ -183,12 +181,12 @@ double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
     }
   } else if (sub_y == 1 && sub_x == 1) {
     y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << (tx_off_log2 + sub_y)];
-    int uv_width = ((col << tx_off_log2) + tx_width) << sub_x;
+    int uv_width = ((col << tx_off_log2) + width) << sub_x;
     diff_width = (uv_width - cfl->y_width) >> sub_x;
-    int uv_height = ((row << tx_off_log2) + tx_width) << sub_y;
+    int uv_height = ((row << tx_off_log2) + width) << sub_y;
     diff_height = (uv_height - cfl->y_height) >> sub_y;
-    for (int j = 0; j < tx_height; j++) {
-      for (int i = 0; i < tx_width; i++) {
+    for (int j = 0; j < height; j++) {
+      for (int i = 0; i < width; i++) {
         top_left = (pred_row_offset + i) << sub_y;
         bot_left = top_left + MAX_SB_SIZE;
         // In 4:2:0, average pixels in 2x2 grid
@@ -214,9 +212,9 @@ double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
   // frame, the columns will be copied over them.
   if (diff_width > 0) {
     int last_pixel;
-    output_row_offset = tx_width - diff_width;
+    output_row_offset = width - diff_width;
 
-    for (int j = 0; j < tx_height; j++) {
+    for (int j = 0; j < height; j++) {
       last_pixel = output_row_offset - 1;
       for (int i = 0; i < diff_width; i++) {
         output[output_row_offset + i] = output[last_pixel];
@@ -229,7 +227,7 @@ double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
     output_row_offset = diff_height * output_stride;
     const int last_row_offset = output_row_offset - output_stride;
     for (int j = 0; j < diff_height; j++) {
-      for (int i = 0; i < tx_width; i++) {
+      for (int i = 0; i < width; i++) {
         output[output_row_offset + i] = output[last_row_offset + i];
       }
       output_row_offset += output_stride;
@@ -238,11 +236,11 @@ double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
 
   int avg = 0;
   output_row_offset = 0;
-  for (int j = 0; j < tx_height; j++) {
-    for (int i = 0; i < tx_width; i++) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
       avg += output[output_row_offset + i];
     }
     output_row_offset += output_stride;
   }
-  return avg / (double)(tx_width * tx_height);
+  return avg / (double)(width * height);
 }
