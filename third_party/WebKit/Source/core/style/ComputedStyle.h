@@ -53,7 +53,6 @@
 #include "core/style/StyleReflection.h"
 #include "core/style/StyleSelfAlignmentData.h"
 #include "core/style/StyleTransformData.h"
-#include "core/style/StyleVisualData.h"
 #include "core/style/StyleWillChangeData.h"
 #include "core/style/TransformOrigin.h"
 #include "platform/Length.h"
@@ -184,7 +183,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
  protected:
   // non-inherited attributes
   DataRef<StyleBoxData> box_data_;
-  DataRef<StyleVisualData> visual_data_;
   DataRef<StyleRareNonInheritedData> rare_non_inherited_data_;
 
   // inherited attributes
@@ -576,15 +574,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // clip
   static LengthBox InitialClip() { return LengthBox(); }
-  const LengthBox& Clip() const { return visual_data_->clip; }
+  const LengthBox& Clip() const { return visual_data_->clip_; }
   void SetClip(const LengthBox& box) {
-    SET_VAR(visual_data_, has_auto_clip, false);
-    SET_VAR(visual_data_, clip, box);
+    SET_VAR(visual_data_, has_auto_clip_, false);
+    SET_VAR(visual_data_, clip_, box);
   }
-  bool HasAutoClip() const { return visual_data_->has_auto_clip; }
+  bool HasAutoClip() const { return visual_data_->has_auto_clip_; }
   void SetHasAutoClip() {
-    SET_VAR(visual_data_, has_auto_clip, true);
-    SET_VAR(visual_data_, clip, ComputedStyle::InitialClip());
+    SET_VAR(visual_data_, has_auto_clip_, true);
+    SET_VAR(visual_data_, clip_, ComputedStyle::InitialClip());
   }
 
   // Column properties.
@@ -1454,10 +1452,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // text-decoration-line
   static TextDecoration InitialTextDecoration() { return kTextDecorationNone; }
   TextDecoration GetTextDecoration() const {
-    return static_cast<TextDecoration>(visual_data_->text_decoration);
+    return static_cast<TextDecoration>(visual_data_->text_decoration_);
   }
   void SetTextDecoration(TextDecoration v) {
-    SET_VAR(visual_data_, text_decoration, v);
+    SET_VAR(visual_data_, text_decoration_, v);
   }
 
   // text-decoration-color
@@ -2971,10 +2969,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Clip utility functions.
-  const Length& ClipLeft() const { return visual_data_->clip.Left(); }
-  const Length& ClipRight() const { return visual_data_->clip.Right(); }
-  const Length& ClipTop() const { return visual_data_->clip.Top(); }
-  const Length& ClipBottom() const { return visual_data_->clip.Bottom(); }
+  const Length& ClipLeft() const { return visual_data_->clip_.Left(); }
+  const Length& ClipRight() const { return visual_data_->clip_.Right(); }
+  const Length& ClipTop() const { return visual_data_->clip_.Top(); }
+  const Length& ClipBottom() const { return visual_data_->clip_.Bottom(); }
 
   // Offset utility functions.
   // Accessors for positioned object edges that take into account writing mode.

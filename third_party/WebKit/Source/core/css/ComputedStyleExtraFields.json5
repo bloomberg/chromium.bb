@@ -183,5 +183,21 @@
       default_value: "Color::kTransparent",
       field_group: "background",
     },
+    {
+      name: "TextDecoration",
+      field_template: "storage_only",
+      type_name: "TextDecoration",
+      field_size: 4,
+      default_value: "kTextDecorationNone",
+      field_group: "visual",
+    },
+    {
+      name: "HasAutoClip",
+      field_template: "storage_only",
+      type_name: "bool",
+      field_size: 1,
+      default_value: "true",
+      field_group: "visual",
+    },
   ],
 }

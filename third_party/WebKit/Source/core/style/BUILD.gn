@@ -103,8 +103,6 @@ blink_core_sources("rendering") {
     "StyleSelfAlignmentData.h",
     "StyleTransformData.cpp",
     "StyleTransformData.h",
-    "StyleVisualData.cpp",
-    "StyleVisualData.h",
     "StyleWillChangeData.cpp",
     "StyleWillChangeData.h",
     "TextSizeAdjust.h",

@@ -545,6 +545,10 @@
       custom_all: true,
       is_descriptor: true,
       priority: "High",
+      field_template: "storage_only",
+      type_name: "float",
+      default_value: "1.0",
+      field_group: "visual",
     },
 
     {
@@ -892,6 +896,10 @@
       converter: "ConvertClip",
       custom_all: true,
       interpolable: true,
+      field_template: "storage_only",
+      field_type_path: "platform/LengthBox",
+      default_value: "LengthBox()",
+      field_group: "visual",
     },
     {
       name: "clip-path",
