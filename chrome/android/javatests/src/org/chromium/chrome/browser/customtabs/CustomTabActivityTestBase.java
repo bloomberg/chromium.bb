@@ -19,9 +19,13 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Base class for all instrumentation tests that require a {@link CustomTabActivity}.
@@ -42,8 +46,26 @@ public abstract class CustomTabActivityTestBase extends
 
     @Override
     protected void startActivityCompletely(Intent intent) {
+        setActivity(launchCustomTabActivityCompletely(intent));
+    }
+
+    /**
+     * Start a {@link CustomTabActivity} with given {@link Intent} and return the
+     * activity started. Note that this function doesn't wait for the activity's
+     * tab to initialize.
+     */
+    protected CustomTabActivity launchCustomTabActivityCompletely(Intent intent) {
+        final Set<Activity> currentActivities =
+                Collections.newSetFromMap(new IdentityHashMap<Activity, Boolean>());
+        for (WeakReference<Activity> ref : ApplicationStatus.getRunningActivities()) {
+            Activity currentActivity = ref.get();
+            if (currentActivity != null) {
+                currentActivities.add(currentActivity);
+            }
+        }
         Activity activity = getInstrumentation().startActivitySync(intent);
         assertNotNull("Main activity did not start", activity);
+        final AtomicReference<CustomTabActivity> launchedActivity = new AtomicReference<>();
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -51,14 +73,16 @@ public abstract class CustomTabActivityTestBase extends
                 for (WeakReference<Activity> ref : list) {
                     Activity activity = ref.get();
                     if (activity == null) continue;
+                    if (currentActivities.contains(activity)) continue;
                     if (activity instanceof CustomTabActivity) {
-                        setActivity(activity);
+                        launchedActivity.set((CustomTabActivity) activity);
                         return true;
                     }
                 }
                 return false;
             }
         });
+        return launchedActivity.get();
     }
 
     /**
@@ -67,13 +91,19 @@ public abstract class CustomTabActivityTestBase extends
      */
     protected void startCustomTabActivityWithIntent(Intent intent) throws InterruptedException {
         startActivityCompletely(intent);
+        waitForCustomTab(getActivity());
+    }
+
+    /** Wait till the activity's tab is initialized. */
+    protected static void waitForCustomTab(final CustomTabActivity activity)
+            throws InterruptedException {
         CriteriaHelper.pollUiThread(new Criteria("Tab never selected/initialized.") {
             @Override
             public boolean isSatisfied() {
-                return getActivity().getActivityTab() != null;
+                return activity.getActivityTab() != null;
             }
         });
-        final Tab tab = getActivity().getActivityTab();
+        final Tab tab = activity.getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
         tab.addObserver(new EmptyTabObserver() {
             @Override

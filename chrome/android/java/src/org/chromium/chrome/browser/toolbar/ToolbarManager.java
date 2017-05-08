@@ -172,6 +172,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private boolean mShouldUpdateTabCount = true;
     private boolean mShouldUpdateToolbarPrimaryColor = true;
 
+    private Runnable mDeferredStartupRunnable;
+
     /**
      * Creates a ToolbarManager object.
      *
@@ -822,6 +824,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         if (currentTab != null) currentTab.removeObserver(mTabObserver);
         mFindToolbarObservers.clear();
         mToolbar.destroy();
+        if (mDeferredStartupRunnable != null) {
+            // Run the runnable now, because there won't be any new data in the future.
+            ThreadUtils.getUiThreadHandler().removeCallbacks(mDeferredStartupRunnable);
+            mDeferredStartupRunnable.run();
+            mDeferredStartupRunnable = null;
+        }
     }
 
     /**
@@ -1120,13 +1128,17 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             final String activityName) {
         // Record startup performance statistics
         long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
-        if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
-            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+        if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS
+                && mDeferredStartupRunnable == null) {
+            mDeferredStartupRunnable = new Runnable() {
                 @Override
                 public void run() {
                     onDeferredStartup(activityCreationTimeMs, activityName);
+                    mDeferredStartupRunnable = null;
                 }
-            }, RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
+            };
+            ThreadUtils.postOnUiThreadDelayed(mDeferredStartupRunnable,
+                    RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
         }
         RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime." + activityName,
                 mToolbar.getFirstDrawTime() - activityCreationTimeMs, TimeUnit.MILLISECONDS);

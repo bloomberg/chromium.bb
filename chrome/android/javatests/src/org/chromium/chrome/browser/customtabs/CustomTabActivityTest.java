@@ -32,6 +32,7 @@ import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.customtabs.CustomTabsSession;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
@@ -49,6 +50,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
@@ -68,6 +70,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
+import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -79,6 +82,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils.ActivityCloser;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
@@ -94,7 +99,10 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -2348,6 +2356,144 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 getInstrumentation().getTargetContext(), testUrl));
         Tab tab = getActivity().getActivityTab();
         assertEquals(testUrl, tab.getUrl());
+    }
+
+    @LargeTest
+    public void testClosedActivitiesNotLeaked() throws Exception {
+        openCloseActivities(true /* closeFrontToBack */, new ActivityCloser<CustomTabActivity>() {
+            @Override
+            public void close(CustomTabActivity activity) {
+                CustomTabToolbar toolbar = (CustomTabToolbar) activity.findViewById(R.id.toolbar);
+                toolbar.getCloseButtonForTest().performClick();
+            }
+        });
+    }
+
+    @LargeTest
+    public void testClosedBackActivitiesNotLeaked() throws Exception {
+        openCloseActivities(true /* closeFrontToBack */, new ActivityCloser<CustomTabActivity>() {
+            @Override
+            public void close(CustomTabActivity activity) {
+                activity.onBackPressed();
+            }
+        });
+    }
+
+    @LargeTest
+    public void testFinishedActivitiesNotLeaked() throws Exception {
+        openCloseActivities(true /* closeFrontToBack */, new ActivityCloser<CustomTabActivity>() {
+            @Override
+            public void close(CustomTabActivity activity) {
+                activity.finish();
+            }
+        });
+    }
+
+    @LargeTest
+    public void testStoppedFinishedActivitiesNotLeaked() throws Exception {
+        openCloseActivities(false /* closeFrontToBack */, new ActivityCloser<CustomTabActivity>() {
+            @Override
+            public void close(CustomTabActivity activity) {
+                activity.finish();
+            }
+        });
+    }
+
+    /**
+     * Opens several activities, closes them, and checks that activities are GCed.
+     *
+     * @param closeFrontToBack Whether to close activities starting from the
+     *            last opened one (front), or from the first opened one (back).
+     *            Essentially this param controls whether activities are closed
+     *            in the active (true) or stopped (false) state.
+     * @param activityCloser Activity closing logic.
+     */
+    @SuppressFBWarnings("DM_GC")
+    private void openCloseActivities(boolean closeFrontToBack,
+            final ActivityCloser<CustomTabActivity> activityCloser) throws Exception {
+        final int activityCount = 5;
+
+        final List<WeakReference<Activity>> activityRefs = new ArrayList<>();
+
+        // Something in ApplicationTestUtils.closeActivity() call below retains last closed
+        // activity (in a local reference). I couldn't figure out what it is, so to avoid
+        // the problem we start one extra activity so that it's closed last. We don't care
+        // what that extra activity is, as long it's not CustomTabActivity. Note that we
+        // need to start extra activity before / after CCT activities according to
+        // closeFrontToBack flag.
+        Runnable extraActivityStarter = new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent();
+                intent.setClass(getInstrumentation().getTargetContext(), Preferences.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activityRefs.add(
+                        new WeakReference<>(getInstrumentation().startActivitySync(intent)));
+            }
+        };
+        ActivityCloser<Activity> extraActivityCloser = new ActivityCloser<Activity>() {
+            @Override
+            public void close(Activity activity) {
+                activity.finish();
+            }
+        };
+
+        // We're closing front to back, so extra activity should be started first.
+        if (closeFrontToBack) extraActivityStarter.run();
+
+        for (int i = 0; i != activityCount; ++i) {
+            // Don't use startActivityCompletely() because it retains the started
+            // activity in several member variables.
+            CustomTabActivity activity =
+                    launchCustomTabActivityCompletely(createMinimalCustomTabIntent());
+            waitForCustomTab(activity);
+            activityRefs.add(new WeakReference<Activity>(activity));
+        }
+
+        // We're closing back to front, so extra activity should be started last.
+        if (!closeFrontToBack) extraActivityStarter.run();
+
+        // Make sure that the first activity we need to close is at the beginning.
+        if (closeFrontToBack) Collections.reverse(activityRefs);
+
+        for (WeakReference<Activity> ref : activityRefs) {
+            Activity activity = ref.get();
+            // Activity can be null here if "Don't keep activities" developer option
+            // is turned on.
+            if (activity != null) {
+                if (activity instanceof CustomTabActivity) {
+                    ApplicationTestUtils.closeActivity(
+                            (CustomTabActivity) activity, activityCloser);
+                } else {
+                    // Must be an extra activity started above.
+                    ApplicationTestUtils.closeActivity(activity, extraActivityCloser);
+                }
+            }
+        }
+
+        // GC the activities. Note that System.gc() is a no-op unless it is followed
+        // by or following a call to System.runFinalization().
+        System.gc();
+        System.runFinalization();
+        System.gc();
+
+        for (int i = 0; i != activityCount; ++i) {
+            WeakReference<Activity> ref = activityRefs.get(i);
+
+            // If this fails: something retains activities! It's probably a leak!
+            // In order to find the culprit:
+            //  * Repro locally
+            //  * Comment out the assert
+            //  * Add Thread.sleep() for a minute or so
+            //  * While it's sleeping, open DDMS and take an HPROF dump
+            //  * Use ahat tool (go/ahat) to open the dump
+            //  * Go to 'allocations' page
+            //  * Find 'SeparateTaskCustomTabActivity' row
+            //  * Click on the number, *not* on the class name
+            //  * You will see a list of live SeparateTaskCustomTabActivity objects -
+            //    click on entries and inspect their 'Sample Path from GC Root'.
+            assertNull("Activity is leaked", ref.get());
+        }
     }
 
     /** Maybe prerenders a URL with a referrer, then launch it with another one. */
