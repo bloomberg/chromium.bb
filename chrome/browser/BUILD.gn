@@ -4150,7 +4150,6 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/infobar/SubresourceFilterInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/TranslateCompactInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBar.java",
-      "../android/java/src/org/chromium/chrome/browser/infobar/TranslateSnackbarController.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/UpdatePasswordInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/instantapps/InstantAppsSettings.java",
       "../android/java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java",
