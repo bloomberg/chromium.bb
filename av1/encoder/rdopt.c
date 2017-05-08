@@ -2338,6 +2338,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                BLOCK_SIZE bsize, int mode_cost) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  assert(!is_inter_block(mbmi));
   RD_STATS this_rd_stats;
   int row, col;
   int64_t temp_sse, this_rd;
@@ -2425,6 +2426,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mic->mbmi;
+  assert(!is_inter_block(mbmi));
   int this_rate, colors, n;
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *const src = x->plane[0].src.buf;
@@ -2596,6 +2598,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
   const AV1_COMMON *const cm = &cpi->common;
   PREDICTION_MODE mode;
   MACROBLOCKD *const xd = &x->e_mbd;
+  assert(!is_inter_block(&xd->mi[0]->mbmi));
   int64_t best_rd = rd_thresh;
   struct macroblock_plane *p = &x->plane[0];
   struct macroblockd_plane *pd = &xd->plane[0];
@@ -3037,6 +3040,7 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
   MB_MODE_INFO *const mbmi = &mic->mbmi;
+  assert(!is_inter_block(mbmi));
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int pred_width_in_4x4_blocks = num_4x4_blocks_wide_lookup[bsize];
   const int pred_height_in_4x4_blocks = num_4x4_blocks_high_lookup[bsize];
@@ -3244,6 +3248,7 @@ static int64_t calc_rd_given_intra_angle(
   RD_STATS tokenonly_rd_stats;
   int64_t this_rd, this_model_rd;
   MB_MODE_INFO *mbmi = &x->e_mbd.mi[0]->mbmi;
+  assert(!is_inter_block(mbmi));
 
   mbmi->angle_delta[0] = angle_delta;
   this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost);
@@ -3285,6 +3290,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *mbmi = &mic->mbmi;
+  assert(!is_inter_block(mbmi));
   int i, angle_delta, best_angle_delta = 0;
   int first_try = 1;
 #if CONFIG_INTRA_INTERP
@@ -3545,6 +3551,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mic->mbmi;
+  assert(!is_inter_block(mbmi));
   MB_MODE_INFO best_mbmi = *mbmi;
   int64_t best_model_rd = INT64_MAX;
 #if CONFIG_EXT_INTRA
@@ -4461,6 +4468,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
                                        int *skippable) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  assert(!is_inter_block(mbmi));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   int this_rate;
@@ -4695,6 +4703,7 @@ static int64_t pick_intra_angle_routine_sbuv(
     int rate_overhead, int64_t best_rd_in, int *rate, RD_STATS *rd_stats,
     int *best_angle_delta, int64_t *best_rd) {
   MB_MODE_INFO *mbmi = &x->e_mbd.mi[0]->mbmi;
+  assert(!is_inter_block(mbmi));
   int this_rate;
   int64_t this_rd;
   RD_STATS tokenonly_rd_stats;
@@ -4722,6 +4731,7 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     RD_STATS *rd_stats) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  assert(!is_inter_block(mbmi));
   int i, angle_delta, best_angle_delta = 0;
   int64_t this_rd, best_rd_in, rd_cost[2 * (MAX_ANGLE_DELTA + 2)];
 
@@ -4777,6 +4787,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                        BLOCK_SIZE bsize, TX_SIZE max_tx_size) {
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  assert(!is_inter_block(mbmi));
   MB_MODE_INFO best_mbmi = *mbmi;
   PREDICTION_MODE mode;
   int64_t best_rd = INT64_MAX, this_rd;
