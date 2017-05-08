@@ -7,6 +7,7 @@
 #import <ChromeWebView/cwv_export.h>
 #import <UIKit/UIKit.h>
 
+@class CWVScrollView;
 @class CWVWebViewConfiguration;
 @protocol CWVUIDelegate;
 @protocol CWVTranslateDelegate;
@@ -56,6 +57,9 @@ CWV_EXPORT
 // completes, it remains at 1.0 until a new navigation starts, at which point it
 // is reset to 0.0.
 @property(nonatomic, readonly) double estimatedProgress;
+
+// The scroll view associated with the web view.
+@property(nonatomic, readonly) CWVScrollView* scrollView;
 
 // The User Agent product string used to build the full User Agent.
 + (NSString*)userAgentProduct;
