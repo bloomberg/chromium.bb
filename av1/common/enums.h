@@ -367,8 +367,6 @@ typedef enum {
   MOTION_MODES
 } MOTION_MODE;
 
-// TODO(urvang): Consider adding II_SMOOTH_PRED if it's helpful.
-
 #if CONFIG_EXT_INTER
 typedef enum {
   II_DC_PRED = 0,
