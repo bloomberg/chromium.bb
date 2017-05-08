@@ -26,7 +26,6 @@
 #include "avcodec.h"
 #include "libavutil/opt.h"
 #include "libavutil/avassert.h"
-#include "libavutil/atomic.h"
 #include "libavutil/avstring.h"
 #include "libavcodec/avcodec.h"
 #include "libavutil/pixdesc.h"
@@ -898,7 +897,14 @@ static int vtenc_create_encoder(AVCodecContext   *avctx,
 {
     VTEncContext *vtctx = avctx->priv_data;
     SInt32       bit_rate = avctx->bit_rate;
+    SInt32       max_rate = avctx->rc_max_rate;
     CFNumberRef  bit_rate_num;
+    CFNumberRef  bytes_per_second;
+    CFNumberRef  one_second;
+    CFArrayRef   data_rate_limits;
+    int64_t      bytes_per_second_value = 0;
+    int64_t      one_second_value = 0;
+    void         *nums[2];
 
     int status = VTCompressionSessionCreate(kCFAllocatorDefault,
                                             avctx->width,
@@ -935,6 +941,46 @@ static int vtenc_create_encoder(AVCodecContext   *avctx,
 
     if (status) {
         av_log(avctx, AV_LOG_ERROR, "Error setting bitrate property: %d\n", status);
+        return AVERROR_EXTERNAL;
+    }
+
+    bytes_per_second_value = max_rate >> 3;
+    bytes_per_second = CFNumberCreate(kCFAllocatorDefault,
+                                      kCFNumberSInt64Type,
+                                      &bytes_per_second_value);
+    if (!bytes_per_second) {
+        return AVERROR(ENOMEM);
+    }
+    one_second_value = 1;
+    one_second = CFNumberCreate(kCFAllocatorDefault,
+                                kCFNumberSInt64Type,
+                                &one_second_value);
+    if (!one_second) {
+        CFRelease(bytes_per_second);
+        return AVERROR(ENOMEM);
+    }
+    nums[0] = bytes_per_second;
+    nums[1] = one_second;
+    data_rate_limits = CFArrayCreate(kCFAllocatorDefault,
+                                     nums,
+                                     2,
+                                     &kCFTypeArrayCallBacks);
+
+    if (!data_rate_limits) {
+        CFRelease(bytes_per_second);
+        CFRelease(one_second);
+        return AVERROR(ENOMEM);
+    }
+    status = VTSessionSetProperty(vtctx->session,
+                                  kVTCompressionPropertyKey_DataRateLimits,
+                                  data_rate_limits);
+
+    CFRelease(bytes_per_second);
+    CFRelease(one_second);
+    CFRelease(data_rate_limits);
+
+    if (status) {
+        av_log(avctx, AV_LOG_ERROR, "Error setting max bitrate property: %d\n", status);
         return AVERROR_EXTERNAL;
     }
 
@@ -1780,7 +1826,7 @@ static int get_cv_pixel_info(
 {
     VTEncContext *vtctx = avctx->priv_data;
     int av_format       = frame->format;
-    int av_color_range  = av_frame_get_color_range(frame);
+    int av_color_range  = frame->color_range;
     int i;
     int range_guessed;
     int status;
@@ -2027,7 +2073,7 @@ static int create_cv_pixel_buffer(AVCodecContext   *avctx,
             AV_LOG_ERROR,
             "Error: Cannot convert format %d color_range %d: %d\n",
             frame->format,
-            av_frame_get_color_range(frame),
+            frame->color_range,
             status
         );
 
@@ -2295,8 +2341,8 @@ static int vtenc_populate_extradata(AVCodecContext   *avctx,
     frame->format          = avctx->pix_fmt;
     frame->width           = avctx->width;
     frame->height          = avctx->height;
-    av_frame_set_colorspace(frame, avctx->colorspace);
-    av_frame_set_color_range(frame, avctx->color_range);
+    frame->colorspace      = avctx->colorspace;
+    frame->color_range     = avctx->color_range;
     frame->color_trc       = avctx->color_trc;
     frame->color_primaries = avctx->color_primaries;
 

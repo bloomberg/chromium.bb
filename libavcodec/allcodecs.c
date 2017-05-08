@@ -25,6 +25,7 @@
  */
 
 #include "config.h"
+#include "libavutil/thread.h"
 #include "avcodec.h"
 #include "version.h"
 
@@ -58,14 +59,8 @@
             av_register_codec_parser(&ff_##x##_parser);                 \
     }
 
-void avcodec_register_all(void)
+static void register_all(void)
 {
-    static int initialized;
-
-    if (initialized)
-        return;
-    initialized = 1;
-
     /* hardware accelerators */
     REGISTER_HWACCEL(H263_VAAPI,        h263_vaapi);
     REGISTER_HWACCEL(H263_VIDEOTOOLBOX, h263_videotoolbox);
@@ -116,6 +111,7 @@ void avcodec_register_all(void)
     REGISTER_HWACCEL(VC1_QSV,           vc1_qsv);
     REGISTER_HWACCEL(VP8_CUVID,         vp8_cuvid);
     REGISTER_HWACCEL(VP8_MEDIACODEC,    vp8_mediacodec);
+    REGISTER_HWACCEL(VP8_QSV,           vp8_qsv);
     REGISTER_HWACCEL(VP9_CUVID,         vp9_cuvid);
     REGISTER_HWACCEL(VP9_D3D11VA,       vp9_d3d11va);
     REGISTER_HWACCEL(VP9_DXVA2,         vp9_dxva2);
@@ -262,6 +258,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER(MPEG2_CRYSTALHD,   mpeg2_crystalhd);
     REGISTER_DECODER(MPEG2_QSV,         mpeg2_qsv);
     REGISTER_DECODER(MSA1,              msa1);
+    REGISTER_DECODER(MSCC,              mscc);
     REGISTER_DECODER(MSMPEG4V1,         msmpeg4v1);
     REGISTER_ENCDEC (MSMPEG4V2,         msmpeg4v2);
     REGISTER_ENCDEC (MSMPEG4V3,         msmpeg4v3);
@@ -320,6 +317,7 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (SNOW,              snow);
     REGISTER_DECODER(SP5X,              sp5x);
     REGISTER_DECODER(SPEEDHQ,           speedhq);
+    REGISTER_DECODER(SRGC,              srgc);
     REGISTER_ENCDEC (SUNRAST,           sunrast);
     REGISTER_ENCDEC (SVQ1,              svq1);
     REGISTER_DECODER(SVQ3,              svq3);
@@ -367,6 +365,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER(VP8,               vp8);
     REGISTER_DECODER(VP9,               vp9);
     REGISTER_DECODER(VQA,               vqa);
+    REGISTER_DECODER(BITPACKED,         bitpacked);
     REGISTER_DECODER(WEBP,              webp);
     REGISTER_ENCODER(WRAPPED_AVFRAME,   wrapped_avframe);
     REGISTER_ENCDEC (WMV1,              wmv1);
@@ -383,6 +382,7 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (XBM,               xbm);
     REGISTER_ENCDEC (XFACE,             xface);
     REGISTER_DECODER(XL,                xl);
+    REGISTER_DECODER(XPM,               xpm);
     REGISTER_ENCDEC (XWD,               xwd);
     REGISTER_ENCDEC (Y41P,              y41p);
     REGISTER_DECODER(YLC,               ylc);
@@ -672,6 +672,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER(VC1_CUVID,         vc1_cuvid);
     REGISTER_DECODER(VP8_CUVID,         vp8_cuvid);
     REGISTER_DECODER(VP8_MEDIACODEC,    vp8_mediacodec);
+    REGISTER_DECODER(VP8_QSV,           vp8_qsv);
     REGISTER_ENCODER(VP8_VAAPI,         vp8_vaapi);
     REGISTER_DECODER(VP9_CUVID,         vp9_cuvid);
     REGISTER_DECODER(VP9_MEDIACODEC,    vp9_mediacodec);
@@ -717,4 +718,11 @@ void avcodec_register_all(void)
     REGISTER_PARSER(VP8,                vp8);
     REGISTER_PARSER(VP9,                vp9);
     REGISTER_PARSER(XMA,                xma);
+}
+
+void avcodec_register_all(void)
+{
+    static AVOnce control = AV_ONCE_INIT;
+
+    ff_thread_once(&control, register_all);
 }

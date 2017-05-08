@@ -185,8 +185,8 @@ static inline int decode_block(CLVContext *ctx, int16_t *blk, int has_ac,
     const int t3 = OP( 2408 * blk[5 * step] - 1609 * blk[3 * step]);    \
     const int t4 = OP( 1108 * blk[2 * step] - 2676 * blk[6 * step]);    \
     const int t5 = OP( 2676 * blk[2 * step] + 1108 * blk[6 * step]);    \
-    const int t6 = ((blk[0 * step] + blk[4 * step]) << dshift) + bias;  \
-    const int t7 = ((blk[0 * step] - blk[4 * step]) << dshift) + bias;  \
+    const int t6 = ((blk[0 * step] + blk[4 * step]) * (1 << dshift)) + bias;  \
+    const int t7 = ((blk[0 * step] - blk[4 * step]) * (1 << dshift)) + bias;  \
     const int t8 = t0 + t2;                                             \
     const int t9 = t0 - t2;                                             \
     const int tA = 181 * (t9 + (t1 - t3)) + 0x80 >> 8;                  \
@@ -281,6 +281,7 @@ static int clv_decode_frame(AVCodecContext *avctx, void *data,
     uint32_t frame_type;
     int i, j;
     int ret;
+    int mb_ret = 0;
 
     bytestream2_init(&gb, buf, buf_size);
     if (avctx->codec_tag == MKTAG('C','L','V','1')) {
@@ -312,7 +313,9 @@ static int clv_decode_frame(AVCodecContext *avctx, void *data,
 
         for (j = 0; j < c->mb_height; j++) {
             for (i = 0; i < c->mb_width; i++) {
-                ret |= decode_mb(c, i, j);
+                ret = decode_mb(c, i, j);
+                if (ret < 0)
+                    mb_ret = ret;
             }
         }
     } else {
@@ -323,7 +326,7 @@ static int clv_decode_frame(AVCodecContext *avctx, void *data,
 
     *got_frame = 1;
 
-    return ret < 0 ? ret : buf_size;
+    return mb_ret < 0 ? mb_ret : buf_size;
 }
 
 static av_cold int clv_decode_init(AVCodecContext *avctx)
@@ -382,6 +385,6 @@ AVCodec ff_clearvideo_decoder = {
     .init           = clv_decode_init,
     .close          = clv_decode_end,
     .decode         = clv_decode_frame,
-    .capabilities   = CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1,
     .long_name      = NULL_IF_CONFIG_SMALL("Iterated Systems ClearVideo"),
 };

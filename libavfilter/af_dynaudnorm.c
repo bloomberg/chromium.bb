@@ -341,7 +341,7 @@ static inline double fade(double prev, double next, int pos,
     return fade_factors[0][pos] * prev + fade_factors[1][pos] * next;
 }
 
-static inline double pow2(const double value)
+static inline double pow_2(const double value)
 {
     return value * value;
 }
@@ -358,7 +358,7 @@ static double find_peak_magnitude(AVFrame *frame, int channel)
     int c, i;
 
     if (channel == -1) {
-        for (c = 0; c < av_frame_get_channels(frame); c++) {
+        for (c = 0; c < frame->channels; c++) {
             double *data_ptr = (double *)frame->extended_data[c];
 
             for (i = 0; i < frame->nb_samples; i++)
@@ -380,19 +380,19 @@ static double compute_frame_rms(AVFrame *frame, int channel)
     int c, i;
 
     if (channel == -1) {
-        for (c = 0; c < av_frame_get_channels(frame); c++) {
+        for (c = 0; c < frame->channels; c++) {
             const double *data_ptr = (double *)frame->extended_data[c];
 
             for (i = 0; i < frame->nb_samples; i++) {
-                rms_value += pow2(data_ptr[i]);
+                rms_value += pow_2(data_ptr[i]);
             }
         }
 
-        rms_value /= frame->nb_samples * av_frame_get_channels(frame);
+        rms_value /= frame->nb_samples * frame->channels;
     } else {
         const double *data_ptr = (double *)frame->extended_data[channel];
         for (i = 0; i < frame->nb_samples; i++) {
-            rms_value += pow2(data_ptr[i]);
+            rms_value += pow_2(data_ptr[i]);
         }
 
         rms_value /= frame->nb_samples;
@@ -545,7 +545,7 @@ static double compute_frame_std_dev(DynamicAudioNormalizerContext *s,
             const double *data_ptr = (double *)frame->extended_data[c];
 
             for (i = 0; i < frame->nb_samples; i++) {
-                variance += pow2(data_ptr[i]);  // Assume that MEAN is *zero*
+                variance += pow_2(data_ptr[i]);  // Assume that MEAN is *zero*
             }
         }
         variance /= (s->channels * frame->nb_samples) - 1;
@@ -553,7 +553,7 @@ static double compute_frame_std_dev(DynamicAudioNormalizerContext *s,
         const double *data_ptr = (double *)frame->extended_data[channel];
 
         for (i = 0; i < frame->nb_samples; i++) {
-            variance += pow2(data_ptr[i]);      // Assume that MEAN is *zero*
+            variance += pow_2(data_ptr[i]);      // Assume that MEAN is *zero*
         }
         variance /= frame->nb_samples - 1;
     }

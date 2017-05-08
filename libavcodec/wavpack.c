@@ -157,7 +157,7 @@ static int wv_get_value(WavpackFrameContext *ctx, GetBitContext *gb,
         } else {
             t = get_unary_0_33(gb);
             if (t >= 2) {
-                if (get_bits_left(gb) < t - 1)
+                if (t >= 32 || get_bits_left(gb) < t - 1)
                     goto error;
                 t = get_bits_long(gb, t - 1) | (1 << (t - 1));
             } else {
@@ -240,7 +240,7 @@ static int wv_get_value(WavpackFrameContext *ctx, GetBitContext *gb,
         if (get_bits_left(gb) <= 0)
             goto error;
     } else {
-        int mid = (base * 2 + add + 1) >> 1;
+        int mid = (base * 2U + add + 1) >> 1;
         while (add > c->error_limit) {
             if (get_bits_left(gb) <= 0)
                 goto error;
@@ -249,7 +249,7 @@ static int wv_get_value(WavpackFrameContext *ctx, GetBitContext *gb,
                 base = mid;
             } else
                 add = mid - base - 1;
-            mid = (base * 2 + add + 1) >> 1;
+            mid = (base * 2U + add + 1) >> 1;
         }
         ret = mid;
     }
@@ -268,12 +268,12 @@ error:
 }
 
 static inline int wv_get_value_integer(WavpackFrameContext *s, uint32_t *crc,
-                                       int S)
+                                       unsigned S)
 {
     unsigned bit;
 
     if (s->extra_bits) {
-        S <<= s->extra_bits;
+        S *= 1 << s->extra_bits;
 
         if (s->got_extra_bits &&
             get_bits_left(&s->gb_extra_bits) >= s->extra_bits) {
@@ -415,11 +415,11 @@ static inline int wv_unpack_stereo(WavpackFrameContext *s, GetBitContext *gb,
             if (t > 0) {
                 if (t > 8) {
                     if (t & 1) {
-                        A = 2 * s->decorr[i].samplesA[0] - s->decorr[i].samplesA[1];
-                        B = 2 * s->decorr[i].samplesB[0] - s->decorr[i].samplesB[1];
+                        A = 2U * s->decorr[i].samplesA[0] - s->decorr[i].samplesA[1];
+                        B = 2U * s->decorr[i].samplesB[0] - s->decorr[i].samplesB[1];
                     } else {
-                        A = (3 * s->decorr[i].samplesA[0] - s->decorr[i].samplesA[1]) >> 1;
-                        B = (3 * s->decorr[i].samplesB[0] - s->decorr[i].samplesB[1]) >> 1;
+                        A = (int)(3U * s->decorr[i].samplesA[0] - s->decorr[i].samplesA[1]) >> 1;
+                        B = (int)(3U * s->decorr[i].samplesB[0] - s->decorr[i].samplesB[1]) >> 1;
                     }
                     s->decorr[i].samplesA[1] = s->decorr[i].samplesA[0];
                     s->decorr[i].samplesB[1] = s->decorr[i].samplesB[0];
@@ -488,7 +488,7 @@ static inline int wv_unpack_stereo(WavpackFrameContext *s, GetBitContext *gb,
 
         pos = (pos + 1) & 7;
         if (s->joint)
-            L += (R -= (L >> 1));
+            L += (unsigned)(R -= (unsigned)(L >> 1));
         crc = (crc * 3 + L) * 3 + R;
 
         if (type == AV_SAMPLE_FMT_FLTP) {
@@ -846,7 +846,7 @@ static int wavpack_decode_block(AVCodecContext *avctx, int block_no,
                 continue;
             }
             bytestream2_get_buffer(&gb, val, 4);
-            if (val[0] > 32) {
+            if (val[0] > 31) {
                 av_log(avctx, AV_LOG_ERROR,
                        "Invalid INT32INFO, extra_bits = %d (> 32)\n", val[0]);
                 continue;
@@ -860,6 +860,12 @@ static int wavpack_decode_block(AVCodecContext *avctx, int block_no,
             } else if (val[3]) {
                 s->and   = 1;
                 s->shift = val[3];
+            }
+            if (s->shift > 31) {
+                av_log(avctx, AV_LOG_ERROR,
+                       "Invalid INT32INFO, shift = %d (> 31)\n", s->shift);
+                s->and = s->or = s->shift = 0;
+                continue;
             }
             /* original WavPack decoder forces 32-bit lossy sound to be treated
              * as 24-bit one in order to have proper clipping */

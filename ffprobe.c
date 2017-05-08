@@ -51,6 +51,19 @@
 #include "libpostproc/postprocess.h"
 #include "cmdutils.h"
 
+#include "libavutil/thread.h"
+
+#if !HAVE_THREADS
+#  ifdef pthread_mutex_lock
+#    undef pthread_mutex_lock
+#  endif
+#  define pthread_mutex_lock(a) do{}while(0)
+#  ifdef pthread_mutex_unlock
+#    undef pthread_mutex_unlock
+#  endif
+#  define pthread_mutex_unlock(a) do{}while(0)
+#endif
+
 typedef struct InputStream {
     AVStream *st;
 
@@ -86,6 +99,7 @@ static int do_show_library_versions = 0;
 static int do_show_pixel_formats = 0;
 static int do_show_pixel_format_flags = 0;
 static int do_show_pixel_format_components = 0;
+static int do_show_log = 0;
 
 static int do_show_chapter_tags = 0;
 static int do_show_format_tags = 0;
@@ -148,6 +162,8 @@ typedef enum {
     SECTION_ID_FRAME_TAGS,
     SECTION_ID_FRAME_SIDE_DATA_LIST,
     SECTION_ID_FRAME_SIDE_DATA,
+    SECTION_ID_FRAME_LOG,
+    SECTION_ID_FRAME_LOGS,
     SECTION_ID_LIBRARY_VERSION,
     SECTION_ID_LIBRARY_VERSIONS,
     SECTION_ID_PACKET,
@@ -187,10 +203,12 @@ static struct section sections[] = {
     [SECTION_ID_FORMAT] =             { SECTION_ID_FORMAT, "format", 0, { SECTION_ID_FORMAT_TAGS, -1 } },
     [SECTION_ID_FORMAT_TAGS] =        { SECTION_ID_FORMAT_TAGS, "tags", SECTION_FLAG_HAS_VARIABLE_FIELDS, { -1 }, .element_name = "tag", .unique_name = "format_tags" },
     [SECTION_ID_FRAMES] =             { SECTION_ID_FRAMES, "frames", SECTION_FLAG_IS_ARRAY, { SECTION_ID_FRAME, SECTION_ID_SUBTITLE, -1 } },
-    [SECTION_ID_FRAME] =              { SECTION_ID_FRAME, "frame", 0, { SECTION_ID_FRAME_TAGS, SECTION_ID_FRAME_SIDE_DATA_LIST, -1 } },
+    [SECTION_ID_FRAME] =              { SECTION_ID_FRAME, "frame", 0, { SECTION_ID_FRAME_TAGS, SECTION_ID_FRAME_SIDE_DATA_LIST, SECTION_ID_FRAME_LOGS, -1 } },
     [SECTION_ID_FRAME_TAGS] =         { SECTION_ID_FRAME_TAGS, "tags", SECTION_FLAG_HAS_VARIABLE_FIELDS, { -1 }, .element_name = "tag", .unique_name = "frame_tags" },
     [SECTION_ID_FRAME_SIDE_DATA_LIST] ={ SECTION_ID_FRAME_SIDE_DATA_LIST, "side_data_list", SECTION_FLAG_IS_ARRAY, { SECTION_ID_FRAME_SIDE_DATA, -1 }, .element_name = "side_data", .unique_name = "frame_side_data_list" },
     [SECTION_ID_FRAME_SIDE_DATA] =     { SECTION_ID_FRAME_SIDE_DATA, "side_data", 0, { -1 } },
+    [SECTION_ID_FRAME_LOGS] =         { SECTION_ID_FRAME_LOGS, "logs", SECTION_FLAG_IS_ARRAY, { SECTION_ID_FRAME_LOG, -1 } },
+    [SECTION_ID_FRAME_LOG] =          { SECTION_ID_FRAME_LOG, "log", 0, { -1 },  },
     [SECTION_ID_LIBRARY_VERSIONS] =   { SECTION_ID_LIBRARY_VERSIONS, "library_versions", SECTION_FLAG_IS_ARRAY, { SECTION_ID_LIBRARY_VERSION, -1 } },
     [SECTION_ID_LIBRARY_VERSION] =    { SECTION_ID_LIBRARY_VERSION, "library_version", 0, { -1 } },
     [SECTION_ID_PACKETS] =            { SECTION_ID_PACKETS, "packets", SECTION_FLAG_IS_ARRAY, { SECTION_ID_PACKET, -1} },
@@ -257,11 +275,79 @@ static uint64_t *nb_streams_packets;
 static uint64_t *nb_streams_frames;
 static int *selected_streams;
 
+#if HAVE_THREADS
+pthread_mutex_t log_mutex;
+#endif
+typedef struct LogBuffer {
+    char *context_name;
+    int log_level;
+    char *log_message;
+    AVClassCategory category;
+    char *parent_name;
+    AVClassCategory parent_category;
+}LogBuffer;
+
+static LogBuffer *log_buffer;
+static int log_buffer_size;
+
+static void log_callback(void *ptr, int level, const char *fmt, va_list vl)
+{
+    AVClass* avc = ptr ? *(AVClass **) ptr : NULL;
+    va_list vl2;
+    char line[1024];
+    static int print_prefix = 1;
+    void *new_log_buffer;
+
+    va_copy(vl2, vl);
+    av_log_default_callback(ptr, level, fmt, vl);
+    av_log_format_line(ptr, level, fmt, vl2, line, sizeof(line), &print_prefix);
+    va_end(vl2);
+
+#if HAVE_THREADS
+    pthread_mutex_lock(&log_mutex);
+
+    new_log_buffer = av_realloc_array(log_buffer, log_buffer_size + 1, sizeof(*log_buffer));
+    if (new_log_buffer) {
+        char *msg;
+        int i;
+
+        log_buffer = new_log_buffer;
+        memset(&log_buffer[log_buffer_size], 0, sizeof(log_buffer[log_buffer_size]));
+        log_buffer[log_buffer_size].context_name= avc ? av_strdup(avc->item_name(ptr)) : NULL;
+        if (avc) {
+            if (avc->get_category) log_buffer[log_buffer_size].category = avc->get_category(ptr);
+            else                   log_buffer[log_buffer_size].category = avc->category;
+        }
+        log_buffer[log_buffer_size].log_level   = level;
+        msg = log_buffer[log_buffer_size].log_message = av_strdup(line);
+        for (i=strlen(msg) - 1; i>=0 && msg[i] == '\n'; i--) {
+            msg[i] = 0;
+        }
+        if (avc && avc->parent_log_context_offset) {
+            AVClass** parent = *(AVClass ***) (((uint8_t *) ptr) +
+                                   avc->parent_log_context_offset);
+            if (parent && *parent) {
+                log_buffer[log_buffer_size].parent_name = av_strdup((*parent)->item_name(parent));
+                log_buffer[log_buffer_size].parent_category =
+                    (*parent)->get_category ? (*parent)->get_category(parent) :(*parent)->category;
+            }
+        }
+        log_buffer_size ++;
+    }
+
+    pthread_mutex_unlock(&log_mutex);
+#endif
+}
+
 static void ffprobe_cleanup(int ret)
 {
     int i;
     for (i = 0; i < FF_ARRAY_ELEMS(sections); i++)
         av_dict_free(&(sections[i].entries_to_show));
+
+#if HAVE_THREADS
+    pthread_mutex_destroy(&log_mutex);
+#endif
 }
 
 struct unit_value {
@@ -1762,6 +1848,7 @@ static inline int show_tags(WriterContext *w, AVDictionary *tags, int section_id
 }
 
 static void print_pkt_side_data(WriterContext *w,
+                                AVCodecParameters *par,
                                 const AVPacketSideData *side_data,
                                 int nb_side_data,
                                 SectionID id_data_list,
@@ -1769,14 +1856,13 @@ static void print_pkt_side_data(WriterContext *w,
 {
     int i;
 
-    writer_print_section_header(w, SECTION_ID_STREAM_SIDE_DATA_LIST);
+    writer_print_section_header(w, id_data_list);
     for (i = 0; i < nb_side_data; i++) {
         const AVPacketSideData *sd = &side_data[i];
         const char *name = av_packet_side_data_name(sd->type);
 
-        writer_print_section_header(w, SECTION_ID_STREAM_SIDE_DATA);
+        writer_print_section_header(w, id_data);
         print_str("side_data_type", name ? name : "unknown");
-        print_int("side_data_size", sd->size);
         if (sd->type == AV_PKT_DATA_DISPLAYMATRIX && sd->size >= 9*4) {
             writer_print_integers(w, "displaymatrix", sd->data, 9, " %11d", 3, 4, 1);
             print_int("rotation", av_display_rotation_get((int32_t *)sd->data));
@@ -1786,20 +1872,82 @@ static void print_pkt_side_data(WriterContext *w,
             print_int("inverted", !!(stereo->flags & AV_STEREO3D_FLAG_INVERT));
         } else if (sd->type == AV_PKT_DATA_SPHERICAL) {
             const AVSphericalMapping *spherical = (AVSphericalMapping *)sd->data;
-            if (spherical->projection == AV_SPHERICAL_EQUIRECTANGULAR)
-                print_str("projection", "equirectangular");
-            else if (spherical->projection == AV_SPHERICAL_CUBEMAP)
-                print_str("projection", "cubemap");
-            else
-                print_str("projection", "unknown");
+            print_str("projection", av_spherical_projection_name(spherical->projection));
+            if (spherical->projection == AV_SPHERICAL_CUBEMAP) {
+                print_int("padding", spherical->padding);
+            } else if (spherical->projection == AV_SPHERICAL_EQUIRECTANGULAR_TILE) {
+                size_t l, t, r, b;
+                av_spherical_tile_bounds(spherical, par->width, par->height,
+                                         &l, &t, &r, &b);
+                print_int("bound_left", l);
+                print_int("bound_top", t);
+                print_int("bound_right", r);
+                print_int("bound_bottom", b);
+            }
 
             print_int("yaw", (double) spherical->yaw / (1 << 16));
             print_int("pitch", (double) spherical->pitch / (1 << 16));
             print_int("roll", (double) spherical->roll / (1 << 16));
+        } else if (sd->type == AV_PKT_DATA_SKIP_SAMPLES && sd->size == 10) {
+            print_int("skip_samples",    AV_RL32(sd->data));
+            print_int("discard_padding", AV_RL32(sd->data + 4));
+            print_int("skip_reason",     AV_RL8(sd->data + 8));
+            print_int("discard_reason",  AV_RL8(sd->data + 9));
         }
         writer_print_section_footer(w);
     }
     writer_print_section_footer(w);
+}
+
+static void clear_log(int need_lock)
+{
+    int i;
+
+    if (need_lock)
+        pthread_mutex_lock(&log_mutex);
+    for (i=0; i<log_buffer_size; i++) {
+        av_freep(&log_buffer[i].context_name);
+        av_freep(&log_buffer[i].parent_name);
+        av_freep(&log_buffer[i].log_message);
+    }
+    log_buffer_size = 0;
+    if(need_lock)
+        pthread_mutex_unlock(&log_mutex);
+}
+
+static int show_log(WriterContext *w, int section_ids, int section_id, int log_level)
+{
+    int i;
+    pthread_mutex_lock(&log_mutex);
+    if (!log_buffer_size) {
+        pthread_mutex_unlock(&log_mutex);
+        return 0;
+    }
+    writer_print_section_header(w, section_ids);
+
+    for (i=0; i<log_buffer_size; i++) {
+        if (log_buffer[i].log_level <= log_level) {
+            writer_print_section_header(w, section_id);
+            print_str("context", log_buffer[i].context_name);
+            print_int("level", log_buffer[i].log_level);
+            print_int("category", log_buffer[i].category);
+            if (log_buffer[i].parent_name) {
+                print_str("parent_context", log_buffer[i].parent_name);
+                print_int("parent_category", log_buffer[i].parent_category);
+            } else {
+                print_str_opt("parent_context", "N/A");
+                print_str_opt("parent_category", "N/A");
+            }
+            print_str("message", log_buffer[i].log_message);
+            writer_print_section_footer(w);
+        }
+    }
+    clear_log(0);
+    pthread_mutex_unlock(&log_mutex);
+
+    writer_print_section_footer(w);
+
+    return 0;
 }
 
 static void show_packet(WriterContext *w, InputFile *ifile, AVPacket *pkt, int packet_idx)
@@ -1843,7 +1991,7 @@ static void show_packet(WriterContext *w, InputFile *ifile, AVPacket *pkt, int p
             av_dict_free(&dict);
         }
 
-        print_pkt_side_data(w, pkt->side_data, pkt->side_data_elems,
+        print_pkt_side_data(w, st->codecpar, pkt->side_data, pkt->side_data_elems,
                             SECTION_ID_PACKET_SIDE_DATA_LIST,
                             SECTION_ID_PACKET_SIDE_DATA);
     }
@@ -1901,13 +2049,13 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
     print_time("pkt_pts_time",          frame->pts, &stream->time_base);
     print_ts  ("pkt_dts",               frame->pkt_dts);
     print_time("pkt_dts_time",          frame->pkt_dts, &stream->time_base);
-    print_ts  ("best_effort_timestamp", av_frame_get_best_effort_timestamp(frame));
-    print_time("best_effort_timestamp_time", av_frame_get_best_effort_timestamp(frame), &stream->time_base);
-    print_duration_ts  ("pkt_duration",      av_frame_get_pkt_duration(frame));
-    print_duration_time("pkt_duration_time", av_frame_get_pkt_duration(frame), &stream->time_base);
-    if (av_frame_get_pkt_pos (frame) != -1) print_fmt    ("pkt_pos", "%"PRId64, av_frame_get_pkt_pos(frame));
+    print_ts  ("best_effort_timestamp", frame->best_effort_timestamp);
+    print_time("best_effort_timestamp_time", frame->best_effort_timestamp, &stream->time_base);
+    print_duration_ts  ("pkt_duration",      frame->pkt_duration);
+    print_duration_time("pkt_duration_time", frame->pkt_duration, &stream->time_base);
+    if (frame->pkt_pos != -1) print_fmt    ("pkt_pos", "%"PRId64, frame->pkt_pos);
     else                      print_str_opt("pkt_pos", "N/A");
-    if (av_frame_get_pkt_size(frame) != -1) print_val    ("pkt_size", av_frame_get_pkt_size(frame), unit_byte_str);
+    if (frame->pkt_size != -1) print_val    ("pkt_size", frame->pkt_size, unit_byte_str);
     else                       print_str_opt("pkt_size", "N/A");
 
     switch (stream->codecpar->codec_type) {
@@ -1938,18 +2086,20 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
         if (s) print_str    ("sample_fmt", s);
         else   print_str_opt("sample_fmt", "unknown");
         print_int("nb_samples",         frame->nb_samples);
-        print_int("channels", av_frame_get_channels(frame));
-        if (av_frame_get_channel_layout(frame)) {
+        print_int("channels", frame->channels);
+        if (frame->channel_layout) {
             av_bprint_clear(&pbuf);
-            av_bprint_channel_layout(&pbuf, av_frame_get_channels(frame),
-                                     av_frame_get_channel_layout(frame));
+            av_bprint_channel_layout(&pbuf, frame->channels,
+                                     frame->channel_layout);
             print_str    ("channel_layout", pbuf.str);
         } else
             print_str_opt("channel_layout", "unknown");
         break;
     }
     if (do_show_frame_tags)
-        show_tags(w, av_frame_get_metadata(frame), SECTION_ID_FRAME_TAGS);
+        show_tags(w, frame->metadata, SECTION_ID_FRAME_TAGS);
+    if (do_show_log)
+        show_log(w, SECTION_ID_FRAME_LOGS, SECTION_ID_FRAME_LOG, do_show_log);
     if (frame->nb_side_data) {
         writer_print_section_header(w, SECTION_ID_FRAME_SIDE_DATA_LIST);
         for (i = 0; i < frame->nb_side_data; i++) {
@@ -1959,7 +2109,6 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
             writer_print_section_header(w, SECTION_ID_FRAME_SIDE_DATA);
             name = av_frame_side_data_name(sd->type);
             print_str("side_data_type", name ? name : "unknown");
-            print_int("side_data_size", sd->size);
             if (sd->type == AV_FRAME_DATA_DISPLAYMATRIX && sd->size >= 9*4) {
                 writer_print_integers(w, "displaymatrix", sd->data, 9, " %11d", 3, 4, 1);
                 print_int("rotation", av_display_rotation_get((int32_t *)sd->data));
@@ -1981,7 +2130,8 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
 
 static av_always_inline int process_frame(WriterContext *w,
                                           InputFile *ifile,
-                                          AVFrame *frame, AVPacket *pkt)
+                                          AVFrame *frame, AVPacket *pkt,
+                                          int *packet_new)
 {
     AVFormatContext *fmt_ctx = ifile->fmt_ctx;
     AVCodecContext *dec_ctx = ifile->streams[pkt->stream_index].dec_ctx;
@@ -1989,27 +2139,43 @@ static av_always_inline int process_frame(WriterContext *w,
     AVSubtitle sub;
     int ret = 0, got_frame = 0;
 
+    clear_log(1);
     if (dec_ctx && dec_ctx->codec) {
         switch (par->codec_type) {
         case AVMEDIA_TYPE_VIDEO:
-            ret = avcodec_decode_video2(dec_ctx, frame, &got_frame, pkt);
-            break;
-
         case AVMEDIA_TYPE_AUDIO:
-            ret = avcodec_decode_audio4(dec_ctx, frame, &got_frame, pkt);
+            if (*packet_new) {
+                ret = avcodec_send_packet(dec_ctx, pkt);
+                if (ret == AVERROR(EAGAIN)) {
+                    ret = 0;
+                } else if (ret >= 0 || ret == AVERROR_EOF) {
+                    ret = 0;
+                    *packet_new = 0;
+                }
+            }
+            if (ret >= 0) {
+                ret = avcodec_receive_frame(dec_ctx, frame);
+                if (ret >= 0) {
+                    got_frame = 1;
+                } else if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                    ret = 0;
+                }
+            }
             break;
 
         case AVMEDIA_TYPE_SUBTITLE:
             ret = avcodec_decode_subtitle2(dec_ctx, &sub, &got_frame, pkt);
+            *packet_new = 0;
             break;
+        default:
+            *packet_new = 0;
         }
+    } else {
+        *packet_new = 0;
     }
 
     if (ret < 0)
         return ret;
-    ret = FFMIN(ret, pkt->size); /* guard against bogus return values */
-    pkt->data += ret;
-    pkt->size -= ret;
     if (got_frame) {
         int is_sub = (par->codec_type == AVMEDIA_TYPE_SUBTITLE);
         nb_streams_frames[pkt->stream_index]++;
@@ -2021,7 +2187,7 @@ static av_always_inline int process_frame(WriterContext *w,
         if (is_sub)
             avsubtitle_free(&sub);
     }
-    return got_frame;
+    return got_frame || *packet_new;
 }
 
 static void log_read_interval(const ReadInterval *interval, void *log_ctx, int log_level)
@@ -2052,7 +2218,7 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
                                  const ReadInterval *interval, int64_t *cur_ts)
 {
     AVFormatContext *fmt_ctx = ifile->fmt_ctx;
-    AVPacket pkt, pkt1;
+    AVPacket pkt;
     AVFrame *frame = NULL;
     int ret = 0, i = 0, frame_count = 0;
     int64_t start = -INT64_MAX, end = interval->end;
@@ -2129,8 +2295,8 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
                 nb_streams_packets[pkt.stream_index]++;
             }
             if (do_read_frames) {
-                pkt1 = pkt;
-                while (pkt1.size && process_frame(w, ifile, frame, &pkt1) > 0);
+                int packet_new = 1;
+                while (process_frame(w, ifile, frame, &pkt, &packet_new) > 0);
             }
         }
         av_packet_unref(&pkt);
@@ -2142,7 +2308,7 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
     for (i = 0; i < fmt_ctx->nb_streams; i++) {
         pkt.stream_index = i;
         if (do_read_frames)
-            while (process_frame(w, ifile, frame, &pkt) > 0);
+            while (process_frame(w, ifile, frame, &pkt, &(int){1}) > 0);
     }
 
 end:
@@ -2228,9 +2394,8 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
 #endif
 
     /* print AVI/FourCC tag */
-    av_get_codec_tag_string(val_str, sizeof(val_str), par->codec_tag);
-    print_str("codec_tag_string",    val_str);
-    print_fmt("codec_tag", "0x%04x", par->codec_tag);
+    print_str("codec_tag_string",    av_fourcc2str(par->codec_tag));
+    print_fmt("codec_tag", "0x%04"PRIx32, par->codec_tag);
 
     switch (par->codec_type) {
     case AVMEDIA_TYPE_VIDEO:
@@ -2404,7 +2569,7 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
         ret = show_tags(w, stream->metadata, in_program ? SECTION_ID_PROGRAM_STREAM_TAGS : SECTION_ID_STREAM_TAGS);
 
     if (stream->nb_side_data) {
-        print_pkt_side_data(w, stream->side_data, stream->nb_side_data,
+        print_pkt_side_data(w, stream->codecpar, stream->side_data, stream->nb_side_data,
                             SECTION_ID_STREAM_SIDE_DATA_LIST,
                             SECTION_ID_STREAM_SIDE_DATA);
     }
@@ -2564,6 +2729,14 @@ static int open_input_file(InputFile *ifile, const char *filename)
     AVDictionary **opts;
     int scan_all_pmts_set = 0;
 
+    fmt_ctx = avformat_alloc_context();
+    if (!fmt_ctx) {
+        print_error(filename, AVERROR(ENOMEM));
+        exit_program(1);
+    }
+
+    fmt_ctx->flags |= AVFMT_FLAG_KEEP_SIDE_DATA;
+
     if (!av_dict_get(format_opts, "scan_all_pmts", NULL, AV_DICT_MATCH_CASE)) {
         av_dict_set(&format_opts, "scan_all_pmts", "1", AV_DICT_DONT_OVERWRITE);
         scan_all_pmts_set = 1;
@@ -2637,6 +2810,13 @@ static int open_input_file(InputFile *ifile, const char *filename)
             err = avcodec_parameters_to_context(ist->dec_ctx, stream->codecpar);
             if (err < 0)
                 exit(1);
+
+            if (do_show_log) {
+                // For loging it is needed to disable at least frame threads as otherwise
+                // the log information would need to be reordered and matches up to contexts and frames
+                // That is in fact possible but not trivial
+                av_dict_set(&codec_opts, "threads", "1", 0);
+            }
 
             av_codec_set_pkt_timebase(ist->dec_ctx, stream->time_base);
             ist->dec_ctx->framerate = stream->avg_frame_rate;
@@ -2993,6 +3173,7 @@ void show_help_default(const char *opt, const char *arg)
     printf("\n");
 
     show_help_children(avformat_get_class(), AV_OPT_FLAG_DECODING_PARAM);
+    show_help_children(avcodec_get_class(), AV_OPT_FLAG_DECODING_PARAM);
 }
 
 /**
@@ -3198,7 +3379,7 @@ DEFINE_OPT_SHOW_SECTION(streams,          STREAMS)
 DEFINE_OPT_SHOW_SECTION(programs,         PROGRAMS)
 
 static const OptionDef real_options[] = {
-#include "cmdutils_common_opts.h"
+    CMDUTILS_COMMON_OPTIONS
     { "f", HAS_ARG, {.func_arg = opt_format}, "force format", "format" },
     { "unit", OPT_BOOL, {&show_value_unit}, "show unit of the displayed values" },
     { "prefix", OPT_BOOL, {&use_value_prefix}, "use SI prefixes for the displayed values" },
@@ -3222,6 +3403,9 @@ static const OptionDef real_options[] = {
       "show a particular entry from the format/container info", "entry" },
     { "show_entries", HAS_ARG, {.func_arg = opt_show_entries},
       "show a set of specified entries", "entry_list" },
+#if HAVE_THREADS
+    { "show_log", OPT_INT|HAS_ARG, {(void*)&do_show_log}, "show log" },
+#endif
     { "show_packets", 0, {(void*)&opt_show_packets}, "show packets info" },
     { "show_programs", 0, {(void*)&opt_show_programs}, "show programs info" },
     { "show_streams", 0, {(void*)&opt_show_streams}, "show streams info" },
@@ -3268,6 +3452,12 @@ int main(int argc, char **argv)
 
     init_dynload();
 
+#if HAVE_THREADS
+    ret = pthread_mutex_init(&log_mutex, NULL);
+    if (ret != 0) {
+        goto end;
+    }
+#endif
     av_log_set_flags(AV_LOG_SKIP_REPEATED);
     register_exit(ffprobe_cleanup);
 
@@ -3282,6 +3472,9 @@ int main(int argc, char **argv)
 
     show_banner(argc, argv, options);
     parse_options(NULL, argc, argv, options, opt_input_file);
+
+    if (do_show_log)
+        av_log_set_callback(log_callback);
 
     /* mark things to show, based on -show_entries */
     SET_DO_SHOW(CHAPTERS, chapters);

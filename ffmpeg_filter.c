@@ -460,7 +460,7 @@ static int configure_output_video_filter(FilterGraph *fg, OutputFilter *ofilter,
     if (ret < 0)
         return ret;
 
-    if (!hw_device_ctx && (ofilter->width || ofilter->height)) {
+    if (ofilter->width || ofilter->height) {
         char args[255];
         AVFilterContext *filter;
         AVDictionaryEntry *e = NULL;
@@ -678,6 +678,21 @@ int configure_output_filter(FilterGraph *fg, OutputFilter *ofilter, AVFilterInOu
     }
 }
 
+void check_filter_outputs(void)
+{
+    int i;
+    for (i = 0; i < nb_filtergraphs; i++) {
+        int n;
+        for (n = 0; n < filtergraphs[i]->nb_outputs; n++) {
+            OutputFilter *output = filtergraphs[i]->outputs[n];
+            if (!output->ost) {
+                av_log(NULL, AV_LOG_FATAL, "Filter %s has an unconnected output\n", output->name);
+                exit_program(1);
+            }
+        }
+    }
+}
+
 static int sub2video_prepare(InputStream *ist, InputFilter *ifilter)
 {
     AVFormatContext *avf = input_files[ist->file_index]->ctx;
@@ -800,23 +815,6 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
         }
         if (ret < 0)
             return ret;
-    }
-
-    if (ist->framerate.num) {
-        AVFilterContext *setpts;
-
-        snprintf(name, sizeof(name), "forcecfr_in_%d_%d",
-                 ist->file_index, ist->st->index);
-        if ((ret = avfilter_graph_create_filter(&setpts,
-                                                avfilter_get_by_name("setpts"),
-                                                name, "N", NULL,
-                                                fg->graph)) < 0)
-            return ret;
-
-        if ((ret = avfilter_link(last_filter, 0, setpts, 0)) < 0)
-            return ret;
-
-        last_filter = setpts;
     }
 
     if (do_deinterlace) {
@@ -1037,7 +1035,6 @@ int configure_filtergraph(FilterGraph *fg)
         }
         if (strlen(args))
             args[strlen(args) - 1] = '\0';
-        fg->graph->resample_lavr_opts = av_strdup(args);
 
         e = av_dict_get(ost->encoder_opts, "threads", NULL, 0);
         if (e)
@@ -1180,7 +1177,7 @@ int ifilter_parameters_from_frame(InputFilter *ifilter, const AVFrame *frame)
     ifilter->sample_aspect_ratio = frame->sample_aspect_ratio;
 
     ifilter->sample_rate         = frame->sample_rate;
-    ifilter->channels            = av_frame_get_channels(frame);
+    ifilter->channels            = frame->channels;
     ifilter->channel_layout      = frame->channel_layout;
 
     if (frame->hw_frames_ctx) {

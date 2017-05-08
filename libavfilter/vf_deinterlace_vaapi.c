@@ -446,7 +446,7 @@ static int deint_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_frame)
     params.surface = input_surface;
     params.surface_region = &input_region;
     params.surface_color_standard = vaapi_proc_colour_standard(
-        av_frame_get_colorspace(input_frame));
+        input_frame->colorspace);
 
     params.output_region = NULL;
     params.output_background_color = 0xff000000;
@@ -631,4 +631,5 @@ AVFilter ff_vf_deinterlace_vaapi = {
     .inputs         = deint_vaapi_inputs,
     .outputs        = deint_vaapi_outputs,
     .priv_class     = &deint_vaapi_class,
+    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

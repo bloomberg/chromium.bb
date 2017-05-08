@@ -1,5 +1,5 @@
 MAIN_MAKEFILE=1
-include config.mak
+include ffbuild/config.mak
 
 vpath %.c    $(SRC_PATH)
 vpath %.cpp  $(SRC_PATH)
@@ -43,8 +43,6 @@ OBJS-ffserver                 += ffserver_config.o
 
 TESTTOOLS   = audiogen videogen rotozoom tiny_psnr tiny_ssim base64 audiomatch
 HOSTPROGS  := $(TESTTOOLS:%=tests/%) doc/print_options
-TOOLS       = qt-faststart trasher uncoded_frame
-TOOLS-$(CONFIG_ZLIB) += cws2fws
 
 # $(FFLIBS-yes) needs to be in linking order
 FFLIBS-$(CONFIG_AVDEVICE)   += avdevice
@@ -61,10 +59,13 @@ FFLIBS := avutil
 DATA_FILES := $(wildcard $(SRC_PATH)/presets/*.ffpreset) $(SRC_PATH)/doc/ffprobe.xsd
 EXAMPLES_FILES := $(wildcard $(SRC_PATH)/doc/examples/*.c) $(SRC_PATH)/doc/examples/Makefile $(SRC_PATH)/doc/examples/README
 
-SKIPHEADERS = cmdutils_common_opts.h                                    \
-              compat/w32pthreads.h
+SKIPHEADERS = compat/w32pthreads.h
 
-include $(SRC_PATH)/common.mak
+# first so "all" becomes default target
+all: all-yes
+
+include $(SRC_PATH)/tools/Makefile
+include $(SRC_PATH)/ffbuild/common.mak
 
 FF_EXTRALIBS := $(FFEXTRALIBS)
 FF_DEP_LIBS  := $(DEP_LIBS)
@@ -72,23 +73,32 @@ FF_STATIC_DEP_LIBS := $(STATIC_DEP_LIBS)
 
 all: $(AVPROGS)
 
-$(TOOLS): %$(EXESUF): %.o $(EXEOBJS)
+$(TOOLS): %$(EXESUF): %.o
 	$(LD) $(LDFLAGS) $(LDEXEFLAGS) $(LD_O) $^ $(ELIBS)
+
+target_dec_%_fuzzer$(EXESUF): target_dec_%_fuzzer.o $(FF_DEP_LIBS)
+	$(LD) $(LDFLAGS) $(LDEXEFLAGS) $(LD_O) $^ $(ELIBS) $(FF_EXTRALIBS) $(LIBFUZZER_PATH)
 
 tools/cws2fws$(EXESUF): ELIBS = $(ZLIB)
 tools/uncoded_frame$(EXESUF): $(FF_DEP_LIBS)
 tools/uncoded_frame$(EXESUF): ELIBS = $(FF_EXTRALIBS)
+tools/target_dec_%_fuzzer$(EXESUF): $(FF_DEP_LIBS)
 
-config.h: .config
-.config: $(wildcard $(FFLIBS:%=$(SRC_PATH)/lib%/all*.c))
+CONFIGURABLE_COMPONENTS =                                           \
+    $(wildcard $(FFLIBS:%=$(SRC_PATH)/lib%/all*.c))                 \
+    $(SRC_PATH)/libavcodec/bitstream_filters.c                      \
+    $(SRC_PATH)/libavformat/protocols.c                             \
+
+config.h: ffbuild/.config
+ffbuild/.config: $(CONFIGURABLE_COMPONENTS)
 	@-tput bold 2>/dev/null
-	@-printf '\nWARNING: $(?F) newer than config.h, rerun configure\n\n'
+	@-printf '\nWARNING: $(?) newer than config.h, rerun configure\n\n'
 	@-tput sgr0 2>/dev/null
 
 SUBDIR_VARS := CLEANFILES EXAMPLES FFLIBS HOSTPROGS TESTPROGS TOOLS      \
                HEADERS ARCH_HEADERS BUILT_HEADERS SKIPHEADERS            \
                ARMV5TE-OBJS ARMV6-OBJS ARMV8-OBJS VFP-OBJS NEON-OBJS     \
-               ALTIVEC-OBJS MMX-OBJS YASM-OBJS                           \
+               ALTIVEC-OBJS VSX-OBJS MMX-OBJS YASM-OBJS                  \
                MIPSFPU-OBJS MIPSDSPR2-OBJS MIPSDSP-OBJS MSA-OBJS         \
                MMI-OBJS OBJS SLIBOBJS HOSTOBJS TESTOBJS
 
@@ -97,13 +107,19 @@ $(1) :=
 $(1)-yes :=
 endef
 
+ifdef CONFIG_RAISE_MAJOR
+RAISE_MAJOR = 100
+else
+RAISE_MAJOR = 0
+endif
+
 define DOSUBDIR
 $(foreach V,$(SUBDIR_VARS),$(eval $(call RESET,$(V))))
 SUBDIR := $(1)/
 include $(SRC_PATH)/$(1)/Makefile
 -include $(SRC_PATH)/$(1)/$(ARCH)/Makefile
 -include $(SRC_PATH)/$(1)/$(INTRINSICS)/Makefile
-include $(SRC_PATH)/library.mak
+include $(SRC_PATH)/ffbuild/library.mak
 endef
 
 $(foreach D,$(FFLIBS),$(eval $(call DOSUBDIR,lib$(D))))
@@ -111,11 +127,11 @@ $(foreach D,$(FFLIBS),$(eval $(call DOSUBDIR,lib$(D))))
 include $(SRC_PATH)/doc/Makefile
 
 define DOPROG
-OBJS-$(1) += $(1).o $(EXEOBJS) $(OBJS-$(1)-yes)
+OBJS-$(1) += $(1).o $(OBJS-$(1)-yes)
 $(1)$(PROGSSUF)_g$(EXESUF): $$(OBJS-$(1))
 $$(OBJS-$(1)): CFLAGS  += $(CFLAGS-$(1))
 $(1)$(PROGSSUF)_g$(EXESUF): LDFLAGS += $(LDFLAGS-$(1))
-$(1)$(PROGSSUF)_g$(EXESUF): FF_EXTRALIBS += $(LIBS-$(1))
+$(1)$(PROGSSUF)_g$(EXESUF): FF_EXTRALIBS += $(EXTRALIBS-$(1))
 -include $$(OBJS-$(1):.o=.d)
 endef
 
@@ -130,14 +146,10 @@ $(PROGS): %$(PROGSSUF)$(EXESUF): %$(PROGSSUF)_g$(EXESUF)
 %$(PROGSSUF)_g$(EXESUF): %.o $(FF_DEP_LIBS)
 	$(LD) $(LDFLAGS) $(LDEXEFLAGS) $(LD_O) $(OBJS-$*) $(FF_EXTRALIBS)
 
-OBJDIRS += tools
-
--include $(wildcard tools/*.d)
-
-VERSION_SH  = $(SRC_PATH)/version.sh
+VERSION_SH  = $(SRC_PATH)/ffbuild/version.sh
 GIT_LOG     = $(SRC_PATH)/.git/logs/HEAD
 
-.version: $(wildcard $(GIT_LOG)) $(VERSION_SH) config.mak
+.version: $(wildcard $(GIT_LOG)) $(VERSION_SH) ffbuild/config.mak
 .version: M=@
 
 libavutil/ffversion.h .version:
@@ -178,7 +190,6 @@ uninstall-data:
 clean::
 	$(RM) $(ALLAVPROGS) $(ALLAVPROGS_G)
 	$(RM) $(CLEANSUFFIXES)
-	$(RM) $(CLEANSUFFIXES:%=tools/%)
 	$(RM) $(CLEANSUFFIXES:%=compat/msvcrt/%)
 	$(RM) $(CLEANSUFFIXES:%=compat/atomics/pthread/%)
 	$(RM) $(CLEANSUFFIXES:%=compat/%)
@@ -187,7 +198,10 @@ clean::
 
 distclean::
 	$(RM) $(DISTCLEANSUFFIXES)
-	$(RM) config.* .config libavutil/avconfig.h .version mapfile avversion.h version.h libavutil/ffversion.h libavcodec/codec_names.h libavcodec/bsf_list.c libavformat/protocol_list.c
+	$(RM) .version avversion.h config.asm config.h mapfile  \
+		ffbuild/.config ffbuild/config.* libavutil/avconfig.h \
+		version.h libavutil/ffversion.h libavcodec/codec_names.h \
+		libavcodec/bsf_list.c libavformat/protocol_list.c
 ifeq ($(SRC_LINK),src)
 	$(RM) src
 endif

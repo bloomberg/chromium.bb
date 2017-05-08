@@ -101,6 +101,14 @@ Go to @url{http://www.wavpack.com/} and follow the instructions for
 installing the library. Then pass @code{--enable-libwavpack} to configure to
 enable it.
 
+@section libxavs
+
+FFmpeg can make use of the libxavs library for Xavs encoding.
+
+Go to @url{http://xavs.sf.net/} and follow the instructions for
+installing the library. Then pass @code{--enable-libxavs} to configure to
+enable it.
+
 @section OpenH264
 
 FFmpeg can make use of the OpenH264 library for H.264 encoding and decoding.
@@ -185,6 +193,19 @@ For Windows, supported AviSynth variants are
 
 For Linux and OS X, the supported AviSynth variant is
 @url{https://github.com/avxsynth/avxsynth, AvxSynth}.
+
+@float NOTE
+There is currently a regression in AviSynth+'s @code{capi.h} header as of
+October 2016, which interferes with the ability for builds of FFmpeg to use
+MSVC-built binaries of AviSynth. Until this is resolved, you can make sure
+a known good version is installed by checking out a version from before
+the regression occurred:
+
+@code{git clone -b MT git://github.com/AviSynth/AviSynthPlus.git @*
+cd AviSynthPlus @*
+git checkout -b oldheader b4f292b4dbfad149697fb65c6a037bb3810813f9 @*
+make install PREFIX=/install/prefix}
+@end float
 
 @float NOTE
 AviSynth and AvxSynth are loaded dynamically.  Distributors can build FFmpeg
@@ -609,6 +630,8 @@ following image formats are supported:
     @tab X BitMap image format
 @item XFace @tab X @tab X
     @tab X-Face image format
+@item XPM  @tab   @tab X
+    @tab X PixMap image format
 @item XWD  @tab X @tab X
     @tab X Window Dump image format
 @end multitable
@@ -766,6 +789,7 @@ following image formats are supported:
     @tab Used in LucasArts games / SMUSH animations.
 @item lossless MJPEG         @tab  X  @tab  X
 @item MagicYUV Video         @tab     @tab  X
+@item Mandsoft Screen Capture Codec  @tab     @tab  X
 @item Microsoft ATC Screen   @tab     @tab  X
     @tab Also known as Microsoft Screen 3.
 @item Microsoft Expression Encoder Screen  @tab     @tab  X
@@ -833,6 +857,7 @@ following image formats are supported:
     @tab used in some games by Entertainment Software Partners
 @item ScreenPressor          @tab     @tab  X
 @item Screenpresso           @tab     @tab  X
+@item Screen Recorder Gold Codec  @tab     @tab  X
 @item Sierra VMD video       @tab     @tab  X
     @tab Used in Sierra VMD files.
 @item Silicon Graphics Motion Video Compressor 1 (MVC1)  @tab     @tab  X

@@ -79,8 +79,8 @@
  */
 
 #define LIBAVUTIL_VERSION_MAJOR  55
-#define LIBAVUTIL_VERSION_MINOR  47
-#define LIBAVUTIL_VERSION_MICRO 101
+#define LIBAVUTIL_VERSION_MINOR  61
+#define LIBAVUTIL_VERSION_MICRO 100
 
 #define LIBAVUTIL_VERSION_INT   AV_VERSION_INT(LIBAVUTIL_VERSION_MAJOR, \
                                                LIBAVUTIL_VERSION_MINOR, \
@@ -134,6 +134,9 @@
 #endif
 #ifndef FF_API_PKT_PTS
 #define FF_API_PKT_PTS                  (LIBAVUTIL_VERSION_MAJOR < 56)
+#endif
+#ifndef FF_API_CRYPTO_SIZE_T
+#define FF_API_CRYPTO_SIZE_T            (LIBAVUTIL_VERSION_MAJOR < 56)
 #endif
 
 
