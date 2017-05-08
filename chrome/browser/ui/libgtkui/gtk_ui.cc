@@ -315,23 +315,38 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   return params;
 }
 
-double GetDpi() {
-  if (display::Display::HasForceDeviceScaleFactor())
-    return display::Display::GetForcedDeviceScaleFactor() * kDefaultDPI;
+float GetGdkWindowScalingFactor() {
+  GValue scale = G_VALUE_INIT;
+  g_value_init(&scale, G_TYPE_INT);
+  if (!gdk_screen_get_setting(gdk_screen_get_default(),
+                              "gdk-window-scaling-factor", &scale))
+    return -1;
 
+  return g_value_get_int(&scale);
+}
+
+float GetScaleFromXftDPI() {
   GtkSettings* gtk_settings = gtk_settings_get_default();
   CHECK(gtk_settings);
   gint gtk_dpi = -1;
   g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, nullptr);
-
   // GTK multiplies the DPI by 1024 before storing it.
-  return (gtk_dpi > 0) ? gtk_dpi / 1024.0 : kDefaultDPI;
+  return (gtk_dpi > 0) ? gtk_dpi / (1024 * kDefaultDPI) : -1;
 }
 
 float GetRawDeviceScaleFactor() {
   if (display::Display::HasForceDeviceScaleFactor())
     return display::Display::GetForcedDeviceScaleFactor();
-  return GetDpi() / kDefaultDPI;
+
+  float scale = GetGdkWindowScalingFactor();
+  if (scale > 0)
+    return scale;
+
+  scale = GetScaleFromXftDPI();
+  if (scale > 0)
+    return scale;
+
+  return 1;
 }
 
 views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
