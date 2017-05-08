@@ -75,12 +75,6 @@ void CustomNotificationView::RequestFocusOnCloseButton() {
     contents_view_delegate_->RequestFocusOnCloseButton();
 }
 
-bool CustomNotificationView::IsPinned() const {
-  if (!contents_view_delegate_)
-    return false;
-  return contents_view_delegate_->IsPinned();
-}
-
 const char* CustomNotificationView::GetClassName() const {
   return kViewClassName;
 }

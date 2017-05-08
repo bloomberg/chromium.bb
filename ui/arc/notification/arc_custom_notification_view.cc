@@ -197,12 +197,6 @@ class ArcCustomNotificationView::ContentViewDelegate
     owner_->UpdateControlButtonsVisibility();
   }
 
-  bool IsPinned() const override {
-    if (!owner_->item_)
-      return false;
-    return owner_->item_->pinned();
-  }
-
   void UpdateControlButtonsVisibility() override {
     owner_->UpdateControlButtonsVisibility();
   }

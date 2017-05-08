@@ -38,7 +38,6 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
   void SetDrawBackgroundAsActive(bool active) override;
   bool IsCloseButtonFocused() const override;
   void RequestFocusOnCloseButton() override;
-  bool IsPinned() const override;
   void UpdateControlButtonsVisibility() override;
 
   // Overridden from views::View:

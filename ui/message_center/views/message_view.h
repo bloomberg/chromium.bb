@@ -55,7 +55,6 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   virtual bool IsCloseButtonFocused() const = 0;
   virtual void RequestFocusOnCloseButton() = 0;
-  virtual bool IsPinned() const = 0;
   virtual void UpdateControlButtonsVisibility() = 0;
 
   void OnCloseButtonPressed();
@@ -79,6 +78,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   std::string notification_id() { return notification_id_; }
   NotifierId notifier_id() { return notifier_id_; }
   const base::string16& display_source() const { return display_source_; }
+  bool pinned() const { return pinned_; }
 
   void set_controller(MessageCenterController* controller) {
     controller_ = controller;
@@ -108,6 +108,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   base::string16 accessible_name_;
 
   base::string16 display_source_;
+  bool pinned_ = false;
 
   std::unique_ptr<views::Painter> focus_painter_;
 

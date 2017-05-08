@@ -54,7 +54,6 @@ class MESSAGE_CENTER_EXPORT NotificationView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
   bool IsCloseButtonFocused() const override;
   void RequestFocusOnCloseButton() override;
-  bool IsPinned() const override;
   void UpdateControlButtonsVisibility() override;
 
  protected:
