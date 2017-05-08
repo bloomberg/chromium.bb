@@ -1995,6 +1995,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   const AtomicString& Locale() const {
     return LayoutLocale::LocaleString(GetFontDescription().Locale());
   }
+  AtomicString LocaleForLineBreakIterator() const;
 
   // FIXME: Remove letter-spacing/word-spacing and replace them with respective
   // FontBuilder calls.  letter-spacing

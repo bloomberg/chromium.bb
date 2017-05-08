@@ -360,7 +360,6 @@ inline LayoutText* Text::GetLayoutObject() const {
 }
 
 void ApplyTextTransform(const ComputedStyle*, String&, UChar);
-AtomicString LocaleForLineBreakIterator(const ComputedStyle&);
 
 }  // namespace blink
 
