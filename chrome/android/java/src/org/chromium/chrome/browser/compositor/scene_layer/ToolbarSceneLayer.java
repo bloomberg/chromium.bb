@@ -146,9 +146,16 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 mLayoutProvider.getActiveLayout().forceHideBrowserControlsAndroidView();
         ViewportMode viewportMode = mLayoutProvider.getActiveLayout().getViewportMode();
 
-        update(mRenderHost.getBrowserControlsBackgroundColor(),
-                mRenderHost.getBrowserControlsUrlBarAlpha(), mLayoutProvider.getFullscreenManager(),
-                resourceManager, forceHideBrowserControlsAndroidView, viewportMode,
+        // TODO(mdjones): Create a "theme provider" to handle cases like this.
+        int color = mRenderHost.getBrowserControlsBackgroundColor();
+        float alpha = mRenderHost.getBrowserControlsUrlBarAlpha();
+        if (mLayoutProvider.getFullscreenManager().areBrowserControlsAtBottom()) {
+            color = mLayoutProvider.getFullscreenManager().getTab().getDefaultThemeColor();
+            if (!mLayoutProvider.getFullscreenManager().getTab().isIncognito()) alpha = 1f;
+        }
+
+        update(color, alpha, mLayoutProvider.getFullscreenManager(), resourceManager,
+                forceHideBrowserControlsAndroidView, viewportMode,
                 DeviceFormFactor.isTablet(mContext), viewport.height());
 
         return this;

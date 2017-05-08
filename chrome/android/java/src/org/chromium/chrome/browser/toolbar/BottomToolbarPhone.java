@@ -153,6 +153,17 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     @Override
+    protected int getProgressBarColor() {
+        int color = super.getProgressBarColor();
+        if (getToolbarDataProvider().getTab() != null) {
+            // ToolbarDataProvider itself accounts for Chrome Home and will return default colors,
+            // so pull the progress bar color from the tab.
+            color = getToolbarDataProvider().getTab().getThemeColor();
+        }
+        return color;
+    }
+
+    @Override
     protected int getProgressBarTopMargin() {
         // In the case where the toolbar is at the bottom of the screen, the progress bar should
         // be at the top of the screen.
@@ -331,6 +342,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
     @Override
     protected void updateVisualsForToolbarState() {
         super.updateVisualsForToolbarState();
+
+        getProgressBar().setThemeColor(getProgressBarColor(), isIncognito());
 
         // TODO(mdjones): Creating a new tab from the tab switcher skips the
         // drawTabSwitcherFadeAnimation which would otherwise make this line unnecessary.
