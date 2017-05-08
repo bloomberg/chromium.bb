@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="cups_add_printer_dialog.html">
 <link rel="import" href="cups_printers_list.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -17,6 +18,11 @@
       .settings-box .start .secondary {
         color: var(--paper-grey-800);
         font-size: 92.31%;  /* 12px / 13px */
+      }
+      
+      .settings-box .primary-button {
+        -webkit-margin-end: 0;
+        -webkit-margin-start: auto;
       }
 
       #message {
@@ -48,15 +54,13 @@
     </style>
 
     <div class="settings-box first">
-      <a id="addPrinter" is="action-link" on-tap="onAddPrinterTap_"
-          hidden="[[!canAddPrinter_]]">
+      <paper-button class="primary-button" id="addPrinter"
+          on-tap="onAddPrinterTap_" hidden="[[!canAddPrinter_]]">
         $i18n{addCupsPrinter}
-      </a>
+      </paper-button>
       <div class="start" hidden="[[canAddPrinter_]]">
         <span>$i18n{addCupsPrinter}</span>
-        <div class="secondary">
-          $i18n{requireNetworkMessage}
-        </div>
+        <div class="secondary">$i18n{requireNetworkMessage}</div>
       </div>
     </div>
 
