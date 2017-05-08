@@ -4,6 +4,12 @@
       "app": "base_unittests"
     },
     {
+      "app": "boringssl_crypto_tests"
+    },
+    {
+      "app": "boringssl_ssl_tests"
+    },
+    {
       "app": "components_unittests"
     },
     {
