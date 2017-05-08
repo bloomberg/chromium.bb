@@ -123,6 +123,23 @@ public class ApplicationTestUtils {
 
     /** Finishes the given activity and waits for its onDestroy() to be called. */
     public static void finishActivity(final Activity activity) throws Exception {
+        closeActivity(activity, new ActivityCloser<Activity>() {
+            @Override
+            public void close(Activity activity) {
+                activity.finish();
+            }
+        });
+    }
+
+    /**
+     * Encapsulates activity closing logic. Invoked on UI thread.
+     * @param <A> Activity type.
+     */
+    public interface ActivityCloser<A extends Activity> { void close(A activity); }
+
+    /** Closes the given activity and waits for its onDestroy() to be called. */
+    public static <A extends Activity> void closeActivity(
+            final A activity, final ActivityCloser<A> closer) throws Exception {
         final CallbackHelper callbackHelper = new CallbackHelper();
         final ApplicationStatus.ActivityStateListener activityStateListener =
                 new ApplicationStatus.ActivityStateListener() {
@@ -143,7 +160,7 @@ public class ApplicationTestUtils {
                     }
                     ApplicationStatus.registerStateListenerForActivity(
                             activityStateListener, activity);
-                    activity.finish();
+                    closer.close(activity);
                     return false;
                 }
             });
