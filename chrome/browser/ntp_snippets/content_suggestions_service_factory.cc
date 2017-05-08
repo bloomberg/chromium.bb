@@ -335,28 +335,9 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(profile);
-  RequestCoordinator* request_coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(profile);
-  DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(profile);
-  DownloadCoreService* download_core_service =
-      DownloadCoreServiceFactory::GetForBrowserContext(profile);
-  DownloadHistory* download_history =
-      download_core_service->GetDownloadHistory();
-  PhysicalWebDataSource* physical_web_data_source =
-      g_browser_process->GetPhysicalWebDataSource();
-#endif  // OS_ANDROID
-  BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForBrowserContext(profile);
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
-  LanguageModel* language_model =
-      LanguageModelFactory::GetInstance()->GetForBrowserContext(profile);
-
-#if defined(OS_ANDROID)
   if (IsRecentTabProviderEnabled()) {
+    RequestCoordinator* request_coordinator =
+        RequestCoordinatorFactory::GetForBrowserContext(profile);
     RegisterRecentTabProvider(offline_page_model, request_coordinator, service,
                               pref_service);
   }
@@ -369,6 +350,12 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       base::FeatureList::IsEnabled(
           features::kOfflinePageDownloadSuggestionsFeature);
   if (show_asset_downloads || show_offline_page_downloads) {
+    DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(profile);
+    DownloadCoreService* download_core_service =
+        DownloadCoreServiceFactory::GetForBrowserContext(profile);
+    DownloadHistory* download_history =
+        download_core_service->GetDownloadHistory();
     RegisterDownloadsProvider(
         show_offline_page_downloads ? offline_page_model : nullptr,
         show_asset_downloads ? download_manager : nullptr, download_history,
@@ -380,6 +367,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #endif  // OS_ANDROID
 
   // |bookmark_model| can be null in tests.
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile);
   if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature) &&
       bookmark_model && !IsChromeHomeEnabled()) {
     RegisterBookmarkProvider(bookmark_model, service, pref_service);
@@ -387,12 +376,18 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
 #if defined(OS_ANDROID)
   if (IsPhysicalWebPageProviderEnabled()) {
+    PhysicalWebDataSource* physical_web_data_source =
+        g_browser_process->GetPhysicalWebDataSource();
     RegisterPhysicalWebPageProvider(service, physical_web_data_source,
                                     pref_service);
   }
 #endif  // OS_ANDROID
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
+    OAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    LanguageModel* language_model =
+        LanguageModelFactory::GetInstance()->GetForBrowserContext(profile);
     RegisterArticleProvider(signin_manager, token_service, service,
                             language_model, user_classifier_raw, pref_service,
                             profile);
@@ -400,6 +395,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
   if (base::FeatureList::IsEnabled(
           ntp_snippets::kForeignSessionsSuggestionsFeature)) {
+    SyncService* sync_service =
+        ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
     RegisterForeignSessionsProvider(sync_service, service, pref_service);
   }
 
