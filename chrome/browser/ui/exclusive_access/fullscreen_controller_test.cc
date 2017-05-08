@@ -88,3 +88,10 @@ void FullscreenControllerTest::Reload() {
 void FullscreenControllerTest::SetPrivilegedFullscreen(bool is_privileged) {
   GetFullscreenController()->SetPrivilegedFullscreenForTesting(is_privileged);
 }
+
+void FullscreenControllerTest::EnterActiveTabFullscreen() {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  FullscreenNotificationObserver fullscreen_observer;
+  browser()->EnterFullscreenModeForTab(tab, GURL());
+  fullscreen_observer.Wait();
+}

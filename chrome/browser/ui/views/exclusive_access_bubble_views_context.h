@@ -47,6 +47,11 @@ class ExclusiveAccessBubbleViewsContext {
 
   // Returns the bounds of the top level View in screen coordinate system.
   virtual gfx::Rect GetTopContainerBoundsInScreen() = 0;
+
+  // Destroy any exclusive access bubble. This allows the bubble to ask its
+  // owner to clean up when the bubble observes its native widget being
+  // destroyed before the owner requested it.
+  virtual void DestroyAnyExclusiveAccessBubble() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXCLUSIVE_ACCESS_BUBBLE_VIEWS_CONTEXT_H_

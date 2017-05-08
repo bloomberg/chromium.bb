@@ -2694,6 +2694,11 @@ gfx::Rect BrowserView::GetTopContainerBoundsInScreen() {
   return top_container_->GetBoundsInScreen();
 }
 
+void BrowserView::DestroyAnyExclusiveAccessBubble() {
+  exclusive_access_bubble_.reset();
+  new_back_shortcut_bubble_.reset();
+}
+
 extensions::ActiveTabPermissionGranter*
 BrowserView::GetActiveTabPermissionGranter() {
   content::WebContents* web_contents = GetActiveWebContents();

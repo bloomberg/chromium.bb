@@ -193,6 +193,11 @@ gfx::Rect ExclusiveAccessController::GetTopContainerBoundsInScreen() {
   return gfx::Rect();
 }
 
+void ExclusiveAccessController::DestroyAnyExclusiveAccessBubble() {
+  Destroy();
+  new_back_shortcut_bubble_.reset();
+}
+
 BrowserWindow* ExclusiveAccessController::GetBrowserWindow() const {
   return [controller_ browserWindow];
 }
