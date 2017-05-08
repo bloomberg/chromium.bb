@@ -149,8 +149,9 @@ class CronetHttpProtocolHandlerDelegate
   gAcceptLanguages = acceptLanguages;
 }
 
+// TODO(lilyhoughton) this should either be removed, or made more sophisticated
 + (void)checkNotStarted {
-  CHECK(gChromeNet == NULL) << "Cronet is already started.";
+  CHECK(!gChromeNet.Get()) << "Cronet is already started.";
 }
 
 + (void)setHttp2Enabled:(BOOL)http2Enabled {
@@ -210,10 +211,11 @@ class CronetHttpProtocolHandlerDelegate
 }
 
 + (void)startInternal {
-  cronet::CronetEnvironment::Initialize();
   std::string user_agent = base::SysNSStringToUTF8(gUserAgent);
+
   gChromeNet.Get().reset(
       new cronet::CronetEnvironment(user_agent, gUserAgentPartial));
+
   gChromeNet.Get()->set_accept_language(
       base::SysNSStringToUTF8(gAcceptLanguages ?: [self getAcceptLanguages]));
 
@@ -244,12 +246,18 @@ class CronetHttpProtocolHandlerDelegate
   dispatch_once(&onceToken, ^{
     if (![NSThread isMainThread]) {
       dispatch_sync(dispatch_get_main_queue(), ^(void) {
-        [self startInternal];
+        cronet::CronetEnvironment::Initialize();
       });
     } else {
-      [self startInternal];
+      cronet::CronetEnvironment::Initialize();
     }
   });
+
+  [self startInternal];
+}
+
++ (void)shutdownForTesting {
+  gChromeNet.Get().reset();
 }
 
 + (void)registerHttpProtocolHandler {

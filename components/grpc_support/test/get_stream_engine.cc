@@ -126,4 +126,7 @@ stream_engine* GetTestStreamEngine(int port) {
   return &engine;
 }
 
+void StartTestStreamEngine(int port) {}
+void ShutdownTestStreamEngine() {}
+
 }  // namespace grpc_support

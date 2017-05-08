@@ -36,9 +36,11 @@ class BidirectionalStreamTest : public ::testing::TestWithParam<bool> {
  protected:
   void SetUp() override {
     StartQuicTestServer();
+    StartTestStreamEngine(GetQuicTestServerPort());
   }
 
   void TearDown() override {
+    ShutdownTestStreamEngine();
     ShutdownQuicTestServer();
   }
 

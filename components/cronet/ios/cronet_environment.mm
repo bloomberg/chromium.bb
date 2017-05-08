@@ -248,14 +248,20 @@ void CronetEnvironment::Start() {
 }
 
 CronetEnvironment::~CronetEnvironment() {
+  // TODO(lilyhoughton) make unregistering of this work.
   // net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
 
-  // TODO(lilyhoughton) right now this is relying on there being
-  // only one CronetEnvironment (per process).  if (when?) that
-  // changes, so will this have to.
-  base::TaskScheduler* ts = base::TaskScheduler::GetInstance();
-  if (ts)
-    ts->Shutdown();
+  // TODO(lilyhoughton) this can only be run once, so right now leaking it.
+  // Should be be called when the _last_ CronetEnvironment is destroyed.
+  // base::TaskScheduler* ts = base::TaskScheduler::GetInstance();
+  // if (ts)
+  //  ts->Shutdown();
+
+  // TODO(lilyhoughton) this should be smarter about making sure there are no
+  // pending requests, etc.
+
+  network_io_thread_->task_runner().get()->DeleteSoon(FROM_HERE,
+                                                      main_context_.release());
 }
 
 void CronetEnvironment::InitializeOnNetworkThread() {
