@@ -102,44 +102,6 @@ config_ctx = config_item_context(BaseConfig)
 def ChromiumGitURL(_c, *pieces):
   return '/'.join(('https://chromium.googlesource.com',) + pieces)
 
-# TODO(phajdan.jr): Move to proper repo and add coverage.
-def ChromeInternalGitURL(_c, *pieces):  # pragma: no cover
-  return '/'.join(('https://chrome-internal.googlesource.com',) + pieces)
-
-def ChromeInternalSrcURL(c):
-  return ChromeInternalGitURL(c, 'chrome', 'src-internal.git')
-
-# TODO(iannucci,vadimsh): Switch this to src-limited
-@config_ctx()
-def chrome_internal(c):
-  s = c.solutions.add()
-  s.name = 'src-internal'
-  s.url = ChromeInternalSrcURL(c)
-  # Remove some things which are generally not needed
-  s.custom_deps = {
-    "src/data/autodiscovery" : None,
-    "src/data/page_cycler" : None,
-    "src/tools/grit/grit/test/data" : None,
-    "src/chrome/test/data/perf/frame_rate/private" : None,
-    "src/data/mozilla_js_tests" : None,
-    "src/chrome/test/data/firefox2_profile/searchplugins" : None,
-    "src/chrome/test/data/firefox2_searchplugins" : None,
-    "src/chrome/test/data/firefox3_profile/searchplugins" : None,
-    "src/chrome/test/data/firefox3_searchplugins" : None,
-    "src/chrome/test/data/ssl/certs" : None,
-    "src/data/mach_ports" : None,
-    "src/data/esctf" : None,
-    "src/data/selenium_core" : None,
-    "src/chrome/test/data/plugin" : None,
-    "src/data/memory_test" : None,
-    "src/data/tab_switching" : None,
-    "src/chrome/test/data/osdd" : None,
-    "src/webkit/data/bmp_decoder":None,
-    "src/webkit/data/ico_decoder":None,
-    "src/webkit/data/test_shell/plugins":None,
-    "src/webkit/data/xbm_decoder":None,
-  }
-
 @config_ctx()
 def android(c):
   c.target_os.add('android')
@@ -394,30 +356,8 @@ def custom_tabs_client(c):
               'GoogleChrome/custom-tabs-client.git')
   c.got_revision_mapping['custom_tabs_client'] = 'got_revision'
 
-# TODO(phajdan.jr): Move to proper repo and add coverage.
-@config_ctx()
-def angle_top_of_tree(c):  # pragma: no cover
-  """Configures the top-of-tree ANGLE in a Chromium checkout.
-
-  Sets up ToT instead of the DEPS-pinned revision for ANGLE.
-  """
-  # TODO(tandrii): I think patch_projects in bare_chromium fixed this.
-  c.solutions[0].revision = 'HEAD'
-  c.revisions['src/third_party/angle'] = 'HEAD'
-
 @config_ctx()
 def gerrit_test_cq_normal(c):
   soln = c.solutions.add()
   soln.name = 'gerrit-test-cq-normal'
   soln.url = 'https://chromium.googlesource.com/playground/gerrit-cq/normal.git'
-
-# TODO(phajdan.jr): Move to proper repo and add coverage.
-@config_ctx()
-def valgrind(c):  # pragma: no cover
-  """Add Valgrind binaries to the gclient solution."""
-  c.solutions[0].custom_deps['src/third_party/valgrind'] = \
-    ChromiumGitURL(c, 'chromium', 'deps', 'valgrind', 'binaries')
-
-@config_ctx()
-def ndk_next(c):
-  c.revisions['src/third_party/android_tools/ndk'] = 'origin/next'
