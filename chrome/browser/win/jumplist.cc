@@ -444,6 +444,8 @@ void JumpList::CancelPendingUpdate() {
 
 void JumpList::Terminate() {
   DCHECK(CalledOnValidThread());
+  timer_most_visited_.Stop();
+  timer_recently_closed_.Stop();
   CancelPendingUpdate();
   if (profile_) {
     sessions::TabRestoreService* tab_restore_service =
@@ -467,14 +469,16 @@ void JumpList::ShutdownOnUIThread() {
 void JumpList::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& urls) {
   DCHECK(CalledOnValidThread());
-  // If we have a pending favicon request, cancel it here (it is out of date).
-  CancelPendingUpdate();
 
+  // At most 9 JumpList items can be displayed for the "Most Visited"
+  // category.
+  const int kMostVistedCount = 9;
   {
     JumpListData* data = &jumplist_data_->data;
     base::AutoLock auto_lock(data->list_lock_);
     data->most_visited_pages_.clear();
-    for (size_t i = 0; i < urls.size(); i++) {
+
+    for (size_t i = 0; i < urls.size() && i < kMostVistedCount; i++) {
       const history::MostVisitedURL& url = urls[i];
       scoped_refptr<ShellLinkItem> link = CreateShellLink();
       std::string url_string = url.url.spec();
@@ -495,46 +499,23 @@ void JumpList::OnMostVisitedURLsAvailable(
 
 void JumpList::TabRestoreServiceChanged(sessions::TabRestoreService* service) {
   DCHECK(CalledOnValidThread());
+
   // if we have a pending favicon request, cancel it here (it is out of date).
   CancelPendingUpdate();
 
-  // Create a list of ShellLinkItems from the "Recently Closed" pages.
-  // As noted above, we create a ShellLinkItem objects with the following
-  // parameters.
-  // * arguments
-  //   The last URL of the tab object.
-  // * title
-  //   The title of the last URL.
-  // * icon
-  //   An empty string. This value is to be updated in OnFaviconDataAvailable().
-  const int kRecentlyClosedCount = 3;
-  sessions::TabRestoreService* tab_restore_service =
-      TabRestoreServiceFactory::GetForProfile(profile_);
-
-  {
-    JumpListData* data = &jumplist_data_->data;
-    base::AutoLock auto_lock(data->list_lock_);
-    data->recently_closed_pages_.clear();
-
-    for (const auto& entry : tab_restore_service->entries()) {
-      switch (entry->type) {
-        case sessions::TabRestoreService::TAB:
-          AddTab(static_cast<const sessions::TabRestoreService::Tab&>(*entry),
-                 kRecentlyClosedCount, data);
-          break;
-        case sessions::TabRestoreService::WINDOW:
-          AddWindow(
-              static_cast<const sessions::TabRestoreService::Window&>(*entry),
-              kRecentlyClosedCount, data);
-          break;
-      }
-    }
-
-    data->recently_closed_pages_have_updates_ = true;
+  // Initialize the one-shot timer to update the the "Recently Closed" category
+  // in a while. If there is already a request queued then cancel it and post
+  // the new request. This ensures that JumpList update of the "Recently Closed"
+  // category won't happen until there has been a brief quiet period, thus
+  // avoiding update storms.
+  if (timer_recently_closed_.IsRunning()) {
+    timer_recently_closed_.Reset();
+  } else {
+    timer_recently_closed_.Start(
+        FROM_HERE, kDelayForJumplistUpdate,
+        base::Bind(&JumpList::DeferredTabRestoreServiceChanged,
+                   base::Unretained(this)));
   }
-
-  // Send a query that retrieves the first favicon.
-  StartLoadingFavicon();
 }
 
 void JumpList::TabRestoreServiceDestroyed(
@@ -675,22 +656,6 @@ void JumpList::PostRunUpdate() {
   DCHECK(CalledOnValidThread());
 
   TRACE_EVENT0("browser", "JumpList::PostRunUpdate");
-  // Initialize the one-shot timer to update the jumplists in a while.
-  // If there is already a request queued then cancel it and post the new
-  // request. This ensures that JumpListUpdates won't happen until there has
-  // been a brief quiet period, thus avoiding update storms.
-  if (timer_.IsRunning()) {
-    timer_.Reset();
-  } else {
-    timer_.Start(FROM_HERE, kDelayForJumplistUpdate, this,
-                 &JumpList::DeferredRunUpdate);
-  }
-}
-
-void JumpList::DeferredRunUpdate() {
-  DCHECK(CalledOnValidThread());
-
-  TRACE_EVENT0("browser", "JumpList::DeferredRunUpdate");
   if (!profile_)
     return;
 
@@ -730,8 +695,72 @@ void JumpList::TopSitesLoaded(history::TopSites* top_sites) {
 
 void JumpList::TopSitesChanged(history::TopSites* top_sites,
                                ChangeReason change_reason) {
-  top_sites->GetMostVisitedURLs(
-      base::Bind(&JumpList::OnMostVisitedURLsAvailable,
-                 weak_ptr_factory_.GetWeakPtr()),
-      false);
+  // If we have a pending favicon request, cancel it here (it is out of date).
+  CancelPendingUpdate();
+
+  // Initialize the one-shot timer to update the the "Most visited" category in
+  // a while. If there is already a request queued then cancel it and post the
+  // new request. This ensures that JumpList update of the "Most visited"
+  // category won't happen until there has been a brief quiet period, thus
+  // avoiding update storms.
+  if (timer_most_visited_.IsRunning()) {
+    timer_most_visited_.Reset();
+  } else {
+    timer_most_visited_.Start(
+        FROM_HERE, kDelayForJumplistUpdate,
+        base::Bind(&JumpList::DeferredTopSitesChanged, base::Unretained(this)));
+  }
+}
+
+void JumpList::DeferredTopSitesChanged() {
+  scoped_refptr<history::TopSites> top_sites =
+      TopSitesFactory::GetForProfile(profile_);
+  if (top_sites) {
+    top_sites->GetMostVisitedURLs(
+        base::Bind(&JumpList::OnMostVisitedURLsAvailable,
+                   weak_ptr_factory_.GetWeakPtr()),
+        false);
+  }
+}
+
+void JumpList::DeferredTabRestoreServiceChanged() {
+  // Create a list of ShellLinkItems from the "Recently Closed" pages.
+  // As noted above, we create a ShellLinkItem objects with the following
+  // parameters.
+  // * arguments
+  //   The last URL of the tab object.
+  // * title
+  //   The title of the last URL.
+  // * icon
+  //   An empty string. This value is to be updated in OnFaviconDataAvailable().
+  const int kRecentlyClosedCount = 3;
+  sessions::TabRestoreService* tab_restore_service =
+      TabRestoreServiceFactory::GetForProfile(profile_);
+
+  {
+    JumpListData* data = &jumplist_data_->data;
+    base::AutoLock auto_lock(data->list_lock_);
+    data->recently_closed_pages_.clear();
+
+    for (const auto& entry : tab_restore_service->entries()) {
+      if (data->recently_closed_pages_.size() >= kRecentlyClosedCount)
+        break;
+      switch (entry->type) {
+        case sessions::TabRestoreService::TAB:
+          AddTab(static_cast<const sessions::TabRestoreService::Tab&>(*entry),
+                 kRecentlyClosedCount, data);
+          break;
+        case sessions::TabRestoreService::WINDOW:
+          AddWindow(
+              static_cast<const sessions::TabRestoreService::Window&>(*entry),
+              kRecentlyClosedCount, data);
+          break;
+      }
+    }
+
+    data->recently_closed_pages_have_updates_ = true;
+  }
+
+  // Send a query that retrieves the first favicon.
+  StartLoadingFavicon();
 }
