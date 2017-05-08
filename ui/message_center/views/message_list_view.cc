@@ -560,6 +560,9 @@ void MessageListView::AnimateClearingOneNotification() {
   new_bounds.set_x(new_bounds.right() + kMarginBetweenItems);
   animator_.AnimateViewTo(child, new_bounds);
 
+  // Deleting the child after animation.
+  deleted_when_done_.insert(child);
+
   // Schedule to start sliding out next notification after a short delay.
   if (!clearing_all_views_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

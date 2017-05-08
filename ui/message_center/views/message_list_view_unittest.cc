@@ -59,7 +59,11 @@ class MockNotificationView : public NotificationView {
 MockNotificationView::MockNotificationView(MessageCenterController* controller,
                                            const Notification& notification,
                                            Test* test)
-    : NotificationView(controller, notification), test_(test) {}
+    : NotificationView(controller, notification), test_(test) {
+  // Calling SetPaintToLayer() to ensure that this view has its own layer.
+  // This layer is needed to enable adding/removal animations.
+  SetPaintToLayer();
+}
 
 MockNotificationView::~MockNotificationView() {}
 
@@ -441,15 +445,7 @@ TEST_F(MessageListViewTest, ClearAllClosableNotifications) {
 
   RunPendingAnimations();
 
-  // TODO(yhanada): notification_view1 and notification_view2 should be deleted
-  //                here. Uncomment the below test.
-  EXPECT_TRUE(gfx::IntersectRects(notification_view1->bounds(),
-                                  message_list_view()->bounds())
-                  .IsEmpty());
-  EXPECT_TRUE(gfx::IntersectRects(notification_view2->bounds(),
-                                  message_list_view()->bounds())
-                  .IsEmpty());
-  // EXPECT_EQ(0, message_list_view()->child_count());
+  EXPECT_EQ(0, message_list_view()->child_count());
 }
 
 }  // namespace
