@@ -72,8 +72,8 @@ class Display : public PlatformDisplayDelegate,
   void Init(const display::ViewportMetrics& metrics,
             std::unique_ptr<DisplayBinding> binding);
 
-  // Returns an ID for this display. In internal mode this the display::Display
-  // ID. In external mode this hasn't been defined yet.
+  // Returns the ID for this display. In internal mode this is the
+  // display::Display ID. In external mode this hasn't been defined yet.
   int64_t GetId() const;
 
   // Sets the display::Display corresponding to this ws::Display. This is only

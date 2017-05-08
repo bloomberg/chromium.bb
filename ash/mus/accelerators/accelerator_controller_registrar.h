@@ -72,7 +72,7 @@ class AcceleratorControllerRegistrar : public AcceleratorHandler,
   // . AcceleratorFilter forwards to its delegate, which indirectly is
   //   implemented by AcceleratorRouter.
   // . AcceleratorRouter may early out, if not it calls through to
-  //   AcceleratorController. This stop may stop propagation entirely.
+  //   AcceleratorController. This may stop propagation entirely.
   // . If focus is on a Widget, then NativeWidgetAura gets the key event, calls
   //   to Widget::OnKeyEvent(), which calls to FocusManager::OnKeyEvent(), which
   //   calls to AshFocusManagerFactory::Delegate::ProcessAccelerator() finally

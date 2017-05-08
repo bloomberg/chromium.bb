@@ -28,8 +28,22 @@ class WindowManagerDisplayRoot {
   explicit WindowManagerDisplayRoot(Display* display);
   ~WindowManagerDisplayRoot();
 
+  // NOTE: this window is not necessarily visible to the window manager. When
+  // the display roots are automatically created this root is visible to the
+  // window manager. When the display roots are not automatically created this
+  // root has a single child that is created by the client. Use
+  // GetClientVisibileRoot() to get the root that is visible to the client.
   ServerWindow* root() { return root_.get(); }
   const ServerWindow* root() const { return root_.get(); }
+
+  // See root() for details of this. This returns null until the client creates
+  // the root.
+  ServerWindow* GetClientVisibileRoot() {
+    return const_cast<ServerWindow*>(
+        const_cast<const WindowManagerDisplayRoot*>(this)
+            ->GetClientVisibileRoot());
+  }
+  const ServerWindow* GetClientVisibileRoot() const;
 
   Display* display() { return display_; }
   const Display* display() const { return display_; }
