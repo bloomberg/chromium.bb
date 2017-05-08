@@ -9,11 +9,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "url/gurl.h"
 
 namespace vr_shell {
 
 class UiElement;
 class UiScene;
+class UrlBar;
 class VrBrowserInterface;
 
 class UiSceneManager {
@@ -27,11 +29,13 @@ class UiSceneManager {
   void SetWebVRMode(bool web_vr);
 
   void OnAppButtonClicked();
+  void OnUrlChange(const GURL& gurl);
 
  private:
   void CreateSecurityWarnings();
   void CreateContentQuad();
   void CreateBackground();
+  void CreateUrlBar();
 
   void ConfigureSecurityWarnings();
   void OnSecurityWarningTimer();
@@ -44,6 +48,7 @@ class UiSceneManager {
   UiElement* permanent_security_warning_ = nullptr;
   UiElement* transient_security_warning_ = nullptr;
   UiElement* main_content_ = nullptr;
+  UrlBar* url_bar_ = nullptr;
 
   bool web_vr_mode_ = false;
   bool secure_origin_ = false;

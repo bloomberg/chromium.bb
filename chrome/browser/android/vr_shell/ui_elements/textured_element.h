@@ -23,14 +23,15 @@ class TexturedElement : public UiElement {
   explicit TexturedElement(int maximum_width);
   ~TexturedElement() override;
 
-  void Initialize() override;
+  void Initialize() final;
 
   // UiElement interface.
   void Render(VrShellRenderer* renderer,
-              vr::Mat4f view_proj_matrix) const override;
+              vr::Mat4f view_proj_matrix) const final;
 
  protected:
   virtual UiTexture* GetTexture() const = 0;
+  void Update();
 
  private:
   void Flush(SkSurface* surface);

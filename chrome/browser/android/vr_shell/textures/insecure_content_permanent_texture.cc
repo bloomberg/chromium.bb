@@ -33,8 +33,12 @@ InsecureContentPermanentTexture::InsecureContentPermanentTexture() = default;
 
 InsecureContentPermanentTexture::~InsecureContentPermanentTexture() = default;
 
-void InsecureContentPermanentTexture::Draw(gfx::Canvas* canvas,
+void InsecureContentPermanentTexture::Draw(SkCanvas* sk_canvas,
                                            const gfx::Size& texture_size) {
+  cc::SkiaPaintCanvas paint_canvas(sk_canvas);
+  gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
+  gfx::Canvas* canvas = &gfx_canvas;
+
   DCHECK(texture_size.height() * 4 == texture_size.width());
   size_.set_height(texture_size.height());
   int max_width = texture_size.width();

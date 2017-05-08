@@ -31,8 +31,12 @@ InsecureContentTransientTexture::InsecureContentTransientTexture() = default;
 
 InsecureContentTransientTexture::~InsecureContentTransientTexture() = default;
 
-void InsecureContentTransientTexture::Draw(gfx::Canvas* canvas,
+void InsecureContentTransientTexture::Draw(SkCanvas* sk_canvas,
                                            const gfx::Size& texture_size) {
+  cc::SkiaPaintCanvas paint_canvas(sk_canvas);
+  gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
+  gfx::Canvas* canvas = &gfx_canvas;
+
   size_.set_width(texture_size.width());
   int max_height = texture_size.height();
   cc::PaintFlags flags;
