@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -510,8 +511,15 @@ public class BottomSheet
                 mContainerHeight = bottom - top;
                 updateSheetDimensions();
 
-                cancelAnimation();
-                setSheetState(mCurrentState, false);
+                // If we are in the middle of a touch event stream (i.e. scrolling while keyboard is
+                // up) don't set the sheet state. Instead allow the gesture detector to position the
+                // sheet and make sure the keyboard hides.
+                if (mIsScrolling) {
+                    UiUtils.hideKeyboard(BottomSheet.this);
+                } else {
+                    cancelAnimation();
+                    setSheetState(mCurrentState, false);
+                }
 
                 if (!mHasRootLayoutOccurred && mTabModelSelector != null
                         && mTabModelSelector.isTabStateInitialized()) {
