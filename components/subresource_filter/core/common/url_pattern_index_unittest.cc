@@ -4,6 +4,7 @@
 
 #include "components/subresource_filter/core/common/url_pattern_index.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -52,6 +53,14 @@ class UrlPatternIndexTest : public ::testing::Test {
     return index_matcher_->FindMatch(
         url, document_origin, element_type, activation_type,
         IsThirdParty(url, document_origin), disable_generic_rules);
+  }
+
+  bool IsOutOfRange(const flat::UrlRule* rule) const {
+    if (!rule)
+      return false;
+    const auto* data = reinterpret_cast<const uint8_t*>(rule);
+    return data < flat_builder_->GetBufferPointer() ||
+           data >= flat_builder_->GetBufferPointer() + flat_builder_->GetSize();
   }
 
   void Reset() {
@@ -663,6 +672,36 @@ TEST_F(UrlPatternIndexTest, RulesWithSupportedAndUnsupportedTypes) {
   EXPECT_TRUE(FindMatch("http://example.com", nullptr, kNoElement, kDocument));
   EXPECT_FALSE(
       FindMatch("http://example.com", nullptr, kNoElement, kGenericBlock));
+}
+
+TEST_F(UrlPatternIndexTest, FindMatchReturnsCorrectRules) {
+  constexpr size_t kNumOfPatterns = 1024;
+
+  std::vector<std::string> url_patterns(kNumOfPatterns);
+  for (size_t i = 0; i < kNumOfPatterns; ++i) {
+    url_patterns[i] = "http://example." + std::to_string(i) + ".com";
+    ASSERT_TRUE(
+        AddUrlRule(MakeUrlRule(UrlPattern(url_patterns[i], kSubstring))))
+        << "Rule #" << i;
+  }
+  Finish();
+
+  std::reverse(url_patterns.begin() + kNumOfPatterns / 2, url_patterns.end());
+  for (const std::string& url_pattern : url_patterns) {
+    SCOPED_TRACE(::testing::Message() << "UrlPattern: " << url_pattern);
+
+    const flat::UrlRule* rule = FindMatch(url_pattern);
+    ASSERT_TRUE(rule);
+    ASSERT_FALSE(IsOutOfRange(rule));
+
+    const flatbuffers::String* rule_pattern = rule->url_pattern();
+    ASSERT_TRUE(rule_pattern);
+    EXPECT_EQ(url_pattern,
+              base::StringPiece(rule_pattern->data(), rule_pattern->size()));
+  }
+
+  EXPECT_FALSE(
+      FindMatch("http://example." + std::to_string(kNumOfPatterns) + ".com"));
 }
 
 }  // namespace subresource_filter
