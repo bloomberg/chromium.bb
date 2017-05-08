@@ -75,6 +75,8 @@ class TRACING_EXPORT ProcessMetricsMemoryDumpProvider
   static int fast_polling_statm_fd_for_testing;
 
   base::ScopedFD fast_polling_statm_fd_;
+
+  base::ScopedFD OpenStatm();
 #endif
 
   base::ProcessId process_;

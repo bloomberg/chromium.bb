@@ -180,15 +180,18 @@ uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file,
   return num_valid_regions;
 }
 
-bool GetResidentSizeFromStatmFile(int fd, uint64_t* resident_pages) {
+bool GetResidentAndSharedPagesFromStatmFile(int fd,
+                                            uint64_t* resident_pages,
+                                            uint64_t* shared_pages) {
   lseek(fd, 0, SEEK_SET);
   char line[kMaxLineSize];
   int res = read(fd, line, kMaxLineSize - 1);
   if (res <= 0)
     return false;
   line[res] = '\0';
-  int num_scanned = sscanf(line, "%*s %" SCNu64, resident_pages);
-  return num_scanned == 1;
+  int num_scanned =
+      sscanf(line, "%*s %" SCNu64 " %" SCNu64, resident_pages, shared_pages);
+  return num_scanned == 2;
 }
 
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
@@ -633,6 +636,29 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
 
   uint64_t peak_rss_bytes = 0;
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  auto& footprint = pmd->process_totals()->GetPlatformPrivateFootprint();
+
+  base::ScopedFD autoclose;
+  int statm_fd = fast_polling_statm_fd_.get();
+  if (statm_fd == -1) {
+    autoclose = OpenStatm();
+    statm_fd = autoclose.get();
+  }
+  if (statm_fd == -1)
+    return false;
+  const static size_t page_size = base::GetPageSize();
+  uint64_t resident_pages;
+  uint64_t shared_pages;
+  bool success = GetResidentAndSharedPagesFromStatmFile(
+      statm_fd, &resident_pages, &shared_pages);
+  if (!success)
+    return false;
+
+  // TODO(hjd): Implement swap in the next CL.
+  footprint.rss_anon_bytes = (resident_pages - shared_pages) * page_size;
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
 #if !defined(OS_IOS)
   peak_rss_bytes = process_metrics_->GetPeakWorkingSetSize();
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -676,31 +702,41 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
   return true;
 }
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+base::ScopedFD ProcessMetricsMemoryDumpProvider::OpenStatm() {
+  std::string name =
+      "/proc/" +
+      (process_ == base::kNullProcessId ? "self"
+                                        : base::IntToString(process_)) +
+      "/statm";
+  base::ScopedFD fd = base::ScopedFD(open(name.c_str(), O_RDONLY));
+  DCHECK(fd.is_valid());
+  return fd;
+}
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
 void ProcessMetricsMemoryDumpProvider::PollFastMemoryTotal(
     uint64_t* memory_total) {
   *memory_total = 0;
 #if defined(OS_LINUX) || defined(OS_ANDROID)
+
   int statm_fd = fast_polling_statm_fd_for_testing;
   if (statm_fd == -1) {
-    if (!fast_polling_statm_fd_.is_valid()) {
-      std::string name = "/proc/" + (process_ == base::kNullProcessId
-                                         ? "self"
-                                         : base::IntToString(process_)) +
-                         "/statm";
-      fast_polling_statm_fd_.reset(open(name.c_str(), O_RDONLY));
-      DCHECK(fast_polling_statm_fd_.is_valid());
-    }
+    if (!fast_polling_statm_fd_.is_valid())
+      fast_polling_statm_fd_ = OpenStatm();
     statm_fd = fast_polling_statm_fd_.get();
+    if (statm_fd == -1)
+      return;
   }
-  if (statm_fd == -1)
-    return;
 
-  uint64_t rss_pages = 0;
-  if (!GetResidentSizeFromStatmFile(statm_fd, &rss_pages))
+  uint64_t resident_pages = 0;
+  uint64_t ignored_shared_pages = 0;
+  if (!GetResidentAndSharedPagesFromStatmFile(statm_fd, &resident_pages,
+                                              &ignored_shared_pages))
     return;
 
   static size_t page_size = base::GetPageSize();
-  *memory_total = rss_pages * page_size;
+  *memory_total = resident_pages * page_size;
 #else
   *memory_total = process_metrics_->GetWorkingSetSize();
 #endif
