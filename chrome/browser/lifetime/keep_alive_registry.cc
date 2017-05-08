@@ -4,10 +4,16 @@
 
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
+
+#if defined(OS_WIN)
+#include "components/browser_watcher/stability_data_names.h"
+#include "components/browser_watcher/stability_debugging.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public methods
@@ -136,6 +142,10 @@ void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
 void KeepAliveRegistry::OnKeepAliveStateChanged(bool new_keeping_alive) {
   DVLOG(1) << "Notifying KeepAliveStateObservers: KeepingAlive changed to: "
            << new_keeping_alive;
+#if defined(OS_WIN)
+  browser_watcher::SetStabilityDataBool(browser_watcher::kStabilityKeepAlive,
+                                        new_keeping_alive);
+#endif
   for (KeepAliveStateObserver& observer : observers_)
     observer.OnKeepAliveStateChanged(new_keeping_alive);
 }
@@ -143,6 +153,10 @@ void KeepAliveRegistry::OnKeepAliveStateChanged(bool new_keeping_alive) {
 void KeepAliveRegistry::OnRestartAllowedChanged(bool new_restart_allowed) {
   DVLOG(1) << "Notifying KeepAliveStateObservers: Restart changed to: "
            << new_restart_allowed;
+#if defined(OS_WIN)
+  browser_watcher::SetStabilityDataBool(
+      browser_watcher::kStabilityRestartAllowed, new_restart_allowed);
+#endif
   for (KeepAliveStateObserver& observer : observers_)
     observer.OnKeepAliveRestartStateChanged(new_restart_allowed);
 }

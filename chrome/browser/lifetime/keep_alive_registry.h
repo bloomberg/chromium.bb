@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_LIFETIME_KEEP_ALIVE_REGISTRY_H_
 
 #include <unordered_map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"

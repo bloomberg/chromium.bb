@@ -8,6 +8,15 @@
 
 namespace browser_watcher {
 
+void SetStabilityDataBool(base::StringPiece name, bool value) {
+  base::debug::GlobalActivityTracker* global_tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (!global_tracker)
+    return;  // Activity tracking isn't enabled.
+
+  global_tracker->process_data().SetBool(name, value);
+}
+
 void SetStabilityDataInt(base::StringPiece name, int64_t value) {
   base::debug::GlobalActivityTracker* global_tracker =
       base::debug::GlobalActivityTracker::Get();
