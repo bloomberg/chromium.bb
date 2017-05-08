@@ -243,6 +243,12 @@ const char kTopChromeMdMaterial[] = "Normal";
 
 const char kTopChromeMdMaterialHybrid[] = "Touch";
 
+const char kSiteDetails[] = "Site Details";
+
+const char kSiteDetailsDescription[] =
+    "Adds UI in MD Settings to view all content settings for a specific "
+    "origin.";
+
 const char kSiteSettings[] = "Site settings with All sites and Site details";
 
 const char kSiteSettingsDescription[] =
