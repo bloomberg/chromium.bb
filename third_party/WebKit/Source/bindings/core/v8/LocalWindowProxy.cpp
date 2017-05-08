@@ -276,22 +276,40 @@ void LocalWindowProxy::UpdateActivityLogger() {
 }
 
 void LocalWindowProxy::SetSecurityToken(SecurityOrigin* origin) {
-  // If two tokens are equal, then the SecurityOrigins canAccess each other.
-  // If two tokens are not equal, then we have to call canAccess.
-  // Note: we can't use the HTTPOrigin if it was set from the DOM.
+  // The security token is a fast path optimization for cross-context v8 checks.
+  // If two contexts have the same token, then the SecurityOrigins can access
+  // each other. Otherwise, v8 will fall back to a full CanAccess() check.
   String token;
-  // If document.domain is modified, v8 needs to do a full canAccess check,
-  // so always use an empty security token in that case.
-  bool delay_set = world_->IsMainWorld() && origin->DomainWasSetInDOM();
-  if (origin && !delay_set)
+  // The default v8 security token is to the global object itself. By
+  // definition, the global object is unique and using it as the security token
+  // will always trigger a full CanAccess() check from any other context.
+  //
+  // Using the default security token to force a callback to CanAccess() is
+  // required for three things:
+  // 1. When a new window is opened, the browser displays the pending URL rather
+  //    than about:blank. However, if the Document is accessed, it is no longer
+  //    safe to show the pending URL, as the initial empty Document may have
+  //    been modified. Forcing a CanAccess() call allows Blink to notify the
+  //    browser if the initial empty Document is accessed.
+  // 2. If document.domain is set, a full CanAccess() check is required as two
+  //    Documents are only same-origin if document.domain is set to the same
+  //    value. Checking this can currently only be done in Blink, so require a
+  //    full CanAccess() check.
+  bool use_default_security_token =
+      world_->IsMainWorld() && (GetFrame()
+                                    ->Loader()
+                                    .StateMachine()
+                                    ->IsDisplayingInitialEmptyDocument() ||
+                                origin->DomainWasSetInDOM());
+  if (origin && !use_default_security_token)
     token = origin->ToString();
 
-  // An empty or "null" token means we always have to call
-  // canAccess. The toString method on securityOrigins returns the
-  // string "null" for empty security origins and for security
-  // origins that should only allow access to themselves. In this
-  // case, we use the global object as the security token to avoid
-  // calling canAccess when a script accesses its own objects.
+  // 3. The ToString() method on SecurityOrigin returns the string "null" for
+  //    empty security origins and for security origins that should only allow
+  //    access to themselves (i.e. opaque origins). Using the default security
+  //    token serves for two purposes: it allows fast-path security checks for
+  //    accesses inside the same context, and forces a full CanAccess() check
+  //    for contexts that don't inherit the same origin, which will always fail.
   v8::HandleScope handle_scope(GetIsolate());
   v8::Local<v8::Context> context = script_state_->GetContext();
   if (token.IsEmpty() || token == "null") {
