@@ -53,7 +53,6 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="1820259098641718022">Lagt til i leselisten</translation>
 <translation id="1876721852596493031">Send bruksdata</translation>
 <translation id="1886928167269928266">Tidenes morgen</translation>
-<translation id="1894451531427596130">Kontrollér hvordan dette fungerer, i <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Last opp til Google Disk</translation>
 <translation id="1941314575388338491">Dobbelttrykk for å kopiere.</translation>
 <translation id="1952728750904661634">Logg på med administrert konto</translation>
@@ -97,6 +96,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Tilbakestill innstillingene for Oversetter</translation>
 <translation id="285960592395650245">Prøv å laste ned på nytt</translation>
+<translation id="2870560284913253234">Nettsted</translation>
 <translation id="2871695793448672541">Skjult passord</translation>
 <translation id="2898963176829412617">Ny mappe</translation>
 <translation id="2903493209154104877">Adresser</translation>
@@ -109,7 +109,6 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2989805286512600854">Åpne i ny fane</translation>
 <translation id="3024255823539804759">Det siste døgnet</translation>
 <translation id="3037605927509011580">Æsj!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> er ikke tilgjengelig. For å få tilgang til nettleserloggen din, velg «<ph name="SHOW_HISTORY" />» fra verktøymenyen.</translation>
 <translation id="3112556859945124369">Merk…</translation>
 <translation id="3151924044251363314">Bare personer som har passordfrasen din, kan lese de krypterte dataene dine. Passordfrasen blir verken sendt til Google eller lagret. Hvis du glemmer den, må du tilbakestille synkroniseringen. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Merk alle…</translation>

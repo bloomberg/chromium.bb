@@ -7,7 +7,6 @@
 <translation id="1061441684050139317">Chrome potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
 <translation id="1080790410959514870">Odjavljate se iz računa, ki ga upravlja <ph name="DOMAIN_NAME" />. S tem bodo izbrisani podatki, ki jih je Chrome shranil v tej napravi, vendar bodo podatki ostali v vašem Google Računu.</translation>
 <translation id="1111673857033749125">Tu bodo prikazani zaznamki, shranjeni v drugih napravah.</translation>
-<translation id="1117638547758781293">Filter delov sredstev</translation>
 <translation id="1121094540300013208">Poročila o uporabi in zrušitvah</translation>
 <translation id="1137305377394488060">zadnje ure</translation>
 <translation id="1145536944570833626">Izbris obstoječih podatkov.</translation>
@@ -306,6 +305,7 @@
 <translation id="4269820728363426813">Kopiraj naslov povezave</translation>
 <translation id="4275663329226226506">Predstavnosti</translation>
 <translation id="4278390842282768270">Dovoljeno</translation>
+<translation id="42981349822642051">Razširi</translation>
 <translation id="4300272766492248925">Odpri aplikacijo</translation>
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="4351244548802238354">Zapri pogovorno okno</translation>
@@ -725,7 +725,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="857509777403223202">Kmalu bo prikazanih več člankov. Prijeten večer.</translation>
 <translation id="857943718398505171">Dovoljeno (priporočeno)</translation>
 <translation id="8583805026567836021">Brisanje podatkov računa</translation>
-<translation id="85969253066007694">Delovanje tega lahko vi in vaši starši nadzirate v <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" /></translation>
 <translation id="8617240290563765734">Želite odpreti predlagani URL, naveden v preneseni vsebini?</translation>
 <translation id="862875433388403934">Prenesene vsebine (filmov, glasbe ipd.) morda ne bo mogoče več predvajati v drugih aplikacijah, dokler te znova ne pridobijo licenc na podlagi nove poverilnice naprave.
 
@@ -743,7 +742,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8748850008226585750">Vsebina je skrita</translation>
 <translation id="8788968922598763114">Vnovično odpiranje nazadnje zaprtega zavihka</translation>
 <translation id="8812260976093120287">Na nekaterih spletnih mestih je mogoče plačevati z zgoraj navedenimi podprtimi aplikacijami v napravi.</translation>
-<translation id="8812942424849541387">Delovanje tega lahko nadzirate v <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" />.</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="883635517171802338">Spletnim mestom prepreči prikazovanje pojavnih oken (priporočeno)</translation>
 <translation id="8847988622838149491">USB</translation>

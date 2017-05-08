@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">تمت الإضافة إلى قائمة القراءة</translation>
 <translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
 <translation id="1886928167269928266">بدايةَ الوقت</translation>
-<translation id="1894451531427596130">التحكم في كيفية عمل هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">‏التحميل إلى Google Drive</translation>
 <translation id="1941314575388338491">انقر نقرًا مزدوجًا للنسخ.</translation>
 <translation id="1952728750904661634">تسجيل الدخول باستخدام حساب مُدار</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />، <ph name="STATE" />، <ph name="URL" /></translation>
 <translation id="2843803966603263712">إعادة تعيين إعدادات الترجمة</translation>
 <translation id="285960592395650245">إعادة محاولة التنزيل</translation>
+<translation id="2870560284913253234">الموقع</translation>
 <translation id="2871695793448672541">مخفية، كلمة المرور</translation>
 <translation id="2898963176829412617">مجلد جديد...</translation>
 <translation id="2903493209154104877">العناوين</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">فتح في علامة تبويب جديدة</translation>
 <translation id="3024255823539804759">اليوم الماضي</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> غير متاح. للوصول إلى سجل التصفح، حدد "<ph name="SHOW_HISTORY" />" من قائمة الأدوات.</translation>
 <translation id="3112556859945124369">وضع علامة...</translation>
 <translation id="3151924044251363314">‏لا يمكن لأحد قراءة بياناتك المشفرة سوى من لديه عبارة المرور التي تستخدمها. ولا يتم إرسال عبارة المرور إلى شركة Google. في حالة نسيان عبارة المرور أو أردت تغيير هذا الإعداد، ستحتاج إلى إعادة ضبط المزامنة. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">وضع علامة على الكل...</translation>

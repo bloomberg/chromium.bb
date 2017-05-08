@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Perangkat USB-C (port sebelah kiri)</translation>
 <translation id="1346748346194534595">Kanan</translation>
-<translation id="137180024469554212">Nonaktifkan penguncian rotasi</translation>
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Keyboard di layar diaktifkan</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi dinonaktifkan.</translation>
+<translation id="1856813161013948396">Lewati layar kunci dengan hanya menge-tap sensor sidik jari. Klik untuk mengonfigurasi.</translation>
 <translation id="1864454756846565995">Perangkat USB-C (port belakang)</translation>
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengelola tugas telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Perangkat ini dikelola oleh <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Potret</translation>
 <translation id="207439088875642105">Ini adalah akun untuk anak yang dikelola oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Hentikan casting <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
@@ -81,7 +82,6 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3126069444801937830">Mulai ulang untuk memperbarui</translation>
 <translation id="3147142846278915599">Peluncur (menyinkronkan aplikasi...)</translation>
 <translation id="315116470104423982">Data seluler</translation>
-<translation id="3157169093162779309">Aktifkan penguncian rotasi</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
 <translation id="3294437725009624529">Tamu</translation>
 <translation id="3335772982573114336">Catatan baru</translation>
@@ -97,12 +97,12 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
 <translation id="3606978283550408104">Layar Braille tersambung.</translation>
 <translation id="3621202678540785336">Masukan</translation>
-<translation id="3625258641415618104">Tangkapan layar dinonaktifkan</translation>
+<translation id="3625258641415618104">Screenshot dinonaktifkan</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> resolusi diubah menjadi <ph name="RESOLUTION" /></translation>
 <translation id="3712407551474845318">Tangkap wilayah</translation>
 <translation id="371370241367527062">Mikrofon depan</translation>
-<translation id="3742055079367172538">Tangkapan layar telah diambil</translation>
+<translation id="3742055079367172538">Screenshot telah diambil</translation>
 <translation id="3775358506042162758">Anda hanya dapat memiliki paling banyak tiga akun dalam fitur masuk multipel.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Kunci</translation>
@@ -113,7 +113,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3899995891769452915">Masukan suara</translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="394485226368336402">Setelan audio</translation>
-<translation id="3967919079500697218">Kemampuan untuk membuat tangkapan layar telah dinonaktifkan oleh administrator Anda.</translation>
+<translation id="3967919079500697218">Kemampuan untuk membuat screenshot telah dinonaktifkan oleh administrator Anda.</translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
@@ -139,7 +139,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="5168181903108465623">Perangkat transmisi tersedia</translation>
 <translation id="5170568018924773124">Tampilkan dalam folder</translation>
 <translation id="5207949376430453814">Sorot tempat penyisipan teks</translation>
-<translation id="5222676887888702881">Keluar</translation>
+<translation id="5222676887888702881">Logout</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
 <translation id="5313326810920013265">Setelan bluetooth</translation>
 <translation id="5331975486040154427">Perangkat USB-C (port belakang sebelah kiri)</translation>
@@ -204,6 +204,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="7034339000180558234">Mentransmisi <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Setel wallpaper...</translation>
 <translation id="7066646422045619941">Jaringan ini dinonaktifkan oleh administrator Anda.</translation>
+<translation id="7067196344162293536">Putar otomatis</translation>
 <translation id="7097613348211027502">ChromeVox (masukan lisan) diaktifkan.
 Tekan Ctrl+Alt+Z untuk menonaktifkan.</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
@@ -269,6 +270,7 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="9201131092683066720">Baterai terisi <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Keluar dari mode desktop terpadu</translation>
 <translation id="923686485342484400">Tekan Control Shift Q dua kali untuk keluar.</translation>
-<translation id="939252827960237676">Gagal menyimpan tangkapan layar</translation>
+<translation id="939252827960237676">Gagal menyimpan screenshot</translation>
 <translation id="945522503751344254">Kirim masukan</translation>
+<translation id="98515147261107953">Lanskap</translation>
 </translationbundle>

@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">USB-C-enhet (vänster port)</translation>
 <translation id="1346748346194534595">Höger</translation>
-<translation id="137180024469554212">Inaktivera rotationslås</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1467432559032391204">Vänster</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Skärmen på tangentbordet har aktiverats</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi är inaktiverat.</translation>
+<translation id="1856813161013948396">Hoppa över låsskärmen genom att trycka på fingeravtryckssensorn. Klicka för att konfigurera.</translation>
 <translation id="1864454756846565995">USB-C-enhet (bakre port)</translation>
 <translation id="1882897271359938046">Spegling av <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Kortkommandot för att öppna aktivitetshanteraren har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Den här enheten hanteras av <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Stående</translation>
 <translation id="207439088875642105">Det här är ett konto för barn som hanteras av <ph name="FIRST_PARENT_EMAIL" /> och <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Sluta casta <ph name="TAB_NAME" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
@@ -80,7 +81,6 @@
 <translation id="3126069444801937830">Starta om för att uppdatera</translation>
 <translation id="3147142846278915599">Översikt (appar synkroniseras …)</translation>
 <translation id="315116470104423982">Mobildata</translation>
-<translation id="3157169093162779309">Aktivera rotationslås</translation>
 <translation id="3236488194889173876">Det finns inget tillgängligt mobilnätverk</translation>
 <translation id="3294437725009624529">Gäst</translation>
 <translation id="3335772982573114336">Ny anteckning</translation>
@@ -203,6 +203,7 @@
 <translation id="7034339000180558234">Castar <ph name="TAB_NAME" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ange bakgrund ...</translation>
 <translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
+<translation id="7067196344162293536">Rotera automatiskt</translation>
 <translation id="7097613348211027502">ChromeVox (talad feedback) har aktiverats.
 Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="7098389117866926363">USB-C-enhet (vänstra porten på baksidan)</translation>
@@ -269,4 +270,5 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="923686485342484400">Tryck på Control + skift + Q två gånger om du vill logga ut.</translation>
 <translation id="939252827960237676">Det gick inte att spara skärmdumpen</translation>
 <translation id="945522503751344254">Skicka synpunkter</translation>
+<translation id="98515147261107953">Liggande</translation>
 </translationbundle>

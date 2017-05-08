@@ -53,7 +53,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="1820259098641718022">S-a adăugat în lista de lectură</translation>
 <translation id="1876721852596493031">Trim. date utilizare</translation>
 <translation id="1886928167269928266">De la început</translation>
-<translation id="1894451531427596130">Controlează cum funcționează din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Încarcă în Google Drive</translation>
 <translation id="1941314575388338491">Atinge de două ori pentru a copia.</translation>
 <translation id="1952728750904661634">Conectează-te cu un cont gestionat</translation>
@@ -97,6 +96,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Resetează Traducere</translation>
 <translation id="285960592395650245">Reîncearcă să descarci</translation>
+<translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Parolă ascunsă</translation>
 <translation id="2898963176829412617">Dosar nou…</translation>
 <translation id="2903493209154104877">Adrese</translation>
@@ -109,7 +109,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2989805286512600854">Deschideți într-o filă nouă</translation>
 <translation id="3024255823539804759">Din ultima zi</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
-<translation id="3050311348724540835">Adresa <ph name="HISTORY_URL" /> nu este disponibilă. Pentru a accesa istoricul de navigare, selectează „<ph name="SHOW_HISTORY" />” din meniul de instrumente.</translation>
 <translation id="3112556859945124369">Marchează…</translation>
 <translation id="3151924044251363314">Numai un utilizator care are expresia de acces poate citi datele criptate. Expresia de acces nu este trimisă sau stocată la Google. Dacă uiți expresia de acces sau dorești să modifici această setare, va fi necesar să resetezi sincronizarea. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marchează-le pe toate…</translation>

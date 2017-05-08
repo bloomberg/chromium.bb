@@ -27,7 +27,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="1654128982815600832">Mengaktifkan sambungan jarak jauh untuk komputer ini...</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
 <translation id="1704090719919187045">Preferensi Host Chromoting</translation>
-<translation id="174018511426417793">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, pasang Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
+<translation id="174018511426417793">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, instal Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Menyambungkan...</translation>
 <translation id="1770394049404108959">Saya tidak dapat membuka aplikasi ini.</translation>
 <translation id="177096447311351977">IP saluran untuk klien: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
@@ -82,7 +82,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2888969873284818612">Terjadi kesalahan jaringan. Kami akan memulai ulang aplikasi saat perangkat Anda kembali online.</translation>
 <translation id="2894654864775534701">Saat ini komputer ini dibagikan dengan akun lain.</translation>
 <translation id="2919669478609886916">Saat ini Anda sedang berbagi mesin ini dengan pengguna lain. Apakah Anda ingin terus berbagi?</translation>
-<translation id="2921543551052660690">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Chromium<ph name="LINK_END" /> dengan akun tersebut dan pasang kembali Chromoting.</translation>
+<translation id="2921543551052660690">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Chromium<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chromoting.</translation>
 <translation id="2926340305933667314">Gagal menonaktifkan akses jarak jauh ke komputer ini. Coba lagi nanti.</translation>
 <translation id="2930135165929238380">Beberapa komponen yang diperlukan tidak ada. Buka chrome://plugins dan pastikan Native Client diaktifkan.</translation>
 <translation id="2939145106548231838">Autentikasi untuk menghosting</translation>
@@ -136,21 +136,21 @@ Chromoting</translation>
 <translation id="4240294130679914010">Pencopot Pemasangan Host Chromoting</translation>
 <translation id="4277463233460010382">Komputer ini dikonfigurasi untuk mengizinkan satu atau beberapa klien terhubung tanpa memasukkan PIN</translation>
 <translation id="4277736576214464567">Kode akses tidak valid. Harap coba lagi.</translation>
-<translation id="4361728918881830843">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, pasang Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
+<translation id="4361728918881830843">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, instal Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4368630973089289038">Ingin membantu meningkatkan Chromoting? <ph name="LINK_BEGIN" />Isi survei ini.<ph name="LINK_END" /></translation>
 <translation id="4394049700291259645">Nonaktifkan</translation>
 <translation id="4405930547258349619">Pustaka Inti</translation>
 <translation id="4430435636878359009">Nonaktifkan sambungan jarak jauh ke komputer ini</translation>
 <translation id="4430915108080446161">Membuat kode akses...</translation>
 <translation id="4472575034687746823">Memulai</translation>
-<translation id="4481276415609939789">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan ke komputer, pasang Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
+<translation id="4481276415609939789">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan ke komputer, instal Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4513946894732546136">Masukan</translation>
 <translation id="4517233780764084060">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chromoting menjadi ‘Buka sebagai jendela’.</translation>
 <translation id="4563926062592110512">Klien terputus: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4572065712096155137">Akses</translation>
 <translation id="4573676252416618192">Host Chrome
 Desktop Jarak Jauh</translation>
-<translation id="4619978527973181021">Setuju dan Pasang</translation>
+<translation id="4619978527973181021">Setuju dan Instal</translation>
 <translation id="4703302905453407178">Komponen wajib berhenti bekerja. Laporkan masalah ini kepada pengembang.</translation>
 <translation id="4703799847237267011">Sesi Chromoting Anda berakhir.</translation>
 <translation id="4736223761657662401">Riwayat Sambungan</translation>
@@ -172,7 +172,7 @@ Desktop Jarak Jauh</translation>
 <translation id="5156271271724754543">Masukkan PIN yang sama di kedua kotak.</translation>
 <translation id="5170982930780719864">ID host tidak valid.</translation>
 <translation id="518094545883702183">Informasi ini hanya digunakan untuk mendiagnosis masalah yang Anda laporkan, hanya tersedia untuk orang yang menyelidiki laporan, dan dipertahankan selama tidak lebih dari 30 hari.</translation>
-<translation id="5222676887888702881">Keluar</translation>
+<translation id="5222676887888702881">Logout</translation>
 <translation id="5254120496627797685">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
 <translation id="533625276787323658">Perangkat sambungan belum disiapkan</translation>
@@ -284,7 +284,7 @@ Desktop Jarak Jauh</translation>
 <translation id="8509907436388546015">Proses Integrasi Desktop</translation>
 <translation id="8513093439376855948">Hosting perpesanan asli untuk pengelolaan hosting jarak jauh</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
-<translation id="8548209692293300397">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Google Chrome<ph name="LINK_END" /> dengan akun tersebut dan pasang kembali Chrome Desktop Jarak Jauh.</translation>
+<translation id="8548209692293300397">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Google Chrome<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chrome Desktop Jarak Jauh.</translation>
 <translation id="8642984861538780905">Sedang</translation>
 <translation id="8712909229180978490">Saya tidak dapat melihat file saya yang tersimpan secara online di Google Drive.</translation>
 <translation id="8743328882720071828">Izinkan <ph name="CLIENT_USERNAME" /> melihat dan mengontrol komputer Anda?</translation>
@@ -292,7 +292,7 @@ Desktop Jarak Jauh</translation>
 <translation id="8791202241915690908">Download Pemasang Host Chromoting</translation>
 <translation id="894763922177556086">Baik</translation>
 <translation id="895780780740011433">Untuk Windows 7 dan lebih tinggi</translation>
-<translation id="897805526397249209">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, pasang Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
+<translation id="897805526397249209">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, instal Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Pengontrol Host Chrome Desktop Jarak Jauh</translation>
 <translation id="9016232822027372900">Tetap sambungkan</translation>
 <translation id="906458777597946297">Memaksimalkan jendela</translation>

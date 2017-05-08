@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">USB-C device (port sa kaliwa)</translation>
 <translation id="1346748346194534595">Kanan</translation>
-<translation id="137180024469554212">I-disable ang lock sa pag-rotate</translation>
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1467432559032391204">Kaliwa</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
+<translation id="1856813161013948396">Laktawan ang lock screen sa pamamagitan lang ng pag-tap sa sensor para sa fingerprint. I-click upang i-configure.</translation>
 <translation id="1864454756846565995">USB-C device (port sa rear)</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Napalitan na ang shortcut para sa pagbubukas sa task manager. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Pinamamahalaan ng <ph name="DOMAIN" /> ang device na ito.</translation>
+<translation id="2050339315714019657">Portrait</translation>
 <translation id="207439088875642105">Isa itong account para sa mga bata na pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Ihinto ang pag-cast ng <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -81,7 +82,6 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3126069444801937830">I-restart upang mag-update</translation>
 <translation id="3147142846278915599">Launcher (nagsi-sync ng mga app...)</translation>
 <translation id="315116470104423982">Data sa mobile</translation>
-<translation id="3157169093162779309">I-enable ang lock sa pag-rotate</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
 <translation id="3294437725009624529">Bisita</translation>
 <translation id="3335772982573114336">Bagong tala</translation>
@@ -204,6 +204,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="7034339000180558234">Kina-cast ang <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Magtakda ng wallpaper...</translation>
 <translation id="7066646422045619941">Na-disable ng iyong administrator ang network na ito.</translation>
+<translation id="7067196344162293536">Awtomatikong pag-rotate</translation>
 <translation id="7097613348211027502">Naka-enable ang ChromeVox (pasalitang feedback).
 Pindutin ang Ctrl+Alt+Z upang i-disable.</translation>
 <translation id="7098389117866926363">USB-C device (kaliwang port sa likod)</translation>
@@ -271,4 +272,5 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="923686485342484400">Pindutin ang Control Shift Q nang dalawang beses upang mag-sign out.</translation>
 <translation id="939252827960237676">Nabigong i-save ang screenshot</translation>
 <translation id="945522503751344254">Magpadala ng feedback...</translation>
+<translation id="98515147261107953">Landscape</translation>
 </translationbundle>

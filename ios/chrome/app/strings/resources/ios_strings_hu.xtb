@@ -53,7 +53,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="1820259098641718022">Hozzáadva az olvasási listához</translation>
 <translation id="1876721852596493031">Használati adatok küldése</translation>
 <translation id="1886928167269928266">Mindenkori</translation>
-<translation id="1894451531427596130">A működési mód szabályozása a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> oldalon</translation>
 <translation id="1911619930368729126">Feltöltés Google Drive-ba</translation>
 <translation id="1941314575388338491">A másoláshoz koppintson duplán.</translation>
 <translation id="1952728750904661634">Bejelentkezés felügyelt fiókkal</translation>
@@ -97,6 +96,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">A Fordító beállításainak visszaállítása</translation>
 <translation id="285960592395650245">Letöltés újrapróbálása</translation>
+<translation id="2870560284913253234">Webhely</translation>
 <translation id="2871695793448672541">Jelszó (rejtett)</translation>
 <translation id="2898963176829412617">Új mappa...</translation>
 <translation id="2903493209154104877">Címek</translation>
@@ -109,7 +109,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2989805286512600854">Megnyitás új lapon</translation>
 <translation id="3024255823539804759">Elmúlt nap</translation>
 <translation id="3037605927509011580">A manóba!</translation>
-<translation id="3050311348724540835">A(z) <ph name="HISTORY_URL" /> nem áll rendelkezésre. A böngészési előzmények megnyitásához válassza az „<ph name="SHOW_HISTORY" />” lehetőséget az eszközök menüből.</translation>
 <translation id="3112556859945124369">Megjelölés…</translation>
 <translation id="3151924044251363314">Titkosított adatait csak az olvashatja el, aki rendelkezik összetett jelszavával. Az összetett jelszót a Google nem kapja meg, és nem is tárolja. Ha elfelejtette összetett jelszavát, vagy módosítaná ezt a beállítást, alaphelyzetbe kell állítania a szinkronizálást. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Az összes megjelölése…</translation>

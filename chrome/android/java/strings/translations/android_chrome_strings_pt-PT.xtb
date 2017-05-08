@@ -7,7 +7,6 @@
 <translation id="1061441684050139317">O Chrome necessita de acesso ao microfone para o partilhar com este site.</translation>
 <translation id="1080790410959514870">Está a terminar sessão numa conta gerida por <ph name="DOMAIN_NAME" />. Esta ação elimina os dados do Chrome armazenados neste dispositivo, mas os dados permanecem na sua Conta Google.</translation>
 <translation id="1111673857033749125">Os marcadores guardados nos seus outros dispositivos são apresentados aqui.</translation>
-<translation id="1117638547758781293">Filtro do sub-recurso</translation>
 <translation id="1121094540300013208">Relatórios de utilização e falhas</translation>
 <translation id="1137305377394488060">da hora anterior</translation>
 <translation id="1145536944570833626">Eliminar dados existentes.</translation>
@@ -306,6 +305,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4275663329226226506">Multimédia</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
+<translation id="42981349822642051">Expandir</translation>
 <translation id="4300272766492248925">Abrir aplicação</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
@@ -710,7 +710,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Websites.</translation>
 <translation id="8441146129660941386">Procurar para trás</translation>
 <translation id="8447861592752582886">Revogar autorização do dispositivo</translation>
-<translation id="8487700953926739672">Disponível off-line</translation>
+<translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8489271220582375723">Abrir a página do histórico</translation>
 <translation id="8493948351860045254">Libertar espaço</translation>
 <translation id="8497726226069778601">Ainda não há nada para ver aqui</translation>
@@ -725,7 +725,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="857509777403223202">Serão apresentados mais artigos em breve. Desfrute do seu serão!</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8583805026567836021">A limpar os dados da conta</translation>
-<translation id="85969253066007694">Tu e os teus pais podem controlar estas funcionalidades nas <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /></translation>
 <translation id="8617240290563765734">Pretende abrir o URL sugerido que é especificado no conteúdo transferido?</translation>
 <translation id="862875433388403934">É possível que os conteúdos (filmes, música, etc.) transferidos noutras aplicações deixem de ser reproduzíveis enquanto essas aplicações não voltarem a obter licenças com base numa nova credencial de dispositivo.
 
@@ -743,7 +742,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8748850008226585750">Conteúdo ocultado</translation>
 <translation id="8788968922598763114">Reabrir o último separador fechado</translation>
 <translation id="8812260976093120287">Nalguns Websites, é possível pagar com as aplicações de pagamento compatíveis acima no dispositivo.</translation>
-<translation id="8812942424849541387">Controle esta funcionalidade nas <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="883635517171802338">Impedir a apresentação de pop-ups por parte dos sites (recomendado)</translation>
 <translation id="8847988622838149491">USB</translation>

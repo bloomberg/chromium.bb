@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Urządzenie USB-C (lewy port)</translation>
 <translation id="1346748346194534595">W prawo</translation>
-<translation id="137180024469554212">Wyłącz blokadę obracania</translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
+<translation id="1856813161013948396">Pomiń ekran blokady, dotykając czujnika linii papilarnych. Kliknij, by skonfigurować.</translation>
 <translation id="1864454756846565995">Urządzenie USB-C (tylny port)</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Zmieniliśmy skrót, który otwiera menedżera zadań. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Pionowo</translation>
 <translation id="207439088875642105">To jest konto dla dzieci, którym zarządzają <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Zakończ przesyłanie karty <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
@@ -81,7 +82,6 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3126069444801937830">Uruchom ponownie i zaktualizuj</translation>
 <translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
 <translation id="315116470104423982">Komórkowa transmisja danych</translation>
-<translation id="3157169093162779309">Włącz blokadę obracania</translation>
 <translation id="3236488194889173876">Brak dostępnych sieci komórkowych</translation>
 <translation id="3294437725009624529">Gość</translation>
 <translation id="3335772982573114336">Nowa notatka</translation>
@@ -204,6 +204,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="7034339000180558234">Przesyłam kartę <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ustaw tapetę...</translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
+<translation id="7067196344162293536">Obracanie automatyczne</translation>
 <translation id="7097613348211027502">ChromeVox (potwierdzenia głosowe) jest włączony.
 Aby wyłączyć, naciśnij Ctrl+Alt+Z.</translation>
 <translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
@@ -271,4 +272,5 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="923686485342484400">Naciśnij dwukrotnie Control Shift Q, by się wylogować.</translation>
 <translation id="939252827960237676">Nie można zapisać zrzutu ekranu</translation>
 <translation id="945522503751344254">Wyślij zgłoszenie</translation>
+<translation id="98515147261107953">Poziomo</translation>
 </translationbundle>

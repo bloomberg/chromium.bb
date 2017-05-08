@@ -53,7 +53,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="1820259098641718022">Lisättiin lukulistalle</translation>
 <translation id="1876721852596493031">Lähetä käyttötietoja</translation>
 <translation id="1886928167269928266">Alusta asti</translation>
-<translation id="1894451531427596130">Hallinnoi tämän toimintaa <ph name="BEGIN_LINK" />Asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="1911619930368729126">Lähetä Google Driveen</translation>
 <translation id="1941314575388338491">Kopioi kaksoisnapauttamalla.</translation>
 <translation id="1952728750904661634">Kirjaudu sisään hallinnoidulla tilillä</translation>
@@ -97,6 +96,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Nollaa käännösasetukset</translation>
 <translation id="285960592395650245">Yritä latausta uudelleen</translation>
+<translation id="2870560284913253234">Sivusto</translation>
 <translation id="2871695793448672541">Piilotettu salasana</translation>
 <translation id="2898963176829412617">Uusi kansio…</translation>
 <translation id="2903493209154104877">Osoitteet</translation>
@@ -109,7 +109,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2989805286512600854">Avaa uudessa välilehdessä</translation>
 <translation id="3024255823539804759">Viimeisen päivän ajalta</translation>
 <translation id="3037605927509011580">Voi räkä!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> ei ole saatavilla. Tarkastele selaushistoriaa valitsemalla työkaluvalikosta <ph name="SHOW_HISTORY" />.</translation>
 <translation id="3112556859945124369">Merkitse…</translation>
 <translation id="3151924044251363314">Salattuja tietojasi voi lukea vain tunnuslauseesi avulla. Tunnuslausetta ei lähetetä Googlelle eikä Google tallenna sitä. Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, synkronointi täytyy nollata. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Merkitse kaikki…</translation>

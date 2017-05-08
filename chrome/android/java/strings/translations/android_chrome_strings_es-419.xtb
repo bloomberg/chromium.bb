@@ -7,7 +7,6 @@
 <translation id="1061441684050139317">Chrome necesita acceso al micrófono para compartirlo con este sitio.</translation>
 <translation id="1080790410959514870">Saldrás de una cuenta administrada por <ph name="DOMAIN_NAME" />. Esta acción eliminará los datos de Chrome almacenados en este dispositivo, aunque estos se mantendrán en la cuenta de Google.</translation>
 <translation id="1111673857033749125">Los favoritos guardados en tus otros dispositivos aparecerán aquí.</translation>
-<translation id="1117638547758781293">Filtro de subrecurso</translation>
 <translation id="1121094540300013208">Informes de uso y de fallos</translation>
 <translation id="1137305377394488060">hace una hora</translation>
 <translation id="1145536944570833626">Borra los datos existentes.</translation>
@@ -306,6 +305,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4269820728363426813">Copiar dirección del vínculo</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
+<translation id="42981349822642051">Mostrar</translation>
 <translation id="4300272766492248925">Abrir app</translation>
 <translation id="4307992518367153382">Básicas</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
@@ -326,7 +326,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4535858793016067060">Activa la opción "Fuentes desconocidas" en la configuración de seguridad de Android y prueba el experimento para agregar a la pantalla principal de forma mejorada. Asegúrate de inhabilitar esta configuración cuando hayas terminado de probarlo.</translation>
 <translation id="4558311620361989323">Accesos directos a páginas web</translation>
 <translation id="4572422548854449519">Acceder a una cuenta administrada</translation>
-<translation id="4581964774250883625">Estás en modo de navegación de incógnito.</translation>
+<translation id="4581964774250883625">Estás en modo incógnito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hace # minuto}other{Hace # minutos}}</translation>
 <translation id="4587589328781138893">Sitios</translation>
 <translation id="4605958867780575332">Se quitó el siguiente elemento: <ph name="ITEM_TITLE" /></translation>
@@ -725,7 +725,6 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="857509777403223202">Pronto se mostrarán más artículos. Disfruta tu tarde.</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8583805026567836021">Borrando datos de cuenta</translation>
-<translation id="85969253066007694">Tus padres y tú pueden controlar el funcionamiento en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="8617240290563765734">¿Quieres abrir la URL sugerida que se especifica en el contenido descargado?</translation>
 <translation id="862875433388403934">Tal vez no puedas reproducir el contenido descargado (películas, música, etc.) en otras aplicaciones hasta que dichas aplicaciones vuelvan a adquirir licencias basadas en una nueva credencial de dispositivo.
 
@@ -743,7 +742,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8748850008226585750">Contenidos ocultos</translation>
 <translation id="8788968922598763114">Volver a abrir la última pestaña cerrada</translation>
 <translation id="8812260976093120287">En algunos sitios web, puedes usar las apps compatibles que se enumeran anteriormente para hacer pagos en tu dispositivo.</translation>
-<translation id="8812942424849541387">Controlar el funcionamiento en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="883635517171802338">Bloquear las ventanas emergentes en los sitios (recomendado)</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">USB-C ierīce (pieslēgvieta pa kreisi)</translation>
 <translation id="1346748346194534595">Pa labi</translation>
-<translation id="137180024469554212">Atspējot rotācijas bloķēšanu</translation>
 <translation id="1383876407941801731">Meklēt</translation>
 <translation id="1467432559032391204">Pa kreisi</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
 <translation id="1823873187264960516">Ethernet adrese: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi tīkls ir izslēgts.</translation>
+<translation id="1856813161013948396">Izlaidiet bloķēšanas ekrānu, vienkārši pieskaroties pirksta nospieduma sensoram. Noklikšķiniet, lai konfigurētu.</translation>
 <translation id="1864454756846565995">USB-C ierīce (aizmugurējā pieslēgvieta)</translation>
 <translation id="1882897271359938046">Spoguļo šeit: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Tika mainīti īsinājumtaustiņi, ar kuriem var atvērt uzdevumu pārvaldnieku. Lūdzu, turpmāk izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Šo ierīci pārvalda vietne <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Portrets</translation>
 <translation id="207439088875642105">Šis ir bērniem paredzēts konts, ko pārvalda <ph name="FIRST_PARENT_EMAIL" /> un <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Apturēt “<ph name="TAB_NAME" />” apraidi uztvērējā “<ph name="RECEIVER_NAME" />”</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
@@ -81,7 +82,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="3126069444801937830">Restartēt, lai atjauninātu</translation>
 <translation id="3147142846278915599">Palaišanas programma (notiek lietotņu sinhronizēšana...)</translation>
 <translation id="315116470104423982">Mobilie dati</translation>
-<translation id="3157169093162779309">Iespējot rotācijas bloķēšanu</translation>
 <translation id="3236488194889173876">Mobilais tīkls nav pieejams</translation>
 <translation id="3294437725009624529">Viesis</translation>
 <translation id="3335772982573114336">Jauna piezīme</translation>
@@ -204,6 +204,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="7034339000180558234">Notiek cilnes <ph name="TAB_NAME" /> apraide šādā vietā: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Iestatīt fona tapeti...</translation>
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
+<translation id="7067196344162293536">Pagriezt automātiski</translation>
 <translation id="7097613348211027502">Lasītājs ChromeVox (balss komentāri) ir iespējots.
 Nospiediet īsinājumtaustiņu kombināciju Ctrl+Alt+Z, lai to atspējotu.</translation>
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
@@ -271,4 +272,5 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="923686485342484400">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="939252827960237676">Neizdevās saglabāt ekrānuzņēmumu.</translation>
 <translation id="945522503751344254">Sūtīt atsauksmes</translation>
+<translation id="98515147261107953">Ainava</translation>
 </translationbundle>

@@ -54,7 +54,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1876721852596493031">Enviar dados de uso</translation>
 <translation id="1886928167269928266">Desde o começo</translation>
-<translation id="1894451531427596130">Controlar a maneira como esse recurso funciona nas <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Enviar para o Google Drive</translation>
 <translation id="1941314575388338491">Toque duas vezes para copiar.</translation>
 <translation id="1952728750904661634">Fazer login com uma conta gerenciada</translation>
@@ -98,6 +97,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Redefinir Tradutor</translation>
 <translation id="285960592395650245">Tentar fazer o download novamente</translation>
+<translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Senha oculta</translation>
 <translation id="2898963176829412617">Nova pasta...</translation>
 <translation id="2903493209154104877">Endereços</translation>
@@ -110,7 +110,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2989805286512600854">Abrir em uma nova guia</translation>
 <translation id="3024255823539804759">Do dia anterior</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> não está disponível. Para acessar seu histórico de navegação, selecione "<ph name="SHOW_HISTORY" />" no menu de ferramentas.</translation>
 <translation id="3112556859945124369">Marcar...</translation>
 <translation id="3151924044251363314">Somente uma pessoa com sua senha longa pode ler seus dados criptografados. A senha longa não é enviada ou armazenada pelo Google. Se você esquecer sua senha longa ou desejar alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marcar tudo...</translation>

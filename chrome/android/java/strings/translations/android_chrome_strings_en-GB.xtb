@@ -7,7 +7,6 @@
 <translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>
 <translation id="1080790410959514870">You are signing out of an account managed by <ph name="DOMAIN_NAME" />. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.</translation>
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
-<translation id="1117638547758781293">Subresource Filter</translation>
 <translation id="1121094540300013208">Usage and crash reports</translation>
 <translation id="1137305377394488060">past hour</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
@@ -306,6 +305,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4269820728363426813">Copy link address</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Allowed</translation>
+<translation id="42981349822642051">Expand</translation>
 <translation id="4300272766492248925">Open app</translation>
 <translation id="4307992518367153382">Basics</translation>
 <translation id="4351244548802238354">Close dialogue</translation>
@@ -725,7 +725,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="857509777403223202">More articles will appear soon. Enjoy your evening!</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
-<translation id="85969253066007694">You and your parents can control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
 <translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
@@ -741,7 +740,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8748850008226585750">Contents hidden</translation>
 <translation id="8788968922598763114">Reopen the last closed tab</translation>
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
-<translation id="8812942424849541387">Control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
 <translation id="8847988622838149491">USB</translation>

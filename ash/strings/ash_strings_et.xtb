@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">C-tüüpi USB-seade (vasakpoolne port)</translation>
 <translation id="1346748346194534595">Paremale</translation>
-<translation id="137180024469554212">Keela pööramise lukustus</translation>
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1467432559032391204">Vasakule</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Ekraanil kuvatav klaviatuur on lubatud</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">WiFi on välja lülitatud.</translation>
+<translation id="1856813161013948396">Jätke lukustuskuva vahele, puudutades sõrmejäljeandurit. Klõpsake seadistamiseks.</translation>
 <translation id="1864454756846565995">C-tüüpi USB-seade (tagumine port)</translation>
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Tegumihalduri avamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Seadet haldab <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Vertikaalpaigutus</translation>
 <translation id="207439088875642105">See on lastekonto, mida haldavad <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Peata vahekaardi <ph name="TAB_NAME" /> ülekandmine vastuvõtjasse <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
@@ -81,7 +82,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3126069444801937830">Taaskäivitage värskendamiseks</translation>
 <translation id="3147142846278915599">Käivitusprogramm (rakenduste sünkroonimine ...)</translation>
 <translation id="315116470104423982">Mobiilne andmeside</translation>
-<translation id="3157169093162779309">Luba pööramise lukustus</translation>
 <translation id="3236488194889173876">Ühtegi mobiilsidevõrku pole saadaval</translation>
 <translation id="3294437725009624529">Külaline</translation>
 <translation id="3335772982573114336">Uus märge</translation>
@@ -204,6 +204,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="7034339000180558234">Vahelehe <ph name="TAB_NAME" /> ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Määra taustapilt ...</translation>
 <translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
+<translation id="7067196344162293536">Automaatne pööramine</translation>
 <translation id="7097613348211027502">ChromeVox (kõnena esitatud tagasiside) on lubatud.
 Keelamiseks vajutage klahvikombinatsiooni Ctrl + Alt + Z.</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
@@ -271,4 +272,5 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="923686485342484400">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="939252827960237676">Ekraanipilti ei õnnestunud salvestada</translation>
 <translation id="945522503751344254">Saada tagasisidet</translation>
+<translation id="98515147261107953">Horisontaalpaigutus</translation>
 </translationbundle>

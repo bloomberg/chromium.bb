@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Dispositiu USB-C (port esquerre)</translation>
 <translation id="1346748346194534595">A la dreta</translation>
-<translation id="137180024469554212">Desactiveu el bloqueig de la rotació</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
+<translation id="1856813161013948396">Omet la pantalla de bloqueig tocant el sensor d'empremtes digitals. Fes clic per configurar aquesta funció.</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La drecera per obrir el gestor de tasques ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Aquest dispositiu està gestionat per <ph name="DOMAIN" /></translation>
+<translation id="2050339315714019657">Vertical</translation>
 <translation id="207439088875642105">Aquest és un compte infantil gestionat per <ph name="FIRST_PARENT_EMAIL" /> i per <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Deixa d'emetre <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
@@ -81,7 +82,6 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
 <translation id="3147142846278915599">Launcher (s'estan sincronitzant les aplicacions...)</translation>
 <translation id="315116470104423982">Dades mòbils</translation>
-<translation id="3157169093162779309">Activeu el bloqueig de la rotació</translation>
 <translation id="3236488194889173876">No hi ha cap xarxa de telefonia mòbil disponible</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="3335772982573114336">Nota nova</translation>
@@ -204,6 +204,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="7034339000180558234">S'està emetent <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Estableix fons de pantalla...</translation>
 <translation id="7066646422045619941">L'administrador ha desactivat aquesta xarxa.</translation>
+<translation id="7067196344162293536">Rotació automàtica</translation>
 <translation id="7097613348211027502">ChromeVox (comentaris de veu) està activat.
 Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
@@ -271,4 +272,5 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="923686485342484400">Premeu Control+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="939252827960237676">S'ha produït un error en desar la captura de pantalla.</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>
+<translation id="98515147261107953">Horitzontal</translation>
 </translationbundle>

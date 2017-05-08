@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">‏دستگاه USB-C (درگاه سمت چپ)</translation>
 <translation id="1346748346194534595">راست</translation>
-<translation id="137180024469554212">قفل چرخش غیرفعال شود</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1467432559032391204">چپ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="1823873187264960516">اترنت: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">‏Wi-Fi خاموش است.</translation>
+<translation id="1856813161013948396">به‌سادگی با ضربه زدن روی حسگر اثر انگشت، از صفحه در حالت قفل رد شوید. برای پیکربندی کلیک کنید.</translation>
 <translation id="1864454756846565995">‏دستگاه USB-C (درگاه عقب)</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">کلیدهای میان‌بر باز کردن مدیر فعالیت‌ها تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
 <translation id="2049639323467105390">این دستگاه توسط <ph name="DOMAIN" /> مدیریت می‌شود.</translation>
+<translation id="2050339315714019657">عمودی</translation>
 <translation id="207439088875642105">این یک حساب مخصوص بچه‌ها است که توسط <ph name="FIRST_PARENT_EMAIL" /> و <ph name="SECOND_PARENT_EMAIL" /> مدیریت می‌شود</translation>
 <translation id="2122028596993374965">شروع ارسال محتوای <ph name="TAB_NAME" /> به <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
@@ -81,7 +82,6 @@
 <translation id="3126069444801937830">راه‌اندازی مجدد برای به‌روزرسانی</translation>
 <translation id="3147142846278915599">راه انداز (همگام‌سازی برنامه‌ها...)</translation>
 <translation id="315116470104423982">داده‌های تلفن همراه</translation>
-<translation id="3157169093162779309">قفل چرخش فعال شود</translation>
 <translation id="3236488194889173876">هیچ شبکه تلفن همراهی دردسترس نیست</translation>
 <translation id="3294437725009624529">مهمان</translation>
 <translation id="3335772982573114336">یادداشت جدید</translation>
@@ -187,7 +187,7 @@
 <translation id="6490471652906364588">‏دستگاه USB-C (درگاه سمت راست)</translation>
 <translation id="6501401484702599040">ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">ورودی دست‌نویس</translation>
-<translation id="6537270692134705506">ضبط کردن صفحه‌نمایش</translation>
+<translation id="6537270692134705506">ضبط کردن صفحه</translation>
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
@@ -204,6 +204,7 @@
 <translation id="7034339000180558234">ارسال محتوای <ph name="TAB_NAME" /> به <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">تنظیم کاغذدیواری...</translation>
 <translation id="7066646422045619941">این شبکه توسط سرپرست شما غیرفعال شده است.</translation>
+<translation id="7067196344162293536">چرخش خودکار</translation>
 <translation id="7097613348211027502">‏ChromeVox (بازخورد گفتاری) فعال است.
 برای غیرفعال کردن آن Ctrl+Alt+Z را فشار دهید.</translation>
 <translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
@@ -271,4 +272,5 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="923686485342484400">‏برای خروج از سیستم Control Shift Q را دو بار فشار دهید.</translation>
 <translation id="939252827960237676">عکس صفحه‌نمایش ذخیره نشد</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>
+<translation id="98515147261107953">افقی</translation>
 </translationbundle>

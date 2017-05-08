@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Устройство USB-C (порт слева)</translation>
 <translation id="1346748346194534595">Справа</translation>
-<translation id="137180024469554212">Отключить автоповорот экрана</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1467432559032391204">Слева</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi отключен</translation>
+<translation id="1856813161013948396">Для разблокировки экрана коснитесь сканера отпечатков пальцев. Нажмите, чтобы настроить.</translation>
 <translation id="1864454756846565995">Устройство USB-C (порт сзади)</translation>
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Изменились быстрые клавиши для запуска диспетчера задач. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Это устройство находится в домене <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Книжная</translation>
 <translation id="207439088875642105">Этим детским аккаунтом управляют <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="2122028596993374965">Остановить трансляцию вкладки "<ph name="TAB_NAME" />" на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
@@ -81,7 +82,6 @@
 <translation id="3126069444801937830">Перезагрузите, чтобы обновить</translation>
 <translation id="3147142846278915599">Панель запуска (синхронизация приложений...)</translation>
 <translation id="315116470104423982">Мобильное подключение</translation>
-<translation id="3157169093162779309">Включить автоповорот экрана</translation>
 <translation id="3236488194889173876">Нет доступных мобильных сетей</translation>
 <translation id="3294437725009624529">Гость</translation>
 <translation id="3335772982573114336">Новая заметка</translation>
@@ -204,6 +204,7 @@
 <translation id="7034339000180558234">Трансляция вкладки "<ph name="TAB_NAME" />": <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Выбрать обои</translation>
 <translation id="7066646422045619941">Эта сеть отключена администратором.</translation>
+<translation id="7067196344162293536">Автоповорот</translation>
 <translation id="7097613348211027502">Голосовое сопровождение ChromeVox включено. Чтобы отключить его, нажмите CTRL+ALT+Z.</translation>
 <translation id="7098389117866926363">Устройство USB-C (порт слева на задней панели)</translation>
 <translation id="7129360219436193655">Режим лазерной указки</translation>
@@ -270,4 +271,5 @@
 <translation id="923686485342484400">Чтобы выйти, дважды нажмите Control+Shift+Q.</translation>
 <translation id="939252827960237676">Не удалось сохранить скриншот</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
+<translation id="98515147261107953">Альбомная</translation>
 </translationbundle>

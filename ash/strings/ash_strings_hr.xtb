@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">USB-C uređaj (lijevi priključak)</translation>
 <translation id="1346748346194534595">Udesno</translation>
-<translation id="137180024469554212">Onemogući zaključavanje rotacije</translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1467432559032391204">Ulijevo</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi je isključen.</translation>
+<translation id="1856813161013948396">Preskočite zaključan zaslon tako što ćete dodirnuti senzor otiska prsta. Kliknite da biste konfigurirali.</translation>
 <translation id="1864454756846565995">USB-C uređaj (stražnji priključak)</translation>
 <translation id="1882897271359938046">Zrcaljenje na zaslon <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Promijenio se prečac za otvaranje upravitelja zadataka. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Ovim uređajem upravlja <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Portret</translation>
 <translation id="207439088875642105">Ovo je račun za djecu kojim upravljaju <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Zaustavi emitiranje kartice <ph name="TAB_NAME" /> na prijamniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
@@ -81,7 +82,6 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="3126069444801937830">Ponovo pokrenite za ažuriranje</translation>
 <translation id="3147142846278915599">Pokretač (sinkronizacija aplikacija...)</translation>
 <translation id="315116470104423982">Mobilni podaci</translation>
-<translation id="3157169093162779309">Omogući zaključavanje rotacije</translation>
 <translation id="3236488194889173876">Mobilne mreže nisu dostupne</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="3335772982573114336">Nova bilješka</translation>
@@ -204,6 +204,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="7034339000180558234">Emitiranje kartice <ph name="TAB_NAME" /> na <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Postavljanje pozadinske slike...</translation>
 <translation id="7066646422045619941">Tu mrežu onemogućio je vaš administrator.</translation>
+<translation id="7067196344162293536">Automatski izmjenjuj</translation>
 <translation id="7097613348211027502">Omogućen je ChromeVox (govorne povratne informacije).
 Pritisnite Ctrl+Alt+Z da biste ga onemogućili.</translation>
 <translation id="7098389117866926363">USB-C uređaj (lijevi priključak sa stražnje strane)</translation>
@@ -271,4 +272,5 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="923686485342484400">Pritisnite Ctrl, Shift i Q dvaput da biste se odjavili.</translation>
 <translation id="939252827960237676">Snimka zaslona nije spremljena</translation>
 <translation id="945522503751344254">Slanje povratnih informacija</translation>
+<translation id="98515147261107953">Pejzaž</translation>
 </translationbundle>

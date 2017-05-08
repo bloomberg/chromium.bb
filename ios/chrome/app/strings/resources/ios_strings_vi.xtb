@@ -53,7 +53,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="1820259098641718022">Đã thêm vào Danh sách đọc</translation>
 <translation id="1876721852596493031">Gửi dữ liệu sử dụng</translation>
 <translation id="1886928167269928266">Mọi thứ</translation>
-<translation id="1894451531427596130">Kiểm soát cách hoạt động của ứng dụng này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Tải lên Google Drive</translation>
 <translation id="1941314575388338491">Nhấn đúp để sao chép.</translation>
 <translation id="1952728750904661634">Đăng nhập bằng tài khoản được quản lý</translation>
@@ -97,6 +96,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Đặt lại cài đặt dịch</translation>
 <translation id="285960592395650245">Thử tải xuống lại</translation>
+<translation id="2870560284913253234">Trang web</translation>
 <translation id="2871695793448672541">Mật khẩu ẩn</translation>
 <translation id="2898963176829412617">Thư mục mới…</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
@@ -109,7 +109,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2989805286512600854">Mở bằng Tab Mới</translation>
 <translation id="3024255823539804759">Ngày trước</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> không khả dụng. Để truy cập lịch sử duyệt web của bạn, hãy chọn "<ph name="SHOW_HISTORY" />" từ menu công cụ.</translation>
 <translation id="3112556859945124369">Đánh dấu...</translation>
 <translation id="3151924044251363314">Chỉ người có cụm mật khẩu mới có thể đọc dữ liệu được mã hóa của bạn. Cụm mật khẩu không được gửi tới hoặc được lưu trữ bởi Google. Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, bạn cần đặt lại đồng bộ hóa. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Đánh dấu tất cả...</translation>

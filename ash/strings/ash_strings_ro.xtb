@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Dispozitiv USB-C (portul din stânga)</translation>
 <translation id="1346748346194534595">Dreapta</translation>
-<translation id="137180024469554212">Dezactivează blocarea rotirii</translation>
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1467432559032391204">Stânga</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
+<translation id="1856813161013948396">Omite ecranul de blocare atingând senzorul de amprentă. Dă clic pentru a configura.</translation>
 <translation id="1864454756846565995">Dispozitiv USB-C (portul din spate)</translation>
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Comanda rapidă pentru a deschide managerul de activități a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Portret</translation>
 <translation id="207439088875642105">Acesta este un cont pentru copii gestionat de <ph name="FIRST_PARENT_EMAIL" /> și de <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Nu mai proiecta <ph name="TAB_NAME" /> pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
@@ -81,7 +82,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3126069444801937830">Reporniți pentru a actualiza</translation>
 <translation id="3147142846278915599">Lansator (se sincronizează aplicațiile...)</translation>
 <translation id="315116470104423982">Date mobile</translation>
-<translation id="3157169093162779309">Activează blocarea rotirii</translation>
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="3335772982573114336">Notă nouă</translation>
@@ -204,6 +204,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="7034339000180558234">Se proiectează <ph name="TAB_NAME" /> pe <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Setați o imagine de fundal...</translation>
 <translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
+<translation id="7067196344162293536">Rotire automată</translation>
 <translation id="7097613348211027502">ChromeVox (feedbackul rostit) este activat.
 Apăsați pe Ctrl+Alt+Z pentru dezactivare.</translation>
 <translation id="7098389117866926363">Dispozitiv USB-C (portul din stânga în spate)</translation>
@@ -271,4 +272,5 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="923686485342484400">Apăsați de două ori Control Shift Q pentru a vă deconecta.</translation>
 <translation id="939252827960237676">Captura de ecran nu a putut fi salvată.</translation>
 <translation id="945522503751344254">Trimite feedback</translation>
+<translation id="98515147261107953">Peisaj</translation>
 </translationbundle>

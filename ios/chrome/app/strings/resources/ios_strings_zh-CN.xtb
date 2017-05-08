@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">已添加到阅读清单</translation>
 <translation id="1876721852596493031">发送使用情况数据</translation>
 <translation id="1886928167269928266">全部</translation>
-<translation id="1894451531427596130">您可以转到<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />控制该功能的运行方式</translation>
 <translation id="1911619930368729126">上传到Google云端硬盘</translation>
 <translation id="1941314575388338491">点按两次即可复制。</translation>
 <translation id="1952728750904661634">登录受管理的帐号</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />，<ph name="STATE" />，<ph name="URL" /></translation>
 <translation id="2843803966603263712">重置翻译设置</translation>
 <translation id="285960592395650245">重试下载</translation>
+<translation id="2870560284913253234">网站</translation>
 <translation id="2871695793448672541">目前为隐藏状态的密码</translation>
 <translation id="2898963176829412617">新建文件夹…</translation>
 <translation id="2903493209154104877">地址</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">在新标签页中打开</translation>
 <translation id="3024255823539804759">过去 1 天</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
-<translation id="3050311348724540835">无法访问 <ph name="HISTORY_URL" />。要访问您的浏览记录，请从工具菜单中选择“<ph name="SHOW_HISTORY" />”。</translation>
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3151924044251363314">只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">全部标为…</translation>

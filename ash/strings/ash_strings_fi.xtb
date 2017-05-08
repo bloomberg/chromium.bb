@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">C-tyypin USB-laite (vasemman sivun portti)</translation>
 <translation id="1346748346194534595">Oikealle</translation>
-<translation id="137180024469554212">Poista näytön kierron lukitus käytöstä</translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1467432559032391204">Vasemmalle</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi ei ole käytössä.</translation>
+<translation id="1856813161013948396">Ohita lukitusnäyttö koskettamalla sormenjälkitunnistinta. Määritä napauttamalla.</translation>
 <translation id="1864454756846565995">C-tyypin USB-laite (takaportti)</translation>
 <translation id="1882897271359938046">Peilataan: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Tehtävänhallinnan avaamisen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Tätä laitetta hallinnoi <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Pystysuunta</translation>
 <translation id="207439088875642105">Tämä on lapsen tili, jota hallinnoivat <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="2122028596993374965">Lopeta suoratoisto: <ph name="TAB_NAME" />, <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pienitehoinen laturi</translation>
@@ -80,7 +81,6 @@
 <translation id="3126069444801937830">Päivitä käynnistämällä uudelleen</translation>
 <translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
 <translation id="315116470104423982">Mobiilitiedonsiirto</translation>
-<translation id="3157169093162779309">Ota näytön kierron lukitus käyttöön</translation>
 <translation id="3236488194889173876">Mobiiliverkkoja ei ole käytettävissä</translation>
 <translation id="3294437725009624529">Vieras</translation>
 <translation id="3335772982573114336">Uusi muistiinpano</translation>
@@ -203,6 +203,7 @@
 <translation id="7034339000180558234">Välilehti <ph name="TAB_NAME" /> peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
 <translation id="7052914147756339792">Aseta taustakuva...</translation>
 <translation id="7066646422045619941">Järjestelmänvalvoja on poistanut tämän verkon käytöstä.</translation>
+<translation id="7067196344162293536">Automaattinen kierto</translation>
 <translation id="7097613348211027502">ChromeVox (äänipalaute) on käytössä. Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="7098389117866926363">C-tyypin USB-laite (vasemmanpuoleinen takaportti)</translation>
 <translation id="7129360219436193655">Laserosoitintila</translation>
@@ -268,4 +269,5 @@
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>
 <translation id="939252827960237676">Kuvakaappauksen tallentaminen epäonnistui</translation>
 <translation id="945522503751344254">Lähetä palautetta</translation>
+<translation id="98515147261107953">Vaakasuunta</translation>
 </translationbundle>

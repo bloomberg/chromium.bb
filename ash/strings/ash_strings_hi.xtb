@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">USB-C डिवाइस (बायां पोर्ट)</translation>
 <translation id="1346748346194534595">दाएं</translation>
-<translation id="137180024469554212">रोटेशन लॉक को अक्षम करें</translation>
 <translation id="1383876407941801731">खोज</translation>
 <translation id="1467432559032391204">बाएं</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
 <translation id="1823873187264960516">ईथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
+<translation id="1856813161013948396">बस फ़िंगरप्रिंट सेंसर पर टैप करके लॉक स्क्रीन छोड़ें. कॉन्फ़िगर करने के लिए क्लिक करें.</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर मिरर कर रहा है</translation>
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">यह डिवाइस <ph name="DOMAIN" /> द्वारा प्रबंधित है.</translation>
+<translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="207439088875642105">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="FIRST_PARENT_EMAIL" /> और <ph name="SECOND_PARENT_EMAIL" /> द्वारा प्रबंधित किया जाता है</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> को <ph name="TAB_NAME" /> कास्ट करना बंद करें</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
@@ -81,7 +82,6 @@
 <translation id="3126069444801937830">अपडेट करने के लिए पुनरारंभ करें</translation>
 <translation id="3147142846278915599">लॉन्‍चर (ऐप्‍स समन्‍वयित किए जा रहे हैं...)</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
-<translation id="3157169093162779309">रोटेशन लॉक को सक्षम करें</translation>
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3294437725009624529">अतिथि</translation>
 <translation id="3335772982573114336">नया नोट</translation>
@@ -204,6 +204,7 @@
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
 <translation id="7052914147756339792">वॉलपेपर सेट करें...</translation>
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
+<translation id="7067196344162293536">स्वत: घुमाएं</translation>
 <translation id="7097613348211027502">ChromeVox (बोला गया फ़ीडबैक) सक्षम है. अक्षम करने के लिए Ctrl+Alt+Z दबाएं.</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
 <translation id="7129360219436193655">लेज़र पॉइंटर मोड</translation>
@@ -270,4 +271,5 @@
 <translation id="923686485342484400">प्रस्थान करने के लिए दो बार Control Shift Q दबाएं.</translation>
 <translation id="939252827960237676">स्क्रीनशॉट सहेजने में विफल</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>
+<translation id="98515147261107953">भू-दृश्य</translation>
 </translationbundle>

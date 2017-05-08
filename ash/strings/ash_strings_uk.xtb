@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">Пристрій із портом USB типу C (ліворуч)</translation>
 <translation id="1346748346194534595">Праворуч</translation>
-<translation id="137180024469554212">Розблокувати обертання</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1467432559032391204">Ліворуч</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Екранну клавіатуру ввімкнено</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi вимкнено.</translation>
+<translation id="1856813161013948396">Торкніться сканера відбитків пальців, щоб пропустити заблокований екран. Натисніть, щоб налаштувати.</translation>
 <translation id="1864454756846565995">Пристрій із портом USB типу C (на задній панелі)</translation>
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Комбінація клавіш для запуску Диспетчера завдань змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Цим пристроєм керує домен <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Портретна</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> і <ph name="SECOND_PARENT_EMAIL" /> керують цим обліковим записом для дітей</translation>
 <translation id="2122028596993374965">Зупинити трансляцію вкладки "<ph name="TAB_NAME" />" на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
@@ -81,7 +82,6 @@
 <translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
 <translation id="3147142846278915599">Панель запуску (синхронізація додатків…)</translation>
 <translation id="315116470104423982">Мобільне передавання даних</translation>
-<translation id="3157169093162779309">Заблокувати обертання</translation>
 <translation id="3236488194889173876">Немає мобільних мереж</translation>
 <translation id="3294437725009624529">Гість</translation>
 <translation id="3335772982573114336">Нова нотатка</translation>
@@ -204,6 +204,7 @@
 <translation id="7034339000180558234">Вкладка "<ph name="TAB_NAME" />" транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="7052914147756339792">Установити фоновий малюнок...</translation>
 <translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
+<translation id="7067196344162293536">Автоматичне обертання</translation>
 <translation id="7097613348211027502">ChromeVox (голосові підказки) увімкнено.
 Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
 <translation id="7098389117866926363">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
@@ -271,4 +272,5 @@
 <translation id="923686485342484400">Щоб вийти, двічі натисніть Control Shift Q.</translation>
 <translation id="939252827960237676">Не вдалося зберегти знімок екрана</translation>
 <translation id="945522503751344254">Надіслати відгук</translation>
+<translation id="98515147261107953">Альбомна</translation>
 </translationbundle>

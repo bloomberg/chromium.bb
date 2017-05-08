@@ -53,7 +53,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="1820259098641718022">Lisati lugemisloendisse</translation>
 <translation id="1876721852596493031">Kasutusandm. saatm.</translation>
 <translation id="1886928167269928266">Alates algusest</translation>
-<translation id="1894451531427596130">Juhtige seda jaotises <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">Laadi üles Google Drive'i</translation>
 <translation id="1941314575388338491">Kopeerimiseks topeltpuudutage.</translation>
 <translation id="1952728750904661634">Sisselogimine hallatud kontoga</translation>
@@ -97,6 +96,7 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Tõlkimisseadete lähtestamine</translation>
 <translation id="285960592395650245">Proovi veel alla laadida</translation>
+<translation id="2870560284913253234">Sait</translation>
 <translation id="2871695793448672541">Peidetud, parool</translation>
 <translation id="2898963176829412617">Uus kaust ...</translation>
 <translation id="2903493209154104877">Aadressid</translation>
@@ -109,7 +109,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="2989805286512600854">Ava uuel vahelehel</translation>
 <translation id="3024255823539804759">Viimane päev</translation>
 <translation id="3037605927509011580">Ups, ebaõnn!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" /> ei ole saadaval. Sirvimisajaloole juurdepääsemiseks tehke tööriistamenüüs valik „<ph name="SHOW_HISTORY" />”.</translation>
 <translation id="3112556859945124369">Märgi …</translation>
 <translation id="3151924044251363314">Teie krüpteeritud andmeid saavad lugeda vaid need, kes teavad teie parooli – seda ei saadeta Google'ile ja Google ei talleta seda. Kui unustate parooli või soovite seda seadet muuta, tuleb teil sünkroonimine lähtestada. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Märgi kõik …</translation>

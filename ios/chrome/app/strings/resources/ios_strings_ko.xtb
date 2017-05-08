@@ -53,7 +53,6 @@
 <translation id="1820259098641718022">읽기 목록에 추가됨</translation>
 <translation id="1876721852596493031">사용 데이터 보내기</translation>
 <translation id="1886928167269928266">전체</translation>
-<translation id="1894451531427596130"><ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 작동 방식을 제어하세요.</translation>
 <translation id="1911619930368729126">Google 드라이브로 업로드</translation>
 <translation id="1941314575388338491">복사하려면 두 번 탭하세요.</translation>
 <translation id="1952728750904661634">관리 계정으로 로그인</translation>
@@ -97,6 +96,7 @@
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">번역 설정 재설정</translation>
 <translation id="285960592395650245">다운로드 다시 시도</translation>
+<translation id="2870560284913253234">사이트</translation>
 <translation id="2871695793448672541">숨겨진 비밀번호</translation>
 <translation id="2898963176829412617">새 폴더 만들기…</translation>
 <translation id="2903493209154104877">주소</translation>
@@ -109,7 +109,6 @@
 <translation id="2989805286512600854">새 탭에서 열기</translation>
 <translation id="3024255823539804759">지난 1일</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
-<translation id="3050311348724540835"><ph name="HISTORY_URL" />을(를) 사용할 수 없습니다. 인터넷 사용 기록에 액세스하려면 도구 메뉴에서 '<ph name="SHOW_HISTORY" />'을(를) 선택하세요.</translation>
 <translation id="3112556859945124369">표시…</translation>
 <translation id="3151924044251363314">암호를 아는 사람만 암호화된 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않거나 이 설정을 변경하려면 동기화를 재설정해야 합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">모두 표시...</translation>

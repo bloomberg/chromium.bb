@@ -7,7 +7,6 @@
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐号。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
-<translation id="1117638547758781293">子资源过滤器</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
 <translation id="1137305377394488060">过去 1 小时</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
@@ -306,6 +305,7 @@
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许</translation>
+<translation id="42981349822642051">展开</translation>
 <translation id="4300272766492248925">打开应用</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
@@ -326,7 +326,7 @@
 <translation id="4535858793016067060">您必须在 Android 安全设置中开启“未知来源”，才能试用“经过改进的‘添加到主屏幕’功能”实验。在试用完该实验后，请务必停用此设置。</translation>
 <translation id="4558311620361989323">网页快捷键</translation>
 <translation id="4572422548854449519">请登录受管理的帐号</translation>
-<translation id="4581964774250883625">您已进入隐身模式。</translation>
+<translation id="4581964774250883625">您已进入无痕模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分钟前}other{# 分钟前}}</translation>
 <translation id="4587589328781138893">网站</translation>
 <translation id="4605958867780575332">以下项已移除：<ph name="ITEM_TITLE" /></translation>
@@ -725,7 +725,6 @@
 <translation id="857509777403223202">我们很快将会为您奉上更多文章，伴您度过美好的夜晚时光！</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
 <translation id="8583805026567836021">清除帐号数据</translation>
-<translation id="85969253066007694">您和您的父母可以在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中控制这项功能的运作方式</translation>
 <translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
 
@@ -743,7 +742,6 @@
 <translation id="8748850008226585750">内容已隐藏</translation>
 <translation id="8788968922598763114">重新打开上次关闭的标签页</translation>
 <translation id="8812260976093120287">在某些网站上，您可以使用自己的设备通过上述支持的付款应用付款。</translation>
-<translation id="8812942424849541387">您可以转到<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />控制该功能的运行方式</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="883635517171802338">禁止网站显示弹出式窗口（推荐）</translation>
 <translation id="8847988622838149491">USB</translation>

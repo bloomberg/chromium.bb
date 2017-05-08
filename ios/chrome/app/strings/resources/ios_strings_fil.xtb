@@ -53,7 +53,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="1820259098641718022">Idinagdag sa Listahan ng Mga Babasahin</translation>
 <translation id="1876721852596493031">Magpadala ng Data</translation>
 <translation id="1886928167269928266">Mula sa Umpisa</translation>
-<translation id="1894451531427596130">Kontrolin kung paano ito gumagana sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" /></translation>
 <translation id="1911619930368729126">I-upload sa Google Drive</translation>
 <translation id="1941314575388338491">I-double tap upang kopyahin.</translation>
 <translation id="1952728750904661634">Mag-sign in gamit ang isang pinamamahalaang account</translation>
@@ -97,6 +96,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">I-reset ang Mga Setting ng Pagsasalin</translation>
 <translation id="285960592395650245">Subukan Muli ang Download</translation>
+<translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Nakatago, Password</translation>
 <translation id="2898963176829412617">Bagong Folder…</translation>
 <translation id="2903493209154104877">Mga Address</translation>
@@ -109,7 +109,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="2989805286512600854">Buksan sa Bagong Tab</translation>
 <translation id="3024255823539804759">Nakalipas na Araw</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
-<translation id="3050311348724540835">Hindi available ang <ph name="HISTORY_URL" />. Upang ma-access ang iyong history ng pagba-browse, piliin ang "<ph name="SHOW_HISTORY" />" sa menu ng mga tool.</translation>
 <translation id="3112556859945124369">Markahan…</translation>
 <translation id="3151924044251363314">Ang taong may alam ng iyong passphrase lang ang makakabasa sa iyong naka-encrypt na data. Hindi ipinapadala sa o iniimbak ng Google ang passphrase. Kung makakalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, kakailanganin mong i-reset ang pag-sync. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Markahan Lahat...</translation>

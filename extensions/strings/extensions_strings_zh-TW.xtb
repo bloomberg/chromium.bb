@@ -4,7 +4,7 @@
 <translation id="1135328998467923690">套件無效：<ph name="ERROR_CODE" />。</translation>
 <translation id="1140871961407805696">後置鏡頭</translation>
 <translation id="1256619696651732561">擴充功能資訊清單剖析器</translation>
-<translation id="1445572445564823378">這個擴充功能使得 <ph name="PRODUCT_NAME" /> 運作變慢。建議您停用這個擴充功能，以恢復 <ph name="PRODUCT_NAME" /> 的效能。</translation>
+<translation id="1445572445564823378">這個擴充功能使得 <ph name="PRODUCT_NAME" /> 運作變慢。建議你停用這個擴充功能，以恢復 <ph name="PRODUCT_NAME" /> 的效能。</translation>
 <translation id="1468038450257740950">系統不支援 WebGL。</translation>
 <translation id="149347756975725155">無法載入擴充功能圖示「<ph name="ICON" />」。</translation>
 <translation id="1803557475693955505">無法載入背景頁面「<ph name="BACKGROUND_PAGE" />」。</translation>
@@ -16,7 +16,7 @@
 <translation id="2988488679308982380">無法安裝套件：<ph name="ERROR_CODE" /></translation>
 <translation id="3115238746683532089">供應商 <ph name="VENDOR_ID" /> 提供的不明產品 <ph name="PRODUCT_ID" /> (序號：<ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3163201441334626963">供應商 <ph name="VENDOR_ID" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
-<translation id="3369521687965833290">無法為擴充功能解除封裝。如要安全解除封裝，設定檔目錄的路徑必須以磁碟代號開頭，且不能包含連接點、掛載點或符號連結。您的設定檔中沒有符合條件的路徑。</translation>
+<translation id="3369521687965833290">無法為擴充功能解除封裝。如要安全解除封裝，設定檔目錄的路徑必須以磁碟代號開頭，且不能包含連接點、掛載點或符號連結。你的設定檔中沒有符合條件的路徑。</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (序號：<ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397">供應商 <ph name="VENDOR_ID" /> 提供的 <ph name="PRODUCT_NAME" /> (序號：<ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3624204664103857160">無法載入啟動器頁面「<ph name="PAGE" />」。</translation>
@@ -27,13 +27,13 @@
 <translation id="5026754133087629784">Webview：<ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview：<ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5436430103864390185">系統不支援造型視窗。</translation>
-<translation id="5456409301717116725">這個擴充功能含有金鑰檔「<ph name="KEY_PATH" />」。您不妨重新考慮是否仍要進行。</translation>
+<translation id="5456409301717116725">這個擴充功能含有金鑰檔「<ph name="KEY_PATH" />」。你不妨重新考慮是否仍要進行。</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME" /> 擴充功能</translation>
 <translation id="5960890139610307736">ExtensionView：<ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">這個裝置的管理員要求安裝「<ph name="EXTENSION_NAME" />」，因此無法解除安裝這個擴充功能。</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> 提供的不明產品 <ph name="PRODUCT_ID" /> (序號：<ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721">供應商 <ph name="VENDOR_ID" /> 提供的 <ph name="PRODUCT_NAME" /></translation>
-<translation id="6143635259298204954">無法為擴充功能解除封裝。如要安全解除封裝，設定檔目錄的路徑不能包含符號連結。您的設定檔中沒有符合條件的路徑。</translation>
+<translation id="6143635259298204954">無法為擴充功能解除封裝。如要安全解除封裝，設定檔目錄的路徑不能包含符號連結。你的設定檔中沒有符合條件的路徑。</translation>
 <translation id="641087317769093025">無法將擴充功能解壓縮</translation>
 <translation id="6542618148162044354">「<ph name="APP_NAME" />」要求存取你的一或多個裝置：</translation>
 <translation id="6566142449942033617">無法載入外掛程式的「<ph name="PLUGIN_PATH" />」。</translation>
@@ -43,7 +43,7 @@
 <translation id="677806580227005219">MIME 處理常式：<ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">這項擴充功能自動重新載入的頻率過高。</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
-<translation id="7217838517480956708">這台電腦的管理員要求安裝 <ph name="EXTENSION_NAME" />，因此您無法移除或修改它。</translation>
+<translation id="7217838517480956708">這台電腦的管理員要求安裝 <ph name="EXTENSION_NAME" />，因此你無法移除或修改它。</translation>
 <translation id="7581279002575751816">系統不支援 NPAPI 外掛程式。</translation>
 <translation id="7809034755304591547">管理員已封鎖 <ph name="EXTENSION_NAME" /> (擴充功能 ID「<ph name="EXTENSION_ID" />」)。</translation>
 <translation id="7972881773422714442">選項：<ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>

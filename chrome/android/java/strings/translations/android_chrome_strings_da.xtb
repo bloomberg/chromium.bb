@@ -7,7 +7,6 @@
 <translation id="1061441684050139317">Chrome skal have adgang til mikrofonen for at kunne dele den med dette website.</translation>
 <translation id="1080790410959514870">Du er ved at logge ud af en konto, der administreres af <ph name="DOMAIN_NAME" />. Dette medfører sletning af de Chrome-data, der er gemt på denne enhed, men dataene forbliver på din Google-konto.</translation>
 <translation id="1111673857033749125">Bogmærker, der er gemt på dine andre enheder, vises her.</translation>
-<translation id="1117638547758781293">Subresource-filter</translation>
 <translation id="1121094540300013208">Forbrugs- og nedbrudsrapporter</translation>
 <translation id="1137305377394488060">den seneste time</translation>
 <translation id="1145536944570833626">Slet eksisterende data.</translation>
@@ -306,6 +305,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4269820728363426813">Kopiér linkadresse</translation>
 <translation id="4275663329226226506">Medier</translation>
 <translation id="4278390842282768270">Tilladt</translation>
+<translation id="42981349822642051">Udvid</translation>
 <translation id="4300272766492248925">Åbn app</translation>
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
 <translation id="4351244548802238354">Luk dialogboksen</translation>
@@ -326,7 +326,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4535858793016067060">Slå "Ukendte kilder" til i sikkerhedsindstillingerne i Android for at afprøve eksperimentet "Forbedring af funktionen Føj til startskærm". Sørg for at deaktivere denne indstilling, når du er færdig med at teste den.</translation>
 <translation id="4558311620361989323">Genveje på websider</translation>
 <translation id="4572422548854449519">Log ind på administreret konto</translation>
-<translation id="4581964774250883625">Du er inkognito.</translation>
+<translation id="4581964774250883625">Du er nu i inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{For # minut siden}one{For # minut siden}other{For # minutter siden}}</translation>
 <translation id="4587589328781138893">Websites</translation>
 <translation id="4605958867780575332">Element fjernet: <ph name="ITEM_TITLE" /></translation>
@@ -725,13 +725,12 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="857509777403223202">Der vises snart flere artikler. Hav en god aften!</translation>
 <translation id="857943718398505171">Tilladt (anbefales)</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
-<translation id="85969253066007694">Du og dine forældre kan styre, hvordan synkroniseringsindstillinger og browserhistorik fungerer i <ph name="BEGIN_LINK1" />Indstillinger<ph name="END_LINK1" /></translation>
 <translation id="8617240290563765734">Vil du åbne den foreslåede webadresse, som er angivet i det downloadede indhold?</translation>
 <translation id="862875433388403934">Indhold (film, musik m.m.), der er downloadet i andre applikationer, kan muligvis ikke længere afspilles, før disse applikationer får nye licenser, der er baseret på nye loginoplysninger for enheden.
 
 Du kan få nye licenser ved at oprette forbindelse til internettet og afspille det indhold, du har downloadet.</translation>
 <translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
-<translation id="8641930654639604085">Prøv at blokere websites med voksenindhold</translation>
+<translation id="8641930654639604085">Prøv at blokere websites med indhold for voksne</translation>
 <translation id="8660471606262461360">Fra Google Payments</translation>
 <translation id="8662811608048051533">Logger dig ud af de fleste websites.</translation>
 <translation id="8676374126336081632">Ryd indtastning</translation>
@@ -743,7 +742,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8748850008226585750">Indholdet er skjult</translation>
 <translation id="8788968922598763114">Åbn den senest lukkede fane igen</translation>
 <translation id="8812260976093120287">På nogle websites kan du betale med ovenstående understøttede betalingsapps på din enhed.</translation>
-<translation id="8812942424849541387">Kontrollér, hvordan dette fungerer i <ph name="BEGIN_LINK1" />Indstillinger<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="883635517171802338">Bloker visning af pop up-vinduer på websites (anbefales)</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -14,7 +14,6 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1293264513303784526">USB-C-apparaat (poort aan linkerkant)</translation>
 <translation id="1346748346194534595">Rechts</translation>
-<translation id="137180024469554212">Draaivergrendeling uitschakelen</translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -30,6 +29,7 @@
 <translation id="1747827819627189109">Schermtoetsenbord ingeschakeld</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wifi is uitgeschakeld.</translation>
+<translation id="1856813161013948396">Sla het vergrendelingsscherm over door op de vingerafdruksensor te tikken. Klik om te configureren.</translation>
 <translation id="1864454756846565995">USB-C-apparaat (poort aan achterkant)</translation>
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">De sneltoets om Taakbeheer te openen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
@@ -38,6 +38,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2049639323467105390">Dit apparaat wordt beheerd door <ph name="DOMAIN" />.</translation>
+<translation id="2050339315714019657">Staand</translation>
 <translation id="207439088875642105">Dit is een account voor kinderen dat wordt beheerd door <ph name="FIRST_PARENT_EMAIL" /> en <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Casten van <ph name="TAB_NAME" /> naar <ph name="RECEIVER_NAME" /> stopzetten</translation>
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
@@ -81,7 +82,6 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3126069444801937830">Opnieuw starten om updates uit te voeren</translation>
 <translation id="3147142846278915599">Launcher (apps synchroniseren...)</translation>
 <translation id="315116470104423982">Mobiele gegevens</translation>
-<translation id="3157169093162779309">Draaivergrendeling inschakelen</translation>
 <translation id="3236488194889173876">Geen mobiel netwerk beschikbaar</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="3335772982573114336">Nieuwe notitie</translation>
@@ -204,6 +204,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> wordt gecast naar <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Achtergrond instellen...</translation>
 <translation id="7066646422045619941">Dit netwerk is uitgeschakeld door je beheerder.</translation>
+<translation id="7067196344162293536">Automatisch draaien</translation>
 <translation id="7097613348211027502">ChromeVox (gesproken feedback) is ingeschakeld.
 Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
@@ -271,4 +272,5 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="923686485342484400">Druk twee keer op Control+Shift+Q om uit te loggen.</translation>
 <translation id="939252827960237676">Kan screenshot niet opslaan</translation>
 <translation id="945522503751344254">Feedback verzenden</translation>
+<translation id="98515147261107953">Liggend</translation>
 </translationbundle>
