@@ -255,7 +255,7 @@
       <entry name="none" value="0">
 	<description summary="don't move the child surface when constrained">
 	  Don't alter the surface position even if it is constrained on some
-	  axis, for example partially outside the edge of a monitor.
+	  axis, for example partially outside the edge of an output.
 	</description>
       </entry>
       <entry name="slide_x" value="1">
@@ -847,7 +847,7 @@
     </request>
 
     <request name="set_fullscreen">
-      <description summary="set the window as fullscreen on a monitor">
+      <description summary="set the window as fullscreen on an output">
 	Make the surface fullscreen.
 
 	You can specify an output that you would prefer to be fullscreen.
