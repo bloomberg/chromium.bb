@@ -7,13 +7,14 @@
 
 #include "core/workers/Worklet.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class LocalFrame;
+class ScriptPromiseResolver;
 
 // A MainThreadWorklet is a worklet that runs only on the main thread.
 // TODO(nhiroki): This is a temporary class to support module loading for main
@@ -36,6 +37,10 @@ class CORE_EXPORT MainThreadWorklet : public Worklet {
 
  protected:
   explicit MainThreadWorklet(LocalFrame*);
+
+ private:
+  void FetchAndInvokeScript(const KURL& module_url_record,
+                            ScriptPromiseResolver*);
 };
 
 }  // namespace blink
