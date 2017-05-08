@@ -34,8 +34,8 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   bool IsMainThreadWorkletGlobalScope() const final { return true; }
 
   // WorkerOrWorkletGlobalScope
-  void CountFeature(UseCounter::Feature) final;
-  void CountDeprecation(UseCounter::Feature) final;
+  void ReportFeature(UseCounter::Feature) override;
+  void ReportDeprecation(UseCounter::Feature) override;
   WorkerThread* GetThread() const final;
 
   void FetchAndInvokeScript(const KURL& module_url_record,

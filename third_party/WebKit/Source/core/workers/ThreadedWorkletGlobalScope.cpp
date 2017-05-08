@@ -30,16 +30,16 @@ ThreadedWorkletGlobalScope::~ThreadedWorkletGlobalScope() {
   DCHECK(!thread_);
 }
 
-void ThreadedWorkletGlobalScope::CountFeature(UseCounter::Feature feature) {
+void ThreadedWorkletGlobalScope::ReportFeature(UseCounter::Feature feature) {
   DCHECK(IsContextThread());
   DCHECK(thread_);
   thread_->GetWorkerReportingProxy().CountFeature(feature);
 }
 
-void ThreadedWorkletGlobalScope::CountDeprecation(UseCounter::Feature feature) {
+void ThreadedWorkletGlobalScope::ReportDeprecation(
+    UseCounter::Feature feature) {
   DCHECK(IsContextThread());
   DCHECK(thread_);
-  AddDeprecationMessage(feature);
   thread_->GetWorkerReportingProxy().CountDeprecation(feature);
 }
 

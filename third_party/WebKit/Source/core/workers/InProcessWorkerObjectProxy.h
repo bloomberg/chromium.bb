@@ -87,7 +87,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
   WeakPtr<ThreadedMessagingProxyBase> MessagingProxyWeakPtr() final;
 
  private:
-  friend class InProcessWorkerMessagingProxyForTest;
+  friend class InProcessWorkerObjectProxyForTest;
 
   void StartPendingActivityTimer();
   void CheckPendingActivity(TimerBase*);

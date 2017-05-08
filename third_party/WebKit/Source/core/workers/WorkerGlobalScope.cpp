@@ -112,16 +112,15 @@ void WorkerGlobalScope::Dispose() {
   thread_ = nullptr;
 }
 
-void WorkerGlobalScope::CountFeature(UseCounter::Feature feature) {
+void WorkerGlobalScope::ReportFeature(UseCounter::Feature feature) {
   DCHECK(IsContextThread());
   DCHECK(thread_);
   thread_->GetWorkerReportingProxy().CountFeature(feature);
 }
 
-void WorkerGlobalScope::CountDeprecation(UseCounter::Feature feature) {
+void WorkerGlobalScope::ReportDeprecation(UseCounter::Feature feature) {
   DCHECK(IsContextThread());
   DCHECK(thread_);
-  AddDeprecationMessage(feature);
   thread_->GetWorkerReportingProxy().CountDeprecation(feature);
 }
 

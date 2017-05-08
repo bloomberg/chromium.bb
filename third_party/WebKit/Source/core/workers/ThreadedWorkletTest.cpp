@@ -20,6 +20,35 @@
 
 namespace blink {
 
+class ThreadedWorkletObjectProxyForTest final
+    : public ThreadedWorkletObjectProxy {
+ public:
+  ThreadedWorkletObjectProxyForTest(
+      const WeakPtr<ThreadedWorkletMessagingProxy>& messaging_proxy_weak_ptr,
+      ParentFrameTaskRunners* parent_frame_task_runners)
+      : ThreadedWorkletObjectProxy(messaging_proxy_weak_ptr,
+                                   parent_frame_task_runners),
+        reported_features_(UseCounter::kNumberOfFeatures) {}
+
+ protected:
+  void CountFeature(UseCounter::Feature feature) override {
+    // Any feature should be reported only one time.
+    EXPECT_FALSE(reported_features_.QuickGet(feature));
+    reported_features_.QuickSet(feature);
+    ThreadedWorkletObjectProxy::CountFeature(feature);
+  }
+
+  void CountDeprecation(UseCounter::Feature feature) final {
+    // Any feature should be reported only one time.
+    EXPECT_FALSE(reported_features_.QuickGet(feature));
+    reported_features_.QuickSet(feature);
+    ThreadedWorkletObjectProxy::CountDeprecation(feature);
+  }
+
+ private:
+  BitVector reported_features_;
+};
+
 class ThreadedWorkletThreadForTest : public WorkerThread {
  public:
   ThreadedWorkletThreadForTest(
@@ -27,7 +56,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
       WorkerReportingProxy& worker_reporting_proxy)
       : WorkerThread(WorkerLoaderProxy::Create(worker_loader_proxy_provider),
                      worker_reporting_proxy) {}
-  ~ThreadedWorkletThreadForTest() override{};
+  ~ThreadedWorkletThreadForTest() override {}
 
   WorkerBackingThread& GetWorkerBackingThread() override {
     auto worklet_thread_holder =
@@ -72,7 +101,6 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   // Emulates deprecated API use on ThreadedWorkletGlobalScope.
   void CountDeprecation(UseCounter::Feature feature) {
     EXPECT_TRUE(IsCurrentThread());
-    EXPECT_EQ(0u, GetConsoleMessageStorage()->size());
     GlobalScope()->CountDeprecation(feature);
 
     // countDeprecation() should add a warning message.
@@ -91,6 +119,8 @@ class ThreadedWorkletMessagingProxyForTest
  public:
   ThreadedWorkletMessagingProxyForTest(ExecutionContext* execution_context)
       : ThreadedWorkletMessagingProxy(execution_context) {
+    worklet_object_proxy_ = WTF::MakeUnique<ThreadedWorkletObjectProxyForTest>(
+        weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
     worker_loader_proxy_provider_ =
         WTF::MakeUnique<WorkerLoaderProxyProvider>();
     worker_thread_ = WTF::MakeUnique<ThreadedWorkletThreadForTest>(
@@ -170,7 +200,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   // This feature is randomly selected.
   const UseCounter::Feature kFeature1 = UseCounter::Feature::kRequestFileSystem;
 
-  // API use on the DedicatedWorkerGlobalScope should be recorded in UseCounter
+  // API use on the ThreadedWorkletGlobalScope should be recorded in UseCounter
   // on the Document.
   EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature1));
   TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
@@ -180,6 +210,15 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
                           CrossThreadUnretained(GetWorkerThread()), kFeature1));
   testing::EnterRunLoop();
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature1));
+
+  // API use should be reported to the Document only one time. See comments in
+  // ThreadedWorkletGlobalScopeForTest::CountFeature.
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+      ->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(&ThreadedWorkletThreadForTest::CountFeature,
+                          CrossThreadUnretained(GetWorkerThread()), kFeature1));
+  testing::EnterRunLoop();
 
   // This feature is randomly selected from Deprecation::deprecationMessage().
   const UseCounter::Feature kFeature2 =
@@ -195,6 +234,15 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
   testing::EnterRunLoop();
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature2));
+
+  // API use should be reported to the Document only one time. See comments in
+  // ThreadedWorkletGlobalScopeForTest::CountDeprecation.
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+      ->PostTask(
+          BLINK_FROM_HERE,
+          CrossThreadBind(&ThreadedWorkletThreadForTest::CountDeprecation,
+                          CrossThreadUnretained(GetWorkerThread()), kFeature2));
+  testing::EnterRunLoop();
 }
 
 }  // namespace blink

@@ -26,19 +26,18 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
 
-void MainThreadWorkletGlobalScope::CountFeature(UseCounter::Feature feature) {
+void MainThreadWorkletGlobalScope::ReportFeature(UseCounter::Feature feature) {
   DCHECK(IsMainThread());
   // A parent document is on the same thread, so just record API use in the
   // document's UseCounter.
   UseCounter::Count(GetFrame(), feature);
 }
 
-void MainThreadWorkletGlobalScope::CountDeprecation(
+void MainThreadWorkletGlobalScope::ReportDeprecation(
     UseCounter::Feature feature) {
   DCHECK(IsMainThread());
   // A parent document is on the same thread, so just record API use in the
   // document's UseCounter.
-  AddDeprecationMessage(feature);
   Deprecation::CountDeprecation(GetFrame(), feature);
 }
 

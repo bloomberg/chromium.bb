@@ -17,24 +17,33 @@
 namespace blink {
 
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope()
-    : deprecation_warning_bits_(UseCounter::kNumberOfFeatures) {}
+    : used_features_(UseCounter::kNumberOfFeatures) {}
 
 WorkerOrWorkletGlobalScope::~WorkerOrWorkletGlobalScope() = default;
 
-void WorkerOrWorkletGlobalScope::AddDeprecationMessage(
-    UseCounter::Feature feature) {
+void WorkerOrWorkletGlobalScope::CountFeature(UseCounter::Feature feature) {
   DCHECK_NE(UseCounter::kOBSOLETE_PageDestruction, feature);
   DCHECK_GT(UseCounter::kNumberOfFeatures, feature);
-
-  // For each deprecated feature, send console message at most once
-  // per worker lifecycle.
-  if (deprecation_warning_bits_.QuickGet(feature))
+  if (used_features_.QuickGet(feature))
     return;
-  deprecation_warning_bits_.QuickSet(feature);
+  used_features_.QuickSet(feature);
+  ReportFeature(feature);
+}
+
+void WorkerOrWorkletGlobalScope::CountDeprecation(UseCounter::Feature feature) {
+  DCHECK_NE(UseCounter::kOBSOLETE_PageDestruction, feature);
+  DCHECK_GT(UseCounter::kNumberOfFeatures, feature);
+  if (used_features_.QuickGet(feature))
+    return;
+  used_features_.QuickSet(feature);
+
+  // Adds a deprecation message to the console.
   DCHECK(!Deprecation::DeprecationMessage(feature).IsEmpty());
   AddConsoleMessage(
       ConsoleMessage::Create(kDeprecationMessageSource, kWarningMessageLevel,
                              Deprecation::DeprecationMessage(feature)));
+
+  ReportDeprecation(feature);
 }
 
 void WorkerOrWorkletGlobalScope::PostTask(

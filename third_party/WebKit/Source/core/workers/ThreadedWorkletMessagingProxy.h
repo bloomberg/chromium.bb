@@ -32,6 +32,8 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
   }
 
  private:
+  friend class ThreadedWorkletMessagingProxyForTest;
+
   std::unique_ptr<ThreadedWorkletObjectProxy> worklet_object_proxy_;
 
   WeakPtrFactory<ThreadedWorkletMessagingProxy> weak_ptr_factory_;

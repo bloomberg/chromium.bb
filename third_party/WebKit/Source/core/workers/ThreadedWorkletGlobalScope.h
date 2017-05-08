@@ -16,8 +16,8 @@ class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
  public:
   ~ThreadedWorkletGlobalScope() override;
   void Dispose() override;
-  void CountFeature(UseCounter::Feature) final;
-  void CountDeprecation(UseCounter::Feature) final;
+  void ReportFeature(UseCounter::Feature) override;
+  void ReportDeprecation(UseCounter::Feature) override;
 
   // ExecutionContext
   bool IsThreadedWorkletGlobalScope() const final { return true; }
