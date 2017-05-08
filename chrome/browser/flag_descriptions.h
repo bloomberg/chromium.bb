@@ -3398,6 +3398,10 @@ extern const char kLocationHardReloadName[];
 // a hard-reload.
 extern const char kLocationHardReloadDescription[];
 
+// Name and description for the capture-thumbnail-on-load-finished flag.
+extern const char kCaptureThumbnailOnLoadFinishedName[];
+extern const char kCaptureThumbnailOnLoadFinishedDescription[];
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_

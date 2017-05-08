@@ -38,6 +38,7 @@ class ThumbnailTabHelper
   // content::WebContentsObserver overrides.
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
   void DidStartLoading() override;
+  void DidStopLoading() override;
   void NavigationStopped() override;
 
   // Update the thumbnail of the given tab contents if necessary.
@@ -66,6 +67,8 @@ class ThumbnailTabHelper
 
   // Indicates that the given widget has changed is visibility.
   void WidgetHidden(content::RenderWidgetHost* widget);
+
+  const bool capture_on_load_finished_;
 
   content::NotificationRegistrar registrar_;
   scoped_refptr<thumbnails::ThumbnailingContext> thumbnailing_context_;
