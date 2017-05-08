@@ -3357,3 +3357,8 @@ crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-path-context-cli
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Timeout ]
 
+# Layout Tests on Swarming (Windows) - https://crbug.com/717347
+crbug.com/718717 [ Win ] fast/css-grid-layout/grid-self-baseline-two-dimensional.html [ Failure Pass Timeout ]
+crbug.com/718717 [ Win ] fast/css-grid-layout/grid-align-justify-stretch-with-orthogonal-flows.html [ Failure Pass Timeout ]
+crbug.com/719298 [ Win ] fast/dnd/dropEffect-for-effectAllowed.html [ Failure Pass Timeout ]
+crbug.com/719299 [ Win ] external/wpt/css/css-ui-3/outline-004.html [ Failure Pass Timeout ]
