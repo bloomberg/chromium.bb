@@ -258,10 +258,14 @@ ArcAppIcon::~ArcAppIcon() {
 }
 
 void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
+  // We provide Play Store icon from Chrome resources and it is not expected
+  // that we have external load request.
+  DCHECK_NE(app_id_, arc::kPlayStoreAppId);
+
+  const ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(context_);
   DCHECK(prefs);
 
-  base::FilePath path = prefs->GetIconPath(app_id_, scale_factor);
+  const base::FilePath path = prefs->GetIconPath(app_id_, scale_factor);
   if (path.empty())
     return;
 
@@ -361,8 +365,6 @@ void ArcAppIcon::Update(const gfx::ImageSkia* image) {
       image_skia_.AddRepresentation(image_rep);
     }
   }
-
-  image_ = gfx::Image(image_skia_);
 
   observer_->OnIconUpdated(this);
 }

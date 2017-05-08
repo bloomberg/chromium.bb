@@ -61,10 +61,12 @@ ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
                        kArcAppIconSizeInDp,
                        // The life time of icon must shorter than |this|.
                        this));
-    icon->LoadForScaleFactor(
+    icon->image_skia().GetRepresentation(
         ui::GetSupportedScaleFactor(display::Screen::GetScreen()
                                         ->GetPrimaryDisplay()
                                         .device_scale_factor()));
+    // Apply icon now to set the default image.
+    OnIconUpdated(icon.get());
 
     // Add notifiers.
     package_to_app_ids_.insert(std::make_pair(app->package_name, app_id));
@@ -73,7 +75,7 @@ ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
     std::unique_ptr<message_center::Notifier> notifier(
         new message_center::Notifier(notifier_id, base::UTF8ToUTF16(app->name),
                                      app->notifications_enabled));
-    notifier->icon = icon->image();
+    notifier->icon = gfx::Image(icon->image_skia());
     icons_.push_back(std::move(icon));
     results.push_back(std::move(notifier));
   }
@@ -117,7 +119,7 @@ void ArcApplicationNotifierSourceChromeOS::OnIconUpdated(ArcAppIcon* icon) {
   observer_->OnIconImageUpdated(
       message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
                                  icon->app_id()),
-      icon->image());
+      gfx::Image(icon->image_skia()));
 }
 
 void ArcApplicationNotifierSourceChromeOS::StopObserving() {
