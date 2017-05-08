@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "ui/arc/notification/arc_custom_notification_item.h"
+#include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -41,11 +41,11 @@ class ArcCustomNotificationView
     : public views::NativeViewHost,
       public views::ButtonListener,
       public aura::WindowObserver,
-      public ArcCustomNotificationItem::Observer,
+      public ArcNotificationItem::Observer,
       public ArcNotificationSurfaceManager::Observer,
       public gfx::AnimationDelegate {
  public:
-  explicit ArcCustomNotificationView(ArcCustomNotificationItem* item);
+  explicit ArcCustomNotificationView(ArcNotificationItem* item);
   ~ArcCustomNotificationView() override;
 
   std::unique_ptr<message_center::CustomNotificationContentViewDelegate>
@@ -108,7 +108,7 @@ class ArcCustomNotificationView
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // ArcCustomNotificationItem::Observer
+  // ArcNotificationItem::Observer
   void OnItemDestroying() override;
   void OnItemUpdated() override;
 
@@ -122,7 +122,7 @@ class ArcCustomNotificationView
 
   // If |item_| is null, we may be about to be destroyed. In this case,
   // we have to be careful about what we do.
-  ArcCustomNotificationItem* item_ = nullptr;
+  ArcNotificationItem* item_ = nullptr;
   exo::NotificationSurface* surface_ = nullptr;
 
   const std::string notification_key_;
