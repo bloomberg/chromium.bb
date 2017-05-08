@@ -68,11 +68,11 @@
  *
  * The most common case requiring annotations is atomic reference counting:
  * bool deref() {
- *     ANNOTATE_HAPPENS_BEFORE(&m_refCount);
- *     if (!atomicDecrement(&m_refCount)) {
- *         // m_refCount is now 0
- *         ANNOTATE_HAPPENS_AFTER(&m_refCount);
- *         // "return true; happens-after each atomicDecrement of m_refCount"
+ *     ANNOTATE_HAPPENS_BEFORE(&ref_count_);
+ *     if (!atomicDecrement(&ref_count_)) {
+ *         // ref_count_ is now 0
+ *         ANNOTATE_HAPPENS_AFTER(&ref_count_);
+ *         // "return true; happens-after each atomicDecrement of ref_count_"
  *         return true;
  *     }
  *     return false;

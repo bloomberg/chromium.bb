@@ -90,9 +90,9 @@ class Visitor;
 // private:
 //     void dispose()
 //     {
-//         m_bar->...; // It is safe to touch other on-heap objects.
+//         bar_->...; // It is safe to touch other on-heap objects.
 //     }
-//     Member<Bar> m_bar;
+//     Member<Bar> bar_;
 // };
 #define USING_PRE_FINALIZER(Class, preFinalizer)                           \
  public:                                                                   \
@@ -478,7 +478,7 @@ class PLATFORM_EXPORT ThreadState {
     size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
     --likely_to_be_promptly_freed_[entry_index];
     int arena_index = vector_backing_arena_index_;
-    // If m_likelyToBePromptlyFreed[entryIndex] > 0, that means that
+    // If likely_to_be_promptly_freed_[entryIndex] > 0, that means that
     // more than 33% of vectors of the type have been promptly freed
     // since the last GC.
     if (likely_to_be_promptly_freed_[entry_index] > 0) {
@@ -672,7 +672,7 @@ class PLATFORM_EXPORT ThreadState {
 
   // Pre-finalizers are called in the reverse order in which they are
   // registered by the constructors (including constructors of Mixin objects)
-  // for an object, by processing the m_orderedPreFinalizers back-to-front.
+  // for an object, by processing the ordered_pre_finalizers_ back-to-front.
   ListHashSet<PreFinalizer> ordered_pre_finalizers_;
 
   v8::Isolate* isolate_;
@@ -692,7 +692,7 @@ class PLATFORM_EXPORT ThreadState {
 
 #if defined(LEAK_SANITIZER)
   // Count that controls scoped disabling of persistent registration.
-  size_t m_disabledStaticPersistentsRegistration;
+  size_t disabled_static_persistent_registration_;
 #endif
 
   // Ideally we want to allocate an array of size |gcInfoTableMax| but it will
