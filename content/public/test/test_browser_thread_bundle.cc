@@ -8,8 +8,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_async_task_scheduler.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 
 namespace content {
@@ -23,7 +25,7 @@ TestBrowserThreadBundle::TestBrowserThreadBundle(int options)
 }
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
-  DCHECK(threads_created_);
+  CHECK(threads_created_);
 
   // To avoid memory leaks, we must ensure that any tasks posted to the blocking
   // pool via PostTaskAndReply are able to reply back to the originating thread.
@@ -59,30 +61,38 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   scoped_async_task_scheduler_.reset();
 
   base::RunLoop().RunUntilIdle();
+  CHECK(base::MessageLoop::current()->IsIdleForTesting());
 
   // |message_loop_| needs to explicitly go away before fake threads in order
   // for DestructionObservers hooked to |message_loop_| to be able to invoke
   // BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
-  CHECK(message_loop_->IsIdleForTesting());
   message_loop_.reset();
 }
 
 void TestBrowserThreadBundle::Init() {
+  // Check that the UI thread hasn't already been initialized. This will fail if
+  // multiple TestBrowserThreadBundles are initialized in the same scope.
+  CHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI));
+
   // Check for conflicting options can't have two IO threads.
   CHECK(!(options_ & IO_MAINLOOP) || !(options_ & REAL_IO_THREAD));
   // There must be a thread to start to use DONT_CREATE_THREADS
   CHECK((options_ & ~IO_MAINLOOP) != DONT_CREATE_THREADS);
 
-  // Create the UI thread. In production, this work is done in
-  // BrowserMainLoop::MainMessageLoopStart().
-  if (options_ & IO_MAINLOOP) {
-    message_loop_.reset(new base::MessageLoopForIO());
-  } else {
-    message_loop_.reset(new base::MessageLoopForUI());
-  }
+  // Create the main MessageLoop, if it doesn't already exist, and set the
+  // current thread as the UI thread. In production, this work is done in
+  // BrowserMainLoop::MainMessageLoopStart(). The main MessageLoop may already
+  // exist if this TestBrowserThreadBundle is instantiated in a test whose
+  // parent fixture provides a base::test::ScopedTaskEnvironment.
+  const base::MessageLoop::Type message_loop_type =
+      options_ & IO_MAINLOOP ? base::MessageLoop::TYPE_IO
+                             : base::MessageLoop::TYPE_UI;
+  if (!base::MessageLoop::current())
+    message_loop_ = base::MakeUnique<base::MessageLoop>(message_loop_type);
+  CHECK(base::MessageLoop::current()->IsType(message_loop_type));
 
-  ui_thread_.reset(
-      new TestBrowserThread(BrowserThread::UI, message_loop_.get()));
+  ui_thread_ = base::MakeUnique<TestBrowserThread>(
+      BrowserThread::UI, base::MessageLoop::current());
 
   if (!(options_ & DONT_CREATE_THREADS))
     CreateThreads();
@@ -90,40 +100,47 @@ void TestBrowserThreadBundle::Init() {
 
 // This method mimics the work done in BrowserMainLoop::CreateThreads().
 void TestBrowserThreadBundle::CreateThreads() {
-  DCHECK(!threads_created_);
+  CHECK(!threads_created_);
 
-  scoped_async_task_scheduler_ =
-      base::MakeUnique<base::test::ScopedAsyncTaskScheduler>();
+  // TaskScheduler can sometimes be externally provided by a
+  // base::test::ScopedTaskEnvironment in a parent fixture. In that case it's
+  // expected to have provided the MessageLoop as well (in which case
+  // |message_loop_| remains null in Init()).
+  CHECK(!base::TaskScheduler::GetInstance() || !message_loop_);
+  if (!base::TaskScheduler::GetInstance()) {
+    scoped_async_task_scheduler_ =
+        base::MakeUnique<base::test::ScopedAsyncTaskScheduler>();
+  }
 
   if (options_ & REAL_DB_THREAD) {
-    db_thread_.reset(new TestBrowserThread(BrowserThread::DB));
+    db_thread_ = base::MakeUnique<TestBrowserThread>(BrowserThread::DB);
     db_thread_->Start();
   } else {
-    db_thread_.reset(
-        new TestBrowserThread(BrowserThread::DB, message_loop_.get()));
+    db_thread_ = base::MakeUnique<TestBrowserThread>(
+        BrowserThread::DB, base::MessageLoop::current());
   }
 
   if (options_ & REAL_FILE_THREAD) {
-    file_thread_.reset(new TestBrowserThread(BrowserThread::FILE));
+    file_thread_ = base::MakeUnique<TestBrowserThread>(BrowserThread::FILE);
     file_thread_->Start();
   } else {
-    file_thread_.reset(
-        new TestBrowserThread(BrowserThread::FILE, message_loop_.get()));
+    file_thread_ = base::MakeUnique<TestBrowserThread>(
+        BrowserThread::FILE, base::MessageLoop::current());
   }
 
-  file_user_blocking_thread_.reset(new TestBrowserThread(
-      BrowserThread::FILE_USER_BLOCKING, message_loop_.get()));
-  process_launcher_thread_.reset(new TestBrowserThread(
-      BrowserThread::PROCESS_LAUNCHER, message_loop_.get()));
-  cache_thread_.reset(
-      new TestBrowserThread(BrowserThread::CACHE, message_loop_.get()));
+  file_user_blocking_thread_ = base::MakeUnique<TestBrowserThread>(
+      BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current());
+  process_launcher_thread_ = base::MakeUnique<TestBrowserThread>(
+      BrowserThread::PROCESS_LAUNCHER, base::MessageLoop::current());
+  cache_thread_ = base::MakeUnique<TestBrowserThread>(
+      BrowserThread::CACHE, base::MessageLoop::current());
 
   if (options_ & REAL_IO_THREAD) {
-    io_thread_.reset(new TestBrowserThread(BrowserThread::IO));
+    io_thread_ = base::MakeUnique<TestBrowserThread>(BrowserThread::IO);
     io_thread_->StartIOThread();
   } else {
-    io_thread_.reset(
-        new TestBrowserThread(BrowserThread::IO, message_loop_.get()));
+    io_thread_ = base::MakeUnique<TestBrowserThread>(
+        BrowserThread::IO, base::MessageLoop::current());
   }
 
   threads_created_ = true;
