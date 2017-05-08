@@ -3061,7 +3061,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     upstream_branch_name = scm.GIT.ShortBranchName(upstream_branch)
 
     if upstream_branch_name == 'master':
-      return 'origin/master'
+      return self.GetCommonAncestorWithUpstream()
 
     # Check the squashed hash of the parent.
     # TODO(tandrii): consider checking parent change in Gerrit and using its
