@@ -90,8 +90,7 @@ static INLINE int mv_cost(const MV *mv, const int *joint_cost,
 int av1_mv_bit_cost(const MV *mv, const MV *ref, const int *mvjcost,
                     int *mvcost[2], int weight) {
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
-  return (int)ROUND_POWER_OF_TWO(
-      (int64_t)mv_cost(&diff, mvjcost, mvcost) * weight, 7);
+  return ROUND_POWER_OF_TWO(mv_cost(&diff, mvjcost, mvcost) * weight, 7);
 }
 
 #define PIXEL_TRANSFORM_ERROR_SCALE 4
@@ -110,8 +109,8 @@ static int mv_err_cost(const MV *mv, const MV *ref, const int *mvjcost,
 static int mvsad_err_cost(const MACROBLOCK *x, const MV *mv, const MV *ref,
                           int sad_per_bit) {
   const MV diff = { (mv->row - ref->row) * 8, (mv->col - ref->col) * 8 };
-  return (int)ROUND_POWER_OF_TWO(
-      (int64_t)mv_cost(&diff, x->nmvjointsadcost, x->mvsadcost) * sad_per_bit,
+  return ROUND_POWER_OF_TWO(
+      (unsigned)mv_cost(&diff, x->nmvjointsadcost, x->mvsadcost) * sad_per_bit,
       AV1_PROB_COST_SHIFT);
 }
 
