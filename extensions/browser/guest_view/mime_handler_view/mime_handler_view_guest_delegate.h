@@ -14,8 +14,6 @@ struct ContextMenuParams;
 
 namespace extensions {
 
-class MimeHandlerViewGuest;
-
 // A delegate class of MimeHandlerViewGuest that are not a part of chrome.
 class MimeHandlerViewGuestDelegate {
  public:
@@ -25,10 +23,6 @@ class MimeHandlerViewGuestDelegate {
   // Handles context menu, or returns false if unhandled.
   virtual bool HandleContextMenu(content::WebContents* web_contents,
                                  const content::ContextMenuParams& params);
-
-  // Request to change the zoom level of the top level page containing
-  // this view.
-  virtual void ChangeZoom(bool zoom_in) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuestDelegate);
