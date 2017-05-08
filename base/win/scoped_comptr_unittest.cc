@@ -51,30 +51,6 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
   ScopedComPtr<IUnknown> qi_test;
   EXPECT_HRESULT_SUCCEEDED(mem_alloc.CopyTo(IID_PPV_ARGS(&qi_test)));
   EXPECT_TRUE(qi_test.Get() != NULL);
-  qi_test.Reset();
-
-  // test ScopedComPtr& constructor
-  ScopedComPtr<IMalloc> copy1(mem_alloc);
-  EXPECT_TRUE(copy1.IsSameObject(mem_alloc.Get()));
-  EXPECT_FALSE(copy1.IsSameObject(unk2.Get()));  // unk2 is valid but different
-  EXPECT_FALSE(copy1.IsSameObject(unk.Get()));  // unk is NULL
-
-  IMalloc* naked_copy = copy1.Detach();
-  copy1 = naked_copy;  // Test the =(T*) operator.
-  naked_copy->Release();
-
-  copy1.Reset();
-  EXPECT_FALSE(copy1.IsSameObject(unk2.Get()));  // unk2 is valid, copy1 is not
-
-  // test Interface* constructor
-  ScopedComPtr<IMalloc> copy2(static_cast<IMalloc*>(mem_alloc.Get()));
-  EXPECT_TRUE(copy2.IsSameObject(mem_alloc.Get()));
-
-  EXPECT_TRUE(SUCCEEDED(unk.QueryFrom(mem_alloc.Get())));
-  EXPECT_TRUE(unk.Get() != NULL);
-  unk.Reset();
-  EXPECT_TRUE(unk.Get() == NULL);
-  EXPECT_TRUE(unk.IsSameObject(copy1.Get()));  // both are NULL
 }
 
 TEST(ScopedComPtrTest, ScopedComPtrVector) {

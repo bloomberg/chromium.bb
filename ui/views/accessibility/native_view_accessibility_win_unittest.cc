@@ -19,6 +19,28 @@ using base::win::ScopedVariant;
 namespace views {
 namespace test {
 
+namespace {
+
+// Whether |left| represents the same COM object as |right|.
+template <typename T, typename U>
+bool IsSameObject(T* left, U* right) {
+  if (!left && !right)
+    return true;
+
+  if (!left || !right)
+    return false;
+
+  ScopedComPtr<IUnknown> left_unknown;
+  left->QueryInterface(IID_PPV_ARGS(&left_unknown));
+
+  ScopedComPtr<IUnknown> right_unknown;
+  right->QueryInterface(IID_PPV_ARGS(&right_unknown));
+
+  return left_unknown == right_unknown;
+}
+
+}  // namespace
+
 class NativeViewAccessibilityWinTest : public ViewsTestBase {
  public:
   NativeViewAccessibilityWinTest() {}
@@ -188,15 +210,15 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
       alerts_bstr, 0, &targets, &n_targets));
   ASSERT_EQ(2, n_targets);
-  ASSERT_TRUE(infobar_accessible.IsSameObject(targets[0]));
-  ASSERT_TRUE(infobar2_accessible.IsSameObject(targets[1]));
+  ASSERT_TRUE(IsSameObject(infobar_accessible.Get(), targets[0]));
+  ASSERT_TRUE(IsSameObject(infobar2_accessible.Get(), targets[1]));
   CoTaskMemFree(targets);
 
   // If we set max_targets to 1, we should only get the first one.
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
       alerts_bstr, 1, &targets, &n_targets));
   ASSERT_EQ(1, n_targets);
-  ASSERT_TRUE(infobar_accessible.IsSameObject(targets[0]));
+  ASSERT_TRUE(IsSameObject(infobar_accessible.Get(), targets[0]));
   CoTaskMemFree(targets);
 
   // If we delete the first view, we should only get the second one now.
@@ -204,7 +226,7 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
       alerts_bstr, 0, &targets, &n_targets));
   ASSERT_EQ(1, n_targets);
-  ASSERT_TRUE(infobar2_accessible.IsSameObject(targets[0]));
+  ASSERT_TRUE(IsSameObject(infobar2_accessible.Get(), targets[0]));
   CoTaskMemFree(targets);
 }
 
