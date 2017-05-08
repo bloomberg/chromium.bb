@@ -68,6 +68,8 @@ source_set("unit_tests") {
 
   visibility = [ "//components/feature_engagement_tracker:unit_tests" ]
 
+  # IMPORTANT NOTE: When adding new tests, also remember to update the list of
+  # tests in //components/feature_engagement_tracker/components_unittests.filter
   sources = [
     "chrome_variations_configuration_unittest.cc",
     "editable_configuration_unittest.cc",
