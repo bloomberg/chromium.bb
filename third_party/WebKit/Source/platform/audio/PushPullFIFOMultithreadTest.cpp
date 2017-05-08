@@ -220,9 +220,6 @@ FIFOSmokeTestParam smoke_test_params[] = {
   // Test case 6 (User-specified buffer size): 960 Pull, 128 Push. Minimal
   // Jitter. 960 frames = 20ms at 48KHz.
   {48000, 2, 8192, 1000, 960, 1, 128, 1},
-
-  // Test case 7 (Longer test duration): 256 Pull, 128 Push. 10 seconds.
-  {48000, 2, 8192, 10000, 256, 0, 128, 1}
 };
 
 INSTANTIATE_TEST_CASE_P(PushPullFIFOSmokeTest,
