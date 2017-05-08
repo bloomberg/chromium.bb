@@ -19,9 +19,9 @@ cr.define('print_preview.ticket_items', function() {
     print_preview.ticket_items.TicketItem.call(
         this,
         appState,
-        print_preview.AppState.Field.IS_COLOR_ENABLED,
+        print_preview.AppStateField.IS_COLOR_ENABLED,
         destinationStore);
-  };
+  }
 
   /**
    * @private {!Array<string>} List of capability types considered color.
@@ -105,7 +105,7 @@ cr.define('print_preview.ticket_items', function() {
       var dest = this.getSelectedDestInternal();
       if (dest) {
         if (dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
-            dest.type == print_preview.Destination.Type.MOBILE) {
+            dest.type == print_preview.DestinationType.MOBILE) {
           return true;
         }
       }

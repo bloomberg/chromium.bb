@@ -367,11 +367,11 @@ cr.define('print_preview', function() {
           recentDestinations.push(destination);
         }
         if (destination.isLocal ||
-            destination.origin == print_preview.Destination.Origin.DEVICE) {
+            destination.origin == print_preview.DestinationOrigin.DEVICE) {
           localDestinations.push(destination);
         } else {
           if (destination.connectionStatus ==
-                print_preview.Destination.ConnectionStatus.UNREGISTERED) {
+                print_preview.DestinationConnectionStatus.UNREGISTERED) {
             unregisteredCloudDestinations.push(destination);
           } else {
             cloudDestinations.push(destination);
@@ -590,7 +590,7 @@ cr.define('print_preview', function() {
       // TODO(crbug.com/416701): Upon resolution, update this.
       var destinationItem =
           (destination.isLocal ||
-           destination.origin == print_preview.Destination.Origin.DEVICE) ?
+           destination.origin == print_preview.DestinationOrigin.DEVICE) ?
                this.localList_.getDestinationItem(destination.id) :
                this.cloudList_.getDestinationItem(destination.id);
       assert(destinationItem != null,
@@ -599,7 +599,7 @@ cr.define('print_preview', function() {
       // Another printer setup is in process or the printer doesn't need to be
       // set up. Reject the setup request directly.
       if (this.destinationInConfiguring_ != null ||
-          destination.origin != print_preview.Destination.Origin.CROS ||
+          destination.origin != print_preview.DestinationOrigin.CROS ||
           destination.capabilities != null) {
         destinationItem.onConfigureRequestRejected(
             this.destinationInConfiguring_ != null);
@@ -616,7 +616,7 @@ cr.define('print_preview', function() {
      * @private
      */
     handleConfigureDestination_: function(destination) {
-      assert(destination.origin == print_preview.Destination.Origin.CROS,
+      assert(destination.origin == print_preview.DestinationOrigin.CROS,
              'Only local printer on Chrome OS requires setup.');
       this.destinationInConfiguring_ = destination;
       this.destinationStore_.resolveCrosDestination(destination).then(

@@ -17,7 +17,7 @@ cr.define('print_preview.ticket_items', function() {
   function Copies(destinationStore) {
     print_preview.ticket_items.TicketItem.call(
         this, null /*appState*/, null /*field*/, destinationStore);
-  };
+  }
 
   Copies.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,

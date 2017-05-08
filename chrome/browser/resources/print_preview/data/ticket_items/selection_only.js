@@ -20,7 +20,7 @@ cr.define('print_preview.ticket_items', function() {
         null /*field*/,
         null /*destinationStore*/,
         documentInfo);
-  };
+  }
 
   SelectionOnly.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,

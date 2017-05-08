@@ -19,9 +19,9 @@ cr.define('print_preview.ticket_items', function() {
     print_preview.ticket_items.TicketItem.call(
         this,
         appState,
-        print_preview.AppState.Field.IS_DUPLEX_ENABLED,
+        print_preview.AppStateField.IS_DUPLEX_ENABLED,
         destinationStore);
-  };
+  }
 
   Duplex.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,

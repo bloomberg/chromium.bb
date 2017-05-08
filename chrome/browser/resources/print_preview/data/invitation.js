@@ -49,7 +49,7 @@ cr.define('print_preview', function() {
      * @private {string}
      */
     this.account_ = account;
-  };
+  }
 
   Invitation.prototype = {
     /** @return {string} Text identifying invitation sender. */

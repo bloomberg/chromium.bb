@@ -55,7 +55,7 @@ cr.define('print_preview', function() {
    */
   ProvisionalDestinationResolver.create = function(store, destination) {
     if (destination.provisionalType !=
-            print_preview.Destination.ProvisionalType.NEEDS_USB_PERMISSION) {
+            print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION) {
       return null;
     }
     return new ProvisionalDestinationResolver(store, destination);

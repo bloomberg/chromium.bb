@@ -330,7 +330,7 @@ cr.define('print_preview', function() {
               print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
         var customMargins = printTicketStore.customMargins.getValue();
         var orientationEnum =
-            print_preview.ticket_items.CustomMargins.Orientation;
+            print_preview.ticket_items.CustomMarginsOrientation;
         ticket['marginsCustom'] = {
           'marginTop': customMargins.get(orientationEnum.TOP),
           'marginRight': customMargins.get(orientationEnum.RIGHT),
@@ -411,7 +411,7 @@ cr.define('print_preview', function() {
               print_preview.ticket_items.MarginsTypeValue.CUSTOM)) {
         var customMargins = printTicketStore.customMargins.getValue();
         var orientationEnum =
-            print_preview.ticket_items.CustomMargins.Orientation;
+            print_preview.ticket_items.CustomMarginsOrientation;
         ticket['marginsCustom'] = {
           'marginTop': customMargins.get(orientationEnum.TOP),
           'marginRight': customMargins.get(orientationEnum.RIGHT),
@@ -491,7 +491,7 @@ cr.define('print_preview', function() {
       var numberFormatSymbols =
           print_preview.MeasurementSystem.parseNumberFormat(
               initialSettings['numberFormat']);
-      var unitType = print_preview.MeasurementSystem.UnitType.IMPERIAL;
+      var unitType = print_preview.MeasurementSystemUnitType.IMPERIAL;
       if (initialSettings['measurementSystem'] != null) {
         unitType = initialSettings['measurementSystem'];
       }
@@ -568,7 +568,7 @@ cr.define('print_preview', function() {
           NativeLayer.EventType.GET_CAPABILITIES_FAIL);
       getCapsFailEvent.destinationId = destinationId;
       getCapsFailEvent.destinationOrigin =
-          print_preview.Destination.Origin.LOCAL;
+          print_preview.DestinationOrigin.LOCAL;
       this.dispatchEvent(getCapsFailEvent);
     },
 
@@ -583,7 +583,7 @@ cr.define('print_preview', function() {
           NativeLayer.EventType.GET_CAPABILITIES_FAIL);
       getCapsFailEvent.destinationId = destinationId;
       getCapsFailEvent.destinationOrigin =
-          print_preview.Destination.Origin.PRIVET;
+          print_preview.DestinationOrigin.PRIVET;
       this.dispatchEvent(getCapsFailEvent);
     },
 
@@ -598,7 +598,7 @@ cr.define('print_preview', function() {
           NativeLayer.EventType.GET_CAPABILITIES_FAIL);
       getCapsFailEvent.destinationId = destinationId;
       getCapsFailEvent.destinationOrigin =
-          print_preview.Destination.Origin.EXTENSION;
+          print_preview.DestinationOrigin.EXTENSION;
       this.dispatchEvent(getCapsFailEvent);
     },
 
@@ -921,7 +921,7 @@ cr.define('print_preview', function() {
    *     mode.
    * @param {string} thousandsDelimeter Character delimeter of thousands digits.
    * @param {string} decimalDelimeter Character delimeter of the decimal point.
-   * @param {!print_preview.MeasurementSystem.UnitType} unitType Unit type of
+   * @param {!print_preview.MeasurementSystemUnitType} unitType Unit type of
    *     local machine's measurement system.
    * @param {boolean} isDocumentModifiable Whether the document to print is
    *     modifiable.
@@ -981,7 +981,7 @@ cr.define('print_preview', function() {
 
     /**
      * Unit type of local machine's measurement system.
-     * @type {string}
+     * @type {print_preview.MeasurementSystemUnitType}
      * @private
      */
     this.unitType_ = unitType;
@@ -1064,7 +1064,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {!print_preview.MeasurementSystem.UnitType} Unit type of local
+     * @return {!print_preview.MeasurementSystemUnitType} Unit type of local
      *     machine's measurement system.
      */
     get unitType() {

@@ -19,10 +19,10 @@ cr.define('print_preview.ticket_items', function() {
     print_preview.ticket_items.TicketItem.call(
         this,
         appState,
-        print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED,
+        print_preview.AppStateField.IS_CSS_BACKGROUND_ENABLED,
         null /*destinationStore*/,
         documentInfo);
-  };
+  }
 
   CssBackground.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,

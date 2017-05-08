@@ -8,95 +8,6 @@ cr.define('print_preview', function() {
   /**
    * A data store that stores destinations and dispatches events when the data
    * store changes.
-   * @param {!Array<!print_preview.Destination.Origin>} origins Match
-   *     destinations from these origins.
-   * @param {RegExp} idRegExp Match destination's id.
-   * @param {RegExp} displayNameRegExp Match destination's displayName.
-   * @param {boolean} skipVirtualDestinations Whether to ignore virtual
-   *     destinations, for example, Save as PDF.
-   * @constructor
-   */
-  function DestinationMatch(
-      origins, idRegExp, displayNameRegExp, skipVirtualDestinations) {
-
-    /** @private {!Array<!print_preview.Destination.Origin>} */
-    this.origins_ = origins;
-
-    /** @private {RegExp} */
-    this.idRegExp_ = idRegExp;
-
-    /** @private {RegExp} */
-    this.displayNameRegExp_ = displayNameRegExp;
-
-    /** @private {boolean} */
-    this.skipVirtualDestinations_ = skipVirtualDestinations;
-  };
-
-  DestinationMatch.prototype = {
-
-    /**
-     * @param {!print_preview.Destination.Origin} origin Origin to match.
-     * @return {boolean} Whether the origin is one of the {@code origins_}.
-     */
-    matchOrigin: function(origin) {
-      return arrayContains(this.origins_, origin);
-    },
-
-    /**
-     * @param {string} id Id of the destination.
-     * @param {string} origin Origin of the destination.
-     * @return {boolean} Whether destination is the same as initial.
-     */
-    matchIdAndOrigin: function(id, origin) {
-      return this.matchOrigin(origin) &&
-             this.idRegExp_ &&
-             this.idRegExp_.test(id);
-    },
-
-    /**
-     * @param {!print_preview.Destination} destination Destination to match.
-     * @return {boolean} Whether {@code destination} matches the last user
-     *     selected one.
-     */
-    match: function(destination) {
-      if (!this.matchOrigin(destination.origin)) {
-        return false;
-      }
-      if (this.idRegExp_ && !this.idRegExp_.test(destination.id)) {
-        return false;
-      }
-      if (this.displayNameRegExp_ &&
-          !this.displayNameRegExp_.test(destination.displayName)) {
-        return false;
-      }
-      if (this.skipVirtualDestinations_ &&
-          this.isVirtualDestination_(destination)) {
-        return false;
-      }
-      return true;
-    },
-
-    /**
-     * @param {!print_preview.Destination} destination Destination to check.
-     * @return {boolean} Whether {@code destination} is virtual, in terms of
-     *     destination selection.
-     * @private
-     */
-    isVirtualDestination_: function(destination) {
-      if (destination.origin == print_preview.Destination.Origin.LOCAL) {
-        return arrayContains(
-            [print_preview.Destination.GooglePromotedId.SAVE_AS_PDF],
-            destination.id);
-      }
-      return arrayContains(
-          [print_preview.Destination.GooglePromotedId.DOCS],
-          destination.id);
-    }
-  };
-
-  /**
-   * A data store that stores destinations and dispatches events when the data
-   * store changes.
    * @param {!print_preview.NativeLayer} nativeLayer Used to fetch local print
    *     destinations.
    * @param {!print_preview.UserInfo} userInfo User information repository.
@@ -196,7 +107,7 @@ cr.define('print_preview', function() {
     /**
      * Maps user account to the list of origins for which destinations are
      * already loaded.
-     * @type {!Object<Array<print_preview.Destination.Origin>>}
+     * @type {!Object<Array<print_preview.DestinationOrigin>>}
      * @private
      */
     this.loadedCloudOrigins_ = {};
@@ -282,16 +193,16 @@ cr.define('print_preview', function() {
     /**
      * Local destinations are CROS destinations on ChromeOS because they require
      * extra setup.
-     * @type {!print_preview.Destination.Origin}
+     * @type {!print_preview.DestinationOrigin}
      * @private
      */
     this.platformOrigin_ = cr.isChromeOS ?
-        print_preview.Destination.Origin.CROS :
-        print_preview.Destination.Origin.LOCAL;
+        print_preview.DestinationOrigin.CROS :
+        print_preview.DestinationOrigin.LOCAL;
 
     this.addEventListeners_();
     this.reset_();
-  };
+  }
 
   /**
    * Event types dispatched by the data store.
@@ -310,7 +221,8 @@ cr.define('print_preview', function() {
     CACHED_SELECTED_DESTINATION_INFO_READY:
         'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
     SELECTED_DESTINATION_CAPABILITIES_READY:
-        'print_preview.DestinationStore.SELECTED_DESTINATION_CAPABILITIES_READY',
+        'print_preview.DestinationStore' +
+        '.SELECTED_DESTINATION_CAPABILITIES_READY',
   };
 
   /**
@@ -513,8 +425,8 @@ cr.define('print_preview', function() {
 
   /**
    * Localizes printer capabilities.
-   * @param {!Object} capabilities Printer capabilities to localize.
-   * @return {!Object} Localized capabilities.
+   * @param {!print_preview.Cdd} capabilities Printer capabilities to localize.
+   * @return {!print_preview.Cdd} Localized capabilities.
    * @private
    */
   DestinationStore.localizeCapabilities_ = function(capabilities) {
@@ -525,7 +437,7 @@ cr.define('print_preview', function() {
     if (!mediaSize)
       return capabilities;
 
-    for (var i = 0, media; media = mediaSize.option[i]; i++) {
+    for (var i = 0, media; (media = mediaSize.option[i]); i++) {
       // No need to patch capabilities with localized names provided.
       if (!media.custom_display_name_localized) {
         media.custom_display_name =
@@ -552,8 +464,8 @@ cr.define('print_preview', function() {
 
   /**
    * Sort printer media sizes.
-   * @param {!Object} capabilities Printer capabilities to localize.
-   * @return {!Object} Localized capabilities.
+   * @param {!print_preview.Cdd} capabilities Printer capabilities to localize.
+   * @return {!print_preview.Cdd} Localized capabilities.
    * @private
    */
   DestinationStore.sortMediaSizes_ = function(capabilities) {
@@ -578,7 +490,7 @@ cr.define('print_preview', function() {
     var categoryStandardJP = [];
     var categoryStandardMisc = [];
     var categoryCustom = [];
-    for (var i = 0, media; media = mediaSize.option[i]; i++) {
+    for (var i = 0, media; (media = mediaSize.option[i]); i++) {
       var name = media.name || 'CUSTOM';
       var category;
       if (name.startsWith('NA_')) {
@@ -664,7 +576,7 @@ cr.define('print_preview', function() {
              this.cloudPrintInterface_.isCloudDestinationSearchInProgress;
     },
 
-    /*
+    /**
      * Initializes the destination store. Sets the initially selected
      * destination. If any inserted destinations match this ID, that destination
      * will be automatically selected. This method must be called after the
@@ -746,9 +658,9 @@ cr.define('print_preview', function() {
       if (foundDestination) return;
 
       // Try the system default
-      id = this.systemDefaultDestinationId_;
+      id = this.systemDefaultDestinationId_ || '';
       origin = id == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
-          print_preview.Destination.Origin.LOCAL :
+          print_preview.DestinationOrigin.LOCAL :
           this.platformOrigin_;
       account = '';
       var candidate =
@@ -775,7 +687,8 @@ cr.define('print_preview', function() {
     /**
      * Attempts to fetch capabilities of the destination identified by the
      * provided origin, id and account.
-     * @param {!print_preview.Destination.Origin} origin Destination origin.
+     * @param {string | print_preview.DestinationOrigin} origin Destination
+     *     origin.
      * @param {string} id Destination id.
      * @param {string} account User account destination is registered for.
      * @param {string} name Destination display name.
@@ -791,20 +704,23 @@ cr.define('print_preview', function() {
       this.autoSelectMatchingDestination_ =
           this.createExactDestinationMatch_(origin, id);
 
-      if (origin == print_preview.Destination.Origin.LOCAL ||
-          origin == print_preview.Destination.Origin.CROS) {
+      if (origin == print_preview.DestinationOrigin.LOCAL ||
+          origin == print_preview.DestinationOrigin.CROS) {
         this.nativeLayer_.startGetLocalDestinationCapabilities(id);
         return true;
       }
 
       if (this.cloudPrintInterface_ &&
-          (origin == print_preview.Destination.Origin.COOKIES ||
-           origin == print_preview.Destination.Origin.DEVICE)) {
-        this.cloudPrintInterface_.printer(id, origin, account);
+          (origin == print_preview.DestinationOrigin.COOKIES ||
+           origin == print_preview.DestinationOrigin.DEVICE)) {
+        this.cloudPrintInterface_.printer(
+            id,
+            /** @type {print_preview.DestinationOrigin} */(origin),
+            account);
         return true;
       }
 
-      if (origin == print_preview.Destination.Origin.PRIVET) {
+      if (origin == print_preview.DestinationOrigin.PRIVET) {
         // TODO(noamsml): Resolve a specific printer instead of listing all
         // privet printers in this case.
         this.nativeLayer_.startGetPrivetDestinations();
@@ -814,11 +730,11 @@ cr.define('print_preview', function() {
         // destination will be overwritten.
         this.selectedDestination_ = new print_preview.Destination(
             id,
-            print_preview.Destination.Type.LOCAL,
-            print_preview.Destination.Origin.PRIVET,
+            print_preview.DestinationType.LOCAL,
+            print_preview.DestinationOrigin.PRIVET,
             name,
             false /*isRecent*/,
-            print_preview.Destination.ConnectionStatus.ONLINE);
+            print_preview.DestinationConnectionStatus.ONLINE);
         this.selectedDestination_.capabilities = capabilities;
 
         cr.dispatchSimpleEvent(
@@ -827,7 +743,7 @@ cr.define('print_preview', function() {
         return true;
       }
 
-      if (origin == print_preview.Destination.Origin.EXTENSION) {
+      if (origin == print_preview.DestinationOrigin.EXTENSION) {
         // TODO(tbarzic): Add support for requesting a single extension's
         // printer list.
         this.startLoadExtensionDestinations();
@@ -863,25 +779,25 @@ cr.define('print_preview', function() {
       this.autoSelectMatchingDestination_ = destinationMatch;
 
       if (destinationMatch.matchOrigin(
-            print_preview.Destination.Origin.LOCAL) ||
+            print_preview.DestinationOrigin.LOCAL) ||
           destinationMatch.matchOrigin(
-            print_preview.Destination.Origin.CROS)) {
+            print_preview.DestinationOrigin.CROS)) {
         this.startLoadLocalDestinations();
       }
       if (destinationMatch.matchOrigin(
-            print_preview.Destination.Origin.PRIVET)) {
+            print_preview.DestinationOrigin.PRIVET)) {
         this.startLoadPrivetDestinations();
       }
       if (destinationMatch.matchOrigin(
-            print_preview.Destination.Origin.EXTENSION)) {
+            print_preview.DestinationOrigin.EXTENSION)) {
         this.startLoadExtensionDestinations();
       }
       if (destinationMatch.matchOrigin(
-            print_preview.Destination.Origin.COOKIES) ||
+            print_preview.DestinationOrigin.COOKIES) ||
           destinationMatch.matchOrigin(
-            print_preview.Destination.Origin.DEVICE) ||
+            print_preview.DestinationOrigin.DEVICE) ||
           destinationMatch.matchOrigin(
-            print_preview.Destination.Origin.PROFILE)) {
+            print_preview.DestinationOrigin.PROFILE)) {
         this.startLoadCloudDestinations();
       }
     },
@@ -889,7 +805,7 @@ cr.define('print_preview', function() {
     /**
      * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
      *     default destination selection rules.
-     * @return {!print_preview.DestinationMatch} Creates rules matching
+     * @return {?print_preview.DestinationMatch} Creates rules matching
      *     previously selected destination.
      * @private
      */
@@ -906,7 +822,7 @@ cr.define('print_preview', function() {
             'Failed to parse defaultDestinationSelectionRules: ' + e);
       }
       if (!matchRules)
-        return;
+        return null;
 
       var isLocal = !matchRules.kind || matchRules.kind == 'local';
       var isCloud = !matchRules.kind || matchRules.kind == 'cloud';
@@ -917,15 +833,15 @@ cr.define('print_preview', function() {
 
       var origins = [];
       if (isLocal) {
-        origins.push(print_preview.Destination.Origin.LOCAL);
-        origins.push(print_preview.Destination.Origin.PRIVET);
-        origins.push(print_preview.Destination.Origin.EXTENSION);
-        origins.push(print_preview.Destination.Origin.CROS);
+        origins.push(print_preview.DestinationOrigin.LOCAL);
+        origins.push(print_preview.DestinationOrigin.PRIVET);
+        origins.push(print_preview.DestinationOrigin.EXTENSION);
+        origins.push(print_preview.DestinationOrigin.CROS);
       }
       if (isCloud) {
-        origins.push(print_preview.Destination.Origin.COOKIES);
-        origins.push(print_preview.Destination.Origin.DEVICE);
-        origins.push(print_preview.Destination.Origin.PROFILE);
+        origins.push(print_preview.DestinationOrigin.COOKIES);
+        origins.push(print_preview.DestinationOrigin.DEVICE);
+        origins.push(print_preview.DestinationOrigin.PROFILE);
       }
 
       var idRegExp = null;
@@ -946,7 +862,7 @@ cr.define('print_preview', function() {
         console.error('Failed to parse regexp for "name": ' + e);
       }
 
-      return new DestinationMatch(
+      return new print_preview.DestinationMatch(
           origins,
           idRegExp,
           displayNameRegExp,
@@ -973,14 +889,15 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {!print_preview.Destination.Origin} origin Destination origin.
+     * @param {string | print_preview.DestinationOrigin} origin Destination
+     *     origin.
      * @param {string} id Destination id.
      * @return {!print_preview.DestinationMatch} Creates rules matching
      *     provided destination.
      * @private
      */
     createExactDestinationMatch_: function(origin, id) {
-      return new DestinationMatch(
+      return new print_preview.DestinationMatch(
           [origin],
           new RegExp('^' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'),
           null /*displayNameRegExp*/,
@@ -1101,19 +1018,19 @@ cr.define('print_preview', function() {
      * @return {!Promise<!print_preview.PrinterSetupResponse>}
      */
     resolveCrosDestination: function(destination) {
-      assert(destination.origin == print_preview.Destination.Origin.CROS);
+      assert(destination.origin == print_preview.DestinationOrigin.CROS);
       return this.nativeLayer_.setupPrinter(destination.id);
     },
 
     /**
      * Attempts to resolve a provisional destination.
-     * @param {!print_preview.Destination} destinaion Provisional destination
+     * @param {!print_preview.Destination} destination Provisional destination
      *     that should be resolved.
      */
     resolveProvisionalDestination: function(destination) {
       assert(
           destination.provisionalType ==
-              print_preview.Destination.ProvisionalType.NEEDS_USB_PERMISSION,
+              print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION,
           'Provisional type cannot be resolved.');
       this.nativeLayer_.grantExtensionPrinterAccess(destination.id);
     },
@@ -1124,7 +1041,7 @@ cr.define('print_preview', function() {
      */
     selectPdfDestination_: function() {
       var saveToPdfKey = this.getDestinationKey_(
-          print_preview.Destination.Origin.LOCAL,
+          print_preview.DestinationOrigin.LOCAL,
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
           '');
       this.selectDestination(
@@ -1141,7 +1058,7 @@ cr.define('print_preview', function() {
         if (this.autoSelectMatchingDestination_ &&
             !this.autoSelectMatchingDestination_.matchIdAndOrigin(
                 this.systemDefaultDestinationId_,
-                this.plaformOrigin_)) {
+                this.platformOrigin_)) {
           if (this.fetchPreselectedDestination_(
                 this.platformOrigin_,
                 this.systemDefaultDestinationId_,
@@ -1202,7 +1119,7 @@ cr.define('print_preview', function() {
 
     /**
      * Initiates loading of cloud destinations.
-     * @param {print_preview.Destination.Origin=} opt_origin Search destinations
+     * @param {print_preview.DestinationOrigin=} opt_origin Search destinations
      *     for the specified origin only.
      */
     startLoadCloudDestinations: function(opt_origin) {
@@ -1211,7 +1128,7 @@ cr.define('print_preview', function() {
         if (origins.length == 0 ||
             (opt_origin && origins.indexOf(opt_origin) < 0)) {
           this.cloudPrintInterface_.search(
-              this.userInfo_.activeUser, opt_origin);
+              this.userInfo_.activeUser || '', opt_origin);
           cr.dispatchSimpleEvent(
               this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
         }
@@ -1221,12 +1138,12 @@ cr.define('print_preview', function() {
     /** Requests load of COOKIE based cloud destinations. */
     reloadUserCookieBasedDestinations: function() {
       var origins = this.loadedCloudOrigins_[this.userInfo_.activeUser] || [];
-      if (origins.indexOf(print_preview.Destination.Origin.COOKIES) >= 0) {
+      if (origins.indexOf(print_preview.DestinationOrigin.COOKIES) >= 0) {
         cr.dispatchSimpleEvent(
             this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
       } else {
         this.startLoadCloudDestinations(
-            print_preview.Destination.Origin.COOKIES);
+            print_preview.DestinationOrigin.COOKIES);
       }
     },
 
@@ -1257,8 +1174,8 @@ cr.define('print_preview', function() {
      * are reported.
      * Emits {@code DestinationStore.EventType.PROVISIONAL_DESTINATION_RESOLVED}
      * event.
-     * @param {!Event} The event containing the provisional destination ID and
-     *     resolved destination description. If the destination was not
+     * @param {!Event} evt The event containing the provisional destination ID
+     *     and resolved destination description. If the destination was not
      *     successfully resolved, the description will not be set.
      * @private
      */
@@ -1356,7 +1273,7 @@ cr.define('print_preview', function() {
     updateDestination_: function(destination) {
       assert(destination.constructor !== Array, 'Single printer expected');
       destination.capabilities_ = DestinationStore.localizeCapabilities_(
-          destination.capabilities_);
+          assert(destination.capabilities_));
       destination.capabilities_ = DestinationStore.sortMediaSizes_(
           destination.capabilities_);
       var existingDestination = this.destinationMap_[this.getKey_(destination)];
@@ -1401,7 +1318,7 @@ cr.define('print_preview', function() {
       // been found among reported extension destinations.
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchOrigin(
-              print_preview.Destination.Origin.EXTENSION) &&
+              print_preview.DestinationOrigin.EXTENSION) &&
           this.selectedDestination_ &&
           this.selectedDestination_.isExtension) {
         this.selectDefaultDestination_();
@@ -1427,9 +1344,9 @@ cr.define('print_preview', function() {
         this.destinationMap_[key] = destination;
         return true;
       } else if (existingDestination.connectionStatus ==
-                     print_preview.Destination.ConnectionStatus.UNKNOWN &&
+                     print_preview.DestinationConnectionStatus.UNKNOWN &&
                  destination.connectionStatus !=
-                     print_preview.Destination.ConnectionStatus.UNKNOWN) {
+                     print_preview.DestinationConnectionStatus.UNKNOWN) {
         existingDestination.connectionStatus = destination.connectionStatus;
         return true;
       } else {
@@ -1482,7 +1399,6 @@ cr.define('print_preview', function() {
 
     /**
      * Creates a local PDF print destination.
-     * @return {!print_preview.Destination} Created print destination.
      * @private
      */
     createLocalPdfPrintDestination_: function() {
@@ -1491,11 +1407,11 @@ cr.define('print_preview', function() {
       if (this.pdfPrinterEnabled_) {
         this.insertDestination_(new print_preview.Destination(
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-            print_preview.Destination.Type.LOCAL,
-            print_preview.Destination.Origin.LOCAL,
+            print_preview.DestinationType.LOCAL,
+            print_preview.DestinationOrigin.LOCAL,
             loadTimeData.getString('printToPDF'),
             false /*isRecent*/,
-            print_preview.Destination.ConnectionStatus.ONLINE));
+            print_preview.DestinationConnectionStatus.ONLINE));
       }
     },
 
@@ -1550,7 +1466,7 @@ cr.define('print_preview', function() {
       // capabilities.
       var origin = destinationId ==
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
-          print_preview.Destination.Origin.LOCAL : this.platformOrigin_;
+          print_preview.DestinationOrigin.LOCAL : this.platformOrigin_;
       var key = this.getDestinationKey_(
           origin,
           destinationId,
@@ -1674,7 +1590,12 @@ cr.define('print_preview', function() {
 
     /**
      * Called when a Privet printer is added to the local network.
-     * @param {Object} event Contains information about the added printer.
+     * @param {{printer: {serviceName: string,
+     *                    name: string,
+     *                    hasLocalPrinting: boolean,
+     *                    isUnregistered: boolean,
+     *                    cloudID: string}}} event Contains information about
+     *      the added printer.
      * @private
      */
     onPrivetPrinterAdded_: function(event) {
@@ -1729,7 +1650,7 @@ cr.define('print_preview', function() {
      */
     onExtensionCapabilitiesSet_: function(event) {
       var destinationKey = this.getDestinationKey_(
-          print_preview.Destination.Origin.EXTENSION,
+          print_preview.DestinationOrigin.EXTENSION,
           event.printerId,
           '' /* account */);
       var destination = this.destinationMap_[destinationKey];
@@ -1756,7 +1677,8 @@ cr.define('print_preview', function() {
     //    and Destination.origin by complex ID.
     /**
      * Returns key to be used with {@code destinationMap_}.
-     * @param {!print_preview.Destination.Origin} origin Destination origin.
+     * @param {print_preview.DestinationOrigin | string} origin Destination
+     *     origin.
      * @param {string} id Destination id.
      * @param {string} account User account destination is registered for.
      * @private

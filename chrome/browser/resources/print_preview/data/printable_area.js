@@ -27,7 +27,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.size_ = size;
-  };
+  }
 
   PrintableArea.prototype = {
     /**

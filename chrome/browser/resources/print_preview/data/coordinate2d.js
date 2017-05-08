@@ -26,7 +26,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.y_ = y;
-  };
+  }
 
   Coordinate2d.prototype = {
     /** @return {number} X-dimension of the point. */
