@@ -5,11 +5,14 @@
 #include "components/metrics/execution_phase.h"
 
 #include "build/build_config.h"
-#include "components/browser_watcher/stability_data_names.h"
-#include "components/browser_watcher/stability_debugging.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+
+#if defined(OS_WIN)
+#include "components/browser_watcher/stability_data_names.h"
+#include "components/browser_watcher/stability_debugging.h"
+#endif  // defined(OS_WIN)
 
 namespace metrics {
 
