@@ -87,6 +87,19 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // for a given |surface_id| for the first time.
   void SurfaceCreated(const SurfaceInfo& surface_info);
 
+  // Called when a CompositorFrame within |surface| has activated.
+  void SurfaceActivated(Surface* surface);
+
+  // Called when the dependencies of a pending CompositorFrame within |surface|
+  // has changed.
+  void SurfaceDependenciesChanged(
+      Surface* surface,
+      const base::flat_set<SurfaceId>& added_dependencies,
+      const base::flat_set<SurfaceId>& removed_dependencies);
+
+  // Called when |surface| is being destroyed.
+  void SurfaceDiscarded(Surface* surface);
+
   // Require that the given sequence number must be satisfied (using
   // SatisfySequence) before the given surface can be destroyed.
   void RequireSequence(const SurfaceId& surface_id,

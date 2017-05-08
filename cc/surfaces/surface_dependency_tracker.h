@@ -6,9 +6,7 @@
 #define CC_SURFACES_SURFACE_DEPENDENCY_TRACKER_H_
 
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/pending_frame_observer.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_observer.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
@@ -30,9 +28,7 @@ class SurfaceManager;
 // TODO(fsamuel): Deadlines should not be global. They should be scoped to a
 // surface subtree. However, that will not be possible until SurfaceReference
 // work is complete.
-class CC_SURFACES_EXPORT SurfaceDependencyTracker : public BeginFrameObserver,
-                                                    public PendingFrameObserver,
-                                                    public SurfaceObserver {
+class CC_SURFACES_EXPORT SurfaceDependencyTracker : public BeginFrameObserver {
  public:
   SurfaceDependencyTracker(SurfaceManager* surface_manager,
                            BeginFrameSource* begin_frame_source);
@@ -44,22 +40,17 @@ class CC_SURFACES_EXPORT SurfaceDependencyTracker : public BeginFrameObserver,
 
   bool has_deadline() const { return frames_since_deadline_set_.has_value(); }
 
+  void OnSurfaceActivated(Surface* surface);
+  void OnSurfaceDependenciesChanged(
+      Surface* surface,
+      const base::flat_set<SurfaceId>& added_dependencies,
+      const base::flat_set<SurfaceId>& removed_dependencies);
+  void OnSurfaceDiscarded(Surface* surface);
+
   // BeginFrameObserver implementation.
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
-
-  // PendingFrameObserver implementation:
-  void OnSurfaceActivated(Surface* surface) override;
-  void OnSurfaceDependenciesChanged(
-      Surface* surface,
-      const base::flat_set<SurfaceId>& added_dependencies,
-      const base::flat_set<SurfaceId>& removed_dependencies) override;
-  void OnSurfaceDiscarded(Surface* surface) override;
-
-  // SurfaceObserver implementation:
-  void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
-  void OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) override;
 
  private:
   // Informs all Surfaces with pending frames blocked on the provided
@@ -83,9 +74,8 @@ class CC_SURFACES_EXPORT SurfaceDependencyTracker : public BeginFrameObserver,
   std::unordered_map<SurfaceId, base::flat_set<SurfaceId>, SurfaceIdHash>
       blocked_surfaces_from_dependency_;
 
-  // The set of SurfaceIds corresponding to observed Surfaces that have
-  // blockers.
-  base::flat_set<SurfaceId> observed_surfaces_by_id_;
+  // The set of SurfaceIds corresponding that are known to have blockers.
+  base::flat_set<SurfaceId> blocked_surfaces_by_id_;
 
   // The set of SurfaceIds to which corresponding CompositorFrames have not
   // arrived by the time their deadline fired.

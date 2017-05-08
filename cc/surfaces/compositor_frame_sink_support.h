@@ -14,7 +14,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
-#include "cc/surfaces/pending_frame_observer.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_resource_holder.h"
@@ -24,13 +23,13 @@
 namespace cc {
 
 class CompositorFrameSinkSupportClient;
+class Surface;
 class SurfaceManager;
 
 class CC_SURFACES_EXPORT CompositorFrameSinkSupport
     : public BeginFrameObserver,
       public SurfaceResourceHolderClient,
-      public FrameSinkManagerClient,
-      public PendingFrameObserver {
+      public FrameSinkManagerClient {
  public:
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       CompositorFrameSinkSupportClient* client,
@@ -71,6 +70,8 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void RefResources(const TransferableResourceArray& resources);
   void UnrefResources(const ReturnedResourceArray& resources);
 
+  void OnSurfaceActivated(Surface* surface);
+
  protected:
   CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
                              const FrameSinkId& frame_sink_id,
@@ -102,14 +103,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
-
-  // PendingFrameObserver implementation.
-  void OnSurfaceActivated(Surface* surface) override;
-  void OnSurfaceDependenciesChanged(
-      Surface* surface,
-      const base::flat_set<SurfaceId>& added_dependencies,
-      const base::flat_set<SurfaceId>& removed_dependencies) override;
-  void OnSurfaceDiscarded(Surface* surface) override;
 
   void UpdateNeedsBeginFramesInternal();
   std::unique_ptr<Surface> CreateSurface(
