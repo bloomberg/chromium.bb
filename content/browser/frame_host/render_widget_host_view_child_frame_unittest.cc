@@ -10,10 +10,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface.h"
@@ -74,7 +74,9 @@ class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
 
 class RenderWidgetHostViewChildFrameTest : public testing::Test {
  public:
-  RenderWidgetHostViewChildFrameTest() : task_scheduler_(&message_loop_) {}
+  RenderWidgetHostViewChildFrameTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
@@ -115,8 +117,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 
     browser_context_.reset();
 
-    message_loop_.task_runner()->DeleteSoon(FROM_HERE,
-                                            browser_context_.release());
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                    browser_context_.release());
     base::RunLoop().RunUntilIdle();
 #if !defined(OS_ANDROID)
     ImageTransportFactory::Terminate();
@@ -136,10 +138,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-
-  // TaskScheduler is used by RenderWidgetHostImpl constructor.
-  base::test::ScopedTaskScheduler task_scheduler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;

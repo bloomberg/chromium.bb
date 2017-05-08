@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/common/conflicts/module_watcher_win.h"
@@ -47,7 +47,7 @@ class ModuleEventSinkImplTest : public testing::Test {
   uint32_t process_id() { return module_event_sink_impl_->process_id_; }
 
   // Must be before |module_database_|.
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ModuleDatabase> module_database_;
   std::unique_ptr<ModuleEventSinkImpl> module_event_sink_impl_;
 

@@ -9,8 +9,7 @@
 #include <stdint.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/message_loop/message_loop.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -132,8 +131,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
 
   base::mac::ScopedNSAutoreleasePool pool;
-  base::MessageLoop message_loop;
-  base::test::ScopedTaskScheduler task_scheduler(&message_loop);
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   int32_t routing_id = process_host->GetNextRoutingID();
   RenderWidgetHostEditCommandCounter* render_widget =

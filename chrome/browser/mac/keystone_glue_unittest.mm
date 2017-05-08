@@ -5,7 +5,7 @@
 #import <Foundation/Foundation.h>
 #import <objc/objc-class.h>
 
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #import "chrome/browser/mac/keystone_registration.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -180,7 +180,7 @@ namespace {
 
 class KeystoneGlueTest : public PlatformTest {
  private:
-  base::test::ScopedTaskScheduler task_scheduler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // DISABLED because the mocking isn't currently working.

@@ -9,12 +9,11 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/metrics/proto/ukm/source.pb.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -97,7 +96,7 @@ class TranslateRankerImplTest : public ::testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
 
   // Sets up the task scheduling/task-runner environment for each test.
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Manages the enabling/disabling of features within the scope of a test.
   base::test::ScopedFeatureList scoped_feature_list_;
