@@ -235,6 +235,8 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) override;
 
+  WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) override;
+
  private:
   explicit ChromeClientImpl(WebViewBase*);
 

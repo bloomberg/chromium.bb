@@ -77,6 +77,7 @@ class WebFrameScheduler;
 class WebImage;
 class WebLayer;
 class WebLayerTreeView;
+class WebLocalFrameBase;
 
 struct CompositedSelection;
 struct DateTimeChooserParameters;
@@ -351,6 +352,10 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void InstallSupplements(LocalFrame&) {}
 
   virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }
+
+  virtual WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) {
+    return nullptr;
+  }
 
   DECLARE_TRACE();
 

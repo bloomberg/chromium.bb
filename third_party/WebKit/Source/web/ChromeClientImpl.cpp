@@ -950,6 +950,10 @@ WebLayerTreeView* ChromeClientImpl::GetWebLayerTreeView(LocalFrame* frame) {
   return web_frame->LocalRoot()->FrameWidget()->GetLayerTreeView();
 }
 
+WebLocalFrameBase* ChromeClientImpl::GetWebLocalFrameBase(LocalFrame* frame) {
+  return WebLocalFrameImpl::FromFrame(frame);
+}
+
 void ChromeClientImpl::SetEventListenerProperties(
     LocalFrame* frame,
     WebEventListenerClass event_class,
