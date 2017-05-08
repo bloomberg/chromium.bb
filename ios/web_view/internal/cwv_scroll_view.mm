@@ -62,6 +62,14 @@
   [_proxy addGestureRecognizer:gestureRecognizer];
 }
 
+#pragma mark - NSObject
+
+- (void)dealloc {
+  // Removes |self| from |_proxy|'s observers. Otherwise |_proxy| will keep a
+  // dangling pointer to |self| and cause SEGV later.
+  [_proxy removeObserver:self];
+}
+
 #pragma mark - CRWWebViewScrollViewObserver
 
 - (void)webViewScrollViewWillBeginDragging:
