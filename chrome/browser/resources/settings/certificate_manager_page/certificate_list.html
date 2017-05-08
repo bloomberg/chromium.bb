@@ -22,7 +22,7 @@
         $i18n{certificateManagerImport}</paper-button>
 <if expr="chromeos">
       <paper-button id="importAndBind" on-tap="onImportAndBindTap_"
-          hidden="[[!canImportAndBind_(certificateType)]]">
+          hidden="[[!canImportAndBind_(certificateType, isGuest_)]]">
         $i18n{certificateManagerImportAndBind}</paper-button>
 </if>
     </div>
