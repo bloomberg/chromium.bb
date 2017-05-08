@@ -137,7 +137,7 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
   // http://yahoo.com is "Yahoo!". In RTL locales, in the New Tab page, the
   // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
   // "ltr".
-  std::string direction;
+  const char* direction;
   if (base::i18n::StringContainsStrongRTLChars(mv_item.title))
     direction = kRTLHtmlTextDirection;
   else
@@ -174,7 +174,7 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
   obj->Set(v8::String::NewFromUtf8(isolate, "domain"),
            UTF8ToV8String(isolate, mv_item.url.host()));
   obj->Set(v8::String::NewFromUtf8(isolate, "direction"),
-           UTF8ToV8String(isolate, direction));
+           v8::String::NewFromUtf8(isolate, direction));
   obj->Set(v8::String::NewFromUtf8(isolate, "url"),
            UTF8ToV8String(isolate, mv_item.url.spec()));
   return obj;
@@ -639,6 +639,7 @@ void SearchBoxExtensionWrapper::GetMostVisitedItems(
   DVLOG(1) << render_frame << " GetMostVisitedItems";
 
   const SearchBox* search_box = SearchBox::Get(render_frame);
+  int render_view_id = render_frame->GetRenderView()->GetRoutingID();
 
   std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
   search_box->GetMostVisitedItems(&instant_mv_items);
@@ -646,10 +647,9 @@ void SearchBoxExtensionWrapper::GetMostVisitedItems(
   v8::Local<v8::Array> v8_mv_items =
       v8::Array::New(isolate, instant_mv_items.size());
   for (size_t i = 0; i < instant_mv_items.size(); ++i) {
-    v8_mv_items->Set(
-        i, GenerateMostVisitedItem(
-               isolate, render_frame->GetRenderView()->GetRoutingID(),
-               instant_mv_items[i].first, instant_mv_items[i].second));
+    v8_mv_items->Set(i, GenerateMostVisitedItem(isolate, render_view_id,
+                                                instant_mv_items[i].first,
+                                                instant_mv_items[i].second));
   }
   args.GetReturnValue().Set(v8_mv_items);
 }
