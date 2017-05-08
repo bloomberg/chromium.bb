@@ -639,6 +639,9 @@ base::Time AutocompleteAgeThreshold() {
 
 bool RowQualifiesAsSignificant(const URLRow& row,
                                const base::Time& threshold) {
+  if (row.hidden())
+    return false;
+
   const base::Time& real_threshold =
       threshold.is_null() ? AutocompleteAgeThreshold() : threshold;
   return (row.typed_count() >= kLowQualityMatchTypedLimit) ||
