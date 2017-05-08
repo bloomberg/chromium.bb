@@ -20,8 +20,8 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 
 namespace content {
@@ -171,12 +171,14 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
 }
 
 void ResourceFetcherImpl::Start(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
     const Callback& callback) {
   DCHECK(!loader_);
   DCHECK(!client_);
   DCHECK(!request_.IsNull());
+  DCHECK(frame);
+  DCHECK(!frame->GetDocument().IsNull());
   if (!request_.HttpBody().IsNull())
     DCHECK_NE("GET", request_.HttpMethod().Utf8()) << "GETs can't have bodies.";
 
