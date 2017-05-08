@@ -339,6 +339,19 @@ int Main(const MainParams& params) {
 #endif
   base::EnableTerminationOnOutOfMemory();
 
+#if defined(OS_LINUX)
+  // The various desktop environments set this environment variable that allows
+  // the dbus client library to connect directly to the bus. When this variable
+  // is not set (test environments like xvfb-run), the dbus client library will
+  // fall back to auto-launch mode. Auto-launch is dangerous as it can cause
+  // hangs (crbug.com/715658) . This one line disables the dbus auto-launch,
+  // by clobbering the DBUS_SESSION_BUS_ADDRESS env variable if not already set.
+  // The old auto-launch behavior, if needed, can be restored by setting
+  // DBUS_SESSION_BUS_ADDRESS="autolaunch:" before launching chrome.
+  const int kNoOverrideIfAlreadySet = 0;
+  setenv("DBUS_SESSION_BUS_ADDRESS", "disabled:", kNoOverrideIfAlreadySet);
+#endif
+
 #if defined(OS_WIN)
   base::win::RegisterInvalidParamHandler();
   ui::win::CreateATLModuleIfNeeded();
