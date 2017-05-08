@@ -79,3 +79,24 @@ def unique_name(basename, suffix='', timestamp=True, device=None):
           if timestamp else '',
       '_%s' % device.serial if device else '',
       suffix)
+
+
+def get_url_link(name, bucket, authenticated_link=True):
+  """Get url link before/without uploading.
+
+  Args:
+    name: Name of the file on Google Storage.
+    bucket: Bucket to upload file to.
+    authenticated_link: Whether to return a link that requires user to
+        authenticate with a Google account. Setting this to false will return
+        a link that does not require user to be signed into Google account but
+        will only work for completely public storage buckets.
+  Returns:
+    Web link to item to be uploaded to Google Storage bucket
+  """
+  if bucket.startswith('gs://'):
+    bucket = bucket[len('gs://'):]
+  if bucket.endswith('/'):
+    bucket = bucket[:-1]
+  url_template = _AUTHENTICATED_URL if authenticated_link else _PUBLIC_URL
+  return os.path.join(url_template % bucket, name)
