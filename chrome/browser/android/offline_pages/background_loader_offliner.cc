@@ -172,8 +172,8 @@ bool BackgroundLoaderOffliner::LoadAndSave(
     return false;
   }
 
-  if (!loader_)
-    ResetState();
+  ResetLoader();
+  AttachObservers();
 
   MarkLoadStartTime();
 
@@ -453,13 +453,16 @@ void BackgroundLoaderOffliner::ResetState() {
   network_bytes_ = 0LL;
   is_low_bar_met_ = false;
   did_snapshot_on_last_retry_ = false;
-  // TODO(chili): Remove after RequestCoordinator can handle multiple offliners.
-  // We reset the loader and observer after completion so loaders
-  // will not be re-used across different requests/tries. This is a temporary
-  // solution while there exists assumptions about the number of offliners
-  // there are.
+  content::WebContentsObserver::Observe(nullptr);
+  loader_.reset();
+}
+
+void BackgroundLoaderOffliner::ResetLoader() {
   loader_.reset(
       new background_loader::BackgroundLoaderContents(browser_context_));
+}
+
+void BackgroundLoaderOffliner::AttachObservers() {
   content::WebContents* contents = loader_->web_contents();
   content::WebContentsObserver::Observe(contents);
   OfflinerData::AddToWebContents(contents, this);

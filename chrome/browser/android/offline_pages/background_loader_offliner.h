@@ -63,8 +63,8 @@ class BackgroundLoaderOffliner : public Offliner,
   void OnNetworkBytesChanged(int64_t bytes);
 
  protected:
-  // Called to reset internal loader and observer state.
-  virtual void ResetState();
+  // Called to reset the loader.
+  virtual void ResetLoader();
 
  private:
   friend class TestBackgroundLoaderOffliner;
@@ -74,6 +74,12 @@ class BackgroundLoaderOffliner : public Offliner,
 
   // Called when the page has been saved.
   void OnPageSaved(SavePageResult save_result, int64_t offline_id);
+
+  // Called to reset internal loader and observer state.
+  void ResetState();
+
+  // Called to attach 'this' as the observer to the loader.
+  void AttachObservers();
 
   // Called when application state has changed.
   void OnApplicationStateChange(
