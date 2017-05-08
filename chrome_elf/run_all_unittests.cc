@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
   install_static::ScopedInstallDetails scoped_install_details;
 
   base::TestSuite test_suite(argc, argv);
-  int ret = base::LaunchUnitTests(
-      argc, argv,
+  int ret = base::LaunchUnitTestsWithOptions(
+      argc, argv, 1, 0, true,  // Single process, no batching, default jobs.
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
   return ret;
 }
