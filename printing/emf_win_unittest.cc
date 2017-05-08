@@ -47,7 +47,6 @@ class EmfPrintingTest : public testing::Test, public PrintingContext::Delegate {
 };
 
 const uint32_t EMF_HEADER_SIZE = 128;
-const int ONE_MB = 1024 * 1024;
 
 }  // namespace
 
@@ -209,31 +208,6 @@ TEST(EmfTest, FileBackedEmf) {
   RECT output_rect = {0, 0, 10, 10};
   EXPECT_TRUE(emf.Playback(hdc, &output_rect));
   EXPECT_TRUE(DeleteDC(hdc));
-}
-
-TEST(EmfTest, RasterizeMetafile) {
-  Emf emf;
-  EXPECT_TRUE(emf.Init());
-  EXPECT_TRUE(emf.context());
-  HBRUSH brush = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
-  for (int i = 0; i < 4; ++i) {
-    RECT rect = { 5 + i, 5 + i, 5 + i + 1, 5 + i + 2};
-    FillRect(emf.context(), &rect, brush);
-  }
-  EXPECT_TRUE(emf.FinishDocument());
-
-  std::unique_ptr<Emf> raster(emf.RasterizeMetafile(1));
-  // Just 1px bitmap but should be stretched to the same bounds.
-  EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
-
-  raster = emf.RasterizeMetafile(20);
-  EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
-
-  raster = emf.RasterizeMetafile(16 * ONE_MB);
-  // Expected size about 64MB.
-  EXPECT_LE(abs(static_cast<int>(raster->GetDataSize()) - 64 * ONE_MB), ONE_MB);
-  // Bounds should still be the same.
-  EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
 }
 
 }  // namespace printing
