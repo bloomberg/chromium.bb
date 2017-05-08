@@ -53,6 +53,8 @@
             <meta-data android:name="com.android.webview.WebViewDonorPackage"
                        android:value="{{ donor_package }}" />
         {% endif %}
+        <meta-data android:name="org.chromium.content.browser.SANDBOXED_SERVICES_NAME"
+                   android:value="org.chromium.content.app.SandboxedProcessService"/>
         {% set num_sandboxed_services = 20 %}
         <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
                    android:value="{{ num_sandboxed_services }}"/>

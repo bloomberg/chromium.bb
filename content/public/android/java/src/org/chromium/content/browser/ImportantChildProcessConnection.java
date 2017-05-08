@@ -16,20 +16,20 @@ import org.chromium.base.process_launcher.ChildProcessCreationParams;
 public class ImportantChildProcessConnection extends BaseChildProcessConnection {
     public static final Factory FACTORY = new BaseChildProcessConnection.Factory() {
         @Override
-        public BaseChildProcessConnection create(Context context, boolean sandboxed,
-                DeathCallback deathCallback, String serviceClassName,
-                Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
-            return new ImportantChildProcessConnection(context, sandboxed, deathCallback,
-                    serviceClassName, childProcessCommonParameters, creationParams);
+        public BaseChildProcessConnection create(Context context, DeathCallback deathCallback,
+                String serviceClassName, Bundle childProcessCommonParameters,
+                ChildProcessCreationParams creationParams) {
+            return new ImportantChildProcessConnection(context, deathCallback, serviceClassName,
+                    childProcessCommonParameters, creationParams);
         }
     };
 
     private final ChildServiceConnection mBinding;
 
-    private ImportantChildProcessConnection(Context context, boolean sandboxed,
-            DeathCallback deathCallback, String serviceClassName,
-            Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
-        super(context, sandboxed, deathCallback, serviceClassName, childProcessCommonParameters,
+    private ImportantChildProcessConnection(Context context, DeathCallback deathCallback,
+            String serviceClassName, Bundle childProcessCommonParameters,
+            ChildProcessCreationParams creationParams) {
+        super(context, deathCallback, serviceClassName, childProcessCommonParameters,
                 creationParams);
         int flags = Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT;
         if (shouldBindAsExportedService()) {

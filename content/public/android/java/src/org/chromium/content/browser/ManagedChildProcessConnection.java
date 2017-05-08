@@ -21,12 +21,12 @@ public class ManagedChildProcessConnection extends BaseChildProcessConnection {
 
     public static final Factory FACTORY = new BaseChildProcessConnection.Factory() {
         @Override
-        public BaseChildProcessConnection create(Context context, boolean sandboxed,
-                DeathCallback deathCallback, String serviceClassName,
-                Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
+        public BaseChildProcessConnection create(Context context, DeathCallback deathCallback,
+                String serviceClassName, Bundle childProcessCommonParameters,
+                ChildProcessCreationParams creationParams) {
             assert LauncherThread.runningOnLauncherThread();
-            return new ManagedChildProcessConnection(context, sandboxed, deathCallback,
-                    serviceClassName, childProcessCommonParameters, creationParams);
+            return new ManagedChildProcessConnection(context, deathCallback, serviceClassName,
+                    childProcessCommonParameters, creationParams);
         }
     };
 
@@ -60,10 +60,10 @@ public class ManagedChildProcessConnection extends BaseChildProcessConnection {
     private boolean mUnbound;
 
     @VisibleForTesting
-    ManagedChildProcessConnection(Context context, boolean sandboxed, DeathCallback deathCallback,
+    ManagedChildProcessConnection(Context context, DeathCallback deathCallback,
             String serviceClassName, Bundle childProcessCommonParameters,
             ChildProcessCreationParams creationParams) {
-        super(context, sandboxed, deathCallback, serviceClassName, childProcessCommonParameters,
+        super(context, deathCallback, serviceClassName, childProcessCommonParameters,
                 creationParams);
 
         int initialFlags = Context.BIND_AUTO_CREATE;

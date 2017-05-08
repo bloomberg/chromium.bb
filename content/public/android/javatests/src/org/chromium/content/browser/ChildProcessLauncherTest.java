@@ -615,8 +615,8 @@ public class ChildProcessLauncherTest {
             public void run() {
                 String packageName = creationParams != null ? creationParams.getPackageName()
                                                             : context.getPackageName();
-                ChildConnectionAllocator allocator =
-                        ChildConnectionAllocator.getAllocator(context, packageName, inSandbox);
+                ChildConnectionAllocator allocator = ChildProcessLauncher.getConnectionAllocator(
+                        context, packageName, inSandbox);
                 allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context, commandLine,
                         1 /* childProcessId */, new FileDescriptorInfo[0],
                         null /* launchCallback */, null /* childProcessCallback */,
@@ -631,8 +631,8 @@ public class ChildProcessLauncherTest {
                 new Callable<Integer>() {
                     @Override
                     public Integer call() {
-                        return ChildConnectionAllocator
-                                .getAllocator(context, packageName, true /*isSandboxed */)
+                        return ChildProcessLauncher
+                                .getConnectionAllocator(context, packageName, true /*isSandboxed */)
                                 .allocatedConnectionsCountForTesting();
                     }
                 });
@@ -644,8 +644,8 @@ public class ChildProcessLauncherTest {
                 new Callable<BaseChildProcessConnection[]>() {
                     @Override
                     public BaseChildProcessConnection[] call() {
-                        return ChildConnectionAllocator
-                                .getAllocator(context, packageName, true /*isSandboxed */)
+                        return ChildProcessLauncher
+                                .getConnectionAllocator(context, packageName, true /*isSandboxed */)
                                 .connectionArrayForTesting();
                     }
                 });
@@ -657,8 +657,8 @@ public class ChildProcessLauncherTest {
                 new Callable<Integer>() {
                     @Override
                     public Integer call() {
-                        return ChildConnectionAllocator
-                                .getAllocator(context, packageName, inSandbox)
+                        return ChildProcessLauncher
+                                .getConnectionAllocator(context, packageName, inSandbox)
                                 .pendingSpawnsCountForTesting();
                     }
                 });

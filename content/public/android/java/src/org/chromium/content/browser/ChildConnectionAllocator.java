@@ -9,19 +9,13 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.content.app.PrivilegedProcessService;
-import org.chromium.content.app.SandboxedProcessService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -32,31 +26,13 @@ import java.util.Queue;
 public class ChildConnectionAllocator {
     private static final String TAG = "ChildConnAllocator";
 
-    private static final String NUM_SANDBOXED_SERVICES_KEY =
-            "org.chromium.content.browser.NUM_SANDBOXED_SERVICES";
-    private static final String NUM_PRIVILEGED_SERVICES_KEY =
-            "org.chromium.content.browser.NUM_PRIVILEGED_SERVICES";
-    private static final String SANDBOXED_SERVICES_NAME_KEY =
-            "org.chromium.content.browser.SANDBOXED_SERVICES_NAME";
-
-    // Map from package name to ChildConnectionAllocator.
-    private static Map<String, ChildConnectionAllocator> sSandboxedChildConnectionAllocatorMap;
-
-    // Allocator used for non-sandboxed services.
-    private static ChildConnectionAllocator sPrivilegedChildConnectionAllocator;
-
-    // Used by test to override the default sandboxed service settings.
-    private static int sSandboxedServicesCountForTesting = -1;
-    private static String sSandboxedServicesNameForTesting;
-
     // The factory used to create BaseChildProcessConnection instances.
     private final BaseChildProcessConnection.Factory mConnectionFactory;
 
     // Connections to services. Indices of the array correspond to the service numbers.
     private final BaseChildProcessConnection[] mChildProcessConnections;
 
-    private final String mChildClassName;
-    private final boolean mInSandbox;
+    private final String mServiceClassName;
 
     // The list of free (not bound) service indices.
     private final ArrayList<Integer> mFreeConnectionIndices;
@@ -65,93 +41,58 @@ public class ChildConnectionAllocator {
     // dequeue the pending spawn data from the same allocator as the connection.
     private final Queue<ChildSpawnData> mPendingSpawnQueue = new LinkedList<>();
 
-    @SuppressFBWarnings("LI_LAZY_INIT_STATIC") // Method is single thread.
-    public static ChildConnectionAllocator getAllocator(
-            Context context, String packageName, boolean sandboxed) {
-        assert LauncherThread.runningOnLauncherThread();
-        if (!sandboxed) {
-            if (sPrivilegedChildConnectionAllocator == null) {
-                sPrivilegedChildConnectionAllocator = new ChildConnectionAllocator(
-                        ImportantChildProcessConnection.FACTORY, false /* sandboxed */,
-                        getNumberOfServices(context, false, packageName),
-                        getClassNameOfService(context, false, packageName));
-            }
-            return sPrivilegedChildConnectionAllocator;
-        }
-
-        if (sSandboxedChildConnectionAllocatorMap == null) {
-            sSandboxedChildConnectionAllocatorMap = new HashMap<String, ChildConnectionAllocator>();
-        }
-        if (!sSandboxedChildConnectionAllocatorMap.containsKey(packageName)) {
-            Log.w(TAG,
-                    "Create a new ChildConnectionAllocator with package name = %s,"
-                            + " inSandbox = true",
-                    packageName);
-            sSandboxedChildConnectionAllocatorMap.put(packageName,
-                    new ChildConnectionAllocator(ManagedChildProcessConnection.FACTORY,
-                            true /* sandboxed */, getNumberOfServices(context, true, packageName),
-                            getClassNameOfService(context, true, packageName)));
-        }
-        return sSandboxedChildConnectionAllocatorMap.get(packageName);
-        // TODO(pkotwicz|hanxi): Figure out when old allocators should be removed from
-        // {@code sSandboxedChildConnectionAllocatorMap}.
-    }
-
-    private static String getClassNameOfService(
-            Context context, boolean inSandbox, String packageName) {
-        if (!inSandbox) {
-            return PrivilegedProcessService.class.getName();
-        }
-
-        if (!TextUtils.isEmpty(sSandboxedServicesNameForTesting)) {
-            return sSandboxedServicesNameForTesting;
-        }
-
-        String serviceName = null;
+    /**
+     * Factory method that retrieves the service name and number of service from the
+     * AndroidManifest.xml.
+     */
+    public static ChildConnectionAllocator create(Context context,
+            BaseChildProcessConnection.Factory connectionFactory, String packageName,
+            String serviceClassNameManifestKey, String numChildServicesManifestKey) {
+        String serviceClassName = null;
+        int numServices = -1;
+        PackageManager packageManager = context.getPackageManager();
         try {
-            PackageManager packageManager = context.getPackageManager();
             ApplicationInfo appInfo =
                     packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
             if (appInfo.metaData != null) {
-                serviceName = appInfo.metaData.getString(SANDBOXED_SERVICES_NAME_KEY);
+                serviceClassName = appInfo.metaData.getString(serviceClassNameManifestKey);
+                numServices = appInfo.metaData.getInt(numChildServicesManifestKey, -1);
             }
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException("Could not get application info.");
         }
 
-        if (serviceName != null) {
-            // Check that the service exists.
-            try {
-                PackageManager packageManager = context.getPackageManager();
-                // PackageManager#getServiceInfo() throws an exception if the service does not
-                // exist.
-                packageManager.getServiceInfo(new ComponentName(packageName, serviceName + "0"), 0);
-                return serviceName;
-            } catch (PackageManager.NameNotFoundException e) {
-                throw new RuntimeException(
-                        "Illegal meta data value: the child service doesn't exist");
-            }
+        if (numServices < 0) {
+            throw new RuntimeException("Illegal meta data value for number of child services");
         }
-        return SandboxedProcessService.class.getName();
+
+        // Check that the service exists.
+        try {
+            // PackageManager#getServiceInfo() throws an exception if the service does not
+            // exist.
+            packageManager.getServiceInfo(
+                    new ComponentName(packageName, serviceClassName + "0"), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
+        }
+
+        return new ChildConnectionAllocator(
+                connectionFactory, packageName, serviceClassName, numServices);
     }
 
-    static int getNumberOfServices(Context context, boolean inSandbox, String packageName) {
+    // TODO(jcivelli): remove this method once crbug.com/693484 has been addressed.
+    static int getNumberOfServices(
+            Context context, String packageName, String numChildServicesManifestKey) {
         int numServices = -1;
-        if (inSandbox && sSandboxedServicesCountForTesting != -1) {
-            numServices = sSandboxedServicesCountForTesting;
-        } else {
-            try {
-                PackageManager packageManager = context.getPackageManager();
-                ApplicationInfo appInfo = packageManager.getApplicationInfo(
-                        packageName, PackageManager.GET_META_DATA);
-                if (appInfo.metaData != null) {
-                    numServices = appInfo.metaData.getInt(
-                            inSandbox ? NUM_SANDBOXED_SERVICES_KEY : NUM_PRIVILEGED_SERVICES_KEY,
-                            -1);
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                throw new RuntimeException("Could not get application info", e);
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            ApplicationInfo appInfo =
+                    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            if (appInfo.metaData != null) {
+                numServices = appInfo.metaData.getInt(numChildServicesManifestKey, -1);
             }
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException("Could not get application info", e);
         }
         if (numServices < 0) {
             throw new RuntimeException("Illegal meta data value for number of child services");
@@ -159,22 +100,27 @@ public class ChildConnectionAllocator {
         return numServices;
     }
 
+    /**
+     * Factory method used with some tests to create an allocator with values passed in directly
+     * instead of being retrieved from the AndroidManifest.xml.
+     */
     @VisibleForTesting
-    public static void setSandboxServicesSettingsForTesting(int serviceCount, String serviceName) {
-        sSandboxedServicesCountForTesting = serviceCount;
-        sSandboxedServicesNameForTesting = serviceName;
+    public static ChildConnectionAllocator createForTest(
+            BaseChildProcessConnection.Factory connectionFactory, String packageName,
+            String serviceClassName, int serviceCount) {
+        return new ChildConnectionAllocator(
+                connectionFactory, packageName, serviceClassName, serviceCount);
     }
 
     private ChildConnectionAllocator(BaseChildProcessConnection.Factory connectionFactory,
-            boolean inSandbox, int numChildServices, String serviceClassName) {
+            String packageName, String serviceClassName, int numChildServices) {
         mConnectionFactory = connectionFactory;
+        mServiceClassName = serviceClassName;
         mChildProcessConnections = new BaseChildProcessConnection[numChildServices];
         mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
         for (int i = 0; i < numChildServices; i++) {
             mFreeConnectionIndices.add(i);
         }
-        mChildClassName = serviceClassName;
-        mInSandbox = inSandbox;
     }
 
     // Allocates or enqueues. If there are no free slots, returns null and enqueues the spawn data.
@@ -182,7 +128,6 @@ public class ChildConnectionAllocator {
             BaseChildProcessConnection.DeathCallback deathCallback,
             Bundle childProcessCommonParameters, boolean queueIfNoSlotAvailable) {
         assert LauncherThread.runningOnLauncherThread();
-        assert spawnData.isInSandbox() == mInSandbox;
         if (mFreeConnectionIndices.isEmpty()) {
             Log.d(TAG, "Ran out of services to allocate.");
             if (queueIfNoSlotAvailable) {
@@ -192,11 +137,11 @@ public class ChildConnectionAllocator {
         }
         int slot = mFreeConnectionIndices.remove(0);
         assert mChildProcessConnections[slot] == null;
-        String serviceClassName = mChildClassName + slot;
-        mChildProcessConnections[slot] = mConnectionFactory.create(spawnData.getContext(),
-                mInSandbox, deathCallback, serviceClassName, childProcessCommonParameters,
-                spawnData.getCreationParams());
-        Log.d(TAG, "Allocator allocated a connection, sandbox: %b, slot: %d", mInSandbox, slot);
+        String serviceClassName = mServiceClassName + slot;
+        mChildProcessConnections[slot] =
+                mConnectionFactory.create(spawnData.getContext(), deathCallback, serviceClassName,
+                        childProcessCommonParameters, spawnData.getCreationParams());
+        Log.d(TAG, "Allocator allocated a connection, name: %s, slot: %d", mServiceClassName, slot);
         return mChildProcessConnections[slot];
     }
 
@@ -213,7 +158,7 @@ public class ChildConnectionAllocator {
             mChildProcessConnections[slot] = null;
             assert !mFreeConnectionIndices.contains(slot);
             mFreeConnectionIndices.add(slot);
-            Log.d(TAG, "Allocator freed a connection, sandbox: %b, slot: %d", mInSandbox, slot);
+            Log.d(TAG, "Allocator freed a connection, name: %s, slot: %d", mServiceClassName, slot);
         }
         return mPendingSpawnQueue.poll();
     }
@@ -221,6 +166,10 @@ public class ChildConnectionAllocator {
     public boolean isFreeConnectionAvailable() {
         assert LauncherThread.runningOnLauncherThread();
         return !mFreeConnectionIndices.isEmpty();
+    }
+
+    public int getNumberOfServices() {
+        return mChildProcessConnections.length;
     }
 
     /** @return the count of connections managed by the allocator */

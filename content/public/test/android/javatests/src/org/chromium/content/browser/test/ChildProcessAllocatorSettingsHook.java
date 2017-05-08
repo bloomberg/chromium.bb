@@ -7,7 +7,7 @@ package org.chromium.content.browser.test;
 import android.content.Context;
 
 import org.chromium.base.test.BaseTestResult.PreTestHook;
-import org.chromium.content.browser.ChildConnectionAllocator;
+import org.chromium.content.browser.ChildProcessLauncher;
 
 import java.lang.reflect.Method;
 
@@ -22,7 +22,7 @@ public final class ChildProcessAllocatorSettingsHook implements PreTestHook {
         ChildProcessAllocatorSettings annotation =
                 testMethod.getAnnotation(ChildProcessAllocatorSettings.class);
         if (annotation != null) {
-            ChildConnectionAllocator.setSandboxServicesSettingsForTesting(
+            ChildProcessLauncher.setSandboxServicesSettingsForTesting(
                     annotation.sandboxedServiceCount(), annotation.sandboxedServiceName());
         }
     }

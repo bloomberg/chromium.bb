@@ -41,6 +41,9 @@
         {% set num_sandboxed_services = 20 %}
         <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
                    android:value="{{ num_sandboxed_services }}"/>
+        <meta-data android:name="org.chromium.content.browser.SANDBOXED_SERVICES_NAME"
+                   android:value="org.chromium.content.app.SandboxedProcessService"/>
+
         {% for i in range(num_sandboxed_services) %}
         <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
                  android:process=":sandboxed_process{{ i }}"
@@ -51,6 +54,9 @@
         {% set num_privileged_services = 3 %}
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="{{ num_privileged_services }}"/>
+        <meta-data android:name="org.chromium.content.browser.PRIVILEGED_SERVICES_NAME"
+                   android:value="org.chromium.content.app.PrivilegedProcessService"/>
+
         {% for i in range(num_privileged_services) %}
         <service android:name="org.chromium.content.app.PrivilegedProcessService{{ i }}"
                  android:process=":privileged_process{{ i }}"

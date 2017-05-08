@@ -856,6 +856,9 @@ by a child template that "extends" this file.
         {% set num_sandboxed_services = 20 %}
         <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
             android:value="{{ num_sandboxed_services }}"/>
+        <meta-data android:name="org.chromium.content.browser.SANDBOXED_SERVICES_NAME"
+            android:value="org.chromium.content.app.SandboxedProcessService"/>
+
         {% for i in range(num_sandboxed_services) %}
         <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
             android:process=":sandboxed_process{{ i }}"
@@ -872,6 +875,9 @@ by a child template that "extends" this file.
         {% set num_privileged_services = 3 %}
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
             android:value="{{ num_privileged_services }}"/>
+        <meta-data android:name="org.chromium.content.browser.PRIVILEGED_SERVICES_NAME"
+            android:value="org.chromium.content.app.PrivilegedProcessService"/>
+
         {% for i in range(num_privileged_services) %}
         {% set privileged_process_name = ':privileged_process%d' % i %}
         <!-- TODO(tedchoc): Omit this for release builds as MultiDex is debug only. -->
