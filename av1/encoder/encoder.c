@@ -2633,7 +2633,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     if (t < cpi->num_workers - 1) {
 #if CONFIG_PALETTE
       if (cpi->common.allow_screen_content_tools)
-        aom_free(thread_data->td->mb.palette_buffer);
+        aom_free(thread_data->td->palette_buffer);
 #endif  // CONFIG_PALETTE
       aom_free(thread_data->td->counts);
       av1_free_pc_tree(thread_data->td);

@@ -324,6 +324,10 @@ typedef struct ThreadData {
 
   VAR_TREE *var_tree;
   VAR_TREE *var_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2 + 1];
+
+#if CONFIG_PALETTE
+  PALETTE_BUFFER *palette_buffer;
+#endif  // CONFIG_PALETTE
 } ThreadData;
 
 struct EncWorkerData;
