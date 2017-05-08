@@ -37,7 +37,8 @@ int64_t vp9_block_error_fp_neon(const int16_t *coeff, const int16_t *dqcoeff, in
 RTCD_EXTERN int64_t (*vp9_block_error_fp)(const int16_t *coeff, const int16_t *dqcoeff, int block_size);
 
 int vp9_denoiser_filter_c(const uint8_t *sig, int sig_stride, const uint8_t *mc_avg, int mc_avg_stride, uint8_t *avg, int avg_stride, int increase_denoising, BLOCK_SIZE bs, int motion_magnitude);
-#define vp9_denoiser_filter vp9_denoiser_filter_c
+int vp9_denoiser_filter_neon(const uint8_t *sig, int sig_stride, const uint8_t *mc_avg, int mc_avg_stride, uint8_t *avg, int avg_stride, int increase_denoising, BLOCK_SIZE bs, int motion_magnitude);
+RTCD_EXTERN int (*vp9_denoiser_filter)(const uint8_t *sig, int sig_stride, const uint8_t *mc_avg, int mc_avg_stride, uint8_t *avg, int avg_stride, int increase_denoising, BLOCK_SIZE bs, int motion_magnitude);
 
 int vp9_diamond_search_sad_c(const struct macroblock *x, const struct search_site_config *cfg,  struct mv *ref_mv, struct mv *best_mv, int search_param, int sad_per_bit, int *num00, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv);
 #define vp9_diamond_search_sad vp9_diamond_search_sad_c
@@ -88,7 +89,7 @@ void vp9_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int
 void vp9_scale_and_extend_frame_c(const struct yv12_buffer_config *src, struct yv12_buffer_config *dst, int phase_scaler);
 #define vp9_scale_and_extend_frame vp9_scale_and_extend_frame_c
 
-void vp9_temporal_filter_apply_c(const uint8_t *frame1, unsigned int stride, const uint8_t *frame2, unsigned int block_width, unsigned int block_height, int strength, int filter_weight, unsigned int *accumulator, uint16_t *count);
+void vp9_temporal_filter_apply_c(const uint8_t *frame1, unsigned int stride, const uint8_t *frame2, unsigned int block_width, unsigned int block_height, int strength, int filter_weight, uint32_t *accumulator, uint16_t *count);
 #define vp9_temporal_filter_apply vp9_temporal_filter_apply_c
 
 void vp9_rtcd(void);
@@ -105,6 +106,8 @@ static void setup_rtcd_internal(void)
 
     vp9_block_error_fp = vp9_block_error_fp_c;
     if (flags & HAS_NEON) vp9_block_error_fp = vp9_block_error_fp_neon;
+    vp9_denoiser_filter = vp9_denoiser_filter_c;
+    if (flags & HAS_NEON) vp9_denoiser_filter = vp9_denoiser_filter_neon;
     vp9_fdct8x8_quant = vp9_fdct8x8_quant_c;
     if (flags & HAS_NEON) vp9_fdct8x8_quant = vp9_fdct8x8_quant_neon;
     vp9_iht4x4_16_add = vp9_iht4x4_16_add_c;
