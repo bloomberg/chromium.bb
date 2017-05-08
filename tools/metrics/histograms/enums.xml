@@ -21278,6 +21278,7 @@ from previous Chrome versions.
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1310737697" label="MaterialDesignSettings:enabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
+  <int value="-1290548937" label="OmniboxUIExperiments:enabled"/>
   <int value="-1289678848" label="SystemDownloadManager:enabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
@@ -21923,6 +21924,7 @@ from previous Chrome versions.
   <int value="1210343926" label="enable-drop-sync-credential"/>
   <int value="1211284676" label="V8NoTurbo:enabled"/>
   <int value="1214455758" label="VideoRotateToFullscreen:disabled"/>
+  <int value="1215531732" label="OmniboxUIExperiments:disabled"/>
   <int value="1219628795" label="PrintScaling:disabled"/>
   <int value="1219826373" label="ServiceWorkerNavigationPreload:enabled"/>
   <int value="1220171692" label="SpeculativeLaunchServiceWorker:enabled"/>

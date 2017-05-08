@@ -3359,6 +3359,12 @@ extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 // for current URL.
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+// Name of the Omnibox UI vertical margin flag.
+extern const char kOmniboxUIVerticalMarginName[];
+
+// Description of the Omnibox UI vertical margin flag.
+extern const char kOmniboxUIVerticalMarginDescription[];
+
 // Name of the flag that forces Network Quality Estimator (NQE) to always
 // return the specified effective connection type.
 extern const char kForceEffectiveConnectionTypeName[];

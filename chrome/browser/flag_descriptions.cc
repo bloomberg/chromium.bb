@@ -3089,6 +3089,11 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kOmniboxUIVerticalMarginName[] = "Omnibox UI Vertical Margin";
+
+const char kOmniboxUIVerticalMarginDescription[] =
+    "Changes the vertical margin in the Omnibox UI.";
+
 const char kForceEffectiveConnectionTypeName[] =
     "Override effective connection type";
 

@@ -966,6 +966,29 @@ const FeatureEntry::Choice kEnableHeapProfilingChoices[] = {
      switches::kEnableHeapProfiling,
      switches::kEnableHeapProfilingTaskProfiler}};
 
+const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin4px[] = {
+    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "4"}};
+const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin8px[] = {
+    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "8"}};
+const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin12px[] = {
+    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "12"}};
+const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin16px[] = {
+    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "16"}};
+const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin20px[] = {
+    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "20"}};
+
+const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
+    {"4px vertical margin", kOmniboxUIVerticalMargin4px,
+     arraysize(kOmniboxUIVerticalMargin4px), nullptr},
+    {"8px vertical margin", kOmniboxUIVerticalMargin8px,
+     arraysize(kOmniboxUIVerticalMargin8px), nullptr},
+    {"12px vertical margin", kOmniboxUIVerticalMargin12px,
+     arraysize(kOmniboxUIVerticalMargin12px), nullptr},
+    {"16px vertical margin", kOmniboxUIVerticalMargin16px,
+     arraysize(kOmniboxUIVerticalMargin16px), nullptr},
+    {"20px vertical margin", kOmniboxUIVerticalMargin20px,
+     arraysize(kOmniboxUIVerticalMargin20px), nullptr}};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2837,6 +2860,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowCertLinkOnPageInfoDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kShowCertLink)},
 #endif
+
+    {"omnibox-ui-vertical-margin",
+     flag_descriptions::kOmniboxUIVerticalMarginName,
+     flag_descriptions::kOmniboxUIVerticalMarginDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kUIExperiments,
+                                    kOmniboxUIVerticalMarginVariations,
+                                    "OmniboxUIVerticalMarginVariations")},
 
     {"use-suggestions-even-if-few",
      flag_descriptions::kUseSuggestionsEvenIfFewFeatureName,
