@@ -21,24 +21,6 @@ namespace blink {
 
 namespace {
 
-// To forcibly stop the message loop.
-// TODO(hongchan): move this hack into Test class when the solution is found.
-void FinishTest() {
-  LOG(INFO) << "FinishTest";
-  testing::ExitRunLoop();
-}
-
-// To wait for spawned threads to finish their tasks.
-// TODO(hongchan): move this hack into Test class when the solution is found.
-void HoldTestForDuration(double duration_ms) {
-  LOG(INFO) << "HoldTestForDuration";
-  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&FinishTest),
-      duration_ms);
-  testing::EnterRunLoop();
-}
-
 // Base FIFOClient with an extra thread for looping and jitter control. The
 // child class must define a specific task to run on the thread.
 class FIFOClient {
@@ -47,15 +29,17 @@ class FIFOClient {
       : fifo_(fifo),
         bus_(AudioBus::Create(fifo->NumberOfChannels(), bus_length)),
         client_thread_(Platform::Current()->CreateThread("client thread")),
+        done_event_(WTF::MakeUnique<WaitableEvent>()),
         jitter_range_ms_(jitter_range_ms) {}
 
-  void Start(double duration_ms, double interval_ms) {
+  WaitableEvent* Start(double duration_ms, double interval_ms) {
     duration_ms_ = duration_ms;
     interval_ms_ = interval_ms;
     client_thread_->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&FIFOClient::RunTaskOnOwnThread,
                         CrossThreadUnretained(this)));
+    return done_event_.get();
   }
 
   virtual void Stop(int callback_counter) = 0;
@@ -84,12 +68,14 @@ class FIFOClient {
               interval_with_jitter);
     } else {
       Stop(counter_);
+      done_event_->Signal();
     }
   }
 
   PushPullFIFO* fifo_;
   RefPtr<AudioBus> bus_;
   std::unique_ptr<WebThread> client_thread_;
+  std::unique_ptr<WaitableEvent> done_event_;
 
   // Test duration.
   double duration_ms_;
@@ -179,14 +165,17 @@ TEST_P(PushPullFIFOSmokeTest, SmokeTests) {
   std::unique_ptr<PushClient> push_client = WTF::WrapUnique(new PushClient(
       test_fifo.get(), param.push_buffer_size, param.push_jitter_range_ms));
 
-  LOG(INFO) << "PushPullFIFOSmokeTest - Start";
+  Vector<WaitableEvent*> done_events;
+  done_events.push_back(
+      pull_client->Start(param.test_duration_ms, pull_interval_ms));
+  done_events.push_back(
+      push_client->Start(param.test_duration_ms, push_interval_ms));
 
-  pull_client->Start(param.test_duration_ms, pull_interval_ms);
-  push_client->Start(param.test_duration_ms, push_interval_ms);
+  LOG(INFO) << "PushPullFIFOSmokeTest - Started";
 
-  // If the operation does not cause a crash for the test period, it's passed.
-  // Also give a bit more time to finish the tear-down process.
-  HoldTestForDuration(param.test_duration_ms + 150);
+  // We have to wait both of events to be signaled.
+  WaitableEvent::WaitMultiple(done_events);
+  WaitableEvent::WaitMultiple(done_events);
 }
 
 FIFOSmokeTestParam smoke_test_params[] = {
@@ -220,6 +209,9 @@ FIFOSmokeTestParam smoke_test_params[] = {
   // Test case 6 (User-specified buffer size): 960 Pull, 128 Push. Minimal
   // Jitter. 960 frames = 20ms at 48KHz.
   {48000, 2, 8192, 1000, 960, 1, 128, 1},
+
+  // Test case 7 (Longer test duration): 256 Pull, 128 Push. 10 seconds.
+  {48000, 2, 8192, 10000, 256, 0, 128, 1}
 };
 
 INSTANTIATE_TEST_CASE_P(PushPullFIFOSmokeTest,
