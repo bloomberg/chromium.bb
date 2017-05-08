@@ -72,7 +72,7 @@ std::unique_ptr<base::DictionaryValue> GetPrinterInfo(const Printer& printer) {
 
   printer_info->SetString("printerAddress", host);
   printer_info->SetString("printerProtocol", base::ToLowerASCII(scheme));
-  if (base::ToLowerASCII(scheme) == "lpd" && !path.empty())
+  if (!path.empty())
     printer_info->SetString("printerQueue", path.substr(1));
 
   return printer_info;

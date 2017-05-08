@@ -57,6 +57,20 @@
             </div>
           </div>
         </div>
+        <template is="dom-if" if="[[printer.printerQueue]]">
+          <div class="list-item setting-box two-line">
+            <div class="start">
+              <div>$i18n{printerQueue}</div>
+              <div class="secondary">[[printer.printerQueue]]</div>
+            </div>
+          </div>
+        </template>
+        <div class="list-item setting-box two-line">
+          <div class="start">
+            <div>$i18n{printerURI}</div>
+            <div class="secondary">[[getPrinterURI_(printer)]]</div>
+          </div>
+        </div>
       </div>
     </iron-collapse>
   </template>

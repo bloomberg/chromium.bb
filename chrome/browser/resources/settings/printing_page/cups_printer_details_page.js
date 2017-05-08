@@ -73,4 +73,25 @@ Polymer({
       return loadTimeData.getString('printerProtocolUsb');
     assertNotReached('Illegal printer protocol!');
   },
+
+  /**
+   * @param {!CupsPrinterInfo} printer
+   * @return {string} The printer's URI that displays in the UI
+   * @private
+   */
+  getPrinterURI_: function(printer) {
+    if (!printer) {
+      return '';
+    } else if (printer.printerProtocol &&
+               printer.printerAddress &&
+               printer.printerQueue) {
+      return printer.printerProtocol + '://' +
+             printer.printerAddress + '/' +
+             printer.printerQueue;
+    } else if (printer.printerProtocol && printer.printerAddress) {
+      return printer.printerProtocol + '://' + printer.printerAddress;
+    } else {
+      return '';
+    }
+  },
 });
