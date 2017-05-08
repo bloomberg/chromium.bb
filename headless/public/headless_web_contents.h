@@ -90,6 +90,14 @@ class HEADLESS_EXPORT HeadlessWebContents {
       const std::string& devtools_agent_host_id,
       int* frame_tree_node_id) const = 0;
 
+  // Returns the devtools frame id corresponding to the |frame_tree_node_id|, if
+  // any. Note this relies on an IPC sent from blink during navigation.
+  virtual std::string GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
+      int process_id,
+      int frame_tree_node_id) const = 0;
+
+  virtual int GetMainFrameRenderProcessId() const = 0;
+
  private:
   friend class HeadlessWebContentsImpl;
   HeadlessWebContents() {}
