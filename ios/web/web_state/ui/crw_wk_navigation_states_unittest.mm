@@ -7,8 +7,16 @@
 #import <WebKit/WebKit.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "ios/web/web_state/navigation_context_impl.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
+
+namespace {
+const char kTestUrl1[] = "https://test1.test/";
+const char kTestUrl2[] = "https://test2.test/";
+}
 
 namespace web {
 
@@ -18,11 +26,13 @@ class CRWWKNavigationStatesTest : public PlatformTest {
   CRWWKNavigationStatesTest()
       : navigation1_(static_cast<WKNavigation*>([[NSObject alloc] init])),
         navigation2_(static_cast<WKNavigation*>([[NSObject alloc] init])),
+        navigation3_(static_cast<WKNavigation*>([[NSObject alloc] init])),
         states_([[CRWWKNavigationStates alloc] init]) {}
 
  protected:
   base::scoped_nsobject<WKNavigation> navigation1_;
   base::scoped_nsobject<WKNavigation> navigation2_;
+  base::scoped_nsobject<WKNavigation> navigation3_;
   base::scoped_nsobject<CRWWKNavigationStates> states_;
 };
 
@@ -56,6 +66,48 @@ TEST_F(CRWWKNavigationStatesTest, LastAddedNavigation) {
   [states_ setState:WKNavigationState::STARTED forNavigation:navigation2_];
   EXPECT_EQ(navigation2_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::STARTED, [states_ lastAddedNavigationState]);
+
+  // navigation_3 is added later and hence the latest.
+  std::unique_ptr<web::NavigationContextImpl> context =
+      NavigationContextImpl::CreateSameDocumentNavigationContext(
+          nullptr /*web_state*/, GURL(kTestUrl1));
+  [states_ setContext:std::move(context) forNavigation:navigation3_];
+  EXPECT_EQ(navigation3_, [states_ lastAddedNavigation]);
+  EXPECT_EQ(WKNavigationState::NONE, [states_ lastAddedNavigationState]);
+}
+
+// Tests |setContext:forNavigation:| and |contextForNavigaiton:| methods.
+TEST_F(CRWWKNavigationStatesTest, Context) {
+  EXPECT_FALSE([states_ contextForNavigation:navigation1_]);
+  EXPECT_FALSE([states_ contextForNavigation:navigation2_]);
+  EXPECT_FALSE([states_ contextForNavigation:navigation3_]);
+
+  // Add first context.
+  std::unique_ptr<web::NavigationContextImpl> context1 =
+      NavigationContextImpl::CreateSameDocumentNavigationContext(
+          nullptr /*web_state*/, GURL(kTestUrl1));
+  [states_ setContext:std::move(context1) forNavigation:navigation1_];
+  EXPECT_FALSE([states_ contextForNavigation:navigation2_]);
+  EXPECT_FALSE([states_ contextForNavigation:navigation3_]);
+  ASSERT_TRUE([states_ contextForNavigation:navigation1_]);
+  EXPECT_EQ(GURL(kTestUrl1),
+            [states_ contextForNavigation:navigation1_]->GetUrl());
+  EXPECT_TRUE([states_ contextForNavigation:navigation1_]->IsSameDocument());
+  EXPECT_FALSE([states_ contextForNavigation:navigation1_]->IsErrorPage());
+
+  // Replace existing context.
+  std::unique_ptr<web::NavigationContextImpl> context2 =
+      NavigationContextImpl::CreateErrorPageNavigationContext(
+          nullptr /*web_state*/, GURL(kTestUrl2),
+          nullptr /* response_headers */);
+  [states_ setContext:std::move(context2) forNavigation:navigation1_];
+  EXPECT_FALSE([states_ contextForNavigation:navigation2_]);
+  EXPECT_FALSE([states_ contextForNavigation:navigation3_]);
+  ASSERT_TRUE([states_ contextForNavigation:navigation1_]);
+  EXPECT_EQ(GURL(kTestUrl2),
+            [states_ contextForNavigation:navigation1_]->GetUrl());
+  EXPECT_FALSE([states_ contextForNavigation:navigation1_]->IsSameDocument());
+  EXPECT_TRUE([states_ contextForNavigation:navigation1_]->IsErrorPage());
 }
 
 }  // namespace web
