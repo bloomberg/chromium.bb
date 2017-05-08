@@ -75,9 +75,6 @@ namespace blink {
 // Used by flexible boxes when flexing this element and by table cells.
 typedef WTF::HashMap<const LayoutBox*, LayoutUnit> OverrideSizeMap;
 
-static OverrideSizeMap* g_extra_inline_offset_map = nullptr;
-static OverrideSizeMap* g_extra_block_offset_map = nullptr;
-
 // Size of border belt for autoscroll. When mouse pointer in border belt,
 // autoscroll is started.
 static const int kAutoscrollBeltSize = 20;
@@ -124,7 +121,6 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
 void LayoutBox::WillBeDestroyed() {
   ClearOverrideSize();
   ClearContainingBlockOverrideSize();
-  ClearExtraInlineAndBlockOffests();
 
   if (IsOutOfFlowPositioned())
     LayoutBlock::RemovePositionedObject(this);
@@ -1447,35 +1443,6 @@ void LayoutBox::ClearOverrideContainingBlockContentLogicalHeight() {
     return;
   EnsureRareData().has_override_containing_block_content_logical_height_ =
       false;
-}
-
-LayoutUnit LayoutBox::ExtraInlineOffset() const {
-  return g_extra_inline_offset_map ? g_extra_inline_offset_map->at(this)
-                                   : LayoutUnit();
-}
-
-LayoutUnit LayoutBox::ExtraBlockOffset() const {
-  return g_extra_block_offset_map ? g_extra_block_offset_map->at(this)
-                                  : LayoutUnit();
-}
-
-void LayoutBox::SetExtraInlineOffset(LayoutUnit inline_offest) {
-  if (!g_extra_inline_offset_map)
-    g_extra_inline_offset_map = new OverrideSizeMap;
-  g_extra_inline_offset_map->Set(this, inline_offest);
-}
-
-void LayoutBox::SetExtraBlockOffset(LayoutUnit block_offest) {
-  if (!g_extra_block_offset_map)
-    g_extra_block_offset_map = new OverrideSizeMap;
-  g_extra_block_offset_map->Set(this, block_offest);
-}
-
-void LayoutBox::ClearExtraInlineAndBlockOffests() {
-  if (g_extra_inline_offset_map)
-    g_extra_inline_offset_map->erase(this);
-  if (g_extra_block_offset_map)
-    g_extra_block_offset_map->erase(this);
 }
 
 LayoutUnit LayoutBox::AdjustBorderBoxLogicalWidthForBoxSizing(
@@ -3900,13 +3867,28 @@ void LayoutBox::ComputeInlineStaticDistance(
   if (!logical_left.IsAuto() || !logical_right.IsAuto())
     return;
 
+  LayoutObject* parent = child->Parent();
+  TextDirection parent_direction = parent->Style()->Direction();
+
+  // This method is using EnclosingBox() which is wrong for absolutely
+  // positioned grid items, as they rely on the grid area. So for grid items if
+  // both "left" and "right" properties are "auto", we can consider that one of
+  // them (depending on the direction) is simply "0".
+  if (parent->IsLayoutGrid() && parent == child->ContainingBlock()) {
+    if (parent_direction == TextDirection::kLtr)
+      logical_left.SetValue(kFixed, 0);
+    else
+      logical_right.SetValue(kFixed, 0);
+    return;
+  }
+
   // For multicol we also need to keep track of the block position, since that
   // determines which column we're in and thus affects the inline position.
   LayoutUnit static_block_position = child->Layer()->StaticBlockPosition();
 
   // FIXME: The static distance computation has not been patched for mixed
   // writing modes yet.
-  if (child->Parent()->Style()->Direction() == TextDirection::kLtr) {
+  if (parent_direction == TextDirection::kLtr) {
     LayoutUnit static_position = child->Layer()->StaticInlinePosition() -
                                  container_block->BorderLogicalLeft();
     for (LayoutObject* curr = child->Parent(); curr && curr != container_block;
@@ -4081,9 +4063,6 @@ void LayoutBox::ComputePositionedLogicalWidth(
       computed_values.margins_.end_ = min_values.margins_.end_;
     }
   }
-
-  if (!Style()->HasStaticInlinePosition(is_horizontal))
-    computed_values.position_ += ExtraInlineOffset();
 
   computed_values.extent_ += borders_plus_padding;
 }
@@ -4489,9 +4468,6 @@ void LayoutBox::ComputePositionedLogicalHeight(
       computed_values.margins_.after_ = min_values.margins_.after_;
     }
   }
-
-  if (!Style()->HasStaticBlockPosition(IsHorizontalWritingMode()))
-    computed_values.position_ += ExtraBlockOffset();
 
   // Set final height value.
   computed_values.extent_ += borders_plus_padding;
