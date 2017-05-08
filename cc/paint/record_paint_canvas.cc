@@ -343,10 +343,6 @@ void RecordPaintCanvas::Annotate(AnnotationType type,
   buffer_->push<AnnotateOp>(type, rect, data);
 }
 
-void RecordPaintCanvas::PlaybackPaintRecord(sk_sp<const PaintRecord> record) {
-  drawPicture(record);
-}
-
 const SkNoDrawCanvas* RecordPaintCanvas::GetCanvas() const {
   return const_cast<RecordPaintCanvas*>(this)->GetCanvas();
 }

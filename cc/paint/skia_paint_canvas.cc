@@ -253,10 +253,6 @@ const SkMatrix& SkiaPaintCanvas::getTotalMatrix() const {
   return canvas_->getTotalMatrix();
 }
 
-void SkiaPaintCanvas::PlaybackPaintRecord(sk_sp<const PaintRecord> record) {
-  record->playback(canvas_);
-}
-
 void SkiaPaintCanvas::Annotate(AnnotationType type,
                                const SkRect& rect,
                                sk_sp<SkData> data) {

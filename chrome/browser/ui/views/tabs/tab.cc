@@ -1148,11 +1148,11 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
                       inactive_color, stroke_color);
   }
 
-  canvas->sk_canvas()->PlaybackPaintRecord(cache.fill_record);
+  canvas->sk_canvas()->drawPicture(cache.fill_record);
   gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
   if (clip)
     canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
-  canvas->sk_canvas()->PlaybackPaintRecord(cache.stroke_record);
+  canvas->sk_canvas()->drawPicture(cache.stroke_record);
 }
 
 void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
