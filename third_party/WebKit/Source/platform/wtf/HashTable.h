@@ -52,11 +52,11 @@
   ++probeCount;                                                  \
   HashTableStats::instance().recordCollisionAtCount(probeCount); \
   ++perTableProbeCount;                                          \
-  m_stats->recordCollisionAtCount(perTableProbeCount)
+  stats_->recordCollisionAtCount(perTableProbeCount)
 #define UPDATE_ACCESS_COUNTS()                              \
   atomicIncrement(&HashTableStats::instance().numAccesses); \
   int probeCount = 0;                                       \
-  ++m_stats->numAccesses;                                   \
+  ++stats_->numAccesses;                                    \
   int perTableProbeCount = 0
 #else
 #define UPDATE_PROBE_COUNTS() \
@@ -70,9 +70,9 @@
 #if DUMP_HASHTABLE_STATS_PER_TABLE
 #define UPDATE_PROBE_COUNTS() \
   ++perTableProbeCount;       \
-  m_stats->recordCollisionAtCount(perTableProbeCount)
+  stats_->recordCollisionAtCount(perTableProbeCount)
 #define UPDATE_ACCESS_COUNTS() \
-  ++m_stats->numAccesses;      \
+  ++stats_->numAccesses;       \
   int perTableProbeCount = 0
 #else
 #define UPDATE_PROBE_COUNTS() \
@@ -371,7 +371,7 @@ class HashTableConstIterator final {
   std::ostream& PrintTo(std::ostream& stream) const {
     if (position_ == end_position_)
       return stream << "iterator representing <end>";
-    // TODO(tkent): Change |m_position| to |*m_position| to show the
+    // TODO(tkent): Change |position_| to |*position_| to show the
     // pointed object. It requires a lot of new stream printer functions.
     return stream << "iterator pointing to " << position_;
   }
@@ -905,7 +905,7 @@ class HashTable final
   mutable
       typename std::conditional<Allocator::isGarbageCollected,
                                 HashTableStats*,
-                                std::unique_ptr<HashTableStats>>::type m_stats;
+                                std::unique_ptr<HashTableStats>>::type stats_;
 #endif
 
   template <WeakHandlingFlag x,
@@ -947,7 +947,7 @@ inline HashTable<Key,
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
       ,
-      m_stats(nullptr)
+      stats_(nullptr)
 #endif
 {
   static_assert(Allocator::kIsGarbageCollected ||
@@ -1378,7 +1378,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   atomicIncrement(&HashTableStats::instance().numReinserts);
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  ++m_stats->numReinserts;
+  ++stats_->numReinserts;
 #endif
   Value* new_entry = LookupForWriting(Extractor::Extract(entry)).first;
   Mover<ValueType, Allocator,
@@ -1473,7 +1473,7 @@ void HashTable<Key,
   atomicIncrement(&HashTableStats::instance().numRemoves);
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  ++m_stats->numRemoves;
+  ++stats_->numRemoves;
 #endif
 
   EnterAccessForbiddenScope();
@@ -1708,7 +1708,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   if (oldTableSize != 0)
-    ++m_stats->numRehashes;
+    ++stats_->numRehashes;
 #endif
 
   table_ = new_table;
@@ -1730,8 +1730,8 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   deleted_count_ = 0;
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  if (!m_stats)
-    m_stats = HashTableStatsPtr<Allocator>::create();
+  if (!stats_)
+    stats_ = HashTableStatsPtr<Allocator>::create();
 #endif
 
   return new_entry;
@@ -1757,7 +1757,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
   if (oldTableSize != 0)
-    ++m_stats->numRehashes;
+    ++stats_->numRehashes;
 #endif
 
   // The Allocator::isGarbageCollected check is not needed.  The check is just
@@ -1827,7 +1827,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
       ,
-      m_stats(HashTableStatsPtr<Allocator>::copy(other.m_stats))
+      stats_(HashTableStatsPtr<Allocator>::copy(other.stats_))
 #endif
 {
   if (other.size())
@@ -1860,7 +1860,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
       ,
-      m_stats(HashTableStatsPtr<Allocator>::copy(other.m_stats))
+      stats_(HashTableStatsPtr<Allocator>::copy(other.stats_))
 #endif
 {
   swap(other);
@@ -1896,7 +1896,7 @@ void HashTable<Key,
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  HashTableStatsPtr<Allocator>::swap(m_stats, other.m_stats);
+  HashTableStatsPtr<Allocator>::swap(stats_, other.stats_);
 #endif
 }
 
@@ -2064,7 +2064,7 @@ void HashTable<Key,
                KeyTraits,
                Allocator>::Trace(VisitorDispatcher visitor) {
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-  Allocator::markNoTracing(visitor, m_stats);
+  Allocator::markNoTracing(visitor, stats_);
 #endif
 
   // If someone else already marked the backing and queued up the trace and/or

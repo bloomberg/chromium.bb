@@ -123,7 +123,7 @@ ThreadState::ThreadState()
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
 #if defined(LEAK_SANITIZER)
-      m_disabledStaticPersistentsRegistration(0),
+      disabled_static_persistent_registration_(0),
 #endif
       allocated_object_size_(0),
       marked_object_size_(0),
@@ -1222,7 +1222,7 @@ void ThreadState::RegisterStaticPersistentNode(
     PersistentNode* node,
     PersistentClearCallback callback) {
 #if defined(LEAK_SANITIZER)
-  if (m_disabledStaticPersistentsRegistration)
+  if (disabled_static_persistent_registration_)
     return;
 #endif
 
@@ -1253,12 +1253,12 @@ void ThreadState::FreePersistentNode(PersistentNode* persistent_node) {
 
 #if defined(LEAK_SANITIZER)
 void ThreadState::enterStaticReferenceRegistrationDisabledScope() {
-  m_disabledStaticPersistentsRegistration++;
+  disabled_static_persistent_registration_++;
 }
 
 void ThreadState::leaveStaticReferenceRegistrationDisabledScope() {
-  DCHECK(m_disabledStaticPersistentsRegistration);
-  m_disabledStaticPersistentsRegistration--;
+  DCHECK(disabled_static_persistent_registration_);
+  disabled_static_persistent_registration_--;
 }
 #endif
 

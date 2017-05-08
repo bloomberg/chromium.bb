@@ -602,7 +602,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   }
 
   void AllocateBuffer(size_t new_capacity) {
-    // FIXME: This should DCHECK(!m_buffer) to catch misuse/leaks.
+    // FIXME: This should DCHECK(!buffer_) to catch misuse/leaks.
     if (new_capacity > inlineCapacity)
       Base::AllocateBuffer(new_capacity);
     else
@@ -633,9 +633,9 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   // Further complication comes from the fact that VectorBuffer is also used as
   // the backing store of a Deque.  Deque allocates the objects like a ring
   // buffer, so there may be a "hole" (unallocated region) in the middle of the
-  // buffer. This function assumes elements in a range [m_buffer, m_buffer +
-  // m_size) are all allocated except for elements within |thisHole|. The same
-  // applies for |other.m_buffer| and |otherHole|.
+  // buffer. This function assumes elements in a range [buffer_, buffer_ +
+  // size_) are all allocated except for elements within |thisHole|. The same
+  // applies for |other.buffer_| and |otherHole|.
   void SwapVectorBuffer(VectorBuffer<T, inlineCapacity, Allocator>& other,
                         OffsetRange this_hole,
                         OffsetRange other_hole) {
@@ -872,7 +872,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
 //
 // Vectors may have an _inline buffer_. An inline buffer is a storage area
 // that is contained in the vector itself, along with other metadata like
-// m_size. It is used as a storage space when the vector's elements fit in
+// size_. It is used as a storage space when the vector's elements fit in
 // that space. If the inline buffer becomes full and further space is
 // necessary, an out-of-line buffer is allocated in the heap, and it will
 // take over the role of the inline buffer.
@@ -1751,7 +1751,6 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::UncheckedAppend(
   push_back(std::forward<U>(val));
 #else
   DCHECK_LT(size(), capacity());
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
   new (NotNull, end()) T(std::forward<U>(val));
   ++size_;
 #endif
