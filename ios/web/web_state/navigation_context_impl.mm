@@ -4,44 +4,57 @@
 
 #include "ios/web/web_state/navigation_context_impl.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/memory/ptr_util.h"
 #include "net/http/http_response_headers.h"
 
 namespace web {
 
 // static
-std::unique_ptr<NavigationContext>
+std::unique_ptr<NavigationContextImpl>
 NavigationContextImpl::CreateNavigationContext(
     WebState* web_state,
     const GURL& url,
     const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
-  std::unique_ptr<NavigationContext> resut(
+  std::unique_ptr<NavigationContextImpl> resut(
       new NavigationContextImpl(web_state, url, false /* is_same_document */,
                                 false /* is_error_page */, response_headers));
   return resut;
 }
 
 // static
-std::unique_ptr<NavigationContext>
+std::unique_ptr<NavigationContextImpl>
 NavigationContextImpl::CreateSameDocumentNavigationContext(WebState* web_state,
                                                            const GURL& url) {
-  std::unique_ptr<NavigationContext> result(new NavigationContextImpl(
+  std::unique_ptr<NavigationContextImpl> result(new NavigationContextImpl(
       web_state, url, true /* is_same_document */, false /* is_error_page */,
       nullptr /* response_headers */));
   return result;
 }
 
 // static
-std::unique_ptr<NavigationContext>
+std::unique_ptr<NavigationContextImpl>
 NavigationContextImpl::CreateErrorPageNavigationContext(
     WebState* web_state,
     const GURL& url,
     const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
-  std::unique_ptr<NavigationContext> result(
+  std::unique_ptr<NavigationContextImpl> result(
       new NavigationContextImpl(web_state, url, false /* is_same_document */,
                                 true /* is_error_page */, response_headers));
   return result;
 }
+
+#ifndef NDEBUG
+NSString* NavigationContextImpl::GetDescription() const {
+  return [NSString stringWithFormat:@"web::WebState: %ld, url: %s, "
+                                     "is_same_document: %@, is_error_page_: %@",
+                                    reinterpret_cast<long>(web_state_),
+                                    url_.spec().c_str(),
+                                    is_same_document_ ? @"true" : @"false",
+                                    is_error_page_ ? @"true" : @"false"];
+}
+#endif  // NDEBUG
 
 WebState* NavigationContextImpl::GetWebState() {
   return web_state_;

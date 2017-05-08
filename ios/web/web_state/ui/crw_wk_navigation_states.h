@@ -5,10 +5,14 @@
 #ifndef IOS_WEB_WEB_STATE_UI_CRW_WK_NAVIGATION_STATES_H_
 #define IOS_WEB_WEB_STATE_UI_CRW_WK_NAVIGATION_STATES_H_
 
+#include <memory>
+
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
 namespace web {
+
+class NavigationContextImpl;
 
 // State of in-flight WKNavigation objects.
 enum class WKNavigationState : int {
@@ -36,15 +40,15 @@ enum class WKNavigationState : int {
 
 }  // namespace web
 
-// Stores states for WKNavigation objects. Allows lookign up for last added
-// navigation object.
+// Stores states and navigation contexts for WKNavigation objects.
+// Allows looking up for last added navigation object.
 @interface CRWWKNavigationStates : NSObject
 
 // Adds a new navigation if it was not added yet. If navigation was already
 // added then updates state for existing navigation. Updating state does not
 // affect the result of |lastAddedNavigation| method. New added navigations
 // should have WKNavigationState::REQUESTED, WKNavigationState::STARTED or
-// WKNavigationState::COMMITTED state. Passed |navigation| will be help as weak
+// WKNavigationState::COMMITTED state. |navigation| will be held as a weak
 // reference and will not be retained. No-op if |navigation| is null.
 - (void)setState:(web::WKNavigationState)state
     forNavigation:(WKNavigation*)navigation;
@@ -52,6 +56,17 @@ enum class WKNavigationState : int {
 // Removes given |navigation|. Fails if |navigation| does not exist. No-op if
 // |navigation| is null.
 - (void)removeNavigation:(WKNavigation*)navigation;
+
+// Adds a new navigation if it was not added yet. If navigation was already
+// added then updates context for existing navigation. Updating context does not
+// affect the result of |lastAddedNavigation| method. |navigation| will be held
+// as a weak reference and will not be retained. No-op if |navigation| is null.
+- (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context
+     forNavigation:(WKNavigation*)navigation;
+
+// Returns context if one was previously associated with given |navigation|.
+// Returns null if |navigation| is null.
+- (web::NavigationContextImpl*)contextForNavigation:(WKNavigation*)navigation;
 
 // WKNavigation which was added the most recently via |setState:forNavigation:|.
 // Updating navigation state via |setState:forNavigation:| does not change the

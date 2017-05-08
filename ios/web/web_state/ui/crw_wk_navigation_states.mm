@@ -5,13 +5,17 @@
 #import "ios/web/web_state/ui/crw_wk_navigation_states.h"
 
 #include "base/logging.h"
+#include "ios/web/web_state/navigation_context_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 // Holds a pair of state and creation order index.
-@interface CRWWKNavigationsStateRecord : NSObject
+@interface CRWWKNavigationsStateRecord : NSObject {
+  // Backs up |context| property.
+  std::unique_ptr<web::NavigationContextImpl> _context;
+}
 // Navigation state.
 @property(nonatomic, assign) web::WKNavigationState state;
 // Numerical index representing creation order (smaller index denotes earlier
@@ -24,16 +28,28 @@
 - (instancetype)initWithState:(web::WKNavigationState)state
                         index:(NSUInteger)index NS_DESIGNATED_INITIALIZER;
 
+// Initializes record with context and index values.
+- (instancetype)initWithContext:
+                    (std::unique_ptr<web::NavigationContextImpl>)context
+                          index:(NSUInteger)index NS_DESIGNATED_INITIALIZER;
+
+// web::NavigationContextImpl for this navigation.
+- (web::NavigationContextImpl*)context;
+- (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context;
+
 @end
 
 @implementation CRWWKNavigationsStateRecord
 @synthesize state = _state;
 @synthesize index = _index;
 
+#ifndef NDEBUG
 - (NSString*)description {
-  return [NSString stringWithFormat:@"state: %d, index: %ld", _state,
-                                    static_cast<long>(_index)];
+  return [NSString stringWithFormat:@"state: %d, index: %ld, context: %@",
+                                    _state, static_cast<long>(_index),
+                                    _context->GetDescription()];
 }
+#endif  // NDEBUG
 
 - (instancetype)initWithState:(web::WKNavigationState)state
                         index:(NSUInteger)index {
@@ -42,6 +58,24 @@
     _index = index;
   }
   return self;
+}
+
+- (instancetype)initWithContext:
+                    (std::unique_ptr<web::NavigationContextImpl>)context
+                          index:(NSUInteger)index {
+  if ((self = [super init])) {
+    _context = std::move(context);
+    _index = index;
+  }
+  return self;
+}
+
+- (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context {
+  _context = std::move(context);
+}
+
+- (web::NavigationContextImpl*)context {
+  return _context.get();
 }
 
 @end
@@ -98,6 +132,32 @@
 
   DCHECK([_records objectForKey:navigation]);
   [_records removeObjectForKey:navigation];
+}
+
+- (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context
+     forNavigation:(WKNavigation*)navigation {
+  if (!navigation) {
+    // WKWebView may call WKNavigationDelegate callbacks with nil.
+    return;
+  }
+  CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+  if (!record) {
+    record =
+        [[CRWWKNavigationsStateRecord alloc] initWithContext:std::move(context)
+                                                       index:++_lastStateIndex];
+  } else {
+    [record setContext:std::move(context)];
+  }
+  [_records setObject:record forKey:navigation];
+}
+
+- (web::NavigationContextImpl*)contextForNavigation:(WKNavigation*)navigation {
+  if (!navigation) {
+    // WKWebView may call WKNavigationDelegate callbacks with nil.
+    return nullptr;
+  }
+  CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+  return [record context];
 }
 
 - (WKNavigation*)lastAddedNavigation {

@@ -18,21 +18,26 @@ namespace web {
 class NavigationContextImpl : public NavigationContext {
  public:
   // Creates navigation context for sucessful navigation to a different page.
-  static std::unique_ptr<NavigationContext> CreateNavigationContext(
+  static std::unique_ptr<NavigationContextImpl> CreateNavigationContext(
       WebState* web_state,
       const GURL& url,
       const scoped_refptr<net::HttpResponseHeaders>& response_headers);
 
   // Creates navigation context for sucessful same page navigation.
-  static std::unique_ptr<NavigationContext> CreateSameDocumentNavigationContext(
-      WebState* web_state,
-      const GURL& url);
+  static std::unique_ptr<NavigationContextImpl>
+  CreateSameDocumentNavigationContext(WebState* web_state, const GURL& url);
 
   // Creates navigation context for the error page navigation.
-  static std::unique_ptr<NavigationContext> CreateErrorPageNavigationContext(
+  static std::unique_ptr<NavigationContextImpl>
+  CreateErrorPageNavigationContext(
       WebState* web_state,
       const GURL& url,
       const scoped_refptr<net::HttpResponseHeaders>& response_headers);
+
+#ifndef NDEBUG
+  // Returns human readable description of this object.
+  NSString* GetDescription() const;
+#endif  // NDEBUG
 
   // NavigationContext overrides:
   WebState* GetWebState() override;
@@ -40,6 +45,7 @@ class NavigationContextImpl : public NavigationContext {
   bool IsSameDocument() const override;
   bool IsErrorPage() const override;
   net::HttpResponseHeaders* GetResponseHeaders() const override;
+  ~NavigationContextImpl() override;
 
  private:
   NavigationContextImpl(
@@ -48,7 +54,6 @@ class NavigationContextImpl : public NavigationContext {
       bool is_same_page,
       bool is_error_page,
       const scoped_refptr<net::HttpResponseHeaders>& response_headers);
-  ~NavigationContextImpl() override;
 
   WebState* web_state_ = nullptr;
   GURL url_;
