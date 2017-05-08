@@ -11,11 +11,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
-#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 class GURL;
@@ -26,8 +24,8 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
-class WebContents;
-}  // namespace content
+class SiteInstance;
+}
 
 namespace guest_view {
 
@@ -54,9 +52,8 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
-  static void set_factory_for_testing(GuestViewManagerFactory* factory) {
-    GuestViewManager::factory_ = factory;
-  }
+  static void set_factory_for_testing(GuestViewManagerFactory* factory);
+
   // Returns the guest WebContents associated with the given |guest_instance_id|
   // if the provided |embedder_render_process_id| is allowed to access it.
   // If the embedder is not allowed access, the embedder will be killed, and
@@ -204,9 +201,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   static bool GetFullPageGuestHelper(content::WebContents** result,
                                      content::WebContents* guest_web_contents);
 
-  // Static factory instance (always NULL for non-test).
-  static GuestViewManagerFactory* factory_;
-
   // Contains guests' WebContents, mapping from their instance ids.
   using GuestInstanceMap = std::map<int, content::WebContents*>;
   GuestInstanceMap guest_web_contents_by_instance_id_;
@@ -256,7 +250,7 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   // |last_instance_id_removed_| are kept here.
   std::set<int> removed_instance_ids_;
 
-  content::BrowserContext* context_;
+  content::BrowserContext* const context_;
 
   std::unique_ptr<GuestViewManagerDelegate> delegate_;
 
