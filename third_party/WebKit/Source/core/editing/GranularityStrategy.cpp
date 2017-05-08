@@ -69,7 +69,7 @@ SelectionInDOMTree CharacterGranularityStrategy::UpdateExtent(
   const VisiblePosition& extent_position =
       VisiblePositionForContentsPoint(extent_point, frame);
   const VisibleSelection& selection =
-      frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+      frame->Selection().ComputeVisibleSelectionInDOMTree();
   if (extent_position.IsNull() || selection.VisibleBase().DeepEquivalent() ==
                                       extent_position.DeepEquivalent())
     return selection.AsSelection();
@@ -102,7 +102,7 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
     const IntPoint& extent_point,
     LocalFrame* frame) {
   const VisibleSelection& selection =
-      frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+      frame->Selection().ComputeVisibleSelectionInDOMTree();
 
   if (state_ == StrategyState::kCleared)
     state_ = StrategyState::kExpanding;

@@ -1106,7 +1106,7 @@ GranularityStrategy* FrameSelection::GetGranularityStrategy() {
 }
 
 void FrameSelection::MoveRangeSelectionExtent(const IntPoint& contents_point) {
-  if (ComputeVisibleSelectionInDOMTreeDeprecated().IsNone())
+  if (ComputeVisibleSelectionInDOMTree().IsNone())
     return;
 
   const SetSelectionOptions kOptions =
