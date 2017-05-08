@@ -50,7 +50,8 @@ external/wpt/conformance-checkers [ Skip ]
 ## Owners: mkwst@chromium.org
 # external/wpt/content-security-policy [ Pass ]
 external/wpt/cookies [ Skip ]
-external/wpt/cors [ Skip ]
+## Owners: blink-network-dev@chromium.org
+# external/wpt/cors [ Pass ]
 ## Owners: kojii@chromium.org,ksakamoto@chromium.org
 # external/wpt/css-font-loading [ Pass ]
 external/wpt/css/CSS1 [ Skip ]
@@ -257,7 +258,8 @@ external/wpt/dpub-aria [ Skip ]
 ## Owners: jrummell@chromium.org
 # external/wpt/encrypted-media [ Pass ]
 external/wpt/encrypted-media/Google [ Skip ]
-external/wpt/eventsource [ Skip ]
+## Owners: blink-network-dev@chromium.org
+# external/wpt/eventsource [ Pass ]
 external/wpt/ext-xhtml-pubid [ Skip ]
 ## Owners: tyoshino@chromium.org,yhirano@chromium.org,mkwst@chromium.org,japhet@chromium.org
 # external/wpt/fetch [ Pass ]
@@ -326,7 +328,8 @@ external/wpt/performance-timeline [ Skip ]
 ## Owners: chongz@chromium.org
 # external/wpt/pointerlock [ Pass ]
 external/wpt/presentation-api [ Skip ]
-external/wpt/progress-events [ Skip ]
+## Owners: blink-network-dev@chromium.org
+# external/wpt/progress-events [ Pass ]
 external/wpt/proximity [ Skip ]
 ## Owners: rob.buis@samsung.com
 # external/wpt/quirks-mode [ Pass ]
@@ -371,7 +374,8 @@ external/wpt/tools [ Skip ]
 # external/wpt/touch-events [ Pass ]
 ## Owners: dtapuska@chromium.org
 # external/wpt/uievents [ Pass ]
-external/wpt/url [ Skip ]
+## Owners: blink-network-dev@chromium.org
+# external/wpt/url [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/user-timing [ Pass ]
 ## Owners: platform-capabilities@chromium.org
@@ -391,7 +395,8 @@ external/wpt/webgl [ Skip ]
 # external/wpt/webmessaging [ Pass ]
 ## Owners: hta@chromium.org
 # external/wpt/webrtc [ Pass ]
-external/wpt/websockets [ Skip ]
+## Owners: blink-network-dev@chromium.org
+# external/wpt/websockets [ Pass ]
 ## Owners: michaeln@chromium.org,jsbell@chromium.org
 # external/wpt/webstorage [ Pass ]
 ## Owners: foolip@chromium.org,maksim.sisov@intel.com
