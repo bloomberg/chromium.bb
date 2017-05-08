@@ -165,13 +165,13 @@
 	Specify the anchor rectangle within the parent surface that the child
 	surface will be placed relative to. The rectangle is relative to the
 	window geometry as defined by xdg_surface.set_window_geometry of the
-	parent surface. The rectangle must be at least 1x1 large.
+	parent surface.
 
 	When the xdg_positioner object is used to position a child surface, the
 	anchor rectangle may not extend outside the window geometry of the
 	positioned child's parent surface.
 
-	If a zero or negative size is set the invalid_input error is raised.
+	If a negative size is set the invalid_input error is raised.
       </description>
       <arg name="x" type="int" summary="x position of anchor rectangle"/>
       <arg name="y" type="int" summary="y position of anchor rectangle"/>
