@@ -18,10 +18,10 @@
 // been executed. In case of successful request, the passed error is nil.
 // The |completionHandler| must not be null. The |messageRouter| and |webView|
 // must not be nil. The |request| must be a POST request.
-- (void)loadPOSTRequest:(NSURLRequest*)request
-              inWebView:(WKWebView*)webView
-          messageRouter:(CRWWKScriptMessageRouter*)messageRouter
-      completionHandler:(void (^)(NSError*))completionHandler;
+- (WKNavigation*)loadPOSTRequest:(NSURLRequest*)request
+                       inWebView:(WKWebView*)webView
+                   messageRouter:(CRWWKScriptMessageRouter*)messageRouter
+               completionHandler:(void (^)(NSError*))completionHandler;
 
 @end
 
