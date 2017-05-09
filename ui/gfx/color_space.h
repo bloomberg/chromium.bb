@@ -123,15 +123,6 @@ class GFX_EXPORT ColorSpace {
   ColorSpace& operator=(const ColorSpace& other);
   ~ColorSpace();
 
-  // Create a color space with primary, transfer and matrix values from the
-  // H264 specification (Table E-3 Colour Primaries, E-4 Transfer
-  // Characteristics, and E-5 Matrix Coefficients in
-  // https://www.itu.int/rec/T-REC-H.264/en).
-  static ColorSpace CreateVideo(int h264_primary,
-                                int h264_transfer,
-                                int h264_matrix,
-                                RangeID range_id);
-
   // Returns true if this is not the default-constructor object.
   bool IsValid() const;
 

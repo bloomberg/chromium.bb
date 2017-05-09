@@ -54,10 +54,138 @@ bool VideoColorSpace::operator!=(const VideoColorSpace& other) const {
 }
 
 gfx::ColorSpace VideoColorSpace::ToGfxColorSpace() const {
-  // TODO(hubbe): Make this type-safe.
-  return gfx::ColorSpace::CreateVideo(static_cast<int>(primaries),
-                                      static_cast<int>(transfer),
-                                      static_cast<int>(matrix), range);
+  gfx::ColorSpace::PrimaryID primary_id = gfx::ColorSpace::PrimaryID::INVALID;
+  gfx::ColorSpace::TransferID transfer_id =
+      gfx::ColorSpace::TransferID::INVALID;
+  gfx::ColorSpace::MatrixID matrix_id = gfx::ColorSpace::MatrixID::INVALID;
+
+  switch (primaries) {
+    case PrimaryID::INVALID:
+    case PrimaryID::BT709:
+    case PrimaryID::UNSPECIFIED:
+      primary_id = gfx::ColorSpace::PrimaryID::BT709;
+      break;
+    case PrimaryID::BT470M:
+      primary_id = gfx::ColorSpace::PrimaryID::BT470M;
+      break;
+    case PrimaryID::BT470BG:
+      primary_id = gfx::ColorSpace::PrimaryID::BT470BG;
+      break;
+    case PrimaryID::SMPTE170M:
+      primary_id = gfx::ColorSpace::PrimaryID::SMPTE170M;
+      break;
+    case PrimaryID::SMPTE240M:
+      primary_id = gfx::ColorSpace::PrimaryID::SMPTE240M;
+      break;
+    case PrimaryID::FILM:
+      primary_id = gfx::ColorSpace::PrimaryID::FILM;
+      break;
+    case PrimaryID::BT2020:
+      primary_id = gfx::ColorSpace::PrimaryID::BT2020;
+      break;
+    case PrimaryID::SMPTEST428_1:
+      primary_id = gfx::ColorSpace::PrimaryID::SMPTEST428_1;
+      break;
+    case PrimaryID::SMPTEST431_2:
+      primary_id = gfx::ColorSpace::PrimaryID::SMPTEST431_2;
+      break;
+    case PrimaryID::SMPTEST432_1:
+      primary_id = gfx::ColorSpace::PrimaryID::SMPTEST432_1;
+    case PrimaryID::EBU_3213_E:
+      // TODO(uzair.jaleel) Need to check this once.
+      primary_id = gfx::ColorSpace::PrimaryID::INVALID;
+      break;
+  }
+
+  switch (transfer) {
+    case TransferID::INVALID:
+    case TransferID::BT709:
+    case TransferID::UNSPECIFIED:
+      transfer_id = gfx::ColorSpace::TransferID::BT709;
+      break;
+    case TransferID::GAMMA22:
+      transfer_id = gfx::ColorSpace::TransferID::GAMMA22;
+      break;
+    case TransferID::GAMMA28:
+      transfer_id = gfx::ColorSpace::TransferID::GAMMA28;
+      break;
+    case TransferID::SMPTE170M:
+      transfer_id = gfx::ColorSpace::TransferID::SMPTE170M;
+      break;
+    case TransferID::SMPTE240M:
+      transfer_id = gfx::ColorSpace::TransferID::SMPTE240M;
+      break;
+    case TransferID::LINEAR:
+      transfer_id = gfx::ColorSpace::TransferID::LINEAR;
+      break;
+    case TransferID::LOG:
+      transfer_id = gfx::ColorSpace::TransferID::LOG;
+      break;
+    case TransferID::LOG_SQRT:
+      transfer_id = gfx::ColorSpace::TransferID::LOG_SQRT;
+      break;
+    case TransferID::IEC61966_2_4:
+      transfer_id = gfx::ColorSpace::TransferID::IEC61966_2_4;
+      break;
+    case TransferID::BT1361_ECG:
+      transfer_id = gfx::ColorSpace::TransferID::BT1361_ECG;
+      break;
+    case TransferID::IEC61966_2_1:
+      transfer_id = gfx::ColorSpace::TransferID::IEC61966_2_1;
+      break;
+    case TransferID::BT2020_10:
+      transfer_id = gfx::ColorSpace::TransferID::BT2020_10;
+      break;
+    case TransferID::BT2020_12:
+      transfer_id = gfx::ColorSpace::TransferID::BT2020_12;
+      break;
+    case TransferID::SMPTEST2084:
+      transfer_id = gfx::ColorSpace::TransferID::SMPTEST2084;
+      break;
+    case TransferID::SMPTEST428_1:
+      transfer_id = gfx::ColorSpace::TransferID::SMPTEST428_1;
+      break;
+    case TransferID::ARIB_STD_B67:
+      transfer_id = gfx::ColorSpace::TransferID::ARIB_STD_B67;
+      break;
+  }
+
+  switch (matrix) {
+    case MatrixID::RGB:
+      matrix_id = gfx::ColorSpace::MatrixID::RGB;
+      break;
+    case MatrixID::INVALID:
+    case MatrixID::BT709:
+    case MatrixID::UNSPECIFIED:
+      matrix_id = gfx::ColorSpace::MatrixID::BT709;
+      break;
+    case MatrixID::FCC:
+      matrix_id = gfx::ColorSpace::MatrixID::FCC;
+      break;
+    case MatrixID::BT470BG:
+      matrix_id = gfx::ColorSpace::MatrixID::BT470BG;
+      break;
+    case MatrixID::SMPTE170M:
+      matrix_id = gfx::ColorSpace::MatrixID::SMPTE170M;
+      break;
+    case MatrixID::SMPTE240M:
+      matrix_id = gfx::ColorSpace::MatrixID::SMPTE240M;
+      break;
+    case MatrixID::YCOCG:
+      matrix_id = gfx::ColorSpace::MatrixID::YCOCG;
+      break;
+    case MatrixID::BT2020_NCL:
+      matrix_id = gfx::ColorSpace::MatrixID::BT2020_NCL;
+      break;
+    case MatrixID::BT2020_CL:
+      matrix_id = gfx::ColorSpace::MatrixID::BT2020_CL;
+      break;
+    case MatrixID::YDZDX:
+      matrix_id = gfx::ColorSpace::MatrixID::YDZDX;
+      break;
+  }
+
+  return gfx::ColorSpace(primary_id, transfer_id, matrix_id, range);
 }
 
 VideoColorSpace VideoColorSpace::REC709() {

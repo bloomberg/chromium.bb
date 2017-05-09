@@ -311,33 +311,6 @@ TEST(SimpleColorSpace, GetColorSpace) {
   EXPECT_NEAR(tmp.z(), 1.0f, kEpsilon);
 }
 
-TEST(SimpleColorSpace, UnknownVideoToSRGB) {
-  // Invalid video spaces should be BT709.
-  ColorSpace unknown = gfx::ColorSpace::CreateVideo(
-      -1, -1, -1, gfx::ColorSpace::RangeID::LIMITED);
-  ColorSpace sRGB = ColorSpace::CreateSRGB();
-  std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
-      unknown, sRGB, ColorTransform::Intent::INTENT_PERCEPTUAL));
-
-  ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
-  t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 0.0f, 0.001f);
-
-  tmp = ColorTransform::TriStim(235.0f / 255.0f, 0.5f, 0.5f);
-  t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 1.0f, 0.001f);
-
-  // Test a blue color
-  tmp = ColorTransform::TriStim(128.0f / 255.0f, 240.0f / 255.0f, 0.5f);
-  t->Transform(&tmp, 1);
-  EXPECT_GT(tmp.z(), tmp.x());
-  EXPECT_GT(tmp.z(), tmp.y());
-}
-
 TEST(SimpleColorSpace, ToUndefined) {
   ColorSpace null;
   ColorSpace nonnull = gfx::ColorSpace::CreateSRGB();
