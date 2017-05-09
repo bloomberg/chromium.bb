@@ -16,6 +16,9 @@ include(FindwxWidgets)
 set(AOM_SUPPORTED_CPU_TARGETS
     "arm64 armv7 armv7s generic mips32 mips64 x86 x86_64")
 
+option(ENABLE_CCACHE "Enable ccache support" OFF)
+option(ENABLE_DISTCC "Enable distcc support" OFF)
+
 # Generate the user config settings. This must occur before include of
 # aom_config_defaults.cmake (because it turns every config variable into a cache
 # variable with its own help string).
@@ -114,6 +117,26 @@ elseif ("${AOM_TARGET_CPU}" MATCHES "arm")
 endif ()
 
 include("${AOM_ROOT}/build/cmake/cpu.cmake")
+
+if (ENABLE_CCACHE)
+  find_program(CCACHE "ccache")
+  if (NOT "${CCACHE}" STREQUAL "")
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE}")
+  else ()
+    message("--- Cannot find ccache, ENABLE_CCACHE ignored.")
+  endif ()
+endif ()
+
+if (ENABLE_DISTCC)
+  find_program(DISTCC "distcc")
+  if (NOT "${DISTCC}" STREQUAL "")
+    set(CMAKE_C_COMPILER_LAUNCHER "${DISTCC}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${DISTCC}")
+  else ()
+    message("--- Cannot find distcc, ENABLE_DISTCC ignored.")
+  endif ()
+endif ()
 
 # Test compiler flags.
 if (MSVC)
