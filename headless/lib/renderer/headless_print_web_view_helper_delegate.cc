@@ -32,7 +32,7 @@ bool HeadlessPrintWebViewHelperDelegate::OverridePrint(
 }
 
 bool HeadlessPrintWebViewHelperDelegate::IsAskPrintSettingsEnabled() {
-  return false;
+  return true;
 }
 
 #if defined(OS_MACOSX)

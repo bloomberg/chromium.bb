@@ -31,7 +31,10 @@ grit("components_resources") {
     "-E",
     "about_credits_file=" + rebase_path(about_credits_file_bro, root_build_dir),
   ]
-  defines = [ "enable_print_preview=$enable_print_preview" ]
+  defines = [
+    "enable_basic_printing=$enable_basic_printing",
+    "enable_print_preview=$enable_print_preview",
+  ]
 
   deps = [
     ":compressed_about_credits",

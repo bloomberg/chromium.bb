@@ -30,8 +30,8 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   CHECK(metafile.Init());
 
   for (size_t i = 0; i < printed_pages.size(); ++i) {
-    PrintPageInternal(params.params, printed_pages[i], frame, &metafile,
-                      &page_size_in_dpi[i], &content_area_in_dpi[i],
+    PrintPageInternal(params.params, printed_pages[i], page_count, frame,
+                      &metafile, &page_size_in_dpi[i], &content_area_in_dpi[i],
                       &printable_area_in_dpi[i]);
   }
 

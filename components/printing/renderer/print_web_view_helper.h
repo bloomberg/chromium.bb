@@ -293,10 +293,12 @@ class PrintWebViewHelper
 #if defined(OS_MACOSX)
   void PrintPagesInternal(const PrintMsg_Print_Params& params,
                           const std::vector<int>& printed_pages,
+                          int page_count,
                           blink::WebLocalFrame* frame);
 #else
   void PrintPageInternal(const PrintMsg_Print_Params& params,
                          int page_number,
+                         int page_count,
                          blink::WebLocalFrame* frame,
                          PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
@@ -308,6 +310,7 @@ class PrintWebViewHelper
 #if defined(OS_MACOSX)
   void RenderPage(const PrintMsg_Print_Params& params,
                   int page_number,
+                  int page_count,
                   blink::WebLocalFrame* frame,
                   bool is_preview,
                   PdfMetafileSkia* metafile,
@@ -346,9 +349,8 @@ class PrintWebViewHelper
       const PrintMsg_PrintPages_Params& params,
       int page_count);
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  // Given the |device| and |canvas| to draw on, prints the appropriate headers
-  // and footers using strings from |header_footer_info| on to the canvas.
+  // Given the |canvas| to draw on, prints the appropriate headers and footers
+  // to |canvas| using information from the remaining parameters.
   static void PrintHeaderAndFooter(blink::WebCanvas* canvas,
                                    int page_number,
                                    int total_pages,
@@ -356,7 +358,6 @@ class PrintWebViewHelper
                                    float webkit_scale_factor,
                                    const PageSizeMargins& page_layout_in_points,
                                    const PrintMsg_Print_Params& params);
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Script Initiated Printing ------------------------------------------------
 

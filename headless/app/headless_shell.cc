@@ -361,7 +361,10 @@ void HeadlessShell::OnScreenshotCaptured(
 
 void HeadlessShell::PrintToPDF() {
   devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
-      page::PrintToPDFParams::Builder().Build(),
+      page::PrintToPDFParams::Builder()
+          .SetDisplayHeaderFooter(true)
+          .SetPrintBackground(true)
+          .Build(),
       base::Bind(&HeadlessShell::OnPDFCreated, weak_factory_.GetWeakPtr()));
 }
 
