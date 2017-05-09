@@ -4,14 +4,18 @@
 
 #include "components/sync/model_impl/model_type_store_impl.h"
 
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model_impl/model_type_store_backend.h"
@@ -49,6 +53,41 @@ std::string FormatMetaPrefix(ModelType type) {
 std::string FormatGlobalMetadataKey(ModelType type) {
   return std::string(GetModelTypeRootTag(type)) + kGlobalMetadataKey;
 }
+
+// Holds a one to one mapping between profile path and SequencedTaskRunner. This
+// class is expected to be accessed on any thread, and uses a lock to guarantee
+// thread safety. The task runners are held onto by scoped_refptrs, and since
+// this class is leaky, none of these task runners are ever destroyed.
+class TaskRunnerMap {
+ public:
+  TaskRunnerMap() = default;
+
+  scoped_refptr<base::SequencedTaskRunner> GetOrCreateTaskRunner(
+      const std::string& path) {
+    base::AutoLock scoped_lock(lock_);
+    auto iter = task_runner_map_.find(path);
+    if (iter == task_runner_map_.end()) {
+      scoped_refptr<base::SequencedTaskRunner> task_runner =
+          CreateSequencedTaskRunnerWithTraits(
+              base::TaskTraits().MayBlock().WithShutdownBehavior(
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
+      task_runner_map_[path] = task_runner;
+      return task_runner;
+    } else {
+      return iter->second;
+    }
+  }
+
+ private:
+  mutable base::Lock lock_;
+  std::map<std::string, scoped_refptr<base::SequencedTaskRunner>>
+      task_runner_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskRunnerMap);
+};
+
+base::LazyInstance<TaskRunnerMap>::Leaky task_runner_map_singleton_ =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -90,19 +129,17 @@ ModelTypeStoreImpl::~ModelTypeStoreImpl() {
 void ModelTypeStoreImpl::CreateStore(
     ModelType type,
     const std::string& path,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback) {
   DCHECK(!callback.is_null());
   std::unique_ptr<leveldb::Env> env;
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      task_runner_map_singleton_.Get().GetOrCreateTaskRunner(path);
   std::unique_ptr<Result> result(new Result());
   auto task = base::Bind(&ModelTypeStoreBackend::GetOrCreateBackend, path,
                          base::Passed(&env), result.get());
-  auto reply =
-      base::Bind(&ModelTypeStoreImpl::BackendInitDone, type,
-                 base::Passed(&result), blocking_task_runner, callback);
-
-  base::PostTaskAndReplyWithResult(blocking_task_runner.get(), FROM_HERE, task,
-                                   reply);
+  auto reply = base::Bind(&ModelTypeStoreImpl::BackendInitDone, type,
+                          base::Passed(&result), task_runner, callback);
+  base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE, task, reply);
 }
 
 // static
