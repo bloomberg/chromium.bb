@@ -361,7 +361,7 @@ Node* CSSComputedStyleDeclaration::StyledNode() const {
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     AtomicString custom_property_name) const {
-  Node* styled_node = this->StyledNode();
+  Node* styled_node = StyledNode();
   if (!styled_node)
     return nullptr;
 
@@ -370,9 +370,11 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   const ComputedStyle* style = ComputeComputedStyle();
   if (!style)
     return nullptr;
+  // Don't use styled_node in case it was discarded or replaced in
+  // UpdateStyleAndLayoutTreeForNode.
   return ComputedStyleCSSValueMapping::Get(
       custom_property_name, *style,
-      styled_node->GetDocument().GetPropertyRegistry());
+      StyledNode()->GetDocument().GetPropertyRegistry());
 }
 
 std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>>
@@ -385,7 +387,7 @@ CSSComputedStyleDeclaration::GetVariables() const {
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     CSSPropertyID property_id) const {
-  Node* styled_node = this->StyledNode();
+  Node* styled_node = StyledNode();
   if (!styled_node)
     return nullptr;
 
@@ -394,7 +396,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
 
   // The style recalc could have caused the styled node to be discarded or
   // replaced if it was a PseudoElement so we need to update it.
-  styled_node = this->StyledNode();
+  styled_node = StyledNode();
   LayoutObject* layout_object = styled_node->GetLayoutObject();
 
   const ComputedStyle* style = ComputeComputedStyle();
@@ -407,7 +409,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
 
   if (force_full_layout) {
     document.UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(styled_node);
-    styled_node = this->StyledNode();
+    styled_node = StyledNode();
     style = ComputeComputedStyle();
     layout_object = styled_node->GetLayoutObject();
   }
