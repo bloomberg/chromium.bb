@@ -100,12 +100,12 @@ size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
   }
   if (frames_requested > fifo_length_) {
     LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << static_cast<void*>(this)
-                 << ">] framesRequested > m_fifoLength (" << frames_requested
+                 << ">] framesRequested > fifo_length_ (" << frames_requested
                  << " > " << fifo_length_ << ")";
   }
   if (index_read_ >= fifo_length_) {
     LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << static_cast<void*>(this)
-                 << ">] m_indexRead >= m_fifoLength (" << index_read_
+                 << ">] index_read_ >= fifo_length_ (" << index_read_
                  << " >= " << fifo_length_ << ")";
   }
 #endif

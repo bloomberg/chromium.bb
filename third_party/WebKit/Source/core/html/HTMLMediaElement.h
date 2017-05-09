@@ -661,7 +661,7 @@ class CORE_EXPORT HTMLMediaElement
   HeapVector<Member<ScriptPromiseResolver>> play_promise_reject_list_;
   ExceptionCode play_promise_error_code_;
 
-  // This is a weak reference, since m_audioSourceNode holds a reference to us.
+  // This is a weak reference, since audio_source_node_ holds a reference to us.
   // TODO(Oilpan): Consider making this a strongly traced pointer with oilpan
   // where strong cycles are not a problem.
   GC_PLUGIN_IGNORE("http://crbug.com/404577")

@@ -525,9 +525,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
 HTMLMediaElement::~HTMLMediaElement() {
   BLINK_MEDIA_LOG << "~HTMLMediaElement(" << (void*)this << ")";
 
-  // m_audioSourceNode is explicitly cleared by AudioNode::dispose().
+  // audio_source_node_ is explicitly cleared by AudioNode::dispose().
   // Since AudioNode::dispose() is guaranteed to be always called before
-  // the AudioNode is destructed, m_audioSourceNode is explicitly cleared
+  // the AudioNode is destructed, audio_source_node_ is explicitly cleared
   // even if the AudioNode and the HTMLMediaElement die together.
   DCHECK(!audio_source_node_);
 }
@@ -568,11 +568,11 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   if (should_delay_load_event_) {
     GetDocument().IncrementLoadEventDelayCount();
     // Note: Keeping the load event delay count increment on oldDocument that
-    // was added when m_shouldDelayLoadEvent was set so that destruction of
-    // m_webMediaPlayer can not cause load event dispatching in oldDocument.
+    // was added when should_delay_load_event_ was set so that destruction of
+    // web_media_player_ can not cause load event dispatching in oldDocument.
   } else {
     // Incrementing the load event delay count so that destruction of
-    // m_webMediaPlayer can not cause load event dispatching in oldDocument.
+    // web_media_player_ can not cause load event dispatching in oldDocument.
     old_document.IncrementLoadEventDelayCount();
   }
 
@@ -589,7 +589,7 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   InvokeLoadAlgorithm();
 
   // Decrement the load event delay count on oldDocument now that
-  // m_webMediaPlayer has been destroyed and there is no risk of dispatching a
+  // web_media_player_ has been destroyed and there is no risk of dispatching a
   // load event from within the destructor.
   old_document.DecrementLoadEventDelayCount();
 
@@ -735,7 +735,7 @@ void HTMLMediaElement::ScheduleEvent(const AtomicString& event_name) {
 
 void HTMLMediaElement::ScheduleEvent(Event* event) {
 #if LOG_MEDIA_EVENTS
-  BLINK_MEDIA_LOG << "scheduleEvent(" << (void*)this << ")"
+  BLINK_MEDIA_LOG << "ScheduleEvent(" << (void*)this << ")"
                   << " - scheduling '" << event->type() << "'";
 #endif
   async_event_queue_->EnqueueEvent(event);
@@ -806,7 +806,7 @@ void HTMLMediaElement::load() {
   InvokeLoadAlgorithm();
 }
 
-// TODO(srirama.m): Currently m_ignorePreloadNone is reset before calling
+// TODO(srirama.m): Currently ignore_preload_none_ is reset before calling
 // invokeLoadAlgorithm() in all places except load(). Move it inside here
 // once microtask is implemented for "Await a stable state" step
 // in resource selection algorithm.
@@ -818,7 +818,7 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
   load_timer_.Stop();
   CancelDeferredLoad();
   // FIXME: Figure out appropriate place to reset LoadTextTrackResource if
-  // necessary and set m_pendingActionFlags to 0 here.
+  // necessary and set pending_action_flags_ to 0 here.
   pending_action_flags_ &= ~kLoadMediaResource;
   sent_stalled_event_ = false;
   have_fired_loaded_data_ = false;
@@ -949,7 +949,7 @@ void HTMLMediaElement::InvokeResourceSelectionAlgorithm() {
 
   played_time_ranges_ = TimeRanges::Create();
 
-  // FIXME: Investigate whether these can be moved into m_networkState !=
+  // FIXME: Investigate whether these can be moved into network_state_ !=
   // kNetworkEmpty block above
   // so they are closer to the relevant spec steps.
   last_seek_time_ = 0;
@@ -1124,7 +1124,7 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
   // The resource fetch algorithm
   SetNetworkState(kNetworkLoading);
 
-  // Set m_currentSrc *before* changing to the cache url, the fact that we are
+  // Set current_src_ *before* changing to the cache url, the fact that we are
   // loading from the app cache is an internal detail not exposed through the
   // media element API.
   current_src_ = url;
@@ -1132,7 +1132,7 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
   if (audio_source_node_)
     audio_source_node_->OnCurrentSrcChanged(current_src_);
 
-  BLINK_MEDIA_LOG << "loadResource(" << (void*)this << ") - m_currentSrc -> "
+  BLINK_MEDIA_LOG << "loadResource(" << (void*)this << ") - current_src_ -> "
                   << UrlForLoggingMedia(current_src_);
 
   StartProgressEventTimer();
@@ -1684,7 +1684,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
                   << static_cast<int>(state) << ") - current state is "
                   << static_cast<int>(ready_state_);
 
-  // Set "wasPotentiallyPlaying" BEFORE updating m_readyState,
+  // Set "wasPotentiallyPlaying" BEFORE updating ready_state_,
   // potentiallyPlaying() uses it
   bool was_potentially_playing = PotentiallyPlaying();
 
@@ -1730,7 +1730,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
   } else {
     if (was_potentially_playing && ready_state_ < kHaveFutureData) {
       // Force an update to official playback position. Automatic updates from
-      // currentPlaybackPosition() will be blocked while m_readyState remains
+      // currentPlaybackPosition() will be blocked while ready_state_ remains
       // < kHaveFutureData. This blocking is desired after 'waiting' has been
       // fired, but its good to update it one final time to accurately reflect
       // media time at the moment we ran out of data to play.
@@ -1878,16 +1878,16 @@ void HTMLMediaElement::Seek(double time) {
   BLINK_MEDIA_LOG << "seek(" << (void*)this << ", " << time << ")";
 
   // 2 - If the media element's readyState is HAVE_NOTHING, abort these steps.
-  // FIXME: remove m_webMediaPlayer check once we figure out how
-  // m_webMediaPlayer is going out of sync with readystate.
-  // m_webMediaPlayer is cleared but readystate is not set to HAVE_NOTHING.
+  // FIXME: remove web_media_player_ check once we figure out how
+  // web_media_player_ is going out of sync with readystate.
+  // web_media_player_ is cleared but readystate is not set to HAVE_NOTHING.
   if (!web_media_player_ || ready_state_ == kHaveNothing)
     return;
 
   // Ignore preload none and start load if necessary.
   SetIgnorePreloadNone();
 
-  // Get the current time before setting m_seeking, m_lastSeekTime is returned
+  // Get the current time before setting seeking_, last_seek_time_ is returned
   // once it is set.
   double now = currentTime();
 
@@ -1913,7 +1913,7 @@ void HTMLMediaElement::Seek(double time) {
   // comparing with current time. This is necessary because if the seek time is
   // not equal to currentTime but the delta is less than the movie's time scale,
   // we will ask the media engine to "seek" to the current movie time, which may
-  // be a noop and not generate a timechanged callback. This means m_seeking
+  // be a noop and not generate a timechanged callback. This means seeking_
   // will never be cleared and we will never fire a 'seeked' event.
   double media_time = GetWebMediaPlayer()->MediaTimeForTimeValue(time);
   if (time != media_time) {
@@ -2000,7 +2000,7 @@ double HTMLMediaElement::EarliestPossiblePosition() const {
 
 double HTMLMediaElement::CurrentPlaybackPosition() const {
   // "Official" playback position won't take updates from "current" playback
-  // position until m_readyState > kHaveMetadata, but other callers (e.g.
+  // position until ready_state_ > kHaveMetadata, but other callers (e.g.
   // pauseInternal) may still request currentPlaybackPosition at any time.
   // From spec: "Media elements have a current playback position, which must
   // initially (i.e., in the absence of media data) be zero seconds."
@@ -2032,11 +2032,11 @@ double HTMLMediaElement::OfficialPlaybackPosition() const {
   }
 
 #if LOG_OFFICIAL_TIME_STATUS
-  static const double minCachedDeltaForWarning = 0.01;
+  static const double kMinCachedDeltaForWarning = 0.01;
   double delta =
-      std::abs(m_officialPlaybackPosition - currentPlaybackPosition());
-  if (delta > minCachedDeltaForWarning) {
-    BLINK_MEDIA_LOG << "currentTime(" << (void*)this
+      std::abs(official_playback_position_ - CurrentPlaybackPosition());
+  if (delta > kMinCachedDeltaForWarning) {
+    BLINK_MEDIA_LOG << "CurrentTime(" << (void*)this
                     << ") - WARNING, cached time is " << delta
                     << "seconds off of media time when paused/waiting";
   }
@@ -2047,8 +2047,8 @@ double HTMLMediaElement::OfficialPlaybackPosition() const {
 
 void HTMLMediaElement::SetOfficialPlaybackPosition(double position) const {
 #if LOG_OFFICIAL_TIME_STATUS
-  BLINK_MEDIA_LOG << "setOfficialPlaybackPosition(" << (void*)this
-                  << ") was:" << m_officialPlaybackPosition
+  BLINK_MEDIA_LOG << "SetOfficialPlaybackPosition(" << (void*)this
+                  << ") was:" << official_playback_position_
                   << " now:" << position;
 #endif
 
@@ -2144,9 +2144,9 @@ HTMLMediaElement::DirectionOfPlayback HTMLMediaElement::GetDirectionOfPlayback()
 }
 
 void HTMLMediaElement::UpdatePlaybackRate() {
-  // FIXME: remove m_webMediaPlayer check once we figure out how
-  // m_webMediaPlayer is going out of sync with readystate.
-  // m_webMediaPlayer is cleared but readystate is not set to kHaveNothing.
+  // FIXME: remove web_media_player_ check once we figure out how
+  // web_media_player_ is going out of sync with readystate.
+  // web_media_player_ is cleared but readystate is not set to kHaveNothing.
   if (web_media_player_ && PotentiallyPlaying())
     GetWebMediaPlayer()->SetRate(playbackRate());
 }
@@ -2239,8 +2239,8 @@ WebMediaPlayer::Preload HTMLMediaElement::EffectivePreloadType() const {
 ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
   // We have to share the same logic for internal and external callers. The
   // internal callers do not want to receive a Promise back but when ::play()
-  // is called, |m_playPromiseResolvers| needs to be populated. What this code
-  // does is to populate |m_playPromiseResolvers| before calling ::play() and
+  // is called, |play_promise_resolvers_| needs to be populated. What this code
+  // does is to populate |play_promise_resolvers_| before calling ::play() and
   // remove the Promise if ::play() failed.
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -2353,7 +2353,7 @@ void HTMLMediaElement::PauseInternal() {
     ScheduleEvent(EventTypeNames::pause);
 
     // Force an update to official playback position. Automatic updates from
-    // currentPlaybackPosition() will be blocked while m_paused = true. This
+    // currentPlaybackPosition() will be blocked while paused_ = true. This
     // blocking is desired while paused, but its good to update it one final
     // time to accurately reflect movie time at the moment we paused.
     SetOfficialPlaybackPosition(CurrentPlaybackPosition());
@@ -2987,7 +2987,7 @@ void HTMLMediaElement::SourceWasAdded(HTMLSourceElement* source) {
   // algorithm.
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
     InvokeResourceSelectionAlgorithm();
-    // Ignore current |m_nextChildNodeToConsider| and consider |source|.
+    // Ignore current |next_child_node_to_consider_| and consider |source|.
     next_child_node_to_consider_ = source;
     return;
   }
@@ -2995,13 +2995,13 @@ void HTMLMediaElement::SourceWasAdded(HTMLSourceElement* source) {
   if (current_source_node_ && source == current_source_node_->nextSibling()) {
     BLINK_MEDIA_LOG << "sourceWasAdded(" << (void*)this
                     << ") - <source> inserted immediately after current source";
-    // Ignore current |m_nextChildNodeToConsider| and consider |source|.
+    // Ignore current |next_child_node_to_consider_| and consider |source|.
     next_child_node_to_consider_ = source;
     return;
   }
 
-  // Consider current |m_nextChildNodeToConsider| as it is already in the middle
-  // of processing.
+  // Consider current |next_child_node_to_consider_| as it is already in the
+  // middle of processing.
   if (next_child_node_to_consider_)
     return;
 
@@ -3039,7 +3039,7 @@ void HTMLMediaElement::SourceWasRemoved(HTMLSourceElement* source) {
     if (current_source_node_)
       next_child_node_to_consider_ = current_source_node_->nextSibling();
     BLINK_MEDIA_LOG << "sourceWasRemoved(" << (void*)this
-                    << ") - m_nextChildNodeToConsider set to "
+                    << ") - next_child_node_to_consider_ set to "
                     << next_child_node_to_consider_.Get();
   } else if (source == current_source_node_) {
     // Clear the current source node pointer, but don't change the movie as the
@@ -3048,8 +3048,8 @@ void HTMLMediaElement::SourceWasRemoved(HTMLSourceElement* source) {
     // element is already inserted in a video or audio element will have no
     // effect.
     current_source_node_ = nullptr;
-    BLINK_MEDIA_LOG << "sourceWasRemoved(" << (void*)this
-                    << ") - m_currentSourceNode set to 0";
+    BLINK_MEDIA_LOG << "SourceWasRemoved(" << (void*)this
+                    << ") - current_source_node_ set to 0";
   }
 }
 

@@ -313,8 +313,8 @@ bool MediaKeys::HasPendingActivity() const {
   // Remain around if there are pending events.
   DVLOG(MEDIA_KEYS_LOG_LEVEL)
       << __func__ << "(" << this << ")"
-      << (!pending_actions_.IsEmpty() ? " !m_pendingActions.isEmpty()" : "")
-      << (reserved_for_media_element_ ? " m_reservedForMediaElement" : "");
+      << (!pending_actions_.IsEmpty() ? " !pending_actions_.isEmpty()" : "")
+      << (reserved_for_media_element_ ? " reserved_for_media_element_" : "");
 
   return !pending_actions_.IsEmpty() || reserved_for_media_element_;
 }

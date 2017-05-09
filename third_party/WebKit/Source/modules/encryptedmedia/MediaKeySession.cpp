@@ -1019,11 +1019,11 @@ bool MediaKeySession::HasPendingActivity() const {
   // and we're not closed.
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL)
       << __func__ << "(" << this << ")"
-      << (!pending_actions_.IsEmpty() ? " !m_pendingActions.isEmpty()" : "")
+      << (!pending_actions_.IsEmpty() ? " !pending_actions_.IsEmpty()" : "")
       << (async_event_queue_->HasPendingEvents()
-              ? " m_asyncEventQueue->hasPendingEvents()"
+              ? " async_event_queue_->HasPendingEvents()"
               : "")
-      << ((media_keys_ && !is_closed_) ? " m_mediaKeys && !m_isClosed" : "");
+      << ((media_keys_ && !is_closed_) ? " media_keys_ && !is_closed_" : "");
 
   return !pending_actions_.IsEmpty() ||
          async_event_queue_->HasPendingEvents() || (media_keys_ && !is_closed_);
