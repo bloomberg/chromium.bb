@@ -470,6 +470,7 @@ source_set("unit_tests") {
     "time_delta_interpolator_unittest.cc",
     "vector_math_unittest.cc",
     "video_codecs_unittest.cc",
+    "video_color_space_unittest.cc",
     "video_decoder_config_unittest.cc",
     "video_frame_pool_unittest.cc",
     "video_frame_unittest.cc",
