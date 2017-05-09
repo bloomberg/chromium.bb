@@ -456,6 +456,14 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       self._portage_extra_env['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
           '/creds/service_accounts/service-account-goma-client.json')
 
+    # Propagate buildbot related names to chroot, which will be used
+    # to annotate goma logs on uploading.
+    for name in ('BUILDERNAME', 'MASTERNAME', 'SLAVENAME', 'CLOBBER'):
+      key = 'BUILDBOT_' + name
+      value = os.environ.get(key)
+      if value is not None:
+        self._portage_extra_env[key] = value
+
     return chroot_args
 
   def PerformStage(self):

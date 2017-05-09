@@ -190,8 +190,9 @@ class GomaLogUploader(object):
       logging.error('Compiler proxy start time is not found. '
                     'So, gomacc INFO files will not be uploaded.')
       return
-    self._UploadInfoFiles(
-        remote_dir, headers, 'gomacc', compiler_proxy_start_time)
+
+    # TODO(crbug.com/719843): Enable uploading gomacc logs after
+    # crbug.com/719843 is resolved.
 
 
 def _GetParser():
