@@ -81,7 +81,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
     kNodeTypeMediaElementAudioSource = 4,
     kNodeTypeMediaStreamAudioDestination = 5,
     kNodeTypeMediaStreamAudioSource = 6,
-    kNodeTypeJavaScript = 7,
+    kNodeTypeScriptProcessor = 7,
     kNodeTypeBiquadFilter = 8,
     kNodeTypePanner = 9,
     kNodeTypeStereoPanner = 10,

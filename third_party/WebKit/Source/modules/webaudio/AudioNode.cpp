@@ -127,7 +127,7 @@ String AudioHandler::NodeTypeName() const {
       return "MediaStreamAudioDestinationNode";
     case kNodeTypeMediaStreamAudioSource:
       return "MediaStreamAudioSourceNode";
-    case kNodeTypeJavaScript:
+    case kNodeTypeScriptProcessor:
       return "ScriptProcessorNode";
     case kNodeTypeBiquadFilter:
       return "BiquadFilterNode";
@@ -641,7 +641,7 @@ AudioNode* AudioNode::connect(AudioNode* destination,
   // ScriptProcessorNodes with 0 output channels can't be connected to any
   // destination.  If there are no output channels, what would the destination
   // receive?  Just disallow this.
-  if (Handler().GetNodeType() == AudioHandler::kNodeTypeJavaScript &&
+  if (Handler().GetNodeType() == AudioHandler::kNodeTypeScriptProcessor &&
       Handler().NumberOfOutputChannels() == 0) {
     exception_state.ThrowDOMException(kInvalidAccessError,
                                       "cannot connect a ScriptProcessorNode "

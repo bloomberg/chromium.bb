@@ -45,7 +45,7 @@ ScriptProcessorHandler::ScriptProcessorHandler(
     size_t buffer_size,
     unsigned number_of_input_channels,
     unsigned number_of_output_channels)
-    : AudioHandler(kNodeTypeJavaScript, node, sample_rate),
+    : AudioHandler(kNodeTypeScriptProcessor, node, sample_rate),
       double_buffer_index_(0),
       buffer_size_(buffer_size),
       buffer_read_write_index_(0),
