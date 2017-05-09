@@ -62,6 +62,7 @@ class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     anchor_widget->Init(params);
+    anchor_widget->Show();
     return anchor_widget;
   }
 
