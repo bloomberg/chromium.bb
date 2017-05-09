@@ -57,7 +57,6 @@ class DocumentMarkerControllerTest : public ::testing::Test {
 
   Text* CreateTextNode(const char*);
   void MarkNodeContents(Node*);
-  void MarkNodeContentsWithComposition(Node*);
   void SetBodyInnerHTML(const char*);
 
  private:
@@ -75,16 +74,6 @@ void DocumentMarkerControllerTest::MarkNodeContents(Node* node) {
   auto range = EphemeralRange::RangeOfContents(*node);
   MarkerController().AddMarker(range.StartPosition(), range.EndPosition(),
                                DocumentMarker::kSpelling);
-}
-
-void DocumentMarkerControllerTest::MarkNodeContentsWithComposition(Node* node) {
-  // Force layoutObjects to be created; TextIterator, which is used in
-  // DocumentMarkerControllerTest::addMarker(), needs them.
-  GetDocument().UpdateStyleAndLayout();
-  auto range = EphemeralRange::RangeOfContents(*node);
-  MarkerController().AddCompositionMarker(range.StartPosition(),
-                                          range.EndPosition(), Color::kBlack,
-                                          false, Color::kBlack);
 }
 
 void DocumentMarkerControllerTest::SetBodyInnerHTML(const char* body_content) {
@@ -213,22 +202,6 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
   GetDocument().UpdateStyleAndLayout();
   Vector<IntRect> new_rendered_rects =
       MarkerController().RenderedRectsForMarkers(DocumentMarker::kSpelling);
-  EXPECT_EQ(1u, new_rendered_rects.size());
-  EXPECT_NE(rendered_rects[0], new_rendered_rects[0]);
-}
-
-TEST_F(DocumentMarkerControllerTest, UpdateRenderedRectsForComposition) {
-  SetBodyInnerHTML("<div style='margin: 100px'>foo</div>");
-  Element* div = ToElement(GetDocument().body()->firstChild());
-  MarkNodeContentsWithComposition(div);
-  Vector<IntRect> rendered_rects =
-      MarkerController().RenderedRectsForMarkers(DocumentMarker::kComposition);
-  EXPECT_EQ(1u, rendered_rects.size());
-
-  div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
-  GetDocument().UpdateStyleAndLayout();
-  Vector<IntRect> new_rendered_rects =
-      MarkerController().RenderedRectsForMarkers(DocumentMarker::kComposition);
   EXPECT_EQ(1u, new_rendered_rects.size());
   EXPECT_NE(rendered_rects[0], new_rendered_rects[0]);
 }

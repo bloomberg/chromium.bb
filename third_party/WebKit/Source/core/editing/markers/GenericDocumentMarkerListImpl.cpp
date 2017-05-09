@@ -20,10 +20,11 @@ void GenericDocumentMarkerListImpl::Add(DocumentMarker* marker) {
       DocumentMarkerListEditor::AddMarkerAndMergeOverlapping(&markers_, marker);
       return;
     case DocumentMarker::kTextMatch:
-    case DocumentMarker::kComposition:
       DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(&markers_,
                                                                    marker);
       return;
+    case DocumentMarker::kComposition:
+      NOTREACHED();
   }
 
   NOTREACHED() << "Unhanded marker type: " << marker->GetType();

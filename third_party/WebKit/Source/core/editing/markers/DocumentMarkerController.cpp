@@ -34,6 +34,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/CompositionMarkerListImpl.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
 #include "core/editing/markers/GenericDocumentMarkerListImpl.h"
 #include "core/editing/markers/RenderedDocumentMarker.h"
@@ -66,9 +67,12 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
 }
 
 DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
-  // All MarkerTypes use GenericDocumentMarkerListImpl for now. Eventually we
-  // will use different marker list classes for different MarkerTypes.
-  return new GenericDocumentMarkerListImpl();
+  switch (type) {
+    case DocumentMarker::kComposition:
+      return new CompositionMarkerListImpl();
+    default:
+      return new GenericDocumentMarkerListImpl();
+  }
 }
 
 }  // namespace
