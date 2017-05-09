@@ -207,6 +207,13 @@ if (NOT MSVC)
   aom_pop_var(CMAKE_REQUIRED_LIBRARIES)
 endif()
 
+set(AOM_LIB_LINK_TYPE PUBLIC)
+if (EMSCRIPTEN)
+  # Avoid CMake generation time errors resulting from collisions with the form
+  # of target_link_libraries() used by Emscripten.cmake.
+  unset(AOM_LIB_LINK_TYPE)
+endif ()
+
 # Generate aom_config templates.
 set(aom_config_asm_template "${AOM_CONFIG_DIR}/aom_config.asm.cmake")
 set(aom_config_h_template "${AOM_CONFIG_DIR}/aom_config.h.cmake")

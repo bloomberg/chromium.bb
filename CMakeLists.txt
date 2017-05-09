@@ -225,7 +225,7 @@ if (CONFIG_ANALYZER)
                  "${AOM_ROOT}/examples/analyzer.cc"
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_decoder_app_util>)
-  target_link_libraries(analyzer PUBLIC ${wxWidgets_LIBRARIES})
+  target_link_libraries(analyzer ${AOM_LIB_LINK_TYPE} ${wxWidgets_LIBRARIES})
   set(AOM_APP_TARGETS ${AOM_APP_TARGETS} analyzer)
 endif ()
 
@@ -255,11 +255,24 @@ add_executable(simple_decoder
                $<TARGET_OBJECTS:aom_decoder_app_util>)
 
 if (CONFIG_INSPECTION)
-add_executable(inspect
-               "${AOM_ROOT}/examples/inspect.c"
-               $<TARGET_OBJECTS:aom_common_app_util>
-               $<TARGET_OBJECTS:aom_decoder_app_util>)
-set(AOM_APP_TARGETS ${AOM_APP_TARGETS} inspect)
+  add_executable(inspect
+                 "${AOM_ROOT}/examples/inspect.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} inspect)
+
+  if (EMSCRIPTEN)
+    add_preproc_definition(_POSIX_SOURCE)
+    add_compiler_flag_if_supported("-s TOTAL_MEMORY=134217728")
+    add_compiler_flag_if_supported("-s MODULARIZE=1")
+    add_compiler_flag_if_supported("-s EXPORT_NAME=\"\'DecoderModule\'\"")
+    add_compiler_flag_if_supported("--memory-init-file 0")
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+      # Default to -O3 when no build type specified.
+      add_compiler_flag_if_supported("-O3")
+    endif ()
+    em_link_post_js(inspect "${AOM_ROOT}/tools/inspect-post.js")
+  endif ()
 endif ()
 
 add_executable(simple_encoder
@@ -278,7 +291,7 @@ set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aom_cx_set_ref aomdec aomenc
     simple_encoder twopass_encoder)
 
 foreach (aom_app ${AOM_APP_TARGETS})
-  target_link_libraries(${aom_app} PUBLIC aom)
+  target_link_libraries(${aom_app} ${AOM_LIB_LINK_TYPE} aom)
 endforeach ()
 
 if (CONFIG_LIBYUV)
@@ -321,7 +334,7 @@ endif ()
 if (HAVE_PTHREAD_H AND CONFIG_MULTITHREAD)
   find_package(Threads)
   foreach (app_target ${AOM_APP_TARGETS})
-    target_link_libraries(${app_target} PUBLIC Threads::Threads)
+    target_link_libraries(${app_target} ${AOM_LIB_LINK_TYPE} Threads::Threads)
   endforeach ()
 endif ()
 

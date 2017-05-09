@@ -141,7 +141,7 @@ function (add_asm_library lib_name asm_sources dependent_target)
        "void ${lib_name}_dummy_function(void) {}\n")
   target_sources(${lib_name} PUBLIC ${dummy_c_file})
 
-  target_link_libraries(${dependent_target} PRIVATE ${lib_name})
+  target_link_libraries(${dependent_target} ${AOM_LIB_LINK_TYPE} ${lib_name})
 
   # Add the new lib target to the global list of aom library targets.
   list(APPEND AOM_LIB_TARGETS ${lib_name})

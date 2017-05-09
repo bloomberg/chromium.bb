@@ -275,12 +275,12 @@ function (setup_aom_test_targets)
     endif ()
   endif ()
 
-  target_link_libraries(test_libaom PUBLIC aom gtest)
+  target_link_libraries(test_libaom ${AOM_LIB_LINK_TYPE} aom gtest)
 
   add_executable(test_intra_pred_speed
                  ${AOM_TEST_INTRA_PRED_SPEED_SOURCES}
                  $<TARGET_OBJECTS:aom_common_app_util>)
-  target_link_libraries(test_intra_pred_speed PUBLIC aom gtest)
+  target_link_libraries(test_intra_pred_speed ${AOM_LIB_LINK_TYPE} aom gtest)
 
   if (CONFIG_LIBYUV)
     target_sources(test_libaom PUBLIC $<TARGET_OBJECTS:yuv>)
