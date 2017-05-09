@@ -215,8 +215,14 @@ SIMPLE_FAILURE_PATTERNS = [(re.compile(pattern), label) for pattern, label in (
 # Spaces in between words are allowed (for instance: Suite job)
 TEST_OUTCOME_RE = re.compile(r'(\w[\w\. ]+\w) +\[ ([A-Z]+) \]')
 
-FAILED_TEST_REASON_RE = re.compile('FAILED|ERROR|ABORT')
+FAILED_TEST_REASON_RE = re.compile('FAIL|ERROR|ABORT')
+# TEST_FAILURE_PATTERNS is matched against the entire line which includes
+# the test name and the reason.  In cases where additional debugging or
+# information is available, a link is provided with details.
 TEST_FAILURE_PATTERNS = [(re.compile(pattern), label) for pattern, label in (
+    # Tests.
+    ('provision', 'https://yaqs.googleplex.com/eng/q/5277276940009472'),
+    # Reasons.
     ('ABORT: Failed to install device image.*CODE=37', 'AU37'),
     ('ABORT: Failed to install device image.*CODE=0', 'AU0'),
     ('FAIL: Update server .* not available', 'NoServer'),
