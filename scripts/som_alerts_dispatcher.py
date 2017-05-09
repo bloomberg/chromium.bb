@@ -26,7 +26,6 @@ from chromite.lib import som
 # Only display this many links per stage
 MAX_STAGE_LINKS = 7
 
-
 def GetParser():
   """Creates the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
@@ -248,6 +247,8 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
     som.Alert object if build requires alert.  None otherwise.
   """
   BUILD_IGNORE_STATUSES = frozenset([constants.BUILDER_STATUS_PASSED])
+  CIDB_INDETERMINATE_STATUSES = frozenset([constants.BUILDER_STATUS_INFLIGHT,
+                                           constants.BUILDER_STATUS_ABORTED])
   if ((not allow_experimental and not build['important']) or
       build['status'] in BUILD_IGNORE_STATUSES):
     return None
@@ -282,10 +283,17 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
                    build['builder_name'], build['build_number'])),
   ]
 
+  # Include annotations from CIDB.
   notes = [
       ('Annotation: %(failure_category)s(%(failure_message)s) '
        '%(blame_url)s %(notes)s') % a for a in annotations
   ]
+
+  # If the CIDB status was indeterminate (inflight/aborted), provide link
+  # for sheriffs.
+  if build['status'] in CIDB_INDETERMINATE_STATUSES:
+    notes.append('Indeterminate CIDB status: '
+                 'https://yaqs.googleplex.com/eng/q/5238815784697856')
 
   # TODO: Gather similar failures.
   # TODO: Report of how many builds failed in a row.
