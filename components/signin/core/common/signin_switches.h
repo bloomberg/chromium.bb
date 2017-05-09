@@ -22,8 +22,6 @@ extern const char kEnableRefreshTokenAnnotationRequest[];
 extern const char kEnableSigninPromo[];
 extern const char kExtensionsMultiAccount[];
 
-extern const base::Feature kUsePasswordSeparatedSigninFlow;
-
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Note: Account consistency is already enabled on mobile platforms, so this
 // switch only exist on desktop platforms.

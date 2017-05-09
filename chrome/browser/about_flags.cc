@@ -1607,11 +1607,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccountConsistencyDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableAccountConsistency)},
 #endif
-    {"enable-password-separated-signin-flow",
-     flag_descriptions::kEnablePasswordSeparatedSigninFlowName,
-     flag_descriptions::kEnablePasswordSeparatedSigninFlowDescription,
-     kOsMac | kOsWin | kOsLinux,
-     FEATURE_VALUE_TYPE(switches::kUsePasswordSeparatedSigninFlow)},
 #if BUILDFLAG(ENABLE_APP_LIST)
     {"reset-app-list-install-state",
      flag_descriptions::kResetAppListInstallStateName,

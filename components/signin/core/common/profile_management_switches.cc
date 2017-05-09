@@ -36,11 +36,6 @@ bool IsExtensionsMultiAccount() {
          IsEnableAccountConsistency();
 }
 
-bool UsePasswordSeparatedSigninFlow() {
-  return base::FeatureList::IsEnabled(
-      switches::kUsePasswordSeparatedSigninFlow);
-}
-
 void EnableAccountConsistencyForTesting(base::CommandLine* command_line) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   command_line->AppendSwitch(switches::kEnableAccountConsistency);

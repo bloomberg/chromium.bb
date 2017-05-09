@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -66,12 +65,8 @@ class UserManagerModalHost : public web_modal::WebContentsModalDialogHost {
       : host_view_(host_view) {}
 
   gfx::Size GetMaximumDialogSize() override {
-    return switches::UsePasswordSeparatedSigninFlow()
-               ? gfx::Size(UserManagerProfileDialog::kDialogWidth,
-                           UserManagerProfileDialog::kDialogHeight)
-               : gfx::Size(
-                     UserManagerProfileDialog::kPasswordCombinedDialogWidth,
-                     UserManagerProfileDialog::kPasswordCombinedDialogHeight);
+    return gfx::Size(UserManagerProfileDialog::kDialogWidth,
+                     UserManagerProfileDialog::kDialogHeight);
   }
 
   ~UserManagerModalHost() override {}

@@ -22,9 +22,6 @@ bool IsEnableAccountConsistency();
 // Whether the chrome.identity API should be multi-account.
 bool IsExtensionsMultiAccount();
 
-// Checks whether the new gaia password separated sign in flow is enabled.
-bool UsePasswordSeparatedSigninFlow();
-
 // Called in tests to force enable account consistency.
 void EnableAccountConsistencyForTesting(base::CommandLine* command_line);
 

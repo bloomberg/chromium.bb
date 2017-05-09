@@ -145,9 +145,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
                            bool reauth_required,
                            int width);
 
-  // Creates a webview showing the gaia signin page.
-  views::View* CreateGaiaSigninView(views::View** signin_content_view);
-
   // Creates a view to confirm account removal for |account_id_to_remove_|.
   views::View* CreateAccountRemovalView();
 

@@ -92,8 +92,6 @@ namespace {
 // Helpers --------------------------------------------------------------------
 
 const int kButtonHeight = 32;
-const int kPasswordCombinedFixedGaiaViewWidth = 360;
-const int kFixedGaiaViewWidth = 448;
 const int kFixedAccountRemovalViewWidth = 280;
 const int kFixedSwitchUserViewWidth = 320;
 const int kImageSide = 40;
@@ -719,14 +717,11 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
   switch (view_mode_) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
     case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
-      const int width = switches::UsePasswordSeparatedSigninFlow()
-          ? kFixedGaiaViewWidth : kPasswordCombinedFixedGaiaViewWidth;
-      layout = CreateSingleColumnLayout(this, width);
-      DCHECK(!switches::UsePasswordSeparatedSigninFlow());
-      sub_view = CreateGaiaSigninView(&view_to_focus);
+    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
+      // The modal sign-in view is shown in for bubble view modes.
+      // See |SigninViewController::ShouldShowModalSigninForMode|.
+      NOTREACHED();
       break;
-    }
     case profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
       layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
       sub_view = CreateAccountRemovalView();
@@ -1677,39 +1672,6 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
     // Save the original email address, as the button text could be elided.
     delete_account_button_map_[delete_button] = account_id;
   }
-}
-
-views::View* ProfileChooserView::CreateGaiaSigninView(
-    views::View** signin_content_view) {
-  std::unique_ptr<views::WebView> web_view =
-      SigninViewControllerDelegateViews::CreateGaiaWebView(
-          this, view_mode_, browser_, access_point_);
-
-  int message_id;
-  switch (view_mode_) {
-    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-      message_id = IDS_PROFILES_GAIA_SIGNIN_TITLE;
-      break;
-    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-      message_id = IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE;
-      break;
-    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
-      message_id = IDS_PROFILES_GAIA_REAUTH_TITLE;
-      break;
-    }
-    default:
-      NOTREACHED() << "Called with invalid mode=" << view_mode_;
-      return NULL;
-  }
-
-  if (signin_content_view)
-    *signin_content_view = web_view.get();
-
-  TitleCard* title_card = new TitleCard(l10n_util::GetStringUTF16(message_id),
-                                        this,
-                                        &gaia_signin_cancel_button_);
-  return TitleCard::AddPaddedTitleCard(
-      web_view.release(), title_card, kPasswordCombinedFixedGaiaViewWidth);
 }
 
 views::View* ProfileChooserView::CreateAccountRemovalView() {

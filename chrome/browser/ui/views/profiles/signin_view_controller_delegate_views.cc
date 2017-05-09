@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -23,8 +22,6 @@
 
 namespace {
 
-const int kPasswordCombinedFixedGaiaViewHeight = 440;
-const int kPasswordCombinedFixedGaiaViewWidth = 360;
 const int kFixedGaiaViewHeight = 612;
 const int kModalDialogWidth = 448;
 const int kSyncConfirmationDialogHeight = 487;
@@ -159,12 +156,8 @@ SigninViewControllerDelegateViews::CreateGaiaWebView(
       ->GetWebContentsModalDialogHost()
       ->GetMaximumDialogSize().height();
   // Adds Gaia signin webview.
-  const gfx::Size pref_size =
-      switches::UsePasswordSeparatedSigninFlow()
-          ? gfx::Size(kModalDialogWidth,
-                      std::min(kFixedGaiaViewHeight, max_height))
-          : gfx::Size(kPasswordCombinedFixedGaiaViewWidth,
-                      kPasswordCombinedFixedGaiaViewHeight);
+  const gfx::Size pref_size(kModalDialogWidth,
+                            std::min(kFixedGaiaViewHeight, max_height));
   views::WebView* web_view = new views::WebView(browser->profile());
   web_view->LoadInitialURL(url);
 

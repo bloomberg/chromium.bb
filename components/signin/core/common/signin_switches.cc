@@ -31,10 +31,4 @@ const char kEnableSigninPromo[] = "enable-signin-promo";
 // Enables multiple account versions of chrome.identity APIs.
 const char kExtensionsMultiAccount[] = "extensions-multi-account";
 
-// Enables or disables the new password separated sign in flow in a tab modal
-// dialog.
-const base::Feature kUsePasswordSeparatedSigninFlow {
-  "UsePasswordSeparatedSigninFlow", base::FEATURE_ENABLED_BY_DEFAULT
-};
-
 }  // namespace switches
