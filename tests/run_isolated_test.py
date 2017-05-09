@@ -587,6 +587,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     args = [
       '--named-cache-root', np, '--cache', ip, '--clean',
       '--min-free-space', '10240',
+      '--log-file', self.temp_join('run_isolated.log'),
     ]
     self.mock(file_path, 'get_free_space', lambda _: fake_free_space[0])
     parser, options, _ = run_isolated.parse_args(args)

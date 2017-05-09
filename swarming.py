@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8.10'
+__version__ = '0.9.0'
 
 import collections
 import datetime
@@ -53,34 +53,13 @@ class Failure(Exception):
 ### Isolated file handling.
 
 
-def isolated_to_hash(arg, algo):
-  """Archives a .isolated file if needed.
-
-  Returns the file hash to trigger and a bool specifying if it was a file (True)
-  or a hash (False).
-  """
-  if arg.endswith('.isolated'):
-    arg = unicode(os.path.abspath(arg))
-    file_hash = isolated_format.hash_file(arg, algo)
-    if not file_hash:
-      on_error.report('Archival failure %s' % arg)
-      return None, True
-    return file_hash, True
-  elif isolated_format.is_valid_hash(arg, algo):
-    return arg, False
-  else:
-    on_error.report('Invalid hash %s' % arg)
-    return None, False
-
-
 def isolated_handle_options(options, args):
-  """Handles '--isolated <isolated>', '<isolated>' and '-- <args...>' arguments.
+  """Handles '--isolated <isolated>' and '-- <args...>' arguments.
 
   Returns:
     tuple(command, inputs_ref).
   """
   isolated_cmd_args = []
-  is_file = False
   if not options.isolated:
     if '--' in args:
       index = args.index('--')
@@ -94,11 +73,6 @@ def isolated_handle_options(options, args):
       raise ValueError(
           'Use --isolated, --raw-cmd or \'--\' to pass arguments to the called '
           'process.')
-    # Old code. To be removed eventually.
-    options.isolated, is_file = isolated_to_hash(
-        args[0], isolated_format.get_hash_algo(options.namespace))
-    if not options.isolated:
-      raise ValueError('Invalid argument %s' % args[0])
   elif args:
     if '--' in args:
       index = args.index('--')
@@ -109,15 +83,9 @@ def isolated_handle_options(options, args):
       # optparse eats '--' sometimes.
       isolated_cmd_args = args
 
-  # If a file name was passed, use its base name of the isolated hash.
-  # Otherwise, use user name as an approximation of a task name.
   if not options.task_name:
-    if is_file:
-      key = os.path.splitext(os.path.basename(args[0]))[0]
-    else:
-      key = options.user
     options.task_name = u'%s/%s/%s' % (
-        key,
+        options.user,
         '_'.join(
             '%s=%s' % (k, v)
             for k, v in sorted(options.dimensions.iteritems())),
@@ -986,8 +954,7 @@ def add_trigger_options(parser):
 def process_trigger_options(parser, options, args):
   """Processes trigger options and does preparatory steps.
 
-  Uploads files to isolate server and generates service account tokens if
-  necessary.
+  Generates service account tokens if necessary.
   """
   options.dimensions = dict(options.dimensions)
   options.env = dict(options.env)
@@ -1621,11 +1588,6 @@ def CMDterminate(parser, args):
 @subcommand.usage("(hash|isolated) [-- extra_args|raw command]")
 def CMDtrigger(parser, args):
   """Triggers a Swarming task.
-
-  Accepts either the hash (sha1) of a .isolated file already uploaded or the
-  path to an .isolated file to archive.
-
-  If an .isolated file is specified instead of an hash, it is first archived.
 
   Passes all extra arguments provided after '--' as additional command line
   arguments for an isolated command specified in *.isolate file.

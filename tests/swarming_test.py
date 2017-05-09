@@ -227,6 +227,21 @@ class Common(object):
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
 
+  def main_safe(self, args):
+    """Bypasses swarming.main()'s exception handling.
+
+    It gets in the way when debugging test failures.
+    """
+    # pylint: disable=bare-except
+    try:
+      return main(args)
+    except:
+      logging.exception('Unexpected exception thrown in main')
+      logging.error(
+          'STDOUT:\n%s\nSTDERR:\n%s',
+          sys.stdout.getvalue(), sys.stderr.getvalue())
+      self.fail()
+
 
 class NetTestCase(net_utils.TestCase, Common):
   """Base class that defines the url_open mock."""
@@ -297,7 +312,7 @@ class TestIsolated(auto_stub.TestCase, Common):
           'secret_bytes': None,
         },
       }
-      ret = main(
+      ret = self.main_safe(
           [
             'reproduce', '--swarming', self._swarming.url, '123', '--',
             '--bar',
@@ -837,7 +852,7 @@ class TestMain(NetTestCase):
             {},
           ),
         ])
-    ret = main(
+    ret = self.main_safe(
         ['bot_delete', '--swarming', 'https://localhost:1', 'foo', '--force'])
     self._check_output('', '')
     self.assertEqual(0, ret)
@@ -878,7 +893,7 @@ class TestMain(NetTestCase):
             result,
           ),
         ])
-    ret = main([
+    ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
         '--dimension', 'foo', 'bar',
@@ -935,7 +950,7 @@ class TestMain(NetTestCase):
             result,
           ),
         ])
-    ret = main([
+    ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
         '--dimension', 'foo', 'bar',
@@ -979,7 +994,7 @@ class TestMain(NetTestCase):
             result,
           ),
         ])
-    ret = main([
+    ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
         '--isolate-server', 'https://localhost:2',
@@ -1009,7 +1024,7 @@ class TestMain(NetTestCase):
         '  https://localhost:1/user/task/12300\n',
         '')
 
-  def test_run_isolated_upload_and_json(self):
+  def test_run_isolated_and_json(self):
     # pylint: disable=unused-argument
     write_json_calls = []
     self.mock(tools, 'write_json', lambda *args: write_json_calls.append(args))
@@ -1043,7 +1058,7 @@ class TestMain(NetTestCase):
             result,
           ),
         ])
-    ret = main([
+    ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
         '--isolate-server', 'https://localhost:2',
@@ -1060,7 +1075,7 @@ class TestMain(NetTestCase):
         '--idempotent',
         '--task-name', 'unit_tests',
         '--dump-json', 'foo.json',
-        isolated,
+        '--isolated', isolated_hash,
         '--',
         '--some-arg',
         '123',
@@ -1154,7 +1169,7 @@ class TestMain(NetTestCase):
             result,
           ),
         ])
-    ret = main([
+    ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
         '--isolate-server', 'https://localhost:2',
@@ -1302,7 +1317,7 @@ class TestMain(NetTestCase):
       self.assertEqual(False, include_perf)
       print('Fake output')
     self.mock(swarming, 'collect', stub_collect)
-    main(
+    self.main_safe(
         ['collect', '--swarming', 'https://host', '--json', j, '--decorate',
           '--print-status-updates', '--task-summary-json', '/a',
           '--task-output-dir', '/b'])
@@ -1317,7 +1332,7 @@ class TestMain(NetTestCase):
             {'yo': 'dawg'},
           ),
         ])
-    ret = main(
+    ret = self.main_safe(
         [
           'query', '--swarming', 'https://localhost:1', 'bot/botid/tasks',
         ])
@@ -1348,7 +1363,7 @@ class TestMain(NetTestCase):
             },
           ),
         ])
-    ret = main(
+    ret = self.main_safe(
         [
           'query', '--swarming', 'https://localhost:1',
           'bot/botid/tasks?foo=bar',
@@ -1399,7 +1414,7 @@ class TestMain(NetTestCase):
               },
             ),
           ])
-      ret = main(
+      ret = self.main_safe(
           [
             'reproduce', '--swarming', 'https://localhost:1', '123', '--',
             '--bar',
@@ -1543,7 +1558,7 @@ class TestCommandBot(NetTestCase):
     }
 
   def test_bots(self):
-    ret = main(['bots', '--swarming', 'https://localhost:1'])
+    ret = self.main_safe(['bots', '--swarming', 'https://localhost:1'])
     expected = (
         u'swarm2\n'
         u'  {"cores": ["8"], "cpu": ["x86", "x86-64"], "gpu": '
@@ -1561,12 +1576,13 @@ class TestCommandBot(NetTestCase):
     self.assertEqual(0, ret)
 
   def test_bots_bare(self):
-    ret = main(['bots', '--swarming', 'https://localhost:1', '--bare'])
+    ret = self.main_safe(
+        ['bots', '--swarming', 'https://localhost:1', '--bare'])
     self._check_output("swarm2\nswarm3\nswarm4\n", '')
     self.assertEqual(0, ret)
 
   def test_bots_filter(self):
-    ret = main(
+    ret = self.main_safe(
         [
           'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Windows',
@@ -1580,7 +1596,7 @@ class TestCommandBot(NetTestCase):
     self.assertEqual(0, ret)
 
   def test_bots_filter_keep_dead(self):
-    ret = main(
+    ret = self.main_safe(
         [
           'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Linux', '--keep-dead',
@@ -1596,7 +1612,7 @@ class TestCommandBot(NetTestCase):
     self.assertEqual(0, ret)
 
   def test_bots_filter_dead_only(self):
-    ret = main(
+    ret = self.main_safe(
         [
           'bots', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'Linux', '--dead-only',
