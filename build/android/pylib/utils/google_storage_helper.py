@@ -53,7 +53,7 @@ def upload(name, filepath, bucket, content_type=None, authenticated_link=True):
   gs_path = 'gs://%s/%s' % (bucket, name)
   logging.info('Uploading %s to %s', filepath, gs_path)
 
-  cmd = [_GSUTIL_PATH]
+  cmd = [_GSUTIL_PATH, '-q']
   if content_type:
     cmd.extend(['-h', 'Content-Type:%s' % content_type])
   cmd.extend(['cp', filepath, gs_path])
