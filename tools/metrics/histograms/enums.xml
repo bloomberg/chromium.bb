@@ -21277,6 +21277,7 @@ from previous Chrome versions.
       label="disallow-autofill-sync-credential-for-reauth"/>
   <int value="-1349532167" label="enable-wifi-credential-sync"/>
   <int value="-1346722635" label="gesture-selection"/>
+  <int value="-1344375439" label="ServiceWorkerPaymentApps:disabled"/>
   <int value="-1341092934" label="enable-accelerated-overflow-scroll"/>
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1337185440" label="enable-webvr"/>
@@ -21773,6 +21774,7 @@ from previous Chrome versions.
   <int value="625273056" label="disable-boot-animation"/>
   <int value="628302973" label="NTPSnippets:enabled"/>
   <int value="628570445" label="AndroidAutofillAccessibility:enabled"/>
+  <int value="630244477" label="ServiceWorkerPaymentApps:enabled"/>
   <int value="630947363" label="touch-events"/>
   <int value="635971109" label="PrintPdfAsImage:disabled"/>
   <int value="636425179" label="mhtml-generator-option"/>
