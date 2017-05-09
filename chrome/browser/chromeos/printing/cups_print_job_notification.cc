@@ -181,7 +181,32 @@ void CupsPrintJobNotification::UpdateNotification() {
 }
 
 void CupsPrintJobNotification::UpdateNotificationTitle() {
-  notification_->set_title(base::UTF8ToUTF16(print_job_->document_title()));
+  base::string16 title;
+  switch (print_job_->state()) {
+    case CupsPrintJob::State::STATE_WAITING:
+    case CupsPrintJob::State::STATE_STARTED:
+    case CupsPrintJob::State::STATE_PAGE_DONE:
+    case CupsPrintJob::State::STATE_SUSPENDED:
+    case CupsPrintJob::State::STATE_RESUMED:
+      title = l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job_->document_title()));
+      break;
+    case CupsPrintJob::State::STATE_DOCUMENT_DONE:
+      title = l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_DONE_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job_->document_title()));
+      break;
+    case CupsPrintJob::State::STATE_CANCELLED:
+    case CupsPrintJob::State::STATE_ERROR:
+      title = l10n_util::GetStringFUTF16(
+          IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE,
+          base::UTF8ToUTF16(print_job_->document_title()));
+      break;
+    default:
+      break;
+  }
+  notification_->set_title(title);
 }
 
 void CupsPrintJobNotification::UpdateNotificationIcon() {
@@ -209,37 +234,12 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
 }
 
 void CupsPrintJobNotification::UpdateNotificationBodyMessage() {
-  base::string16 message;
-  switch (print_job_->state()) {
-    case CupsPrintJob::State::STATE_NONE:
-      break;
-    case CupsPrintJob::State::STATE_WAITING:
-    case CupsPrintJob::State::STATE_STARTED:
-    case CupsPrintJob::State::STATE_PAGE_DONE:
-    case CupsPrintJob::State::STATE_SUSPENDED:
-    case CupsPrintJob::State::STATE_RESUMED:
-      message = l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_PRINTING_NOTIFICATION_MESSAGE,
-          base::IntToString16(print_job_->total_page_number()),
-          base::UTF8ToUTF16(print_job_->printer().display_name()));
-
-      break;
-    case CupsPrintJob::State::STATE_DOCUMENT_DONE:
-      message = l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_DONE_NOTIFICATION_MESSAGE,
-          base::IntToString16(print_job_->total_page_number()),
-          base::UTF8ToUTF16(print_job_->printer().display_name()));
-      break;
-    case CupsPrintJob::State::STATE_CANCELLED:
-    case CupsPrintJob::State::STATE_ERROR:
-      message = l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_ERROR_NOTIFICATION_MESSAGE,
-          base::IntToString16(print_job_->total_page_number()),
-          base::UTF8ToUTF16(print_job_->printer().display_name()));
-      break;
-    default:
-      break;
-  }
+  base::string16 message = l10n_util::GetStringFUTF16(
+      (print_job_->total_page_number() > 1)
+          ? IDS_PRINT_JOB_NOTIFICATION_MESSAGE
+          : IDS_PRINT_JOB_NOTIFICATION_SINGLE_PAGE_MESSAGE,
+      base::IntToString16(print_job_->total_page_number()),
+      base::UTF8ToUTF16(print_job_->printer().display_name()));
   notification_->set_message(message);
 }
 
