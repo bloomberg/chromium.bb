@@ -144,8 +144,10 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
       ToNGPhysicalBoxFragment(html_fragment->Children()[0].Get());
   auto* container_fragment =
       ToNGPhysicalBoxFragment(body_fragment->Children()[0].Get());
-  auto* line_box_fragments_wrapper =
+  auto* span_box_fragments_wrapper =
       ToNGPhysicalBoxFragment(container_fragment->Children()[0].Get());
+  auto* line_box_fragments_wrapper =
+      ToNGPhysicalBoxFragment(span_box_fragments_wrapper->Children()[0].Get());
   Vector<NGPhysicalTextFragment*> text_fragments;
   for (const auto& child : line_box_fragments_wrapper->Children()) {
     auto* line_box = ToNGPhysicalLineBoxFragment(child.Get());

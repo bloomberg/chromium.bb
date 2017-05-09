@@ -77,9 +77,9 @@ TEST_F(NGBlockNodeForTest, ChildFloatBeforeInline) {
   NGBlockNode* container =
       new NGBlockNode(GetLayoutObjectByElementId("container"));
   NGLayoutInputNode* child1 = container->FirstChild();
-  EXPECT_TRUE(child1 && child1->IsInline());
+  EXPECT_TRUE(child1 && child1->IsBlock());
   NGLayoutInputNode* child2 = child1->NextSibling();
-  EXPECT_EQ(child2, nullptr);
+  EXPECT_TRUE(child2 && child2->IsBlock());
 }
 
 TEST_F(NGBlockNodeForTest, ChildFloatAfterInline) {
@@ -143,9 +143,9 @@ TEST_F(NGBlockNodeForTest, ChildOofBeforeInline) {
   NGBlockNode* container =
       new NGBlockNode(GetLayoutObjectByElementId("container"));
   NGLayoutInputNode* child1 = container->FirstChild();
-  EXPECT_TRUE(child1 && child1->IsInline());
+  EXPECT_TRUE(child1 && child1->IsBlock());
   NGLayoutInputNode* child2 = child1->NextSibling();
-  EXPECT_EQ(child2, nullptr);
+  EXPECT_TRUE(child2 && child2->IsBlock());
 }
 
 TEST_F(NGBlockNodeForTest, ChildOofAfterInline) {

@@ -66,13 +66,26 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
       is_bidi_reordered_(false)
 #endif
 {
+  container_builder_.MutableUnpositionedFloats() = space->UnpositionedFloats();
+
+  // TODO(crbug.com/716930): We may be an empty LayoutInline due to splitting.
+  // Only resolve our BFC offset if we know that we are non-empty as we may
+  // need to pass through our margin strut.
+  if (!inline_node->Items().IsEmpty()) {
+    NGLogicalOffset bfc_offset = ConstraintSpace().BfcOffset();
+    bfc_offset.block_offset += ConstraintSpace().MarginStrut().Sum();
+    MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_offset,
+                                 &container_builder_);
+    PositionPendingFloats(bfc_offset.block_offset, &container_builder_,
+                          MutableConstraintSpace());
+  }
+
   if (!is_horizontal_writing_mode_)
     baseline_type_ = FontBaseline::kIdeographicBaseline;
   if (break_token)
     Initialize(break_token->ItemIndex(), break_token->TextOffset());
   else
     Initialize(0, 0);
-  container_builder_.MutableUnpositionedFloats() = space->UnpositionedFloats();
 }
 
 bool NGInlineLayoutAlgorithm::IsFirstLine() const {
@@ -242,18 +255,6 @@ bool NGInlineLayoutAlgorithm::CreateLine() {
 
 bool NGInlineLayoutAlgorithm::CreateLineUpToLastBreakOpportunity() {
   const Vector<NGInlineItem>& items = Node()->Items();
-
-  // TODO(crbug.com/716930): We may be an empty LayoutInline due to splitting.
-  // Only resolve our BFC offset if we know that we are non-empty as we may
-  // need to pass through our margin strut.
-  if (!items.IsEmpty()) {
-    NGLogicalOffset bfc_offset = ConstraintSpace().BfcOffset();
-    bfc_offset.block_offset += ConstraintSpace().MarginStrut().Sum();
-    MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_offset,
-                                 &container_builder_);
-    PositionPendingFloats(bfc_offset.block_offset, &container_builder_,
-                          MutableConstraintSpace());
-  }
 
   // Create a list of LineItemChunk from |start| and |last_break_opportunity|.
   // TODO(kojii): Consider refactoring LineItemChunk once NGLineBuilder's public
@@ -551,6 +552,8 @@ LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
 
 void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
   NGLogicalOffset iter_offset = ConstraintSpace().BfcOffset();
+  if (container_builder_.BfcOffset())
+    iter_offset = ContainerBfcOffset();
   iter_offset.block_offset += content_size_;
   auto* iter = MutableConstraintSpace()->LayoutOpportunityIterator(iter_offset);
   NGLayoutOpportunity opportunity = iter->Next();

@@ -222,32 +222,11 @@ LayoutObject* NGBlockNode::GetLayoutObject() const {
   return layout_box_;
 }
 
-static bool ShouldHandleByInlineContext(LayoutObject* child) {
-  DCHECK(child);
-  // The spec isn't clear about whether floats/OOF should be in inline
-  // formatting context or in block formatting context.
-  // Prefer inline formatting context because 1) floats/OOF at the beginning
-  // and in the middle of inline should be handled in the same code, and 2)
-  // it matches to the LayoutObject tree.
-  for (; child; child = child->NextSibling()) {
-    if (child->IsInline())
-      return true;
-    if (child->IsFloating() || child->IsOutOfFlowPositioned())
-      continue;
-    return false;
-  }
-  // All children are either float or OOF.
-  // TODO(kojii): Should this be handled in block context or inline context?
-  // If we handle in inline, we can remove all code for floats/OOF from block
-  // layout, but it may change semantics and causes incorrectness?
-  return false;
-}
-
 NGLayoutInputNode* NGBlockNode::FirstChild() {
   if (!first_child_) {
     LayoutObject* child = layout_box_->SlowFirstChild();
     if (child) {
-      if (ShouldHandleByInlineContext(child)) {
+      if (layout_box_->ChildrenInline()) {
         first_child_ =
             new NGInlineNode(child, ToLayoutNGBlockFlow(layout_box_));
       } else {
