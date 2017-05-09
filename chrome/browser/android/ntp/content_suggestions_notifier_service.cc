@@ -204,7 +204,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
   void AppStatusChanged(base::android::ApplicationState state) {
     if (variations::GetVariationParamByFeatureAsBool(
             kNotificationsFeature, kNotificationsKeepWhenFrontmostParam,
-            false)) {
+            true)) {
       return;
     }
     if (!ShouldNotifyInState(state)) {
