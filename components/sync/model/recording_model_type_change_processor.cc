@@ -16,10 +16,13 @@ namespace {
 
 std::unique_ptr<ModelTypeChangeProcessor> CreateAndAssignProcessor(
     RecordingModelTypeChangeProcessor** processor_address,
+    bool expect_error,
     ModelType type,
     ModelTypeSyncBridge* bridge) {
   auto processor = base::MakeUnique<RecordingModelTypeChangeProcessor>();
   *processor_address = processor.get();
+  if (expect_error)
+    processor->ExpectError();
   // Not all compilers are smart enough to up cast during copy elision, so we
   // explicitly create a correctly typed unique_ptr.
   return base::WrapUnique(processor.release());
@@ -61,9 +64,10 @@ void RecordingModelTypeChangeProcessor::SetIsTrackingMetadata(
 // static
 ModelTypeSyncBridge::ChangeProcessorFactory
 RecordingModelTypeChangeProcessor::FactoryForBridgeTest(
-    RecordingModelTypeChangeProcessor** processor_address) {
+    RecordingModelTypeChangeProcessor** processor_address,
+    bool expect_error) {
   return base::Bind(&CreateAndAssignProcessor,
-                    base::Unretained(processor_address));
+                    base::Unretained(processor_address), expect_error);
 }
 
 }  //  namespace syncer
