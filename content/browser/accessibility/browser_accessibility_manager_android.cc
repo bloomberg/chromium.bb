@@ -191,7 +191,7 @@ ui::AXTreeUpdate
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  empty_document.state = 1 << ui::AX_STATE_READ_ONLY;
+  empty_document.AddState(ui::AX_STATE_READ_ONLY);
 
   ui::AXTreeUpdate update;
   update.root_id = empty_document.id;
@@ -991,9 +991,9 @@ void BrowserAccessibilityManagerAndroid::OnAutofillPopupDisplayed(
   ui::AXNodeData ax_node_data;
   ax_node_data.role = ui::AX_ROLE_MENU;
   ax_node_data.SetName("Autofill");
-  ax_node_data.state = 1 << ui::AX_STATE_READ_ONLY;
-  ax_node_data.state |= 1 << ui::AX_STATE_FOCUSABLE;
-  ax_node_data.state |= 1 << ui::AX_STATE_SELECTABLE;
+  ax_node_data.AddState(ui::AX_STATE_READ_ONLY);
+  ax_node_data.AddState(ui::AX_STATE_FOCUSABLE);
+  ax_node_data.AddState(ui::AX_STATE_SELECTABLE);
   g_autofill_popup_proxy_node_ax_node->SetData(ax_node_data);
   g_autofill_popup_proxy_node->Init(this, g_autofill_popup_proxy_node_ax_node);
 

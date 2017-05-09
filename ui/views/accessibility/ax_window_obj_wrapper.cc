@@ -53,7 +53,6 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->role = is_alert_ ? ui::AX_ROLE_ALERT : ui::AX_ROLE_WINDOW;
   out_node_data->AddStringAttribute(ui::AX_ATTR_NAME,
                                     base::UTF16ToUTF8(window_->GetTitle()));
-  out_node_data->state = 0;
   out_node_data->location = gfx::RectF(window_->GetBoundsInScreen());
 
   ui::AXTreeIDRegistry::AXTreeID child_ax_tree_id =

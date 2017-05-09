@@ -165,11 +165,9 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
 
 void PopulateAXState(arc::mojom::AccessibilityNodeInfoData* node,
                      ui::AXNodeData* out_data) {
-  out_data->state = 0;
-
 #define MAP_STATE(android_boolean_property, chrome_state) \
   if (GetBooleanProperty(node, android_boolean_property)) \
-    out_data->AddStateFlag(chrome_state);
+    out_data->AddState(chrome_state);
 
   using AXBooleanProperty = arc::mojom::AccessibilityBooleanProperty;
 
@@ -194,7 +192,7 @@ void PopulateAXState(arc::mojom::AccessibilityNodeInfoData* node,
   }
 
   if (!GetBooleanProperty(node, AXBooleanProperty::ENABLED))
-    out_data->AddStateFlag(ui::AX_STATE_DISABLED);
+    out_data->AddState(ui::AX_STATE_DISABLED);
 }
 
 }  // namespace

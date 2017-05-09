@@ -111,14 +111,14 @@ TEST_F(NativeViewAccessibilityTest, LabelIsChildOfButton) {
 TEST_F(NativeViewAccessibilityTest, InvisibleViews) {
   EXPECT_TRUE(widget_->IsVisible());
   EXPECT_FALSE(
-      button_accessibility()->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE));
+      button_accessibility()->GetData().HasState(ui::AX_STATE_INVISIBLE));
   EXPECT_FALSE(
-      label_accessibility()->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE));
+      label_accessibility()->GetData().HasState(ui::AX_STATE_INVISIBLE));
   button_->SetVisible(false);
   EXPECT_TRUE(
-      button_accessibility()->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE));
+      button_accessibility()->GetData().HasState(ui::AX_STATE_INVISIBLE));
   EXPECT_TRUE(
-      label_accessibility()->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE));
+      label_accessibility()->GetData().HasState(ui::AX_STATE_INVISIBLE));
 }
 
 TEST_F(NativeViewAccessibilityTest, WritableFocus) {

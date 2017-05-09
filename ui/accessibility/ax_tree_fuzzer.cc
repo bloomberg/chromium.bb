@@ -31,7 +31,6 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   while (i < size) {
     ui::AXNodeData node;
     node.id = data[i++];
-    node.state = 0;
     if (i < size) {
       size_t child_count = data[i++];
       for (size_t j = 0; j < child_count && i < size; j++)

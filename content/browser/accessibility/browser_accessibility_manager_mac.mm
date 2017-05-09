@@ -135,8 +135,7 @@ ui::AXTreeUpdate
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  empty_document.state =
-      1 << ui::AX_STATE_READ_ONLY;
+  empty_document.AddState(ui::AX_STATE_READ_ONLY);
   ui::AXTreeUpdate update;
   update.root_id = empty_document.id;
   update.nodes.push_back(empty_document);
@@ -371,7 +370,7 @@ void BrowserAccessibilityManagerMac::OnNodeDataWillChange(
       role == ui::AX_ROLE_TEXT_FIELD) {
     old_text = old_node_data.GetString16Attribute(ui::AX_ATTR_VALUE);
     new_text = new_node_data.GetString16Attribute(ui::AX_ATTR_VALUE);
-  } else if (new_node_data.state & (1 << ui::AX_STATE_EDITABLE)) {
+  } else if (new_node_data.HasState(ui::AX_STATE_EDITABLE)) {
     old_text = old_node_data.GetString16Attribute(ui::AX_ATTR_NAME);
     new_text = new_node_data.GetString16Attribute(ui::AX_ATTR_NAME);
   }

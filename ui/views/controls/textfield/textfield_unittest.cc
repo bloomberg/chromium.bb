@@ -3101,21 +3101,19 @@ TEST_F(TextfieldTest, AccessiblePasswordTest) {
   textfield_->SetText(ASCIIToUTF16("password"));
 
   ui::AXNodeData node_data_regular;
-  node_data_regular.state = 0;
   textfield_->GetAccessibleNodeData(&node_data_regular);
   EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, node_data_regular.role);
   EXPECT_EQ(ASCIIToUTF16("password"),
             node_data_regular.GetString16Attribute(ui::AX_ATTR_VALUE));
-  EXPECT_FALSE(node_data_regular.HasStateFlag(ui::AX_STATE_PROTECTED));
+  EXPECT_FALSE(node_data_regular.HasState(ui::AX_STATE_PROTECTED));
 
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   ui::AXNodeData node_data_protected;
-  node_data_protected.state = 0;
   textfield_->GetAccessibleNodeData(&node_data_protected);
   EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, node_data_protected.role);
   EXPECT_EQ(ASCIIToUTF16("********"),
             node_data_protected.GetString16Attribute(ui::AX_ATTR_VALUE));
-  EXPECT_TRUE(node_data_protected.HasStateFlag(ui::AX_STATE_PROTECTED));
+  EXPECT_TRUE(node_data_protected.HasState(ui::AX_STATE_PROTECTED));
 }
 
 // Verify that cursor visibility is controlled by SetCursorEnabled.

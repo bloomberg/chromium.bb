@@ -912,11 +912,11 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                                ui::AX_SUPPORTED_ACTION_ACTIVATE);
   }
   if (read_only())
-    node_data->AddStateFlag(ui::AX_STATE_READ_ONLY);
+    node_data->AddState(ui::AX_STATE_READ_ONLY);
   else
-    node_data->AddStateFlag(ui::AX_STATE_EDITABLE);
+    node_data->AddState(ui::AX_STATE_EDITABLE);
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD) {
-    node_data->AddStateFlag(ui::AX_STATE_PROTECTED);
+    node_data->AddState(ui::AX_STATE_PROTECTED);
     node_data->SetValue(base::string16(text().size(), '*'));
   } else {
     node_data->SetValue(text());

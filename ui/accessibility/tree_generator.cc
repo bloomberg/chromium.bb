@@ -88,18 +88,15 @@ void TreeGenerator::BuildUniqueTreeWithSize(
   update.root_id = permuted[0];
   update.nodes.resize(node_count);
   update.nodes[0].id = permuted[0];
-  update.nodes[0].state = AX_STATE_NONE;
   if (node_count > 1) {
     update.nodes[0].child_ids.push_back(permuted[1]);
     update.nodes[1].id = permuted[1];
-    update.nodes[1].state = AX_STATE_NONE;
   }
 
   // The remaining nodes are assigned based on their parent
   // selected from the next bits from |tree_index|.
   for (int i = 2; i < node_count; ++i) {
     update.nodes[i].id = permuted[i];
-    update.nodes[i].state = AX_STATE_NONE;
     int parent_index = (tree_index % i);
     tree_index /= i;
     update.nodes[parent_index].child_ids.push_back(permuted[i]);

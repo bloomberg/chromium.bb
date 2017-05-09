@@ -212,7 +212,7 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   AXNodeData root;
   root.id = 1;
   root.role = AX_ROLE_DIALOG;
-  root.state = 1 << AX_STATE_FOCUSABLE;
+  root.AddState(AX_STATE_FOCUSABLE);
   root.location = gfx::RectF(0, 0, 800, 600);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
@@ -220,13 +220,11 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   AXNodeData button;
   button.id = 2;
   button.role = AX_ROLE_BUTTON;
-  button.state = 0;
   button.location = gfx::RectF(20, 20, 200, 30);
 
   AXNodeData checkbox;
   checkbox.id = 3;
   checkbox.role = AX_ROLE_CHECK_BOX;
-  checkbox.state = 0;
   checkbox.location = gfx::RectF(20, 50, 200, 30);
 
   AXTreeUpdate initial_state;
@@ -275,7 +273,6 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
   AXNodeData list;
   list.id = 3;
   list.role = AX_ROLE_LIST;
-  list.state = 0;
   list.child_ids.push_back(4);
   list.child_ids.push_back(5);
   list.child_ids.push_back(6);
@@ -283,17 +280,14 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
   AXNodeData list_item_2;
   list_item_2.id = 5;
   list_item_2.role = AX_ROLE_LIST_ITEM;
-  list_item_2.state = 0;
 
   AXNodeData list_item_3;
   list_item_3.id = 6;
   list_item_3.role = AX_ROLE_LIST_ITEM;
-  list_item_3.state = 0;
 
   AXNodeData button;
   button.id = 7;
   button.role = AX_ROLE_BUTTON;
-  button.state = 0;
 
   AXTreeUpdate update;
   update.root_id = 3;
@@ -576,7 +570,6 @@ TEST(AXTreeTest, BogusAXTree) {
   AXTreeUpdate initial_state;
   AXNodeData node;
   node.id = 0;
-  node.state = 0;
   initial_state.nodes.push_back(node);
   initial_state.nodes.push_back(node);
   ui::AXTree tree;
@@ -588,11 +581,9 @@ TEST(AXTreeTest, BogusAXTree2) {
   AXTreeUpdate initial_state;
   AXNodeData node;
   node.id = 0;
-  node.state = 0;
   initial_state.nodes.push_back(node);
   AXNodeData node2;
   node2.id = 0;
-  node2.state = 0;
   node2.child_ids.push_back(0);
   node2.child_ids.push_back(0);
   initial_state.nodes.push_back(node2);
@@ -605,13 +596,11 @@ TEST(AXTreeTest, BogusAXTree3) {
   AXTreeUpdate initial_state;
   AXNodeData node;
   node.id = 0;
-  node.state = 0;
   node.child_ids.push_back(1);
   initial_state.nodes.push_back(node);
 
   AXNodeData node2;
   node2.id = 1;
-  node2.state = 0;
   node2.child_ids.push_back(1);
   node2.child_ids.push_back(1);
   initial_state.nodes.push_back(node2);
@@ -626,10 +615,9 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_BUTTON;
-  initial_state.nodes[0].state = 0;
   initial_state.nodes[0].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
                                          ui::AX_CHECKED_STATE_TRUE);
-  initial_state.nodes[0].AddStateFlag(AX_STATE_FOCUSABLE);
+  initial_state.nodes[0].AddState(AX_STATE_FOCUSABLE);
   AXTree tree(initial_state);
 
   FakeAXTreeDelegate fake_delegate;
@@ -641,11 +629,10 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   update.nodes.resize(1);
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_CHECK_BOX;
-  update.nodes[0].state = 0;
   update.nodes[0].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
                                   ui::AX_CHECKED_STATE_FALSE);
-  update.nodes[0].AddStateFlag(AX_STATE_FOCUSABLE);
-  update.nodes[0].AddStateFlag(AX_STATE_VISITED);
+  update.nodes[0].AddState(AX_STATE_FOCUSABLE);
+  update.nodes[0].AddState(AX_STATE_VISITED);
   EXPECT_TRUE(tree.Unserialize(update));
 
   const std::vector<std::string>& change_log =

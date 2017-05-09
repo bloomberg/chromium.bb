@@ -228,9 +228,9 @@ void Tab::SetState(TabState tab_state) {
 void Tab::GetAccessibleNodeData(ui::AXNodeData* data) {
   data->role = ui::AX_ROLE_TAB;
   data->SetName(title()->text());
-  data->AddStateFlag(ui::AX_STATE_SELECTABLE);
+  data->AddState(ui::AX_STATE_SELECTABLE);
   if (selected())
-    data->AddStateFlag(ui::AX_STATE_SELECTED);
+    data->AddState(ui::AX_STATE_SELECTED);
 }
 
 bool Tab::HandleAccessibleAction(const ui::AXActionData& action_data) {

@@ -360,10 +360,8 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
   if (old_data.state != new_data.state) {
     for (int i = AX_STATE_NONE + 1; i <= AX_STATE_LAST; ++i) {
       AXState state = static_cast<AXState>(i);
-      if (old_data.HasStateFlag(state) != new_data.HasStateFlag(state)) {
-        delegate_->OnStateChanged(this, node, state,
-                                  new_data.HasStateFlag(state));
-      }
+      if (old_data.HasState(state) != new_data.HasState(state))
+        delegate_->OnStateChanged(this, node, state, new_data.HasState(state));
     }
   }
 
