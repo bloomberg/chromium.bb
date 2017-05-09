@@ -35,7 +35,7 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
   // FeatureEngagementTracker implementation.
   void NotifyEvent(const std::string& event) override;
   bool ShouldTriggerHelpUI(const base::Feature& feature) override;
-  void Dismissed() override;
+  void Dismissed(const base::Feature& feature) override;
   bool IsInitialized() override;
   void AddOnInitializedCallback(OnInitializedCallback callback) override;
 

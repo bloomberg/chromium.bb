@@ -31,9 +31,9 @@ public interface FeatureEngagementTracker {
     boolean shouldTriggerHelpUI(String feature);
 
     /**
-     * Must be called after display of feature enlightenment finishes.
+     * Must be called after display of feature enlightenment finishes for a particular feature.
      */
-    void dismissed();
+    void dismissed(String feature);
 
     /**
      * Returns whether the tracker has been successfully initialized. During startup, this will be

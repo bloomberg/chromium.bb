@@ -42,9 +42,9 @@ public class FeatureEngagementTrackerImpl implements FeatureEngagementTracker {
     }
 
     @Override
-    public void dismissed() {
+    public void dismissed(String feature) {
         assert mNativePtr != 0;
-        nativeDismissed(mNativePtr);
+        nativeDismissed(mNativePtr, feature);
     }
 
     @Override
@@ -74,7 +74,8 @@ public class FeatureEngagementTrackerImpl implements FeatureEngagementTracker {
             long nativeFeatureEngagementTrackerImplAndroid, String event);
     private native boolean nativeShouldTriggerHelpUI(
             long nativeFeatureEngagementTrackerImplAndroid, String feature);
-    private native void nativeDismissed(long nativeFeatureEngagementTrackerImplAndroid);
+    private native void nativeDismissed(
+            long nativeFeatureEngagementTrackerImplAndroid, String feature);
     private native boolean nativeIsInitialized(long nativeFeatureEngagementTrackerImplAndroid);
     private native void nativeAddOnInitializedCallback(
             long nativeFeatureEngagementTrackerImplAndroid, Callback<Boolean> callback);

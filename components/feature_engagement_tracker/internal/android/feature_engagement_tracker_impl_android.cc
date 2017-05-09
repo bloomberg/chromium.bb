@@ -13,8 +13,8 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "components/feature_engagement_tracker/internal/feature_list.h"
 #include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
+#include "components/feature_engagement_tracker/public/feature_list.h"
 #include "jni/FeatureEngagementTrackerImpl_jni.h"
 
 namespace feature_engagement_tracker {
@@ -121,8 +121,12 @@ bool FeatureEngagementTrackerImplAndroid::ShouldTriggerHelpUI(
 
 void FeatureEngagementTrackerImplAndroid::Dismissed(
     JNIEnv* env,
-    const base::android::JavaRef<jobject>& jobj) {
-  feature_engagement_tracker_impl_->Dismissed();
+    const base::android::JavaRef<jobject>& jobj,
+    const base::android::JavaParamRef<jstring>& jfeature) {
+  std::string feature = ConvertJavaStringToUTF8(env, jfeature);
+  DCHECK(features_.find(feature) != features_.end());
+
+  feature_engagement_tracker_impl_->Dismissed(*features_[feature]);
 }
 
 bool FeatureEngagementTrackerImplAndroid::IsInitialized(

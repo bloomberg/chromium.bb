@@ -725,7 +725,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        tracker.dismissed();
+                        tracker.dismissed(FeatureConstants.DOWNLOAD_HOME_FEATURE);
                         getAppMenuHandler().setMenuHighlight(null);
                     }
                 });

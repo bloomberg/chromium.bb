@@ -10,8 +10,8 @@
 #include <unordered_set>
 
 #include "base/macros.h"
-#include "components/feature_engagement_tracker/internal/feature_list.h"
 #include "components/feature_engagement_tracker/internal/storage_validator.h"
+#include "components/feature_engagement_tracker/public/feature_list.h"
 
 namespace feature_engagement_tracker {
 class Configuration;

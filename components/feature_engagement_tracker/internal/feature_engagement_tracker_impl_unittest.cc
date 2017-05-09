@@ -278,14 +278,14 @@ TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
 
   // After dismissing the current in-product help, that feature can not be shown
   // again, but a different feature should.
-  tracker_->Dismissed();
+  tracker_->Dismissed(kTestFeatureFoo);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
   EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
 
   // After dismissing the second registered feature, no more in-product help
   // should be shown, since kTestFeatureQux is invalid.
-  tracker_->Dismissed();
+  tracker_->Dismissed(kTestFeatureBar);
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
