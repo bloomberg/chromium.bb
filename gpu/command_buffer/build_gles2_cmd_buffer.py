@@ -4638,6 +4638,27 @@ def ToCamelCase(input_string):
   """converts ABC_underscore_case to ABCUnderscoreCase."""
   return ''.join(w[0].upper() + w[1:] for w in input_string.split('_'))
 
+def EnumsConflict(a, b):
+  """Returns true if the enums have different names (ignoring suffixes) and one
+  of them is a Chromium enum."""
+  if a == b:
+    return False
+
+  if b.endswith('_CHROMIUM'):
+    a, b = b, a
+
+  if not a.endswith('_CHROMIUM'):
+    return False
+
+  def removesuffix(string, suffix):
+    if not string.endswith(suffix):
+      return string
+    return string[:-len(suffix)]
+  b = removesuffix(b, "_NV")
+  b = removesuffix(b, "_EXT")
+  b = removesuffix(b, "_OES")
+  return removesuffix(a, "_CHROMIUM") != b
+
 def GetGLGetTypeConversion(result_type, value_type, value):
   """Makes a gl compatible type conversion string for accessing state variables.
 
@@ -10911,8 +10932,7 @@ extern const NameToFunc g_gles2_function_table[] = {
             if not value in dict:
               dict[value] = name
             # check our own _CHROMIUM macro conflicts with khronos GL headers.
-            elif dict[value] != name and (name.endswith('_CHROMIUM') or
-                dict[value].endswith('_CHROMIUM')):
+            elif EnumsConflict(dict[value], name):
               self.Error("code collision: %s and %s have the same code %s" %
                          (dict[value], name, value))
 

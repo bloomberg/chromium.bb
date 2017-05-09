@@ -16,7 +16,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0, "GL_FALSE",
     },
     {
-        0x00, "GL_CLOSE_PATH_CHROMIUM",
+        0x00, "GL_CLOSE_PATH_NV",
     },
     {
         0x0000, "GL_POINTS",
@@ -31,13 +31,13 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x00000002, "GL_CONTEXT_FLAG_DEBUG_BIT_KHR",
     },
     {
-        0x00000004, "GL_GEOMETRY_SHADER_BIT_EXT",
+        0x00000004, "GL_GEOMETRY_SHADER_BIT_OES",
     },
     {
-        0x00000008, "GL_TESS_CONTROL_SHADER_BIT_EXT",
+        0x00000008, "GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR",
     },
     {
-        0x00000010, "GL_TESS_EVALUATION_SHADER_BIT_EXT",
+        0x00000010, "GL_TESS_EVALUATION_SHADER_BIT_OES",
     },
     {
         0x00000020, "GL_COLOR_BUFFER_BIT5_QCOM",
@@ -76,13 +76,13 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0001, "GL_LINES",
     },
     {
-        0x00010000, "GL_STENCIL_BUFFER_BIT0_QCOM",
+        0x00010000, "GL_FONT_X_MIN_BOUNDS_BIT_NV",
     },
     {
         0x0002, "GL_LINE_LOOP",
     },
     {
-        0x00020000, "GL_STENCIL_BUFFER_BIT1_QCOM",
+        0x00020000, "GL_FONT_Y_MIN_BOUNDS_BIT_NV",
     },
     {
         0x0003, "GL_LINE_STRIP",
@@ -91,7 +91,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0004, "GL_TRIANGLES",
     },
     {
-        0x00040000, "GL_STENCIL_BUFFER_BIT2_QCOM",
+        0x00040000, "GL_FONT_X_MAX_BOUNDS_BIT_NV",
     },
     {
         0x0005, "GL_TRIANGLE_STRIP",
@@ -100,58 +100,70 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0006, "GL_TRIANGLE_FAN",
     },
     {
-        0x0007, "GL_QUADS_EXT",
+        0x0007, "GL_QUADS_OES",
     },
     {
         0x0008, "GL_MAP_INVALIDATE_BUFFER_BIT_EXT",
     },
     {
-        0x00080000, "GL_STENCIL_BUFFER_BIT3_QCOM",
+        0x00080000, "GL_FONT_Y_MAX_BOUNDS_BIT_NV",
     },
     {
-        0x000A, "GL_LINES_ADJACENCY_EXT",
+        0x000A, "GL_LINES_ADJACENCY_OES",
     },
     {
-        0x000B, "GL_LINE_STRIP_ADJACENCY_EXT",
+        0x000B, "GL_LINE_STRIP_ADJACENCY_OES",
     },
     {
-        0x000C, "GL_TRIANGLES_ADJACENCY_EXT",
+        0x000C, "GL_TRIANGLES_ADJACENCY_OES",
     },
     {
-        0x000D, "GL_TRIANGLE_STRIP_ADJACENCY_EXT",
+        0x000D, "GL_TRIANGLE_STRIP_ADJACENCY_OES",
     },
     {
-        0x000E, "GL_PATCHES_EXT",
+        0x000E, "GL_PATCHES_OES",
     },
     {
         0x0010, "GL_MAP_FLUSH_EXPLICIT_BIT_EXT",
     },
     {
-        0x00100000, "GL_STENCIL_BUFFER_BIT4_QCOM",
+        0x00100000, "GL_FONT_UNITS_PER_EM_BIT_NV",
     },
     {
         0x0020, "GL_MAP_UNSYNCHRONIZED_BIT_EXT",
     },
     {
-        0x00200000, "GL_STENCIL_BUFFER_BIT5_QCOM",
+        0x00200000, "GL_FONT_ASCENDER_BIT_NV",
     },
     {
-        0x00400000, "GL_STENCIL_BUFFER_BIT6_QCOM",
+        0x0040, "GL_MAP_PERSISTENT_BIT_EXT",
     },
     {
-        0x00800000, "GL_STENCIL_BUFFER_BIT7_QCOM",
+        0x00400000, "GL_FONT_DESCENDER_BIT_NV",
     },
     {
-        0x01000000, "GL_MULTISAMPLE_BUFFER_BIT0_QCOM",
+        0x0080, "GL_MAP_COHERENT_BIT_EXT",
     },
     {
-        0x02, "GL_MOVE_TO_CHROMIUM",
+        0x00800000, "GL_FONT_HEIGHT_BIT_NV",
+    },
+    {
+        0x01, "GL_BOLD_BIT_NV",
+    },
+    {
+        0x0100, "GL_DYNAMIC_STORAGE_BIT_EXT",
+    },
+    {
+        0x01000000, "GL_FONT_MAX_ADVANCE_WIDTH_BIT_NV",
+    },
+    {
+        0x02, "GL_MOVE_TO_NV",
     },
     {
         0x0200, "GL_NEVER",
     },
     {
-        0x02000000, "GL_MULTISAMPLE_BUFFER_BIT1_QCOM",
+        0x02000000, "GL_FONT_MAX_ADVANCE_HEIGHT_BIT_NV",
     },
     {
         0x0201, "GL_LESS",
@@ -173,6 +185,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x0207, "GL_ALWAYS",
+    },
+    {
+        0x03, "GL_RELATIVE_MOVE_TO_NV",
     },
     {
         0x0300, "GL_SRC_COLOR",
@@ -202,10 +217,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0308, "GL_SRC_ALPHA_SATURATE",
     },
     {
-        0x04, "GL_LINE_TO_CHROMIUM",
+        0x04, "GL_LINE_TO_NV",
     },
     {
-        0x04000000, "GL_MULTISAMPLE_BUFFER_BIT2_QCOM",
+        0x04000000, "GL_FONT_UNDERLINE_POSITION_BIT_NV",
     },
     {
         0x0404, "GL_FRONT",
@@ -215,6 +230,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x0408, "GL_FRONT_AND_BACK",
+    },
+    {
+        0x05, "GL_RELATIVE_LINE_TO_NV",
     },
     {
         0x0500, "GL_INVALID_ENUM",
@@ -241,7 +259,19 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0507, "GL_CONTEXT_LOST_KHR",
     },
     {
-        0x08000000, "GL_MULTISAMPLE_BUFFER_BIT3_QCOM",
+        0x06, "GL_HORIZONTAL_LINE_TO_NV",
+    },
+    {
+        0x07, "GL_RELATIVE_HORIZONTAL_LINE_TO_NV",
+    },
+    {
+        0x08, "GL_VERTICAL_LINE_TO_NV",
+    },
+    {
+        0x08000000, "GL_FONT_UNDERLINE_THICKNESS_BIT_NV",
+    },
+    {
+        0x09, "GL_RELATIVE_VERTICAL_LINE_TO_NV",
     },
     {
         0x0900, "GL_CW",
@@ -250,10 +280,16 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0901, "GL_CCW",
     },
     {
-        0x0A, "GL_QUADRATIC_CURVE_TO_CHROMIUM",
+        0x0A, "GL_QUADRATIC_CURVE_TO_NV",
+    },
+    {
+        0x0B, "GL_RELATIVE_QUADRATIC_CURVE_TO_NV",
     },
     {
         0x0B21, "GL_LINE_WIDTH",
+    },
+    {
+        0x0B40, "GL_POLYGON_MODE_NV",
     },
     {
         0x0B44, "GL_CULL_FACE",
@@ -310,10 +346,16 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0BA2, "GL_VIEWPORT",
     },
     {
-        0x0BA6, "GL_PATH_MODELVIEW_MATRIX_CHROMIUM",
+        0x0BA3, "GL_PATH_MODELVIEW_STACK_DEPTH_NV",
     },
     {
-        0x0BA7, "GL_PATH_PROJECTION_MATRIX_CHROMIUM",
+        0x0BA4, "GL_PATH_PROJECTION_STACK_DEPTH_NV",
+    },
+    {
+        0x0BA6, "GL_PATH_MODELVIEW_MATRIX_NV",
+    },
+    {
+        0x0BA7, "GL_PATH_PROJECTION_MATRIX_NV",
     },
     {
         0x0BC0, "GL_ALPHA_TEST_QCOM",
@@ -331,7 +373,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0BE2, "GL_BLEND",
     },
     {
-        0x0C, "GL_CUBIC_CURVE_TO_CHROMIUM",
+        0x0C, "GL_CUBIC_CURVE_TO_NV",
     },
     {
         0x0C01, "GL_DRAW_BUFFER_EXT",
@@ -364,6 +406,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0CF5, "GL_UNPACK_ALIGNMENT",
     },
     {
+        0x0D, "GL_RELATIVE_CUBIC_CURVE_TO_NV",
+    },
+    {
         0x0D02, "GL_PACK_ROW_LENGTH",
     },
     {
@@ -380,6 +425,12 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x0D33, "GL_MAX_TEXTURE_SIZE",
+    },
+    {
+        0x0D36, "GL_PATH_MAX_MODELVIEW_STACK_DEPTH_NV",
+    },
+    {
+        0x0D38, "GL_PATH_MAX_PROJECTION_STACK_DEPTH_NV",
     },
     {
         0x0D3A, "GL_MAX_VIEWPORT_DIMS",
@@ -409,13 +460,28 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x0DE1, "GL_TEXTURE_2D",
     },
     {
+        0x0E, "GL_SMOOTH_QUADRATIC_CURVE_TO_NV",
+    },
+    {
+        0x0F, "GL_RELATIVE_SMOOTH_QUADRATIC_CURVE_TO_NV",
+    },
+    {
         0x1, "GL_CA_LAYER_EDGE_LEFT_CHROMIUM",
     },
     {
-        0x10000000, "GL_MULTISAMPLE_BUFFER_BIT4_QCOM",
+        0x10, "GL_SMOOTH_CUBIC_CURVE_TO_NV",
     },
     {
-        0x1004, "GL_TEXTURE_BORDER_COLOR_EXT",
+        0x100, "GL_GLYPH_HAS_KERNING_BIT_NV",
+    },
+    {
+        0x10000000, "GL_FONT_HAS_KERNING_BIT_NV",
+    },
+    {
+        0x1004, "GL_TEXTURE_BORDER_COLOR_OES",
+    },
+    {
+        0x11, "GL_RELATIVE_SMOOTH_CUBIC_CURVE_TO_NV",
     },
     {
         0x1100, "GL_DONT_CARE",
@@ -425,6 +491,15 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x1102, "GL_NICEST",
+    },
+    {
+        0x12, "GL_SMALL_CCW_ARC_TO_NV",
+    },
+    {
+        0x13, "GL_RELATIVE_SMALL_CCW_ARC_TO_NV",
+    },
+    {
+        0x14, "GL_SMALL_CW_ARC_TO_NV",
     },
     {
         0x1400, "GL_BYTE",
@@ -454,19 +529,37 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x140C, "GL_FIXED",
     },
     {
+        0x140E, "GL_INT64_NV",
+    },
+    {
+        0x140F, "GL_UNSIGNED_INT64_NV",
+    },
+    {
+        0x15, "GL_RELATIVE_SMALL_CW_ARC_TO_NV",
+    },
+    {
         0x1506, "GL_XOR_NV",
     },
     {
         0x150A, "GL_INVERT",
     },
     {
-        0x1700, "GL_PATH_MODELVIEW_CHROMIUM",
+        0x16, "GL_LARGE_CCW_ARC_TO_NV",
     },
     {
-        0x1701, "GL_PATH_PROJECTION_CHROMIUM",
+        0x17, "GL_RELATIVE_LARGE_CCW_ARC_TO_NV",
+    },
+    {
+        0x1700, "GL_PATH_MODELVIEW_NV",
+    },
+    {
+        0x1701, "GL_PATH_PROJECTION_NV",
     },
     {
         0x1702, "GL_TEXTURE",
+    },
+    {
+        0x18, "GL_LARGE_CW_ARC_TO_NV",
     },
     {
         0x1800, "GL_COLOR_EXT",
@@ -476,6 +569,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x1802, "GL_STENCIL_EXT",
+    },
+    {
+        0x19, "GL_RELATIVE_LARGE_CW_ARC_TO_NV",
     },
     {
         0x1901, "GL_STENCIL_INDEX_OES",
@@ -508,7 +604,19 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x190A, "GL_LUMINANCE_ALPHA",
     },
     {
-        0x1A, "GL_CONIC_CURVE_TO_CHROMIUM",
+        0x1A, "GL_CONIC_CURVE_TO_NV",
+    },
+    {
+        0x1B, "GL_RELATIVE_CONIC_CURVE_TO_NV",
+    },
+    {
+        0x1B00, "GL_POINT_NV",
+    },
+    {
+        0x1B01, "GL_LINE_NV",
+    },
+    {
+        0x1B02, "GL_FILL_NV",
     },
     {
         0x1D00, "GL_FLAT_CHROMIUM",
@@ -541,7 +649,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x2, "GL_CA_LAYER_EDGE_RIGHT_CHROMIUM",
     },
     {
-        0x20000000, "GL_MULTISAMPLE_BUFFER_BIT5_QCOM",
+        0x20, "GL_GLYPH_VERTICAL_BEARING_X_BIT_NV",
+    },
+    {
+        0x20000000, "GL_FONT_NUM_GLYPH_INDICES_BIT_NV",
     },
     {
         0x2400, "GL_EYE_LINEAR_CHROMIUM",
@@ -586,6 +697,12 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x2A00, "GL_POLYGON_OFFSET_UNITS",
     },
     {
+        0x2A01, "GL_POLYGON_OFFSET_POINT_NV",
+    },
+    {
+        0x2A02, "GL_POLYGON_OFFSET_LINE_NV",
+    },
+    {
         0x3000, "GL_CLIP_DISTANCE0_APPLE",
     },
     {
@@ -614,6 +731,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x4, "GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM",
+    },
+    {
+        0x40, "GL_GLYPH_VERTICAL_BEARING_Y_BIT_NV",
     },
     {
         0x40000000, "GL_MULTISAMPLE_BUFFER_BIT6_QCOM",
@@ -655,6 +775,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8, "GL_CA_LAYER_EDGE_TOP_CHROMIUM",
     },
     {
+        0x80, "GL_GLYPH_VERTICAL_BEARING_ADVANCE_BIT_NV",
+    },
+    {
         0x80000000, "GL_MULTISAMPLE_BUFFER_BIT7_QCOM",
     },
     {
@@ -676,10 +799,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8006, "GL_FUNC_ADD",
     },
     {
-        0x8007, "GL_MIN_EXT",
+        0x8007, "GL_MIN",
     },
     {
-        0x8008, "GL_MAX_EXT",
+        0x8008, "GL_MAX",
     },
     {
         0x8009, "GL_BLEND_EQUATION",
@@ -721,6 +844,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8052, "GL_RGB10_EXT",
     },
     {
+        0x8054, "GL_RGB16_EXT",
+    },
+    {
         0x8056, "GL_RGBA4",
     },
     {
@@ -731,6 +857,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x8059, "GL_RGB10_A2_EXT",
+    },
+    {
+        0x805B, "GL_RGBA16_EXT",
     },
     {
         0x8069, "GL_TEXTURE_BINDING_2D",
@@ -802,7 +931,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x80E9, "GL_MAX_ELEMENTS_INDICES",
     },
     {
-        0x812D, "GL_CLAMP_TO_BORDER_EXT",
+        0x812D, "GL_CLAMP_TO_BORDER_OES",
     },
     {
         0x812F, "GL_CLAMP_TO_EDGE",
@@ -874,7 +1003,13 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x821D, "GL_NUM_EXTENSIONS",
     },
     {
-        0x8221, "GL_PRIMITIVE_RESTART_FOR_PATCHES_SUPPORTED",
+        0x821F, "GL_BUFFER_IMMUTABLE_STORAGE_EXT",
+    },
+    {
+        0x8220, "GL_BUFFER_STORAGE_FLAGS_EXT",
+    },
+    {
+        0x8221, "GL_PRIMITIVE_RESTART_FOR_PATCHES_SUPPORTED_OES",
     },
     {
         0x8227, "GL_RG_EXT",
@@ -886,7 +1021,13 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8229, "GL_R8_EXT",
     },
     {
+        0x822A, "GL_R16_EXT",
+    },
+    {
         0x822B, "GL_RG8_EXT",
+    },
+    {
+        0x822C, "GL_RG16_EXT",
     },
     {
         0x822D, "GL_R16F_EXT",
@@ -1012,10 +1153,22 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x825A, "GL_PROGRAM_PIPELINE_BINDING_EXT",
     },
     {
-        0x825E, "GL_LAYER_PROVOKING_VERTEX_EXT",
+        0x825B, "GL_MAX_VIEWPORTS_OES",
     },
     {
-        0x8260, "GL_UNDEFINED_VERTEX_EXT",
+        0x825C, "GL_VIEWPORT_SUBPIXEL_BITS_OES",
+    },
+    {
+        0x825D, "GL_VIEWPORT_BOUNDS_RANGE_OES",
+    },
+    {
+        0x825E, "GL_LAYER_PROVOKING_VERTEX_OES",
+    },
+    {
+        0x825F, "GL_VIEWPORT_INDEX_PROVOKING_VERTEX_OES",
+    },
+    {
+        0x8260, "GL_UNDEFINED_VERTEX_OES",
     },
     {
         0x8261, "GL_NO_RESET_NOTIFICATION_KHR",
@@ -1039,16 +1192,16 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x826D, "GL_DEBUG_GROUP_STACK_DEPTH_KHR",
     },
     {
-        0x82DB, "GL_TEXTURE_VIEW_MIN_LEVEL_EXT",
+        0x82DB, "GL_TEXTURE_VIEW_MIN_LEVEL_OES",
     },
     {
-        0x82DC, "GL_TEXTURE_VIEW_NUM_LEVELS_EXT",
+        0x82DC, "GL_TEXTURE_VIEW_NUM_LEVELS_OES",
     },
     {
-        0x82DD, "GL_TEXTURE_VIEW_MIN_LAYER_EXT",
+        0x82DD, "GL_TEXTURE_VIEW_MIN_LAYER_OES",
     },
     {
-        0x82DE, "GL_TEXTURE_VIEW_NUM_LAYERS_EXT",
+        0x82DE, "GL_TEXTURE_VIEW_NUM_LAYERS_OES",
     },
     {
         0x82DF, "GL_TEXTURE_IMMUTABLE_LEVELS",
@@ -1066,10 +1219,19 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x82E3, "GL_QUERY_KHR",
     },
     {
+        0x82E4, "GL_PROGRAM_PIPELINE_KHR",
+    },
+    {
         0x82E6, "GL_SAMPLER_KHR",
     },
     {
         0x82E8, "GL_MAX_LABEL_LENGTH_KHR",
+    },
+    {
+        0x82F9, "GL_MAX_CULL_DISTANCES_EXT",
+    },
+    {
+        0x82FA, "GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES_EXT",
     },
     {
         0x82FB, "GL_CONTEXT_RELEASE_BEHAVIOR_KHR",
@@ -1112,6 +1274,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x83FB, "GL_PERFQUERY_WAIT_INTEL",
+    },
+    {
+        0x83FE, "GL_CONSERVATIVE_RASTERIZATION_INTEL",
     },
     {
         0x846D, "GL_ALIASED_POINT_SIZE_RANGE",
@@ -1217,6 +1382,12 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x84E0, "GL_ACTIVE_TEXTURE",
+    },
+    {
+        0x84E3, "GL_PATH_TRANSPOSE_MODELVIEW_MATRIX_NV",
+    },
+    {
+        0x84E4, "GL_PATH_TRANSPOSE_PROJECTION_MATRIX_NV",
     },
     {
         0x84E8, "GL_MAX_RENDERBUFFER_SIZE",
@@ -1480,16 +1651,16 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x886A, "GL_VERTEX_ATTRIB_ARRAY_NORMALIZED",
     },
     {
-        0x886C, "GL_MAX_TESS_CONTROL_INPUT_COMPONENTS_EXT",
+        0x886C, "GL_MAX_TESS_CONTROL_INPUT_COMPONENTS_OES",
     },
     {
-        0x886D, "GL_MAX_TESS_EVALUATION_INPUT_COMPONENTS_EXT",
+        0x886D, "GL_MAX_TESS_EVALUATION_INPUT_COMPONENTS_OES",
     },
     {
         0x8872, "GL_MAX_TEXTURE_IMAGE_UNITS",
     },
     {
-        0x887F, "GL_GEOMETRY_SHADER_INVOCATIONS_EXT",
+        0x887F, "GL_GEOMETRY_SHADER_INVOCATIONS_OES",
     },
     {
         0x8892, "GL_ARRAY_BUFFER",
@@ -1600,13 +1771,13 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8914, "GL_SAMPLES_PASSED_ARB",
     },
     {
-        0x8916, "GL_GEOMETRY_LINKED_VERTICES_OUT_EXT",
+        0x8916, "GL_GEOMETRY_LINKED_VERTICES_OUT_OES",
     },
     {
-        0x8917, "GL_GEOMETRY_LINKED_INPUT_TYPE_EXT",
+        0x8917, "GL_GEOMETRY_LINKED_INPUT_TYPE_OES",
     },
     {
-        0x8918, "GL_GEOMETRY_LINKED_OUTPUT_TYPE_EXT",
+        0x8918, "GL_GEOMETRY_LINKED_OUTPUT_TYPE_OES",
     },
     {
         0x8919, "GL_SAMPLER_BINDING",
@@ -1630,7 +1801,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8A2B, "GL_MAX_VERTEX_UNIFORM_BLOCKS",
     },
     {
-        0x8A2C, "GL_MAX_GEOMETRY_UNIFORM_BLOCKS_EXT",
+        0x8A2C, "GL_MAX_GEOMETRY_UNIFORM_BLOCKS_OES",
     },
     {
         0x8A2D, "GL_MAX_FRAGMENT_UNIFORM_BLOCKS",
@@ -1648,7 +1819,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8A31, "GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS",
     },
     {
-        0x8A32, "GL_MAX_COMBINED_GEOMETRY_UNIFORM_COMPONENTS_EXT",
+        0x8A32, "GL_MAX_COMBINED_GEOMETRY_UNIFORM_COMPONENTS_OES",
     },
     {
         0x8A33, "GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS",
@@ -1975,6 +2146,12 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8BDC, "GL_STATE_RESTORE",
     },
     {
+        0x8BE7, "GL_SAMPLER_EXTERNAL_2D_Y2Y_EXT",
+    },
+    {
+        0x8BFA, "GL_TEXTURE_PROTECTED_EXT",
+    },
+    {
         0x8C00, "GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG",
     },
     {
@@ -1999,19 +2176,19 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8C1D, "GL_TEXTURE_BINDING_2D_ARRAY",
     },
     {
-        0x8C29, "GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS_EXT",
+        0x8C29, "GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS_OES",
     },
     {
-        0x8C2A, "GL_TEXTURE_BUFFER_EXT",
+        0x8C2A, "GL_TEXTURE_BUFFER_OES",
     },
     {
-        0x8C2B, "GL_MAX_TEXTURE_BUFFER_SIZE_EXT",
+        0x8C2B, "GL_MAX_TEXTURE_BUFFER_SIZE_OES",
     },
     {
-        0x8C2C, "GL_TEXTURE_BINDING_BUFFER_EXT",
+        0x8C2C, "GL_TEXTURE_BINDING_BUFFER_OES",
     },
     {
-        0x8C2D, "GL_TEXTURE_BUFFER_DATA_STORE_BINDING_EXT",
+        0x8C2D, "GL_TEXTURE_BUFFER_DATA_STORE_BINDING_OES",
     },
     {
         0x8C2F, "GL_ANY_SAMPLES_PASSED_EXT",
@@ -2089,7 +2266,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8C85, "GL_TRANSFORM_FEEDBACK_BUFFER_SIZE",
     },
     {
-        0x8C87, "GL_PRIMITIVES_GENERATED_EXT",
+        0x8C87, "GL_PRIMITIVES_GENERATED_OES",
     },
     {
         0x8C88, "GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN",
@@ -2236,6 +2413,54 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8CEF, "GL_COLOR_ATTACHMENT15_EXT",
     },
     {
+        0x8CF0, "GL_COLOR_ATTACHMENT16",
+    },
+    {
+        0x8CF1, "GL_COLOR_ATTACHMENT17",
+    },
+    {
+        0x8CF2, "GL_COLOR_ATTACHMENT18",
+    },
+    {
+        0x8CF3, "GL_COLOR_ATTACHMENT19",
+    },
+    {
+        0x8CF4, "GL_COLOR_ATTACHMENT20",
+    },
+    {
+        0x8CF5, "GL_COLOR_ATTACHMENT21",
+    },
+    {
+        0x8CF6, "GL_COLOR_ATTACHMENT22",
+    },
+    {
+        0x8CF7, "GL_COLOR_ATTACHMENT23",
+    },
+    {
+        0x8CF8, "GL_COLOR_ATTACHMENT24",
+    },
+    {
+        0x8CF9, "GL_COLOR_ATTACHMENT25",
+    },
+    {
+        0x8CFA, "GL_COLOR_ATTACHMENT26",
+    },
+    {
+        0x8CFB, "GL_COLOR_ATTACHMENT27",
+    },
+    {
+        0x8CFC, "GL_COLOR_ATTACHMENT28",
+    },
+    {
+        0x8CFD, "GL_COLOR_ATTACHMENT29",
+    },
+    {
+        0x8CFE, "GL_COLOR_ATTACHMENT30",
+    },
+    {
+        0x8CFF, "GL_COLOR_ATTACHMENT31",
+    },
+    {
         0x8D00, "GL_DEPTH_ATTACHMENT",
     },
     {
@@ -2371,10 +2596,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8D9F, "GL_INT_2_10_10_10_REV",
     },
     {
-        0x8DA7, "GL_FRAMEBUFFER_ATTACHMENT_LAYERED_EXT",
+        0x8DA7, "GL_FRAMEBUFFER_ATTACHMENT_LAYERED_OES",
     },
     {
-        0x8DA8, "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS_EXT",
+        0x8DA8, "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS_OES",
     },
     {
         0x8DAD, "GL_FLOAT_32_UNSIGNED_INT_24_8_REV",
@@ -2386,7 +2611,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8DC1, "GL_SAMPLER_2D_ARRAY",
     },
     {
-        0x8DC2, "GL_SAMPLER_BUFFER_EXT",
+        0x8DC2, "GL_SAMPLER_BUFFER_OES",
     },
     {
         0x8DC4, "GL_SAMPLER_2D_ARRAY_SHADOW_NV",
@@ -2416,7 +2641,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8DCF, "GL_INT_SAMPLER_2D_ARRAY",
     },
     {
-        0x8DD0, "GL_INT_SAMPLER_BUFFER_EXT",
+        0x8DD0, "GL_INT_SAMPLER_BUFFER_OES",
     },
     {
         0x8DD2, "GL_UNSIGNED_INT_SAMPLER_2D",
@@ -2431,19 +2656,19 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8DD7, "GL_UNSIGNED_INT_SAMPLER_2D_ARRAY",
     },
     {
-        0x8DD8, "GL_UNSIGNED_INT_SAMPLER_BUFFER_EXT",
+        0x8DD8, "GL_UNSIGNED_INT_SAMPLER_BUFFER_OES",
     },
     {
-        0x8DD9, "GL_GEOMETRY_SHADER_EXT",
+        0x8DD9, "GL_GEOMETRY_SHADER_OES",
     },
     {
-        0x8DDF, "GL_MAX_GEOMETRY_UNIFORM_COMPONENTS_EXT",
+        0x8DDF, "GL_MAX_GEOMETRY_UNIFORM_COMPONENTS_OES",
     },
     {
-        0x8DE0, "GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT",
+        0x8DE0, "GL_MAX_GEOMETRY_OUTPUT_VERTICES_OES",
     },
     {
-        0x8DE1, "GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS_EXT",
+        0x8DE1, "GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS_OES",
     },
     {
         0x8DF0, "GL_LOW_FLOAT",
@@ -2488,10 +2713,28 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8DFD, "GL_MAX_FRAGMENT_UNIFORM_VECTORS",
     },
     {
-        0x8E1E, "GL_MAX_COMBINED_TESS_CONTROL_UNIFORM_COMPONENTS_EXT",
+        0x8E13, "GL_QUERY_WAIT_NV",
     },
     {
-        0x8E1F, "GL_MAX_COMBINED_TESS_EVALUATION_UNIFORM_COMPONENTS_EXT",
+        0x8E14, "GL_QUERY_NO_WAIT_NV",
+    },
+    {
+        0x8E15, "GL_QUERY_BY_REGION_WAIT_NV",
+    },
+    {
+        0x8E16, "GL_QUERY_BY_REGION_NO_WAIT_NV",
+    },
+    {
+        0x8E1B, "GL_POLYGON_OFFSET_CLAMP_EXT",
+    },
+    {
+        0x8E1E, "GL_MAX_COMBINED_TESS_CONTROL_UNIFORM_COMPONENTS_OES",
+    },
+    {
+        0x8E1F, "GL_MAX_COMBINED_TESS_EVALUATION_UNIFORM_COMPONENTS_OES",
+    },
+    {
+        0x8E20, "GL_COLOR_SAMPLES_NV",
     },
     {
         0x8E22, "GL_TRANSFORM_FEEDBACK",
@@ -2524,13 +2767,16 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8E45, "GL_TEXTURE_SWIZZLE_A",
     },
     {
-        0x8E4D, "GL_FIRST_VERTEX_CONVENTION_EXT",
+        0x8E4D, "GL_FIRST_VERTEX_CONVENTION_OES",
     },
     {
-        0x8E4E, "GL_LAST_VERTEX_CONVENTION_EXT",
+        0x8E4E, "GL_LAST_VERTEX_CONVENTION_OES",
     },
     {
-        0x8E5A, "GL_MAX_GEOMETRY_SHADER_INVOCATIONS_EXT",
+        0x8E50, "GL_SAMPLE_LOCATION_NV",
+    },
+    {
+        0x8E5A, "GL_MAX_GEOMETRY_SHADER_INVOCATIONS_OES",
     },
     {
         0x8E5B, "GL_MIN_FRAGMENT_INTERPOLATION_OFFSET_OES",
@@ -2542,73 +2788,73 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8E5D, "GL_FRAGMENT_INTERPOLATION_OFFSET_BITS_OES",
     },
     {
-        0x8E72, "GL_PATCH_VERTICES_EXT",
+        0x8E72, "GL_PATCH_VERTICES_OES",
     },
     {
-        0x8E75, "GL_TESS_CONTROL_OUTPUT_VERTICES_EXT",
+        0x8E75, "GL_TESS_CONTROL_OUTPUT_VERTICES_OES",
     },
     {
-        0x8E76, "GL_TESS_GEN_MODE_EXT",
+        0x8E76, "GL_TESS_GEN_MODE_OES",
     },
     {
-        0x8E77, "GL_TESS_GEN_SPACING_EXT",
+        0x8E77, "GL_TESS_GEN_SPACING_OES",
     },
     {
-        0x8E78, "GL_TESS_GEN_VERTEX_ORDER_EXT",
+        0x8E78, "GL_TESS_GEN_VERTEX_ORDER_OES",
     },
     {
-        0x8E79, "GL_TESS_GEN_POINT_MODE_EXT",
+        0x8E79, "GL_TESS_GEN_POINT_MODE_OES",
     },
     {
-        0x8E7A, "GL_ISOLINES_EXT",
+        0x8E7A, "GL_ISOLINES_OES",
     },
     {
-        0x8E7B, "GL_FRACTIONAL_ODD_EXT",
+        0x8E7B, "GL_FRACTIONAL_ODD_OES",
     },
     {
-        0x8E7C, "GL_FRACTIONAL_EVEN_EXT",
+        0x8E7C, "GL_FRACTIONAL_EVEN_OES",
     },
     {
-        0x8E7D, "GL_MAX_PATCH_VERTICES_EXT",
+        0x8E7D, "GL_MAX_PATCH_VERTICES_OES",
     },
     {
-        0x8E7E, "GL_MAX_TESS_GEN_LEVEL_EXT",
+        0x8E7E, "GL_MAX_TESS_GEN_LEVEL_OES",
     },
     {
-        0x8E7F, "GL_MAX_TESS_CONTROL_UNIFORM_COMPONENTS_EXT",
+        0x8E7F, "GL_MAX_TESS_CONTROL_UNIFORM_COMPONENTS_OES",
     },
     {
-        0x8E80, "GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS_EXT",
+        0x8E80, "GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS_OES",
     },
     {
-        0x8E81, "GL_MAX_TESS_CONTROL_TEXTURE_IMAGE_UNITS_EXT",
+        0x8E81, "GL_MAX_TESS_CONTROL_TEXTURE_IMAGE_UNITS_OES",
     },
     {
-        0x8E82, "GL_MAX_TESS_EVALUATION_TEXTURE_IMAGE_UNITS_EXT",
+        0x8E82, "GL_MAX_TESS_EVALUATION_TEXTURE_IMAGE_UNITS_OES",
     },
     {
-        0x8E83, "GL_MAX_TESS_CONTROL_OUTPUT_COMPONENTS_EXT",
+        0x8E83, "GL_MAX_TESS_CONTROL_OUTPUT_COMPONENTS_OES",
     },
     {
-        0x8E84, "GL_MAX_TESS_PATCH_COMPONENTS_EXT",
+        0x8E84, "GL_MAX_TESS_PATCH_COMPONENTS_OES",
     },
     {
-        0x8E85, "GL_MAX_TESS_CONTROL_TOTAL_OUTPUT_COMPONENTS_EXT",
+        0x8E85, "GL_MAX_TESS_CONTROL_TOTAL_OUTPUT_COMPONENTS_OES",
     },
     {
-        0x8E86, "GL_MAX_TESS_EVALUATION_OUTPUT_COMPONENTS_EXT",
+        0x8E86, "GL_MAX_TESS_EVALUATION_OUTPUT_COMPONENTS_OES",
     },
     {
-        0x8E87, "GL_TESS_EVALUATION_SHADER_EXT",
+        0x8E87, "GL_TESS_EVALUATION_SHADER_OES",
     },
     {
-        0x8E88, "GL_TESS_CONTROL_SHADER_EXT",
+        0x8E88, "GL_TESS_CONTROL_SHADER_OES",
     },
     {
-        0x8E89, "GL_MAX_TESS_CONTROL_UNIFORM_BLOCKS_EXT",
+        0x8E89, "GL_MAX_TESS_CONTROL_UNIFORM_BLOCKS_OES",
     },
     {
-        0x8E8A, "GL_MAX_TESS_EVALUATION_UNIFORM_BLOCKS_EXT",
+        0x8E8A, "GL_MAX_TESS_EVALUATION_UNIFORM_BLOCKS_OES",
     },
     {
         0x8ED0, "GL_COVERAGE_COMPONENT_NV",
@@ -2633,6 +2879,24 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x8ED7, "GL_COVERAGE_AUTOMATIC_NV",
+    },
+    {
+        0x8F10, "GL_INCLUSIVE_EXT",
+    },
+    {
+        0x8F11, "GL_EXCLUSIVE_EXT",
+    },
+    {
+        0x8F12, "GL_WINDOW_RECTANGLE_EXT",
+    },
+    {
+        0x8F13, "GL_WINDOW_RECTANGLE_MODE_EXT",
+    },
+    {
+        0x8F14, "GL_MAX_WINDOW_RECTANGLES_EXT",
+    },
+    {
+        0x8F15, "GL_NUM_WINDOW_RECTANGLES_EXT",
     },
     {
         0x8F36, "GL_COPY_READ_BUFFER_NV",
@@ -2662,6 +2926,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8F67, "GL_MAX_SHADER_PIXEL_LOCAL_STORAGE_SIZE_EXT",
     },
     {
+        0x8F69, "GL_TEXTURE_ASTC_DECODE_PRECISION_EXT",
+    },
+    {
         0x8F94, "GL_R8_SNORM",
     },
     {
@@ -2672,6 +2939,18 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x8F97, "GL_RGBA8_SNORM",
+    },
+    {
+        0x8F98, "GL_R16_SNORM_EXT",
+    },
+    {
+        0x8F99, "GL_RG16_SNORM_EXT",
+    },
+    {
+        0x8F9A, "GL_RGB16_SNORM_EXT",
+    },
+    {
+        0x8F9B, "GL_RGBA16_SNORM_EXT",
     },
     {
         0x8F9C, "GL_SIGNED_NORMALIZED",
@@ -2695,136 +2974,355 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8FBB, "GL_GPU_DISJOINT_EXT",
     },
     {
+        0x8FBD, "GL_SR8_EXT",
+    },
+    {
+        0x8FBE, "GL_SRG8_EXT",
+    },
+    {
         0x8FC4, "GL_SHADER_BINARY_VIV",
     },
     {
-        0x9009, "GL_TEXTURE_CUBE_MAP_ARRAY_EXT",
+        0x8FE0, "GL_INT8_NV",
     },
     {
-        0x900A, "GL_TEXTURE_BINDING_CUBE_MAP_ARRAY_EXT",
+        0x8FE1, "GL_INT8_VEC2_NV",
     },
     {
-        0x900C, "GL_SAMPLER_CUBE_MAP_ARRAY_EXT",
+        0x8FE2, "GL_INT8_VEC3_NV",
     },
     {
-        0x900D, "GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW_EXT",
+        0x8FE3, "GL_INT8_VEC4_NV",
     },
     {
-        0x900E, "GL_INT_SAMPLER_CUBE_MAP_ARRAY_EXT",
+        0x8FE4, "GL_INT16_NV",
     },
     {
-        0x900F, "GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY_EXT",
+        0x8FE5, "GL_INT16_VEC2_NV",
     },
     {
-        0x9051, "GL_IMAGE_BUFFER_EXT",
+        0x8FE6, "GL_INT16_VEC3_NV",
     },
     {
-        0x9054, "GL_IMAGE_CUBE_MAP_ARRAY_EXT",
+        0x8FE7, "GL_INT16_VEC4_NV",
     },
     {
-        0x905C, "GL_INT_IMAGE_BUFFER_EXT",
+        0x8FE9, "GL_INT64_VEC2_NV",
     },
     {
-        0x905F, "GL_INT_IMAGE_CUBE_MAP_ARRAY_EXT",
+        0x8FEA, "GL_INT64_VEC3_NV",
     },
     {
-        0x9067, "GL_UNSIGNED_INT_IMAGE_BUFFER_EXT",
+        0x8FEB, "GL_INT64_VEC4_NV",
     },
     {
-        0x906A, "GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY_EXT",
+        0x8FEC, "GL_UNSIGNED_INT8_NV",
+    },
+    {
+        0x8FED, "GL_UNSIGNED_INT8_VEC2_NV",
+    },
+    {
+        0x8FEE, "GL_UNSIGNED_INT8_VEC3_NV",
+    },
+    {
+        0x8FEF, "GL_UNSIGNED_INT8_VEC4_NV",
+    },
+    {
+        0x8FF0, "GL_UNSIGNED_INT16_NV",
+    },
+    {
+        0x8FF1, "GL_UNSIGNED_INT16_VEC2_NV",
+    },
+    {
+        0x8FF2, "GL_UNSIGNED_INT16_VEC3_NV",
+    },
+    {
+        0x8FF3, "GL_UNSIGNED_INT16_VEC4_NV",
+    },
+    {
+        0x8FF5, "GL_UNSIGNED_INT64_VEC2_NV",
+    },
+    {
+        0x8FF6, "GL_UNSIGNED_INT64_VEC3_NV",
+    },
+    {
+        0x8FF7, "GL_UNSIGNED_INT64_VEC4_NV",
+    },
+    {
+        0x8FF8, "GL_FLOAT16_NV",
+    },
+    {
+        0x8FF9, "GL_FLOAT16_VEC2_NV",
+    },
+    {
+        0x8FFA, "GL_FLOAT16_VEC3_NV",
+    },
+    {
+        0x8FFB, "GL_FLOAT16_VEC4_NV",
+    },
+    {
+        0x9009, "GL_TEXTURE_CUBE_MAP_ARRAY_OES",
+    },
+    {
+        0x900A, "GL_TEXTURE_BINDING_CUBE_MAP_ARRAY_OES",
+    },
+    {
+        0x900C, "GL_SAMPLER_CUBE_MAP_ARRAY_OES",
+    },
+    {
+        0x900D, "GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW_OES",
+    },
+    {
+        0x900E, "GL_INT_SAMPLER_CUBE_MAP_ARRAY_OES",
+    },
+    {
+        0x900F, "GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY_OES",
+    },
+    {
+        0x9051, "GL_IMAGE_BUFFER_OES",
+    },
+    {
+        0x9054, "GL_IMAGE_CUBE_MAP_ARRAY_OES",
+    },
+    {
+        0x905C, "GL_INT_IMAGE_BUFFER_OES",
+    },
+    {
+        0x905F, "GL_INT_IMAGE_CUBE_MAP_ARRAY_OES",
+    },
+    {
+        0x9067, "GL_UNSIGNED_INT_IMAGE_BUFFER_OES",
+    },
+    {
+        0x906A, "GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY_OES",
     },
     {
         0x906F, "GL_RGB10_A2UI",
     },
     {
-        0x9075, "GL_PATH_STROKE_WIDTH_CHROMIUM",
+        0x9070, "GL_PATH_FORMAT_SVG_NV",
     },
     {
-        0x9076, "GL_PATH_END_CAPS_CHROMIUM",
+        0x9071, "GL_PATH_FORMAT_PS_NV",
     },
     {
-        0x9079, "GL_PATH_JOIN_STYLE_CHROMIUM",
+        0x9072, "GL_STANDARD_FONT_NAME_NV",
+    },
+    {
+        0x9073, "GL_SYSTEM_FONT_NAME_NV",
+    },
+    {
+        0x9074, "GL_FILE_NAME_NV",
+    },
+    {
+        0x9075, "GL_PATH_STROKE_WIDTH_NV",
+    },
+    {
+        0x9076, "GL_PATH_END_CAPS_NV",
+    },
+    {
+        0x9077, "GL_PATH_INITIAL_END_CAP_NV",
+    },
+    {
+        0x9078, "GL_PATH_TERMINAL_END_CAP_NV",
+    },
+    {
+        0x9079, "GL_PATH_JOIN_STYLE_NV",
+    },
+    {
+        0x907A, "GL_PATH_MITER_LIMIT_NV",
+    },
+    {
+        0x907B, "GL_PATH_DASH_CAPS_NV",
+    },
+    {
+        0x907C, "GL_PATH_INITIAL_DASH_CAP_NV",
+    },
+    {
+        0x907D, "GL_PATH_TERMINAL_DASH_CAP_NV",
+    },
+    {
+        0x907E, "GL_PATH_DASH_OFFSET_NV",
+    },
+    {
+        0x907F, "GL_PATH_CLIENT_LENGTH_NV",
     },
     {
         0x907a, "GL_PATH_MITER_LIMIT_CHROMIUM",
     },
     {
+        0x9080, "GL_PATH_FILL_MODE_NV",
+    },
+    {
+        0x9081, "GL_PATH_FILL_MASK_NV",
+    },
+    {
+        0x9082, "GL_PATH_FILL_COVER_MODE_NV",
+    },
+    {
+        0x9083, "GL_PATH_STROKE_COVER_MODE_NV",
+    },
+    {
+        0x9084, "GL_PATH_STROKE_MASK_NV",
+    },
+    {
         0x9086, "GL_PATH_STROKE_BOUND_CHROMIUM",
     },
     {
-        0x9088, "GL_COUNT_UP_CHROMIUM",
+        0x9088, "GL_COUNT_UP_NV",
     },
     {
-        0x9089, "GL_COUNT_DOWN_CHROMIUM",
+        0x9089, "GL_COUNT_DOWN_NV",
     },
     {
-        0x908B, "GL_CONVEX_HULL_CHROMIUM",
+        0x908A, "GL_PATH_OBJECT_BOUNDING_BOX_NV",
     },
     {
-        0x908D, "GL_BOUNDING_BOX_CHROMIUM",
+        0x908B, "GL_CONVEX_HULL_NV",
     },
     {
-        0x908E, "GL_TRANSLATE_X_CHROMIUM",
+        0x908D, "GL_BOUNDING_BOX_NV",
     },
     {
-        0x908F, "GL_TRANSLATE_Y_CHROMIUM",
+        0x908E, "GL_TRANSLATE_X_NV",
     },
     {
-        0x9090, "GL_TRANSLATE_2D_CHROMIUM",
+        0x908F, "GL_TRANSLATE_Y_NV",
     },
     {
-        0x9091, "GL_TRANSLATE_3D_CHROMIUM",
+        0x9090, "GL_TRANSLATE_2D_NV",
     },
     {
-        0x9092, "GL_AFFINE_2D_CHROMIUM",
+        0x9091, "GL_TRANSLATE_3D_NV",
     },
     {
-        0x9094, "GL_AFFINE_3D_CHROMIUM",
+        0x9092, "GL_AFFINE_2D_NV",
     },
     {
-        0x9096, "GL_TRANSPOSE_AFFINE_2D_CHROMIUM",
+        0x9094, "GL_AFFINE_3D_NV",
     },
     {
-        0x9098, "GL_TRANSPOSE_AFFINE_3D_CHROMIUM",
+        0x9096, "GL_TRANSPOSE_AFFINE_2D_NV",
     },
     {
-        0x909C, "GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM",
+        0x9098, "GL_TRANSPOSE_AFFINE_3D_NV",
     },
     {
-        0x90A4, "GL_ROUND_CHROMIUM",
+        0x909A, "GL_UTF8_NV",
     },
     {
-        0x90A6, "GL_BEVEL_CHROMIUM",
+        0x909B, "GL_UTF16_NV",
     },
     {
-        0x90A7, "GL_MITER_REVERT_CHROMIUM",
+        0x909C, "GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV",
     },
     {
-        0x90B7, "GL_PATH_STENCIL_FUNC_CHROMIUM",
+        0x909D, "GL_PATH_COMMAND_COUNT_NV",
     },
     {
-        0x90B8, "GL_PATH_STENCIL_REF_CHROMIUM",
+        0x909E, "GL_PATH_COORD_COUNT_NV",
     },
     {
-        0x90B9, "GL_PATH_STENCIL_VALUE_MASK_CHROMIUM",
+        0x909F, "GL_PATH_DASH_ARRAY_COUNT_NV",
     },
     {
-        0x90CB, "GL_MAX_TESS_CONTROL_IMAGE_UNIFORMS_EXT",
+        0x90A0, "GL_PATH_COMPUTED_LENGTH_NV",
     },
     {
-        0x90CC, "GL_MAX_TESS_EVALUATION_IMAGE_UNIFORMS_EXT",
+        0x90A1, "GL_PATH_FILL_BOUNDING_BOX_NV",
     },
     {
-        0x90CD, "GL_MAX_GEOMETRY_IMAGE_UNIFORMS_EXT",
+        0x90A2, "GL_PATH_STROKE_BOUNDING_BOX_NV",
     },
     {
-        0x90D7, "GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS_EXT",
+        0x90A3, "GL_SQUARE_NV",
     },
     {
-        0x90D8, "GL_MAX_TESS_CONTROL_SHADER_STORAGE_BLOCKS_EXT",
+        0x90A4, "GL_ROUND_NV",
     },
     {
-        0x90D9, "GL_MAX_TESS_EVALUATION_SHADER_STORAGE_BLOCKS_EXT",
+        0x90A5, "GL_TRIANGULAR_NV",
+    },
+    {
+        0x90A6, "GL_BEVEL_NV",
+    },
+    {
+        0x90A7, "GL_MITER_REVERT_NV",
+    },
+    {
+        0x90A8, "GL_MITER_TRUNCATE_NV",
+    },
+    {
+        0x90A9, "GL_SKIP_MISSING_GLYPH_NV",
+    },
+    {
+        0x90AA, "GL_USE_MISSING_GLYPH_NV",
+    },
+    {
+        0x90AB, "GL_PATH_ERROR_POSITION_NV",
+    },
+    {
+        0x90AD, "GL_ACCUM_ADJACENT_PAIRS_NV",
+    },
+    {
+        0x90AE, "GL_ADJACENT_PAIRS_NV",
+    },
+    {
+        0x90AF, "GL_FIRST_TO_REST_NV",
+    },
+    {
+        0x90B0, "GL_PATH_GEN_MODE_NV",
+    },
+    {
+        0x90B1, "GL_PATH_GEN_COEFF_NV",
+    },
+    {
+        0x90B3, "GL_PATH_GEN_COMPONENTS_NV",
+    },
+    {
+        0x90B4, "GL_PATH_DASH_OFFSET_RESET_NV",
+    },
+    {
+        0x90B5, "GL_MOVE_TO_RESETS_NV",
+    },
+    {
+        0x90B6, "GL_MOVE_TO_CONTINUES_NV",
+    },
+    {
+        0x90B7, "GL_PATH_STENCIL_FUNC_NV",
+    },
+    {
+        0x90B8, "GL_PATH_STENCIL_REF_NV",
+    },
+    {
+        0x90B9, "GL_PATH_STENCIL_VALUE_MASK_NV",
+    },
+    {
+        0x90BD, "GL_PATH_STENCIL_DEPTH_OFFSET_FACTOR_NV",
+    },
+    {
+        0x90BE, "GL_PATH_STENCIL_DEPTH_OFFSET_UNITS_NV",
+    },
+    {
+        0x90BF, "GL_PATH_COVER_DEPTH_FUNC_NV",
+    },
+    {
+        0x90CB, "GL_MAX_TESS_CONTROL_IMAGE_UNIFORMS_OES",
+    },
+    {
+        0x90CC, "GL_MAX_TESS_EVALUATION_IMAGE_UNIFORMS_OES",
+    },
+    {
+        0x90CD, "GL_MAX_GEOMETRY_IMAGE_UNIFORMS_OES",
+    },
+    {
+        0x90D7, "GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS_OES",
+    },
+    {
+        0x90D8, "GL_MAX_TESS_CONTROL_SHADER_STORAGE_BLOCKS_OES",
+    },
+    {
+        0x90D9, "GL_MAX_TESS_EVALUATION_SHADER_STORAGE_BLOCKS_OES",
     },
     {
         0x90F0, "GL_COLOR_ATTACHMENT_EXT",
@@ -2843,6 +3341,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x90a4, "GL_ROUND_CHROMIUM",
+    },
+    {
+        0x9100, "GL_TEXTURE_2D_MULTISAMPLE",
     },
     {
         0x9102, "GL_TEXTURE_2D_MULTISAMPLE_ARRAY_OES",
@@ -2911,10 +3412,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x9122, "GL_MAX_VERTEX_OUTPUT_COMPONENTS",
     },
     {
-        0x9123, "GL_MAX_GEOMETRY_INPUT_COMPONENTS_EXT",
+        0x9123, "GL_MAX_GEOMETRY_INPUT_COMPONENTS_OES",
     },
     {
-        0x9124, "GL_MAX_GEOMETRY_OUTPUT_COMPONENTS_EXT",
+        0x9124, "GL_MAX_GEOMETRY_OUTPUT_COMPONENTS_OES",
     },
     {
         0x9125, "GL_MAX_FRAGMENT_INPUT_COMPONENTS",
@@ -2944,6 +3445,27 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x9138, "GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG",
     },
     {
+        0x9139, "GL_CUBIC_IMG",
+    },
+    {
+        0x913A, "GL_CUBIC_MIPMAP_NEAREST_IMG",
+    },
+    {
+        0x913B, "GL_CUBIC_MIPMAP_LINEAR_IMG",
+    },
+    {
+        0x913C, "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_AND_DOWNSAMPLE_IMG",
+    },
+    {
+        0x913D, "GL_NUM_DOWNSAMPLE_SCALES_IMG",
+    },
+    {
+        0x913E, "GL_DOWNSAMPLE_SCALES_IMG",
+    },
+    {
+        0x913F, "GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SCALE_IMG",
+    },
+    {
         0x9143, "GL_MAX_DEBUG_MESSAGE_LENGTH_KHR",
     },
     {
@@ -2971,13 +3493,46 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x9154, "GL_VERTEX_ARRAY_OBJECT_EXT",
     },
     {
-        0x919D, "GL_TEXTURE_BUFFER_OFFSET_EXT",
+        0x9195, "GL_VIRTUAL_PAGE_SIZE_X_EXT",
     },
     {
-        0x919E, "GL_TEXTURE_BUFFER_SIZE_EXT",
+        0x9196, "GL_VIRTUAL_PAGE_SIZE_Y_EXT",
     },
     {
-        0x919F, "GL_TEXTURE_BUFFER_OFFSET_ALIGNMENT_EXT",
+        0x9197, "GL_VIRTUAL_PAGE_SIZE_Z_EXT",
+    },
+    {
+        0x9198, "GL_MAX_SPARSE_TEXTURE_SIZE_EXT",
+    },
+    {
+        0x9199, "GL_MAX_SPARSE_3D_TEXTURE_SIZE_EXT",
+    },
+    {
+        0x919A, "GL_MAX_SPARSE_ARRAY_TEXTURE_LAYERS_EXT",
+    },
+    {
+        0x919D, "GL_TEXTURE_BUFFER_OFFSET_OES",
+    },
+    {
+        0x919E, "GL_TEXTURE_BUFFER_SIZE_OES",
+    },
+    {
+        0x919F, "GL_TEXTURE_BUFFER_OFFSET_ALIGNMENT_OES",
+    },
+    {
+        0x91A6, "GL_TEXTURE_SPARSE_EXT",
+    },
+    {
+        0x91A7, "GL_VIRTUAL_PAGE_SIZE_INDEX_EXT",
+    },
+    {
+        0x91A8, "GL_NUM_VIRTUAL_PAGE_SIZES_EXT",
+    },
+    {
+        0x91A9, "GL_SPARSE_TEXTURE_FULL_ARRAY_CUBE_MIPMAPS_EXT",
+    },
+    {
+        0x91AA, "GL_NUM_SPARSE_LEVELS_EXT",
     },
     {
         0x9243, "GL_UNPACK_COLORSPACE_CONVERSION_CHROMIUM",
@@ -3187,49 +3742,196 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x92B4, "GL_INVERT_OVG_NV",
     },
     {
-        0x92BE, "GL_PRIMITIVE_BOUNDING_BOX_EXT",
+        0x92BE, "GL_PRIMITIVE_BOUNDING_BOX_OES",
     },
     {
-        0x92CD, "GL_MAX_TESS_CONTROL_ATOMIC_COUNTER_BUFFERS_EXT",
+        0x92CD, "GL_MAX_TESS_CONTROL_ATOMIC_COUNTER_BUFFERS_OES",
     },
     {
-        0x92CE, "GL_MAX_TESS_EVALUATION_ATOMIC_COUNTER_BUFFERS_EXT",
+        0x92CE, "GL_MAX_TESS_EVALUATION_ATOMIC_COUNTER_BUFFERS_OES",
     },
     {
-        0x92CF, "GL_MAX_GEOMETRY_ATOMIC_COUNTER_BUFFERS_EXT",
+        0x92CF, "GL_MAX_GEOMETRY_ATOMIC_COUNTER_BUFFERS_OES",
     },
     {
-        0x92D3, "GL_MAX_TESS_CONTROL_ATOMIC_COUNTERS_EXT",
+        0x92D3, "GL_MAX_TESS_CONTROL_ATOMIC_COUNTERS_OES",
     },
     {
-        0x92D4, "GL_MAX_TESS_EVALUATION_ATOMIC_COUNTERS_EXT",
+        0x92D4, "GL_MAX_TESS_EVALUATION_ATOMIC_COUNTERS_OES",
     },
     {
-        0x92D5, "GL_MAX_GEOMETRY_ATOMIC_COUNTERS_EXT",
+        0x92D5, "GL_MAX_GEOMETRY_ATOMIC_COUNTERS_OES",
+    },
+    {
+        0x92DD, "GL_FRAGMENT_COVERAGE_TO_COLOR_NV",
+    },
+    {
+        0x92DE, "GL_FRAGMENT_COVERAGE_COLOR_NV",
     },
     {
         0x92E0, "GL_DEBUG_OUTPUT_KHR",
     },
     {
-        0x92E7, "GL_IS_PER_PATCH_EXT",
+        0x92E7, "GL_IS_PER_PATCH_OES",
     },
     {
-        0x9307, "GL_REFERENCED_BY_TESS_CONTROL_SHADER_EXT",
+        0x9307, "GL_REFERENCED_BY_TESS_CONTROL_SHADER_OES",
     },
     {
-        0x9308, "GL_REFERENCED_BY_TESS_EVALUATION_SHADER_EXT",
+        0x9308, "GL_REFERENCED_BY_TESS_EVALUATION_SHADER_OES",
     },
     {
-        0x9309, "GL_REFERENCED_BY_GEOMETRY_SHADER_EXT",
+        0x9309, "GL_REFERENCED_BY_GEOMETRY_SHADER_OES",
     },
     {
-        0x9312, "GL_FRAMEBUFFER_DEFAULT_LAYERS_EXT",
+        0x930F, "GL_LOCATION_INDEX_EXT",
     },
     {
-        0x9317, "GL_MAX_FRAMEBUFFER_LAYERS_EXT",
+        0x9312, "GL_FRAMEBUFFER_DEFAULT_LAYERS_OES",
     },
     {
-        0x9332, "GL_COVERAGE_MODULATION_CHROMIUM",
+        0x9317, "GL_MAX_FRAMEBUFFER_LAYERS_OES",
+    },
+    {
+        0x9327, "GL_RASTER_MULTISAMPLE_EXT",
+    },
+    {
+        0x9328, "GL_RASTER_SAMPLES_EXT",
+    },
+    {
+        0x9329, "GL_MAX_RASTER_SAMPLES_EXT",
+    },
+    {
+        0x932A, "GL_RASTER_FIXED_SAMPLE_LOCATIONS_EXT",
+    },
+    {
+        0x932B, "GL_MULTISAMPLE_RASTERIZATION_ALLOWED_EXT",
+    },
+    {
+        0x932C, "GL_EFFECTIVE_RASTER_SAMPLES_EXT",
+    },
+    {
+        0x932D, "GL_DEPTH_SAMPLES_NV",
+    },
+    {
+        0x932E, "GL_STENCIL_SAMPLES_NV",
+    },
+    {
+        0x932F, "GL_MIXED_DEPTH_SAMPLES_SUPPORTED_NV",
+    },
+    {
+        0x9330, "GL_MIXED_STENCIL_SAMPLES_SUPPORTED_NV",
+    },
+    {
+        0x9331, "GL_COVERAGE_MODULATION_TABLE_NV",
+    },
+    {
+        0x9332, "GL_COVERAGE_MODULATION_NV",
+    },
+    {
+        0x9333, "GL_COVERAGE_MODULATION_TABLE_SIZE_NV",
+    },
+    {
+        0x933C, "GL_FILL_RECTANGLE_NV",
+    },
+    {
+        0x933D, "GL_SAMPLE_LOCATION_SUBPIXEL_BITS_NV",
+    },
+    {
+        0x933E, "GL_SAMPLE_LOCATION_PIXEL_GRID_WIDTH_NV",
+    },
+    {
+        0x933F, "GL_SAMPLE_LOCATION_PIXEL_GRID_HEIGHT_NV",
+    },
+    {
+        0x9340, "GL_PROGRAMMABLE_SAMPLE_LOCATION_TABLE_SIZE_NV",
+    },
+    {
+        0x9341, "GL_PROGRAMMABLE_SAMPLE_LOCATION_NV",
+    },
+    {
+        0x9342, "GL_FRAMEBUFFER_PROGRAMMABLE_SAMPLE_LOCATIONS_NV",
+    },
+    {
+        0x9343, "GL_FRAMEBUFFER_SAMPLE_LOCATION_PIXEL_GRID_NV",
+    },
+    {
+        0x9346, "GL_CONSERVATIVE_RASTERIZATION_NV",
+    },
+    {
+        0x9347, "GL_SUBPIXEL_PRECISION_BIAS_X_BITS_NV",
+    },
+    {
+        0x9348, "GL_SUBPIXEL_PRECISION_BIAS_Y_BITS_NV",
+    },
+    {
+        0x9349, "GL_MAX_SUBPIXEL_PRECISION_BIAS_BITS_NV",
+    },
+    {
+        0x9350, "GL_VIEWPORT_SWIZZLE_POSITIVE_X_NV",
+    },
+    {
+        0x9351, "GL_VIEWPORT_SWIZZLE_NEGATIVE_X_NV",
+    },
+    {
+        0x9352, "GL_VIEWPORT_SWIZZLE_POSITIVE_Y_NV",
+    },
+    {
+        0x9353, "GL_VIEWPORT_SWIZZLE_NEGATIVE_Y_NV",
+    },
+    {
+        0x9354, "GL_VIEWPORT_SWIZZLE_POSITIVE_Z_NV",
+    },
+    {
+        0x9355, "GL_VIEWPORT_SWIZZLE_NEGATIVE_Z_NV",
+    },
+    {
+        0x9356, "GL_VIEWPORT_SWIZZLE_POSITIVE_W_NV",
+    },
+    {
+        0x9357, "GL_VIEWPORT_SWIZZLE_NEGATIVE_W_NV",
+    },
+    {
+        0x9358, "GL_VIEWPORT_SWIZZLE_X_NV",
+    },
+    {
+        0x9359, "GL_VIEWPORT_SWIZZLE_Y_NV",
+    },
+    {
+        0x935A, "GL_VIEWPORT_SWIZZLE_Z_NV",
+    },
+    {
+        0x935B, "GL_VIEWPORT_SWIZZLE_W_NV",
+    },
+    {
+        0x9368, "GL_FONT_GLYPHS_AVAILABLE_NV",
+    },
+    {
+        0x9369, "GL_FONT_TARGET_UNAVAILABLE_NV",
+    },
+    {
+        0x936A, "GL_FONT_UNAVAILABLE_NV",
+    },
+    {
+        0x936B, "GL_FONT_UNINTELLIGIBLE_NV",
+    },
+    {
+        0x936C, "GL_STANDARD_FONT_FORMAT_NV",
+    },
+    {
+        0x936D, "GL_FRAGMENT_INPUT_NV",
+    },
+    {
+        0x9371, "GL_MULTISAMPLES_NV",
+    },
+    {
+        0x9372, "GL_SUPERSAMPLE_SCALE_X_NV",
+    },
+    {
+        0x9373, "GL_SUPERSAMPLE_SCALE_Y_NV",
+    },
+    {
+        0x9374, "GL_CONFORMANT_NV",
     },
     {
         0x9380, "GL_NUM_SAMPLE_COUNTS",
@@ -3448,10 +4150,99 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x9500, "GL_PERFQUERY_GPA_EXTENDED_COUNTERS_INTEL",
     },
     {
+        0x954D, "GL_CONSERVATIVE_RASTER_MODE_NV",
+    },
+    {
+        0x954E, "GL_CONSERVATIVE_RASTER_MODE_POST_SNAP_NV",
+    },
+    {
+        0x954F, "GL_CONSERVATIVE_RASTER_MODE_PRE_SNAP_TRIANGLES_NV",
+    },
+    {
+        0x9630, "GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR",
+    },
+    {
+        0x9631, "GL_MAX_VIEWS_OVR",
+    },
+    {
+        0x9632, "GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR",
+    },
+    {
+        0x9633, "GL_FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR",
+    },
+    {
+        0x9650, "GL_MAX_SHADER_COMBINED_LOCAL_STORAGE_FAST_SIZE_EXT",
+    },
+    {
+        0x9651, "GL_MAX_SHADER_COMBINED_LOCAL_STORAGE_SIZE_EXT",
+    },
+    {
+        0x9652,
+        "GL_FRAMEBUFFER_INCOMPLETE_INSUFFICIENT_SHADER_COMBINED_LOCAL_STORAGE_"
+        "EXT",
+    },
+    {
+        0xC0, "GL_SHARED_EDGE_NV",
+    },
+    {
+        0xE8, "GL_ROUNDED_RECT_NV",
+    },
+    {
+        0xE9, "GL_RELATIVE_ROUNDED_RECT_NV",
+    },
+    {
+        0xEA, "GL_ROUNDED_RECT2_NV",
+    },
+    {
+        0xEB, "GL_RELATIVE_ROUNDED_RECT2_NV",
+    },
+    {
+        0xEC, "GL_ROUNDED_RECT4_NV",
+    },
+    {
+        0xED, "GL_RELATIVE_ROUNDED_RECT4_NV",
+    },
+    {
+        0xEE, "GL_ROUNDED_RECT8_NV",
+    },
+    {
+        0xEF, "GL_RELATIVE_ROUNDED_RECT8_NV",
+    },
+    {
+        0xF0, "GL_RESTART_PATH_NV",
+    },
+    {
+        0xF2, "GL_DUP_FIRST_CUBIC_CURVE_TO_NV",
+    },
+    {
+        0xF4, "GL_DUP_LAST_CUBIC_CURVE_TO_NV",
+    },
+    {
+        0xF6, "GL_RECT_NV",
+    },
+    {
+        0xF7, "GL_RELATIVE_RECT_NV",
+    },
+    {
+        0xF8, "GL_CIRCULAR_CCW_ARC_TO_NV",
+    },
+    {
+        0xFA, "GL_CIRCULAR_CW_ARC_TO_NV",
+    },
+    {
+        0xFC, "GL_CIRCULAR_TANGENT_ARC_TO_NV",
+    },
+    {
+        0xFE, "GL_ARC_TO_NV",
+    },
+    {
+        0xFF, "GL_RELATIVE_ARC_TO_NV",
+    },
+    {
         0xFFFFFFFF, "GL_ALL_SHADER_BITS_EXT",
     },
     {
-        1, "GL_ES_VERSION_2_0",
+        1, "GL_GLES_PROTOTYPES",
     },
     {
         16, "GL_MAILBOX_SIZE_CHROMIUM",
