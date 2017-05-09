@@ -36,6 +36,9 @@ const base::Feature kAutofillUkmLogging{"AutofillUkmLogging",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamRequestCvcIfMissing{
     "AutofillUpstreamRequestCvcIfMissing", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillUpstreamUseAutofillProfileComparatorForName{
+    "AutofillUpstreamUseAutofillProfileComparatorForName",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";
 const char kAutofillCreditCardPopupDividerColorKey[] = "dropdown_divider_color";

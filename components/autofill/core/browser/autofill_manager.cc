@@ -123,6 +123,29 @@ base::string16 SanitizeCreditCardFieldValue(const base::string16& value) {
   return sanitized;
 }
 
+// If |name| consists of three whitespace-separated parts and the second of the
+// three parts is a single character or a single character followed by a period,
+// returns the result of joining the first and third parts with a space.
+// Otherwise, returns |name|.
+//
+// Note that a better way to do this would be to use SplitName from
+// src/components/autofill/core/browser/contact_info.cc. However, for now we
+// want the logic of which variations of names are considered to be the same to
+// exactly match the logic applied on the Payments server.
+base::string16 RemoveMiddleInitial(const base::string16& name) {
+  std::vector<base::StringPiece16> parts =
+      base::SplitStringPiece(name, base::kWhitespaceUTF16,
+                             base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (parts.size() == 3 && (parts[1].length() == 1 ||
+                            (parts[1].length() == 2 &&
+                             base::EndsWith(parts[1], base::ASCIIToUTF16("."),
+                                            base::CompareCase::SENSITIVE)))) {
+    parts.erase(parts.begin() + 1);
+    return base::JoinString(parts, base::ASCIIToUTF16(" "));
+  }
+  return name;
+}
+
 // Returns whether the |field| is predicted as being any kind of name.
 bool IsNameType(const AutofillField& field) {
   return field.Type().group() == NAME || field.Type().group() == NAME_BILLING ||
@@ -1325,24 +1348,45 @@ int AutofillManager::GetProfilesForCreditCardUpload(
   if (candidate_profiles.empty()) {
     verified_name = card_name;
   } else {
-    AutofillProfileComparator comparator(app_locale_);
-    verified_name = comparator.NormalizeForComparison(card_name);
-    for (const AutofillProfile& profile : candidate_profiles) {
-      const base::string16 address_name = comparator.NormalizeForComparison(
-          profile.GetInfo(AutofillType(NAME_FULL), app_locale_));
-      if (!address_name.empty()) {
+    bool found_conflicting_names = false;
+    if (base::FeatureList::IsEnabled(
+            kAutofillUpstreamUseAutofillProfileComparatorForName)) {
+      AutofillProfileComparator comparator(app_locale_);
+      verified_name = comparator.NormalizeForComparison(card_name);
+      for (const AutofillProfile& profile : candidate_profiles) {
+        const base::string16 address_name = comparator.NormalizeForComparison(
+            profile.GetInfo(AutofillType(NAME_FULL), app_locale_));
+        if (address_name.empty())
+          continue;
         if (verified_name.empty() ||
             comparator.IsNameVariantOf(address_name, verified_name)) {
           verified_name = address_name;
         } else if (!comparator.IsNameVariantOf(verified_name, address_name)) {
-          if (!upload_decision_metrics)
-            *rappor_metric_name =
-                "Autofill.CardUploadNotOfferedConflictingNames";
-          upload_decision_metrics |=
-              AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
+          found_conflicting_names = true;
           break;
         }
       }
+    } else {
+      verified_name = RemoveMiddleInitial(card_name);
+      for (const AutofillProfile& profile : candidate_profiles) {
+        const base::string16 address_name = RemoveMiddleInitial(
+            profile.GetInfo(AutofillType(NAME_FULL), app_locale_));
+        if (address_name.empty())
+          continue;
+        if (verified_name.empty()) {
+          verified_name = address_name;
+        } else if (!base::EqualsCaseInsensitiveASCII(verified_name,
+                                                     address_name)) {
+          found_conflicting_names = true;
+          break;
+        }
+      }
+    }
+    if (found_conflicting_names) {
+      if (!upload_decision_metrics)
+        *rappor_metric_name = "Autofill.CardUploadNotOfferedConflictingNames";
+      upload_decision_metrics |=
+          AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
     }
   }
 
