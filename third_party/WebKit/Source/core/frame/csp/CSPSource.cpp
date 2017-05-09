@@ -129,9 +129,8 @@ CSPSource::PortMatchingResult CSPSource::PortMatches(
   }
 
   bool is_scheme_http;  // needed for detecting an upgrade when the port is 0
-  is_scheme_http = scheme_.IsEmpty()
-                       ? policy_->ProtocolEqualsSelf("http")
-                       : DeprecatedEqualIgnoringCase("http", scheme_);
+  is_scheme_http = scheme_.IsEmpty() ? policy_->ProtocolEqualsSelf("http")
+                                     : EqualIgnoringASCIICase("http", scheme_);
 
   if ((port_ == 80 || (port_ == 0 && is_scheme_http)) &&
       (port == 443 || (port == 0 && DefaultPortForProtocol(protocol) == 443)))

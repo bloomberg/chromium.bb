@@ -1388,11 +1388,11 @@ void ContentSecurityPolicy::ReportUnsupportedDirective(const String& name) {
   String message =
       "Unrecognized Content-Security-Policy directive '" + name + "'.\n";
   MessageLevel level = kErrorMessageLevel;
-  if (DeprecatedEqualIgnoringCase(name, kAllow)) {
+  if (EqualIgnoringASCIICase(name, kAllow)) {
     message = kAllowMessage;
-  } else if (DeprecatedEqualIgnoringCase(name, kOptions)) {
+  } else if (EqualIgnoringASCIICase(name, kOptions)) {
     message = kOptionsMessage;
-  } else if (DeprecatedEqualIgnoringCase(name, kPolicyURI)) {
+  } else if (EqualIgnoringASCIICase(name, kPolicyURI)) {
     message = kPolicyURIMessage;
   } else if (GetDirectiveType(name) != DirectiveType::kUndefined) {
     message = "The Content-Security-Policy directive '" + name +
@@ -1490,7 +1490,7 @@ void ContentSecurityPolicy::ReportInvalidSourceExpression(
   String message = "The source list for Content Security Policy directive '" +
                    directive_name + "' contains an invalid source: '" + source +
                    "'. It will be ignored.";
-  if (DeprecatedEqualIgnoringCase(source, "'none'"))
+  if (EqualIgnoringASCIICase(source, "'none'"))
     message = message +
               " Note that 'none' has no effect unless it is the only "
               "expression in the source list.";
@@ -1543,7 +1543,7 @@ bool ContentSecurityPolicy::UrlMatchesSelf(const KURL& url) const {
 }
 
 bool ContentSecurityPolicy::ProtocolEqualsSelf(const String& protocol) const {
-  return DeprecatedEqualIgnoringCase(protocol, self_protocol_);
+  return EqualIgnoringASCIICase(protocol, self_protocol_);
 }
 
 const String& ContentSecurityPolicy::GetSelfProtocol() const {
