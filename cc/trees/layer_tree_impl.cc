@@ -1021,10 +1021,6 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     TRACE_EVENT2(
         "cc", "LayerTreeImpl::UpdateDrawProperties::CalculateDrawProperties",
         "IsActive", IsActiveTree(), "SourceFrameNumber", source_frame_number_);
-    // TODO(crbug.com/692780): Remove this option entirely once this get to
-    // stable and proves it works.
-    bool can_render_to_separate_surface = true;
-
     // We verify visible rect calculations whenever we verify clip tree
     // calculations except when this function is explicitly passed a flag asking
     // us to skip it.
@@ -1035,7 +1031,6 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
         OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
-        can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
         &render_surface_list_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);

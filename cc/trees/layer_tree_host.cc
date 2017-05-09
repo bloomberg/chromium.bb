@@ -686,7 +686,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     TRACE_EVENT0(
         TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
         "LayerTreeHostInProcessCommon::ComputeVisibleRectsWithPropertyTrees");
-    bool can_render_to_separate_surface = true;
     PropertyTrees* property_trees = &property_trees_;
     if (!settings_.use_layer_lists) {
       // If use_layer_lists is set, then the property trees should have been
@@ -706,8 +705,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
           TRACE_EVENT_SCOPE_THREAD, "property_trees",
           property_trees->AsTracedValue());
     }
-    draw_property_utils::UpdatePropertyTrees(this, property_trees,
-                                             can_render_to_separate_surface);
+    draw_property_utils::UpdatePropertyTrees(this, property_trees);
     draw_property_utils::FindLayersThatNeedUpdates(this, property_trees,
                                                    &update_layer_list);
   }

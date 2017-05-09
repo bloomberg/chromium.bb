@@ -713,26 +713,17 @@ static ConditionalClip LayerClipRect(PropertyTrees* property_trees,
       effect_node->has_render_surface
           ? effect_node
           : effect_tree->Node(effect_node->target_id);
-  // TODO(weiliangc): When effect node has up to date render surface info on
-  // compositor thread, no need to check for resourceless draw mode
-  if (!property_trees->non_root_surfaces_enabled) {
-    target_node = effect_tree->Node(1);
-  }
-
   bool include_expanding_clips = false;
   return ComputeAccumulatedClip(property_trees, include_expanding_clips,
                                 layer->clip_tree_index(), target_node->id);
 }
 
-static void UpdateRenderTarget(EffectTree* effect_tree,
-                               bool can_render_to_separate_surface) {
+static void UpdateRenderTarget(EffectTree* effect_tree) {
   for (int i = EffectTree::kContentsRootNodeId;
        i < static_cast<int>(effect_tree->size()); ++i) {
     EffectNode* node = effect_tree->Node(i);
     if (i == EffectTree::kContentsRootNodeId) {
       // Render target of the node corresponding to root is itself.
-      node->target_id = EffectTree::kContentsRootNodeId;
-    } else if (!can_render_to_separate_surface) {
       node->target_id = EffectTree::kContentsRootNodeId;
     } else if (effect_tree->parent(node)->has_render_surface) {
       node->target_id = node->parent_id;
@@ -877,16 +868,10 @@ void ComputeEffects(EffectTree* effect_tree) {
 }
 
 void UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
-                         PropertyTrees* property_trees,
-                         bool can_render_to_separate_surface) {
+                         PropertyTrees* property_trees) {
   DCHECK(layer_tree_host);
   DCHECK(property_trees);
   DCHECK_EQ(layer_tree_host->property_trees(), property_trees);
-  if (property_trees->non_root_surfaces_enabled !=
-      can_render_to_separate_surface) {
-    property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
-    property_trees->transform_tree.set_needs_update(true);
-  }
   if (property_trees->transform_tree.needs_update()) {
     property_trees->clip_tree.set_needs_update(true);
     property_trees->effect_tree.set_needs_update(true);
@@ -901,15 +886,8 @@ void UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
 
 void UpdatePropertyTreesAndRenderSurfaces(LayerImpl* root_layer,
                                           PropertyTrees* property_trees,
-                                          bool can_render_to_separate_surface,
                                           bool can_adjust_raster_scales) {
   bool render_surfaces_need_update = false;
-  if (property_trees->non_root_surfaces_enabled !=
-      can_render_to_separate_surface) {
-    property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
-    property_trees->transform_tree.set_needs_update(true);
-    render_surfaces_need_update = true;
-  }
   if (property_trees->can_adjust_raster_scales != can_adjust_raster_scales) {
     property_trees->can_adjust_raster_scales = can_adjust_raster_scales;
     property_trees->transform_tree.set_needs_update(true);
@@ -921,11 +899,9 @@ void UpdatePropertyTreesAndRenderSurfaces(LayerImpl* root_layer,
   }
   if (render_surfaces_need_update) {
     property_trees->effect_tree.UpdateRenderSurfaces(
-        root_layer->layer_tree_impl(),
-        property_trees->non_root_surfaces_enabled);
+        root_layer->layer_tree_impl());
   }
-  UpdateRenderTarget(&property_trees->effect_tree,
-                     property_trees->non_root_surfaces_enabled);
+  UpdateRenderTarget(&property_trees->effect_tree);
 
   ComputeTransforms(&property_trees->transform_tree);
   ComputeEffects(&property_trees->effect_tree);
@@ -953,12 +929,9 @@ gfx::Transform DrawTransform(const LayerImpl* layer,
   // node and surface's transform node and scales it by the surface's content
   // scale.
   gfx::Transform xform;
-  if (transform_tree.property_trees()->non_root_surfaces_enabled)
-    transform_tree.property_trees()->GetToTarget(
-        layer->transform_tree_index(), layer->render_target_effect_tree_index(),
-        &xform);
-  else
-    xform = transform_tree.ToScreen(layer->transform_tree_index());
+  transform_tree.property_trees()->GetToTarget(
+      layer->transform_tree_index(), layer->render_target_effect_tree_index(),
+      &xform);
   if (layer->should_flatten_transform_from_property_tree())
     xform.FlattenTo2d();
   xform.Translate(layer->offset_to_transform_parent().x(),

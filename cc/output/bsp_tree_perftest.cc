@@ -71,10 +71,8 @@ class BspTreePerfTest : public LayerTreeTest {
     LayerTreeImpl* active_tree = host_impl->active_tree();
     // First build the tree and then we'll start running tests on layersorter
     // itself
-    bool can_render_to_separate_surface = true;
     int max_texture_size = 8096;
-    DoCalcDrawPropertiesImpl(can_render_to_separate_surface, max_texture_size,
-                             active_tree, host_impl);
+    DoCalcDrawPropertiesImpl(max_texture_size, active_tree, host_impl);
 
     LayerImplList base_list;
     BuildLayerImplList(active_tree->root_layer_for_testing(), &base_list);
@@ -104,8 +102,7 @@ class BspTreePerfTest : public LayerTreeTest {
     EndTest();
   }
 
-  void DoCalcDrawPropertiesImpl(bool can_render_to_separate_surface,
-                                int max_texture_size,
+  void DoCalcDrawPropertiesImpl(int max_texture_size,
                                 LayerTreeImpl* active_tree,
                                 LayerTreeHostImpl* host_impl) {
     RenderSurfaceList update_list;
@@ -119,7 +116,6 @@ class BspTreePerfTest : public LayerTreeTest {
         active_tree->OuterViewportScrollLayer(),
         active_tree->elastic_overscroll()->Current(active_tree->IsActiveTree()),
         active_tree->OverscrollElasticityLayer(), max_texture_size,
-        can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
         &update_list, active_tree->property_trees());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);

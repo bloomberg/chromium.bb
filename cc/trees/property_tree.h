@@ -394,8 +394,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
     return render_surfaces_[id].get();
   }
 
-  void UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl,
-                            bool non_root_surfaces_enabled);
+  void UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl);
 
   bool ContributesToDrawnSurface(int id);
 
@@ -654,7 +653,6 @@ class CC_EXPORT PropertyTrees final {
   ClipTree clip_tree;
   ScrollTree scroll_tree;
   bool needs_rebuild;
-  bool non_root_surfaces_enabled;
   bool can_adjust_raster_scales;
   // Change tracking done on property trees needs to be preserved across commits
   // (when they are not rebuild). We cache a global bool which stores whether
