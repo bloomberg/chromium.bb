@@ -85,9 +85,7 @@ class BrowserTargetImpl : public mojom::BrowserTarget {
   ~BrowserTargetImpl() override {}
 
   // mojom::BrowserTarget overrides:
-  void Start(const StartCallback& closure) override {
-    closure.Run();
-  }
+  void Start(StartCallback closure) override { std::move(closure).Run(); }
   void Stop() override {
     g_got_message = true;
     run_loop_->Quit();

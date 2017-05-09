@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -96,9 +97,9 @@ class TestDriverMessageFilter
     next_expected_string_ = expected;
   }
 
-  void RequestQuit(const RequestQuitCallback& callback) override {
+  void RequestQuit(RequestQuitCallback callback) override {
     EXPECT_EQ(kNumTestMessages, message_count_);
-    callback.Run();
+    std::move(callback).Run();
     base::MessageLoop::current()->QuitWhenIdle();
   }
 

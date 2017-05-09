@@ -25,8 +25,7 @@ class LayoutTestBluetoothFakeAdapterSetterImpl
       mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
 
  private:
-  void Set(const std::string& adapter_name,
-           const SetCallback& callback) override;
+  void Set(const std::string& adapter_name, SetCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestBluetoothFakeAdapterSetterImpl);
 };

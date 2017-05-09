@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <tuple>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -131,24 +132,22 @@ class TestServiceImpl : public mojom::TestService {
                             std::move(request));
   }
 
-  void DoSomething(const DoSomethingCallback& callback) override {
-    callback.Run();
+  void DoSomething(DoSomethingCallback callback) override {
+    std::move(callback).Run();
   }
 
-  void DoTerminateProcess(const DoTerminateProcessCallback& callback) override {
+  void DoTerminateProcess(DoTerminateProcessCallback callback) override {
     NOTREACHED();
   }
 
-  void CreateFolder(const CreateFolderCallback& callback) override {
-    NOTREACHED();
-  }
+  void CreateFolder(CreateFolderCallback callback) override { NOTREACHED(); }
 
-  void GetRequestorName(const GetRequestorNameCallback& callback) override {
-    callback.Run("");
+  void GetRequestorName(GetRequestorNameCallback callback) override {
+    std::move(callback).Run("");
   }
 
   void CreateSharedBuffer(const std::string& message,
-                          const CreateSharedBufferCallback& callback) override {
+                          CreateSharedBufferCallback callback) override {
     NOTREACHED();
   }
 

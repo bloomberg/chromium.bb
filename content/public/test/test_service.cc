@@ -37,27 +37,25 @@ void TestService::Create(const service_manager::BindSourceInfo& source_info,
   service_binding_.Bind(std::move(request));
 }
 
-void TestService::DoSomething(const DoSomethingCallback& callback) {
-  callback.Run();
+void TestService::DoSomething(DoSomethingCallback callback) {
+  std::move(callback).Run();
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void TestService::DoTerminateProcess(
-    const DoTerminateProcessCallback& callback) {
+void TestService::DoTerminateProcess(DoTerminateProcessCallback callback) {
   NOTREACHED();
 }
 
-void TestService::CreateFolder(const CreateFolderCallback& callback) {
+void TestService::CreateFolder(CreateFolderCallback callback) {
   NOTREACHED();
 }
 
-void TestService::GetRequestorName(const GetRequestorNameCallback& callback) {
-  callback.Run(requestor_name_);
+void TestService::GetRequestorName(GetRequestorNameCallback callback) {
+  std::move(callback).Run(requestor_name_);
 }
 
-void TestService::CreateSharedBuffer(
-    const std::string& message,
-    const CreateSharedBufferCallback& callback) {
+void TestService::CreateSharedBuffer(const std::string& message,
+                                     CreateSharedBufferCallback callback) {
   NOTREACHED();
 }
 

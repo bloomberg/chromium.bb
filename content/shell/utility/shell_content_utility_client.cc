@@ -37,26 +37,26 @@ class TestServiceImpl : public mojom::TestService {
   }
 
   // mojom::TestService implementation:
-  void DoSomething(const DoSomethingCallback& callback) override {
-    callback.Run();
+  void DoSomething(DoSomethingCallback callback) override {
+    std::move(callback).Run();
   }
 
-  void DoTerminateProcess(const DoTerminateProcessCallback& callback) override {
+  void DoTerminateProcess(DoTerminateProcessCallback callback) override {
     base::Process::Current().Terminate(0, false);
   }
 
-  void CreateFolder(const CreateFolderCallback& callback) override {
+  void CreateFolder(CreateFolderCallback callback) override {
     // Note: This is used to check if the sandbox is disabled or not since
     //       creating a folder is forbidden when it is enabled.
-    callback.Run(base::ScopedTempDir().CreateUniqueTempDir());
+    std::move(callback).Run(base::ScopedTempDir().CreateUniqueTempDir());
   }
 
-  void GetRequestorName(const GetRequestorNameCallback& callback) override {
+  void GetRequestorName(GetRequestorNameCallback callback) override {
     NOTREACHED();
   }
 
   void CreateSharedBuffer(const std::string& message,
-                          const CreateSharedBufferCallback& callback) override {
+                          CreateSharedBufferCallback callback) override {
     mojo::ScopedSharedBufferHandle buffer =
         mojo::SharedBufferHandle::Create(message.size());
     CHECK(buffer.is_valid());
@@ -66,7 +66,7 @@ class TestServiceImpl : public mojom::TestService {
     std::copy(message.begin(), message.end(),
               reinterpret_cast<char*>(mapping.get()));
 
-    callback.Run(std::move(buffer));
+    std::move(callback).Run(std::move(buffer));
   }
 
  private:
