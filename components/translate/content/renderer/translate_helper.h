@@ -46,7 +46,7 @@ class TranslateHelper : public content::RenderFrameObserver,
   void Translate(const std::string& translate_script,
                  const std::string& source_lang,
                  const std::string& target_lang,
-                 const TranslateCallback& callback) override;
+                 TranslateCallback callback) override;
   void RevertTranslation() override;
 
  protected:

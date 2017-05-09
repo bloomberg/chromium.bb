@@ -4,6 +4,8 @@
 
 #include "components/translate/content/renderer/translate_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -136,9 +138,8 @@ void TranslateHelper::CancelPendingTranslation() {
   weak_method_factory_.InvalidateWeakPtrs();
   // Make sure to send the cancelled response back.
   if (translate_callback_pending_) {
-    translate_callback_pending_.Run(true, source_lang_, target_lang_,
-                                    TranslateErrors::NONE);
-    translate_callback_pending_.Reset();
+    std::move(translate_callback_pending_)
+        .Run(true, source_lang_, target_lang_, TranslateErrors::NONE);
   }
   source_lang_.clear();
   target_lang_.clear();
@@ -254,18 +255,20 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
 void TranslateHelper::Translate(const std::string& translate_script,
                                 const std::string& source_lang,
                                 const std::string& target_lang,
-                                const TranslateCallback& callback) {
+                                TranslateCallback callback) {
   WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame) {
     // Cancelled.
-    callback.Run(true, source_lang, target_lang, TranslateErrors::NONE);
+    std::move(callback).Run(true, source_lang, target_lang,
+                            TranslateErrors::NONE);
     return;  // We navigated away, nothing to do.
   }
 
   // A similar translation is already under way, nothing to do.
   if (translate_callback_pending_ && target_lang_ == target_lang) {
     // This request is ignored.
-    callback.Run(true, source_lang, target_lang, TranslateErrors::NONE);
+    std::move(callback).Run(true, source_lang, target_lang,
+                            TranslateErrors::NONE);
     return;
   }
 
@@ -273,7 +276,7 @@ void TranslateHelper::Translate(const std::string& translate_script,
   CancelPendingTranslation();
 
   // Set our states.
-  translate_callback_pending_ = callback;
+  translate_callback_pending_ = std::move(callback);
 
   // If the source language is undetermined, we'll let the translate element
   // detect it.
@@ -353,9 +356,8 @@ void TranslateHelper::CheckTranslateStatus() {
         ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime"));
 
     // Notify the browser we are done.
-    translate_callback_pending_.Run(false, actual_source_lang, target_lang_,
-                                    TranslateErrors::NONE);
-    translate_callback_pending_.Reset();
+    std::move(translate_callback_pending_)
+        .Run(false, actual_source_lang, target_lang_, TranslateErrors::NONE);
     return;
   }
 
@@ -404,8 +406,8 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
     TranslateErrors::Type error) {
   DCHECK(translate_callback_pending_);
   // Notify the browser there was an error.
-  translate_callback_pending_.Run(false, source_lang_, target_lang_, error);
-  translate_callback_pending_.Reset();
+  std::move(translate_callback_pending_)
+      .Run(false, source_lang_, target_lang_, error);
 }
 
 const mojom::ContentTranslateDriverPtr& TranslateHelper::GetTranslateDriver() {

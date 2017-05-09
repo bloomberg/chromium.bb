@@ -137,19 +137,18 @@ class FakePageImpl : public translate::mojom::Page {
   void Translate(const std::string& translate_script,
                  const std::string& source_lang,
                  const std::string& target_lang,
-                 const TranslateCallback& callback) override {
+                 TranslateCallback callback) override {
     // Ensure pending callback gets called.
     if (translate_callback_pending_) {
-      translate_callback_pending_.Run(true, "", "",
-                                      translate::TranslateErrors::NONE);
-      translate_callback_pending_.Reset();
+      std::move(translate_callback_pending_)
+          .Run(true, "", "", translate::TranslateErrors::NONE);
     }
 
     called_translate_ = true;
     source_lang_ = source_lang;
     target_lang_ = target_lang;
 
-    translate_callback_pending_ = callback;
+    translate_callback_pending_ = std::move(callback);
   }
 
   void RevertTranslation() override { called_revert_translation_ = true; }
@@ -158,8 +157,8 @@ class FakePageImpl : public translate::mojom::Page {
                       const std::string& source_lang,
                       const std::string& target_lang,
                       translate::TranslateErrors::Type error) {
-    translate_callback_pending_.Run(cancelled, source_lang, target_lang, error);
-    translate_callback_pending_.Reset();
+    std::move(translate_callback_pending_)
+        .Run(cancelled, source_lang, target_lang, error);
   }
 
   bool called_translate_;
