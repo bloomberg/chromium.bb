@@ -10,6 +10,8 @@
 
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/client/ios/facade/remoting_authentication.h"
+#import "remoting/client/ios/facade/remoting_service.h"
 
 #include "base/strings/stringprintf.h"
 #include "google_apis/google_api_keys.h"
@@ -113,7 +115,7 @@ std::string GetAuthorizationCodeUri() {
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
 
   _content = [NSMutableArray array];
-  [_content addObject:@[ @"Login" ]];
+  [_content addObject:@[ @"Login", @"Logout" ]];
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -146,10 +148,17 @@ std::string GetAuthorizationCodeUri() {
                forControlEvents:UIControlEventTouchUpInside];
     accessCodeButton.translatesAutoresizingMaskIntoConstraints = NO;
     cell.accessoryView = accessCodeButton;
-  } else {
-    UISwitch* editingSwitch = [[UISwitch alloc] initWithFrame:CGRectZero];
-    cell.accessoryView = editingSwitch;
+  } else if (indexPath.section == 0 && indexPath.item == 1) {
+    MDCRaisedButton* logoutButton = [[MDCRaisedButton alloc] init];
+    [logoutButton setTitle:@"Logout" forState:UIControlStateNormal];
+    [logoutButton sizeToFit];
+    [logoutButton addTarget:self
+                     action:@selector(didTapLogout:)
+           forControlEvents:UIControlEventTouchUpInside];
+    logoutButton.translatesAutoresizingMaskIntoConstraints = NO;
+    cell.accessoryView = logoutButton;
   }
+
   return cell;
 }
 
@@ -190,6 +199,10 @@ std::string GetAuthorizationCodeUri() {
       [NSString stringWithCString:GetAuthorizationCodeUri().c_str()
                          encoding:[NSString defaultCStringEncoding]];
   [[UIApplication sharedApplication] openURL:[NSURL URLWithString:authUri]];
+}
+
+- (void)didTapLogout:(id)sender {
+  [[RemotingService SharedInstance].authentication logout];
 }
 
 @end

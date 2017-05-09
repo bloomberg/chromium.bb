@@ -31,6 +31,8 @@ source_set("ios_core") {
     "key_input.h",
     "key_input.mm",
     "key_map_us.h",
+    "keychain_wrapper.h",
+    "keychain_wrapper.mm",
   ]
 
   if (!is_chrome_branded) {

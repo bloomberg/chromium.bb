@@ -18,6 +18,7 @@
 #import "remoting/client/ios/app/host_view_controller.h"
 #import "remoting/client/ios/app/remoting_settings_view_controller.h"
 #import "remoting/client/ios/domain/client_session_details.h"
+#import "remoting/client/ios/facade/remoting_authentication.h"
 #import "remoting/client/ios/facade/remoting_service.h"
 #import "remoting/client/ios/session/remoting_client.h"
 
@@ -59,7 +60,6 @@ static CGFloat kHostInset = 5.f;
   self = [super initWithContentViewController:collectionVC];
   if (self) {
     _remotingService = [RemotingService SharedInstance];
-    [_remotingService setAuthenticationDelegate:self];
 
     _collectionViewController = collectionVC;
     _collectionViewController.flexHeaderContainerViewController = self;
@@ -100,10 +100,28 @@ static CGFloat kHostInset = 5.f;
 - (void)viewDidLoad {
   [super viewDidLoad];
   [_appBar addSubviewsToParent];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(hostsDidUpdateNotification:)
+             name:kHostsDidUpdate
+           object:nil];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(userDidUpdateNotification:)
+             name:kUserDidUpdate
+           object:nil];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+
+  [self nowAuthenticated:_remotingService.authentication.user.isAuthenticated];
   [self presentStatus];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
   if (!_isAuthenticated) {
     // TODO(nicholss): This is used as a demo of the app functionality for the
     // moment but the real app will force the login flow if unauthenticated.
@@ -112,6 +130,8 @@ static CGFloat kHostInset = 5.f;
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = @"Please login.";
     [MDCSnackbarManager showMessage:message];
+  } else {
+    [_remotingService requestHostListFetch];
   }
 }
 
@@ -129,6 +149,16 @@ static CGFloat kHostInset = 5.f;
                  collectionHeight);
 }
 
+#pragma mark - Remoting Service Notifications
+
+- (void)hostsDidUpdateNotification:(NSNotification*)notification {
+  [_collectionViewController.collectionView reloadData];
+}
+
+- (void)userDidUpdateNotification:(NSNotification*)notification {
+  [self nowAuthenticated:_remotingService.authentication.user.isAuthenticated];
+}
+
 #pragma mark - RemotingAuthenticationDelegate
 
 - (void)nowAuthenticated:(BOOL)authenticated {
@@ -136,12 +166,10 @@ static CGFloat kHostInset = 5.f;
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = @"Logged In!";
     [MDCSnackbarManager showMessage:message];
-    [_remotingService setHostListDelegate:self];
   } else {
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = @"Not logged in.";
     [MDCSnackbarManager showMessage:message];
-    [_remotingService setHostListDelegate:nil];
   }
   _isAuthenticated = authenticated;
   [_collectionViewController.collectionView reloadData];
@@ -176,7 +204,7 @@ static CGFloat kHostInset = 5.f;
            completion:(void (^)())completionBlock {
   _client = [[RemotingClient alloc] init];
 
-  [_remotingService
+  [_remotingService.authentication
       callbackWithAccessToken:base::BindBlockArc(^(
                                   remoting::OAuthTokenGetter::Status status,
                                   const std::string& user_email,
@@ -198,13 +226,11 @@ static CGFloat kHostInset = 5.f;
 }
 
 - (NSInteger)getHostCount {
-  NSArray<HostInfo*>* hosts = [_remotingService getHosts];
-  return [hosts count];
+  return _remotingService.hosts.count;
 }
 
 - (HostInfo*)getHostAtIndexPath:(NSIndexPath*)path {
-  NSArray<HostInfo*>* hosts = [_remotingService getHosts];
-  return hosts[path.row];
+  return _remotingService.hosts[path.row];
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate
@@ -244,9 +270,9 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 }
 
 - (void)didSelectRefresh {
-  // TODO(nicholss) implement this.
-  NSLog(@"Should refresh...");
-  _dialogTransitionController = [[MDCDialogTransitionController alloc] init];
+  // TODO(nicholss): Might want to rate limit this. Maybe remoting service
+  // controls that.
+  [_remotingService requestHostListFetch];
 }
 
 - (void)didSelectSettings {
@@ -260,9 +286,9 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 - (void)presentStatus {
   MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
   if (_isAuthenticated) {
-    UserInfo* user = [_remotingService getUser];
     message.text = [NSString
-        stringWithFormat:@"Currently signed in as %@.", [user userEmail]];
+        stringWithFormat:@"Currently signed in as %@.",
+                         _remotingService.authentication.user.userEmail];
     [MDCSnackbarManager showMessage:message];
   }
 }

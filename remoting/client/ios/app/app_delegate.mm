@@ -13,6 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #import "remoting/client/ios/app/remoting_view_controller.h"
+#import "remoting/client/ios/facade/remoting_authentication.h"
 #import "remoting/client/ios/facade/remoting_service.h"
 
 @implementation AppDelegate
@@ -45,7 +46,7 @@
   }
   NSString* authorizationCode = [components objectForKey:@"code"];
 
-  [[RemotingService SharedInstance]
+  [[RemotingService SharedInstance].authentication
       authenticateWithAuthorizationCode:authorizationCode];
 
   [self launchRemotingViewController];

@@ -6,29 +6,22 @@
 #define REMOTING_CLIENT_IOS_FACADE_REMOTING_SERVICE_H_
 
 #import "remoting/client/chromoting_client_runtime.h"
-#import "remoting/client/ios/domain/host_info.h"
-#import "remoting/client/ios/domain/user_info.h"
 
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
 
-// |RemotingAuthenticationDelegate|s are interested in authentication related
-// notifications.
-@protocol RemotingAuthenticationDelegate<NSObject>
+@class HostInfo;
+@class UserInfo;
+@class RemotingAuthentication;
 
-// Notifies the delegate that the authentication status of the current user has
-// changed to a new state.
-- (void)nowAuthenticated:(BOOL)authenticated;
+// Eventing related keys:
 
-@end
-
-// |RemotingHostListDelegate|s are interested in notifications related to host
-// list.
-@protocol RemotingHostListDelegate<NSObject>
-
-- (void)hostListUpdated;
-
-@end
+// Hosts did update event.
+extern NSString* const kHostsDidUpdate;
+// User did update event name.
+extern NSString* const kUserDidUpdate;
+// Map key for UserInfo object.
+extern NSString* const kUserInfo;
 
 // |RemotingService| is the centralized place to ask for information about
 // authentication or query the remote services. It also helps deal with the
@@ -39,38 +32,18 @@
 // Access to the singleton shared instance from this method.
 + (RemotingService*)SharedInstance;
 
-// Access to the current |ChromotingClientRuntime| from this method.
-- (remoting::ChromotingClientRuntime*)runtime;
+// Start a request to fetch the host list. This will produce an notification on
+// |kHostsDidUpdate| when a new host is ready.
+- (void)requestHostListFetch;
 
-// Register to be a |RemotingAuthenticationDelegate|.
-- (void)setAuthenticationDelegate:(id<RemotingAuthenticationDelegate>)delegate;
+@property(nonatomic, readonly) RemotingAuthentication* authentication;
 
-// A cached answer if there is a currently authenticated user.
-- (BOOL)isAuthenticated;
+// Returns the current host list.
+@property(nonatomic, readonly) NSArray<HostInfo*>* hosts;
 
-// Provide an |authorizationCode| to authenticate a user as the first time user
-// of the application or OAuth Flow.
-- (void)authenticateWithAuthorizationCode:(NSString*)authorizationCode;
-
-// Provide the |refreshToken| and |email| to authenticate a user as a returning
-// user of the application.
-- (void)authenticateWithRefreshToken:(NSString*)refreshToken
-                               email:(NSString*)email;
-
-// Returns the currently logged in user info from cache, or nil if no
-// currently authenticated user.
-- (UserInfo*)getUser;
-
-// Register to be a |RemotingHostListDelegate|. Side effect of setting this
-// delegate is the application will attempt to fetch a fresh host list.
-- (void)setHostListDelegate:(id<RemotingHostListDelegate>)delegate;
-
-// Returns the currently cached host list or nil if none exist.
-- (NSArray<HostInfo*>*)getHosts;
-
-// Fetches an OAuth Access Token and passes it back to the callback.
-- (void)callbackWithAccessToken:
-    (const remoting::OAuthTokenGetter::TokenCallback&)onAccessToken;
+// The Chromoting Client Runtime, this holds the threads and other shared
+// resources used by the Chromoting clients
+@property(nonatomic, readonly) remoting::ChromotingClientRuntime* runtime;
 
 @end
 

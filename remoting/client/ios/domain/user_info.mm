@@ -13,6 +13,7 @@
 @synthesize userId = _userId;
 @synthesize userFullName = _userFullName;
 @synthesize userEmail = _userEmail;
+@synthesize refreshToken = _refreshToken;
 
 // Parse jsonData into Host list.
 + (UserInfo*)parseListFromJSON:(NSMutableData*)data {
@@ -26,12 +27,26 @@
   user.userId = [json objectForKey:@"userId"];
   user.userFullName = [json objectForKey:@"userFullName"];
   user.userEmail = [json objectForKey:@"userEmail"];
+  user.refreshToken = [json objectForKey:@"refreshToken"];
 
   return user;
 }
 
+- (BOOL)isAuthenticated {
+  if (_userEmail && _userEmail.length > 0 && _refreshToken &&
+      _refreshToken.length > 0) {
+    return YES;
+  }
+  return NO;
+}
+
 - (NSComparisonResult)compare:(UserInfo*)user {
   return [self.userId compare:user.userId];
+}
+
+- (NSString*)description {
+  return [NSString stringWithFormat:@"UserInfo: userEmail=%@ refreshToken=%@",
+                                    _userEmail, _refreshToken];
 }
 
 @end
