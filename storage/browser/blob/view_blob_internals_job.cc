@@ -180,34 +180,38 @@ int ViewBlobInternalsJob::GetData(
   mime_type->assign("text/html");
   charset->assign("UTF-8");
 
-  data->clear();
-  StartHTML(data);
-  if (blob_storage_context_->registry().blob_map_.empty())
-    data->append(kEmptyBlobStorageMessage);
-  else
-    GenerateHTML(data);
-  EndHTML(data);
+  *data = GenerateHTML(blob_storage_context_);
   return net::OK;
 }
 
-void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
-  for (auto iter = blob_storage_context_->registry().blob_map_.begin();
-       iter != blob_storage_context_->registry().blob_map_.end(); ++iter) {
-    AddHTMLBoldText(iter->first, out);
-    GenerateHTMLForBlobData(*iter->second, iter->second->content_type(),
-                            iter->second->content_disposition(),
-                            iter->second->refcount(), out);
-  }
-  if (!blob_storage_context_->registry().url_to_uuid_.empty()) {
-    AddHorizontalRule(out);
-    for (auto iter = blob_storage_context_->registry().url_to_uuid_.begin();
-         iter != blob_storage_context_->registry().url_to_uuid_.end(); ++iter) {
-      AddHTMLBoldText(iter->first.spec(), out);
-      StartHTMLList(out);
-      AddHTMLListItem(kUUID, iter->second, out);
-      EndHTMLList(out);
+std::string ViewBlobInternalsJob::GenerateHTML(
+    BlobStorageContext* blob_storage_context) {
+  std::string out;
+  StartHTML(&out);
+  if (blob_storage_context->registry().blob_map_.empty()) {
+    out.append(kEmptyBlobStorageMessage);
+  } else {
+    for (auto iter = blob_storage_context->registry().blob_map_.begin();
+         iter != blob_storage_context->registry().blob_map_.end(); ++iter) {
+      AddHTMLBoldText(iter->first, &out);
+      GenerateHTMLForBlobData(*iter->second, iter->second->content_type(),
+                              iter->second->content_disposition(),
+                              iter->second->refcount(), &out);
+    }
+    if (!blob_storage_context->registry().url_to_uuid_.empty()) {
+      AddHorizontalRule(&out);
+      for (auto iter = blob_storage_context->registry().url_to_uuid_.begin();
+           iter != blob_storage_context->registry().url_to_uuid_.end();
+           ++iter) {
+        AddHTMLBoldText(iter->first.spec(), &out);
+        StartHTMLList(&out);
+        AddHTMLListItem(kUUID, iter->second, &out);
+        EndHTMLList(&out);
+      }
     }
   }
+  EndHTML(&out);
+  return out;
 }
 
 void ViewBlobInternalsJob::GenerateHTMLForBlobData(

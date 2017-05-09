@@ -38,10 +38,11 @@ class STORAGE_EXPORT ViewBlobInternalsJob
   bool IsRedirectResponse(GURL* location, int* http_status_code) override;
   void Kill() override;
 
+  static std::string GenerateHTML(BlobStorageContext* blob_storage_context);
+
  private:
   ~ViewBlobInternalsJob() override;
 
-  void GenerateHTML(std::string* out) const;
   static void GenerateHTMLForBlobData(const BlobEntry& blob_data,
                                       const std::string& content_type,
                                       const std::string& content_disposition,
