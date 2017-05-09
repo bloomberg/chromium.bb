@@ -24,6 +24,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -120,8 +121,38 @@ void ModelLoader::StartFetch() {
   // Then only re-fetch when a profile setting changes to need it.
   // This will save on the order of ~50KB/week/client of bandwidth.
   DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
-  fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */, url_,
-                                     net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("safe_browsing_module_loader", R"(
+        semantics {
+          sender: "Safe Browsing Service"
+          description:
+            "Safe Browsing downloads the latest client-side phishing detection "
+            "model at startup. It uses this data on future page loads to "
+            "determine if it looks like a phishing page."
+          trigger:
+            "At startup. Most of the time the data will be in cache, so the "
+            "response will be small."
+          data:
+            "No user-controlled data or PII is sent. Only a static URL of the "
+            "model which is provided by field study is passed."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable or disable this feature by toggling 'Protect "
+            "you and your device from dangerous sites' in Chromium settings "
+            "under Privacy. This feature is enabled by default."
+          chrome_policy {
+            SafeBrowsingEnabled {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingEnabled: false
+            }
+          }
+        })");
+  fetcher_ =
+      net::URLFetcher::Create(0 /* ID used for testing */, url_,
+                              net::URLFetcher::GET, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   fetcher_->SetRequestContext(request_context_getter_);
