@@ -6845,85 +6845,70 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
 class TestAccessInitialDocumentWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  virtual void DidAccessInitialDocument() { ++did_access_initial_document_; }
+  TestAccessInitialDocumentWebFrameClient()
+      : did_access_initial_document_(false) {}
 
-  // !!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!
-  // If the actual counts in the tests below increase, this could be an
-  // indicator of a bug that causes DidAccessInitialDocument() to always be
-  // invoked, regardless of whether or not the initial document is accessed.
-  // Please do not simply increment the expected counts in the below tests
-  // without understanding what's causing the increased count.
-  int did_access_initial_document_ = 0;
+  virtual void DidAccessInitialDocument() {
+    did_access_initial_document_ = true;
+  }
+
+  bool did_access_initial_document_;
 };
 
 TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBody) {
+  // FIXME: Why is this local webViewClient needed instead of the default
+  // WebViewHelper one? With out it there's some mysterious crash in the
+  // WebViewHelper destructor.
+  FrameTestHelpers::TestWebViewClient web_view_client;
   TestAccessInitialDocumentWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(true, &web_frame_client);
+  web_view_helper.Initialize(true, &web_frame_client, &web_view_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
   WebView* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Access the initial document by modifying the body.
   new_view->MainFrame()->ExecuteScript(
       WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
   RunPendingTasks();
-  EXPECT_EQ(2, web_frame_client.did_access_initial_document_);
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 
-  web_view_helper.Reset();
-}
-
-TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentOpen) {
-  TestAccessInitialDocumentWebFrameClient web_frame_client;
-  FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(true, &web_frame_client);
-  RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
-
-  // Create another window that will try to access it.
-  FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebView* new_view = new_web_view_helper.InitializeWithOpener(
-      web_view_helper.WebView()->MainFrame(), true);
-  RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
-
-  // Access the initial document by calling document.open(), which allows
-  // arbitrary modification of the initial document.
+  // Access the initial document again, to ensure we don't notify twice.
   new_view->MainFrame()->ExecuteScript(
-      WebScriptSource("window.opener.document.open();"));
+      WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
   RunPendingTasks();
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
-
-  web_view_helper.Reset();
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 }
 
 TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentNavigator) {
+  // FIXME: Why is this local webViewClient needed instead of the default
+  // WebViewHelper one? With out it there's some mysterious crash in the
+  // WebViewHelper destructor.
+  FrameTestHelpers::TestWebViewClient web_view_client;
   TestAccessInitialDocumentWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(true, &web_frame_client);
+  web_view_helper.Initialize(true, &web_frame_client, &web_view_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
   WebView* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Access the initial document to get to the navigator object.
   new_view->MainFrame()->ExecuteScript(
       WebScriptSource("console.log(window.opener.navigator);"));
   RunPendingTasks();
-  EXPECT_EQ(3, web_frame_client.did_access_initial_document_);
-
-  web_view_helper.Reset();
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 }
 
 TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentViaJavascriptUrl) {
@@ -6931,83 +6916,85 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentViaJavascriptUrl) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(true, &web_frame_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Access the initial document from a javascript: URL.
   FrameTestHelpers::LoadFrame(web_view_helper.WebView()->MainFrame(),
                               "javascript:document.body.appendChild(document."
                               "createTextNode('Modified'))");
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
-
-  web_view_helper.Reset();
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 }
 
 TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
 {
+  // FIXME: Why is this local webViewClient needed instead of the default
+  // WebViewHelper one? With out it there's some mysterious crash in the
+  // WebViewHelper destructor.
+  FrameTestHelpers::TestWebViewClient web_view_client;
   TestAccessInitialDocumentWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(true, &web_frame_client);
+  web_view_helper.Initialize(true, &web_frame_client, &web_view_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
   WebView* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Access the initial document by modifying the body.
   new_view->MainFrame()->ExecuteScript(
       WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
-  EXPECT_EQ(2, web_frame_client.did_access_initial_document_);
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 
   // Run a modal dialog, which used to run a nested run loop and require
   // a special case for notifying about the access.
   new_view->MainFrame()->ExecuteScript(
       WebScriptSource("window.opener.confirm('Modal');"));
-  EXPECT_EQ(3, web_frame_client.did_access_initial_document_);
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 
   // Ensure that we don't notify again later.
   RunPendingTasks();
-  EXPECT_EQ(3, web_frame_client.did_access_initial_document_);
-
-  web_view_helper.Reset();
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 }
 
 TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
 {
+  // FIXME: Why is this local webViewClient needed instead of the default
+  // WebViewHelper one? With out it there's some mysterious crash in the
+  // WebViewHelper destructor.
+  FrameTestHelpers::TestWebViewClient web_view_client;
   TestAccessInitialDocumentWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(true, &web_frame_client);
+  web_view_helper.Initialize(true, &web_frame_client, &web_view_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
   WebView* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_FALSE(web_frame_client.did_access_initial_document_);
 
   // Access the initial document with document.write, which moves us past the
   // initial empty document state of the state machine.
   new_view->MainFrame()->ExecuteScript(
       WebScriptSource("window.opener.document.write('Modified'); "
                       "window.opener.document.close();"));
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 
   // Run a modal dialog, which used to run a nested run loop and require
   // a special case for notifying about the access.
   new_view->MainFrame()->ExecuteScript(
       WebScriptSource("window.opener.confirm('Modal');"));
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 
   // Ensure that we don't notify again later.
   RunPendingTasks();
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
-
-  web_view_helper.Reset();
+  EXPECT_TRUE(web_frame_client.did_access_initial_document_);
 }
 
 class TestScrolledFrameClient : public FrameTestHelpers::TestWebFrameClient {
