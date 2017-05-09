@@ -7,6 +7,9 @@ blink_core_sources("exported") {
   sources = [
     "SharedWorkerRepositoryClientImpl.cpp",
     "SharedWorkerRepositoryClientImpl.h",
+    "WebArrayBuffer.cpp",
+    "WebArrayBufferConverter.cpp",
+    "WebArrayBufferView.cpp",
     "WebAssociatedURLLoaderImpl.cpp",
     "WebAssociatedURLLoaderImpl.h",
     "WebBlob.cpp",
