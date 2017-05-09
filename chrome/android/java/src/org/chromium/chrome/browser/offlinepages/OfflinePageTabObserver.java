@@ -171,7 +171,7 @@ public class OfflinePageTabObserver
     @Override
     public void onUrlUpdated(Tab tab) {
         Log.d(TAG, "onUrlUpdated");
-        if (!isOfflinePage(tab)) {
+        if (!OfflinePageUtils.isOfflinePage(tab)) {
             stopObservingTab(tab);
         } else {
             if (isObservingTab(tab)) {
@@ -184,7 +184,7 @@ public class OfflinePageTabObserver
     }
 
     void startObservingTab(Tab tab) {
-        if (!isOfflinePage(tab)) return;
+        if (!OfflinePageUtils.isOfflinePage(tab)) return;
 
         mCurrentTab = tab;
 
@@ -240,15 +240,16 @@ public class OfflinePageTabObserver
     // Methods from ConnectionTypeObserver.
     @Override
     public void onConnectionTypeChanged(int connectionType) {
-        Log.d(TAG, "Got connectivity event, connectionType: " + connectionType + ", is connected: "
-                        + isConnected() + ", controller: " + mSnackbarController);
+        Log.d(TAG,
+                "Got connectivity event, connectionType: " + connectionType + ", is connected: "
+                        + OfflinePageUtils.isConnected() + ", controller: " + mSnackbarController);
         maybeShowReloadSnackbar(mCurrentTab, true);
 
         // Since we are loosing the connection, next time we connect, we still want to show a
         // snackbar. This works in event that onConnectionTypeChanged happens, while Chrome is not
         // visible. Making it visible after that would not trigger the snackbar, even though
         // connection state changed. See http://crbug.com/651410
-        if (!isConnected()) {
+        if (!OfflinePageUtils.isConnected()) {
             for (TabState tabState : mObservedTabs.values()) {
                 tabState.wasSnackbarSeen = false;
             }
@@ -275,26 +276,11 @@ public class OfflinePageTabObserver
         return mIsObservingNetworkChanges;
     }
 
-    @VisibleForTesting
-    boolean isConnected() {
-        return OfflinePageUtils.isConnected();
-    }
-
-    @VisibleForTesting
-    boolean isShowingOfflinePreview(Tab tab) {
-        return OfflinePageUtils.isShowingOfflinePreview(tab);
-    }
-
-    @VisibleForTesting
-    boolean isOfflinePage(Tab tab) {
-        return OfflinePageUtils.isOfflinePage(tab);
-    }
-
     void maybeShowReloadSnackbar(Tab tab, boolean isNetworkEvent) {
         // Exclude Offline Previews, as there is a seperate UI for previews.
-        if (tab == null || tab.isFrozen() || tab.isHidden() || !isOfflinePage(tab)
-                || isShowingOfflinePreview(tab) || !isConnected() || !isLoadedTab(tab)
-                || (wasSnackbarSeen(tab) && !isNetworkEvent)) {
+        if (tab == null || tab.isFrozen() || tab.isHidden() || !OfflinePageUtils.isOfflinePage(tab)
+                || OfflinePageUtils.isShowingOfflinePreview(tab) || !OfflinePageUtils.isConnected()
+                || !isLoadedTab(tab) || (wasSnackbarSeen(tab) && !isNetworkEvent)) {
             // Conditions to show a snackbar are not met.
             return;
         }

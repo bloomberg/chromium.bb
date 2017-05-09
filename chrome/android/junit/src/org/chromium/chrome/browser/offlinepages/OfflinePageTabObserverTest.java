@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.offlinepages;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import android.content.Context;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +51,8 @@ public class OfflinePageTabObserverTest {
     @Mock private SnackbarManager mSnackbarManager;
     @Mock private SnackbarController mSnackbarController;
     @Mock private Tab mTab;
+    @Mock
+    private OfflinePageUtils.Internal mOfflinePageUtils;
 
     private OfflinePageTabObserver createObserver() {
         OfflinePageTabObserver observer = spy(new OfflinePageTabObserver(
@@ -56,13 +61,7 @@ public class OfflinePageTabObserverTest {
         // directly mock out.
         doNothing().when(observer).startObservingNetworkChanges();
         doNothing().when(observer).stopObservingNetworkChanges();
-        // TODO(fgorski): This call has to be mocked out until we update OfflinePageUtils.
-        // It also goes to NetworkChangeNotifier from there.
-        doReturn(false).when(observer).isConnected();
-        doReturn(false).when(observer).isShowingOfflinePreview(any(Tab.class));
-        // TODO(fgorski): This call has to be mocked out until we update OfflinePageUtils.
-        doNothing().when(observer).showReloadSnackbar(any(Tab.class));
-        doReturn(true).when(observer).isOfflinePage(any(Tab.class));
+
         // Assert tab model observer was created.
         assertTrue(observer.getTabModelObserver() != null);
         return observer;
@@ -81,6 +80,16 @@ public class OfflinePageTabObserverTest {
 
         // Setting up mock snackbar manager.
         doNothing().when(mSnackbarManager).dismissSnackbars(eq(mSnackbarController));
+
+        // Setting up offline page utils.
+        OfflinePageUtils.setInstanceForTesting(mOfflinePageUtils);
+        doReturn(false).when(mOfflinePageUtils).isConnected();
+        doReturn(false).when(mOfflinePageUtils).isShowingOfflinePreview(any(Tab.class));
+        doReturn(true).when(mOfflinePageUtils).isOfflinePage(any(Tab.class));
+        doNothing()
+                .when(mOfflinePageUtils)
+                .showReloadSnackbar(any(Context.class), any(SnackbarManager.class),
+                        any(SnackbarController.class), anyInt());
     }
 
     private void showTab(OfflinePageTabObserver observer) {
@@ -104,14 +113,14 @@ public class OfflinePageTabObserverTest {
     }
 
     private void connect(OfflinePageTabObserver observer, boolean notify) {
-        doReturn(true).when(observer).isConnected();
+        doReturn(true).when(mOfflinePageUtils).isConnected();
         if (notify) {
             observer.onConnectionTypeChanged(0);
         }
     }
 
     private void disconnect(OfflinePageTabObserver observer, boolean notify) {
-        doReturn(false).when(observer).isConnected();
+        doReturn(false).when(mOfflinePageUtils).isConnected();
         if (notify) {
             observer.onConnectionTypeChanged(0);
         }
@@ -130,14 +139,14 @@ public class OfflinePageTabObserverTest {
     public void testStartObservingTab() {
         OfflinePageTabObserver observer = createObserver();
 
-        doReturn(false).when(observer).isOfflinePage(any(Tab.class));
+        doReturn(false).when(mOfflinePageUtils).isOfflinePage(any(Tab.class));
         observer.startObservingTab(mTab);
 
         assertFalse(observer.isObservingNetworkChanges());
         assertFalse(observer.isObservingTab(mTab));
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
 
-        doReturn(true).when(observer).isOfflinePage(any(Tab.class));
+        doReturn(true).when(mOfflinePageUtils).isOfflinePage(any(Tab.class));
         observer.startObservingTab(mTab);
 
         assertTrue(observer.isObservingNetworkChanges());
@@ -171,7 +180,7 @@ public class OfflinePageTabObserverTest {
         OfflinePageTabObserver observer = createObserver();
 
         observer.startObservingTab(mTab);
-        doReturn(true).when(observer).isConnected();
+        doReturn(true).when(mOfflinePageUtils).isConnected();
         observer.onPageLoadFinished(mTab);
 
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
@@ -267,7 +276,7 @@ public class OfflinePageTabObserverTest {
         hideTab(null);
 
         observer.startObservingTab(mTab);
-        doReturn(true).when(observer).isShowingOfflinePreview(mTab);
+        doReturn(true).when(mOfflinePageUtils).isShowingOfflinePreview(mTab);
         observer.onPageLoadFinished(mTab);
 
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
@@ -400,7 +409,7 @@ public class OfflinePageTabObserverTest {
         verify(mSnackbarManager, times(1)).dismissSnackbars(eq(mSnackbarController));
 
         // URL updated and tab no longer shows offline page.
-        doReturn(false).when(observer).isOfflinePage(any(Tab.class));
+        doReturn(false).when(mOfflinePageUtils).isOfflinePage(any(Tab.class));
         observer.onUrlUpdated(mTab);
 
         assertFalse(observer.isObservingTab(mTab));
@@ -432,7 +441,7 @@ public class OfflinePageTabObserverTest {
         observer.onPageLoadFinished(mTab);
 
         // URL updated and tab no longer shows offline page.
-        doReturn(false).when(observer).isOfflinePage(any(Tab.class));
+        doReturn(false).when(mOfflinePageUtils).isOfflinePage(any(Tab.class));
         observer.onUrlUpdated(mTab);
 
         assertFalse(observer.isObservingTab(mTab));
