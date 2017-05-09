@@ -131,6 +131,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/network/host_resolver_impl_chromeos.h"
 #endif
 
@@ -386,6 +387,11 @@ IOThread::IOThread(
 #endif
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
+#endif
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  allow_gssapi_library_load_ = connector->IsActiveDirectoryManaged();
 #endif
   pref_proxy_config_tracker_.reset(
       ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
@@ -788,6 +794,10 @@ void IOThread::CreateDefaultAuthHandlerFactory() {
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
       ,
       gssapi_library_name_
+#endif
+#if defined(OS_CHROMEOS)
+      ,
+      allow_gssapi_library_load_
 #endif
       ));
   UpdateServerWhitelist();

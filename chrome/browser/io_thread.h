@@ -383,6 +383,10 @@ class IOThread : public content::BrowserThreadDelegate {
   std::string gssapi_library_name_;
 #endif
 
+#if defined(OS_CHROMEOS)
+  bool allow_gssapi_library_load_;
+#endif
+
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from local_state object.
   std::unique_ptr<ssl_config::SSLConfigServiceManager>
