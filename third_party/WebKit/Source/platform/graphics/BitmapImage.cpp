@@ -73,17 +73,17 @@ BitmapImage::BitmapImage(ImageObserver* observer)
     : Image(observer),
       current_frame_(0),
       cached_frame_index_(0),
-      repetition_count_(kCAnimationNone),
-      repetition_count_status_(kUnknown),
-      repetitions_complete_(0),
-      desired_frame_start_time_(0),
-      frame_count_(0),
       animation_policy_(kImageAnimationPolicyAllowed),
       animation_finished_(false),
       all_data_received_(false),
       have_size_(false),
       size_available_(false),
-      have_frame_count_(false) {}
+      have_frame_count_(false),
+      repetition_count_status_(kUnknown),
+      repetition_count_(kCAnimationNone),
+      repetitions_complete_(0),
+      desired_frame_start_time_(0),
+      frame_count_(0) {}
 
 BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
     : Image(observer),
@@ -91,16 +91,16 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
       current_frame_(0),
       cached_frame_(SkImage::MakeFromBitmap(bitmap)),
       cached_frame_index_(0),
-      repetition_count_(kCAnimationNone),
-      repetition_count_status_(kUnknown),
-      repetitions_complete_(0),
-      frame_count_(1),
       animation_policy_(kImageAnimationPolicyAllowed),
       animation_finished_(true),
       all_data_received_(true),
       have_size_(true),
       size_available_(true),
-      have_frame_count_(true) {
+      have_frame_count_(true),
+      repetition_count_status_(kUnknown),
+      repetition_count_(kCAnimationNone),
+      repetitions_complete_(0),
+      frame_count_(1) {
   // Since we don't have a decoder, we can't figure out the image orientation.
   // Set m_sizeRespectingOrientation to be the same as m_size so it's not 0x0.
   size_respecting_orientation_ = size_;

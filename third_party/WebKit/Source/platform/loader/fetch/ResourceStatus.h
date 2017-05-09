@@ -7,7 +7,7 @@
 
 namespace blink {
 
-enum class ResourceStatus {
+enum class ResourceStatus : uint8_t {
   kNotStarted,
   kPending,  // load in progress
   kCached,   // load completed successfully

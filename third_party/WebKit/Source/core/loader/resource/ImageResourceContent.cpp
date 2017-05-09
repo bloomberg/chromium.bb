@@ -68,7 +68,7 @@ class NullImageResourceInfo final
 }  // namespace
 
 ImageResourceContent::ImageResourceContent(PassRefPtr<blink::Image> image)
-    : image_(std::move(image)), is_refetchable_data_from_disk_cache_(true) {
+    : is_refetchable_data_from_disk_cache_(true), image_(std::move(image)) {
   DEFINE_STATIC_LOCAL(NullImageResourceInfo, null_info,
                       (new NullImageResourceInfo()));
   info_ = &null_info;
