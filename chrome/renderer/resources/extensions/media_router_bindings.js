@@ -189,6 +189,7 @@ define('media_router_bindings', [
       default:
         throw new Error('Scheme must be http or https');
     }
+    mojoOrigin.suborigin = '';
     return new originMojom.Origin(mojoOrigin);
   }
 
