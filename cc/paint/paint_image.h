@@ -21,7 +21,7 @@ class CC_PAINT_EXPORT PaintImage {
   enum class CompletionState { UNKNOWN, DONE, PARTIALLY_DONE };
 
   PaintImage();
-  explicit PaintImage(sk_sp<const SkImage> sk_image,
+  explicit PaintImage(sk_sp<SkImage> sk_image,
                       AnimationType animation_type = AnimationType::STATIC,
                       CompletionState completion_state = CompletionState::DONE);
   PaintImage(const PaintImage& other);
@@ -32,13 +32,14 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage& operator=(PaintImage&& other);
 
   bool operator==(const PaintImage& other);
+  explicit operator bool() const { return sk_image_; }
 
-  const sk_sp<const SkImage>& sk_image() const { return sk_image_; }
+  const sk_sp<SkImage>& sk_image() const { return sk_image_; }
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
 
  private:
-  sk_sp<const SkImage> sk_image_;
+  sk_sp<SkImage> sk_image_;
   AnimationType animation_type_ = AnimationType::UNKNOWN;
   CompletionState completion_state_ = CompletionState::UNKNOWN;
 };

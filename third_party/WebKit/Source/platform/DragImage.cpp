@@ -73,13 +73,13 @@ const float kDragLinkUrlFontSize = 10;
 
 }  // anonymous namespace
 
-sk_sp<SkImage> DragImage::ResizeAndOrientImage(
-    sk_sp<SkImage> image,
+PaintImage DragImage::ResizeAndOrientImage(
+    const PaintImage& image,
     ImageOrientation orientation,
     FloatSize image_scale,
     float opacity,
     InterpolationQuality interpolation_quality) {
-  IntSize size(image->width(), image->height());
+  IntSize size(image.sk_image()->width(), image.sk_image()->height());
   size.Scale(image_scale.Width(), image_scale.Height());
   AffineTransform transform;
   if (orientation != kDefaultImageOrientation) {
@@ -90,19 +90,19 @@ sk_sp<SkImage> DragImage::ResizeAndOrientImage(
   transform.ScaleNonUniform(image_scale.Width(), image_scale.Height());
 
   if (size.IsEmpty())
-    return nullptr;
+    return PaintImage();
 
   if (transform.IsIdentity() && opacity == 1) {
     // Nothing to adjust, just use the original.
-    ASSERT(image->width() == size.Width());
-    ASSERT(image->height() == size.Height());
+    DCHECK_EQ(image.sk_image()->width(), size.Width());
+    DCHECK_EQ(image.sk_image()->height(), size.Height());
     return image;
   }
 
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(size.Width(), size.Height());
   if (!surface)
-    return nullptr;
+    return PaintImage();
 
   SkPaint paint;
   ASSERT(opacity >= 0 && opacity <= 1);
@@ -113,9 +113,10 @@ sk_sp<SkImage> DragImage::ResizeAndOrientImage(
 
   SkCanvas* canvas = surface->getCanvas();
   canvas->concat(AffineTransformToSkMatrix(transform));
-  canvas->drawImage(image, 0, 0, &paint);
+  canvas->drawImage(image.sk_image(), 0, 0, &paint);
 
-  return surface->makeImageSnapshot();
+  return PaintImage(surface->makeImageSnapshot(), image.animation_type(),
+                    image.completion_state());
 }
 
 FloatSize DragImage::ClampedImageScale(const IntSize& image_size,
@@ -150,8 +151,8 @@ std::unique_ptr<DragImage> DragImage::Create(
   if (!image)
     return nullptr;
 
-  sk_sp<SkImage> sk_image = image->ImageForCurrentFrame();
-  if (!sk_image)
+  PaintImage paint_image = image->PaintImageForCurrentFrame();
+  if (!paint_image)
     return nullptr;
 
   ImageOrientation orientation;
@@ -160,12 +161,12 @@ std::unique_ptr<DragImage> DragImage::Create(
     orientation = ToBitmapImage(image)->CurrentFrameOrientation();
 
   SkBitmap bm;
-  sk_sp<SkImage> resized_image =
-      ResizeAndOrientImage(std::move(sk_image), orientation, image_scale,
-                           opacity, interpolation_quality);
-  if (!resized_image ||
-      !resized_image->asLegacyBitmap(&bm, SkImage::kRO_LegacyBitmapMode))
+  paint_image = ResizeAndOrientImage(paint_image, orientation, image_scale,
+                                     opacity, interpolation_quality);
+  if (!paint_image || !paint_image.sk_image()->asLegacyBitmap(
+                          &bm, SkImage::kRO_LegacyBitmapMode)) {
     return nullptr;
+  }
 
   return WTF::WrapUnique(
       new DragImage(bm, device_scale_factor, interpolation_quality));

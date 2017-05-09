@@ -39,9 +39,8 @@ struct PositionScaleDrawImage {
   SkSize scale;
 };
 
-sk_sp<PaintRecord> CreateRecording(
-    const sk_sp<const SkImage>& discardable_image,
-    const gfx::Rect& visible_rect) {
+sk_sp<PaintRecord> CreateRecording(const sk_sp<SkImage>& discardable_image,
+                                   const gfx::Rect& visible_rect) {
   PaintRecorder recorder;
   PaintCanvas* canvas =
       recorder.beginRecording(visible_rect.width(), visible_rect.height());
@@ -651,7 +650,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
 TEST_F(DiscardableImageMapTest, ClipsImageRects) {
   gfx::Rect visible_rect(500, 500);
 
-  sk_sp<const SkImage> discardable_image =
+  sk_sp<SkImage> discardable_image =
       CreateDiscardableImage(gfx::Size(500, 500));
   sk_sp<PaintRecord> record = CreateRecording(discardable_image, visible_rect);
 

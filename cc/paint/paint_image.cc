@@ -7,14 +7,12 @@
 namespace cc {
 
 PaintImage::PaintImage() = default;
-PaintImage::PaintImage(sk_sp<const SkImage> sk_image,
+PaintImage::PaintImage(sk_sp<SkImage> sk_image,
                        AnimationType animation_type,
                        CompletionState completion_state)
     : sk_image_(std::move(sk_image)),
       animation_type_(animation_type),
-      completion_state_(completion_state) {
-  DCHECK(sk_image_);
-}
+      completion_state_(completion_state) {}
 PaintImage::PaintImage(const PaintImage& other) = default;
 PaintImage::PaintImage(PaintImage&& other) = default;
 PaintImage::~PaintImage() = default;

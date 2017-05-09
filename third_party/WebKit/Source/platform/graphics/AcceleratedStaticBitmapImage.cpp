@@ -94,6 +94,8 @@ void AcceleratedStaticBitmapImage::CopyToTexture(
 }
 
 sk_sp<SkImage> AcceleratedStaticBitmapImage::ImageForCurrentFrame() {
+  // TODO(ccameron): This function should not ignore |colorBehavior|.
+  // https://crbug.com/672306
   CheckThread();
   if (!IsValid())
     return nullptr;
@@ -107,15 +109,11 @@ void AcceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
                                         const FloatRect& src_rect,
                                         RespectImageOrientationEnum,
                                         ImageClampingMode image_clamping_mode) {
-  // TODO(ccameron): This function should not ignore |colorBehavior|.
-  // https://crbug.com/672306
-  CheckThread();
-  if (!IsValid())
+  const auto& paint_image = PaintImageForCurrentFrame();
+  if (!paint_image)
     return;
-  CreateImageFromMailboxIfNeeded();
-  sk_sp<SkImage> image = texture_holder_->GetSkImage();
   StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect,
-                                image_clamping_mode, image);
+                                image_clamping_mode, paint_image);
 }
 
 bool AcceleratedStaticBitmapImage::IsValid() {
