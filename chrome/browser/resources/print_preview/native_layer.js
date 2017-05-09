@@ -79,7 +79,7 @@ cr.define('print_preview', function() {
         this.onProvisionalDestinationResolved_.bind(this);
     global.failedToResolveProvisionalPrinter =
         this.failedToResolveProvisionalDestination_.bind(this);
-  };
+  }
 
   /**
    * Event types dispatched from the Chromium native layer.
@@ -304,9 +304,9 @@ cr.define('print_preview', function() {
         'collate': true,
         'copies': 1,
         'deviceName': destination.id,
-        'dpiHorizontal': "horizontal_dpi" in printTicketStore.dpi.getValue() ?
+        'dpiHorizontal': 'horizontal_dpi' in printTicketStore.dpi.getValue() ?
            printTicketStore.dpi.getValue().horizontal_dpi : 0,
-        'dpiVertical': "vertical_dpi" in printTicketStore.dpi.getValue() ?
+        'dpiVertical': 'vertical_dpi' in printTicketStore.dpi.getValue() ?
            printTicketStore.dpi.getValue().vertical_dpi : 0,
         'duplex': printTicketStore.duplex.getValue() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
@@ -388,9 +388,9 @@ cr.define('print_preview', function() {
         'printWithExtension': destination.isExtension,
         'rasterizePDF': printTicketStore.rasterize.getValue(),
         'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
-        'dpiHorizontal': "horizontal_dpi" in printTicketStore.dpi.getValue() ?
+        'dpiHorizontal': 'horizontal_dpi' in printTicketStore.dpi.getValue() ?
            printTicketStore.dpi.getValue().horizontal_dpi : 0,
-        'dpiVertical': "vertical_dpi" in printTicketStore.dpi.getValue() ?
+        'dpiVertical': 'vertical_dpi' in printTicketStore.dpi.getValue() ?
            printTicketStore.dpi.getValue().vertical_dpi : 0,
         'deviceName': destination.id,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
@@ -953,89 +953,77 @@ cr.define('print_preview', function() {
 
     /**
      * Whether the print preview should be in auto-print mode.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.isInKioskAutoPrintMode_ = isInKioskAutoPrintMode;
 
     /**
      * Whether the print preview should switch to App Kiosk mode.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.isInAppKioskMode_ = isInAppKioskMode;
 
     /**
      * Character delimeter of thousands digits.
-     * @type {string}
-     * @private
+     * @private {string}
      */
     this.thousandsDelimeter_ = thousandsDelimeter;
 
     /**
      * Character delimeter of the decimal point.
-     * @type {string}
-     * @private
+     * @private {string}
      */
     this.decimalDelimeter_ = decimalDelimeter;
 
     /**
      * Unit type of local machine's measurement system.
-     * @type {print_preview.MeasurementSystemUnitType}
-     * @private
+     * @private {print_preview.MeasurementSystemUnitType}
      */
     this.unitType_ = unitType;
 
     /**
      * Whether the document to print is modifiable.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.isDocumentModifiable_ = isDocumentModifiable;
 
     /**
      * Title of the document.
-     * @type {string}
-     * @private
+     * @private {string}
      */
     this.documentTitle_ = documentTitle;
 
     /**
      * Whether the document has selection.
-     * @type {string}
-     * @private
+     * @private {boolean}
      */
     this.documentHasSelection_ = documentHasSelection;
 
     /**
      * Whether selection only should be printed.
-     * @type {string}
-     * @private
+     * @private {boolean}
      */
     this.selectionOnly_ = selectionOnly;
 
     /**
      * ID of the system default destination.
-     * @type {?string}
-     * @private
+     * @private {?string}
      */
     this.systemDefaultDestinationId_ = systemDefaultDestinationId;
 
     /**
      * Serialized app state.
-     * @type {?string}
-     * @private
+     * @private {?string}
      */
     this.serializedAppStateStr_ = serializedAppStateStr;
 
     /**
      * Serialized default destination selection rules.
-     * @type {?string}
-     * @private
+     * @private {?string}
      */
     this.serializedDefaultDestinationSelectionRulesStr_ =
         serializedDefaultDestinationSelectionRulesStr;
-  };
+  }
 
   NativeInitialSettings.prototype = {
     /**

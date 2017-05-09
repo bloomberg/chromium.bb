@@ -105,19 +105,19 @@ cr.define('print_preview', function() {
       this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.INVITES_DONE,
+          cloudprint.CloudPrintInterfaceEventType.INVITES_DONE,
           this.onCloudPrintInvitesDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.INVITES_FAILED,
+          cloudprint.CloudPrintInterfaceEventType.INVITES_FAILED,
           this.onCloudPrintInvitesDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.PROCESS_INVITE_DONE,
+          cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
           this.onCloudPrintProcessInviteDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.PROCESS_INVITE_FAILED,
+          cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_FAILED,
           this.onCloudPrintProcessInviteFailed_.bind(this));
     },
 

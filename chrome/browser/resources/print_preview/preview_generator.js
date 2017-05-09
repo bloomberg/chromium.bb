@@ -144,7 +144,7 @@ cr.define('print_preview', function() {
     this.tracker_ = new EventTracker();
 
     this.addEventListeners_();
-  };
+  }
 
   /**
    * Event types dispatched by the preview generator.

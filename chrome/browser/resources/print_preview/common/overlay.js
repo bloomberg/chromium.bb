@@ -12,7 +12,7 @@ cr.define('print_preview', function() {
    */
   function Overlay() {
     print_preview.Component.call(this);
-  };
+  }
 
   Overlay.prototype = {
     __proto__: print_preview.Component.prototype,

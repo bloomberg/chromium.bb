@@ -9,7 +9,7 @@ cr.define('print_preview', function() {
    * Object used to measure usage statistics.
    * @constructor
    */
-  function Metrics() {};
+  function Metrics() {}
 
   /**
    * Enumeration of buckets that a user can enter while using the destination
@@ -105,7 +105,7 @@ cr.define('print_preview', function() {
 
     /** @private {number} */
     this.maxBucket_ = maxBucket;
-  };
+  }
 
   MetricsContext.prototype = {
     /**
@@ -131,7 +131,7 @@ cr.define('print_preview', function() {
         this,
         'PrintPreview.DestinationAction',
         Metrics.DestinationSearchBucket.DESTINATION_SEARCH_MAX_BUCKET);
-  };
+  }
 
   DestinationSearchMetricsContext.prototype = {
     __proto__: MetricsContext.prototype
@@ -146,7 +146,7 @@ cr.define('print_preview', function() {
     MetricsContext.call(this,
                         'PrintPreview.GcpPromo',
                         Metrics.GcpPromoBucket.GCP_PROMO_MAX_BUCKET);
-  };
+  }
 
   GcpPromoMetricsContext.prototype = {
     __proto__: MetricsContext.prototype
@@ -162,7 +162,7 @@ cr.define('print_preview', function() {
         this,
         'PrintPreview.PrintSettingsUi',
         Metrics.PrintSettingsUiBucket.PRINT_SETTINGS_UI_MAX_BUCKET);
-  };
+  }
 
   PrintSettingsUiMetricsContext.prototype = {
     __proto__: MetricsContext.prototype

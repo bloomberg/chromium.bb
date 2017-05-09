@@ -2,8 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('cloudprint');
+
+/**
+ * Event types dispatched by the cloudprint interface.
+ * @enum {string}
+ */
+cloudprint.CloudPrintInterfaceEventType = {
+  INVITES_DONE: 'cloudprint.CloudPrintInterface.INVITES_DONE',
+  INVITES_FAILED: 'cloudprint.CloudPrintInterface.INVITES_FAILED',
+  PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
+  PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
+  PROCESS_INVITE_DONE: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_DONE',
+  PROCESS_INVITE_FAILED:
+      'cloudprint.CloudPrintInterface.PROCESS_INVITE_FAILED',
+  SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
+  SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
+  SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
+  SUBMIT_FAILED: 'cloudprint.CloudPrintInterface.SUBMIT_FAILED',
+};
+
 cr.define('cloudprint', function() {
   'use strict';
+
+  var CloudPrintInterfaceEventType = cloudprint.CloudPrintInterfaceEventType;
 
   /**
    * API to the Google Cloud Print service.
@@ -67,14 +89,14 @@ cr.define('cloudprint', function() {
 
     /**
      * Pending requests delayed until we get access token.
-     * @type {!Array<!CloudPrintRequest>}
+     * @type {!Array<!cloudprint.CloudPrintRequest>}
      * @private
      */
     this.requestQueue_ = [];
 
     /**
      * Outstanding cloud destination search requests.
-     * @type {!Array<!CloudPrintRequest>}
+     * @type {!Array<!cloudprint.CloudPrintRequest>}
      * @private
      */
     this.outstandingCloudSearchRequests_ = [];
@@ -87,25 +109,7 @@ cr.define('cloudprint', function() {
     this.tracker_ = new EventTracker();
 
     this.addEventListeners_();
-  };
-
-  /**
-   * Event types dispatched by the interface.
-   * @enum {string}
-   */
-  CloudPrintInterface.EventType = {
-    INVITES_DONE: 'cloudprint.CloudPrintInterface.INVITES_DONE',
-    INVITES_FAILED: 'cloudprint.CloudPrintInterface.INVITES_FAILED',
-    PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
-    PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
-    PROCESS_INVITE_DONE: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_DONE',
-    PROCESS_INVITE_FAILED:
-        'cloudprint.CloudPrintInterface.PROCESS_INVITE_FAILED',
-    SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
-    SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
-    SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
-    SUBMIT_FAILED: 'cloudprint.CloudPrintInterface.SUBMIT_FAILED',
-  };
+  }
 
   /**
    * Content type header value for a URL encoded HTTP request.
@@ -183,8 +187,8 @@ cr.define('cloudprint', function() {
 
     /**
      * Sends Google Cloud Print search API request.
-     * @param {string=} opt_account Account the search is sent for. When
-     *      omitted, the search is done on behalf of the primary user.
+     * @param {?string=} opt_account Account the search is sent for. When
+     *      null or omitted, the search is done on behalf of the primary user.
      * @param {print_preview.DestinationOrigin=} opt_origin When specified,
      *     searches destinations for {@code opt_origin} only, otherwise starts
      *     searches for all origins.
@@ -262,8 +266,8 @@ cr.define('cloudprint', function() {
       var params = [
         new HttpParam('printerid', invitation.destination.id),
         new HttpParam('email', invitation.scopeId),
-        new HttpParam('accept', accept),
-        new HttpParam('use_cdd', true),
+        new HttpParam('accept', accept ? 'true' : 'false'),
+        new HttpParam('use_cdd', 'true'),
       ];
       this.sendOrQueueRequest_(this.buildRequest_(
           'POST',
@@ -332,7 +336,7 @@ cr.define('cloudprint', function() {
           'printer',
           params,
           origin,
-          account,
+          account || '',
           this.onPrinterDone_.bind(this, printerId)));
     },
 
@@ -357,9 +361,9 @@ cr.define('cloudprint', function() {
      * @param {?string} account Account the request is sent for. Can be
      *     {@code null} or empty string if the request is not cookie bound or
      *     is sent on behalf of the primary user.
-     * @param {function(number, Object, !print_preview.DestinationOrigin)}
-     *     callback Callback to invoke when request completes.
-     * @return {!CloudPrintRequest} Partially prepared request.
+     * @param {function(!cloudprint.CloudPrintRequest)} callback Callback to
+     *     invoke when request completes.
+     * @return {!cloudprint.CloudPrintRequest} Partially prepared request.
      * @private
      */
     buildRequest_: function(method, action, params, origin, account, callback) {
@@ -411,13 +415,14 @@ cr.define('cloudprint', function() {
         xhr.setRequestHeader(header, headers[header]);
       }
 
-      return new CloudPrintRequest(xhr, body, origin, account, callback);
+      return new cloudprint.CloudPrintRequest(xhr, body, origin, account,
+                                              callback);
     },
 
     /**
      * Sends a request to the Google Cloud Print API or queues if it needs to
      *     wait OAuth2 access token.
-     * @param {!CloudPrintRequest} request Request to send or queue.
+     * @param {!cloudprint.CloudPrintRequest} request Request to send or queue.
      * @private
      */
     sendOrQueueRequest_: function(request) {
@@ -431,7 +436,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Sends a request to the Google Cloud Print API.
-     * @param {!CloudPrintRequest} request Request to send.
+     * @param {!cloudprint.CloudPrintRequest} request Request to send.
      * @private
      */
     sendRequest_: function(request) {
@@ -442,8 +447,10 @@ cr.define('cloudprint', function() {
 
     /**
      * Creates a Google Cloud Print interface error that is ready to dispatch.
-     * @param {!CloudPrintInterface.EventType} type Type of the error.
-     * @param {!CloudPrintRequest} request Request that has been completed.
+     * @param {!cloudprint.CloudPrintInterfaceEventType} type Type of the
+     *     error.
+     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     *     completed.
      * @return {!Event} Google Cloud Print interface error event.
      * @private
      */
@@ -463,7 +470,8 @@ cr.define('cloudprint', function() {
 
     /**
      * Updates user info and session index from the {@code request} response.
-     * @param {!CloudPrintRequest} request Request to extract user info from.
+     * @param {!cloudprint.CloudPrintRequest} request Request to extract user
+     *     info from.
      * @private
      */
     setUsers_: function(request) {
@@ -523,13 +531,14 @@ cr.define('cloudprint', function() {
     /**
      * Called when the ready-state of a XML http request changes.
      * Calls the successCallback with the result or dispatches an ERROR event.
-     * @param {!CloudPrintRequest} request Request that was changed.
+     * @param {!cloudprint.CloudPrintRequest} request Request that was changed.
      * @private
      */
     onReadyStateChange_: function(request) {
       if (request.xhr.readyState == 4) {
         if (request.xhr.status == 200) {
-          request.result = JSON.parse(request.xhr.responseText);
+          request.result = /** @type {Object} */ (
+              JSON.parse(request.xhr.responseText));
           if (request.origin == print_preview.DestinationOrigin.COOKIES &&
               request.result['success']) {
             this.xsrfTokens_[request.result['request']['user']] =
@@ -545,7 +554,8 @@ cr.define('cloudprint', function() {
      * Called when the search request completes.
      * @param {boolean} isRecent Whether the search request was for recent
      *     destinations.
-     * @param {!CloudPrintRequest} request Request that has been completed.
+     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     *     completed.
      * @private
      */
     onSearchDone_: function(isRecent, request) {
@@ -580,13 +590,13 @@ cr.define('cloudprint', function() {
         // Extract and store users.
         this.setUsers_(request);
         // Dispatch SEARCH_DONE event.
-        event = new Event(CloudPrintInterface.EventType.SEARCH_DONE);
+        event = new Event(CloudPrintInterfaceEventType.SEARCH_DONE);
         event.origin = request.origin;
         event.printers = printerList;
         event.isRecent = isRecent;
       } else {
         event = this.createErrorEvent_(
-            CloudPrintInterface.EventType.SEARCH_FAILED,
+            CloudPrintInterfaceEventType.SEARCH_FAILED,
             request);
       }
       event.user = activeUser;
@@ -596,7 +606,8 @@ cr.define('cloudprint', function() {
 
     /**
      * Called when invitations search request completes.
-     * @param {!CloudPrintRequest} request Request that has been completed.
+     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     *     completed.
      * @private
      */
     onInvitesDone_: function(request) {
@@ -618,11 +629,11 @@ cr.define('cloudprint', function() {
           }
         });
         // Dispatch INVITES_DONE event.
-        event = new Event(CloudPrintInterface.EventType.INVITES_DONE);
+        event = new Event(CloudPrintInterfaceEventType.INVITES_DONE);
         event.invitations = invitationList;
       } else {
         event = this.createErrorEvent_(
-            CloudPrintInterface.EventType.INVITES_FAILED, request);
+            CloudPrintInterfaceEventType.INVITES_FAILED, request);
       }
       event.user = activeUser;
       this.dispatchEvent(event);
@@ -632,7 +643,8 @@ cr.define('cloudprint', function() {
      * Called when invitation processing request completes.
      * @param {!print_preview.Invitation} invitation Processed invitation.
      * @param {boolean} accept Whether this invitation was accepted or rejected.
-     * @param {!CloudPrintRequest} request Request that has been completed.
+     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     *     completed.
      * @private
      */
     onProcessInviteDone_: function(invitation, accept, request) {
@@ -642,7 +654,7 @@ cr.define('cloudprint', function() {
            request.result['request'] &&
            request.result['request']['user']) || '';
       if (request.xhr.status == 200 && request.result['success']) {
-        event = new Event(CloudPrintInterface.EventType.PROCESS_INVITE_DONE);
+        event = new Event(CloudPrintInterfaceEventType.PROCESS_INVITE_DONE);
         if (accept) {
           try {
             event.printer = cloudprint.CloudDestinationParser.parse(
@@ -653,7 +665,7 @@ cr.define('cloudprint', function() {
         }
       } else {
         event = this.createErrorEvent_(
-            CloudPrintInterface.EventType.PROCESS_INVITE_FAILED, request);
+            CloudPrintInterfaceEventType.PROCESS_INVITE_FAILED, request);
       }
       event.invitation = invitation;
       event.accept = accept;
@@ -663,18 +675,19 @@ cr.define('cloudprint', function() {
 
     /**
      * Called when the submit request completes.
-     * @param {!CloudPrintRequest} request Request that has been completed.
+     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     *     completed.
      * @private
      */
     onSubmitDone_: function(request) {
       if (request.xhr.status == 200 && request.result['success']) {
         var submitDoneEvent = new Event(
-            CloudPrintInterface.EventType.SUBMIT_DONE);
+            CloudPrintInterfaceEventType.SUBMIT_DONE);
         submitDoneEvent.jobId = request.result['job']['id'];
         this.dispatchEvent(submitDoneEvent);
       } else {
         var errorEvent = this.createErrorEvent_(
-            CloudPrintInterface.EventType.SUBMIT_FAILED, request);
+            CloudPrintInterfaceEventType.SUBMIT_FAILED, request);
         this.dispatchEvent(errorEvent);
       }
     },
@@ -682,7 +695,8 @@ cr.define('cloudprint', function() {
     /**
      * Called when the printer request completes.
      * @param {string} destinationId ID of the destination that was looked up.
-     * @param {!CloudPrintRequest} request Request that has been completed.
+     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     *     completed.
      * @private
      */
     onPrinterDone_: function(destinationId, request) {
@@ -725,12 +739,12 @@ cr.define('cloudprint', function() {
           return;
         }
         var printerDoneEvent =
-            new Event(CloudPrintInterface.EventType.PRINTER_DONE);
+            new Event(CloudPrintInterfaceEventType.PRINTER_DONE);
         printerDoneEvent.printer = printer;
         this.dispatchEvent(printerDoneEvent);
       } else {
         var errorEvent = this.createErrorEvent_(
-            CloudPrintInterface.EventType.PRINTER_FAILED, request);
+            CloudPrintInterfaceEventType.PRINTER_FAILED, request);
         errorEvent.destinationId = destinationId;
         errorEvent.destinationOrigin = request.origin;
         this.dispatchEvent(errorEvent);
@@ -746,8 +760,8 @@ cr.define('cloudprint', function() {
    * @param {?string} account Account the request is sent for. Can be
    *     {@code null} or empty string if the request is not cookie bound or
    *     is sent on behalf of the primary user.
-   * @param {function(!CloudPrintRequest)} callback Callback to invoke when
-   *     request completes.
+   * @param {function(!cloudprint.CloudPrintRequest)} callback Callback to
+   *     invoke when request completes.
    * @constructor
    */
   function CloudPrintRequest(xhr, body, origin, account, callback) {
@@ -777,7 +791,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Callback to invoke when request completes.
-     * @type {function(!CloudPrintRequest)}
+     * @type {function(!cloudprint.CloudPrintRequest)}
      */
     this.callback = callback;
 
@@ -786,7 +800,7 @@ cr.define('cloudprint', function() {
      * @type {Object} JSON response.
      */
     this.result = null;
-  };
+  }
 
   /**
    * Data structure that represents an HTTP parameter.
@@ -806,10 +820,11 @@ cr.define('cloudprint', function() {
      * @type {string}
      */
     this.value = value;
-  };
+  }
 
   // Export
   return {
-    CloudPrintInterface: CloudPrintInterface
+    CloudPrintInterface: CloudPrintInterface,
+    CloudPrintRequest: CloudPrintRequest
   };
 });
