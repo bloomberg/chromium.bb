@@ -10,6 +10,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
+#include "core/page/ScopedPageSuspender.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +58,7 @@ class HTMLFormControlElementTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  DummyPageHolder& Page() const { return *dummy_page_holder_; }
+  Page& GetPage() const { return dummy_page_holder_->GetPage(); }
   Document& GetDocument() const { return *document_; }
 
  private:
@@ -128,13 +129,12 @@ TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   ValidationMessageClient* validation_message_client =
       new MockValidationMessageClient();
-  GetDocument().GetPage()->SetValidationMessageClient(
-      validation_message_client);
+  GetPage().SetValidationMessageClient(validation_message_client);
+  Page::OrdinaryPages().insert(&GetPage());
 
   HTMLInputElement* input =
       toHTMLInputElement(GetDocument().getElementById("input"));
-  GetDocument().GetFrame()->SetPrinting(true, FloatSize(800, 600),
-                                        FloatSize(800, 600), 1);
+  ScopedPageSuspender suspender;  // print() suspends the page.
   input->reportValidity();
   EXPECT_FALSE(validation_message_client->IsValidationMessageVisible(*input));
 }

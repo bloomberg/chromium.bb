@@ -465,7 +465,7 @@ void HTMLFormControlElement::UpdateVisibleValidationMessage() {
   Page* page = GetDocument().GetPage();
   if (!page || !page->IsPageVisible() || GetDocument().UnloadStarted())
     return;
-  if (GetDocument().GetFrame()->ShouldUsePrintingLayout())
+  if (page->Suspended())
     return;
   String message;
   if (GetLayoutObject() && willValidate())
