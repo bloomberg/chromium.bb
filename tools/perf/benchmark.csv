@@ -39,12 +39,9 @@ loading.cluster_telemetry,,
 loading.mobile,"kouhei@chromium.org, ksakamoto@chromium.org",
 media.android.tough_video_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media
 media.android.tough_video_cases_tbmv2,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
-media.chromeOS.tough_video_cases,crouleau@chromium.org,Internals>Media
-media.chromeOS4kOnly.tough_video_cases,crouleau@chromium.org,Internals>Media
 media.media_cns_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media
 media.mse_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media>Source
 media.tough_video_cases,crouleau@chromium.org,Internals>Media
-media.tough_video_cases_extra,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media
 media.tough_video_cases_tbmv2,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
 media_perftests,crouleau@chromium.org,
 memory.blink_memory_mobile,bashi@chromium.org,
