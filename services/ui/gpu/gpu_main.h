@@ -46,6 +46,7 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
   GpuService* gpu_service() { return gpu_service_.get(); }
 
  private:
+  void BindOnGpu(mojom::GpuMainRequest request);
   void InitOnGpuThread(
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_runner);
@@ -59,7 +60,7 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
       cc::mojom::FrameSinkManagerRequest request,
       cc::mojom::FrameSinkManagerClientPtrInfo client_info);
   void CreateGpuServiceOnGpuThread(mojom::GpuServiceRequest request,
-                                   mojom::GpuHostPtrInfo gpu_host_info,
+                                   mojom::GpuHostPtr gpu_host,
                                    const gpu::GpuPreferences& preferences,
                                    gpu::GpuProcessActivityFlags activity_flags);
   void BindGpuInternalOnGpuThread(mojom::GpuServiceRequest request);

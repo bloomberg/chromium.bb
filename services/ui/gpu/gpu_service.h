@@ -61,6 +61,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
                           base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
+  bool is_initialized() const { return !!gpu_host_; }
+
   media::MediaGpuChannelManager* media_gpu_channel_manager() {
     return media_gpu_channel_manager_.get();
   }

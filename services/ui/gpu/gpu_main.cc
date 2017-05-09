@@ -52,7 +52,7 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
       io_thread_("GpuIOThread"),
       compositor_thread_("DisplayCompositorThread"),
       power_monitor_(base::MakeUnique<base::PowerMonitorDeviceSource>()),
-      binding_(this, std::move(request)) {
+      binding_(this) {
   base::Thread::Options thread_options;
 
 #if defined(OS_WIN)
@@ -92,6 +92,16 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
   // Start the compositor thread.
   compositor_thread_.Start();
   compositor_thread_task_runner_ = compositor_thread_.task_runner();
+
+  // |this| will outlive the gpu thread and so it's safe to use
+  // base::Unretained here.
+  gpu_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuMain::InitOnGpuThread, base::Unretained(this),
+                 io_thread_.task_runner(), compositor_thread_task_runner_));
+  gpu_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GpuMain::BindOnGpu, base::Unretained(this),
+                            base::Passed(std::move(request))));
 }
 
 GpuMain::~GpuMain() {
@@ -112,39 +122,30 @@ GpuMain::~GpuMain() {
   io_thread_.Stop();
 }
 
-void GpuMain::OnStart() {
-  // |this| will outlive the gpu thread and so it's safe to use
-  // base::Unretained here.
-  gpu_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuMain::InitOnGpuThread, base::Unretained(this),
-                 io_thread_.task_runner(), compositor_thread_task_runner_));
-}
-
 void GpuMain::CreateGpuService(mojom::GpuServiceRequest request,
                                mojom::GpuHostPtr gpu_host,
                                const gpu::GpuPreferences& preferences,
                                mojo::ScopedSharedBufferHandle activity_flags) {
-  // |this| will outlive the gpu thread and so it's safe to use
-  // base::Unretained here.
-  gpu_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuMain::CreateGpuServiceOnGpuThread, base::Unretained(this),
-                 base::Passed(std::move(request)),
-                 base::Passed(gpu_host.PassInterface()), preferences,
-                 base::Passed(
-                     gpu::GpuProcessActivityFlags(std::move(activity_flags)))));
+  DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
+  CreateGpuServiceOnGpuThread(
+      std::move(request), std::move(gpu_host), preferences,
+      gpu::GpuProcessActivityFlags(std::move(activity_flags)));
 }
 
 void GpuMain::CreateFrameSinkManager(
     cc::mojom::FrameSinkManagerRequest request,
     cc::mojom::FrameSinkManagerClientPtr client) {
-  if (!gpu_service_) {
+  DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
+  if (!gpu_service_ || !gpu_service_->is_initialized()) {
     pending_frame_sink_manager_request_ = std::move(request);
     pending_frame_sink_manager_client_info_ = client.PassInterface();
     return;
   }
   CreateFrameSinkManagerInternal(std::move(request), client.PassInterface());
+}
+
+void GpuMain::BindOnGpu(mojom::GpuMainRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 void GpuMain::InitOnGpuThread(
@@ -167,6 +168,7 @@ void GpuMain::CreateFrameSinkManagerInternal(
     cc::mojom::FrameSinkManagerClientPtrInfo client_info) {
   DCHECK(!gpu_command_service_);
   DCHECK(gpu_service_);
+  DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   gpu_command_service_ = new gpu::GpuInProcessThreadService(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group());
@@ -175,18 +177,10 @@ void GpuMain::CreateFrameSinkManagerInternal(
   mojom::GpuServicePtr gpu_service;
   mojom::GpuServiceRequest gpu_service_request(&gpu_service);
 
-  if (gpu_thread_task_runner_->BelongsToCurrentThread()) {
-    // If the FrameSinkManager creation was delayed because GpuService had not
-    // been created yet, then this is called, in gpu thread, right after
-    // GpuService is created.
-    BindGpuInternalOnGpuThread(std::move(gpu_service_request));
-  } else {
-    gpu_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&GpuMain::BindGpuInternalOnGpuThread, base::Unretained(this),
-                   base::Passed(std::move(gpu_service_request))));
-  }
-
+  // If the FrameSinkManager creation was delayed because GpuService had not
+  // been created yet, then this is called, in gpu thread, right after
+  // GpuService is created.
+  BindGpuInternalOnGpuThread(std::move(gpu_service_request));
   compositor_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GpuMain::CreateFrameSinkManagerOnCompositorThread,
                             base::Unretained(this), image_factory,
@@ -224,6 +218,7 @@ void GpuMain::TearDownOnCompositorThread() {
 }
 
 void GpuMain::TearDownOnGpuThread() {
+  binding_.Close();
   gpu_service_.reset();
   gpu_memory_buffer_factory_.reset();
   gpu_init_.reset();
@@ -231,11 +226,9 @@ void GpuMain::TearDownOnGpuThread() {
 
 void GpuMain::CreateGpuServiceOnGpuThread(
     mojom::GpuServiceRequest request,
-    mojom::GpuHostPtrInfo gpu_host_info,
+    mojom::GpuHostPtr gpu_host,
     const gpu::GpuPreferences& preferences,
     gpu::GpuProcessActivityFlags activity_flags) {
-  mojom::GpuHostPtr gpu_host;
-  gpu_host.Bind(std::move(gpu_host_info));
   gpu_service_->UpdateGPUInfoFromPreferences(preferences);
   gpu_service_->InitializeWithHost(std::move(gpu_host),
                                    std::move(activity_flags));
