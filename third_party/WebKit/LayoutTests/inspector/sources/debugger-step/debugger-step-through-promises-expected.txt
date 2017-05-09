@@ -23,7 +23,7 @@ Executing StepInto...
 Call stack:
     0) p2 (debugger-step-through-promises.html:17)
     [Promise.resolve]
-    0) testFunction (debugger-step-through-promises.html:9)
+    0) testFunction (debugger-step-through-promises.html:14)
     [setTimeout]
     0) scheduleTestFunction (debugger-test.js:3)
     <... skipped remaining frames ...>
@@ -32,7 +32,7 @@ Executing StepOver...
 Call stack:
     0) p2 (debugger-step-through-promises.html:18)
     [Promise.resolve]
-    0) testFunction (debugger-step-through-promises.html:9)
+    0) testFunction (debugger-step-through-promises.html:14)
     [setTimeout]
     0) scheduleTestFunction (debugger-test.js:3)
     <... skipped remaining frames ...>
@@ -41,7 +41,7 @@ Executing StepOver...
 Call stack:
     0) p3 (debugger-step-through-promises.html:22)
     [Promise.resolve]
-    0) testFunction (debugger-step-through-promises.html:9)
+    0) testFunction (debugger-step-through-promises.html:19)
     [setTimeout]
     0) scheduleTestFunction (debugger-test.js:3)
     <... skipped remaining frames ...>
@@ -50,7 +50,7 @@ Executing StepOver...
 Call stack:
     0) p3 (debugger-step-through-promises.html:23)
     [Promise.resolve]
-    0) testFunction (debugger-step-through-promises.html:9)
+    0) testFunction (debugger-step-through-promises.html:19)
     [setTimeout]
     0) scheduleTestFunction (debugger-test.js:3)
     <... skipped remaining frames ...>
