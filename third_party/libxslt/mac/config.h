@@ -56,7 +56,7 @@
 #define HAVE_LOCALE_H 1
 
 /* Define to 1 if you have the `localtime' function. */
-#define HAVE_LOCALTIME 1
+
 
 /* Define to 1 if you have the `localtime_r' function. */
 #define HAVE_LOCALTIME_R 1
