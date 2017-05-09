@@ -114,6 +114,10 @@ void DoodleFetcherImpl::FetchDoodle(FinishedCallback callback) {
   fetcher_->Start();
 }
 
+bool DoodleFetcherImpl::IsFetchInProgress() const {
+  return !callbacks_.empty();
+}
+
 void DoodleFetcherImpl::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
   std::unique_ptr<net::URLFetcher> free_fetcher = std::move(fetcher_);

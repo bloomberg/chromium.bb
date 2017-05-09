@@ -36,6 +36,8 @@ class FakeDoodleFetcher : public DoodleFetcher {
     callbacks_.push_back(std::move(callback));
   }
 
+  bool IsFetchInProgress() const override { return !callbacks_.empty(); }
+
   size_t num_pending_callbacks() const { return callbacks_.size(); }
 
   void ServeAllCallbacks(DoodleState state,
@@ -151,6 +153,16 @@ TEST_F(DoodleServiceTest, FetchesConfigOnRefresh) {
   EXPECT_THAT(service()->config(), Eq(other_config));
 }
 
+TEST_F(DoodleServiceTest, CoalescesRefreshCalls) {
+  ASSERT_THAT(service()->config(), Eq(base::nullopt));
+
+  // Request a refresh of the doodle config, twice.
+  service()->Refresh();
+  service()->Refresh();
+  // Only one request should have arrived at the fetcher.
+  EXPECT_THAT(fetcher()->num_pending_callbacks(), Eq(1u));
+}
+
 TEST_F(DoodleServiceTest, PersistsConfig) {
   // Load some doodle config.
   service()->Refresh();
@@ -164,6 +176,27 @@ TEST_F(DoodleServiceTest, PersistsConfig) {
   // again automatically.
   RecreateServiceWithZeroRefreshInterval();
   EXPECT_THAT(service()->config(), Eq(config));
+}
+
+TEST_F(DoodleServiceTest, FetchesOnCreationIfEmpty) {
+  ASSERT_THAT(service()->config(), Eq(base::nullopt));
+
+  // Since there was no cached config, the service should have sent a request.
+  EXPECT_THAT(fetcher()->num_pending_callbacks(), Eq(1u));
+}
+
+TEST_F(DoodleServiceTest, DoesNotFetchOnCreationWithCachedConfig) {
+  // Load some doodle config.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  RecreateServiceWithZeroRefreshInterval();
+
+  // Since there was a cached config, there should be no refresh request.
+  EXPECT_THAT(fetcher()->num_pending_callbacks(), Eq(0u));
 }
 
 TEST_F(DoodleServiceTest, PersistsExpiryDate) {

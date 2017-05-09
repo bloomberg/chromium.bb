@@ -50,11 +50,9 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
       const base::Optional<std::string>& override_url);
   ~DoodleFetcherImpl() override;
 
-  // Fetches a doodle asynchronously. The |callback| is called with a
-  // DoodleState indicating whether the request succeded in fetching a doodle.
-  // If a fetch is already running, the callback will be queued and invoked with
-  // result from the next completed request.
+  // DoodleFetcher implementation.
   void FetchDoodle(FinishedCallback callback) override;
+  bool IsFetchInProgress() const override;
 
  private:
   // net::URLFetcherDelegate implementation.
@@ -74,10 +72,6 @@ class DoodleFetcherImpl : public DoodleFetcher, public net::URLFetcherDelegate {
                              const base::Optional<DoodleConfig>& config);
 
   GURL GetGoogleBaseUrl() const;
-
-  // Returns whether a fetch is still in progress. A fetch begins when a
-  // callback is added and ends when the last callback was called.
-  bool IsFetchInProgress() const { return !callbacks_.empty(); }
 
   // Parameters set from constructor.
   scoped_refptr<net::URLRequestContextGetter> const download_context_;
