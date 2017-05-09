@@ -17,6 +17,7 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/content_view_render_view.h"
 #include "content/browser/android/content_view_statics.h"
+#include "content/browser/android/context_selection_client.h"
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/dialog_overlay_impl.h"
 #include "content/browser/android/gpu_process_callback.h"
@@ -43,6 +44,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ChildProcessLauncher", content::RegisterChildProcessLauncher},
     {"ContentFeatureList", content::android::RegisterContentFeatureListJni},
     {"ContentVideoView", content::ContentVideoView::RegisterContentVideoView},
+    {"ContextSelectionClient", content::RegisterContextSelectionClient},
     {"GpuProcessCallback", content::RegisterGpuProcessCallback},
     {"MemoryMonitorAndroid", content::MemoryMonitorAndroid::Register},
     {"BackgroundSyncNetworkObserverAndroid",
