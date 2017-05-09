@@ -81,6 +81,7 @@
 #import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
+#include "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
@@ -644,14 +645,18 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 // Registers load request with empty referrer and link or client redirect
-// transition based on user interaction state.
-- (void)registerLoadRequest:(const GURL&)URL;
+// transition based on user interaction state. Returns navigation context for
+// this request.
+- (std::unique_ptr<web::NavigationContextImpl>)registerLoadRequestForURL:
+    (const GURL&)URL;
 // Prepares web controller and delegates for anticipated page change.
 // Allows several methods to invoke webWill/DidAddPendingURL on anticipated page
 // change, using the same cached request and calculated transition types.
-- (void)registerLoadRequest:(const GURL&)URL
-                   referrer:(const web::Referrer&)referrer
-                 transition:(ui::PageTransition)transition;
+// Returns navigation context for this request.
+- (std::unique_ptr<web::NavigationContextImpl>)
+registerLoadRequestForURL:(const GURL&)URL
+                 referrer:(const web::Referrer&)referrer
+               transition:(ui::PageTransition)transition;
 // Updates the HTML5 history state of the page using the current NavigationItem.
 // For same-document navigations and navigations affected by
 // window.history.[push/replace]State(), the URL and serialized state object
@@ -1433,7 +1438,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return [_webView estimatedProgress];
 }
 
-- (void)registerLoadRequest:(const GURL&)URL {
+- (std::unique_ptr<web::NavigationContextImpl>)registerLoadRequestForURL:
+    (const GURL&)URL {
   // Get the navigation type from the last main frame load request, and try to
   // map that to a PageTransition.
   WKNavigationType navigationType =
@@ -1466,12 +1472,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   // The referrer is not known yet, and will be updated later.
   const web::Referrer emptyReferrer;
-  [self registerLoadRequest:URL referrer:emptyReferrer transition:transition];
+  return [self registerLoadRequestForURL:URL
+                                referrer:emptyReferrer
+                              transition:transition];
 }
 
-- (void)registerLoadRequest:(const GURL&)requestURL
-                   referrer:(const web::Referrer&)referrer
-                 transition:(ui::PageTransition)transition {
+- (std::unique_ptr<web::NavigationContextImpl>)
+registerLoadRequestForURL:(const GURL&)requestURL
+                 referrer:(const web::Referrer&)referrer
+               transition:(ui::PageTransition)transition {
   // Transfer time is registered so that further transitions within the time
   // envelope are not also registered as links.
   _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
@@ -1504,8 +1513,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         web::NavigationInitiationType::RENDERER_INITIATED,
         web::NavigationManager::UserAgentOverrideOption::INHERIT);
   }
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          _webStateImpl, requestURL, nullptr /* response_headers */);
   _webStateImpl->SetIsLoading(true);
+  // TODO(crbug.com/713836): pass context to |OnProvisionalNavigationStarted|.
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
+  return context;
 }
 
 - (void)updateHTML5HistoryState {
@@ -1800,9 +1814,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     item->SetVirtualURL([nativeContent virtualURL]);
   }
 
-  [self registerLoadRequest:targetURL
-                   referrer:referrer
-                 transition:self.currentTransition];
+  std::unique_ptr<web::NavigationContextImpl> navigationContext =
+      [self registerLoadRequestForURL:targetURL
+                             referrer:referrer
+                           transition:self.currentTransition];
   [self loadNativeViewWithSuccess:YES];
 }
 
@@ -4365,7 +4380,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       }
       return;
     } else {
-      [self registerLoadRequest:webViewURL];
+      std::unique_ptr<web::NavigationContextImpl> navigationContext =
+          [self registerLoadRequestForURL:webViewURL];
     }
   }
 
@@ -4379,9 +4395,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [_navigationStates setState:web::WKNavigationState::REDIRECTED
                 forNavigation:navigation];
 
-  [self registerLoadRequest:net::GURLWithNSURL(webView.URL)
-                   referrer:[self currentReferrer]
-                 transition:ui::PAGE_TRANSITION_SERVER_REDIRECT];
+  // It is fine to ignore returned NavigationContext. Context does not change
+  // for redirect and old context stored _navigationStates is valid and it
+  // should not be replaced.
+  [self registerLoadRequestForURL:net::GURLWithNSURL(webView.URL)
+                         referrer:[self currentReferrer]
+                       transition:ui::PAGE_TRANSITION_SERVER_REDIRECT];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4850,11 +4869,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // registering a load request logically comes before updating the document
   // URL, but also must come first since it uses state that is reset on URL
   // changes.
+  std::unique_ptr<web::NavigationContextImpl> navigationContext;
   if (!_changingHistoryState) {
     // If this wasn't a previously-expected load (e.g., certain back/forward
     // navigations), register the load request.
     if (![self isLoadRequestPendingForURL:newURL])
-      [self registerLoadRequest:newURL];
+      navigationContext = [self registerLoadRequestForURL:newURL];
   }
 
   [self setDocumentURL:newURL];
@@ -4904,9 +4924,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [request setAllHTTPHeaderFields:self.currentHTTPHeaders];
     GURL navigationURL =
         currentItem ? currentItem->GetURL() : GURL::EmptyGURL();
-    [self registerLoadRequest:navigationURL
-                     referrer:self.currentNavItemReferrer
-                   transition:self.currentTransition];
+    std::unique_ptr<web::NavigationContextImpl> navigationContext =
+        [self registerLoadRequestForURL:navigationURL
+                               referrer:self.currentNavItemReferrer
+                             transition:self.currentTransition];
     [self loadPOSTRequest:request];
     return;
   }
@@ -4914,9 +4935,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   ProceduralBlock defaultNavigationBlock = ^{
     web::NavigationItem* item = self.currentNavItem;
     GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
-    [self registerLoadRequest:navigationURL
-                     referrer:self.currentNavItemReferrer
-                   transition:self.currentTransition];
+    std::unique_ptr<web::NavigationContextImpl> navigationContext =
+        [self registerLoadRequestForURL:navigationURL
+                               referrer:self.currentNavItemReferrer
+                             transition:self.currentTransition];
     [self loadRequest:request];
     [self reportBackForwardNavigationTypeForFastNavigation:NO];
   };
@@ -4951,9 +4973,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // so |reload| must be explicitly called.
     web::NavigationItem* item = self.currentNavItem;
     GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
-    [self registerLoadRequest:navigationURL
-                     referrer:self.currentNavItemReferrer
-                   transition:self.currentTransition];
+    std::unique_ptr<web::NavigationContextImpl> navigationContext =
+        [self registerLoadRequestForURL:navigationURL
+                               referrer:self.currentNavItemReferrer
+                             transition:self.currentTransition];
     WKNavigation* navigation = nil;
     if (navigationURL == net::GURLWithNSURL([_webView URL])) {
       navigation = [_webView reload];
