@@ -17,11 +17,20 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeoutException;
@@ -29,11 +38,18 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for the SmartClipProvider.
  */
-public class SmartClipProviderTest
-        extends ChromeActivityTestCaseBase<ChromeActivity> implements Handler.Callback {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class SmartClipProviderTest implements Handler.Callback {
     // This is a key for meta-data in the package manifest. It should NOT
     // change, as OEMs will use it when they look for the SmartClipProvider
     // interface.
+
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String SMART_CLIP_PROVIDER_KEY =
             "org.chromium.content.browser.SMART_CLIP_PROVIDER";
 
@@ -82,26 +98,17 @@ public class SmartClipProviderTest
     private Method mSetSmartClipResultHandlerMethod;
     private Method mExtractSmartClipDataMethod;
 
-    public SmartClipProviderTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        mActivity = getActivity();
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mActivity = mActivityTestRule.getActivity();
         mCallbackHelper = new MyCallbackHelper();
         mHandlerThread = new HandlerThread("ContentViewTest thread");
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper(), this);
 
         mSmartClipProviderClass = getSmartClipProviderClass();
-        assertNotNull(mSmartClipProviderClass);
+        Assert.assertNotNull(mSmartClipProviderClass);
         mSetSmartClipResultHandlerMethod = mSmartClipProviderClass.getDeclaredMethod(
                 "setSmartClipResultHandler", new Class[] { Handler.class });
         mExtractSmartClipDataMethod = mSmartClipProviderClass.getDeclaredMethod(
@@ -109,17 +116,13 @@ public class SmartClipProviderTest
                 new Class[] { Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE });
     }
 
+    @After
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    @Override
     public void tearDown() throws Exception {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                mHandlerThread.quitSafely();
-            } else {
-                mHandlerThread.quit();
-            }
-        } finally {
-            super.tearDown();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            mHandlerThread.quitSafely();
+        } else {
+            mHandlerThread.quit();
         }
     }
 
@@ -127,7 +130,7 @@ public class SmartClipProviderTest
     @Override
     public boolean handleMessage(Message msg) {
         Bundle bundle = msg.getData();
-        assertNotNull(bundle);
+        Assert.assertNotNull(bundle);
         String url = bundle.getString("url");
         String title = bundle.getString("title");
         String text = bundle.getString("text");
@@ -144,7 +147,7 @@ public class SmartClipProviderTest
                 mActivity.getPackageName(), PackageManager.GET_META_DATA);
         Bundle bundle = ai.metaData;
         String className = bundle.getString(SMART_CLIP_PROVIDER_KEY);
-        assertNotNull(className);
+        Assert.assertNotNull(className);
         return Class.forName(className);
     }
 
@@ -164,6 +167,7 @@ public class SmartClipProviderTest
         return null;
     }
 
+    @Test
     @MediumTest
     @Feature({"SmartClip"})
     @RetryOnFailure
@@ -175,31 +179,32 @@ public class SmartClipProviderTest
                 // This emulates what OEM will be doing when they want to call
                 // functions on SmartClipProvider through view hierarchy.
 
-                Object scp =
-                        findSmartClipProvider(getActivity().findViewById(android.R.id.content));
-                assertNotNull(scp);
+                Object scp = findSmartClipProvider(
+                        mActivityTestRule.getActivity().findViewById(android.R.id.content));
+                Assert.assertNotNull(scp);
                 try {
                     mSetSmartClipResultHandlerMethod.invoke(scp, mHandler);
                     mExtractSmartClipDataMethod.invoke(
                             scp, rect.left, rect.top, rect.width(), rect.height());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    fail();
+                    Assert.fail();
                 }
             }
         });
         mCallbackHelper.waitForCallback(0, 1);  // call count: 0 --> 1
-        assertEquals("about:blank", mCallbackHelper.getTitle());
-        assertEquals("about:blank", mCallbackHelper.getUrl());
-        assertNotNull(mCallbackHelper.getText());
-        assertNotNull(mCallbackHelper.getHtml());
-        assertNotNull(mCallbackHelper.getRect());
-        assertEquals(rect.left, mCallbackHelper.getRect().left);
-        assertEquals(rect.top, mCallbackHelper.getRect().top);
-        assertEquals(rect.width(), mCallbackHelper.getRect().width());
-        assertEquals(rect.height(), mCallbackHelper.getRect().height());
+        Assert.assertEquals("about:blank", mCallbackHelper.getTitle());
+        Assert.assertEquals("about:blank", mCallbackHelper.getUrl());
+        Assert.assertNotNull(mCallbackHelper.getText());
+        Assert.assertNotNull(mCallbackHelper.getHtml());
+        Assert.assertNotNull(mCallbackHelper.getRect());
+        Assert.assertEquals(rect.left, mCallbackHelper.getRect().left);
+        Assert.assertEquals(rect.top, mCallbackHelper.getRect().top);
+        Assert.assertEquals(rect.width(), mCallbackHelper.getRect().width());
+        Assert.assertEquals(rect.height(), mCallbackHelper.getRect().height());
     }
 
+    @Test
     @MediumTest
     @Feature({"SmartClip"})
     @RetryOnFailure
@@ -207,9 +212,9 @@ public class SmartClipProviderTest
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Object scp =
-                        findSmartClipProvider(getActivity().findViewById(android.R.id.content));
-                assertNotNull(scp);
+                Object scp = findSmartClipProvider(
+                        mActivityTestRule.getActivity().findViewById(android.R.id.content));
+                Assert.assertNotNull(scp);
                 try {
                     // Galaxy Note 4 has a bug where it doesn't always set the handler first; in
                     // that case, we shouldn't crash: http://crbug.com/710147
@@ -221,7 +226,7 @@ public class SmartClipProviderTest
                     mExtractSmartClipDataMethod.invoke(scp, 10, 20, 100, 70);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    fail();
+                    Assert.fail();
                 }
             }
         });

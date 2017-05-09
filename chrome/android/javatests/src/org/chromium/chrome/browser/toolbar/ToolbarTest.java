@@ -4,18 +4,28 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbar;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
@@ -27,21 +37,24 @@ import org.chromium.net.test.EmbeddedTestServer;
 /**
  * Tests for toolbar manager behavior.
  */
-public class ToolbarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class ToolbarTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String TEST_PAGE = "/chrome/test/data/android/test.html";
 
-    public ToolbarTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     private void findInPageFromMenu() {
-        MenuUtils.invokeCustomMenuActionSync(getInstrumentation(),
-                getActivity(), R.id.find_in_page_id);
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), R.id.find_in_page_id);
 
         waitForFindInPageVisibility(true);
     }
@@ -50,8 +63,9 @@ public class ToolbarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                FindToolbar findToolbar = (FindToolbar) getActivity().findViewById(
-                        R.id.find_toolbar);
+                FindToolbar findToolbar =
+                        (FindToolbar) mActivityTestRule.getActivity().findViewById(
+                                R.id.find_toolbar);
 
                 boolean isVisible = findToolbar != null && findToolbar.isShown();
                 return (visible == isVisible) && !findToolbar.isAnimating();
@@ -70,18 +84,19 @@ public class ToolbarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         return isShowingError[0];
     }
 
+    @Test
     @MediumTest
     public void testNTPNavigatesToErrorPageOnDisconnectedNetwork() throws Exception {
-        EmbeddedTestServer testServer =
-                EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
 
-        Tab tab = getActivity().getActivityTab();
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
         // Load new tab page.
-        loadUrl(UrlConstants.NTP_URL);
-        assertEquals(UrlConstants.NTP_URL, tab.getUrl());
-        assertFalse(isErrorPage(tab));
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        Assert.assertEquals(UrlConstants.NTP_URL, tab.getUrl());
+        Assert.assertFalse(isErrorPage(tab));
 
         // Stop the server and also disconnect the network.
         testServer.stopAndDestroyServer();
@@ -92,18 +107,19 @@ public class ToolbarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
 
-        loadUrl(testUrl);
-        assertEquals(testUrl, tab.getUrl());
-        assertTrue(isErrorPage(tab));
+        mActivityTestRule.loadUrl(testUrl);
+        Assert.assertEquals(testUrl, tab.getUrl());
+        Assert.assertTrue(isErrorPage(tab));
     }
 
+    @Test
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"Omnibox"})
     public void testFindInPageDismissedOnOmniboxFocus() {
         findInPageFromMenu();
 
-        UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
+        UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 

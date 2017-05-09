@@ -7,13 +7,21 @@ package org.chromium.chrome.browser.autofill;
 import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -31,26 +39,24 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Integration tests for interaction of the AutofillPopup and a keyboard.
  */
-public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-
-    public AutofillPopupWithKeyboardTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        // Don't launch activity automatically.
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class AutofillPopupWithKeyboardTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     /**
      * Test that showing autofill popup and keyboard will not hide the autofill popup.
      */
+    @Test
     @MediumTest
     @Feature({"autofill-keyboard"})
     @RetryOnFailure
     public void testShowAutofillPopupAndKeyboardimultaneously()
             throws InterruptedException, ExecutionException, TimeoutException {
-        startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html><head>"
+        mActivityTestRule.startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html><head>"
                 + "<meta name=\"viewport\""
                 + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
                 + "<body><form method=\"POST\">"
@@ -79,7 +85,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                viewCoreRef.set(getActivity().getCurrentContentViewCore());
+                viewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
                 webContentsRef.set(viewCoreRef.get().getWebContents());
                 viewRef.set(viewCoreRef.get().getContainerView());
             }
@@ -95,9 +101,10 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
         CriteriaHelper.pollUiThread(new Criteria("Keyboard was never shown.") {
             @Override
             public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(
-                        getActivity(),
-                        getActivity().getCurrentContentViewCore().getContainerView());
+                return UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(),
+                        mActivityTestRule.getActivity()
+                                .getCurrentContentViewCore()
+                                .getContainerView());
             }
         });
 
@@ -115,7 +122,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
                 return viewRef.get().findViewById(R.id.dropdown_popup_window).getTag();
             }
         });
-        assertTrue(popupObject instanceof AutofillPopup);
+        Assert.assertTrue(popupObject instanceof AutofillPopup);
         final AutofillPopup popup = (AutofillPopup) popupObject;
         CriteriaHelper.pollUiThread(new Criteria("Autofill Popup was never shown.") {
             @Override

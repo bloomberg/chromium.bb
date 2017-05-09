@@ -12,23 +12,35 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.util.Base64;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
@@ -41,7 +53,14 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test suite for verifying the behavior of various URL overriding actions.
  */
-public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class UrlOverridingTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String BASE_PATH = "/chrome/test/data/android/url_overriding/";
     private static final String NAVIGATION_FROM_TIMEOUT_PAGE =
             BASE_PATH + "navigation_from_timer.html";
@@ -102,25 +121,21 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     private ActivityMonitor mActivityMonitor;
     private EmbeddedTestServer mTestServer;
 
-    public UrlOverridingTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
         filter.addCategory(Intent.CATEGORY_BROWSABLE);
         filter.addDataScheme("market");
-        mActivityMonitor = getInstrumentation().addMonitor(
+        mActivityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 filter, new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
     }
 
     private void loadUrlAndWaitForIntentUrl(final String url, boolean needClick,
@@ -135,23 +150,24 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         final CallbackHelper failCallback = new CallbackHelper();
         final CallbackHelper newTabCallback = new CallbackHelper();
 
-        final Tab tab = getActivity().getActivityTab();
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         final Tab[] latestTabHolder = new Tab[1];
         latestTabHolder[0] = tab;
         tab.addObserver(new TestTabObserver(finishCallback, failCallback));
         if (expectedNewTabCount > 0) {
-            getActivity().getTabModelSelector().addObserver(new EmptyTabModelSelectorObserver() {
-                @Override
-                public void onNewTabCreated(Tab newTab) {
-                    newTabCallback.notifyCalled();
-                    newTab.addObserver(new TestTabObserver(finishCallback, failCallback));
-                    latestTabHolder[0] = newTab;
-                }
-            });
+            mActivityTestRule.getActivity().getTabModelSelector().addObserver(
+                    new EmptyTabModelSelectorObserver() {
+                        @Override
+                        public void onNewTabCreated(Tab newTab) {
+                            newTabCallback.notifyCalled();
+                            newTab.addObserver(new TestTabObserver(finishCallback, failCallback));
+                            latestTabHolder[0] = newTab;
+                        }
+                    });
         }
 
-        getActivity().onUserInteraction();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        mActivityTestRule.getActivity().onUserInteraction();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 tab.loadUrl(new LoadUrlParams(url, PageTransition.LINK));
@@ -162,22 +178,22 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
             try {
                 finishCallback.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
             } catch (TimeoutException ex) {
-                fail();
+                Assert.fail();
                 return;
             }
         }
 
         SystemClock.sleep(1);
-        getActivity().onUserInteraction();
+        mActivityTestRule.getActivity().onUserInteraction();
         if (needClick) {
-            singleClickView(tab.getView());
+            TouchCommon.singleClickView(tab.getView());
         }
 
         if (failCallback.getCallCount() == 0) {
             try {
                 failCallback.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
             } catch (TimeoutException ex) {
-                fail("Haven't received navigation failure of intents.");
+                Assert.fail("Haven't received navigation failure of intents.");
                 return;
             }
         }
@@ -190,13 +206,13 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 try {
                     finishCallback.waitForCallback(1, 1, 20, TimeUnit.SECONDS);
                 } catch (TimeoutException ex) {
-                    fail("Fallback URL is not loaded");
+                    Assert.fail("Fallback URL is not loaded");
                     return;
                 }
             }
         }
 
-        assertEquals(expectedNewTabCount, newTabCallback.getCallCount());
+        Assert.assertEquals(expectedNewTabCount, newTabCallback.getCallCount());
         // For sub frames, the |loadFailCallback| run through different threads
         // from the ExternalNavigationHandler. As a result, there is no guarantee
         // when url override result would come.
@@ -229,10 +245,11 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                         return mActivityMonitor.getHits();
                     }
                 }));
-        assertEquals(1 + (hasFallbackUrl ? 1 : 0), finishCallback.getCallCount());
-        assertEquals(1, failCallback.getCallCount());
+        Assert.assertEquals(1 + (hasFallbackUrl ? 1 : 0), finishCallback.getCallCount());
+        Assert.assertEquals(1, failCallback.getCallCount());
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationFromTimer() throws InterruptedException {
@@ -240,6 +257,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 mTestServer.getURL(NAVIGATION_FROM_TIMEOUT_PAGE), false, false, true);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationFromTimerInSubFrame() throws InterruptedException {
@@ -248,6 +266,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 false, false);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationFromUserGesture() throws InterruptedException {
@@ -255,6 +274,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 mTestServer.getURL(NAVIGATION_FROM_USER_GESTURE_PAGE), true, true, true);
     }
 
+    @Test
     @SmallTest
     public void testNavigationFromUserGestureInSubFrame() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
@@ -262,6 +282,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 true, false);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationFromXHRCallback() throws InterruptedException {
@@ -269,6 +290,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_PAGE), true, true, true);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationFromXHRCallbackInSubFrame() throws InterruptedException {
@@ -277,6 +299,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 true, false);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationFromXHRCallbackAndShortTimeout() throws InterruptedException {
@@ -285,6 +308,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 true, true, true);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationFromXHRCallbackAndLongTimeout() throws InterruptedException {
@@ -293,6 +317,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 true, false, true);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationWithFallbackURL()
@@ -305,6 +330,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         loadUrlAndWaitForIntentUrl(originalUrl, true, 0, false, fallbackUrl, true);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testNavigationWithFallbackURLInSubFrame()
@@ -332,6 +358,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         loadUrlAndWaitForIntentUrl(originalUrl, true, false, false);
     }
 
+    @Test
     @SmallTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     public void testOpenWindowFromUserGesture() throws InterruptedException {
@@ -339,12 +366,13 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 true, 1, true, null, true);
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testRedirectionFromIntent() {
         Intent intent = new Intent(Intent.ACTION_VIEW,
                 Uri.parse(mTestServer.getURL(NAVIGATION_FROM_JAVA_REDIRECTION_PAGE)));
-        Context targetContext = getInstrumentation().getTargetContext();
+        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         intent.setClassName(targetContext, ChromeLauncherActivity.class.getName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         targetContext.startActivity(intent);
@@ -355,10 +383,5 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 return mActivityMonitor.getHits();
             }
         }));
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 }

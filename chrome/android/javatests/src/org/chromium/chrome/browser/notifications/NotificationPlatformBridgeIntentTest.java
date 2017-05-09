@@ -8,17 +8,24 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -30,9 +37,11 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * that the responsibility for correct initialization, e.g. loading the native library, lies with
  * the code exercised by this test.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-public class NotificationPlatformBridgeIntentTest
-        extends ChromeActivityTestCaseBase<ChromeActivity> {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class NotificationPlatformBridgeIntentTest {
     /**
      * Name of the Intent extra holding the notification id. This is set by the framework when a
      * notification preferences intent has been triggered from there, which could be one of the
@@ -40,28 +49,22 @@ public class NotificationPlatformBridgeIntentTest
      */
     public static final String EXTRA_NOTIFICATION_ID = "notification_id";
 
-    public NotificationPlatformBridgeIntentTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        // Don't do anything here. The responsibility for correct initialization, e.g. loading the
-        // native library, lies with the code exercised by this test.
-    }
-
     /**
      * Tests the scenario where the user clicks "App settings" in the Android App notifications
      * screen. In this scenario the intent does not have the tag extra which holds the origin. This
      * means that the preferences cannot be shown for a specific site, and Chrome falls back to
      * showing the notification preferences for all sites.
      */
+    @Test
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testLaunchNotificationPreferencesForCategory() {
-        assertFalse("The native library should not be loaded yet", LibraryLoader.isInitialized());
+        Assert.assertFalse(
+                "The native library should not be loaded yet", LibraryLoader.isInitialized());
 
-        final Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        final Context context = InstrumentationRegistry.getInstrumentation()
+                                        .getTargetContext()
+                                        .getApplicationContext();
 
         final Intent intent =
                 new Intent(Intent.ACTION_MAIN)
@@ -70,17 +73,17 @@ public class NotificationPlatformBridgeIntentTest
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         Preferences activity = ActivityUtils.waitForActivity(
-                getInstrumentation(), Preferences.class, new Runnable() {
+                InstrumentationRegistry.getInstrumentation(), Preferences.class, new Runnable() {
                     @Override
                     public void run() {
                         context.startActivity(intent);
                     }
                 });
-        assertNotNull("Could not find the Preferences activity", activity);
+        Assert.assertNotNull("Could not find the Preferences activity", activity);
 
         SingleCategoryPreferences fragment =
                 ActivityUtils.waitForFragmentToAttach(activity, SingleCategoryPreferences.class);
-        assertNotNull("Could not find the SingleCategoryPreferences fragment", fragment);
+        Assert.assertNotNull("Could not find the SingleCategoryPreferences fragment", fragment);
     }
 
     /**
@@ -88,12 +91,16 @@ public class NotificationPlatformBridgeIntentTest
      * through a long press. In this scenario the intent has the tag extra which holds the origin
      * that created the notification. Chrome will show the preferences for this specific site.
      */
+    @Test
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testLaunchNotificationPreferencesForWebsite() {
-        assertFalse("The native library should not be loaded yet", LibraryLoader.isInitialized());
+        Assert.assertFalse(
+                "The native library should not be loaded yet", LibraryLoader.isInitialized());
 
-        final Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        final Context context = InstrumentationRegistry.getInstrumentation()
+                                        .getTargetContext()
+                                        .getApplicationContext();
 
         final Intent intent =
                 new Intent(Intent.ACTION_MAIN)
@@ -107,17 +114,17 @@ public class NotificationPlatformBridgeIntentTest
                                         null /* tag */));
 
         Preferences activity = ActivityUtils.waitForActivity(
-                getInstrumentation(), Preferences.class, new Runnable() {
+                InstrumentationRegistry.getInstrumentation(), Preferences.class, new Runnable() {
                     @Override
                     public void run() {
                         context.startActivity(intent);
                     }
                 });
-        assertNotNull("Could not find the Preferences activity", activity);
+        Assert.assertNotNull("Could not find the Preferences activity", activity);
 
         SingleWebsitePreferences fragment =
                 ActivityUtils.waitForFragmentToAttach(activity, SingleWebsitePreferences.class);
-        assertNotNull("Could not find the SingleWebsitePreferences fragment", fragment);
+        Assert.assertNotNull("Could not find the SingleWebsitePreferences fragment", fragment);
     }
 
     /**
@@ -128,13 +135,17 @@ public class NotificationPlatformBridgeIntentTest
      * The created intent does not carry significant data and is expected to fail, but has to be
      * sufficient for the Java code to trigger start-up of the browser process.
      */
+    @Test
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testLaunchProcessForNotificationActivation() throws Exception {
-        assertFalse("The native library should not be loaded yet", LibraryLoader.isInitialized());
-        assertNull(NotificationPlatformBridge.getInstanceForTests());
+        Assert.assertFalse(
+                "The native library should not be loaded yet", LibraryLoader.isInitialized());
+        Assert.assertNull(NotificationPlatformBridge.getInstanceForTests());
 
-        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        Context context = InstrumentationRegistry.getInstrumentation()
+                                  .getTargetContext()
+                                  .getApplicationContext();
 
         Intent intent = new Intent(NotificationConstants.ACTION_CLICK_NOTIFICATION);
         intent.setClass(context, NotificationService.Receiver.class);
@@ -158,7 +169,7 @@ public class NotificationPlatformBridgeIntentTest
             }
         });
 
-        assertTrue("The native library should be loaded now", LibraryLoader.isInitialized());
-        assertNotNull(NotificationPlatformBridge.getInstanceForTests());
+        Assert.assertTrue("The native library should be loaded now", LibraryLoader.isInitialized());
+        Assert.assertNotNull(NotificationPlatformBridge.getInstanceForTests());
     }
 }

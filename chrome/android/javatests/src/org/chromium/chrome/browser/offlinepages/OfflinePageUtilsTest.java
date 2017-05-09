@@ -5,19 +5,29 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -32,8 +42,15 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link OfflinePageUtils}. */
-@CommandLineFlags.Add({"enable-features=OfflineBookmarks", "enable-features=OfflinePagesSharing"})
-public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({"enable-features=OfflineBookmarks", "enable-features=OfflinePagesSharing",
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class OfflinePageUtilsTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
     private static final ClientId BOOKMARK_ID =
@@ -42,13 +59,9 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
     private OfflinePageBridge mOfflinePageBridge;
     private EmbeddedTestServer mTestServer;
 
-    public OfflinePageUtilsTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
         final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -74,15 +87,15 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
                 }
             }
         });
-        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
     }
 
     /**
@@ -132,11 +145,7 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         }
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testShowOfflineSnackbarIfNecessary() throws Exception {
@@ -158,19 +167,22 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
             }
         });
         String testUrl = mTestServer.getURL(TEST_PAGE);
-        loadUrl(testUrl);
+        mActivityTestRule.loadUrl(testUrl);
 
-        int tabId = getActivity().getActivityTab().getId();
+        int tabId = mActivityTestRule.getActivity().getActivityTab().getId();
 
         // Act.  This needs to be called from the UI thread.
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                OfflinePageTabObserver offlineObserver =
-                        new OfflinePageTabObserver(getActivity().getTabModelSelector(),
-                                getActivity().getSnackbarManager(), mockSnackbarController);
-                OfflinePageTabObserver.setObserverForTesting(getActivity(), offlineObserver);
-                OfflinePageUtils.showOfflineSnackbarIfNecessary(getActivity().getActivityTab());
+                OfflinePageTabObserver offlineObserver = new OfflinePageTabObserver(
+                        mActivityTestRule.getActivity().getTabModelSelector(),
+                        mActivityTestRule.getActivity().getSnackbarManager(),
+                        mockSnackbarController);
+                OfflinePageTabObserver.setObserverForTesting(
+                        mActivityTestRule.getActivity(), offlineObserver);
+                OfflinePageUtils.showOfflineSnackbarIfNecessary(
+                        mActivityTestRule.getActivity().getActivityTab());
 
                 // Pretend that we went online, this should cause the snackbar to show.
                 // This call will set the isConnected call to return true.
@@ -185,13 +197,13 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         mockSnackbarController.waitForSnackbarControllerToFinish();
 
         // Assert snackbar was shown.
-        assertEquals(tabId, mockSnackbarController.getLastTabId());
-        assertTrue(mockSnackbarController.getDismissed());
+        Assert.assertEquals(tabId, mockSnackbarController.getLastTabId());
+        Assert.assertTrue(mockSnackbarController.getDismissed());
     }
 
     private void loadPageAndSave() throws Exception {
         String testUrl = mTestServer.getURL(TEST_PAGE);
-        loadUrl(testUrl);
+        mActivityTestRule.loadUrl(testUrl);
         savePage(SavePageResult.SUCCESS, testUrl);
     }
 
@@ -203,21 +215,22 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
+                mOfflinePageBridge.savePage(
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
                         BOOKMARK_ID, new SavePageCallback() {
                             @Override
                             public void onSavePageDone(
                                     int savePageResult, String url, long offlineId) {
-                                assertEquals(
+                                Assert.assertEquals(
                                         "Requested and returned URLs differ.", expectedUrl, url);
-                                assertEquals(
+                                Assert.assertEquals(
                                         "Save result incorrect.", expectedResult, savePageResult);
                                 semaphore.release();
                             }
                         });
             }
         });
-        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private List<OfflinePageItem> getAllPages() throws InterruptedException {
@@ -235,10 +248,11 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
                 });
             }
         });
-        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return result;
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testCopyToShareableLocation() throws Exception {
@@ -255,21 +269,23 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         // Clear the directory before copying the file.
         clearSharedOfflineFilesAndWait();
 
-        File offlineSharingDir =
-                OfflinePageUtils.getDirectoryForOfflineSharing(getActivity().getBaseContext());
-        assertTrue("Offline sharing directory should exist.", offlineSharingDir != null);
+        File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(
+                mActivityTestRule.getActivity().getBaseContext());
+        Assert.assertTrue("Offline sharing directory should exist.", offlineSharingDir != null);
 
         File offlinePageShareable = new File(offlineSharingDir, offlinePageOriginal.getName());
-        assertFalse("File with the same name should not exist.", offlinePageShareable.exists());
+        Assert.assertFalse(
+                "File with the same name should not exist.", offlinePageShareable.exists());
 
-        assertTrue("Should be able to copy file to shareable location.",
+        Assert.assertTrue("Should be able to copy file to shareable location.",
                 OfflinePageUtils.copyToShareableLocation(
                         offlinePageOriginal, offlinePageShareable));
 
-        assertEquals("File copy result incorrect", offlinePageOriginal.length(),
+        Assert.assertEquals("File copy result incorrect", offlinePageOriginal.length(),
                 offlinePageShareable.length());
     }
 
+    @Test
     @SmallTest
     public void testDeleteSharedOfflineFiles() throws Exception {
         // Save an offline page.
@@ -282,15 +298,15 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
 
         File offlinePageOriginal = new File(offlinePageFilePath);
 
-        final Context context = getActivity().getBaseContext();
+        final Context context = mActivityTestRule.getActivity().getBaseContext();
         final File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(context);
 
-        assertTrue("Should be able to create subdirectory in shareable directory.",
+        Assert.assertTrue("Should be able to create subdirectory in shareable directory.",
                 (offlineSharingDir != null));
 
         File offlinePageShareable = new File(offlineSharingDir, offlinePageOriginal.getName());
         if (!offlinePageShareable.exists()) {
-            assertTrue("Should be able to copy file to shareable location.",
+            Assert.assertTrue("Should be able to copy file to shareable location.",
                     OfflinePageUtils.copyToShareableLocation(
                             offlinePageOriginal, offlinePageShareable));
         }
@@ -300,7 +316,7 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     private void clearSharedOfflineFilesAndWait() {
-        final Context context = getActivity().getBaseContext();
+        final Context context = mActivityTestRule.getActivity().getBaseContext();
         final File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(context);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
