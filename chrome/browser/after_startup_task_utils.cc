@@ -217,8 +217,8 @@ bool AfterStartupTaskUtils::Runner::PostDelayedTask(
   return true;
 }
 
-bool AfterStartupTaskUtils::Runner::RunsTasksOnCurrentThread() const {
-  return destination_runner_->RunsTasksOnCurrentThread();
+bool AfterStartupTaskUtils::Runner::RunsTasksInCurrentSequence() const {
+  return destination_runner_->RunsTasksInCurrentSequence();
 }
 
 void AfterStartupTaskUtils::StartMonitoringStartup() {

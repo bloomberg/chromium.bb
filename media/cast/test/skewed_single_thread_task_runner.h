@@ -34,7 +34,7 @@ class SkewedSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
                        base::OnceClosure task,
                        base::TimeDelta delay) final;
 
-  bool RunsTasksOnCurrentThread() const final;
+  bool RunsTasksInCurrentSequence() const final;
 
   // This function is currently not used, and will return false.
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,

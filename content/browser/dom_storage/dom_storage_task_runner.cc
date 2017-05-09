@@ -24,9 +24,9 @@ DOMStorageWorkerPoolTaskRunner::DOMStorageWorkerPoolTaskRunner(
 
 DOMStorageWorkerPoolTaskRunner::~DOMStorageWorkerPoolTaskRunner() = default;
 
-bool DOMStorageWorkerPoolTaskRunner::RunsTasksOnCurrentThread() const {
-  // It is valid for an implementation to always return true.
-  return true;
+bool DOMStorageWorkerPoolTaskRunner::RunsTasksInCurrentSequence() const {
+  return primary_sequence_->RunsTasksOnCurrentThread() ||
+         commit_sequence_->RunsTasksOnCurrentThread();
 }
 
 bool DOMStorageWorkerPoolTaskRunner::PostDelayedTask(
@@ -68,8 +68,8 @@ MockDOMStorageTaskRunner::MockDOMStorageTaskRunner(
 
 MockDOMStorageTaskRunner::~MockDOMStorageTaskRunner() = default;
 
-bool MockDOMStorageTaskRunner::RunsTasksOnCurrentThread() const {
-  return task_runner_->RunsTasksOnCurrentThread();
+bool MockDOMStorageTaskRunner::RunsTasksInCurrentSequence() const {
+  return task_runner_->RunsTasksInCurrentSequence();
 }
 
 bool MockDOMStorageTaskRunner::PostDelayedTask(

@@ -34,8 +34,8 @@ bool AutoThreadTaskRunner::PostNonNestableDelayedTask(
   return true;
 }
 
-bool AutoThreadTaskRunner::RunsTasksOnCurrentThread() const {
-  return task_runner_->RunsTasksOnCurrentThread();
+bool AutoThreadTaskRunner::RunsTasksInCurrentSequence() const {
+  return task_runner_->RunsTasksInCurrentSequence();
 }
 
 AutoThreadTaskRunner::~AutoThreadTaskRunner() {

@@ -80,7 +80,7 @@ class WorkerTaskRunner : public base::SequencedTaskRunner {
     return true;
   }
 
-  bool RunsTasksOnCurrentThread() const override { return false; }
+  bool RunsTasksInCurrentSequence() const override { return false; }
 
  protected:
   ~WorkerTaskRunner() override {

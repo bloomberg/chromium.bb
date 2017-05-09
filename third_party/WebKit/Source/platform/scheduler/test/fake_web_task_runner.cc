@@ -61,7 +61,7 @@ class FakeWebTaskRunner::BaseTaskRunner : public base::SingleThreadTaskRunner {
     return true;
   }
 
-  bool RunsTasksOnCurrentThread() const { return true; }
+  bool RunsTasksInCurrentSequence() const { return true; }
 
  private:
   RefPtr<Data> data_;
@@ -89,7 +89,7 @@ void FakeWebTaskRunner::PostDelayedTask(const WebTraceLocation&,
                   base::TimeDelta::FromMillisecondsD(delay_ms));
 }
 
-bool FakeWebTaskRunner::RunsTasksOnCurrentThread() {
+bool FakeWebTaskRunner::RunsTasksInCurrentSequence() {
   return true;
 }
 

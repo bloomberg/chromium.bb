@@ -35,8 +35,8 @@ bool SkewedSingleThreadTaskRunner::PostDelayedTask(
       base::TimeDelta::FromMicroseconds(delay.InMicroseconds() * skew_));
 }
 
-bool SkewedSingleThreadTaskRunner::RunsTasksOnCurrentThread() const {
-  return task_runner_->RunsTasksOnCurrentThread();
+bool SkewedSingleThreadTaskRunner::RunsTasksInCurrentSequence() const {
+  return task_runner_->RunsTasksInCurrentSequence();
 }
 
 bool SkewedSingleThreadTaskRunner::PostNonNestableDelayedTask(

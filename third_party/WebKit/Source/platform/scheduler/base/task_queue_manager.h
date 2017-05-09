@@ -273,7 +273,7 @@ class PLATFORM_EXPORT TaskQueueManager
                                              LazyNow time_before_task,
                                              base::TimeTicks* time_after_task);
 
-  bool RunsTasksOnCurrentThread() const;
+  bool RunsTasksInCurrentSequence() const;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay);

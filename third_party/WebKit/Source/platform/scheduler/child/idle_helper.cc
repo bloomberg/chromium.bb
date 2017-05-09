@@ -288,7 +288,7 @@ void IdleHelper::OnIdleTaskPosted() {
                "OnIdleTaskPosted");
   if (is_shutdown_)
     return;
-  if (idle_task_runner_->RunsTasksOnCurrentThread()) {
+  if (idle_task_runner_->RunsTasksInCurrentSequence()) {
     OnIdleTaskPostedOnMainThread();
   } else {
     helper_->ControlTaskQueue()->PostTask(

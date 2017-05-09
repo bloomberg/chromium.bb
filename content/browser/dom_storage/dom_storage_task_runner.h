@@ -63,7 +63,7 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
       scoped_refptr<base::SequencedTaskRunner> primary_sequence,
       scoped_refptr<base::SequencedTaskRunner> commit_sequence);
 
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        base::OnceClosure task,
@@ -100,7 +100,7 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
   explicit MockDOMStorageTaskRunner(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
 
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        base::OnceClosure task,

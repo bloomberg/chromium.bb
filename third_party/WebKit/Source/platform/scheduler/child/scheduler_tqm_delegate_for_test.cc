@@ -54,8 +54,8 @@ bool SchedulerTqmDelegateForTest::PostNonNestableDelayedTask(
                                                   delay);
 }
 
-bool SchedulerTqmDelegateForTest::RunsTasksOnCurrentThread() const {
-  return task_runner_->RunsTasksOnCurrentThread();
+bool SchedulerTqmDelegateForTest::RunsTasksInCurrentSequence() const {
+  return task_runner_->RunsTasksInCurrentSequence();
 }
 
 bool SchedulerTqmDelegateForTest::IsNested() const {

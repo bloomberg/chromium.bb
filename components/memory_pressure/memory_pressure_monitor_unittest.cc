@@ -46,7 +46,7 @@ class TaskRunnerProxy : public base::TaskRunner {
  public:
   // The provided |mock| must outlive this object.
   explicit TaskRunnerProxy(MockTaskRunner* mock) : mock_(mock) {}
-  bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksInCurrentSequence() const override { return true; }
   bool PostDelayedTask(const tracked_objects::Location& location,
                        base::OnceClosure closure,
                        base::TimeDelta delta) override {

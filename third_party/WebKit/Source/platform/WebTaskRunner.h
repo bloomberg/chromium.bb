@@ -65,9 +65,13 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
                                base::OnceClosure,
                                double delay_ms) = 0;
 
-  // Returns true if the current thread is a thread on which a task may be run.
-  // Can be called from any thread.
-  virtual bool RunsTasksOnCurrentThread() = 0;
+  // Drepecated: favor RunsTasksInCurrentSequence().
+  // TODO(http://crbug.com/665062): mass redirect callers and remove this.
+  bool RunsTasksOnCurrentThread();
+
+  // Returns true if tasks posted to this TaskRunner are sequenced
+  // with this call.
+  virtual bool RunsTasksInCurrentSequence() = 0;
 
   // ---
 

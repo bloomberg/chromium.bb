@@ -42,7 +42,7 @@ class FakeTaskRunner : public base::TaskRunner {
     std::move(task).Run();
     return true;
   }
-  bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksInCurrentSequence() const override { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(FakeTaskRunner);
 };

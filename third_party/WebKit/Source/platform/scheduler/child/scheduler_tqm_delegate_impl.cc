@@ -56,8 +56,8 @@ bool SchedulerTqmDelegateImpl::PostNonNestableDelayedTask(
       from_here, std::move(task), delay);
 }
 
-bool SchedulerTqmDelegateImpl::RunsTasksOnCurrentThread() const {
-  return message_loop_task_runner_->RunsTasksOnCurrentThread();
+bool SchedulerTqmDelegateImpl::RunsTasksInCurrentSequence() const {
+  return message_loop_task_runner_->RunsTasksInCurrentSequence();
 }
 
 bool SchedulerTqmDelegateImpl::IsNested() const {

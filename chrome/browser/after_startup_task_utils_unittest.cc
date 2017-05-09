@@ -41,8 +41,8 @@ class WrappedTaskRunner : public base::TaskRunner {
         base::TimeDelta());  // Squash all delays so our tests complete asap.
   }
 
-  bool RunsTasksOnCurrentThread() const override {
-    return real_task_runner_->RunsTasksOnCurrentThread();
+  bool RunsTasksInCurrentSequence() const override {
+    return real_task_runner_->RunsTasksInCurrentSequence();
   }
 
   base::TaskRunner* real_runner() const { return real_task_runner_.get(); }

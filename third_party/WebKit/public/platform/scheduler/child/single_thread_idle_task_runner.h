@@ -80,7 +80,7 @@ class SingleThreadIdleTaskRunner
       const tracked_objects::Location& from_here,
       const IdleTask& idle_task);
 
-  bool RunsTasksOnCurrentThread() const;
+  bool RunsTasksInCurrentSequence() const;
 
   void SetBlameContext(base::trace_event::BlameContext* blame_context);
 

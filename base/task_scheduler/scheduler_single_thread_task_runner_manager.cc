@@ -96,7 +96,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
 
   void OnDetach() override { NOTREACHED(); }
 
-  bool RunsTasksOnCurrentThread() {
+  bool RunsTasksInCurrentSequence() {
     // We check the thread ref instead of the sequence for the benefit of COM
     // callbacks which may execute without a sequence context.
     return thread_ref_checker_.IsCurrentThreadSameAsSetThread();
@@ -279,8 +279,8 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
     return PostDelayedTask(from_here, std::move(closure), delay);
   }
 
-  bool RunsTasksOnCurrentThread() const override {
-    return GetDelegate()->RunsTasksOnCurrentThread();
+  bool RunsTasksInCurrentSequence() const override {
+    return GetDelegate()->RunsTasksInCurrentSequence();
   }
 
  private:

@@ -111,6 +111,10 @@ TaskHandle::TaskHandle(RefPtr<Runner> runner) : runner_(std::move(runner)) {
   DCHECK(runner_);
 }
 
+bool WebTaskRunner::RunsTasksOnCurrentThread() {
+  return RunsTasksInCurrentSequence();
+}
+
 // Use a custom function for base::Bind instead of convertToBaseCallback to
 // avoid copying the closure later in the call chain. Copying the bound state
 // can lead to data races with ref counted objects like StringImpl. See

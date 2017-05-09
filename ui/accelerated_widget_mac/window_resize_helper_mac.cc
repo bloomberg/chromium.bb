@@ -81,7 +81,7 @@ class PumpableTaskRunner : public base::SingleThreadTaskRunner {
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override;
 
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
 
  private:
   friend class WrappedTask;
@@ -276,8 +276,8 @@ bool PumpableTaskRunner::PostNonNestableDelayedTask(
   return false;
 }
 
-bool PumpableTaskRunner::RunsTasksOnCurrentThread() const {
-  return target_task_runner_->RunsTasksOnCurrentThread();
+bool PumpableTaskRunner::RunsTasksInCurrentSequence() const {
+  return target_task_runner_->RunsTasksInCurrentSequence();
 }
 
 }  // namespace

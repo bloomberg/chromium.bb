@@ -70,7 +70,7 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override;
 
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
 
   static base::TimeTicks AbsoluteMaxNow();
 

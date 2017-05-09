@@ -82,7 +82,7 @@ class TestTaskScheduler : public TaskScheduler {
                const SequenceToken& sequence_token);
 
   // Returns true if this TaskScheduler runs its tasks on the current thread.
-  bool RunsTasksOnCurrentThread() const;
+  bool RunsTasksInCurrentSequence() const;
 
  private:
   // Returns the TaskRunner to which this TaskScheduler forwards tasks. It may
@@ -143,7 +143,7 @@ class TestTaskSchedulerTaskRunner : public SingleThreadTaskRunner {
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   OnceClosure closure,
                                   TimeDelta delay) override;
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
 
  private:
   ~TestTaskSchedulerTaskRunner() override;
@@ -272,8 +272,8 @@ void TestTaskScheduler::RunTask(std::unique_ptr<internal::Task> task,
   saved_task_runner_ = nullptr;
 }
 
-bool TestTaskScheduler::RunsTasksOnCurrentThread() const {
-  return MessageLoopTaskRunner()->RunsTasksOnCurrentThread();
+bool TestTaskScheduler::RunsTasksInCurrentSequence() const {
+  return MessageLoopTaskRunner()->RunsTasksInCurrentSequence();
 }
 
 TestTaskSchedulerTaskRunner::TestTaskSchedulerTaskRunner(
@@ -308,9 +308,9 @@ bool TestTaskSchedulerTaskRunner::PostNonNestableDelayedTask(
   return PostDelayedTask(from_here, std::move(closure), delay);
 }
 
-bool TestTaskSchedulerTaskRunner::RunsTasksOnCurrentThread() const {
+bool TestTaskSchedulerTaskRunner::RunsTasksInCurrentSequence() const {
   if (execution_mode_ == ExecutionMode::PARALLEL)
-    return task_scheduler_->RunsTasksOnCurrentThread();
+    return task_scheduler_->RunsTasksInCurrentSequence();
   return sequence_token_ == SequenceToken::GetForCurrentThread();
 }
 
