@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_executable_handler.h"
+#include "content/browser/appcache/appcache_job.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
@@ -30,49 +30,33 @@ class AppCacheURLRequestJobTest;
 
 // A net::URLRequestJob derivative that knows how to return a response stored
 // in the appcache.
-class CONTENT_EXPORT AppCacheURLRequestJob
-    : public net::URLRequestJob,
-      public AppCacheStorage::Delegate {
+class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
+                                             public AppCacheStorage::Delegate,
+                                             public AppCacheJob {
  public:
   // Callback that will be invoked before the request is restarted. The caller
   // can use this opportunity to grab state from the AppCacheURLRequestJob to
   // determine how it should behave when the request is restarted.
   using OnPrepareToRestartCallback = base::Closure;
 
-  AppCacheURLRequestJob(net::URLRequest* request,
-                        net::NetworkDelegate* network_delegate,
-                        AppCacheStorage* storage,
-                        AppCacheHost* host,
-                        bool is_main_resource,
-                        const OnPrepareToRestartCallback& restart_callback_);
-
   ~AppCacheURLRequestJob() override;
 
-  // Informs the job of what response it should deliver. Only one of these
-  // methods should be called, and only once per job. A job will sit idle and
-  // wait indefinitely until one of the deliver methods is called.
+  // AppCacheJob overrides.
+  void Kill() override;
+  bool IsStarted() const override;
+  bool IsWaiting() const override;
+  bool IsDeliveringAppCacheResponse() const override;
+  bool IsDeliveringNetworkResponse() const override;
+  bool IsDeliveringErrorResponse() const override;
+  bool IsCacheEntryNotFound() const override;
   void DeliverAppCachedResponse(const GURL& manifest_url,
                                 int64_t cache_id,
                                 const AppCacheEntry& entry,
-                                bool is_fallback);
-  void DeliverNetworkResponse();
-  void DeliverErrorResponse();
-
-  bool is_waiting() const {
-    return delivery_type_ == AWAITING_DELIVERY_ORDERS;
-  }
-
-  bool is_delivering_appcache_response() const {
-    return delivery_type_ == APPCACHED_DELIVERY;
-  }
-
-  bool is_delivering_network_response() const {
-    return delivery_type_ == NETWORK_DELIVERY;
-  }
-
-  bool is_delivering_error_response() const {
-    return delivery_type_ == ERROR_DELIVERY;
-  }
+                                bool is_fallback) override;
+  void DeliverNetworkResponse() override;
+  void DeliverErrorResponse() override;
+  const GURL& GetURL() const override;
+  net::URLRequestJob* AsURLRequestJob() override;
 
   // Accessors for the info about the appcached response, if any,
   // that this job has been instructed to deliver. These are only
@@ -81,31 +65,23 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   int64_t cache_id() const { return cache_id_; }
   const AppCacheEntry& entry() const { return entry_; }
 
-  // net::URLRequestJob's Kill method is made public so the users of this
-  // class in the appcache namespace can call it.
-  void Kill() override;
-
-  // Returns true if the job has been started by the net library.
-  bool has_been_started() const {
-    return has_been_started_;
-  }
-
   // Returns true if the job has been killed.
   bool has_been_killed() const {
     return has_been_killed_;
   }
 
-  // Returns true if the cache entry was not found in the disk cache.
-  bool cache_entry_not_found() const {
-    return cache_entry_not_found_;
-  }
-
  private:
   friend class AppCacheRequestHandlerTest;
   friend class AppCacheURLRequestJobTest;
+  // AppCacheJob::Create() creates this instance.
+  friend class AppCacheJob;
 
-  // Friend so it can get a weak pointer.
-  friend class AppCacheRequestHandler;
+  AppCacheURLRequestJob(net::URLRequest* request,
+                        net::NetworkDelegate* network_delegate,
+                        AppCacheStorage* storage,
+                        AppCacheHost* host,
+                        bool is_main_resource,
+                        const OnPrepareToRestartCallback& restart_callback_);
 
   enum DeliveryType {
     AWAITING_DELIVERY_ORDERS,
@@ -114,12 +90,8 @@ class CONTENT_EXPORT AppCacheURLRequestJob
     ERROR_DELIVERY
   };
 
-  base::WeakPtr<AppCacheURLRequestJob> GetWeakPtr();
-
   // Returns true if one of the Deliver methods has been called.
-  bool has_delivery_orders() const {
-    return !is_waiting();
-  }
+  bool has_delivery_orders() const { return !IsWaiting(); }
 
   void MaybeBeginDelivery();
   void BeginDelivery();
@@ -184,7 +156,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   scoped_refptr<AppCache> cache_;
   scoped_refptr<AppCacheGroup> group_;
   const OnPrepareToRestartCallback on_prepare_to_restart_callback_;
-  base::WeakPtrFactory<AppCacheURLRequestJob> weak_factory_;
 };
 
 }  // namespace content

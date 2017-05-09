@@ -61,6 +61,8 @@ class CONTENT_EXPORT AppCacheRequest
 
  protected:
   friend class AppCacheRequestHandler;
+  // Enables the AppCacheJob to call GetURLRequest() and GetResourceRequest().
+  friend class AppCacheJob;
 
   AppCacheRequest() {}
 
