@@ -55,7 +55,7 @@ class TestServiceImpl : public mojom::TestService {
   void OnConnectionError() { delete this; }
 
   // mojom::TestService:
-  void DoSomething(const DoSomethingCallback& callback) override {
+  void DoSomething(DoSomethingCallback callback) override {
     // Instead of responding normally, unbind the pipe, write some garbage,
     // and go away.
     const std::string kBadMessage = "This is definitely not a valid response!";
@@ -69,20 +69,18 @@ class TestServiceImpl : public mojom::TestService {
     OnConnectionError();
   }
 
-  void DoTerminateProcess(const DoTerminateProcessCallback& callback) override {
+  void DoTerminateProcess(DoTerminateProcessCallback callback) override {
     NOTREACHED();
   }
 
-  void CreateFolder(const CreateFolderCallback& callback) override {
-    NOTREACHED();
-  }
+  void CreateFolder(CreateFolderCallback callback) override { NOTREACHED(); }
 
-  void GetRequestorName(const GetRequestorNameCallback& callback) override {
-    callback.Run("Not implemented.");
+  void GetRequestorName(GetRequestorNameCallback callback) override {
+    std::move(callback).Run("Not implemented.");
   }
 
   void CreateSharedBuffer(const std::string& message,
-                          const CreateSharedBufferCallback& callback) override {
+                          CreateSharedBufferCallback callback) override {
     NOTREACHED();
   }
 

@@ -34,12 +34,12 @@ class TestService : public service_manager::Service, public mojom::TestService {
               mojom::TestServiceRequest request);
 
   // TestService:
-  void DoSomething(const DoSomethingCallback& callback) override;
-  void DoTerminateProcess(const DoTerminateProcessCallback& callback) override;
-  void CreateFolder(const CreateFolderCallback& callback) override;
-  void GetRequestorName(const GetRequestorNameCallback& callback) override;
+  void DoSomething(DoSomethingCallback callback) override;
+  void DoTerminateProcess(DoTerminateProcessCallback callback) override;
+  void CreateFolder(CreateFolderCallback callback) override;
+  void GetRequestorName(GetRequestorNameCallback callback) override;
   void CreateSharedBuffer(const std::string& message,
-                          const CreateSharedBufferCallback& callback) override;
+                          CreateSharedBufferCallback callback) override;
 
   service_manager::BinderRegistry registry_;
   mojo::Binding<mojom::TestService> service_binding_;

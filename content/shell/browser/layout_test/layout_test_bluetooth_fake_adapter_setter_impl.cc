@@ -5,6 +5,7 @@
 #include "content/shell/browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "content/public/test/layouttest_support.h"
@@ -31,13 +32,13 @@ void LayoutTestBluetoothFakeAdapterSetterImpl::Create(
 
 void LayoutTestBluetoothFakeAdapterSetterImpl::Set(
     const std::string& adapter_name,
-    const SetCallback& callback) {
+    SetCallback callback) {
   SetTestBluetoothScanDuration();
 
   device::BluetoothAdapterFactoryWrapper::Get().SetBluetoothAdapterForTesting(
       LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(adapter_name));
 
-  callback.Run();
+  std::move(callback).Run();
 }
 
 }  // namespace content
