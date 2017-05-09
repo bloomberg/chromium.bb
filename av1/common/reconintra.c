@@ -518,9 +518,13 @@ static int has_bottom_left(BLOCK_SIZE bsize, int mi_row, int mi_col,
     // and/or bottom-left superblocks. But only the left superblock is
     // available, so check if all required pixels fall in that superblock.
     if (blk_col_in_sb == 0) {
-      const int blk_start_row_off = blk_row_in_sb << (bh_in_mi_log2 + !ss_y);
+      const int blk_start_row_off = blk_row_in_sb
+                                        << (bh_in_mi_log2 + MI_SIZE_LOG2 -
+                                            tx_size_wide_log2[0]) >>
+                                    ss_y;
       const int row_off_in_sb = blk_start_row_off + row_off;
-      const int sb_height_unit = MAX_MIB_SIZE << !ss_y;
+      const int sb_height_unit =
+          MAX_MIB_SIZE << (MI_SIZE_LOG2 - tx_size_wide_log2[0]) >> ss_y;
       return row_off_in_sb + bottom_left_count_unit < sb_height_unit;
     }
 
