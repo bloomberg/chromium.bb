@@ -27,6 +27,8 @@ source_set("payments") {
     "payment_request_error_coordinator.mm",
     "payment_request_manager.h",
     "payment_request_manager.mm",
+    "payment_request_mediator.h",
+    "payment_request_mediator.mm",
     "payment_request_view_controller.h",
     "payment_request_view_controller.mm",
     "payment_request_view_controller_actions.h",

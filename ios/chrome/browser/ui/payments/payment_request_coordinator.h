@@ -34,7 +34,6 @@ struct PaymentAddress;
 namespace web {
 class PaymentDetails;
 class PaymentShippingOption;
-class PaymentResponse;
 }  // namespace web
 
 @class PaymentRequestCoordinator;
@@ -51,9 +50,11 @@ class PaymentResponse;
 - (void)paymentRequestCoordinatorDidSelectSettings:
     (PaymentRequestCoordinator*)coordinator;
 
-// Notifies the delegate that the user has confirmed the payment request.
+// Notifies the delegate that the user has completed the payment request.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-    didConfirmWithPaymentResponse:(web::PaymentResponse)paymentResponse;
+        didCompletePaymentRequest:(PaymentRequest*)paymentRequest
+                             card:(const autofill::CreditCard&)card
+                 verificationCode:(const base::string16&)verificationCode;
 
 // Notifies the delegate that the user has selected a shipping address.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
@@ -115,7 +116,8 @@ class PaymentResponse;
 // |paymentRequest|, because CVC unmasking process may update the credit card
 // number and expiration date.
 - (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
-                                      CVC:(const base::string16&)cvc;
+                         verificationCode:
+                             (const base::string16&)verificationCode;
 
 @end
 

@@ -21,14 +21,13 @@
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_request_data_util.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
+#include "ios/chrome/browser/ui/payments/payment_request_mediator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -44,9 +43,8 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 class PRCardUnmaskPromptViewBridge
     : public autofill::CardUnmaskPromptViewBridge {
  public:
-  explicit PRCardUnmaskPromptViewBridge(
-      autofill::CardUnmaskPromptController* controller,
-      UIViewController* base_view_controller)
+  PRCardUnmaskPromptViewBridge(autofill::CardUnmaskPromptController* controller,
+                               UIViewController* base_view_controller)
       : autofill::CardUnmaskPromptViewBridge(controller),
         base_view_controller_(base_view_controller) {}
 
@@ -73,9 +71,9 @@ class FullCardRequester
       public autofill::payments::FullCardRequest::UIDelegate,
       public base::SupportsWeakPtr<FullCardRequester> {
  public:
-  explicit FullCardRequester(PaymentRequestCoordinator* owner,
-                             UIViewController* base_view_controller,
-                             ios::ChromeBrowserState* browser_state)
+  FullCardRequester(PaymentRequestCoordinator* owner,
+                    UIViewController* base_view_controller,
+                    ios::ChromeBrowserState* browser_state)
       : owner_(owner),
         base_view_controller_(base_view_controller),
         unmask_controller_(browser_state->GetPrefs(),
@@ -91,9 +89,11 @@ class FullCardRequester
   }
 
   // payments::FullCardRequest::ResultDelegate:
-  void OnFullCardRequestSucceeded(const autofill::CreditCard& card,
-                                  const base::string16& cvc) override {
-    [owner_ fullCardRequestDidSucceedWithCard:card CVC:cvc];
+  void OnFullCardRequestSucceeded(
+      const autofill::CreditCard& card,
+      const base::string16& verificationCode) override {
+    [owner_ fullCardRequestDidSucceedWithCard:card
+                             verificationCode:verificationCode];
   }
 
   // payments::FullCardRequest::ResultDelegate:
@@ -139,6 +139,8 @@ class FullCardRequester
   ShippingOptionSelectionCoordinator* _shippingOptionSelectionCoordinator;
   PaymentMethodSelectionCoordinator* _methodSelectionCoordinator;
 
+  PaymentRequestMediator* _mediator;
+
   // Receiver of the full credit card details. Also displays the unmask prompt
   // UI.
   std::unique_ptr<FullCardRequester> _fullCardRequester;
@@ -156,20 +158,16 @@ class FullCardRequester
 @synthesize delegate = _delegate;
 
 - (void)start {
+  _mediator =
+      [[PaymentRequestMediator alloc] initWithBrowserState:_browserState];
+
   _viewController = [[PaymentRequestViewController alloc]
       initWithPaymentRequest:_paymentRequest];
   [_viewController setPageFavicon:_pageFavicon];
   [_viewController setPageTitle:_pageTitle];
   [_viewController setPageHost:_pageHost];
   [_viewController setDelegate:self];
-  DCHECK(_browserState);
-  const SigninManager* signinManager =
-      ios::SigninManagerFactory::GetForBrowserStateIfExists(_browserState);
-  if (signinManager && signinManager->IsAuthenticated()) {
-    NSString* accountName = base::SysUTF8ToNSString(
-        signinManager->GetAuthenticatedAccountInfo().email);
-    [_viewController setAuthenticatedAccountName:accountName];
-  }
+  [_viewController setDataSource:_mediator];
   [_viewController loadModel];
 
   _navigationController = [[UINavigationController alloc]
@@ -212,93 +210,17 @@ class FullCardRequester
 }
 
 - (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
-                                      CVC:(const base::string16&)cvc {
-  web::PaymentResponse paymentResponse;
-
-  // If the merchant specified the card network as part of the "basic-card"
-  // payment method, return "basic-card" as the method_name. Otherwise, return
-  // the name of the network directly.
-  std::string issuer_network =
-      autofill::data_util::GetPaymentRequestData(card.network())
-          .basic_card_issuer_network;
-  paymentResponse.method_name =
-      _paymentRequest->basic_card_specified_networks().find(issuer_network) !=
-              _paymentRequest->basic_card_specified_networks().end()
-          ? base::ASCIIToUTF16("basic-card")
-          : base::ASCIIToUTF16(issuer_network);
-
-  // Get the billing address
-  autofill::AutofillProfile billingAddress;
-
-  // TODO(crbug.com/714768): Make sure the billing address is set and valid
-  // before getting here. Once the bug is addressed, there will be no need to
-  // copy the address, *billing_address_ptr can be used to get the basic card
-  // response.
-  if (!card.billing_address_id().empty()) {
-    autofill::AutofillProfile* billingAddressPtr =
-        autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
-            card.billing_address_id(), _paymentRequest->billing_profiles());
-    if (billingAddressPtr)
-      billingAddress = *billingAddressPtr;
-  }
-
-  paymentResponse.details = GetBasicCardResponseFromAutofillCreditCard(
-      card, cvc, billingAddress,
-      GetApplicationContext()->GetApplicationLocale());
-
-  if (_paymentRequest->request_shipping()) {
-    autofill::AutofillProfile* shippingAddress =
-        _paymentRequest->selected_shipping_profile();
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a shipping address.
-    DCHECK(shippingAddress);
-    paymentResponse.shipping_address = GetPaymentAddressFromAutofillProfile(
-        *shippingAddress, GetApplicationContext()->GetApplicationLocale());
-
-    web::PaymentShippingOption* shippingOption =
-        _paymentRequest->selected_shipping_option();
-    DCHECK(shippingOption);
-    paymentResponse.shipping_option = shippingOption->id;
-  }
-
-  if (_paymentRequest->request_payer_name()) {
-    autofill::AutofillProfile* contactInfo =
-        _paymentRequest->selected_contact_profile();
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a contact info.
-    DCHECK(contactInfo);
-    paymentResponse.payer_name =
-        contactInfo->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                             GetApplicationContext()->GetApplicationLocale());
-  }
-
-  if (_paymentRequest->request_payer_email()) {
-    autofill::AutofillProfile* contactInfo =
-        _paymentRequest->selected_contact_profile();
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a contact info.
-    DCHECK(contactInfo);
-    paymentResponse.payer_email =
-        contactInfo->GetRawInfo(autofill::EMAIL_ADDRESS);
-  }
-
-  if (_paymentRequest->request_payer_phone()) {
-    autofill::AutofillProfile* contactInfo =
-        _paymentRequest->selected_contact_profile();
-    // TODO(crbug.com/602666): User should get here only if they have selected
-    // a contact info.
-    DCHECK(contactInfo);
-    paymentResponse.payer_phone =
-        contactInfo->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
-  }
-
+                         verificationCode:
+                             (const base::string16&)verificationCode {
   _viewController.view.userInteractionEnabled = NO;
   [_viewController setPending:YES];
   [_viewController loadModel];
   [[_viewController collectionView] reloadData];
 
   [_delegate paymentRequestCoordinator:self
-         didConfirmWithPaymentResponse:paymentResponse];
+             didCompletePaymentRequest:_paymentRequest
+                                  card:card
+                      verificationCode:verificationCode];
 }
 
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails {

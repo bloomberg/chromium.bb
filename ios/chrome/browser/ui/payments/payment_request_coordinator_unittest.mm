@@ -37,8 +37,10 @@
 @implementation PaymentRequestCoordinatorDelegateMock
 
 typedef void (^mock_coordinator_cancel)(PaymentRequestCoordinator*);
-typedef void (^mock_coordinator_confirm)(PaymentRequestCoordinator*,
-                                         web::PaymentResponse);
+typedef void (^mock_coordinator_complete)(PaymentRequestCoordinator*,
+                                          PaymentRequest*,
+                                          const autofill::CreditCard&,
+                                          const base::string16&);
 typedef void (^mock_coordinator_select_shipping_address)(
     PaymentRequestCoordinator*,
     payments::PaymentAddress);
@@ -53,9 +55,11 @@ typedef void (^mock_coordinator_select_shipping_option)(
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-    didConfirmWithPaymentResponse:(web::PaymentResponse)paymentResponse {
-  return static_cast<mock_coordinator_confirm>([self blockForSelector:_cmd])(
-      coordinator, paymentResponse);
+        didCompletePaymentRequest:(PaymentRequest*)paymentRequest
+                             card:(const autofill::CreditCard&)card
+                 verificationCode:(const base::string16&)verificationCode {
+  return static_cast<mock_coordinator_complete>([self blockForSelector:_cmd])(
+      coordinator, paymentRequest, card, verificationCode);
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
@@ -147,28 +151,22 @@ TEST_F(PaymentRequestCoordinatorTest, FullCardRequestDidSucceed) {
       mockForProtocol:@protocol(PaymentMethodSelectionCoordinatorDelegate)];
   id delegate_mock([[PaymentRequestCoordinatorDelegateMock alloc]
       initWithRepresentedObject:delegate]);
-  SEL selector =
-      @selector(paymentRequestCoordinator:didConfirmWithPaymentResponse:);
+  SEL selector = @selector(paymentRequestCoordinator:didCompletePaymentRequest:
+                           card:verificationCode:);
   [delegate_mock onSelector:selector
        callBlockExpectation:^(PaymentRequestCoordinator* callerCoordinator,
-                              web::PaymentResponse paymentResponse) {
-         EXPECT_EQ(base::ASCIIToUTF16("4111111111111111"),
-                   paymentResponse.details.card_number);
-         EXPECT_EQ(base::ASCIIToUTF16("Test User"),
-                   paymentResponse.details.cardholder_name);
-         EXPECT_EQ(base::ASCIIToUTF16("11"),
-                   paymentResponse.details.expiry_month);
-         EXPECT_EQ(base::ASCIIToUTF16("2022"),
-                   paymentResponse.details.expiry_year);
-         EXPECT_EQ(base::ASCIIToUTF16("123"),
-                   paymentResponse.details.card_security_code);
+                              PaymentRequest* paymentRequest,
+                              const autofill::CreditCard& card,
+                              const base::string16& verificationCode) {
+         EXPECT_EQ(credit_card_, card);
+         EXPECT_EQ(base::ASCIIToUTF16("123"), verificationCode);
          EXPECT_EQ(coordinator, callerCoordinator);
        }];
   [coordinator setDelegate:delegate_mock];
 
   // Call the card unmasking delegate method.
   [coordinator fullCardRequestDidSucceedWithCard:credit_card_
-                                             CVC:base::ASCIIToUTF16("123")];
+                                verificationCode:base::ASCIIToUTF16("123")];
 }
 
 // Tests that calling the ShippingAddressSelectionCoordinator delegate method
