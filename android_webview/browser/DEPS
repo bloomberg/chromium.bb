@@ -3,7 +3,7 @@ include_rules = [
   "+android_webview/browser",
   "+android_webview/common",
   "+android_webview/grit",
-  "+android_webview/native/public",
+  "+android_webview/jni",
   "+android_webview/public/browser",
 
   "+cc",
@@ -42,15 +42,18 @@ include_rules = [
   "+media/base/android",
 
   "+components/policy/policy_constants.h",
+  "+components/web_contents_delegate_android",
 
   "+printing",
 
   "+services/service_manager/public/cpp",
 
   "+storage/browser/quota",
+  "+storage/common/quota",
 
   "+ui/gfx",
   "+ui/gl",
+  "+ui/touch_selection/touch_handle.h",
 
   # Temporary until we bundle our own favicon. See
   # AwContentBrowserClient::GetDefaultFavicon

@@ -4,9 +4,9 @@
 
 #include "android_webview/lib/main/webview_jni_onload.h"
 
+#include "android_webview/browser/android_webview_jni_registrar.h"
 #include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/lib/main/aw_main_delegate.h"
-#include "android_webview/native/android_webview_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
