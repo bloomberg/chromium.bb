@@ -60,7 +60,7 @@ void SignInScreenController::OnSigninScreenReady() {
   gaia_screen_->MaybePreloadAuthExtension();
   user_selection_screen_->InitEasyUnlock();
   if (ScreenLocker::default_screen_locker())
-    ScreenLocker::default_screen_locker()->web_ui()->OnLockWebUIReady();
+    ScreenLocker::default_screen_locker()->delegate()->OnLockWebUIReady();
 }
 
 void SignInScreenController::RemoveUser(const AccountId& account_id) {

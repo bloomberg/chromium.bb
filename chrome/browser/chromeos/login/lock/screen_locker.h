@@ -24,6 +24,10 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace chromeos {
 
 class Authenticator;
@@ -44,6 +48,59 @@ class WebUIScreenLockerTester;
 class ScreenLocker : public AuthStatusConsumer,
                      public device::mojom::FingerprintObserver {
  public:
+  enum class FingerprintState {
+    kHidden,
+    kDefault,
+    kSignin,
+    kFailed,
+    kRemoved,
+  };
+
+  // Delegate used to send internal state changes back to the UI.
+  class Delegate {
+   public:
+    Delegate();
+    virtual ~Delegate();
+
+    // Enable/disable password input.
+    virtual void SetPasswordInputEnabled(bool enabled) = 0;
+
+    // Show the given error message.
+    virtual void ShowErrorMessage(int error_msg_id,
+                                  HelpAppLauncher::HelpTopic help_topic_id) = 0;
+
+    // Close any displayed error messages.
+    virtual void ClearErrors() = 0;
+
+    // Run any visual effects after authentication is successful. This must call
+    // ScreenLocker::UnlockOnLoginSuccess() after all effects are done.
+    virtual void AnimateAuthenticationSuccess() = 0;
+
+    // Called when the webui lock screen is ready. This gets invoked by a
+    // chrome.send from the embedded webui.
+    virtual void OnLockWebUIReady() = 0;
+
+    // Called when webui lock screen wallpaper is loaded and displayed.
+    virtual void OnLockBackgroundDisplayed() = 0;
+
+    // Called when the webui header bar becomes visible.
+    virtual void OnHeaderBarVisible() = 0;
+
+    // Called by ScreenLocker to notify that ash lock animation finishes.
+    virtual void OnAshLockAnimationFinished() = 0;
+
+    // Called when fingerprint state has changed.
+    virtual void SetFingerprintState(const AccountId& account_id,
+                                     FingerprintState state) = 0;
+
+    // Returns the web contents used to back the lock screen.
+    // TODO(jdufault): Remove this function when we remove WebUIScreenLocker.
+    virtual content::WebContents* GetWebContents() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   explicit ScreenLocker(const user_manager::UserList& users);
 
   // Returns the default instance if it has been created.
@@ -87,8 +144,13 @@ class ScreenLocker : public AuthStatusConsumer,
                         HelpAppLauncher::HelpTopic help_topic_id,
                         bool sign_out_only);
 
-  // Returns the WebUIScreenLocker used to lock the screen.
-  WebUIScreenLocker* web_ui() { return web_ui_.get(); }
+  // Returns the WebUIScreenLocker instance. This should only be used in tests.
+  // When using views-based lock this will be a nullptr.
+  // TODO(jdufault): Remove this function, make tests agnostic to ui impl.
+  WebUIScreenLocker* web_ui_for_testing() { return web_ui_.get(); }
+
+  // Returns delegate that can be used to talk to the view-layer.
+  Delegate* delegate() { return delegate_; }
 
   // Returns the users to authenticate.
   const user_manager::UserList& users() const { return users_; }
@@ -168,6 +230,10 @@ class ScreenLocker : public AuthStatusConsumer,
 
   // WebUIScreenLocker instance in use.
   std::unique_ptr<WebUIScreenLocker> web_ui_;
+
+  // Delegate used to talk to the view.
+  Delegate* delegate_ = nullptr;
+  bool owns_delegate_ = false;
 
   // Users that can unlock the device.
   user_manager::UserList users_;

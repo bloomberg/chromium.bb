@@ -14,8 +14,7 @@
 
 namespace chromeos {
 
-LockWindow::LockWindow(views::View* initially_focused_view)
-    : initially_focused_view_(initially_focused_view) {
+LockWindow::LockWindow() {
   ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
 
   views::Widget::InitParams params(
@@ -47,7 +46,8 @@ const views::Widget* LockWindow::GetWidget() const {
 }
 
 views::View* LockWindow::GetInitiallyFocusedView() {
-  return initially_focused_view_;
+  // There are multiple GetContentsView definitions; use the views::Widget one.
+  return views::Widget::GetContentsView();
 }
 
 }  // namespace chromeos

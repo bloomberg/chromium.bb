@@ -148,9 +148,11 @@ void RendererFreezer::OnScreenLockStateChanged(chromeos::ScreenLocker* locker,
   // RendererFreezer::SuspendImminent(), it is guaranteed that the screen locker
   // renderer will not be frozen at any point.
   if (is_locked) {
-    delegate_->SetShouldFreezeRenderer(
-        locker->web_ui()->GetWebContents()->GetRenderProcessHost()->GetHandle(),
-        false);
+    delegate_->SetShouldFreezeRenderer(locker->delegate()
+                                           ->GetWebContents()
+                                           ->GetRenderProcessHost()
+                                           ->GetHandle(),
+                                       false);
   }
 }
 

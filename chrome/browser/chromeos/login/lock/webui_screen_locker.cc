@@ -151,7 +151,7 @@ void WebUIScreenLocker::LockScreen() {
   gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   lock_time_ = base::TimeTicks::Now();
-  lock_window_ = new LockWindow(this);
+  lock_window_ = new LockWindow();
   lock_window_->AddObserver(this);
 
   Init();
@@ -177,7 +177,7 @@ void WebUIScreenLocker::LockScreen() {
   DisableKeyboardOverscroll();
 }
 
-void WebUIScreenLocker::SetInputEnabled(bool enabled) {
+void WebUIScreenLocker::SetPasswordInputEnabled(bool enabled) {
   login_display_->SetUIEnabled(enabled);
 }
 
@@ -202,7 +202,7 @@ void WebUIScreenLocker::ScreenLockReady() {
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
                       base::TimeTicks::Now() - lock_time_);
   screen_locker_->ScreenLockReady();
-  SetInputEnabled(true);
+  SetPasswordInputEnabled(true);
 }
 
 void WebUIScreenLocker::OnLockWindowReady() {
@@ -266,11 +266,12 @@ void WebUIScreenLocker::OnAshLockAnimationFinished() {
       "cr.ui.Oobe.animateOnceFullyDisplayed");
 }
 
-void WebUIScreenLocker::SetFingerprintState(const AccountId& account_id,
-                                            FingerprintState state) {
+void WebUIScreenLocker::SetFingerprintState(
+    const AccountId& account_id,
+    ScreenLocker::FingerprintState state) {
   // TODO(xiaoyinh@): Modify JS side to consolidate removeUserPodFingerprintIcon
   // and setUserPodFingerprintIcon into single JS function.
-  if (state == FingerprintState::kRemoved) {
+  if (state == ScreenLocker::FingerprintState::kRemoved) {
     GetWebUI()->CallJavascriptFunctionUnsafe(
         "login.AccountPickerScreen.removeUserPodFingerprintIcon",
         ::login::MakeValue(account_id));
@@ -281,12 +282,16 @@ void WebUIScreenLocker::SetFingerprintState(const AccountId& account_id,
       chromeos::quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
   if (!quick_unlock_storage ||
       !quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
-    state = FingerprintState::kHidden;
+    state = ScreenLocker::FingerprintState::kHidden;
   }
   GetWebUI()->CallJavascriptFunctionUnsafe(
       "login.AccountPickerScreen.setUserPodFingerprintIcon",
       ::login::MakeValue(account_id),
       ::login::MakeValue(static_cast<int>(state)));
+}
+
+content::WebContents* WebUIScreenLocker::GetWebContents() {
+  return WebUILoginView::GetWebContents();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

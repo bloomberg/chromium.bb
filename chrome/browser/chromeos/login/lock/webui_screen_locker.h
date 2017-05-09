@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/lock_window.h"
@@ -43,20 +44,13 @@ class WebUIScreenLockerTester;
 
 // Displays a WebUI lock screen based on the Oobe account picker screen.
 class WebUIScreenLocker : public WebUILoginView,
+                          public ScreenLocker::Delegate,
                           public LoginDisplay::Delegate,
                           public views::WidgetObserver,
                           public PowerManagerClient::Observer,
                           public display::DisplayObserver,
                           public content::WebContentsObserver {
  public:
-  enum class FingerprintState {
-    kHidden,
-    kDefault,
-    kSignin,
-    kFailed,
-    kRemoved,
-  };
-
   // Request lock screen preload when the user is idle. Does nothing if
   // preloading is disabled or if the preload hueristics return false.
   static void RequestPreload();
@@ -68,37 +62,6 @@ class WebUIScreenLocker : public WebUILoginView,
   // ScreenLockReady is called when all initialization has finished.
   void LockScreen();
 
-  // Enable/disable password input.
-  void SetInputEnabled(bool enabled);
-
-  // Disables all UI needed and shows error bubble with |message|. If
-  // |sign_out_only| is true then all other input except "Sign Out" button is
-  // blocked.
-  void ShowErrorMessage(int error_msg_id,
-                        HelpAppLauncher::HelpTopic help_topic_id);
-
-  // Close message bubble to clear error messages.
-  void ClearErrors();
-
-  // Allows to have visual effects once unlock authentication is successful,
-  // Must call ScreenLocker::UnlockOnLoginSuccess() once all effects are done.
-  void AnimateAuthenticationSuccess();
-
-  // Called when the webui lock screen is ready. This gets invoked by a
-  // chrome.send from the embedded webui.
-  void OnLockWebUIReady();
-
-  // Called when webui lock screen wallpaper is loaded and displayed.
-  void OnLockBackgroundDisplayed();
-
-  // Called when the webui header bar becomes visible.
-  void OnHeaderBarVisible();
-
-  // Called by ScreenLocker to notify that ash lock animation finishes.
-  void OnAshLockAnimationFinished();
-
-  void SetFingerprintState(const AccountId& account_id, FingerprintState state);
-
  private:
   friend class test::WebUIScreenLockerTester;
 
@@ -106,6 +69,20 @@ class WebUIScreenLocker : public WebUILoginView,
   static bool ShouldPreloadLockScreen();
   // Helper function that creates and preloads a views::WebView.
   static std::unique_ptr<views::WebView> DoPreload(Profile* profile);
+
+  // ScreenLocker::Delegate:
+  void SetPasswordInputEnabled(bool enabled) override;
+  void ShowErrorMessage(int error_msg_id,
+                        HelpAppLauncher::HelpTopic help_topic_id) override;
+  void ClearErrors() override;
+  void AnimateAuthenticationSuccess() override;
+  void OnLockWebUIReady() override;
+  void OnLockBackgroundDisplayed() override;
+  void OnHeaderBarVisible() override;
+  void OnAshLockAnimationFinished() override;
+  void SetFingerprintState(const AccountId& account_id,
+                           ScreenLocker::FingerprintState state) override;
+  content::WebContents* GetWebContents() override;
 
   // LoginDisplay::Delegate:
   void CancelPasswordChangedFlow() override;
