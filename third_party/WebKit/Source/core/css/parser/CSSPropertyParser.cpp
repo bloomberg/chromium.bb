@@ -815,8 +815,8 @@ static CSSValue* ConsumeBorderImageRepeat(CSSParserTokenRange& range) {
                               CSSValuePair::kDropIdenticalValues);
 }
 
-static CSSValue* ConsumeBorderImageSlice(CSSPropertyID property,
-                                         CSSParserTokenRange& range) {
+static CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange& range,
+                                         bool default_fill) {
   bool fill = ConsumeIdent<CSSValueFill>(range);
   CSSValue* slices[4] = {0};
 
@@ -836,14 +836,7 @@ static CSSValue* ConsumeBorderImageSlice(CSSPropertyID property,
     fill = true;
   }
   Complete4Sides(slices);
-  // FIXME: For backwards compatibility, -webkit-border-image,
-  // -webkit-mask-box-image and -webkit-box-reflect have to do a fill by
-  // default.
-  // FIXME: What do we do with -webkit-box-reflect and -webkit-mask-box-image?
-  // Probably just have to leave them filling...
-  if (property == CSSPropertyWebkitBorderImage ||
-      property == CSSPropertyWebkitMaskBoxImage ||
-      property == CSSPropertyWebkitBoxReflect)
+  if (default_fill)
     fill = true;
   return CSSBorderImageSliceValue::Create(
       CSSQuadValue::Create(slices[0], slices[1], slices[2], slices[3],
@@ -893,14 +886,14 @@ static CSSValue* ConsumeBorderImageWidth(CSSParserTokenRange& range) {
                               CSSQuadValue::kSerializeAsQuad);
 }
 
-static bool ConsumeBorderImageComponents(CSSPropertyID property,
-                                         CSSParserTokenRange& range,
+static bool ConsumeBorderImageComponents(CSSParserTokenRange& range,
                                          const CSSParserContext* context,
                                          CSSValue*& source,
                                          CSSValue*& slice,
                                          CSSValue*& width,
                                          CSSValue*& outset,
-                                         CSSValue*& repeat) {
+                                         CSSValue*& repeat,
+                                         bool default_fill) {
   do {
     if (!source) {
       source = ConsumeImageOrNone(range, context);
@@ -913,7 +906,7 @@ static bool ConsumeBorderImageComponents(CSSPropertyID property,
         continue;
     }
     if (!slice) {
-      slice = ConsumeBorderImageSlice(property, range);
+      slice = ConsumeBorderImageSlice(range, default_fill);
       if (slice) {
         DCHECK(!width);
         DCHECK(!outset);
@@ -937,16 +930,15 @@ static bool ConsumeBorderImageComponents(CSSPropertyID property,
   return true;
 }
 
-static CSSValue* ConsumeWebkitBorderImage(CSSPropertyID property,
-                                          CSSParserTokenRange& range,
+static CSSValue* ConsumeWebkitBorderImage(CSSParserTokenRange& range,
                                           const CSSParserContext* context) {
   CSSValue* source = nullptr;
   CSSValue* slice = nullptr;
   CSSValue* width = nullptr;
   CSSValue* outset = nullptr;
   CSSValue* repeat = nullptr;
-  if (ConsumeBorderImageComponents(property, range, context, source, slice,
-                                   width, outset, repeat))
+  if (ConsumeBorderImageComponents(range, context, source, slice, width, outset,
+                                   repeat, true /* default_fill */))
     return CreateBorderImageValue(source, slice, width, outset, repeat);
   return nullptr;
 }
@@ -971,8 +963,7 @@ static CSSValue* ConsumeReflect(CSSParserTokenRange& range,
 
   CSSValue* mask = nullptr;
   if (!range.AtEnd()) {
-    mask =
-        ConsumeWebkitBorderImage(CSSPropertyWebkitBoxReflect, range, context);
+    mask = ConsumeWebkitBorderImage(range, context);
     if (!mask)
       return nullptr;
   }
@@ -1786,7 +1777,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumeBorderImageRepeat(range_);
     case CSSPropertyBorderImageSlice:
     case CSSPropertyWebkitMaskBoxImageSlice:
-      return ConsumeBorderImageSlice(property, range_);
+      return ConsumeBorderImageSlice(range_, false /* default_fill */);
     case CSSPropertyBorderImageOutset:
     case CSSPropertyWebkitMaskBoxImageOutset:
       return ConsumeBorderImageOutset(range_);
@@ -1794,7 +1785,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitMaskBoxImageWidth:
       return ConsumeBorderImageWidth(range_);
     case CSSPropertyWebkitBorderImage:
-      return ConsumeWebkitBorderImage(property, range_, context_);
+      return ConsumeWebkitBorderImage(range_, context_);
     case CSSPropertyWebkitBoxReflect:
       return ConsumeReflect(range_, context_);
     case CSSPropertyBackgroundAttachment:
@@ -2491,15 +2482,18 @@ bool CSSPropertyParser::Consume4Values(const StylePropertyShorthand& shorthand,
   return range_.AtEnd();
 }
 
+// TODO(crbug.com/668012): refactor out property specific logic from this method
+// and remove CSSPropetyID argument
 bool CSSPropertyParser::ConsumeBorderImage(CSSPropertyID property,
+                                           bool default_fill,
                                            bool important) {
   CSSValue* source = nullptr;
   CSSValue* slice = nullptr;
   CSSValue* width = nullptr;
   CSSValue* outset = nullptr;
   CSSValue* repeat = nullptr;
-  if (ConsumeBorderImageComponents(property, range_, context_, source, slice,
-                                   width, outset, repeat)) {
+  if (ConsumeBorderImageComponents(range_, context_, source, slice, width,
+                                   outset, repeat, default_fill)) {
     switch (property) {
       case CSSPropertyWebkitMaskBoxImage:
         AddProperty(CSSPropertyWebkitMaskBoxImageSource,
@@ -3338,8 +3332,9 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
     case CSSPropertyBorder:
       return ConsumeBorder(important);
     case CSSPropertyBorderImage:
+      return ConsumeBorderImage(property, false /* default_fill */, important);
     case CSSPropertyWebkitMaskBoxImage:
-      return ConsumeBorderImage(property, important);
+      return ConsumeBorderImage(property, true /* default_fill */, important);
     case CSSPropertyPageBreakAfter:
     case CSSPropertyPageBreakBefore:
     case CSSPropertyPageBreakInside:
