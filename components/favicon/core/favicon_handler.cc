@@ -220,7 +220,8 @@ int FaviconHandler::GetIconTypesFromHandlerType(
 }
 
 void FaviconHandler::FetchFavicon(const GURL& url) {
-  cancelable_task_tracker_.TryCancelAll();
+  cancelable_task_tracker_for_page_url_.TryCancelAll();
+  cancelable_task_tracker_for_candidates_.TryCancelAll();
 
   url_ = url;
 
@@ -242,7 +243,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
       url_, icon_types_, preferred_icon_size(),
       base::Bind(&FaviconHandler::OnFaviconDataForInitialURLFromFaviconService,
                  base::Unretained(this)),
-      &cancelable_task_tracker_);
+      &cancelable_task_tracker_for_page_url_);
 }
 
 bool FaviconHandler::UpdateFaviconCandidate(
@@ -282,8 +283,7 @@ void FaviconHandler::SetFavicon(const GURL& icon_url,
 void FaviconHandler::NotifyFaviconUpdated(
     const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
-  if (favicon_bitmap_results.empty())
-    return;
+  DCHECK(!favicon_bitmap_results.empty());
 
   gfx::Image resized_image = favicon_base::SelectFaviconFramesFromPNGs(
       favicon_bitmap_results,
@@ -339,6 +339,7 @@ void FaviconHandler::OnUpdateFaviconURL(
     return;
   }
 
+  cancelable_task_tracker_for_candidates_.TryCancelAll();
   download_request_.Cancel();
   candidates_ = std::move(sorted_candidates);
   num_download_requests_ = 0;
@@ -456,7 +457,8 @@ const std::vector<GURL> FaviconHandler::GetIconURLs() const {
 
 bool FaviconHandler::HasPendingTasksForTest() {
   return !download_request_.IsCancelled() ||
-         cancelable_task_tracker_.HasTrackedTasks();
+         cancelable_task_tracker_for_page_url_.HasTrackedTasks() ||
+         cancelable_task_tracker_for_candidates_.HasTrackedTasks();
 }
 
 bool FaviconHandler::ShouldSaveFavicon() {
@@ -509,7 +511,7 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
       service_->GetFavicon(
           icon_url, icon_type, preferred_icon_size(),
           base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)),
-          &cancelable_task_tracker_);
+          &cancelable_task_tracker_for_candidates_);
     } else {
       // Ask the history service for the icon. This does two things:
       // 1. Attempts to fetch the favicon data from the database.
@@ -519,14 +521,13 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
       service_->UpdateFaviconMappingsAndFetch(
           url_, icon_url, icon_type, preferred_icon_size(),
           base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)),
-          &cancelable_task_tracker_);
+          &cancelable_task_tracker_for_candidates_);
     }
   }
 }
 
 void FaviconHandler::OnFaviconData(const std::vector<
     favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results) {
-  bool has_results = !favicon_bitmap_results.empty();
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
   bool has_expired_or_incomplete_result =
       !has_valid_result || HasExpiredOrIncompleteResult(preferred_icon_size(),
@@ -538,14 +539,6 @@ void FaviconHandler::OnFaviconData(const std::vector<
     // size) because temporarily showing the user an expired favicon or
     // streched favicon is preferable to showing the user the default favicon.
     NotifyFaviconUpdated(favicon_bitmap_results);
-  }
-
-  if (!current_candidate() ||
-      (has_results && !DoUrlsAndIconsMatch(current_candidate()->icon_url,
-                                           current_candidate()->icon_type,
-                                           favicon_bitmap_results))) {
-    // The icon URLs have been updated since the favicon data was requested.
-    return;
   }
 
   if (has_expired_or_incomplete_result) {
