@@ -447,10 +447,16 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
           profile_)->AsWeakPtr();
 #endif  // !defined(OS_ANDROID)
-    case syncer::SUPERVISED_USER_WHITELISTS:
-      return SupervisedUserServiceFactory::GetForProfile(profile_)
-          ->GetWhitelistService()
-          ->AsWeakPtr();
+    case syncer::SUPERVISED_USER_WHITELISTS: {
+      // Unlike other types here, ProfileSyncServiceFactory does not declare a
+      // DependsOn the SupervisedUserServiceFactory (in order to avoid circular
+      // dependency), which means we cannot assume it is still alive.
+      SupervisedUserService* supervised_user_service =
+          SupervisedUserServiceFactory::GetForProfileIfExists(profile_);
+      if (supervised_user_service)
+        return supervised_user_service->GetWhitelistService()->AsWeakPtr();
+      return base::WeakPtr<syncer::SyncableService>();
+    }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::ARTICLES: {
       dom_distiller::DomDistillerService* service =
@@ -507,7 +513,7 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
           ->AsWeakPtr();
 #endif  // defined(OS_CHROMEOS)
     case syncer::TYPED_URLS:
-      // TODO(gangwu):implement TypedURLSyncBridge and return real
+      // TODO(gangwu): Implement TypedURLSyncBridge and return real
       // TypedURLSyncBridge here.
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
     default:

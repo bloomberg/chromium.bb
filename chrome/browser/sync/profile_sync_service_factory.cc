@@ -141,8 +141,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(SpellcheckServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  // TODO(skym, crbug.com/705545): Fix this circular dependency.
-  // DependsOn(SupervisedUserServiceFactory::GetInstance());
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
 #if !defined(OS_ANDROID)
   DependsOn(SupervisedUserSharedSettingsServiceFactory::GetInstance());

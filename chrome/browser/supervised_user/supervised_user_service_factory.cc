@@ -25,6 +25,13 @@ SupervisedUserService* SupervisedUserServiceFactory::GetForProfile(
 }
 
 // static
+SupervisedUserService* SupervisedUserServiceFactory::GetForProfileIfExists(
+    Profile* profile) {
+  return static_cast<SupervisedUserService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, /*create=*/false));
+}
+
+// static
 SupervisedUserServiceFactory* SupervisedUserServiceFactory::GetInstance() {
   return base::Singleton<SupervisedUserServiceFactory>::get();
 }
@@ -43,8 +50,6 @@ SupervisedUserServiceFactory::SupervisedUserServiceFactory()
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 #endif
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-
-  // TODO(skym, crbug.com/705545): Fix this circular dependency.
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
