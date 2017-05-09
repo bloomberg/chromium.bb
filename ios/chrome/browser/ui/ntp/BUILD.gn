@@ -109,12 +109,37 @@ source_set("ntp") {
   ]
 }
 
+source_set("ntp_header") {
+  sources = [
+    "google_landing_data_source.h",
+    "new_tab_page_header_constants.h",
+    "new_tab_page_header_constants.mm",
+    "new_tab_page_header_view.h",
+    "new_tab_page_header_view.mm",
+    "new_tab_page_toolbar_controller.h",
+    "new_tab_page_toolbar_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/ntp_tiles",
+    "//components/strings",
+    "//components/toolbar",
+    "//ios/chrome/app/theme",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/toolbar:resource_macros",
+    "//ios/chrome/common",
+    "//ui/base",
+  ]
+}
+
 source_set("ntp_internal") {
   sources = [
     "centering_scrollview.h",
     "centering_scrollview.mm",
     "google_landing_consumer.h",
-    "google_landing_data_source.h",
     "google_landing_mediator.h",
     "google_landing_mediator.mm",
     "google_landing_view_controller.h",
@@ -133,19 +158,16 @@ source_set("ntp_internal") {
     "new_tab_page_bar_item.mm",
     "new_tab_page_controller.h",
     "new_tab_page_controller.mm",
-    "new_tab_page_header_constants.h",
-    "new_tab_page_header_constants.mm",
-    "new_tab_page_header_view.h",
-    "new_tab_page_header_view.mm",
     "new_tab_page_panel_protocol.mm",
-    "new_tab_page_toolbar_controller.h",
-    "new_tab_page_toolbar_controller.mm",
     "new_tab_page_view.h",
     "new_tab_page_view.mm",
     "notification_promo_whats_new.h",
     "notification_promo_whats_new.mm",
     "whats_new_header_view.h",
     "whats_new_header_view.mm",
+  ]
+  public_deps = [
+    ":ntp_header",
   ]
   deps = [
     ":ntp",
@@ -165,9 +187,7 @@ source_set("ntp_internal") {
     "//components/strings",
     "//components/suggestions",
     "//components/sync_sessions",
-    "//components/toolbar",
     "//ios/chrome/app/strings",
-    "//ios/chrome/app/theme",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
@@ -186,7 +206,6 @@ source_set("ntp_internal") {
     "//ios/chrome/browser/ui/ntp/recent_tabs",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/toolbar",
-    "//ios/chrome/browser/ui/toolbar:resource_macros",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
