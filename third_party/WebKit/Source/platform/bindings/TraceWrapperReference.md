@@ -21,7 +21,7 @@ object should keep alive.
 ``DECLARE_VIRTUAL_TRACE_WRAPPERS()``.
 5. Define the method using ``DEFINE_TRACE_WRAPPERS(ClassName)``.
 6. Trace all fields that received a wrapper tracing type in (1) and (2) using
-``visitor->traceWrapers(<m_field>)`` in the body of ``DEFINE_TRACE_WRAPPERS``.
+``visitor->TraceWrappers(<field_>)`` in the body of ``DEFINE_TRACE_WRAPPERS``.
 
 The following example illustrates these steps:
 
@@ -35,15 +35,15 @@ class SomeDOMObject : public ScriptWrappable {          // (1)
   DECLARE_VIRTUAL_TRACE_WRAPPERS();                     // (4)
 
  private:
-  TraceWrapperMember<OtherWrappable> m_otherWrappable;  // (2)
-  Member<NonWrappable> m_nonWrappable;
-  TraceWrapperV8Reference<v8::Value> m_v8object;        // (3)
+  TraceWrapperMember<OtherWrappable> other_wrappable_;  // (2)
+  Member<NonWrappable> non_wrappable_;
+  TraceWrapperV8Reference<v8::Value> v8object_;         // (3)
   // ...
 };
 
 DEFINE_TRACE_WRAPPERS(SomeDOMObject) {                  // (5)
-  visitor->traceWrappers(m_otherWrappable);             // (6)
-  visitor->traceWrappers(m_v8object);                   // (6)
+  visitor->TraceWrappers(other_wrappable_);             // (6)
+  visitor->TraceWrappers(v8object_);                    // (6)
 }
 ```
 
@@ -82,7 +82,6 @@ Pick the header file depending on what types are needed.
 
 ```c++
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 ```
 
@@ -93,14 +92,14 @@ adjust a given class ``SomeDOMObject`` to participate in wrapper tracing.
 class SomeDOMObject : public ScriptWrappable {
   // ...
  private:
-  Member<OtherWrappable /* extending ScriptWrappable */> m_otherWrappable;
-  Member<NonWrappable> m_nonWrappable;
+  Member<OtherWrappable /* extending ScriptWrappable */> other_wrappable_;
+  Member<NonWrappable> non_wrappable_;
 };
 ```
 
 In this scenario ``SomeDOMObject`` is the object that is wrapped by an object on
 the JavaScript side. The next step is to identify the paths that lead to other
-wrappables. In this case, only ``m_otherWrappable`` needs to be traced to find
+wrappables. In this case, only ``other_wrappable_`` needs to be traced to find
 other *wrappers* in V8.
 
 As wrapper tracing only traces a subset of members residing on the Oilpan heap,
@@ -120,12 +119,12 @@ class SomeDOMObject : public ScriptWrappable {
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  Member<OtherWrappable> m_otherWrappable;
-  Member<NonWrappable> m_nonWrappable;
+  Member<OtherWrappable> other_wrappable_;
+  Member<NonWrappable> non_wrappable_;
 };
 
 DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
-  visitor->traceWrappers(m_otherWrappable);
+  visitor->TraceWrappers(other_wrappable_);
 }
 ```
 
@@ -141,28 +140,28 @@ the only reference keeping ``Y``, and ``A`` has already been marked, the garbage
 collector will not find ``Y`` and reclaim it.
 
 To overcome this problem we require all writes of interesting objects, i.e.,
-writes to traced fields, to go through a write barrier.  Repeat for simpler
-readers: The write barrier will check for the problem case above and make sure
+writes to traced fields, to go through a write barrier.
+The write barrier will check for the problem case above and make sure
 ``Y`` will be marked. In order to automatically issue a write barrier
-``m_otherWrappable`` needs ``TraceWrapperMember`` type.
+``other_wrappable_`` needs ``TraceWrapperMember`` type.
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
  public:
-  SomeDOMObject() : m_otherWrappable(this, nullptr) {}
+  SomeDOMObject() : other_wrappable_(this, nullptr) {}
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  TraceWrapperMember<OtherWrappable> m_otherWrappable;
-  Member<NonWrappable> m_nonWrappable;
+  TraceWrapperMember<OtherWrappable> other_wrappable_;
+  Member<NonWrappable> non_wrappable_;
 };
 
 DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
-  visitor->traceWrappers(m_otherWrappable);
+  visitor->TraceWrappers(other_wrappable_);
 }
 ```
 
-``TraceWrapperMember`` makes sure that any write to ``m_otherWrappable`` will
+``TraceWrapperMember`` makes sure that any write to ``other_wrappable_`` will
 consider doing a write barrier. Using the proper type, the write barrier is
 correct by construction, i.e., it will never be missed.
 
@@ -179,12 +178,12 @@ class SomeDOMObject : public ScriptWrappable {
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  HeapVector<TraceWrapperMember<OtherWrappable>> m_otherWrappables;
+  HeapVector<TraceWrapperMember<OtherWrappable>> other_wrappables_;
 };
 
 DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
-  for (auto other : m_otherWrappables)
-    visitor->traceWrappers(other);
+  for (auto other : other_wrappables_)
+    visitor->TraceWrappers(other);
 }
 ```
 
@@ -194,7 +193,7 @@ constructed using ``TraceWrapperMember``, e.g.
 
 ```c++
 void SomeDOMObject::AppendNewValue(OtherWrappable* newValue) {
-  m_otherWrappables.append(TraceWrapperMember(this, newValue));
+  other_wrappables_.append(TraceWrapperMember(this, newValue));
 }
 ```
 
@@ -211,32 +210,32 @@ check for assigning a raw value.
 class SomeDOMObject : public ScriptWrappable {
  public:
   SomeDOMObject() {
-    m_otherWrappables.resize(5);
+    other_wrappables_.resize(5);
   }
 
   void writeAt(int i, OtherWrappable* other) {
-    m_otherWrappables[i] = other;
+    other_wrappables_[i] = other;
   }
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
  private:
-  HeapVector<TraceWrapperMember<OtherWrappable>> m_otherWrappables;
+  HeapVector<TraceWrapperMember<OtherWrappable>> other_wrappables_;
 };
 
 DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
-  for (auto other : m_otherWrappables)
-    visitor->traceWrappers(other);
+  for (auto other : other_wrappables_)
+    visitor->TraceWrappers(other);
 }
 ```
 
 In this example, the compiler will not warn you on
-``m_otherWrappables[i] = other``, but an assertion will throw at runtime as long
+``other_wrappables_[i] = other``, but an assertion will throw at runtime as long
 as there exists a test covering that branch.
 
 The correct assignment looks like
 
 ```c++
-m_otherWrappables[i] = TraceWrapperMember<OtherWrappable>(this, other);
+other_wrappables_[i] = TraceWrapperMember<OtherWrappable>(this, other);
 ```
 
 Note that the assertion that triggers when the annotation is not present does
@@ -271,17 +270,16 @@ barriers will be done manually.
 class ManualWrappable : public ScriptWrappable {
  public:
   void setNew(OtherWrappable* newValue) {
-    m_otherWrappable = newValue;
-    SriptWrappableVisitor::writeBarrier(this, m_otherWrappable);
+    other_wrappable_ = newValue;
+    SriptWrappableVisitor::WriteBarrier(this, other_wrappable_);
   }
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
  private:
-  Member<OtherWrappable>> m_otherWrappable;
+  Member<OtherWrappable>> other_wrappable_;
 };
 
 DEFINE_TRACE_WRAPPERS(ManualWrappable) {
-  for (auto other : m_otherWrappables)
-    visitor->traceWrappersWithManualWriteBarrier(other);
+  visitor->TraceWrappersWithManualWriteBarrier(other_wrappable_);
 }
 ```
