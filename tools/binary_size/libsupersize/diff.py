@@ -180,19 +180,12 @@ def _DiffSymbolGroups(before, after):
       section_name=after.section_name)
 
 
-def Diff(before, after, cluster=True):
-  """Diffs two SizeInfo objects. Returns a SizeInfoDiff.
-
-  Args:
-    cluster: When True, calls SymbolGroup.Cluster() after diffing. This
-        generally reduces noise.
-  """
+def Diff(before, after):
+  """Diffs two SizeInfo objects. Returns a SizeInfoDiff."""
   assert isinstance(before, models.SizeInfo)
   assert isinstance(after, models.SizeInfo)
   section_sizes = {k: after.section_sizes[k] - v
                    for k, v in before.section_sizes.iteritems()}
   symbol_diff = _DiffSymbolGroups(before.symbols, after.symbols)
-  if cluster:
-    symbol_diff = symbol_diff.Cluster()
   return models.SizeInfoDiff(section_sizes, symbol_diff, before.metadata,
                              after.metadata)
