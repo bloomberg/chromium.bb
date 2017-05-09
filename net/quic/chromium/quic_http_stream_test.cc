@@ -178,9 +178,9 @@ class DeleteStreamCallback : public TestCompletionCallbackBase {
 
 class QuicHttpStreamPeer {
  public:
-  static QuicChromiumClientStream* GetQuicChromiumClientStream(
+  static QuicChromiumClientStream::Handle* GetQuicChromiumClientStream(
       QuicHttpStream* stream) {
-    return stream->stream_;
+    return stream->stream_.get();
   }
 };
 
@@ -536,7 +536,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
   void ReceivePromise(QuicStreamId id) {
     auto headers = AsHeaderList(push_promise_);
-    QuicChromiumClientStream* stream =
+    QuicChromiumClientStream::Handle* stream =
         QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
     stream->OnPromiseHeaderList(id, headers.uncompressed_header_bytes(),
                                 headers);
@@ -631,7 +631,7 @@ TEST_P(QuicHttpStreamTest, DisableConnectionMigrationForStream) {
   EXPECT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
-  QuicChromiumClientStream* client_stream =
+  QuicChromiumClientStream::Handle* client_stream =
       QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
   EXPECT_FALSE(client_stream->can_migrate());
 }
@@ -1466,7 +1466,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
                                           callback_.callback()));
 
   // Check that priority is highest.
-  QuicChromiumClientStream* reliable_stream =
+  QuicChromiumClientStream::Handle* reliable_stream =
       QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
   DCHECK(reliable_stream);
   DCHECK_EQ(kV3HighestPriority, reliable_stream->priority());
@@ -1517,7 +1517,7 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
                                           callback_.callback()));
 
   // Check that priority is highest.
-  QuicChromiumClientStream* reliable_stream =
+  QuicChromiumClientStream::Handle* reliable_stream =
       QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
   DCHECK(reliable_stream);
   QuicChromiumClientStream::Delegate* delegate = reliable_stream->GetDelegate();
@@ -1526,9 +1526,8 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
 
   // Set Delegate to nullptr and make sure Priority returns highest
   // priority.
-  reliable_stream->SetDelegate(nullptr);
+  reliable_stream->ClearDelegate();
   DCHECK_EQ(kV3HighestPriority, reliable_stream->priority());
-  reliable_stream->SetDelegate(delegate);
 
   EXPECT_EQ(0, stream_->GetTotalSentBytes());
   EXPECT_EQ(0, stream_->GetTotalReceivedBytes());

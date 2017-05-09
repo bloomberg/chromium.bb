@@ -340,7 +340,7 @@ void BidirectionalStreamQuicImpl::ResetStream() {
   closed_stream_received_bytes_ = stream_->stream_bytes_read();
   closed_stream_sent_bytes_ = stream_->stream_bytes_written();
   closed_is_first_stream_ = stream_->IsFirstStream();
-  stream_->SetDelegate(nullptr);
+  stream_->ClearDelegate();
   stream_ = nullptr;
 }
 

@@ -78,7 +78,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   void ResetStream();
 
   const std::unique_ptr<QuicChromiumClientSession::Handle> session_;
-  QuicChromiumClientStream* stream_;  // Non-owning.
+  std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
 
   const BidirectionalStreamRequestInfo* request_info_;
   BidirectionalStreamImpl::Delegate* delegate_;
