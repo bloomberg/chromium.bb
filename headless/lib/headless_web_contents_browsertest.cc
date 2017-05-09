@@ -109,6 +109,22 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Focus) {
   EXPECT_TRUE(result);
 }
 
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, HandleSSLError) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  ASSERT_TRUE(https_server.Start());
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(https_server.GetURL("/hello.html"))
+          .Build();
+
+  EXPECT_FALSE(WaitForLoad(web_contents));
+}
+
 namespace {
 bool DecodePNG(std::string base64_data, SkBitmap* bitmap) {
   std::string png_data;
