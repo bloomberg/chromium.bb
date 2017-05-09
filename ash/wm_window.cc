@@ -5,7 +5,6 @@
 #include "ash/wm_window.h"
 
 #include "ash/ash_constants.h"
-#include "ash/aura/aura_layout_manager_adapter.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -20,7 +19,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_layout_manager.h"
 #include "ash/wm_transient_window_observer.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -307,23 +305,6 @@ std::vector<WmWindow*> WmWindow::GetTransientChildren() {
 
 bool WmWindow::MoveToEventRoot(const ui::Event& event) {
   return ash::wm::MoveWindowToEventRoot(window_, event);
-}
-
-void WmWindow::SetLayoutManager(
-    std::unique_ptr<WmLayoutManager> layout_manager) {
-  // See ~AuraLayoutManagerAdapter for why SetLayoutManager(nullptr) is called.
-  window_->SetLayoutManager(nullptr);
-  if (!layout_manager)
-    return;
-
-  // |window_| takes ownership of AuraLayoutManagerAdapter.
-  window_->SetLayoutManager(
-      new AuraLayoutManagerAdapter(window_, std::move(layout_manager)));
-}
-
-WmLayoutManager* WmWindow::GetLayoutManager() {
-  AuraLayoutManagerAdapter* adapter = AuraLayoutManagerAdapter::Get(window_);
-  return adapter ? adapter->wm_layout_manager() : nullptr;
 }
 
 void WmWindow::SetVisibilityChangesAnimated() {

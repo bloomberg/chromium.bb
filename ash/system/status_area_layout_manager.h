@@ -22,7 +22,7 @@ class StatusAreaLayoutManager : public wm::WmSnapToPixelLayoutManager {
 
   // Overridden from wm::WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
-  void SetChildBounds(WmWindow* child,
+  void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
 
  private:

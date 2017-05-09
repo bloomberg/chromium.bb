@@ -11,7 +11,6 @@
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/ash_touch_exploration_manager_chromeos.h"
-#include "ash/aura/aura_layout_manager_adapter.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -234,8 +233,7 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
           src_container->children();
       auto iter = src_container_children.begin();
       while (iter != src_container_children.end() &&
-             SystemModalContainerLayoutManager::IsModalBackground(
-                 WmWindow::Get(*iter))) {
+             SystemModalContainerLayoutManager::IsModalBackground(*iter)) {
         ++iter;
       }
       // If the entire window list is modal background windows then stop.
@@ -384,26 +382,25 @@ ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
 }
 
 SystemModalContainerLayoutManager*
-RootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
-  WmWindow* modal_container = nullptr;
+RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
+  aura::Window* modal_container = nullptr;
   if (window) {
-    aura::Window* window_container =
-        wm::GetContainerForWindow(window->aura_window());
+    aura::Window* window_container = wm::GetContainerForWindow(window);
     if (window_container &&
         window_container->id() >= kShellWindowId_LockScreenContainer) {
-      modal_container = GetWmContainer(kShellWindowId_LockSystemModalContainer);
+      modal_container = GetContainer(kShellWindowId_LockSystemModalContainer);
     } else {
-      modal_container = GetWmContainer(kShellWindowId_SystemModalContainer);
+      modal_container = GetContainer(kShellWindowId_SystemModalContainer);
     }
   } else {
     int modal_window_id =
         Shell::Get()->session_controller()->IsUserSessionBlocked()
             ? kShellWindowId_LockSystemModalContainer
             : kShellWindowId_SystemModalContainer;
-    modal_container = GetWmContainer(modal_window_id);
+    modal_container = GetContainer(modal_window_id);
   }
   return modal_container ? static_cast<SystemModalContainerLayoutManager*>(
-                               modal_container->GetLayoutManager())
+                               modal_container->layout_manager())
                          : nullptr;
 }
 
@@ -441,7 +438,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   aura::Window* modal_container = GetContainer(modal_container_id);
   SystemModalContainerLayoutManager* modal_layout_manager = nullptr;
   modal_layout_manager = static_cast<SystemModalContainerLayoutManager*>(
-      WmWindow::Get(modal_container)->GetLayoutManager());
+      modal_container->layout_manager());
 
   if (modal_layout_manager->has_window_dimmer())
     blocking_container = modal_container;
@@ -458,8 +455,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   // If the window is in the target modal container, only allow the top most
   // one.
   if (modal_container && modal_container->Contains(window))
-    return modal_layout_manager->IsPartOfActiveModalWindow(
-        WmWindow::Get(window));
+    return modal_layout_manager->IsPartOfActiveModalWindow(window);
 
   return true;
 }
@@ -646,8 +642,7 @@ void RootWindowController::ActivateKeyboard(
     return;
   }
   DCHECK(keyboard_controller);
-  Shell::Get()->NotifyVirtualKeyboardActivated(true,
-                                               WmWindow::Get(GetRootWindow()));
+  Shell::Get()->NotifyVirtualKeyboardActivated(true, GetRootWindow());
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
@@ -671,8 +666,7 @@ void RootWindowController::DeactivateKeyboard(
     keyboard_controller->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
     parent->RemoveChild(keyboard_container);
-    Shell::Get()->NotifyVirtualKeyboardActivated(
-        false, WmWindow::Get(GetRootWindow()));
+    Shell::Get()->NotifyVirtualKeyboardActivated(false, GetRootWindow());
   }
 }
 
@@ -795,32 +789,30 @@ void RootWindowController::InitLayoutManagers() {
   DCHECK(!wm_shelf_->shelf_widget());
   GetShelf()->CreateShelfWidget(GetWindow());
 
-  WmWindow* root = GetWindow();
+  aura::Window* root = GetRootWindow();
   root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
-  root->SetLayoutManager(base::WrapUnique(root_window_layout_manager_));
+  root->SetLayoutManager(root_window_layout_manager_);
 
   aura::Window* default_container =
       GetContainer(kShellWindowId_DefaultContainer);
   // Installs WorkspaceLayoutManager on |default_container|.
   workspace_controller_.reset(new WorkspaceController(default_container));
 
-  WmWindow* modal_container =
-      GetWmContainer(kShellWindowId_SystemModalContainer);
-  DCHECK(modal_container);
+  aura::Window* modal_container =
+      GetContainer(kShellWindowId_SystemModalContainer);
   modal_container->SetLayoutManager(
-      base::MakeUnique<SystemModalContainerLayoutManager>(modal_container));
+      new SystemModalContainerLayoutManager(modal_container));
 
-  WmWindow* lock_modal_container =
-      GetWmContainer(kShellWindowId_LockSystemModalContainer);
+  aura::Window* lock_modal_container =
+      GetContainer(kShellWindowId_LockSystemModalContainer);
   DCHECK(lock_modal_container);
   lock_modal_container->SetLayoutManager(
-      base::MakeUnique<SystemModalContainerLayoutManager>(
-          lock_modal_container));
+      new SystemModalContainerLayoutManager(lock_modal_container));
 
-  WmWindow* lock_container = GetWmContainer(kShellWindowId_LockScreenContainer);
+  aura::Window* lock_container =
+      GetContainer(kShellWindowId_LockScreenContainer);
   DCHECK(lock_container);
-  lock_container->SetLayoutManager(
-      base::MakeUnique<LockLayoutManager>(lock_container));
+  lock_container->SetLayoutManager(new LockLayoutManager(lock_container));
 
   WmWindow* always_on_top_container =
       GetWmContainer(kShellWindowId_AlwaysOnTopContainer);

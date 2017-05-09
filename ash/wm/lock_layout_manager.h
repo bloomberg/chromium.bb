@@ -39,16 +39,17 @@ class ASH_EXPORT LockLayoutManager
       public ShellObserver,
       public keyboard::KeyboardControllerObserver {
  public:
-  explicit LockLayoutManager(WmWindow* window);
+  explicit LockLayoutManager(aura::Window* window);
   ~LockLayoutManager() override;
 
   // Overridden from WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(WmWindow* child) override;
-  void OnWillRemoveWindowFromLayout(WmWindow* child) override;
-  void OnWindowRemovedFromLayout(WmWindow* child) override;
-  void OnChildWindowVisibilityChanged(WmWindow* child, bool visibile) override;
-  void SetChildBounds(WmWindow* child,
+  void OnWindowAddedToLayout(aura::Window* child) override;
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
+  void OnWindowRemovedFromLayout(aura::Window* child) override;
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visibile) override;
+  void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
 
   // Overriden from aura::WindowObserver:
@@ -59,7 +60,7 @@ class ASH_EXPORT LockLayoutManager
 
   // ShellObserver:
   void OnVirtualKeyboardStateChanged(bool activated,
-                                     WmWindow* root_window) override;
+                                     aura::Window* root_window) override;
 
   // keyboard::KeyboardControllerObserver overrides:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
@@ -70,8 +71,8 @@ class ASH_EXPORT LockLayoutManager
   // This happens when the display size, work area insets has changed.
   void AdjustWindowsForWorkAreaChange(const wm::WMEvent* event);
 
-  WmWindow* window_;
-  WmWindow* root_window_;
+  aura::Window* window_;
+  aura::Window* root_window_;
 
   ScopedObserver<keyboard::KeyboardController,
                  keyboard::KeyboardControllerObserver>

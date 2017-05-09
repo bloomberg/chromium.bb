@@ -7,8 +7,8 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm_window.h"
 #include "base/auto_reset.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -28,12 +28,11 @@ void StatusAreaLayoutManager::OnWindowResized() {
 }
 
 void StatusAreaLayoutManager::SetChildBounds(
-    WmWindow* child,
+    aura::Window* child,
     const gfx::Rect& requested_bounds) {
   // Only need to have the shelf do a layout if the child changing is the status
   // area and the shelf isn't in the process of doing a layout.
-  if (child != WmWindow::Get(
-                   shelf_widget_->status_area_widget()->GetNativeWindow()) ||
+  if (child != shelf_widget_->status_area_widget()->GetNativeWindow() ||
       in_layout_) {
     wm::WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
     return;

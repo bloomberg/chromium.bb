@@ -84,7 +84,7 @@ class ASH_EXPORT PanelLayoutManager
   WmShelf* shelf() { return shelf_; }
   void SetShelf(WmShelf* shelf);
 
-  // WmLayoutManager:
+  // aura::LayoutManager:
   void OnWindowResized() override;
   void OnWindowAddedToLayout(aura::Window* child) override;
   void OnWillRemoveWindowFromLayout(aura::Window* child) override;
@@ -98,7 +98,7 @@ class ASH_EXPORT PanelLayoutManager
   void OnOverviewModeEnded() override;
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
   void OnVirtualKeyboardStateChanged(bool activated,
-                                     WmWindow* root_window) override;
+                                     aura::Window* root_window) override;
 
   // aura::WindowObserver
   void OnWindowPropertyChanged(aura::Window* window,

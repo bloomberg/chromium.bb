@@ -437,7 +437,7 @@ views::WebView* WebUILoginView::web_view() {
 // ash::ShellObserver:
 
 void WebUILoginView::OnVirtualKeyboardStateChanged(bool activated,
-                                                   ash::WmWindow* root_window) {
+                                                   aura::Window* root_window) {
   auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
   if (keyboard_controller) {
     if (activated) {

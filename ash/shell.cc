@@ -524,7 +524,7 @@ void Shell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
 }
 
 void Shell::NotifyVirtualKeyboardActivated(bool activated,
-                                           WmWindow* root_window) {
+                                           aura::Window* root_window) {
   for (auto& observer : shell_observers_)
     observer.OnVirtualKeyboardStateChanged(activated, root_window);
 }

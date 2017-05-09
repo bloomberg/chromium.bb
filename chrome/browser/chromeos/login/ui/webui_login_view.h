@@ -143,7 +143,7 @@ class WebUILoginView : public views::View,
 
   // ash::ShellObserver:
   void OnVirtualKeyboardStateChanged(bool activated,
-                                     ash::WmWindow* root_window) override;
+                                     aura::Window* root_window) override;
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;

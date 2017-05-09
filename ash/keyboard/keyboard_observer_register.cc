@@ -10,8 +10,8 @@ namespace ash {
 
 void UpdateKeyboardObserverFromStateChanged(
     bool keyboard_activated,
-    WmWindow* keyboard_root_window,
-    WmWindow* observer_root_window,
+    aura::Window* keyboard_root_window,
+    aura::Window* observer_root_window,
     ScopedObserver<keyboard::KeyboardController,
                    keyboard::KeyboardControllerObserver>* keyboard_observer) {
   if (keyboard_root_window != observer_root_window)

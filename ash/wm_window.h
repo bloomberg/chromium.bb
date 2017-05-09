@@ -44,7 +44,6 @@ namespace ash {
 
 class ImmersiveFullscreenController;
 class RootWindowController;
-class WmLayoutManager;
 class WmTransientWindowObserver;
 class WmWindowTestApi;
 enum class WmWindowProperty;
@@ -186,9 +185,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
 
   // Moves this to the display where |event| occurred; returns true if moved.
   bool MoveToEventRoot(const ui::Event& event);
-
-  void SetLayoutManager(std::unique_ptr<WmLayoutManager> layout_manager);
-  WmLayoutManager* GetLayoutManager();
 
   // See wm::SetWindowVisibilityChangesAnimated() for details on what this
   // does.

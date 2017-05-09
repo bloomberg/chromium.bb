@@ -580,7 +580,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Notifies observers that the virtual keyboard has been
   // activated/deactivated for |root_window|.
-  void NotifyVirtualKeyboardActivated(bool activated, WmWindow* root_window);
+  void NotifyVirtualKeyboardActivated(bool activated,
+                                      aura::Window* root_window);
 
   // Notifies observers that the shelf was created for |root_window|.
   // TODO(jamescook): Move to Shelf.

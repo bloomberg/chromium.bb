@@ -342,9 +342,9 @@ void WorkspaceLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
 
 void WorkspaceLayoutManager::OnVirtualKeyboardStateChanged(
     bool activated,
-    WmWindow* root_window) {
-  UpdateKeyboardObserverFromStateChanged(
-      activated, root_window, WmWindow::Get(root_window_), &keyboard_observer_);
+    aura::Window* root_window) {
+  UpdateKeyboardObserverFromStateChanged(activated, root_window, root_window_,
+                                         &keyboard_observer_);
 }
 
 //////////////////////////////////////////////////////////////////////////////

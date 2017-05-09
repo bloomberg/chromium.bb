@@ -18,7 +18,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
@@ -95,8 +94,9 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
   DISALLOW_COPY_AND_ASSIGN(DeleteOnBlurDelegate);
 };
 
-WmLayoutManager* GetLayoutManager(RootWindowController* controller, int id) {
-  return WmWindow::Get(controller->GetContainer(id))->GetLayoutManager();
+aura::LayoutManager* GetLayoutManager(RootWindowController* controller,
+                                      int id) {
+  return controller->GetContainer(id)->layout_manager();
 }
 
 }  // namespace
@@ -394,7 +394,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
       CreateModalWidget(gfx::Rect(300, 10, 100, 100));
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
             controller->GetSystemModalLayoutManager(
-                WmWindow::Get(session_modal_widget->GetNativeWindow())));
+                session_modal_widget->GetNativeWindow()));
 
   Shell::Get()->session_controller()->LockScreenAndFlushForTest();
   EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
@@ -409,10 +409,10 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
   EXPECT_EQ(
       GetLayoutManager(controller, kShellWindowId_LockSystemModalContainer),
       controller->GetSystemModalLayoutManager(
-          WmWindow::Get(lock_modal_widget->GetNativeWindow())));
+          lock_modal_widget->GetNativeWindow()));
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
             controller->GetSystemModalLayoutManager(
-                WmWindow::Get(session_modal_widget->GetNativeWindow())));
+                session_modal_widget->GetNativeWindow()));
 
   GetSessionControllerClient()->UnlockScreen();
 }
@@ -439,7 +439,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   EXPECT_EQ(
       GetLayoutManager(controller, kShellWindowId_LockSystemModalContainer),
       controller->GetSystemModalLayoutManager(
-          WmWindow::Get(login_modal_widget->GetNativeWindow())));
+          login_modal_widget->GetNativeWindow()));
   login_modal_widget->Close();
 
   // Configure user session environment.
@@ -454,7 +454,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
       CreateModalWidget(gfx::Rect(300, 10, 100, 100));
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
             controller->GetSystemModalLayoutManager(
-                WmWindow::Get(session_modal_widget->GetNativeWindow())));
+                session_modal_widget->GetNativeWindow()));
 }
 
 TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
@@ -469,7 +469,7 @@ TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
         CreateModalWidget(gfx::Rect(300, 10, 100, 100));
     EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
               controller->GetSystemModalLayoutManager(
-                  WmWindow::Get(session_modal_widget->GetNativeWindow())));
+                  session_modal_widget->GetNativeWindow()));
     EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
               controller->GetSystemModalLayoutManager(NULL));
     session_modal_widget->Close();
@@ -485,12 +485,12 @@ TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
     EXPECT_EQ(
         GetLayoutManager(controller, kShellWindowId_LockSystemModalContainer),
         controller->GetSystemModalLayoutManager(
-            WmWindow::Get(lock_modal_widget->GetNativeWindow())));
+            lock_modal_widget->GetNativeWindow()));
 
     session_modal_widget = CreateModalWidget(gfx::Rect(300, 10, 100, 100));
     EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
               controller->GetSystemModalLayoutManager(
-                  WmWindow::Get(session_modal_widget->GetNativeWindow())));
+                  session_modal_widget->GetNativeWindow()));
     session_modal_widget->Close();
 
     lock_modal_widget->Close();

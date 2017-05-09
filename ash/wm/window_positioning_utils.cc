@@ -152,7 +152,8 @@ void SetBoundsInScreen(WmWindow* window,
       // All containers that uses screen coordinates must have valid window ids.
       DCHECK_GE(container_id, 0);
       // Don't move modal background.
-      if (!SystemModalContainerLayoutManager::IsModalBackground(window))
+      if (!SystemModalContainerLayoutManager::IsModalBackground(
+              window->aura_window()))
         dst_container = dst_root->GetChildByShellWindowId(container_id);
     }
 

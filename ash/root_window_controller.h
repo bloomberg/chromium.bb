@@ -179,7 +179,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // modal container is used if the screen is currently locked. Otherwise, the
   // default modal container is used.
   SystemModalContainerLayoutManager* GetSystemModalLayoutManager(
-      WmWindow* window);
+      aura::Window* window);
 
   AlwaysOnTopController* always_on_top_controller() {
     return always_on_top_controller_.get();

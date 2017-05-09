@@ -120,11 +120,11 @@ class ASH_EXPORT ShellPort {
 
   // Creates a modal background (a partially-opaque fullscreen window) on all
   // displays for |window|.
-  void CreateModalBackground(WmWindow* window);
+  void CreateModalBackground(aura::Window* window);
 
   // Called when a modal window is removed. It will activate another modal
   // window if any, or remove modal screens on all displays.
-  void OnModalWindowRemoved(WmWindow* removed);
+  void OnModalWindowRemoved(aura::Window* removed);
 
   // For testing only: set simulation that a modal window is open
   void SimulateModalWindowOpenForTesting(bool modal_window_open) {

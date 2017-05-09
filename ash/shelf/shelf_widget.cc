@@ -156,7 +156,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
 
   shelf_layout_manager_ = new ShelfLayoutManager(this, wm_shelf_);
   shelf_layout_manager_->AddObserver(this);
-  shelf_container->SetLayoutManager(base::WrapUnique(shelf_layout_manager_));
+  shelf_container->aura_window()->SetLayoutManager(shelf_layout_manager_);
   background_animator_.PaintBackground(
       shelf_layout_manager_->GetShelfBackgroundType(),
       AnimationChangeType::IMMEDIATE);
@@ -184,8 +184,8 @@ void ShelfWidget::CreateStatusAreaWidget(WmWindow* status_container) {
     status_area_widget_->Show();
   Shell::Get()->focus_cycler()->AddWidget(status_area_widget_);
   background_animator_.AddObserver(status_area_widget_);
-  status_container->SetLayoutManager(
-      base::MakeUnique<StatusAreaLayoutManager>(this));
+  status_container->aura_window()->SetLayoutManager(
+      new StatusAreaLayoutManager(this));
 }
 
 void ShelfWidget::SetPaintsBackground(ShelfBackgroundType background_type,

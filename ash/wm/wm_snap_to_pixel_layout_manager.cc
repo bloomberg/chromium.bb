@@ -6,8 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm_window.h"
-#include "base/memory/ptr_util.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -18,14 +17,14 @@ WmSnapToPixelLayoutManager::WmSnapToPixelLayoutManager() {}
 WmSnapToPixelLayoutManager::~WmSnapToPixelLayoutManager() {}
 
 // static
-void WmSnapToPixelLayoutManager::InstallOnContainers(WmWindow* window) {
-  for (WmWindow* child : window->GetChildren()) {
-    if (child->aura_window()->id() < kShellWindowId_Min ||
-        child->aura_window()->id() > kShellWindowId_Max)  // not a container
+void WmSnapToPixelLayoutManager::InstallOnContainers(aura::Window* window) {
+  for (aura::Window* child : window->children()) {
+    if (child->id() < kShellWindowId_Min ||
+        child->id() > kShellWindowId_Max)  // not a container
       continue;
-    if (child->aura_window()->GetProperty(kSnapChildrenToPixelBoundary)) {
-      if (!child->GetLayoutManager() && !child->aura_window()->layout_manager())
-        child->SetLayoutManager(base::MakeUnique<WmSnapToPixelLayoutManager>());
+    if (child->GetProperty(kSnapChildrenToPixelBoundary)) {
+      if (!child->layout_manager())
+        child->SetLayoutManager(new WmSnapToPixelLayoutManager());
     } else {
       InstallOnContainers(child);
     }
@@ -34,22 +33,23 @@ void WmSnapToPixelLayoutManager::InstallOnContainers(WmWindow* window) {
 
 void WmSnapToPixelLayoutManager::OnWindowResized() {}
 
-void WmSnapToPixelLayoutManager::OnWindowAddedToLayout(WmWindow* child) {}
+void WmSnapToPixelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {}
 
-void WmSnapToPixelLayoutManager::OnWillRemoveWindowFromLayout(WmWindow* child) {
-}
+void WmSnapToPixelLayoutManager::OnWillRemoveWindowFromLayout(
+    aura::Window* child) {}
 
-void WmSnapToPixelLayoutManager::OnWindowRemovedFromLayout(WmWindow* child) {}
+void WmSnapToPixelLayoutManager::OnWindowRemovedFromLayout(
+    aura::Window* child) {}
 
-void WmSnapToPixelLayoutManager::OnChildWindowVisibilityChanged(WmWindow* child,
-                                                                bool visibile) {
-}
+void WmSnapToPixelLayoutManager::OnChildWindowVisibilityChanged(
+    aura::Window* child,
+    bool visibile) {}
 
 void WmSnapToPixelLayoutManager::SetChildBounds(
-    WmWindow* child,
+    aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  child->SetBoundsDirect(requested_bounds);
-  child->SnapToPixelBoundaryIfNecessary();
+  SetChildBoundsDirect(child, requested_bounds);
+  wm::SnapWindowToPixelBoundary(child);
 }
 
 }  // namespace wm
