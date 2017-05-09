@@ -97,7 +97,9 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   void set_incognito(bool enabled) { is_incognito_ = enabled; }
 
-  bool IsPingingEnabled() override { return true; }
+  bool IsPingingEnabled(const base::Feature& feature) override { return true; }
+
+  bool IsHistorySyncEnabled() override { return false; }
 
   LoginReputationClientResponse* latest_response() {
     return latest_response_.get();
@@ -423,35 +425,6 @@ TEST_F(PasswordProtectionServiceTest,
       GURL("ftp://foo.com:21"), GURL("http://foo.com/submit"),
       GURL("http://foo.com/frame"));
   EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
-}
-
-TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForIncognito) {
-  histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
-  password_protection_service_->set_incognito(true);
-  password_protection_service_->StartRequest(
-      GURL(kTargetUrl), GURL("http://foo.com/submit"),
-      GURL("http://foo.com/frame"),
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, password_protection_service_->latest_response());
-  EXPECT_THAT(histograms_.GetAllSamples(kRequestOutcomeHistogramName),
-              testing::ElementsAre(base::Bucket(7 /* INCOGNITO */, 1)));
-}
-
-TEST_F(PasswordProtectionServiceTest,
-       TestNoRequestSentForNonExtendedReporting) {
-  histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
-  password_protection_service_->set_extended_reporting(false);
-  password_protection_service_->StartRequest(
-      GURL(kTargetUrl), GURL("http://foo.com/submit"),
-      GURL("http://foo.com/frame"),
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, password_protection_service_->latest_response());
-  EXPECT_THAT(
-      histograms_.GetAllSamples(kRequestOutcomeHistogramName),
-      testing::ElementsAre(base::Bucket(6 /* NO_EXTENDED_REPORTING */, 1)));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {

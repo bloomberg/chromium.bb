@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -31,6 +32,9 @@ namespace safe_browsing {
 
 class SafeBrowsingDatabaseManager;
 class PasswordProtectionRequest;
+
+extern const base::Feature kLowReputationPinging;
+extern const base::Feature kProtectedPasswordEntryPinging;
 
 // Manage password protection pings and verdicts. There is one instance of this
 // class per profile. Therefore, every PasswordProtectionService instance is
@@ -116,17 +120,25 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       int event_tab_id,  // -1 if tab id is not available.
       LoginReputationClientRequest::Frame* frame) = 0;
 
+  void FillUserPopulation(
+      const LoginReputationClientRequest::TriggerType& request_type,
+      LoginReputationClientRequest* request_proto);
+
   virtual bool IsExtendedReporting() = 0;
+
   virtual bool IsIncognito() = 0;
 
-  // If we can send ping to Safe Browsing backend.
-  virtual bool IsPingingEnabled() = 0;
+  virtual bool IsPingingEnabled(const base::Feature& feature) = 0;
+
+  virtual bool IsHistorySyncEnabled() = 0;
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
 
   // Increases "PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist" UMA
   // metric based on input.
   void OnMatchCsdWhiteListResult(const bool* match_whitelist);
+
+  HostContentSettingsMap* content_settings() const { return content_settings_; }
 
  private:
   friend class PasswordProtectionServiceTest;

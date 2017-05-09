@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -62,6 +63,12 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
 }
 
 }  // namespace
+
+const base::Feature kLowReputationPinging{"LowReputationPinging",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kProtectedPasswordEntryPinging{
+    "ProtectedPasswordEntryPinging", base::FEATURE_DISABLED_BY_DEFAULT};
 
 PasswordProtectionService::PasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
@@ -214,7 +221,7 @@ void PasswordProtectionService::MaybeStartLowReputationRequest(
     const GURL& password_form_action,
     const GURL& password_form_frame_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsPingingEnabled())
+  if (!IsPingingEnabled(kLowReputationPinging))
     return;
 
   // Skip URLs that we can't get a reliable reputation for.
@@ -298,6 +305,31 @@ int PasswordProtectionService::GetStoredVerdictCount() {
 
 int PasswordProtectionService::GetRequestTimeoutInMS() {
   return kRequestTimeoutMs;
+}
+
+void PasswordProtectionService::FillUserPopulation(
+    const LoginReputationClientRequest::TriggerType& request_type,
+    LoginReputationClientRequest* request_proto) {
+  ChromeUserPopulation* user_population = request_proto->mutable_population();
+  user_population->set_user_population(
+      IsExtendedReporting() ? ChromeUserPopulation::EXTENDED_REPORTING
+                            : ChromeUserPopulation::SAFE_BROWSING);
+  user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
+
+  base::FieldTrial* low_reputation_field_trial =
+      base::FeatureList::GetFieldTrial(kLowReputationPinging);
+  if (low_reputation_field_trial) {
+    user_population->add_finch_active_groups(
+        low_reputation_field_trial->trial_name() + "|" +
+        low_reputation_field_trial->group_name());
+  }
+  base::FieldTrial* password_entry_field_trial =
+      base::FeatureList::GetFieldTrial(kProtectedPasswordEntryPinging);
+  if (password_entry_field_trial) {
+    user_population->add_finch_active_groups(
+        low_reputation_field_trial->trial_name() + "|" +
+        low_reputation_field_trial->group_name());
+  }
 }
 
 void PasswordProtectionService::OnMatchCsdWhiteListResult(

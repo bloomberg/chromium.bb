@@ -34,6 +34,14 @@ message ChromeUserPopulation {
     EXTENDED_REPORTING = 2;
   }
   optional UserPopulation user_population = 1;
+
+  // If user enabled history sync.
+  optional bool is_history_sync_enabled = 2;
+
+  // The finch active groups this user belongs to (if any). Active group is
+  // defined by finch trial name and group name. Trial name and group name are
+  // concatenated with separator "|", e.g. "PingOnlyTrial|DefaultGroup".
+  repeated string finch_active_groups = 4;
 }
 
 message ClientPhishingRequest {
@@ -214,6 +222,9 @@ message LoginReputationClientRequest {
 
   // The number of verdicts stored on the client.
   optional int32 stored_verdict_cnt = 5;
+
+  // Chrome user population.
+  optional ChromeUserPopulation population = 6;
 }
 
 // The message is used for client response for login reputation requests.
