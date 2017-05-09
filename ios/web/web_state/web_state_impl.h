@@ -41,6 +41,7 @@ class BrowserState;
 struct ContextMenuParams;
 struct FaviconURL;
 struct LoadCommittedDetails;
+class NavigationContext;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
@@ -74,6 +75,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Notifies the observers that a provisional navigation has started.
   void OnProvisionalNavigationStarted(const GURL& url);
+
+  // Called when a navigation is finished.
+  void OnNavigationFinished(web::NavigationContext* context);
 
   // Called when a navigation is committed.
   void OnNavigationCommitted(const GURL& url);
