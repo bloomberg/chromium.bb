@@ -138,7 +138,7 @@ void av1_inc_mv(const MV *mv, nmv_context_counts *mvctx, const int usehp);
 extern const aom_tree_index
     av1_global_motion_types_tree[TREE_SIZE(GLOBAL_TRANS_TYPES)];
 #endif  // CONFIG_GLOBAL_MOTION
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_EC_MULTISYMBOL && !CONFIG_EC_ADAPT
 void av1_set_mv_cdfs(nmv_context *ctx);
 #endif
 
