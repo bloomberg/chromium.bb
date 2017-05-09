@@ -175,10 +175,8 @@ std::vector<TraitsExecutionModePair> GetTraitsExecutionModePairs() {
          priority_index <= static_cast<size_t>(TaskPriority::HIGHEST);
          ++priority_index) {
       const TaskPriority priority = static_cast<TaskPriority>(priority_index);
-      params.push_back(TraitsExecutionModePair(
-          TaskTraits().WithPriority(priority), execution_mode));
-      params.push_back(TraitsExecutionModePair(
-          TaskTraits().WithPriority(priority).MayBlock(), execution_mode));
+      params.push_back(TraitsExecutionModePair({priority}, execution_mode));
+      params.push_back(TraitsExecutionModePair({MayBlock()}, execution_mode));
     }
   }
 
@@ -368,22 +366,17 @@ TEST_F(TaskSchedulerImplTest, MultipleTraitsExecutionModePairs) {
 TEST_F(TaskSchedulerImplTest, GetMaxConcurrentTasksWithTraitsDeprecated) {
   StartTaskScheduler();
   EXPECT_EQ(1, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
-                   TaskTraits().WithPriority(TaskPriority::BACKGROUND)));
-  EXPECT_EQ(
-      3, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
-             TaskTraits().WithPriority(TaskPriority::BACKGROUND).MayBlock()));
+                   {TaskPriority::BACKGROUND}));
+  EXPECT_EQ(3, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+                   {MayBlock(), TaskPriority::BACKGROUND}));
   EXPECT_EQ(4, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
-                   TaskTraits().WithPriority(TaskPriority::USER_VISIBLE)));
-  EXPECT_EQ(
-      12,
-      scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
-          TaskTraits().WithPriority(TaskPriority::USER_VISIBLE).MayBlock()));
+                   {TaskPriority::USER_VISIBLE}));
+  EXPECT_EQ(12, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+                    {MayBlock(), TaskPriority::USER_VISIBLE}));
   EXPECT_EQ(4, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
-                   TaskTraits().WithPriority(TaskPriority::USER_BLOCKING)));
-  EXPECT_EQ(
-      12,
-      scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
-          TaskTraits().WithPriority(TaskPriority::USER_BLOCKING).MayBlock()));
+                   {TaskPriority::USER_BLOCKING}));
+  EXPECT_EQ(12, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+                    {MayBlock(), TaskPriority::USER_BLOCKING}));
 }
 
 // Verify that the RunsTasksOnCurrentThread() method of a SequencedTaskRunner
@@ -488,8 +481,7 @@ TEST_F(TaskSchedulerImplTest, FileDescriptorWatcherNoOpsAfterShutdown) {
 
   scoped_refptr<TaskRunner> blocking_task_runner =
       scheduler_.CreateSequencedTaskRunnerWithTraits(
-          TaskTraits().WithShutdownBehavior(
-              TaskShutdownBehavior::BLOCK_SHUTDOWN));
+          {TaskShutdownBehavior::BLOCK_SHUTDOWN});
   blocking_task_runner->PostTask(
       FROM_HERE,
       BindOnce(

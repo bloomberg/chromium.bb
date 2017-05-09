@@ -214,7 +214,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
                                  DispatchMessage(&msg);
                                },
                                std::move(msg)),
-                           TaskTraits().MayBlock(), TimeDelta());
+                           TaskTraits(MayBlock()), TimeDelta());
       if (task_tracker_->WillPostTask(pump_message_task.get())) {
         bool was_empty =
             message_pump_sequence_->PushTask(std::move(pump_message_task));
