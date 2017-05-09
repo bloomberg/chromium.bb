@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
+#include "content/browser/blob_storage/blob_internals_url_loader.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/resource_context_impl.h"
@@ -20,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/template_expressions.h"
@@ -217,10 +220,8 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
  public:
   WebUIURLLoaderFactory(FrameTreeNode* ftn)
       : frame_tree_node_id_(ftn->frame_tree_node_id()),
-        resource_context_(ftn->current_frame_host()
-                              ->GetProcess()
-                              ->GetBrowserContext()
-                              ->GetResourceContext()) {
+        browser_context_(
+            ftn->current_frame_host()->GetProcess()->GetBrowserContext()) {
     ftn->AddObserver(this);
   }
 
@@ -238,10 +239,21 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
                             const ResourceRequest& request,
                             mojom::URLLoaderClientPtr client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (request.url.host_piece() == kChromeUIBlobInternalsHost) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(
+              &StartBlobInternalsURLLoader, request, client.PassInterface(),
+              base::Unretained(
+                  ChromeBlobStorageContext::GetFor(browser_context_))));
+      return;
+    }
+
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&StartURLLoader, request, frame_tree_node_id_,
-                       client.PassInterface(), resource_context_));
+                       client.PassInterface(),
+                       browser_context_->GetResourceContext()));
   }
 
   void SyncLoad(int32_t routing_id,
@@ -258,7 +270,7 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
 
  private:
   int frame_tree_node_id_;
-  ResourceContext* resource_context_;
+  BrowserContext* browser_context_;
   mojo::BindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIURLLoaderFactory);
