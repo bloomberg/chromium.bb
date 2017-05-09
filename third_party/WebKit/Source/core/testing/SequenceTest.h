@@ -41,7 +41,7 @@ class SequenceTest final : public GarbageCollectedFinalized<SequenceTest>,
  private:
   SequenceTest();
 
-  HeapVector<Member<Element>> m_elementSequence;
+  HeapVector<Member<Element>> element_sequence_;
 };
 
 }  // namespace blink
