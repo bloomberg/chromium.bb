@@ -72,6 +72,8 @@ class LargeIconService : public KeyedService {
   // encouraged to use GetLargeIconOrFallbackStyle() first.
   //
   // A minimum size |min_source_size_in_pixel| can be specified as a constraint.
+  // |desired_size_in_pixel| serves only as a hint to the service, no guarantees
+  // on the fetched size are provided.
   //
   // The callback is triggered when the operation finishes, where |success|
   // tells whether the fetch actually managed to database a new icon in the
@@ -83,6 +85,7 @@ class LargeIconService : public KeyedService {
   void GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
       const GURL& page_url,
       int min_source_size_in_pixel,
+      int desired_size_in_pixel,
       const base::Callback<void(bool success)>& callback);
 
  private:
