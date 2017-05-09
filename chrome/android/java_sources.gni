@@ -1019,6 +1019,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsUiDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsEventReporter.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsEventReporterBridge.java",
+  "java/src/org/chromium/chrome/browser/suggestions/SuggestionsMetrics.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsRanker.java",
   "java/src/org/chromium/chrome/browser/superviseduser/SupervisedUserContentProvider.java",
   "java/src/org/chromium/chrome/browser/sync/GmsCoreSyncListener.java",

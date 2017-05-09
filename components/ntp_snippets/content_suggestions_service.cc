@@ -20,6 +20,7 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/ntp_snippets/content_suggestions_metrics.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -324,6 +325,9 @@ void ContentSuggestionsService::DismissSuggestion(
                  << " for unavailable category " << suggestion_id.category();
     return;
   }
+
+  metrics::RecordContentSuggestionDismissed();
+
   providers_by_category_[suggestion_id.category()]->DismissSuggestion(
       suggestion_id);
 
@@ -338,6 +342,8 @@ void ContentSuggestionsService::DismissCategory(Category category) {
   if (providers_it == providers_by_category_.end()) {
     return;
   }
+
+  metrics::RecordCategoryDismissed();
 
   ContentSuggestionsProvider* provider = providers_it->second;
   UnregisterCategory(category, provider);
@@ -381,6 +387,8 @@ void ContentSuggestionsService::Fetch(
   if (providers_it == providers_by_category_.end()) {
     return;
   }
+
+  metrics::RecordFetchAction();
 
   providers_it->second->Fetch(category, known_suggestion_ids, callback);
 }

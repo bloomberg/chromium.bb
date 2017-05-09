@@ -35,9 +35,6 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
  * Provides content to be displayed inside of the Home tab of bottom sheet.
- *
- * TODO(dgn): If the bottom sheet view is not recreated across tab changes, it will have to be
- * notified of it, at least when it is pulled up on the new tab.
  */
 public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetContent {
     private static SuggestionsSource sSuggestionsSourceForTesting;
@@ -92,17 +89,19 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             @Override
             public void onSheetOpened() {
                 mRecyclerView.scrollToPosition(0);
-
-                // TODO(https://crbug.com/689962) Ensure this call does not discard all suggestions
-                // every time the sheet is opened.
-                adapter.refreshSuggestions();
-                mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
+                prepareSuggestionsForReveal(adapter);
             }
+
+            @Override
+            public void onSheetClosed() {
+                SuggestionsMetrics.recordSurfaceHidden();
+            }
+
         };
         mBottomSheet = activity.getBottomSheet();
         mBottomSheet.addObserver(mBottomSheetObserver);
-        adapter.refreshSuggestions();
-        mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
+
+        if (mBottomSheet.isSheetOpen()) prepareSuggestionsForReveal(adapter);
 
         mShadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
         mShadowView.init(
@@ -162,6 +161,13 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     @Override
     public int getType() {
         return BottomSheetContentController.TYPE_SUGGESTIONS;
+    }
+
+    /** Called when the UI is revlealed, prepares the list of suggestions. */
+    private void prepareSuggestionsForReveal(NewTabPageAdapter adapter) {
+        adapter.refreshSuggestions();
+        mSuggestionsUiDelegate.getEventReporter().onSurfaceOpened();
+        SuggestionsMetrics.recordSurfaceVisible();
     }
 
     public static void setSuggestionsSourceForTesting(SuggestionsSource suggestionsSource) {

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
@@ -134,6 +135,13 @@ void MostVisitedSites::Refresh() {
 
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
                                                  bool add_url) {
+  if (add_url) {
+    base::RecordAction(base::UserMetricsAction("Suggestions.Site.Removed"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Suggestions.Site.RemovalUndone"));
+  }
+
   if (top_sites_) {
     // Always blacklist in the local TopSites.
     if (add_url)
