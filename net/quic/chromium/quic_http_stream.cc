@@ -597,8 +597,7 @@ int QuicHttpStream::DoRequestStreamComplete(int rv) {
     return GetResponseStatus();
   }
 
-  stream_ = quic_session()->ReleaseStream();
-  stream_->SetDelegate(this);
+  stream_ = quic_session()->ReleaseStream(this);
   if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
     stream_->DisableConnectionMigration();
   }
