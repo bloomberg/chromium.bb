@@ -314,7 +314,7 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
                    blk_row);
 }
 
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
 static INLINE void add_token(TOKENEXTRA **t,
                              aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
                              aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
@@ -329,24 +329,18 @@ static INLINE void add_token(TOKENEXTRA **t,
   (*t)++;
 }
 
-#else  // CONFIG_NEW_TOKENSET
-static INLINE void add_token(
-    TOKENEXTRA **t, const aom_prob *context_tree,
-#if CONFIG_EC_MULTISYMBOL
-    aom_cdf_prob (*token_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
-#endif  // CONFIG_EC_MULTISYMBOL
-    int32_t extra, uint8_t token, uint8_t skip_eob_node, unsigned int *counts) {
+#else   // CONFIG_EC_MULTISYMBOL
+static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
+                             int32_t extra, uint8_t token,
+                             uint8_t skip_eob_node, unsigned int *counts) {
   (*t)->token = token;
   (*t)->extra = extra;
   (*t)->context_tree = context_tree;
-#if CONFIG_EC_MULTISYMBOL
-  (*t)->token_cdf = token_cdf;
-#endif  // CONFIG_EC_MULTISYMBOL
   (*t)->skip_eob_node = skip_eob_node;
   (*t)++;
   ++counts[token];
 }
-#endif  // CONFIG_NEW_TOKENSET
+#endif  // CONFIG_EC_MULTISYMBOL
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
 #if CONFIG_PALETTE
@@ -471,16 +465,16 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const int ref = is_inter_block(mbmi);
   unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       td->rd_counts.coef_counts[txsize_sqr_map[tx_size]][type][ref];
-#if !CONFIG_NEW_TOKENSET
+#if !CONFIG_EC_MULTISYMBOL
   aom_prob(*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       cpi->common.fc->coef_probs[txsize_sqr_map[tx_size]][type][ref];
-#endif  // !CONFIG_NEW_TOKENSET
+#endif  // !CONFIG_EC_MULTISYMBOL
 #if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 #elif CONFIG_EC_MULTISYMBOL
   FRAME_CONTEXT *ec_ctx = cpi->common.fc;
 #endif
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
   aom_cdf_prob(
       *const coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
       ec_ctx->coef_head_cdfs[txsize_sqr_map[tx_size]][type][ref];
@@ -492,12 +486,8 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   int eob_val;
   int first_val = 1;
 #else
-#if CONFIG_EC_MULTISYMBOL
-  aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
-      ec_ctx->coef_cdfs[txsize_sqr_map[tx_size]][type][ref];
-#endif
   int skip_eob = 0;
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
   const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   unsigned int(*const eob_branch)[COEFF_CONTEXTS] =
       td->counts->eob_branch[txsize_sqr_map[tx_size]][type][ref];
@@ -511,7 +501,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   nb = scan_order->neighbors;
   c = 0;
 
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
   if (eob == 0)
     add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt], 1,
               1, 0, BLOCK_Z_TOKEN);
@@ -554,11 +544,8 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
     av1_get_token_extra(v, &token, &extra);
 
-    add_token(&t, coef_probs[band[c]][pt],
-#if CONFIG_EC_MULTISYMBOL
-              &coef_cdfs[band[c]][pt],
-#endif
-              extra, (uint8_t)token, (uint8_t)skip_eob, counts[band[c]][pt]);
+    add_token(&t, coef_probs[band[c]][pt], extra, (uint8_t)token,
+              (uint8_t)skip_eob, counts[band[c]][pt]);
 
     token_cache[scan[c]] = av1_pt_energy_class[token];
     ++c;
@@ -566,14 +553,11 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
     skip_eob = (token == ZERO_TOKEN);
   }
   if (c < seg_eob) {
-    add_token(&t, coef_probs[band[c]][pt],
-#if CONFIG_EC_MULTISYMBOL
-              NULL,
-#endif
-              0, EOB_TOKEN, 0, counts[band[c]][pt]);
+    add_token(&t, coef_probs[band[c]][pt], 0, EOB_TOKEN, 0,
+              counts[band[c]][pt]);
     ++eob_branch[band[c]][pt];
   }
-#endif  // CONFIG_NEW_TOKENSET
+#endif  // CONFIG_EC_MULTISYMBOL
 
 #if CONFIG_COEF_INTERLEAVE
   t->token = EOSB_TOKEN;

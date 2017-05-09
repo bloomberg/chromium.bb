@@ -45,7 +45,7 @@ extern "C" {
 #define CATEGORY5_TOKEN 9   // 35-66 Extra Bits 5+1
 #define CATEGORY6_TOKEN 10  // 67+   Extra Bits 14+1
 #define EOB_TOKEN 11        // EOB   Extra Bits 0+0
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
 #define NO_EOB 0           // Not an end-of-block
 #define EARLY_EOB 1        // End of block before the last position
 #define LAST_EOB 2         // End of block in the last position (implicit)
@@ -56,7 +56,7 @@ extern "C" {
 #define ONE_TOKEN_NEOB 2
 #define TWO_TOKEN_PLUS_EOB 3
 #define TWO_TOKEN_PLUS_NEOB 4
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
 #define ENTROPY_TOKENS 12
 
 #define ENTROPY_NODES 11
@@ -253,9 +253,8 @@ extern const aom_cdf_prob av1_pareto8_token_probs[COEFF_PROB_MODELS]
 extern const aom_cdf_prob av1_pareto8_tail_probs[COEFF_PROB_MODELS]
                                                 [ENTROPY_TOKENS - 3];
 struct frame_contexts;
-#if CONFIG_NEW_TOKENSET
+
 void av1_coef_head_cdfs(struct frame_contexts *fc);
-#endif
 void av1_coef_pareto_cdfs(struct frame_contexts *fc);
 #endif  // CONFIG_EC_MULTISYMBOL
 

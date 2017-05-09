@@ -887,7 +887,7 @@ static INLINE void write_coeff_extra(const aom_prob *pb, int value,
 }
 #endif
 
-#if CONFIG_NEW_TOKENSET && !CONFIG_LV_MAP
+#if CONFIG_EC_MULTISYMBOL && !CONFIG_LV_MAP
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
                            aom_bit_depth_t bit_depth, const TX_SIZE tx_size,
@@ -951,7 +951,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
   *tp = p;
 }
-#else  //  CONFIG_NEW_TOKENSET
+#else  //  CONFIG_EC_MULTISYMBOL && !CONFIG_LV_MAP
 #if !CONFIG_LV_MAP
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
@@ -1042,7 +1042,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   *tp = p;
 }
 #endif  // !CONFIG_LV_MAP
-#endif  // CONFIG_NEW_TOKENSET
+#endif  // CONFIG_EC_MULTISYMBOL !CONFIG_LV_MAP
 #else   // !CONFIG_PVQ
 static PVQ_INFO *get_pvq_block(PVQ_QUEUE *pvq_q) {
   PVQ_INFO *pvq;
@@ -3113,7 +3113,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 }
 
 #if !CONFIG_LV_MAP
-#if !CONFIG_PVQ && !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
+#if !CONFIG_PVQ && !CONFIG_EC_ADAPT
 static void build_tree_distribution(AV1_COMP *cpi, TX_SIZE tx_size,
                                     av1_coeff_stats *coef_branch_ct,
                                     av1_coeff_probs_model *coef_probs) {
@@ -3144,7 +3144,7 @@ static void build_tree_distribution(AV1_COMP *cpi, TX_SIZE tx_size,
   }
 }
 
-#if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
+#if !CONFIG_EC_ADAPT
 static void update_coef_probs_common(aom_writer *const bc, AV1_COMP *cpi,
                                      TX_SIZE tx_size,
                                      av1_coeff_stats *frame_branch_ct,
@@ -3297,7 +3297,7 @@ static void update_coef_probs_common(aom_writer *const bc, AV1_COMP *cpi,
 }
 #endif
 
-#if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
+#if !CONFIG_EC_ADAPT
 static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   const TX_MODE tx_mode = cpi->common.tx_mode;
   const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
@@ -3316,7 +3316,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
     }
   }
 }
-#endif  // !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
+#endif  // !CONFIG_EC_ADAPT
 #endif  // !CONFIG_EC_ADAPT
 #endif  // !CONFIG_LV_MAP
 
@@ -4719,9 +4719,9 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   av1_write_txb_probs(cpi, header_bc);
 #else
 #if !CONFIG_PVQ
-#if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
+#if !CONFIG_EC_ADAPT
   update_coef_probs(cpi, header_bc);
-#endif  // !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
+#endif  // !CONFIG_EC_ADAPT
 #endif  // CONFIG_PVQ
 #endif  // CONFIG_LV_MAP
 
@@ -4906,9 +4906,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_GLOBAL_MOTION
   }
 #if CONFIG_EC_MULTISYMBOL && !CONFIG_EC_ADAPT
-#if CONFIG_NEW_TOKENSET
   av1_coef_head_cdfs(fc);
-#endif
   av1_coef_pareto_cdfs(fc);
   for (i = 0; i < NMV_CONTEXTS; ++i) av1_set_mv_cdfs(&fc->nmvc[i]);
   av1_set_mode_cdfs(cm);

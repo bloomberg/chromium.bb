@@ -1104,12 +1104,12 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   int c, cost;
   const int16_t *scan = scan_order->scan;
   const int16_t *nb = scan_order->neighbors;
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
   const int ref = is_inter_block(mbmi);
   aom_prob *blockz_probs =
       cm->fc->blockzero_probs[txsize_sqr_map[tx_size]][type][ref];
 
-#endif  // CONFIG_NEW_TOKENSET
+#endif  // CONFIG_EC_MULTISYMBOL
 
 #if CONFIG_HIGHBITDEPTH
   const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, xd->bd);
@@ -1124,12 +1124,12 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   (void)cm;
 
   if (eob == 0) {
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
     // single eob token
     cost = av1_cost_bit(blockz_probs[pt], 0);
 #else
     cost = token_costs[0][0][pt][EOB_TOKEN];
-#endif  // CONFIG_NEW_TOKENSET
+#endif  // CONFIG_EC_MULTISYBMOL
   } else {
     if (use_fast_coef_costing) {
       int band_left = *band_count++;
@@ -1138,11 +1138,11 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       int v = qcoeff[0];
       int16_t prev_t;
       cost = av1_get_token_cost(v, &prev_t, cat6_bits);
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
       cost += (*token_costs)[!prev_t][pt][prev_t];
 #else
       cost += (*token_costs)[0][pt][prev_t];
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
 
       token_cache[0] = av1_pt_energy_class[prev_t];
       ++token_costs;
@@ -1154,11 +1154,11 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
         v = qcoeff[rc];
         cost += av1_get_token_cost(v, &t, cat6_bits);
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
         cost += (*token_costs)[!t][!prev_t][t];
 #else
         cost += (*token_costs)[!prev_t][!prev_t][t];
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
         prev_t = t;
         if (!--band_left) {
           band_left = *band_count++;
@@ -1167,7 +1167,7 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       }
 
       // eob token
-      if (band_left || CONFIG_NEW_TOKENSET)
+      if (band_left || CONFIG_EC_MULTISYMBOL)
         cost += (*token_costs)[0][!prev_t][EOB_TOKEN];
 
     } else {  // !use_fast_coef_costing
@@ -1176,22 +1176,22 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       // dc token
       int v = qcoeff[0];
       int16_t tok;
-#if !CONFIG_NEW_TOKENSET
+#if !CONFIG_EC_MULTISYMBOL
       unsigned int(*tok_cost_ptr)[COEFF_CONTEXTS][ENTROPY_TOKENS];
-#endif
+#endif  // !CONFIG_EC_MULTISYMBOL
       cost = av1_get_token_cost(v, &tok, cat6_bits);
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
       cost += (*token_costs)[!tok][pt][tok];
 #else
       cost += (*token_costs)[0][pt][tok];
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
 
       token_cache[0] = av1_pt_energy_class[tok];
       ++token_costs;
 
-#if !CONFIG_NEW_TOKENSET
+#if !CONFIG_EC_MULTISYMBOL
       tok_cost_ptr = &((*token_costs)[!tok]);
-#endif
+#endif  // !CONFIG_EC_MULTISYMBOL
 
       // ac tokens
       for (c = 1; c < eob; c++) {
@@ -1200,23 +1200,23 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
         v = qcoeff[rc];
         cost += av1_get_token_cost(v, &tok, cat6_bits);
         pt = get_coef_context(nb, token_cache, c);
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_EC_MULTISYMBOL
         cost += (*token_costs)[!tok][pt][tok];
 #else
         cost += (*tok_cost_ptr)[pt][tok];
-#endif
+#endif  // CONFIG_EC_MULTISYMBOL
         token_cache[rc] = av1_pt_energy_class[tok];
         if (!--band_left) {
           band_left = *band_count++;
           ++token_costs;
         }
-#if !CONFIG_NEW_TOKENSET
+#if !CONFIG_EC_MULTISYMBOL
         tok_cost_ptr = &((*token_costs)[!tok]);
-#endif
+#endif  // !CONFIG_EC_MULTISYMBOL
       }
 
       // eob token
-      if (band_left || CONFIG_NEW_TOKENSET) {
+      if (band_left || CONFIG_EC_MULTISYMBOL) {
         pt = get_coef_context(nb, token_cache, c);
         cost += (*token_costs)[0][pt][EOB_TOKEN];
       }

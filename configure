@@ -267,7 +267,6 @@ EXPERIMENT_LIST="
     supertx
     ans
     ec_multisymbol
-    new_tokenset
     loop_restoration
     ext_partition
     ext_partition_types
@@ -483,7 +482,6 @@ post_process_cmdline() {
     soft_enable ext_tx
     soft_enable cdef
     soft_enable ec_adapt
-    soft_enable new_tokenset
     soft_enable ext_intra
     soft_enable mv_compress
     soft_enable ext_refs
@@ -515,7 +513,6 @@ post_process_cmdline() {
     enabled pvq && enable_feature ec_adapt
     enabled cfl && enable_feature ec_multisymbol
     enabled ec_adapt && enable_feature ec_multisymbol
-    enabled new_tokenset && enable_feature ec_multisymbol
     enabled new_multisymbol && enable_feature ec_multisymbol
     enabled ec_multisymbol && ! enabled ans && soft_enable daala_ec
     enabled ec_multisymbol && ! enabled daala_ec && soft_enable ans

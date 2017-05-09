@@ -2373,7 +2373,7 @@ static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
                        "Failed to allocate bool decoder %d", 1);
 }
 
-#if !CONFIG_PVQ && !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET) && !CONFIG_LV_MAP
+#if !CONFIG_PVQ && !CONFIG_EC_ADAPT && !CONFIG_LV_MAP
 static void read_coef_probs_common(av1_coeff_probs_model *coef_probs,
                                    aom_reader *r) {
   int i, j, k, l, m;
@@ -4578,9 +4578,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   av1_read_txb_probs(fc, cm->tx_mode, &r);
 #else  // CONFIG_LV_MAP
 #if !CONFIG_PVQ
-#if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
+#if !CONFIG_EC_ADAPT
   read_coef_probs(fc, cm->tx_mode, &r);
-#endif  // !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
+#endif  // !CONFIG_EC_ADAPT
 #endif  // !CONFIG_PVQ
 #endif  // CONFIG_LV_MAP
 
@@ -4736,9 +4736,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // EC_ADAPT, DAALA_EC
   }
 #if CONFIG_EC_MULTISYMBOL && !CONFIG_EC_ADAPT
-#if CONFIG_NEW_TOKENSET
   av1_coef_head_cdfs(fc);
-#endif
   /* Make tail distribution from head */
   av1_coef_pareto_cdfs(fc);
   for (i = 0; i < NMV_CONTEXTS; ++i) av1_set_mv_cdfs(&fc->nmvc[i]);
