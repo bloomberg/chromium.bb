@@ -36,11 +36,11 @@ Nullable<Vector<uint8_t>> SequenceTest::identityOctetSequenceOrNull(
 }
 
 HeapVector<Member<Element>> SequenceTest::getElementSequence() const {
-  return m_elementSequence;
+  return element_sequence_;
 }
 
 void SequenceTest::setElementSequence(const HeapVector<Member<Element>>& arg) {
-  m_elementSequence = arg;
+  element_sequence_ = arg;
 }
 
 bool SequenceTest::unionReceivedSequence(const DoubleOrDoubleSequence& arg) {
@@ -48,7 +48,7 @@ bool SequenceTest::unionReceivedSequence(const DoubleOrDoubleSequence& arg) {
 }
 
 DEFINE_TRACE(SequenceTest) {
-  visitor->Trace(m_elementSequence);
+  visitor->Trace(element_sequence_);
 }
 
 }  // namespace blink
