@@ -114,7 +114,7 @@ class CSSPropertyParser {
   bool ConsumeBorderSpacing(bool important);
 
   // CSS3 Parsing Routines (for properties specific to CSS3)
-  bool ConsumeBorderImage(CSSPropertyID, bool important);
+  bool ConsumeBorderImage(CSSPropertyID, bool default_fill, bool important);
 
   bool ConsumeFlex(bool important);
 
