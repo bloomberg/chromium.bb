@@ -1685,17 +1685,12 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
   DECLARE_ALIGNED(16, int16_t, src_hbuf[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(16, int16_t, src_vbuf[MAX_SB_SQUARE]);
   int idx;
-  const int bw = 4 << b_width_log2_lookup[bsize];
-  const int bh = 4 << b_height_log2_lookup[bsize];
-  const int search_width = bw << 1;
-  const int search_height = bh << 1;
   const int src_stride = x->plane[0].src.stride;
   const int ref_stride = xd->plane[0].pre[0].stride;
   uint8_t const *ref_buf, *src_buf;
   MV *tmp_mv = &xd->mi[0]->mbmi.mv[0].as_mv;
   unsigned int best_sad, tmp_sad, sad_arr[4];
   MV this_mv;
-  const int norm_factor = 3 + (bw >> 5);
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
       av1_get_scaled_ref_frame(cpi, mbmi->ref_frame[0]);
 
@@ -1723,6 +1718,12 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
     return this_sad;
   }
 #endif
+
+  const int bw = 4 << b_width_log2_lookup[bsize];
+  const int bh = 4 << b_height_log2_lookup[bsize];
+  const int search_width = bw << 1;
+  const int search_height = bh << 1;
+  const int norm_factor = 3 + (bw >> 5);
 
   // Set up prediction 1-D reference set
   ref_buf = xd->plane[0].pre[0].buf - (bw >> 1);
