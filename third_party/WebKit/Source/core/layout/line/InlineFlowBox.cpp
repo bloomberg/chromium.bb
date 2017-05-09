@@ -1138,8 +1138,7 @@ inline void InlineFlowBox::AddReplacedChildOverflow(
   // be adjusted for writing-mode differences.
   if (!box.HasSelfPaintingLayer()) {
     LayoutRect child_logical_visual_overflow =
-        box.LogicalVisualOverflowRectForPropagation(
-            GetLineLayoutItem().StyleRef());
+        box.LogicalVisualOverflowRectForPropagation();
     child_logical_visual_overflow.Move(inline_box->LogicalLeft(),
                                        inline_box->LogicalTop());
     logical_visual_overflow.Unite(child_logical_visual_overflow);
@@ -1150,8 +1149,7 @@ inline void InlineFlowBox::AddReplacedChildOverflow(
   // as layout overflow. This rectangle must include transforms and relative
   // positioning and be adjusted for writing-mode differences.
   LayoutRect child_logical_layout_overflow =
-      box.LogicalLayoutOverflowRectForPropagation(
-          GetLineLayoutItem().StyleRef());
+      box.LogicalLayoutOverflowRectForPropagation();
   child_logical_layout_overflow.Move(inline_box->LogicalLeft(),
                                      inline_box->LogicalTop());
   logical_layout_overflow.Unite(child_logical_layout_overflow);

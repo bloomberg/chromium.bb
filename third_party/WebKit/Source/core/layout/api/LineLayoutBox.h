@@ -75,13 +75,11 @@ class LineLayoutBox : public LineLayoutBoxModel {
   }
 
   bool HasOverflowModel() const { return ToBox()->HasOverflowModel(); }
-  LayoutRect LogicalVisualOverflowRectForPropagation(
-      const ComputedStyle& style) const {
-    return ToBox()->LogicalVisualOverflowRectForPropagation(style);
+  LayoutRect LogicalVisualOverflowRectForPropagation() const {
+    return ToBox()->LogicalVisualOverflowRectForPropagation();
   }
-  LayoutRect LogicalLayoutOverflowRectForPropagation(
-      const ComputedStyle& style) const {
-    return ToBox()->LogicalLayoutOverflowRectForPropagation(style);
+  LayoutRect LogicalLayoutOverflowRectForPropagation() const {
+    return ToBox()->LogicalLayoutOverflowRectForPropagation();
   }
 
   void SetLocation(const LayoutPoint& location) {

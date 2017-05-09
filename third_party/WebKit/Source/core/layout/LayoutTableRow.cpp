@@ -313,12 +313,12 @@ void LayoutTableRow::AddOverflowFromCell(const LayoutTableCell* cell) {
   LayoutSize cell_row_offset = cell->Location() - Location();
 
   LayoutRect cell_visual_overflow_rect =
-      cell->VisualOverflowRectForPropagation(StyleRef());
+      cell->VisualOverflowRectForPropagation();
   cell_visual_overflow_rect.Move(cell_row_offset);
   AddContentsVisualOverflow(cell_visual_overflow_rect);
 
   LayoutRect cell_layout_overflow_rect =
-      cell->LayoutOverflowRectForPropagation(StyleRef());
+      cell->LayoutOverflowRectForPropagation();
   cell_layout_overflow_rect.Move(cell_row_offset);
   AddLayoutOverflow(cell_layout_overflow_rect);
 }

@@ -1217,12 +1217,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return ToLayoutSize(PhysicalLocation());
   }
 
-  LayoutRect LogicalVisualOverflowRectForPropagation(
-      const ComputedStyle&) const;
-  LayoutRect VisualOverflowRectForPropagation(const ComputedStyle&) const;
-  LayoutRect LogicalLayoutOverflowRectForPropagation(
-      const ComputedStyle&) const;
-  LayoutRect LayoutOverflowRectForPropagation(const ComputedStyle&) const;
+  // Convert a local rect in this box's blocks direction into parent's blocks
+  // direction, for parent to accumulate layout or visual overflow.
+  LayoutRect RectForOverflowPropagation(const LayoutRect&) const;
+
+  LayoutRect LogicalVisualOverflowRectForPropagation() const;
+  LayoutRect VisualOverflowRectForPropagation() const {
+    return RectForOverflowPropagation(VisualOverflowRect());
+  }
+  LayoutRect LogicalLayoutOverflowRectForPropagation() const;
+  LayoutRect LayoutOverflowRectForPropagation() const;
 
   bool HasOverflowModel() const { return overflow_.get(); }
   bool HasSelfVisualOverflow() const {

@@ -263,4 +263,54 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->LocalVisualRect());
 }
 
+TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  div { width: 100px; height: 100px }"
+      "</style>"
+      "<div id='a'>"
+      "  <div style='height: 50px'></div>"
+      "  <div id='b' style='writing-mode: vertical-rl; margin-left: 60px'>"
+      "    <div style='width: 30px'></div>"
+      "    <div id='c' style='margin-top: 40px'>"
+      "      <div style='width: 10px'></div>"
+      "      <div style='margin-top: 20px; margin-left: 10px'></div>"
+      "    </div>"
+      "    <div id='d' style='writing-mode: vertical-lr; margin-top: 40px'>"
+      "      <div style='width: 10px'></div>"
+      "      <div style='margin-top: 20px'></div>"
+      "    </div>"
+      "  </div>"
+      "</div>");
+
+  auto* c = ToLayoutBox(GetLayoutObjectByElementId("c"));
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), c->SelfVisualOverflowRect());
+  EXPECT_EQ(LayoutRect(10, 20, 100, 100), c->ContentsVisualOverflowRect());
+  EXPECT_EQ(LayoutRect(0, 0, 110, 120), c->VisualOverflowRect());
+  // C and its parent b have the same blocks direction.
+  EXPECT_EQ(LayoutRect(0, 0, 110, 120), c->VisualOverflowRectForPropagation());
+
+  auto* d = ToLayoutBox(GetLayoutObjectByElementId("d"));
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), d->SelfVisualOverflowRect());
+  EXPECT_EQ(LayoutRect(10, 20, 100, 100), d->ContentsVisualOverflowRect());
+  EXPECT_EQ(LayoutRect(0, 0, 110, 120), d->VisualOverflowRect());
+  // D and its parent b have different blocks direction.
+  EXPECT_EQ(LayoutRect(-10, 0, 110, 120),
+            d->VisualOverflowRectForPropagation());
+
+  auto* b = ToLayoutBox(GetLayoutObjectByElementId("b"));
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), b->SelfVisualOverflowRect());
+  // Union of VisualOverflowRectForPropagations offset by locations of c and d.
+  EXPECT_EQ(LayoutRect(30, 40, 200, 120), b->ContentsVisualOverflowRect());
+  EXPECT_EQ(LayoutRect(0, 0, 230, 160), b->VisualOverflowRect());
+  // B and its parent A have different blocks direction.
+  EXPECT_EQ(LayoutRect(-130, 0, 230, 160),
+            b->VisualOverflowRectForPropagation());
+
+  auto* a = ToLayoutBox(GetLayoutObjectByElementId("a"));
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), a->SelfVisualOverflowRect());
+  EXPECT_EQ(LayoutRect(-70, 50, 230, 160), a->ContentsVisualOverflowRect());
+  EXPECT_EQ(LayoutRect(-70, 0, 230, 210), a->VisualOverflowRect());
+}
+
 }  // namespace blink
