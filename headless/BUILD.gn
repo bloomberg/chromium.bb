@@ -29,6 +29,7 @@ repack("pak") {
   sources = [
     "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
@@ -51,6 +52,7 @@ repack("pak") {
 
   deps = [
     ":resources",
+    "//components/resources:components_resources",
     "//components/strings",
     "//content:resources",
     "//content/app/resources",
@@ -318,6 +320,10 @@ static_library("headless_lib") {
     "//net",
   ]
 
+  if (enable_basic_printing) {
+    public_deps += [ "//skia" ]
+  }
+
   deps = [
     ":gen_devtools_client_api",
     ":tab_socket",
@@ -389,6 +395,10 @@ test("headless_unittests") {
     "public/util/testing/fake_managed_dispatch_url_request_job.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
   ]
+
+  if (enable_basic_printing) {
+    sources += [ "lib/browser/headless_printing_unittest.cc" ]
+  }
 
   deps = [
     ":headless_lib",
@@ -492,6 +502,10 @@ test("headless_browsertests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (enable_basic_printing) {
+    deps += [ "//pdf" ]
+  }
 }
 
 static_library("headless_shell_lib") {

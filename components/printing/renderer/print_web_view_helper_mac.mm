@@ -29,12 +29,13 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
     return false;
 
   if (delegate_->UseSingleMetafile()) {
-    PrintPagesInternal(print_params, printed_pages, frame);
+    PrintPagesInternal(print_params, printed_pages, page_count, frame);
     return true;
   }
 
   for (int page_number : printed_pages)
-    PrintPagesInternal(print_params, std::vector<int>{page_number}, frame);
+    PrintPagesInternal(print_params, std::vector<int>{page_number}, page_count,
+                       frame);
   return true;
 }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -42,6 +43,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 void PrintWebViewHelper::PrintPagesInternal(
     const PrintMsg_Print_Params& params,
     const std::vector<int>& printed_pages,
+    int page_count,
     blink::WebLocalFrame* frame) {
   PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
   CHECK(metafile.Init());
@@ -49,8 +51,8 @@ void PrintWebViewHelper::PrintPagesInternal(
   gfx::Size page_size_in_dpi;
   gfx::Rect content_area_in_dpi;
   for (int page_number : printed_pages) {
-    RenderPage(params, page_number, frame, false, &metafile, &page_size_in_dpi,
-               &content_area_in_dpi);
+    RenderPage(params, page_number, page_count, frame, false, &metafile,
+               &page_size_in_dpi, &content_area_in_dpi);
   }
   metafile.FinishDocument();
 
@@ -93,8 +95,10 @@ bool PrintWebViewHelper::RenderPreviewPage(
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   gfx::Size page_size;
-  RenderPage(printParams, page_number, print_preview_context_.prepared_frame(),
-             true, initial_render_metafile, &page_size, NULL);
+  RenderPage(printParams, page_number,
+             print_preview_context_.total_page_count(),
+             print_preview_context_.prepared_frame(), true,
+             initial_render_metafile, &page_size, NULL);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
 
@@ -115,6 +119,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
 
 void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
                                     int page_number,
+                                    int page_count,
                                     blink::WebLocalFrame* frame,
                                     bool is_preview,
                                     PdfMetafileSkia* metafile,
@@ -147,14 +152,11 @@ void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
 
     MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
     cc::SetIsPreviewMetafile(canvas, is_preview);
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     if (params.display_header_footer) {
       PrintHeaderAndFooter(static_cast<blink::WebCanvas*>(canvas),
-                           page_number + 1,
-                           print_preview_context_.total_page_count(), *frame,
-                           scale_factor, page_layout_in_points, params);
+                           page_number + 1, page_count, *frame, scale_factor,
+                           page_layout_in_points, params);
     }
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
     RenderPageContent(frame, page_number, canvas_area, content_area,
                       scale_factor, static_cast<blink::WebCanvas*>(canvas));
   }

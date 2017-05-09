@@ -89,6 +89,9 @@ const float kPrintingMinimumShrinkFactor = 1.33333333f;
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool g_is_preview_enabled = true;
+#else
+bool g_is_preview_enabled = false;
+#endif
 
 const char kPageLoadScriptFormat[] =
     "document.open(); document.write(%s); document.close();";
@@ -103,9 +106,6 @@ void ExecuteScript(blink::WebFrame* frame,
   std::string script = base::StringPrintf(script_format, json.c_str());
   frame->ExecuteScript(blink::WebString::FromUTF8(script));
 }
-#else
-bool g_is_preview_enabled = false;
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 int GetDPI(const PrintMsg_Print_Params* print_params) {
 #if defined(OS_MACOSX)
@@ -559,7 +559,6 @@ blink::WebView* FrameReference::view() {
   return view_;
 }
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // static - Not anonymous so that platform implementations can use it.
 void PrintWebViewHelper::PrintHeaderAndFooter(
     blink::WebCanvas* canvas,
@@ -588,8 +587,9 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::Create(&web_widget_client, web_view, frame);
 
-  base::Value html(ResourceBundle::GetSharedInstance().GetLocalizedString(
-      IDR_PRINT_PREVIEW_PAGE));
+  base::Value html(
+      base::UTF8ToUTF16(ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_PRINT_PREVIEW_PAGE)));
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 
@@ -617,7 +617,6 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   web_view->Close();
 }
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 // static - Not anonymous so that platform implementations can use it.
 float PrintWebViewHelper::RenderPageContent(blink::WebFrame* frame,
@@ -724,10 +723,8 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     ComputeWebKitPrintParamsInDesiredDpi(params, &web_print_params_);
     frame->PrintBegin(web_print_params_, node_to_print_);
     double scale_factor = 1.0f;
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     if (print_params.scale_factor >= PrintWebViewHelper::kEpsilon)
       scale_factor = print_params.scale_factor;
-#endif
     print_params = CalculatePrintParamsForCss(
         frame, 0, print_params, ignore_css_margins, fit_to_page, &scale_factor);
     frame->PrintEnd();
@@ -1350,6 +1347,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   PrintPageInternal(print_params, page_number,
+                    print_preview_context_.total_page_count(),
                     print_preview_context_.prepared_frame(),
                     initial_render_metafile, nullptr, nullptr, nullptr);
   print_preview_context_.RenderedPreviewPage(
@@ -1850,6 +1848,7 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
 #if !defined(OS_MACOSX)
 void PrintWebViewHelper::PrintPageInternal(const PrintMsg_Print_Params& params,
                                            int page_number,
+                                           int page_count,
                                            blink::WebLocalFrame* frame,
                                            PdfMetafileSkia* metafile,
                                            gfx::Size* page_size_in_dpi,
@@ -1858,10 +1857,8 @@ void PrintWebViewHelper::PrintPageInternal(const PrintMsg_Print_Params& params,
   PageSizeMargins page_layout_in_points;
 
   double css_scale_factor = 1.0f;
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (params.scale_factor >= kEpsilon)
     css_scale_factor = params.scale_factor;
-#endif
 
   // Save the original page size here to avoid rounding errors incurred by
   // converting to pixels and back and by scaling the page for reflow and
@@ -1908,7 +1905,6 @@ void PrintWebViewHelper::PrintPageInternal(const PrintMsg_Print_Params& params,
 
   MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (params.display_header_footer) {
 #if defined(OS_WIN)
     const float fudge_factor = 1;
@@ -1918,11 +1914,10 @@ void PrintWebViewHelper::PrintPageInternal(const PrintMsg_Print_Params& params,
     const float fudge_factor = kPrintingMinimumShrinkFactor;
 #endif
     // |page_number| is 0-based, so 1 is added.
-    PrintHeaderAndFooter(
-        canvas, page_number + 1, print_preview_context_.total_page_count(),
-        *frame, scale_factor / fudge_factor, page_layout_in_points, params);
+    PrintHeaderAndFooter(canvas, page_number + 1, page_count, *frame,
+                         scale_factor / fudge_factor, page_layout_in_points,
+                         params);
   }
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   float webkit_scale_factor = RenderPageContent(
       frame, page_number, canvas_area, content_area, scale_factor, canvas);

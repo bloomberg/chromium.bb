@@ -16,12 +16,8 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/target.h"
-#include "printing/features/features.h"
+#include "printing/units.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-#include "headless/lib/browser/headless_print_manager.h"
-#endif
 
 namespace headless {
 
@@ -31,6 +27,11 @@ const char kResultParam[] = "result";
 const char kErrorParam[] = "error";
 const char kErrorCodeParam[] = "code";
 const char kErrorMessageParam[] = "message";
+
+// The max and min value should match the ones in scaling_settings.html.
+// Update both files at the same time.
+const double kScaleMaxVal = 200;
+const double kScaleMinVal = 10;
 
 // JSON RPC 2.0 spec: http://www.jsonrpc.org/specification#error_object
 enum Error {
@@ -93,6 +94,65 @@ void PDFCreated(
 #endif
 
 }  // namespace
+
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+std::unique_ptr<base::DictionaryValue> ParsePrintSettings(
+    int command_id,
+    const base::DictionaryValue* params,
+    printing::HeadlessPrintSettings* settings) {
+  // We can safely ignore the return values of the following Get methods since
+  // the defaults are already set in |settings|.
+  params->GetBoolean("landscape", &settings->landscape);
+  params->GetBoolean("displayHeaderFooter", &settings->display_header_footer);
+  params->GetBoolean("printBackground", &settings->should_print_backgrounds);
+  params->GetDouble("scale", &settings->scale);
+  if (settings->scale > kScaleMaxVal / 100 ||
+      settings->scale < kScaleMinVal / 100)
+    return CreateInvalidParamResponse(command_id, "scale");
+  params->GetString("pageRanges", &settings->page_ranges);
+
+  double paper_width_in_inch = printing::kLetterWidthInch;
+  double paper_height_in_inch = printing::kLetterHeightInch;
+  params->GetDouble("paperWidth", &paper_width_in_inch);
+  params->GetDouble("paperHeight", &paper_height_in_inch);
+  if (paper_width_in_inch <= 0)
+    return CreateInvalidParamResponse(command_id, "paperWidth");
+  if (paper_height_in_inch <= 0)
+    return CreateInvalidParamResponse(command_id, "paperHeight");
+  settings->paper_size_in_points =
+      gfx::Size(paper_width_in_inch * printing::kPointsPerInch,
+                paper_height_in_inch * printing::kPointsPerInch);
+
+  // Set default margin to 1.0cm = ~2/5 of an inch.
+  double default_margin_in_inch = 1000.0 / printing::kHundrethsMMPerInch;
+  double margin_top_in_inch = default_margin_in_inch;
+  double margin_bottom_in_inch = default_margin_in_inch;
+  double margin_left_in_inch = default_margin_in_inch;
+  double margin_right_in_inch = default_margin_in_inch;
+  params->GetDouble("marginTop", &margin_top_in_inch);
+  params->GetDouble("marginBottom", &margin_bottom_in_inch);
+  params->GetDouble("marginLeft", &margin_left_in_inch);
+  params->GetDouble("marginRight", &margin_right_in_inch);
+  if (margin_top_in_inch < 0)
+    return CreateInvalidParamResponse(command_id, "marginTop");
+  if (margin_bottom_in_inch < 0)
+    return CreateInvalidParamResponse(command_id, "marginBottom");
+  if (margin_left_in_inch < 0)
+    return CreateInvalidParamResponse(command_id, "marginLeft");
+  if (margin_right_in_inch < 0)
+    return CreateInvalidParamResponse(command_id, "marginRight");
+  settings->margins_in_points.top =
+      margin_top_in_inch * printing::kPointsPerInch;
+  settings->margins_in_points.bottom =
+      margin_bottom_in_inch * printing::kPointsPerInch;
+  settings->margins_in_points.left =
+      margin_left_in_inch * printing::kPointsPerInch;
+  settings->margins_in_points.right =
+      margin_right_in_inch * printing::kPointsPerInch;
+
+  return nullptr;
+}
+#endif
 
 HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
     base::WeakPtr<HeadlessBrowserImpl> browser)
@@ -189,14 +249,23 @@ void HeadlessDevToolsManagerDelegate::PrintToPDF(
     int command_id,
     const base::DictionaryValue* params,
     const CommandCallback& callback) {
+  DCHECK(callback);
+
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   content::WebContents* web_contents = agent_host->GetWebContents();
   content::RenderFrameHost* rfh = web_contents->GetMainFrame();
 
+  printing::HeadlessPrintSettings settings;
+  std::unique_ptr<base::DictionaryValue> response =
+      ParsePrintSettings(command_id, params, &settings);
+  if (response) {
+    callback.Run(std::move(response));
+    return;
+  }
   printing::HeadlessPrintManager::FromWebContents(web_contents)
-      ->GetPDFContents(rfh, base::Bind(&PDFCreated, callback, command_id));
+      ->GetPDFContents(rfh, settings,
+                       base::Bind(&PDFCreated, callback, command_id));
 #else
-  DCHECK(callback);
   callback.Run(CreateErrorResponse(command_id, kErrorServerError,
                                    "Printing is not enabled"));
 #endif

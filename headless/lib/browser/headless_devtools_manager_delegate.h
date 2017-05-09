@@ -13,9 +13,21 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "printing/features/features.h"
+
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#include "headless/lib/browser/headless_print_manager.h"
+#endif
 
 namespace headless {
 class HeadlessBrowserImpl;
+
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+std::unique_ptr<base::DictionaryValue> ParsePrintSettings(
+    int command_id,
+    const base::DictionaryValue* params,
+    printing::HeadlessPrintSettings* settings);
+#endif
 
 class HeadlessDevToolsManagerDelegate
     : public content::DevToolsManagerDelegate {
