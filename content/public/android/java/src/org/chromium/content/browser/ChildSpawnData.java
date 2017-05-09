@@ -15,7 +15,6 @@ import org.chromium.content.browser.ChildProcessLauncher.LaunchCallback;
 class ChildSpawnData {
     private final Context mContext;
     private final String[] mCommandLine;
-    private final int mChildProcessId;
     private final FileDescriptorInfo[] mFilesToBeMapped;
     private final LaunchCallback mLaunchCallback;
     private final IBinder mChildProcessCallback;
@@ -23,13 +22,11 @@ class ChildSpawnData {
     private final boolean mAlwaysInForeground;
     private final ChildProcessCreationParams mCreationParams;
 
-    ChildSpawnData(Context context, String[] commandLine, int childProcessId,
-            FileDescriptorInfo[] filesToBeMapped, LaunchCallback launchCallback,
-            IBinder childProcessCallback, boolean inSandbox, boolean alwaysInForeground,
-            ChildProcessCreationParams creationParams) {
+    ChildSpawnData(Context context, String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
+            LaunchCallback launchCallback, IBinder childProcessCallback, boolean inSandbox,
+            boolean alwaysInForeground, ChildProcessCreationParams creationParams) {
         mContext = context;
         mCommandLine = commandLine;
-        mChildProcessId = childProcessId;
         mFilesToBeMapped = filesToBeMapped;
         mLaunchCallback = launchCallback;
         mChildProcessCallback = childProcessCallback;
@@ -44,10 +41,6 @@ class ChildSpawnData {
 
     String[] getCommandLine() {
         return mCommandLine;
-    }
-
-    int getChildProcessId() {
-        return mChildProcessId;
     }
 
     FileDescriptorInfo[] getFilesToBeMapped() {

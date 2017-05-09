@@ -229,7 +229,6 @@ public class ChildProcessLauncher {
                         @Override
                         public void run() {
                             startInternal(pendingSpawn.getContext(), pendingSpawn.getCommandLine(),
-                                    pendingSpawn.getChildProcessId(),
                                     pendingSpawn.getFilesToBeMapped(),
                                     pendingSpawn.getLaunchCallback(),
                                     pendingSpawn.getChildProcessCallback(),
@@ -391,9 +390,9 @@ public class ChildProcessLauncher {
                             }
                         };
                 ChildSpawnData spawnData = new ChildSpawnData(context, null /* commandLine */,
-                        -1 /* child process id */, null /* filesToBeMapped */,
-                        null /* launchCallback */, null /* child process callback */,
-                        true /* inSandbox */, SPARE_CONNECTION_ALWAYS_IN_FOREGROUND, params);
+                        null /* filesToBeMapped */, null /* launchCallback */,
+                        null /* child process callback */, true /* inSandbox */,
+                        SPARE_CONNECTION_ALWAYS_IN_FOREGROUND, params);
                 sSpareSandboxedConnection =
                         allocateBoundConnection(spawnData, startCallback, true /* forWarmUp */);
                 sSpareConnectionStarting = sSpareSandboxedConnection != null;
@@ -418,7 +417,7 @@ public class ChildProcessLauncher {
      * @param filesToBeMapped File IDs, FDs, offsets, and lengths to pass through.
      * @param launchCallback Callback invoked when the connection is established.
      */
-    static void start(Context context, int paramId, final String[] commandLine, int childProcessId,
+    static void start(Context context, int paramId, final String[] commandLine,
             FileDescriptorInfo[] filesToBeMapped, LaunchCallback launchCallback) {
         assert LauncherThread.runningOnLauncherThread();
         IBinder childProcessCallback = null;
@@ -456,16 +455,16 @@ public class ChildProcessLauncher {
             }
         }
 
-        startInternal(context, commandLine, childProcessId, filesToBeMapped, launchCallback,
-                childProcessCallback, inSandbox, alwaysInForeground, params);
+        startInternal(context, commandLine, filesToBeMapped, launchCallback, childProcessCallback,
+                inSandbox, alwaysInForeground, params);
     }
 
     @VisibleForTesting
     public static BaseChildProcessConnection startInternal(final Context context,
-            final String[] commandLine, final int childProcessId,
-            final FileDescriptorInfo[] filesToBeMapped, final LaunchCallback launchCallback,
-            final IBinder childProcessCallback, final boolean inSandbox,
-            final boolean alwaysInForeground, final ChildProcessCreationParams creationParams) {
+            final String[] commandLine, final FileDescriptorInfo[] filesToBeMapped,
+            final LaunchCallback launchCallback, final IBinder childProcessCallback,
+            final boolean inSandbox, final boolean alwaysInForeground,
+            final ChildProcessCreationParams creationParams) {
         assert LauncherThread.runningOnLauncherThread();
         try {
             TraceEvent.begin("ChildProcessLauncher.startInternal");
@@ -490,9 +489,9 @@ public class ChildProcessLauncher {
                                     // than one process), so try starting the process again.
                                     // This connection that failed to start has not been freed,
                                     // so a new bound connection will be allocated.
-                                    startInternal(context, commandLine, childProcessId,
-                                            filesToBeMapped, launchCallback, childProcessCallback,
-                                            inSandbox, alwaysInForeground, creationParams);
+                                    startInternal(context, commandLine, filesToBeMapped,
+                                            launchCallback, childProcessCallback, inSandbox,
+                                            alwaysInForeground, creationParams);
                                 }
                             });
                         }
@@ -513,10 +512,9 @@ public class ChildProcessLauncher {
                 }
             }
             if (allocatedConnection == null) {
-
-                ChildSpawnData spawnData = new ChildSpawnData(context, commandLine, childProcessId,
-                        filesToBeMapped, launchCallback, childProcessCallback, inSandbox,
-                        alwaysInForeground, creationParams);
+                ChildSpawnData spawnData = new ChildSpawnData(context, commandLine, filesToBeMapped,
+                        launchCallback, childProcessCallback, inSandbox, alwaysInForeground,
+                        creationParams);
                 allocatedConnection =
                         allocateBoundConnection(spawnData, startCallback, false /* forWarmUp */);
                 if (allocatedConnection == null) {
@@ -524,8 +522,8 @@ public class ChildProcessLauncher {
                 }
             }
 
-            triggerConnectionSetup(allocatedConnection, commandLine, childProcessId,
-                    filesToBeMapped, childProcessCallback, launchCallback);
+            triggerConnectionSetup(allocatedConnection, commandLine, filesToBeMapped,
+                    childProcessCallback, launchCallback);
             return allocatedConnection;
         } finally {
             TraceEvent.end("ChildProcessLauncher.startInternal");
@@ -551,7 +549,7 @@ public class ChildProcessLauncher {
 
     @VisibleForTesting
     static void triggerConnectionSetup(final BaseChildProcessConnection connection,
-            String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped,
+            String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
             final IBinder childProcessCallback, final LaunchCallback launchCallback) {
         assert LauncherThread.runningOnLauncherThread();
         Log.d(TAG, "Setting up connection to process, connection name=%s",
