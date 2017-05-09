@@ -18,7 +18,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 
-class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest;
 class ArcAppTest;
 class SessionControllerClientTest;
 class Profile;
@@ -29,6 +28,10 @@ class FilePath;
 
 namespace extensions {
 class ExtensionGarbageCollectorChromeOSUnitTest;
+}
+
+namespace arc {
+class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest;
 }
 
 namespace ash {
@@ -167,7 +170,7 @@ class ProfileHelper
   friend class ProfileListChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
   friend class ash::test::MultiUserWindowManagerChromeOSTest;
-  friend class ::ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest;
+  friend class arc::ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest;
   friend class ::ArcAppTest;
   friend class ::SessionControllerClientTest;
   friend class ::test::BrowserFinderChromeOSTest;

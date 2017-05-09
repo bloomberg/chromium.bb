@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
-#include "chrome/browser/chromeos/arc/auth/arc_auth_info_fetcher.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_code_fetcher.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -22,20 +22,20 @@ class Profile;
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
-}
+}  // namespace net
 
 namespace arc {
 
 // The instance is not reusable, so for each Fetch(), the instance must be
 // re-created. Deleting the instance cancels inflight operation.
-class ArcBackgroundAuthCodeFetcher : public ArcAuthInfoFetcher,
+class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
                                      public OAuth2TokenService::Consumer,
                                      public net::URLFetcherDelegate {
  public:
   ArcBackgroundAuthCodeFetcher(Profile* profile, ArcAuthContext* context);
   ~ArcBackgroundAuthCodeFetcher() override;
 
-  // ArcAuthInfoFetcher:
+  // ArcAuthCodeFetcher:
   void Fetch(const FetchCallback& callback) override;
 
  private:

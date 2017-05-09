@@ -11,17 +11,18 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
-#include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_manual_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -271,19 +272,23 @@ void ArcAuthService::RequestAccountInfoInternal(
   if (user && user->IsActiveDirectoryUser()) {
     // For Active Directory enrolled devices, we get an enrollment token for a
     // managed Google Play account from DMServer.
-    fetcher_ = base::MakeUnique<ArcActiveDirectoryEnrollmentTokenFetcher>();
-    fetcher_->Fetch(base::Bind(&ArcAuthService::OnEnrollmentTokenFetched,
-                               weak_ptr_factory_.GetWeakPtr()));
+    auto enrollment_token_fetcher =
+        base::MakeUnique<ArcActiveDirectoryEnrollmentTokenFetcher>();
+    enrollment_token_fetcher->Fetch(
+        base::Bind(&ArcAuthService::OnEnrollmentTokenFetched,
+                   weak_ptr_factory_.GetWeakPtr()));
+    fetcher_ = std::move(enrollment_token_fetcher);
     return;
   }
   // For non-AD enrolled devices an auth code is fetched.
+  std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher;
   if (IsArcKioskMode()) {
     // In Kiosk mode, use Robot auth code fetching.
-    fetcher_ = base::MakeUnique<ArcRobotAuthCodeFetcher>();
+    auth_code_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
   } else if (base::FeatureList::IsEnabled(arc::kArcUseAuthEndpointFeature)) {
     // Optionally retrieve auth code in silent mode.
     DCHECK(profile);
-    fetcher_ = base::MakeUnique<ArcBackgroundAuthCodeFetcher>(
+    auth_code_fetcher = base::MakeUnique<ArcBackgroundAuthCodeFetcher>(
         profile, ArcSessionManager::Get()->auth_context());
   } else {
     // Report that silent auth code is not activated. All other states are
@@ -293,45 +298,60 @@ void ArcAuthService::RequestAccountInfoInternal(
     // Here, support_host should be available always. The case support_host is
     // not created is when 1) IsArcOptInVerificationDisabled() is true or 2)
     // IsArcKioskMode() is true. Both cases are handled above.
-    fetcher_ = base::MakeUnique<ArcManualAuthCodeFetcher>(
+    auth_code_fetcher = base::MakeUnique<ArcManualAuthCodeFetcher>(
         ArcSessionManager::Get()->auth_context(),
         ArcSessionManager::Get()->support_host());
   }
-  fetcher_->Fetch(base::Bind(&ArcAuthService::OnAuthCodeFetched,
-                             weak_ptr_factory_.GetWeakPtr()));
+  auth_code_fetcher->Fetch(base::Bind(&ArcAuthService::OnAuthCodeFetched,
+                                      weak_ptr_factory_.GetWeakPtr()));
+  fetcher_ = std::move(auth_code_fetcher);
 }
 
 void ArcAuthService::OnEnrollmentTokenFetched(
-    ArcAuthInfoFetcher::Status status,
-    const std::string& enrollment_token) {
+    ArcActiveDirectoryEnrollmentTokenFetcher::Status status,
+    const std::string& enrollment_token,
+    const std::string& user_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   fetcher_.reset();
 
   switch (status) {
-    case ArcAuthInfoFetcher::Status::SUCCESS:
+    case ArcActiveDirectoryEnrollmentTokenFetcher::Status::SUCCESS: {
+      // Save user_id to the user profile.
+      Profile* const profile = ArcSessionManager::Get()->profile();
+      if (!profile) {
+        LOG(ERROR) << "Profile is not available.";
+      } else {
+        profile->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId,
+                                       user_id);
+      }
+
+      // Send enrollment token to arc.
       notifier_->Notify(true /*is_enforced*/, enrollment_token,
                         std::string() /* account_name */,
                         mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT,
                         true);
       notifier_.reset();
       return;
-    case ArcAuthInfoFetcher::Status::FAILURE:
+    }
+    case ArcActiveDirectoryEnrollmentTokenFetcher::Status::FAILURE: {
       ArcSessionManager::Get()->OnProvisioningFinished(
           ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
       return;
-    case ArcAuthInfoFetcher::Status::ARC_DISABLED:
+    }
+    case ArcActiveDirectoryEnrollmentTokenFetcher::Status::ARC_DISABLED: {
       ArcSessionManager::Get()->OnProvisioningFinished(
           ProvisioningResult::ARC_DISABLED);
       return;
+    }
   }
 }
 
-void ArcAuthService::OnAuthCodeFetched(ArcAuthInfoFetcher::Status status,
+void ArcAuthService::OnAuthCodeFetched(bool success,
                                        const std::string& auth_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   fetcher_.reset();
 
-  if (status != ArcAuthInfoFetcher::Status::SUCCESS) {
+  if (!success) {
     ArcSessionManager::Get()->OnProvisioningFinished(
         ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
     return;

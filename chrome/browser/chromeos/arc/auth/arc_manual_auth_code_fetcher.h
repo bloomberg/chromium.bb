@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
-#include "chrome/browser/chromeos/arc/auth/arc_auth_info_fetcher.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_code_fetcher.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -22,7 +22,7 @@ class ArcAuthContext;
 
 // Implements the auth token fetching procedure with user's "SIGN IN" button
 // click.
-class ArcManualAuthCodeFetcher : public ArcAuthInfoFetcher,
+class ArcManualAuthCodeFetcher : public ArcAuthCodeFetcher,
                                  public ArcSupportHost::Observer {
  public:
   ArcManualAuthCodeFetcher(ArcAuthContext* context,

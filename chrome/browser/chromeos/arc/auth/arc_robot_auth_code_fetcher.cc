@@ -81,11 +81,11 @@ void ArcRobotAuthCodeFetcher::OnFetchRobotAuthCodeCompleted(
 
   if (status != policy::DM_STATUS_SUCCESS) {
     LOG(ERROR) << "Fetching of robot auth code failed. DM Status: " << status;
-    callback.Run(ArcAuthInfoFetcher::Status::FAILURE, std::string());
+    callback.Run(false /* success */, std::string());
     return;
   }
 
-  callback.Run(ArcAuthInfoFetcher::Status::SUCCESS,
+  callback.Run(true /* success */,
                response.service_api_access_response().auth_code());
 }
 
