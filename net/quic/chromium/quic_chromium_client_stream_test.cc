@@ -44,12 +44,19 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
 
   MOCK_METHOD0(OnSendData, int());
   MOCK_METHOD2(OnSendDataComplete, int(int, bool*));
-  void OnHeadersAvailable(const SpdyHeaderBlock& headers,
-                          size_t frame_len) override {
+  void OnInitialHeadersAvailable(const SpdyHeaderBlock& headers,
+                                 size_t frame_len) override {
     headers_ = headers.Clone();
-    OnHeadersAvailableMock(headers, frame_len);
+    OnInitialHeadersAvailableMock(headers, frame_len);
   }
-  MOCK_METHOD2(OnHeadersAvailableMock,
+  MOCK_METHOD2(OnInitialHeadersAvailableMock,
+               void(const SpdyHeaderBlock& headers, size_t frame_len));
+  void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
+                                  size_t frame_len) override {
+    trailers_ = headers.Clone();
+    OnTrailingHeadersAvailableMock(headers, frame_len);
+  }
+  MOCK_METHOD2(OnTrailingHeadersAvailableMock,
                void(const SpdyHeaderBlock& headers, size_t frame_len));
   MOCK_METHOD2(OnDataReceived, int(const char*, int));
   MOCK_METHOD0(OnDataAvailable, void());
@@ -58,6 +65,7 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
   MOCK_METHOD0(HasSendHeadersComplete, bool());
 
   SpdyHeaderBlock headers_;
+  SpdyHeaderBlock trailers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -253,8 +261,8 @@ class QuicChromiumClientStreamTest
 
   QuicHeaderList ProcessHeadersFull(const SpdyHeaderBlock& headers) {
     QuicHeaderList h = ProcessHeaders(headers);
-    EXPECT_CALL(delegate_,
-                OnHeadersAvailableMock(_, h.uncompressed_header_bytes()));
+    EXPECT_CALL(delegate_, OnInitialHeadersAvailableMock(
+                               _, h.uncompressed_header_bytes()));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(headers, delegate_.headers_);
     EXPECT_TRUE(stream_->header_list().empty());
@@ -377,7 +385,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
   auto t = ProcessTrailers(trailers);
   base::RunLoop run_loop;
   EXPECT_CALL(delegate_,
-              OnHeadersAvailableMock(_, t.uncompressed_header_bytes()))
+              OnTrailingHeadersAvailableMock(_, t.uncompressed_header_bytes()))
       .WillOnce(testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
 
   run_loop.Run();
@@ -395,7 +403,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
 
   // Make sure kFinalOffsetHeaderKey is gone from the delivered actual trailers.
   trailers.erase(kFinalOffsetHeaderKey);
-  EXPECT_EQ(trailers, delegate_.headers_);
+  EXPECT_EQ(trailers, delegate_.trailers_);
   base::RunLoop().RunUntilIdle();
   EXPECT_CALL(delegate_, OnClose());
 }
@@ -434,7 +442,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
 
   base::RunLoop run_loop2;
   EXPECT_CALL(delegate_,
-              OnHeadersAvailableMock(_, t.uncompressed_header_bytes()))
+              OnTrailingHeadersAvailableMock(_, t.uncompressed_header_bytes()))
       .WillOnce(
           testing::InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
 
@@ -456,7 +464,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
   EXPECT_TRUE(stream_->IsDoneReading());
   // Make sure kFinalOffsetHeaderKey is gone from the delivered actual trailers.
   trailers.erase(kFinalOffsetHeaderKey);
-  EXPECT_EQ(trailers, delegate_.headers_);
+  EXPECT_EQ(trailers, delegate_.trailers_);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_CALL(delegate_, OnClose());
@@ -501,7 +509,7 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
 
   base::RunLoop run_loop2;
   EXPECT_CALL(delegate_,
-              OnHeadersAvailableMock(_, t.uncompressed_header_bytes()))
+              OnTrailingHeadersAvailableMock(_, t.uncompressed_header_bytes()))
       .WillOnce(
           testing::InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
 
@@ -523,7 +531,7 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
 
   // Make sure kFinalOffsetHeaderKey is gone from the delivered actual trailers.
   trailers.erase(kFinalOffsetHeaderKey);
-  EXPECT_EQ(trailers, delegate_.headers_);
+  EXPECT_EQ(trailers, delegate_.trailers_);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_CALL(delegate_, OnClose());
@@ -630,7 +638,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersBeforeDelegate) {
   EXPECT_TRUE(delegate2_.headers_.empty());
 
   // Now set the delegate and verify that the headers are delivered.
-  EXPECT_CALL(delegate2_, OnHeadersAvailableMock(
+  EXPECT_CALL(delegate2_, OnInitialHeadersAvailableMock(
                               _, header_list.uncompressed_header_bytes()));
   stream2->SetDelegate(&delegate2_);
   base::RunLoop().RunUntilIdle();
@@ -662,7 +670,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeDelegate) {
 
   // Now set the delegate and verify that the headers are delivered, but
   // not the data, which needs to be read explicitly.
-  EXPECT_CALL(delegate2_, OnHeadersAvailableMock(
+  EXPECT_CALL(delegate2_, OnInitialHeadersAvailableMock(
                               _, header_list.uncompressed_header_bytes()));
   stream2->SetDelegate(&delegate2_);
   base::RunLoop().RunUntilIdle();

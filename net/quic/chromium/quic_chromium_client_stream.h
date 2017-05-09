@@ -37,9 +37,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
    public:
     Delegate() {}
 
-    // Called when headers are available.
-    virtual void OnHeadersAvailable(const SpdyHeaderBlock& headers,
-                                    size_t frame_len) = 0;
+    // Called when initial headers are available.
+    virtual void OnInitialHeadersAvailable(const SpdyHeaderBlock& headers,
+                                           size_t frame_len) = 0;
+
+    // Called when trailing headers are available.
+    virtual void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
+                                            size_t frame_len) = 0;
 
     // Called when data is available to be read.
     virtual void OnDataAvailable() = 0;
@@ -120,10 +124,14 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   using QuicStream::sequencer;
 
  private:
-  void NotifyDelegateOfHeadersCompleteLater(SpdyHeaderBlock headers,
-                                            size_t frame_len);
-  void NotifyDelegateOfHeadersComplete(SpdyHeaderBlock headers,
-                                       size_t frame_len);
+  void NotifyDelegateOfInitialHeadersAvailableLater(SpdyHeaderBlock headers,
+                                                    size_t frame_len);
+  void NotifyDelegateOfInitialHeadersAvailable(SpdyHeaderBlock headers,
+                                               size_t frame_len);
+  void NotifyDelegateOfTrailingHeadersAvailableLater(SpdyHeaderBlock headers,
+                                                     size_t frame_len);
+  void NotifyDelegateOfTrailingHeadersAvailable(SpdyHeaderBlock headers,
+                                                size_t frame_len);
   void NotifyDelegateOfDataAvailableLater();
   void NotifyDelegateOfDataAvailable();
 

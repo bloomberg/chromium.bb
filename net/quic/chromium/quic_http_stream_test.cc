@@ -107,8 +107,13 @@ class AutoClosingStream : public QuicHttpStream {
       HttpServerProperties* http_server_properties)
       : QuicHttpStream(std::move(session), http_server_properties) {}
 
-  void OnHeadersAvailable(const SpdyHeaderBlock& headers,
-                          size_t frame_len) override {
+  void OnInitialHeadersAvailable(const SpdyHeaderBlock& headers,
+                                 size_t frame_len) override {
+    Close(false);
+  }
+
+  void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
+                                  size_t frame_len) override {
     Close(false);
   }
 
