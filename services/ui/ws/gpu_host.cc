@@ -41,7 +41,6 @@ GpuHost::GpuHost(GpuHostDelegate* delegate)
   // TODO(sad): Once GPU process is split, this would look like:
   //   connector->BindInterface("gpu", &gpu_main_);
   gpu_main_impl_ = base::MakeUnique<GpuMain>(MakeRequest(&gpu_main_));
-  gpu_main_impl_->OnStart();
 
   // TODO(sad): Correctly initialize gpu::GpuPreferences (like it is initialized
   // in GpuProcessHost::Init()).
