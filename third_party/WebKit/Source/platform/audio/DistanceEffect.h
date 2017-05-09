@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Distance_h
-#define Distance_h
+#ifndef DistanceEffect_h
+#define DistanceEffect_h
 
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
@@ -78,4 +78,4 @@ class PLATFORM_EXPORT DistanceEffect {
 
 }  // namespace blink
 
-#endif  // Distance_h
+#endif  // DistanceEffect_h

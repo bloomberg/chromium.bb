@@ -32,7 +32,7 @@
 #include "modules/webaudio/AudioParam.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/Cone.h"
-#include "platform/audio/Distance.h"
+#include "platform/audio/DistanceEffect.h"
 #include "platform/audio/Panner.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/wtf/HashMap.h"
