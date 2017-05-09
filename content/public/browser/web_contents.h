@@ -44,6 +44,12 @@ namespace blink {
 struct WebFindOptions;
 }
 
+namespace device {
+namespace mojom {
+class WakeLockContext;
+}
+}
+
 namespace net {
 struct LoadStateWithParam;
 }
@@ -673,6 +679,9 @@ class WebContents : public PageNavigator,
   // Returns the original opener if HasOriginalOpener() is true, or nullptr
   // otherwise.
   virtual WebContents* GetOriginalOpener() const = 0;
+
+  // Returns the WakeLockContext accociated with this WebContents.
+  virtual device::mojom::WakeLockContext* GetWakeLockContext() = 0;
 
   typedef base::Callback<void(
       int, /* id */

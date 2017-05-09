@@ -51,6 +51,10 @@ class MockInterfaceProvider : public InterfaceProvider {
     // mojom::WakeLockService
     void RequestWakeLock() override { registry_->SetWakeLockStatus(true); }
     void CancelWakeLock() override { registry_->SetWakeLockStatus(false); }
+    void AddClient(
+        device::mojom::blink::WakeLockServiceRequest wake_lock) override {}
+    void HasWakeLockForTests(
+        const HasWakeLockForTestsCallback& callback) override {}
 
     mojo::Binding<WakeLockService> binding_;
     MockInterfaceProvider* const registry_;

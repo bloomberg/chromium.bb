@@ -10,8 +10,4 @@ import "device/wake_lock/public/interfaces/wake_lock_service.mojom";
 interface WakeLockContext {
   // Gets a WakeLockService within this context.
   GetWakeLock(WakeLockService& wake_lock);
-
-  // Test-only method that returns whethere a wake lock is currently active
-  // within this context.
-  HasWakeLockForTests() => (bool result);
 };

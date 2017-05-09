@@ -3733,10 +3733,10 @@ void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
 void RenderFrameHostImpl::BindWakeLockServiceRequest(
     const service_manager::BindSourceInfo& source_info,
     device::mojom::WakeLockServiceRequest request) {
-  device::mojom::WakeLockContext* wake_lock_service_context =
-      delegate_ ? delegate_->GetWakeLockServiceContext() : nullptr;
-  if (wake_lock_service_context)
-    wake_lock_service_context->GetWakeLock(std::move(request));
+  device::mojom::WakeLockService* renderer_wake_lock =
+      delegate_ ? delegate_->GetRendererWakeLock() : nullptr;
+  if (renderer_wake_lock)
+    renderer_wake_lock->AddClient(std::move(request));
 }
 
 void RenderFrameHostImpl::GetInterface(

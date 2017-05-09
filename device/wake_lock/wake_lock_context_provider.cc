@@ -31,10 +31,10 @@ WakeLockContextProvider::~WakeLockContextProvider() {}
 void WakeLockContextProvider::GetContext(
     int context_id,
     mojo::InterfaceRequest<mojom::WakeLockContext> request) {
-  // WakeLockServiceContext owns itself (see the comment on
-  // wake_lock_service_context.h).
-  new WakeLockServiceContext(std::move(request), context_id, file_task_runner_,
-                             native_view_getter_);
+  mojo::MakeStrongBinding(
+      base::MakeUnique<WakeLockServiceContext>(context_id, file_task_runner_,
+                                               native_view_getter_),
+      std::move(request));
 }
 
 }  // namespace device
