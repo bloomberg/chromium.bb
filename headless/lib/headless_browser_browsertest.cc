@@ -31,6 +31,7 @@
 #include "headless/test/test_url_request_job.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_store.h"
+#include "net/http/http_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -392,12 +393,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {
 
 namespace {
 
-// True if the request method is "safe" (per section 4.2.1 of RFC 7231).
-bool IsMethodSafe(const std::string& method) {
-  return method == "GET" || method == "HEAD" || method == "OPTIONS" ||
-         method == "TRACE";
-}
-
 class ProtocolHandlerWithCookies
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
@@ -468,7 +463,7 @@ void URLRequestJobWithCookies::Start() {
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       options.set_same_site_cookie_mode(
           net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-    } else if (IsMethodSafe(request_->method())) {
+    } else if (net::HttpUtil::IsMethodSafe(request_->method())) {
       options.set_same_site_cookie_mode(
           net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
     }
