@@ -8,8 +8,6 @@ static_library("certificate_transparency") {
     "ct_policy_manager.h",
     "log_dns_client.cc",
     "log_dns_client.h",
-    "log_proof_fetcher.cc",
-    "log_proof_fetcher.h",
     "pref_names.cc",
     "pref_names.h",
     "single_tree_tracker.cc",
@@ -35,7 +33,6 @@ source_set("unit_tests") {
   sources = [
     "ct_policy_manager_unittest.cc",
     "log_dns_client_unittest.cc",
-    "log_proof_fetcher_unittest.cc",
     "mock_log_dns_traffic.cc",
     "mock_log_dns_traffic.h",
     "single_tree_tracker_unittest.cc",
