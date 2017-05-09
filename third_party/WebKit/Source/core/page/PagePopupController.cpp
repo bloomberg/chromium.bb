@@ -40,7 +40,7 @@ namespace blink {
 PagePopupController::PagePopupController(PagePopup& popup,
                                          PagePopupClient* client)
     : popup_(popup), popup_client_(client) {
-  ASSERT(client);
+  DCHECK(client);
 }
 
 PagePopupController* PagePopupController::Create(PagePopup& popup,
@@ -66,7 +66,7 @@ void PagePopupController::closePopup() {
 
 void PagePopupController::selectFontsFromOwnerDocument(
     Document* target_document) {
-  ASSERT(target_document);
+  DCHECK(target_document);
   if (popup_client_)
     popup_client_->SelectFontsFromOwnerDocument(*target_document);
 }

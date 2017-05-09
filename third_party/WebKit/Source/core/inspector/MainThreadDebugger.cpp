@@ -100,7 +100,7 @@ MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
       task_runner_(WTF::MakeUnique<InspectorTaskRunner>()),
       paused_(false) {
   MutexLocker locker(CreationMutex());
-  ASSERT(!instance_);
+  DCHECK(!instance_);
   instance_ = this;
 }
 
@@ -126,8 +126,8 @@ int MainThreadDebugger::ContextGroupId(ExecutionContext* context) {
 
 void MainThreadDebugger::SetClientMessageLoop(
     std::unique_ptr<ClientMessageLoop> client_message_loop) {
-  ASSERT(!client_message_loop_);
-  ASSERT(client_message_loop);
+  DCHECK(!client_message_loop_);
+  DCHECK(client_message_loop);
   client_message_loop_ = std::move(client_message_loop);
 }
 
@@ -140,7 +140,7 @@ void MainThreadDebugger::DidClearContextsForFrame(LocalFrame* frame) {
 void MainThreadDebugger::ContextCreated(ScriptState* script_state,
                                         LocalFrame* frame,
                                         SecurityOrigin* origin) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   v8::HandleScope handles(script_state->GetIsolate());
   DOMWrapperWorld& world = script_state->World();
   StringBuilder aux_data_builder;
@@ -337,7 +337,7 @@ v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(
     v8::Local<v8::Context> context) {
   ExecutionContext* execution_context = ToExecutionContext(context);
   DCHECK(execution_context);
-  ASSERT(execution_context->IsDocument());
+  DCHECK(execution_context->IsDocument());
   return ToV8(MemoryInfo::Create(), context->Global(), isolate);
 }
 

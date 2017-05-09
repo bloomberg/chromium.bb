@@ -65,8 +65,8 @@ double SharedWorkerPerformance::workerStart(ScriptState* script_state,
 
 double SharedWorkerPerformance::GetWorkerStart(ExecutionContext* context,
                                                SharedWorker&) const {
-  ASSERT(context);
-  ASSERT(context->IsDocument());
+  DCHECK(context);
+  DCHECK(context->IsDocument());
   Document* document = ToDocument(context);
   if (!document->Loader())
     return 0;

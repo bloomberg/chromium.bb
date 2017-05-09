@@ -48,7 +48,7 @@ class Iteration final : public GarbageCollectedFinalized<Iteration> {
   Iteration() : is_set_(false), is_done_(false), is_valid_(true) {}
 
   void Set(ScriptValue v) {
-    ASSERT(!v.IsEmpty());
+    DCHECK(!v.IsEmpty());
     is_set_ = true;
     v8::TryCatch block(v.GetScriptState()->GetIsolate());
     v8::Local<v8::Value> value;

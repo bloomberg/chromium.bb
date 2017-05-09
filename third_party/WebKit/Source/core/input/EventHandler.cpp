@@ -168,7 +168,7 @@ class OptionalCursor {
 
   bool IsCursorChange() const { return is_cursor_change_; }
   const Cursor& GetCursor() const {
-    ASSERT(is_cursor_change_);
+    DCHECK(is_cursor_change_);
     return cursor_;
   }
 
@@ -368,8 +368,8 @@ bool EventHandler::UseHandCursor(Node* node, bool is_over_link) {
 }
 
 void EventHandler::CursorUpdateTimerFired(TimerBase*) {
-  ASSERT(frame_);
-  ASSERT(frame_->GetDocument());
+  DCHECK(frame_);
+  DCHECK(frame_->GetDocument());
 
   UpdateCursor();
 }
@@ -792,8 +792,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     HitTestResult* hovered_node,
     bool only_update_scrollbars,
     bool force_leave) {
-  ASSERT(frame_);
-  ASSERT(frame_->View());
+  DCHECK(frame_);
+  DCHECK(frame_->View());
 
   mouse_event_manager_->SetLastKnownMousePosition(mouse_event);
 
@@ -816,7 +816,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   }
 
   // Mouse events simulated from touch should not hit-test again.
-  ASSERT(!mouse_event.FromTouch());
+  DCHECK(!mouse_event.FromTouch());
 
   HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kMove;
   if (mouse_event_manager_->MousePressed()) {
@@ -958,7 +958,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   }
 
   // Mouse events simulated from touch should not hit-test again.
-  ASSERT(!mouse_event.FromTouch());
+  DCHECK(!mouse_event.FromTouch());
 
   HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kRelease;
   HitTestRequest request(hit_type);
@@ -1341,7 +1341,7 @@ WebInputEventResult EventHandler::HandleGestureEvent(
   // Non-scrolling related gesture events do a single cross-frame hit-test and
   // jump directly to the inner most frame. This matches handleMousePressEvent
   // etc.
-  ASSERT(!targeted_event.Event().IsScrollEvent());
+  DCHECK(!targeted_event.Event().IsScrollEvent());
 
   // Update mouseout/leave/over/enter events before jumping directly to the
   // inner most frame.
@@ -1403,7 +1403,7 @@ bool EventHandler::BestClickableNodeForHitTestResult(
   // FIXME: Unify this with the other best* functions which are very similar.
 
   TRACE_EVENT0("input", "EventHandler::bestClickableNodeForHitTestResult");
-  ASSERT(result.IsRectBasedTest());
+  DCHECK(result.IsRectBasedTest());
 
   // If the touch is over a scrollbar, don't adjust the touch point since touch
   // adjustment only takes into account DOM nodes so a touch over a scrollbar
@@ -1433,7 +1433,7 @@ bool EventHandler::BestContextMenuNodeForHitTestResult(
     const HitTestResult& result,
     IntPoint& target_point,
     Node*& target_node) {
-  ASSERT(result.IsRectBasedTest());
+  DCHECK(result.IsRectBasedTest());
   IntPoint touch_center =
       frame_->View()->ContentsToRootFrame(result.RoundedPointInMainFrame());
   IntRect touch_rect = frame_->View()->ContentsToRootFrame(
@@ -1640,7 +1640,7 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
 
   DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
   // Scrolling events get hit tested per frame (like wheel events do).
-  ASSERT(!gesture_event.IsScrollEvent());
+  DCHECK(!gesture_event.IsScrollEvent());
 
   HitTestRequest::HitTestRequestType hit_type =
       gesture_manager_->GetHitTypeForGestureType(gesture_event.GetType());
@@ -1726,7 +1726,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   // If we did a rect-based hit test it must be resolved to the best single node
   // by now to ensure consumers don't accidentally use one of the other
   // candidates.
-  ASSERT(!hit_test_result.IsRectBasedTest());
+  DCHECK(!hit_test_result.IsRectBasedTest());
 
   return GestureEventWithHitTestResults(adjusted_event, hit_test_result);
 }
@@ -1936,8 +1936,8 @@ void EventHandler::ResizeScrollableAreaDestroyed() {
 void EventHandler::HoverTimerFired(TimerBase*) {
   TRACE_EVENT0("input", "EventHandler::hoverTimerFired");
 
-  ASSERT(frame_);
-  ASSERT(frame_->GetDocument());
+  DCHECK(frame_);
+  DCHECK(frame_->GetDocument());
 
   if (LayoutViewItem layout_item = frame_->ContentLayoutItem()) {
     if (FrameView* view = frame_->View()) {

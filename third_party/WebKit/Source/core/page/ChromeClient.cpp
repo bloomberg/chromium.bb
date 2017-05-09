@@ -112,7 +112,7 @@ static bool OpenJavaScriptDialog(LocalFrame* frame,
 bool ChromeClient::OpenBeforeUnloadConfirmPanel(const String& message,
                                                 LocalFrame* frame,
                                                 bool is_reload) {
-  ASSERT(frame);
+  DCHECK(frame);
   return OpenJavaScriptDialog(
       frame, message, ChromeClient::kHTMLDialog, [this, frame, is_reload]() {
         return OpenBeforeUnloadConfirmPanelDelegate(frame, is_reload);
@@ -121,7 +121,7 @@ bool ChromeClient::OpenBeforeUnloadConfirmPanel(const String& message,
 
 bool ChromeClient::OpenJavaScriptAlert(LocalFrame* frame,
                                        const String& message) {
-  ASSERT(frame);
+  DCHECK(frame);
   if (!CanOpenModalIfDuringPageDismissal(frame->Tree().Top(),
                                          ChromeClient::kAlertDialog, message))
     return false;
@@ -133,7 +133,7 @@ bool ChromeClient::OpenJavaScriptAlert(LocalFrame* frame,
 
 bool ChromeClient::OpenJavaScriptConfirm(LocalFrame* frame,
                                          const String& message) {
-  ASSERT(frame);
+  DCHECK(frame);
   if (!CanOpenModalIfDuringPageDismissal(frame->Tree().Top(),
                                          ChromeClient::kConfirmDialog, message))
     return false;
@@ -147,7 +147,7 @@ bool ChromeClient::OpenJavaScriptPrompt(LocalFrame* frame,
                                         const String& prompt,
                                         const String& default_value,
                                         String& result) {
-  ASSERT(frame);
+  DCHECK(frame);
   if (!CanOpenModalIfDuringPageDismissal(frame->Tree().Top(),
                                          ChromeClient::kPromptDialog, prompt))
     return false;

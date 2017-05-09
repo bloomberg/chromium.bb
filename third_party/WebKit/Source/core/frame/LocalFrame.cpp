@@ -305,8 +305,8 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
                             bool horizontal_lock,
                             ScrollbarMode vertical_scrollbar_mode,
                             bool vertical_lock) {
-  ASSERT(this);
-  ASSERT(GetPage());
+  DCHECK(this);
+  DCHECK(GetPage());
 
   bool is_local_root = this->IsLocalRoot();
 
@@ -339,7 +339,7 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
   // FIXME: Not clear what the right thing for OOPI is here.
   if (!OwnerLayoutItem().IsNull()) {
     HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
-    ASSERT(owner);
+    DCHECK(owner);
     // FIXME: OOPI might lead to us temporarily lying to a frame and telling it
     // that it's owned by a FrameOwner that knows nothing about it. If we're
     // lying to this frame, don't let it clobber the existing widget.
@@ -355,7 +355,7 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
 LocalFrame::~LocalFrame() {
   // Verify that the FrameView has been cleared as part of detaching
   // the frame owner.
-  ASSERT(!view_);
+  DCHECK(!view_);
 }
 
 DEFINE_TRACE(LocalFrame) {
@@ -751,7 +751,7 @@ std::unique_ptr<DragImage> LocalFrame::DragImageForSelection(float opacity) {
     return nullptr;
 
   view_->UpdateAllLifecyclePhasesExceptPaint();
-  ASSERT(GetDocument()->IsActive());
+  DCHECK(GetDocument()->IsActive());
 
   FloatRect painting_rect = FloatRect(Selection().Bounds());
   GlobalPaintFlags paint_flags =

@@ -354,7 +354,7 @@ void TouchEventManager::UpdateTargetAndRegionMapsForTouchStarts(
         // in the active sequence. This must be a single document to
         // ensure we don't leak Nodes between documents.
         touch_sequence_document_ = &(touch_info.touch_node->GetDocument());
-        ASSERT(touch_sequence_document_->GetFrame()->View());
+        DCHECK(touch_sequence_document_->GetFrame()->View());
       }
 
       // Ideally we'd ASSERT(!m_targetForTouchID.contains(point.id())
@@ -431,7 +431,7 @@ void TouchEventManager::SetAllPropertiesOfTouchInfos(
       touch_node = touch_sequence_document_;
       target_frame = touch_sequence_document_->GetFrame();
     }
-    ASSERT(target_frame);
+    DCHECK(target_frame);
 
     // pagePoint should always be in the target element's document coordinates.
     FloatPoint page_point =
@@ -472,7 +472,7 @@ bool TouchEventManager::ReHitTestTouchPointsIfNeeded(
     touch_sequence_document_.Clear();
   }
 
-  ASSERT(frame_->View());
+  DCHECK(frame_->View());
   if (touch_sequence_document_ &&
       (!touch_sequence_document_->GetFrame() ||
        !touch_sequence_document_->GetFrame()->View())) {

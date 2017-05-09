@@ -133,7 +133,7 @@ void ContextMenuController::ShowContextMenuAtPoint(
 
 std::unique_ptr<ContextMenu> ContextMenuController::CreateContextMenu(
     Event* event) {
-  ASSERT(event);
+  DCHECK(event);
 
   if (!event->IsMouseEvent())
     return nullptr;
@@ -181,7 +181,7 @@ void ContextMenuController::ContextMenuItemSelected(
       item->Action() > kContextMenuItemLastCustomTag)
     return;
 
-  ASSERT(menu_provider_);
+  DCHECK(menu_provider_);
   menu_provider_->ContextMenuItemSelected(item);
 }
 

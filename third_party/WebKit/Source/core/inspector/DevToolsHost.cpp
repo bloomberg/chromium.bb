@@ -69,7 +69,7 @@ class FrontendMenuProvider final : public ContextMenuProvider {
 
   ~FrontendMenuProvider() override {
     // Verify that this menu provider has been detached.
-    ASSERT(!devtools_host_);
+    DCHECK(!devtools_host_);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -117,7 +117,7 @@ DevToolsHost::DevToolsHost(InspectorFrontendClient* client,
       menu_provider_(nullptr) {}
 
 DevToolsHost::~DevToolsHost() {
-  ASSERT(!client_);
+  DCHECK(!client_);
 }
 
 DEFINE_TRACE(DevToolsHost) {
@@ -209,7 +209,7 @@ void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
                                    float x,
                                    float y,
                                    const Vector<ContextMenuItem>& items) {
-  ASSERT(frontend_frame_);
+  DCHECK(frontend_frame_);
   FrontendMenuProvider* menu_provider =
       FrontendMenuProvider::Create(this, items);
   menu_provider_ = menu_provider;

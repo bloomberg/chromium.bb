@@ -202,7 +202,7 @@ Node* SmartClip::FindBestOverlappingNode(Node* root_node,
 // image in the smart clip. It seems to want to include sprites created from
 // CSS background images but to skip actual backgrounds.
 bool SmartClip::ShouldSkipBackgroundImage(Node* node) {
-  ASSERT(node);
+  DCHECK(node);
   // Apparently we're only interested in background images on spans and divs.
   if (!isHTMLSpanElement(*node) && !isHTMLDivElement(*node))
     return true;

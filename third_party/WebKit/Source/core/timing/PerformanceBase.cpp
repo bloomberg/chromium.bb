@@ -367,14 +367,14 @@ void PerformanceBase::AddResourceTiming(const ResourceTimingInfo& info) {
 
   if (!allow_redirect_details) {
     ResourceLoadTiming* final_timing = final_response.GetResourceLoadTiming();
-    ASSERT(final_timing);
+    DCHECK(final_timing);
     if (final_timing)
       start_time = final_timing->RequestTime();
   }
 
   ResourceLoadTiming* last_redirect_timing =
       redirect_chain.back().GetResourceLoadTiming();
-  ASSERT(last_redirect_timing);
+  DCHECK(last_redirect_timing);
   double last_redirect_end_time = last_redirect_timing->ReceiveHeadersEnd();
 
   PerformanceEntry* entry = PerformanceResourceTiming::Create(
@@ -488,7 +488,7 @@ void PerformanceBase::RegisterPerformanceObserver(
 
 void PerformanceBase::UnregisterPerformanceObserver(
     PerformanceObserver& old_observer) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   // Deliver any pending observations on this observer before unregistering.
   if (active_observers_.Contains(&old_observer) &&
       !old_observer.ShouldBeSuspended()) {
@@ -535,7 +535,7 @@ void PerformanceBase::ActivateObserver(PerformanceObserver& observer) {
 }
 
 void PerformanceBase::ResumeSuspendedObservers() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   if (suspended_observers_.IsEmpty())
     return;
 
@@ -550,7 +550,7 @@ void PerformanceBase::ResumeSuspendedObservers() {
 }
 
 void PerformanceBase::DeliverObservationsTimerFired(TimerBase*) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   PerformanceObservers observers;
   active_observers_.Swap(observers);
   for (const auto& observer : observers) {

@@ -17,7 +17,7 @@ namespace blink {
 
 RemoteFrameView::RemoteFrameView(RemoteFrame* remote_frame)
     : remote_frame_(remote_frame) {
-  ASSERT(remote_frame);
+  DCHECK(remote_frame);
 }
 
 RemoteFrameView::~RemoteFrameView() {}

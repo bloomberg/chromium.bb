@@ -58,7 +58,7 @@ bool CanvasFontCache::GetFontUsingDefaultStyle(const String& font_string,
   HashMap<String, Font>::iterator i =
       fonts_resolved_using_default_style_.find(font_string);
   if (i != fonts_resolved_using_default_style_.end()) {
-    ASSERT(font_lru_list_.Contains(font_string));
+    DCHECK(font_lru_list_.Contains(font_string));
     font_lru_list_.erase(font_string);
     font_lru_list_.insert(font_string);
     resolved_font = i->value;
@@ -83,7 +83,7 @@ MutableStylePropertySet* CanvasFontCache::ParseFont(const String& font_string) {
   MutableStylePropertySet* parsed_style;
   MutableStylePropertyMap::iterator i = fetched_fonts_.find(font_string);
   if (i != fetched_fonts_.end()) {
-    ASSERT(font_lru_list_.Contains(font_string));
+    DCHECK(font_lru_list_.Contains(font_string));
     parsed_style = i->value;
     font_lru_list_.erase(font_string);
     font_lru_list_.insert(font_string);
@@ -118,8 +118,8 @@ MutableStylePropertySet* CanvasFontCache::ParseFont(const String& font_string) {
 }
 
 void CanvasFontCache::DidProcessTask() {
-  ASSERT(pruning_scheduled_);
-  ASSERT(main_cache_purge_preventer_);
+  DCHECK(pruning_scheduled_);
+  DCHECK(main_cache_purge_preventer_);
   while (fetched_fonts_.size() > MaxFonts()) {
     fetched_fonts_.erase(font_lru_list_.front());
     fonts_resolved_using_default_style_.erase(font_lru_list_.front());
@@ -133,7 +133,7 @@ void CanvasFontCache::DidProcessTask() {
 void CanvasFontCache::SchedulePruningIfNeeded() {
   if (pruning_scheduled_)
     return;
-  ASSERT(!main_cache_purge_preventer_);
+  DCHECK(!main_cache_purge_preventer_);
   main_cache_purge_preventer_ = WTF::WrapUnique(new FontCachePurgePreventer);
   Platform::Current()->CurrentThread()->AddTaskObserver(this);
   pruning_scheduled_ = true;

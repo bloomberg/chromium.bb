@@ -20,8 +20,8 @@ PlatformEventController::~PlatformEventController() {}
 
 void PlatformEventController::OneShotCallback(TimerBase* timer) {
   DCHECK_EQ(timer, &timer_);
-  ASSERT(HasLastData());
-  ASSERT(!timer_.IsActive());
+  DCHECK(HasLastData());
+  DCHECK(!timer_.IsActive());
 
   DidUpdateData();
 }

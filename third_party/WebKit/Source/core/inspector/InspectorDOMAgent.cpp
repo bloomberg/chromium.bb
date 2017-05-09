@@ -369,7 +369,7 @@ ShadowRoot* InspectorDOMAgent::UserAgentShadowRoot(Node* node) {
   Node* candidate = node;
   while (candidate && !candidate->IsShadowRoot())
     candidate = candidate->ParentOrShadowHostNode();
-  ASSERT(candidate);
+  DCHECK(candidate);
   ShadowRoot* shadow_root = ToShadowRoot(candidate);
 
   return shadow_root->GetType() == ShadowRootType::kUserAgent ? shadow_root
@@ -512,7 +512,7 @@ void InspectorDOMAgent::PushChildNodesToFrontend(int node_id,
 
     for (node = InnerFirstChild(node); node; node = InnerNextSibling(node)) {
       int child_node_id = node_map->at(node);
-      ASSERT(child_node_id);
+      DCHECK(child_node_id);
       PushChildNodesToFrontend(child_node_id, depth, pierce);
     }
 
@@ -641,7 +641,7 @@ Response InspectorDOMAgent::querySelectorAll(
 
 int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push,
                                               NodeToIdMap* node_map) {
-  ASSERT(node_to_push);  // Invalid input
+  DCHECK(node_to_push);  // Invalid input
   // InspectorDOMAgent might have been resetted already. See crbug.com/450491
   if (!document_)
     return 0;
@@ -668,7 +668,7 @@ int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push,
 
   for (int i = path.size() - 1; i >= 0; --i) {
     int node_id = node_map->at(path.at(i).Get());
-    ASSERT(node_id);
+    DCHECK(node_id);
     PushChildNodesToFrontend(node_id);
   }
   return node_map->at(node_to_push);
@@ -849,7 +849,7 @@ Response InspectorDOMAgent::getOuterHTML(int node_id, WTF::String* outer_html) {
 Response InspectorDOMAgent::setOuterHTML(int node_id,
                                          const String& outer_html) {
   if (!node_id) {
-    ASSERT(document_);
+    DCHECK(document_);
     DOMPatchSupport dom_patch_support(dom_editor_.Get(), *document_.Get());
     dom_patch_support.PatchDocument(outer_html);
     return Response::OK();
@@ -1034,7 +1034,7 @@ Response InspectorDOMAgent::performSearch(
 
     // XPath evaluation
     for (Document* document : docs) {
-      ASSERT(document);
+      DCHECK(document);
       DummyExceptionStateForTesting exception_state;
       XPathResult* result = DocumentXPathEvaluator::evaluate(
           *document, whitespace_trimmed_query, document, nullptr,
@@ -2004,9 +2004,9 @@ void InspectorDOMAgent::PseudoElementDestroyed(PseudoElement* pseudo_element) {
 
   // If a PseudoElement is bound, its parent element must be bound, too.
   Element* parent = pseudo_element->ParentOrShadowHostElement();
-  ASSERT(parent);
+  DCHECK(parent);
   int parent_id = document_node_to_id_map_->at(parent);
-  ASSERT(parent_id);
+  DCHECK(parent_id);
 
   Unbind(pseudo_element, document_node_to_id_map_.Get());
   GetFrontend()->pseudoElementRemoved(parent_id, pseudo_element_id);

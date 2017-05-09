@@ -442,7 +442,7 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
 
   if (!web_scrollbar_layer) {
     ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
-    ASSERT(coordinator);
+    DCHECK(coordinator);
     ScrollbarOrientation webcore_orientation =
         is_horizontal ? kHorizontalScrollbar : kVerticalScrollbar;
     web_scrollbar_layer = coordinator->CreateSolidColorScrollbarLayer(

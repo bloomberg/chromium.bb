@@ -102,7 +102,7 @@ BuildObjectForAnimationEffect(KeyframeEffectReadOnly* effect,
 
   if (is_transition) {
     // Obtain keyframes and convert keyframes back to delay
-    ASSERT(effect->Model()->IsKeyframeEffectModel());
+    DCHECK(effect->Model()->IsKeyframeEffectModel());
     const KeyframeEffectModelBase* model =
         ToKeyframeEffectModelBase(effect->Model());
     Vector<RefPtr<Keyframe>> keyframes =
@@ -281,7 +281,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
   if (!id_to_animation_clone_.at(id)) {
     KeyframeEffectReadOnly* old_effect =
         ToKeyframeEffectReadOnly(animation->effect());
-    ASSERT(old_effect->Model()->IsKeyframeEffectModel());
+    DCHECK(old_effect->Model()->IsKeyframeEffectModel());
     KeyframeEffectModelBase* old_model =
         ToKeyframeEffectModelBase(old_effect->Model());
     EffectModel* new_model = nullptr;
@@ -535,7 +535,7 @@ void InspectorAnimationAgent::DidClearDocumentOfWindowObject(
   if (!state_->booleanProperty(AnimationAgentState::animationAgentEnabled,
                                false))
     return;
-  ASSERT(frame->GetDocument());
+  DCHECK(frame->GetDocument());
   frame->GetDocument()->Timeline().SetPlaybackRate(
       ReferenceTimeline().PlaybackRate());
 }

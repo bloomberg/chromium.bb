@@ -218,7 +218,7 @@ FileList* DataTransfer::files() const {
 }
 
 void DataTransfer::setDragImage(Element* image, int x, int y) {
-  ASSERT(image);
+  DCHECK(image);
 
   if (!IsForDragAndDrop())
     return;
@@ -265,7 +265,7 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImage(
 
 static ImageResourceContent* GetImageResourceContent(Element* element) {
   // Attempt to pull ImageResourceContent from element
-  ASSERT(element);
+  DCHECK(element);
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object || !layout_object->IsImage())
     return 0;
@@ -316,7 +316,7 @@ void DataTransfer::DeclareAndWriteDragImage(Element* element,
 void DataTransfer::WriteURL(Node* node, const KURL& url, const String& title) {
   if (!data_object_)
     return;
-  ASSERT(!url.IsEmpty());
+  DCHECK(!url.IsEmpty());
 
   data_object_->SetURLAndTitle(url, title);
 

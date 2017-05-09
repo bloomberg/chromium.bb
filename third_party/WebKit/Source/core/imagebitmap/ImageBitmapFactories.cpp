@@ -191,7 +191,7 @@ ImageBitmapFactories& ImageBitmapFactories::From(EventTarget& event_target) {
   if (LocalDOMWindow* window = event_target.ToLocalDOMWindow())
     return FromInternal(*window);
 
-  ASSERT(event_target.GetExecutionContext()->IsWorkerGlobalScope());
+  DCHECK(event_target.GetExecutionContext()->IsWorkerGlobalScope());
   return ImageBitmapFactories::FromInternal(
       *ToWorkerGlobalScope(event_target.GetExecutionContext()));
 }
@@ -212,7 +212,7 @@ void ImageBitmapFactories::AddLoader(ImageBitmapLoader* loader) {
 }
 
 void ImageBitmapFactories::DidFinishLoading(ImageBitmapLoader* loader) {
-  ASSERT(pending_loaders_.Contains(loader));
+  DCHECK(pending_loaders_.Contains(loader));
   pending_loaders_.erase(loader);
 }
 
@@ -277,7 +277,7 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
     DOMArrayBuffer* array_buffer,
     const String& premultiply_alpha_option,
     const String& color_space_conversion_option) {
-  ASSERT(!IsMainThread());
+  DCHECK(!IsMainThread());
 
   ImageDecoder::AlphaOption alpha_op = ImageDecoder::kAlphaPremultiplied;
   if (premultiply_alpha_option == "none")

@@ -73,7 +73,7 @@ void Pasteboard::WritePlainText(const String& text, SmartReplaceOption) {
 void Pasteboard::WriteImage(Image* image,
                             const KURL& url,
                             const String& title) {
-  ASSERT(image);
+  DCHECK(image);
 
   const WebImage web_image(image);
   if (web_image.IsNull())

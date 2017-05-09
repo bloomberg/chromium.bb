@@ -40,7 +40,7 @@ RemoteFrame* RemoteFrame::Create(RemoteFrameClient* client,
 }
 
 RemoteFrame::~RemoteFrame() {
-  ASSERT(!view_);
+  DCHECK(!view_);
 }
 
 DEFINE_TRACE(RemoteFrame) {
@@ -133,7 +133,7 @@ void RemoteFrame::CreateView() {
   if (!DeprecatedLocalOwner())
     return;
 
-  ASSERT(!DeprecatedLocalOwner()->OwnedWidget());
+  DCHECK(!DeprecatedLocalOwner()->OwnedWidget());
 
   SetView(RemoteFrameView::Create(this));
 
@@ -152,7 +152,7 @@ void RemoteFrame::SetWebLayer(WebLayer* web_layer) {
   if (web_layer_)
     GraphicsLayer::RegisterContentsLayer(web_layer_);
 
-  ASSERT(Owner());
+  DCHECK(Owner());
   ToHTMLFrameOwnerElement(Owner())->SetNeedsCompositingUpdate();
 }
 

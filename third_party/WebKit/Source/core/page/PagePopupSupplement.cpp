@@ -64,7 +64,7 @@ void PagePopupSupplement::Dispose() {
 void PagePopupSupplement::Install(LocalFrame& frame,
                                   PagePopup& popup,
                                   PagePopupClient* popup_client) {
-  ASSERT(popup_client);
+  DCHECK(popup_client);
   ProvideTo(frame, SupplementName(),
             new PagePopupSupplement(frame, popup, popup_client));
 }

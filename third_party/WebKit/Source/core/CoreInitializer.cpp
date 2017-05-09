@@ -75,7 +75,7 @@ void CoreInitializer::RegisterEventFactory() {
 }
 
 void CoreInitializer::Initialize() {
-  ASSERT(!IsInitialized());
+  DCHECK(!IsInitialized());
   is_initialized_ = true;
   // Note: in order to add core static strings for a new module (1)
   // the value of 'coreStaticStringsCount' must be updated with the

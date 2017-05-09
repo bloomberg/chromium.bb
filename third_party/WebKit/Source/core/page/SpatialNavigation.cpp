@@ -57,8 +57,8 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType type)
       distance(MaxDistance()),
       is_offscreen(true),
       is_offscreen_after_scrolling(true) {
-  ASSERT(node);
-  ASSERT(node->IsElementNode());
+  DCHECK(node);
+  DCHECK(node->IsElementNode());
 
   if (isHTMLAreaElement(*node)) {
     HTMLAreaElement& area = toHTMLAreaElement(*node);
@@ -152,7 +152,7 @@ bool HasOffscreenRect(Node* node, WebFocusType type) {
   if (!frame_view)
     return true;
 
-  ASSERT(!frame_view->NeedsLayout());
+  DCHECK(!frame_view->NeedsLayout());
 
   LayoutRect container_viewport_rect(frame_view->VisibleContentRect());
   // We want to select a node if it is currently off screen, but will be
@@ -198,7 +198,7 @@ bool HasOffscreenRect(Node* node, WebFocusType type) {
 }
 
 bool ScrollInDirection(LocalFrame* frame, WebFocusType type) {
-  ASSERT(frame);
+  DCHECK(frame);
 
   if (frame && CanScrollInDirection(frame->GetDocument(), type)) {
     int dx = 0;
@@ -230,7 +230,7 @@ bool ScrollInDirection(LocalFrame* frame, WebFocusType type) {
 }
 
 bool ScrollInDirection(Node* container, WebFocusType type) {
-  ASSERT(container);
+  DCHECK(container);
   if (container->IsDocumentNode())
     return ScrollInDirection(ToDocument(container)->GetFrame(), type);
 
@@ -292,7 +292,7 @@ static void DeflateIfOverlapped(LayoutRect& a, LayoutRect& b) {
 }
 
 bool IsScrollableNode(const Node* node) {
-  ASSERT(!node->IsDocumentNode());
+  DCHECK(!node->IsDocumentNode());
 
   if (!node)
     return false;
@@ -307,7 +307,7 @@ bool IsScrollableNode(const Node* node) {
 
 Node* ScrollableEnclosingBoxOrParentFrameForNodeInDirection(WebFocusType type,
                                                             Node* node) {
-  ASSERT(node);
+  DCHECK(node);
   Node* parent = node;
   do {
     // FIXME: Spatial navigation is broken for OOPI.
@@ -322,7 +322,7 @@ Node* ScrollableEnclosingBoxOrParentFrameForNodeInDirection(WebFocusType type,
 }
 
 bool CanScrollInDirection(const Node* container, WebFocusType type) {
-  ASSERT(container);
+  DCHECK(container);
   if (container->IsDocumentNode())
     return CanScrollInDirection(ToDocument(container)->GetFrame(), type);
 
@@ -676,7 +676,7 @@ LayoutRect VirtualRectForDirection(WebFocusType type,
 
 LayoutRect VirtualRectForAreaElementAndDirection(HTMLAreaElement& area,
                                                  WebFocusType type) {
-  ASSERT(area.ImageElement());
+  DCHECK(area.ImageElement());
   // Area elements tend to overlap more than other focusable elements. We
   // flatten the rect of the area elements to minimize the effect of overlapping
   // areas.

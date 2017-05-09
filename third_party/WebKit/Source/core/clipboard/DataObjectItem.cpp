@@ -118,7 +118,7 @@ File* DataObjectItem::GetAsFile() const {
   if (source_ == kInternalSource) {
     if (file_)
       return file_.Get();
-    ASSERT(shared_buffer_);
+    DCHECK(shared_buffer_);
     // FIXME: This code is currently impossible--we never populate
     // m_sharedBuffer when dragging in. At some point though, we may need to
     // support correctly converting a shared buffer into a file.

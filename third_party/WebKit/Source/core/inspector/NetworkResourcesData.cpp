@@ -100,8 +100,8 @@ DEFINE_TRACE(NetworkResourcesData::ResourceData) {
 
 void NetworkResourcesData::ResourceData::SetContent(const String& content,
                                                     bool base64_encoded) {
-  ASSERT(!HasData());
-  ASSERT(!HasContent());
+  DCHECK(!HasData());
+  DCHECK(!HasContent());
   content_ = content;
   base64_encoded_ = base64_encoded;
 }
@@ -109,13 +109,13 @@ void NetworkResourcesData::ResourceData::SetContent(const String& content,
 size_t NetworkResourcesData::ResourceData::RemoveContent() {
   size_t result = 0;
   if (HasData()) {
-    ASSERT(!HasContent());
+    DCHECK(!HasContent());
     result = data_buffer_->size();
     data_buffer_ = nullptr;
   }
 
   if (HasContent()) {
-    ASSERT(!HasData());
+    DCHECK(!HasData());
     result = content_.CharactersSizeInBytes();
     content_ = String();
   }
@@ -163,7 +163,7 @@ size_t NetworkResourcesData::ResourceData::DataLength() const {
 
 void NetworkResourcesData::ResourceData::AppendData(const char* data,
                                                     size_t data_length) {
-  ASSERT(!HasContent());
+  DCHECK(!HasContent());
   if (!data_buffer_)
     data_buffer_ = SharedBuffer::Create(data, data_length);
   else

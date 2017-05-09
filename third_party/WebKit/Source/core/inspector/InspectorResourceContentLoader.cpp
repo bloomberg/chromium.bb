@@ -185,7 +185,7 @@ void InspectorResourceContentLoader::Cancel(int client_id) {
 }
 
 InspectorResourceContentLoader::~InspectorResourceContentLoader() {
-  ASSERT(resources_.IsEmpty());
+  DCHECK(resources_.IsEmpty());
 }
 
 DEFINE_TRACE(InspectorResourceContentLoader) {
