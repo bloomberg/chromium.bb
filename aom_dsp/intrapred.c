@@ -834,6 +834,7 @@ static INLINE void highbd_smooth_predictor(uint16_t *dst, ptrdiff_t stride,
   }
 }
 
+#if CONFIG_SMOOTH_HV
 static INLINE void highbd_smooth_v_predictor(uint16_t *dst, ptrdiff_t stride,
                                              int bs, const uint16_t *above,
                                              const uint16_t *left, int bd) {
@@ -895,6 +896,7 @@ static INLINE void highbd_smooth_h_predictor(uint16_t *dst, ptrdiff_t stride,
     dst += stride;
   }
 }
+#endif
 
 #else
 static INLINE void highbd_tm_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
