@@ -262,7 +262,8 @@ def RunCurl(curl_args, *args, **kwargs):
   Args:
     curl_args: Command line to pass to curl. Must be list of str.
     *args, **kwargs: See RunCommandWithRetries and RunCommand.
-      Note that retry_on and error_check cannot be overwritten.
+      Note that retry_on, error_check, sleep, backoff_factor cannot be
+      overwritten.
 
   Returns:
     A CommandResult object.
@@ -298,16 +299,12 @@ def RunCurl(curl_args, *args, **kwargs):
 
   try:
     return RunCommandWithRetries(
-        5, cmd, sleep=3, retry_on=retriable_exits, error_check=_CheckExit,
-        *args, **kwargs)
+        10, cmd, retry_on=retriable_exits, error_check=_CheckExit,
+        sleep=3, backoff_factor=1.6, *args, **kwargs)
   except cros_build_lib.RunCommandError as e:
     if e.result.returncode in (51, 58, 60):
       # These are the return codes of failing certs as per 'man curl'.
       raise DownloadError(
           'Download failed with certificate error? Try "sudo c_rehash".')
-
-  try:
-    return RunCommandWithRetries(5, cmd, sleep=60, *args, **kwargs)
-  except cros_build_lib.RunCommandError as e:
     raise DownloadError('Curl failed w/ exit code %i: %s' %
                         (e.result.returncode, e.result.error))
