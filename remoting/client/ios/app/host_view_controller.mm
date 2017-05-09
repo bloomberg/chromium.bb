@@ -111,6 +111,7 @@ static const CGFloat kFabInset = 15.f;
   // TODO(nicholss): The FAB is being used to close the window at the moment
   // just as a demo  as the integration continues. This will not be the case
   // in the final app.
+  [_client disconnectFromHost];
   [self dismissViewControllerAnimated:YES completion:nil];
 }
 
