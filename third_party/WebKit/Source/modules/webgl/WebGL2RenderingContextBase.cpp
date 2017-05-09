@@ -198,8 +198,8 @@ void WebGL2RenderingContextBase::DestroyContext() {
 }
 
 void WebGL2RenderingContextBase::InitializeNewContext() {
-  ASSERT(!isContextLost());
-  ASSERT(GetDrawingBuffer());
+  DCHECK(!isContextLost());
+  DCHECK(GetDrawingBuffer());
 
   read_framebuffer_binding_ = nullptr;
 
@@ -695,7 +695,7 @@ void WebGL2RenderingContextBase::readBuffer(GLenum mode) {
   WebGLFramebuffer* read_framebuffer_binding =
       GetFramebufferBinding(GL_READ_FRAMEBUFFER);
   if (!read_framebuffer_binding) {
-    ASSERT(GetDrawingBuffer());
+    DCHECK(GetDrawingBuffer());
     if (mode != GL_BACK && mode != GL_NONE) {
       SynthesizeGLError(GL_INVALID_OPERATION, "readBuffer",
                         "invalid read buffer");
@@ -807,7 +807,7 @@ void WebGL2RenderingContextBase::readPixels(GLint x,
 
   // Due to WebGL's same-origin restrictions, it is not possible to
   // taint the origin using the WebGL API.
-  ASSERT(canvas()->OriginClean());
+  DCHECK(canvas()->OriginClean());
 
   if (!ValidateValueFitNonNegInt32("readPixels", "offset", offset))
     return;
@@ -4557,7 +4557,7 @@ bool WebGL2RenderingContextBase::ValidateUniformBlockIndex(
     const char* function_name,
     WebGLProgram* program,
     GLuint block_index) {
-  ASSERT(program);
+  DCHECK(program);
   if (!program->LinkStatus(this)) {
     SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                       "program not linked");
@@ -4967,13 +4967,13 @@ bool WebGL2RenderingContextBase::ValidateCapability(const char* function_name,
 
 bool WebGL2RenderingContextBase::IsBufferBoundToTransformFeedback(
     WebGLBuffer* buffer) {
-  ASSERT(buffer);
+  DCHECK(buffer);
   return transform_feedback_binding_->IsBufferBoundToTransformFeedback(buffer);
 }
 
 bool WebGL2RenderingContextBase::IsBufferBoundToNonTransformFeedback(
     WebGLBuffer* buffer) {
-  ASSERT(buffer);
+  DCHECK(buffer);
 
   if (bound_array_buffer_ == buffer ||
       bound_vertex_array_object_->BoundElementArrayBuffer() == buffer ||
@@ -4995,7 +4995,7 @@ bool WebGL2RenderingContextBase::ValidateBufferTargetCompatibility(
     const char* function_name,
     GLenum target,
     WebGLBuffer* buffer) {
-  ASSERT(buffer);
+  DCHECK(buffer);
 
   switch (buffer->GetInitialTarget()) {
     case GL_ELEMENT_ARRAY_BUFFER:

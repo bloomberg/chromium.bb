@@ -316,7 +316,7 @@ WebGLFramebuffer::WebGLAttachment* WebGLFramebuffer::GetAttachment(
 void WebGLFramebuffer::RemoveAttachmentFromBoundFramebuffer(
     GLenum target,
     WebGLSharedObject* attachment) {
-  ASSERT(IsBound(target));
+  DCHECK(IsBound(target));
   if (!object_)
     return;
   if (!attachment)

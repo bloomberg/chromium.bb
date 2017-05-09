@@ -87,7 +87,7 @@ String ConvertTransferStatus(const UsbTransferStatus& status) {
 
 Vector<uint8_t> ConvertBufferSource(
     const ArrayBufferOrArrayBufferView& buffer) {
-  ASSERT(!buffer.isNull());
+  DCHECK(!buffer.isNull());
   Vector<uint8_t> vector;
   if (buffer.isArrayBuffer())
     vector.Append(static_cast<uint8_t*>(buffer.getAsArrayBuffer()->Data()),

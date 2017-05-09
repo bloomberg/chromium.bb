@@ -17,7 +17,7 @@ PresentationAvailabilityCallbacks::PresentationAvailabilityCallbacks(
     PresentationAvailabilityProperty* resolver,
     const Vector<KURL>& urls)
     : resolver_(resolver), urls_(urls) {
-  ASSERT(resolver_);
+  DCHECK(resolver_);
 }
 
 PresentationAvailabilityCallbacks::~PresentationAvailabilityCallbacks() {}

@@ -47,7 +47,7 @@ NetworkInformation* NetworkInformation::Create(ExecutionContext* context) {
 }
 
 NetworkInformation::~NetworkInformation() {
-  ASSERT(!observing_);
+  DCHECK(!observing_);
 }
 
 String NetworkInformation::type() const {
@@ -69,7 +69,7 @@ double NetworkInformation::downlinkMax() const {
 
 void NetworkInformation::ConnectionChange(WebConnectionType type,
                                           double downlink_max_mbps) {
-  ASSERT(GetExecutionContext()->IsContextThread());
+  DCHECK(GetExecutionContext()->IsContextThread());
 
   // This can happen if the observer removes and then adds itself again
   // during notification.
@@ -111,7 +111,7 @@ void NetworkInformation::RemovedEventListener(
 
 void NetworkInformation::RemoveAllEventListeners() {
   EventTargetWithInlineData::RemoveAllEventListeners();
-  ASSERT(!HasEventListeners());
+  DCHECK(!HasEventListeners());
   StopObserving();
 }
 

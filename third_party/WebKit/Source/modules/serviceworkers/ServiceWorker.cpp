@@ -155,7 +155,7 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
     : AbstractWorker(execution_context),
       handle_(std::move(handle)),
       was_stopped_(false) {
-  ASSERT(handle_);
+  DCHECK(handle_);
   handle_->ServiceWorker()->SetProxy(this);
 }
 

@@ -19,7 +19,7 @@ std::unique_ptr<CompositorWorkerThread> CompositorWorkerThread::Create(
     double time_origin) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "CompositorWorkerThread::create");
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   return WTF::WrapUnique(new CompositorWorkerThread(
       std::move(worker_loader_proxy), worker_object_proxy, time_origin));
 }

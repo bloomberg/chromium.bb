@@ -54,7 +54,7 @@ PresentationAvailability::PresentationAvailability(
       urls_(urls),
       value_(value),
       state_(State::kActive) {
-  ASSERT(execution_context->IsDocument());
+  DCHECK(execution_context->IsDocument());
   WebVector<WebURL> data(urls.size());
   for (size_t i = 0; i < urls.size(); ++i)
     data[i] = WebURL(urls[i]);

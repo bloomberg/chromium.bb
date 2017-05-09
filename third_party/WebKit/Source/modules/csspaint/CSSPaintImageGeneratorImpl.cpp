@@ -42,10 +42,10 @@ CSSPaintImageGeneratorImpl::CSSPaintImageGeneratorImpl(Observer* observer)
 CSSPaintImageGeneratorImpl::~CSSPaintImageGeneratorImpl() {}
 
 void CSSPaintImageGeneratorImpl::SetDefinition(CSSPaintDefinition* definition) {
-  ASSERT(!definition_);
+  DCHECK(!definition_);
   definition_ = definition;
 
-  ASSERT(observer_);
+  DCHECK(observer_);
   observer_->PaintImageGeneratorReady();
 }
 

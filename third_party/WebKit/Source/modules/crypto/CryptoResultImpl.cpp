@@ -64,7 +64,7 @@ static void RejectWithTypeError(const String& error_details,
 class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
  public:
   static Resolver* Create(ScriptState* script_state, CryptoResultImpl* result) {
-    ASSERT(script_state->ContextIsValid());
+    DCHECK(script_state->ContextIsValid());
     Resolver* resolver = new Resolver(script_state, result);
     resolver->SuspendIfNeeded();
     resolver->KeepAliveWhilePending();
@@ -128,7 +128,7 @@ CryptoResultImpl::CryptoResultImpl(ScriptState* script_state)
 }
 
 CryptoResultImpl::~CryptoResultImpl() {
-  ASSERT(!resolver_);
+  DCHECK(!resolver_);
 }
 
 DEFINE_TRACE(CryptoResultImpl) {
@@ -226,7 +226,7 @@ void CryptoResultImpl::CompleteWithKeyPair(const WebCryptoKey& public_key,
 }
 
 void CryptoResultImpl::Cancel() {
-  ASSERT(cancel_);
+  DCHECK(cancel_);
   cancel_->Cancel();
   cancel_.Clear();
   ClearResolver();

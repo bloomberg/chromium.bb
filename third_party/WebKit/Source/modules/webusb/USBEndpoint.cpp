@@ -71,7 +71,7 @@ USBEndpoint* USBEndpoint::Create(const USBAlternateInterface* alternate,
 USBEndpoint::USBEndpoint(const USBAlternateInterface* alternate,
                          size_t endpoint_index)
     : alternate_(alternate), endpoint_index_(endpoint_index) {
-  ASSERT(alternate_);
+  DCHECK(alternate_);
   ASSERT(endpoint_index_ < alternate_->Info().endpoints.size());
 }
 

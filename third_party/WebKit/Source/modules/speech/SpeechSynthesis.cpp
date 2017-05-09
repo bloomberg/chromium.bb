@@ -86,7 +86,7 @@ bool SpeechSynthesis::paused() const {
 
 void SpeechSynthesis::StartSpeakingImmediately() {
   SpeechSynthesisUtterance* utterance = CurrentSpeechUtterance();
-  ASSERT(utterance);
+  DCHECK(utterance);
 
   utterance->SetStartTime(MonotonicallyIncreasingTime());
   is_paused_ = false;
@@ -94,7 +94,7 @@ void SpeechSynthesis::StartSpeakingImmediately() {
 }
 
 void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance) {
-  ASSERT(utterance);
+  DCHECK(utterance);
 
   utterance_queue_.push_back(utterance);
 
@@ -138,7 +138,7 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
 void SpeechSynthesis::HandleSpeakingCompleted(
     SpeechSynthesisUtterance* utterance,
     bool error_occurred) {
-  ASSERT(utterance);
+  DCHECK(utterance);
 
   bool should_start_speaking = false;
   // If the utterance that completed was the one we're currently speaking,

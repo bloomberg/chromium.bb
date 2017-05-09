@@ -38,11 +38,11 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
       ScriptSourceCode("registerPaint('foo', class { paint() { } });"));
 
   CSSPaintDefinition* definition = global_scope->FindDefinition("foo");
-  ASSERT(definition);
+  DCHECK(definition);
 
   v8::Isolate* isolate =
       global_scope->ScriptController()->GetScriptState()->GetIsolate();
-  ASSERT(isolate);
+  DCHECK(isolate);
 
   // Set our ScopedPersistent to the paint function, and make weak.
   ScopedPersistent<v8::Function> handle;
@@ -51,13 +51,13 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
     handle.Set(isolate, definition->PaintFunctionForTesting(isolate));
     handle.SetPhantom();
   }
-  ASSERT(!handle.IsEmpty());
-  ASSERT(handle.IsWeak());
+  DCHECK(!handle.IsEmpty());
+  DCHECK(handle.IsWeak());
 
   // Run a GC, persistent shouldn't have been collected yet.
   ThreadState::Current()->CollectAllGarbage();
   V8GCController::CollectAllGarbageForTesting(isolate);
-  ASSERT(!handle.IsEmpty());
+  DCHECK(!handle.IsEmpty());
 
   // Delete the page & associated objects.
   page_.reset();
@@ -65,7 +65,7 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
   // Run a GC, the persistent should have been collected.
   ThreadState::Current()->CollectAllGarbage();
   V8GCController::CollectAllGarbageForTesting(isolate);
-  ASSERT(handle.IsEmpty());
+  DCHECK(handle.IsEmpty());
 }
 
 }  // namespace blink

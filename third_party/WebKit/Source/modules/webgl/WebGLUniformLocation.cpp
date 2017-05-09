@@ -36,7 +36,7 @@ WebGLUniformLocation* WebGLUniformLocation::Create(WebGLProgram* program,
 WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program,
                                            GLint location)
     : program_(program), location_(location) {
-  ASSERT(program_);
+  DCHECK(program_);
   link_count_ = program_->LinkCount();
 }
 

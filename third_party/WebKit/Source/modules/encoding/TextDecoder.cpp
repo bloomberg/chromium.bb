@@ -79,14 +79,14 @@ String TextDecoder::encoding() const {
 String TextDecoder::decode(const BufferSource& input,
                            const TextDecodeOptions& options,
                            ExceptionState& exception_state) {
-  ASSERT(!input.isNull());
+  DCHECK(!input.isNull());
   if (input.isArrayBufferView()) {
     const char* start = static_cast<const char*>(
         input.getAsArrayBufferView().View()->BaseAddress());
     size_t length = input.getAsArrayBufferView().View()->byteLength();
     return decode(start, length, options, exception_state);
   }
-  ASSERT(input.isArrayBuffer());
+  DCHECK(input.isArrayBuffer());
   const char* start =
       static_cast<const char*>(input.getAsArrayBuffer()->Data());
   size_t length = input.getAsArrayBuffer()->ByteLength();

@@ -99,12 +99,12 @@ CanvasStyle::CanvasStyle(CanvasPattern* pattern)
     : type_(kImagePattern), pattern_(pattern) {}
 
 CanvasStyle* CanvasStyle::CreateFromGradient(CanvasGradient* gradient) {
-  ASSERT(gradient);
+  DCHECK(gradient);
   return new CanvasStyle(gradient);
 }
 
 CanvasStyle* CanvasStyle::CreateFromPattern(CanvasPattern* pattern) {
-  ASSERT(pattern);
+  DCHECK(pattern);
   return new CanvasStyle(pattern);
 }
 

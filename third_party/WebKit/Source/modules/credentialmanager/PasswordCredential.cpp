@@ -92,7 +92,7 @@ PasswordCredential* PasswordCredential::Create(
       PasswordCredential::Create(data, exception_state);
   if (exception_state.HadException())
     return nullptr;
-  ASSERT(credential);
+  DCHECK(credential);
 
   // After creating the Credential, populate its 'additionalData', 'idName', and
   // 'passwordName' attributes.  If the form's 'enctype' is anything other than

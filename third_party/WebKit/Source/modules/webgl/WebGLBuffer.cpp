@@ -53,7 +53,7 @@ void WebGLBuffer::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
 void WebGLBuffer::SetInitialTarget(GLenum target) {
   // WebGL restricts the ability to bind buffers to multiple targets based on
   // it's initial bind point.
-  ASSERT(!initial_target_);
+  DCHECK(!initial_target_);
   initial_target_ = target;
 }
 

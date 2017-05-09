@@ -156,7 +156,7 @@ PresentationConnection::PresentationConnection(LocalFrame* frame,
       proxy_(nullptr) {}
 
 PresentationConnection::~PresentationConnection() {
-  ASSERT(!blob_loader_);
+  DCHECK(!blob_loader_);
 }
 
 void PresentationConnection::BindProxy(
@@ -170,9 +170,9 @@ PresentationConnection* PresentationConnection::Take(
     ScriptPromiseResolver* resolver,
     const WebPresentationInfo& presentation_info,
     PresentationRequest* request) {
-  ASSERT(resolver);
-  ASSERT(request);
-  ASSERT(resolver->GetExecutionContext()->IsDocument());
+  DCHECK(resolver);
+  DCHECK(request);
+  DCHECK(resolver->GetExecutionContext()->IsDocument());
 
   Document* document = ToDocument(resolver->GetExecutionContext());
   if (!document->GetFrame())
@@ -191,8 +191,8 @@ PresentationConnection* PresentationConnection::Take(
     PresentationController* controller,
     const WebPresentationInfo& presentation_info,
     PresentationRequest* request) {
-  ASSERT(controller);
-  ASSERT(request);
+  DCHECK(controller);
+  DCHECK(request);
 
   PresentationConnection* connection = new PresentationConnection(
       controller->GetFrame(), presentation_info.id, presentation_info.url);
@@ -294,7 +294,7 @@ void PresentationConnection::send(
 }
 
 void PresentationConnection::send(Blob* data, ExceptionState& exception_state) {
-  ASSERT(data);
+  DCHECK(data);
   if (!CanSendMessage(exception_state))
     return;
 
@@ -332,7 +332,7 @@ void PresentationConnection::HandleMessageQueue() {
         messages_.pop_front();
         break;
       case kMessageTypeBlob:
-        ASSERT(!blob_loader_);
+        DCHECK(!blob_loader_);
         blob_loader_ = new BlobLoader(message->blob_data_handle, this);
         break;
     }

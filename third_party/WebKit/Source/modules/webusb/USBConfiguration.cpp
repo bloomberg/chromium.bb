@@ -31,7 +31,7 @@ USBConfiguration* USBConfiguration::Create(const USBDevice* device,
 USBConfiguration::USBConfiguration(const USBDevice* device,
                                    size_t configuration_index)
     : device_(device), configuration_index_(configuration_index) {
-  ASSERT(device_);
+  DCHECK(device_);
   ASSERT(configuration_index_ < device_->Info().configurations.size());
 }
 

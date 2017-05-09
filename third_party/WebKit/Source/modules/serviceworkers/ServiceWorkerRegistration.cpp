@@ -66,7 +66,7 @@ void ServiceWorkerRegistration::SetActive(
 ServiceWorkerRegistration* ServiceWorkerRegistration::GetOrCreate(
     ExecutionContext* execution_context,
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) {
-  ASSERT(handle);
+  DCHECK(handle);
 
   ServiceWorkerRegistration* existing_registration =
       static_cast<ServiceWorkerRegistration*>(handle->Registration()->Proxy());
@@ -133,8 +133,8 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
     : ContextLifecycleObserver(execution_context),
       handle_(std::move(handle)),
       stopped_(false) {
-  ASSERT(handle_);
-  ASSERT(!handle_->Registration()->Proxy());
+  DCHECK(handle_);
+  DCHECK(!handle_->Registration()->Proxy());
 
   if (!execution_context)
     return;

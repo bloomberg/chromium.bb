@@ -23,7 +23,7 @@ inline CompositorWorker::CompositorWorker(ExecutionContext* context)
 CompositorWorker* CompositorWorker::Create(ExecutionContext* context,
                                            const String& url,
                                            ExceptionState& exception_state) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   Document* document = ToDocument(context);
   if (!document->GetPage()) {
     exception_state.ThrowDOMException(kInvalidAccessError,
@@ -43,7 +43,7 @@ CompositorWorker* CompositorWorker::Create(ExecutionContext* context,
 }
 
 CompositorWorker::~CompositorWorker() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
 }
 
 const AtomicString& CompositorWorker::InterfaceName() const {
