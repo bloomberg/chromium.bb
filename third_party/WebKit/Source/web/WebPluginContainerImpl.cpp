@@ -71,7 +71,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintLayer.h"
-#include "modules/plugins/PluginOcclusionSupport.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -436,10 +435,9 @@ void WebPluginContainerImpl::ReportGeometry() {
     return;
 
   IntRect window_rect, clip_rect, unobscured_rect;
-  Vector<IntRect> cut_out_rects;
-  CalculateGeometry(window_rect, clip_rect, unobscured_rect, cut_out_rects);
+  CalculateGeometry(window_rect, clip_rect, unobscured_rect);
   web_plugin_->UpdateGeometry(window_rect, clip_rect, unobscured_rect,
-                              cut_out_rects, self_visible_);
+                              self_visible_);
 }
 
 v8::Local<v8::Object> WebPluginContainerImpl::V8ObjectForElement() {
@@ -995,8 +993,7 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
 
 void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,
                                                IntRect& clip_rect,
-                                               IntRect& unobscured_rect,
-                                               Vector<IntRect>& cut_out_rects) {
+                                               IntRect& unobscured_rect) {
   // document().layoutView() can be null when we receive messages from the
   // plugins while we are destroying a frame.
   // FIXME: Can we just check m_element->document().isActive() ?
@@ -1009,10 +1006,6 @@ void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,
     ComputeClipRectsForPlugin(element_, window_rect, clip_rect,
                               unobscured_rect);
   }
-  GetPluginOcclusions(element_, parent_, frame_rect_, cut_out_rects);
-  // Convert to the plugin position.
-  for (size_t i = 0; i < cut_out_rects.size(); i++)
-    cut_out_rects[i].Move(-frame_rect_.X(), -frame_rect_.Y());
 }
 
 }  // namespace blink

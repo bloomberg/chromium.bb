@@ -232,7 +232,6 @@ void TestPlugin::UpdateGeometry(
     const blink::WebRect& window_rect,
     const blink::WebRect& clip_rect,
     const blink::WebRect& unobscured_rect,
-    const blink::WebVector<blink::WebRect>& cut_outs_rects,
     bool is_visible) {
   if (clip_rect == rect_)
     return;

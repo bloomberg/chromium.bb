@@ -47,7 +47,6 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   void UpdateGeometry(const blink::WebRect& window_rect,
                       const blink::WebRect& clip_rect,
                       const blink::WebRect& unobscured_rect,
-                      const blink::WebVector<blink::WebRect>& cut_outs_rects,
                       bool is_visible) override;
   void UpdateFocus(bool focused, blink::WebFocusType focus_type) override;
   void UpdateVisibility(bool visible) override;
