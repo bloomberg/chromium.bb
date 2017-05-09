@@ -22,13 +22,12 @@ ChromePromptImpl::ChromePromptImpl(ChromePromptRequest request,
 
 ChromePromptImpl::~ChromePromptImpl() {}
 
-void ChromePromptImpl::PromptUser(
-    std::vector<UwSPtr> removable_uws_found,
-    ElevationStatus elevation_status,
-    const ChromePrompt::PromptUserCallback& callback) {
+void ChromePromptImpl::PromptUser(std::vector<UwSPtr> removable_uws_found,
+                                  ElevationStatus elevation_status,
+                                  ChromePrompt::PromptUserCallback callback) {
   // Placeholder. The actual implementation will show the prompt dialog to the
   // user and invoke this callback depending on the user's response.
-  callback.Run(PromptAcceptance::DENIED);
+  std::move(callback).Run(PromptAcceptance::DENIED);
 }
 
 }  // namespace safe_browsing

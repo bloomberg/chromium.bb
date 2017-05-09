@@ -11,4 +11,6 @@ mojom("interfaces") {
   deps = [
     "//mojo/common:common_custom_types",
   ]
+
+  use_once_callback = true
 }
