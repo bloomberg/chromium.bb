@@ -12,7 +12,6 @@
 namespace content {
 
 class TouchTimeoutHandler;
-class TouchMoveSlopSuppressor;
 
 // A queue that processes a touch-event and forwards it on to the
 // renderer process immediately. This class assumes that queueing will
@@ -115,10 +114,6 @@ class CONTENT_EXPORT PassthroughTouchEventQueue : public TouchEventQueue {
   // current sequence. This is only used when the event is synthetically
   // cancelled after a touch timeout.
   bool drop_remaining_touches_in_sequence_;
-
-  // Suppresses TouchMove's within a slop region when a sequence has not yet
-  // been preventDefaulted.
-  std::unique_ptr<TouchMoveSlopSuppressor> touchmove_slop_suppressor_;
 
   // Optional handler for timed-out touch event acks.
   std::unique_ptr<TouchTimeoutHandler> timeout_handler_;

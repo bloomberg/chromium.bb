@@ -1293,32 +1293,37 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMovedBeyondSlopRegionCheck) {
 
   // TouchMove's movedBeyondSlopRegion within the slop region is set to false.
   MoveTouchPoint(0, 0, kHalfSlopLengthDips);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
   MoveTouchPoint(0, kHalfSlopLengthDips, 0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
   MoveTouchPoint(0, -kHalfSlopLengthDips, 0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
   MoveTouchPoint(0, -kSlopLengthDips, 0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
   MoveTouchPoint(0, 0, kSlopLengthDips);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
@@ -1333,6 +1338,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMovedBeyondSlopRegionCheck) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_TRUE(acked_event().moved_beyond_slop_region);
 }
 
 // Tests that even very small TouchMove's movedBeyondSlopRegion is set to true

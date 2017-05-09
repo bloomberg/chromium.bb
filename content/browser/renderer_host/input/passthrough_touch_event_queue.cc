@@ -24,10 +24,6 @@ using ui::LatencyInfo;
 namespace content {
 namespace {
 
-// A sanity check on touches received to ensure that touch movement outside
-// the platform slop region will cause scrolling.
-const double kMaxConceivablePlatformSlopRegionLengthDipsSquared = 60. * 60.;
-
 // Compare all properties of touch points to determine the state.
 bool HasPointChanged(const WebTouchPoint& point_1,
                      const WebTouchPoint& point_2) {
@@ -46,59 +42,6 @@ bool HasPointChanged(const WebTouchPoint& point_1,
 
 }  // namespace
 
-// Provides touchmove slop suppression for a touch sequence until a
-// (unprevented) touch will trigger immediate scrolling.
-class TouchMoveSlopSuppressor {
- public:
-  TouchMoveSlopSuppressor() : suppressing_touchmoves_(false) {}
-
-  bool FilterEvent(const WebTouchEvent& event) {
-    if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
-      suppressing_touchmoves_ = true;
-      touch_start_location_ = gfx::PointF(event.touches[0].position);
-    }
-
-    if (event.GetType() == WebInputEvent::kTouchEnd ||
-        event.GetType() == WebInputEvent::kTouchCancel)
-      suppressing_touchmoves_ = false;
-
-    if (event.GetType() != WebInputEvent::kTouchMove)
-      return false;
-
-    if (suppressing_touchmoves_) {
-      if (event.touches_length > 1) {
-        suppressing_touchmoves_ = false;
-      } else if (event.moved_beyond_slop_region) {
-        suppressing_touchmoves_ = false;
-      } else {
-        // No sane slop region should be larger than 60 DIPs.
-        DCHECK_LT(
-            (gfx::PointF(event.touches[0].position) - touch_start_location_)
-                .LengthSquared(),
-            kMaxConceivablePlatformSlopRegionLengthDipsSquared);
-      }
-    }
-
-    return suppressing_touchmoves_;
-  }
-
-  void ConfirmTouchEvent(InputEventAckState ack_result) {
-    if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-      suppressing_touchmoves_ = false;
-  }
-
-  bool suppressing_touchmoves() const { return suppressing_touchmoves_; }
-
- private:
-  bool suppressing_touchmoves_;
-
-  // Sanity check that the upstream touch provider is properly reporting whether
-  // the touch sequence will cause scrolling.
-  gfx::PointF touch_start_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchMoveSlopSuppressor);
-};
-
 PassthroughTouchEventQueue::TouchEventWithLatencyInfoAndAckState::
     TouchEventWithLatencyInfoAndAckState(const TouchEventWithLatencyInfo& event)
     : TouchEventWithLatencyInfo(event),
@@ -116,7 +59,6 @@ PassthroughTouchEventQueue::PassthroughTouchEventQueue(
       has_handlers_(true),
       maybe_has_handler_for_current_sequence_(false),
       drop_remaining_touches_in_sequence_(false),
-      touchmove_slop_suppressor_(new TouchMoveSlopSuppressor),
       send_touch_events_async_(false),
       processing_acks_(false) {
   if (config.touch_ack_timeout_supported) {
@@ -178,8 +120,6 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
   if (timeout_handler_ &&
       timeout_handler_->ConfirmTouchEvent(unique_touch_event_id, ack_result))
     return;
-
-  touchmove_slop_suppressor_->ConfirmTouchEvent(ack_result);
 
   auto touch_event_iter = outstanding_touches_.begin();
   while (touch_event_iter != outstanding_touches_.end()) {
@@ -362,9 +302,6 @@ PassthroughTouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
 
   if (timeout_handler_ && timeout_handler_->FilterEvent(event))
     return ACK_WITH_NO_CONSUMER_EXISTS;
-
-  if (touchmove_slop_suppressor_->FilterEvent(event))
-    return ACK_WITH_NOT_CONSUMED;
 
   if (drop_remaining_touches_in_sequence_ &&
       event.GetType() != WebInputEvent::kTouchCancel) {
