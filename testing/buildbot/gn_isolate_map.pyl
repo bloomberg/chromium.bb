@@ -941,6 +941,8 @@
     "script": "//testing/scripts/run_gtest_perf_test.py",
     "args": [
       "cc_perftests",
+      "--adb-path",
+      "src/third_party/android_tools/sdk/platform-tools/adb"
     ],
   },
   "media_perftests": {
@@ -966,7 +968,9 @@
     "script": "//testing/scripts/run_gtest_perf_test.py",
     "args": [
       "tracing_perftests",
-      "--test-launcher-print-test-stdio=always"
+      "--test-launcher-print-test-stdio=always",
+      "--adb-path",
+      "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
   },
   "gpu_perftests": {
@@ -976,7 +980,7 @@
     "args": [
       "gpu_perftests",
       "--adb-path",
-      "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+      "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
   },
   "angle_perftests": {

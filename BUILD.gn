@@ -968,6 +968,10 @@ group("chromium_builder_perf") {
       "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
     ]
 
+    if (is_android) {
+      data += [ "//third_party/android_tools/sdk/platform-tools/adb" ]
+    }
+
     if (!is_chromeos) {
       data_deps += [ "//chrome/test:performance_browser_tests" ]
     }

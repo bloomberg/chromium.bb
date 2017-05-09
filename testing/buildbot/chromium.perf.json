@@ -916,6 +916,26 @@
         }
       },
       {
+        "args": [],
+        "isolate_name": "cc_perftests",
+        "name": "cc_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build73-b1--device2",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 7200,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
         "args": [
           "dromaeo.domcoreattr",
           "-v",
@@ -1266,6 +1286,26 @@
           "expiration": 36000,
           "hard_timeout": 7200,
           "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "gpu_perftests",
+        "name": "gpu_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build73-b1--device2",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 7200,
+          "ignore_task_failure": false,
           "io_timeout": 3600
         }
       },
@@ -5543,6 +5583,26 @@
           "expiration": 36000,
           "hard_timeout": 7200,
           "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "tracing_perftests",
+        "name": "tracing_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build73-b1--device2",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 7200,
+          "ignore_task_failure": false,
           "io_timeout": 3600
         }
       },

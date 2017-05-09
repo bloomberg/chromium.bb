@@ -259,7 +259,12 @@ def get_waterfall_config():
            'build75-b1--device1', 'build75-b1--device2', 'build75-b1--device3',
            'build75-b1--device4', 'build75-b1--device5', 'build75-b1--device6',
            'build75-b1--device7',
-          ]
+          ],
+       'perf_tests': [
+         ('tracing_perftests', 'build73-b1--device2'),
+         ('gpu_perftests', 'build73-b1--device2'),
+         ('cc_perftests', 'build73-b1--device2'),
+         ]
       }
     ])
 
