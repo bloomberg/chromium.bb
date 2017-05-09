@@ -69,7 +69,7 @@ class Canvas2DLayerBridgePtr {
  public:
   Canvas2DLayerBridgePtr() {}
   Canvas2DLayerBridgePtr(PassRefPtr<Canvas2DLayerBridge> layer_bridge)
-      : layer_bridge_(layer_bridge) {}
+      : layer_bridge_(std::move(layer_bridge)) {}
 
   ~Canvas2DLayerBridgePtr() { Clear(); }
 
@@ -82,7 +82,7 @@ class Canvas2DLayerBridgePtr {
 
   void operator=(PassRefPtr<Canvas2DLayerBridge> layer_bridge) {
     DCHECK(!layer_bridge_);
-    layer_bridge_ = layer_bridge;
+    layer_bridge_ = std::move(layer_bridge);
   }
 
   Canvas2DLayerBridge* operator->() { return layer_bridge_.Get(); }

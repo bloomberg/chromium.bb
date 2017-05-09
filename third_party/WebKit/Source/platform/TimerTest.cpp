@@ -97,7 +97,7 @@ class OnHeapTimerOwner final
   };
 
   explicit OnHeapTimerOwner(PassRefPtr<Record> record)
-      : timer_(this, &OnHeapTimerOwner::Fired), record_(record) {}
+      : timer_(this, &OnHeapTimerOwner::Fired), record_(std::move(record)) {}
   ~OnHeapTimerOwner() { record_->SetOwnerIsDestructed(); }
 
   void StartOneShot(double interval, const WebTraceLocation& caller) {

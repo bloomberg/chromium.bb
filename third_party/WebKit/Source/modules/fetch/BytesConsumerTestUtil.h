@@ -69,7 +69,7 @@ class BytesConsumerTestUtil {
     // In mock methods we use RefPtr<> rather than PassRefPtr<>.
     void DidFetchDataLoadedBlobHandle(
         PassRefPtr<BlobDataHandle> blob_data_handle) override {
-      DidFetchDataLoadedBlobHandleMock(blob_data_handle);
+      DidFetchDataLoadedBlobHandleMock(std::move(blob_data_handle));
     }
   };
 

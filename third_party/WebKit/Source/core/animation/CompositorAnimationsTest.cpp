@@ -242,15 +242,10 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
   }
 
   AnimatableValueKeyframeEffectModel* CreateKeyframeEffectModel(
-      PassRefPtr<AnimatableValueKeyframe> prp_from,
-      PassRefPtr<AnimatableValueKeyframe> prp_to,
-      PassRefPtr<AnimatableValueKeyframe> prp_c = nullptr,
-      PassRefPtr<AnimatableValueKeyframe> prp_d = nullptr) {
-    RefPtr<AnimatableValueKeyframe> from = prp_from;
-    RefPtr<AnimatableValueKeyframe> to = prp_to;
-    RefPtr<AnimatableValueKeyframe> c = prp_c;
-    RefPtr<AnimatableValueKeyframe> d = prp_d;
-
+      RefPtr<AnimatableValueKeyframe> from,
+      RefPtr<AnimatableValueKeyframe> to,
+      RefPtr<AnimatableValueKeyframe> c = nullptr,
+      RefPtr<AnimatableValueKeyframe> d = nullptr) {
     EXPECT_EQ(from->Offset(), 0);
     AnimatableValueKeyframeVector frames;
     frames.push_back(from);

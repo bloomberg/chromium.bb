@@ -99,7 +99,8 @@ void DataConsumerHandleTestUtil::Thread::Shutdown() {
 class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
     : public Reader {
  public:
-  ReaderImpl(PassRefPtr<Context> context, Client* client) : context_(context) {
+  ReaderImpl(PassRefPtr<Context> context, Client* client)
+      : context_(std::move(context)) {
     context_->AttachReader(client);
   }
   ~ReaderImpl() { context_->DetachReader(); }
