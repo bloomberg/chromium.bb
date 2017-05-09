@@ -115,7 +115,7 @@ class RequestCoordinator : public KeyedService,
   int64_t SavePageLater(const SavePageLaterParams& save_page_later_params);
 
   // Remove a list of requests by |request_id|.  This removes requests from the
-  // request queue, and cancels an in-progress prerender.
+  // request queue, and cancels an in-progress offliner.
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveRequestsCallback& callback);
 
@@ -338,9 +338,9 @@ class RequestCoordinator : public KeyedService,
 
   void HandleWatchdogTimeout();
 
-  // Cancels an in progress pre-rendering, and updates state appropriately.
-  void StopPrerendering(const CancelCallback& callback,
-                        Offliner::RequestStatus stop_status);
+  // Cancels an in progress offlining, and updates state appropriately.
+  void StopOfflining(const CancelCallback& callback,
+                     Offliner::RequestStatus stop_status);
 
   // Marks attempt on the request and sends it to offliner in continuation.
   void SendRequestToOffliner(const SavePageRequest& request);
