@@ -51,9 +51,15 @@ from cStringIO import StringIO
 EngineDep = namedtuple('EngineDep',
                        'url revision path_override branch repo_type')
 
+
+class MalformedRecipesCfg(Exception):
+  def __init__(self, msg, path):
+    super(MalformedRecipesCfg, self).__init__('malformed recipes.cfg: %s: %r'
+                                              % (msg, path))
+
+
 def parse(repo_root, recipes_cfg_path):
-  """Parse is transitional code which parses a recipes.cfg file as either jsonpb
-  or as textpb.
+  """Parse is a lightweight a recipes.cfg file parser.
 
   Args:
     repo_root (str) - native path to the root of the repo we're trying to run
@@ -69,40 +75,38 @@ def parse(repo_root, recipes_cfg_path):
   with open(recipes_cfg_path, 'rU') as fh:
     pb = json.load(fh)
 
-  if pb['api_version'] == 1:
-    # TODO(iannucci): remove when we only support version 2
-    engine = next(
-      (d for d in pb['deps'] if d['project_id'] == 'recipe_engine'), None)
-    if engine is None:
-      raise ValueError('could not find recipe_engine dep in %r'
-                       % recipes_cfg_path)
-  else:
+  try:
+    if pb['api_version'] != 2:
+      raise MalformedRecipesCfg('unknown version %d' % pb['api_version'],
+                                recipes_cfg_path)
+
     engine = pb['deps']['recipe_engine']
 
-  if 'url' not in engine:
-    raise ValueError(
-      'Required field "url" in dependency "recipe_engine" not found: %r' %
-      (recipes_cfg_path,)
-    )
+    if 'url' not in engine:
+      raise MalformedRecipesCfg(
+        'Required field "url" in dependency "recipe_engine" not found',
+        recipes_cfg_path)
 
-  engine.setdefault('revision', '')
-  engine.setdefault('path_override', '')
-  engine.setdefault('branch', 'refs/heads/master')
-  recipes_path = pb.get('recipes_path', '')
+    engine.setdefault('revision', '')
+    engine.setdefault('path_override', '')
+    engine.setdefault('branch', 'refs/heads/master')
+    recipes_path = pb.get('recipes_path', '')
 
-  # TODO(iannucci): only support absolute refs
-  if not engine['branch'].startswith('refs/'):
-    engine['branch'] = 'refs/heads/' + engine['branch']
+    # TODO(iannucci): only support absolute refs
+    if not engine['branch'].startswith('refs/'):
+      engine['branch'] = 'refs/heads/' + engine['branch']
 
-  engine.setdefault('repo_type', 'GIT')
-  if engine['repo_type'] not in ('GIT', 'GITILES'):
-    raise ValueError(
-      'Unsupported "repo_type" value in dependency "recipe_engine": %r' %
-      (recipes_cfg_path,)
-    )
+    engine.setdefault('repo_type', 'GIT')
+    if engine['repo_type'] not in ('GIT', 'GITILES'):
+      raise MalformedRecipesCfg(
+        'Unsupported "repo_type" value in dependency "recipe_engine"',
+        recipes_cfg_path)
 
-  recipes_path = os.path.join(repo_root, recipes_path.replace('/', os.path.sep))
-  return EngineDep(**engine), recipes_path
+    recipes_path = os.path.join(
+      repo_root, recipes_path.replace('/', os.path.sep))
+    return EngineDep(**engine), recipes_path
+  except KeyError as ex:
+    raise MalformedRecipesCfg(ex.message, recipes_cfg_path)
 
 
 GIT = 'git.bat' if sys.platform.startswith(('win', 'cygwin')) else 'git'
