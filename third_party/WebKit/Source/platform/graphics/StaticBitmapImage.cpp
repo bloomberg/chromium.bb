@@ -29,22 +29,15 @@ void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
                                    const FloatRect& dst_rect,
                                    const FloatRect& src_rect,
                                    ImageClampingMode clamp_mode,
-                                   sk_sp<SkImage> image) {
+                                   const PaintImage& image) {
   FloatRect adjusted_src_rect = src_rect;
-  adjusted_src_rect.Intersect(SkRect::Make(image->bounds()));
+  adjusted_src_rect.Intersect(SkRect::Make(image.sk_image()->bounds()));
 
   if (dst_rect.IsEmpty() || adjusted_src_rect.IsEmpty())
     return;  // Nothing to draw.
 
-  auto animation_type = MaybeAnimated() ? PaintImage::AnimationType::ANIMATED
-                                        : PaintImage::AnimationType::STATIC;
-  auto completion_state = CurrentFrameIsComplete()
-                              ? PaintImage::CompletionState::DONE
-                              : PaintImage::CompletionState::PARTIALLY_DONE;
-  canvas->drawImageRect(
-      PaintImage(std::move(image), animation_type, completion_state),
-      adjusted_src_rect, dst_rect, &flags,
-      WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
+  canvas->drawImageRect(image, adjusted_src_rect, dst_rect, &flags,
+                        WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 }
 
 }  // namespace blink

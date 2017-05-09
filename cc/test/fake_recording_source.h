@@ -99,17 +99,17 @@ class FakeRecordingSource : public RecordingSource {
     client_.add_draw_rectf(rect, flags);
   }
 
-  void add_draw_image(sk_sp<const SkImage> image, const gfx::Point& point) {
+  void add_draw_image(sk_sp<SkImage> image, const gfx::Point& point) {
     client_.add_draw_image(std::move(image), point, default_flags_);
   }
 
-  void add_draw_image_with_transform(sk_sp<const SkImage> image,
+  void add_draw_image_with_transform(sk_sp<SkImage> image,
                                      const gfx::Transform& transform) {
     client_.add_draw_image_with_transform(std::move(image), transform,
                                           default_flags_);
   }
 
-  void add_draw_image_with_flags(sk_sp<const SkImage> image,
+  void add_draw_image_with_flags(sk_sp<SkImage> image,
                                  const gfx::Point& point,
                                  const PaintFlags& flags) {
     client_.add_draw_image(std::move(image), point, flags);

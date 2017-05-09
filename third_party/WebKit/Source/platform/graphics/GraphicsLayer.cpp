@@ -1051,44 +1051,30 @@ void GraphicsLayer::SetContentsRect(const IntRect& rect) {
 void GraphicsLayer::SetContentsToImage(
     Image* image,
     RespectImageOrientationEnum respect_image_orientation) {
-  sk_sp<SkImage> sk_image;
-  PaintImage::AnimationType animation_type = PaintImage::AnimationType::UNKNOWN;
-  PaintImage::CompletionState completion_state =
-      PaintImage::CompletionState::UNKNOWN;
-  if (image) {
-    sk_image = image->ImageForCurrentFrame();
-    animation_type = image->MaybeAnimated()
-                         ? PaintImage::AnimationType::ANIMATED
-                         : PaintImage::AnimationType::STATIC;
-    completion_state = image->CurrentFrameIsComplete()
-                           ? PaintImage::CompletionState::DONE
-                           : PaintImage::CompletionState::PARTIALLY_DONE;
+  PaintImage paint_image;
+  if (image)
+    paint_image = image->PaintImageForCurrentFrame();
+
+  if (paint_image && image->IsBitmapImage() &&
+      respect_image_orientation == kRespectImageOrientation) {
+    ImageOrientation image_orientation =
+        ToBitmapImage(image)->CurrentFrameOrientation();
+    paint_image =
+        DragImage::ResizeAndOrientImage(paint_image, image_orientation);
   }
 
-  if (image && sk_image && image->IsBitmapImage()) {
-    if (respect_image_orientation == kRespectImageOrientation) {
-      ImageOrientation image_orientation =
-          ToBitmapImage(image)->CurrentFrameOrientation();
-      sk_image = DragImage::ResizeAndOrientImage(std::move(sk_image),
-                                                 image_orientation);
-    }
-  }
-
-  if (image && sk_image) {
+  if (paint_image) {
     if (!image_layer_) {
       image_layer_ =
           Platform::Current()->CompositorSupport()->CreateImageLayer();
       RegisterContentsLayer(image_layer_->Layer());
     }
-    image_layer_->SetImage(
-        PaintImage(std::move(sk_image), animation_type, completion_state));
+    image_layer_->SetImage(std::move(paint_image));
     image_layer_->Layer()->SetOpaque(image->CurrentFrameKnownToBeOpaque());
     UpdateContentsRect();
-  } else {
-    if (image_layer_) {
-      UnregisterContentsLayer(image_layer_->Layer());
-      image_layer_.reset();
-    }
+  } else if (image_layer_) {
+    UnregisterContentsLayer(image_layer_->Layer());
+    image_layer_.reset();
   }
 
   SetContentsTo(image_layer_ ? image_layer_->Layer() : 0);

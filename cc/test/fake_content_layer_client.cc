@@ -16,12 +16,12 @@
 
 namespace cc {
 
-FakeContentLayerClient::ImageData::ImageData(sk_sp<const SkImage> img,
+FakeContentLayerClient::ImageData::ImageData(sk_sp<SkImage> img,
                                              const gfx::Point& point,
                                              const PaintFlags& flags)
     : image(std::move(img)), point(point), flags(flags) {}
 
-FakeContentLayerClient::ImageData::ImageData(sk_sp<const SkImage> img,
+FakeContentLayerClient::ImageData::ImageData(sk_sp<SkImage> img,
                                              const gfx::Transform& transform,
                                              const PaintFlags& flags)
     : image(std::move(img)), transform(transform), flags(flags) {}

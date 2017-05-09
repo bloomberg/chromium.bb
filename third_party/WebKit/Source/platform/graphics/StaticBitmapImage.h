@@ -72,7 +72,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
                   const FloatRect&,
                   const FloatRect&,
                   ImageClampingMode,
-                  sk_sp<SkImage>);
+                  const PaintImage&);
 
   // These two properties are here because the SkImage API doesn't expose the
   // info. They applied to both UnacceleratedStaticBitmapImage and

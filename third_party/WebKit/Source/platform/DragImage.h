@@ -32,12 +32,11 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-
-class SkImage;
 
 namespace blink {
 
@@ -74,8 +73,8 @@ class PLATFORM_EXPORT DragImage {
 
   void Scale(float scale_x, float scale_y);
 
-  static sk_sp<SkImage> ResizeAndOrientImage(
-      sk_sp<SkImage>,
+  static PaintImage ResizeAndOrientImage(
+      const PaintImage&,
       ImageOrientation,
       FloatSize image_scale = FloatSize(1, 1),
       float opacity = 1.0,

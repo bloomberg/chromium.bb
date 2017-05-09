@@ -78,7 +78,7 @@ SkColor DebugColors::HighResTileBorderColor() {
   return SkColorSetARGB(100, 80, 200, 200);
 }
 int DebugColors::HighResTileBorderWidth(float device_scale_factor) {
-  return Scale(1, device_scale_factor);
+  return Scale(3, device_scale_factor);
 }
 
 // Low-res tile borders are purple.

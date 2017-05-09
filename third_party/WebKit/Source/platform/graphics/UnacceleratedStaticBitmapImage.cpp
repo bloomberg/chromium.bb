@@ -36,7 +36,7 @@ void UnacceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
                                           RespectImageOrientationEnum,
                                           ImageClampingMode clamp_mode) {
   StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect, clamp_mode,
-                                image_);
+                                PaintImageForCurrentFrame());
 }
 
 sk_sp<SkImage> UnacceleratedStaticBitmapImage::ImageForCurrentFrame() {

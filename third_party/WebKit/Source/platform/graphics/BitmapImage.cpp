@@ -263,12 +263,12 @@ void BitmapImage::Draw(
     ImageClampingMode clamp_mode) {
   TRACE_EVENT0("skia", "BitmapImage::draw");
 
-  sk_sp<SkImage> image = ImageForCurrentFrame();
+  PaintImage image = PaintImageForCurrentFrame();
   if (!image)
     return;  // It's too early and we don't have an image yet.
 
   FloatRect adjusted_src_rect = src_rect;
-  adjusted_src_rect.Intersect(SkRect::Make(image->bounds()));
+  adjusted_src_rect.Intersect(SkRect::Make(image.sk_image()->bounds()));
 
   if (adjusted_src_rect.IsEmpty() || dst_rect.IsEmpty())
     return;  // Nothing to draw.
@@ -299,18 +299,11 @@ void BitmapImage::Draw(
     }
   }
 
-  uint32_t unique_id = image->uniqueID();
-  bool is_lazy_generated = image->isLazyGenerated();
-  auto animation_type = MaybeAnimated() ? PaintImage::AnimationType::ANIMATED
-                                        : PaintImage::AnimationType::STATIC;
-  auto completion_state = CurrentFrameIsComplete()
-                              ? PaintImage::CompletionState::DONE
-                              : PaintImage::CompletionState::PARTIALLY_DONE;
-
-  canvas->drawImageRect(
-      PaintImage(std::move(image), animation_type, completion_state),
-      adjusted_src_rect, adjusted_dst_rect, &flags,
-      WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
+  uint32_t unique_id = image.sk_image()->uniqueID();
+  bool is_lazy_generated = image.sk_image()->isLazyGenerated();
+  canvas->drawImageRect(std::move(image), adjusted_src_rect, adjusted_dst_rect,
+                        &flags,
+                        WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 
   if (is_lazy_generated)
     PlatformInstrumentation::DidDrawLazyPixelRef(unique_id);

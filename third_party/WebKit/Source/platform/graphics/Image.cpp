@@ -225,32 +225,24 @@ void Image::DrawTiledBorder(GraphicsContext& ctxt,
 
 namespace {
 
-sk_sp<PaintShader> CreatePatternShader(sk_sp<const SkImage> image,
+sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                        const SkMatrix& shader_matrix,
                                        const PaintFlags& paint,
                                        const FloatSize& spacing,
                                        SkShader::TileMode tmx,
-                                       SkShader::TileMode tmy,
-                                       bool animated,
-                                       bool complete) {
+                                       SkShader::TileMode tmy) {
   if (spacing.IsZero())
-    return MakePaintShaderImage(image, tmx, tmy, &shader_matrix);
+    return MakePaintShaderImage(image.sk_image(), tmx, tmy, &shader_matrix);
 
   // Arbitrary tiling is currently only supported for SkPictureShader, so we use
   // that instead of a plain bitmap shader to implement spacing.
-  const SkRect tile_rect = SkRect::MakeWH(image->width() + spacing.Width(),
-                                          image->height() + spacing.Height());
+  const SkRect tile_rect =
+      SkRect::MakeWH(image.sk_image()->width() + spacing.Width(),
+                     image.sk_image()->height() + spacing.Height());
 
   PaintRecorder recorder;
   PaintCanvas* canvas = recorder.beginRecording(tile_rect);
-  auto animation_type = animated ? PaintImage::AnimationType::ANIMATED
-                                 : PaintImage::AnimationType::STATIC;
-  auto completion_state = complete
-                              ? PaintImage::CompletionState::DONE
-                              : PaintImage::CompletionState::PARTIALLY_DONE;
-  canvas->drawImage(
-      PaintImage(std::move(image), animation_type, completion_state), 0, 0,
-      &paint);
+  canvas->drawImage(image, 0, 0, &paint);
 
   return MakePaintShaderRecord(recorder.finishRecordingAsPicture(), tmx, tmy,
                                &shader_matrix, nullptr);
@@ -276,13 +268,14 @@ void Image::DrawPattern(GraphicsContext& context,
                         const FloatSize& repeat_spacing) {
   TRACE_EVENT0("skia", "Image::drawPattern");
 
-  sk_sp<SkImage> image = ImageForCurrentFrame();
+  PaintImage image = PaintImageForCurrentFrame();
   if (!image)
     return;
 
   FloatRect norm_src_rect = float_src_rect;
 
-  norm_src_rect.Intersect(FloatRect(0, 0, image->width(), image->height()));
+  norm_src_rect.Intersect(
+      FloatRect(0, 0, image.sk_image()->width(), image.sk_image()->height()));
   if (dest_rect.IsEmpty() || norm_src_rect.IsEmpty())
     return;  // nothing to draw
 
@@ -301,15 +294,17 @@ void Image::DrawPattern(GraphicsContext& context,
   local_matrix.preScale(scale.Width(), scale.Height());
 
   // Fetch this now as subsetting may swap the image.
-  auto image_id = image->uniqueID();
+  auto image_id = image.sk_image()->uniqueID();
 
-  image = image->makeSubset(EnclosingIntRect(norm_src_rect));
+  image =
+      PaintImage(image.sk_image()->makeSubset(EnclosingIntRect(norm_src_rect)),
+                 image.animation_type(), image.completion_state());
   if (!image)
     return;
 
   const FloatSize tile_size(
-      image->width() * scale.Width() + repeat_spacing.Width(),
-      image->height() * scale.Height() + repeat_spacing.Height());
+      image.sk_image()->width() * scale.Width() + repeat_spacing.Width(),
+      image.sk_image()->height() * scale.Height() + repeat_spacing.Height());
   const auto tmx = ComputeTileMode(dest_rect.X(), dest_rect.MaxX(), adjusted_x,
                                    adjusted_x + tile_size.Width());
   const auto tmy = ComputeTileMode(dest_rect.Y(), dest_rect.MaxY(), adjusted_y,
@@ -322,10 +317,10 @@ void Image::DrawPattern(GraphicsContext& context,
       context.ComputeFilterQuality(this, dest_rect, norm_src_rect));
   flags.setAntiAlias(context.ShouldAntialias());
   flags.setShader(
-      CreatePatternShader(std::move(image), local_matrix, flags,
+      CreatePatternShader(image, local_matrix, flags,
                           FloatSize(repeat_spacing.Width() / scale.Width(),
                                     repeat_spacing.Height() / scale.Height()),
-                          tmx, tmy, MaybeAnimated(), CurrentFrameIsComplete()));
+                          tmx, tmy));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
@@ -342,6 +337,15 @@ PassRefPtr<Image> Image::ImageForDefaultFrame() {
   RefPtr<Image> image(this);
 
   return image.Release();
+}
+
+PaintImage Image::PaintImageForCurrentFrame() {
+  auto animation_type = MaybeAnimated() ? PaintImage::AnimationType::ANIMATED
+                                        : PaintImage::AnimationType::STATIC;
+  auto completion_state = CurrentFrameIsComplete()
+                              ? PaintImage::CompletionState::DONE
+                              : PaintImage::CompletionState::PARTIALLY_DONE;
+  return PaintImage(ImageForCurrentFrame(), animation_type, completion_state);
 }
 
 bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {

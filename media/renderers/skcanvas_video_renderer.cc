@@ -432,7 +432,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   // sw image into the SkPicture. The long term solution is for Skia to provide
   // a SkPicture filter that makes a picture safe for multiple CPU raster
   // threads. (skbug.com/4321).
-  sk_sp<const SkImage> image;
+  sk_sp<SkImage> image;
   if (canvas->imageInfo().colorType() == kUnknown_SkColorType)
     image = last_image_->makeNonTextureImage();
   else

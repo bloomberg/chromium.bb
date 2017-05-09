@@ -37,6 +37,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -153,6 +154,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual sk_sp<SkImage> ImageForCurrentFrame() = 0;
   virtual PassRefPtr<Image> ImageForDefaultFrame();
+
+  PaintImage PaintImageForCurrentFrame();
 
   enum ImageClampingMode {
     kClampImageToSourceRect,
