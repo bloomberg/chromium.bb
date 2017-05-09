@@ -193,6 +193,7 @@ public class WebViewLayoutTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/719974")
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
@@ -415,8 +416,9 @@ public class WebViewLayoutTest {
         File filePath = new File(absolutePath.substring(0, absolutePath.lastIndexOf("/")));
 
         if (!filePath.exists()) {
-            if (!filePath.mkdirs())
+            if (!filePath.mkdirs()) {
                 throw new IOException("failed to create directories: " + filePath);
+            }
         }
 
         FileOutputStream outputStream = new FileOutputStream(fileOut);
