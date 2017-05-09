@@ -30,6 +30,7 @@ class HarfBuzzShaperTest : public ::testing::Test {
   FontDescription font_description;
   Font font;
   unsigned start_index = 0;
+  unsigned num_characters = 0;
   unsigned num_glyphs = 0;
   hb_script_t script = HB_SCRIPT_INVALID;
 };
@@ -224,6 +225,19 @@ TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
   RefPtr<ShapeResult> first = shaper.Shape(&font, direction, 0, 6);
   RefPtr<ShapeResult> second = shaper.Shape(&font, direction, 6, 11);
   RefPtr<ShapeResult> third = shaper.Shape(&font, direction, 11, 12);
+
+  ASSERT_TRUE(TestInfo(first)->RunInfoForTesting(0, start_index, num_characters,
+                                                 num_glyphs, script));
+  EXPECT_EQ(0u, start_index);
+  EXPECT_EQ(6u, num_characters);
+  ASSERT_TRUE(TestInfo(second)->RunInfoForTesting(
+      0, start_index, num_characters, num_glyphs, script));
+  EXPECT_EQ(6u, start_index);
+  EXPECT_EQ(5u, num_characters);
+  ASSERT_TRUE(TestInfo(third)->RunInfoForTesting(0, start_index, num_characters,
+                                                 num_glyphs, script));
+  EXPECT_EQ(11u, start_index);
+  EXPECT_EQ(1u, num_characters);
 
   HarfBuzzShaper shaper2(string.Characters16(), 6);
   RefPtr<ShapeResult> first_reference = shaper2.Shape(&font, direction);

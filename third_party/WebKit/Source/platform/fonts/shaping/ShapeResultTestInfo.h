@@ -19,6 +19,11 @@ class PLATFORM_EXPORT ShapeResultTestInfo : public ShapeResult {
                          unsigned& start_index,
                          unsigned& num_glyphs,
                          hb_script_t&) const;
+  bool RunInfoForTesting(unsigned run_index,
+                         unsigned& start_index,
+                         unsigned& num_characters,
+                         unsigned& num_glyphs,
+                         hb_script_t&) const;
   uint16_t GlyphForTesting(unsigned run_index, size_t glyph_index) const;
   float AdvanceForTesting(unsigned run_index, size_t glyph_index) const;
   SimpleFontData* FontDataForTesting(unsigned run_index) const;

@@ -15,15 +15,26 @@ unsigned ShapeResultTestInfo::NumberOfRunsForTesting() const {
 
 bool ShapeResultTestInfo::RunInfoForTesting(unsigned run_index,
                                             unsigned& start_index,
+                                            unsigned& num_characters,
                                             unsigned& num_glyphs,
                                             hb_script_t& script) const {
   if (run_index < runs_.size() && runs_[run_index]) {
     start_index = runs_[run_index]->start_index_;
+    num_characters = runs_[run_index]->num_characters_;
     num_glyphs = runs_[run_index]->glyph_data_.size();
     script = runs_[run_index]->script_;
     return true;
   }
   return false;
+}
+
+bool ShapeResultTestInfo::RunInfoForTesting(unsigned run_index,
+                                            unsigned& start_index,
+                                            unsigned& num_glyphs,
+                                            hb_script_t& script) const {
+  unsigned num_characters;
+  return RunInfoForTesting(run_index, start_index, num_characters, num_glyphs,
+                           script);
 }
 
 uint16_t ShapeResultTestInfo::GlyphForTesting(unsigned run_index,

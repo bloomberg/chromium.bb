@@ -227,9 +227,12 @@ bool HarfBuzzShaper::ExtractShapeResults(
     if (HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(range_data->buffer))) {
       start_index = glyph_info[last_change_position].cluster;
       if (glyph_index == num_glyphs) {
-        num_characters = current_queue_item.start_index_ +
-                         current_queue_item.num_characters_ -
-                         glyph_info[last_change_position].cluster;
+        // Clamp the end offsets of the queue item to the offsets representing
+        // the shaping window.
+        unsigned shape_end =
+            std::min(range_data->end, current_queue_item.start_index_ +
+                                          current_queue_item.num_characters_);
+        num_characters = shape_end - glyph_info[last_change_position].cluster;
         num_glyphs_to_insert = num_glyphs - last_change_position;
       } else {
         num_characters = glyph_info[glyph_index].cluster -
@@ -240,9 +243,12 @@ bool HarfBuzzShaper::ExtractShapeResults(
       // Direction Backwards
       start_index = glyph_info[glyph_index - 1].cluster;
       if (last_change_position == 0) {
-        num_characters = current_queue_item.start_index_ +
-                         current_queue_item.num_characters_ -
-                         glyph_info[glyph_index - 1].cluster;
+        // Clamp the end offsets of the queue item to the offsets representing
+        // the shaping window.
+        unsigned shape_end =
+            std::min(range_data->end, current_queue_item.start_index_ +
+                                          current_queue_item.num_characters_);
+        num_characters = shape_end - glyph_info[glyph_index - 1].cluster;
       } else {
         num_characters = glyph_info[last_change_position - 1].cluster -
                          glyph_info[glyph_index - 1].cluster;
