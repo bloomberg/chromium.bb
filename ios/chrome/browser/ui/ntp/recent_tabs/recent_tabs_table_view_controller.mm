@@ -828,7 +828,9 @@ enum CellType {
       contentViewTopMargin = kSigninPromoViewTopMargin;
       SigninPromoView* signinPromoView =
           [[SigninPromoView alloc] initWithFrame:CGRectZero];
-      signinPromoView.sendChromeCommand = YES;
+      [signinPromoView
+          enableChromeCommandWithAccessPoint:signin_metrics::AccessPoint::
+                                                 ACCESS_POINT_RECENT_TABS];
       signinPromoView.textLabel.text =
           l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);
       signinPromoView.textLabel.preferredMaxLayoutWidth =

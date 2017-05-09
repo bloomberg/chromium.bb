@@ -411,7 +411,9 @@ CGSize PreferredCellSizeForWidth(UICollectionViewCell* cell, CGFloat width) {
           dequeueReusableCellWithReuseIdentifier:[BookmarkSigninPromoCell
                                                      reuseIdentifier]
                                     forIndexPath:indexPath];
-      signinPromoCell.signinPromoView.sendChromeCommand = YES;
+      [signinPromoCell.signinPromoView
+          enableChromeCommandWithAccessPoint:signin_metrics::AccessPoint::
+                                                 ACCESS_POINT_BOOKMARK_MANAGER];
       [[_signinPromoViewMediator createConfigurator]
           configureSigninPromoView:signinPromoCell.signinPromoView];
       __weak BookmarkFolderCollectionView* weakSelf = self;

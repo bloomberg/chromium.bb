@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "components/signin/core/browser/signin_metrics.h"
+
 @class MDCFlatButton;
 
 typedef NS_ENUM(NSInteger, SigninPromoViewMode) {
@@ -36,9 +38,6 @@ typedef NS_ENUM(NSInteger, SigninPromoViewMode) {
 @property(nonatomic, readonly) UILabel* textLabel;
 @property(nonatomic, readonly) MDCFlatButton* primaryButton;
 @property(nonatomic, readonly) MDCFlatButton* secondaryButton;
-// If set to YES, ShowSigninCommand is sent when primary or secondary buttons
-// are tapped.
-@property(nonatomic, getter=doesSendChromeCommand) BOOL sendChromeCommand;
 
 // Horizontal padding used for |textLabel|, |primaryButton| and
 // |secondaryButton|. Used to compute the preferred max layout width of
@@ -51,6 +50,13 @@ typedef NS_ENUM(NSInteger, SigninPromoViewMode) {
 // using CircularImageFromImage() (so if the image is not squared, it will be
 // cropped first). Must only be called in the "Warm State" mode.
 - (void)setProfileImage:(UIImage*)image;
+
+// Enables SigninPromoView to send ShowSigninCommand when primary or secondary
+// buttons are tapped, and sets the metric access point. By default, command is
+// disabled.
+// This method should be called only once.
+- (void)enableChromeCommandWithAccessPoint:
+    (signin_metrics::AccessPoint)accessPoint;
 
 @end
 

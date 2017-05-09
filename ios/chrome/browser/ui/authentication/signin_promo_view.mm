@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
@@ -34,6 +36,8 @@ const CGFloat kButtonHeight = 36;
 @implementation SigninPromoView {
   NSArray<NSLayoutConstraint*>* _coldStateConstraints;
   NSArray<NSLayoutConstraint*>* _warmStateConstraints;
+  BOOL _shouldSendChromeCommand;
+  signin_metrics::AccessPoint _accessPoint;
 }
 
 @synthesize mode = _mode;
@@ -41,12 +45,12 @@ const CGFloat kButtonHeight = 36;
 @synthesize textLabel = _textLabel;
 @synthesize primaryButton = _primaryButton;
 @synthesize secondaryButton = _secondaryButton;
-@synthesize sendChromeCommand = _sendChromeCommand;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     self.isAccessibilityElement = YES;
+    _accessPoint = signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
 
     // Adding subviews.
     self.clipsToBounds = YES;
@@ -205,23 +209,29 @@ const CGFloat kButtonHeight = 36;
   return kHorizontalPadding;
 }
 
+- (void)enableChromeCommandWithAccessPoint:
+    (signin_metrics::AccessPoint)accessPoint {
+  DCHECK(!_shouldSendChromeCommand);
+  _shouldSendChromeCommand = YES;
+  _accessPoint = accessPoint;
+}
+
 - (void)onPrimaryButtonAction:(id)unused {
-  if (!_sendChromeCommand) {
+  if (!_shouldSendChromeCommand) {
     return;
   }
+  [self recordSigninUserActionForAccessPoint];
   ShowSigninCommand* command = nil;
   switch (_mode) {
     case SigninPromoViewModeColdState:
       command = [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-                accessPoint:signin_metrics::AccessPoint::
-                                ACCESS_POINT_RECENT_TABS];
+                accessPoint:_accessPoint];
       break;
     case SigninPromoViewModeWarmState:
       command = [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS
-                accessPoint:signin_metrics::AccessPoint::
-                                ACCESS_POINT_RECENT_TABS];
+                accessPoint:_accessPoint];
       break;
   }
   DCHECK(command);
@@ -229,13 +239,30 @@ const CGFloat kButtonHeight = 36;
 }
 
 - (void)onSecondaryButtonAction:(id)unused {
-  if (!_sendChromeCommand) {
+  if (!_shouldSendChromeCommand) {
     return;
   }
+  [self recordSigninUserActionForAccessPoint];
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-            accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS];
+            accessPoint:_accessPoint];
   [self chromeExecuteCommand:command];
+}
+
+- (void)recordSigninUserActionForAccessPoint {
+  switch (_accessPoint) {
+    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromBookmarkManager"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromRecentTabs"));
+      break;
+    default:
+      NOTREACHED() << "Unexpected value for access point " << (int)_accessPoint;
+      break;
+  }
 }
 
 #pragma mark - NSObject(Accessibility)
