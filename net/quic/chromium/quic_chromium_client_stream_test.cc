@@ -206,7 +206,7 @@ class QuicChromiumClientStreamTest
     stream_ = new QuicChromiumClientStream(kTestStreamId, &session_,
                                            NetLogWithSource());
     session_.ActivateStream(base::WrapUnique(stream_));
-    stream_->SetDelegate(&delegate_);
+    handle_ = stream_->CreateHandle(&delegate_);
   }
 
   void InitializeHeaders() {
@@ -278,8 +278,10 @@ class QuicChromiumClientStreamTest
   }
 
   QuicCryptoClientConfig crypto_config_;
-  testing::StrictMock<MockDelegate> delegate2_;
+  std::unique_ptr<QuicChromiumClientStream::Handle> handle_;
   testing::StrictMock<MockDelegate> delegate_;
+  std::unique_ptr<QuicChromiumClientStream::Handle> handle2_;
+  testing::StrictMock<MockDelegate> delegate2_;
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
   MockQuicClientSessionBase session_;
@@ -291,6 +293,105 @@ class QuicChromiumClientStreamTest
 INSTANTIATE_TEST_CASE_P(Version,
                         QuicChromiumClientStreamTest,
                         ::testing::ValuesIn(AllSupportedVersions()));
+
+TEST_P(QuicChromiumClientStreamTest, Handle) {
+  EXPECT_TRUE(handle_->IsOpen());
+  EXPECT_EQ(kTestStreamId, handle_->id());
+  EXPECT_EQ(QUIC_NO_ERROR, handle_->connection_error());
+  EXPECT_EQ(QUIC_STREAM_NO_ERROR, handle_->stream_error());
+  EXPECT_TRUE(handle_->IsFirstStream());
+  EXPECT_FALSE(handle_->IsDoneReading());
+  EXPECT_FALSE(handle_->fin_sent());
+  EXPECT_FALSE(handle_->fin_received());
+  EXPECT_EQ(0u, handle_->stream_bytes_read());
+  EXPECT_EQ(0u, handle_->stream_bytes_written());
+  EXPECT_EQ(0u, handle_->NumBytesConsumed());
+
+  InitializeHeaders();
+  QuicStreamOffset offset = 0;
+  ProcessHeadersFull(headers_);
+  QuicStreamFrame frame2(kTestStreamId, true, offset, QuicStringPiece());
+  EXPECT_CALL(delegate_, OnClose());
+  stream_->OnStreamFrame(frame2);
+  EXPECT_TRUE(handle_->fin_received());
+  handle_->OnFinRead();
+
+  const char kData1[] = "hello world";
+  const size_t kDataLen = arraysize(kData1);
+
+  // All data written.
+  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(kDataLen, true)));
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, handle_->WriteStreamData(QuicStringPiece(kData1, kDataLen),
+                                         true, callback.callback()));
+
+  EXPECT_FALSE(handle_->IsOpen());
+  EXPECT_EQ(kTestStreamId, handle_->id());
+  EXPECT_EQ(QUIC_NO_ERROR, handle_->connection_error());
+  EXPECT_EQ(QUIC_STREAM_NO_ERROR, handle_->stream_error());
+  EXPECT_TRUE(handle_->IsFirstStream());
+  EXPECT_TRUE(handle_->IsDoneReading());
+  EXPECT_TRUE(handle_->fin_sent());
+  EXPECT_TRUE(handle_->fin_received());
+  EXPECT_EQ(0u, handle_->stream_bytes_read());
+  EXPECT_EQ(kDataLen, handle_->stream_bytes_written());
+  EXPECT_EQ(0u, handle_->NumBytesConsumed());
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED,
+            handle_->WriteStreamData(QuicStringPiece(kData1, kDataLen), true,
+                                     callback.callback()));
+
+  std::vector<scoped_refptr<IOBuffer>> buffers = {
+      scoped_refptr<IOBuffer>(new IOBuffer(10))};
+  std::vector<int> lengths = {10};
+  EXPECT_EQ(
+      ERR_CONNECTION_CLOSED,
+      handle_->WritevStreamData(buffers, lengths, true, callback.callback()));
+
+  SpdyHeaderBlock headers;
+  EXPECT_EQ(0u, handle_->WriteHeaders(std::move(headers), true, nullptr));
+}
+
+TEST_P(QuicChromiumClientStreamTest, HandleAfterConnectionClose) {
+  // Verify that the delegate's OnClose is called after closing the connection.
+  EXPECT_CALL(delegate_, OnClose());
+  EXPECT_CALL(session_,
+              SendRstStream(kTestStreamId, QUIC_RST_ACKNOWLEDGEMENT, 0));
+  stream_->OnConnectionClosed(QUIC_INVALID_FRAME_DATA,
+                              ConnectionCloseSource::FROM_PEER);
+
+  EXPECT_FALSE(handle_->IsOpen());
+  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, handle_->connection_error());
+}
+
+TEST_P(QuicChromiumClientStreamTest, HandleAfterStreamReset) {
+  // Verify that the delegate's OnClose is called after the stream is reset,
+  // but that the Handle still behaves correctly.
+  EXPECT_CALL(delegate_, OnClose());
+  QuicRstStreamFrame rst(kTestStreamId, QUIC_STREAM_CANCELLED, 0);
+  EXPECT_CALL(session_,
+              SendRstStream(kTestStreamId, QUIC_RST_ACKNOWLEDGEMENT, 0));
+  stream_->OnStreamReset(rst);
+
+  EXPECT_FALSE(handle_->IsOpen());
+  EXPECT_EQ(QUIC_STREAM_CANCELLED, handle_->stream_error());
+}
+
+TEST_P(QuicChromiumClientStreamTest, HandleAfterClearDelegate) {
+  EXPECT_TRUE(handle_->IsOpen());
+  handle_->ClearDelegate();
+
+  // Verify that the delegate's OnClose is not called after ClearDelegate.
+  EXPECT_CALL(delegate_, OnClose()).Times(0);
+  QuicRstStreamFrame rst(kTestStreamId, QUIC_STREAM_CANCELLED, 0);
+  EXPECT_CALL(session_,
+              SendRstStream(kTestStreamId, QUIC_RST_ACKNOWLEDGEMENT, 0));
+  stream_->OnStreamReset(rst);
+
+  EXPECT_FALSE(handle_->IsOpen());
+  EXPECT_EQ(QUIC_STREAM_CANCELLED, handle_->stream_error());
+}
 
 TEST_P(QuicChromiumClientStreamTest, OnFinRead) {
   InitializeHeaders();
@@ -359,10 +460,10 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
 }
 
 TEST_P(QuicChromiumClientStreamTest, OnError) {
-  EXPECT_CALL(delegate_, OnError(ERR_INTERNET_DISCONNECTED));
+  EXPECT_CALL(delegate_, OnError(ERR_INTERNET_DISCONNECTED)).Times(1);
 
   stream_->OnError(ERR_INTERNET_DISCONNECTED);
-  EXPECT_FALSE(stream_->GetDelegate());
+  stream_->OnError(ERR_INTERNET_DISCONNECTED);
 }
 
 TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
@@ -640,7 +741,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersBeforeDelegate) {
   // Now set the delegate and verify that the headers are delivered.
   EXPECT_CALL(delegate2_, OnInitialHeadersAvailableMock(
                               _, header_list.uncompressed_header_bytes()));
-  stream2->SetDelegate(&delegate2_);
+  handle2_ = stream2->CreateHandle(&delegate2_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(headers_, delegate2_.headers_);
 
@@ -672,7 +773,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeDelegate) {
   // not the data, which needs to be read explicitly.
   EXPECT_CALL(delegate2_, OnInitialHeadersAvailableMock(
                               _, header_list.uncompressed_header_bytes()));
-  stream2->SetDelegate(&delegate2_);
+  handle2_ = stream2->CreateHandle(&delegate2_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(headers_, delegate2_.headers_);
   base::RunLoop().RunUntilIdle();

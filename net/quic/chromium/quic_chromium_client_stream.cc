@@ -21,13 +21,226 @@
 
 namespace net {
 
+QuicChromiumClientStream::Handle::Handle(QuicChromiumClientStream* stream,
+                                         Delegate* delegate)
+    : stream_(stream), delegate_(delegate) {
+  SaveState();
+}
+
+QuicChromiumClientStream::Handle::~Handle() {
+  if (stream_) {
+    stream_->ClearHandle();
+    // TODO(rch): If stream_ is still valid, it should probably be Reset()
+    // so that it does not leak.
+    // stream_->Reset(QUIC_STREAM_CANCELLED);
+  }
+}
+
+void QuicChromiumClientStream::Handle::ClearDelegate() {
+  delegate_ = nullptr;
+}
+
+void QuicChromiumClientStream::Handle::OnInitialHeadersAvailable(
+    const SpdyHeaderBlock& headers,
+    size_t frame_len) {
+  delegate_->OnInitialHeadersAvailable(headers, frame_len);
+}
+
+void QuicChromiumClientStream::Handle::OnTrailingHeadersAvailable(
+    const SpdyHeaderBlock& headers,
+    size_t frame_len) {
+  delegate_->OnTrailingHeadersAvailable(headers, frame_len);
+}
+
+void QuicChromiumClientStream::Handle::OnDataAvailable() {
+  delegate_->OnDataAvailable();
+}
+
+void QuicChromiumClientStream::Handle::OnClose() {
+  if (stream_)
+    SaveState();
+  stream_ = nullptr;
+  if (delegate_) {
+    auto* delegate = delegate_;
+    delegate_ = nullptr;
+    delegate->OnClose();
+  }
+}
+
+void QuicChromiumClientStream::Handle::OnError(int error) {
+  if (stream_)
+    SaveState();
+  stream_ = nullptr;
+  if (delegate_) {
+    auto* delegate = delegate_;
+    delegate_ = nullptr;
+    delegate->OnError(error);
+  }
+}
+
+size_t QuicChromiumClientStream::Handle::WriteHeaders(
+    SpdyHeaderBlock header_block,
+    bool fin,
+    QuicReferenceCountedPointer<QuicAckListenerInterface>
+        ack_notifier_delegate) {
+  if (!stream_)
+    return 0;
+  return stream_->WriteHeaders(std::move(header_block), fin,
+                               ack_notifier_delegate);
+}
+
+int QuicChromiumClientStream::Handle::WriteStreamData(
+    base::StringPiece data,
+    bool fin,
+    const CompletionCallback& callback) {
+  if (!stream_)
+    return ERR_CONNECTION_CLOSED;
+  return stream_->WriteStreamData(data, fin, callback);
+}
+
+int QuicChromiumClientStream::Handle::WritevStreamData(
+    const std::vector<scoped_refptr<IOBuffer>>& buffers,
+    const std::vector<int>& lengths,
+    bool fin,
+    const CompletionCallback& callback) {
+  if (!stream_)
+    return ERR_CONNECTION_CLOSED;
+  return stream_->WritevStreamData(buffers, lengths, fin, callback);
+}
+
+int QuicChromiumClientStream::Handle::Read(IOBuffer* buf, int buf_len) {
+  if (!stream_)
+    return ERR_CONNECTION_CLOSED;
+  return stream_->Read(buf, buf_len);
+}
+
+void QuicChromiumClientStream::Handle::OnFinRead() {
+  if (stream_)
+    stream_->OnFinRead();
+}
+
+void QuicChromiumClientStream::Handle::DisableConnectionMigration() {
+  if (stream_)
+    stream_->DisableConnectionMigration();
+}
+
+void QuicChromiumClientStream::Handle::SetPriority(SpdyPriority priority) {
+  if (stream_)
+    stream_->SetPriority(priority);
+}
+
+void QuicChromiumClientStream::Handle::Reset(
+    QuicRstStreamErrorCode error_code) {
+  if (stream_)
+    stream_->Reset(error_code);
+}
+
+QuicStreamId QuicChromiumClientStream::Handle::id() const {
+  if (!stream_)
+    return id_;
+  return stream_->id();
+}
+
+QuicErrorCode QuicChromiumClientStream::Handle::connection_error() const {
+  if (!stream_)
+    return connection_error_;
+  return stream_->connection_error();
+}
+
+QuicRstStreamErrorCode QuicChromiumClientStream::Handle::stream_error() const {
+  if (!stream_)
+    return stream_error_;
+  return stream_->stream_error();
+}
+
+bool QuicChromiumClientStream::Handle::fin_sent() const {
+  if (!stream_)
+    return fin_sent_;
+  return stream_->fin_sent();
+}
+
+bool QuicChromiumClientStream::Handle::fin_received() const {
+  if (!stream_)
+    return fin_received_;
+  return stream_->fin_received();
+}
+
+uint64_t QuicChromiumClientStream::Handle::stream_bytes_read() const {
+  if (!stream_)
+    return stream_bytes_read_;
+  return stream_->stream_bytes_read();
+}
+
+uint64_t QuicChromiumClientStream::Handle::stream_bytes_written() const {
+  if (!stream_)
+    return stream_bytes_written_;
+  return stream_->stream_bytes_written();
+}
+
+size_t QuicChromiumClientStream::Handle::NumBytesConsumed() const {
+  if (!stream_)
+    return num_bytes_consumed_;
+  return stream_->sequencer()->NumBytesConsumed();
+}
+
+bool QuicChromiumClientStream::Handle::IsDoneReading() const {
+  if (!stream_)
+    return is_done_reading_;
+  return stream_->IsDoneReading();
+}
+
+bool QuicChromiumClientStream::Handle::IsFirstStream() const {
+  if (!stream_)
+    return is_first_stream_;
+  return stream_->IsFirstStream();
+}
+
+void QuicChromiumClientStream::Handle::OnPromiseHeaderList(
+    QuicStreamId promised_id,
+    size_t frame_len,
+    const QuicHeaderList& header_list) {
+  stream_->OnPromiseHeaderList(promised_id, frame_len, header_list);
+}
+
+SpdyPriority QuicChromiumClientStream::Handle::priority() const {
+  if (!stream_)
+    return priority_;
+  return stream_->priority();
+}
+
+bool QuicChromiumClientStream::Handle::can_migrate() {
+  if (!stream_)
+    return false;
+  return stream_->can_migrate();
+}
+
+QuicChromiumClientStream::Delegate*
+QuicChromiumClientStream::Handle::GetDelegate() {
+  return delegate_;
+}
+
+void QuicChromiumClientStream::Handle::SaveState() {
+  DCHECK(stream_);
+  fin_sent_ = stream_->fin_sent();
+  fin_received_ = stream_->fin_received();
+  num_bytes_consumed_ = stream_->sequencer()->NumBytesConsumed();
+  id_ = stream_->id();
+  connection_error_ = stream_->connection_error();
+  stream_error_ = stream_->stream_error();
+  is_done_reading_ = stream_->IsDoneReading();
+  is_first_stream_ = stream_->IsFirstStream();
+  stream_bytes_read_ = stream_->stream_bytes_read();
+  stream_bytes_written_ = stream_->stream_bytes_written();
+  priority_ = stream_->priority();
+}
+
 QuicChromiumClientStream::QuicChromiumClientStream(
     QuicStreamId id,
     QuicClientSessionBase* session,
     const NetLogWithSource& net_log)
     : QuicSpdyStream(id, session),
       net_log_(net_log),
-      delegate_(nullptr),
+      handle_(nullptr),
       headers_delivered_(false),
       initial_headers_sent_(false),
       session_(session),
@@ -36,8 +249,8 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       weak_factory_(this) {}
 
 QuicChromiumClientStream::~QuicChromiumClientStream() {
-  if (delegate_)
-    delegate_->OnClose();
+  if (handle_)
+    handle_->OnClose();
 }
 
 void QuicChromiumClientStream::OnInitialHeadersComplete(
@@ -58,14 +271,14 @@ void QuicChromiumClientStream::OnInitialHeadersComplete(
   ConsumeHeaderList();
   session_->OnInitialHeadersComplete(id(), header_block);
 
-  if (delegate_) {
-    // The delegate will receive the headers via a posted task.
-    NotifyDelegateOfInitialHeadersAvailableLater(std::move(header_block),
-                                                 frame_len);
+  if (handle_) {
+    // The handle will receive the headers via a posted task.
+    NotifyHandleOfInitialHeadersAvailableLater(std::move(header_block),
+                                               frame_len);
     return;
   }
 
-  // Buffer the headers and deliver them when the delegate arrives.
+  // Buffer the headers and deliver them when the handle arrives.
   initial_headers_ = std::move(header_block);
   initial_headers_frame_len_ = frame_len;
 }
@@ -75,8 +288,8 @@ void QuicChromiumClientStream::OnTrailingHeadersComplete(
     size_t frame_len,
     const QuicHeaderList& header_list) {
   QuicSpdyStream::OnTrailingHeadersComplete(fin, frame_len, header_list);
-  NotifyDelegateOfTrailingHeadersAvailableLater(received_trailers().Clone(),
-                                                frame_len);
+  NotifyHandleOfTrailingHeadersAvailableLater(received_trailers().Clone(),
+                                              frame_len);
 }
 
 void QuicChromiumClientStream::OnPromiseHeaderList(
@@ -109,16 +322,16 @@ void QuicChromiumClientStream::OnDataAvailable() {
     return;
   }
 
-  // The delegate will read the data via a posted task, and
+  // The handle will read the data via a posted task, and
   // will be able to, potentially, read all data which has queued up.
-  if (delegate_)
-    NotifyDelegateOfDataAvailableLater();
+  if (handle_)
+    NotifyHandleOfDataAvailableLater();
 }
 
 void QuicChromiumClientStream::OnClose() {
-  if (delegate_) {
-    delegate_->OnClose();
-    delegate_ = nullptr;
+  if (handle_) {
+    handle_->OnClose();
+    handle_ = nullptr;
   }
   QuicStream::OnClose();
 }
@@ -192,25 +405,32 @@ int QuicChromiumClientStream::WritevStreamData(
   return ERR_IO_PENDING;
 }
 
-void QuicChromiumClientStream::SetDelegate(
+std::unique_ptr<QuicChromiumClientStream::Handle>
+QuicChromiumClientStream::CreateHandle(
     QuicChromiumClientStream::Delegate* delegate) {
-  DCHECK(!(delegate_ && delegate));
-  delegate_ = delegate;
-  if (delegate == nullptr)
-    return;
+  DCHECK(!handle_);
+  auto handle = std::unique_ptr<QuicChromiumClientStream::Handle>(
+      new QuicChromiumClientStream::Handle(this, delegate));
+  handle_ = handle.get();
 
   // Should this perhaps be via PostTask to make reasoning simpler?
   if (!initial_headers_.empty()) {
-    delegate_->OnInitialHeadersAvailable(std::move(initial_headers_),
-                                         initial_headers_frame_len_);
+    handle_->OnInitialHeadersAvailable(std::move(initial_headers_),
+                                       initial_headers_frame_len_);
   }
+
+  return handle;
+}
+
+void QuicChromiumClientStream::ClearHandle() {
+  handle_ = nullptr;
 }
 
 void QuicChromiumClientStream::OnError(int error) {
-  if (delegate_) {
-    QuicChromiumClientStream::Delegate* delegate = delegate_;
-    delegate_ = nullptr;
-    delegate->OnError(error);
+  if (handle_) {
+    QuicChromiumClientStream::Handle* handle = handle_;
+    handle_ = nullptr;
+    handle->OnError(error);
   }
 }
 
@@ -230,22 +450,22 @@ int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
   return bytes_read;
 }
 
-void QuicChromiumClientStream::NotifyDelegateOfInitialHeadersAvailableLater(
+void QuicChromiumClientStream::NotifyHandleOfInitialHeadersAvailableLater(
     SpdyHeaderBlock headers,
     size_t frame_len) {
-  DCHECK(delegate_);
+  DCHECK(handle_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(
-          &QuicChromiumClientStream::NotifyDelegateOfInitialHeadersAvailable,
+          &QuicChromiumClientStream::NotifyHandleOfInitialHeadersAvailable,
           weak_factory_.GetWeakPtr(), base::Passed(std::move(headers)),
           frame_len));
 }
 
-void QuicChromiumClientStream::NotifyDelegateOfInitialHeadersAvailable(
+void QuicChromiumClientStream::NotifyHandleOfInitialHeadersAvailable(
     SpdyHeaderBlock headers,
     size_t frame_len) {
-  if (!delegate_)
+  if (!handle_)
     return;
 
   DCHECK(!headers_delivered_);
@@ -254,50 +474,50 @@ void QuicChromiumClientStream::NotifyDelegateOfInitialHeadersAvailable(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_HEADERS,
       base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
 
-  delegate_->OnInitialHeadersAvailable(headers, frame_len);
+  handle_->OnInitialHeadersAvailable(headers, frame_len);
 }
 
-void QuicChromiumClientStream::NotifyDelegateOfTrailingHeadersAvailableLater(
+void QuicChromiumClientStream::NotifyHandleOfTrailingHeadersAvailableLater(
     SpdyHeaderBlock headers,
     size_t frame_len) {
-  DCHECK(delegate_);
+  DCHECK(handle_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(
-          &QuicChromiumClientStream::NotifyDelegateOfTrailingHeadersAvailable,
+          &QuicChromiumClientStream::NotifyHandleOfTrailingHeadersAvailable,
           weak_factory_.GetWeakPtr(), base::Passed(std::move(headers)),
           frame_len));
 }
 
-void QuicChromiumClientStream::NotifyDelegateOfTrailingHeadersAvailable(
+void QuicChromiumClientStream::NotifyHandleOfTrailingHeadersAvailable(
     SpdyHeaderBlock headers,
     size_t frame_len) {
-  if (!delegate_)
+  if (!handle_)
     return;
 
   DCHECK(headers_delivered_);
   // Only mark trailers consumed when we are about to notify delegate.
   MarkTrailersConsumed();
   // Post an async task to notify delegate of the FIN flag.
-  NotifyDelegateOfDataAvailableLater();
+  NotifyHandleOfDataAvailableLater();
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS,
       base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
 
-  delegate_->OnTrailingHeadersAvailable(headers, frame_len);
+  handle_->OnTrailingHeadersAvailable(headers, frame_len);
 }
 
-void QuicChromiumClientStream::NotifyDelegateOfDataAvailableLater() {
-  DCHECK(delegate_);
+void QuicChromiumClientStream::NotifyHandleOfDataAvailableLater() {
+  DCHECK(handle_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&QuicChromiumClientStream::NotifyDelegateOfDataAvailable,
+      base::Bind(&QuicChromiumClientStream::NotifyHandleOfDataAvailable,
                  weak_factory_.GetWeakPtr()));
 }
 
-void QuicChromiumClientStream::NotifyDelegateOfDataAvailable() {
-  if (delegate_)
-    delegate_->OnDataAvailable();
+void QuicChromiumClientStream::NotifyHandleOfDataAvailable() {
+  if (handle_)
+    handle_->OnDataAvailable();
 }
 
 void QuicChromiumClientStream::DisableConnectionMigration() {

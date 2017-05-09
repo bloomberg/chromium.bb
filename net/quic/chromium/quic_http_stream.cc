@@ -108,8 +108,8 @@ bool QuicHttpStream::CheckVary(const SpdyHeaderBlock& client_request,
 void QuicHttpStream::OnRendezvousResult(QuicSpdyStream* stream) {
   push_handle_ = nullptr;
   if (stream) {
-    stream_ = static_cast<QuicChromiumClientStream*>(stream);
-    stream_->SetDelegate(this);
+    stream_ =
+        static_cast<QuicChromiumClientStream*>(stream)->CreateHandle(this);
   }
 
   // callback_ should only be non-null in the case of asynchronous
@@ -358,7 +358,7 @@ void QuicHttpStream::Close(bool /*not_reusable*/) {
   SaveResponseStatus();
   // Note: the not_reusable flag has no meaning for QUIC streams.
   if (stream_) {
-    stream_->SetDelegate(nullptr);
+    stream_->ClearDelegate();
     stream_->Reset(QUIC_STREAM_CANCELLED);
   }
   ResetStream();
@@ -378,10 +378,9 @@ int64_t QuicHttpStream::GetTotalReceivedBytes() const {
   // bytes. Change this to include QUIC overhead as well.
   int64_t total_received_bytes = headers_bytes_received_;
   if (stream_) {
-    DCHECK_LE(stream_->sequencer()->NumBytesConsumed(),
-              stream_->stream_bytes_read());
+    DCHECK_LE(stream_->NumBytesConsumed(), stream_->stream_bytes_read());
     // Only count the uniquely received bytes.
-    total_received_bytes += stream_->sequencer()->NumBytesConsumed();
+    total_received_bytes += stream_->NumBytesConsumed();
   } else {
     total_received_bytes += closed_stream_received_bytes_;
   }
@@ -671,7 +670,7 @@ int QuicHttpStream::DoReadRequestBodyComplete(int rv) {
   // |rv| is the result of read from the request body from the last call to
   // DoSendBody().
   if (rv < 0) {
-    stream_->SetDelegate(nullptr);
+    stream_->ClearDelegate();
     stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
     ResetStream();
     return rv;
@@ -764,7 +763,7 @@ int QuicHttpStream::ReadAvailableData(IOBuffer* buf, int buf_len) {
   if (null_stream)
     return rv;
   if (stream_->IsDoneReading()) {
-    stream_->SetDelegate(nullptr);
+    stream_->ClearDelegate();
     stream_->OnFinRead();
     SetResponseStatus(OK);
     ResetStream();
@@ -779,12 +778,12 @@ void QuicHttpStream::ResetStream() {
   }
   if (!stream_)
     return;
-  DCHECK_LE(stream_->sequencer()->NumBytesConsumed(),
-            stream_->stream_bytes_read());
+  DCHECK_LE(stream_->NumBytesConsumed(), stream_->stream_bytes_read());
   // Only count the uniquely received bytes.
-  closed_stream_received_bytes_ = stream_->sequencer()->NumBytesConsumed();
+  closed_stream_received_bytes_ = stream_->NumBytesConsumed();
   closed_stream_sent_bytes_ = stream_->stream_bytes_written();
   closed_is_first_stream_ = stream_->IsFirstStream();
+  stream_->ClearDelegate();
   stream_ = nullptr;
 
   // If |request_body_stream_| is non-NULL, Reset it, to abort any in progress
