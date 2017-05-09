@@ -9,6 +9,7 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -16,7 +17,6 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebView.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -99,7 +99,7 @@ WebString WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(
   if (!frame)
     return WebString();
   StringBuilder text;
-  FrameContentAsPlainText(max_chars, ToWebLocalFrameImpl(frame)->GetFrame(),
+  FrameContentAsPlainText(max_chars, ToWebLocalFrameBase(frame)->GetFrame(),
                           text);
   return text.ToString();
 }
@@ -115,7 +115,7 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
 WebString WebFrameContentDumper::DumpAsMarkup(WebLocalFrame* frame) {
   if (!frame)
     return WebString();
-  return CreateMarkup(ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument());
+  return CreateMarkup(ToWebLocalFrameBase(frame)->GetFrame()->GetDocument());
 }
 
 WebString WebFrameContentDumper::DumpLayoutTreeAsText(
@@ -135,7 +135,7 @@ WebString WebFrameContentDumper::DumpLayoutTreeAsText(
   if (to_show & kLayoutAsTextPrinting)
     behavior |= kLayoutAsTextPrintingMode;
 
-  return ExternalRepresentation(ToWebLocalFrameImpl(frame)->GetFrame(),
+  return ExternalRepresentation(ToWebLocalFrameBase(frame)->GetFrame(),
                                 behavior);
 }
 }

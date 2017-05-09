@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class FrameView;
 class LocalFrame;
 class Node;
 class WebFrameClient;
@@ -34,10 +35,19 @@ class WebLocalFrameBase : public WebLocalFrame {
   virtual WebTextCheckClient* TextCheckClient() const = 0;
   virtual void SetContextMenuNode(Node*) = 0;
   virtual void ClearContextMenuNode() = 0;
+  virtual LocalFrame* GetFrame() const = 0;
+  virtual FrameView* GetFrameView() const = 0;
 
  protected:
   explicit WebLocalFrameBase(WebTreeScopeType scope) : WebLocalFrame(scope) {}
 };
-}
+
+DEFINE_TYPE_CASTS(WebLocalFrameBase,
+                  WebFrame,
+                  frame,
+                  frame->IsWebLocalFrame(),
+                  frame.IsWebLocalFrame());
+
+}  // namespace blink
 
 #endif  // WebLocalFrameBase_h
