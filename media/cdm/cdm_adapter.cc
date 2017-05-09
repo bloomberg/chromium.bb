@@ -87,19 +87,18 @@ CdmPromise::Exception ToMediaExceptionType(cdm::Error error) {
   return CdmPromise::UNKNOWN_ERROR;
 }
 
-ContentDecryptionModule::MessageType ToMediaMessageType(
-    cdm::MessageType message_type) {
+CdmMessageType ToMediaMessageType(cdm::MessageType message_type) {
   switch (message_type) {
     case cdm::kLicenseRequest:
-      return ContentDecryptionModule::LICENSE_REQUEST;
+      return CdmMessageType::LICENSE_REQUEST;
     case cdm::kLicenseRenewal:
-      return ContentDecryptionModule::LICENSE_RENEWAL;
+      return CdmMessageType::LICENSE_RENEWAL;
     case cdm::kLicenseRelease:
-      return ContentDecryptionModule::LICENSE_RELEASE;
+      return CdmMessageType::LICENSE_RELEASE;
   }
 
   NOTREACHED() << "Unexpected cdm::MessageType " << message_type;
-  return ContentDecryptionModule::LICENSE_REQUEST;
+  return CdmMessageType::LICENSE_REQUEST;
 }
 
 CdmKeyInformation::KeyStatus ToCdmKeyInformationKeyStatus(

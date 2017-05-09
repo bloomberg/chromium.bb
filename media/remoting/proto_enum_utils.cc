@@ -499,10 +499,9 @@ base::Optional<pb::CdmException> ToProtoCdmException(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<ContentDecryptionModule::MessageType> ToMediaCdmMessageType(
-    pb::CdmMessageType value) {
+base::Optional<CdmMessageType> ToMediaCdmMessageType(pb::CdmMessageType value) {
   using OriginType = pb::CdmMessageType;
-  using OtherType = ContentDecryptionModule;
+  using OtherType = CdmMessageType;
   switch (value) {
     CASE_RETURN_OTHER(LICENSE_REQUEST);
     CASE_RETURN_OTHER(LICENSE_RENEWAL);
@@ -511,9 +510,8 @@ base::Optional<ContentDecryptionModule::MessageType> ToMediaCdmMessageType(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(
-    ContentDecryptionModule::MessageType value) {
-  using OriginType = ContentDecryptionModule;
+base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(CdmMessageType value) {
+  using OriginType = CdmMessageType;
   using OtherType = pb::CdmMessageType;
   switch (value) {
     CASE_RETURN_OTHER(LICENSE_REQUEST);

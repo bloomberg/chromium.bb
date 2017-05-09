@@ -228,14 +228,13 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   }
 
   void OnSessionMessage(const std::string& session_id,
-                        ContentDecryptionModule::MessageType message_type,
+                        CdmMessageType message_type,
                         const std::vector<uint8_t>& message,
                         AesDecryptor* decryptor) override {
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
     EXPECT_EQ(current_session_id_, session_id);
-    EXPECT_EQ(ContentDecryptionModule::MessageType::LICENSE_REQUEST,
-              message_type);
+    EXPECT_EQ(CdmMessageType::LICENSE_REQUEST, message_type);
 
     // Extract the key ID from |message|. For Clear Key this is a JSON object
     // containing a set of "kids". There should only be 1 key ID in |message|.
@@ -338,7 +337,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
 class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
   void OnSessionMessage(const std::string& session_id,
-                        ContentDecryptionModule::MessageType message_type,
+                        CdmMessageType message_type,
                         const std::vector<uint8_t>& message,
                         AesDecryptor* decryptor) override {
     EXPECT_FALSE(session_id.empty());

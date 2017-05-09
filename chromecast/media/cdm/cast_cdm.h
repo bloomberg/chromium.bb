@@ -75,10 +75,9 @@ class CastCdm : public ::media::ContentDecryptionModule {
  protected:
   ~CastCdm() override;
 
-  void OnSessionMessage(
-      const std::string& session_id,
-      const std::vector<uint8_t>& message,
-      ::media::ContentDecryptionModule::MessageType message_type);
+  void OnSessionMessage(const std::string& session_id,
+                        const std::vector<uint8_t>& message,
+                        ::media::CdmMessageType message_type);
   void OnSessionClosed(const std::string& session_id);
   void OnSessionKeysChange(const std::string& session_id,
                            bool newly_usable_keys,

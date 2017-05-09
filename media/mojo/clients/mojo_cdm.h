@@ -38,7 +38,7 @@ class MojoCdm : public ContentDecryptionModule,
                 public CdmContext,
                 public mojom::ContentDecryptionModuleClient {
  public:
-  using MessageType = ContentDecryptionModule::MessageType;
+  using MessageType = CdmMessageType;
 
   static void Create(
       const std::string& key_system,

@@ -230,10 +230,9 @@ void MockCdm::RemoveSession(const std::string& session_id,
   OnRemoveSession(session_id, promise);
 }
 
-void MockCdm::CallSessionMessageCB(
-    const std::string& session_id,
-    ContentDecryptionModule::MessageType message_type,
-    const std::vector<uint8_t>& message) {
+void MockCdm::CallSessionMessageCB(const std::string& session_id,
+                                   CdmMessageType message_type,
+                                   const std::vector<uint8_t>& message) {
   session_message_cb_.Run(session_id, message_type, message);
 }
 

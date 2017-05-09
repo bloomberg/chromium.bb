@@ -351,7 +351,7 @@ class MockCdmClient {
 
   MOCK_METHOD3(OnSessionMessage,
                void(const std::string& session_id,
-                    ContentDecryptionModule::MessageType message_type,
+                    CdmMessageType message_type,
                     const std::vector<uint8_t>& message));
   MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
 
@@ -511,7 +511,7 @@ class MockCdm : public ContentDecryptionModule {
   MOCK_METHOD0(GetCdmContext, CdmContext*());
 
   void CallSessionMessageCB(const std::string& session_id,
-                            ContentDecryptionModule::MessageType message_type,
+                            CdmMessageType message_type,
                             const std::vector<uint8_t>& message);
   void CallSessionClosedCB(const std::string& session_id);
   void CallSessionKeysChangeCB(const std::string& session_id,

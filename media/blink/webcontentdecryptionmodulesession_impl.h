@@ -51,7 +51,7 @@ class WebContentDecryptionModuleSessionImpl
   void Remove(blink::WebContentDecryptionModuleResult result) override;
 
   // Callbacks.
-  void OnSessionMessage(ContentDecryptionModule::MessageType message_type,
+  void OnSessionMessage(CdmMessageType message_type,
                         const std::vector<uint8_t>& message);
   void OnSessionKeysChange(bool has_additional_usable_key,
                            CdmKeysInfo keys_info);

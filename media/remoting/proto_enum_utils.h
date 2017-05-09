@@ -86,10 +86,8 @@ base::Optional<CdmPromise::Exception> ToCdmPromiseException(
 base::Optional<pb::CdmException> ToProtoCdmException(
     CdmPromise::Exception value);
 
-base::Optional<ContentDecryptionModule::MessageType> ToMediaCdmMessageType(
-    pb::CdmMessageType value);
-base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(
-    ContentDecryptionModule::MessageType value);
+base::Optional<CdmMessageType> ToMediaCdmMessageType(pb::CdmMessageType value);
+base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(CdmMessageType value);
 
 base::Optional<CdmSessionType> ToCdmSessionType(pb::CdmSessionType value);
 base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(CdmSessionType value);

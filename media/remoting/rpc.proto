@@ -286,7 +286,7 @@ enum CdmException {
   OUTPUT_ERROR = 6;
 }
 
-// Proto version of media::ContentDecryptionModule::MessageType.
+// Proto version of media::CdmMessageType.
 // NEVER change these numbers or re-use old ones; only add new ones.
 enum CdmMessageType {
   LICENSE_REQUEST = 0;

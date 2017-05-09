@@ -162,11 +162,10 @@ void MojoCdmService::OnCdmCreated(
                std::move(decryptor_service));
 }
 
-void MojoCdmService::OnSessionMessage(
-    const std::string& session_id,
-    ::media::ContentDecryptionModule::MessageType message_type,
-    const std::vector<uint8_t>& message) {
-  DVLOG(2) << __func__ << "(" << message_type << ")";
+void MojoCdmService::OnSessionMessage(const std::string& session_id,
+                                      ::media::CdmMessageType message_type,
+                                      const std::vector<uint8_t>& message) {
+  DVLOG(2) << __func__;
   client_->OnSessionMessage(session_id, message_type, message);
 }
 

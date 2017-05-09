@@ -42,10 +42,9 @@ CdmContext* FakeEncryptedMedia::GetCdmContext() {
 }
 
 // Callbacks for firing session events. Delegate to |app_|.
-void FakeEncryptedMedia::OnSessionMessage(
-    const std::string& session_id,
-    ContentDecryptionModule::MessageType message_type,
-    const std::vector<uint8_t>& message) {
+void FakeEncryptedMedia::OnSessionMessage(const std::string& session_id,
+                                          CdmMessageType message_type,
+                                          const std::vector<uint8_t>& message) {
   app_->OnSessionMessage(session_id, message_type, message, decryptor_.get());
 }
 
