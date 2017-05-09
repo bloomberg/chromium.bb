@@ -94,8 +94,10 @@ void OnSetOomScoreAdj(bool success, const std::string& output) {
 
 std::ostream& operator<<(std::ostream& os, const ProcessType& type) {
   switch (type) {
+    case ProcessType::FOCUSED_TAB:
+      return os << "FOCUSED_TAB";
     case ProcessType::FOCUSED_APP:
-      return os << "FOCUSED_APP/FOCUSED_TAB";
+      return os << "FOCUSED_APP";
     case ProcessType::VISIBLE_APP:
       return os << "VISIBLE_APP";
     case ProcessType::BACKGROUND_TAB:
@@ -144,7 +146,8 @@ bool TabManagerDelegate::Candidate::operator<(
     return TabManager::CompareTabStats(*tab(), *rhs.tab());
   // Impossible case. If app and tab are mixed in one process type, favor
   // apps.
-  NOTREACHED() << "Undefined comparison between apps and tabs";
+  NOTREACHED() << "Undefined comparison between apps and tabs: process_type="
+               << process_type();
   return app();
 }
 
