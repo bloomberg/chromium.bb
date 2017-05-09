@@ -17,7 +17,7 @@ import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.content_public.browser.GestureStateListener;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -157,13 +157,40 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
         assertEquals("false", result);
     }
 
+    private static class TapGestureStateListener extends GestureStateListener {
+        private CallbackHelper mCallbackHelper = new CallbackHelper();
+
+        public int getCallCount() {
+            return mCallbackHelper.getCallCount();
+        }
+
+        public void waitForTap(int currentCallCount) throws Throwable {
+            mCallbackHelper.waitForCallback(currentCallCount);
+        }
+
+        @Override
+        public void onSingleTap(boolean consumed) {
+            mCallbackHelper.notifyCalled();
+        }
+    }
+
+    /**
+     * Taps on a view and waits for a callback.
+     */
+    private void tapViewAndWait(AwTestContainerView view) throws Throwable {
+        final TapGestureStateListener tapGestureStateListener = new TapGestureStateListener();
+        int callCount = tapGestureStateListener.getCallCount();
+        view.getContentViewCore().addGestureStateListener(tapGestureStateListener);
+
+        AwTestTouchUtils.simulateTouchCenterOfView(view);
+        tapGestureStateListener.waitForTap(callCount);
+    }
+
     /*
      * Verify that when the AwContentsClient calls handleJsBeforeUnload
-     * Flaky (crbug/719308)
      */
     @MediumTest
     @Feature({"AndroidWebView"})
-    @RetryOnFailure
     public void testOverrideBeforeUnloadHandling() throws Throwable {
         final CallbackHelper jsBeforeUnloadHelper = new CallbackHelper();
         TestAwContentsClient client = new TestAwContentsClient() {
@@ -181,7 +208,7 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
                 "text/html", false);
         enableJavaScriptOnUiThread(awContents);
         // JavaScript onbeforeunload dialogs require a user gesture.
-        AwTestTouchUtils.simulateTouchCenterOfView(view);
+        tapViewAndWait(view);
 
         // Don't wait synchronously because we don't leave the page.
         int currentCallCount = jsBeforeUnloadHelper.getCallCount();
