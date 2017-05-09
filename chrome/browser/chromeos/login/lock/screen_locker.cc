@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/login/views/lock_screen.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
@@ -46,6 +49,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/biod/constants.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -66,6 +70,8 @@
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -80,6 +86,12 @@ namespace {
 // on successful authentication before unlocking, but we want to be sure that
 // unlock happens even if animations are broken.
 const int kUnlockGuardTimeoutMs = 400;
+
+// Returns true if we are using md-based login/lock.
+bool IsUsingMdLogin() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kShowMdLogin);
+}
 
 // Returns true if fingerprint authentication is available for one of the
 // |users|.
@@ -111,7 +123,7 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
   ~ScreenLockObserver() override {
     if (DBusThreadManager::IsInitialized()) {
       DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(
-          NULL);
+          nullptr);
     }
   }
 
@@ -153,12 +165,47 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
 
-ScreenLockObserver* g_screen_lock_observer = NULL;
+// Stubbed delegate that will eventually be replaced by mojo calls.
+class StubDelegate : public ScreenLocker::Delegate {
+ public:
+  StubDelegate() = default;
+  ~StubDelegate() override = default;
+
+  // ScreenLocker::Delegate:
+  void SetPasswordInputEnabled(bool enabled) override { NOTIMPLEMENTED(); }
+  void ShowErrorMessage(int error_msg_id,
+                        HelpAppLauncher::HelpTopic help_topic_id) override {
+    NOTIMPLEMENTED();
+  }
+  void ClearErrors() override { NOTIMPLEMENTED(); }
+  void AnimateAuthenticationSuccess() override { NOTIMPLEMENTED(); }
+  void OnLockWebUIReady() override { NOTIMPLEMENTED(); }
+  void OnLockBackgroundDisplayed() override { NOTIMPLEMENTED(); }
+  void OnHeaderBarVisible() override { NOTIMPLEMENTED(); }
+  void OnAshLockAnimationFinished() override { NOTIMPLEMENTED(); }
+  void SetFingerprintState(const AccountId& account_id,
+                           ScreenLocker::FingerprintState state) override {
+    NOTIMPLEMENTED();
+  }
+  content::WebContents* GetWebContents() override { return nullptr; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StubDelegate);
+};
+
+ScreenLockObserver* g_screen_lock_observer = nullptr;
 
 }  // namespace
 
 // static
-ScreenLocker* ScreenLocker::screen_locker_ = NULL;
+ScreenLocker* ScreenLocker::screen_locker_ = nullptr;
+
+//////////////////////////////////////////////////////////////////////////////
+// ScreenLocker::Delegate, public:
+
+ScreenLocker::Delegate::Delegate() = default;
+
+ScreenLocker::Delegate::~Delegate() = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // ScreenLocker, public:
@@ -188,15 +235,36 @@ void ScreenLocker::Init() {
 
   authenticator_ = UserSessionManager::GetInstance()->CreateAuthenticator(this);
   extended_authenticator_ = ExtendedAuthenticator::Create(this);
-  web_ui_.reset(new WebUIScreenLocker(this));
-  web_ui()->LockScreen();
+  if (IsUsingMdLogin()) {
+    // Create delegate that will eventually call into the views-based lock
+    // screen via mojo.
+    delegate_ = new StubDelegate();
+    owns_delegate_ = true;
 
-  // Ownership of |icon_image_source| is passed.
-  screenlock_icon_provider_.reset(new ScreenlockIconProvider);
-  ScreenlockIconSource* screenlock_icon_source =
-      new ScreenlockIconSource(screenlock_icon_provider_->AsWeakPtr());
-  content::URLDataSource::Add(web_ui()->GetWebContents()->GetBrowserContext(),
-                              screenlock_icon_source);
+    // Create and display lock screen.
+    // TODO(jdufualt): LockWindow should live in ash.
+    // TODO(jdufault): Calling ash::ShowLockScreenInWidget should be a mojo
+    // call. We should only set the session state to locked after the mojo call
+    // has completed.
+    LockWindow* lock_window = new LockWindow();
+    lock_window->SetBounds(
+        display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+    ash::ShowLockScreenInWidget(lock_window);
+    session_manager::SessionManager::Get()->SetSessionState(
+        session_manager::SessionState::LOCKED);
+  } else {
+    web_ui_.reset(new WebUIScreenLocker(this));
+    delegate_ = web_ui_.get();
+    owns_delegate_ = false;
+    web_ui_->LockScreen();
+
+    // Ownership of |icon_image_source| is passed.
+    screenlock_icon_provider_ = base::MakeUnique<ScreenlockIconProvider>();
+    ScreenlockIconSource* screenlock_icon_source =
+        new ScreenlockIconSource(screenlock_icon_provider_->AsWeakPtr());
+    content::URLDataSource::Add(web_ui_->web_contents()->GetBrowserContext(),
+                                screenlock_icon_source);
+  }
 
   // Start locking on ash side.
   SessionControllerClient::Get()->StartLock(base::Bind(
@@ -220,10 +288,10 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
   // Don't enable signout button here as we're showing
   // MessageBubble.
 
-  web_ui()->ShowErrorMessage(incorrect_passwords_count_++
-                                 ? IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
-                                 : IDS_LOGIN_ERROR_AUTHENTICATING,
-                             HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+  delegate_->ShowErrorMessage(incorrect_passwords_count_++
+                                  ? IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
+                                  : IDS_LOGIN_ERROR_AUTHENTICATING,
+                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 
   if (auth_status_consumer_)
     auth_status_consumer_->OnAuthFailure(error);
@@ -247,7 +315,7 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
   if (user) {
     if (!user->is_active()) {
-      saved_ime_state_ = NULL;
+      saved_ime_state_ = nullptr;
       user_manager::UserManager::Get()->SwitchActiveUser(
           user_context.GetAccountId());
     }
@@ -280,7 +348,7 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
       FROM_HERE, base::Bind(&ScreenLocker::UnlockOnLoginSuccess,
                             weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUnlockGuardTimeoutMs));
-  web_ui()->AnimateAuthenticationSuccess();
+  delegate_->AnimateAuthenticationSuccess();
 }
 
 void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
@@ -315,7 +383,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
       << "Invalid user trying to unlock.";
 
   authentication_start_time_ = base::Time::Now();
-  web_ui()->SetInputEnabled(false);
+  delegate_->SetPasswordInputEnabled(false);
   if (user_context.IsUsingPin())
     unlock_attempt_type_ = AUTH_PIN;
 
@@ -379,18 +447,18 @@ void ScreenLocker::OnStartLockCallback(bool locked) {
   if (!locked)
     return;
 
-  web_ui()->OnAshLockAnimationFinished();
+  delegate_->OnAshLockAnimationFinished();
 
   AccessibilityManager::Get()->PlayEarcon(
       chromeos::SOUND_LOCK, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 }
 
 void ScreenLocker::ClearErrors() {
-  web_ui()->ClearErrors();
+  delegate_->ClearErrors();
 }
 
 void ScreenLocker::Signout() {
-  web_ui()->ClearErrors();
+  delegate_->ClearErrors();
   base::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
   // We expect that this call will not wait for any user input.
   // If it changes at some point, we will need to force exit.
@@ -401,14 +469,14 @@ void ScreenLocker::Signout() {
 }
 
 void ScreenLocker::EnableInput() {
-  web_ui()->SetInputEnabled(true);
+  delegate_->SetPasswordInputEnabled(true);
 }
 
 void ScreenLocker::ShowErrorMessage(int error_msg_id,
                                     HelpAppLauncher::HelpTopic help_topic_id,
                                     bool sign_out_only) {
-  web_ui()->SetInputEnabled(!sign_out_only);
-  web_ui()->ShowErrorMessage(error_msg_id, help_topic_id);
+  delegate_->SetPasswordInputEnabled(!sign_out_only);
+  delegate_->ShowErrorMessage(error_msg_id, help_topic_id);
 }
 
 void ScreenLocker::SetLoginStatusConsumer(
@@ -426,7 +494,7 @@ void ScreenLocker::InitClass() {
 void ScreenLocker::ShutDownClass() {
   DCHECK(g_screen_lock_observer);
   delete g_screen_lock_observer;
-  g_screen_lock_observer = NULL;
+  g_screen_lock_observer = nullptr;
 }
 
 // static
@@ -512,7 +580,7 @@ void ScreenLocker::Hide() {
 // static
 void ScreenLocker::ScheduleDeletion() {
   // Avoid possible multiple calls.
-  if (screen_locker_ == NULL)
+  if (screen_locker_ == nullptr)
     return;
   VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
 
@@ -520,7 +588,7 @@ void ScreenLocker::ScheduleDeletion() {
       SOUND_UNLOCK, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 
   delete screen_locker_;
-  screen_locker_ = NULL;
+  screen_locker_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -531,10 +599,10 @@ ScreenLocker::~ScreenLocker() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
   if (authenticator_.get())
-    authenticator_->SetConsumer(NULL);
+    authenticator_->SetConsumer(nullptr);
   ClearErrors();
 
-  screen_locker_ = NULL;
+  screen_locker_ = nullptr;
   bool state = false;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
   content::NotificationService::current()->Notify(
@@ -551,6 +619,12 @@ ScreenLocker::~ScreenLocker() {
 
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
+  }
+
+  if (owns_delegate_) {
+    owns_delegate_ = false;
+    delete delegate_;
+    delegate_ = nullptr;
   }
 }
 
@@ -616,8 +690,8 @@ void ScreenLocker::OnAuthScanDone(
     OnFingerprintAuthFailure(*active_user);
     return;
   }
-  web_ui()->SetFingerprintState(active_user->GetAccountId(),
-                                WebUIScreenLocker::FingerprintState::kSignin);
+  delegate_->SetFingerprintState(active_user->GetAccountId(),
+                                 FingerprintState::kSignin);
   OnAuthSuccess(user_context);
 }
 
@@ -629,8 +703,8 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
   UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationFailure",
                             unlock_attempt_type_, UnlockType::AUTH_COUNT);
 
-  web_ui()->SetFingerprintState(user.GetAccountId(),
-                                WebUIScreenLocker::FingerprintState::kFailed);
+  delegate_->SetFingerprintState(user.GetAccountId(),
+                                 FingerprintState::kFailed);
 
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForUser(&user);
@@ -638,10 +712,10 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
       quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
     quick_unlock_storage->fingerprint_storage()->AddUnlockAttempt();
     if (quick_unlock_storage->fingerprint_storage()->ExceededUnlockAttempts()) {
-      web_ui()->SetFingerprintState(
-          user.GetAccountId(), WebUIScreenLocker::FingerprintState::kRemoved);
-      web_ui()->ShowErrorMessage(IDS_LOGIN_ERROR_FINGERPRINT_MAX_ATTEMPT,
-                                 HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+      delegate_->SetFingerprintState(user.GetAccountId(),
+                                     FingerprintState::kRemoved);
+      delegate_->ShowErrorMessage(IDS_LOGIN_ERROR_FINGERPRINT_MAX_ATTEMPT,
+                                  HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
     }
   }
 

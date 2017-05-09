@@ -16,10 +16,10 @@ class Widget;
 
 namespace chromeos {
 
-// Shows the widget for the WebUI screen locker.
+// Shows the widget for the lock screen.
 class LockWindow : public views::Widget, public views::WidgetDelegate {
  public:
-  explicit LockWindow(views::View* initially_focused_view);
+  LockWindow();
   ~LockWindow() override;
 
  private:
@@ -27,9 +27,6 @@ class LockWindow : public views::Widget, public views::WidgetDelegate {
   views::View* GetInitiallyFocusedView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
-
-  // The view which should be initially focused.
-  views::View* initially_focused_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LockWindow);
 };

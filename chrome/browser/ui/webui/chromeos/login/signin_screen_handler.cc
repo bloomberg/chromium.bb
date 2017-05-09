@@ -1343,7 +1343,7 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 void SigninScreenHandler::HandleWallpaperReady() {
   if (ScreenLocker::default_screen_locker()) {
     ScreenLocker::default_screen_locker()
-        ->web_ui()
+        ->delegate()
         ->OnLockBackgroundDisplayed();
   }
 }

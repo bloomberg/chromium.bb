@@ -238,7 +238,8 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     if (!tester->IsLocked())
       lock_state_observer.Wait();
     ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
-    WebUIScreenLocker* web_ui_screen_locker = screen_locker->web_ui();
+    WebUIScreenLocker* web_ui_screen_locker =
+        screen_locker->web_ui_for_testing();
     ASSERT_TRUE(web_ui_screen_locker);
     content::WebUI* web_ui = web_ui_screen_locker->GetWebUI();
     ASSERT_TRUE(web_ui);
