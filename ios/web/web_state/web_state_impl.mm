@@ -698,6 +698,11 @@ void WebStateImpl::OnProvisionalNavigationStarted(const GURL& url) {
     observer.ProvisionalNavigationStarted(url);
 }
 
+void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
+  for (auto& observer : observers_)
+    observer.DidFinishNavigation(context);
+}
+
 #pragma mark - NavigationManagerDelegate implementation
 
 void WebStateImpl::GoToIndex(int index) {
