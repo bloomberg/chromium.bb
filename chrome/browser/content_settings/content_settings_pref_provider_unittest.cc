@@ -11,8 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/test_timeouts.h"
-#include "base/threading/platform_thread.h"
+#include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -620,11 +619,16 @@ TEST_F(PrefProviderTest, LastModified) {
       ContentSettingsPattern::FromString("www.google.com");
   auto value = base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW);
 
-  base::Time t1 = base::Time::Now();
-
   // Create a  provider and set a few settings.
   PrefProvider provider(&prefs, false /* incognito */,
                         true /* store_last_modified */);
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(base::Time::Now());
+  base::SimpleTestClock* clock = test_clock.get();
+  provider.SetClockForTesting(std::move(test_clock));
+
+  base::Time t1 = clock->Now();
+
   provider.SetWebsiteSetting(pattern_1, ContentSettingsPattern::Wildcard(),
                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
                              value->DeepCopy());
@@ -632,19 +636,17 @@ TEST_F(PrefProviderTest, LastModified) {
                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
                              value->DeepCopy());
   // Make sure that the timestamps for pattern_1 and patter_2 are before |t2|.
-  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  base::Time t2 = base::Time::Now();
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  base::Time t2 = clock->Now();
 
   base::Time last_modified = provider.GetWebsiteSettingLastModified(
       pattern_1, ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  EXPECT_GE(last_modified, t1);
-  EXPECT_LT(last_modified, t2);
+  EXPECT_EQ(last_modified, t1);
   last_modified = provider.GetWebsiteSettingLastModified(
       pattern_2, ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  EXPECT_GE(last_modified, t1);
-  EXPECT_LT(last_modified, t2);
+  EXPECT_EQ(last_modified, t1);
 
   // A change for pattern_1, which will update the last_modified timestamp.
   auto value2 = base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK);
@@ -655,14 +657,13 @@ TEST_F(PrefProviderTest, LastModified) {
   last_modified = provider.GetWebsiteSettingLastModified(
       pattern_1, ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  EXPECT_GE(last_modified, t2);
+  EXPECT_EQ(last_modified, t2);
 
   // The timestamp of pattern_2 shouldn't change.
   last_modified = provider.GetWebsiteSettingLastModified(
       pattern_2, ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  EXPECT_GE(last_modified, t1);
-  EXPECT_LT(last_modified, t2);
+  EXPECT_EQ(last_modified, t1);
 
   provider.ShutdownOnUIThread();
 }

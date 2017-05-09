@@ -31,6 +31,7 @@ class PrefService;
 
 namespace base {
 class Value;
+class Clock;
 }
 
 namespace content_settings {
@@ -218,6 +219,16 @@ class HostContentSettingsMap : public content_settings::Observer,
   // This should only be called on the UI thread.
   void ClearSettingsForOneType(ContentSettingsType content_type);
 
+  // Return the |last_modified| date of a content setting. This will only return
+  // valid values for settings from the PreferenceProvider. Settings from other
+  // providers will return base::Time().
+  //
+  // This may be called on any thread.
+  base::Time GetSettingLastModifiedDate(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type) const;
+
   using PatternSourcePredicate =
       base::Callback<bool(const ContentSettingsPattern& primary_pattern,
                           const ContentSettingsPattern& secondary_pattern)>;
@@ -271,6 +282,10 @@ class HostContentSettingsMap : public content_settings::Observer,
   void MigrateDomainScopedSettings(bool after_sync);
 
   base::WeakPtr<HostContentSettingsMap> GetWeakPtr();
+
+  // Injects a clock into the PrefProvider to allow control over the
+  // |last_modified| timestamp.
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;

@@ -19,6 +19,8 @@ static_library("core") {
     "counters/history_counter.h",
     "counters/passwords_counter.cc",
     "counters/passwords_counter.h",
+    "counters/site_settings_counter.cc",
+    "counters/site_settings_counter.h",
     "history_notice_utils.cc",
     "history_notice_utils.h",
     "pref_names.cc",
@@ -28,6 +30,8 @@ static_library("core") {
   deps = [
     "//base",
     "//components/autofill/core/browser",
+    "//components/content_settings/core/browser:browser",
+    "//components/content_settings/core/common:common",
     "//components/history/core/browser",
     "//components/password_manager/core/browser",
     "//components/pref_registry:pref_registry",

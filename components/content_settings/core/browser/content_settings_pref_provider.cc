@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_clock.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -85,7 +86,10 @@ void PrefProvider::RegisterProfilePrefs(
 PrefProvider::PrefProvider(PrefService* prefs,
                            bool incognito,
                            bool store_last_modified)
-    : prefs_(prefs), is_incognito_(incognito) {
+    : prefs_(prefs),
+      is_incognito_(incognito),
+      store_last_modified_(store_last_modified),
+      clock_(new base::DefaultClock) {
   DCHECK(prefs_);
   // Verify preferences version.
   if (!prefs_->HasPrefPath(prefs::kContentSettingsVersion)) {
@@ -108,7 +112,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
         info->type(),
         base::MakeUnique<ContentSettingsPref>(
             info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
-            is_incognito_, store_last_modified,
+            is_incognito_,
             base::Bind(&PrefProvider::Notify, base::Unretained(this)))));
   }
 
@@ -153,9 +157,12 @@ bool PrefProvider::SetWebsiteSetting(
     return false;
   }
 
+  base::Time modified_time =
+      store_last_modified_ ? clock_->Now() : base::Time();
+
   return GetPref(content_type)
       ->SetWebsiteSetting(primary_pattern, secondary_pattern,
-                          resource_identifier, in_value);
+                          resource_identifier, modified_time, in_value);
 }
 
 base::Time PrefProvider::GetWebsiteSettingLastModified(
@@ -274,6 +281,10 @@ void PrefProvider::DiscardObsoletePreferences() {
         all_settings->RemoveWithoutPathExpansion(key, nullptr);
     }
   }
+}
+
+void PrefProvider::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
 }
 
 }  // namespace content_settings

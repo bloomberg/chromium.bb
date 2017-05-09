@@ -37,6 +37,12 @@
      =1 {1 password (synced)}
      other {# passwords (synced)}}
   </message>
+  <message name="IDS_DEL_SITE_SETTINGS_COUNTER" desc="A counter showing how many sites with site settings the user has.">
+    {COUNT, plural,
+     =0 {none}
+     =1 {1 site}
+     other {# sites}}
+  </message>
   <message name="IDS_DEL_AUTOFILL_COUNTER_EMPTY" desc="A counter showing that the user has no form data stored.">
     none
   </message>

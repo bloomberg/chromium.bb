@@ -658,6 +658,14 @@ void HostContentSettingsMap::ClearSettingsForOneType(
   FlushLossyWebsiteSettings();
 }
 
+base::Time HostContentSettingsMap::GetSettingLastModifiedDate(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type) const {
+  return pref_provider_->GetWebsiteSettingLastModified(
+      primary_pattern, secondary_pattern, content_type, std::string());
+}
+
 void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
     ContentSettingsType content_type,
     base::Time begin_time,
@@ -927,4 +935,9 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
     }
   }
   return std::unique_ptr<base::Value>();
+}
+
+void HostContentSettingsMap::SetClockForTesting(
+    std::unique_ptr<base::Clock> clock) {
+  pref_provider_->SetClockForTesting(std::move(clock));
 }
