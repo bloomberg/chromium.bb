@@ -144,7 +144,7 @@ public class PickerCategoryView extends RelativeLayout
      */
     public void initialize(
             PhotoPickerDialog dialog, PhotoPickerListener listener, boolean multiSelectionAllowed) {
-        // TODO(finnur): Change selection delegate to support single-selection.
+        if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
 
         mDialog = dialog;
         mMultiSelectionAllowed = multiSelectionAllowed;
