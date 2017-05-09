@@ -4884,6 +4884,9 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   uint8_t clear_data[MAX_AV1_HEADER_SIZE];
   size_t first_partition_size;
   YV12_BUFFER_CONFIG *new_fb;
+#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
+  RefBuffer *last_fb_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
+#endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 
 #if CONFIG_ADAPT_SCAN
   av1_deliver_eob_threshold(cm, xd);
@@ -4945,26 +4948,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 
   cm->setup_mi(cm);
 
-#if CONFIG_TEMPMV_SIGNALING
-  RefBuffer *last_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
-  if (last_ref_buf->idx != INVALID_IDX) {
-    cm->prev_frame = &cm->buffer_pool->frame_bufs[last_ref_buf->idx];
-    if (cm->use_prev_frame_mvs) {
-      assert(!cm->error_resilient_mode &&
-             cm->width == last_ref_buf->buf->y_width &&
-             cm->height == last_ref_buf->buf->y_height &&
-             !cm->prev_frame->intra_only);
-    }
-  } else {
-    assert(cm->use_prev_frame_mvs == 0);
-  }
-#else
-  cm->use_prev_frame_mvs =
-      !cm->error_resilient_mode && cm->width == cm->last_width &&
-      cm->height == cm->last_height && !cm->last_intra_only &&
-      cm->last_show_frame && (cm->last_frame_type != KEY_FRAME);
-#endif
-#if CONFIG_EXT_REFS
+#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as
   //               a reference, it is probable that by the time it is being
@@ -4975,12 +4959,28 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   //               (1) Simply disable the use of previous frame mvs; or
   //               (2) Have cm->prev_frame point to one reference frame buffer,
   //                   e.g. LAST_FRAME.
-  if (cm->use_prev_frame_mvs && !dec_is_ref_frame_buf(pbi, cm->prev_frame)) {
+  if (!dec_is_ref_frame_buf(pbi, cm->prev_frame)) {
     // Reassign the LAST_FRAME buffer to cm->prev_frame.
-    RefBuffer *last_fb_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
-    cm->prev_frame = &cm->buffer_pool->frame_bufs[last_fb_ref_buf->idx];
+    cm->prev_frame = last_fb_ref_buf->idx != INVALID_IDX
+                         ? &cm->buffer_pool->frame_bufs[last_fb_ref_buf->idx]
+                         : NULL;
   }
-#endif  // CONFIG_EXT_REFS
+#endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
+
+#if CONFIG_TEMPMV_SIGNALING
+  if (cm->use_prev_frame_mvs) {
+    assert(!cm->error_resilient_mode && !cm->prev_frame &&
+           cm->width == last_fb_ref_buf->buf->y_width &&
+           cm->height == last_fb_ref_buf->buf->y_height &&
+           !cm->prev_frame->intra_only);
+  }
+#else
+  cm->use_prev_frame_mvs = !cm->error_resilient_mode && cm->prev_frame &&
+                           cm->width == cm->prev_frame->buf.y_crop_width &&
+                           cm->height == cm->prev_frame->buf.y_crop_height &&
+                           !cm->last_intra_only && cm->last_show_frame &&
+                           (cm->last_frame_type != KEY_FRAME);
+#endif  // CONFIG_TEMPMV_SIGNALING
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 
