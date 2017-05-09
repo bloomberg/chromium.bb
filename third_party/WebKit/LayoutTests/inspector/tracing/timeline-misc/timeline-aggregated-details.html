@@ -4,7 +4,12 @@
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function test()
+function initialize_ProductsExperiment()
+{
+    Runtime.experiments.enableForTest('timelineColorByProduct');
+}
+
+async function test()
 {
     var sessionId = "6.23";
     var rawTraceEvents = [
@@ -469,10 +474,10 @@ function test()
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
-                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
-                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
-                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://www.google.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://www.google.com/rec.js" },
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://www.google.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://www.google.com/rec.js" }
                 ]
             }
         },
@@ -487,9 +492,9 @@ function test()
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
-                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
-                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://www.google.com/rec.js" },
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://www.google.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://www.google.com/rec.js" }
                 ]
             }
         },
@@ -504,8 +509,8 @@ function test()
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
-                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://www.google.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://www.google.com/rec.js" }
                 ]
             }
         },
@@ -520,7 +525,7 @@ function test()
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://www.google.com/rec.js" }
                 ]
             }
         },
@@ -549,8 +554,8 @@ function test()
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
-                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://www.google.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://www.google.com/rec.js" }
                 ]
             }
         },
@@ -565,7 +570,7 @@ function test()
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://www.google.com/rec.js" }
                 ]
             }
         },
@@ -606,31 +611,32 @@ function test()
     timeline._setModel(InspectorTest.createPerformanceModelWithEvents(rawTraceEvents));
 
     timeline.requestWindowTimes(0, Infinity);
+    await ProductRegistry.instance();
     var groupByEnum = Timeline.AggregatedTimelineTreeView.GroupBy;
-    for (var grouping in groupByEnum) {
-        var groupingValue = groupByEnum[grouping];
-        testEventTree("CallTree", groupingValue);
-        testEventTree("BottomUp", groupingValue);
+    for (var grouping of Object.values(groupByEnum)) {
+        testEventTree("CallTree", grouping);
+        testEventTree("BottomUp", grouping);
     }
-
     testEventTree("EventLog");
     InspectorTest.completeTest();
+
+    function getTreeView(type)
+    {
+        if (timeline._tabbedPane) {
+            timeline._tabbedPane.selectTab(type, true);
+            return timeline._currentView._treeView;
+        }
+        timeline._currentView._detailsView._tabbedPane.selectTab(type, true);
+        return timeline._currentView._detailsView._tabbedPane.visibleView;
+    }
 
     function testEventTree(type, grouping)
     {
         InspectorTest.addResult("");
-        var tree;
-        if (timeline._tabbedPane) {
-            timeline._tabbedPane.selectTab(type, true);
-            tree = timeline._currentView._treeView;
-        } else {
-            timeline._currentView._detailsView._tabbedPane.selectTab(type, true);
-            tree = timeline._currentView._detailsView._tabbedPane.visibleView;
-        }
+        var tree = getTreeView(type);
         if (grouping) {
             InspectorTest.addResult(type + "  Group by: " + grouping);
-            tree._groupByCombobox.select(tree._groupByCombobox.options().find(x => x.value === grouping));
-            tree._onGroupByChanged();
+            tree._groupBySetting.set(grouping);
         } else {
             InspectorTest.addResult(type);
         }
@@ -643,9 +649,9 @@ function test()
     {
         var name;
         if (node.isGroupNode()) {
-           name = treeView._displayInfoForGroupNode(node).name;
+            name = treeView._displayInfoForGroupNode(node).name;
         } else {
-           name = node.event.name === TimelineModel.TimelineModel.RecordType.JSFrame
+            name = node.event.name === TimelineModel.TimelineModel.RecordType.JSFrame
                       ? UI.beautifyFunctionName(node.event.args["data"]["functionName"])
                       : Timeline.TimelineUIUtils.eventTitle(node.event);
         }
