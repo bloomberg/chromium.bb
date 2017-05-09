@@ -4,32 +4,51 @@
 
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
-source_set("startup") {
-  configs += [ "//build/config/compiler:enable_arc" ]
+# Target for sources that don't depend on //ios/chrome/browser:browser
+source_set("startup_basic") {
   sources = [
-    "background_upload_alert.h",
-    "background_upload_alert.mm",
     "chrome_main_starter.h",
     "chrome_main_starter.mm",
-    "client_registration.h",
-    "client_registration.mm",
     "ios_chrome_main.h",
     "ios_chrome_main.mm",
     "ios_chrome_main_delegate.h",
     "ios_chrome_main_delegate.mm",
-    "network_stack_setup.h",
-    "network_stack_setup.mm",
-    "provider_registration.h",
-    "provider_registration.mm",
     "register_experimental_settings.h",
     "register_experimental_settings.mm",
     "setup_debugging.h",
     "setup_debugging.mm",
   ]
 
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   deps = [
     "//base",
     "//components/crash/core/common",
+    "//ios/chrome/browser:chrome_paths",
+    "//ios/web/public/app",
+    "//skia",
+  ]
+
+  assert_no_deps = [ "//ios/chrome/browser" ]
+}
+
+source_set("startup") {
+  sources = [
+    "background_upload_alert.h",
+    "background_upload_alert.mm",
+    "client_registration.h",
+    "client_registration.mm",
+    "network_stack_setup.h",
+    "network_stack_setup.mm",
+    "provider_registration.h",
+    "provider_registration.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":startup_basic",
+    "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser:browser_internal",
     "//ios/chrome/browser/web",
@@ -38,7 +57,6 @@ source_set("startup") {
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//ios/web/public/app",
-    "//skia",
     ios_provider_target,
   ]
 }
