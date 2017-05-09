@@ -49,7 +49,8 @@ external/wpt/conformance-checkers [ Skip ]
 # external/wpt/console [ Pass ]
 ## Owners: mkwst@chromium.org
 # external/wpt/content-security-policy [ Pass ]
-external/wpt/cookies [ Skip ]
+## Owners: mkwst@chromium.org
+# external/wpt/cookies [ Pass ]
 ## Owners: blink-network-dev@chromium.org
 # external/wpt/cors [ Pass ]
 ## Owners: kojii@chromium.org,ksakamoto@chromium.org
