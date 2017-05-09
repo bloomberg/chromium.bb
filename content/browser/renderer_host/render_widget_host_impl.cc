@@ -884,7 +884,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
   // How long to (synchronously) wait for the renderer to respond with a
   // new frame when our current frame doesn't exist or is the wrong size.
   // This timeout impacts the "choppiness" of our window resize.
-  const int kPaintMsgTimeoutMS = 50;
+  const int kPaintMsgTimeoutMS = 167;
 
   if (!view_)
     return;
