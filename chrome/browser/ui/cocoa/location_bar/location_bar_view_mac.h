@@ -108,9 +108,12 @@ class LocationBarViewMac : public LocationBar,
   //  save credit card bubble to aim at.
   NSPoint GetSaveCreditCardBubblePoint() const;
 
-  // Get the point in window coordinates in the security icon at which the page
-  // info bubble aims.
+  // Get the point in window coordinates for the page info bubble anchor.
   NSPoint GetPageInfoBubblePoint() const;
+
+  // Get the point in window coordinates in the security icon at which infobar
+  // arrows should point.
+  NSPoint GetInfoBarAnchorPoint() const;
 
   // When any image decorations change, call this to ensure everything is
   // redrawn and laid out if necessary.

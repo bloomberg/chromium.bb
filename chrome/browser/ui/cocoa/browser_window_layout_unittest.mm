@@ -31,7 +31,7 @@ class BrowserWindowLayoutTest : public testing::Test {
     [layout setBookmarkBarHidden:NO];
     [layout setBookmarkBarHeight:26];
     [layout setInfoBarHeight:72];
-    [layout setPageInfoBubblePointY:13];
+    [layout setInfoBarAnchorPointY:13];
     [layout setHasDownloadShelf:YES];
     [layout setDownloadShelfHeight:44];
     [layout setOSYosemiteOrLater:NO];

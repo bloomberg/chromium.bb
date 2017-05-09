@@ -166,8 +166,12 @@ class AutocompleteTextFieldObserver {
 // via -[NSView addToolTipRect:owner:userData:].
 - (void)addToolTip:(NSString*)tooltip forRect:(NSRect)aRect;
 
-// Obtain the bubble anchor point for |decoration|. In window coordinates.
+// Obtain the bubble anchor point for |decoration| in window coordinates.
 - (NSPoint)bubblePointForDecoration:(LocationBarDecoration*)decoration;
+
+// Returns the anchor point for arrows pointing to |decoration| in window
+// coordinates.
+- (NSPoint)arrowAnchorPointForDecoration:(LocationBarDecoration*)decoration;
 
 @end
 

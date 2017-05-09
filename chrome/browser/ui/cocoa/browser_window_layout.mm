@@ -168,8 +168,8 @@ const CGFloat kLocationBarRightOffset = 35;
   parameters_.infoBarHeight = infoBarHeight;
 }
 
-- (void)setPageInfoBubblePointY:(CGFloat)pageInfoBubblePointY {
-  parameters_.pageInfoBubblePointY = pageInfoBubblePointY;
+- (void)setInfoBarAnchorPointY:(CGFloat)infoBarAnchorPointY {
+  parameters_.infoBarAnchorPointY = infoBarAnchorPointY;
 }
 
 - (void)setHasDownloadShelf:(BOOL)hasDownloadShelf {
@@ -343,7 +343,7 @@ const CGFloat kLocationBarRightOffset = 35;
     // info bubble icon.
     if (parameters_.hasToolbar) {
       infoBarMaxY =
-          NSMinY(output_.toolbarFrame) + parameters.pageInfoBubblePointY;
+          NSMinY(output_.toolbarFrame) + parameters.infoBarAnchorPointY;
     }
 
     output_.infoBarFrame =
