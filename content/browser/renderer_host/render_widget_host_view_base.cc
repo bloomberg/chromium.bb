@@ -406,6 +406,10 @@ cc::FrameSinkId RenderWidgetHostViewBase::GetFrameSinkId() {
   return cc::FrameSinkId();
 }
 
+cc::LocalSurfaceId RenderWidgetHostViewBase::GetLocalSurfaceId() const {
+  return cc::LocalSurfaceId();
+}
+
 cc::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,

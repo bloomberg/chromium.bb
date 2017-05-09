@@ -7250,6 +7250,10 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);
 // Makes sure that LocalSurfaceId is propagated to the CompositorFrameSink.
 class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
  protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_surface_synchronization = true;
+  }
+
   void BeginTest() override {
     expected_local_surface_id_ = allocator_.GenerateId();
     PostSetLocalSurfaceIdToMainThread(expected_local_surface_id_);

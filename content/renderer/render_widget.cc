@@ -1207,11 +1207,20 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (!GetWebWidget())
     return;
 
+  if (params.local_surface_id)
+    local_surface_id_ = *params.local_surface_id;
+
   if (compositor_) {
     compositor_->SetViewportSize(params.physical_backing_size);
     compositor_->setBottomControlsHeight(params.bottom_controls_height);
     compositor_->SetRasterColorSpace(
         screen_info_.icc_profile.GetParametricColorSpace());
+    // If surface synchronization is enable, then this will use the provided
+    // |local_surface_id_| to submit the next generated CompositorFrame.
+    // If the ID is not valid, then the compositor will defer commits until
+    // it receives a valid surface ID. This is a no-op if surface
+    // synchronization is disabled.
+    compositor_->SetLocalSurfaceId(local_surface_id_);
   }
 
   visible_viewport_size_ = params.visible_viewport_size;
@@ -1304,12 +1313,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   OnDeviceScaleFactorChanged();
   compositor_->SetRasterColorSpace(screen_info_.icc_profile.GetColorSpace());
   compositor_->SetContentSourceId(current_content_source_id_);
-#if defined(USE_AURA)
-  RendererWindowTreeClient* window_tree_client =
-      RendererWindowTreeClient::Get(routing_id_);
-  if (window_tree_client)
-    compositor_->SetLocalSurfaceId(window_tree_client->local_surface_id());
-#endif
+  compositor_->SetLocalSurfaceId(local_surface_id_);
   // For background pages and certain tests, we don't want to trigger
   // CompositorFrameSink creation.
   bool should_generate_frame_sink =

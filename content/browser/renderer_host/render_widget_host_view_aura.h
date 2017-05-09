@@ -174,6 +174,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
   cc::FrameSinkId GetFrameSinkId() override;
+  cc::LocalSurfaceId GetLocalSurfaceId() const override;
   cc::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
                                      const gfx::Point& point,
                                      gfx::Point* transformed_point) override;
@@ -591,6 +592,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   std::unique_ptr<RenderWidgetHostViewEventHandler> event_handler_;
 
   cc::FrameSinkId frame_sink_id_;
+  cc::LocalSurfaceId local_surface_id_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
