@@ -6,9 +6,9 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/web/WebFrameClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -17,8 +17,8 @@ MediaKeysClientImpl::MediaKeysClientImpl() {}
 WebEncryptedMediaClient* MediaKeysClientImpl::EncryptedMediaClient(
     ExecutionContext* execution_context) {
   Document* document = ToDocument(execution_context);
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(document->GetFrame());
+  WebLocalFrameBase* web_frame =
+      WebLocalFrameBase::FromFrame(document->GetFrame());
   return web_frame->Client()->EncryptedMediaClient();
 }
 
