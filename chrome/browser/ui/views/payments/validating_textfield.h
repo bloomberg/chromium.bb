@@ -19,6 +19,9 @@ class ValidatingTextfield : public views::Textfield {
   // Textfield:
   // The first validation will happen on blur.
   void OnBlur() override;
+  // Used to keep track of our own destruction.
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
 
   // Called when the textfield contents is changed. May do validation.
   void OnContentsChanged();
@@ -29,7 +32,8 @@ class ValidatingTextfield : public views::Textfield {
   void Validate();
 
   std::unique_ptr<ValidationDelegate> delegate_;
-  bool was_blurred_;
+  bool was_blurred_ = false;
+  bool being_removed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ValidatingTextfield);
 };

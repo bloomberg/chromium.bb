@@ -212,11 +212,6 @@ void PaymentRequestSheetController::ButtonPressed(views::Button* sender,
                                                   const ui::Event& event) {
   switch (static_cast<PaymentRequestCommonTags>(sender->tag())) {
     case PaymentRequestCommonTags::CLOSE_BUTTON_TAG:
-      // Transfer the focus to the cancel button, so that any OnBlur actions
-      // can fully execute before CloseDialog is called.
-      dialog()
-          ->GetViewByID(static_cast<int>(DialogViewID::CANCEL_BUTTON))
-          ->RequestFocus();
       dialog()->CloseDialog();
       break;
     case PaymentRequestCommonTags::BACK_BUTTON_TAG:

@@ -13,9 +13,7 @@ namespace payments {
 ValidatingCombobox::ValidatingCombobox(
     std::unique_ptr<ui::ComboboxModel> model,
     std::unique_ptr<ValidationDelegate> delegate)
-    : Combobox(std::move(model)),
-      delegate_(std::move(delegate)),
-      was_blurred_(false) {
+    : Combobox(std::move(model)), delegate_(std::move(delegate)) {
   // No need to remove observer on owned model.
   this->model()->AddObserver(this);
 }
@@ -26,11 +24,18 @@ void ValidatingCombobox::OnBlur() {
   Combobox::OnBlur();
 
   // The first validation should be on a blur. The subsequent validations will
-  // occur when the content changes.
-  if (!was_blurred_) {
+  // occur when the content changes. Do not validate if the view is being
+  // removed.
+  if (!was_blurred_ && !being_removed_) {
     was_blurred_ = true;
     Validate();
   }
+}
+
+void ValidatingCombobox::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.child == this && !details.is_add)
+    being_removed_ = true;
 }
 
 void ValidatingCombobox::OnContentsChanged() {
