@@ -66,6 +66,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 - (void)connectToHost:(HostInfo*)hostInfo
              username:(NSString*)username
           accessToken:(NSString*)accessToken {
+  DCHECK(_runtime->ui_task_runner()->BelongsToCurrentThread());
   DCHECK(hostInfo);
   DCHECK(hostInfo.jabberId);
   DCHECK(hostInfo.hostId);
@@ -113,21 +114,19 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 
   _displayHandler = [[GlDisplayHandler alloc] init];
   _displayHandler.delegate = self;
+
+  _session.reset(new remoting::ChromotingSession(
+      _sessonDelegate->GetWeakPtr(), [_displayHandler CreateCursorShapeStub],
+      [_displayHandler CreateVideoRenderer], audioPlayer, info,
+      client_auth_config));
+  _session->Connect();
+
   __weak GlDisplayHandler* weakDisplayHandler = _displayHandler;
   _gestureInterpreter.reset(new remoting::GestureInterpreter(
       base::BindBlockArc(^(const remoting::ViewMatrix& matrix) {
         [weakDisplayHandler onPixelTransformationChanged:matrix];
-      })));
-
-  _runtime->ui_task_runner()->PostTask(
-      FROM_HERE, base::BindBlockArc(^{
-        _session.reset(new remoting::ChromotingSession(
-            _sessonDelegate->GetWeakPtr(),
-            [_displayHandler CreateCursorShapeStub],
-            [_displayHandler CreateVideoRenderer], audioPlayer, info,
-            client_auth_config));
-        _session->Connect();
-      }));
+      }),
+      _session.get()));
 }
 
 #pragma mark - Eventing

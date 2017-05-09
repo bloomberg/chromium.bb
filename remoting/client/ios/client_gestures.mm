@@ -114,16 +114,8 @@
 }
 
 - (IBAction)tapGestureTriggered:(UITapGestureRecognizer*)sender {
-  // LOG_TRACE(INFO) << "tapGestureTriggered";
-  // CGPoint touchPoint = [sender locationInView:self.view];
-  // if ([_scene containsTouchPoint:touchPoint]) {
-  //   if (_inputScheme == HostInputSchemeTouch) {
-  //     [_scene setMouseLocationFromLocationInView:touchPoint];
-  //     _circle.expandedRadius = 11.0f;
-  //     [_circle doExpandingAnimationAtLocation:[_scene mouseLocationInView]];
-  //   }
-  //   [Utility leftClickOn:_clientToHostProxy at:_scene.mousePosition];
-  // }
+  CGPoint touchPoint = [sender locationInView:_view];
+  _client.gestureInterpreter->Tap(touchPoint.x, touchPoint.y);
 }
 
 // Change position of scene.  This can occur during a pinch or long press.
@@ -238,6 +230,20 @@
 
 // Click-Drag mouse operation.  This can occur during a Pan.
 - (IBAction)longPressGestureTriggered:(UILongPressGestureRecognizer*)sender {
+  CGPoint touchPoint = [sender locationInView:_view];
+  remoting::GestureInterpreter::GestureState state;
+  switch ([sender state]) {
+    case UIGestureRecognizerStateBegan:
+      state = remoting::GestureInterpreter::GESTURE_BEGAN;
+      break;
+    case UIGestureRecognizerStateChanged:
+      state = remoting::GestureInterpreter::GESTURE_CHANGED;
+      break;
+    default:
+      state = remoting::GestureInterpreter::GESTURE_ENDED;
+  }
+  _client.gestureInterpreter->LongPress(touchPoint.x, touchPoint.y, state);
+
   // LOG_TRACE(INFO) << "longPressGestureTriggered";
   // if ([sender state] == UIGestureRecognizerStateBegan) {
   //   if (_inputScheme == HostInputSchemeTouch) {
@@ -271,14 +277,8 @@
 }
 
 - (IBAction)twoFingerTapGestureTriggered:(UITapGestureRecognizer*)sender {
-  // LOG_TRACE(INFO) << "twoFingerTapGestureTriggered";
-  if (_inputScheme == HostInputSchemeTouch) {
-    // disabled
-    return;
-  }
-  // if ([_scene containsTouchPoint:[sender locationInView:self.view]]) {
-  //   [Utility rightClickOn:_clientToHostProxy at:_scene.mousePosition];
-  // }
+  CGPoint touchPoint = [sender locationInView:_view];
+  _client.gestureInterpreter->TwoFingerTap(touchPoint.x, touchPoint.y);
 }
 
 - (IBAction)threeFingerTapGestureTriggered:(UITapGestureRecognizer*)sender {

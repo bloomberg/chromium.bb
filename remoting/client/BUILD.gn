@@ -25,6 +25,8 @@ static_library("client") {
     "cursor_shape_stub_proxy.h",
     "desktop_viewport.cc",
     "desktop_viewport.h",
+    "direct_input_strategy.cc",
+    "direct_input_strategy.h",
     "dual_buffer_frame_consumer.cc",
     "dual_buffer_frame_consumer.h",
     "empty_cursor_filter.cc",

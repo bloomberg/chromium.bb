@@ -42,10 +42,14 @@ void DesktopViewport::ScaleDesktop(float px, float py, float scale) {
   UpdateViewport();
 }
 
+void DesktopViewport::MoveViewport(float dx, float dy) {
+  MoveViewportWithoutUpdate(dx, dy);
+  UpdateViewport();
+}
+
 void DesktopViewport::SetViewportCenter(float x, float y) {
   ViewMatrix::Point old_center = GetViewportCenter();
-  MoveViewportCenterWithoutUpdate(x - old_center.x, y - old_center.y);
-  UpdateViewport();
+  MoveViewport(x - old_center.x, y - old_center.y);
 }
 
 void DesktopViewport::RegisterOnTransformationChangedCallback(
@@ -55,6 +59,10 @@ void DesktopViewport::RegisterOnTransformationChangedCallback(
   if (IsViewportReady() && run_immediately) {
     callback.Run(desktop_to_surface_transform_);
   }
+}
+
+const ViewMatrix& DesktopViewport::GetTransformation() const {
+  return desktop_to_surface_transform_;
 }
 
 void DesktopViewport::ResizeToFit() {
@@ -156,8 +164,8 @@ void DesktopViewport::UpdateViewport() {
   ViewMatrix::Point old_center = GetViewportCenter();
   ViewMatrix::Point new_center =
       ConstrainPointToBounds(GetViewportCenterBounds(), old_center);
-  MoveViewportCenterWithoutUpdate(new_center.x - old_center.x,
-                                  new_center.y - old_center.y);
+  MoveViewportWithoutUpdate(new_center.x - old_center.x,
+                            new_center.y - old_center.y);
 
   if (on_transformation_changed_) {
     on_transformation_changed_.Run(desktop_to_surface_transform_);
@@ -201,7 +209,7 @@ ViewMatrix::Point DesktopViewport::GetViewportCenter() const {
       {surface_size_.x / 2.f, surface_size_.y / 2.f});
 }
 
-void DesktopViewport::MoveViewportCenterWithoutUpdate(float dx, float dy) {
+void DesktopViewport::MoveViewportWithoutUpdate(float dx, float dy) {
   // <dx, dy> is defined on desktop's reference frame. Translation must be
   // flipped and scaled.
   desktop_to_surface_transform_.PostTranslate(
