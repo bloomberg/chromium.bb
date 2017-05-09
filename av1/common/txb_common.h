@@ -32,35 +32,41 @@ static int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format on*/
 };
 
+static INLINE int get_level_count_mag(int *mag, const tran_low_t *tcoeffs,
+                                      int c,  // raster order
+                                      int bwl, int level, int (*nb_offset)[2],
+                                      int nb_num) {
+  const int row = c >> bwl;
+  const int col = c - (row << bwl);
+  const int stride = 1 << bwl;
+  int count = 0;
+  *mag = 0;
+  for (int idx = 0; idx < nb_num; ++idx) {
+    int ref_row = row + nb_offset[idx][0];
+    int ref_col = col + nb_offset[idx][1];
+    int pos = (ref_row << bwl) + ref_col;
+    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
+      continue;
+    tran_low_t abs_coeff = abs(tcoeffs[pos]);
+    count += abs_coeff > level;
+    if (nb_offset[idx][0] >= 0 && nb_offset[idx][1] >= 0)
+      *mag = AOMMAX(*mag, abs_coeff);
+  }
+  return count;
+}
+
 static INLINE int get_base_ctx(const tran_low_t *tcoeffs,
                                int c,  // raster order
                                const int bwl, const int level) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
-  const int stride = 1 << bwl;
   const int level_minus_1 = level - 1;
-  int ctx = 0;
-  int mag = 0;
-  int idx;
+  int mag;
+  int count = get_level_count_mag(&mag, tcoeffs, c, bwl, level_minus_1,
+                                  base_ref_offset, BASE_CONTEXT_POSITION_NUM);
+  int ctx = (count + 1) >> 1;
+  mag = mag > level;
   int ctx_idx = -1;
-  tran_low_t abs_coeff;
-
-  ctx = 0;
-  for (idx = 0; idx < BASE_CONTEXT_POSITION_NUM; ++idx) {
-    int ref_row = row + base_ref_offset[idx][0];
-    int ref_col = col + base_ref_offset[idx][1];
-    int pos = (ref_row << bwl) + ref_col;
-
-    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
-      continue;
-
-    abs_coeff = abs(tcoeffs[pos]);
-    ctx += abs_coeff > level_minus_1;
-
-    if (base_ref_offset[idx][0] >= 0 && base_ref_offset[idx][1] >= 0)
-      mag |= abs_coeff > level;
-  }
-  ctx = (ctx + 1) >> 1;
   if (row == 0 && col == 0) {
     ctx_idx = (ctx << 1) + mag;
     assert(ctx_idx < 8);
