@@ -9,6 +9,7 @@
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 
+namespace blink {
 namespace network_instrumentation {
 
 using network_instrumentation::RequestOutcome;
@@ -21,9 +22,9 @@ const char kNetInstrumentationCategory[] = TRACE_DISABLED_BY_DEFAULT("network");
 
 const char* RequestOutcomeToString(RequestOutcome outcome) {
   switch (outcome) {
-    case RequestOutcome::Success:
+    case RequestOutcome::kSuccess:
       return "Success";
-    case RequestOutcome::Fail:
+    case RequestOutcome::kFail:
       return "Fail";
     default:
       NOTREACHED();
@@ -38,21 +39,21 @@ const char* RequestOutcomeToString(RequestOutcome outcome) {
 
 namespace {
 
-std::unique_ptr<TracedValue> scopedResourceTrackerBeginData(
+std::unique_ptr<TracedValue> ScopedResourceTrackerBeginData(
     const blink::ResourceRequest& request) {
   std::unique_ptr<TracedValue> data = TracedValue::Create();
   data->SetString("url", request.Url().GetString());
   return data;
 }
 
-std::unique_ptr<TracedValue> resourcePrioritySetData(
+std::unique_ptr<TracedValue> ResourcePrioritySetData(
     blink::ResourceLoadPriority priority) {
   std::unique_ptr<TracedValue> data = TracedValue::Create();
   data->SetInteger("priority", priority);
   return data;
 }
 
-std::unique_ptr<TracedValue> endResourceLoadData(RequestOutcome outcome) {
+std::unique_ptr<TracedValue> EndResourceLoadData(RequestOutcome outcome) {
   std::unique_ptr<TracedValue> data = TracedValue::Create();
   data->SetString("outcome", RequestOutcomeToString(outcome));
   return data;
@@ -61,37 +62,38 @@ std::unique_ptr<TracedValue> endResourceLoadData(RequestOutcome outcome) {
 }  // namespace
 
 ScopedResourceLoadTracker::ScopedResourceLoadTracker(
-    unsigned long resourceID,
+    unsigned long resource_id,
     const blink::ResourceRequest& request)
-    : m_resourceLoadContinuesBeyondScope(false), m_resourceID(resourceID) {
+    : resource_load_continues_beyond_scope_(false), resource_id_(resource_id) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       kNetInstrumentationCategory, kResourceLoadTitle,
-      TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resourceID)),
-      "beginData", scopedResourceTrackerBeginData(request));
+      TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resource_id)),
+      "beginData", ScopedResourceTrackerBeginData(request));
 }
 
 ScopedResourceLoadTracker::~ScopedResourceLoadTracker() {
-  if (!m_resourceLoadContinuesBeyondScope)
-    endResourceLoad(m_resourceID, RequestOutcome::Fail);
+  if (!resource_load_continues_beyond_scope_)
+    EndResourceLoad(resource_id_, RequestOutcome::kFail);
 }
 
-void ScopedResourceLoadTracker::resourceLoadContinuesBeyondScope() {
-  m_resourceLoadContinuesBeyondScope = true;
+void ScopedResourceLoadTracker::ResourceLoadContinuesBeyondScope() {
+  resource_load_continues_beyond_scope_ = true;
 }
 
-void resourcePrioritySet(unsigned long resourceID,
+void ResourcePrioritySet(unsigned long resource_id,
                          blink::ResourceLoadPriority priority) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
       kNetInstrumentationCategory, kResourcePrioritySetTitle,
-      TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resourceID)), "data",
-      resourcePrioritySetData(priority));
+      TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resource_id)),
+      "data", ResourcePrioritySetData(priority));
 }
 
-void endResourceLoad(unsigned long resourceID, RequestOutcome outcome) {
+void EndResourceLoad(unsigned long resource_id, RequestOutcome outcome) {
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       kNetInstrumentationCategory, kResourceLoadTitle,
-      TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resourceID)),
-      "endData", endResourceLoadData(outcome));
+      TRACE_ID_WITH_SCOPE(kBlinkResourceID, TRACE_ID_LOCAL(resource_id)),
+      "endData", EndResourceLoadData(outcome));
 }
 
 }  // namespace network_instrumentation
+}  // namespace blink

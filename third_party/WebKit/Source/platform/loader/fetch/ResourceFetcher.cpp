@@ -544,7 +544,7 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
       params.GetSpeculativePreloadType(), params.IsLinkPreload()));
   InitializeResourceRequest(resource_request, factory.GetType(),
                             params.Defer());
-  network_instrumentation::resourcePrioritySet(identifier,
+  network_instrumentation::ResourcePrioritySet(identifier,
                                                resource_request.Priority());
 
   blocked_reason = Context().CanRequest(
@@ -706,7 +706,7 @@ Resource* ResourceFetcher::RequestResource(
 
   if (policy != kUse)
     InsertAsPreloadIfNecessary(resource, params, factory.GetType());
-  scoped_resource_load_tracker.resourceLoadContinuesBeyondScope();
+  scoped_resource_load_tracker.ResourceLoadContinuesBeyondScope();
 
   DCHECK(!resource->ErrorOccurred() ||
          params.Options().synchronous_policy == kRequestSynchronously);
@@ -1453,7 +1453,7 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
 
     resource->DidChangePriority(resource_load_priority,
                                 resource_priority.intra_priority_value);
-    network_instrumentation::resourcePrioritySet(resource->Identifier(),
+    network_instrumentation::ResourcePrioritySet(resource->Identifier(),
                                                  resource_load_priority);
     Context().DispatchDidChangeResourcePriority(
         resource->Identifier(), resource_load_priority,

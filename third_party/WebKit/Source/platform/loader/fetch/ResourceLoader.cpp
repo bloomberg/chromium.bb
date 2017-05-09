@@ -410,9 +410,9 @@ void ResourceLoader::DidReceiveTransferSizeUpdate(int transfer_size_diff) {
 }
 
 void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
-  network_instrumentation::endResourceLoad(
+  network_instrumentation::EndResourceLoad(
       resource_->Identifier(),
-      network_instrumentation::RequestOutcome::Success);
+      network_instrumentation::RequestOutcome::kSuccess);
 
   fetcher_->HandleLoaderFinish(resource_.Get(), 0,
                                ResourceFetcher::kDidFinishFirstPartInMultipart);
@@ -428,9 +428,9 @@ void ResourceLoader::DidFinishLoading(double finish_time,
 
   loader_.reset();
 
-  network_instrumentation::endResourceLoad(
+  network_instrumentation::EndResourceLoad(
       resource_->Identifier(),
-      network_instrumentation::RequestOutcome::Success);
+      network_instrumentation::RequestOutcome::kSuccess);
 
   fetcher_->HandleLoaderFinish(resource_.Get(), finish_time,
                                ResourceFetcher::kDidFinishLoading);
@@ -457,8 +457,8 @@ void ResourceLoader::HandleError(const ResourceError& error) {
 
   loader_.reset();
 
-  network_instrumentation::endResourceLoad(
-      resource_->Identifier(), network_instrumentation::RequestOutcome::Fail);
+  network_instrumentation::EndResourceLoad(
+      resource_->Identifier(), network_instrumentation::RequestOutcome::kFail);
 
   fetcher_->HandleLoaderError(resource_.Get(), error);
 }

@@ -9,34 +9,35 @@
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 
 namespace blink {
+
 class ResourceRequest;
-}  // namespace blink
 
 namespace network_instrumentation {
 
-enum RequestOutcome { Success, Fail };
+enum RequestOutcome { kSuccess, kFail };
 
 class PLATFORM_EXPORT ScopedResourceLoadTracker {
  public:
-  ScopedResourceLoadTracker(unsigned long resourceID,
+  ScopedResourceLoadTracker(unsigned long resource_id,
                             const blink::ResourceRequest&);
   ~ScopedResourceLoadTracker();
-  void resourceLoadContinuesBeyondScope();
+  void ResourceLoadContinuesBeyondScope();
 
  private:
   // If this variable is false, close resource load slice at end of scope.
-  bool m_resourceLoadContinuesBeyondScope;
+  bool resource_load_continues_beyond_scope_;
 
-  const unsigned long m_resourceID;
+  const unsigned long resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedResourceLoadTracker);
 };
 
-void PLATFORM_EXPORT resourcePrioritySet(unsigned long resourceID,
+void PLATFORM_EXPORT ResourcePrioritySet(unsigned long resource_id,
                                          blink::ResourceLoadPriority);
 
-void PLATFORM_EXPORT endResourceLoad(unsigned long resourceID, RequestOutcome);
+void PLATFORM_EXPORT EndResourceLoad(unsigned long resource_id, RequestOutcome);
 
 }  // namespace network_instrumentation
+}  // namespace blink
 
 #endif  // NetworkInstrumentation_h
