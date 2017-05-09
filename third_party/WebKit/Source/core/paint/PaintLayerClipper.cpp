@@ -264,20 +264,6 @@ LayoutRect PaintLayerClipper::LocalClipRect(
   return clip_rect;
 }
 
-#ifdef CHECK_CLIP_RECTS
-#define CHECK_RECTS_EQ(expected, actual)                                \
-  do {                                                                  \
-    bool matches =                                                      \
-        (expected.isEmpty() && actual.isEmpty()) || expected == actual; \
-    if (!matches) {                                                     \
-      LOG(ERROR) << "Rects don't match for m_layer="                    \
-                 << m_layer.layoutObject()->debugName()                 \
-                 << " expected=" << expected.toString()                 \
-                 << " actual=" << actual.toString();                    \
-    }                                                                   \
-  } while (false);
-#endif
-
 void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     const ClipRectsContext& context,
     const LayoutRect& paint_dirty_rect,
@@ -319,17 +305,6 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
         foreground_rect.SetHasRadius(true);
     }
   }
-
-#ifdef CHECK_CLIP_RECTS
-  ClipRect testBackgroundRect, testForegroundRect;
-  LayoutRect testLayerBounds;
-  PaintLayerClipper(m_layer, nullptr)
-      .calculateRects(context, paintDirtyRect, testLayerBounds,
-                      testBackgroundRect, testForegroundRect, offsetFromRoot);
-  CHECK_RECTS_EQ(testBackgroundRect, backgroundRect);
-  CHECK_RECTS_EQ(testForegroundRect, foregroundRect);
-  CHECK_RECTS_EQ(testLayerBounds, layerBounds);
-#endif
 }
 
 void PaintLayerClipper::CalculateRects(
@@ -564,11 +539,6 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
     }
 
     CalculateBackgroundClipRectWithGeometryMapper(context, output);
-#ifdef CHECK_CLIP_RECTS
-    ClipRect testBackgroundClipRect =
-        PaintLayerClipper(m_layer, nullptr).backgroundClipRect(context);
-    CHECK_RECTS_EQ(testBackgroundClipRect, output);
-#endif
     return;
   }
   DCHECK(layer_.Parent());
