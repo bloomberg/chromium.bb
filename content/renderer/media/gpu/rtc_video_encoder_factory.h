@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "media/base/video_codecs.h"
 #include "third_party/webrtc/media/engine/webrtcvideoencoderfactory.h"
 
 namespace media {
@@ -30,15 +31,15 @@ class CONTENT_EXPORT RTCVideoEncoderFactory
 
   // cricket::WebRtcVideoEncoderFactory implementation.
   webrtc::VideoEncoder* CreateVideoEncoder(
-      webrtc::VideoCodecType type) override;
-  const std::vector<VideoCodec>& codecs() const override;
+      const cricket::VideoCodec& codec) override;
+  const std::vector<cricket::VideoCodec>& supported_codecs() const override;
   void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) override;
 
  private:
   media::GpuVideoAcceleratorFactories* gpu_factories_;
 
   // List of supported cricket::WebRtcVideoEncoderFactory::VideoCodec.
-  std::vector<VideoCodec> codecs_;
+  std::vector<cricket::VideoCodec> supported_codecs_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoEncoderFactory);
 };
