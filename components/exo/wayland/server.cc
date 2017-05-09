@@ -2149,7 +2149,8 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
     // already activated on the client side, so do not notify about the
     // activation. It means that zcr_remote_shell_v1_send_activated is used
     // only to notify about activations originating in Aura.
-    if (gained_active && gained_active->GetProperty(kIgnoreWindowActivated)) {
+    if (gained_active && ShellSurface::GetMainSurface(gained_active) &&
+        gained_active->GetProperty(kIgnoreWindowActivated)) {
       gained_active->SetProperty(kIgnoreWindowActivated, false);
       return;
     }
