@@ -5,6 +5,7 @@
 // A utility for printing the contents of a postmortem stability minidump.
 
 #include <windows.h>  // NOLINT
+
 #include <dbghelp.h>
 
 #include "base/command_line.h"
@@ -158,6 +159,30 @@ void PrintReport(FILE* out, const browser_watcher::StabilityReport& report) {
   }
 }
 
+bool GetStabilityStreamRvaAndSize(RVA directory_rva,
+                                  ULONG32 stream_count,
+                                  FILE* file,
+                                  RVA* report_rva,
+                                  ULONG32* report_size_bytes) {
+  std::vector<MINIDUMP_DIRECTORY> directory;
+  directory.resize(stream_count);
+
+  CHECK_EQ(0, fseek(file, directory_rva, SEEK_SET));
+  CHECK_EQ(stream_count, fread(directory.data(), sizeof(MINIDUMP_DIRECTORY),
+                               stream_count, file));
+
+  for (const MINIDUMP_DIRECTORY& entry : directory) {
+    constexpr ULONG32 kStabilityStream = static_cast<ULONG32>(0x4B6B0002);
+    if (entry.StreamType == kStabilityStream) {
+      *report_rva = entry.Location.Rva;
+      *report_size_bytes = entry.Location.DataSize;
+      return true;
+    }
+  }
+
+  return false;
+}
+
 int Main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 
@@ -176,18 +201,14 @@ int Main(int argc, char** argv) {
   MINIDUMP_HEADER header = {};
   CHECK_EQ(1U, fread(&header, sizeof(header), 1U, minidump_file.get()));
   CHECK_EQ(static_cast<ULONG32>(MINIDUMP_SIGNATURE), header.Signature);
-  CHECK_EQ(2U, header.NumberOfStreams);
+  fprintf(stdout, "Number of streams: %u\n", header.NumberOfStreams);
   RVA directory_rva = header.StreamDirectoryRva;
 
-  // Read the directory entry for the stability report's stream.
-  // Note: this hardcodes an expectation that the stability report is the first
-  // encountered stream. This is acceptable for a debug tool.
-  MINIDUMP_DIRECTORY directory = {};
-  CHECK_EQ(0, fseek(minidump_file.get(), directory_rva, SEEK_SET));
-  CHECK_EQ(1U, fread(&directory, sizeof(directory), 1U, minidump_file.get()));
-  CHECK_EQ(static_cast<ULONG32>(0x4B6B0002), directory.StreamType);
-  RVA report_rva = directory.Location.Rva;
-  ULONG32 report_size_bytes = directory.Location.DataSize;
+  RVA report_rva;
+  ULONG32 report_size_bytes;
+  CHECK(GetStabilityStreamRvaAndSize(directory_rva, header.NumberOfStreams,
+                                     minidump_file.get(), &report_rva,
+                                     &report_size_bytes));
 
   // Read the serialized stability report.
   std::string serialized_report;

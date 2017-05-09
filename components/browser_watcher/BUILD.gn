@@ -131,9 +131,9 @@ if (is_win) {
     ]
   }
 
-  executable("dump_postmortem") {
+  executable("dump_stability") {
     sources = [
-      "dump_postmortem_minidump_main_win.cc",
+      "dump_stability_report_main_win.cc",
     ]
     deps = [
       ":stability_report_proto",
