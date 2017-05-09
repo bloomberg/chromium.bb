@@ -166,49 +166,6 @@ void NativeThemeWin::CloseHandles() {
   instance()->CloseHandlesInternal();
 }
 
-HRESULT NativeThemeWin::GetThemeColor(ThemeName theme,
-                                      int part_id,
-                                      int state_id,
-                                      int prop_id,
-                                      SkColor* color) const {
-  HANDLE handle = GetThemeHandle(theme);
-  if (!handle || !get_theme_color_)
-    return E_NOTIMPL;
-  COLORREF color_ref;
-  if (get_theme_color_(handle, part_id, state_id, prop_id, &color_ref) != S_OK)
-    return E_NOTIMPL;
-  *color = skia::COLORREFToSkColor(color_ref);
-  return S_OK;
-}
-
-SkColor NativeThemeWin::GetThemeColorWithDefault(ThemeName theme,
-                                                 int part_id,
-                                                 int state_id,
-                                                 int prop_id,
-                                                 int default_sys_color) const {
-  SkColor color;
-  return (GetThemeColor(theme, part_id, state_id, prop_id, &color) == S_OK) ?
-      color : color_utils::GetSysSkColor(default_sys_color);
-}
-
-gfx::Size NativeThemeWin::GetThemeBorderSize(ThemeName theme) const {
-  // For simplicity use the wildcard state==0, part==0, since it works
-  // for the cases we currently depend on.
-  int border;
-  return (GetThemeInt(theme, 0, 0, TMT_BORDERSIZE, &border) == S_OK) ?
-      gfx::Size(border, border) :
-      gfx::Size(GetSystemMetrics(SM_CXEDGE), GetSystemMetrics(SM_CYEDGE));
-}
-
-void NativeThemeWin::DisableTheming() const {
-  if (set_theme_properties_)
-    set_theme_properties_(0);
-}
-
-bool NativeThemeWin::IsClassicTheme(ThemeName name) const {
-  return !theme_dll_ || !GetThemeHandle(name);
-}
-
 // static
 NativeThemeWin* NativeThemeWin::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeWin, s_native_theme, ());
@@ -285,13 +242,10 @@ void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
 NativeThemeWin::NativeThemeWin()
     : draw_theme_(NULL),
       draw_theme_ex_(NULL),
-      get_theme_color_(NULL),
       get_theme_content_rect_(NULL),
       get_theme_part_size_(NULL),
       open_theme_(NULL),
       close_theme_(NULL),
-      set_theme_properties_(NULL),
-      get_theme_int_(NULL),
       theme_dll_(LoadLibrary(L"uxtheme.dll")),
       color_change_listener_(this),
       is_using_high_contrast_(false),
@@ -301,8 +255,6 @@ NativeThemeWin::NativeThemeWin()
         GetProcAddress(theme_dll_, "DrawThemeBackground"));
     draw_theme_ex_ = reinterpret_cast<DrawThemeBackgroundExPtr>(
         GetProcAddress(theme_dll_, "DrawThemeBackgroundEx"));
-    get_theme_color_ = reinterpret_cast<GetThemeColorPtr>(
-        GetProcAddress(theme_dll_, "GetThemeColor"));
     get_theme_content_rect_ = reinterpret_cast<GetThemeContentRectPtr>(
         GetProcAddress(theme_dll_, "GetThemeBackgroundContentRect"));
     get_theme_part_size_ = reinterpret_cast<GetThemePartSizePtr>(
@@ -311,10 +263,6 @@ NativeThemeWin::NativeThemeWin()
         GetProcAddress(theme_dll_, "OpenThemeData"));
     close_theme_ = reinterpret_cast<CloseThemeDataPtr>(
         GetProcAddress(theme_dll_, "CloseThemeData"));
-    set_theme_properties_ = reinterpret_cast<SetThemeAppPropertiesPtr>(
-        GetProcAddress(theme_dll_, "SetThemeAppProperties"));
-    get_theme_int_ = reinterpret_cast<GetThemeIntPtr>(
-        GetProcAddress(theme_dll_, "GetThemeInt"));
   }
   memset(theme_handles_, 0, sizeof(theme_handles_));
 
@@ -1926,16 +1874,6 @@ int NativeThemeWin::GetWindowsState(Part part,
       NOTREACHED();
   }
   return 0;
-}
-
-HRESULT NativeThemeWin::GetThemeInt(ThemeName theme,
-                                    int part_id,
-                                    int state_id,
-                                    int prop_id,
-                                    int *value) const {
-  HANDLE handle = GetThemeHandle(theme);
-  return (handle && get_theme_int_) ?
-      get_theme_int_(handle, part_id, state_id, prop_id, value) : E_NOTIMPL;
 }
 
 HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
