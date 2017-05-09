@@ -2455,6 +2455,21 @@ bool TextureManager::ValidateTexImage(
         error_state, function_name, args.target, "target");
     return false;
   }
+  if (feature_info_->IsWebGL1OrES2Context()) {
+    switch (args.format) {
+      case GL_DEPTH_COMPONENT:
+      case GL_DEPTH_STENCIL:
+        if (args.target != GL_TEXTURE_2D) {
+          ERRORSTATE_SET_GL_ERROR(
+              error_state, GL_INVALID_OPERATION, function_name,
+              "invalid target for depth/stencil textures");
+          return false;
+        }
+        break;
+      default:
+        break;
+    }
+  }
   if (!ValidateTextureParameters(
       error_state, function_name, true, args.format, args.type,
       args.internal_format, args.level)) {
