@@ -233,14 +233,14 @@ static INLINE int get_dc_sign_ctx(int dc_sign) {
 static INLINE void get_txb_ctx(BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                                int plane, const ENTROPY_CONTEXT *a,
                                const ENTROPY_CONTEXT *l, TXB_CTX *txb_ctx) {
-  const int tx_size_in_blocks = 1 << tx_size;
+  const int txb_w_unit = tx_size_wide_unit[tx_size];
+  const int txb_h_unit = tx_size_high_unit[tx_size];
   int ctx_offset = (plane == 0) ? 0 : 7;
-  int k;
 
   if (plane_bsize > txsize_to_bsize[tx_size]) ctx_offset += 3;
 
   int dc_sign = 0;
-  for (k = 0; k < tx_size_in_blocks; ++k) {
+  for (int k = 0; k < txb_w_unit; ++k) {
     int sign = ((uint8_t)a[k]) >> COEFF_CONTEXT_BITS;
     if (sign == 1)
       --dc_sign;
@@ -248,8 +248,10 @@ static INLINE void get_txb_ctx(BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
       ++dc_sign;
     else if (sign != 0)
       assert(0);
+  }
 
-    sign = ((uint8_t)l[k]) >> COEFF_CONTEXT_BITS;
+  for (int k = 0; k < txb_h_unit; ++k) {
+    int sign = ((uint8_t)l[k]) >> COEFF_CONTEXT_BITS;
     if (sign == 1)
       --dc_sign;
     else if (sign == 2)
@@ -257,15 +259,21 @@ static INLINE void get_txb_ctx(BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
     else if (sign != 0)
       assert(0);
   }
+
   txb_ctx->dc_sign_ctx = get_dc_sign_ctx(dc_sign);
 
   if (plane == 0) {
     int top = 0;
     int left = 0;
-    for (k = 0; k < tx_size_in_blocks; ++k) {
+
+    for (int k = 0; k < txb_w_unit; ++k) {
       top = AOMMAX(top, ((uint8_t)a[k] & COEFF_CONTEXT_MASK));
+    }
+
+    for (int k = 0; k < txb_h_unit; ++k) {
       left = AOMMAX(left, ((uint8_t)l[k] & COEFF_CONTEXT_MASK));
     }
+
     top = AOMMIN(top, 255);
     left = AOMMIN(left, 255);
 
