@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
-#include "components/signin/core/common/profile_management_switches.h"
 
 SigninViewController::SigninViewController()
     : signin_view_controller_delegate_(nullptr) {}
@@ -67,8 +66,7 @@ void SigninViewController::ResetModalSigninDelegate() {
 // static
 bool SigninViewController::ShouldShowModalSigninForMode(
     profiles::BubbleViewMode mode) {
-  return switches::UsePasswordSeparatedSigninFlow() &&
-         (mode == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-          mode == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-          mode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH);
+  return mode == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
+         mode == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
+         mode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH;
 }

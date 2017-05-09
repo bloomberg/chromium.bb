@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -98,21 +97,6 @@ void SetupProfilesForLock(Profile* signed_in) {
 
   // |signed_in| should now be lockable.
   EXPECT_TRUE(profiles::IsLockAvailable(signed_in));
-}
-
-views::View* FindWebView(views::View* view) {
-  std::queue<views::View*> queue;
-  queue.push(view);
-  while (!queue.empty()) {
-    views::View* current = queue.front();
-    queue.pop();
-    if (current->GetClassName() == views::WebView::kViewClassName)
-      return current;
-
-    for (int i = 0; i < current->child_count(); ++i)
-      queue.push(current->child_at(i));
-  }
-  return nullptr;
 }
 
 }  // namespace
@@ -188,16 +172,6 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     return ProfileChooserView::profile_bubble_->signin_current_profile_button_;
   }
 
-  void ShowSigninView() {
-    DCHECK(!switches::UsePasswordSeparatedSigninFlow());
-    DCHECK(current_profile_bubble());
-    DCHECK(current_profile_bubble()->avatar_menu_);
-    current_profile_bubble()->ShowView(
-        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
-        current_profile_bubble()->avatar_menu_.get());
-    base::RunLoop().RunUntilIdle();
-  }
-
  private:
   std::unique_ptr<content::WindowedNotificationObserver> window_close_observer_;
 
@@ -224,24 +198,6 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SigninButtonHasFocus) {
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
 
   EXPECT_TRUE(signin_current_profile_button()->HasFocus());
-}
-
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ContentAreaHasFocus) {
-  // The ProfileChooserView doesn't handle sign in under the new password
-  // separated signin flow.
-  if (switches::UsePasswordSeparatedSigninFlow())
-    return;
-
-  ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
-
-  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
-
-  ShowSigninView();
-
-  ASSERT_TRUE(current_profile_bubble());
-  views::View* web_view = FindWebView(current_profile_bubble());
-  ASSERT_TRUE(web_view);
-  EXPECT_TRUE(web_view->HasFocus());
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ViewProfileUMA) {

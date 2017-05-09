@@ -1918,13 +1918,6 @@ extern const char kAccountConsistencyName[];
 // jar.
 extern const char kAccountConsistencyDescription[];
 
-// Title for the flag to enable the new gaia password-separated sign in flow.
-extern const char kEnablePasswordSeparatedSigninFlowName[];
-
-// Description for the flag to enable the new gaia password-separated sign in
-// flow.
-extern const char kEnablePasswordSeparatedSigninFlowDescription[];
-
 // Title for the flag to enable the google profile information
 extern const char kGoogleProfileInfoName[];
 

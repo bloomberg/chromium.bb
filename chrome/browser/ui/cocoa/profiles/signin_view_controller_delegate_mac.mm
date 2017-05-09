@@ -17,17 +17,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
-
-// Dimensions of the web contents containing the old-style signin flow with the
-// username and password challenge on the same form.
-const CGFloat kPasswordCombinedFixedGaiaViewHeight = 440;
-const CGFloat kPasswordCombinedFixedGaiaViewWidth = 360;
 
 // Width of the different dialogs that make up the signin flow.
 const int kModalDialogWidth = 448;
@@ -99,11 +93,7 @@ SigninViewControllerDelegateMac::CreateGaiaWebContents(
                                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                         std::string());
   NSView* webview = web_contents->GetNativeView();
-  [webview
-      setFrameSize:switches::UsePasswordSeparatedSigninFlow()
-                       ? NSMakeSize(kModalDialogWidth, kFixedGaiaViewHeight)
-                       : NSMakeSize(kPasswordCombinedFixedGaiaViewWidth,
-                                    kPasswordCombinedFixedGaiaViewHeight)];
+  [webview setFrameSize:NSMakeSize(kModalDialogWidth, kFixedGaiaViewHeight)];
 
   content::RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
   if (rwhv)

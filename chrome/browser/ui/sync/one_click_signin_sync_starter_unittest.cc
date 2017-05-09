@@ -18,7 +18,6 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -123,26 +122,4 @@ TEST_F(OneClickSigninSyncStarterTest, CallbackNull) {
       GoogleServiceAuthError::REQUEST_CANCELED));
   EXPECT_EQ(0, failed_count_);
   EXPECT_EQ(0, succeeded_count_);
-}
-
-// Verifies that the continue URL is loaded once signin completes.
-TEST_F(OneClickSigninSyncStarterTest, LoadContinueUrl) {
-  // This test would need to be a browser test to work under the password
-  // separated signin flow since it expects a full browser down the line.
-  // However, that flow doesn't support continue_url so this test is irrelevant
-  // there.
-  if (switches::UsePasswordSeparatedSigninFlow())
-    return;
-
-  content::NavigationController& controller = web_contents()->GetController();
-  EXPECT_FALSE(controller.GetPendingEntry());
-
-  const GURL kTestURL = GURL("http://www.example.com");
-  CreateSyncStarter(base::Bind(&OneClickSigninSyncStarterTest::Callback,
-                               base::Unretained(this)),
-                    kTestURL);
-  sync_starter_->AccountAddedToCookie(
-      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-  EXPECT_EQ(1, succeeded_count_);
-  EXPECT_EQ(kTestURL, controller.GetPendingEntry()->GetURL());
 }

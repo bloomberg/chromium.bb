@@ -58,11 +58,6 @@ class UserManager {
 // Dialog that will be displayed when a profile is selected in UserManager.
 class UserManagerProfileDialog {
  public:
-  // Dimensions of the reauth dialog displaying the old-style signin flow with
-  // the username and password challenge on the same form.
-  static constexpr int kPasswordCombinedDialogHeight = 440;
-  static constexpr int kPasswordCombinedDialogWidth = 360;
-
   // Dimensions of the reauth dialog displaying the password-separated signin
   // flow.
   static constexpr int kDialogHeight = 512;

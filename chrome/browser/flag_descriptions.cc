@@ -1736,13 +1736,6 @@ const char kAccountConsistencyDescription[] =
     "When enabled, the browser manages signing in and out of Google "
     "accounts.";
 
-const char kEnablePasswordSeparatedSigninFlowName[] =
-    "Enable new gaia password-separated sign in flow";
-
-const char kEnablePasswordSeparatedSigninFlowDescription[] =
-    "When enabled, signing in to the browser will use a new gaia "
-    "password-separated sign in flow.";
-
 const char kGoogleProfileInfoName[] = "Google profile name and icon";
 
 const char kGoogleProfileInfoDescription[] =

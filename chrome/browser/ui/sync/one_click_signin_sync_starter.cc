@@ -38,7 +38,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync/base/sync_prefs.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -417,12 +416,9 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
 
 void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
     LoginUIService::SyncConfirmationUIClosedResult result) {
-
-  if (switches::UsePasswordSeparatedSigninFlow()) {
-    // We didn't run this callback in AccountAddedToCookie so do it now.
-    if (!sync_setup_completed_callback_.is_null())
-      sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
-  }
+  // We didn't run this callback in AccountAddedToCookie so do it now.
+  if (!sync_setup_completed_callback_.is_null())
+    sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
 
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
@@ -491,57 +487,10 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
 
-  if (switches::UsePasswordSeparatedSigninFlow()) {
-    // Under the new signin flow, the sync confirmation dialog should always be
-    // shown regardless of |start_mode_|. |sync_setup_completed_callback_| will
-    // be run after the modal is closed.
-    DisplayModalSyncConfirmationWindow();
-    return;
-  }
-
-  if (!sync_setup_completed_callback_.is_null())
-    sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
-
-  switch (start_mode_) {
-    case SYNC_WITH_DEFAULT_SETTINGS: {
-      // Just kick off the sync machine, no need to configure it first.
-      ProfileSyncService* profile_sync_service = GetProfileSyncService();
-      if (profile_sync_service)
-        profile_sync_service->SetFirstSetupComplete();
-      FinishProfileSyncServiceSetup();
-      if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
-        base::string16 message;
-        if (!profile_sync_service) {
-          // Sync is disabled by policy.
-          message = l10n_util::GetStringUTF16(
-              IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE);
-        }
-        DisplayFinalConfirmationBubble(message);
-      }
-      break;
-    }
-    case CONFIRM_SYNC_SETTINGS_FIRST:
-      // Blocks sync until the sync settings confirmation UI is closed.
-      DisplayFinalConfirmationBubble(base::string16());
-      return;
-    case CONFIGURE_SYNC_FIRST:
-      ShowSettingsPage(true);  // Show sync config UI.
-      break;
-    case SHOW_SETTINGS_WITHOUT_CONFIGURE:
-      ShowSettingsPage(false);  // Don't show sync config UI.
-      break;
-    case UNDO_SYNC:
-      NOTREACHED();
-  }
-
-  // Navigate to the |continue_url_| if one is set, unless the user first needs
-  // to configure Sync.
-  if (web_contents() && !continue_url_.is_empty() &&
-      start_mode_ != CONFIGURE_SYNC_FIRST) {
-    LoadContinueUrl();
-  }
-
-  delete this;
+  // The sync confirmation dialog should always be shown regardless of
+  // |start_mode_|. |sync_setup_completed_callback_| will be run after the
+  // modal is closed.
+  DisplayModalSyncConfirmationWindow();
 }
 
 void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
