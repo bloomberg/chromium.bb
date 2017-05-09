@@ -302,15 +302,25 @@ void LayoutTableRow::AddOverflowFromCell(const LayoutTableCell* cell) {
     AddSelfVisualOverflow(cell_background_rect);
   }
 
-  // Should propagate cell's overflow to row if the cell has row span or has
-  // overflow.
-  if (cell->RowSpan() == 1 && !cell->HasOverflowModel())
-    return;
-
   // The cell and the row share the section's coordinate system. However
   // the visual overflow should be determined in the coordinate system of
   // the row, that's why we shift the rects by cell_row_offset below.
   LayoutSize cell_row_offset = cell->Location() - Location();
+
+  // Let the row's self visual overflow cover the cell's whole collapsed
+  // borders. This ensures correct raster invalidation on row border style
+  // change.
+  if (const auto* collapsed_borders = cell->GetCollapsedBorderValues()) {
+    LayoutRect collapsed_border_rect =
+        cell->RectForOverflowPropagation(collapsed_borders->LocalVisualRect());
+    collapsed_border_rect.Move(cell_row_offset);
+    AddSelfVisualOverflow(collapsed_border_rect);
+  }
+
+  // Should propagate cell's overflow to row if the cell has row span or has
+  // overflow.
+  if (cell->RowSpan() == 1 && !cell->HasOverflowModel())
+    return;
 
   LayoutRect cell_visual_overflow_rect =
       cell->VisualOverflowRectForPropagation();

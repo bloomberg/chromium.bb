@@ -1238,7 +1238,7 @@ void LayoutTableSection::LayoutRows() {
 
   SetLogicalHeight(LayoutUnit(row_pos_[total_rows]));
 
-  ComputeOverflowFromCells(total_rows, Table()->NumEffectiveColumns());
+  ComputeOverflowFromDescendants();
 }
 
 int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
@@ -1272,15 +1272,8 @@ int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
   return pagination_strut.Ceil();
 }
 
-void LayoutTableSection::ComputeOverflowFromCells() {
-  unsigned total_rows = grid_.size();
-  unsigned n_eff_cols = Table()->NumEffectiveColumns();
-  ComputeOverflowFromCells(total_rows, n_eff_cols);
-}
-
-void LayoutTableSection::ComputeOverflowFromCells(unsigned total_rows,
-                                                  unsigned n_eff_cols) {
-  unsigned total_cells_count = n_eff_cols * total_rows;
+void LayoutTableSection::ComputeOverflowFromDescendants() {
+  unsigned total_cells_count = NumRows() * Table()->NumEffectiveColumns();
   unsigned max_allowed_overflowing_cells_count =
       total_cells_count <
               g_min_table_size_to_use_fast_paint_path_with_overflowing_cell
@@ -1294,29 +1287,43 @@ void LayoutTableSection::ComputeOverflowFromCells(unsigned total_rows,
 #if DCHECK_IS_ON()
   bool has_overflowing_cell = false;
 #endif
-  // Now that our height has been determined, add in overflow from cells.
-  for (unsigned r = 0; r < total_rows; r++) {
-    unsigned n_cols = NumCols(r);
-    for (unsigned c = 0; c < n_cols; c++) {
-      const auto* cell = OriginatingCellAt(r, c);
-      if (!cell)
-        continue;
-      AddOverflowFromChild(*cell);
-#if DCHECK_IS_ON()
-      has_overflowing_cell |= cell->HasVisualOverflow();
-#endif
-      if (cell->HasVisualOverflow() &&
-          !force_slow_paint_path_with_overflowing_cell_) {
-        overflowing_cells_.insert(cell);
-        if (overflowing_cells_.size() > max_allowed_overflowing_cells_count) {
-          // We need to set m_forcesSlowPaintPath only if there is a least one
-          // overflowing cells as the hit testing code rely on this information.
-          force_slow_paint_path_with_overflowing_cell_ = true;
-          // The slow path does not make any use of the overflowing cells info,
-          // don't hold on to the memory.
-          overflowing_cells_.clear();
-        }
+
+  for (auto* row = FirstRow(); row; row = row->NextRow()) {
+    AddOverflowFromChild(*row);
+
+    for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
+      // Let the section's self visual overflow cover the cell's whole collapsed
+      // borders. This ensures correct raster invalidation on section border
+      // style change.
+      // TODO(wangxianzhu): When implementing row as DisplayItemClient of
+      // collapsed borders, the following logic should be replaced by
+      // invalidation of rows on section border style change. crbug.com/663208.
+      if (const auto* collapsed_borders = cell->GetCollapsedBorderValues()) {
+        LayoutRect rect = cell->RectForOverflowPropagation(
+            collapsed_borders->LocalVisualRect());
+        rect.MoveBy(cell->Location());
+        AddSelfVisualOverflow(rect);
       }
+
+      if (force_slow_paint_path_with_overflowing_cell_ ||
+          !cell->HasVisualOverflow())
+        continue;
+
+#if DCHECK_IS_ON()
+      has_overflowing_cell = true;
+#endif
+      if (overflowing_cells_.size() >= max_allowed_overflowing_cells_count) {
+        // We need to set force_slow_paint_path_with_overflowing_cell_ only if
+        // there is at least one overflowing cell as the hit testing code relies
+        // on this information.
+        force_slow_paint_path_with_overflowing_cell_ = true;
+        // The slow path does not make any use of the overflowing cells info,
+        // don't hold on to the memory.
+        overflowing_cells_.clear();
+        continue;
+      }
+
+      overflowing_cells_.insert(cell);
     }
   }
 
@@ -1348,9 +1355,8 @@ bool LayoutTableSection::RecalcChildOverflowAfterStyleChange() {
       row_layouter->ComputeOverflow();
     children_overflow_changed |= row_children_overflow_changed;
   }
-  // TODO(crbug.com/604136): Add visual overflow from rows too.
   if (children_overflow_changed)
-    ComputeOverflowFromCells(total_rows, Table()->NumEffectiveColumns());
+    ComputeOverflowFromDescendants();
   return children_overflow_changed;
 }
 

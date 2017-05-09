@@ -4,11 +4,19 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutTableRow TR",
+      "position": [8, 8],
+      "transformOrigin": [37.5, 10.5],
+      "bounds": [76, 22],
       "drawsContent": true,
+      "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
-          "object": "LayoutTableRow TR id='row'",
-          "rect": [8, 8, 60, 54],
+          "object": "LayoutTableCell TD id='target'",
+          "rect": [0, 0, 38, 22],
           "reason": "style change"
         }
       ]
@@ -16,15 +24,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
+      "object": "LayoutTableCell TD id='target'",
       "reason": "style change"
     },
     {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableRow TR id='row'",
+      "object": "RootInlineBox",
       "reason": "style change"
     }
   ]

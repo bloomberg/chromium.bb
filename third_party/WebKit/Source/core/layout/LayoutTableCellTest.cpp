@@ -79,6 +79,9 @@ class LayoutTableCellTest : public RenderingTest {
   bool HasEndBorderAdjoiningTable(const LayoutTableCell* cell) {
     return cell->HasEndBorderAdjoiningTable();
   }
+  LayoutRect LocalVisualRect(const LayoutTableCell* cell) {
+    return cell->LocalVisualRect();
+  }
 
   LayoutTableCell* GetCellByElementId(const char* id) {
     return ToLayoutTableCell(GetLayoutObjectByElementId(id));
@@ -249,6 +252,49 @@ TEST_F(LayoutTableCellTest, HasBorderAdjoiningTableRTL) {
   EXPECT_FALSE(HasEndBorderAdjoiningTable(cell31));
   EXPECT_FALSE(HasStartBorderAdjoiningTable(cell32));
   EXPECT_FALSE(HasEndBorderAdjoiningTable(cell32));
+}
+
+TEST_F(LayoutTableCellTest, LocalVisualRectWithCollapsedBorders) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  table { border-collapse: collapse }"
+      "  td { border: 0px solid blue; padding: 0 }"
+      "  div { width: 100px; height: 100px }"
+      "</style>"
+      "<table>"
+      "  <tr>"
+      "    <td id='cell1' style='border-bottom-width: 10px;"
+      "        outline: 3px solid blue'><div></div></td>"
+      "    <td id='cell2' style='border-width: 3px 15px'><div></div></td>"
+      "  </tr>"
+      "</table>");
+
+  auto* cell1 = GetCellByElementId("cell1");
+  auto* cell2 = GetCellByElementId("cell2");
+  EXPECT_TRUE(cell1->Table()->ShouldCollapseBorders());
+
+  EXPECT_EQ(0, cell1->BorderLeft());
+  EXPECT_EQ(7, cell1->BorderRight());
+  EXPECT_EQ(0, cell1->BorderTop());
+  EXPECT_EQ(5, cell1->BorderBottom());
+  EXPECT_EQ(8, cell2->BorderLeft());
+  EXPECT_EQ(7, cell2->BorderRight());
+  EXPECT_EQ(2, cell2->BorderTop());
+  EXPECT_EQ(1, cell2->BorderBottom());
+
+  LayoutRect expected_visual_rect1 = cell1->BorderBoxRect();
+  // Expand top, left for outline, right and bottom for collapsed border.
+  expected_visual_rect1.ExpandEdges(LayoutUnit(3), LayoutUnit(8), LayoutUnit(5),
+                                    LayoutUnit(3));
+  EXPECT_EQ(expected_visual_rect1, LocalVisualRect(cell1));
+
+  LayoutRect expected_visual_rect2 = cell2->BorderBoxRect();
+  // Expand outer half border width at each side. For the bottom side, expand
+  // more because the left border is lengthened to cover the joint with the
+  // bottom border of the cell to the left.
+  expected_visual_rect2.ExpandEdges(LayoutUnit(1), LayoutUnit(8), LayoutUnit(5),
+                                    LayoutUnit(7));
+  EXPECT_EQ(expected_visual_rect2, LocalVisualRect(cell2));
 }
 
 }  // namespace blink

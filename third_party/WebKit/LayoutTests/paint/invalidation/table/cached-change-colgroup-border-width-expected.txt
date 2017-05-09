@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutTableSection TBODY",
+          "rect": [7, 7, 167, 104],
+          "reason": "bounds change"
+        },
+        {
           "object": "LayoutTableCol COLGROUP id='colgroup'",
           "rect": [8, 8, 166, 102],
           "reason": "style change"
@@ -65,11 +70,6 @@
           "object": "LayoutTable TABLE",
           "rect": [169, 8, 5, 102],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [169, 9, 4, 100],
-          "reason": "incremental"
         }
       ]
     }
@@ -109,7 +109,7 @@
     },
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "incremental"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutTableCell TD",

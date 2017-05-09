@@ -7,19 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutTableSection TBODY id='tbody'",
+          "rect": [8, 8, 114, 104],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutTable TABLE",
           "rect": [8, 159, 114, 2],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableSection TBODY id='tbody'",
-          "rect": [10, 10, 110, 100],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutTableSection TBODY id='tbody'",
-          "rect": [9, 9, 107, 100],
-          "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD",

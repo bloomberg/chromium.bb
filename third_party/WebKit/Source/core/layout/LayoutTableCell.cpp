@@ -409,21 +409,26 @@ LayoutSize LayoutTableCell::OffsetFromContainer(const LayoutObject* o) const {
   return offset;
 }
 
-LayoutRect LayoutTableCell::LocalVisualRect() const {
-  // If the table grid is dirty, we cannot get reliable information about
-  // adjoining cells, so we ignore outside borders. This should not be a problem
-  // because it means that the table is going to recalculate the grid, relayout
-  // and issue a paint invalidation of its current rect, which includes any
-  // outside borders of this cell.
-  if (!Table()->ShouldCollapseBorders() || Table()->NeedsSectionRecalc())
-    return LayoutBlockFlow::LocalVisualRect();
+void LayoutTableCell::ComputeOverflow(LayoutUnit old_client_after_edge,
+                                      bool recompute_floats) {
+  LayoutBlockFlow::ComputeOverflow(old_client_after_edge, recompute_floats);
 
+  UpdateCollapsedBorderValues();
+  if (!collapsed_border_values_)
+    return;
+
+  // Calculate local visual rect of collapsed borders.
+  // Our border rect already includes the inner halves of the collapsed borders,
+  // so here we get the outer halves.
   bool rtl = !StyleForCellFlow().IsLeftToRightDirection();
-  LayoutUnit outline_outset(Style()->OutlineOutsetExtent());
-  LayoutUnit left(std::max(CollapsedBorderHalfLeft(true), outline_outset));
-  LayoutUnit right(std::max(CollapsedBorderHalfRight(true), outline_outset));
-  LayoutUnit top(std::max(CollapsedBorderHalfTop(true), outline_outset));
-  LayoutUnit bottom(std::max(CollapsedBorderHalfBottom(true), outline_outset));
+  LayoutUnit left = CollapsedBorderHalfLeft(true);
+  LayoutUnit right = CollapsedBorderHalfRight(true);
+  LayoutUnit top = CollapsedBorderHalfTop(true);
+  LayoutUnit bottom = CollapsedBorderHalfBottom(true);
+
+  // This cell's borders may be lengthened to match the widths of orthogonal
+  // borders of adjacent cells. Expand visual overflow to cover the lengthened
+  // parts.
   if ((left && !rtl) || (right && rtl)) {
     if (LayoutTableCell* before = Table()->CellBefore(this)) {
       top = std::max(top, before->CollapsedBorderHalfTop(true));
@@ -449,15 +454,16 @@ LayoutRect LayoutTableCell::LocalVisualRect() const {
     }
   }
 
-  LayoutRect self_visual_overflow_rect = this->SelfVisualOverflowRect();
-  LayoutPoint location(
-      std::max(LayoutUnit(left), -self_visual_overflow_rect.X()),
-      std::max(LayoutUnit(top), -self_visual_overflow_rect.Y()));
-  return LayoutRect(-location.X(), -location.Y(),
-                    location.X() + std::max(Size().Width() + right,
-                                            self_visual_overflow_rect.MaxX()),
-                    location.Y() + std::max(Size().Height() + bottom,
-                                            self_visual_overflow_rect.MaxY()));
+  LayoutRect rect = BorderBoxRect();
+  rect.ExpandEdges(top, right, bottom, left);
+  collapsed_border_values_->SetLocalVisualRect(rect);
+}
+
+LayoutRect LayoutTableCell::LocalVisualRect() const {
+  LayoutRect rect = SelfVisualOverflowRect();
+  if (collapsed_border_values_)
+    rect.Unite(collapsed_border_values_->LocalVisualRect());
+  return rect;
 }
 
 int LayoutTableCell::CellBaselinePosition() const {
@@ -1262,12 +1268,6 @@ void LayoutTableCell::Paint(const PaintInfo& paint_info,
 }
 
 void LayoutTableCell::UpdateCollapsedBorderValues() const {
-  Table()->InvalidateCollapsedBordersForAllCellsIfNeeded();
-  if (collapsed_border_values_valid_)
-    return;
-
-  collapsed_border_values_valid_ = true;
-
   if (!Table()->ShouldCollapseBorders()) {
     if (collapsed_border_values_) {
       collapsed_borders_visually_changed_ = true;
@@ -1275,6 +1275,12 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
     }
     return;
   }
+
+  Table()->InvalidateCollapsedBordersForAllCellsIfNeeded();
+  if (collapsed_border_values_valid_)
+    return;
+
+  collapsed_border_values_valid_ = true;
 
   CollapsedBorderValues new_values(
       *this, ComputeCollapsedStartBorder(), ComputeCollapsedEndBorder(),

@@ -12,19 +12,14 @@
           "reason": "style change"
         },
         {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 8, 113, 104],
+          "reason": "location change"
+        },
+        {
           "object": "LayoutTable TABLE",
           "rect": [8, 108, 113, 4],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 110, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [9, 9, 107, 100],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
@@ -96,7 +91,7 @@
     },
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTableRow TR",

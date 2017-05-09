@@ -17,12 +17,32 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 8, 132, 149],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 8, 132, 149],
+          "reason": "layoutObject removal"
+        },
+        {
           "object": "LayoutTableCell TD",
           "rect": [8, 75, 132, 82],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableCell TD",
+          "rect": [8, 75, 132, 82],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 75, 132, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutTableRow TR",
           "rect": [8, 75, 132, 82],
           "reason": "layoutObject removal"
         },
@@ -37,33 +57,13 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutTableSection TBODY",
-          "rect": [15, 15, 117, 134],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [15, 15, 117, 134],
-          "reason": "layoutObject removal"
-        },
-        {
           "object": "LayoutTableRow TR",
-          "rect": [15, 82, 117, 67],
+          "rect": [8, 8, 132, 82],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutTableRow TR",
-          "rect": [15, 82, 117, 67],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [15, 15, 117, 67],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [15, 15, 117, 67],
+          "rect": [8, 8, 132, 82],
           "reason": "layoutObject removal"
         }
       ]
