@@ -274,9 +274,9 @@ find_package(Perl)
 if (NOT PERL_FOUND)
   message(FATAL_ERROR "Perl is required to build libaom.")
 endif ()
-configure_file(
-  "${AOM_ROOT}/build/cmake/rtcd_config.cmake"
-  "${AOM_CONFIG_DIR}/${AOM_TARGET_CPU}_rtcd_config.rtcd")
+
+configure_file("${AOM_CONFIG_DIR}/rtcd_config.cmake"
+               "${AOM_CONFIG_DIR}/${AOM_TARGET_CPU}_rtcd_config.rtcd")
 
 set(AOM_RTCD_CONFIG_FILE_LIST
     "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
