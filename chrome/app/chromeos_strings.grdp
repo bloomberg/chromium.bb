@@ -3528,7 +3528,7 @@ Press any key to continue exploring.
     Trusted Platform Module (TPM) chip is disabled or absent.
   </message>
   <message name="IDS_EULA_SECURE_MODULE_DESCRIPTION" desc="Description of what a secure module does in the eula page.">
-    Your computer contains a secure module, which is used to implement many critical security features in Chrome OS.
+    Your computer contains a secure module, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=sm
   </message>
   <message name="IDS_EULA_SECURE_MODULE_KEY_DESCRIPTION" desc="Description of the generated secure module password in the eula page.">
     Below is the randomly generated secure module password that has been assigned to your computer:
