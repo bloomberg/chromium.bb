@@ -123,7 +123,7 @@ class HatsNotificationControllerTest : public BrowserWithTestWindowTest {
   }
 
   scoped_refptr<HatsNotificationController> InstantiateHatsController() {
-    MockImageFetcher* mock_image_fetcher_ = new MockImageFetcher;
+    mock_image_fetcher_ = new MockImageFetcher;
     // The initialization will fail since the function IsNewDevice() will return
     // true.
     scoped_refptr<HatsNotificationController> hats_notification_controller =
@@ -177,6 +177,7 @@ class HatsNotificationControllerTest : public BrowserWithTestWindowTest {
 
   TestingProfile profile_;
   StrictMock<MockNetworkPortalDetector> mock_network_portal_detector_;
+  MockImageFetcher* mock_image_fetcher_;
 
  private:
   std::unique_ptr<TestingProfileManager> profile_manager_;
@@ -225,6 +226,17 @@ TEST_F(HatsNotificationControllerTest, OldDevice_ShouldShowNotification) {
   EXPECT_CALL(mock_network_portal_detector_,
               RemoveObserver(hats_notification_controller.get()))
       .Times(2);
+
+  EXPECT_CALL(*mock_image_fetcher_,
+              StartOrQueueNetworkRequest(
+                  HatsNotificationController::kImageFetcher1xId,
+                  GURL(HatsNotificationController::kGoogleIcon1xUrl), _))
+      .Times(1);
+  EXPECT_CALL(*mock_image_fetcher_,
+              StartOrQueueNetworkRequest(
+                  HatsNotificationController::kImageFetcher2xId,
+                  GURL(HatsNotificationController::kGoogleIcon2xUrl), _))
+      .Times(1);
 
   hats_notification_controller->Initialize(false);
 
