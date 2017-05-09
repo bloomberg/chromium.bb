@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<head>
+<title>Performance Paint Timing Test</title>
+</head>
+<body>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script>
+    async_test(function (t) {
+        var observer = new PerformanceObserver(
+            t.step_func(function (entryList) {
+                var entries = entryList.getEntries();
+                assert_equals(entries.length, 2,
+                    "There should be two paint timing instances.");
+                assert_equals(entries[0].entryType, "paint",
+                    "Expected entryType to be: paint.");
+                assert_equals(entries[0].duration, 0,
+                    "Expected duration to be: 0.");
+
+                assert_equals(entries[1].entryType, "paint",
+                    "Expected entryType to be: paint.");
+                assert_equals(entries[1].duration, 0,
+                    "Expected duration to be: 0.");
+                observer.disconnect();
+                t.done();
+            })
+        );
+        observer.observe({entryTypes: ["paint"]});
+
+    }, "First contentful paint fires due to canvas render.");
+    </script>
+
+    <script>
+      window.onload = function() {
+          var c=document.getElementById("canvas");
+          var ctx=c.getContext("2d");
+          ctx.beginPath();
+          ctx.moveTo(0,0);
+          ctx.lineTo(300,150);
+          ctx.stroke();
+      }
+    </script>
+
+    <canvas id="canvas" width="200" height="200" ></canvas>
+</body>
+</html>
