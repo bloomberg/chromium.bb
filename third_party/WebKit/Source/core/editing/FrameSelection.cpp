@@ -983,7 +983,7 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
       break;
   }
 
-  Position start = ComputeVisibleSelectionInDOMTreeDeprecated().Start();
+  Position start = ComputeVisibleSelectionInDOMTree().Start();
   DCHECK(start.AnchorNode());
   if (start.AnchorNode() && start.AnchorNode()->GetLayoutObject()) {
     // FIXME: This code only handles scrolling the startContainer's layer, but
