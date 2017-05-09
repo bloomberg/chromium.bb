@@ -98,25 +98,25 @@ bool ShellPort::IsSystemModalWindowOpen() {
   return false;
 }
 
-void ShellPort::CreateModalBackground(WmWindow* window) {
-  for (WmWindow* root_window : GetAllRootWindows()) {
-    root_window->GetRootWindowController()
+void ShellPort::CreateModalBackground(aura::Window* window) {
+  for (aura::Window* root_window : Shell::GetAllRootWindows()) {
+    RootWindowController::ForWindow(root_window)
         ->GetSystemModalLayoutManager(window)
         ->CreateModalBackground();
   }
 }
 
-void ShellPort::OnModalWindowRemoved(WmWindow* removed) {
-  WmWindow::Windows root_windows = GetAllRootWindows();
-  for (WmWindow* root_window : root_windows) {
-    if (root_window->GetRootWindowController()
+void ShellPort::OnModalWindowRemoved(aura::Window* removed) {
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  for (aura::Window* root_window : root_windows) {
+    if (RootWindowController::ForWindow(root_window)
             ->GetSystemModalLayoutManager(removed)
             ->ActivateNextModalWindow()) {
       return;
     }
   }
-  for (WmWindow* root_window : root_windows) {
-    root_window->GetRootWindowController()
+  for (aura::Window* root_window : root_windows) {
+    RootWindowController::ForWindow(root_window)
         ->GetSystemModalLayoutManager(removed)
         ->DestroyModalBackground();
   }

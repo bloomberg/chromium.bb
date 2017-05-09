@@ -8,6 +8,10 @@
 #include "ash/ash_export.h"
 #include "ash/login_status.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
 
 class WmWindow;
@@ -59,7 +63,7 @@ class ASH_EXPORT ShellObserver {
 
   // Called when keyboard is activated/deactivated in |root_window|.
   virtual void OnVirtualKeyboardStateChanged(bool activated,
-                                             WmWindow* root_window) {}
+                                             aura::Window* root_window) {}
 
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}

@@ -4,7 +4,6 @@
 
 #include "ash/wm/root_window_layout_manager.h"
 
-#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 
@@ -42,7 +41,7 @@ namespace wm {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowLayoutManager, public:
 
-RootWindowLayoutManager::RootWindowLayoutManager(WmWindow* owner)
+RootWindowLayoutManager::RootWindowLayoutManager(aura::Window* owner)
     : owner_(owner) {}
 
 RootWindowLayoutManager::~RootWindowLayoutManager() {}
@@ -51,23 +50,24 @@ RootWindowLayoutManager::~RootWindowLayoutManager() {}
 // RootWindowLayoutManager, aura::LayoutManager implementation:
 
 void RootWindowLayoutManager::OnWindowResized() {
-  ResizeWindow(owner_->aura_window()->children(),
-               gfx::Rect(owner_->GetBounds().size()), 0);
+  ResizeWindow(owner_->children(), gfx::Rect(owner_->bounds().size()), 0);
 }
 
-void RootWindowLayoutManager::OnWindowAddedToLayout(WmWindow* child) {}
+void RootWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {}
 
-void RootWindowLayoutManager::OnWillRemoveWindowFromLayout(WmWindow* child) {}
+void RootWindowLayoutManager::OnWillRemoveWindowFromLayout(
+    aura::Window* child) {}
 
-void RootWindowLayoutManager::OnWindowRemovedFromLayout(WmWindow* child) {}
+void RootWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {}
 
-void RootWindowLayoutManager::OnChildWindowVisibilityChanged(WmWindow* child,
-                                                             bool visible) {}
+void RootWindowLayoutManager::OnChildWindowVisibilityChanged(
+    aura::Window* child,
+    bool visible) {}
 
 void RootWindowLayoutManager::SetChildBounds(
-    WmWindow* child,
+    aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  child->SetBoundsDirect(requested_bounds);
+  SetChildBoundsDirect(child, requested_bounds);
 }
 
 }  // namespace wm

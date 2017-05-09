@@ -97,7 +97,7 @@ class ASH_EXPORT WorkspaceLayoutManager
                                 WmWindow* root_window) override;
   void OnPinnedStateChanged(WmWindow* pinned_window) override;
   void OnVirtualKeyboardStateChanged(bool activated,
-                                     WmWindow* root_window) override;
+                                     aura::Window* root_window) override;
 
  private:
   typedef std::set<aura::Window*> WindowSet;

@@ -389,15 +389,14 @@ void ShelfLayoutManager::OnWindowResized() {
   LayoutShelf();
 }
 
-void ShelfLayoutManager::SetChildBounds(WmWindow* child,
+void ShelfLayoutManager::SetChildBounds(aura::Window* child,
                                         const gfx::Rect& requested_bounds) {
   wm::WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
   // We may contain other widgets (such as frame maximize bubble) but they don't
   // effect the layout in anyway.
   if (!updating_bounds_ &&
-      ((WmWindow::Get(shelf_widget_->GetNativeWindow()) == child) ||
-       (WmWindow::Get(shelf_widget_->status_area_widget()->GetNativeWindow()) ==
-        child))) {
+      ((shelf_widget_->GetNativeWindow() == child) ||
+       (shelf_widget_->status_area_widget()->GetNativeWindow() == child))) {
     LayoutShelf();
   }
 }
@@ -412,11 +411,11 @@ void ShelfLayoutManager::OnPinnedStateChanged(WmWindow* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnVirtualKeyboardStateChanged(bool activated,
-                                                       WmWindow* root_window) {
+void ShelfLayoutManager::OnVirtualKeyboardStateChanged(
+    bool activated,
+    aura::Window* root_window) {
   UpdateKeyboardObserverFromStateChanged(
-      activated, root_window,
-      WmWindow::Get(shelf_widget_->GetNativeWindow())->GetRootWindow(),
+      activated, root_window, shelf_widget_->GetNativeWindow()->GetRootWindow(),
       &keyboard_observer_);
 }
 

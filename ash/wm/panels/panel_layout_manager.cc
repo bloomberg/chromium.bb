@@ -337,7 +337,7 @@ views::Widget* PanelLayoutManager::GetCalloutWidgetForPanel(WmWindow* panel) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, WmLayoutManager implementation:
+// PanelLayoutManager, aura::LayoutManager implementation:
 void PanelLayoutManager::OnWindowResized() {
   Relayout();
 }
@@ -458,11 +458,12 @@ void PanelLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
     Relayout();
 }
 
-void PanelLayoutManager::OnVirtualKeyboardStateChanged(bool activated,
-                                                       WmWindow* root_window) {
-  UpdateKeyboardObserverFromStateChanged(activated, root_window,
-                                         panel_container_->GetRootWindow(),
-                                         &keyboard_observer_);
+void PanelLayoutManager::OnVirtualKeyboardStateChanged(
+    bool activated,
+    aura::Window* root_window) {
+  UpdateKeyboardObserverFromStateChanged(
+      activated, root_window, panel_container_->GetRootWindow()->aura_window(),
+      &keyboard_observer_);
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -15,7 +15,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
@@ -54,7 +53,7 @@ bool AllRootWindowsHaveModalBackgroundsForContainer(int container_id) {
   bool has_modal_screen = !containers.empty();
   for (aura::Window* container : containers) {
     has_modal_screen &= static_cast<SystemModalContainerLayoutManager*>(
-                            WmWindow::Get(container)->GetLayoutManager())
+                            container->layout_manager())
                             ->has_window_dimmer();
   }
   return has_modal_screen;
@@ -804,7 +803,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
   SystemModalContainerLayoutManager* layout_manager =
       ShellPort::Get()
           ->GetPrimaryRootWindowController()
-          ->GetSystemModalLayoutManager(WmWindow::Get(modal_window.get()));
+          ->GetSystemModalLayoutManager(modal_window.get());
 
   EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
   EXPECT_FALSE(layout_manager->has_window_dimmer());

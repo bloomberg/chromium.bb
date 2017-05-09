@@ -7,14 +7,16 @@
 
 #include "base/scoped_observer.h"
 
+namespace aura {
+class Window;
+}
+
 namespace keyboard {
 class KeyboardController;
 class KeyboardControllerObserver;
 }
 
 namespace ash {
-
-class WmWindow;
 
 // Helper function to start/stop observing KeyboardController.
 // |keyboard_root_window| is the root window where KeyboardController changes
@@ -25,8 +27,8 @@ class WmWindow;
 // false.
 void UpdateKeyboardObserverFromStateChanged(
     bool keyboard_activated,
-    WmWindow* keyboard_root_window,
-    WmWindow* observer_root_window,
+    aura::Window* keyboard_root_window,
+    aura::Window* observer_root_window,
     ScopedObserver<keyboard::KeyboardController,
                    keyboard::KeyboardControllerObserver>* keyboard_observer);
 
