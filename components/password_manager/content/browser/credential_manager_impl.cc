@@ -30,9 +30,9 @@ namespace password_manager {
 
 namespace {
 
-void RunMojoGetCallback(const mojom::CredentialManager::GetCallback& callback,
+void RunMojoGetCallback(mojom::CredentialManager::GetCallback callback,
                         const CredentialInfo& info) {
-  callback.Run(mojom::CredentialManagerError::SUCCESS, info);
+  std::move(callback).Run(mojom::CredentialManagerError::SUCCESS, info);
 }
 
 }  // namespace
@@ -55,7 +55,7 @@ void CredentialManagerImpl::BindRequest(
 }
 
 void CredentialManagerImpl::Store(const CredentialInfo& credential,
-                                  const StoreCallback& callback) {
+                                  StoreCallback callback) {
   DCHECK_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, credential.type);
 
   if (password_manager_util::IsLoggingActive(client_)) {
@@ -65,7 +65,7 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   }
 
   // Send acknowledge response back.
-  callback.Run();
+  std::move(callback).Run();
 
   if (!client_->IsSavingAndFillingEnabledForCurrentPage() ||
       !client_->OnCredentialManagerUsed())
@@ -126,13 +126,13 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
 }
 
 void CredentialManagerImpl::RequireUserMediation(
-    const RequireUserMediationCallback& callback) {
+    RequireUserMediationCallback callback) {
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
         .LogRequireUserMediation(web_contents()->GetLastCommittedURL());
   }
   // Send acknowledge response back.
-  callback.Run();
+  std::move(callback).Run();
 
   PasswordStore* store = GetPasswordStore();
   if (!store || !client_->IsSavingAndFillingEnabledForCurrentPage() ||
@@ -149,7 +149,7 @@ void CredentialManagerImpl::RequireUserMediation(
 void CredentialManagerImpl::Get(bool zero_click_only,
                                 bool include_passwords,
                                 const std::vector<GURL>& federations,
-                                const GetCallback& callback) {
+                                GetCallback callback) {
   using metrics_util::LogCredentialManagerGetResult;
   metrics_util::CredentialManagerGetMediation mediation_status =
       zero_click_only ? metrics_util::CREDENTIAL_MANAGER_GET_UNMEDIATED
@@ -162,10 +162,11 @@ void CredentialManagerImpl::Get(bool zero_click_only,
   }
   if (pending_request_ || !store) {
     // Callback error.
-    callback.Run(pending_request_
-                     ? mojom::CredentialManagerError::PENDINGREQUEST
-                     : mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
-                 base::nullopt);
+    std::move(callback).Run(
+        pending_request_
+            ? mojom::CredentialManagerError::PENDINGREQUEST
+            : mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
+        base::nullopt);
     LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_REJECTED,
                                   mediation_status);
     return;
@@ -175,7 +176,8 @@ void CredentialManagerImpl::Get(bool zero_click_only,
   // page is being prerendered.
   if (!client_->IsFillingEnabledForCurrentPage() ||
       !client_->OnCredentialManagerUsed()) {
-    callback.Run(mojom::CredentialManagerError::SUCCESS, CredentialInfo());
+    std::move(callback).Run(mojom::CredentialManagerError::SUCCESS,
+                            CredentialInfo());
     LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_NONE,
                                   mediation_status);
     return;
@@ -183,7 +185,8 @@ void CredentialManagerImpl::Get(bool zero_click_only,
   // Return an empty credential if zero-click is required but disabled.
   if (zero_click_only && !IsZeroClickAllowed()) {
     // Callback with empty credential info.
-    callback.Run(mojom::CredentialManagerError::SUCCESS, CredentialInfo());
+    std::move(callback).Run(mojom::CredentialManagerError::SUCCESS,
+                            CredentialInfo());
     LogCredentialManagerGetResult(
         metrics_util::CREDENTIAL_MANAGER_GET_NONE_ZERO_CLICK_OFF,
         mediation_status);
@@ -191,8 +194,8 @@ void CredentialManagerImpl::Get(bool zero_click_only,
   }
 
   pending_request_.reset(new CredentialManagerPendingRequestTask(
-      this, base::Bind(&RunMojoGetCallback, callback), zero_click_only,
-      include_passwords, federations));
+      this, base::Bind(&RunMojoGetCallback, base::Passed(&callback)),
+      zero_click_only, include_passwords, federations));
   // This will result in a callback to
   // PendingRequestTask::OnGetPasswordStoreResults().
   GetPasswordStore()->GetLogins(GetSynthesizedFormForOrigin(),

@@ -8,6 +8,7 @@
 
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -350,21 +351,21 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
 
   // Helpers for testing CredentialManagerImpl methods.
   void CallStore(const CredentialInfo& info,
-                 const CredentialManagerImpl::StoreCallback& callback) {
-    cm_service_impl_->Store(info, callback);
+                 CredentialManagerImpl::StoreCallback callback) {
+    cm_service_impl_->Store(info, std::move(callback));
   }
 
   void CallRequireUserMediation(
-      const CredentialManagerImpl::RequireUserMediationCallback& callback) {
-    cm_service_impl_->RequireUserMediation(callback);
+      CredentialManagerImpl::RequireUserMediationCallback callback) {
+    cm_service_impl_->RequireUserMediation(std::move(callback));
   }
 
   void CallGet(bool zero_click_only,
                bool include_passwords,
                const std::vector<GURL>& federations,
-               const CredentialManagerImpl::GetCallback& callback) {
+               CredentialManagerImpl::GetCallback callback) {
     cm_service_impl_->Get(zero_click_only, include_passwords, federations,
-                          callback);
+                          std::move(callback));
   }
 
  protected:
