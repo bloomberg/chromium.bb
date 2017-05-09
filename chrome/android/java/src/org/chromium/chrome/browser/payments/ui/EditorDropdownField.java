@@ -18,11 +18,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  * Helper class for creating a dropdown view with a label.
@@ -33,6 +36,8 @@ class EditorDropdownField implements EditorFieldView {
     private final TextView mLabel;
     private final Spinner mDropdown;
     private int mSelectedIndex;
+    @Nullable
+    private PaymentRequestObserverForTest mObserverForTest;
 
     /**
      * Builds a dropdown view.
@@ -44,9 +49,10 @@ class EditorDropdownField implements EditorFieldView {
      *                        processed.
      */
     public EditorDropdownField(Context context, ViewGroup root, final EditorFieldModel fieldModel,
-            final Runnable changedCallback) {
+            final Runnable changedCallback, @Nullable PaymentRequestObserverForTest observer) {
         assert fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
         mFieldModel = fieldModel;
+        mObserverForTest = observer;
 
         mLayout = LayoutInflater.from(context).inflate(
                 R.layout.payment_request_editor_dropdown, root, false);
@@ -96,6 +102,9 @@ class EditorDropdownField implements EditorFieldView {
                     mFieldModel.setDropdownKey(
                             mFieldModel.getDropdownKeyValues().get(position).getKey(),
                             changedCallback);
+                }
+                if (mObserverForTest != null) {
+                    mObserverForTest.onPaymentRequestEditorTextUpdate();
                 }
             }
 
