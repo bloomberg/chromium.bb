@@ -21,6 +21,7 @@ source_set("steps") {
     "//components/content_settings/core/browser",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/startup",
+    "//ios/chrome/app/startup:startup_basic",
     "//ios/chrome/browser",
     "//ios/chrome/browser:browser_internal",
     "//ios/chrome/browser/browser_state",

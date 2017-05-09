@@ -13,7 +13,7 @@ source_set("core") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/app/startup",
+    "//ios/chrome/app/startup:startup_basic",
     "//ios/showcase/common",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
