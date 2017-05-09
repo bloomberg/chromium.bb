@@ -701,6 +701,13 @@ void URLDataManagerBackend::URLToRequestPath(const GURL& url,
     path->assign(spec.substr(offset));
 }
 
+std::vector<std::string> URLDataManagerBackend::GetWebUISchemes() {
+  std::vector<std::string> schemes;
+  schemes.push_back(kChromeUIScheme);
+  GetContentClient()->browser()->GetAdditionalWebUISchemes(&schemes);
+  return schemes;
+}
+
 namespace {
 
 class DevToolsJobFactory

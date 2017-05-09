@@ -15,6 +15,7 @@
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
@@ -214,7 +215,9 @@ void NavigationURLLoaderNetworkService::StartURLRequest(
   // This is fine for now since the only user of this is WebUI which doesn't
   // need this, but we'll have to fix this when other consumers come up.
   mojom::URLLoaderFactoryPtr factory_ptr;
-  if (request->url.SchemeIs(kChromeUIScheme)) {
+  const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
+  if (std::find(schemes.begin(), schemes.end(), request->url.scheme()) !=
+      schemes.end()) {
     FrameTreeNode* frame_tree_node =
         FrameTreeNode::GloballyFindByID(request_info_->frame_tree_node_id);
     factory_ptr = GetWebUIURLLoader(frame_tree_node);
