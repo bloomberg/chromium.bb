@@ -99,7 +99,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   void AdvanceAnimationForTesting() override { InternalAdvanceAnimation(); }
 
  private:
-  enum RepetitionCountStatus {
+  enum RepetitionCountStatus : uint8_t {
     kUnknown,    // We haven't checked the source's repetition count.
     kUncertain,  // We have a repetition count, but it might be wrong (some GIFs
                  // have a count after the image data, and will report "loop
@@ -193,15 +193,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   size_t cached_frame_index_;  // Index of the frame that is cached.
 
   std::unique_ptr<Timer<BitmapImage>> frame_timer_;
-  int repetition_count_;  // How many total animation loops we should do.  This
-                          // will be cAnimationNone if this image type is
-                          // incapable of animation.
-  RepetitionCountStatus repetition_count_status_;
-  int repetitions_complete_;         // How many repetitions we've finished.
-  double desired_frame_start_time_;  // The system time at which we hope to see
-                                     // the next call to startAnimation().
-
-  size_t frame_count_;
 
   ImageAnimationPolicy
       animation_policy_;  // Whether or not we can play animation.
@@ -215,6 +206,17 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   bool size_available_ : 1;     // Whether we can obtain the size of the first
                                 // image frame from ImageIO yet.
   mutable bool have_frame_count_ : 1;
+
+  RepetitionCountStatus repetition_count_status_;
+  int repetition_count_;  // How many total animation loops we should do.  This
+                          // will be cAnimationNone if this image type is
+                          // incapable of animation.
+  int repetitions_complete_;  // How many repetitions we've finished.
+
+  double desired_frame_start_time_;  // The system time at which we hope to see
+                                     // the next call to startAnimation().
+
+  size_t frame_count_;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(BitmapImage);

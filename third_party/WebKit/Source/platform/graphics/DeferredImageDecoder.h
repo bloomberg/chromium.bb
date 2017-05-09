@@ -98,16 +98,16 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   // Copy of the data that is passed in, used by deferred decoding.
   // Allows creating readonly snapshots that may be read in another thread.
   std::unique_ptr<SkRWBuffer> rw_buffer_;
-  bool all_data_received_;
   std::unique_ptr<ImageDecoder> actual_decoder_;
 
   String filename_extension_;
   IntSize size_;
   int repetition_count_;
   bool has_embedded_color_space_ = false;
-  sk_sp<SkColorSpace> color_space_for_sk_images_;
+  bool all_data_received_;
   bool can_yuv_decode_;
   bool has_hot_spot_;
+  sk_sp<SkColorSpace> color_space_for_sk_images_;
   IntPoint hot_spot_;
 
   // Caches frame state information.

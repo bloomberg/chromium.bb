@@ -202,21 +202,22 @@ class CORE_EXPORT ImageResourceContent final
         : AutoReset(&content->is_add_remove_observer_prohibited_, true) {}
   };
 
-  Member<ImageResourceInfo> info_;
   ResourceStatus content_status_ = ResourceStatus::kNotStarted;
-
-  RefPtr<blink::Image> image_;
-
-  HashCountedSet<ImageResourceObserver*> observers_;
-  HashCountedSet<ImageResourceObserver*> finished_observers_;
-
-  Image::SizeAvailability size_available_ = Image::kSizeUnavailable;
 
   // Indicates if this resource's encoded image data can be purged and refetched
   // from disk cache to save memory usage. See crbug/664437.
   bool is_refetchable_data_from_disk_cache_;
 
   mutable bool is_add_remove_observer_prohibited_ = false;
+
+  Image::SizeAvailability size_available_ = Image::kSizeUnavailable;
+
+  Member<ImageResourceInfo> info_;
+
+  RefPtr<blink::Image> image_;
+
+  HashCountedSet<ImageResourceObserver*> observers_;
+  HashCountedSet<ImageResourceObserver*> finished_observers_;
 
 #if DCHECK_IS_ON()
   bool is_update_image_being_called_ = false;

@@ -84,9 +84,9 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::CreateForTesting(
 
 DeferredImageDecoder::DeferredImageDecoder(
     std::unique_ptr<ImageDecoder> actual_decoder)
-    : all_data_received_(false),
-      actual_decoder_(std::move(actual_decoder)),
+    : actual_decoder_(std::move(actual_decoder)),
       repetition_count_(kCAnimationNone),
+      all_data_received_(false),
       can_yuv_decode_(false),
       has_hot_spot_(false) {}
 
