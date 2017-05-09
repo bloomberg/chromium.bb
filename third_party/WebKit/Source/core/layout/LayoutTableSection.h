@@ -121,7 +121,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   int VBorderSpacingBeforeFirstRow() const;
   int CalcRowLogicalHeight();
   void LayoutRows();
-  void ComputeOverflowFromCells();
+  void ComputeOverflowFromDescendants();
   bool RecalcChildOverflowAfterStyleChange();
 
   void MarkAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::WhatToMarkAllCells);
@@ -431,8 +431,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     return overflowing_cells_.size() ||
            force_slow_paint_path_with_overflowing_cell_;
   }
-
-  void ComputeOverflowFromCells(unsigned total_rows, unsigned n_eff_cols);
 
   // These two functions take a rectangle as input that has been flipped by
   // logicalRectForWritingModeAndDirection.

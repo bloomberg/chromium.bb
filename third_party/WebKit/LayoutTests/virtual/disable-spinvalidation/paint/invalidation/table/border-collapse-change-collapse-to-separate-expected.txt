@@ -23,7 +23,7 @@
         },
         {
           "object": "LayoutTableRow TR",
-          "rect": [9, 9, 209, 105],
+          "rect": [8, 8, 212, 108],
           "reason": "style change"
         },
         {

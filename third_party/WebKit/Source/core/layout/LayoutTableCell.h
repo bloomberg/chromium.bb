@@ -317,17 +317,21 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     String DebugName() const;
     LayoutRect VisualRect() const;
 
+    LayoutRect LocalVisualRect() const { return local_visual_rect_; }
+    void SetLocalVisualRect(const LayoutRect& r) { local_visual_rect_ = r; }
+
    private:
     const LayoutTableCell& layout_table_cell_;
     CollapsedBorderValue start_border_;
     CollapsedBorderValue end_border_;
     CollapsedBorderValue before_border_;
     CollapsedBorderValue after_border_;
+    LayoutRect local_visual_rect_;
   };
 
   bool UsesCompositedCellDisplayItemClients() const;
   const CollapsedBorderValues* GetCollapsedBorderValues() const {
-    DCHECK(collapsed_border_values_valid_);
+    UpdateCollapsedBorderValues();
     return collapsed_border_values_.get();
   }
   void InvalidateCollapsedBorderValues() {
@@ -371,6 +375,9 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   void PaintMask(const PaintInfo&, const LayoutPoint&) const override;
 
   LayoutSize OffsetFromContainer(const LayoutObject*) const override;
+
+  void ComputeOverflow(LayoutUnit old_client_after_edge,
+                       bool recompute_floats = false) override;
   LayoutRect LocalVisualRect() const override;
 
   LayoutUnit CollapsedBorderHalfLeft(bool outer) const;

@@ -539,7 +539,7 @@ void LayoutTable::SimplifiedNormalFlowLayout() {
        section = SectionBelow(section)) {
     section->LayoutIfNeeded();
     section->LayoutRows();
-    section->ComputeOverflowFromCells();
+    section->ComputeOverflowFromDescendants();
     section->UpdateAfterLayout();
     section->AddVisualEffectOverflow();
   }

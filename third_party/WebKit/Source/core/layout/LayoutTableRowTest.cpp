@@ -153,6 +153,37 @@ TEST_F(LayoutTableRowTest, VisualOverflow) {
   EXPECT_EQ(LayoutRect(0, 0, 450, 100), row3->SelfVisualOverflowRect());
 }
 
+TEST_F(LayoutTableRowTest, VisualOverflowWithCollapsedBorders) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  table { border-collapse: collapse }"
+      "  td { border: 0px solid blue; padding: 0 }"
+      "  div { width: 100px; height: 100px }"
+      "</style>"
+      "<table>"
+      "  <tr id='row'>"
+      "    <td style='border-bottom-width: 10px;"
+      "        outline: 3px solid blue'><div></div></td>"
+      "    <td style='border-width: 3px 15px'><div></div></td>"
+      "  </tr>"
+      "</table>");
+
+  auto* row = GetRowByElementId("row");
+
+  // The row's self visual overflow covers the collapsed borders.
+  LayoutRect expected_self_visual_overflow = row->BorderBoxRect();
+  expected_self_visual_overflow.ExpandEdges(LayoutUnit(1), LayoutUnit(8),
+                                            LayoutUnit(5), LayoutUnit(0));
+  EXPECT_EQ(expected_self_visual_overflow, row->SelfVisualOverflowRect());
+
+  // The row's visual overflow covers self visual overflow and visual overflows
+  // of all cells.
+  LayoutRect expected_visual_overflow = row->BorderBoxRect();
+  expected_visual_overflow.ExpandEdges(LayoutUnit(3), LayoutUnit(8),
+                                       LayoutUnit(5), LayoutUnit(3));
+  EXPECT_EQ(expected_visual_overflow, row->VisualOverflowRect());
+}
+
 TEST_F(LayoutTableRowTest, LayoutOverflow) {
   SetBodyInnerHTML(
       "<table style='border-spacing: 0'>"

@@ -13,13 +13,18 @@
         },
         {
           "object": "LayoutTableSection TBODY",
-          "rect": [12, 186, 102, 68],
+          "rect": [8, 182, 110, 76],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTable TABLE",
           "rect": [8, 96, 101, 76],
           "reason": "full"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 96, 101, 76],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutTable TABLE id='t'",
@@ -30,11 +35,6 @@
           "object": "LayoutTableCell TD id='d2'",
           "rect": [22, 210, 96, 20],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [12, 100, 93, 68],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
