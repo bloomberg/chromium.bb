@@ -11,6 +11,7 @@
 #include "ash/shell_port.h"
 #include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -41,6 +42,7 @@ TilesDefaultView::TilesDefaultView(SystemTrayItem* owner)
     : owner_(owner),
       settings_button_(nullptr),
       help_button_(nullptr),
+      night_light_button_(nullptr),
       lock_button_(nullptr),
       power_button_(nullptr) {
   DCHECK(owner_);
@@ -60,13 +62,12 @@ void TilesDefaultView::Init() {
   // Show the buttons in this row as disabled if the user is at the login
   // screen, lock screen, or in a secondary account flow. The exception is
   // |power_button_| which is always shown as enabled.
-  const bool disable_buttons = !TrayPopupUtils::CanOpenWebUISettings();
+  const bool can_show_web_ui = TrayPopupUtils::CanOpenWebUISettings();
 
   settings_button_ = new SystemMenuButton(
       this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
-  if (disable_buttons)
-    settings_button_->SetEnabled(false);
+  settings_button_->SetEnabled(can_show_web_ui);
   AddChildView(settings_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
@@ -80,16 +81,25 @@ void TilesDefaultView::Init() {
     // flipping must be disabled. (crbug.com/475237)
     help_button_->EnableCanvasFlippingForRTLUI(false);
   }
-  if (disable_buttons)
-    help_button_->SetEnabled(false);
+  help_button_->SetEnabled(can_show_web_ui);
   AddChildView(help_button_);
+  AddChildView(TrayPopupUtils::CreateVerticalSeparator());
+
+  night_light_button_ =
+      new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
+                           Shell::Get()->night_light_controller()->enabled()
+                               ? kSystemMenuNightLightOnIcon
+                               : kSystemMenuNightLightOffIcon,
+                           IDS_ASH_STATUS_TRAY_NIGHT_LIGHT);
+  night_light_button_->SetEnabled(can_show_web_ui);
+  AddChildView(night_light_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
   lock_button_ =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuLockIcon, IDS_ASH_STATUS_TRAY_LOCK);
-  if (disable_buttons || !Shell::Get()->session_controller()->CanLockScreen())
-    lock_button_->SetEnabled(false);
+  lock_button_->SetEnabled(can_show_web_ui &&
+                           Shell::Get()->session_controller()->CanLockScreen());
 
   AddChildView(lock_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
@@ -114,6 +124,9 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
   } else if (sender == help_button_) {
     ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_HELP);
     Shell::Get()->system_tray_controller()->ShowHelp();
+  } else if (sender == night_light_button_) {
+    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_NIGHT_LIGHT);
+    Shell::Get()->night_light_controller()->Toggle();
   } else if (sender == lock_button_) {
     ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
     chromeos::DBusThreadManager::Get()

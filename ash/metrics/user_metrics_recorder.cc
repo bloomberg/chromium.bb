@@ -547,6 +547,9 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_TRAY_LOCK_SCREEN:
       RecordAction(UserMetricsAction("Tray_LockScreen"));
       break;
+    case UMA_TRAY_NIGHT_LIGHT:
+      RecordAction(UserMetricsAction("Tray_NightLight"));
+      break;
     case UMA_TRAY_OVERVIEW:
       RecordAction(UserMetricsAction("Tray_Overview"));
       break;

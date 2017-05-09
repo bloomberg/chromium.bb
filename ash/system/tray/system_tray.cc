@@ -27,6 +27,7 @@
 #include "ash/system/media_security/multi_profile_media_tray_item.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/network/tray_vpn.h"
+#include "ash/system/night_light/tray_night_light.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/screen_security/screen_capture_tray_item.h"
@@ -273,6 +274,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(base::WrapUnique(tray_audio_));
   AddTrayItem(base::MakeUnique<TrayBrightness>(this));
   AddTrayItem(base::MakeUnique<TrayCapsLock>(this));
+  tray_night_light_ = new TrayNightLight(this);
+  AddTrayItem(base::WrapUnique(tray_night_light_));
   // TODO(jamescook): Remove this when mus has support for display management
   // and we have a DisplayManager equivalent. See http://crbug.com/548429
   std::unique_ptr<SystemTrayItem> tray_rotation_lock =
