@@ -15,14 +15,25 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/payments/core/address_normalizer_impl.h"
+#include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
 namespace autofill {
 
 // Android wrapper of the PersonalDataManager which provides access from the
 // Java layer. Note that on Android, there's only a single profile, and
 // therefore a single instance of this wrapper.
-class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
+class PersonalDataManagerAndroid
+    : public PersonalDataManagerObserver,
+      public LoadRulesListener,
+      public base::SupportsWeakPtr<PersonalDataManagerAndroid> {
  public:
+  // The interface for the sub-key request.
+  class SubKeyRequestDelegate {
+   public:
+    virtual void OnRulesSuccessfullyLoaded() = 0;
+    virtual ~SubKeyRequestDelegate() {}
+  };
+
   // Registers the JNI bindings for this class.
   static bool Register(JNIEnv* env);
 
@@ -288,7 +299,14 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   // Starts loading the address validation rules for the specified
   // |region_code|.
-  void LoadRulesForRegion(
+  void LoadRulesForAddressNormalization(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& region_code);
+
+  // Starts loading the rules for the specified |region_code| for the further
+  // sub-key request.
+  void LoadRulesForSubKeys(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& region_code);
@@ -313,6 +331,31 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   // Checks whether the Autofill PersonalDataManager has credit cards.
   jboolean HasCreditCards(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj);
+
+  // Gets the sub-keys for the region with |jregion_code| code, if the
+  // |jregion_code| rules have finished loading. Otherwise, sets up a task to
+  // get the sub-keys, when the rules are loaded.
+  void StartRegionSubKeysRequest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& jregion_code,
+      const base::android::JavaParamRef<jobject>& jdelegate);
+
+  // Gets the sub-keys of the rule associated with |jregion_code|. Should only
+  // be called when the rules are loaded.
+  base::android::ScopedJavaLocalRef<jobjectArray> GetSubKeys(
+      JNIEnv* env,
+      const std::string& jregion_code);
+
+  // Callback of the sub-keys request.
+  // This is called when the sub-keys are loaded.
+  void OnAddressValidationRulesLoaded(const std::string& region_code,
+                                      bool success) override;
+
+  // Cancels the pending sub-key request task.
+  void CancelPendingGetSubKeys(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj);
 
@@ -365,6 +408,13 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   // The address validator used to normalize addresses.
   payments::AddressNormalizerImpl address_normalizer_;
+
+  // The address validator used for sub-key request.
+  AddressValidator address_validator_;
+
+  // The region code and the request for the pending sub-key request.
+  std::unique_ptr<SubKeyRequestDelegate> pending_subkey_request_;
+  std::string pending_subkey_region_code_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerAndroid);
 };

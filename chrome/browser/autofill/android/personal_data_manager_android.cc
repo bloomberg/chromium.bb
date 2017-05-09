@@ -13,6 +13,7 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/resource_mapper.h"
@@ -306,6 +307,40 @@ class AndroidAddressNormalizerDelegate
   DISALLOW_COPY_AND_ASSIGN(AndroidAddressNormalizerDelegate);
 };
 
+class AndroidSubKeyRequesterDelegate
+    : public PersonalDataManagerAndroid::SubKeyRequestDelegate,
+      public base::SupportsWeakPtr<AndroidSubKeyRequesterDelegate> {
+ public:
+  AndroidSubKeyRequesterDelegate(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jdelegate,
+      const std::string& region_code,
+      base::WeakPtr<PersonalDataManagerAndroid> personal_data_manager_android) {
+    jdelegate_.Reset(env, jdelegate);
+    region_code_ = region_code;
+    personal_data_manager_android_ = personal_data_manager_android;
+  }
+
+  ~AndroidSubKeyRequesterDelegate() override {}
+
+ private:
+  // PersonalDataManagerAndroid::SubKeyRequestDelegate:
+  void OnRulesSuccessfullyLoaded() override {
+    if (personal_data_manager_android_) {
+      JNIEnv* env = base::android::AttachCurrentThread();
+      Java_GetSubKeysRequestDelegate_onSubKeysReceived(
+          env, jdelegate_,
+          personal_data_manager_android_->GetSubKeys(env, region_code_));
+    }
+  }
+
+  ScopedJavaGlobalRef<jobject> jdelegate_;
+  std::string region_code_;
+  base::WeakPtr<PersonalDataManagerAndroid> personal_data_manager_android_;
+
+  DISALLOW_COPY_AND_ASSIGN(AndroidSubKeyRequesterDelegate);
+};
+
 }  // namespace
 
 PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env, jobject obj)
@@ -317,7 +352,13 @@ PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env, jobject obj)
               new autofill::ChromeMetadataSource(
                   I18N_ADDRESS_VALIDATION_DATA_URL,
                   personal_data_manager_->GetURLRequestContextGetter())),
-          ValidationRulesStorageFactory::CreateStorage()) {
+          ValidationRulesStorageFactory::CreateStorage()),
+      address_validator_(
+          base::MakeUnique<autofill::ChromeMetadataSource>(
+              I18N_ADDRESS_VALIDATION_DATA_URL,
+              personal_data_manager_->GetURLRequestContextGetter()),
+          ValidationRulesStorageFactory::CreateStorage(),
+          this) {
   personal_data_manager_->AddObserver(this);
 }
 
@@ -699,12 +740,19 @@ jlong PersonalDataManagerAndroid::GetCurrentDateForTesting(
   return base::Time::Now().ToTimeT();
 }
 
-void PersonalDataManagerAndroid::LoadRulesForRegion(
+void PersonalDataManagerAndroid::LoadRulesForAddressNormalization(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj,
     const base::android::JavaParamRef<jstring>& jregion_code) {
   address_normalizer_.LoadRulesForRegion(
       ConvertJavaStringToUTF8(env, jregion_code));
+}
+
+void PersonalDataManagerAndroid::LoadRulesForSubKeys(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jstring>& jregion_code) {
+  address_validator_.LoadRules(ConvertJavaStringToUTF8(env, jregion_code));
 }
 
 void PersonalDataManagerAndroid::StartAddressNormalization(
@@ -740,6 +788,53 @@ jboolean PersonalDataManagerAndroid::HasCreditCards(
   return !personal_data_manager_->GetCreditCards().empty();
 }
 
+base::android::ScopedJavaLocalRef<jobjectArray>
+PersonalDataManagerAndroid::GetSubKeys(JNIEnv* env,
+                                       const std::string& region_code) {
+  std::vector<std::string> sub_keys =
+      address_validator_.GetRegionSubKeys(region_code);
+  return base::android::ToJavaArrayOfStrings(env, sub_keys);
+}
+
+void PersonalDataManagerAndroid::OnAddressValidationRulesLoaded(
+    const std::string& region_code,
+    bool success) {
+  // if |success| == false, AddressValidator::GetRegionSubKeys will return an
+  // empty list of sub-keys. => No need to check for |success|.
+  // Check if there is any sub-key request for that region code.
+  if (!pending_subkey_region_code_.compare(region_code))
+    pending_subkey_request_->OnRulesSuccessfullyLoaded();
+  pending_subkey_region_code_.clear();
+  pending_subkey_request_.reset();
+}
+
+void PersonalDataManagerAndroid::StartRegionSubKeysRequest(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jregion_code,
+    const JavaParamRef<jobject>& jdelegate) {
+  const std::string region_code = ConvertJavaStringToUTF8(env, jregion_code);
+  std::unique_ptr<SubKeyRequestDelegate> requester =
+      base::MakeUnique<AndroidSubKeyRequesterDelegate>(
+          env, jdelegate, region_code, AsWeakPtr());
+
+  if (AreRulesLoadedForRegion(region_code)) {
+    requester->OnRulesSuccessfullyLoaded();
+  } else {
+    // Setup the variables so that the sub-keys request is sent, when the rules
+    // are loaded.
+    pending_subkey_region_code_ = region_code;
+    pending_subkey_request_ = std::move(requester);
+  }
+}
+
+void PersonalDataManagerAndroid::CancelPendingGetSubKeys(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  pending_subkey_region_code_.clear();
+  pending_subkey_request_.reset();
+}
+
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(
     JNIEnv* env,
     const std::vector<AutofillProfile*>& profiles) {
@@ -762,7 +857,7 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetCreditCardGUIDs(
 
 bool PersonalDataManagerAndroid::AreRulesLoadedForRegion(
     const std::string& region_code) {
-  return address_normalizer_.AreRulesLoadedForRegion(region_code);
+  return address_validator_.AreRulesLoadedForRegion(region_code);
 }
 
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(

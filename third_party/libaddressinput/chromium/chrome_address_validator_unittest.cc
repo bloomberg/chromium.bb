@@ -5,6 +5,7 @@
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
 #include <stddef.h>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -67,8 +68,8 @@ class AddressValidatorTest : public testing::Test, LoadRulesListener {
 
  private:
   // LoadRulesListener implementation.
-  virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
-                                              bool success) override {
+  void OnAddressValidationRulesLoaded(const std::string& country_code,
+                                      bool success) override {
     AddressData address_data;
     address_data.region_code = country_code;
     FieldProblemMap dummy;
@@ -109,6 +110,26 @@ class LargeAddressValidatorTest : public testing::Test {
 };
 
 AddressValidator* LargeAddressValidatorTest::validator_ = NULL;
+
+TEST_F(AddressValidatorTest, SubKeysLoaded) {
+  const std::string country_code = "US";
+  const std::string first_state = "AL";
+
+  validator_->LoadRules(country_code);
+  std::vector<std::string> sub_keys =
+      validator_->GetRegionSubKeys(country_code);
+  ASSERT_FALSE(sub_keys.empty());
+  ASSERT_EQ(sub_keys[0], first_state);
+}
+
+TEST_F(AddressValidatorTest, SubKeysNotLoaded) {
+  const std::string country_code = "ZZ";
+
+  validator_->LoadRules(country_code);
+  std::vector<std::string> sub_keys =
+      validator_->GetRegionSubKeys(country_code);
+  ASSERT_TRUE(sub_keys.empty());
+}
 
 TEST_F(AddressValidatorTest, RegionHasRules) {
   const std::vector<std::string>& region_codes = GetRegionCodes();
@@ -758,7 +779,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
     virtual ~TestAddressValidator() {}
 
    protected:
-    virtual base::TimeDelta GetBaseRetryPeriod() const override {
+    base::TimeDelta GetBaseRetryPeriod() const override {
       return base::TimeDelta::FromSeconds(0);
     }
 
@@ -770,7 +791,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
   // data.
   class FailingSource : public Source {
    public:
-    explicit FailingSource()
+    FailingSource()
         : failures_number_(0), attempts_number_(0), actual_source_(true) {}
     virtual ~FailingSource() {}
 
@@ -781,8 +802,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
 
     // Source implementation.
     // Always fails for the first |failures_number| times.
-    virtual void Get(const std::string& url,
-                     const Callback& callback) const override {
+    void Get(const std::string& url, const Callback& callback) const override {
       ++attempts_number_;
       // |callback| takes ownership of the |new std::string|.
       if (failures_number_-- > 0)
@@ -823,8 +843,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
 
  private:
   // LoadRulesListener implementation.
-  virtual void OnAddressValidationRulesLoaded(const std::string&,
-                                              bool success) override {
+  void OnAddressValidationRulesLoaded(const std::string&, bool success) override {
     load_rules_success_ = success;
   }
 
