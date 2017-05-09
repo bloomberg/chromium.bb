@@ -523,6 +523,17 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   allowed_set.remove(0x2010u);  // Hyphen
   allowed_set.remove(0x2027u);  // Hyphenation Point
 
+#if defined(OS_MACOSX)
+  // The following characters are reported as present in the default macOS
+  // system UI font, but they render as blank. Remove them from the allowed
+  // set to prevent spoofing.
+  // Tibetan characters used for transliteration of ancient texts:
+  allowed_set.remove(0x0F8Cu);
+  allowed_set.remove(0x0F8Du);
+  allowed_set.remove(0x0F8Eu);
+  allowed_set.remove(0x0F8Fu);
+#endif
+
   uspoof_setAllowedUnicodeSet(checker_, &allowed_set, status);
 }
 
