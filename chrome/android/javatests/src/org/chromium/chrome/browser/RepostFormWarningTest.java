@@ -4,15 +4,25 @@
 
 package org.chromium.chrome.browser;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v7.app.AlertDialog;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -25,54 +35,55 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests verifying that form resubmission dialogs are correctly displayed and handled.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class RepostFormWarningTest {
     // Active tab.
+
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private Tab mTab;
     // Callback helper that manages waiting for pageloads to finish.
     private TestCallbackHelperContainer mCallbackHelper;
 
     private EmbeddedTestServer mTestServer;
 
-    public RepostFormWarningTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
-        mTab = getActivity().getActivityTab();
+        mTab = mActivityTestRule.getActivity().getActivityTab();
         mCallbackHelper = new TestCallbackHelperContainer(mTab.getContentViewCore());
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
     }
 
     /** Verifies that the form resubmission warning is not displayed upon first POST navigation. */
+    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testFormFirstNavigation() throws Throwable {
         // Load the url posting data for the first time.
         postNavigation();
         mCallbackHelper.getOnPageFinishedHelper().waitForCallback(0);
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Verify that the form resubmission warning was not shown.
-        assertNull("Form resubmission warning shown upon first load.",
+        Assert.assertNull("Form resubmission warning shown upon first load.",
                 RepostFormWarningDialog.getCurrentDialogForTesting());
     }
 
     /** Verifies that confirming the form reload performs the reload. */
+    @Test
     @MediumTest
     @Feature({"Navigation"})
     public void testFormResubmissionContinue() throws Throwable {
@@ -89,7 +100,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
         mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
 
         // Verify that the reference to the dialog in RepostFormWarningDialog was cleared.
-        assertNull("Form resubmission warning dialog was not dismissed correctly.",
+        Assert.assertNull("Form resubmission warning dialog was not dismissed correctly.",
                 RepostFormWarningDialog.getCurrentDialogForTesting());
     }
 
@@ -98,6 +109,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
      * after the "Cancel" button is clicked to verify that the load was not triggered, which blocks
      * for CallbackHelper's default timeout upon each execution.
      */
+    @Test
     @SmallTest
     @Feature({"Navigation"})
     public void testFormResubmissionCancel() throws Throwable {
@@ -117,16 +129,17 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
         } catch (TimeoutException ex) {
             timedOut = true;
         }
-        assertTrue("Page was reloaded despite selecting Cancel.", timedOut);
+        Assert.assertTrue("Page was reloaded despite selecting Cancel.", timedOut);
 
         // Verify that the reference to the dialog in RepostFormWarningDialog was cleared.
-        assertNull("Form resubmission warning dialog was not dismissed correctly.",
+        Assert.assertNull("Form resubmission warning dialog was not dismissed correctly.",
                 RepostFormWarningDialog.getCurrentDialogForTesting());
     }
 
     /**
      * Verifies that destroying the Tab dismisses the form resubmission dialog.
      */
+    @Test
     @SmallTest
     @Feature({"Navigation"})
     public void testFormResubmissionTabDestroyed() throws Throwable {
@@ -141,7 +154,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().getCurrentTabModel().closeTab(mTab);
+                mActivityTestRule.getActivity().getCurrentTabModel().closeTab(mTab);
             }
         });
 
@@ -175,7 +188,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
         final String url = "/chrome/test/data/android/test.html";
         final byte[] postData = new byte[] { 42 };
 
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mTab.loadUrl(LoadUrlParams.createLoadHttpPostParams(
@@ -186,7 +199,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
     /** Reloads mTab. */
     private void reload() throws Throwable {
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mTab.reload();
@@ -196,7 +209,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
     /** Clicks the given button in the given dialog. */
     private void clickButton(final AlertDialog dialog, final int buttonId) throws Throwable {
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 dialog.getButton(buttonId).performClick();

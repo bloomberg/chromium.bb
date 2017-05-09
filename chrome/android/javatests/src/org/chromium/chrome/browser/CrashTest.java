@@ -6,31 +6,35 @@ package org.chromium.chrome.browser;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * The class contains a testcase that intentionally crashes.
  */
-public class CrashTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-
-    public CrashTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() {
-        // Don't launch activity automatically.
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class CrashTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     /**
      * Intentionally crashing the test. The testcase should be
      * disabled the majority of time.
      */
+    @Test
     @DisabledTest
     @SmallTest
     public void testIntentionalBrowserCrash() throws Exception {
-        startMainActivityFromLauncher();
-        loadUrl("chrome://inducebrowsercrashforrealz");
+        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.loadUrl("chrome://inducebrowsercrashforrealz");
     }
 }

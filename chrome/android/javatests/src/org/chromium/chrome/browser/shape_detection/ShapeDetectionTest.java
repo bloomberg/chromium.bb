@@ -5,15 +5,25 @@
 package org.chromium.chrome.browser.shape_detection;
 
 import android.os.StrictMode;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -26,34 +36,39 @@ import java.util.concurrent.TimeoutException;
  *  is based on android.media.FaceDetector and doesn't need special treatment,
  *  hence is tested via content_browsertests.
  */
-public class ShapeDetectionTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class ShapeDetectionTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String BARCODE_TEST_EXPECTED_TAB_TITLE = "https://chromium.org";
     private static final String TEXT_TEST_EXPECTED_TAB_TITLE =
             "The quick brown fox jumped over the lazy dog. Helvetica Neue 36.";
     private StrictMode.ThreadPolicy mOldPolicy;
 
-    public ShapeDetectionTest() {
-        super(ChromeActivity.class);
-    }
-
     /**
      * Verifies that QR codes are detected correctly.
      */
+    @Test
     @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @Feature({"ShapeDetection"})
     @LargeTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testBarcodeDetection() throws InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer =
-                EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
         try {
-            Tab tab = getActivity().getActivityTab();
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
             TabTitleObserver titleObserver =
                     new TabTitleObserver(tab, BARCODE_TEST_EXPECTED_TAB_TITLE);
-            loadUrl(testServer.getURL("/chrome/test/data/android/barcode_detection.html"));
+            mActivityTestRule.loadUrl(
+                    testServer.getURL("/chrome/test/data/android/barcode_detection.html"));
             titleObserver.waitForTitleUpdate(10);
 
-            assertEquals(BARCODE_TEST_EXPECTED_TAB_TITLE, tab.getTitle());
+            Assert.assertEquals(BARCODE_TEST_EXPECTED_TAB_TITLE, tab.getTitle());
         } finally {
             testServer.stopAndDestroyServer();
         }
@@ -62,21 +77,23 @@ public class ShapeDetectionTest extends ChromeActivityTestCaseBase<ChromeActivit
     /**
      * Verifies that text is detected correctly.
      */
+    @Test
     @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @Feature({"ShapeDetection"})
     @LargeTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testTextDetection() throws InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer =
-                EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
         try {
-            Tab tab = getActivity().getActivityTab();
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
             TabTitleObserver titleObserver =
                     new TabTitleObserver(tab, TEXT_TEST_EXPECTED_TAB_TITLE);
-            loadUrl(testServer.getURL("/chrome/test/data/android/text_detection.html"));
+            mActivityTestRule.loadUrl(
+                    testServer.getURL("/chrome/test/data/android/text_detection.html"));
             titleObserver.waitForTitleUpdate(10);
 
-            assertEquals(TEXT_TEST_EXPECTED_TAB_TITLE, tab.getTitle());
+            Assert.assertEquals(TEXT_TEST_EXPECTED_TAB_TITLE, tab.getTitle());
         } finally {
             testServer.stopAndDestroyServer();
         }
@@ -85,9 +102,9 @@ public class ShapeDetectionTest extends ChromeActivityTestCaseBase<ChromeActivit
     /**
      * We need to allow a looser policy due to the Google Play Services internals.
      */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -96,19 +113,13 @@ public class ShapeDetectionTest extends ChromeActivityTestCaseBase<ChromeActivit
         });
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 StrictMode.setThreadPolicy(mOldPolicy);
             }
         });
-        super.tearDown();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 }
