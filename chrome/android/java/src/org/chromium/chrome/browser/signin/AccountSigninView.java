@@ -134,12 +134,17 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     /**
      * Initializes this view with profile data cache, delegate and listener.
      * @param profileData ProfileDataCache that will be used to call to retrieve user account info.
+     * @param isChildAccount Whether this view is for a child account.
+     * @param forcedAccountName An account that should be force-selected.
      * @param delegate    The UI object creation delegate.
      * @param listener    The account selection event listener.
      */
-    public void init(ProfileDataCache profileData, Delegate delegate, Listener listener) {
+    public void init(ProfileDataCache profileData, boolean isChildAccount, String forcedAccountName,
+            Delegate delegate, Listener listener) {
         mProfileData = profileData;
         mProfileData.addObserver(this);
+        mIsChildAccount = isChildAccount;
+        mForcedAccountName = TextUtils.isEmpty(forcedAccountName) ? null : forcedAccountName;
         mDelegate = delegate;
         mListener = listener;
         showSigninPage();
@@ -223,31 +228,15 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     }
 
     /**
-     * Refresh the list of available system accounts asynchronously. This is a convenience method
-     * that will ignore whether the accounts updating was actually successful.
+     * Refresh the list of available system accounts asynchronously.
      */
     private void updateAccounts() {
-        updateAccounts(new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {}
-        });
-    }
-
-    /**
-     * Refresh the list of available system accounts asynchronously.
-     *
-     * @param callback Called once the accounts have been refreshed. Boolean indicates whether the
-     *                 accounts haven been successfully updated.
-     */
-    private void updateAccounts(final Callback<Boolean> callback) {
         if (mSignedIn || mProfileData == null) {
-            callback.onResult(false);
             return;
         }
 
         if (!checkGooglePlayServicesAvailable()) {
             setUpSigninButton(false);
-            callback.onResult(false);
             return;
         }
 
@@ -287,10 +276,9 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                     accountToSelect = mAccountNames.indexOf(mForcedAccountName);
                     if (accountToSelect < 0) {
                         mListener.onFailedToSetForcedAccount(mForcedAccountName);
-                        callback.onResult(false);
                         return;
                     }
-                    shouldJumpToConfirmationScreen = false;
+                    shouldJumpToConfirmationScreen = true;
                 } else {
                     AccountSelectionResult selection = selectAccountAfterAccountsUpdate(
                             oldAccountNames, mAccountNames, oldSelectedAccount);
@@ -316,7 +304,6 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                 if (shouldJumpToConfirmationScreen) {
                     showConfirmSigninPageAccountTrackerServiceCheck();
                 }
-                callback.onResult(true);
             }
         });
     }
@@ -600,30 +587,6 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         } else {
             return getResources().getString(R.string.signin_signed_in_settings_description);
         }
-    }
-
-    /**
-     * @param isChildAccount Whether this view is for a child account.
-     */
-    public void setIsChildAccount(boolean isChildAccount) {
-        mIsChildAccount = isChildAccount;
-    }
-
-    /**
-     * Switches the view to "no choice, just a confirmation" forced-account mode.
-     * @param forcedAccountName An account that should be force-selected.
-     */
-    public void switchToForcedAccountMode(String forcedAccountName) {
-        mForcedAccountName = forcedAccountName;
-        updateAccounts(new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {
-                if (!result) return;
-                assert TextUtils.equals(getSelectedAccountName(), mForcedAccountName);
-                switchToSignedMode();
-                assert TextUtils.equals(getSelectedAccountName(), mForcedAccountName);
-            }
-        });
     }
 
     /**
