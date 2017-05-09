@@ -27,12 +27,12 @@ assertInterpolation({
   from: neutralKeyframe,
   to: '20px 20px 20px 20px black',
 }, [
-  {at: -0.3, is: '7px 33px 7px 33px black'},
-  {at: 0, is: '10px 30px 10px 30px black'},
-  {at: 0.3, is: '13px 27px 13px 27px black'},
-  {at: 0.6, is: '16px 24px 16px 24px black'},
-  {at: 1, is: '20px 20px 20px 20px black'},
-  {at: 1.5, is: '25px 15px 25px 15px black'},
+  {at: -0.3, is: 'rgb(0, 0, 0) 7px 33px 7px 33px'},
+  {at: 0, is: 'rgb(0, 0, 0) 10px 30px 10px 30px'},
+  {at: 0.3, is: 'rgb(0, 0, 0) 13px 27px 13px 27px'},
+  {at: 0.6, is: 'rgb(0, 0, 0) 16px 24px 16px 24px'},
+  {at: 1, is: 'rgb(0, 0, 0) 20px 20px 20px 20px'},
+  {at: 1.5, is: 'rgb(0, 0, 0) 25px 15px 25px 15px'},
 ]);
 
 assertInterpolation({
@@ -40,12 +40,12 @@ assertInterpolation({
   from: 'initial',
   to: '20px 20px 20px 20px black',
 }, [
-  {at: -0.3, is: '-6px -6px 0px -6px transparent'},
+  {at: -0.3, is: 'rgba(0, 0, 0, 0) -6px -6px 0px -6px'},
   {at: 0, is: 'none'},
-  {at: 0.3, is: '6px 6px 6px 6px rgba(0, 0, 0, 0.3)'},
-  {at: 0.6, is: '12px 12px 12px 12px rgba(0, 0, 0, 0.6)'},
-  {at: 1, is: '20px 20px 20px 20px black'},
-  {at: 1.5, is: '30px 30px 30px 30px black'},
+  {at: 0.3, is: 'rgba(0, 0, 0, 0.3) 6px 6px 6px 6px'},
+  {at: 0.6, is: 'rgba(0, 0, 0, 0.6) 12px 12px 12px 12px'},
+  {at: 1, is: 'rgb(0, 0, 0) 20px 20px 20px 20px'},
+  {at: 1.5, is: 'rgb(0, 0, 0) 30px 30px 30px 30px'},
 ]);
 
 assertInterpolation({
@@ -53,12 +53,12 @@ assertInterpolation({
   from: 'inherit',
   to: '20px 20px 20px 20px black',
 }, [
-  {at: -0.3, is: '33px 7px 33px 7px black'},
-  {at: 0, is: '30px 10px 30px 10px black'},
-  {at: 0.3, is: '27px 13px 27px 13px black'},
-  {at: 0.6, is: '24px 16px 24px 16px black'},
-  {at: 1, is: '20px 20px 20px 20px black'},
-  {at: 1.5, is: '15px 25px 15px 25px black'},
+  {at: -0.3, is: 'rgb(0, 0, 0) 33px 7px 33px 7px'},
+  {at: 0, is: 'rgb(0, 0, 0) 30px 10px 30px 10px'},
+  {at: 0.3, is: 'rgb(0, 0, 0) 27px 13px 27px 13px'},
+  {at: 0.6, is: 'rgb(0, 0, 0) 24px 16px 24px 16px'},
+  {at: 1, is: 'rgb(0, 0, 0) 20px 20px 20px 20px'},
+  {at: 1.5, is: 'rgb(0, 0, 0) 15px 25px 15px 25px'},
 ]);
 
 assertInterpolation({
@@ -66,52 +66,66 @@ assertInterpolation({
   from: 'unset',
   to: '20px 20px 20px 20px black',
 }, [
-  {at: -0.3, is: '-6px -6px 0px -6px transparent'},
+  {at: -0.3, is: 'rgba(0, 0, 0, 0) -6px -6px 0px -6px'},
   {at: 0, is: 'none'},
-  {at: 0.3, is: '6px 6px 6px 6px rgba(0, 0, 0, 0.3)'},
-  {at: 0.6, is: '12px 12px 12px 12px rgba(0, 0, 0, 0.6)'},
-  {at: 1, is: '20px 20px 20px 20px black'},
-  {at: 1.5, is: '30px 30px 30px 30px black'},
+  {at: 0.3, is: 'rgba(0, 0, 0, 0.3) 6px 6px 6px 6px'},
+  {at: 0.6, is: 'rgba(0, 0, 0, 0.6) 12px 12px 12px 12px'},
+  {at: 1, is: 'rgb(0, 0, 0) 20px 20px 20px 20px'},
+  {at: 1.5, is: 'rgb(0, 0, 0) 30px 30px 30px 30px'},
 ]);
 
 // Test basic functionality, and clipping blur at 0
 assertInterpolation({
   property: 'box-shadow',
   from: '15px 10px 5px 6px black',
-  to: '-15px -10px 25px -4px orange'
+  to: '-15px -10px 25px -4px orange',
 }, [
-  {at: -0.3, is: '24px 16px 0px 9px black'},
-  {at: 0, is: '15px 10px 5px 6px black'},
-  {at: 0.3, is: '6px 4px 11px 3px rgb(77, 50, 0)'},
-  {at: 0.6, is: '-3px -2px 17px 0px rgb(153, 99, 0)'},
-  {at: 1, is: '-15px -10px 25px -4px orange'},
-  {at: 1.5, is: '-30px -20px 35px -9px rgb(255, 248, 0)'},
+  {at: -0.3, is: 'rgb(0, 0, 0) 24px 16px 0px 9px'},
+  {at: 0, is: 'rgb(0, 0, 0) 15px 10px 5px 6px'},
+  {at: 0.3, is: 'rgb(77, 50, 0) 6px 4px 11px 3px'},
+  {at: 0.6, is: 'rgb(153, 99, 0) -3px -2px 17px 0px'},
+  {at: 1, is: 'rgb(255, 165, 0) -15px -10px 25px -4px'},
+  {at: 1.5, is: 'rgb(255, 248, 0) -30px -20px 35px -9px'},
+]);
+
+// Test with color as first value.
+assertInterpolation({
+  property: 'box-shadow',
+  from: 'black 15px 10px 5px 6px',
+  to: 'orange -15px -10px 25px -4px',
+}, [
+  {at: -0.3, is: 'rgb(0, 0, 0) 24px 16px 0px 9px'},
+  {at: 0, is: 'rgb(0, 0, 0) 15px 10px 5px 6px'},
+  {at: 0.3, is: 'rgb(77, 50, 0) 6px 4px 11px 3px'},
+  {at: 0.6, is: 'rgb(153, 99, 0) -3px -2px 17px 0px'},
+  {at: 1, is: 'rgb(255, 165, 0) -15px -10px 25px -4px'},
+  {at: 1.5, is: 'rgb(255, 248, 0) -30px -20px 35px -9px'},
 ]);
 
 assertInterpolation({
   property: 'box-shadow',
   from: '15px 10px 5px 6px black inset',
-  to: '-15px -10px 25px -4px orange inset'
+  to: '-15px -10px 25px -4px orange inset',
 }, [
-  {at: -0.3, is: '24px 16px 0px 9px black inset'},
-  {at: 0, is: '15px 10px 5px 6px black inset'},
-  {at: 0.3, is: '6px 4px 11px 3px rgb(77, 50, 0) inset'},
-  {at: 0.6, is: '-3px -2px 17px 0px rgb(153, 99, 0) inset'},
-  {at: 1, is: '-15px -10px 25px -4px orange inset'},
-  {at: 1.5, is: '-30px -20px 35px -9px rgb(255, 248, 0) inset'},
+  {at: -0.3, is: 'rgb(0, 0, 0) 24px 16px 0px 9px inset'},
+  {at: 0, is: 'rgb(0, 0, 0) 15px 10px 5px 6px inset'},
+  {at: 0.3, is: 'rgb(77, 50, 0) 6px 4px 11px 3px inset'},
+  {at: 0.6, is: 'rgb(153, 99, 0) -3px -2px 17px 0px inset'},
+  {at: 1, is: 'rgb(255, 165, 0) -15px -10px 25px -4px inset'},
+  {at: 1.5, is: 'rgb(255, 248, 0) -30px -20px 35px -9px inset'},
 ]);
 
 assertInterpolation({
   property: 'box-shadow',
   from: '15px 10px 5px 6px black',
-  to: '-15px -10px 25px -4px'
+  to: '-15px -10px 25px -4px',
 }, [
-  {at: -0.3, is: '24px 16px 0px 9px black'},
-  {at: 0, is: '15px 10px 5px 6px black'},
-  {at: 0.3, is: '6px 4px 11px 3px rgb(0, 38, 0)'},
-  {at: 0.6, is: '-3px -2px 17px 0px rgb(0, 77, 0)'},
-  {at: 1, is: '-15px -10px 25px -4px green'},
-  {at: 1.5, is: '-30px -20px 35px -9px rgb(0, 192, 0)'},
+  {at: -0.3, is: 'rgb(0, 0, 0) 24px 16px 0px 9px'},
+  {at: 0, is: 'rgb(0, 0, 0) 15px 10px 5px 6px'},
+  {at: 0.3, is: 'rgb(0, 38, 0) 6px 4px 11px 3px'},
+  {at: 0.6, is: 'rgb(0, 77, 0) -3px -2px 17px 0px'},
+  {at: 1, is: 'rgb(0, 128, 0) -15px -10px 25px -4px'},
+  {at: 1.5, is: 'rgb(0, 192, 0) -30px -20px 35px -9px'},
 ]);
 
 assertInterpolation({
@@ -119,26 +133,26 @@ assertInterpolation({
   from: '10px 10px 10px 10px black',
   to: '10px 10px 10px 10px currentColor',
 }, [
-  {at: -0.3, is: '10px 10px 10px 10px black'},
-  {at: 0, is: '10px 10px 10px 10px black'},
-  {at: 0.3, is: '10px 10px 10px 10px rgb(0, 38, 0)'},
-  {at: 0.6, is: '10px 10px 10px 10px rgb(0, 77, 0)'},
-  {at: 1, is: '10px 10px 10px 10px green'},
-  {at: 1.5, is: '10px 10px 10px 10px rgb(0, 192, 0)'},
+  {at: -0.3, is: 'rgb(0, 0, 0) 10px 10px 10px 10px'},
+  {at: 0, is: 'rgb(0, 0, 0) 10px 10px 10px 10px'},
+  {at: 0.3, is: 'rgb(0, 38, 0) 10px 10px 10px 10px'},
+  {at: 0.6, is: 'rgb(0, 77, 0) 10px 10px 10px 10px'},
+  {at: 1, is: 'rgb(0, 128, 0) 10px 10px 10px 10px'},
+  {at: 1.5, is: 'rgb(0, 192, 0) 10px 10px 10px 10px'},
 ]);
 
 // Test padding shorter lists
 assertInterpolation({
   property: 'box-shadow',
   from: '10px 20px rgba(255, 255, 0, 0.5), inset 5px 10em #008000',
-  to: 'none'
+  to: 'none',
 }, [
-  {at: -0.3, is: '13px 26px rgba(255, 255, 0, 0.65), inset 6.5px 39px rgb(0, 166, 0)'},
-  {at: 0, is: '10px 20px rgba(255, 255, 0, 0.5), inset 5px 30px #008000'},
-  {at: 0.3, is: '7px 14px rgba(255, 255, 0, 0.35), inset 3.5px 21px rgba(0, 128, 0, 0.7)'},
-  {at: 0.6, is: '4px 8px rgba(255, 255, 0, 0.2), inset 2px 12px rgba(0, 128, 0, 0.4)'},
+  {at: -0.3, is: 'rgba(255, 255, 0, 0.65) 13px 26px 0px 0px, rgb(0, 166, 0) 6.5px 39px 0px 0px inset'},
+  {at: 0, is: 'rgba(255, 255, 0, 0.5) 10px 20px 0px 0px, rgb(0, 128, 0) 5px 30px 0px 0px inset'},
+  {at: 0.3, is: 'rgba(255, 255, 0, 0.353) 7px 14px 0px 0px, rgba(0, 128, 0, 0.7) 3.5px 21px 0px 0px inset'},
+  {at: 0.6, is: 'rgba(255, 255, 0, 0.2) 4px 8px 0px 0px, rgba(0, 128, 0, 0.4) 2px 12px 0px 0px inset'},
   {at: 1, is: 'none'},
-  {at: 1.5, is: '-5px -10px transparent, inset -2.5px -15px transparent'},
+  {at: 1.5, is: 'rgba(0, 0, 0, 0) -5px -10px 0px 0px, rgba(0, 0, 0, 0) -2.5px -15px 0px 0px inset'},
 ]);
 
 // Test unmatched inset

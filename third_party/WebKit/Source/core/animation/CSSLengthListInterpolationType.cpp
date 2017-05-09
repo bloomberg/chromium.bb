@@ -124,6 +124,7 @@ PairwiseInterpolationValue CSSLengthListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& end) const {
   return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
+      ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
       LengthInterpolationFunctions::MergeSingles);
 }
 
@@ -144,6 +145,7 @@ void CSSLengthListInterpolationType::Composite(
     double interpolation_fraction) const {
   ListInterpolationFunctions::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
+      ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
       LengthInterpolationFunctions::NonInterpolableValuesAreCompatible,
       LengthInterpolationFunctions::Composite);
 }

@@ -116,6 +116,7 @@ PairwiseInterpolationValue CSSShadowListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& end) const {
   return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
+      ListInterpolationFunctions::LengthMatchingStrategy::kPadToLargest,
       ShadowInterpolationFunctions::MaybeMergeSingles);
 }
 
@@ -134,6 +135,7 @@ void CSSShadowListInterpolationType::Composite(
     double interpolation_fraction) const {
   ListInterpolationFunctions::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
+      ListInterpolationFunctions::LengthMatchingStrategy::kPadToLargest,
       ShadowInterpolationFunctions::NonInterpolableValuesAreCompatible,
       ShadowInterpolationFunctions::Composite);
 }
