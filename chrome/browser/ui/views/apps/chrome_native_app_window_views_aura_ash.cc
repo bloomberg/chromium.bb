@@ -373,6 +373,12 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
   }
 }
 
+void ChromeNativeAppWindowViewsAuraAsh::SetActivateOnPointer(
+    bool activate_on_pointer) {
+  widget()->GetNativeWindow()->SetProperty(aura::client::kActivateOnPointerKey,
+                                           activate_on_pointer);
+}
+
 void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {
   menu_runner_.reset();
   menu_model_adapter_.reset();

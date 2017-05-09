@@ -1233,6 +1233,7 @@ enum HistogramValue {
   WEBRTC_AUDIO_PRIVATE_SET_AUDIO_EXPERIMENTS,
   AUTOTESTPRIVATE_GETPLAYSTORESTATE,
   AUTOTESTPRIVATE_SETPLAYSTOREENABLED,
+  APP_CURRENTWINDOWINTERNAL_SETACTIVATEONPOINTER,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

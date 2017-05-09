@@ -141,6 +141,7 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
   SkColor InactiveFrameColor() const override;
   gfx::Insets GetFrameInsets() const override;
   bool CanHaveAlphaEnabled() const override;
+  void SetActivateOnPointer(bool activate_on_pointer) override;
 
   // These are used to simulate Mac-style hide/show. Since windows can be hidden
   // and shown using the app.window API, this sets is_hidden_with_app_ to

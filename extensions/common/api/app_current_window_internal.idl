@@ -51,6 +51,7 @@ namespace app.currentWindowInternal {
     static void setShape(Region region);
     static void setAlwaysOnTop(boolean always_on_top);
     static void setVisibleOnAllWorkspaces(boolean always_visible);
+    static void setActivateOnPointer(boolean activate_on_pointer);
   };
 
   interface Events {

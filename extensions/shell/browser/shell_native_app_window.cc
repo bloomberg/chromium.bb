@@ -195,4 +195,8 @@ bool ShellNativeAppWindow::CanHaveAlphaEnabled() const {
   return false;
 }
 
+void ShellNativeAppWindow::SetActivateOnPointer(bool activate_on_pointer) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace extensions

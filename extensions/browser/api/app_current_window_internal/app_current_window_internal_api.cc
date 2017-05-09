@@ -31,6 +31,8 @@ namespace SetShape = app_current_window_internal::SetShape;
 namespace SetAlwaysOnTop = app_current_window_internal::SetAlwaysOnTop;
 namespace SetVisibleOnAllWorkspaces =
     app_current_window_internal::SetVisibleOnAllWorkspaces;
+namespace SetActivateOnPointer =
+    app_current_window_internal::SetActivateOnPointer;
 
 using app_current_window_internal::Bounds;
 using app_current_window_internal::Region;
@@ -374,6 +376,15 @@ AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction::Run() {
       SetVisibleOnAllWorkspaces::Params::Create(*args_));
   CHECK(params.get());
   window()->GetBaseWindow()->SetVisibleOnAllWorkspaces(params->always_visible);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AppCurrentWindowInternalSetActivateOnPointerFunction::Run() {
+  std::unique_ptr<SetActivateOnPointer::Params> params(
+      SetActivateOnPointer::Params::Create(*args_));
+  CHECK(params.get());
+  window()->GetBaseWindow()->SetActivateOnPointer(params->activate_on_pointer);
   return RespondNow(NoArguments());
 }
 
