@@ -1857,9 +1857,6 @@ class ValidationPool(object):
         status. If not None, this implies there were infrastructure issues.
       failed_hwtests: A list of names (strings) of failed hwtests.
     """
-    if failed_hwtests:
-      logging.info('Failed HWTests: %s', failed_hwtests)
-
     if changes is None:
       changes = self.applied
 
@@ -1887,8 +1884,8 @@ class ValidationPool(object):
     infra_fail = triage_lib.CalculateSuspects.OnlyInfraFailures(
         messages, no_stat)
     suspects = triage_lib.CalculateSuspects.FindSuspects(
-        candidates, messages, infra_fail=infra_fail, lab_fail=lab_fail,
-        sanity=sanity)
+        candidates, messages, build_root=self.build_root, infra_fail=infra_fail,
+        lab_fail=lab_fail, failed_hwtests=failed_hwtests, sanity=sanity)
 
     # Send out failure notifications for each change.
     inputs = [[change, messages, suspects, sanity, infra_fail,
