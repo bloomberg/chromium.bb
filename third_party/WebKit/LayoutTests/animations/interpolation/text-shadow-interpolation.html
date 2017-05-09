@@ -23,7 +23,7 @@
 assertInterpolation({
   property: 'text-shadow',
   from: neutralKeyframe,
-  to: '20px 20px 20px green',
+  to: 'green 20px 20px 20px',
 }, [
   {at: -0.3, is: 'rgb(255, 176, 0) 7px 33px 7px'},
   {at: 0, is: 'rgb(255, 165, 0) 10px 30px 10px'},
@@ -36,7 +36,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'text-shadow',
   from: 'initial',
-  to: '20px 20px 20px green',
+  to: 'green 20px 20px 20px',
 }, [
   {at: -0.3, is: 'rgba(0, 0, 0, 0) -6px -6px 0px'},
   {at: 0, is: 'none'},
@@ -49,7 +49,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'text-shadow',
   from: 'inherit',
-  to: '20px 20px 20px green',
+  to: 'green 20px 20px 20px',
 }, [
   {at: -0.3, is: 'rgb(255, 176, 0) 33px 7px 33px'},
   {at: 0, is: 'rgb(255, 165, 0) 30px 10px 30px'},
@@ -62,7 +62,7 @@ assertInterpolation({
 assertInterpolation({
   property: 'text-shadow',
   from: 'unset',
-  to: '20px 20px 20px green',
+  to: 'green 20px 20px 20px',
 }, [
   {at: -0.3, is: 'rgb(255, 176, 0) 33px 7px 33px'},
   {at: 0, is: 'rgb(255, 165, 0) 30px 10px 30px'},
@@ -74,28 +74,28 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'text-shadow',
-  from: '15px 10px 5px black',
-  to: '-15px -10px 25px orange'
+  from: 'black 15px 10px 5px',
+  to: 'orange -15px -10px 25px',
 }, [
-  {at: -0.3, is: '24px 16px 0px black'},
-  {at: 0, is: '15px 10px 5px black'},
-  {at: 0.3, is: '6px 4px 11px rgb(77, 50, 0)'},
-  {at: 0.6, is: '-3px -2px 17px rgb(153, 99, 0)'},
-  {at: 1, is: '-15px -10px 25px orange'},
-  {at: 1.5, is: '-30px -20px 35px rgb(255, 248, 0)'},
+  {at: -0.3, is: 'rgb(0, 0, 0) 24px 16px 0px'},
+  {at: 0, is: 'rgb(0, 0, 0) 15px 10px 5px'},
+  {at: 0.3, is: 'rgb(77, 50, 0) 6px 4px 11px'},
+  {at: 0.6, is: 'rgb(153, 99, 0) -3px -2px 17px'},
+  {at: 1, is: 'rgb(255, 165, 0) -15px -10px 25px'},
+  {at: 1.5, is: 'rgb(255, 248, 0) -30px -20px 35px'},
 ]);
 
 assertInterpolation({
   property: 'text-shadow',
-  from: '10px 10px 10px black',
-  to: '10px 10px 10px currentColor'
+  from: 'black 10px 10px 10px',
+  to: 'currentColor 10px 10px 10px',
 }, [
-  {at: -0.3, is: '10px 10px 10px black'},
-  {at: 0, is: '10px 10px 10px black'},
-  {at: 0.3, is: '10px 10px 10px rgb(0, 38, 0)'},
-  {at: 0.6, is: '10px 10px 10px rgb(0, 77, 0)'},
-  {at: 1, is: '10px 10px 10px green'},
-  {at: 1.5, is: '10px 10px 10px rgb(0, 192, 0)'},
+  {at: -0.3, is: 'rgb(0, 0, 0) 10px 10px 10px'},
+  {at: 0, is: 'rgb(0, 0, 0) 10px 10px 10px'},
+  {at: 0.3, is: 'rgb(0, 38, 0) 10px 10px 10px'},
+  {at: 0.6, is: 'rgb(0, 77, 0) 10px 10px 10px'},
+  {at: 1, is: 'rgb(0, 128, 0) 10px 10px 10px'},
+  {at: 1.5, is: 'rgb(0, 192, 0) 10px 10px 10px'},
 ]);
 </script>
 </body>

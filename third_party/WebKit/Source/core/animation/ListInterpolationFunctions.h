@@ -23,12 +23,15 @@ class ListInterpolationFunctions {
     return InterpolationValue(InterpolableList::Create(0));
   }
 
+  enum class LengthMatchingStrategy { kLowestCommonMultiple, kPadToLargest };
+
   using MergeSingleItemConversionsCallback =
       PairwiseInterpolationValue (*)(InterpolationValue&& start,
                                      InterpolationValue&& end);
   static PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end,
+      LengthMatchingStrategy,
       MergeSingleItemConversionsCallback);
 
   using EqualNonInterpolableValuesCallback =
@@ -48,6 +51,7 @@ class ListInterpolationFunctions {
                         double underlying_fraction,
                         const InterpolationType&,
                         const InterpolationValue&,
+                        LengthMatchingStrategy,
                         NonInterpolableValuesAreCompatibleCallback,
                         CompositeItemCallback);
 };
