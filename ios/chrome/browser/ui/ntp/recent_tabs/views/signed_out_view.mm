@@ -76,7 +76,7 @@ const CGFloat kDesiredHeight = 180;
   base::RecordAction(base::UserMetricsAction("Signin_Signin_FromRecentTabs"));
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-      signInAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS];
+            accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS];
   [self chromeExecuteCommand:command];
 }
 

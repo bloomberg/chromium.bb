@@ -14,7 +14,7 @@
 @implementation ShowSigninCommand
 
 @synthesize operation = _operation;
-@synthesize signInAccessPoint = _signInAccessPoint;
+@synthesize accessPoint = _accessPoint;
 @synthesize callback = _callback;
 
 - (instancetype)initWithTag:(NSInteger)tag {
@@ -23,23 +23,21 @@
 }
 
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
-                signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
+                      accessPoint:(signin_metrics::AccessPoint)accessPoint
                          callback:
                              (ShowSigninCommandCompletionCallback)callback {
   if ((self = [super initWithTag:IDC_SHOW_SIGNIN_IOS])) {
     _operation = operation;
-    _signInAccessPoint = signInAccessPoint;
+    _accessPoint = accessPoint;
     _callback = [callback copy];
   }
   return self;
 }
 
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
-                signInAccessPoint:
-                    (signin_metrics::AccessPoint)signInAccessPoint {
-  return [self initWithOperation:operation
-               signInAccessPoint:signInAccessPoint
-                        callback:nil];
+                      accessPoint:(signin_metrics::AccessPoint)accessPoint {
+  return
+      [self initWithOperation:operation accessPoint:accessPoint callback:nil];
 }
 
 @end

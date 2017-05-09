@@ -140,7 +140,7 @@ class SignInObserver : public SigninManagerBase::Observer {
       base::UserMetricsAction("Signin_Signin_FromBookmarkManager"));
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-      signInAccessPoint:signin_metrics::AccessPoint::
+            accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_BOOKMARK_MANAGER];
   [self chromeExecuteCommand:command];
 }

@@ -65,7 +65,7 @@ enum PromoAction {
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   self = [super initWithBrowserState:browserState
                isPresentedOnSettings:NO
-                   signInAccessPoint:signin_metrics::AccessPoint::
+                         accessPoint:signin_metrics::AccessPoint::
                                          ACCESS_POINT_SIGNIN_PROMO
                       signInIdentity:nil];
   if (self) {

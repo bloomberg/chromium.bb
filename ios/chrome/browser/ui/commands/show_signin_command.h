@@ -39,14 +39,13 @@ enum AuthenticationOperation {
 // Initializes a command to perform the specified operation with a
 // SigninInteractionController and invoke a possibly-nil callback when finished.
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
-                signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
+                      accessPoint:(signin_metrics::AccessPoint)accessPoint
                          callback:(ShowSigninCommandCompletionCallback)callback
     NS_DESIGNATED_INITIALIZER;
 
 // Initializes a ShowSigninCommand with a nil callback.
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
-                signInAccessPoint:
-                    (signin_metrics::AccessPoint)signInAccessPoint;
+                      accessPoint:(signin_metrics::AccessPoint)accessPoint;
 
 // The callback to be invoked after the operation is complete.
 @property(copy, nonatomic, readonly)
@@ -56,7 +55,7 @@ enum AuthenticationOperation {
 @property(nonatomic, readonly) AuthenticationOperation operation;
 
 // The access point of this authentication operation.
-@property(nonatomic, readonly) signin_metrics::AccessPoint signInAccessPoint;
+@property(nonatomic, readonly) signin_metrics::AccessPoint accessPoint;
 
 @end
 
