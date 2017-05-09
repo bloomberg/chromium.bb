@@ -265,10 +265,14 @@ public class GeolocationHeader {
         Location location = null;
         long locationAge = Long.MAX_VALUE;
         @HeaderState int headerState = geoHeaderStateForUrl(url, isIncognito, true);
+        boolean isXGeoVisibleNetworksEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.XGEO_VISIBLE_NETWORKS);
         if (headerState == HEADER_ENABLED) {
             // Only send X-Geo header if there's a fresh location available.
-            location =
-                    GeolocationTracker.getLastKnownLocation(ContextUtils.getApplicationContext());
+            // Use flag controlling visible network changes to decide whether GPS location should be
+            // included as a fallback.
+            location = GeolocationTracker.getLastKnownLocation(
+                    ContextUtils.getApplicationContext(), isXGeoVisibleNetworksEnabled);
             if (location == null) {
                 recordHistogram(UMA_LOCATION_NOT_AVAILABLE);
                 locationAttached = false;
@@ -326,8 +330,6 @@ public class GeolocationHeader {
         String locationAsciiEncoding =
                 new String(Base64.encode(locationAscii.getBytes(), Base64.NO_WRAP));
 
-        boolean isXGeoVisibleNetworksEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.XGEO_VISIBLE_NETWORKS);
         if (!isXGeoVisibleNetworksEnabled) {
             return XGEO_HEADER_PREFIX + LOCATION_ASCII_PREFIX + locationAsciiEncoding;
         }

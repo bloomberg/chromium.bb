@@ -154,7 +154,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         checkHeaderWithLocation(now, false);
         checkHeaderWithLocation(now - oneHour, false);
         checkHeaderWithLocation(now - oneWeek, true);
-        GeolocationTracker.setLocationForTesting(null);
+        GeolocationTracker.setLocationForTesting(null, null);
         assertNullHeader(SEARCH_URL_1, false);
     }
 
@@ -175,6 +175,60 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         long now = setMockLocationNow();
 
         // X-Geo should be sent for Google search results page URLs using proto encoding.
+        assertNonNullHeader(SEARCH_URL_1, false, now, ENCODING_PROTO);
+    }
+
+    @SmallTest
+    @Feature({"Location"})
+    @CommandLineFlags.Add({DISABLE_XGEO_VISIBLE_NETWORKS})
+    public void testGpsFallbackNotEnabled() throws ProcessInitException {
+        // Only GPS location, should not be sent when flag is off.
+        long now = System.currentTimeMillis();
+        Location gpsLocation = generateMockLocation(LocationManager.GPS_PROVIDER, now);
+        GeolocationTracker.setLocationForTesting(null, gpsLocation);
+
+        assertNullHeader(SEARCH_URL_1, false);
+    }
+
+    @SmallTest
+    @Feature({"Location"})
+    @CommandLineFlags.Add({ENABLE_XGEO_VISIBLE_NETWORKS})
+    public void testGpsFallbackEnabled() throws ProcessInitException {
+        // Only GPS location, should be sent when flag is on.
+        long now = System.currentTimeMillis();
+        Location gpsLocation = generateMockLocation(LocationManager.GPS_PROVIDER, now);
+        GeolocationTracker.setLocationForTesting(null, gpsLocation);
+
+        assertNonNullHeader(SEARCH_URL_1, false, now, ENCODING_PROTO);
+    }
+
+    @SmallTest
+    @Feature({"Location"})
+    @CommandLineFlags.Add({ENABLE_XGEO_VISIBLE_NETWORKS})
+    public void testGpsFallbackYounger() throws ProcessInitException {
+        long now = System.currentTimeMillis();
+        // GPS location is younger.
+        Location gpsLocation = generateMockLocation(LocationManager.GPS_PROVIDER, now + 100);
+        // Network location is older
+        Location netLocation = generateMockLocation(LocationManager.NETWORK_PROVIDER, now);
+        GeolocationTracker.setLocationForTesting(netLocation, gpsLocation);
+
+        // The younger (GPS) should be used.
+        assertNonNullHeader(SEARCH_URL_1, false, now + 100, ENCODING_PROTO);
+    }
+
+    @SmallTest
+    @Feature({"Location"})
+    @CommandLineFlags.Add({ENABLE_XGEO_VISIBLE_NETWORKS})
+    public void testGpsFallbackOlder() throws ProcessInitException {
+        long now = System.currentTimeMillis();
+        // GPS location is older.
+        Location gpsLocation = generateMockLocation(LocationManager.GPS_PROVIDER, now - 100);
+        // Network location is older
+        Location netLocation = generateMockLocation(LocationManager.NETWORK_PROVIDER, now);
+        GeolocationTracker.setLocationForTesting(netLocation, gpsLocation);
+
+        // The younger (Network) should be used.
         assertNonNullHeader(SEARCH_URL_1, false, now, ENCODING_PROTO);
     }
 
@@ -236,8 +290,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         return now;
     }
 
-    private void setMockLocation(long time) {
-        final Location location = new Location(LocationManager.NETWORK_PROVIDER);
+    private Location generateMockLocation(String provider, long time) {
+        Location location = new Location(provider);
         location.setLatitude(LOCATION_LAT);
         location.setLongitude(LOCATION_LONG);
         location.setAccuracy(LOCATION_ACCURACY);
@@ -246,7 +300,12 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
             location.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos()
                     + 1000000 * (time - System.currentTimeMillis()));
         }
-        GeolocationTracker.setLocationForTesting(location);
+        return location;
+    }
+
+    private void setMockLocation(long time) {
+        Location location = generateMockLocation(LocationManager.NETWORK_PROVIDER, time);
+        GeolocationTracker.setLocationForTesting(location, null);
     }
 
     private void assertNullHeader(final String url, final boolean isIncognito) {
