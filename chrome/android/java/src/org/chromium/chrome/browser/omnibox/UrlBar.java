@@ -944,7 +944,13 @@ public class UrlBar extends VerticallyFixedEditText {
         // (since we apply spans when the URL is not focused, we only optimize this when the
         // URL is being edited).
         if (!TextUtils.equals(getEditableText(), text)) {
-            super.setText(text, type);
+            // Certain OEM implementations of setText trigger disk reads. crbug.com/633298
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            try {
+                super.setText(text, type);
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
         }
 
         // Verify the autocomplete is still valid after the text change.
