@@ -125,15 +125,15 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
   """
   # If this is nested, we don't need to create another queue and another
   # message consumer. Do nothing to continue to use the existing queue.
-  if metrics.MESSAGE_QUEUE:
+  if metrics.MESSAGE_QUEUE or metrics.FLUSHING_PROCESS:
     return
 
   with parallel.Manager() as manager:
     message_q = manager.Queue()
 
-    p = multiprocessing.Process(
+    metrics.FLUSHING_PROCESS = multiprocessing.Process(
         target=lambda: _ConsumeMessages(message_q, setup_args, setup_kwargs))
-    p.start()
+    metrics.FLUSHING_PROCESS.start()
 
     # this makes the chromite.lib.metric functions use the queue.
     # note - we have to do this *after* forking the ConsumeMessages process.
@@ -142,18 +142,37 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
     try:
       yield message_q
     finally:
-      # Now that there is no longer a process to listen to the Queue, re-set it
-      # to None so that any future metrics are created within this process.
-      metrics.MESSAGE_QUEUE = None
-      # Send the sentinal value for "flush one more time and exit".
-      message_q.put(None)
-      logging.info("Waiting for ts_mon flushing process to finish...")
-      p.join(timeout=FLUSH_INTERVAL*2)
-      if p.is_alive():
-        p.terminate()
-      if p.exitcode:
-        logging.warning("ts_mon_config flushing process did not exit cleanly.")
-      logging.info("Finished waiting for ts_mon process.")
+      _CleanupMetricsFlushingProcess()
+
+
+def _CleanupMetricsFlushingProcess():
+  """Sends sentinal value to flushing process and .joins it."""
+  # Now that there is no longer a process to listen to the Queue, re-set it
+  # to None so that any future metrics are created within this process.
+  message_q = metrics.MESSAGE_QUEUE
+  flushing_process = metrics.FLUSHING_PROCESS
+  metrics.MESSAGE_QUEUE = None
+  metrics.FLUSHING_PROCESS = None
+
+  # If the process has already died, we don't need to try to clean it up.
+  if not flushing_process.is_alive():
+    return
+
+  # Send the sentinal value for "flush one more time and exit".
+  try:
+    message_q.put(None)
+  # If the flushing process quits, the message Queue can become full.
+  except IOError:
+    if not flushing_process.is_alive():
+      return
+
+  logging.info("Waiting for ts_mon flushing process to finish...")
+  flushing_process.join(timeout=FLUSH_INTERVAL*2)
+  if flushing_process.is_alive():
+    flushing_process.terminate()
+  if flushing_process.exitcode:
+    logging.warning("ts_mon_config flushing process did not exit cleanly.")
+  logging.info("Finished waiting for ts_mon process.")
 
 
 def _WaitToFlush(last_flush, reset_after=()):

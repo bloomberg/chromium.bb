@@ -14,6 +14,7 @@ from __future__ import print_function
 import collections
 import contextlib
 import datetime
+import Queue
 import ssl
 
 from functools import wraps
@@ -38,6 +39,8 @@ _SECONDS_BUCKET_FACTOR = 1.16
 
 # If none, we create metrics in this process. Otherwise, we send metrics via
 # this Queue to a dedicated flushing processes.
+# These attributes are set by chromite.lib.ts_mon_config.SetupTsMonGlobalState.
+FLUSHING_PROCESS = None
 MESSAGE_QUEUE = None
 
 MetricCall = namedtuple(
@@ -45,6 +48,12 @@ MetricCall = namedtuple(
     'metric_name metric_args metric_kwargs '
     'method method_args method_kwargs '
     'reset_after')
+
+
+def _FlushingProcessClosed():
+  """Returns whether the metrics flushing process has been closed."""
+  return (FLUSHING_PROCESS is not None and
+          FLUSHING_PROCESS.exitcode is not None)
 
 
 class ProxyMetric(object):
@@ -58,14 +67,32 @@ class ProxyMetric(object):
   def __getattr__(self, method_name):
     """Redirects all method calls to the MESSAGE_QUEUE."""
     def enqueue(*args, **kwargs):
-      MESSAGE_QUEUE.put(MetricCall(
-          metric_name=self.metric,
-          metric_args=self.metric_args,
-          metric_kwargs=self.metric_kwargs,
-          method=method_name,
-          method_args=args,
-          method_kwargs=kwargs,
-          reset_after=self.reset_after))
+      if not _FlushingProcessClosed():
+        try:
+          MESSAGE_QUEUE.put_nowait(
+              MetricCall(
+                  metric_name=self.metric,
+                  metric_args=self.metric_args,
+                  metric_kwargs=self.metric_kwargs,
+                  method=method_name,
+                  method_args=args,
+                  method_kwargs=kwargs,
+                  reset_after=self.reset_after))
+        except Queue.Full:
+          logging.warning(
+              "Metrics queue is full; skipped sending metric '%s'",
+              self.metric)
+      else:
+        try:
+          exit_code = FLUSHING_PROCESS.exitcode
+        except AttributeError:
+          exit_code = None
+        logging.warning(
+            "Flushing process has been closed (exit code %s),"
+            " skipped sending metric '%s'",
+            exit_code,
+            self.metric)
+
     return enqueue
 
 
