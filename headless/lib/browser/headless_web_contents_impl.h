@@ -57,9 +57,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   void RemoveObserver(Observer* observer) override;
   HeadlessDevToolsTarget* GetDevToolsTarget() override;
   HeadlessTabSocket* GetHeadlessTabSocket() const override;
-  bool GetFrameTreeNodeIdForDevToolsAgentHostId(
-      const std::string& devtools_agent_host_id,
-      int* frame_tree_node_id) const override;
   std::string GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
       int process_id,
       int frame_tree_node_id) const override;
@@ -111,10 +108,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   void InitializeScreen(const gfx::Size& initial_size);
   using MojoService = HeadlessWebContents::Builder::MojoService;
-
-  std::unordered_map<content::RenderFrameHost*, std::string>
-      render_frame_host_to_devtools_agent_host_id_;
-  std::unordered_map<std::string, int> devtools_agent_id_to_frame_tree_node_id_;
 
   class Delegate;
   std::unique_ptr<Delegate> web_contents_delegate_;

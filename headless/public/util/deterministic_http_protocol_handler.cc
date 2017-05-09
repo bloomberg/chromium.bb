@@ -44,6 +44,7 @@ DeterministicHttpProtocolHandler::DeterministicHttpProtocolHandler(
     DeterministicDispatcher* deterministic_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : deterministic_dispatcher_(deterministic_dispatcher),
+      headless_browser_context_(nullptr),
       io_task_runner_(io_task_runner),
       nop_delegate_(new NopGenericURLRequestJobDelegate()) {}
 
@@ -69,7 +70,7 @@ net::URLRequestJob* DeterministicHttpProtocolHandler::MaybeCreateJob(
   return new GenericURLRequestJob(
       request, network_delegate, deterministic_dispatcher_,
       base::MakeUnique<HttpURLFetcher>(url_request_context_.get()),
-      nop_delegate_.get());
+      nop_delegate_.get(), headless_browser_context_);
 }
 
 }  // namespace headless

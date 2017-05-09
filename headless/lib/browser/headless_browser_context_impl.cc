@@ -389,14 +389,6 @@ HeadlessBrowserContext::Builder::SetIncognitoMode(bool incognito_mode) {
 }
 
 HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::AddJsMojoBindings(
-    const std::string& mojom_name,
-    const std::string& js_bindings) {
-  mojo_bindings_.emplace_back(mojom_name, js_bindings);
-  return *this;
-}
-
-HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::AddTabSocketMojoBindings() {
   std::string js_bindings =
       ui::ResourceBundle::GetSharedInstance()

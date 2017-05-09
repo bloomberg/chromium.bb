@@ -191,16 +191,9 @@ int GenericURLRequestJob::GetFrameTreeNodeId() const {
   if (content::ResourceRequestInfo::GetRenderFrameForRequest(
           request_, &render_process_id, &render_frame_routing_id) &&
       render_process_id != -1) {
-    if (headless_browser_context_) {
-      return static_cast<HeadlessBrowserContextImpl*>(headless_browser_context_)
-          ->GetFrameTreeNodeId(render_process_id, render_frame_routing_id);
-    }
-    // TODO(alexclarke): Remove this.
-    content::RenderFrameHost* render_frame_host =
-        content::RenderFrameHost::FromID(render_process_id,
-                                         render_frame_routing_id);
-    DCHECK(render_frame_host);
-    return render_frame_host->GetFrameTreeNodeId();
+    DCHECK(headless_browser_context_);
+    return static_cast<HeadlessBrowserContextImpl*>(headless_browser_context_)
+        ->GetFrameTreeNodeId(render_process_id, render_frame_routing_id);
   }
   // ResourceRequestInfo::GetFrameTreeNodeId is only set for browser side
   // navigations.

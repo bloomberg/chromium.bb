@@ -134,6 +134,15 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
+namespace {
+void ForwardToServiceFactory(
+    const base::Callback<void(mojo::InterfaceRequest<TabSocket>)>&
+        service_factory,
+    mojo::ScopedMessagePipeHandle handle) {
+  service_factory.Run(mojo::MakeRequest<TabSocket>(std::move(handle)));
+}
+}  // namespace
+
 // static
 std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
     HeadlessWebContents::Builder* builder) {
@@ -149,9 +158,15 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
   if (builder->create_tab_socket_) {
     headless_web_contents->headless_tab_socket_ =
         base::MakeUnique<HeadlessTabSocketImpl>();
-    builder->AddMojoService(base::Bind(
-        &HeadlessTabSocketImpl::CreateMojoService,
-        base::Unretained(headless_web_contents->headless_tab_socket_.get())));
+
+    builder->mojo_services_.emplace_back(
+        TabSocket::Name_,
+        base::Bind(
+            &ForwardToServiceFactory,
+            base::Bind(
+                &HeadlessTabSocketImpl::CreateMojoService,
+                base::Unretained(
+                    headless_web_contents->headless_tab_socket_.get()))));
   }
 
   headless_web_contents->mojo_services_ = std::move(builder->mojo_services_);
@@ -219,13 +234,6 @@ void HeadlessWebContentsImpl::RenderFrameCreated(
   browser_context_->SetFrameTreeNodeId(render_frame_host->GetProcess()->GetID(),
                                        render_frame_host->GetRoutingID(),
                                        render_frame_host->GetFrameTreeNodeId());
-
-  std::string devtools_agent_host_id =
-      content::DevToolsAgentHost::GetOrCreateFor(render_frame_host)->GetId();
-  render_frame_host_to_devtools_agent_host_id_[render_frame_host] =
-      devtools_agent_host_id;
-  devtools_agent_id_to_frame_tree_node_id_[devtools_agent_host_id] =
-      render_frame_host->GetFrameTreeNodeId();
 }
 
 void HeadlessWebContentsImpl::RenderFrameDeleted(
@@ -233,25 +241,6 @@ void HeadlessWebContentsImpl::RenderFrameDeleted(
   browser_context_->RemoveFrameTreeNode(
       render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRoutingID());
-
-  auto find_it =
-      render_frame_host_to_devtools_agent_host_id_.find(render_frame_host);
-  if (find_it == render_frame_host_to_devtools_agent_host_id_.end())
-    return;
-
-  devtools_agent_id_to_frame_tree_node_id_.erase(find_it->second);
-  render_frame_host_to_devtools_agent_host_id_.erase(find_it);
-}
-
-bool HeadlessWebContentsImpl::GetFrameTreeNodeIdForDevToolsAgentHostId(
-    const std::string& devtools_agent_host_id,
-    int* frame_tree_node_id) const {
-  const auto& find_it =
-      devtools_agent_id_to_frame_tree_node_id_.find(devtools_agent_host_id);
-  if (find_it == devtools_agent_id_to_frame_tree_node_id_.end())
-    return false;
-  *frame_tree_node_id = find_it->second;
-  return true;
 }
 
 std::string
@@ -389,14 +378,6 @@ HeadlessWebContents::Builder& HeadlessWebContents::Builder::SetInitialURL(
 HeadlessWebContents::Builder& HeadlessWebContents::Builder::SetWindowSize(
     const gfx::Size& size) {
   window_size_ = size;
-  return *this;
-}
-
-HeadlessWebContents::Builder& HeadlessWebContents::Builder::AddMojoService(
-    const std::string& service_name,
-    const base::Callback<void(mojo::ScopedMessagePipeHandle)>&
-        service_factory) {
-  mojo_services_.emplace_back(service_name, service_factory);
   return *this;
 }
 

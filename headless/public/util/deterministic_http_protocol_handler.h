@@ -18,6 +18,7 @@ class URLRequestJobFactory;
 
 namespace headless {
 class DeterministicDispatcher;
+class HeadlessBrowserContext;
 
 // A deterministic protocol handler.  Requests made to this protocol handler
 // will return in order of creation, regardless of what order the network
@@ -37,10 +38,16 @@ class HEADLESS_EXPORT DeterministicHttpProtocolHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
+  void SetHeadlessBrowserContext(
+      HeadlessBrowserContext* headless_browser_context) {
+    headless_browser_context_ = headless_browser_context;
+  }
+
  private:
   class NopGenericURLRequestJobDelegate;
 
   DeterministicDispatcher* deterministic_dispatcher_;  // NOT OWNED.
+  HeadlessBrowserContext* headless_browser_context_;   // NOT OWNED.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   std::unique_ptr<NopGenericURLRequestJobDelegate> nop_delegate_;
 

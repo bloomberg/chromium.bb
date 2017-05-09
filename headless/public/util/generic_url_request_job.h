@@ -155,14 +155,12 @@ class HEADLESS_EXPORT GenericURLRequestJob
 
   // NOTE |url_request_dispatcher| and |delegate| must outlive the
   // GenericURLRequestJob.
-  // TODO(alexclarke): Remove the default parameter.
-  GenericURLRequestJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      URLRequestDispatcher* url_request_dispatcher,
-      std::unique_ptr<URLFetcher> url_fetcher,
-      Delegate* delegate,
-      HeadlessBrowserContext* headless_browser_context = nullptr);
+  GenericURLRequestJob(net::URLRequest* request,
+                       net::NetworkDelegate* network_delegate,
+                       URLRequestDispatcher* url_request_dispatcher,
+                       std::unique_ptr<URLFetcher> url_fetcher,
+                       Delegate* delegate,
+                       HeadlessBrowserContext* headless_browser_context);
   ~GenericURLRequestJob() override;
 
   // net::URLRequestJob implementation:
