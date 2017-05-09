@@ -445,15 +445,11 @@ void PermissionPromptImpl::Hide() {
   }
 }
 
-bool PermissionPromptImpl::IsVisible() {
-  return bubble_delegate_ != nullptr;
-}
-
 void PermissionPromptImpl::UpdateAnchorPosition() {
   DCHECK(browser_);
   DCHECK(browser_->window());
 
-  if (IsVisible()) {
+  if (bubble_delegate_) {
     bubble_delegate_->set_parent_window(
         platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
     bubble_delegate_->UpdateAnchor(GetAnchorView(),

@@ -48,10 +48,6 @@ void PermissionPromptAndroid::Hide() {
   NOTREACHED();
 }
 
-bool PermissionPromptAndroid::IsVisible() {
-  return !requests_.empty();
-}
-
 void PermissionPromptAndroid::UpdateAnchorPosition() {
   NOTREACHED() << "UpdateAnchorPosition is not implemented";
 }

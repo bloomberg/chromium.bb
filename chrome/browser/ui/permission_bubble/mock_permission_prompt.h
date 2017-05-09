@@ -25,9 +25,10 @@ class MockPermissionPrompt : public PermissionPrompt {
   bool CanAcceptRequestUpdate() override;
   bool HidesAutomatically() override;
   void Hide() override;
-  bool IsVisible() override;
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
+
+  bool IsVisible();
 
  private:
   friend class MockPermissionPromptFactory;

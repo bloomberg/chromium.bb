@@ -40,16 +40,16 @@ void MockPermissionPrompt::Hide() {
   is_visible_ = false;
 }
 
-bool MockPermissionPrompt::IsVisible() {
-  return is_visible_;
-}
-
 void MockPermissionPrompt::UpdateAnchorPosition() {}
 
 gfx::NativeWindow MockPermissionPrompt::GetNativeWindow() {
   // This class should only be used when the UI is not necessary.
   NOTREACHED();
   return nullptr;
+}
+
+bool MockPermissionPrompt::IsVisible() {
+  return is_visible_;
 }
 
 MockPermissionPrompt::MockPermissionPrompt(MockPermissionPromptFactory* factory,

@@ -69,9 +69,6 @@ class PermissionPrompt {
   // Hides the permission prompt.
   virtual void Hide() = 0;
 
-  // Returns true if there is a prompt currently showing.
-  virtual bool IsVisible() = 0;
-
   // Updates where the prompt should be anchored. ex: fullscreen toggle.
   virtual void UpdateAnchorPosition() = 0;
 
