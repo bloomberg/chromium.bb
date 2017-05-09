@@ -3,8 +3,6 @@ blink_style.key_mobile_sites
 blink_style.polymer
 blink_style.top_25
 blob_storage.blob_storage
-dummy_benchmark.noisy_benchmark_1
-dummy_benchmark.stable_benchmark_1
 gpu_times.gpu_rasterization.key_mobile_sites_smooth
 gpu_times.gpu_rasterization.top_25_smooth
 gpu_times.key_mobile_sites_smooth
