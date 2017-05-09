@@ -143,13 +143,13 @@ namespace double_conversion {
 
     // Check that the static constants match the values in kCachedPowers.
     static void ValidateStaticConstants() {
-      ASSERT(kCachedPowersOffset == -kCachedPowers[0].decimal_exponent);
-      ASSERT(PowersOfTenCache::kDecimalExponentDistance ==
+      DCHECK_EQ(kCachedPowersOffset, -kCachedPowers[0].decimal_exponent);
+      DCHECK_EQ(PowersOfTenCache::kDecimalExponentDistance,
              (kCachedPowers[1].decimal_exponent -
               kCachedPowers[0].decimal_exponent));
-      ASSERT(PowersOfTenCache::kMinDecimalExponent ==
+      DCHECK_EQ(PowersOfTenCache::kMinDecimalExponent,
              kCachedPowers[0].decimal_exponent);
-      ASSERT(PowersOfTenCache::kMaxDecimalExponent ==
+      DCHECK_EQ(PowersOfTenCache::kMaxDecimalExponent,
              kCachedPowers[kCachedPowersLength - 1].decimal_exponent);
     }
 #endif
@@ -167,10 +167,13 @@ namespace double_conversion {
       int foo = kCachedPowersOffset;
       int index =
           (foo + static_cast<int>(k) - 1) / kDecimalExponentDistance + 1;
-      ASSERT(0 <= index && index < kCachedPowersLength);
+      DCHECK_LE(0, index);
+#if DCHECK_IS_ON()
+      DCHECK_LT(index, kCachedPowersLength);
+#endif
       CachedPower cached_power = kCachedPowers[index];
-      ASSERT(min_exponent <= cached_power.binary_exponent);
-      ASSERT(cached_power.binary_exponent <= max_exponent);
+      DCHECK_LE(min_exponent, cached_power.binary_exponent);
+      DCHECK_LE(cached_power.binary_exponent, max_exponent);
       *decimal_exponent = cached_power.decimal_exponent;
       *power = DiyFp(cached_power.significand, cached_power.binary_exponent);
     }
@@ -179,8 +182,8 @@ namespace double_conversion {
     void PowersOfTenCache::GetCachedPowerForDecimalExponent(int requested_exponent,
                                                             DiyFp* power,
                                                             int* found_exponent) {
-        ASSERT(kMinDecimalExponent <= requested_exponent);
-        ASSERT(requested_exponent < kMaxDecimalExponent + kDecimalExponentDistance);
+        DCHECK_LE(kMinDecimalExponent, requested_exponent);
+        DCHECK_LT(requested_exponent, kMaxDecimalExponent + kDecimalExponentDistance);
 #if DCHECK_IS_ON()
         ValidateStaticConstants();
 #endif
@@ -189,8 +192,8 @@ namespace double_conversion {
         CachedPower cached_power = kCachedPowers[index];
         *power = DiyFp(cached_power.significand, cached_power.binary_exponent);
         *found_exponent = cached_power.decimal_exponent;
-        ASSERT(*found_exponent <= requested_exponent);
-        ASSERT(requested_exponent < *found_exponent + kDecimalExponentDistance);
+        DCHECK_LE(*found_exponent, requested_exponent);
+        DCHECK_LT(requested_exponent, *found_exponent + kDecimalExponentDistance);
     }
 
 }  // namespace double_conversion

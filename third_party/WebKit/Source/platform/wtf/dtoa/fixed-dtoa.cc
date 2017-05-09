@@ -55,11 +55,12 @@ namespace double_conversion {
             accumulator >>= 32;
             accumulator = accumulator + (high_bits_ >> 32) * multiplicand;
             high_bits_ = (accumulator << 32) + part;
-            ASSERT((accumulator >> 32) == 0);
+            DCHECK_EQ((accumulator >> 32), 0u);
         }
 
         void Shift(int shift_amount) {
-            ASSERT(-64 <= shift_amount && shift_amount <= 64);
+            DCHECK_LE(-64, shift_amount);
+            DCHECK_LE(shift_amount, 64);
             if (shift_amount == 0) {
                 return;
             } else if (shift_amount == -64) {
@@ -232,7 +233,8 @@ namespace double_conversion {
     static void FillFractionals(uint64_t fractionals, int exponent,
                                 int fractional_count, Vector<char> buffer,
                                 int* length, int* decimal_point) {
-        ASSERT(-128 <= exponent && exponent <= 0);
+        DCHECK_LE(-128, exponent);
+        DCHECK_LE(exponent, 0);
         // 'fractionals' is a fixed-point number, with binary point at bit
         // (-exponent). Inside the function the non-converted remainder of fractionals
         // is a fixed-point number, with binary point at bit 'point'.
@@ -264,7 +266,8 @@ namespace double_conversion {
                 RoundUp(buffer, length, decimal_point);
             }
         } else {  // We need 128 bits.
-            ASSERT(64 < -exponent && -exponent <= 128);
+            DCHECK_LT(64, -exponent);
+            DCHECK_LE(-exponent, 128);
             UInt128 fractionals128 = UInt128(fractionals, 0);
             fractionals128.Shift(-exponent - 64);
             int point = 128;
@@ -382,7 +385,7 @@ namespace double_conversion {
         } else if (exponent < -128) {
             // This configuration (with at most 20 digits) means that all digits must be
             // 0.
-            ASSERT(fractional_count <= 20);
+            DCHECK_LE(fractional_count, 20);
             buffer[0] = '\0';
             *length = 0;
             *decimal_point = -fractional_count;

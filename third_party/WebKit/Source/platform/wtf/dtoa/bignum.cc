@@ -48,7 +48,7 @@ namespace double_conversion {
 
     // Guaranteed to lie in one Bigit.
     void Bignum::AssignUInt16(uint16_t value) {
-        ASSERT(kBigitSize >= BitSize(value));
+        DCHECK_GE(kBigitSize, BitSize(value));
         Zero();
         if (value == 0) return;
 
@@ -94,7 +94,8 @@ namespace double_conversion {
         uint64_t result = 0;
         for (int i = from; i < from + digits_to_read; ++i) {
             int digit = buffer[i] - '0';
-            ASSERT(0 <= digit && digit <= 9);
+            DCHECK_LE(0, digit);
+            DCHECK_LE(digit, 9);
             result = result * 10 + digit;
         }
         return result;
@@ -192,7 +193,7 @@ namespace double_conversion {
       EnsureCapacity(1 + Max(BigitLength(), other.BigitLength()) - exponent_);
       Chunk carry = 0;
       int bigit_pos = other.exponent_ - exponent_;
-      ASSERT(bigit_pos >= 0);
+      DCHECK_GE(bigit_pos, 0);
       for (int i = 0; i < other.used_digits_; ++i) {
         Chunk sum = bigits_[bigit_pos] + other.bigits_[i] + carry;
         bigits_[bigit_pos] = sum & kBigitMask;
@@ -215,7 +216,7 @@ namespace double_conversion {
       DCHECK(IsClamped());
       DCHECK(other.IsClamped());
       // We require this to be bigger than other.
-      ASSERT(LessEqual(other, *this));
+      DCHECK(LessEqual(other, *this));
 
       Align(other);
 
@@ -223,7 +224,7 @@ namespace double_conversion {
       Chunk borrow = 0;
       int i;
       for (i = 0; i < other.used_digits_; ++i) {
-        ASSERT((borrow == 0) || (borrow == 1));
+        DCHECK((borrow == 0) || (borrow == 1));
         Chunk difference = bigits_[i + offset] - other.bigits_[i] - borrow;
         bigits_[i + offset] = difference & kBigitMask;
         borrow = difference >> (kChunkSize - 1);
@@ -257,7 +258,7 @@ namespace double_conversion {
 
         // The product of a bigit with the factor is of size kBigitSize + 32.
         // Assert that this number + 1 (for the carry) fits into double chunk.
-        ASSERT(kDoubleChunkSize >= kBigitSize + 32 + 1);
+        DCHECK_GE(kDoubleChunkSize, kBigitSize + 32 + 1);
         DoubleChunk carry = 0;
         for (int i = 0; i < used_digits_; ++i) {
             DoubleChunk product = static_cast<DoubleChunk>(factor) * bigits_[i] + carry;
@@ -279,7 +280,7 @@ namespace double_conversion {
             Zero();
             return;
         }
-        ASSERT(kBigitSize < 32);
+        DCHECK_LT(kBigitSize, 32);
         uint64_t carry = 0;
         uint64_t low = factor & 0xFFFFFFFF;
         uint64_t high = factor >> 32;
@@ -319,7 +320,7 @@ namespace double_conversion {
         { kFive1, kFive2, kFive3, kFive4, kFive5, kFive6,
             kFive7, kFive8, kFive9, kFive10, kFive11, kFive12 };
 
-        ASSERT(exponent >= 0);
+        DCHECK_GE(exponent, 0);
         if (exponent == 0) return;
         if (used_digits_ == 0) return;
 
@@ -404,7 +405,7 @@ namespace double_conversion {
         }
         // Since the result was guaranteed to lie inside the number the
         // accumulator must be 0 now.
-        ASSERT(accumulator == 0);
+        DCHECK_EQ(accumulator, 0u);
 
         // Don't forget to update the used_digits and the exponent.
         used_digits_ = product_length;
@@ -414,8 +415,8 @@ namespace double_conversion {
 
 
     void Bignum::AssignPowerUInt16(uint16_t base, int power_exponent) {
-        ASSERT(base != 0);
-        ASSERT(power_exponent >= 0);
+        DCHECK_NE(base, 0);
+        DCHECK_GE(power_exponent, 0);
         if (power_exponent == 0) {
             AssignUInt16(1);
             return;
@@ -490,7 +491,7 @@ namespace double_conversion {
     uint16_t Bignum::DivideModuloIntBignum(const Bignum& other) {
       DCHECK(IsClamped());
       DCHECK(other.IsClamped());
-      ASSERT(other.used_digits_ > 0);
+      DCHECK_GT(other.used_digits_, 0);
 
       // Easy case: if we have less digits than the divisor than the result is
       // 0. Note: this handles the case where this == 0, too.
@@ -508,14 +509,14 @@ namespace double_conversion {
             // This naive approach is extremely inefficient if the this divided other
             // might be big. This function is implemented for doubleToString where
             // the result should be small (less than 10).
-            ASSERT(other.bigits_[other.used_digits_ - 1] >= ((1 << kBigitSize) / 16));
+            DCHECK_GE(other.bigits_[other.used_digits_ - 1], ((1u << kBigitSize) / 16));
             // Remove the multiples of the first digit.
             // Example this = 23 and other equals 9. -> Remove 2 multiples.
             result += static_cast<uint16_t>(bigits_[used_digits_ - 1]);
             SubtractTimes(other, bigits_[used_digits_ - 1]);
         }
 
-        ASSERT(BigitLength() == other.BigitLength());
+        DCHECK_EQ(BigitLength(), other.BigitLength());
 
         // Both bignums are at the same length now.
         // Since other has more than 0 digits we know that the access to
@@ -552,7 +553,7 @@ namespace double_conversion {
 
     template<typename S>
     static int SizeInHexChars(S number) {
-        ASSERT(number > 0);
+        DCHECK_GT(number, 0u);
         int result = 0;
         while (number != 0) {
             number >>= 4;
@@ -563,7 +564,8 @@ namespace double_conversion {
 
 
     static char HexCharOfValue(uint8_t value) {
-        ASSERT(0 <= value && value <= 16);
+        DCHECK_LE(0, value);
+        DCHECK_LE(value, 16);
         if (value < 10) return value + '0';
         return value - 10 + 'A';
     }
@@ -572,7 +574,7 @@ namespace double_conversion {
     bool Bignum::ToHexString(char* buffer, int buffer_size) const {
       DCHECK(IsClamped());
       // Each bigit must be printable as separate hex-character.
-      ASSERT(kBigitSize % 4 == 0);
+      DCHECK_EQ(kBigitSize % 4, 0);
       const int kHexCharsPerBigit = kBigitSize / 4;
 
       if (used_digits_ == 0) {
@@ -720,15 +722,15 @@ namespace double_conversion {
             }
             used_digits_ += zero_digits;
             exponent_ -= zero_digits;
-            ASSERT(used_digits_ >= 0);
-            ASSERT(exponent_ >= 0);
+            DCHECK_GE(used_digits_, 0);
+            DCHECK_GE(exponent_, 0);
         }
     }
 
 
     void Bignum::BigitsShiftLeft(int shift_amount) {
-        ASSERT(shift_amount < kBigitSize);
-        ASSERT(shift_amount >= 0);
+        DCHECK_LT(shift_amount, kBigitSize);
+        DCHECK_GE(shift_amount, 0);
         Chunk carry = 0;
         for (int i = 0; i < used_digits_; ++i) {
             Chunk new_carry = bigits_[i] >> (kBigitSize - shift_amount);
@@ -743,7 +745,7 @@ namespace double_conversion {
 
 
     void Bignum::SubtractTimes(const Bignum& other, int factor) {
-        ASSERT(exponent_ <= other.exponent_);
+        DCHECK_LE(exponent_, other.exponent_);
         if (factor < 3) {
             for (int i = 0; i < factor; ++i) {
                 SubtractBignum(other);
