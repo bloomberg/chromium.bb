@@ -1593,7 +1593,7 @@ void ShellSurface::UpdateShadow() {
     if (shadow_underlay_)
       shadow_underlay_->Hide();
   } else {
-    wm::SetShadowElevation(window, wm::ShadowElevation::MEDIUM);
+    wm::SetShadowElevation(window, wm::ShadowElevation::DEFAULT);
     gfx::Rect shadow_content_bounds =
         gfx::ScaleToEnclosedRect(shadow_content_bounds_, 1.f / scale_);
 
