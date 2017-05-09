@@ -978,9 +978,6 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_FOUND_PRINTER" desc="The printer-found message shown in the manually add printer dialog.">
       Printer found
     </message>
-    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_MANUFACTURER_MODEL" desc="The message shown in the select manufacturer and model dialog.">
-      Could not detect your printer model. Select a manufacturer and model from the list.
-    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER" desc="Label for the dropdown menu to select a manufacturer for the printer.">
       Manufacturer
     </message>
