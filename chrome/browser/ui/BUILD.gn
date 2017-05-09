@@ -2412,6 +2412,8 @@ split_static_library("ui") {
       "cocoa/download/download_util_mac.mm",
       "cocoa/first_run_dialog.h",
       "cocoa/first_run_dialog.mm",
+      "cocoa/first_run_dialog_controller.h",
+      "cocoa/first_run_dialog_controller.mm",
       "cocoa/handoff_active_url_observer.cc",
       "cocoa/handoff_active_url_observer.h",
       "cocoa/handoff_active_url_observer_bridge.h",
