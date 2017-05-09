@@ -21,6 +21,12 @@
       "_bug_id": "crbug.com/659077"
     }
   ],
+  "android.webkit.cts.WebChromeClientTest": [
+    {
+      "name": "testWebViewIncludedStableInterfaces",
+      "_bug_id": "crbug.com/719974"
+    }
+  ],
   "android.webkit.cts.ServiceWorkerClientTest": [
     {
       "name": "testServiceWorkerClientInterceptCallback",
