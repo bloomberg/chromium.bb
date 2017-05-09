@@ -95,6 +95,7 @@
 #include "chrome/browser/android/rappor/rappor_service_bridge.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
 #include "chrome/browser/android/rlz/revenue_stats.h"
+#include "chrome/browser/android/rlz/rlz_ping_handler.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/sessions/session_tab_helper_android.h"
@@ -395,6 +396,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ResourcePrefetchPredictor",
      predictors::RegisterResourcePrefetchPredictor},
     {"RevenueStats", chrome::android::RegisterRevenueStats},
+    {"RlzPingHandler", chrome::android::RegisterRlzPingHandler},
     {"SafeBrowsing", safe_browsing::android::RegisterBrowserJNI},
     {"SceneLayer", RegisterSceneLayer},
     {"ScreenshotTask", chrome::android::RegisterScreenshotTask},
