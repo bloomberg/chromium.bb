@@ -84,18 +84,24 @@ class _Session(object):
       for i, size_info in enumerate(size_infos):
         self._variables['size_info%d' % (i + 1)] = size_info
 
-  def _DiffFunc(self, before=None, after=None, cluster=True):
+  def _DiffFunc(self, before=None, after=None, cluster=True, sort=True):
     """Diffs two SizeInfo objects. Returns a SizeInfoDiff.
 
     Args:
       before: Defaults to first size_infos[0].
       after: Defaults to second size_infos[1].
-      cluster: When True, calls SymbolGroup.Cluster() after diffing. This
-          generally reduces noise.
+      cluster: When True (default), calls SymbolGroup.Cluster() after diffing.
+          Generally reduces noise.
+      sort: When True (default), calls SymbolGroup.Sorted() after diffing.
     """
     before = before if before is not None else self._size_infos[0]
     after = after if after is not None else self._size_infos[1]
-    return diff.Diff(before, after, cluster=cluster)
+    ret = diff.Diff(before, after)
+    if cluster:
+      ret.symbols = ret.symbols.Cluster()
+    if sort:
+      ret.symbols = ret.symbols.Sorted()
+    return ret
 
   def _PrintFunc(self, obj=None, verbose=False, recursive=False, use_pager=None,
                  to_file=None):

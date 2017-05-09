@@ -182,6 +182,7 @@ class IntegrationTest(unittest.TestCase):
     size_info2.symbols -= size_info2.symbols[-3:]
     size_info1.symbols[1].size -= 10
     d = diff.Diff(size_info1, size_info2)
+    d.symbols = d.symbols.Cluster().Sorted()
     return describe.GenerateLines(d, verbose=True)
 
   def test_Diff_Aliases1(self):
@@ -257,6 +258,7 @@ class IntegrationTest(unittest.TestCase):
         models.Symbol(S, 55, name='.L__bar_295', object_path='b'), # 5
     ]
     d = diff.Diff(size_info1, size_info2)
+    d.symbols = d.symbols.Cluster().Sorted()
     self.assertEquals(d.symbols.added_count, 0)
     self.assertEquals(d.symbols.size, 0)
 
