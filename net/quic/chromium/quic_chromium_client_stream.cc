@@ -32,6 +32,7 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       initial_headers_sent_(false),
       session_(session),
       can_migrate_(true),
+      initial_headers_frame_len_(0),
       weak_factory_(this) {}
 
 QuicChromiumClientStream::~QuicChromiumClientStream() {
@@ -57,8 +58,15 @@ void QuicChromiumClientStream::OnInitialHeadersComplete(
   ConsumeHeaderList();
   session_->OnInitialHeadersComplete(id(), header_block);
 
-  // The delegate will read the headers via a posted task.
-  NotifyDelegateOfHeadersCompleteLater(std::move(header_block), frame_len);
+  if (delegate_) {
+    // The delegate will receive the headers via a posted task.
+    NotifyDelegateOfHeadersCompleteLater(std::move(header_block), frame_len);
+    return;
+  }
+
+  // Buffer the headers and deliver them when the delegate arrives.
+  initial_headers_ = std::move(header_block);
+  initial_headers_frame_len_ = frame_len;
 }
 
 void QuicChromiumClientStream::OnTrailingHeadersComplete(
@@ -101,14 +109,14 @@ void QuicChromiumClientStream::OnDataAvailable() {
 
   // The delegate will read the data via a posted task, and
   // will be able to, potentially, read all data which has queued up.
-  NotifyDelegateOfDataAvailableLater();
+  if (delegate_)
+    NotifyDelegateOfDataAvailableLater();
 }
 
 void QuicChromiumClientStream::OnClose() {
   if (delegate_) {
     delegate_->OnClose();
     delegate_ = nullptr;
-    delegate_tasks_.clear();
   }
   QuicStream::OnClose();
 }
@@ -186,14 +194,13 @@ void QuicChromiumClientStream::SetDelegate(
     QuicChromiumClientStream::Delegate* delegate) {
   DCHECK(!(delegate_ && delegate));
   delegate_ = delegate;
-  if (delegate == nullptr) {
-    DCHECK(delegate_tasks_.empty());
+  if (delegate == nullptr)
     return;
-  }
-  while (!delegate_tasks_.empty()) {
-    base::Closure closure = delegate_tasks_.front();
-    delegate_tasks_.pop_front();
-    closure.Run();
+
+  // Should this perhaps be via PostTask to make reasoning simpler?
+  if (!initial_headers_.empty()) {
+    delegate_->OnHeadersAvailable(std::move(initial_headers_),
+                                  initial_headers_frame_len_);
   }
 }
 
@@ -201,7 +208,6 @@ void QuicChromiumClientStream::OnError(int error) {
   if (delegate_) {
     QuicChromiumClientStream::Delegate* delegate = delegate_;
     delegate_ = nullptr;
-    delegate_tasks_.clear();
     delegate->OnError(error);
   }
 }
@@ -225,9 +231,12 @@ int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
 void QuicChromiumClientStream::NotifyDelegateOfHeadersCompleteLater(
     SpdyHeaderBlock headers,
     size_t frame_len) {
-  RunOrBuffer(base::Bind(
-      &QuicChromiumClientStream::NotifyDelegateOfHeadersComplete,
-      weak_factory_.GetWeakPtr(), base::Passed(std::move(headers)), frame_len));
+  DCHECK(delegate_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&QuicChromiumClientStream::NotifyDelegateOfHeadersComplete,
+                 weak_factory_.GetWeakPtr(), base::Passed(std::move(headers)),
+                 frame_len));
 }
 
 void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
@@ -254,7 +263,9 @@ void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
 }
 
 void QuicChromiumClientStream::NotifyDelegateOfDataAvailableLater() {
-  RunOrBuffer(
+  DCHECK(delegate_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
       base::Bind(&QuicChromiumClientStream::NotifyDelegateOfDataAvailable,
                  weak_factory_.GetWeakPtr()));
 }
@@ -262,14 +273,6 @@ void QuicChromiumClientStream::NotifyDelegateOfDataAvailableLater() {
 void QuicChromiumClientStream::NotifyDelegateOfDataAvailable() {
   if (delegate_)
     delegate_->OnDataAvailable();
-}
-
-void QuicChromiumClientStream::RunOrBuffer(base::Closure closure) {
-  if (delegate_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
-  } else {
-    delegate_tasks_.push_back(closure);
-  }
 }
 
 void QuicChromiumClientStream::DisableConnectionMigration() {
