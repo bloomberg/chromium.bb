@@ -2,9 +2,9 @@ Tests that call stack sidebar contains correct labels for async await functions.
 
 Set timer for test function.
 footest.js:6
-boo awaits foo
+await in foo (async)
 bootest.js:12
-testFunction awaits boo
+await in boo (async)
 testFunctiontest.js:18
 setTimeout (async)
 scheduleTestFunctiondebugger-test.js:3
