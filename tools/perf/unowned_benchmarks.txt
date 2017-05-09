@@ -11,8 +11,6 @@ gpu_times.key_mobile_sites_smooth
 gpu_times.top_25_smooth
 loading.cluster_telemetry
 load_library_perf_tests
-oortonline
-oortonline_tbmv2
 power.idle_platform
 power.steady_state
 power.top_10
@@ -34,6 +32,5 @@ system_health.webview_startup_multiprocess
 thread_times.key_hit_test_cases
 thread_times.key_mobile_sites_smooth
 thread_times.key_noop_cases
-v8.detached_context_age_in_gc
 webrtc.getusermedia
 webrtc.peerconnection
