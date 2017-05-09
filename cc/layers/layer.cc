@@ -1139,18 +1139,12 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   TRACE_EVENT0("cc", "Layer::PushPropertiesTo");
   DCHECK(layer_tree_host_);
 
-  // If we did not SavePaintProperties() for the layer this frame, then push the
-  // real property values, not the paint property values.
-  bool use_paint_properties = paint_properties_.source_frame_number ==
-                              layer_tree_host_->SourceFrameNumber();
-
   // The ElementId should be set first because other setters depend on it such
   // as LayerImpl::SetScrollClipLayer.
   layer->SetElementId(inputs_.element_id);
   layer->SetBackgroundColor(inputs_.background_color);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
-  layer->SetBounds(use_paint_properties ? paint_properties_.bounds
-                                        : inputs_.bounds);
+  layer->SetBounds(inputs_.bounds);
 
 #if defined(NDEBUG)
   if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots())
@@ -1271,20 +1265,8 @@ int Layer::NumDescendantsThatDrawContent() const {
   return num_descendants_that_draw_content_;
 }
 
-void Layer::SavePaintProperties() {
-  DCHECK(layer_tree_host_);
-
-  // TODO(reveman): Save all layer properties that we depend on not
-  // changing until PushProperties() has been called. crbug.com/231016
-  paint_properties_.bounds = inputs_.bounds;
-  paint_properties_.source_frame_number = layer_tree_host_->SourceFrameNumber();
-}
-
 bool Layer::Update() {
   DCHECK(layer_tree_host_);
-  DCHECK_EQ(layer_tree_host_->SourceFrameNumber(),
-            paint_properties_.source_frame_number)
-      << "SavePaintProperties must be called for any layer that is painted.";
   return false;
 }
 

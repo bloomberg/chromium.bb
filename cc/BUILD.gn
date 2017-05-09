@@ -79,7 +79,6 @@ cc_component("cc") {
     "layers/nine_patch_layer.h",
     "layers/nine_patch_layer_impl.cc",
     "layers/nine_patch_layer_impl.h",
-    "layers/paint_properties.h",
     "layers/painted_overlay_scrollbar_layer.cc",
     "layers/painted_overlay_scrollbar_layer.h",
     "layers/painted_overlay_scrollbar_layer_impl.cc",

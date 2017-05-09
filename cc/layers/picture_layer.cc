@@ -82,6 +82,10 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     recording_source_.reset(new RecordingSource);
   recording_source_->SetSlowdownRasterScaleFactor(
       host->GetDebugState().slow_down_raster_scale_factor);
+
+  // Source frame numbers are relative the LayerTreeHost, so this needs
+  // to be reset.
+  update_source_frame_number_ = -1;
 }
 
 void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
@@ -95,7 +99,7 @@ bool PictureLayer::Update() {
   update_source_frame_number_ = layer_tree_host()->SourceFrameNumber();
   bool updated = Layer::Update();
 
-  gfx::Size layer_size = paint_properties().bounds;
+  gfx::Size layer_size = bounds();
 
   recording_source_->SetBackgroundColor(SafeOpaqueBackgroundColor());
   recording_source_->SetRequiresClear(
@@ -221,8 +225,6 @@ void PictureLayer::DropRecordingSourceContentIfInvalid() {
   gfx::Size recording_source_bounds = recording_source_->GetSize();
 
   gfx::Size layer_bounds = bounds();
-  if (paint_properties().source_frame_number == source_frame_number)
-    layer_bounds = paint_properties().bounds;
 
   // If update called, then recording source size must match bounds pushed to
   // impl layer.

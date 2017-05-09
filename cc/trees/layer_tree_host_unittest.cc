@@ -1443,6 +1443,21 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeDamageIsUpdated);
 
+class UpdateCountingLayer : public Layer {
+ public:
+  bool Update() override {
+    update_count_++;
+    return false;
+  }
+
+  int update_count() const { return update_count_; }
+
+ private:
+  ~UpdateCountingLayer() override = default;
+
+  int update_count_ = 0;
+};
+
 // Test that when mask layers switches layers, this gets pushed onto impl.
 // Also test that mask layer is in the layer update list even if its owning
 // layer isn't.
@@ -1451,11 +1466,11 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
-    scoped_refptr<Layer> child = Layer::Create();
-    mask_layer = Layer::Create();
-    mask_layer->SetBounds(gfx::Size(10, 10));
-    child->SetMaskLayer(mask_layer.get());
-    root->AddChild(std::move(child));
+    child_layer_ = make_scoped_refptr(new UpdateCountingLayer);
+    mask_layer_ = make_scoped_refptr(new UpdateCountingLayer);
+    mask_layer_->SetBounds(gfx::Size(10, 10));
+    child_layer_->SetMaskLayer(mask_layer_.get());
+    root->AddChild(child_layer_);
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
   }
@@ -1471,19 +1486,11 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
         // Root and mask layer should have the same source frame number as they
         // will be in the layer update list but the child is not as it has empty
         // bounds.
-        EXPECT_EQ(mask_layer->paint_properties().source_frame_number,
-                  layer_tree_host()
-                      ->root_layer()
-                      ->paint_properties()
-                      .source_frame_number);
-        EXPECT_NE(mask_layer->paint_properties().source_frame_number,
-                  layer_tree_host()
-                      ->root_layer()
-                      ->child_at(0)
-                      ->paint_properties()
-                      .source_frame_number);
+        EXPECT_EQ(mask_layer_->update_count(), 1);
+        EXPECT_EQ(child_layer_->update_count(), 0);
+
         layer_tree_host()->root_layer()->RemoveAllChildren();
-        layer_tree_host()->root_layer()->SetMaskLayer(mask_layer.get());
+        layer_tree_host()->root_layer()->SetMaskLayer(mask_layer_.get());
         break;
     }
   }
@@ -1507,7 +1514,8 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
 
   void AfterTest() override {}
 
-  scoped_refptr<Layer> mask_layer;
+  scoped_refptr<UpdateCountingLayer> mask_layer_;
+  scoped_refptr<UpdateCountingLayer> child_layer_;
   int index_;
 };
 

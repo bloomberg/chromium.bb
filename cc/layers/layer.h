@@ -24,7 +24,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
-#include "cc/layers/paint_properties.h"
 #include "cc/paint/paint_record.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host_client.h"
@@ -303,9 +302,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual bool DrawsContent() const;
 
   // This methods typically need to be overwritten by derived classes.
-  // TODO(chrishtr): Blink no longer resizes anything during paint. We can
-  // remove this.
-  virtual void SavePaintProperties();
   // Returns true iff anything was updated that needs to be committed.
   virtual bool Update();
   virtual void SetLayerMaskType(Layer::LayerMaskType type) {}
@@ -332,10 +328,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   bool NeedsDisplayForTesting() const { return !inputs_.update_rect.IsEmpty(); }
   void ResetNeedsDisplayForTesting() { inputs_.update_rect = gfx::Rect(); }
-
-  const PaintProperties& paint_properties() const {
-    return paint_properties_;
-  }
 
   // Mark the layer as needing to push its properties to the LayerImpl during
   // commit.
@@ -633,8 +625,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   std::unique_ptr<std::set<Layer*>> scroll_children_;
 
   std::unique_ptr<std::set<Layer*>> clip_children_;
-
-  PaintProperties paint_properties_;
 
   // These all act like draw properties, so don't need push properties.
   gfx::Rect visible_layer_rect_;

@@ -56,7 +56,6 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
   EXPECT_EQ(test_layer->GetLayerTreeHostForTesting(), layer_tree_host_.get());
 
   gfx::Rect screen_space_clip_rect;
-  test_layer->SavePaintProperties();
   test_layer->Update();
 
   EXPECT_FALSE(test_layer->DrawsContent());
