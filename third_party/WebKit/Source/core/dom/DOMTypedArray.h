@@ -79,10 +79,10 @@ class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
 
  private:
   explicit DOMTypedArray(PassRefPtr<WTFTypedArray> buffer_view)
-      : DOMArrayBufferView(buffer_view) {}
+      : DOMArrayBufferView(std::move(buffer_view)) {}
   DOMTypedArray(PassRefPtr<WTFTypedArray> buffer_view,
                 DOMArrayBufferBase* dom_array_buffer)
-      : DOMArrayBufferView(buffer_view, dom_array_buffer) {}
+      : DOMArrayBufferView(std::move(buffer_view), dom_array_buffer) {}
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
