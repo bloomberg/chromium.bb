@@ -129,6 +129,13 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
       _session.get()));
 }
 
+- (void)disconnectFromHost {
+  if (_session) {
+    _session->Disconnect();
+  }
+  // TODO(nicholss): Do we need to cleanup more?
+}
+
 #pragma mark - Eventing
 
 - (void)hostSessionPinProvided:(NSNotification*)notification {

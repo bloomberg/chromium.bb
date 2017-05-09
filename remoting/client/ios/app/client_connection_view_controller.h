@@ -12,6 +12,7 @@ typedef NS_ENUM(NSInteger, ClientConnectionViewState) {
   ClientViewConnecting,
   ClientViewPinPrompt,
   ClientViewConnected,
+  ClientViewClosed,
 };
 
 // The host connection view controller delegate provides feedback for state

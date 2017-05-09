@@ -46,6 +46,9 @@ extern NSString* const kHostSessionPin;
              username:(NSString*)username
           accessToken:(NSString*)accessToken;
 
+// Disconnect the current host connection.
+- (void)disconnectFromHost;
+
 // Mirrors the native client session delegate interface:
 
 - (void)onConnectionState:(remoting::protocol::ConnectionToHost::State)state

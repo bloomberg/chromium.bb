@@ -218,6 +218,9 @@ static const CGFloat kBarHeight = 58.f;
     case ClientViewConnected:
       [self showConnectedState];
       break;
+    case ClientViewClosed:
+      [self dismissViewControllerAnimated:YES completion:nil];
+      break;
   }
 }
 
@@ -304,9 +307,10 @@ static const CGFloat kBarHeight = 58.f;
       state = ClientViewConnected;
       break;
     case SessionFailed:
-    // TODO(nicholss): Implement.
+    // TODO(nicholss): Implement an error screen.
     case SessionClosed:
-    // TODO(nicholss): Implement.
+      state = ClientViewClosed;
+      break;
     default:
       LOG(ERROR) << "Unknown State for Session, " << sessionDetails.state;
       return;
