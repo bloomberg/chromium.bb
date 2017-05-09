@@ -22,6 +22,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
 #include "chrome/browser/metrics/renderer_uptime_web_contents_observer.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
@@ -298,4 +299,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   if (tracing::NavigationTracingObserver::IsEnabled())
     tracing::NavigationTracingObserver::CreateForWebContents(web_contents);
+
+  if (MediaEngagementService::IsEnabled())
+    MediaEngagementService::CreateWebContentsObserver(web_contents);
 }
