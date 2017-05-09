@@ -185,6 +185,7 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
     case VolumeManagerCommon.RootType.REMOVABLE:
       return VolumeManagerCommon.VolumeType.REMOVABLE;
     case VolumeManagerCommon.RootType.DRIVE:
+    case VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT:
     case VolumeManagerCommon.RootType.TEAM_DRIVE:
     case VolumeManagerCommon.RootType.DRIVE_OTHER:
     case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
