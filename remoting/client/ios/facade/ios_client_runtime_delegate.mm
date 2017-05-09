@@ -9,6 +9,7 @@
 #include "remoting/client/ios/facade/ios_client_runtime_delegate.h"
 
 #import "base/mac/bind_objc_block.h"
+#import "remoting/client/ios/facade/remoting_authentication.h"
 #import "remoting/client/ios/facade/remoting_service.h"
 
 #include "base/bind.h"
@@ -43,18 +44,24 @@ void IosClientRuntimeDelegate::RequestAuthTokenForLogger() {
                    base::Unretained(this)));
     return;
   }
-  // TODO(nicholss): Need to work out how to provide the logger with auth token
-  // at the correct time in the app. This was hanging the app bootup. Removing
-  // for now but this needs to happen the correct way soon.
-  // if ([[RemotingService SharedInstance] getUser]) {
-  //   [[RemotingService SharedInstance]
-  //   callbackWithAccessToken:base::BindBlockArc(
-  //       ^(remoting::OAuthTokenGetter::Status status,
-  //         const std::string& user_email, const std::string& access_token) {
-  //         // TODO(nicholss): Check status.
-  //           runtime_->log_writer()->SetAuthToken(access_token);
-  //       })];
-  // }
+  if ([[RemotingService SharedInstance].authentication.user isAuthenticated]) {
+    [[RemotingService SharedInstance].authentication
+        callbackWithAccessToken:base::BindBlockArc(^(
+                                    remoting::OAuthTokenGetter::Status status,
+                                    const std::string& user_email,
+                                    const std::string& access_token) {
+          if (status == remoting::OAuthTokenGetter::Status::SUCCESS) {
+            // Set the new auth token for the log writer on the network thread.
+            runtime_->network_task_runner()->PostTask(
+                FROM_HERE, base::BindBlockArc(^{
+                  runtime_->log_writer()->SetAuthToken(access_token);
+                }));
+          } else {
+            LOG(ERROR) << "Failed to fetch access token for log writer. ("
+                       << status << ")";
+          }
+        })];
+  }
 }
 
 base::WeakPtr<IosClientRuntimeDelegate> IosClientRuntimeDelegate::GetWeakPtr() {

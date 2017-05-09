@@ -84,7 +84,6 @@ ChromotingClientRuntime::~ChromotingClientRuntime() {
 void ChromotingClientRuntime::SetDelegate(
     ChromotingClientRuntime::Delegate* delegate) {
   delegate_ = delegate;
-  delegate_->RequestAuthTokenForLogger();
 }
 
 void ChromotingClientRuntime::CreateLogWriter() {
