@@ -26,6 +26,7 @@
 #import "ios/web_view/internal/cwv_navigation_action_internal.h"
 #import "ios/web_view/internal/cwv_scroll_view_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
+#import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/internal/web_view_java_script_dialog_presenter.h"
@@ -84,9 +85,9 @@ static NSString* gUserAgentProduct = nil;
 @implementation CWVWebView
 
 @synthesize configuration = _configuration;
-@synthesize navigationDelegate = _navigationDelegate;
-@synthesize translationDelegate = _translationDelegate;
 @synthesize estimatedProgress = _estimatedProgress;
+@synthesize navigationDelegate = _navigationDelegate;
+@synthesize translationController = _translationController;
 @synthesize UIDelegate = _UIDelegate;
 @synthesize scrollView = _scrollView;
 
@@ -192,12 +193,6 @@ static NSString* gUserAgentProduct = nil;
   _javaScriptDialogPresenter->SetUIDelegate(_UIDelegate);
 }
 
-- (void)setTranslationDelegate:(id<CWVTranslateDelegate>)translationDelegate {
-  _translationDelegate = translationDelegate;
-  ios_web_view::WebViewTranslateClient::FromWebState(_webState.get())
-      ->set_translate_delegate(translationDelegate);
-}
-
 // -----------------------------------------------------------------------
 // WebStateObserver implementation.
 
@@ -295,6 +290,16 @@ static NSString* gUserAgentProduct = nil;
   return _javaScriptDialogPresenter.get();
 }
 
+#pragma mark - Translation
+
+- (CWVTranslationController*)translationController {
+  if (!_translationController) {
+    _translationController = [[CWVTranslationController alloc] init];
+    _translationController.webState = _webState.get();
+  }
+  return _translationController;
+}
+
 #pragma mark - Preserving and Restoring State
 
 - (void)encodeRestorableStateWithCoder:(NSCoder*)coder {
@@ -348,8 +353,7 @@ static NSString* gUserAgentProduct = nil;
 
   _scrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
 
-  // Initialize Translate.
-  ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
+  _translationController.webState = _webState.get();
 
   [self addInternalWebViewAsSubview];
 }

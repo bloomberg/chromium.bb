@@ -7,12 +7,14 @@
 
 #import <ChromeWebView/cwv_export.h>
 #import <ChromeWebView/cwv_html_element.h>
+#import <ChromeWebView/cwv_language_detection_result.h>
 #import <ChromeWebView/cwv_navigation_action.h>
 #import <ChromeWebView/cwv_navigation_delegate.h>
 #import <ChromeWebView/cwv_scroll_view.h>
 #import <ChromeWebView/cwv_scroll_view_delegate.h>
-#import <ChromeWebView/cwv_translate_delegate.h>
-#import <ChromeWebView/cwv_translate_manager.h>
+#import <ChromeWebView/cwv_translation_controller.h>
+#import <ChromeWebView/cwv_translation_controller_delegate.h>
+#import <ChromeWebView/cwv_translation_language.h>
 #import <ChromeWebView/cwv_ui_delegate.h>
 #import <ChromeWebView/cwv_user_content_controller.h>
 #import <ChromeWebView/cwv_user_script.h>
