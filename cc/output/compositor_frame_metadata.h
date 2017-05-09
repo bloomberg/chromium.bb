@@ -90,7 +90,7 @@ class CC_EXPORT CompositorFrameMetadata {
   // that if |can_activate_before_dependencies| then the display compositor
   // can choose to activate a CompositorFrame before all dependencies are
   // available.
-  // Note: |activation_dependencies| and |referenced_surfaces| are disjointed
+  // Note: |activation_dependencies| and |referenced_surfaces| are disjoint
   //       sets of surface IDs. If a surface ID is known to exist and can be
   //       used without additional synchronization, then it is placed in
   //       |referenced_surfaces|. |activation_dependencies| is the set of
