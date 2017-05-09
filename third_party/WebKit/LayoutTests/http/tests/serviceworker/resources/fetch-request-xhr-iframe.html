@@ -67,6 +67,8 @@ function get_sorted_header_name_list(headers) {
 function get_header_test() {
   return xhr_send(host_info['HTTP_ORIGIN'], 'GET', '', false)
     .then(function(response) {
+        // This assertion is invalid because the User-Agent header should not
+        // be present.
         assert_array_equals(
           get_sorted_header_name_list(response.headers),
           ["accept", "user-agent"],
@@ -75,7 +77,7 @@ function get_header_test() {
 }
 
 // TODO(tyoshino): Fix the stack not to include the Origin header as specified
-// in the spec.
+// in the spec. Likewise, the User-Agent header should not be present.
 function post_header_test() {
   return xhr_send(host_info['HTTP_ORIGIN'], 'POST', '', false)
     .then(function(response) {
@@ -89,6 +91,8 @@ function post_header_test() {
 function cross_origin_get_header_test() {
   return xhr_send(host_info['HTTP_REMOTE_ORIGIN'], 'GET', '', false)
     .then(function(response) {
+        // This assertion is invalid because the User-Agent header should not
+        // be present.
         assert_array_equals(
           get_sorted_header_name_list(response.headers),
           ["accept", "user-agent"],
@@ -97,7 +101,7 @@ function cross_origin_get_header_test() {
 }
 
 // TODO(tyoshino): Fix the stack not to include the Origin header as specified
-// in the spec.
+// in the spec. Likewise, the User-Agent header should not be present.
 function cross_origin_post_header_test() {
   return xhr_send(host_info['HTTP_REMOTE_ORIGIN'], 'POST', '', false)
     .then(function(response) {

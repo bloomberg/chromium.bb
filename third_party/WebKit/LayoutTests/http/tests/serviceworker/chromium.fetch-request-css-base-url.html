@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!-- This test is prefixed with `chromium.` because the equivalent version
+  available in Web Platform Tests is known to cause timeout errors in the
+  Chromium automated build system. This version should be maintained only to
+  preserve test coverage until the corresponding version in Web Platform Tests
+  can be made to pass consistently. See https://crbug.com/658997 -->
 <title>Service Worker: CSS's base URL must be the request URL even when fetched from other URL</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
