@@ -59,10 +59,10 @@ class ModuleInspector {
   // The modules are put in queue until they are sent for inspection.
   std::queue<ModuleInfoKey> queue_;
 
-  // The traits used on the task that inspects the modules. It originally starts
-  // at a BACKGROUND priority, but is changed to USER_VISIBLE when
+  // The TaskPriority of the task that inspects the modules. It originally
+  // starts at BACKGROUND priority, but is changed to USER_VISIBLE when
   // IncreaseInspectionPriority() is called.
-  base::TaskTraits inspection_task_traits_;
+  base::TaskPriority inspection_task_priority_;
 
   // The vector of paths to %env_var%, used to account for differences in
   // localization and where people keep their files.

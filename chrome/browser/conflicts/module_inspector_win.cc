@@ -23,9 +23,7 @@ StringMapping GetPathMapping() {
 ModuleInspector::ModuleInspector(
     const OnModuleInspectedCallback& on_module_inspected_callback)
     : on_module_inspected_callback_(on_module_inspected_callback),
-      inspection_task_traits_(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
+      inspection_task_priority_(base::TaskPriority::BACKGROUND),
       path_mapping_(GetPathMapping()),
       weak_ptr_factory_(this) {}
 
@@ -40,9 +38,8 @@ void ModuleInspector::AddModule(const ModuleInfoKey& module_key) {
 
 void ModuleInspector::IncreaseInspectionPriority() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Modify the task traits so that future inspections are done faster.
-  inspection_task_traits_ =
-      inspection_task_traits_.WithPriority(base::TaskPriority::USER_VISIBLE);
+  // Modify the TaskPriority so that future inspections are done faster.
+  inspection_task_priority_ = base::TaskPriority::USER_VISIBLE;
 }
 
 void ModuleInspector::StartInspectingModule() {
@@ -50,10 +47,12 @@ void ModuleInspector::StartInspectingModule() {
   queue_.pop();
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, inspection_task_traits_,
-      base::Bind(&InspectModule, path_mapping_, module_key),
-      base::Bind(&ModuleInspector::OnInspectionFinished,
-                 weak_ptr_factory_.GetWeakPtr(), module_key));
+      FROM_HERE,
+      {base::MayBlock(), inspection_task_priority_,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&InspectModule, path_mapping_, module_key),
+      base::BindOnce(&ModuleInspector::OnInspectionFinished,
+                     weak_ptr_factory_.GetWeakPtr(), module_key));
 }
 
 void ModuleInspector::OnInspectionFinished(
