@@ -295,16 +295,11 @@ void CompositorFrameSinkSupport::OnBeginFrameSourcePausedChanged(bool paused) {}
 
 void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   DCHECK(surface->HasActiveFrame());
-  // TODO(staraz): Notify BeginFrameSource about the last activated sequence
-  // number.
   if (!seen_first_frame_activation_) {
     seen_first_frame_activation_ = true;
 
     const CompositorFrame& frame = surface->GetActiveFrame();
-    // CompositorFrames might not be populated with a RenderPass in unit tests.
-    gfx::Size frame_size;
-    if (!frame.render_pass_list.empty())
-      frame_size = frame.render_pass_list.back()->output_rect.size();
+    gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
 
     // SurfaceCreated only applies for the first Surface activation. Thus,
     // SurfaceFactory stops observing new activations after the first one.
