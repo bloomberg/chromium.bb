@@ -21,6 +21,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -481,10 +482,13 @@ void BrowserContext::Initialize(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kMojoLocalStorage)) {
       ServiceInfo info;
-      info.factory =
-          base::Bind(&file::CreateFileService,
-                     BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
-                     BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
+      // TODO(mek): Use sequenced task runner rather than single thread task
+      // runner when mojo supports that (http://crbug.com/678155).
+      info.factory = base::Bind(
+          &file::CreateFileService,
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
       connection->AddEmbeddedService(file::mojom::kServiceName, info);
     }
 
