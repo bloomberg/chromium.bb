@@ -4,11 +4,11 @@
 
 #include "web/AudioOutputDeviceClientImpl.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "public/web/WebFrameClient.h"
-#include "web/WebLocalFrameImpl.h"
-#include <memory>
 
 namespace blink {
 
@@ -24,8 +24,8 @@ void AudioOutputDeviceClientImpl::CheckIfAudioSinkExistsAndIsAuthorized(
   DCHECK(context);
   DCHECK(context->IsDocument());
   Document* document = ToDocument(context);
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(document->GetFrame());
+  WebLocalFrameBase* web_frame =
+      WebLocalFrameBase::FromFrame(document->GetFrame());
   web_frame->Client()->CheckIfAudioSinkExistsAndIsAuthorized(
       sink_id, WebSecurityOrigin(context->GetSecurityOrigin()),
       callbacks.release());

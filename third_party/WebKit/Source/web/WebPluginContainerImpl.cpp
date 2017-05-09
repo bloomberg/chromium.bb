@@ -55,6 +55,7 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -105,7 +106,6 @@
 #include "public/web/WebViewClient.h"
 #include "web/ChromeClientImpl.h"
 #include "web/WebInputEventConversion.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -814,8 +814,8 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent* event) {
   }
 
   // Give the client a chance to issue edit comamnds.
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame());
+  WebLocalFrameBase* web_frame =
+      WebLocalFrameBase::FromFrame(element_->GetDocument().GetFrame());
   if (web_plugin_->SupportsEditCommands())
     web_frame->Client()->HandleCurrentKeyboardEvent();
 
