@@ -147,6 +147,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
                                  const gfx::Size& max_size) override;
   bool CanHaveAlphaEnabled() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
+  void SetActivateOnPointer(bool activate_on_pointer) override;
 
   // web_modal::WebContentsModalDialogHost implementation.
   gfx::NativeView GetHostView() const override;

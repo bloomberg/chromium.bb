@@ -439,4 +439,6 @@ void NativeAppWindowViews::SetVisibleOnAllWorkspaces(bool always_visible) {
   widget_->SetVisibleOnAllWorkspaces(always_visible);
 }
 
+void NativeAppWindowViews::SetActivateOnPointer(bool activate_on_pointer) {}
+
 }  // namespace native_app_window

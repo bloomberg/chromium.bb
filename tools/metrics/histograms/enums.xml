@@ -12189,6 +12189,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1170" label="WEBRTC_AUDIO_PRIVATE_SET_AUDIO_EXPERIMENTS"/>
   <int value="1171" label="AUTOTESTPRIVATE_GETPLAYSTORESTATE"/>
   <int value="1172" label="AUTOTESTPRIVATE_SETPLAYSTOREENABLED"/>
+  <int value="1173" label="APP_CURRENTWINDOWINTERNAL_SETACTIVATEONPOINTER"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

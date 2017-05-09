@@ -64,6 +64,7 @@ class ChromeNativeAppWindowViewsAuraAsh : public ChromeNativeAppWindowViewsAura,
   void SetFullscreen(int fullscreen_types) override;
   void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) override;
+  void SetActivateOnPointer(bool activate_on_pointer) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
