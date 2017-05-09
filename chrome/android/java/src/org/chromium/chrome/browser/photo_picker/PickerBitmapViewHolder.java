@@ -4,9 +4,13 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
+
+import org.chromium.chrome.R;
 
 import java.util.List;
 
@@ -41,6 +45,17 @@ public class PickerBitmapViewHolder
             return;
         }
 
+        if (mCategoryView.getHighResBitmaps().get(filePath) == null) {
+            mCategoryView.getHighResBitmaps().put(filePath, bitmap);
+        }
+
+        if (mCategoryView.getLowResBitmaps().get(filePath) == null) {
+            Resources resources = mItemView.getContext().getResources();
+            new BitmapScalerTask(mCategoryView.getLowResBitmaps(), filePath,
+                    resources.getDimensionPixelSize(R.dimen.photo_picker_grainy_thumbnail_size))
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, bitmap);
+        }
+
         if (!TextUtils.equals(mBitmapDetails.getFilePath(), filePath)) {
             return;
         }
@@ -67,12 +82,24 @@ public class PickerBitmapViewHolder
             return;
         }
 
-        // TODO(finnur): Use cached image, if available.
-
-        mItemView.initialize(mBitmapDetails, null, true);
+        String filePath = mBitmapDetails.getFilePath();
+        Bitmap original = mCategoryView.getHighResBitmaps().get(filePath);
+        if (original != null) {
+            mItemView.initialize(mBitmapDetails, original, false);
+            return;
+        }
 
         int size = mCategoryView.getImageSize();
-        mCategoryView.getDecoderServiceHost().decodeImage(mBitmapDetails.getFilePath(), size, this);
+        Bitmap placeholder = mCategoryView.getLowResBitmaps().get(filePath);
+        if (placeholder != null) {
+            // For performance stats see http://crbug.com/719919.
+            placeholder = BitmapUtils.scale(placeholder, size, false);
+            mItemView.initialize(mBitmapDetails, placeholder, true);
+        } else {
+            mItemView.initialize(mBitmapDetails, null, true);
+        }
+
+        mCategoryView.getDecoderServiceHost().decodeImage(filePath, size, this);
     }
 
     /**
