@@ -65,6 +65,9 @@ CardUnmaskPromptViewBridge::~CardUnmaskPromptViewBridge() {
 void CardUnmaskPromptViewBridge::Show() {
   view_controller_.reset(
       [[CardUnmaskPromptViewController alloc] initWithBridge:this]);
+  [view_controller_ setModalPresentationStyle:UIModalPresentationFormSheet];
+  [view_controller_
+      setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
   // Present the view controller.
   // TODO(crbug.com/692525): Find an alternative to presenting the view
   // controller on the root view controller.
