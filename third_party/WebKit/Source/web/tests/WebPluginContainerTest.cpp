@@ -85,10 +85,9 @@ class WebPluginContainerTest : public ::testing::Test {
   void CalculateGeometry(WebPluginContainerImpl* plugin_container_impl,
                          IntRect& window_rect,
                          IntRect& clip_rect,
-                         IntRect& unobscured_rect,
-                         Vector<IntRect>& cut_out_rects) {
+                         IntRect& unobscured_rect) {
     plugin_container_impl->CalculateGeometry(window_rect, clip_rect,
-                                             unobscured_rect, cut_out_rects);
+                                             unobscured_rect);
   }
 
   void RegisterMockedURL(
@@ -884,7 +883,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement) {
   IntRect window_rect, clip_rect, unobscured_rect;
   Vector<IntRect> cut_out_rects;
   CalculateGeometry(plugin_container_impl, window_rect, clip_rect,
-                    unobscured_rect, cut_out_rects);
+                    unobscured_rect);
   EXPECT_RECT_EQ(IntRect(20, 220, 40, 40), window_rect);
   EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), clip_rect);
   EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), unobscured_rect);
@@ -919,7 +918,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin) {
   Vector<IntRect> cut_out_rects;
 
   CalculateGeometry(plugin_container_impl, window_rect, clip_rect,
-                    unobscured_rect, cut_out_rects);
+                    unobscured_rect);
   EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), window_rect);
   EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), clip_rect);
   EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), unobscured_rect);

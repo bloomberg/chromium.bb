@@ -16,7 +16,5 @@ blink_modules_sources("plugins") {
     "DOMPluginArray.h",
     "NavigatorPlugins.cpp",
     "NavigatorPlugins.h",
-    "PluginOcclusionSupport.cpp",
-    "PluginOcclusionSupport.h",
   ]
 }

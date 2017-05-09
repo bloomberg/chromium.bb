@@ -206,10 +206,7 @@ class WEB_EXPORT WebPluginContainerImpl final
 
   void CalculateGeometry(IntRect& window_rect,
                          IntRect& clip_rect,
-                         IntRect& unobscured_rect,
-                         Vector<IntRect>& cut_out_rects);
-  void WindowCutOutRects(const IntRect& frame_rect,
-                         Vector<IntRect>& cut_out_rects);
+                         IntRect& unobscured_rect);
 
   friend class WebPluginContainerTest;
 

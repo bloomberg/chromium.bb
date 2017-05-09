@@ -54,7 +54,6 @@ class FakeWebPlugin : public WebPlugin {
   void UpdateGeometry(const WebRect& client_rect,
                       const WebRect& clip_rect,
                       const WebRect& window_clip_rect,
-                      const WebVector<WebRect>& cut_outs_rects,
                       bool is_visible) override {}
   void UpdateFocus(bool, WebFocusType) override {}
   void UpdateVisibility(bool) override {}

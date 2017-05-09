@@ -383,7 +383,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
 void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
                                    const WebRect& clip_rect,
                                    const WebRect& unobscured_rect,
-                                   const WebVector<WebRect>& cut_outs_rects,
                                    bool is_visible) {
   gfx::Rect old_view_rect = view_rect_;
   // Convert the plugin_rect_in_viewport to window coordinates, which is css.
