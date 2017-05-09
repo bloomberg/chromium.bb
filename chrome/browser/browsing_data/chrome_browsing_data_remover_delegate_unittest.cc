@@ -1676,6 +1676,88 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       << host_settings[2].primary_pattern.ToString();
 }
 
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
+  auto* map = HostContentSettingsMapFactory::GetForProfile(GetProfile());
+  map->SetContentSettingDefaultScope(kOrigin1, kOrigin1,
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                     std::string(), CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(kOrigin2, kOrigin2,
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                     std::string(), CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(kOrigin2, kOrigin2,
+                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                     std::string(), CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(kOrigin3, kOrigin3,
+                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                     std::string(), CONTENT_SETTING_ALLOW);
+
+  // Clear all except for origin1 and origin3.
+  std::unique_ptr<BrowsingDataFilterBuilder> filter(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
+  filter->AddRegisterableDomain(kTestRegisterableDomain1);
+  filter->AddRegisterableDomain(kTestRegisterableDomain3);
+  BlockUntilOriginDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS,
+      std::move(filter));
+
+  EXPECT_EQ(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS,
+            GetRemovalMask());
+  EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+            GetOriginTypeMask());
+
+  // Verify we still have the allow setting for origin1.
+  ContentSettingsForOneType host_settings;
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+                             &host_settings);
+  ASSERT_EQ(2u, host_settings.size());
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kOrigin1),
+            host_settings[0].primary_pattern)
+      << host_settings[0].primary_pattern.ToString();
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].setting);
+  // And the wildcard.
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[1].primary_pattern)
+      << host_settings[1].primary_pattern.ToString();
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].setting);
+
+  // There should also only be one setting for origin3
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+                             &host_settings);
+  ASSERT_EQ(2u, host_settings.size());
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kOrigin3),
+            host_settings[0].primary_pattern)
+      << host_settings[0].primary_pattern.ToString();
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].setting);
+  // And the wildcard.
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[1].primary_pattern)
+      << host_settings[1].primary_pattern.ToString();
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].setting);
+
+  BlockUntilOriginDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS,
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST));
+
+  // Everything except the wildcard should be deleted now.
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+                             &host_settings);
+  ASSERT_EQ(1u, host_settings.size());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].primary_pattern)
+      << host_settings[0].primary_pattern.ToString();
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].setting);
+
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+                             &host_settings);
+  ASSERT_EQ(1u, host_settings.size());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].primary_pattern)
+      << host_settings[0].primary_pattern.ToString();
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].setting);
+}
+
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDurablePermission) {
   // Add our settings.
   HostContentSettingsMap* host_content_settings_map =

@@ -131,6 +131,10 @@ static void ClearBrowsingData(
         // Bookmarks are deleted separately on the Java side.
         NOTREACHED();
         break;
+      case browsing_data::BrowsingDataType::SITE_SETTINGS:
+        remove_mask |=
+            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
+        break;
       case browsing_data::BrowsingDataType::NUM_TYPES:
         NOTREACHED();
     }

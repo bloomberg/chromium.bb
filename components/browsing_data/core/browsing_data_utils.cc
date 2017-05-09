@@ -90,6 +90,12 @@ base::string16 GetCounterTextFromResult(
         static_cast<const BrowsingDataCounter::FinishedResult*>(result)
             ->Value();
     text = l10n_util::GetPluralStringFUTF16(IDS_DEL_DOWNLOADS_COUNTER, count);
+  } else if (pref_name == prefs::kDeleteSiteSettings) {
+    BrowsingDataCounter::ResultInt count =
+        static_cast<const BrowsingDataCounter::FinishedResult*>(result)
+            ->Value();
+    text =
+        l10n_util::GetPluralStringFUTF16(IDS_DEL_SITE_SETTINGS_COUNTER, count);
   } else if (pref_name == prefs::kDeleteBrowsingHistoryBasic) {
     // The basic tab doesn't show history counter results.
     NOTREACHED();
@@ -226,6 +232,9 @@ bool GetDeletionPreferenceFromDataType(
       // Bookmarks are deleted on the Android side. No corresponding deletion
       // preference.
       return false;
+    case BrowsingDataType::SITE_SETTINGS:
+      *out_pref = prefs::kDeleteSiteSettings;
+      return true;
     case BrowsingDataType::NUM_TYPES:
       // This is not an actual type.
       NOTREACHED();

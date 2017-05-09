@@ -1,6 +1,7 @@
 include_rules = [
   "+components/autofill/core/browser",
   "+components/browser_sync",
+  "+components/content_settings",
   "+components/history/core/browser",
   "+components/history/core/test",
   "+components/password_manager/core/browser",

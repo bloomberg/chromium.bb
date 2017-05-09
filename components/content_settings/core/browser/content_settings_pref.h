@@ -44,7 +44,6 @@ class ContentSettingsPref {
                       PrefChangeRegistrar* registrar,
                       const std::string& pref_name,
                       bool incognito,
-                      bool store_last_modified,
                       NotifyObserversCallback notify_callback);
   ~ContentSettingsPref();
 
@@ -56,6 +55,7 @@ class ContentSettingsPref {
   bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
                          const ContentSettingsPattern& secondary_pattern,
                          const ResourceIdentifier& resource_identifier,
+                         base::Time modified_time,
                          base::Value* value);
 
   // Returns the |last_modified| date of a setting.
@@ -112,8 +112,6 @@ class ContentSettingsPref {
   const std::string& pref_name_;
 
   bool is_incognito_;
-
-  bool store_last_modified_;
 
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preferences service that we triggered ourself.

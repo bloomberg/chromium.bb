@@ -12,6 +12,7 @@
 #include "chrome/browser/browsing_data/downloads_counter.h"
 #include "chrome/browser/browsing_data/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/site_data_counter.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -23,6 +24,7 @@
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/browsing_data/core/counters/history_counter.h"
 #include "components/browsing_data/core/counters/passwords_counter.h"
+#include "components/browsing_data/core/counters/site_settings_counter.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -93,6 +95,11 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
 
   if (pref_name == browsing_data::prefs::kDeleteMediaLicenses)
     return base::MakeUnique<MediaLicensesCounter>(profile);
+
+  if (pref_name == browsing_data::prefs::kDeleteSiteSettings) {
+    return base::MakeUnique<browsing_data::SiteSettingsCounter>(
+        HostContentSettingsMapFactory::GetForProfile(profile));
+  }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (pref_name == browsing_data::prefs::kDeleteHostedAppsData)

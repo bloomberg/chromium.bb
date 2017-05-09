@@ -12,8 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_timeouts.h"
-#include "base/threading/platform_thread.h"
+#include "base/test/simple_test_clock.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -1744,58 +1743,127 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
 
 TEST_F(HostContentSettingsMapTest, ClearSettingsWithTimePredicate) {
   base::test::ScopedFeatureList feature_list;
+  // Enable kTabsInCbd to activate last_modified timestmap recording.
   feature_list.InitAndEnableFeature(features::kTabsInCbd);
 
   TestingProfile profile;
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(&profile);
+  auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(base::Time::Now());
+  base::SimpleTestClock* clock = test_clock.get();
+  map->SetClockForTesting(std::move(test_clock));
+
   ContentSettingsForOneType host_settings;
 
   GURL url1("https://www.google.com/");
   GURL url2("https://maps.google.com/");
 
   // Add setting for url1.
-  host_content_settings_map->SetContentSettingDefaultScope(
-      url1, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
-      CONTENT_SETTING_BLOCK);
+  map->SetContentSettingDefaultScope(url1, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                     std::string(), CONTENT_SETTING_BLOCK);
 
   // Make sure that the timestamp for url1 is different from |t|.
-  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  base::Time t = base::Time::Now();
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  base::Time t = clock->Now();
 
   // Add setting for url2.
-  host_content_settings_map->SetContentSettingDefaultScope(
-      url2, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
-      CONTENT_SETTING_BLOCK);
+  map->SetContentSettingDefaultScope(url2, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                     std::string(), CONTENT_SETTING_BLOCK);
 
   // Verify we have two pattern and the default.
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &host_settings);
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+                             &host_settings);
   EXPECT_EQ(3u, host_settings.size());
 
   // Clear all settings since |t|.
-  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+  map->ClearSettingsForOneTypeWithPredicate(
       CONTENT_SETTINGS_TYPE_POPUPS, t,
       HostContentSettingsMap::PatternSourcePredicate());
 
   // Verify we only have one pattern (url1) and the default.
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &host_settings);
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+                             &host_settings);
   EXPECT_EQ(2u, host_settings.size());
   EXPECT_EQ("https://www.google.com:443",
             host_settings[0].primary_pattern.ToString());
   EXPECT_EQ("*", host_settings[1].primary_pattern.ToString());
 
   // Clear all settings since the beginning of time.
-  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+  map->ClearSettingsForOneTypeWithPredicate(
       CONTENT_SETTINGS_TYPE_POPUPS, base::Time(),
       HostContentSettingsMap::PatternSourcePredicate());
 
   // Verify we only have the default setting.
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &host_settings);
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+                             &host_settings);
   EXPECT_EQ(1u, host_settings.size());
   EXPECT_EQ("*", host_settings[0].primary_pattern.ToString());
+}
+
+TEST_F(HostContentSettingsMapTest, GetSettingLastModified) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kTabsInCbd);
+
+  TestingProfile profile;
+  auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(base::Time::Now());
+  base::SimpleTestClock* clock = test_clock.get();
+  map->SetClockForTesting(std::move(test_clock));
+
+  ContentSettingsForOneType host_settings;
+
+  GURL url("https://www.google.com/");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(url);
+
+  // Last modified date for non existant settings should be base::Time().
+  base::Time t = map->GetSettingLastModifiedDate(
+      pattern, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_POPUPS);
+  EXPECT_EQ(base::Time(), t);
+
+  // Add setting for url.
+  map->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                     std::string(), CONTENT_SETTING_BLOCK);
+  t = map->GetSettingLastModifiedDate(pattern,
+                                      ContentSettingsPattern::Wildcard(),
+                                      CONTENT_SETTINGS_TYPE_POPUPS);
+  EXPECT_EQ(t, clock->Now());
+
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  // Modify setting.
+  map->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                     std::string(), CONTENT_SETTING_ALLOW);
+
+  t = map->GetSettingLastModifiedDate(pattern,
+                                      ContentSettingsPattern::Wildcard(),
+                                      CONTENT_SETTINGS_TYPE_POPUPS);
+  EXPECT_EQ(t, clock->Now());
+}
+
+TEST_F(HostContentSettingsMapTest, LastModifiedIsNotRecordedWhenDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kTabsInCbd);
+
+  TestingProfile profile;
+  auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  ContentSettingsForOneType host_settings;
+
+  GURL url("https://www.google.com/");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(url);
+
+  // Add setting for url.
+  map->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                     std::string(), CONTENT_SETTING_BLOCK);
+
+  base::Time t = map->GetSettingLastModifiedDate(
+      pattern, ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_POPUPS);
+  EXPECT_EQ(base::Time(), t);
 }
 
 TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {

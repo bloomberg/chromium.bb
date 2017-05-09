@@ -25,6 +25,7 @@ enum class BrowsingDataType {
   PASSWORDS,
   FORM_DATA,
   BOOKMARKS,
+  SITE_SETTINGS,
   NUM_TYPES
 };
 

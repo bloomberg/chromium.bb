@@ -153,6 +153,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     private static final String PREF_CACHE = "clear_cache_checkbox";
     private static final String PREF_PASSWORDS = "clear_passwords_checkbox";
     private static final String PREF_FORM_DATA = "clear_form_data_checkbox";
+    private static final String PREF_SITE_SETTINGS = "clear_site_settings_checkbox";
 
     @VisibleForTesting
     public static final String PREF_GOOGLE_SUMMARY = "google_summary";
@@ -195,7 +196,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         CLEAR_PASSWORDS(
                 BrowsingDataType.PASSWORDS, PREF_PASSWORDS, R.drawable.ic_vpn_key_grey, false),
         CLEAR_FORM_DATA(
-                BrowsingDataType.FORM_DATA, PREF_FORM_DATA, R.drawable.bookmark_edit_normal, true);
+                BrowsingDataType.FORM_DATA, PREF_FORM_DATA, R.drawable.bookmark_edit_normal, true),
+        CLEAR_SITE_SETTINGS(BrowsingDataType.SITE_SETTINGS, PREF_SITE_SETTINGS,
+                R.drawable.ic_tv_options_input_settings_rotated_grey, false);
 
         private final int mDataType;
         private final String mPreferenceKey;

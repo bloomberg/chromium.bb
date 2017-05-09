@@ -18,6 +18,10 @@
 
 class PrefService;
 
+namespace base {
+class Clock;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -62,6 +66,8 @@ class PrefProvider : public ObservableProvider {
 
   ContentSettingsPref* GetPref(ContentSettingsType type) const;
 
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+
  private:
   friend class DeadlockCheckerObserver;  // For testing.
 
@@ -78,12 +84,16 @@ class PrefProvider : public ObservableProvider {
 
   const bool is_incognito_;
 
+  bool store_last_modified_;
+
   PrefChangeRegistrar pref_change_registrar_;
 
   std::map<ContentSettingsType, std::unique_ptr<ContentSettingsPref>>
       content_settings_prefs_;
 
   base::ThreadChecker thread_checker_;
+
+  std::unique_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefProvider);
 };

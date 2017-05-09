@@ -47,6 +47,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -722,6 +723,19 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 
     MediaDeviceIDSalt::Reset(profile_->GetPrefs());
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // DATA_TYPE_CONTENT_SETTINGS
+  if (remove_mask & DATA_TYPE_CONTENT_SETTINGS) {
+    const auto* registry =
+        content_settings::ContentSettingsRegistry::GetInstance();
+    auto* map = HostContentSettingsMapFactory::GetForProfile(profile_);
+    for (const content_settings::ContentSettingsInfo* info : *registry) {
+      map->ClearSettingsForOneTypeWithPredicate(
+          info->website_settings_info()->type(), delete_begin_,
+          base::Bind(&WebsiteSettingsFilterAdapter, filter));
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////

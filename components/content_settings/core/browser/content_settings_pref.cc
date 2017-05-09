@@ -77,14 +77,12 @@ ContentSettingsPref::ContentSettingsPref(
     PrefChangeRegistrar* registrar,
     const std::string& pref_name,
     bool incognito,
-    bool store_last_modified,
     NotifyObserversCallback notify_callback)
     : content_type_(content_type),
       prefs_(prefs),
       registrar_(registrar),
       pref_name_(pref_name),
       is_incognito_(incognito),
-      store_last_modified_(store_last_modified),
       updating_preferences_(false),
       notify_callback_(notify_callback) {
   DCHECK(prefs_);
@@ -113,6 +111,7 @@ bool ContentSettingsPref::SetWebsiteSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     const ResourceIdentifier& resource_identifier,
+    base::Time modified_time,
     base::Value* in_value) {
   DCHECK(!in_value || IsValueAllowedForType(in_value, content_type_));
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -128,9 +127,6 @@ bool ContentSettingsPref::SetWebsiteSetting(
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
   if (!is_incognito_)
     map_to_modify = &value_map_;
-
-  base::Time modified_time =
-      store_last_modified_ ? base::Time::Now() : base::Time();
 
   {
     base::AutoLock auto_lock(lock_);
