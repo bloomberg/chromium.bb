@@ -892,7 +892,7 @@ base::string16 BrowserAccessibility::GetText() const {
 }
 
 bool BrowserAccessibility::HasState(ui::AXState state_enum) const {
-  return (GetState() >> state_enum) & 1;
+  return GetData().HasState(state_enum);
 }
 
 bool BrowserAccessibility::IsCellOrTableHeaderRole() const {

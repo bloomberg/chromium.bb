@@ -40,13 +40,12 @@ void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
 
 const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   data_ = ui::AXNodeData();
-  data_.state = 0;
 
   // Views may misbehave if their widget is closed; return an unknown role
   // rather than possibly crashing.
   if (!view_->GetWidget() || view_->GetWidget()->IsClosed()) {
     data_.role = ui::AX_ROLE_UNKNOWN;
-    data_.state = 1 << ui::AX_STATE_DISABLED;
+    data_.AddState(ui::AX_STATE_DISABLED);
     return data_;
   }
 
@@ -58,13 +57,13 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
                            base::UTF16ToUTF8(description));
 
   if (view_->IsAccessibilityFocusable())
-    data_.state |= (1 << ui::AX_STATE_FOCUSABLE);
+    data_.AddState(ui::AX_STATE_FOCUSABLE);
 
   if (!view_->enabled())
-    data_.state |= (1 << ui::AX_STATE_DISABLED);
+    data_.AddState(ui::AX_STATE_DISABLED);
 
   if (!view_->IsDrawn())
-    data_.state |= (1 << ui::AX_STATE_INVISIBLE);
+    data_.AddState(ui::AX_STATE_INVISIBLE);
 
   return data_;
 }

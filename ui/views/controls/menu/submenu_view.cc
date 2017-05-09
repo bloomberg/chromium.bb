@@ -188,7 +188,7 @@ void SubmenuView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     GetMenuItem()->GetAccessibleNodeData(node_data);
   node_data->role = ui::AX_ROLE_MENU_LIST_POPUP;
   // Menus in Chrome are always traversed in a vertical direction.
-  node_data->AddStateFlag(ui::AX_STATE_VERTICAL);
+  node_data->AddState(ui::AX_STATE_VERTICAL);
 }
 
 void SubmenuView::PaintChildren(const ui::PaintContext& context) {

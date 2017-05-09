@@ -299,7 +299,7 @@ bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
 void MenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   CustomButton::GetAccessibleNodeData(node_data);
   node_data->role = ui::AX_ROLE_POP_UP_BUTTON;
-  node_data->AddStateFlag(ui::AX_STATE_HASPOPUP);
+  node_data->AddState(ui::AX_STATE_HASPOPUP);
   if (enabled()) {
     node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
                                ui::AX_SUPPORTED_ACTION_OPEN);

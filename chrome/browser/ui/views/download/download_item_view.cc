@@ -488,9 +488,9 @@ void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
   node_data->role = ui::AX_ROLE_BUTTON;
   if (model_.IsDangerous())
-    node_data->AddStateFlag(ui::AX_STATE_DISABLED);
+    node_data->AddState(ui::AX_STATE_DISABLED);
   else
-    node_data->AddStateFlag(ui::AX_STATE_HASPOPUP);
+    node_data->AddState(ui::AX_STATE_HASPOPUP);
 }
 
 void DownloadItemView::OnThemeChanged() {

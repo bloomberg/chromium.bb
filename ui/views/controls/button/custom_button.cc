@@ -356,13 +356,13 @@ void CustomButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
   switch (state_) {
     case STATE_HOVERED:
-      node_data->AddStateFlag(ui::AX_STATE_HOVERED);
+      node_data->AddState(ui::AX_STATE_HOVERED);
       break;
     case STATE_PRESSED:
-      node_data->AddStateFlag(ui::AX_STATE_PRESSED);
+      node_data->AddState(ui::AX_STATE_PRESSED);
       break;
     case STATE_DISABLED:
-      node_data->AddStateFlag(ui::AX_STATE_DISABLED);
+      node_data->AddState(ui::AX_STATE_DISABLED);
       break;
     case STATE_NORMAL:
     case STATE_COUNT:

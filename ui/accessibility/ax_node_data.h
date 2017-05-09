@@ -106,12 +106,9 @@ struct AX_EXPORT AXNodeData {
   void SetValue(const std::string& value);
   void SetValue(const base::string16& value);
 
-  // Helper to check whether |state_flag| is set in the given |state|.
-  static bool IsFlagSet(uint32_t state, ui::AXState state_flag);
-
-  // Set or check bits in |state_|.
-  void AddStateFlag(ui::AXState state_flag);
-  bool HasStateFlag(ui::AXState state_flag) const;
+  // Set or check bits in |state|.
+  bool HasState(ui::AXState state_flag) const;
+  void AddState(ui::AXState state_flag);
 
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;

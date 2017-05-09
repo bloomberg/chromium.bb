@@ -23,6 +23,19 @@ namespace ui {
 
 namespace {
 
+bool IsFlagSet(uint32_t bitfield, uint32_t flag) {
+  return 0 != (bitfield & (1 << flag));
+}
+
+std::string StateBitfieldToString(uint32_t state) {
+  std::string str;
+  for (uint32_t i = AX_STATE_NONE + 1; i <= AX_STATE_LAST; ++i) {
+    if (IsFlagSet(state, i))
+      str += " " + base::ToUpperASCII(ToString(static_cast<AXState>(i)));
+  }
+  return str;
+}
+
 std::string IntVectorToString(const std::vector<int>& items) {
   std::string str;
   for (size_t i = 0; i < items.size(); ++i) {
@@ -157,13 +170,7 @@ bool IsNodeIdIntListAttribute(AXIntListAttribute attr) {
 }
 
 AXNodeData::AXNodeData()
-    : id(-1),
-      role(AX_ROLE_UNKNOWN),
-      // Turn on all flags to more easily catch bugs where no flags are set.
-      // This will be cleared back to a 0-state before use.
-      state(0xFFFFFFFF),
-      offset_container_id(-1) {
-}
+    : id(-1), role(AX_ROLE_UNKNOWN), state(0), offset_container_id(-1) {}
 
 AXNodeData::~AXNodeData() {
 }
@@ -417,17 +424,13 @@ void AXNodeData::SetValue(const base::string16& value) {
   SetValue(base::UTF16ToUTF8(value));
 }
 
-// static
-bool AXNodeData::IsFlagSet(uint32_t state, ui::AXState state_flag) {
-  return 0 != (state & (1 << state_flag));
-}
-
-void AXNodeData::AddStateFlag(ui::AXState state_flag) {
-  state |= (1 << state_flag);
-}
-
-bool AXNodeData::HasStateFlag(ui::AXState state_flag) const {
+bool AXNodeData::HasState(AXState state_flag) const {
   return IsFlagSet(state, state_flag);
+}
+
+void AXNodeData::AddState(AXState state_flag) {
+  DCHECK_NE(state_flag, AX_STATE_NONE);
+  state |= (1 << state_flag);
 }
 
 std::string AXNodeData::ToString() const {
@@ -436,46 +439,7 @@ std::string AXNodeData::ToString() const {
   result += "id=" + IntToString(id);
   result += " " + ui::ToString(role);
 
-  if (state & (1 << AX_STATE_BUSY))
-    result += " BUSY";
-  if (state & (1 << AX_STATE_COLLAPSED))
-    result += " COLLAPSED";
-  if (state & (1 << AX_STATE_EDITABLE))
-    result += " EDITABLE";
-  if (state & (1 << AX_STATE_EXPANDED))
-    result += " EXPANDED";
-  if (state & (1 << AX_STATE_FOCUSABLE))
-    result += " FOCUSABLE";
-  if (state & (1 << AX_STATE_HASPOPUP))
-    result += " HASPOPUP";
-  if (state & (1 << AX_STATE_HOVERED))
-    result += " HOVERED";
-  if (state & (1 << AX_STATE_INVISIBLE))
-    result += " INVISIBLE";
-  if (state & (1 << AX_STATE_LINKED))
-    result += " LINKED";
-  if (state & (1 << AX_STATE_MULTISELECTABLE))
-    result += " MULTISELECTABLE";
-  if (state & (1 << AX_STATE_OFFSCREEN))
-    result += " OFFSCREEN";
-  if (state & (1 << AX_STATE_PRESSED))
-    result += " PRESSED";
-  if (state & (1 << AX_STATE_PROTECTED))
-    result += " PROTECTED";
-  if (state & (1 << AX_STATE_READ_ONLY))
-    result += " READONLY";
-  if (state & (1 << AX_STATE_REQUIRED))
-    result += " REQUIRED";
-  if (state & (1 << AX_STATE_RICHLY_EDITABLE))
-    result += " RICHLY_EDITABLE";
-  if (state & (1 << AX_STATE_SELECTABLE))
-    result += " SELECTABLE";
-  if (state & (1 << AX_STATE_SELECTED))
-    result += " SELECTED";
-  if (state & (1 << AX_STATE_VERTICAL))
-    result += " VERTICAL";
-  if (state & (1 << AX_STATE_VISITED))
-    result += " VISITED";
+  result += StateBitfieldToString(state);
 
   result += " (" + IntToString(location.x()) + ", " +
                    IntToString(location.y()) + ")-(" +

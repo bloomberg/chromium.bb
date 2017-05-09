@@ -127,19 +127,16 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
   button.id = 2;
   button.SetName("Button");
   button.role = ui::AX_ROLE_BUTTON;
-  button.state = 0;
 
   ui::AXNodeData checkbox;
   checkbox.id = 3;
   checkbox.SetName("Checkbox");
   checkbox.role = ui::AX_ROLE_CHECK_BOX;
-  checkbox.state = 0;
 
   ui::AXNodeData root;
   root.id = 1;
   root.SetName("Document");
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 0;
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -195,13 +192,11 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   text.id = 2;
   text.role = ui::AX_ROLE_STATIC_TEXT;
   text.SetName("old text");
-  text.state = 0;
 
   ui::AXNodeData root;
   root.id = 1;
   root.SetName("Document");
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 0;
   root.child_ids.push_back(2);
 
   // Construct a BrowserAccessibilityManager with this
@@ -277,17 +272,14 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   ui::AXNodeData div;
   div.id = 2;
   div.role = ui::AX_ROLE_GROUP;
-  div.state = 0;
 
   ui::AXNodeData text3;
   text3.id = 3;
   text3.role = ui::AX_ROLE_STATIC_TEXT;
-  text3.state = 0;
 
   ui::AXNodeData text4;
   text4.id = 4;
   text4.role = ui::AX_ROLE_STATIC_TEXT;
-  text4.state = 0;
 
   div.child_ids.push_back(3);
   div.child_ids.push_back(4);
@@ -295,7 +287,6 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 0;
   root.child_ids.push_back(2);
 
   // Construct a BrowserAccessibilityManager with this
@@ -340,7 +331,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ui::AXNodeData text_field;
   text_field.id = 2;
   text_field.role = ui::AX_ROLE_TEXT_FIELD;
-  text_field.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field.AddState(ui::AX_STATE_EDITABLE);
   text_field.SetValue(text_value);
   std::vector<int32_t> line_start_offsets;
   line_start_offsets.push_back(15);
@@ -353,14 +344,14 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ui::AXNodeData static_text1;
   static_text1.id = 3;
   static_text1.role = ui::AX_ROLE_STATIC_TEXT;
-  static_text1.state = 1 << ui::AX_STATE_EDITABLE;
+  static_text1.AddState(ui::AX_STATE_EDITABLE);
   static_text1.SetName(line1);
   static_text1.child_ids.push_back(4);
 
   ui::AXNodeData inline_box1;
   inline_box1.id = 4;
   inline_box1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
-  inline_box1.state = 1 << ui::AX_STATE_EDITABLE;
+  inline_box1.AddState(ui::AX_STATE_EDITABLE);
   inline_box1.SetName(line1);
   std::vector<int32_t> word_start_offsets1;
   word_start_offsets1.push_back(0);
@@ -372,20 +363,20 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ui::AXNodeData line_break;
   line_break.id = 5;
   line_break.role = ui::AX_ROLE_LINE_BREAK;
-  line_break.state = 1 << ui::AX_STATE_EDITABLE;
+  line_break.AddState(ui::AX_STATE_EDITABLE);
   line_break.SetName("\n");
 
   ui::AXNodeData static_text2;
   static_text2.id = 6;
   static_text2.role = ui::AX_ROLE_STATIC_TEXT;
-  static_text2.state = 1 << ui::AX_STATE_EDITABLE;
+  static_text2.AddState(ui::AX_STATE_EDITABLE);
   static_text2.SetName(line2);
   static_text2.child_ids.push_back(7);
 
   ui::AXNodeData inline_box2;
   inline_box2.id = 7;
   inline_box2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
-  inline_box2.state = 1 << ui::AX_STATE_EDITABLE;
+  inline_box2.AddState(ui::AX_STATE_EDITABLE);
   inline_box2.SetName(line2);
   std::vector<int32_t> word_start_offsets2;
   word_start_offsets2.push_back(0);
@@ -499,19 +490,19 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   ui::AXNodeData text1;
   text1.id = 11;
   text1.role = ui::AX_ROLE_STATIC_TEXT;
-  text1.state = 1 << ui::AX_STATE_READ_ONLY;
+  text1.AddState(ui::AX_STATE_READ_ONLY);
   text1.SetName(text1_name);
 
   ui::AXNodeData text2;
   text2.id = 12;
   text2.role = ui::AX_ROLE_STATIC_TEXT;
-  text2.state = 1 << ui::AX_STATE_READ_ONLY;
+  text2.AddState(ui::AX_STATE_READ_ONLY);
   text2.SetName(text2_name);
 
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 1 << ui::AX_STATE_READ_ONLY;
+  root.AddState(ui::AX_STATE_READ_ONLY);
   root.child_ids.push_back(text1.id);
   root.child_ids.push_back(text2.id);
 
@@ -582,7 +573,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   ui::AXNodeData text1;
   text1.id = 11;
   text1.role = ui::AX_ROLE_STATIC_TEXT;
-  text1.state = 1 << ui::AX_STATE_READ_ONLY;
+  text1.AddState(ui::AX_STATE_READ_ONLY);
   text1.SetName(base::UTF16ToUTF8(text1_name));
 
   ui::AXNodeData combo_box;
@@ -594,13 +585,12 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   ui::AXNodeData text2;
   text2.id = 13;
   text2.role = ui::AX_ROLE_STATIC_TEXT;
-  text2.state = 1 << ui::AX_STATE_READ_ONLY;
+  text2.AddState(ui::AX_STATE_READ_ONLY);
   text2.SetName(base::UTF16ToUTF8(text2_name));
 
   ui::AXNodeData check_box;
   check_box.id = 14;
   check_box.role = ui::AX_ROLE_CHECK_BOX;
-  check_box.state = 0;
   check_box.AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
                             ui::AX_CHECKED_STATE_TRUE);
   check_box.SetName(base::UTF16ToUTF8(check_box_name));
@@ -612,8 +602,8 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   button_text.SetName(base::UTF16ToUTF8(button_text_name));
   button.role = ui::AX_ROLE_BUTTON;
   button_text.role = ui::AX_ROLE_STATIC_TEXT;
-  button.state = 1 << ui::AX_STATE_READ_ONLY;
-  button_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  button.AddState(ui::AX_STATE_READ_ONLY);
+  button_text.AddState(ui::AX_STATE_READ_ONLY);
   button.child_ids.push_back(button_text.id);
 
   ui::AXNodeData link, link_text;
@@ -622,14 +612,14 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   link_text.SetName(base::UTF16ToUTF8(link_text_name));
   link.role = ui::AX_ROLE_LINK;
   link_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link.state = 1 << ui::AX_STATE_READ_ONLY;
-  link_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  link.AddState(ui::AX_STATE_READ_ONLY);
+  link_text.AddState(ui::AX_STATE_READ_ONLY);
   link.child_ids.push_back(link_text.id);
 
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 1 << ui::AX_STATE_READ_ONLY;
+  root.AddState(ui::AX_STATE_READ_ONLY);
   root.child_ids.push_back(text1.id);
   root.child_ids.push_back(combo_box.id);
   root.child_ids.push_back(text2.id);
@@ -841,7 +831,6 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   checkbox.id = 3;
   checkbox.SetName("Checkbox");
   checkbox.role = ui::AX_ROLE_CHECK_BOX;
-  checkbox.state = 0;
   checkbox.AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
                            ui::AX_CHECKED_STATE_TRUE);
 
@@ -849,7 +838,8 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   root.id = 1;
   root.SetName("Document");
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -896,7 +886,8 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData combo_box, combo_box_text;
   combo_box.id = 2;
@@ -905,9 +896,9 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   combo_box_text.SetName("Combo box text");
   combo_box.role = ui::AX_ROLE_COMBO_BOX;
   combo_box_text.role = ui::AX_ROLE_STATIC_TEXT;
-  combo_box.state = (1 << ui::AX_STATE_EDITABLE) |
-                    (1 << ui::AX_STATE_FOCUSABLE);
-  combo_box_text.state = 1 << ui::AX_STATE_EDITABLE;
+  combo_box.AddState(ui::AX_STATE_EDITABLE);
+  combo_box.AddState(ui::AX_STATE_FOCUSABLE);
+  combo_box_text.AddState(ui::AX_STATE_EDITABLE);
   combo_box.child_ids.push_back(combo_box_text.id);
 
   ui::AXNodeData search_box, search_box_text, new_line;
@@ -920,17 +911,18 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   search_box.role = ui::AX_ROLE_SEARCH_BOX;
   search_box_text.role = ui::AX_ROLE_STATIC_TEXT;
   new_line.role = ui::AX_ROLE_LINE_BREAK;
-  search_box.state = (1 << ui::AX_STATE_EDITABLE) |
-                     (1 << ui::AX_STATE_FOCUSABLE);
-  search_box_text.state = new_line.state = 1 << ui::AX_STATE_EDITABLE;
+  search_box.AddState(ui::AX_STATE_EDITABLE);
+  search_box.AddState(ui::AX_STATE_FOCUSABLE);
+  search_box_text.AddState(ui::AX_STATE_EDITABLE);
+  new_line.AddState(ui::AX_STATE_EDITABLE);
   search_box.child_ids.push_back(search_box_text.id);
   search_box.child_ids.push_back(new_line.id);
 
   ui::AXNodeData text_field;
   text_field.id = 7;
   text_field.role = ui::AX_ROLE_TEXT_FIELD;
-  text_field.state =
-      (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_FOCUSABLE);
+  text_field.AddState(ui::AX_STATE_EDITABLE);
+  text_field.AddState(ui::AX_STATE_FOCUSABLE);
   text_field.SetValue("Text field text");
 
   ui::AXNodeData link, link_text;
@@ -939,7 +931,8 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   link_text.SetName("Link text");
   link.role = ui::AX_ROLE_LINK;
   link_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link.state = link_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  link.AddState(ui::AX_STATE_READ_ONLY);
+  link_text.AddState(ui::AX_STATE_READ_ONLY);
   link.child_ids.push_back(link_text.id);
 
   ui::AXNodeData slider, slider_text;
@@ -949,7 +942,8 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   slider_text.SetName("Slider text");
   slider.role = ui::AX_ROLE_SLIDER;
   slider_text.role = ui::AX_ROLE_STATIC_TEXT;
-  slider.state = slider_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  slider.AddState(ui::AX_STATE_READ_ONLY);
+  slider_text.AddState(ui::AX_STATE_READ_ONLY);
   slider.child_ids.push_back(slider_text.id);
 
   root.child_ids.push_back(2);   // Combo box.
@@ -1057,7 +1051,8 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData textarea, textarea_div, textarea_text;
   textarea.id = 2;
@@ -1066,11 +1061,11 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
   textarea.role = ui::AX_ROLE_TEXT_FIELD;
   textarea_div.role = ui::AX_ROLE_DIV;
   textarea_text.role = ui::AX_ROLE_STATIC_TEXT;
-  textarea.state = (1 << ui::AX_STATE_EDITABLE) |
-                   (1 << ui::AX_STATE_FOCUSABLE) |
-                   (1 << ui::AX_STATE_MULTILINE);
-  textarea_div.state = 1 << ui::AX_STATE_EDITABLE;
-  textarea_text.state = 1 << ui::AX_STATE_EDITABLE;
+  textarea.AddState(ui::AX_STATE_EDITABLE);
+  textarea.AddState(ui::AX_STATE_FOCUSABLE);
+  textarea.AddState(ui::AX_STATE_MULTILINE);
+  textarea_div.AddState(ui::AX_STATE_EDITABLE);
+  textarea_text.AddState(ui::AX_STATE_EDITABLE);
   textarea.SetValue(base::UTF16ToUTF8(text));
   textarea_text.SetName(base::UTF16ToUTF8(text));
   textarea.AddStringAttribute(ui::AX_ATTR_HTML_TAG, "textarea");
@@ -1082,8 +1077,8 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
   textarea_line2.id = 6;
   textarea_line1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   textarea_line2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
-  textarea_line1.state = 1 << ui::AX_STATE_EDITABLE;
-  textarea_line2.state = 1 << ui::AX_STATE_EDITABLE;
+  textarea_line1.AddState(ui::AX_STATE_EDITABLE);
+  textarea_line2.AddState(ui::AX_STATE_EDITABLE);
   textarea_line1.SetName(base::UTF16ToUTF8(line1));
   textarea_line2.SetName(base::UTF16ToUTF8(line2));
   textarea_line1.AddIntListAttribute(ui::AX_ATTR_WORD_STARTS,
@@ -1100,10 +1095,10 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
   text_field.role = ui::AX_ROLE_TEXT_FIELD;
   text_field_div.role = ui::AX_ROLE_DIV;
   text_field_text.role = ui::AX_ROLE_STATIC_TEXT;
-  text_field.state =
-      (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_FOCUSABLE);
-  text_field_div.state = 1 << ui::AX_STATE_EDITABLE;
-  text_field_text.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field.AddState(ui::AX_STATE_EDITABLE);
+  text_field.AddState(ui::AX_STATE_FOCUSABLE);
+  text_field_div.AddState(ui::AX_STATE_EDITABLE);
+  text_field_text.AddState(ui::AX_STATE_EDITABLE);
   text_field.SetValue(base::UTF16ToUTF8(line1));
   text_field_text.SetName(base::UTF16ToUTF8(line1));
   text_field.AddStringAttribute(ui::AX_ATTR_HTML_TAG, "input");
@@ -1114,7 +1109,7 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
   ui::AXNodeData text_field_line;
   text_field_line.id = 10;
   text_field_line.role = ui::AX_ROLE_INLINE_TEXT_BOX;
-  text_field_line.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field_line.AddState(ui::AX_STATE_EDITABLE);
   text_field_line.SetName(base::UTF16ToUTF8(line1));
   text_field_line.AddIntListAttribute(ui::AX_ATTR_WORD_STARTS,
                                       line1_word_starts);
@@ -1199,13 +1194,14 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData combo_box;
   combo_box.id = 2;
   combo_box.role = ui::AX_ROLE_COMBO_BOX;
-  combo_box.state = (1 << ui::AX_STATE_EDITABLE) |
-      (1 << ui::AX_STATE_FOCUSABLE);
+  combo_box.AddState(ui::AX_STATE_EDITABLE);
+  combo_box.AddState(ui::AX_STATE_FOCUSABLE);
   combo_box.SetValue("Test1");
   // Place the caret between 't' and 'e'.
   combo_box.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, 1);
@@ -1214,8 +1210,8 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   ui::AXNodeData text_field;
   text_field.id = 3;
   text_field.role = ui::AX_ROLE_TEXT_FIELD;
-  text_field.state = (1 << ui::AX_STATE_EDITABLE) |
-      (1 << ui::AX_STATE_FOCUSABLE);
+  text_field.AddState(ui::AX_STATE_EDITABLE);
+  text_field.AddState(ui::AX_STATE_FOCUSABLE);
   text_field.SetValue("Test2");
   // Select the letter 'e'.
   text_field.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, 1);
@@ -1298,32 +1294,35 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData div_editable;
   div_editable.id = 2;
   div_editable.role = ui::AX_ROLE_DIV;
-  div_editable.state = (1 << ui::AX_STATE_EDITABLE) |
-      (1 << ui::AX_STATE_FOCUSABLE);
+  div_editable.AddState(ui::AX_STATE_EDITABLE);
+  div_editable.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData text;
   text.id = 3;
   text.role = ui::AX_ROLE_STATIC_TEXT;
-  text.state = (1 << ui::AX_STATE_EDITABLE);
+  text.AddState(ui::AX_STATE_EDITABLE);
   text.SetName("Click ");
 
   ui::AXNodeData link;
   link.id = 4;
   link.role = ui::AX_ROLE_LINK;
-  link.state = (1 << ui::AX_STATE_EDITABLE) |
-      (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link.AddState(ui::AX_STATE_EDITABLE);
+  link.AddState(ui::AX_STATE_FOCUSABLE);
+  link.AddState(ui::AX_STATE_LINKED);
   link.SetName("here");
 
   ui::AXNodeData link_text;
   link_text.id = 5;
   link_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link_text.state = (1 << ui::AX_STATE_EDITABLE) |
-      (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link_text.AddState(ui::AX_STATE_EDITABLE);
+  link_text.AddState(ui::AX_STATE_FOCUSABLE);
+  link_text.AddState(ui::AX_STATE_LINKED);
   link_text.SetName("here");
 
   root.child_ids.push_back(2);
@@ -1419,32 +1418,36 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData div_editable;
   div_editable.id = 2;
   div_editable.role = ui::AX_ROLE_DIV;
-  div_editable.state =
-      (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_EDITABLE);
+  div_editable.AddState(ui::AX_STATE_FOCUSABLE);
+  div_editable.AddState(ui::AX_STATE_EDITABLE);
 
   ui::AXNodeData text;
   text.id = 3;
   text.role = ui::AX_ROLE_STATIC_TEXT;
-  text.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_EDITABLE);
+  text.AddState(ui::AX_STATE_FOCUSABLE);
+  text.AddState(ui::AX_STATE_EDITABLE);
   text.SetName("Click ");
 
   ui::AXNodeData link;
   link.id = 4;
   link.role = ui::AX_ROLE_LINK;
-  link.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_EDITABLE) |
-               (1 << ui::AX_STATE_LINKED);
+  link.AddState(ui::AX_STATE_FOCUSABLE);
+  link.AddState(ui::AX_STATE_EDITABLE);
+  link.AddState(ui::AX_STATE_LINKED);
   link.SetName("here");
 
   ui::AXNodeData link_text;
   link_text.id = 5;
   link_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link_text.state = (1 << ui::AX_STATE_FOCUSABLE) |
-                    (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_LINKED);
+  link_text.AddState(ui::AX_STATE_FOCUSABLE);
+  link_text.AddState(ui::AX_STATE_EDITABLE);
+  link_text.AddState(ui::AX_STATE_LINKED);
   link_text.SetName("here");
 
   root.child_ids.push_back(2);
@@ -1574,12 +1577,13 @@ TEST_F(BrowserAccessibilityTest, TestIAccessibleHyperlink) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData div;
   div.id = 2;
   div.role = ui::AX_ROLE_DIV;
-  div.state = (1 << ui::AX_STATE_FOCUSABLE);
+  div.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData text;
   text.id = 3;
@@ -1589,7 +1593,8 @@ TEST_F(BrowserAccessibilityTest, TestIAccessibleHyperlink) {
   ui::AXNodeData link;
   link.id = 4;
   link.role = ui::AX_ROLE_LINK;
-  link.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link.AddState(ui::AX_STATE_FOCUSABLE);
+  link.AddState(ui::AX_STATE_LINKED);
   link.SetName("here");
   link.AddStringAttribute(ui::AX_ATTR_URL, "example.com");
 
@@ -1728,19 +1733,20 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData div_editable;
   div_editable.id = 2;
   div_editable.role = ui::AX_ROLE_DIV;
-  div_editable.state =
-      (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_FOCUSABLE);
+  div_editable.AddState(ui::AX_STATE_EDITABLE);
+  div_editable.AddState(ui::AX_STATE_FOCUSABLE);
   div_editable.AddStringAttribute(ui::AX_ATTR_FONT_FAMILY, "Helvetica");
 
   ui::AXNodeData text_before;
   text_before.id = 3;
   text_before.role = ui::AX_ROLE_STATIC_TEXT;
-  text_before.state = (1 << ui::AX_STATE_EDITABLE);
+  text_before.AddState(ui::AX_STATE_EDITABLE);
   text_before.SetName("Before ");
   text_before.AddIntAttribute(
       ui::AX_ATTR_TEXT_STYLE,
@@ -1749,16 +1755,18 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   ui::AXNodeData link;
   link.id = 4;
   link.role = ui::AX_ROLE_LINK;
-  link.state = (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_FOCUSABLE) |
-               (1 << ui::AX_STATE_LINKED);
+  link.AddState(ui::AX_STATE_EDITABLE);
+  link.AddState(ui::AX_STATE_FOCUSABLE);
+  link.AddState(ui::AX_STATE_LINKED);
   link.SetName("lnk");
   link.AddIntAttribute(ui::AX_ATTR_TEXT_STYLE, ui::AX_TEXT_STYLE_UNDERLINE);
 
   ui::AXNodeData link_text;
   link_text.id = 5;
   link_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link_text.state = (1 << ui::AX_STATE_EDITABLE) |
-                    (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link_text.AddState(ui::AX_STATE_EDITABLE);
+  link_text.AddState(ui::AX_STATE_FOCUSABLE);
+  link_text.AddState(ui::AX_STATE_LINKED);
   link_text.SetName("lnk");
   link_text.AddIntAttribute(ui::AX_ATTR_TEXT_STYLE,
                             ui::AX_TEXT_STYLE_UNDERLINE);
@@ -1777,7 +1785,7 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   ui::AXNodeData text_after;
   text_after.id = 6;
   text_after.role = ui::AX_ROLE_STATIC_TEXT;
-  text_after.state = (1 << ui::AX_STATE_EDITABLE);
+  text_after.AddState(ui::AX_STATE_EDITABLE);
   text_after.SetName(" after.");
   // Leave text style as normal.
 
@@ -1968,30 +1976,31 @@ TEST_F(BrowserAccessibilityTest, TestMisspellingsInSimpleTextFields) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+  root.AddState(ui::AX_STATE_READ_ONLY);
+  root.AddState(ui::AX_STATE_FOCUSABLE);
 
   ui::AXNodeData combo_box;
   combo_box.id = 2;
   combo_box.role = ui::AX_ROLE_COMBO_BOX;
-  combo_box.state =
-      (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_FOCUSABLE);
+  combo_box.AddState(ui::AX_STATE_EDITABLE);
+  combo_box.AddState(ui::AX_STATE_FOCUSABLE);
   combo_box.SetValue(value1 + value2);
 
   ui::AXNodeData combo_box_div;
   combo_box_div.id = 3;
   combo_box_div.role = ui::AX_ROLE_DIV;
-  combo_box_div.state = 1 << ui::AX_STATE_EDITABLE;
+  combo_box_div.AddState(ui::AX_STATE_EDITABLE);
 
   ui::AXNodeData static_text1;
   static_text1.id = 4;
   static_text1.role = ui::AX_ROLE_STATIC_TEXT;
-  static_text1.state = 1 << ui::AX_STATE_EDITABLE;
+  static_text1.AddState(ui::AX_STATE_EDITABLE);
   static_text1.SetName(value1);
 
   ui::AXNodeData static_text2;
   static_text2.id = 5;
   static_text2.role = ui::AX_ROLE_STATIC_TEXT;
-  static_text2.state = 1 << ui::AX_STATE_EDITABLE;
+  static_text2.AddState(ui::AX_STATE_EDITABLE);
   static_text2.SetName(value2);
 
   std::vector<int32_t> marker_types;

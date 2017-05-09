@@ -291,7 +291,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 
 - (BOOL)accessibilityIsIgnored {
   return [[self AXRole] isEqualToString:NSAccessibilityUnknownRole] ||
-         node_->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE);
+         node_->GetData().HasState(ui::AX_STATE_INVISIBLE);
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
@@ -381,10 +381,8 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   switch (node_->GetData().role) {
     case ui::AX_ROLE_TEXT_FIELD:
       [axAttributes addObject:kTextfieldAttributes];
-      if (!ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                     ui::AX_STATE_PROTECTED)) {
+      if (!node_->GetData().HasState(ui::AX_STATE_PROTECTED))
         [axAttributes addObjectsFromArray:kUnprotectedTextfieldAttributes];
-      }
     // Fallthrough.
     case ui::AX_ROLE_CHECK_BOX:
     case ui::AX_ROLE_COMBO_BOX:
@@ -405,7 +403,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 - (BOOL)accessibilityIsAttributeSettable:(NSString*)attributeName {
-  if (node_->GetData().HasStateFlag(ui::AX_STATE_DISABLED))
+  if (node_->GetData().HasState(ui::AX_STATE_DISABLED))
     return NO;
 
   // Allow certain attributes to be written via an accessibility client. A
@@ -421,25 +419,23 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   if ([attributeName isEqualToString:NSAccessibilityValueAttribute]) {
     // NSSecureTextField doesn't allow values to be edited (despite showing up
     // as editable), match its behavior.
-    if (node_->GetData().HasStateFlag(ui::AX_STATE_PROTECTED))
+    if (node_->GetData().HasState(ui::AX_STATE_PROTECTED))
       return NO;
     // Since tabs use the Radio Button role on Mac, the standard way to set
     // them is via the value attribute rather than the selected attribute.
     if (node_->GetData().role == ui::AX_ROLE_TAB)
-      return !node_->GetData().HasStateFlag(ui::AX_STATE_SELECTED);
+      return !node_->GetData().HasState(ui::AX_STATE_SELECTED);
   }
 
   if ([attributeName isEqualToString:NSAccessibilityValueAttribute] ||
       [attributeName isEqualToString:NSAccessibilitySelectedTextAttribute] ||
       [attributeName
           isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
-    return !ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                      ui::AX_STATE_READ_ONLY);
+    return !node_->GetData().HasState(ui::AX_STATE_READ_ONLY);
   }
 
   if ([attributeName isEqualToString:NSAccessibilityFocusedAttribute]) {
-    return ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                     ui::AX_STATE_FOCUSABLE);
+    return node_->GetData().HasState(ui::AX_STATE_FOCUSABLE);
   }
 
   // TODO(patricialor): Add callbacks for updating the above attributes except
@@ -453,7 +449,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   // Check for attributes first. Only the |data.action| should be set here - any
   // type-specific information, if needed, should be set below.
   if ([attribute isEqualToString:NSAccessibilityValueAttribute] &&
-      !node_->GetData().HasStateFlag(ui::AX_STATE_PROTECTED)) {
+      !node_->GetData().HasState(ui::AX_STATE_PROTECTED)) {
     data.action = node_->GetData().role == ui::AX_ROLE_TAB
                       ? ui::AX_ACTION_SET_SELECTION
                       : ui::AX_ACTION_SET_VALUE;
@@ -519,8 +515,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   ui::AXRole role = node_->GetData().role;
   switch (role) {
     case ui::AX_ROLE_TEXT_FIELD:
-      if (ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                    ui::AX_STATE_PROTECTED))
+      if (node_->GetData().HasState(ui::AX_STATE_PROTECTED))
         return NSAccessibilitySecureTextFieldSubrole;
       break;
     default:
@@ -540,13 +535,11 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 - (NSNumber*)AXEnabled {
-  return @(!ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                      ui::AX_STATE_DISABLED));
+  return @(!node_->GetData().HasState(ui::AX_STATE_DISABLED));
 }
 
 - (NSNumber*)AXFocused {
-  if (ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                ui::AX_STATE_FOCUSABLE))
+  if (node_->GetData().HasState(ui::AX_STATE_FOCUSABLE))
     return
         @(node_->GetDelegate()->GetFocus() == node_->GetNativeViewAccessible());
   return @NO;
@@ -591,7 +584,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 // Misc attributes.
 
 - (NSNumber*)AXSelected {
-  return @(node_->GetData().HasStateFlag(ui::AX_STATE_SELECTED));
+  return @(node_->GetData().HasState(ui::AX_STATE_SELECTED));
 }
 
 - (NSString*)AXPlaceholderValue {
@@ -601,7 +594,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 // Text-specific attributes.
 
 - (NSString*)AXSelectedText {
-  if (ui::AXNodeData::IsFlagSet(node_->GetData().state, ui::AX_STATE_PROTECTED))
+  if (node_->GetData().HasState(ui::AX_STATE_PROTECTED))
     return nil;
 
   NSRange selectedTextRange;
@@ -610,7 +603,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 - (NSValue*)AXSelectedTextRange {
-  if (ui::AXNodeData::IsFlagSet(node_->GetData().state, ui::AX_STATE_PROTECTED))
+  if (node_->GetData().HasState(ui::AX_STATE_PROTECTED))
     return nil;
 
   int textDir, start, end;
@@ -627,19 +620,19 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 - (NSNumber*)AXNumberOfCharacters {
-  if (ui::AXNodeData::IsFlagSet(node_->GetData().state, ui::AX_STATE_PROTECTED))
+  if (node_->GetData().HasState(ui::AX_STATE_PROTECTED))
     return nil;
   return @([[self AXValue] length]);
 }
 
 - (NSValue*)AXVisibleCharacterRange {
-  if (ui::AXNodeData::IsFlagSet(node_->GetData().state, ui::AX_STATE_PROTECTED))
+  if (node_->GetData().HasState(ui::AX_STATE_PROTECTED))
     return nil;
   return [NSValue valueWithRange:{0, [[self AXNumberOfCharacters] intValue]}];
 }
 
 - (NSNumber*)AXInsertionPointLineNumber {
-  if (ui::AXNodeData::IsFlagSet(node_->GetData().state, ui::AX_STATE_PROTECTED))
+  if (node_->GetData().HasState(ui::AX_STATE_PROTECTED))
     return nil;
   // Multiline is not supported on views.
   return @0;

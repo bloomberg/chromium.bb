@@ -8,5 +8,5 @@
 #include "ui/accessibility/ax_node_data.h"
 
 void NonAccessibleImageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->AddStateFlag(ui::AX_STATE_INVISIBLE);
+  node_data->AddState(ui::AX_STATE_INVISIBLE);
 }

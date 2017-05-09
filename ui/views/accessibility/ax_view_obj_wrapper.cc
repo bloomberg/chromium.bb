@@ -46,15 +46,14 @@ void AXViewObjWrapper::GetChildren(
 }
 
 void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
-  out_node_data->state = 0;
   view_->GetAccessibleNodeData(out_node_data);
 
   out_node_data->id = GetID();
 
   if (view_->IsAccessibilityFocusable())
-    out_node_data->state |= 1 << ui::AX_STATE_FOCUSABLE;
+    out_node_data->AddState(ui::AX_STATE_FOCUSABLE);
   if (!view_->visible())
-    out_node_data->state |= 1 << ui::AX_STATE_INVISIBLE;
+    out_node_data->AddState(ui::AX_STATE_INVISIBLE);
 
   out_node_data->location = gfx::RectF(view_->GetBoundsInScreen());
 }

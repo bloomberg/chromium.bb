@@ -630,7 +630,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       dst->AddBoolAttribute(ui::AX_ATTR_LIVE_ATOMIC, src.LiveRegionAtomic());
       dst->AddBoolAttribute(ui::AX_ATTR_LIVE_BUSY, src.LiveRegionBusy());
       if (src.LiveRegionBusy())
-        dst->state |= (1 << ui::AX_STATE_BUSY);
+        dst->AddState(ui::AX_STATE_BUSY);
       if (!src.LiveRegionStatus().IsEmpty()) {
         dst->AddStringAttribute(ui::AX_ATTR_LIVE_STATUS,
                                 src.LiveRegionStatus().Utf8());

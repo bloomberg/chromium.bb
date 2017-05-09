@@ -100,19 +100,16 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   button.id = 2;
   button.SetName("Button");
   button.role = ui::AX_ROLE_BUTTON;
-  button.state = 0;
 
   ui::AXNodeData checkbox;
   checkbox.id = 3;
   checkbox.SetName("Checkbox");
   checkbox.role = ui::AX_ROLE_CHECK_BOX;
-  checkbox.state = 0;
 
   ui::AXNodeData root;
   root.id = 1;
   root.SetName("Document");
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 0;
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -177,25 +174,21 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   tree1_child1.id = 2;
   tree1_child1.SetName("Child1");
   tree1_child1.role = ui::AX_ROLE_BUTTON;
-  tree1_child1.state = 0;
 
   ui::AXNodeData tree1_child2;
   tree1_child2.id = 3;
   tree1_child2.SetName("Child2");
   tree1_child2.role = ui::AX_ROLE_BUTTON;
-  tree1_child2.state = 0;
 
   ui::AXNodeData tree1_child3;
   tree1_child3.id = 4;
   tree1_child3.SetName("Child3");
   tree1_child3.role = ui::AX_ROLE_BUTTON;
-  tree1_child3.state = 0;
 
   ui::AXNodeData tree1_root;
   tree1_root.id = 1;
   tree1_root.SetName("Document");
   tree1_root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  tree1_root.state = 0;
   tree1_root.child_ids.push_back(2);
   tree1_root.child_ids.push_back(3);
   tree1_root.child_ids.push_back(4);
@@ -212,13 +205,11 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   tree2_child0.id = 5;
   tree2_child0.SetName("Child0");
   tree2_child0.role = ui::AX_ROLE_BUTTON;
-  tree2_child0.state = 0;
 
   ui::AXNodeData tree2_root;
   tree2_root.id = 1;
   tree2_root.SetName("DocumentChanged");
   tree2_root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  tree2_root.state = 0;
   tree2_root.child_ids.push_back(5);
   tree2_root.child_ids.push_back(2);
   tree2_root.child_ids.push_back(3);
@@ -312,46 +303,39 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   tree1_grandchild1.id = 4;
   tree1_grandchild1.SetName("GrandChild1");
   tree1_grandchild1.role = ui::AX_ROLE_BUTTON;
-  tree1_grandchild1.state = 0;
 
   ui::AXNodeData tree1_child1;
   tree1_child1.id = 3;
   tree1_child1.SetName("Child1");
   tree1_child1.role = ui::AX_ROLE_BUTTON;
-  tree1_child1.state = 0;
   tree1_child1.child_ids.push_back(4);
 
   ui::AXNodeData tree1_grandchild2;
   tree1_grandchild2.id = 6;
   tree1_grandchild2.SetName("GrandChild1");
   tree1_grandchild2.role = ui::AX_ROLE_BUTTON;
-  tree1_grandchild2.state = 0;
 
   ui::AXNodeData tree1_child2;
   tree1_child2.id = 5;
   tree1_child2.SetName("Child2");
   tree1_child2.role = ui::AX_ROLE_BUTTON;
-  tree1_child2.state = 0;
   tree1_child2.child_ids.push_back(6);
 
   ui::AXNodeData tree1_grandchild3;
   tree1_grandchild3.id = 8;
   tree1_grandchild3.SetName("GrandChild3");
   tree1_grandchild3.role = ui::AX_ROLE_BUTTON;
-  tree1_grandchild3.state = 0;
 
   ui::AXNodeData tree1_child3;
   tree1_child3.id = 7;
   tree1_child3.SetName("Child3");
   tree1_child3.role = ui::AX_ROLE_BUTTON;
-  tree1_child3.state = 0;
   tree1_child3.child_ids.push_back(8);
 
   ui::AXNodeData tree1_container;
   tree1_container.id = 2;
   tree1_container.SetName("Container");
   tree1_container.role = ui::AX_ROLE_GROUP;
-  tree1_container.state = 0;
   tree1_container.child_ids.push_back(3);
   tree1_container.child_ids.push_back(5);
   tree1_container.child_ids.push_back(7);
@@ -360,7 +344,6 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   tree1_root.id = 1;
   tree1_root.SetName("Document");
   tree1_root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  tree1_root.state = 0;
   tree1_root.child_ids.push_back(2);
 
   // Tree 2:
@@ -379,20 +362,17 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   tree2_grandchild0.id = 9;
   tree2_grandchild0.SetName("GrandChild0");
   tree2_grandchild0.role = ui::AX_ROLE_BUTTON;
-  tree2_grandchild0.state = 0;
 
   ui::AXNodeData tree2_child0;
   tree2_child0.id = 10;
   tree2_child0.SetName("Child0");
   tree2_child0.role = ui::AX_ROLE_BUTTON;
-  tree2_child0.state = 0;
   tree2_child0.child_ids.push_back(9);
 
   ui::AXNodeData tree2_container;
   tree2_container.id = 2;
   tree2_container.SetName("Container");
   tree2_container.role = ui::AX_ROLE_GROUP;
-  tree2_container.state = 0;
   tree2_container.child_ids.push_back(10);
   tree2_container.child_ids.push_back(3);
   tree2_container.child_ids.push_back(5);
@@ -484,21 +464,17 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 
   ui::AXNodeData tree1_4;
   tree1_4.id = 4;
-  tree1_4.state = 0;
 
   ui::AXNodeData tree1_3;
   tree1_3.id = 3;
-  tree1_3.state = 0;
   tree1_3.child_ids.push_back(4);
 
   ui::AXNodeData tree1_2;
   tree1_2.id = 2;
-  tree1_2.state = 0;
 
   ui::AXNodeData tree1_1;
   tree1_1.id = 1;
   tree1_1.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  tree1_1.state = 0;
   tree1_1.child_ids.push_back(2);
   tree1_1.child_ids.push_back(3);
 
@@ -511,20 +487,16 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 
   ui::AXNodeData tree2_6;
   tree2_6.id = 6;
-  tree2_6.state = 0;
 
   ui::AXNodeData tree2_5;
   tree2_5.id = 5;
-  tree2_5.state = 0;
 
   ui::AXNodeData tree2_4;
   tree2_4.id = 4;
-  tree2_4.state = 0;
   tree2_4.child_ids.push_back(6);
 
   ui::AXNodeData tree2_1;
   tree2_1.id = 1;
-  tree2_1.state = 0;
   tree2_1.child_ids.push_back(4);
   tree2_1.child_ids.push_back(5);
 
@@ -1521,7 +1493,6 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 0;
   root.child_ids.push_back(2);
 
   ui::AXNodeData node2;
@@ -1541,7 +1512,6 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   ui::AXNodeData root2;
   root2.id = 3;
   root2.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root2.state = 0;
 
   std::vector<AXEventNotificationDetails> events2;
   events2.push_back(AXEventNotificationDetails());
@@ -1561,7 +1531,6 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 0;
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
   root.child_ids.push_back(4);
@@ -1571,11 +1540,9 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
 
   ui::AXNodeData node3;
   node3.id = 3;
-  node3.state = 0;
 
   ui::AXNodeData node4;
   node4.id = 4;
-  node4.state = 0;
 
   ui::AXTreeUpdate initial_state = MakeAXTreeUpdate(root, node2, node3, node4);
   initial_state.has_tree_data = true;
@@ -1591,7 +1558,6 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   ui::AXNodeData root2;
   root2.id = 3;
   root2.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root2.state = 0;
 
   // Make an update the explicitly clears the previous root.
   std::vector<AXEventNotificationDetails> events2;
