@@ -90,6 +90,16 @@ public class WebApkUma {
                 "WebApk.Install.GooglePlayInstallResult", result, GOOGLE_PLAY_INSTALL_RESULT_MAX);
     }
 
+    /**
+     * Records whether updating a WebAPK from Google Play succeeded. If not, records the reason
+     * that the update failed.
+     */
+    public static void recordGooglePlayUpdateResult(int result) {
+        assert result >= 0 && result < GOOGLE_PLAY_INSTALL_RESULT_MAX;
+        RecordHistogram.recordEnumeratedHistogram(
+                "WebApk.Update.GooglePlayUpdateResult", result, GOOGLE_PLAY_INSTALL_RESULT_MAX);
+    }
+
     /** Records the duration of a WebAPK session (from launch/foreground to background). */
     public static void recordWebApkSessionDuration(long duration) {
         RecordHistogram.recordLongTimesHistogram(
