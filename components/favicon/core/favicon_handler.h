@@ -255,10 +255,15 @@ class FaviconHandler {
     return download_largest_icon_ ? 0 : gfx::kFaviconSize;
   }
 
-  // Used for FaviconService requests.
-  base::CancelableTaskTracker cancelable_task_tracker_;
+  // Used for the GetFaviconForPageURL() request looking up the page URL,
+  // triggered in FetchFavicon().
+  base::CancelableTaskTracker cancelable_task_tracker_for_page_url_;
 
-  FaviconDriverObserver::NotificationIconType handler_type_;
+  // Used for various FaviconService methods triggered while processing
+  // candidates.
+  base::CancelableTaskTracker cancelable_task_tracker_for_candidates_;
+
+  const FaviconDriverObserver::NotificationIconType handler_type_;
 
   // URL of the page we're requesting the favicon for.
   GURL url_;

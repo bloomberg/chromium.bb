@@ -721,6 +721,43 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL3));
 }
 
+// Test that sending an icon URL update different to the previous icon URL
+// update during a database lookup ignores the first icon URL and processes the
+// second.
+TEST_F(FaviconHandlerTest, UpdateDuringDatabaseLookup) {
+  const GURL kIconURL1 = kIconURL16x16;
+  const GURL kIconURL2 = kIconURL64x64;
+
+  // Defer the lookup completion such that RunUntilIdle() doesn't complete the
+  // lookup.
+  favicon_service_.fake()->SetRunCallbackManuallyForUrl(kIconURL1);
+
+  delegate_.fake_downloader().Add(kIconURL1, IntVector{16});
+  delegate_.fake_downloader().Add(kIconURL2, IntVector{64});
+
+  std::unique_ptr<FaviconHandler> handler =
+      RunHandlerWithSimpleFaviconCandidates(URLVector{kIconURL1});
+
+  ASSERT_TRUE(VerifyAndClearExpectations());
+  ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
+
+  // SetFavicons() and OnFaviconUpdated() should be called for the new icon URL
+  // and not |kIconURL1|.
+  EXPECT_CALL(favicon_service_, SetFavicons(_, kIconURL2, _, _));
+  EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL2, _, _));
+
+  handler->OnUpdateFaviconURL(kPageURL,
+                              {FaviconURL(kIconURL2, FAVICON, kEmptySizes)});
+
+  // Finalizes the DB lookup, which should be thrown away as the favicon URLs
+  // were updated.
+  EXPECT_TRUE(favicon_service_.fake()->RunCallbackManually());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(favicon_service_.fake()->db_requests(), ElementsAre(kIconURL2));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL2));
+}
+
 // Test that sending an icon URL update identical to the previous icon URL
 // update during image download is a no-op.
 TEST_F(FaviconHandlerTest, UpdateSameIconURLsWhileDownloadingShouldBeNoop) {
