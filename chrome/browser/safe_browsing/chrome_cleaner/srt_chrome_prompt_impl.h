@@ -22,7 +22,7 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
   void PromptUser(
       std::vector<chrome_cleaner::mojom::UwSPtr> removable_uws_found,
       chrome_cleaner::mojom::ElevationStatus elevation_status,
-      const chrome_cleaner::mojom::ChromePrompt::PromptUserCallback& callback)
+      chrome_cleaner::mojom::ChromePrompt::PromptUserCallback callback)
       override;
 
  private:

@@ -272,13 +272,13 @@ class ReportBadMessageChromePromptImpl : public ChromePromptImpl {
   void PromptUser(
       std::vector<chrome_cleaner::mojom::UwSPtr> removable_uws_found,
       chrome_cleaner::mojom::ElevationStatus elevation_status,
-      const chrome_cleaner::mojom::ChromePrompt::PromptUserCallback& callback)
+      chrome_cleaner::mojom::ChromePrompt::PromptUserCallback callback)
       override {
     if (bad_message_expected_)
       mojo::ReportBadMessage("bad message");
 
     ChromePromptImpl::PromptUser(std::move(removable_uws_found),
-                                 elevation_status, callback);
+                                 elevation_status, std::move(callback));
   }
 
  private:
