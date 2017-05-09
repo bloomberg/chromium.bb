@@ -303,10 +303,7 @@ class BlinkPerfBindings(_BlinkPerfBenchmark):
   @classmethod
   def ShouldDisable(cls, possible_browser):
     # http://crbug.com/563979
-    return (cls.IsSvelte(possible_browser)
-      # http://crbug.com/653970
-      or (possible_browser.browser_type == 'reference' and
-        possible_browser.platform.GetOSName() == 'android'))
+    return cls.IsSvelte(possible_browser)
 
 
 @benchmark.Enabled('content-shell')
@@ -322,8 +319,7 @@ class BlinkPerfCSS(_BlinkPerfBenchmark):
 
 
 @benchmark.Disabled('android', # http://crbug.com/685320
-                    'android-webview', # http://crbug.com/593200
-                    'reference')  # http://crbug.com/576779
+                    'android-webview') # http://crbug.com/593200
 @benchmark.Owner(emails=['junov@chromium.org'])
 class BlinkPerfCanvas(_BlinkPerfBenchmark):
   tag = 'canvas'
