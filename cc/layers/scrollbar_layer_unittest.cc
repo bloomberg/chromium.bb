@@ -210,7 +210,6 @@ TEST_F(ScrollbarLayerTest, RepaintOverlayWhenResourceDisposed) {
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
     scrollbar_layer->set_visible_layer_rect(gfx::Rect(0, 0, 100, 200));
-    scrollbar_layer->SavePaintProperties();
   }
 
   // First call to update should create a resource. The scrollbar itself thinks
@@ -308,8 +307,6 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   scroll_layer->AddChild(content_layer);
   layer_tree_root->AddChild(scrollbar_layer);
 
-  layer_tree_root->SavePaintProperties();
-  content_layer->SavePaintProperties();
   layer_tree_host_->UpdateLayers();
   LayerImpl* layer_impl_tree_root =
       layer_tree_host_->CommitAndCreateLayerImplTree();
@@ -324,12 +321,9 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
                     cc_scrollbar_layer->clip_layer_length());
 
   layer_tree_root->SetBounds(gfx::Size(700, 1500));
-  layer_tree_root->SavePaintProperties();
   scroll_layer->SetBounds(gfx::Size(1000, 2000));
   scroll_layer->SetScrollOffset(gfx::ScrollOffset(100, 200));
-  scroll_layer->SavePaintProperties();
   content_layer->SetBounds(gfx::Size(1000, 2000));
-  content_layer->SavePaintProperties();
 
   layer_tree_host_->UpdateLayers();
   layer_impl_tree_root = layer_tree_host_->CommitAndCreateLayerImplTree();
@@ -945,7 +939,6 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
               layer_tree_host_.get());
 
-    scrollbar_layer->SavePaintProperties();
     for (int update_counter = 0; update_counter < num_updates; update_counter++)
       scrollbar_layer->Update();
 
@@ -1007,7 +1000,6 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
 
   size_t resource_count;
   int expected_created, expected_deleted;
-  scrollbar_layer->SavePaintProperties();
 
   resource_count = 2;
   expected_created = 2;
@@ -1168,7 +1160,6 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
 
     layer_tree_host_->SetDeviceScaleFactor(test_scale);
 
-    scrollbar_layer->SavePaintProperties();
     scrollbar_layer->Update();
 
     // Verify that we have not generated any content uploads that are larger
@@ -1233,7 +1224,6 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     layer_tree_host_->SetDeviceScaleFactor(test_scale);
 
     gfx::Rect screen_space_clip_rect;
-    scrollbar_layer->SavePaintProperties();
 
     scrollbar_layer->Update();
 

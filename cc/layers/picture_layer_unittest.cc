@@ -45,7 +45,6 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
       &host_client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
-  layer->SavePaintProperties();
   layer->Update();
 
   EXPECT_EQ(0, host->SourceFrameNumber());
@@ -53,7 +52,6 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   EXPECT_EQ(1, host->SourceFrameNumber());
 
   layer->SetBounds(gfx::Size(0, 0));
-  layer->SavePaintProperties();
   // Intentionally skipping Update since it would normally be skipped on
   // a layer with empty bounds.
 
@@ -89,7 +87,6 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
       &host_client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
-  layer->SavePaintProperties();
 
   gfx::Rect invalidation_bounds(layer_size);
 
@@ -132,7 +129,6 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
       &host_client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
-  layer->SavePaintProperties();
 
   gfx::Rect invalidation_bounds(layer_size);
 
@@ -175,14 +171,12 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
       &host_client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
-  layer->SavePaintProperties();
   layer->Update();
 
   EXPECT_EQ(0, host->SourceFrameNumber());
   host->CommitComplete();
   EXPECT_EQ(1, host->SourceFrameNumber());
 
-  layer->SavePaintProperties();
   layer->Update();
   host->BuildPropertyTreesForTesting();
 
@@ -218,7 +212,6 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   host_impl.active_tree()->UpdateDrawProperties(can_use_lcd_text);
 
   layer->SetBounds(gfx::Size(11, 11));
-  layer->SavePaintProperties();
 
   host_impl.CreatePendingTree();
   layer_impl = static_cast<FakePictureLayerImpl*>(
@@ -356,6 +349,82 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
 
   animation_host->SetMutatorHostClient(nullptr);
   animation_host2->SetMutatorHostClient(nullptr);
+}
+
+// Verify that PictureLayer::DropRecordingSourceContentIfInvalid does not
+// assert when changing frames.
+TEST(PictureLayerTest, ChangingHostsWithCollidingFrames) {
+  LayerTreeSettings settings = LayerTreeSettings();
+  settings.single_thread_proxy_scheduler = false;
+
+  StubLayerTreeHostSingleThreadClient single_thread_client;
+  FakeLayerTreeHostClient host_client1;
+  FakeLayerTreeHostClient host_client2;
+  TestTaskGraphRunner task_graph_runner;
+
+  FakeContentLayerClient client;
+  client.set_bounds(gfx::Size());
+  scoped_refptr<FakePictureLayer> layer = FakePictureLayer::Create(&client);
+
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+
+  LayerTreeHost::InitParams params;
+  params.client = &host_client1;
+  params.settings = &settings;
+  params.task_graph_runner = &task_graph_runner;
+  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  params.mutator_host = animation_host.get();
+  std::unique_ptr<LayerTreeHost> host1 =
+      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params);
+  host1->SetVisible(true);
+  host_client1.SetLayerTreeHost(host1.get());
+
+  auto animation_host2 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+
+  LayerTreeHost::InitParams params2;
+  params2.client = &host_client1;
+  params2.settings = &settings;
+  params2.task_graph_runner = &task_graph_runner;
+  params2.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  params2.client = &host_client2;
+  params2.mutator_host = animation_host2.get();
+  std::unique_ptr<LayerTreeHost> host2 =
+      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params2);
+  host2->SetVisible(true);
+  host_client2.SetLayerTreeHost(host2.get());
+
+  // The PictureLayer is put in one LayerTreeHost.
+  host1->SetRootLayer(layer);
+  // Do a main frame, record the picture layers.
+  EXPECT_EQ(0, layer->update_count());
+  layer->SetBounds(gfx::Size(500, 500));
+  host1->Composite(base::TimeTicks::Now());
+  EXPECT_EQ(1, layer->update_count());
+  EXPECT_EQ(1, host1->SourceFrameNumber());
+  EXPECT_EQ(gfx::Size(500, 500), layer->bounds());
+
+  // Then moved to another LayerTreeHost.
+  host1->SetRootLayer(nullptr);
+  scoped_refptr<Layer> root = Layer::Create();
+  host2->SetRootLayer(root);
+  root->AddChild(layer);
+
+  // Make the layer not update.
+  layer->SetHideLayerAndSubtree(true);
+  EXPECT_EQ(gfx::Size(500, 500),
+            layer->GetRecordingSourceForTesting()->GetSize());
+
+  // Change its bounds while it's in a state that can't update.
+  layer->SetBounds(gfx::Size(600, 600));
+  host2->Composite(base::TimeTicks::Now());
+
+  // This layer should not have been updated because it is invisible.
+  EXPECT_EQ(1, layer->update_count());
+  EXPECT_EQ(1, host2->SourceFrameNumber());
+
+  // This layer should also drop its recording source because it was resized
+  // and not recorded.
+  EXPECT_EQ(gfx::Size(), layer->GetRecordingSourceForTesting()->GetSize());
 }
 
 }  // namespace

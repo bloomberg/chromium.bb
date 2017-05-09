@@ -710,9 +710,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                                                    &update_layer_list);
   }
 
-  for (const auto& layer : update_layer_list)
-    layer->SavePaintProperties();
-
   bool content_is_suitable_for_gpu = true;
   bool did_paint_content =
       PaintContent(update_layer_list, &content_is_suitable_for_gpu);

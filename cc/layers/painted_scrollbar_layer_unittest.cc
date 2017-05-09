@@ -45,7 +45,6 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   layer_tree_host->SetRootLayer(scrollbar_layer);
   EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
             layer_tree_host.get());
-  scrollbar_layer->SavePaintProperties();
 
   // Request no paint, but expect them to be painted because they have not
   // yet been initialized.

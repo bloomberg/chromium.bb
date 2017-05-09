@@ -60,7 +60,6 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   Mock::VerifyAndClearExpectations(layer_tree_host());
   EXPECT_EQ(test_layer->GetLayerTreeHostForTesting(), layer_tree_host());
 
-  test_layer->SavePaintProperties();
   test_layer->Update();
 
   EXPECT_FALSE(test_layer->DrawsContent());
@@ -84,7 +83,6 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   Mock::VerifyAndClearExpectations(layer_tree_host());
   EXPECT_EQ(test_layer->GetLayerTreeHostForTesting(), layer_tree_host());
 
-  test_layer->SavePaintProperties();
   test_layer->Update();
 
   EXPECT_FALSE(test_layer->DrawsContent());
@@ -162,7 +160,6 @@ TEST_F(UIResourceLayerTest, SharedBitmap) {
   layer_tree_host()->SetRootLayer(layer1);
   layer1->SetBitmap(bitmap);
   bitmap.reset();
-  layer1->SavePaintProperties();
   layer1->Update();
   EXPECT_TRUE(layer1->DrawsContent());
   const auto resource_id = layer1->resource_id();
@@ -171,7 +168,6 @@ TEST_F(UIResourceLayerTest, SharedBitmap) {
   scoped_refptr<TestUIResourceLayer> layer2 = TestUIResourceLayer::Create();
   layer_tree_host()->SetRootLayer(layer2);
   layer2->SetBitmap(bitmap_copy);
-  layer2->SavePaintProperties();
   layer2->Update();
   EXPECT_TRUE(layer2->DrawsContent());
   EXPECT_EQ(resource_id, layer2->resource_id());
@@ -189,7 +185,6 @@ TEST_F(UIResourceLayerTest, SharedBitmap) {
   // change the shared bitmap to something else then back to the original.
   LayerTestCommon::LayerImplTest impl;
   impl.host()->SetRootLayer(layer1);
-  layer1->SavePaintProperties();
   layer1->Update();
   EXPECT_TRUE(layer1->DrawsContent());
   const auto other_lth_resource_id = layer1->resource_id();
