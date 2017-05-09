@@ -145,6 +145,7 @@ class InfoBarDelegate {
     SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE = 72,
     AUTOMATION_INFOBAR_DELEGATE = 73,
     VR_SERVICES_UPGRADE_ANDROID = 74,
+    READER_MODE_INFOBAR_ANDROID = 75,
   };
 
   // Describes navigation events, used to decide whether infobars should be
