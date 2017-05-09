@@ -116,7 +116,10 @@ if (enable_vr) {
   }
 }
 
-mojom("mojo_bindings") {
+mojom_component("mojo_bindings") {
+  output_prefix = "device_vr_mojo_bindings"
+  macro_prefix = "DEVICE_VR_MOJO_BINDINGS"
+
   sources = [
     "vr_service.mojom",
   ]
@@ -125,8 +128,4 @@ mojom("mojo_bindings") {
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
   ]
-
-  export_class_attribute = "DEVICE_VR_EXPORT"
-  export_define = "DEVICE_VR_IMPLEMENTATION=1"
-  export_header = "device/vr/vr_export.h"
 }
