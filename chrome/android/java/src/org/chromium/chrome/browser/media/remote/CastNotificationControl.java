@@ -49,6 +49,14 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
     private String mTitle = "";
     private AudioManager mAudioManager;
 
+    /**
+     * Contains the origin of the tab containing the video when it's cast. The origin is formatted
+     * to be presented better from the security POV if the URL is parseable. Otherwise it's just the
+     * URL of the tab if the tab exists. Can be null.
+     */
+    @Nullable
+    private String mTabOrigin;
+
     private boolean mIsShowing;
 
     private static final Object LOCK = new Object();
@@ -128,10 +136,6 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
         updateNotificationBuilderIfPosterIsGoodEnough();
         mState = initialState;
 
-        // Set origin once per the notification so it doesn't change if another tab becomes active.
-        String origin = getCurrentTabOrigin();
-        if (origin != null) mNotificationBuilder.setOrigin(origin);
-
         updateNotification();
         mIsShowing = true;
     }
@@ -147,6 +151,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
         if (mNotificationBuilder == null) return;
 
         mNotificationBuilder.setMetadata(new MediaMetadata(mTitle, "", ""));
+        if (mTabOrigin != null) mNotificationBuilder.setOrigin(mTabOrigin);
 
         if (mState == PlayerState.PAUSED || mState == PlayerState.PLAYING) {
             mNotificationBuilder.setPaused(mState != PlayerState.PLAYING);
@@ -190,6 +195,9 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
 
     @Override
     public void onRouteSelected(String name, MediaRouteController mediaRouteController) {
+        // The notification will be shown/updated later so don't update it in case it's still
+        // showing for the previous video.
+        mTabOrigin = getCurrentTabOrigin();
     }
 
     @Override
