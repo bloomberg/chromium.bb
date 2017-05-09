@@ -73,56 +73,56 @@ cr.define('options.network', function() {
    * @type {?string}
    * @private
    */
-  var activeMenu_ = null;
+  var activeMenu = null;
 
   /**
    * The state of the cellular device or undefined if not available.
    * @type {?chrome.networkingPrivate.DeviceStateProperties}
    * @private
    */
-  var cellularDevice_ = null;
+  var cellularDevice = null;
 
   /**
    * The active cellular network or null if none.
    * @type {?NetworkProperties}
    * @private
    */
-  var cellularNetwork_ = null;
+  var cellularNetwork = null;
 
   /**
    * The active ethernet network or null if none.
    * @type {?NetworkProperties}
    * @private
    */
-  var ethernetNetwork_ = null;
+  var ethernetNetwork = null;
 
   /**
    * The state of the WiFi device or undefined if not available.
    * @type {string|undefined}
    * @private
    */
-  var wifiDeviceState_ = undefined;
+  var wifiDeviceState = undefined;
 
   /**
    * The state of the WiMAX device or undefined if not available.
    * @type {string|undefined}
    * @private
    */
-  var wimaxDeviceState_ = undefined;
+  var wimaxDeviceState = undefined;
 
   /**
    * The current list of third-party VPN providers.
    * @type {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>}}
    * @private
    */
-  var vpnProviders_ = [];
+  var vpnProviders = [];
 
   /**
    * Indicates if mobile data roaming is enabled.
    * @type {boolean}
    * @private
    */
-  var enableDataRoaming_ = false;
+  var enableDataRoaming = false;
 
   /**
    * Returns the display name for 'network'.
@@ -400,7 +400,7 @@ cr.define('options.network', function() {
      */
     refreshMenu: function() {
       this.menu_ = null;
-      if (activeMenu_ == this.getMenuName())
+      if (activeMenu == this.getMenuName())
         this.showMenu();
     },
 
@@ -413,7 +413,7 @@ cr.define('options.network', function() {
       // list is up to date. Networks are periodically rescanned, but depending
       // on timing, there could be an excessive delay before the first rescan
       // unless forced.
-      var rescan = !activeMenu_ && this.data_.key == 'WiFi';
+      var rescan = !activeMenu && this.data_.key == 'WiFi';
       if (!this.menu_) {
         rebuild = true;
         var existing = $(this.getMenuName());
@@ -435,9 +435,9 @@ cr.define('options.network', function() {
       }
       var top = this.offsetTop + this.clientHeight;
       var menuId = this.getMenuName();
-      if (menuId != activeMenu_ || rebuild) {
+      if (menuId != activeMenu || rebuild) {
         closeMenu_();
-        activeMenu_ = menuId;
+        activeMenu = menuId;
         this.menu_.style.setProperty('top', top + 'px');
         this.menu_.hidden = false;
       }
@@ -537,7 +537,7 @@ cr.define('options.network', function() {
       if (candidateData && isManaged(candidateData.Source))
         this.showManagedNetworkIndicator();
 
-      if (activeMenu_ == this.getMenuName()) {
+      if (activeMenu == this.getMenuName()) {
         // Menu is already showing and needs to be updated. Explicitly calling
         // show menu will force the existing menu to be replaced.  The call
         // is deferred in order to ensure that position of this element has
@@ -573,9 +573,9 @@ cr.define('options.network', function() {
         }
         addendum.push(item);
       } else if (this.data_.key == 'Cellular') {
-        if (cellularDevice_.State == 'Enabled' &&
-            cellularNetwork_ && cellularNetwork_.Cellular &&
-            cellularNetwork_.Cellular.SupportNetworkScan) {
+        if (cellularDevice.State == 'Enabled' &&
+            cellularNetwork && cellularNetwork.Cellular &&
+            cellularNetwork.Cellular.SupportNetworkScan) {
           addendum.push({
             label: loadTimeData.getString('otherCellularNetworks'),
             command: createAddNonVPNConnectionCallback_('Cellular'),
@@ -584,7 +584,7 @@ cr.define('options.network', function() {
           });
         }
 
-        var label = enableDataRoaming_ ? 'disableDataRoaming' :
+        var label = enableDataRoaming ? 'disableDataRoaming' :
             'enableDataRoaming';
         var disabled = !loadTimeData.getValue('loggedInAsOwner');
         var entry = {label: loadTimeData.getString(label),
@@ -598,7 +598,7 @@ cr.define('options.network', function() {
           entry.command = function() {
             options.Preferences.setBooleanPref(
                 'cros.signed.data_roaming_enabled',
-                !enableDataRoaming_, true);
+                !enableDataRoaming, true);
             // Force revalidation of the menu the next time it is displayed.
             self.menu_ = null;
           };
@@ -709,7 +709,7 @@ cr.define('options.network', function() {
 
     /** @override */
     canUpdateMenu: function() {
-      return this.data_.key == 'WiFi' && activeMenu_ == this.getMenuName();
+      return this.data_.key == 'WiFi' && activeMenu == this.getMenuName();
     },
 
     /**
@@ -925,7 +925,7 @@ cr.define('options.network', function() {
       var prefs = options.Preferences.getInstance();
       prefs.addEventListener('cros.signed.data_roaming_enabled',
           function(event) {
-            enableDataRoaming_ = event.value.value;
+            enableDataRoaming = event.value.value;
           });
       this.endBatchUpdates();
 
@@ -971,13 +971,13 @@ cr.define('options.network', function() {
      * @private
      */
     onGetAllExtensions_: function(extensions) {
-      vpnProviders_ = [];
+      vpnProviders = [];
       for (var extension of extensions)
         this.addVpnProvider_(extension);
     },
 
     /**
-     * If |extension| is a third-party VPN provider, add it to vpnProviders_.
+     * If |extension| is a third-party VPN provider, add it to vpnProviders.
      * @param {!ExtensionInfo} extension
      * @private
      */
@@ -989,7 +989,7 @@ cr.define('options.network', function() {
       // Ensure that we haven't already added this provider, e.g. if
       // the onExtensionAdded_ callback gets invoked after onGetAllExtensions_
       // for an extension in the returned list.
-      for (var provider of vpnProviders_) {
+      for (var provider of vpnProviders) {
         if (provider.ExtensionID == extension.id)
           return;
       }
@@ -997,7 +997,7 @@ cr.define('options.network', function() {
         ExtensionID: extension.id,
         ProviderName: extension.name
       };
-      vpnProviders_.push(newProvider);
+      vpnProviders.push(newProvider);
       this.refreshVpnProviders_();
     },
 
@@ -1016,10 +1016,10 @@ cr.define('options.network', function() {
      * @private
      */
     onExtensionRemoved_: function(extensionId) {
-      for (var i = 0; i < vpnProviders_.length; ++i) {
-        var provider = vpnProviders_[i];
+      for (var i = 0; i < vpnProviders.length; ++i) {
+        var provider = vpnProviders[i];
         if (provider.ExtensionID == extensionId) {
-          vpnProviders_.splice(i, 1);
+          vpnProviders.splice(i, 1);
           this.refreshVpnProviders_();
           break;
         }
@@ -1072,14 +1072,14 @@ cr.define('options.network', function() {
 
     /** @override */
     handleKeyDown: function(e) {
-      if (activeMenu_) {
+      if (activeMenu) {
         // keyIdentifier does not report 'Esc' correctly
         if (e.keyCode == 27 /* Esc */) {
           closeMenu_();
           return;
         }
 
-        if ($(activeMenu_).handleKeyDown(e)) {
+        if ($(activeMenu).handleKeyDown(e)) {
           e.preventDefault();
           e.stopPropagation();
         }
@@ -1109,11 +1109,11 @@ cr.define('options.network', function() {
       // A list item may temporarily become unselected while it is constructing
       // its menu. The menu should therefore only be closed if a different item
       // is selected, not when the menu's owner item is deselected.
-      if (activeMenu_) {
+      if (activeMenu) {
         for (var i = 0; i < event.changes.length; ++i) {
           if (event.changes[i].selected) {
             var item = this.dataModel.item(event.changes[i].index);
-            if (!item.getMenuName || item.getMenuName() != activeMenu_) {
+            if (!item.getMenuName || item.getMenuName() != activeMenu) {
               closeMenu_();
               return;
             }
@@ -1219,24 +1219,24 @@ cr.define('options.network', function() {
      */
     updateNetworkStates: function(deviceStates, networkStates) {
       // Update device states.
-      cellularDevice_ = null;
-      wifiDeviceState_ = undefined;
-      wimaxDeviceState_ = undefined;
+      cellularDevice = null;
+      wifiDeviceState = undefined;
+      wimaxDeviceState = undefined;
       for (var i = 0; i < deviceStates.length; ++i) {
         var device = deviceStates[i];
         var type = device.Type;
         var state = device.State;
         if (type == 'Cellular')
-          cellularDevice_ = cellularDevice_ || device;
+          cellularDevice = cellularDevice || device;
         else if (type == 'WiFi')
-          wifiDeviceState_ = wifiDeviceState_ || state;
+          wifiDeviceState = wifiDeviceState || state;
         else if (type == 'WiMAX')
-          wimaxDeviceState_ = wimaxDeviceState_ || state;
+          wimaxDeviceState = wimaxDeviceState || state;
       }
 
       // Update active network states.
-      cellularNetwork_ = null;
-      ethernetNetwork_ = null;
+      cellularNetwork = null;
+      ethernetNetwork = null;
       for (var i = 0; i < networkStates.length; i++) {
         // Note: This cast is valid since
         // networkingPrivate.NetworkStateProperties is a subset of
@@ -1244,25 +1244,25 @@ cr.define('options.network', function() {
         var entry = /** @type {NetworkProperties} */ (networkStates[i]);
         switch (entry.Type) {
           case 'Cellular':
-            cellularNetwork_ = cellularNetwork_ || entry;
+            cellularNetwork = cellularNetwork || entry;
             break;
           case 'Ethernet':
             // Ignore any EAP Parameters networks (which lack ConnectionState).
             if (entry.ConnectionState)
-              ethernetNetwork_ = ethernetNetwork_ || entry;
+              ethernetNetwork = ethernetNetwork || entry;
             break;
         }
-        if (cellularNetwork_ && ethernetNetwork_)
+        if (cellularNetwork && ethernetNetwork)
           break;
       }
 
-      if (cellularNetwork_ && cellularNetwork_.GUID) {
+      if (cellularNetwork && cellularNetwork.GUID) {
         // Get the complete set of cellular properties which includes SIM and
         // Scan properties.
         var networkList = this;
         chrome.networkingPrivate.getProperties(
-            cellularNetwork_.GUID, function(cellular) {
-              cellularNetwork_ = /** @type {NetworkProperties} */ (cellular);
+            cellularNetwork.GUID, function(cellular) {
+              cellularNetwork = /** @type {NetworkProperties} */ (cellular);
               networkList.updateControls(networkStates);
             });
       } else {
@@ -1279,9 +1279,9 @@ cr.define('options.network', function() {
       this.startBatchUpdates();
 
       // Only show Ethernet control if available.
-      if (ethernetNetwork_) {
-        var ethernetOptions = showDetails.bind(null, ethernetNetwork_.GUID);
-        var state = ethernetNetwork_.ConnectionState;
+      if (ethernetNetwork) {
+        var ethernetOptions = showDetails.bind(null, ethernetNetwork.GUID);
+        var state = ethernetNetwork.ConnectionState;
         var subtitle;
         if (state == 'Connected')
           subtitle = loadTimeData.getString('OncConnectionStateConnected');
@@ -1292,29 +1292,29 @@ cr.define('options.network', function() {
         this.update(
           { key: 'Ethernet',
             subtitle: subtitle,
-            iconData: ethernetNetwork_,
+            iconData: ethernetNetwork,
             command: ethernetOptions,
-            Source: ethernetNetwork_.Source }
+            Source: ethernetNetwork.Source }
         );
       } else {
         this.deleteItem('Ethernet');
       }
 
-      if (wifiDeviceState_ == 'Enabled')
+      if (wifiDeviceState == 'Enabled')
         loadData_('WiFi', networkStates);
-      else if (wifiDeviceState_ ==
+      else if (wifiDeviceState ==
           chrome.networkingPrivate.DeviceStateType.PROHIBITED)
         setTechnologiesProhibited_(chrome.networkingPrivate.NetworkType.WI_FI);
       else
         addEnableNetworkButton_(chrome.networkingPrivate.NetworkType.WI_FI);
 
       // Only show cellular control if available.
-      if (cellularDevice_) {
-        if (cellularDevice_.State == 'Enabled' &&
-            !isCellularSimAbsent(cellularDevice_) &&
-            !isCellularSimLocked(cellularDevice_)) {
+      if (cellularDevice) {
+        if (cellularDevice.State == 'Enabled' &&
+            !isCellularSimAbsent(cellularDevice) &&
+            !isCellularSimLocked(cellularDevice)) {
           loadData_('Cellular', networkStates);
-        } else if (cellularDevice_.State ==
+        } else if (cellularDevice.State ==
             chrome.networkingPrivate.DeviceStateType.PROHIBITED) {
           setTechnologiesProhibited_(
               chrome.networkingPrivate.NetworkType.CELLULAR);
@@ -1327,10 +1327,10 @@ cr.define('options.network', function() {
       }
 
       // Only show wimax control if available. Uses cellular icons.
-      if (wimaxDeviceState_) {
-        if (wimaxDeviceState_ == 'Enabled') {
+      if (wimaxDeviceState) {
+        if (wimaxDeviceState == 'Enabled') {
           loadData_('WiMAX', networkStates);
-        } else if (wimaxDeviceState_ ==
+        } else if (wimaxDeviceState ==
             chrome.networkingPrivate.DeviceStateType.PROHIBITED) {
           setTechnologiesProhibited_(
               chrome.networkingPrivate.NetworkType.WI_MAX);
@@ -1360,10 +1360,10 @@ cr.define('options.network', function() {
       if (type == chrome.networkingPrivate.NetworkType.WI_FI)
         sendChromeMetricsAction('Options_NetworkWifiToggle');
       if (type == chrome.networkingPrivate.NetworkType.CELLULAR) {
-        if (isCellularSimLocked(cellularDevice_)) {
+        if (isCellularSimLocked(cellularDevice)) {
           chrome.send('simOperation', ['unlock']);
           return;
-        } else if (isCellularSimAbsent(cellularDevice_)) {
+        } else if (isCellularSimAbsent(cellularDevice)) {
           chrome.send('simOperation', ['configure']);
           return;
         }
@@ -1439,7 +1439,7 @@ cr.define('options.network', function() {
 
     /** @override */
     toggleBubble: function() {
-      if (activeMenu_ && !$(activeMenu_).contains(this))
+      if (activeMenu && !$(activeMenu).contains(this))
         closeMenu_();
       ControlledSettingIndicator.prototype.toggleBubble.call(this);
       if (this.showingBubble) {
@@ -1489,12 +1489,12 @@ cr.define('options.network', function() {
    * @private
    */
   function closeMenu_() {
-    if (activeMenu_) {
-      var menu = $(activeMenu_);
+    if (activeMenu) {
+      var menu = $(activeMenu);
       menu.hidden = true;
       if (menu.data && menu.data.discardOnClose)
         menu.parentNode.removeChild(menu);
-      activeMenu_ = null;
+      activeMenu = null;
     }
   }
 
@@ -1542,8 +1542,8 @@ cr.define('options.network', function() {
    */
   function createAddVPNConnectionEntries_() {
     var entries = [];
-    for (var i = 0; i < vpnProviders_.length; ++i) {
-      var provider = vpnProviders_[i];
+    for (var i = 0; i < vpnProviders.length; ++i) {
+      var provider = vpnProviders[i];
       entries.push({
         label: loadTimeData.getStringF('addConnectionVPNTemplate',
                                        provider.ProviderName),

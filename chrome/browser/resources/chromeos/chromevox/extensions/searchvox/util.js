@@ -66,7 +66,7 @@ cvox.SearchUtil.subOneWrap = function(index, length) {
  * @return {?string} The id of the active descendant.
  * @private
  */
-var getActiveDescendantId_ = function(targetNode) {
+var getActiveDescendantId = function(targetNode) {
   if (!targetNode.getAttribute) {
     return null;
   }
@@ -93,7 +93,7 @@ var getActiveDescendant = function(targetNode) {
   var node = targetNode;
 
   while (node) {
-    var activeId = getActiveDescendantId_(node);
+    var activeId = getActiveDescendantId(node);
     if (!activeId) {
       break;
     }

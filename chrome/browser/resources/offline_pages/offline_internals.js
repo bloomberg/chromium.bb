@@ -12,7 +12,7 @@ cr.define('offlineInternals', function() {
   var savePageRequests = [];
 
   /** @type {!offlineInternals.OfflineInternalsBrowserProxy} */
-  var browserProxy_ =
+  var browserProxy =
       offlineInternals.OfflineInternalsBrowserProxyImpl.getInstance();
 
   /**
@@ -116,9 +116,9 @@ cr.define('offlineInternals', function() {
    * Refresh all displayed information.
    */
   function refreshAll() {
-    browserProxy_.getStoredPages().then(fillStoredPages);
-    browserProxy_.getRequestQueue().then(fillRequestQueue);
-    browserProxy_.getNetworkStatus().then(function(networkStatus) {
+    browserProxy.getStoredPages().then(fillStoredPages);
+    browserProxy.getRequestQueue().then(fillRequestQueue);
+    browserProxy.getNetworkStatus().then(function(networkStatus) {
       $('current-status').textContent = networkStatus;
     });
     refreshLog();
@@ -135,7 +135,7 @@ cr.define('offlineInternals', function() {
       selectedIds.push(checkboxes[i].value);
     }
 
-    browserProxy_.deleteSelectedPages(selectedIds).then(pagesDeleted);
+    browserProxy.deleteSelectedPages(selectedIds).then(pagesDeleted);
   }
 
   /**
@@ -149,7 +149,7 @@ cr.define('offlineInternals', function() {
       selectedIds.push(checkboxes[i].value);
     }
 
-    browserProxy_.deleteSelectedRequests(selectedIds).then(requestsDeleted);
+    browserProxy.deleteSelectedRequests(selectedIds).then(requestsDeleted);
   }
 
   /**
@@ -158,7 +158,7 @@ cr.define('offlineInternals', function() {
    */
   function pagesDeleted(status) {
     $('page-actions-info').textContent = status;
-    browserProxy_.getStoredPages().then(fillStoredPages);
+    browserProxy.getStoredPages().then(fillStoredPages);
   }
 
   /**
@@ -166,7 +166,7 @@ cr.define('offlineInternals', function() {
    */
   function requestsDeleted(status) {
     $('request-queue-actions-info').textContent = status;
-    browserProxy_.getRequestQueue().then(fillRequestQueue);
+    browserProxy.getRequestQueue().then(fillRequestQueue);
   }
 
   /**
@@ -205,7 +205,7 @@ cr.define('offlineInternals', function() {
         selectedIds.push(checkboxes[i].value);
     }
 
-    browserProxy_.deleteSelectedPages(selectedIds).then(pagesDeleted);
+    browserProxy.deleteSelectedPages(selectedIds).then(pagesDeleted);
   }
 
   /**
@@ -220,15 +220,15 @@ cr.define('offlineInternals', function() {
         selectedIds.push(checkboxes[i].value);
     }
 
-    browserProxy_.deleteSelectedRequests(selectedIds).then(requestsDeleted);
+    browserProxy.deleteSelectedRequests(selectedIds).then(requestsDeleted);
   }
 
   /**
    * Refreshes the logs.
    */
   function refreshLog() {
-    browserProxy_.getEventLogs().then(fillEventLog);
-    browserProxy_.getLoggingState().then(updateLogStatus);
+    browserProxy.getEventLogs().then(fillEventLog);
+    browserProxy.getLoggingState().then(updateLogStatus);
   }
 
   function initialize() {
@@ -236,7 +236,7 @@ cr.define('offlineInternals', function() {
      * @param {!boolean} enabled Whether to enable Logging.
      */
     function togglePageModelLog(enabled) {
-      browserProxy_.setRecordPageModel(enabled);
+      browserProxy.setRecordPageModel(enabled);
       $('model-status').textContent = enabled ? 'On' : 'Off';
     }
 
@@ -244,7 +244,7 @@ cr.define('offlineInternals', function() {
      * @param {!boolean} enabled Whether to enable Logging.
      */
     function toggleRequestQueueLog(enabled) {
-      browserProxy_.setRecordRequestQueue(enabled);
+      browserProxy.setRecordRequestQueue(enabled);
       $('request-status').textContent = enabled ? 'On' : 'Off';
     }
 
@@ -275,7 +275,7 @@ cr.define('offlineInternals', function() {
       var counter = saveUrls.length;
       $('save-url-state').textContent = '';
       for (let i = 0; i < saveUrls.length; i++) {
-        browserProxy_.addToRequestQueue(saveUrls[i])
+        browserProxy.addToRequestQueue(saveUrls[i])
             .then(function(state) {
               if (state) {
                 $('save-url-state').textContent +=
@@ -283,7 +283,7 @@ cr.define('offlineInternals', function() {
                 $('url').value = '';
                 counter--;
                 if (counter == 0) {
-                  browserProxy_.getRequestQueue().then(fillRequestQueue);
+                  browserProxy.getRequestQueue().then(fillRequestQueue);
                 }
               } else {
                 $('save-url-state').textContent +=
@@ -293,11 +293,11 @@ cr.define('offlineInternals', function() {
       }
     };
     $('schedule-nwake').onclick = function() {
-      browserProxy_.scheduleNwake();
-    }
+      browserProxy.scheduleNwake();
+    };
     $('cancel-nwake').onclick = function() {
-      browserProxy_.cancelNwake();
-    }
+      browserProxy.cancelNwake();
+    };
     if (!incognito)
       refreshAll();
   }

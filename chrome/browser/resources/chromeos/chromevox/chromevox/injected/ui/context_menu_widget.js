@@ -20,7 +20,7 @@ var CONTEXT_MENU_ATTR = 'contextMenuActions';
  * @param {Object} node Node to extract from.
  * @return {*} Extracted list.
  */
-var extractMenuList_ = function(node) {
+var extractMenuList = function(node) {
   var curr = node;
   while (curr !== document) {
     var menuListJSON = curr.getAttribute(CONTEXT_MENU_ATTR);
@@ -37,7 +37,7 @@ var extractMenuList_ = function(node) {
  * @private
  * @return {Node} Current element node.
  */
-var getCurrentElement_ = function() {
+var getCurrentElement = function() {
   var currNode = cvox.ChromeVox.navigationManager.getCurrentNode();
   while (currNode.nodeType !== Node.ELEMENT_NODE) {
     currNode = currNode.parentNode;
@@ -58,12 +58,12 @@ cvox.ContextMenuWidget = function() {
    * @private
    * @type {Node}
    */
-  this.triggerElement_ = getCurrentElement_();
+  this.triggerElement_ = getCurrentElement();
 
   /**
    * List of menu items in the context menu.
    */
-  this.menuList = extractMenuList_(this.triggerElement_);
+  this.menuList = extractMenuList(this.triggerElement_);
 
   if (!this.menuList) {
     console.log('No context menu found.');

@@ -5,7 +5,7 @@
 // Counter used to give animations unique names.
 var animationCounter = 0;
 
-var animationEventTracker_ = new EventTracker();
+var animationEventTracker = new EventTracker();
 
 function addAnimation(code) {
   var name = 'anim' + animationCounter;
@@ -54,7 +54,7 @@ function fadeInElement(el, opt_justShow) {
   } else {
     el.style.height = height + 'px';
     var animName = addAnimation(getFadeInAnimationCode(height));
-    animationEventTracker_.add(
+    animationEventTracker.add(
         el, 'animationend', onFadeInAnimationEnd.bind(el), false);
     el.style.animationName = animName;
   }
@@ -74,7 +74,7 @@ function fadeOutElement(el) {
   var height = el.offsetHeight;
   el.style.height = height + 'px';
   el.offsetHeight;  // Should force an update of the computed style.
-  animationEventTracker_.add(
+  animationEventTracker.add(
       el, 'transitionend', onFadeOutTransitionEnd.bind(el), false);
   el.classList.add('closing');
   el.classList.remove('visible');
@@ -89,7 +89,7 @@ function fadeOutElement(el) {
 function onFadeOutTransitionEnd(event) {
   if (event.propertyName != 'height')
     return;
-  animationEventTracker_.remove(this, 'transitionend');
+  animationEventTracker.remove(this, 'transitionend');
   this.hidden = true;
 }
 
@@ -113,7 +113,7 @@ function fadeInAnimationCleanup(element) {
     if (animEl)
       animEl.parentNode.removeChild(animEl);
     element.style.animationName = '';
-    animationEventTracker_.remove(element, 'animationend');
+    animationEventTracker.remove(element, 'animationend');
   }
 }
 
