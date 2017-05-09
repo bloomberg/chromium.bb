@@ -169,7 +169,8 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
         boolean hasCameraPermission = mWindowAndroid.hasPermission(Manifest.permission.CAMERA);
         if (mSupportsImageCapture && hasCameraPermission) {
             // GetCameraIntentTask will call LaunchSelectFileWithCameraIntent later.
-            new GetCameraIntentTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            new GetCameraIntentTask(false, mWindowAndroid, this)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else {
             launchSelectFileWithCameraIntent(hasCameraPermission, null);
         }
@@ -272,18 +273,44 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
                 break;
 
             case PHOTOS_SELECTED:
-                // TODO(finnur): Implement.
-                onFileNotSelected();
+                if (photos.length == 0) {
+                    onFileNotSelected();
+                    return;
+                }
+
+                if (photos.length == 1) {
+                    GetDisplayNameTask task =
+                            new GetDisplayNameTask(ContextUtils.getApplicationContext(), false);
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, Uri.parse(photos[0]));
+                    return;
+                } else {
+                    Uri[] filePathArray = new Uri[photos.length];
+                    for (int i = 0; i < photos.length; ++i) {
+                        filePathArray[i] = Uri.parse(photos[i]);
+                    }
+                    GetDisplayNameTask task =
+                            new GetDisplayNameTask(ContextUtils.getApplicationContext(), true);
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, filePathArray);
+                }
                 break;
 
             case LAUNCH_GALLERY:
-                // TODO(finnur): Implement.
-                onFileNotSelected();
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                if (mAllowMultiple) intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                Activity activity = mWindowAndroid.getActivity().get();
+                if (activity != null) {
+                    String label =
+                            activity.getResources().getString(R.string.photo_picker_select_images);
+                    activity.startActivityForResult(
+                            Intent.createChooser(intent, label), PhotoPickerListener.SHOW_GALLERY);
+                }
                 break;
 
             case LAUNCH_CAMERA:
-                // TODO(finnur): Implement.
-                onFileNotSelected();
+                new GetCameraIntentTask(true, mWindowAndroid, this)
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 break;
         }
     }
@@ -294,6 +321,17 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
     }
 
     private class GetCameraIntentTask extends AsyncTask<Void, Void, Uri> {
+        private Boolean mDirectToCamera;
+        private WindowAndroid mWindow;
+        private WindowAndroid.IntentCallback mCallback;
+
+        public GetCameraIntentTask(Boolean directToCamera, WindowAndroid window,
+                WindowAndroid.IntentCallback callback) {
+            mDirectToCamera = directToCamera;
+            mWindow = window;
+            mCallback = callback;
+        }
+
         @Override
         public Uri doInBackground(Void...voids) {
             try {
@@ -323,7 +361,11 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
                         mWindowAndroid.getApplicationContext().getContentResolver(),
                         UiUtils.IMAGE_FILE_PATH, mCameraOutputUri));
             }
-            launchSelectFileWithCameraIntent(true, camera);
+            if (mDirectToCamera) {
+                mWindow.showIntent(camera, mCallback, R.string.low_memory_error);
+            } else {
+                launchSelectFileWithCameraIntent(true, camera);
+            }
         }
     }
 
