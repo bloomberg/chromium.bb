@@ -118,6 +118,10 @@ void WebDocumentSubresourceFilterImpl::ReportDisallowedLoad() {
     std::move(first_disallowed_load_callback_).Run();
 }
 
+bool WebDocumentSubresourceFilterImpl::ShouldLogToConsole() {
+  return filter_.activation_state().enable_logging;
+}
+
 WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicyImpl(
     const blink::WebURL& url,
     proto::ElementType element_type) {

@@ -23,6 +23,10 @@ class WebDocumentSubresourceFilter {
   // Report that a resource loaded by the document (not a preload) was
   // disallowed.
   virtual void ReportDisallowedLoad() = 0;
+
+  // Returns true if disallowed resource loads should be logged to the devtools
+  // console.
+  virtual bool ShouldLogToConsole() = 0;
 };
 
 }  // namespace blink

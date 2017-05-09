@@ -4,6 +4,9 @@
 
 #include "public/platform/WebDocumentSubresourceFilter.h"
 
+#include <string>
+#include <vector>
+
 #include "core/dom/Element.h"
 #include "core/html/HTMLImageElement.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -42,6 +45,8 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
   }
 
   void ReportDisallowedLoad() override {}
+
+  bool ShouldLogToConsole() override { return false; }
 
   const std::vector<std::string>& QueriedSubresourcePaths() const {
     return queried_subresource_paths_;
