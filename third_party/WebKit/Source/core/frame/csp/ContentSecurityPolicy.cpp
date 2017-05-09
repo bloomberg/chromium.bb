@@ -243,7 +243,7 @@ Document* ContentSecurityPolicy::GetDocument() const {
 }
 
 void ContentSecurityPolicy::CopyStateFrom(const ContentSecurityPolicy* other) {
-  ASSERT(policies_.IsEmpty());
+  DCHECK(policies_.IsEmpty());
   for (const auto& policy : other->policies_)
     AddAndReportPolicyFromHeaderValue(policy->Header(), policy->HeaderType(),
                                       policy->HeaderSource());

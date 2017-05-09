@@ -171,7 +171,7 @@ void PrintContext::BeginPrintMode(float width, float height) {
 }
 
 void PrintContext::EndPrintMode() {
-  ASSERT(is_printing_);
+  DCHECK(is_printing_);
   is_printing_ = false;
   if (IsFrameValid())
     frame_->SetPrinting(false, FloatSize(), FloatSize(), 0);

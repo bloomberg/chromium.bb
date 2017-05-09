@@ -152,7 +152,7 @@ class StyleSheetHandler final : public GarbageCollected<StyleSheetHandler>,
                     Document* document,
                     CSSRuleSourceDataList* result)
       : parsed_text_(parsed_text), document_(document), result_(result) {
-    ASSERT(result_);
+    DCHECK(result_);
   }
 
   DECLARE_TRACE();
@@ -247,7 +247,7 @@ void StyleSheetHandler::AddNewRuleToSourceTree(CSSRuleSourceData* rule) {
 }
 
 CSSRuleSourceData* StyleSheetHandler::PopRuleData() {
-  ASSERT(!current_rule_data_stack_.IsEmpty());
+  DCHECK(!current_rule_data_stack_.IsEmpty());
   current_rule_data_ = nullptr;
   CSSRuleSourceData* data = current_rule_data_stack_.back().Get();
   current_rule_data_stack_.pop_back();
@@ -300,7 +300,7 @@ void StyleSheetHandler::ObserveComment(unsigned start_offset,
   String comment_text =
       parsed_text_.Substring(start_offset, end_offset - start_offset);
 
-  ASSERT(comment_text.StartsWith("/*"));
+  DCHECK(comment_text.StartsWith("/*"));
   comment_text = comment_text.Substring(2);
 
   // Require well-formed comments.
@@ -723,7 +723,7 @@ InspectorStyle::InspectorStyle(CSSStyleDeclaration* style,
     : style_(style),
       source_data_(source_data),
       parent_style_sheet_(parent_style_sheet) {
-  ASSERT(style_);
+  DCHECK(style_);
 }
 
 InspectorStyle::~InspectorStyle() {}
@@ -1159,7 +1159,7 @@ CSSMediaRule* InspectorStyleSheet::SetMediaRuleText(
 
 CSSRuleSourceData* InspectorStyleSheet::RuleSourceDataAfterSourceRange(
     const SourceRange& source_range) {
-  ASSERT(source_data_);
+  DCHECK(source_data_);
   unsigned index = 0;
   for (; index < source_data_->size(); ++index) {
     CSSRuleSourceData* sd = source_data_->at(index).Get();
@@ -1222,7 +1222,7 @@ CSSStyleRule* InspectorStyleSheet::InsertCSSOMRuleBySourceRange(
     const SourceRange& source_range,
     const String& rule_text,
     ExceptionState& exception_state) {
-  ASSERT(source_data_);
+  DCHECK(source_data_);
 
   CSSRuleSourceData* containing_rule_source_data = nullptr;
   for (size_t i = 0; i < source_data_->size(); ++i) {
@@ -1876,7 +1876,7 @@ InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(
     Element* element,
     Listener* listener)
     : InspectorStyleSheetBase(listener), element_(element) {
-  ASSERT(element_);
+  DCHECK(element_);
 }
 
 void InspectorStyleSheetForInlineStyle::DidModifyElementAttribute() {

@@ -556,7 +556,7 @@ void InspectorDOMDebuggerAgent::BreakProgramOnDOMEvent(Node* target,
     // Find breakpoint owner node.
     if (!insertion)
       breakpoint_owner = InspectorDOMAgent::InnerParentNode(target);
-    ASSERT(breakpoint_owner);
+    DCHECK(breakpoint_owner);
     while (!(dom_breakpoints_.at(breakpoint_owner) & (1 << breakpoint_type))) {
       Node* parent_node = InspectorDOMAgent::InnerParentNode(breakpoint_owner);
       if (!parent_node)
@@ -569,7 +569,7 @@ void InspectorDOMDebuggerAgent::BreakProgramOnDOMEvent(Node* target,
   }
 
   int breakpoint_owner_node_id = dom_agent_->BoundNodeId(breakpoint_owner);
-  ASSERT(breakpoint_owner_node_id);
+  DCHECK(breakpoint_owner_node_id);
   description->setInteger("nodeId", breakpoint_owner_node_id);
   description->setString("type", DomTypeName(breakpoint_type));
   String json = description->serialize();

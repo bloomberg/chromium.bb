@@ -355,7 +355,7 @@ Response InspectorLayerTreeAgent::compositingReasons(
     reasons_bitmask &= ~kCompositingReasonStringMap[i].reason;
 #endif
   }
-  ASSERT(!reasons_bitmask);
+  DCHECK(!reasons_bitmask);
   return Response::OK();
 }
 

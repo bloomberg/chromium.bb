@@ -417,7 +417,7 @@ static PassRefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
     ParsedOptions& parsed_options,
     AlphaDisposition image_format,
     ColorBehavior color_behavior) {
-  ASSERT(image);
+  DCHECK(image);
   IntRect img_rect(IntPoint(), IntSize(image->width(), image->height()));
   const IntRect src_rect = Intersection(img_rect, parsed_options.crop_rect);
 
@@ -629,7 +629,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
                          Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
-  ASSERT(canvas->IsPaintable());
+  DCHECK(canvas->IsPaintable());
   RefPtr<Image> input;
   if (canvas->PlaceholderFrame()) {
     input = canvas->PlaceholderFrame();
@@ -978,7 +978,7 @@ ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image) {
 }
 
 PassRefPtr<StaticBitmapImage> ImageBitmap::Transfer() {
-  ASSERT(!IsNeutered());
+  DCHECK(!IsNeutered());
   is_neutered_ = true;
   image_->Transfer();
   return std::move(image_);

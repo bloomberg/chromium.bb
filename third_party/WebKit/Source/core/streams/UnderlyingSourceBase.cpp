@@ -16,7 +16,7 @@ ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* script_state,
                                                  ScriptValue js_controller) {
   // Cannot call start twice (e.g., cannot use the same UnderlyingSourceBase to
   // construct multiple streams).
-  ASSERT(!controller_);
+  DCHECK(!controller_);
 
   controller_ = new ReadableStreamController(js_controller);
 

@@ -501,7 +501,7 @@ std::unique_ptr<TracedValue>
 InspectorStyleRecalcInvalidationTrackingEvent::Data(
     Node* node,
     const StyleChangeReasonForTracing& reason) {
-  ASSERT(node);
+  DCHECK(node);
 
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame", ToHexString(node->GetDocument().GetFrame()));
@@ -611,7 +611,7 @@ const char kScrollbarChanged[] = "Scrollbar changed";
 std::unique_ptr<TracedValue> InspectorLayoutInvalidationTrackingEvent::Data(
     const LayoutObject* layout_object,
     LayoutInvalidationReasonForTracing reason) {
-  ASSERT(layout_object);
+  DCHECK(layout_object);
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame", ToHexString(layout_object->GetFrame()));
   SetGeneratingNodeInfo(value.get(), layout_object, "nodeId", "nodeName");
@@ -623,7 +623,7 @@ std::unique_ptr<TracedValue> InspectorLayoutInvalidationTrackingEvent::Data(
 std::unique_ptr<TracedValue> InspectorPaintInvalidationTrackingEvent::Data(
     const LayoutObject* layout_object,
     const LayoutObject& paint_container) {
-  ASSERT(layout_object);
+  DCHECK(layout_object);
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame", ToHexString(layout_object->GetFrame()));
   SetGeneratingNodeInfo(value.get(), &paint_container, "paintId");

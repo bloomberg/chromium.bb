@@ -57,7 +57,7 @@ void SuspendableTimer::ContextDestroyed(ExecutionContext*) {
 
 void SuspendableTimer::Suspend() {
 #if DCHECK_IS_ON()
-  ASSERT(!suspended_);
+  DCHECK(!suspended_);
   suspended_ = true;
 #endif
   if (IsActive()) {
@@ -70,7 +70,7 @@ void SuspendableTimer::Suspend() {
 
 void SuspendableTimer::Resume() {
 #if DCHECK_IS_ON()
-  ASSERT(suspended_);
+  DCHECK(suspended_);
   suspended_ = false;
 #endif
   if (next_fire_interval_ >= 0.0) {

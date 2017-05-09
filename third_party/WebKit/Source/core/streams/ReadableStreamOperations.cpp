@@ -59,7 +59,7 @@ ScriptValue ReadableStreamOperations::GetReader(ScriptState* script_state,
 
 bool ReadableStreamOperations::IsReadableStream(ScriptState* script_state,
                                                 ScriptValue value) {
-  ASSERT(!value.IsEmpty());
+  DCHECK(!value.IsEmpty());
 
   if (!value.IsObject())
     return false;
@@ -129,7 +129,7 @@ bool ReadableStreamOperations::IsErrored(ScriptState* script_state,
 bool ReadableStreamOperations::IsReadableStreamDefaultReader(
     ScriptState* script_state,
     ScriptValue value) {
-  ASSERT(!value.IsEmpty());
+  DCHECK(!value.IsEmpty());
 
   if (!value.IsObject())
     return false;

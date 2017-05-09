@@ -134,7 +134,7 @@ class CORE_EXPORT FrameView final
   void Resize(const IntSize& size) { SetFrameRect(IntRect(Location(), size)); }
 
   LocalFrame& GetFrame() const {
-    ASSERT(frame_);
+    DCHECK(frame_);
     return *frame_;
   }
 

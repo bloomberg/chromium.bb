@@ -109,7 +109,7 @@ bool NodeIsZoomTarget(Node* node) {
   if (node->IsTextNode() || node->IsShadowRoot())
     return false;
 
-  ASSERT(node->GetLayoutObject());
+  DCHECK(node->GetLayoutObject());
   return node->GetLayoutObject()->IsBox();
 }
 
@@ -160,7 +160,7 @@ static inline void AppendBasicSubtargetsForNode(
     Node* node,
     SubtargetGeometryList& subtargets) {
   // Node guaranteed to have layoutObject due to check in node filter.
-  ASSERT(node->GetLayoutObject());
+  DCHECK(node->GetLayoutObject());
 
   Vector<FloatQuad> quads;
   node->GetLayoutObject()->AbsoluteQuads(quads);
@@ -173,7 +173,7 @@ static inline void AppendContextSubtargetsForNode(
     SubtargetGeometryList& subtargets) {
   // This is a variant of appendBasicSubtargetsForNode that adds special
   // subtargets for selected or auto-selectable parts of text nodes.
-  ASSERT(node->GetLayoutObject());
+  DCHECK(node->GetLayoutObject());
 
   if (!node->IsTextNode())
     return AppendBasicSubtargetsForNode(node, subtargets);
@@ -235,7 +235,7 @@ static inline void AppendContextSubtargetsForNode(
 static inline void AppendZoomableSubtargets(Node* node,
                                             SubtargetGeometryList& subtargets) {
   LayoutBox* layout_object = ToLayoutBox(node->GetLayoutObject());
-  ASSERT(layout_object);
+  DCHECK(layout_object);
 
   Vector<FloatQuad> quads;
   FloatRect border_box_rect(layout_object->BorderBoxRect());
@@ -320,7 +320,7 @@ void CompileSubtargetList(const HeapVector<Member<Node>>& intersected_nodes,
     // preferred even when contained in an element that monitors all
     // click-events.
     Node* responding_node = responder_map.at(candidate);
-    ASSERT(responding_node);
+    DCHECK(responding_node);
     if (ancestors_to_responders_set.Contains(responding_node))
       continue;
     // Consolidate bounds for editable content.

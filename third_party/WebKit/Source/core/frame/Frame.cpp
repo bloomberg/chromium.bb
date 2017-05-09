@@ -313,7 +313,7 @@ bool Frame::CanNavigateWithoutFramebusting(const Frame& target_frame,
     }
   }
 
-  ASSERT(GetSecurityContext()->GetSecurityOrigin());
+  DCHECK(GetSecurityContext()->GetSecurityOrigin());
   SecurityOrigin& origin = *GetSecurityContext()->GetSecurityOrigin();
 
   // This is the normal case. A document can navigate its decendant frames,

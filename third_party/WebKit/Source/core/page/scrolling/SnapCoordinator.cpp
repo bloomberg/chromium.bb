@@ -105,8 +105,8 @@ Vector<double> SnapCoordinator::SnapOffsets(const ContainerNode& element,
                                             ScrollbarOrientation orientation) {
   const ComputedStyle* style = element.GetComputedStyle();
   const LayoutBox* snap_container = element.GetLayoutBox();
-  ASSERT(style);
-  ASSERT(snap_container);
+  DCHECK(style);
+  DCHECK(snap_container);
 
   Vector<double> result;
 

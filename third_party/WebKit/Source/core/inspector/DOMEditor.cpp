@@ -234,7 +234,7 @@ class DOMEditor::SetOuterHTMLAction final : public InspectorHistory::Action {
 
   bool Perform(ExceptionState& exception_state) override {
     old_html_ = CreateMarkup(node_.Get());
-    ASSERT(node_->ownerDocument());
+    DCHECK(node_->ownerDocument());
     DOMPatchSupport dom_patch_support(dom_editor_.Get(),
                                       *node_->ownerDocument());
     new_node_ =

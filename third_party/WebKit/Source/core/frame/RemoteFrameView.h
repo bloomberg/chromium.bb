@@ -32,7 +32,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   FrameViewBase* Parent() const override { return parent_; }
 
   RemoteFrame& GetFrame() const {
-    ASSERT(remote_frame_);
+    DCHECK(remote_frame_);
     return *remote_frame_;
   }
 

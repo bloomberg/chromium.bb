@@ -15,7 +15,7 @@ void LayoutSubtreeRootList::ClearAndMarkContainingBlocksForLayout() {
 }
 
 LayoutObject* LayoutSubtreeRootList::RandomRoot() {
-  ASSERT(!IsEmpty());
+  DCHECK(!IsEmpty());
   return *Unordered().begin();
 }
 

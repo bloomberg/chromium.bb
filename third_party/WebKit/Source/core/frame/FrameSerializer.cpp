@@ -206,7 +206,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
         AppendRewrittenAttribute(out, element, attribute.GetName().ToString(),
                                  new_link_for_the_element);
       } else {
-        ASSERT(is_src_doc_attribute);
+        DCHECK(is_src_doc_attribute);
         // Emit src instead of srcdoc attribute for frame elements - we want the
         // serialized subframe to use html contents from the link provided by
         // Delegate::rewriteLink rather than html contents from srcdoc
@@ -271,7 +271,7 @@ FrameSerializer::FrameSerializer(Deque<SerializedResource>& resources,
 
 void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
   TRACE_EVENT0("page-serialization", "FrameSerializer::serializeFrame");
-  ASSERT(frame.GetDocument());
+  DCHECK(frame.GetDocument());
   Document& document = *frame.GetDocument();
   KURL url = document.Url();
 
@@ -300,7 +300,7 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
   }
 
   for (Node* node : serialized_nodes) {
-    ASSERT(node);
+    DCHECK(node);
     if (!node->IsElementNode())
       continue;
 
@@ -383,7 +383,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
     }
 
     WTF::TextEncoding text_encoding(style_sheet.Contents()->Charset());
-    ASSERT(text_encoding.IsValid());
+    DCHECK(text_encoding.IsValid());
     String text_string = css_text.ToString();
     CString text = text_encoding.Encode(
         text_string, WTF::kCSSEncodedEntitiesForUnencodables);
@@ -410,7 +410,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
 }
 
 void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
-  ASSERT(rule->parentStyleSheet()->OwnerDocument());
+  DCHECK(rule->parentStyleSheet()->OwnerDocument());
   Document& document = *rule->parentStyleSheet()->OwnerDocument();
 
   switch (rule->type()) {
@@ -422,7 +422,7 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
     case CSSRule::kImportRule: {
       CSSImportRule* import_rule = ToCSSImportRule(rule);
       KURL sheet_base_url = rule->parentStyleSheet()->BaseURL();
-      ASSERT(sheet_base_url.IsValid());
+      DCHECK(sheet_base_url.IsValid());
       KURL import_url = KURL(sheet_base_url, import_rule->href());
       if (import_rule->styleSheet())
         SerializeCSSStyleSheet(*import_rule->styleSheet(), import_url);

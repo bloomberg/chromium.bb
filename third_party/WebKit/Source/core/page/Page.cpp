@@ -129,15 +129,15 @@ Page::Page(PageClients& page_clients)
       visibility_state_(kPageVisibilityStateVisible),
       is_cursor_visible_(true),
       subframe_count_(0) {
-  ASSERT(editor_client_);
+  DCHECK(editor_client_);
 
-  ASSERT(!AllPages().Contains(this));
+  DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 }
 
 Page::~Page() {
   // willBeDestroyed() must be called before Page destruction.
-  ASSERT(!main_frame_);
+  DCHECK(!main_frame_);
 }
 
 void Page::CloseSoon() {
@@ -654,7 +654,7 @@ void Page::WillBeDestroyed() {
   if (main_frame->IsAttached())
     main_frame->Detach(FrameDetachType::kRemove);
 
-  ASSERT(AllPages().Contains(this));
+  DCHECK(AllPages().Contains(this));
   AllPages().erase(this);
   OrdinaryPages().erase(this);
 

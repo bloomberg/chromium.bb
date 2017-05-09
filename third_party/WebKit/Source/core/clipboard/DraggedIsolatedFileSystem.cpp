@@ -11,12 +11,12 @@ DraggedIsolatedFileSystem::FileSystemIdPreparationCallback
 
 void DraggedIsolatedFileSystem::Init(
     DraggedIsolatedFileSystem::FileSystemIdPreparationCallback callback) {
-  ASSERT(!prepare_callback_);
+  DCHECK(!prepare_callback_);
   prepare_callback_ = callback;
 }
 
 void DraggedIsolatedFileSystem::PrepareForDataObject(DataObject* data_object) {
-  ASSERT(prepare_callback_);
+  DCHECK(prepare_callback_);
   (*prepare_callback_)(data_object);
 }
 

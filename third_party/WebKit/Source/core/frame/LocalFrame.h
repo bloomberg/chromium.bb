@@ -296,7 +296,7 @@ inline FrameLoader& LocalFrame::Loader() const {
 }
 
 inline NavigationScheduler& LocalFrame::GetNavigationScheduler() const {
-  ASSERT(navigation_scheduler_);
+  DCHECK(navigation_scheduler_);
   return *navigation_scheduler_.Get();
 }
 
@@ -337,7 +337,7 @@ inline void LocalFrame::SetInViewSourceMode(bool mode) {
 }
 
 inline EventHandler& LocalFrame::GetEventHandler() const {
-  ASSERT(event_handler_);
+  DCHECK(event_handler_);
   return *event_handler_;
 }
 

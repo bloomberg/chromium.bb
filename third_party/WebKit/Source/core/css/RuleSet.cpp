@@ -370,7 +370,7 @@ void RuleSet::CompactPendingRules(PendingRuleMap& pending_map,
 }
 
 void RuleSet::CompactRules() {
-  ASSERT(pending_rules_);
+  DCHECK(pending_rules_);
   PendingRuleMaps* pending_rules = pending_rules_.Release();
   CompactPendingRules(pending_rules->id_rules, id_rules_);
   CompactPendingRules(pending_rules->class_rules, class_rules_);

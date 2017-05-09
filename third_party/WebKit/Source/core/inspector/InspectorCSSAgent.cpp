@@ -817,7 +817,7 @@ void InspectorCSSAgent::SetActiveStyleSheets(
   for (CSSStyleSheet* css_style_sheet : removed_sheets) {
     InspectorStyleSheet* inspector_style_sheet =
         css_style_sheet_to_inspector_style_sheet_.at(css_style_sheet);
-    ASSERT(inspector_style_sheet);
+    DCHECK(inspector_style_sheet);
 
     document_css_style_sheets->erase(css_style_sheet);
     if (id_to_inspector_style_sheet_.Contains(inspector_style_sheet->Id())) {
@@ -1423,7 +1423,7 @@ Response InspectorCSSAgent::setStyleTexts(
         Member<StyleSheetAction> revert = actions.at(j);
         DummyExceptionStateForTesting undo_exception_state;
         revert->Undo(undo_exception_state);
-        ASSERT(!undo_exception_state.HadException());
+        DCHECK(!undo_exception_state.HadException());
       }
       return Response::Error(
           String::Format("Failed applying edit #%d: ", i) +

@@ -77,7 +77,7 @@ void DOMPatchSupport::PatchDocument(const String& markup) {
   else if (GetDocument().IsXMLDocument())
     new_document = XMLDocument::Create();
 
-  ASSERT(new_document);
+  DCHECK(new_document);
   new_document->SetContextFeatures(GetDocument().GetContextFeatures());
   if (!GetDocument().IsHTMLDocument()) {
     DocumentParser* parser = XMLDocumentParser::Create(*new_document, nullptr);

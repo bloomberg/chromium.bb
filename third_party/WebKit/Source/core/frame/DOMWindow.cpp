@@ -368,7 +368,7 @@ void DOMWindow::close(ExecutionContext* context) {
 
   Document* active_document = nullptr;
   if (context) {
-    ASSERT(IsMainThread());
+    DCHECK(IsMainThread());
     active_document = ToDocument(context);
     if (!active_document)
       return;
@@ -415,13 +415,13 @@ void DOMWindow::focus(ExecutionContext* context) {
   if (!page)
     return;
 
-  ASSERT(context);
+  DCHECK(context);
 
   bool allow_focus = context->IsWindowInteractionAllowed();
   if (allow_focus) {
     context->ConsumeWindowInteraction();
   } else {
-    ASSERT(IsMainThread());
+    DCHECK(IsMainThread());
     allow_focus = opener() && (opener() != this) &&
                   (ToDocument(context)->domWindow() == opener());
   }

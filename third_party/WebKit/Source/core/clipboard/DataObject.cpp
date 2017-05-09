@@ -57,7 +57,9 @@ DataObject* DataObject::CreateFromPasteboard(PasteMode paste_mode) {
       continue;
     data_object->item_list_.push_back(
         DataObjectItem::CreateFromPasteboard(type, sequence_number));
-    ASSERT(types_seen.insert(type).is_new_entry);
+#if DCHECK_IS_ON()
+    DCHECK(types_seen.insert(type).is_new_entry);
+#endif
   }
   return data_object;
 }
@@ -142,7 +144,9 @@ Vector<String> DataObject::Types() const {
       case DataObjectItem::kStringKind:
         // Per the spec, type must be unique among all items of kind 'string'.
         results.push_back(item->GetType());
-        ASSERT(types_seen.insert(item->GetType()).is_new_entry);
+#if DCHECK_IS_ON()
+        DCHECK(types_seen.insert(item->GetType()).is_new_entry);
+#endif
         break;
       case DataObjectItem::kFileKind:
         contains_files = true;
@@ -151,7 +155,9 @@ Vector<String> DataObject::Types() const {
   }
   if (contains_files) {
     results.push_back(kMimeTypeFiles);
-    ASSERT(types_seen.insert(kMimeTypeFiles).is_new_entry);
+#if DCHECK_IS_ON()
+    DCHECK(types_seen.insert(kMimeTypeFiles).is_new_entry);
+#endif
   }
   return results;
 }

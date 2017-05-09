@@ -133,7 +133,7 @@ void DOMTimer::ContextDestroyed(ExecutionContext*) {
 
 void DOMTimer::Fired() {
   ExecutionContext* context = GetExecutionContext();
-  ASSERT(context);
+  DCHECK(context);
   context->Timers()->SetTimerNestingLevel(nesting_level_);
   DCHECK(!context->IsContextSuspended());
   // Only the first execution of a multi-shot timer should get an affirmative

@@ -124,7 +124,7 @@ class CORE_EXPORT RootFrameViewport final
   void UpdateScrollAnimator();
 
   ScrollableArea& VisualViewport() const {
-    ASSERT(visual_viewport_);
+    DCHECK(visual_viewport_);
     return *visual_viewport_;
   }
 

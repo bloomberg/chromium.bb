@@ -78,7 +78,7 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
 }
 
 void OffscreenCanvas::SetNeutered() {
-  ASSERT(!context_);
+  DCHECK(!context_);
   is_neutered_ = true;
   size_.SetWidth(0);
   size_.SetHeight(0);
@@ -209,7 +209,7 @@ void OffscreenCanvas::RegisterRenderingContextFactory(
   CanvasRenderingContext::ContextType type =
       rendering_context_factory->GetContextType();
   ASSERT(type < CanvasRenderingContext::kContextTypeCount);
-  ASSERT(!RenderingContextFactories()[type]);
+  DCHECK(!RenderingContextFactories()[type]);
   RenderingContextFactories()[type] = std::move(rendering_context_factory);
 }
 

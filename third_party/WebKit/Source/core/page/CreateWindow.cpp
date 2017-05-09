@@ -83,7 +83,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (!page)
     return nullptr;
 
-  ASSERT(page->MainFrame());
+  DCHECK(page->MainFrame());
   LocalFrame& frame = *ToLocalFrame(page->MainFrame());
 
   if (!EqualIgnoringASCIICase(request.FrameName(), "_blank"))
@@ -183,7 +183,7 @@ DOMWindow* CreateWindow(const String& url_string,
                         LocalFrame& opener_frame,
                         ExceptionState& exception_state) {
   LocalFrame* active_frame = calling_window.GetFrame();
-  ASSERT(active_frame);
+  DCHECK(active_frame);
 
   KURL completed_url = url_string.IsEmpty()
                            ? KURL(kParsedURLString, g_empty_string)

@@ -87,7 +87,9 @@ void SelectorFilter::PopParentStackFrame() {
     ancestor_identifier_filter_->Remove(parent_frame.identifier_hashes[i]);
   parent_stack_.pop_back();
   if (parent_stack_.IsEmpty()) {
-    ASSERT(ancestor_identifier_filter_->LikelyEmpty());
+#if DCHECK_IS_ON()
+    DCHECK(ancestor_identifier_filter_->LikelyEmpty());
+#endif
     ancestor_identifier_filter_.reset();
   }
 }

@@ -16,10 +16,10 @@ namespace blink {
 namespace {
 Element* ElementForId(int element_id) {
   Node* node = DOMNodeIds::NodeForId(element_id);
-  ASSERT(node);
+  DCHECK(node);
   if (!node)
     return nullptr;
-  ASSERT(node->IsElementNode());
+  DCHECK(node->IsElementNode());
   if (!node->IsElementNode())
     return nullptr;
   return static_cast<Element*>(node);

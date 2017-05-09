@@ -14,7 +14,7 @@ PlatformEventDispatcher::PlatformEventDispatcher()
 
 void PlatformEventDispatcher::AddController(
     PlatformEventController* controller) {
-  ASSERT(controller);
+  DCHECK(controller);
   // TODO: If we can avoid to register a same controller twice, we can change
   // this 'if' to ASSERT.
   if (controllers_.Contains(controller))
@@ -30,7 +30,7 @@ void PlatformEventDispatcher::AddController(
 
 void PlatformEventDispatcher::RemoveController(
     PlatformEventController* controller) {
-  ASSERT(controllers_.Contains(controller));
+  DCHECK(controllers_.Contains(controller));
 
   controllers_.erase(controller);
   if (!is_dispatching_ && controllers_.IsEmpty()) {
