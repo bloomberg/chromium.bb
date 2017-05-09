@@ -129,30 +129,29 @@ def _git_output(argv, **kwargs):
   return subprocess.check_output(argv, **kwargs)
 
 
-def find_engine_override(argv):
-  """Since the bootstrap process attempts to defer all logic to the recipes-py
-  repo, we need to be aware if the user is overriding the recipe_engine
-  dependency. This looks for and returns the overridden recipe_engine path, if
-  any, or None if the user didn't override it."""
+def parse_args(argv):
+  """This extracts a subset of the arguments that this bootstrap script cares
+  about. Currently this consists of:
+    * an override for the recipe engine in the form of `-O recipe_engin=/path`
+    * the --package option.
+  """
   PREFIX = 'recipe_engine='
 
   p = argparse.ArgumentParser(add_help=False)
   p.add_argument('-O', '--project-override', action='append')
+  p.add_argument('--package', type=os.path.abspath)
   args, _ = p.parse_known_args(argv)
   for override in args.project_override or ():
     if override.startswith(PREFIX):
-      return override[len(PREFIX):]
-  return None
+      return override[len(PREFIX):], args.package
+  return None, args.package
 
 
-def checkout_engine(repo_root, recipes_cfg_path):
-  """Checks out"""
-
+def checkout_engine(engine_path, repo_root, recipes_cfg_path):
   dep, recipes_path = parse(repo_root, recipes_cfg_path)
 
   url = dep.url
 
-  engine_path = find_engine_override(sys.argv[1:])
   if not engine_path and url.startswith('file://'):
     engine_path = urlparse.urlparse(url).path
 
@@ -188,16 +187,25 @@ def main():
   if '--verbose' in sys.argv:
     logging.getLogger().setLevel(logging.INFO)
 
-  repo_root = os.path.abspath(
-    _git_output(['rev-parse', '--show-toplevel'],
-                cwd=os.path.abspath(os.path.dirname(__file__))).strip())
+  args = sys.argv[1:]
+  engine_override, recipes_cfg_path = parse_args(args)
 
-  # TODO(iannucci): Actually make the location of recipes.cfg configurable.
-  recipes_cfg_path = os.path.join(repo_root, 'infra', 'config', 'recipes.cfg')
+  if recipes_cfg_path:
+    # calculate repo_root from recipes_cfg_path
+    repo_root = os.path.dirname(
+      os.path.dirname(
+        os.path.dirname(recipes_cfg_path)))
+  else:
+    # find repo_root with git and calculate recipes_cfg_path
+    repo_root = (_git_output(
+      ['rev-parse', '--show-toplevel'],
+      cwd=os.path.abspath(os.path.dirname(__file__))).strip())
+    repo_root = os.path.abspath(repo_root)
+    recipes_cfg_path = os.path.join(repo_root, 'infra', 'config', 'recipes.cfg')
+    args = ['--package', recipes_cfg_path] + args
 
-  engine_path = checkout_engine(repo_root, recipes_cfg_path)
+  engine_path = checkout_engine(engine_override, repo_root, recipes_cfg_path)
 
-  args = ['--package', recipes_cfg_path] + sys.argv[1:]
   return _subprocess_call([
       sys.executable, '-u',
       os.path.join(engine_path, 'recipes.py')] + args)
