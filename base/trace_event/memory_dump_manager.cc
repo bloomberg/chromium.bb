@@ -162,7 +162,6 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 
 MemoryDumpManager::MemoryDumpManager()
     : is_coordinator_(false),
-      is_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
       dumper_registrations_ignored_for_testing_(false),
       heap_profiling_enabled_(false) {
@@ -409,11 +408,10 @@ void MemoryDumpManager::RequestGlobalDump(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
     const GlobalMemoryDumpCallback& callback) {
-  // Bail out immediately if tracing is not enabled at all or if the dump mode
-  // is not allowed.
-  if (!UNLIKELY(subtle::NoBarrier_Load(&is_enabled_))) {
-    VLOG(1) << kLogPrefix << " failed because " << kTraceCategory
-            << " tracing category is not enabled.";
+  // If |request_dump_function_| is null MDM hasn't been initialized yet.
+  if (request_dump_function_.is_null()) {
+    VLOG(1) << kLogPrefix << " failed because"
+            << " memory dump manager is not enabled.";
     if (!callback.is_null())
       callback.Run(0u /* guid */, false /* success */);
     return;
@@ -501,6 +499,16 @@ void MemoryDumpManager::CreateProcessDump(
   {
     AutoLock lock(lock_);
 
+    // MDM could have been disabled by this point destroying
+    // |heap_profiler_serialization_state|. If heap profiling is enabled we
+    // require session state so if heap profiling is on and session state is
+    // absent we fail the dump immediately.
+    if (args.dump_type != MemoryDumpType::SUMMARY_ONLY &&
+        heap_profiling_enabled_ && !heap_profiler_serialization_state_) {
+      callback.Run(args.dump_guid, false /* success */, base::nullopt);
+      return;
+    }
+
     pmd_async_state.reset(new ProcessMemoryDumpAsyncState(
         args, dump_providers_, heap_profiler_serialization_state_, callback,
         GetOrCreateBgTaskRunnerLocked()));
@@ -530,22 +538,6 @@ void MemoryDumpManager::SetupNextMemoryDump(
   // in the PostTask below don't end up registering their own dump providers
   // (for discounting trace memory overhead) while holding the |lock_|.
   TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
-
-  // MDM might have been disabled before getting to this point.
-  // Anyway either MDM is disabled or this was the last hop, create a trace
-  // event, add it to the trace and finalize process dump invoking the callback.
-  if (!subtle::NoBarrier_Load(&is_enabled_)) {
-    if (pmd_async_state->pending_dump_providers.empty()) {
-      VLOG(1) << kLogPrefix << " failed because MemoryDumpManager was disabled"
-              << " before finalizing the dump";
-    } else {
-      VLOG(1) << kLogPrefix << " failed because MemoryDumpManager was disabled"
-              << " before dumping "
-              << pmd_async_state->pending_dump_providers.back().get()->name;
-    }
-    pmd_async_state->dump_successful = false;
-    pmd_async_state->pending_dump_providers.clear();
-  }
 
   if (pmd_async_state->pending_dump_providers.empty())
     return FinalizeDumpAndAddToTrace(std::move(pmd_async_state));
@@ -807,8 +799,6 @@ void MemoryDumpManager::Enable(
   DCHECK(!request_dump_function_.is_null());
   heap_profiler_serialization_state_ = heap_profiler_serialization_state;
 
-  subtle::NoBarrier_Store(&is_enabled_, 1);
-
   MemoryDumpScheduler::Config periodic_config;
   bool peak_detector_configured = false;
   for (const auto& trigger : memory_dump_config.triggers) {
@@ -855,15 +845,11 @@ void MemoryDumpManager::Disable() {
   // There might be a memory dump in progress while this happens. Therefore,
   // ensure that the MDM state which depends on the tracing enabled / disabled
   // state is always accessed by the dumping methods holding the |lock_|.
-  if (!subtle::NoBarrier_Load(&is_enabled_))
-    return;
-  subtle::NoBarrier_Store(&is_enabled_, 0);
-  {
-    AutoLock lock(lock_);
-    MemoryDumpScheduler::GetInstance()->Stop();
-    MemoryPeakDetector::GetInstance()->TearDown();
-    heap_profiler_serialization_state_ = nullptr;
-  }
+  AutoLock lock(lock_);
+
+  MemoryDumpScheduler::GetInstance()->Stop();
+  MemoryPeakDetector::GetInstance()->TearDown();
+  heap_profiler_serialization_state_ = nullptr;
 }
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(

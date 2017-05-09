@@ -253,6 +253,13 @@ void ProcessMemoryDump::DumpHeapUsage(
     base::trace_event::TraceEventMemoryOverhead& overhead,
     const char* allocator_name) {
   if (!metrics_by_context.empty()) {
+    // We shouldn't end up here unless we're doing a detailed dump with
+    // heap profiling enabled and if that is the case tracing should be
+    // enabled which sets up the heap profiler serialization state.
+    if (!heap_profiler_serialization_state()) {
+      NOTREACHED();
+      return;
+    }
     DCHECK_EQ(0ul, heap_dumps_.count(allocator_name));
     std::unique_ptr<TracedValue> heap_dump = ExportHeapDump(
         metrics_by_context, *heap_profiler_serialization_state());
