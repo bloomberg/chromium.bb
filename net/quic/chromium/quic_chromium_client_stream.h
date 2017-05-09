@@ -126,7 +126,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
                                        size_t frame_len);
   void NotifyDelegateOfDataAvailableLater();
   void NotifyDelegateOfDataAvailable();
-  void RunOrBuffer(base::Closure closure);
 
   NetLogWithSource net_log_;
   Delegate* delegate_;
@@ -145,8 +144,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   // Set to false if this stream to not be migrated during connection migration.
   bool can_migrate_;
 
-  // Holds notifications generated before delegate_ is set.
-  std::deque<base::Closure> delegate_tasks_;
+  // Stores the initial header if they arrive before the delegate.
+  SpdyHeaderBlock initial_headers_;
+  // Length of the HEADERS frame containing initial headers.
+  size_t initial_headers_frame_len_;
 
   base::WeakPtrFactory<QuicChromiumClientStream> weak_factory_;
 
