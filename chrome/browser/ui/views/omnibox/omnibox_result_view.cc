@@ -296,7 +296,7 @@ void OmniboxResultView::OnSelected() {
   // updating the text in the omnibox but this alert and GetAccessibleNodeData
   // below make the answer contents accessible.
   if (match_.answer)
-    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
 }
 
 gfx::Size OmniboxResultView::GetPreferredSize() const {
