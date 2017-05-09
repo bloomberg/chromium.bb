@@ -8,9 +8,7 @@
 #import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MaterialFlexibleHeader.h"
 #import "remoting/client/ios/facade/remoting_service.h"
 
-@interface RemotingViewController
-    : MDCFlexibleHeaderContainerViewController<RemotingAuthenticationDelegate,
-                                               RemotingHostListDelegate>
+@interface RemotingViewController : MDCFlexibleHeaderContainerViewController
 
 @end
 

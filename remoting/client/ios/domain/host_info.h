@@ -23,6 +23,8 @@
 // True when |status| is @"ONLINE", anything else is False.
 @property(nonatomic, readonly) bool isOnline;
 
+// Convert a json blob into a |HostInfo| object. Most useful for test.
+// TODO(nicholss): Might move this out into a catagory.
 + (NSMutableArray<HostInfo*>*)parseListFromJSON:(NSMutableData*)data;
 
 // First consider if |isOnline| is greater than anything else, then consider by

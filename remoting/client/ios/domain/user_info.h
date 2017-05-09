@@ -14,9 +14,15 @@
 @property(nonatomic, copy) NSString* userId;
 @property(nonatomic, copy) NSString* userFullName;
 @property(nonatomic, copy) NSString* userEmail;
+@property(nonatomic, copy) NSString* refreshToken;
 
+// Convert a json blob into a |UserInfo| object. Most useful for test.
+// TODO(nicholss): Might move this out into a catagory.
 + (UserInfo*)parseListFromJSON:(NSMutableData*)data;
 
+// This returns the authenticated state of the this user info object.
+- (BOOL)isAuthenticated;
+// Compare two |UserInfo| objects.
 - (NSComparisonResult)compare:(UserInfo*)user;
 
 @end

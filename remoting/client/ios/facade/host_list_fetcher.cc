@@ -29,6 +29,8 @@ HostListFetcher::~HostListFetcher() {}
 // that. For the moment it will work to make progress in the app.
 void HostListFetcher::RetrieveHostlist(const std::string& access_token,
                                        const HostlistCallback& callback) {
+  // TODO(nicholss): There is a bug here if two host list fetches are happening
+  // at the same time there will be a dcheck thrown. Fix this for release.
   DCHECK(!access_token.empty());
   DCHECK(callback);
   DCHECK(!hostlist_callback_);
