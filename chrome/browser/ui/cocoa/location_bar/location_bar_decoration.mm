@@ -144,7 +144,7 @@ const CGFloat kBackgroundFrameYInset = 2.0;
 @end
 
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
-const SkColor LocationBarDecoration::kMaterialDarkModeTextColor = 0xCCFFFFFF;
+const SkColor LocationBarDecoration::kMaterialDarkModeTextColor = SK_ColorWHITE;
 
 LocationBarDecoration::LocationBarDecoration() {
   accessibility_view_.reset(
