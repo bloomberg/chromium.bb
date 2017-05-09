@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <tuple>
+#include <utility>
 
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -44,30 +45,31 @@ class FakeCredentialManager : public mojom::CredentialManager {
  private:
   // mojom::CredentialManager methods:
   void Store(const CredentialInfo& credential,
-             const StoreCallback& callback) override {
-    callback.Run();
+             StoreCallback callback) override {
+    std::move(callback).Run();
   }
 
-  void RequireUserMediation(
-      const RequireUserMediationCallback& callback) override {
-    callback.Run();
+  void RequireUserMediation(RequireUserMediationCallback callback) override {
+    std::move(callback).Run();
   }
 
   void Get(bool zero_click_only,
            bool include_passwords,
            const std::vector<GURL>& federations,
-           const GetCallback& callback) override {
+           GetCallback callback) override {
     const std::string& url = federations[0].spec();
 
     if (url == kTestCredentialPassword) {
       CredentialInfo info;
       info.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
-      callback.Run(mojom::CredentialManagerError::SUCCESS, info);
+      std::move(callback).Run(mojom::CredentialManagerError::SUCCESS, info);
     } else if (url == kTestCredentialEmpty) {
-      callback.Run(mojom::CredentialManagerError::SUCCESS, CredentialInfo());
+      std::move(callback).Run(mojom::CredentialManagerError::SUCCESS,
+                              CredentialInfo());
     } else if (url == kTestCredentialReject) {
-      callback.Run(mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
-                   base::nullopt);
+      std::move(callback).Run(
+          mojom::CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
+          base::nullopt);
     }
   }
 

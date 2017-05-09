@@ -50,14 +50,12 @@ class CredentialManagerImpl
   void BindRequest(mojom::CredentialManagerRequest request);
 
   // mojom::CredentialManager methods:
-  void Store(const CredentialInfo& credential,
-             const StoreCallback& callback) override;
-  void RequireUserMediation(
-      const RequireUserMediationCallback& callback) override;
+  void Store(const CredentialInfo& credential, StoreCallback callback) override;
+  void RequireUserMediation(RequireUserMediationCallback callback) override;
   void Get(bool zero_click_only,
            bool include_passwords,
            const std::vector<GURL>& federations,
-           const GetCallback& callback) override;
+           GetCallback callback) override;
 
   // CredentialManagerPendingRequestTaskDelegate:
   bool IsZeroClickAllowed() const override;
