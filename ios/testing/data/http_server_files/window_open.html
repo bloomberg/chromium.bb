@@ -216,6 +216,26 @@ found in the LICENSE file. -->
     <td>Trying to close the current window should fail.<br></td>
   </tr>
 
+  <tr id="_webScenarioOpenWindowAndInjectPopup">
+    <td>
+      <script>
+        var openWindowAndInjectPopup = function() {
+          var url = window.location.href;
+          var w = window.open('', '', '');
+          var popupScript =
+              "<script>window.open('" + url + "')\<\/script>";
+          w.document.write(popupScript);
+        };
+      </script>
+      <input type="button"
+             onclick="openWindowAndInjectPopup()"
+             name="webScenarioOpenWindowAndInjectPopup"
+             id="webScenarioOpenWindowAndInjectPopup"
+             value="webScenarioOpenWindowAndInjectPopup">
+    </td>
+    <td>Open a window, then inject a window.open call into that window.<br></td>
+  </tr>
+
 </table>
 </body>
 </html>
