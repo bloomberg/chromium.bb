@@ -8,6 +8,7 @@
 #include "core/testing/NullExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
@@ -16,6 +17,7 @@
 namespace blink {
 namespace {
 
+const char kBaseUrl[] = "https://example.com/directory/";
 const char kNotificationTitle[] = "My Notification";
 
 const char kNotificationDir[] = "rtl";
@@ -24,9 +26,9 @@ const char kNotificationBody[] = "Hello, world";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationEmptyTag[] = "";
 const char kNotificationImage[] = "https://example.com/image.jpg";
-const char kNotificationIcon[] = "https://example.com/icon.png";
+const char kNotificationIcon[] = "/icon.png";
 const char kNotificationIconInvalid[] = "https://invalid:icon:url";
-const char kNotificationBadge[] = "https://example.com/badge.png";
+const char kNotificationBadge[] = "badge.png";
 const unsigned kNotificationVibration[] = {42, 10, 20, 30, 40};
 const unsigned long long kNotificationTimestamp = 621046800ull;
 const bool kNotificationRenotify = true;
@@ -44,9 +46,29 @@ const char kNotificationActionPlaceholder[] = "Placeholder...";
 const unsigned kNotificationVibrationUnnormalized[] = {10, 1000000, 50, 42};
 const int kNotificationVibrationNormalized[] = {10, 10000, 50};
 
+// Execution context that implements the VirtualCompleteURL method to complete
+// URLs that are assumed to be relative against a given base URL.
+class CompleteUrlExecutionContext final : public NullExecutionContext {
+ public:
+  explicit CompleteUrlExecutionContext(const String& base)
+      : base_(kParsedURLString, base) {}
+
+ protected:
+  ~CompleteUrlExecutionContext() final = default;
+
+  KURL VirtualCompleteURL(const String& url) const override {
+    return KURL(base_, url);
+  }
+
+ private:
+  KURL base_;
+};
+
 class NotificationDataTest : public ::testing::Test {
  public:
-  void SetUp() override { execution_context_ = new NullExecutionContext(); }
+  void SetUp() override {
+    execution_context_ = new CompleteUrlExecutionContext(kBaseUrl);
+  }
 
   ExecutionContext* GetExecutionContext() { return execution_context_.Get(); }
 
@@ -104,8 +126,12 @@ TEST_F(NotificationDataTest, ReflectProperties) {
   EXPECT_EQ(kNotificationBody, notification_data.body);
   EXPECT_EQ(kNotificationTag, notification_data.tag);
 
-  // TODO(peter): Test the various icon properties when
-  // ExecutionContext::completeURL() works in this test.
+  KURL base(kParsedURLString, kBaseUrl);
+
+  // URLs should be resolved against the base URL of the execution context.
+  EXPECT_EQ(WebURL(KURL(base, kNotificationImage)), notification_data.image);
+  EXPECT_EQ(WebURL(KURL(base, kNotificationIcon)), notification_data.icon);
+  EXPECT_EQ(WebURL(KURL(base, kNotificationBadge)), notification_data.badge);
 
   ASSERT_EQ(vibration_pattern.size(), notification_data.vibrate.size());
   for (size_t i = 0; i < vibration_pattern.size(); ++i)
