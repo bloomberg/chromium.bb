@@ -37,10 +37,6 @@ void PermissionBubbleCocoa::Hide() {
   [bubbleController_ close];
 }
 
-bool PermissionBubbleCocoa::IsVisible() {
-  return bubbleController_ != nil;
-}
-
 void PermissionBubbleCocoa::SetDelegate(Delegate* delegate) {
   if (delegate_ == delegate)
     return;

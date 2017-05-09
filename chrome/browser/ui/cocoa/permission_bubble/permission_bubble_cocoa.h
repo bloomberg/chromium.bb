@@ -27,7 +27,6 @@ class PermissionBubbleCocoa : public PermissionPrompt {
   void Show(const std::vector<PermissionRequest*>& requests,
             const std::vector<bool>& accept_state) override;
   void Hide() override;
-  bool IsVisible() override;
   void SetDelegate(Delegate* delegate) override;
   bool CanAcceptRequestUpdate() override;
   bool HidesAutomatically() override;
