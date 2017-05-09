@@ -302,8 +302,8 @@ void RequestCoordinator::GetQueuedRequestsCallback(
   callback.Run(std::move(requests));
 }
 
-void RequestCoordinator::StopPrerendering(const CancelCallback& final_callback,
-                                          Offliner::RequestStatus stop_status) {
+void RequestCoordinator::StopOfflining(const CancelCallback& final_callback,
+                                       Offliner::RequestStatus stop_status) {
   if (offliner_ && state_ == RequestCoordinatorState::OFFLINING) {
     DCHECK_NE(active_request_id_, 0);
     if (offliner_->Cancel(base::Bind(
@@ -340,15 +340,13 @@ void RequestCoordinator::GetRequestsForSchedulingCallback(
 bool RequestCoordinator::CancelActiveRequestIfItMatches(
     const std::vector<int64_t>& request_ids) {
   // If we have a request in progress and need to cancel it, call the
-  // pre-renderer to cancel.  TODO Make sure we remove any page created by the
-  // prerenderer if it doesn't get the cancel in time.
+  // offliner to cancel.
   if (active_request_id_ != 0) {
     if (request_ids.end() !=
         std::find(request_ids.begin(), request_ids.end(), active_request_id_)) {
-      StopPrerendering(
-          base::Bind(&RequestCoordinator::ResetActiveRequestCallback,
-                     weak_ptr_factory_.GetWeakPtr()),
-          Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
+      StopOfflining(base::Bind(&RequestCoordinator::ResetActiveRequestCallback,
+                               weak_ptr_factory_.GetWeakPtr()),
+                    Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
       return true;
     }
   }
@@ -588,9 +586,9 @@ void RequestCoordinator::ScheduleAsNeeded() {
 
 void RequestCoordinator::StopProcessing(Offliner::RequestStatus stop_status) {
   processing_state_ = ProcessingWindowState::STOPPED;
-  StopPrerendering(base::Bind(&RequestCoordinator::StartSchedulerCallback,
-                              weak_ptr_factory_.GetWeakPtr()),
-                   stop_status);
+  StopOfflining(base::Bind(&RequestCoordinator::StartSchedulerCallback,
+                           weak_ptr_factory_.GetWeakPtr()),
+                stop_status);
 }
 
 void RequestCoordinator::HandleWatchdogTimeout() {
@@ -598,9 +596,9 @@ void RequestCoordinator::HandleWatchdogTimeout() {
       Offliner::REQUEST_COORDINATOR_TIMED_OUT;
   if (offliner_->HandleTimeout(active_request_id_))
     return;
-  StopPrerendering(base::Bind(&RequestCoordinator::TryNextRequestCallback,
-                              weak_ptr_factory_.GetWeakPtr()),
-                   watchdog_status);
+  StopOfflining(base::Bind(&RequestCoordinator::TryNextRequestCallback,
+                           weak_ptr_factory_.GetWeakPtr()),
+                watchdog_status);
 }
 
 // Returns true if the caller should expect a callback, false otherwise. For
@@ -917,7 +915,7 @@ void RequestCoordinator::StartOffliner(
     // Inform observer of active request.
     NotifyChanged(update_result->updated_items.at(0));
 
-    // Start a watchdog timer to catch pre-renders running too long
+    // Start a watchdog timer to catch offliners running too long
     watchdog_timer_.Start(FROM_HERE, timeout, this,
                           &RequestCoordinator::HandleWatchdogTimeout);
   } else {

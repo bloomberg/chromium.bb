@@ -848,7 +848,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   EXPECT_EQ(0L, last_requests().at(0)->completed_attempt_count());
 }
 
-TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
+TEST_F(RequestCoordinatorTest, OfflinerDoneOffliningCancel) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
                                          base::Time::Now(), kUserRequested);
@@ -867,7 +867,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
 
   // Request still in the queue.
   EXPECT_EQ(1UL, last_requests().size());
-  // Verify prerendering cancel not counted as an attempt after all.
+  // Verify offlining cancel not counted as an attempt after all.
   const std::unique_ptr<SavePageRequest>& found_request =
       last_requests().front();
   EXPECT_EQ(0L, found_request->completed_attempt_count());
