@@ -160,6 +160,7 @@
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
+#include "chrome/browser/ui/android/infobars/reader_mode_infobar.h"
 #include "chrome/browser/ui/android/infobars/simple_confirm_infobar_builder.h"
 #include "chrome/browser/ui/android/infobars/translate_compact_infobar.h"
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
@@ -389,6 +390,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"RapporServiceBridge", rappor::RegisterRapporServiceBridge},
     {"RecentlyClosedBridge", RecentlyClosedTabsBridge::Register},
     {"RecordCastAction", remote_media::RegisterRecordCastAction},
+    {"ReaderModeInfoBar", RegisterReaderModeInfoBar},
     {"ReaderModeSceneLayer", RegisterReaderModeSceneLayer},
     {"RemoteMediaPlayerBridge",
      remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
