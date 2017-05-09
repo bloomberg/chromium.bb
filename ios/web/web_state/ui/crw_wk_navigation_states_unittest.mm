@@ -110,4 +110,22 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
   EXPECT_TRUE([states_ contextForNavigation:navigation1_]->IsErrorPage());
 }
 
+// Tests null WKNavigation object.
+TEST_F(CRWWKNavigationStatesTest, NullNavigation) {
+  // navigation_1 is the only navigation and it is the latest.
+  [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
+  ASSERT_EQ(navigation1_, [states_ lastAddedNavigation]);
+  EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
+
+  // null navigation is added later and hence the latest.
+  [states_ setState:WKNavigationState::STARTED forNavigation:nil];
+  EXPECT_FALSE([states_ lastAddedNavigation]);
+  EXPECT_EQ(WKNavigationState::STARTED, [states_ lastAddedNavigationState]);
+
+  // navigation_1 is the is the latest again after removing null navigation.
+  [states_ removeNavigation:nil];
+  ASSERT_EQ(navigation1_, [states_ lastAddedNavigation]);
+  EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
+}
+
 }  // namespace web

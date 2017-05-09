@@ -83,7 +83,16 @@
 @interface CRWWKNavigationStates () {
   NSMapTable* _records;
   NSUInteger _lastStateIndex;
+  WKNavigation* _nullNavigation;
 }
+
+// Returns key to use for storing navigation in records table.
+- (id)keyForNavigation:(WKNavigation*)navigation;
+
+// Returns last added navigation and record.
+- (void)getLastAddedNavigation:(WKNavigation**)outNavigation
+                        record:(CRWWKNavigationsStateRecord**)outRecord;
+
 @end
 
 @implementation CRWWKNavigationStates
@@ -91,6 +100,7 @@
 - (instancetype)init {
   if ((self = [super init])) {
     _records = [NSMapTable weakToStrongObjectsMapTable];
+    _nullNavigation = static_cast<WKNavigation*>([NSNull null]);
   }
   return self;
 }
@@ -102,12 +112,8 @@
 
 - (void)setState:(web::WKNavigationState)state
     forNavigation:(WKNavigation*)navigation {
-  if (!navigation) {
-    // WKWebView may call WKNavigationDelegate callbacks with nil.
-    return;
-  }
-
-  CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+  id key = [self keyForNavigation:navigation];
+  CRWWKNavigationsStateRecord* record = [_records objectForKey:key];
   if (!record) {
     DCHECK(state == web::WKNavigationState::REQUESTED ||
            state == web::WKNavigationState::STARTED ||
@@ -121,26 +127,19 @@
         (record.state == state && state == web::WKNavigationState::REDIRECTED));
     record.state = state;
   }
-  [_records setObject:record forKey:navigation];
+  [_records setObject:record forKey:key];
 }
 
 - (void)removeNavigation:(WKNavigation*)navigation {
-  if (!navigation) {
-    // WKWebView may call WKNavigationDelegate callbacks with nil.
-    return;
-  }
-
-  DCHECK([_records objectForKey:navigation]);
-  [_records removeObjectForKey:navigation];
+  id key = [self keyForNavigation:navigation];
+  DCHECK([_records objectForKey:key]);
+  [_records removeObjectForKey:key];
 }
 
 - (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context
      forNavigation:(WKNavigation*)navigation {
-  if (!navigation) {
-    // WKWebView may call WKNavigationDelegate callbacks with nil.
-    return;
-  }
-  CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+  id key = [self keyForNavigation:navigation];
+  CRWWKNavigationsStateRecord* record = [_records objectForKey:key];
   if (!record) {
     record =
         [[CRWWKNavigationsStateRecord alloc] initWithContext:std::move(context)
@@ -148,38 +147,49 @@
   } else {
     [record setContext:std::move(context)];
   }
-  [_records setObject:record forKey:navigation];
+  [_records setObject:record forKey:key];
 }
 
 - (web::NavigationContextImpl*)contextForNavigation:(WKNavigation*)navigation {
-  if (!navigation) {
-    // WKWebView may call WKNavigationDelegate callbacks with nil.
-    return nullptr;
-  }
-  CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+  id key = [self keyForNavigation:navigation];
+  CRWWKNavigationsStateRecord* record = [_records objectForKey:key];
   return [record context];
 }
 
 - (WKNavigation*)lastAddedNavigation {
   WKNavigation* result = nil;
-  NSUInteger lastAddedIndex = 0;  // record indices start with 1.
-  for (WKNavigation* navigation in _records) {
-    CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
-    if (lastAddedIndex < record.index) {
-      result = navigation;
-      lastAddedIndex = record.index;
-    }
-  }
+  CRWWKNavigationsStateRecord* unused = nil;
+  [self getLastAddedNavigation:&result record:&unused];
   return result;
 }
 
 - (web::WKNavigationState)lastAddedNavigationState {
-  CRWWKNavigationsStateRecord* lastAddedRecord = nil;
-  WKNavigation* lastAddedNavigation = [self lastAddedNavigation];
-  if (lastAddedNavigation)
-    lastAddedRecord = [_records objectForKey:lastAddedNavigation];
+  CRWWKNavigationsStateRecord* result = nil;
+  WKNavigation* unused = nil;
+  [self getLastAddedNavigation:&unused record:&result];
+  return result.state;
+}
 
-  return lastAddedRecord.state;
+- (id)keyForNavigation:(WKNavigation*)navigation {
+  return navigation ? navigation : _nullNavigation;
+}
+
+- (void)getLastAddedNavigation:(WKNavigation**)outNavigation
+                        record:(CRWWKNavigationsStateRecord**)outRecord {
+  NSUInteger lastAddedIndex = 0;  // record indices start with 1.
+  for (WKNavigation* navigation in _records) {
+    CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+    if (lastAddedIndex < record.index) {
+      *outNavigation = navigation;
+      *outRecord = record;
+      lastAddedIndex = record.index;
+    }
+  }
+
+  if (*outNavigation == _nullNavigation) {
+    // |_nullNavigation| is a key for storing null navigations.
+    *outNavigation = nil;
+  }
 }
 
 @end

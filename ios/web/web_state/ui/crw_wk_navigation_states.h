@@ -41,7 +41,10 @@ enum class WKNavigationState : int {
 }  // namespace web
 
 // Stores states and navigation contexts for WKNavigation objects.
-// Allows looking up for last added navigation object.
+// Allows looking up for last added navigation object. null WKNavigation is a
+// valid navigation and treated as a unique key. WKWebView passes null
+// WKNavigation to WKNavigationDelegate callbacks if navigation represents
+// window opening action.
 @interface CRWWKNavigationStates : NSObject
 
 // Adds a new navigation if it was not added yet. If navigation was already
@@ -53,8 +56,8 @@ enum class WKNavigationState : int {
 - (void)setState:(web::WKNavigationState)state
     forNavigation:(WKNavigation*)navigation;
 
-// Removes given |navigation|. Fails if |navigation| does not exist. No-op if
-// |navigation| is null.
+// Removes given |navigation|. Fails if |navigation| does not exist.
+// |navigation| can be null.
 - (void)removeNavigation:(WKNavigation*)navigation;
 
 // Adds a new navigation if it was not added yet. If navigation was already
@@ -70,7 +73,8 @@ enum class WKNavigationState : int {
 
 // WKNavigation which was added the most recently via |setState:forNavigation:|.
 // Updating navigation state via |setState:forNavigation:| does not change the
-// last added navigation. Returns nil if there are no stored navigations.
+// last added navigation. Returns nil if there are no stored navigations or
+// last navigation was null.
 - (WKNavigation*)lastAddedNavigation;
 
 // State of WKNavigation which was added the most recently via
