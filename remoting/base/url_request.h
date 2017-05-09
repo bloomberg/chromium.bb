@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace remoting {
 
@@ -61,7 +62,8 @@ class UrlRequestFactory {
   virtual ~UrlRequestFactory() {}
   virtual std::unique_ptr<UrlRequest> CreateUrlRequest(
       UrlRequest::Type type,
-      const std::string& url) = 0;
+      const std::string& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 };
 
 }  // namespace remoting

@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_PLUGIN_PEPPER_URL_LOADER_H_
 
 #include "base/callback.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
@@ -19,7 +20,8 @@ class PepperUrlRequest : public UrlRequest {
  public:
   PepperUrlRequest(pp::InstanceHandle pp_instance,
                    UrlRequest::Type type,
-                   const std::string& url);
+                   const std::string& url,
+                   const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~PepperUrlRequest() override;
 
   // UrlRequest interface.
@@ -54,8 +56,10 @@ class PepperUrlRequestFactory : public UrlRequestFactory {
   ~PepperUrlRequestFactory() override;
 
    // UrlRequestFactory interface.
-  std::unique_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
-                                               const std::string& url) override;
+  std::unique_ptr<UrlRequest> CreateUrlRequest(
+      UrlRequest::Type type,
+      const std::string& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
  private:
   pp::InstanceHandle pp_instance_;
