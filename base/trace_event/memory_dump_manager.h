@@ -114,6 +114,8 @@ class BASE_EXPORT MemoryDumpManager {
 
   // Requests a memory dump. The dump might happen or not depending on the
   // filters and categories specified when enabling tracing.
+  // A SUMMARY_ONLY dump can be requested at any time after initialization and
+  // other type of dumps can be requested only when MDM is enabled.
   // The optional |callback| is executed asynchronously, on an arbitrary thread,
   // to notify about the completion of the global dump (i.e. after all the
   // processes have dumped) and its success (true iff all the dumps were
@@ -126,14 +128,13 @@ class BASE_EXPORT MemoryDumpManager {
   void RequestGlobalDump(MemoryDumpType dump_type,
                          MemoryDumpLevelOfDetail level_of_detail);
 
-  // Prepare MemoryDumpManager for RequestGlobalMemoryDump calls.
-  // Starts the MemoryDumpManager thread.
-  // Also uses the given config to initialize the peak detector,
-  // scheduler and heap profiler.
+  // Prepare MemoryDumpManager for RequestGlobalMemoryDump calls for tracing
+  // related modes (non-SUMMARY_ONLY).
+  // Initializes the peak detector, scheduler and heap profiler with the given
+  // config.
   void Enable(const TraceConfig::MemoryDumpConfig&);
 
-  // Tearsdown the MemoryDumpManager thread and various other state set up by
-  // Enable.
+  // Tear-down tracing related state.
   void Disable();
 
   // NOTE: Use RequestGlobalDump() to create memory dumps. Creates a memory dump
@@ -305,10 +306,6 @@ class BASE_EXPORT MemoryDumpManager {
   // Protects from concurrent accesses to the local state, eg: to guard against
   // disabling logging while dumping on another thread.
   Lock lock_;
-
-  // Optimization to avoid attempting any memory dump (i.e. to not walk an empty
-  // dump_providers_enabled_ list) when tracing is not enabled.
-  subtle::AtomicWord is_enabled_;
 
   // Thread used for MemoryDumpProviders which don't specify a task runner
   // affinity.

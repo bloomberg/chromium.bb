@@ -159,11 +159,6 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
     ON_CALL(*this, OnMemoryDump(_, _))
         .WillByDefault(
             Invoke([](const MemoryDumpArgs&, ProcessMemoryDump* pmd) -> bool {
-              // |heap_profiler_serialization_state| should not be null under
-              // any circumstances when invoking a memory dump. The problem
-              // might arise in race conditions like crbug.com/600570 .
-              EXPECT_TRUE(pmd->heap_profiler_serialization_state().get() !=
-                          nullptr);
               return true;
             }));
 
@@ -341,19 +336,11 @@ class MemoryDumpManagerTest : public testing::Test {
 };
 
 // Basic sanity checks. Registers a memory dump provider and checks that it is
-// called, but only when memory-infra is enabled.
+// called.
 TEST_F(MemoryDumpManagerTest, SingleDumper) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
   MockMemoryDumpProvider mdp;
   RegisterDumpProvider(&mdp, ThreadTaskRunnerHandle::Get());
-
-  // Check that the dumper is not called if the memory category is not enabled.
-  EnableTracingWithLegacyCategories("foobar-but-not-memory");
-  EXPECT_CALL(global_dump_handler_, RequestGlobalMemoryDump(_, _)).Times(0);
-  EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
-  RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                           MemoryDumpLevelOfDetail::DETAILED);
-  DisableTracing();
 
   // Now repeat enabling the memory category and check that the dumper is
   // invoked this time.
@@ -918,9 +905,6 @@ TEST_F(MemoryDumpManagerTest, CallbackCalledOnFailure) {
   MockMemoryDumpProvider mdp1;
   RegisterDumpProvider(&mdp1, nullptr);
 
-  EXPECT_CALL(global_dump_handler_, RequestGlobalMemoryDump(_, _)).Times(0);
-  EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(0);
-
   last_callback_success_ = true;
   RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                            MemoryDumpLevelOfDetail::DETAILED);
@@ -1051,44 +1035,6 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
           kLightDumpPeriodMs, kHeavyDumpPeriodMs));
   run_loop.Run();
   DisableTracing();
-}
-
-// Tests against race conditions that can happen if tracing is disabled before
-// the CreateProcessDump() call. Real-world regression: crbug.com/580295 .
-TEST_F(MemoryDumpManagerTest, DisableTracingRightBeforeStartOfDump) {
-  base::WaitableEvent tracing_disabled_event(
-      WaitableEvent::ResetPolicy::AUTOMATIC,
-      WaitableEvent::InitialState::NOT_SIGNALED);
-  InitializeMemoryDumpManager(false /* is_coordinator */);
-
-  std::unique_ptr<Thread> mdp_thread(new Thread("test thread"));
-  mdp_thread->Start();
-
-  // Create both same-thread MDP and another MDP with dedicated thread
-  MockMemoryDumpProvider mdp1;
-  RegisterDumpProvider(&mdp1, nullptr);
-  MockMemoryDumpProvider mdp2;
-  RegisterDumpProvider(&mdp2, mdp_thread->task_runner(), kDefaultOptions);
-  EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
-
-  EXPECT_CALL(global_dump_handler_, RequestGlobalMemoryDump(_, _))
-      .WillOnce(Invoke([this](const MemoryDumpRequestArgs& args,
-                              const GlobalMemoryDumpCallback& callback) {
-        DisableTracing();
-        ProcessMemoryDumpCallback process_callback =
-            Bind(&ProcessDumpCallbackAdapter, callback);
-        mdm_->CreateProcessDump(args, process_callback);
-      }));
-
-  // If tracing is disabled for current session CreateProcessDump() should NOT
-  // request dumps from providers. Real-world regression: crbug.com/600570 .
-  EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(0);
-  EXPECT_CALL(mdp2, OnMemoryDump(_, _)).Times(0);
-
-  last_callback_success_ = true;
-  RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                           MemoryDumpLevelOfDetail::DETAILED);
-  EXPECT_FALSE(last_callback_success_);
 }
 
 TEST_F(MemoryDumpManagerTest, DumpOnBehalfOfOtherProcess) {
@@ -1326,6 +1272,29 @@ TEST_F(MemoryDumpManagerTest, DumpWithTracingDisabled) {
   EXPECT_FALSE(last_callback_success_);
 
   mdm_->Disable();
+
+  mdm_->UnregisterDumpProvider(&mdp);
+}
+
+// Tests that we can do a dump without enabling/disabling.
+TEST_F(MemoryDumpManagerTest, DumpWithoutTracing) {
+  InitializeMemoryDumpManager(false /* is_coordinator */);
+  MockMemoryDumpProvider mdp;
+  RegisterDumpProvider(&mdp, ThreadTaskRunnerHandle::Get());
+
+  DisableTracing();
+
+  EXPECT_CALL(global_dump_handler_, RequestGlobalMemoryDump(_, _)).Times(3);
+  EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(3).WillRepeatedly(Return(true));
+  last_callback_success_ = true;
+  for (int i = 0; i < 3; ++i)
+    RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                             MemoryDumpLevelOfDetail::DETAILED);
+  // The callback result should be false since (for the moment at
+  // least) a true result means that as well as the dump being
+  // successful we also managed to add the dump to the trace which shouldn't
+  // happen when tracing is not enabled.
+  EXPECT_FALSE(last_callback_success_);
 
   mdm_->UnregisterDumpProvider(&mdp);
 }
