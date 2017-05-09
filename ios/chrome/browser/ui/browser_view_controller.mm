@@ -4619,6 +4619,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [self uninstallDelegatesForTab:oldTab];
   [self installDelegatesForTab:newTab];
 
+  if (_infoBarContainer) {
+    infobars::InfoBarManager* infoBarManager = [newTab infoBarManager];
+    _infoBarContainer->ChangeInfoBarManager(infoBarManager);
+  }
+
   // Add |newTab|'s view to the hierarchy if it's the current Tab.
   if (self.active && model.currentTab == newTab)
     [self displayTab:newTab isNewSelection:NO];
