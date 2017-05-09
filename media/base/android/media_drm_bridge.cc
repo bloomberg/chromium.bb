@@ -112,18 +112,18 @@ KeyType ConvertCdmSessionType(CdmSessionType session_type) {
   }
 }
 
-ContentDecryptionModule::MessageType GetMessageType(RequestType request_type) {
+CdmMessageType GetMessageType(RequestType request_type) {
   switch (request_type) {
     case RequestType::REQUEST_TYPE_INITIAL:
-      return ContentDecryptionModule::LICENSE_REQUEST;
+      return CdmMessageType::LICENSE_REQUEST;
     case RequestType::REQUEST_TYPE_RENEWAL:
-      return ContentDecryptionModule::LICENSE_RENEWAL;
+      return CdmMessageType::LICENSE_RENEWAL;
     case RequestType::REQUEST_TYPE_RELEASE:
-      return ContentDecryptionModule::LICENSE_RELEASE;
+      return CdmMessageType::LICENSE_RELEASE;
   }
 
   NOTREACHED();
-  return ContentDecryptionModule::LICENSE_REQUEST;
+  return CdmMessageType::LICENSE_REQUEST;
 }
 
 CdmKeyInformation::KeyStatus ConvertKeyStatus(KeyStatus key_status,
@@ -690,7 +690,7 @@ void MediaDrmBridge::OnSessionMessage(
 
   std::vector<uint8_t> message;
   JavaByteArrayToByteVector(env, j_message, &message);
-  ContentDecryptionModule::MessageType message_type =
+  CdmMessageType message_type =
       GetMessageType(static_cast<RequestType>(j_message_type));
 
   task_runner_->PostTask(

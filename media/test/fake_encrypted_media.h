@@ -21,11 +21,10 @@ class FakeEncryptedMedia {
    public:
     virtual ~AppBase() {}
 
-    virtual void OnSessionMessage(
-        const std::string& session_id,
-        ContentDecryptionModule::MessageType message_type,
-        const std::vector<uint8_t>& message,
-        AesDecryptor* decryptor) = 0;
+    virtual void OnSessionMessage(const std::string& session_id,
+                                  CdmMessageType message_type,
+                                  const std::vector<uint8_t>& message,
+                                  AesDecryptor* decryptor) = 0;
 
     virtual void OnSessionClosed(const std::string& session_id) = 0;
 
@@ -46,7 +45,7 @@ class FakeEncryptedMedia {
   CdmContext* GetCdmContext();
   // Callbacks for firing session events. Delegate to |app_|.
   void OnSessionMessage(const std::string& session_id,
-                        ContentDecryptionModule::MessageType message_type,
+                        CdmMessageType message_type,
                         const std::vector<uint8_t>& message);
   void OnSessionClosed(const std::string& session_id);
   void OnSessionKeysChange(const std::string& session_id,

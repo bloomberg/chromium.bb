@@ -46,6 +46,16 @@ enum class CdmSessionType {
   SESSION_TYPE_MAX = PERSISTENT_RELEASE_MESSAGE_SESSION
 };
 
+// Type of message being sent to the application.
+// Must be consistent with the values specified in the spec:
+// https://w3c.github.io/encrypted-media/#idl-def-MediaKeyMessageType
+enum class CdmMessageType {
+  LICENSE_REQUEST,
+  LICENSE_RENEWAL,
+  LICENSE_RELEASE,
+  MESSAGE_TYPE_MAX = LICENSE_RELEASE
+};
+
 // An interface that represents the Content Decryption Module (CDM) in the
 // Encrypted Media Extensions (EME) spec in Chromium.
 // See http://w3c.github.io/encrypted-media/#cdm
@@ -73,16 +83,6 @@ class MEDIA_EXPORT ContentDecryptionModule
     : public base::RefCountedThreadSafe<ContentDecryptionModule,
                                         ContentDecryptionModuleTraits> {
  public:
-  // Type of message being sent to the application.
-  // Must be consistent with the values specified in the spec:
-  // https://w3c.github.io/encrypted-media/#idl-def-MediaKeyMessageType
-  enum MessageType {
-    LICENSE_REQUEST,
-    LICENSE_RENEWAL,
-    LICENSE_RELEASE,
-    MESSAGE_TYPE_MAX = LICENSE_RELEASE
-  };
-
   // Provides a server certificate to be used to encrypt messages to the
   // license server.
   virtual void SetServerCertificate(
@@ -170,7 +170,7 @@ struct MEDIA_EXPORT ContentDecryptionModuleTraits {
 // Called when the CDM needs to queue a message event to the session object.
 // See http://w3c.github.io/encrypted-media/#dom-evt-message
 typedef base::Callback<void(const std::string& session_id,
-                            ContentDecryptionModule::MessageType message_type,
+                            CdmMessageType message_type,
                             const std::vector<uint8_t>& message)>
     SessionMessageCB;
 

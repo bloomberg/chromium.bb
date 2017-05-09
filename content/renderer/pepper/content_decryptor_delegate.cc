@@ -35,6 +35,7 @@
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "ui/gfx/geometry/rect.h"
 
+using media::CdmMessageType;
 using media::CdmPromise;
 using media::CdmSessionType;
 using media::ContentDecryptionModule;
@@ -347,18 +348,18 @@ media::CdmKeyInformation::KeyStatus PpCdmKeyStatusToCdmKeyInformationKeyStatus(
   }
 }
 
-ContentDecryptionModule::MessageType PpCdmMessageTypeToMediaMessageType(
+CdmMessageType PpCdmMessageTypeToMediaMessageType(
     PP_CdmMessageType message_type) {
   switch (message_type) {
     case PP_CDMMESSAGETYPE_LICENSE_REQUEST:
-      return ContentDecryptionModule::LICENSE_REQUEST;
+      return CdmMessageType::LICENSE_REQUEST;
     case PP_CDMMESSAGETYPE_LICENSE_RENEWAL:
-      return ContentDecryptionModule::LICENSE_RENEWAL;
+      return CdmMessageType::LICENSE_RENEWAL;
     case PP_CDMMESSAGETYPE_LICENSE_RELEASE:
-      return ContentDecryptionModule::LICENSE_RELEASE;
+      return CdmMessageType::LICENSE_RELEASE;
     default:
       NOTREACHED();
-      return ContentDecryptionModule::LICENSE_REQUEST;
+      return CdmMessageType::LICENSE_REQUEST;
   }
 }
 

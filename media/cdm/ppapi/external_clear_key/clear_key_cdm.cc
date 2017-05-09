@@ -829,10 +829,9 @@ void ClearKeyCdm::LoadLoadableSession() {
       std::vector<uint8_t>(jwk_set.begin(), jwk_set.end()), std::move(promise));
 }
 
-void ClearKeyCdm::OnSessionMessage(
-    const std::string& session_id,
-    ContentDecryptionModule::MessageType message_type,
-    const std::vector<uint8_t>& message) {
+void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
+                                   CdmMessageType message_type,
+                                   const std::vector<uint8_t>& message) {
   DVLOG(1) << "OnSessionMessage: " << message.size();
 
   // Ignore the message when we are waiting to update the loadable session.

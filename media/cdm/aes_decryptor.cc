@@ -315,7 +315,7 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
 
   promise->resolve(session_id);
 
-  session_message_cb_.Run(session_id, LICENSE_REQUEST, message);
+  session_message_cb_.Run(session_id, CdmMessageType::LICENSE_REQUEST, message);
 }
 
 void AesDecryptor::LoadSession(CdmSessionType session_type,

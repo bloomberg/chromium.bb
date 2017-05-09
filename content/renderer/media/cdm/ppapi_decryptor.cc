@@ -396,7 +396,7 @@ void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
 }
 
 void PpapiDecryptor::OnSessionMessage(const std::string& session_id,
-                                      MessageType message_type,
+                                      media::CdmMessageType message_type,
                                       const std::vector<uint8_t>& message) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   session_message_cb_.Run(session_id, message_type, message);

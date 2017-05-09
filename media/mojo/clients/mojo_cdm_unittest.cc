@@ -582,8 +582,7 @@ TEST_F(MojoCdmTest, RemoveSession_ConnectionErrorDuring) {
 
 TEST_F(MojoCdmTest, SessionMessageCB_Success) {
   const std::string session_id = "message";
-  const ContentDecryptionModule::MessageType message_type =
-      ContentDecryptionModule::LICENSE_REQUEST;
+  const CdmMessageType message_type = CdmMessageType::LICENSE_REQUEST;
   const std::vector<uint8_t> message = {0, 1, 2};
   Initialize(SUCCESS);
   EXPECT_CALL(cdm_client_, OnSessionMessage(session_id, message_type, message));
