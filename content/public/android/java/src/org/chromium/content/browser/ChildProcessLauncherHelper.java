@@ -53,19 +53,18 @@ class ChildProcessLauncherHelper {
 
     @CalledByNative
     private static ChildProcessLauncherHelper create(long nativePointer, int paramId,
-            final String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped) {
+            final String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
-        return new ChildProcessLauncherHelper(
-                nativePointer, paramId, commandLine, childProcessId, filesToBeMapped);
+        return new ChildProcessLauncherHelper(nativePointer, paramId, commandLine, filesToBeMapped);
     }
 
     private ChildProcessLauncherHelper(long nativePointer, int paramId, final String[] commandLine,
-            int childProcessId, FileDescriptorInfo[] filesToBeMapped) {
+            FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
         mNativeChildProcessLauncherHelper = nativePointer;
 
         ChildProcessLauncher.start(ContextUtils.getApplicationContext(), paramId, commandLine,
-                childProcessId, filesToBeMapped, new ChildProcessLauncher.LaunchCallback() {
+                filesToBeMapped, new ChildProcessLauncher.LaunchCallback() {
                     @Override
                     public void onChildProcessStarted(BaseChildProcessConnection connection) {
                         mChildProcessConnection = connection;

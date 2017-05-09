@@ -61,10 +61,9 @@ public final class ChildProcessLauncherTestUtils {
         return runOnLauncherAndGetResult(new Callable<BaseChildProcessConnection>() {
             @Override
             public BaseChildProcessConnection call() {
-                return ChildProcessLauncher.startInternal(context, commandLine,
-                        0 /* childProcessId */, filesToMap, null /* launchCallback */,
-                        null /* childProcessCallback */, true /* inSandbox */,
-                        false /* alwaysInForeground */, params);
+                return ChildProcessLauncher.startInternal(context, commandLine, filesToMap,
+                        null /* launchCallback */, null /* childProcessCallback */,
+                        true /* inSandbox */, false /* alwaysInForeground */, params);
             }
         });
     }

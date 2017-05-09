@@ -561,7 +561,7 @@ public class ChildProcessLauncherTest {
         ChildProcessLauncher.start(context, paramId,
                 new String[] {"--" + ContentSwitches.SWITCH_PROCESS_TYPE + "="
                         + ContentSwitches.SWITCH_RENDERER_PROCESS},
-                0 /* childProcessId */, filesToMap, null /* launchCallback */);
+                filesToMap, null /* launchCallback */);
     }
 
     private static BaseChildProcessConnection allocateBoundConnectionForTesting(
@@ -572,10 +572,9 @@ public class ChildProcessLauncherTest {
                     public BaseChildProcessConnection call() {
                         return ChildProcessLauncher.allocateBoundConnection(
                                 new ChildSpawnData(context, null /* commandLine */,
-                                        0 /* childProcessId */, null /* filesToBeMapped */,
-                                        null /* LaunchCallback */, null /* childProcessCallback */,
-                                        true /* inSandbox */, false /* alwaysInForeground */,
-                                        creationParams),
+                                        null /* filesToBeMapped */, null /* LaunchCallback */,
+                                        null /* childProcessCallback */, true /* inSandbox */,
+                                        false /* alwaysInForeground */, creationParams),
                                 null /* startCallback */, false /* forWarmUp */);
                     }
                 });
@@ -597,10 +596,9 @@ public class ChildProcessLauncherTest {
                                 getDefaultChildProcessCreationParams(packageName);
                         return ChildProcessLauncher.allocateConnection(
                                 new ChildSpawnData(context, null /* commandLine */,
-                                        0 /* childProcessId */, null /* filesToBeMapped */,
-                                        null /* launchCallback */, null /* childProcessCallback */,
-                                        true /* inSandbox */, false /* alwaysInForeground */,
-                                        creationParams),
+                                        null /* filesToBeMapped */, null /* launchCallback */,
+                                        null /* childProcessCallback */, true /* inSandbox */,
+                                        false /* alwaysInForeground */, creationParams),
                                 ChildProcessLauncher.createCommonParamsBundle(creationParams),
                                 false /* forWarmUp */);
                     }
@@ -618,9 +616,9 @@ public class ChildProcessLauncherTest {
                 ChildConnectionAllocator allocator = ChildProcessLauncher.getConnectionAllocator(
                         context, packageName, inSandbox);
                 allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context, commandLine,
-                        1 /* childProcessId */, new FileDescriptorInfo[0],
-                        null /* launchCallback */, null /* childProcessCallback */,
-                        true /* inSandbox */, false /* alwaysInForeground */, creationParams));
+                        new FileDescriptorInfo[0], null /* launchCallback */,
+                        null /* childProcessCallback */, true /* inSandbox */,
+                        false /* alwaysInForeground */, creationParams));
             }
         });
     }
@@ -682,8 +680,8 @@ public class ChildProcessLauncherTest {
             @Override
             public void run() {
                 ChildProcessLauncher.triggerConnectionSetup(connection, sProcessWaitArguments,
-                        1 /* childProcessId */, new FileDescriptorInfo[0],
-                        null /* launchCallback */, null /* childProcessCallback */);
+                        new FileDescriptorInfo[0], null /* launchCallback */,
+                        null /* childProcessCallback */);
             }
         });
     }
