@@ -95,6 +95,11 @@ TestWebWidgetClient* DefaultWebWidgetClient() {
   return &client;
 }
 
+TestWebViewClient* DefaultWebViewClient() {
+  DEFINE_STATIC_LOCAL(TestWebViewClient, client, ());
+  return &client;
+}
+
 }  // namespace
 
 void LoadFrame(WebFrame* frame, const std::string& url) {
@@ -196,10 +201,8 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
 
   if (!web_frame_client)
     web_frame_client = DefaultWebFrameClient();
-  if (!web_view_client) {
-    owned_test_web_view_client_ = WTF::MakeUnique<TestWebViewClient>();
-    web_view_client = owned_test_web_view_client_.get();
-  }
+  if (!web_view_client)
+    web_view_client = DefaultWebViewClient();
   if (!web_widget_client)
     web_widget_client = web_view_client->WidgetClient();
   web_view_ = static_cast<WebViewBase*>(
