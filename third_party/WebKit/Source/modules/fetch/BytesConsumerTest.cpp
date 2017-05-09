@@ -48,7 +48,7 @@ class BytesConsumerTeeTest : public ::testing::Test {
 class FakeBlobBytesConsumer : public BytesConsumer {
  public:
   explicit FakeBlobBytesConsumer(PassRefPtr<BlobDataHandle> handle)
-      : blob_handle_(handle) {}
+      : blob_handle_(std::move(handle)) {}
   ~FakeBlobBytesConsumer() override {}
 
   Result BeginRead(const char** buffer, size_t* available) override {

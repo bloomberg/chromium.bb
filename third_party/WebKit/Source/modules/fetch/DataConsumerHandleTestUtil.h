@@ -187,7 +187,7 @@ class DataConsumerHandleTestUtil {
 
      public:
       ReaderImpl(const String& name, PassRefPtr<Context> context)
-          : name_(name.IsolatedCopy()), context_(context) {
+          : name_(name.IsolatedCopy()), context_(std::move(context)) {
         context_->RecordAttach(name_.IsolatedCopy());
       }
       ~ReaderImpl() override { context_->RecordDetach(name_.IsolatedCopy()); }
@@ -218,7 +218,7 @@ class DataConsumerHandleTestUtil {
 
      private:
       DataConsumerHandle(const String& name, PassRefPtr<Context> context)
-          : name_(name.IsolatedCopy()), context_(context) {}
+          : name_(name.IsolatedCopy()), context_(std::move(context)) {}
 
       std::unique_ptr<Reader> ObtainReader(Client*) {
         return WTF::MakeUnique<ReaderImpl>(name_, context_);
