@@ -12,14 +12,14 @@ var keyboard = {};
  * saves the host window.
  * @private
  */
-var keyboardHostWindow_;
+var keyboardHostWindow;
 
 /**
  * keyboard_utils may be injected as content script. This variable gets and
  * saves the host origin.
  * @private
  */
-var keyboardHostOrigin_;
+var keyboardHostOrigin;
 
 /**
  * Handles the initial messaging posted from webview, where this script is
@@ -30,8 +30,8 @@ var keyboardHostOrigin_;
 keyboard.onInitMessage_ = function(event) {
   if (event.data == 'initialMessage' &&
       event.origin == 'chrome://oobe') {
-    keyboardHostWindow_ = event.source;
-    keyboardHostOrigin_ = event.origin;
+    keyboardHostWindow = event.source;
+    keyboardHostOrigin = event.origin;
   }
 };
 
@@ -104,16 +104,16 @@ keyboard.onKeyDown_ = function(event) {
     // (since it is not available) we send an event to the host script
     // which will make the chrome.send call on our behalf.
     if (event.key == 'ArrowLeft' || event.key == 'ArrowUp') {
-      if (!keyboardHostWindow_)
+      if (!keyboardHostWindow)
         keyboard.onAdvanceFocus(true);
       else
-        keyboardHostWindow_.postMessage('backwardFocus', keyboardHostOrigin_);
+        keyboardHostWindow.postMessage('backwardFocus', keyboardHostOrigin);
       event.preventDefault();
     } else if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
-      if (!keyboardHostWindow_)
+      if (!keyboardHostWindow)
         keyboard.onAdvanceFocus(false);
       else
-        keyboardHostWindow_.postMessage('forwardFocus', keyboardHostOrigin_);
+        keyboardHostWindow.postMessage('forwardFocus', keyboardHostOrigin);
       event.preventDefault();
     }
   }

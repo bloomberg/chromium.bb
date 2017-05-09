@@ -476,7 +476,7 @@ function WallpaperManager(dialogDom) {
       return;
     }
     var self = this;
-    var presetCategoryInner_ = function() {
+    var presetCategoryInner = function() {
       // Selects the first category in the categories list of current
       // wallpaper as the default selected category when showing wallpaper
       // picker UI.
@@ -496,7 +496,7 @@ function WallpaperManager(dialogDom) {
       self.categoriesList_.selectionModel.selectedIndex = presetCategory;
     };
     if (navigator.onLine) {
-      presetCategoryInner_();
+      presetCategoryInner();
     } else {
       // If device is offline, gets the available offline wallpaper list first.
       // Wallpapers which are not in the list will display a grayscaled
@@ -506,7 +506,7 @@ function WallpaperManager(dialogDom) {
           self.downloadedListMap_ = {};
         for (var i = 0; i < lists.length; i++)
           self.downloadedListMap_[lists[i]] = true;
-        presetCategoryInner_();
+        presetCategoryInner();
       });
     }
   };

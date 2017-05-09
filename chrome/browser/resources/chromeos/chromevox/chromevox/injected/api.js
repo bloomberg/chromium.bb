@@ -53,19 +53,19 @@ if (typeof(goog) != 'undefined' && goog.require) {
     * Tracks whether or not the ChromeVox API should be considered active.
     * @type {boolean}
     */
-   var isActive_ = false;
+   var isActive = false;
 
    /**
     * The next id to use for async callbacks.
     * @type {number}
     */
-   var nextCallbackId_ = 1;
+   var nextCallbackId = 1;
 
    /**
     * Map from callback ID to callback function.
     * @type {Object<number, function(*)>}
     */
-   var callbackMap_ = {};
+   var callbackMap = {};
 
    /**
     * Internal function to connect to the content script.
@@ -85,9 +85,9 @@ if (typeof(goog) != 'undefined' && goog.require) {
        }
        try {
          var message = JSON.parse(event.data);
-         if (message['id'] && callbackMap_[message['id']]) {
-           callbackMap_[message['id']](message);
-           delete callbackMap_[message['id']];
+         if (message['id'] && callbackMap[message['id']]) {
+           callbackMap[message['id']](message);
+           delete callbackMap[message['id']];
          }
        } catch (e) {
        }
@@ -103,13 +103,13 @@ if (typeof(goog) != 'undefined' && goog.require) {
     *     with the response message.
     */
    function callAsync_(message, callback) {
-     var id = nextCallbackId_;
-     nextCallbackId_++;
+     var id = nextCallbackId;
+     nextCallbackId++;
      if (message['args'] === undefined) {
        message['args'] = [];
      }
      message['args'] = [id].concat(message['args']);
-     callbackMap_[id] = callback;
+     callbackMap[id] = callback;
      channel.port1.postMessage(JSON.stringify(message));
    }
 
@@ -201,7 +201,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
     * Enables the API and connects to the content script.
     */
    cvox.Api.internalEnable = function() {
-     isActive_ = true;
+     isActive = true;
      maybeEnableMathJaX();
      if (!implementation) {
        connect_();
@@ -223,7 +223,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
     */
    cvox.Api.isChromeVoxActive = function() {
      if (implementation) {
-       return isActive_;
+       return isActive;
      }
      return !!channel;
    };

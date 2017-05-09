@@ -61,7 +61,7 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
   /**
    * @type {string} The host for which the usage total is being fetched.
    */
-  var hostName_;
+  var hostName;
 
   /**
    * Encapsulates the calls between JS and C++ to fetch how much storage the
@@ -73,7 +73,7 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
     if (instance != null)
       instance.websiteDataUsage = '';
 
-    hostName_ = host;
+    hostName = host;
     chrome.send('fetchUsageTotal', [host]);
   };
 
@@ -89,7 +89,7 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
     if (instance == null)
       return;
 
-    if (hostName_ == host) {
+    if (hostName == host) {
       instance.websiteDataUsage = usage;
       instance.websiteStorageType = type;
     }

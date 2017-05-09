@@ -156,24 +156,24 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
  */
 function handleLogSaverMessage(request) {
   if (request === 'start') {
-    if (originalUtilFmt_) {
+    if (originalUtilFmt) {
       // We're already sending
       return false;
     }
-    originalUtilFmt_ = UTIL_fmt;
+    originalUtilFmt = UTIL_fmt;
     UTIL_fmt = function(s) {
-      var line = originalUtilFmt_(s);
+      var line = originalUtilFmt(s);
       chrome.runtime.sendMessage(LOG_SAVER_EXTENSION_ID, line);
       return line;
     };
   } else if (request === 'stop') {
-    if (originalUtilFmt_) {
-      UTIL_fmt = originalUtilFmt_;
-      originalUtilFmt_ = null;
+    if (originalUtilFmt) {
+      UTIL_fmt = originalUtilFmt;
+      originalUtilFmt = null;
     }
   }
   return false;
 }
 
 /** @private */
-var originalUtilFmt_ = null;
+var originalUtilFmt = null;

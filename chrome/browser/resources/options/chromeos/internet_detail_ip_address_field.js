@@ -11,7 +11,7 @@ cr.define('options.internet', function() {
    * @const
    * @type {RegExp}
    */
-  var singleIp_ = /^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$/;
+  var singleIp = /^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$/;
 
   /**
    * Creates a new field specifically for entering IP addresses.
@@ -58,7 +58,7 @@ cr.define('options.internet', function() {
       // Make sure it's only got numbers and ".", there are the correct
       // count of them, and they are all within the correct range.
       var fieldValue = this.editField.value.replace(/\s/g, '');
-      var matches = singleIp_.exec(fieldValue);
+      var matches = singleIp.exec(fieldValue);
       var rangeCorrect = true;
       if (matches != null) {
         for (var i = 1; i < matches.length; ++i) {
@@ -92,7 +92,7 @@ cr.define('options.internet', function() {
         return value;
 
       var fieldValue = value.replace(/\s/g, '');
-      var matches = singleIp_.exec(fieldValue);
+      var matches = singleIp.exec(fieldValue);
       var result = [];
 
       // If we got this far, matches shouldn't be null, but make sure.

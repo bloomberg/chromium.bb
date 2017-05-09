@@ -239,23 +239,23 @@ cr.define('settings', function() {
   r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
 // </if>
 
-  var routeObservers_ = new Set();
+  var routeObservers = new Set();
 
   /** @polymerBehavior */
   var RouteObserverBehavior = {
     /** @override */
     attached: function() {
-      assert(!routeObservers_.has(this));
-      routeObservers_.add(this);
+      assert(!routeObservers.has(this));
+      routeObservers.add(this);
 
       // Emulating Polymer data bindings, the observer is called when the
       // element starts observing the route.
-      this.currentRouteChanged(currentRoute_, undefined);
+      this.currentRouteChanged(currentRoute, undefined);
     },
 
     /** @override */
     detached: function() {
-      assert(routeObservers_.delete(this));
+      assert(routeObservers.delete(this));
     },
 
     /**
@@ -297,43 +297,43 @@ cr.define('settings', function() {
    * settings.initializeRouteFromUrl.
    * @private {!settings.Route}
    */
-  var currentRoute_ = Route.BASIC;
+  var currentRoute = Route.BASIC;
 
   /**
    * The current query parameters. This is updated only by settings.navigateTo
    * or settings.initializeRouteFromUrl.
    * @private {!URLSearchParams}
    */
-  var currentQueryParameters_ = new URLSearchParams();
+  var currentQueryParameters = new URLSearchParams();
 
   /** @private {boolean} */
   var lastRouteChangeWasPopstate_ = false;
 
   /** @private */
-  var initializeRouteFromUrlCalled_ = false;
+  var initializeRouteFromUrlCalled = false;
 
   /**
    * Initialize the route and query params from the URL.
    */
   var initializeRouteFromUrl = function() {
-    assert(!initializeRouteFromUrlCalled_);
-    initializeRouteFromUrlCalled_ = true;
+    assert(!initializeRouteFromUrlCalled);
+    initializeRouteFromUrlCalled = true;
 
     var route = getRouteForPath(window.location.pathname);
     // Never allow direct navigation to ADVANCED.
     if (route && route != Route.ADVANCED) {
-      currentRoute_ = route;
-      currentQueryParameters_ = new URLSearchParams(window.location.search);
+      currentRoute = route;
+      currentQueryParameters = new URLSearchParams(window.location.search);
     } else {
       window.history.replaceState(undefined, '', Route.BASIC.path);
     }
   };
 
   function resetRouteForTesting() {
-    initializeRouteFromUrlCalled_ = false;
+    initializeRouteFromUrlCalled = false;
     lastRouteChangeWasPopstate_ = false;
-    currentRoute_ = Route.BASIC;
-    currentQueryParameters_ = new URLSearchParams();
+    currentRoute = Route.BASIC;
+    currentQueryParameters = new URLSearchParams();
   }
 
   /**
@@ -343,21 +343,21 @@ cr.define('settings', function() {
    * @param {boolean} isPopstate
    */
   var setCurrentRoute = function(route, queryParameters, isPopstate) {
-    var oldRoute = currentRoute_;
-    currentRoute_ = route;
-    currentQueryParameters_ = queryParameters;
+    var oldRoute = currentRoute;
+    currentRoute = route;
+    currentQueryParameters = queryParameters;
     lastRouteChangeWasPopstate_ = isPopstate;
-    routeObservers_.forEach(function(observer) {
-      observer.currentRouteChanged(currentRoute_, oldRoute);
+    routeObservers.forEach(function(observer) {
+      observer.currentRouteChanged(currentRoute, oldRoute);
     });
   };
 
   /** @return {!settings.Route} */
-  var getCurrentRoute = function() { return currentRoute_; };
+  var getCurrentRoute = function() { return currentRoute; };
 
   /** @return {!URLSearchParams} */
   var getQueryParameters = function() {
-    return new URLSearchParams(currentQueryParameters_);  // Defensive copy.
+    return new URLSearchParams(currentQueryParameters);  // Defensive copy.
   };
 
   /** @return {boolean} */
@@ -394,7 +394,7 @@ cr.define('settings', function() {
       url += '?' + queryString;
 
     // History serializes the state, so we don't push the actual route object.
-    window.history.pushState(currentRoute_.path, '', url);
+    window.history.pushState(currentRoute.path, '', url);
     setCurrentRoute(route, params, false);
   };
 
@@ -408,10 +408,10 @@ cr.define('settings', function() {
         window.history.state &&
         assert(getRouteForPath(/** @type {string} */ (window.history.state)));
 
-    if (previousRoute && previousRoute.depth <= currentRoute_.depth)
+    if (previousRoute && previousRoute.depth <= currentRoute.depth)
       window.history.back();
     else
-      navigateTo(currentRoute_.parent || Route.BASIC);
+      navigateTo(currentRoute.parent || Route.BASIC);
   };
 
   window.addEventListener('popstate', function(event) {
