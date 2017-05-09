@@ -117,15 +117,15 @@ WebDataRequestManager::~WebDataRequestManager() {
 void WebDataRequestManager::RequestCompletedOnThread(
     std::unique_ptr<WebDataRequest> request,
     std::unique_ptr<WDTypedResult> result) {
-  // Manipulate the pending_requests_ collection while holding the lock.
+  // Check whether the request is active. It might have been cancelled in
+  // another thread before this completion handler was invoked. This means the
+  // request initiator is no longer interested in the result.
+  if (!request->IsActive())
+    return;
+
+  // Stop tracking the request. The request is already finished, so "stop
+  // tracking" is the same as post-facto cancellation.
   {
-    base::AutoLock l(pending_lock_);
-
-    // Check whether the request is active. It might have been cancelled in
-    // another thread before the lock was acquired.
-    if (!request->IsActive())
-      return;
-
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile(
@@ -133,20 +133,10 @@ void WebDataRequestManager::RequestCompletedOnThread(
             "422460 "
             "WebDataRequestManager::RequestCompletedOnThread::UpdateMap"));
 
-    // Remove the request object from the pending_requests_ map. Note that this
-    // method has ownership of the object (it was passed by unique_ptr).
-    auto i = pending_requests_.find(request->GetHandle());
-    DCHECK(i != pending_requests_.end());
-    pending_requests_.erase(i);
-
-    // The request is no longer active.
-    request->MarkAsInactive();
+    CancelRequest(request->GetHandle());
   }
 
   // Notify the consumer if needed.
-  //
-  // NOTE: The pending_lock_ is no longer held here. It's up to the consumer to
-  // be appropriately thread safe.
   WebDataServiceConsumer* const consumer = request->GetConsumer();
   if (consumer) {
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
