@@ -83,15 +83,6 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   // fetching for different network schemes.
   Builder& SetProtocolHandlers(ProtocolHandlerMap protocol_handlers);
 
-  // DEPRECATED. Specify JS mojo module bindings to be installed, one per mojom
-  // file. Note a single mojom file could potentially define many interfaces.
-  // |mojom_name| the name including path of the .mojom file.
-  // |js_bindings| compiletime generated javascript bindings. Typically loaded
-  // from gen/path/name.mojom.js.
-  // TODO(alexclarke): Remove this.
-  Builder& AddJsMojoBindings(const std::string& mojom_name,
-                             const std::string& js_bindings);
-
   Builder& AddTabSocketMojoBindings();
 
   // By default if you add mojo bindings, http and https are disabled because

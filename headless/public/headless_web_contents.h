@@ -83,13 +83,6 @@ class HEADLESS_EXPORT HeadlessWebContents {
   // Returns the headless tab socket for JS -> C++ if one was created.
   virtual HeadlessTabSocket* GetHeadlessTabSocket() const = 0;
 
-  // Returns the FrameTreeNode Id associated with the |devtools_agent_host_id|
-  // if any.
-  // TODO(alexclarke): Remove this, it doesn't work as expected.
-  virtual bool GetFrameTreeNodeIdForDevToolsAgentHostId(
-      const std::string& devtools_agent_host_id,
-      int* frame_tree_node_id) const = 0;
-
   // Returns the devtools frame id corresponding to the |frame_tree_node_id|, if
   // any. Note this relies on an IPC sent from blink during navigation.
   virtual std::string GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
@@ -118,23 +111,6 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
 
   // Specify the initial window size (default is configured in browser options).
   Builder& SetWindowSize(const gfx::Size& size);
-
-  // DEPRECATED. Specify an embedder provided Mojo service to be installed.  The
-  // |service_factory| callback is called on demand by Mojo to instantiate the
-  // service if a client asks for it.
-  // TODO(alexclarke): Remove AddMojoService.
-  template <typename Interface>
-  Builder& AddMojoService(
-      const base::Callback<void(mojo::InterfaceRequest<Interface>)>&
-          service_factory) {
-    return AddMojoService(
-        Interface::Name_,
-        base::Bind(&Builder::ForwardToServiceFactory<Interface>,
-                   service_factory));
-  }
-  Builder& AddMojoService(const std::string& service_name,
-                          const base::Callback<void(
-                              mojo::ScopedMessagePipeHandle)>& service_factory);
 
   // Whether or not a headless tab socket should be created, to allow JS -> C++
   // embedder communications.

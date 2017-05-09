@@ -137,7 +137,7 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
     return new GenericURLRequestJob(
         request, network_delegate, dispatcher_,
         base::MakeUnique<MockFetcher>(fetch_request_, json_fetch_reply_map_),
-        job_delegate_);
+        job_delegate_, nullptr);
   }
 
  private:

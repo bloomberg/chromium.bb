@@ -1011,10 +1011,6 @@ class RawDevtoolsProtocolTest
         "\"value\":2,\"description\":\"2\"}}}",
         json_message);
 
-    int frame_tree_node_id = 0;
-    EXPECT_TRUE(web_contents_->GetFrameTreeNodeIdForDevToolsAgentHostId(
-        devtools_agent_host_id, &frame_tree_node_id));
-    EXPECT_NE(0, frame_tree_node_id);
     FinishAsynchronousTest();
     return true;
   }
