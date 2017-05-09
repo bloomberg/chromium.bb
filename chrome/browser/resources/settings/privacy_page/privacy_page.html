@@ -404,17 +404,19 @@
         </settings-subpage>
       </template>
       <template is="dom-if" if="[[enableSafeBrowsingSubresourceFilter_]]"
-        route-path="/content/subresourceFilter" no-search>
-        <settings-subpage page-title="$i18n{siteSettingsSubresourceFilter}">
-          <category-default-setting
-              category="{{ContentSettingsTypes.SUBRESOURCE_FILTER}}"
-              toggle-off-label="$i18n{siteSettingsSubresourceFilterAllow}"
-              toggle-on-label="$i18n{siteSettingsSubresourceFilterBlock}">
-          </category-default-setting>
-          <category-setting-exceptions
-              category="{{ContentSettingsTypes.SUBRESOURCE_FILTER}}">
-          </category-setting-exceptions>
-        </settings-subpage>
+          no-search>
+        <template is="dom-if" route-path="/content/subresourceFilter" no-search>
+          <settings-subpage page-title="$i18n{siteSettingsSubresourceFilter}">
+            <category-default-setting
+                category="{{ContentSettingsTypes.SUBRESOURCE_FILTER}}"
+                toggle-off-label="$i18n{siteSettingsSubresourceFilterAllow}"
+                toggle-on-label="$i18n{siteSettingsSubresourceFilterBlock}">
+            </category-default-setting>
+            <category-setting-exceptions
+                category="{{ContentSettingsTypes.SUBRESOURCE_FILTER}}">
+            </category-setting-exceptions>
+          </settings-subpage>
+       </template>
      </template>
      <template is="dom-if" route-path="/content/unsandboxedPlugins" no-search>
         <settings-subpage page-title="$i18n{siteSettingsUnsandboxedPlugins}">
