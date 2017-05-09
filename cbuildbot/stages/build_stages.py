@@ -225,7 +225,12 @@ class CleanUpStage(generic_stages.BuilderStage):
       # ChromiumOs and ChromeOs waterfalls.
       if (config_lib.UseBuildbucketScheduler(self._run.config) and
           config_lib.IsMasterBuild(self._run.config)):
-        tasks.append(self.CancelObsoleteSlaveBuilds)
+
+        # TODO(dgarrett): Remove when crbug.com/719789 is fixed.
+        if self._run.config.build_type == constants.ANDROID_PFQ_TYPE:
+          logging.info('Don\'t try to cancel Android PFQs. crbug.com/719789')
+        else:
+          tasks.append(self.CancelObsoleteSlaveBuilds)
 
       parallel.RunParallelSteps(tasks)
 
