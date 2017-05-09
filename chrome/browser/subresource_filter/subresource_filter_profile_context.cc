@@ -9,11 +9,11 @@
 
 SubresourceFilterProfileContext::SubresourceFilterProfileContext(
     Profile* profile)
-    : content_settings_manager_(
+    : settings_manager_(
           base::MakeUnique<SubresourceFilterContentSettingsManager>(profile)) {}
 
 SubresourceFilterProfileContext::~SubresourceFilterProfileContext() {}
 
 void SubresourceFilterProfileContext::Shutdown() {
-  content_settings_manager_.reset();
+  settings_manager_.reset();
 }

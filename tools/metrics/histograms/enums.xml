@@ -5283,6 +5283,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="30" label="Important site info setting"/>
   <int value="31" label="Permission autoblocker data setting"/>
   <int value="32" label="Subresource filter setting"/>
+  <int value="33" label="Subresource filter metadata"/>
 </enum>
 
 <enum name="ContentTypeParseableResult" type="int">
@@ -33406,6 +33407,8 @@ from previous Chrome versions.
   <int value="7" label="Content setting allowed (global)"/>
   <int value="8" label="Content setting blocked (global)"/>
   <int value="9" label="Content setting wildcard update"/>
+  <int value="10" label="UI Suppressed (Smart Logic)"/>
+  <int value="11" label="Content setting blocked while UI suppressed"/>
 </enum>
 
 <enum name="SubresourceFilterActivationDecision" type="int">

@@ -19,12 +19,15 @@ class SubresourceFilterProfileContext : public KeyedService {
   explicit SubresourceFilterProfileContext(Profile* profile);
   ~SubresourceFilterProfileContext() override;
 
+  SubresourceFilterContentSettingsManager* settings_manager() {
+    return settings_manager_.get();
+  }
+
  private:
   // KeyedService:
   void Shutdown() override;
 
-  std::unique_ptr<SubresourceFilterContentSettingsManager>
-      content_settings_manager_;
+  std::unique_ptr<SubresourceFilterContentSettingsManager> settings_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterProfileContext);
 };

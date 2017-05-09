@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -26,6 +27,9 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/v4_test_utils.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
+#include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -262,6 +266,13 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
     ResetConfigurationToEnableOnPhishingSites();
+
+    settings_manager_ = SubresourceFilterProfileContextFactory::GetForProfile(
+                            browser()->profile())
+                            ->settings_manager();
+#if defined(OS_ANDROID)
+    EXPECT_TRUE(settings_manager->should_use_smart_ui());
+#endif
   }
 
   GURL GetTestUrl(const std::string& relative_url) {
@@ -290,6 +301,10 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
 
   content::WebContents* web_contents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  SubresourceFilterContentSettingsManager* settings_manager() {
+    return settings_manager_;
   }
 
   content::RenderFrameHost* FindFrameByName(const std::string& name) {
@@ -382,6 +397,9 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   safe_browsing::TestV4DatabaseFactory* v4_db_factory_;
   // Owned by the V4GetHashProtocolManager.
   safe_browsing::TestV4GetHashProtocolManagerFactory* v4_get_hash_factory_;
+
+  // Owned by the profile.
+  SubresourceFilterContentSettingsManager* settings_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTest);
 };
@@ -825,6 +843,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   GURL url(GetTestUrl(kTestFrameSetPath));
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
@@ -834,8 +854,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   EXPECT_FALSE(IsDynamicScriptElementLoaded(FindFrameByName("five")));
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
                            1);
-  // Check that bubble is shown for new navigation.
-  ui_test_utils::NavigateToURL(browser(), url);
+  // Check that bubble is shown for new navigation. Must be cross site to avoid
+  // triggering smart UI on Android.
+  ConfigureAsPhishingURL(a_url);
+  ui_test_utils::NavigateToURL(browser(), a_url);
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
                            2);
 }
@@ -1002,6 +1024,70 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ConfigureAsPhishingURL(a_url);
   ui_test_utils::NavigateToURL(browser(), a_url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+}
+
+// Test the "smart" UI, aka the logic to hide the UI on subsequent same-domain
+// navigations, until a certain time threshold has been reached. This is an
+// android-only feature.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       DoNotShowUIUntilThresholdReached) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/subresource_filter/frame_with_included_script.html"));
+  GURL b_url(embedded_test_server()->GetURL(
+      "b.com", "/subresource_filter/frame_with_included_script.html"));
+  // Test utils only support one blacklisted site at a time.
+  // TODO(csharrison): Add support for more than one URL.
+  ConfigureAsPhishingURL(a_url);
+
+  // Cast is safe because this is the only type of client in non-unittest code.
+  ChromeSubresourceFilterClient* client =
+      static_cast<ChromeSubresourceFilterClient*>(
+          ContentSubresourceFilterDriverFactory::FromWebContents(web_contents())
+              ->client());
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock* raw_clock = test_clock.get();
+  settings_manager()->set_clock_for_testing(std::move(test_clock));
+
+  base::HistogramTester histogram_tester;
+
+  // First load should trigger the UI.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+  EXPECT_TRUE(client->did_show_ui_for_navigation());
+
+  histogram_tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                                     kActionUISuppressed, 0);
+
+  // Second load should not trigger the UI, but should still filter content.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  bool use_smart_ui = settings_manager()->should_use_smart_ui();
+  EXPECT_EQ(client->did_show_ui_for_navigation(), !use_smart_ui);
+
+  histogram_tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                                     kActionUISuppressed, use_smart_ui ? 1 : 0);
+
+  ConfigureAsPhishingURL(b_url);
+
+  // Load to another domain should trigger the UI.
+  ui_test_utils::NavigateToURL(browser(), b_url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+  EXPECT_TRUE(client->did_show_ui_for_navigation());
+
+  ConfigureAsPhishingURL(a_url);
+
+  // Fast forward the clock, and a_url should trigger the UI again.
+  raw_clock->Advance(
+      SubresourceFilterContentSettingsManager::kDelayBeforeShowingInfobarAgain);
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+  EXPECT_TRUE(client->did_show_ui_for_navigation());
+
+  histogram_tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                                     kActionUISuppressed, use_smart_ui ? 1 : 0);
 }
 
 IN_PROC_BROWSER_TEST_P(SubresourceFilterWebSocketBrowserTest, BlockWebSocket) {

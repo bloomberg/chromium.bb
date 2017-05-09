@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class GURL;
+class SubresourceFilterContentSettingsManager;
 
 namespace content {
 class NavigationHandle;
@@ -45,7 +46,8 @@ enum SubresourceFilterAction {
   // Content setting updated automatically via the standard UI.
   kActionContentSettingsBlockedFromUI,
 
-  // Content settings which target specific origins (e.g. no wildcards).
+  // Content settings which target specific origins (e.g. no wildcards). These
+  // updates do not include updates from the main UI.
   kActionContentSettingsAllowed,
   kActionContentSettingsBlocked,
 
@@ -60,6 +62,16 @@ enum SubresourceFilterAction {
   // TODO(crbug.com/706061): Fix this once content settings API becomes more
   // flexible.
   kActionContentSettingsWildcardUpdate,
+
+  // The UI was suppressed due to "smart" logic which tries not to spam the UI
+  // on navigations on the same origin within a certain time.
+  kActionUISuppressed,
+
+  // The feature was blocked via content setting manually while smart UI was
+  // suppressing the UI. Potentially indicates that the smart UI is too
+  // aggressive if this happens frequently. This is a reported alongside
+  // kActionContentSettingsBlocked if the UI is currently in suppressed mode.
+  kActionContentSettingsBlockedWhileUISuppressed,
 
   kActionLastEntry
 };
@@ -94,8 +106,11 @@ class ChromeSubresourceFilterClient
   static void LogAction(SubresourceFilterAction action);
 
  private:
-  ContentSetting GetContentSettingForUrl(const GURL& url);
   std::set<std::string> whitelisted_hosts_;
+
+  // Owned by the profile.
+  SubresourceFilterContentSettingsManager* settings_manager_;
+
   content::WebContents* web_contents_;
   bool did_show_ui_for_navigation_;
 
