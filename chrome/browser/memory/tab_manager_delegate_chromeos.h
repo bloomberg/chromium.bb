@@ -33,16 +33,18 @@ namespace memory {
 // Possible types of Apps/Tabs processes. From most important to least
 // important.
 enum class ProcessType {
-  // There can be only one process having process type "FOCUSED_APP"
-  // or "FOCUSED_TAB" in the system at any give time (i.e., The focused window
-  // could be either a chrome window or an Android app. But not both.
-  FOCUSED_APP = 1,
-  FOCUSED_TAB = FOCUSED_APP,
+  // Conceptually, the system cannot have both FOCUSED_TAB and FOCUSED_APP at
+  // the same time, but because Chrome cannot retrieve FOCUSED_APP status
+  // synchronously, Chrome may still see both at the same time. When that
+  // happens, treat FOCUSED_TAB as the most important since the (synchronously
+  // retrieved) tab information is more reliable and up-to-date.
+  FOCUSED_TAB = 1,
+  FOCUSED_APP = 2,
 
-  VISIBLE_APP = 2,
-  BACKGROUND_TAB = 3,
-  BACKGROUND_APP = 4,
-  UNKNOWN_TYPE = 5,
+  VISIBLE_APP = 3,
+  BACKGROUND_TAB = 4,
+  BACKGROUND_APP = 5,
+  UNKNOWN_TYPE = 6,
 };
 
 // The Chrome OS TabManagerDelegate is responsible for keeping the
@@ -98,6 +100,8 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, CandidatesSorted);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
+                           CandidatesSortedWithFocusedAppAndTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
                            DoNotKillRecentlyKilledArcProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, IsRecentlyKilledArcProcess);

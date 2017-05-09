@@ -109,6 +109,28 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
   EXPECT_EQ("service", candidates[8].app()->process_name());
 }
 
+// Occasionally, Chrome sees both FOCUSED_TAB and FOCUSED_APP at the same time.
+// Test that Chrome treats the former as a more important process.
+TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
+  std::vector<arc::ArcProcess> arc_processes;
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
+                             kIsFocused, 100);
+  TabStats tab1;
+  tab1.tab_contents_id = 100;
+  tab1.is_pinned = true;
+  tab1.is_selected = true;
+  const TabStatsList tab_list = {tab1};
+
+  const std::vector<TabManagerDelegate::Candidate> candidates =
+      TabManagerDelegate::GetSortedCandidates(tab_list, arc_processes);
+  ASSERT_EQ(2U, candidates.size());
+  // FOCUSED_TAB should be the first one.
+  ASSERT_TRUE(candidates[0].tab());
+  EXPECT_EQ(100, candidates[0].tab()->tab_contents_id);
+  ASSERT_TRUE(candidates[1].app());
+  EXPECT_EQ("focused", candidates[1].app()->process_name());
+}
+
 class MockTabManagerDelegate : public TabManagerDelegate {
  public:
   MockTabManagerDelegate()
