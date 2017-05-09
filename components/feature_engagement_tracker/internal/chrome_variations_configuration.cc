@@ -18,7 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
-#include "components/feature_engagement_tracker/internal/feature_list.h"
+#include "components/feature_engagement_tracker/public/feature_list.h"
 
 namespace {
 

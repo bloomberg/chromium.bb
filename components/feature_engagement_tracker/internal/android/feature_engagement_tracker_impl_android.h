@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "components/feature_engagement_tracker/internal/feature_engagement_tracker_impl.h"
-#include "components/feature_engagement_tracker/internal/feature_list.h"
+#include "components/feature_engagement_tracker/public/feature_list.h"
 
 namespace base {
 struct Feature;
@@ -53,7 +53,8 @@ class FeatureEngagementTrackerImplAndroid
       const base::android::JavaRef<jobject>& jobj,
       const base::android::JavaParamRef<jstring>& jfeature);
   virtual void Dismissed(JNIEnv* env,
-                         const base::android::JavaRef<jobject>& jobj);
+                         const base::android::JavaRef<jobject>& jobj,
+                         const base::android::JavaParamRef<jstring>& jfeature);
   virtual bool IsInitialized(JNIEnv* env,
                              const base::android::JavaRef<jobject>& jobj);
   virtual void AddOnInitializedCallback(

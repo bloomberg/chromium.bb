@@ -58,8 +58,9 @@ class FeatureEngagementTracker : public KeyedService {
   virtual bool ShouldTriggerHelpUI(const base::Feature& feature)
       WARN_UNUSED_RESULT = 0;
 
-  // Must be called after display of feature enlightenment finishes.
-  virtual void Dismissed() = 0;
+  // Must be called after display of feature enlightenment finishes for a
+  // particular |feature|.
+  virtual void Dismissed(const base::Feature& feature) = 0;
 
   // Returns whether the tracker has been successfully initialized. During
   // startup, this will be false until the internal model has been loaded at

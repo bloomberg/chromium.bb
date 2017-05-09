@@ -9,8 +9,11 @@ if (is_android) {
 
 source_set("public") {
   sources = [
+    "feature_constants.cc",
     "feature_constants.h",
     "feature_engagement_tracker.h",
+    "feature_list.cc",
+    "feature_list.h",
   ]
 
   deps = [

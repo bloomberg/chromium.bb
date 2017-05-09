@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
-#include "components/feature_engagement_tracker/internal/feature_list.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 #include "components/feature_engagement_tracker/internal/model_impl.h"
 #include "components/feature_engagement_tracker/internal/never_condition_validator.h"
@@ -17,6 +16,7 @@
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 #include "components/feature_engagement_tracker/internal/single_invalid_configuration.h"
 #include "components/feature_engagement_tracker/public/feature_constants.h"
+#include "components/feature_engagement_tracker/public/feature_list.h"
 
 namespace feature_engagement_tracker {
 
@@ -98,7 +98,7 @@ bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
   return result;
 }
 
-void FeatureEngagementTrackerImpl::Dismissed() {
+void FeatureEngagementTrackerImpl::Dismissed(const base::Feature& feature) {
   // TODO(nyquist): Track this event.
   model_->SetIsCurrentlyShowing(false);
 }
