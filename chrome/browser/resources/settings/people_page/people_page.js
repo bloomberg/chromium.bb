@@ -78,14 +78,13 @@ Polymer({
 
 // <if expr="chromeos">
     /**
-     * True if quick unlock settings should be displayed on this machine.
+     * True if fingerprint settings should be displayed on this machine.
      * @private
      */
-    quickUnlockEnabled_: {
+    fingerprintUnlockEnabled_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('pinUnlockEnabled') ||
-            loadTimeData.getBoolean('fingerprintUnlockEnabled');
+        return loadTimeData.getBoolean('fingerprintUnlockEnabled');
       },
       readOnly: true,
     },

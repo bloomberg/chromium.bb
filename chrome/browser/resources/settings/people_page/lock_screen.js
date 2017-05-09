@@ -56,13 +56,13 @@ Polymer({
     },
 
     /**
-     * True if pin unlock settings should be displayed on this machine.
+     * True if quick unlock settings should be displayed on this machine.
      * @private
      */
-    pinUnlockEnabled_: {
+    quickUnlockEnabled_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('pinUnlockEnabled');
+        return loadTimeData.getBoolean('quickUnlockEnabled');
       },
       readOnly: true,
     },
@@ -231,9 +231,12 @@ Polymer({
     return selectedUnlockType === LockScreenUnlockType.PIN_PASSWORD;
   },
 
-  /** @private */
-  getSetupPinText_: function() {
-    if (this.hasPin)
+  /**
+   * @param {boolean} hasPin
+   * @private
+   */
+  getSetupPinText_: function(hasPin) {
+    if (hasPin)
       return this.i18n('lockScreenChangePinButton');
     return this.i18n('lockScreenSetupPinButton');
   },
