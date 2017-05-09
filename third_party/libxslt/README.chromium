@@ -9,18 +9,4 @@ Description:
 
 libxslt from libxml.org.
 
-Modifications:
-
-- GetFileAttributes -> GetFileAttributesA in libxslt\security.c
-
-- Apply patch contributed here:
-  https://bugs.chromium.org/p/chromium/issues/detail?id=583171#c17
-
-- Apply patch contributed upstream, details here:
-  https://crbug.com/676623#c18
-
-To import a new version:
-https://docs.google.com/document/d/18gD61GGEUjFiGqFot4WeV97eyyCa17dTg6r6r7r6ZFE/edit
-
-This roll was done using a script:
-https://github.com/dominiccooney/blink-tools/blob/ac9f8e093ec3d00267d67927a37956e5e8993961/roll.py
+Modifications: Apply the patches in chromium/*.patch
