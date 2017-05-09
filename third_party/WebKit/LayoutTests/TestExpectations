@@ -71,9 +71,6 @@ crbug.com/626748 virtual/disable-spinvalidation/paint/invalidation/table/cached-
 # Scanlines off by 1, but code path should be the same
 crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
 
-crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
-crbug.com/646015 virtual/disable-spinvalidation/paint/invalidation/hover-invalidation-table.html [ Failure ]
-
 crbug.com/667045 paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
 crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
 
