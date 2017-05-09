@@ -14,14 +14,14 @@
 
 namespace blink {
 
-class FederatedCredentialData;
+class FederatedCredentialInit;
 class WebFederatedCredential;
 
 class MODULES_EXPORT FederatedCredential final : public CredentialUserData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FederatedCredential* Create(const FederatedCredentialData&,
+  static FederatedCredential* Create(const FederatedCredentialInit&,
                                      ExceptionState&);
   static FederatedCredential* Create(WebFederatedCredential*);
 
