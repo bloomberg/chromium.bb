@@ -63,8 +63,8 @@ typedef enum {
 #define MAX_SEG_MASK_BITS 1
 // SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
 typedef enum {
-  DIFFWTD_42 = 0,
-  DIFFWTD_42_INV,
+  DIFFWTD_38 = 0,
+  DIFFWTD_38_INV,
   SEG_MASK_TYPES,
 } SEG_MASK_TYPE;
 

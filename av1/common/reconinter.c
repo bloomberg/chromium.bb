@@ -371,12 +371,12 @@ void build_compound_seg_mask(uint8_t *mask, SEG_MASK_TYPE mask_type,
                              const uint8_t *src1, int src1_stride,
                              BLOCK_SIZE sb_type, int h, int w) {
   switch (mask_type) {
-    case DIFFWTD_42:
-      diffwtd_mask(mask, 0, 42, src0, src0_stride, src1, src1_stride, sb_type,
+    case DIFFWTD_38:
+      diffwtd_mask(mask, 0, 38, src0, src0_stride, src1, src1_stride, sb_type,
                    h, w);
       break;
-    case DIFFWTD_42_INV:
-      diffwtd_mask(mask, 1, 42, src0, src0_stride, src1, src1_stride, sb_type,
+    case DIFFWTD_38_INV:
+      diffwtd_mask(mask, 1, 38, src0, src0_stride, src1, src1_stride, sb_type,
                    h, w);
       break;
     default: assert(0);
