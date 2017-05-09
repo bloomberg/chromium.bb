@@ -80,13 +80,13 @@ class MojoDiscardableSharedMemoryManagerImpl
   void AllocateLockedDiscardableSharedMemory(
       uint32_t size,
       int32_t id,
-      const AllocateLockedDiscardableSharedMemoryCallback& callback) override {
+      AllocateLockedDiscardableSharedMemoryCallback callback) override {
     base::SharedMemoryHandle handle;
     manager_->AllocateLockedDiscardableSharedMemoryForClient(client_id_, size,
                                                              id, &handle);
     mojo::ScopedSharedBufferHandle memory =
         mojo::WrapSharedMemoryHandle(handle, size, false /* read_only */);
-    return callback.Run(std::move(memory));
+    std::move(callback).Run(std::move(memory));
   }
 
   void DeletedDiscardableSharedMemory(int32_t id) override {
