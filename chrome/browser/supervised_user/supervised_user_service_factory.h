@@ -16,6 +16,8 @@ class SupervisedUserServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static SupervisedUserService* GetForProfile(Profile* profile);
 
+  static SupervisedUserService* GetForProfileIfExists(Profile* profile);
+
   static SupervisedUserServiceFactory* GetInstance();
 
   // Used to create instances for testing.
