@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -58,14 +58,12 @@ class ViewsTestBase : public PlatformTest {
     views_delegate_for_setup_.swap(views_delegate);
   }
 
-  base::MessageLoopForUI* message_loop() { return &message_loop_; }
-
   // Returns a context view. In aura builds, this will be the
   // RootWindow. Everywhere else, NULL.
   gfx::NativeWindow GetContext();
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<TestViewsDelegate> views_delegate_for_setup_;
   std::unique_ptr<ScopedViewsTestHelper> test_helper_;
   bool setup_called_;

@@ -48,7 +48,9 @@ bool InitializeVisuals() {
 }  // namespace
 
 ViewsTestBase::ViewsTestBase()
-    : setup_called_(false),
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      setup_called_(false),
       teardown_called_(false),
       has_compositing_manager_(InitializeVisuals()) {}
 
