@@ -45,7 +45,9 @@ public class PickerBitmapViewHolder
             return;
         }
 
-        mItemView.setThumbnailBitmap(bitmap);
+        if (mItemView.setThumbnailBitmap(bitmap)) {
+            mItemView.fadeInThumbnail();
+        }
     }
 
     /**

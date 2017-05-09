@@ -332,8 +332,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         // to show it when nothing is selected and also not on a blank canvas.
         mSelectedView.setVisibility(!special && checked ? View.VISIBLE : View.GONE);
         mUnselectedView.setVisibility(
-                !special && !checked && anySelection ? View.VISIBLE : View.GONE);
-        mScrim.setVisibility(!special && !checked && anySelection ? View.VISIBLE : View.GONE);
+                !special && !checked && anySelection && mImageLoaded ? View.VISIBLE : View.GONE);
+        mScrim.setVisibility(
+                !special && !checked && anySelection && mImageLoaded ? View.VISIBLE : View.GONE);
     }
 
     private boolean isGalleryTile() {
