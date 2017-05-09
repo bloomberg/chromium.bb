@@ -74,7 +74,7 @@ class PassRefPtr {
   PassRefPtr(T* ptr) : ptr_(ptr) { RefIfNotNull(ptr); }
   PassRefPtr(PassRefPtr&& o) : ptr_(o.LeakRef()) {}
   template <typename U>
-  PassRefPtr(const PassRefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T))
+  PassRefPtr(PassRefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T))
       : ptr_(o.LeakRef()) {}
 
   ALWAYS_INLINE ~PassRefPtr() { DerefIfNotNull(ptr_); }
