@@ -1122,6 +1122,38 @@ should be able to be added at any place in this file.
   <description>User closed the Chrome Home bottom sheet.</description>
 </action>
 
+<action name="Android.ChromeHome.ClosedByNTPCloseButton">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User closed the Chrome Home bottom sheet using the NTP's close button.
+  </description>
+</action>
+
+<action name="Android.ChromeHome.ClosedByNavigation">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User closed the Chrome Home bottom sheet by navigating.
+  </description>
+</action>
+
+<action name="Android.ChromeHome.ClosedBySwipe">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User closed the Chrome Home bottom sheet using a swipe gesture.
+  </description>
+</action>
+
+<action name="Android.ChromeHome.ClosedByTapScrim">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User closed the Chrome Home bottom sheet tapping the scrim behind the sheet.
+  </description>
+</action>
+
 <action name="Android.ChromeHome.FullState">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -1142,6 +1174,42 @@ should be able to be added at any place in this file.
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>User opened the Chrome Home bottom sheet.</description>
+  <obsolete>
+    Deprecated 5/2017. Replaced by the versions with a suffix, which are more
+    descriptive.
+  </obsolete>
+</action>
+
+<action name="Android.ChromeHome.OpenedByExpandButton">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User opened the Chrome Home bottom sheet using the expand button.
+  </description>
+</action>
+
+<action name="Android.ChromeHome.OpenedByNTP">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User opened the Chrome Home bottom sheet by opening a new tab.
+  </description>
+</action>
+
+<action name="Android.ChromeHome.OpenedByOmnibox">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User opened the Chrome Home bottom sheet by focusing the omnibox.
+  </description>
+</action>
+
+<action name="Android.ChromeHome.OpenedBySwipe">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User opened the Chrome Home bottom sheet using a swipe gesture.
+  </description>
 </action>
 
 <action name="Android.ChromeHome.ShowBookmarks">

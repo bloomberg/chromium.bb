@@ -96,6 +96,8 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
                 // If the NTP is loading, the sheet state will be set to SHEET_STATE_HALF.
                 if (TextUtils.equals(tab.getUrl(), getUrl())) return;
 
+                mBottomSheet.getBottomSheetMetrics().setSheetCloseReason(
+                        BottomSheetMetrics.CLOSED_BY_NAVIGATION);
                 mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
             }
         };
@@ -166,6 +168,8 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
         mCloseButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                mBottomSheet.getBottomSheetMetrics().setSheetCloseReason(
+                        BottomSheetMetrics.CLOSED_BY_NTP_CLOSE_BUTTON);
                 mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
                 if (mShowOverviewOnClose && getLayoutManager() != null) {
                     getLayoutManager().showOverview(false);
