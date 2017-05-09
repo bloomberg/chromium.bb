@@ -994,7 +994,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
           initWithBrowserState:_mainBrowserState
       presentingViewController:self.navigationController
          isPresentedOnSettings:YES
-             signInAccessPoint:signin_metrics::AccessPoint::
+                   accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_SETTINGS]);
 
   base::WeakNSObject<SettingsCollectionViewController> weakSelf(self);

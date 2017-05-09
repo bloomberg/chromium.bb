@@ -386,8 +386,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showSavePasswordsSettings;
 // Invokes the sign in flow with the specified authentication operation and
 // invokes |callback| when finished.
-- (void)showSignInWithOperation:(AuthenticationOperation)operation
-              signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
+- (void)showSigninWithOperation:(AuthenticationOperation)operation
+                    accessPoint:(signin_metrics::AccessPoint)accessPoint
                        callback:(ShowSigninCommandCompletionCallback)callback;
 // Wraps a callback with one that first checks if sign-in was completed
 // successfully and the profile wasn't swapped before invoking.
@@ -1432,8 +1432,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       if (command.operation == AUTHENTICATION_OPERATION_DISMISS) {
         [self dismissSigninInteractionController];
       } else {
-        [self showSignInWithOperation:command.operation
-                    signInAccessPoint:command.signInAccessPoint
+        [self showSigninWithOperation:command.operation
+                          accessPoint:command.accessPoint
                              callback:command.callback];
       }
       break;
@@ -2077,8 +2077,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                  completion:nil];
 }
 
-- (void)showSignInWithOperation:(AuthenticationOperation)operation
-              signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
+- (void)showSigninWithOperation:(AuthenticationOperation)operation
+                    accessPoint:(signin_metrics::AccessPoint)accessPoint
                        callback:(ShowSigninCommandCompletionCallback)callback {
   DCHECK_NE(AUTHENTICATION_OPERATION_DISMISS, operation);
 
@@ -2093,7 +2093,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
           initWithBrowserState:_mainBrowserState
       presentingViewController:[self topPresentedViewController]
          isPresentedOnSettings:areSettingsPresented
-             signInAccessPoint:signInAccessPoint]);
+                   accessPoint:accessPoint]);
 
   signin_ui::CompletionCallback completion = ^(BOOL success) {
     _signinInteractionController.reset();
@@ -2143,7 +2143,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
           initWithBrowserState:_mainBrowserState
       presentingViewController:[self topPresentedViewController]
          isPresentedOnSettings:areSettingsPresented
-             signInAccessPoint:signin_metrics::AccessPoint::
+                   accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_UNKNOWN]);
 
   [_signinInteractionController

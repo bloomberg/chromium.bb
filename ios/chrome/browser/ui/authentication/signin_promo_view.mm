@@ -214,13 +214,13 @@ const CGFloat kButtonHeight = 36;
     case SigninPromoViewModeColdState:
       command = [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-          signInAccessPoint:signin_metrics::AccessPoint::
+                accessPoint:signin_metrics::AccessPoint::
                                 ACCESS_POINT_RECENT_TABS];
       break;
     case SigninPromoViewModeWarmState:
       command = [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_SIGNIN_PROMO_CONTINUE_AS
-          signInAccessPoint:signin_metrics::AccessPoint::
+                accessPoint:signin_metrics::AccessPoint::
                                 ACCESS_POINT_RECENT_TABS];
       break;
   }
@@ -234,7 +234,7 @@ const CGFloat kButtonHeight = 36;
   }
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-      signInAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS];
+            accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS];
   [self chromeExecuteCommand:command];
 }
 

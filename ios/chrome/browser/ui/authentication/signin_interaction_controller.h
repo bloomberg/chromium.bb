@@ -31,7 +31,7 @@ class ChromeBrowserState;
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
             presentingViewController:(UIViewController*)presentingViewController
                isPresentedOnSettings:(BOOL)isPresentedOnSettings
-                   signInAccessPoint:(signin_metrics::AccessPoint)accessPoint;
+                         accessPoint:(signin_metrics::AccessPoint)accessPoint;
 
 // Starts user sign-in.
 // * |viewController| is the current view controller.

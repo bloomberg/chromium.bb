@@ -111,7 +111,7 @@ GenericChromeCommand* GetSyncCommandForBrowserState(
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
       return [[[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-          signInAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN]
+                accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN]
           autorelease];
     case SyncSetupService::kSyncServiceNeedsPassphrase:
       return [[[GenericChromeCommand alloc]

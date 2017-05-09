@@ -151,7 +151,7 @@ void HideButton(UIButton* button) {
   BOOL _didAcceptSignIn;
   BOOL _didFinishSignIn;
   BOOL _isPresentedOnSettings;
-  signin_metrics::AccessPoint _signInAccessPoint;
+  signin_metrics::AccessPoint _accessPoint;
   base::scoped_nsobject<ChromeIdentityInteractionManager> _interactionManager;
 
   // Basic state.
@@ -180,13 +180,13 @@ void HideButton(UIButton* button) {
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                isPresentedOnSettings:(BOOL)isPresentedOnSettings
-                   signInAccessPoint:(signin_metrics::AccessPoint)accessPoint
+                         accessPoint:(signin_metrics::AccessPoint)accessPoint
                       signInIdentity:(ChromeIdentity*)identity {
   self = [super init];
   if (self) {
     _browserState = browserState;
     _isPresentedOnSettings = isPresentedOnSettings;
-    _signInAccessPoint = accessPoint;
+    _accessPoint = accessPoint;
 
     if (identity) {
       _autoSignIn = YES;
@@ -240,7 +240,7 @@ void HideButton(UIButton* button) {
 }
 
 - (void)acceptSignInAndExecuteCommand:(GenericChromeCommand*)command {
-  signin_metrics::LogSigninAccessPointCompleted(_signInAccessPoint);
+  signin_metrics::LogSigninAccessPointCompleted(_accessPoint);
   _didAcceptSignIn = YES;
   if (!_didFinishSignIn) {
     _didFinishSignIn = YES;

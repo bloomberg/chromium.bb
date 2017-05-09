@@ -74,7 +74,7 @@ class ChromeBrowserState;
 // * |identity| will be signed in without requiring user input if not nil.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                isPresentedOnSettings:(BOOL)isPresentedOnSettings
-                   signInAccessPoint:(signin_metrics::AccessPoint)accessPoint
+                         accessPoint:(signin_metrics::AccessPoint)accessPoint
                       signInIdentity:(ChromeIdentity*)identity;
 
 // Cancels the on-going authentication operation (if any). |delegate| will be

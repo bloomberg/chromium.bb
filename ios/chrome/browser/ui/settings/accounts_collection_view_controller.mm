@@ -481,7 +481,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           initWithBrowserState:_browserState
       presentingViewController:self.navigationController
          isPresentedOnSettings:YES
-             signInAccessPoint:signin_metrics::AccessPoint::
+                   accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_SETTINGS];
 
   // |_authenticationOperationInProgress| is reset when the signin interaction

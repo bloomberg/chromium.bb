@@ -389,7 +389,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   base::RecordAction(base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-      signInAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER];
+            accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER];
   [self chromeExecuteCommand:command];
 }
 

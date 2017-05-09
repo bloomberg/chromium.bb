@@ -114,7 +114,7 @@ bool ReSignInInfoBarDelegate::Accept() {
   DCHECK(infobarView);
   base::scoped_nsobject<ShowSigninCommand> command([[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-      signInAccessPoint:signin_metrics::AccessPoint::
+            accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_RESIGNIN_INFOBAR]);
   [infobarView chromeExecuteCommand:command];
 
