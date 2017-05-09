@@ -58,6 +58,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/websockets/websocket_manager.h"
+#include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_url_loader_factory.h"
 #include "content/common/accessibility_messages.h"
@@ -3050,14 +3051,15 @@ void RenderFrameHostImpl::CommitNavigation(
   commit_data.handle = handle.release();
   // TODO(scottmg): Pass a factory for SW, etc. once we have one.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService) &&
-      common_params.url.SchemeIs(kChromeUIScheme)) {
-    commit_data.url_loader_factory = GetWebUIURLLoader(frame_tree_node_)
-                                         .PassInterface()
-                                         .PassHandle()
-                                         .release();
-  } else {
-    commit_data.url_loader_factory = mojo::MessagePipeHandle();
+          switches::kEnableNetworkService)) {
+    const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
+    if (std::find(schemes.begin(), schemes.end(), common_params.url.scheme()) !=
+        schemes.end()) {
+      commit_data.url_loader_factory = GetWebUIURLLoader(frame_tree_node_)
+                                           .PassInterface()
+                                           .PassHandle()
+                                           .release();
+    }
   }
   Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, commit_data,
                                      common_params, request_params));

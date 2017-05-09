@@ -415,23 +415,12 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
           CreateFileSystemProtocolHandler(partition_domain,
                                           partition->GetFileSystemContext()));
-  protocol_handlers[kChromeUIScheme] =
-      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          URLDataManagerBackend::CreateProtocolHandler(
-              browser_context_->GetResourceContext(),
-              blob_storage_context).release());
-  std::vector<std::string> additional_webui_schemes;
-  GetContentClient()->browser()->GetAdditionalWebUISchemes(
-      &additional_webui_schemes);
-  for (std::vector<std::string>::const_iterator it =
-           additional_webui_schemes.begin();
-       it != additional_webui_schemes.end();
-       ++it) {
-    protocol_handlers[*it] =
+  for (const auto& scheme : URLDataManagerBackend::GetWebUISchemes()) {
+    protocol_handlers[scheme] =
         linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
             URLDataManagerBackend::CreateProtocolHandler(
-                browser_context_->GetResourceContext(),
-                blob_storage_context).release());
+                browser_context_->GetResourceContext(), blob_storage_context)
+                .release());
   }
 
   protocol_handlers[kChromeDevToolsScheme] =
