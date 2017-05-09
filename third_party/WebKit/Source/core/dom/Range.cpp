@@ -1447,6 +1447,13 @@ static void CollectAbsoluteBoundsForRange(unsigned start,
   layout_text.AbsoluteRectsForRange(rects, start, end);
 }
 
+static void CollectAbsoluteBoundsForRange(unsigned start,
+                                          unsigned end,
+                                          const LayoutText& layout_text,
+                                          Vector<FloatQuad>& quads) {
+  layout_text.AbsoluteQuadsForRange(quads, start, end);
+}
+
 template <typename RectType>
 static Vector<RectType> ComputeTextBounds(const EphemeralRange& range) {
   const Position& start_position = range.StartPosition();
@@ -1473,37 +1480,26 @@ static Vector<RectType> ComputeTextBounds(const EphemeralRange& range) {
   return result;
 }
 
-static Vector<IntRect> computeTextRects(const EphemeralRange& range) {
+static Vector<IntRect> ComputeTextRects(const EphemeralRange& range) {
   return ComputeTextBounds<IntRect>(range);
+}
+
+// TODO(tanvir.rizvi): We will replace Range::TextQuads with ComputeTextQuads
+// and get rid of Range::TextQuads.
+static Vector<FloatQuad> ComputeTextQuads(const EphemeralRange& range) {
+  return ComputeTextBounds<FloatQuad>(range);
 }
 
 IntRect Range::BoundingBox() const {
   IntRect result;
-  const Vector<IntRect>& rects = computeTextRects(EphemeralRange(this));
+  const Vector<IntRect>& rects = ComputeTextRects(EphemeralRange(this));
   for (const IntRect& rect : rects)
     result.Unite(rect);
   return result;
 }
 
 void Range::TextQuads(Vector<FloatQuad>& quads) const {
-  Node* start_container = &start_.Container();
-  DCHECK(start_container);
-  Node* end_container = &end_.Container();
-  DCHECK(end_container);
-
-  Node* stop_node = PastLastNode();
-  for (Node* node = FirstNode(); node != stop_node;
-       node = NodeTraversal::Next(*node)) {
-    LayoutObject* r = node->GetLayoutObject();
-    if (!r || !r->IsText())
-      continue;
-    LayoutText* layout_text = ToLayoutText(r);
-    unsigned start_offset = node == start_container ? start_.Offset() : 0;
-    unsigned end_offset = node == end_container
-                              ? end_.Offset()
-                              : std::numeric_limits<unsigned>::max();
-    layout_text->AbsoluteQuadsForRange(quads, start_offset, end_offset);
-  }
+  quads.AppendVector(ComputeTextQuads(EphemeralRange(this)));
 }
 
 bool AreRangesEqual(const Range* a, const Range* b) {
