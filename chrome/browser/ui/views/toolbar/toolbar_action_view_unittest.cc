@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
+
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -11,9 +13,8 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/test/event_generator.h"
@@ -98,10 +99,7 @@ class OpenMenuListener : public views::ContextMenuController {
 
 class ToolbarActionViewUnitTest : public views::ViewsTestBase {
  public:
-  ToolbarActionViewUnitTest()
-      : widget_(nullptr),
-        ui_thread_(content::BrowserThread::UI, message_loop()),
-        scoped_task_scheduler_(base::MessageLoop::current()) {}
+  ToolbarActionViewUnitTest() : widget_(nullptr) {}
   ~ToolbarActionViewUnitTest() override {}
 
   void SetUp() override {
@@ -122,12 +120,11 @@ class ToolbarActionViewUnitTest : public views::ViewsTestBase {
   views::Widget* widget() { return widget_; }
 
  private:
+  // Web contents need a UI thread and a TaskScheduler.
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+
   // The widget managed by this test.
   views::Widget* widget_;
-
-  // Web contents need a UI thread and a TaskScheduler.
-  content::TestBrowserThread ui_thread_;
-  base::test::ScopedTaskScheduler scoped_task_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewUnitTest);
 };
