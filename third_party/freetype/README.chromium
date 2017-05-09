@@ -9,9 +9,9 @@ Security Critical: yes
 License Android Compatible: yes
 
 Description:
-This package tracks upstream FreeType, but the build files and configuration
-are based on the Android source tree. This package is only used for Android
-and Chromecast. For other platforms the system FreeType library is used.
+This package tracks upstream FreeType. It is shipped as part of Chrome on all
+platforms. FreeType is needed on Windows and Mac for PDFium as well for enabling
+font format support for OpenType Variations on older OS versions.
 
 How to update:
 1. Find the desired commit in
@@ -19,10 +19,9 @@ How to update:
    If such a commit does not yet exist, branch from the appropriate point with
    a branch name like "chromium/android/VER-X-X-X-updates" depending on the
    FreeType tag being branched and commit changes there.
-2. Update BUILD.gn to reflect any changes. This build should be kept
-   in sync with the Android.mk for FreeType in Android as possible.
+2. Update BUILD.gn to reflect any changes.
 3. Merge the new src/include/freetype/config/ftoption.h into
-   include/freetype-android-config/ftoption.h .
+   include/freetype-custom-config/ftoption.h .
 4. Update this file.
-5. Commit build changes while rolling Chromium's freetype-android DEPS to the
+5. Commit build changes while rolling Chromium's freetype DEPS to the
    new commit.
