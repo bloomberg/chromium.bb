@@ -100,28 +100,11 @@ static INLINE int get_level_ctx(const tran_low_t *tcoeffs,
                                 const int bwl) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
-  const int stride = 1 << bwl;
   const int level_minus_1 = NUM_BASE_LEVELS;
-  int ctx = 0;
-  int idx;
-  tran_low_t abs_coeff;
-  int mag = 0, offset = 0;
-
-  for (idx = 0; idx < BR_CONTEXT_POSITION_NUM; ++idx) {
-    int ref_row = row + br_ref_offset[idx][0];
-    int ref_col = col + br_ref_offset[idx][1];
-    int pos = (ref_row << bwl) + ref_col;
-
-    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
-      continue;
-
-    abs_coeff = abs(tcoeffs[pos]);
-    ctx += abs_coeff > level_minus_1;
-
-    if (br_ref_offset[idx][0] >= 0 && br_ref_offset[idx][1] >= 0)
-      mag = AOMMAX(mag, abs_coeff);
-  }
-
+  int mag;
+  int count = get_level_count_mag(&mag, tcoeffs, c, bwl, level_minus_1,
+                                  br_ref_offset, BR_CONTEXT_POSITION_NUM);
+  int offset = 0;
   if (mag <= 1)
     offset = 0;
   else if (mag <= 3)
@@ -131,8 +114,7 @@ static INLINE int get_level_ctx(const tran_low_t *tcoeffs,
   else
     offset = 3;
 
-  ctx = br_level_map[ctx];
-
+  int ctx = br_level_map[count];
   ctx += offset * BR_TMP_OFFSET;
 
   // DC: 0 - 1
