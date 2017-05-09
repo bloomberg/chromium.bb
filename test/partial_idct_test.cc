@@ -52,7 +52,7 @@ typedef std::tr1::tuple<FwdTxfmFunc, InvTxfmWithBdFunc, InvTxfmWithBdFunc,
                         TX_SIZE, int, int, int>
     PartialInvTxfmParam;
 const int kMaxNumCoeffs = 1024;
-const int kCountTestBlock = 1000;
+const int kCountTestBlock = 10000;
 
 class PartialIDctTest : public ::testing::TestWithParam<PartialInvTxfmParam> {
  public:

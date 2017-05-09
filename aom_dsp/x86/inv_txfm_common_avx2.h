@@ -58,7 +58,7 @@ static INLINE void write_buffer_16x16(__m256i *in, const int stride,
   int i = 0;
 
   while (i < 16) {
-    in[i] = _mm256_add_epi16(in[i], rounding);
+    in[i] = _mm256_adds_epi16(in[i], rounding);
     in[i] = _mm256_srai_epi16(in[i], IDCT_ROUNDING_POS);
     recon_and_store(&in[i], output + i * stride);
     i += 1;
