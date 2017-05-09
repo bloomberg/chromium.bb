@@ -29,6 +29,7 @@ class TrayAudio;
 class TrayCast;
 class TrayEnterprise;
 class TrayNetwork;
+class TrayNightLight;
 class TraySupervisedUser;
 class TraySystemInfo;
 class TrayTiles;
@@ -48,6 +49,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   ~SystemTray() override;
 
   TrayUpdate* tray_update() { return tray_update_; }
+
+  TrayNightLight* tray_night_light() { return tray_night_light_; }
 
   // Calls TrayBackgroundView::Initialize(), creates the tray items, and
   // adds them to SystemTrayNotifier.
@@ -234,6 +237,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TraySupervisedUser* tray_supervised_user_ = nullptr;
   TraySystemInfo* tray_system_info_ = nullptr;
   TrayUpdate* tray_update_ = nullptr;
+  TrayNightLight* tray_night_light_ = nullptr;
 
   // A reference to the Screen share and capture item.
   ScreenTrayItem* screen_capture_tray_item_ = nullptr;  // not owned

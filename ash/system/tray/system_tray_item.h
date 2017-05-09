@@ -61,7 +61,8 @@ class ASH_EXPORT SystemTrayItem {
     UMA_TRACING = 23,
     UMA_USER = 24,
     UMA_VPN = 25,
-    UMA_COUNT = 26,
+    UMA_NIGHT_LIGHT = 26,
+    UMA_COUNT = 27,
   };
 
   SystemTrayItem(SystemTray* system_tray, UmaType type);

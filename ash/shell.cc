@@ -74,6 +74,7 @@
 #include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/network/vpn_list.h"
+#include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/power/power_event_observer.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
@@ -319,6 +320,11 @@ bool Shell::ShouldUseIMEService() {
               switches::kUseIMEService));
 }
 
+// static
+void Shell::RegisterPrefs(PrefRegistrySimple* registry) {
+  NightLightController::RegisterPrefs(registry);
+}
+
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   // Use translucent-style window frames for dialogs.
@@ -562,6 +568,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       media_controller_(base::MakeUnique<MediaController>()),
       new_window_controller_(base::MakeUnique<NewWindowController>()),
       session_controller_(base::MakeUnique<SessionController>()),
+      night_light_controller_(
+          base::MakeUnique<NightLightController>(session_controller_.get())),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       shell_delegate_(std::move(shell_delegate)),
       shutdown_controller_(base::MakeUnique<ShutdownController>()),

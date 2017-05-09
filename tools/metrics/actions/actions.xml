@@ -16482,6 +16482,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Tray_NightLight">
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    Records when the user toggles the Night Light feature on/off.
+  </description>
+</action>
+
 <action name="Tray_Overview">
   <owner>bruthig@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>

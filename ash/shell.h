@@ -25,6 +25,7 @@
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/public/activation_change_observer.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace aura {
@@ -121,6 +122,7 @@ class MediaController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
 class NewWindowController;
+class NightLightController;
 class OverlayEventFilter;
 class PaletteDelegate;
 class PartialMagnificationController;
@@ -261,6 +263,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   static Config GetAshConfig();
   static bool ShouldUseIMEService();
 
+  // Registers all ash related prefs to the given |registry|.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
@@ -326,6 +331,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
   NewWindowController* new_window_controller() {
     return new_window_controller_.get();
+  }
+  NightLightController* night_light_controller() {
+    return night_light_controller_.get();
   }
   SessionController* session_controller() { return session_controller_.get(); }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
@@ -686,6 +694,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;
+  std::unique_ptr<NightLightController> night_light_controller_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;

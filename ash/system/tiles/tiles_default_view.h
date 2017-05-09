@@ -48,6 +48,7 @@ class ASH_EXPORT TilesDefaultView : public views::View,
   // which case the corresponding pointer will be null.
   views::CustomButton* settings_button_;
   views::CustomButton* help_button_;
+  views::CustomButton* night_light_button_;
   views::CustomButton* lock_button_;
   views::CustomButton* power_button_;
 

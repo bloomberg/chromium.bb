@@ -39,6 +39,10 @@ class TrayTilesTest : public test::NoSessionAshTestBase {
     return tray_tiles()->default_view_->help_button_;
   }
 
+  views::CustomButton* GetNightLightButton() {
+    return tray_tiles()->default_view_->night_light_button_;
+  }
+
   views::CustomButton* GetLockButton() {
     return tray_tiles()->default_view_->lock_button_;
   }
@@ -61,6 +65,7 @@ TEST_F(TrayTilesTest, ButtonStatesNotLoggedIn) {
       tray_tiles()->CreateDefaultViewForTesting());
   EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
   EXPECT_EQ(Button::STATE_DISABLED, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetNightLightButton()->state());
   EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
   EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
 }
@@ -72,6 +77,7 @@ TEST_F(TrayTilesTest, ButtonStatesLoggedIn) {
       tray_tiles()->CreateDefaultViewForTesting());
   EXPECT_EQ(Button::STATE_NORMAL, GetSettingsButton()->state());
   EXPECT_EQ(Button::STATE_NORMAL, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, GetNightLightButton()->state());
   EXPECT_EQ(Button::STATE_NORMAL, GetLockButton()->state());
   EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
 }
@@ -83,6 +89,7 @@ TEST_F(TrayTilesTest, ButtonStatesLockScreen) {
       tray_tiles()->CreateDefaultViewForTesting());
   EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
   EXPECT_EQ(Button::STATE_DISABLED, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetNightLightButton()->state());
   EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
   EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
 }
@@ -94,6 +101,7 @@ TEST_F(TrayTilesTest, ButtonStatesAddingUser) {
       tray_tiles()->CreateDefaultViewForTesting());
   EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
   EXPECT_EQ(Button::STATE_DISABLED, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetNightLightButton()->state());
   EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
   EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
 }
@@ -109,6 +117,7 @@ TEST_F(TrayTilesTest, ButtonStatesSupervisedUserFlow) {
       tray_tiles()->CreateDefaultViewForTesting());
   EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
   EXPECT_EQ(Button::STATE_DISABLED, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetNightLightButton()->state());
   EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
   EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
 }
