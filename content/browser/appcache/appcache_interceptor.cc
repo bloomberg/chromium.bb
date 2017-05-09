@@ -119,8 +119,7 @@ void AppCacheInterceptor::CompleteCrossSiteTransfer(
     return;
   }
   DCHECK_NE(kAppCacheNoHostId, new_host_id);
-  handler->CompleteCrossSiteTransfer(new_process_id,
-                                     new_host_id);
+  handler->CompleteCrossSiteTransfer(new_process_id, new_host_id);
 }
 
 void AppCacheInterceptor::MaybeCompleteCrossSiteTransferInOldProcess(
@@ -143,7 +142,9 @@ net::URLRequestJob* AppCacheInterceptor::MaybeInterceptRequest(
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
     return NULL;
-  return handler->MaybeLoadResource(network_delegate);
+
+  AppCacheJob* job = handler->MaybeLoadResource(network_delegate);
+  return job ? job->AsURLRequestJob() : nullptr;
 }
 
 net::URLRequestJob* AppCacheInterceptor::MaybeInterceptRedirect(
@@ -153,7 +154,10 @@ net::URLRequestJob* AppCacheInterceptor::MaybeInterceptRedirect(
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
     return NULL;
-  return handler->MaybeLoadFallbackForRedirect(network_delegate, location);
+
+  AppCacheJob* job =
+      handler->MaybeLoadFallbackForRedirect(network_delegate, location);
+  return job ? job->AsURLRequestJob() : nullptr;
 }
 
 net::URLRequestJob* AppCacheInterceptor::MaybeInterceptResponse(
@@ -161,7 +165,9 @@ net::URLRequestJob* AppCacheInterceptor::MaybeInterceptResponse(
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
     return NULL;
-  return handler->MaybeLoadFallbackForResponse(network_delegate);
+
+  AppCacheJob* job = handler->MaybeLoadFallbackForResponse(network_delegate);
+  return job ? job->AsURLRequestJob() : nullptr;
 }
 
 }  // namespace content
