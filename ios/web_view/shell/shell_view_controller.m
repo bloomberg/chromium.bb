@@ -7,7 +7,7 @@
 #import <ChromeWebView/ChromeWebView.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#import "ios/web_view/shell/translate_controller.h"
+#import "ios/web_view/shell/shell_translation_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,7 +32,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 // CWV view which renders the web page.
 @property(nonatomic, strong) CWVWebView* webView;
 // Handles the translation of the content displayed in |webView|.
-@property(nonatomic, strong) TranslateController* translateController;
+@property(nonatomic, strong) ShellTranslationDelegate* translationDelegate;
 
 - (void)back;
 - (void)forward;
@@ -45,7 +45,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 @synthesize field = _field;
 @synthesize toolbar = _toolbar;
 @synthesize webView = _webView;
-@synthesize translateController = _translateController;
+@synthesize translationDelegate = _translationDelegate;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -155,8 +155,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   _webView.restorationIdentifier = @"webView";
   _webView.navigationDelegate = self;
   _webView.UIDelegate = self;
-  _translateController = [[TranslateController alloc] init];
-  _webView.translationDelegate = _translateController;
+  _translationDelegate = [[ShellTranslationDelegate alloc] init];
+  _webView.translationController.delegate = _translationDelegate;
 
   [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                 UIViewAutoresizingFlexibleHeight];

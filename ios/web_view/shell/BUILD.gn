@@ -20,10 +20,10 @@ source_set("shell") {
     "shell_app_delegate.h",
     "shell_app_delegate.m",
     "shell_exe_main.m",
+    "shell_translation_delegate.h",
+    "shell_translation_delegate.m",
     "shell_view_controller.h",
     "shell_view_controller.m",
-    "translate_controller.h",
-    "translate_controller.m",
   ]
 
   deps = [

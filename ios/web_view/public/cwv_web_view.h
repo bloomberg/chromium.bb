@@ -8,9 +8,9 @@
 #import <UIKit/UIKit.h>
 
 @class CWVScrollView;
+@class CWVTranslationController;
 @class CWVWebViewConfiguration;
 @protocol CWVUIDelegate;
-@protocol CWVTranslateDelegate;
 @protocol CWVNavigationDelegate;
 
 // A web view component (like WKWebView) which uses iOS Chromium's web view
@@ -29,11 +29,11 @@ CWV_EXPORT
 // This web view's navigation delegate.
 @property(nonatomic, weak) id<CWVNavigationDelegate> navigationDelegate;
 
+// This web view's translation controller.
+@property(nonatomic, readonly) CWVTranslationController* translationController;
+
 // This web view's UI delegate
 @property(nonatomic, weak) id<CWVUIDelegate> UIDelegate;
-
-// A delegate for the translation feature.
-@property(nonatomic, weak) id<CWVTranslateDelegate> translationDelegate;
 
 // Whether or not this web view can go backwards or forwards.
 @property(nonatomic, readonly) BOOL canGoBack;

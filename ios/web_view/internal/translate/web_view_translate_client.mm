@@ -20,11 +20,10 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web_view/internal/pref_names.h"
-#import "ios/web_view/internal/translate/cwv_translate_manager_impl.h"
+#import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_ranker_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
-#import "ios/web_view/public/cwv_translate_delegate.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -63,12 +62,6 @@ void WebViewTranslateClient::ShowTranslateUI(
     const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool triggered_from_menu) {
-  if (!delegate_.get())
-    return;
-
-  if (error_type != translate::TranslateErrors::NONE)
-    step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
-
   translate_manager_->GetLanguageState().SetTranslateEnabled(true);
 
   if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE &&
@@ -76,32 +69,11 @@ void WebViewTranslateClient::ShowTranslateUI(
     return;
   }
 
-  base::scoped_nsobject<CWVTranslateManagerImpl> criwv_manager(
-      [[CWVTranslateManagerImpl alloc]
-          initWithTranslateManager:translate_manager_.get()
-                    sourceLanguage:source_language
-                    targetLanguage:target_language]);
-
-  CRIWVTransateStep criwv_step;
-  switch (step) {
-    case translate::TRANSLATE_STEP_BEFORE_TRANSLATE:
-      criwv_step = CRIWVTransateStepBeforeTranslate;
-      break;
-    case translate::TRANSLATE_STEP_TRANSLATING:
-      criwv_step = CRIWVTransateStepTranslating;
-      break;
-    case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
-      criwv_step = CRIWVTransateStepAfterTranslate;
-      break;
-    case translate::TRANSLATE_STEP_TRANSLATE_ERROR:
-      criwv_step = CRIWVTransateStepError;
-      break;
-    case translate::TRANSLATE_STEP_NEVER_TRANSLATE:
-      NOTREACHED() << "Never translate is not supported yet in web_view.";
-      criwv_step = CRIWVTransateStepError;
-      break;
-  }
-  [delegate_ translateStepChanged:criwv_step manager:criwv_manager.get()];
+  [translation_controller_ updateTranslateStep:step
+                                sourceLanguage:source_language
+                                targetLanguage:target_language
+                                     errorType:error_type
+                             triggeredFromMenu:triggered_from_menu];
 }
 
 translate::TranslateDriver* WebViewTranslateClient::GetTranslateDriver() {
