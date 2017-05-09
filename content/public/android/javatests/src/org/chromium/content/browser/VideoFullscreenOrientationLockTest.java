@@ -23,7 +23,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.UiUtils;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.MediaSwitches;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -34,10 +33,10 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests for the feature that auto locks the orientation when a video goes fullscreen.
  * See also chrome layer org.chromium.chrome.browser.VideoFullscreenOrientationLockChromeTest
-ContentSwitches.ENABLE_TEST_INTENTS */
+ */
 @RunWith(ContentJUnit4ClassRunner.class)
 @CommandLineFlags.Add({"enable-features=VideoFullscreenOrientationLock",
-        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS, ContentSwitches.ENABLE_TEST_INTENTS})
+        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS})
 public class VideoFullscreenOrientationLockTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
@@ -135,7 +134,8 @@ public class VideoFullscreenOrientationLockTest {
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
     public void testEnterExitFullscreenWithControlsButton() throws Exception {
-        if (DeviceFormFactor.isTablet(InstrumentationRegistry.getInstrumentation().getContext())) {
+        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
+        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
             return;
         }
 
@@ -165,7 +165,8 @@ public class VideoFullscreenOrientationLockTest {
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
     public void testEnterExitFullscreenWithAPI() throws Exception {
-        if (DeviceFormFactor.isTablet(InstrumentationRegistry.getInstrumentation().getContext())) {
+        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
+        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
             return;
         }
 
@@ -191,7 +192,8 @@ public class VideoFullscreenOrientationLockTest {
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
     public void testExitFullscreenByRemovingVideo() throws Exception {
-        if (DeviceFormFactor.isTablet(InstrumentationRegistry.getInstrumentation().getContext())) {
+        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
+        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
             return;
         }
 
@@ -218,7 +220,8 @@ public class VideoFullscreenOrientationLockTest {
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
     public void testExitFullscreenWithNavigation() throws Exception {
-        if (DeviceFormFactor.isTablet(InstrumentationRegistry.getInstrumentation().getContext())) {
+        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
+        if (DeviceFormFactor.isTablet(mActivityTestRule.getActivity())) {
             return;
         }
 
