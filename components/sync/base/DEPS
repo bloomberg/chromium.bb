@@ -6,7 +6,6 @@ include_rules = [
   "+components/prefs",
   "+components/sync/protocol",
   "+components/sync_preferences",
-  "+components/version_info",
   "+crypto",
   "+google/cacheinvalidation",
   "+third_party/zlib",  # For UniquePosition compression
