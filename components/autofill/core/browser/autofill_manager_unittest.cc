@@ -4677,6 +4677,9 @@ TEST_F(AutofillManagerTest, UploadCreditCard) {
                                  AutofillMetrics::UPLOAD_OFFERED);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+  // Verify the histogram entry for recent profile modification.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.HasModifiedProfile.CreditCardFormSubmission", true, 1);
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCardAndSaveCopy) {
@@ -5201,6 +5204,9 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS);
+  // Verify the histogram entry for recent profile modification.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.HasModifiedProfile.CreditCardFormSubmission", false, 1);
 }
 
 TEST_F(AutofillManagerTest,

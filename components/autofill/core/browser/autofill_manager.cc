@@ -1321,15 +1321,22 @@ int AutofillManager::GetProfilesForCreditCardUpload(
   const base::TimeDelta fifteen_minutes = base::TimeDelta::FromMinutes(15);
   int upload_decision_metrics = 0;
   bool has_profile = false;
+  bool has_modified_profile = false;
 
-  // First, collect all of the addresses used recently.
+  // First, collect all of the addresses used or modified recently.
   for (AutofillProfile* profile : personal_data_->GetProfiles()) {
     has_profile = true;
-    if ((now - profile->use_date()) < fifteen_minutes ||
-        (now - profile->modification_date()) < fifteen_minutes) {
+    if ((now - profile->modification_date()) < fifteen_minutes) {
+      has_modified_profile = true;
+      candidate_profiles.push_back(*profile);
+    } else if ((now - profile->use_date()) < fifteen_minutes) {
       candidate_profiles.push_back(*profile);
     }
   }
+
+  AutofillMetrics::LogHasModifiedProfileOnCreditCardFormSubmission(
+      has_modified_profile);
+
   if (candidate_profiles.empty()) {
     upload_decision_metrics |=
         has_profile

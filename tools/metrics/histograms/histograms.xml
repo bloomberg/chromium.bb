@@ -3815,6 +3815,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The autofill state related to a submitted form.</summary>
 </histogram>
 
+<histogram name="Autofill.HasModifiedProfile.CreditCardFormSubmission"
+    enum="Boolean">
+  <owner>csashi@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    Whether user modified an address profile shortly before submitting a credit
+    card form.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.IcuCollatorCreationSuccess" enum="BooleanSuccess">
   <owner>mathp@chromium.org</owner>
   <summary>
