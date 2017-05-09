@@ -301,10 +301,11 @@ int QuicChromiumClientSession::Handle::RequestStream(
   return stream_request_->StartRequest(callback);
 }
 
-QuicChromiumClientStream* QuicChromiumClientSession::Handle::ReleaseStream() {
+QuicChromiumClientStream* QuicChromiumClientSession::Handle::ReleaseStream(
+    QuicChromiumClientStream::Delegate* delegate) {
   DCHECK(stream_request_);
 
-  auto* stream = stream_request_->ReleaseStream();
+  auto* stream = stream_request_->ReleaseStream(delegate);
   stream_request_.reset();
   return stream;
 }
@@ -376,10 +377,12 @@ int QuicChromiumClientSession::StreamRequest::StartRequest(
 }
 
 QuicChromiumClientStream*
-QuicChromiumClientSession::StreamRequest::ReleaseStream() {
+QuicChromiumClientSession::StreamRequest::ReleaseStream(
+    QuicChromiumClientStream::Delegate* delegate) {
   DCHECK(stream_);
   QuicChromiumClientStream* stream = stream_;
   stream_ = nullptr;
+  stream->SetDelegate(delegate);
   return stream;
 }
 

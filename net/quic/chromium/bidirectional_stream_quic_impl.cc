@@ -293,8 +293,7 @@ void BidirectionalStreamQuicImpl::OnStreamReady(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   DCHECK(rv == OK || !stream_);
   if (rv == OK) {
-    stream_ = session_->ReleaseStream();
-    stream_->SetDelegate(this);
+    stream_ = session_->ReleaseStream(this);
     NotifyStreamReady();
   } else {
     NotifyError(rv);
