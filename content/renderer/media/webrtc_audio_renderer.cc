@@ -54,17 +54,24 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
  public:
   // Callback definition for a callback that is called when when Play(), Pause()
   // or SetVolume are called (whenever the internal |playing_state_| changes).
-  typedef base::Callback<void(const blink::WebMediaStream&,
-                              WebRtcAudioRenderer::PlayingState*)>
-      OnPlayStateChanged;
+  using OnPlayStateChanged =
+      base::Callback<void(const blink::WebMediaStream&,
+                          WebRtcAudioRenderer::PlayingState*)>;
+
+  // Signals that the PlayingState* is about to become invalid, see comment in
+  // OnPlayStateRemoved.
+  using OnPlayStateRemoved =
+      base::OnceCallback<void(WebRtcAudioRenderer::PlayingState*)>;
 
   SharedAudioRenderer(const scoped_refptr<MediaStreamAudioRenderer>& delegate,
                       const blink::WebMediaStream& media_stream,
-                      const OnPlayStateChanged& on_play_state_changed)
+                      const OnPlayStateChanged& on_play_state_changed,
+                      OnPlayStateRemoved on_play_state_removed)
       : delegate_(delegate),
         media_stream_(media_stream),
         started_(false),
-        on_play_state_changed_(on_play_state_changed) {
+        on_play_state_changed_(on_play_state_changed),
+        on_play_state_removed_(std::move(on_play_state_removed)) {
     DCHECK(!on_play_state_changed_.is_null());
     DCHECK(!media_stream_.IsNull());
   }
@@ -74,6 +81,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     DCHECK(thread_checker_.CalledOnValidThread());
     DVLOG(1) << __func__;
     Stop();
+    std::move(on_play_state_removed_).Run(&playing_state_);
   }
 
   void Start() override {
@@ -148,6 +156,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
   bool started_;
   WebRtcAudioRenderer::PlayingState playing_state_;
   OnPlayStateChanged on_play_state_changed_;
+  OnPlayStateRemoved on_play_state_removed_;
 };
 
 }  // namespace
@@ -220,9 +229,12 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 scoped_refptr<MediaStreamAudioRenderer>
 WebRtcAudioRenderer::CreateSharedAudioRendererProxy(
     const blink::WebMediaStream& media_stream) {
-  content::SharedAudioRenderer::OnPlayStateChanged on_play_state_changed =
+  SharedAudioRenderer::OnPlayStateChanged on_play_state_changed =
       base::Bind(&WebRtcAudioRenderer::OnPlayStateChanged, this);
-  return new SharedAudioRenderer(this, media_stream, on_play_state_changed);
+  SharedAudioRenderer::OnPlayStateRemoved on_play_state_removed =
+      base::BindOnce(&WebRtcAudioRenderer::OnPlayStateRemoved, this);
+  return new SharedAudioRenderer(this, media_stream, on_play_state_changed,
+                                 std::move(on_play_state_removed));
 }
 
 bool WebRtcAudioRenderer::IsStarted() const {
@@ -590,6 +602,27 @@ void WebRtcAudioRenderer::OnPlayStateChanged(
       EnterPlayState();
     }
     UpdateSourceVolume(source);
+  }
+}
+
+void WebRtcAudioRenderer::OnPlayStateRemoved(PlayingState* state) {
+  // It is possible we associated |state| to a source for a track that is no
+  // longer easily reachable. We iterate over |source_playing_states_| to
+  // ensure there are no dangling pointers to |state| there. See
+  // crbug.com/697256.
+  // TODO(maxmorin): Clean up cleanup code in this and related classes so that
+  // this hack isn't necessary.
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (auto it = source_playing_states_.begin();
+       it != source_playing_states_.end();) {
+    PlayingStates& states = it->second;
+    // We cannot use RemovePlayingState as it might invalidate |it|.
+    states.erase(std::remove(states.begin(), states.end(), state),
+                 states.end());
+    if (states.empty())
+      it = source_playing_states_.erase(it);
+    else
+      ++it;
   }
 }
 
