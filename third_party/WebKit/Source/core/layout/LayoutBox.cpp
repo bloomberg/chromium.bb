@@ -334,7 +334,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
       // The overflow clip paint property depends on border sizes through
       // overflowClipRect(), and border radii, so we update properties on
       // border size or radii change.
-      if (!old_style->Border().SizeEquals(new_style.Border()) ||
+      if (!old_style->BorderSizeEquals(new_style) ||
           !old_style->RadiiEqual(new_style))
         SetNeedsPaintPropertyUpdate();
     }

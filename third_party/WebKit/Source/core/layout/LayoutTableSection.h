@@ -201,22 +201,22 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     bool is_any_row_with_only_spanning_cells;
   };
 
-  const BorderValue& BorderAdjoiningTableStart() const {
+  BorderValue BorderAdjoiningTableStart() const {
     if (HasSameDirectionAs(Table()))
       return Style()->BorderStart();
 
     return Style()->BorderEnd();
   }
 
-  const BorderValue& BorderAdjoiningTableEnd() const {
+  BorderValue BorderAdjoiningTableEnd() const {
     if (HasSameDirectionAs(Table()))
       return Style()->BorderEnd();
 
     return Style()->BorderStart();
   }
 
-  const BorderValue& BorderAdjoiningStartCell(const LayoutTableCell*) const;
-  const BorderValue& BorderAdjoiningEndCell(const LayoutTableCell*) const;
+  BorderValue BorderAdjoiningStartCell(const LayoutTableCell*) const;
+  BorderValue BorderAdjoiningEndCell(const LayoutTableCell*) const;
 
   const LayoutTableCell* FirstRowCellAdjoiningTableStart() const;
   const LayoutTableCell* FirstRowCellAdjoiningTableEnd() const;

@@ -80,11 +80,10 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
   // Returns the next column or column-group.
   LayoutTableCol* NextColumn() const;
 
-  const BorderValue& BorderAdjoiningCellStartBorder(
-      const LayoutTableCell*) const;
-  const BorderValue& BorderAdjoiningCellEndBorder(const LayoutTableCell*) const;
-  const BorderValue& BorderAdjoiningCellBefore(const LayoutTableCell*) const;
-  const BorderValue& BorderAdjoiningCellAfter(const LayoutTableCell*) const;
+  BorderValue BorderAdjoiningCellStartBorder(const LayoutTableCell*) const;
+  BorderValue BorderAdjoiningCellEndBorder(const LayoutTableCell*) const;
+  BorderValue BorderAdjoiningCellBefore(const LayoutTableCell*) const;
+  BorderValue BorderAdjoiningCellAfter(const LayoutTableCell*) const;
 
   const char* GetName() const override { return "LayoutTableCol"; }
 

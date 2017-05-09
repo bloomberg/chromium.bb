@@ -167,17 +167,17 @@ LayoutTableCol* LayoutTableCol::NextColumn() const {
   return ToLayoutTableCol(next);
 }
 
-const BorderValue& LayoutTableCol::BorderAdjoiningCellStartBorder(
+BorderValue LayoutTableCol::BorderAdjoiningCellStartBorder(
     const LayoutTableCell*) const {
   return Style()->BorderStart();
 }
 
-const BorderValue& LayoutTableCol::BorderAdjoiningCellEndBorder(
+BorderValue LayoutTableCol::BorderAdjoiningCellEndBorder(
     const LayoutTableCell*) const {
   return Style()->BorderEnd();
 }
 
-const BorderValue& LayoutTableCol::BorderAdjoiningCellBefore(
+BorderValue LayoutTableCol::BorderAdjoiningCellBefore(
     const LayoutTableCell* cell) const {
   DCHECK_EQ(Table()
                 ->ColElementAtAbsoluteColumn(cell->AbsoluteColumnIndex() +
@@ -187,7 +187,7 @@ const BorderValue& LayoutTableCol::BorderAdjoiningCellBefore(
   return Style()->BorderStart();
 }
 
-const BorderValue& LayoutTableCol::BorderAdjoiningCellAfter(
+BorderValue LayoutTableCol::BorderAdjoiningCellAfter(
     const LayoutTableCell* cell) const {
   DCHECK_EQ(Table()
                 ->ColElementAtAbsoluteColumn(cell->AbsoluteColumnIndex() - 1)

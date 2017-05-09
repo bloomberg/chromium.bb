@@ -251,7 +251,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   // direction on all table parts and writing-mode on cells.
   const ComputedStyle& StyleForCellFlow() const { return Row()->StyleRef(); }
 
-  const BorderValue& BorderAdjoiningTableStart() const {
+  BorderValue BorderAdjoiningTableStart() const {
 #if DCHECK_IS_ON()
     DCHECK(IsFirstOrLastCellInRow());
 #endif
@@ -261,7 +261,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return Style()->BorderEnd();
   }
 
-  const BorderValue& BorderAdjoiningTableEnd() const {
+  BorderValue BorderAdjoiningTableEnd() const {
 #if DCHECK_IS_ON()
     DCHECK(IsFirstOrLastCellInRow());
 #endif
@@ -271,14 +271,14 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return Style()->BorderStart();
   }
 
-  const BorderValue& BorderAdjoiningCellBefore(const LayoutTableCell* cell) {
+  BorderValue BorderAdjoiningCellBefore(const LayoutTableCell* cell) {
     DCHECK_EQ(Table()->CellAfter(cell), this);
     // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality
     // at the cell level.
     return Style()->BorderStart();
   }
 
-  const BorderValue& BorderAdjoiningCellAfter(const LayoutTableCell* cell) {
+  BorderValue BorderAdjoiningCellAfter(const LayoutTableCell* cell) {
     DCHECK_EQ(Table()->CellBefore(cell), this);
     // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality
     // at the cell level.

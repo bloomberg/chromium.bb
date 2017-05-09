@@ -592,10 +592,10 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
   if (surround_data_.Get() != other.surround_data_.Get()) {
     // If our border widths change, then we need to layout. Other changes to
     // borders only necessitate a paint invalidation.
-    if (BorderLeftWidth() != other.BorderLeftWidth() ||
-        BorderTopWidth() != other.BorderTopWidth() ||
-        BorderBottomWidth() != other.BorderBottomWidth() ||
-        BorderRightWidth() != other.BorderRightWidth())
+    if (!(BorderWidthEquals(BorderLeftWidth(), other.BorderLeftWidth())) ||
+        !(BorderWidthEquals(BorderTopWidth(), other.BorderTopWidth())) ||
+        !(BorderWidthEquals(BorderBottomWidth(), other.BorderBottomWidth())) ||
+        !(BorderWidthEquals(BorderRightWidth(), other.BorderRightWidth())))
       return true;
   }
 
@@ -886,7 +886,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
       PrintColorAdjust() != other.PrintColorAdjust() ||
       InsideLink() != other.InsideLink() ||
       !Border().VisuallyEqual(other.Border()) || !RadiiEqual(other) ||
-      *background_data_ != *other.background_data_)
+      !BorderSizeEquals(other) || *background_data_ != *other.background_data_)
     return true;
 
   if (rare_inherited_data_.Get() != other.rare_inherited_data_.Get()) {
@@ -2227,7 +2227,7 @@ Color ComputedStyle::VisitedDependentColor(int color_property) const {
                unvisited_color.Alpha());
 }
 
-const BorderValue& ComputedStyle::BorderBefore() const {
+const BorderValue ComputedStyle::BorderBefore() const {
   switch (GetWritingMode()) {
     case WritingMode::kHorizontalTb:
       return BorderTop();
@@ -2240,7 +2240,7 @@ const BorderValue& ComputedStyle::BorderBefore() const {
   return BorderTop();
 }
 
-const BorderValue& ComputedStyle::BorderAfter() const {
+const BorderValue ComputedStyle::BorderAfter() const {
   switch (GetWritingMode()) {
     case WritingMode::kHorizontalTb:
       return BorderBottom();
@@ -2253,13 +2253,13 @@ const BorderValue& ComputedStyle::BorderAfter() const {
   return BorderBottom();
 }
 
-const BorderValue& ComputedStyle::BorderStart() const {
+const BorderValue ComputedStyle::BorderStart() const {
   if (IsHorizontalWritingMode())
     return IsLeftToRightDirection() ? BorderLeft() : BorderRight();
   return IsLeftToRightDirection() ? BorderTop() : BorderBottom();
 }
 
-const BorderValue& ComputedStyle::BorderEnd() const {
+const BorderValue ComputedStyle::BorderEnd() const {
   if (IsHorizontalWritingMode())
     return IsLeftToRightDirection() ? BorderRight() : BorderLeft();
   return IsLeftToRightDirection() ? BorderBottom() : BorderTop();

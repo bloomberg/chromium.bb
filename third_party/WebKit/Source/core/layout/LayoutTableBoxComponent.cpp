@@ -19,6 +19,7 @@ void LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
     return;
   if (old_style.Border() != table_part.StyleRef().Border() ||
       !old_style.RadiiEqual(table_part.StyleRef()) ||
+      !old_style.BorderSizeEquals(table_part.StyleRef()) ||
       (diff.TextDecorationOrColorChanged() &&
        table_part.StyleRef().HasBorderColorReferencingCurrentColor()))
     table.InvalidateCollapsedBorders();
@@ -37,7 +38,7 @@ bool LayoutTableBoxComponent::DoCellsHaveDirtyWidth(
   // tablePart.needsLayout().
   return diff.NeedsFullLayout() && table_part.NeedsLayout() &&
          table.ShouldCollapseBorders() &&
-         !old_style.Border().SizeEquals(table_part.Style()->Border());
+         !old_style.BorderSizeEquals(*table_part.Style());
 }
 
 void LayoutTableBoxComponent::MutableForPainting::UpdatePaintResult(

@@ -98,7 +98,7 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
   }
 }
 
-const BorderValue& LayoutTableRow::BorderAdjoiningStartCell(
+BorderValue LayoutTableRow::BorderAdjoiningStartCell(
     const LayoutTableCell* cell) const {
 #if DCHECK_IS_ON()
   DCHECK(cell->IsFirstOrLastCellInRow());
@@ -108,7 +108,7 @@ const BorderValue& LayoutTableRow::BorderAdjoiningStartCell(
   return Style()->BorderStart();
 }
 
-const BorderValue& LayoutTableRow::BorderAdjoiningEndCell(
+BorderValue LayoutTableRow::BorderAdjoiningEndCell(
     const LayoutTableCell* cell) const {
 #if DCHECK_IS_ON()
   DCHECK(cell->IsFirstOrLastCellInRow());

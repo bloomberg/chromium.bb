@@ -138,6 +138,12 @@ class CORE_EXPORT ComputedStyleBase {
   DataRef<{{subgroup.type_name}}> {{subgroup.member_name}};
   {% endfor %}
 
+  static unsigned WidthToFixedPoint(float width) {
+    DCHECK_GE(width, 0);
+    return static_cast<unsigned>(std::min<float>(width, kMaxForBorderWidth) *
+                                 kBorderWidthDenominator);
+  }
+
  private:
   {% for field in computed_style.fields %}
   {{declare_storage(field)}}

@@ -499,6 +499,16 @@ enum ScrollSnapType {
 
 enum AutoRepeatType { kNoAutoRepeat, kAutoFill, kAutoFit };
 
+// In order to conserve memory, the border width uses fixed point,
+// which can be bitpacked.  This fixed point implementation is
+// essentially the same as in LayoutUnit.  Six bits are used for the
+// fraction, which leaves 20 bits for the integer part, making 1048575
+// the largest number.
+
+static const int kBorderWidthFractionalBits = 6;
+static const int kBorderWidthDenominator = 1 << kBorderWidthFractionalBits;
+static const int kMaxForBorderWidth = ((1 << 26) - 1) / kBorderWidthDenominator;
+
 }  // namespace blink
 
 #endif  // ComputedStyleConstants_h

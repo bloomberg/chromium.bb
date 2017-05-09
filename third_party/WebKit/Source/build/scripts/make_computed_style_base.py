@@ -349,8 +349,6 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         for property_ in css_properties:
             # All CSS properties that are generated do not have custom comparison and copy logic.
             property_['has_custom_compare_and_copy'] = False
-            # CSS properties are not allowed to explicitly specify their field_size.
-            property_['field_size'] = None
 
         # Read extra fields using the parameter specification from the CSS properties file.
         extra_fields = json5_generator.Json5File.load_from_files(
