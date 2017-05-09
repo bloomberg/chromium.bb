@@ -204,6 +204,9 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
           configurations->the_one_and_only().performance_measurement_rate);
   ActivationState state = ActivationState(activation_level_);
   state.measure_performance = measure_performance_;
+  // TODO(csharrison): Set state.enable_logging based on metadata returns from
+  // the safe browsing filter, when it is available. Add tests for this
+  // behavior.
   throttle_manager_->NotifyPageActivationComputed(navigation_handle, state);
 }
 

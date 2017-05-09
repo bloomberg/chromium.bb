@@ -50,6 +50,9 @@ struct ActivationState {
   // Whether or not extended performance measurements are enabled for the
   // current page load (across all frames).
   bool measure_performance = false;
+
+  // Whether or not to log messages in the devtools console.
+  bool enable_logging = false;
 };
 
 }  // namespace subresource_filter

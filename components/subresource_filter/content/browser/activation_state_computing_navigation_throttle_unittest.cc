@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -359,6 +360,28 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest, DryRunIsPropagated) {
 
   ActivationState state = last_activation_state();
   EXPECT_EQ(ActivationLevel::DRYRUN, state.activation_level);
+  EXPECT_FALSE(state.filtering_disabled_for_document);
+  EXPECT_FALSE(state.generic_blocking_rules_disabled);
+}
+
+TEST_F(ActivationStateComputingThrottleSubFrameTest,
+       DryRunWithLoggingIsPropagated) {
+  ActivationState page_state(ActivationLevel::DRYRUN);
+  page_state.enable_logging = true;
+  NavigateAndCommitMainFrameWithPageActivationState(
+      GURL("http://example.test/"), page_state);
+  EXPECT_EQ(ActivationLevel::DRYRUN, last_activation_state().activation_level);
+
+  CreateSubframeAndInitTestNavigation(GURL("http://example.child/"),
+                                      last_committed_frame_host(),
+                                      last_activation_state());
+  SimulateStartAndExpectToProceed();
+  SimulateRedirectAndExpectToProceed(GURL("http://example.child/?v=1"));
+  SimulateCommitAndExpectToProceed();
+
+  ActivationState state = last_activation_state();
+  EXPECT_EQ(ActivationLevel::DRYRUN, state.activation_level);
+  EXPECT_TRUE(state.enable_logging);
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }

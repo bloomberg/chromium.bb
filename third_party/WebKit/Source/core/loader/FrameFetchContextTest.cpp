@@ -100,6 +100,8 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
 
   void ReportDisallowedLoad() override { ++*filtered_load_counter_; }
 
+  bool ShouldLogToConsole() override { return false; }
+
  private:
   const LoadPolicy policy_;
   int* filtered_load_counter_;

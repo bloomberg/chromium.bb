@@ -4,6 +4,8 @@
 
 #include "core/loader/SubresourceFilter.h"
 
+#include <utility>
+
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/KURL.h"
@@ -58,7 +60,6 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
 
 void SubresourceFilter::ReportLoad(
     WebDocumentSubresourceFilter::LoadPolicy load_policy) {
-  // TODO(csharrison): log console errors here.
   switch (load_policy) {
     case WebDocumentSubresourceFilter::kAllow:
       break;
@@ -66,6 +67,8 @@ void SubresourceFilter::ReportLoad(
       subresource_filter_->ReportDisallowedLoad();
     // fall through
     case WebDocumentSubresourceFilter::kWouldDisallow:
+      // TODO(csharrison): log console errors here based on
+      // subresource_filter_->ShouldLogToConsole().
       document_loader_->DidObserveLoadingBehavior(
           kWebLoadingBehaviorSubresourceFilterMatch);
       break;
