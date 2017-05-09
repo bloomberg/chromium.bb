@@ -132,7 +132,9 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void SetDevicesDiscoveryConfig(
       bool discover_usb_devices,
       bool port_forwarding_enabled,
-      const std::string& port_forwarding_config) override;
+      const std::string& port_forwarding_config,
+      bool network_discovery_enabled,
+      const std::string& network_discovery_config) override;
   void SetDevicesUpdatesEnabled(bool enabled) override;
   void PerformActionOnRemotePage(const std::string& page_id,
                                  const std::string& action) override;
