@@ -42,33 +42,35 @@
     </style>
 
     <div>
-      <div class="list-frame">
-        <paper-radio-group id="unlockType" selected="{{selectedUnlockType}}">
-          <paper-radio-button name="password">
-            <div class="start">
-              $i18n{lockScreenPasswordOnly}
-              <div class="secondary">
-                $i18n{lockScreenHighSecurity}
+      <template is="dom-if" if="[[quickUnlockEnabled_]]">
+        <div class="list-frame">
+          <paper-radio-group id="unlockType" selected="{{selectedUnlockType}}">
+            <paper-radio-button name="password">
+              <div class="start">
+                $i18n{lockScreenPasswordOnly}
+                <div class="secondary">
+                  $i18n{lockScreenHighSecurity}
+                </div>
               </div>
-            </div>
-          </paper-radio-button>
-          <paper-radio-button name="pin+password">
-            <div class="start">
-              $i18n{lockScreenPinOrPassword}
-              <div class="secondary">
-                $i18n{lockScreenMediumSecurity}
+            </paper-radio-button>
+            <paper-radio-button name="pin+password">
+              <div class="start">
+                $i18n{lockScreenPinOrPassword}
+                <div class="secondary">
+                  $i18n{lockScreenMediumSecurity}
+                </div>
               </div>
-            </div>
-            <template is="dom-if"
-                if="[[showConfigurePinButton_(selectedUnlockType)]]">
-              <paper-button id="setupPinButton" class="secondary-button"
-                  on-tap="onConfigurePin_">
-                [[getSetupPinText_(hasPin)]]
-              </paper-button>
-            </template>
-          </paper-radio-button>
-        </paper-radio-group>
-      </div>
+              <template is="dom-if"
+                  if="[[showConfigurePinButton_(selectedUnlockType)]]">
+                <paper-button id="setupPinButton" class="secondary-button"
+                    on-tap="onConfigurePin_">
+                  [[getSetupPinText_(hasPin)]]
+                </paper-button>
+              </template>
+            </paper-radio-button>
+          </paper-radio-group>
+        </div>
+      </template>
 
       <div id="screenLockDiv" class="settings-box">
         <settings-toggle-button class="start"
