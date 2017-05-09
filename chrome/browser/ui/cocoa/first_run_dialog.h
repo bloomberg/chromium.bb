@@ -10,27 +10,10 @@
 // Class that acts as a controller for the modal first run dialog.
 // The dialog asks the user's explicit permission for reporting stats to help
 // us improve Chromium.
-@interface FirstRunDialogController : NSWindowController {
- @private
-  // Bound to the value of the checkbox in FirstRunDialog.xib.
-  BOOL statsEnabled_;
-  BOOL makeDefaultBrowser_;
+@interface FirstRunDialogController : NSWindowController
 
-  IBOutlet NSArray* objectsToSize_;
-  IBOutlet NSButton* setAsDefaultCheckbox_;
-  IBOutlet NSButton* statsCheckbox_;
-  BOOL beenSized_;
-}
-
-// Called when the "Start Google Chrome" button is pressed.
-- (IBAction)ok:(id)sender;
-
-// Called when the "Learn More" button is pressed.
-- (IBAction)learnMore:(id)sender;
-
-// Properties for bindings.
-@property(assign, nonatomic) BOOL statsEnabled;
-@property(assign, nonatomic) BOOL makeDefaultBrowser;
+- (BOOL)isStatsReportingEnabled;
+- (BOOL)isMakeDefaultBrowserEnabled;
 
 @end
 
