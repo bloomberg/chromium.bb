@@ -293,8 +293,8 @@ cr.define('print_preview', function() {
     /**
      * Set a callback that gets called when a key event is received that
      * originates in the plugin.
-     * @param {function(Event)} callback The callback to be called with a key
-     *     event.
+     * @param {function(KeyboardEvent)} callback The callback to be called with
+     *     a key event.
      */
     setPluginKeyEventCallback: function(callback) {
       this.keyEventCallback_ = callback;

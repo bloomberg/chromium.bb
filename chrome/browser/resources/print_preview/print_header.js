@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// <include src="../../../../ui/webui/resources/js/cr/ui/node_utils.js">
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -45,7 +47,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isPrintButtonEnabled_ = true;
-  };
+  }
 
   /**
    * Event types dispatched by the print header.

@@ -913,23 +913,23 @@ cr.define('print_preview', function() {
       this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.SEARCH_DONE,
+          cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE,
           this.onCloudPrintSearchDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.SEARCH_FAILED,
+          cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
           this.onCloudPrintSearchDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.PRINTER_DONE,
+          cloudprint.CloudPrintInterfaceEventType.PRINTER_DONE,
           this.onCloudPrintPrinterDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.PRINTER_FAILED,
+          cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
           this.onCloudPrintPrinterFailed_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
-          cloudprint.CloudPrintInterface.EventType.PROCESS_INVITE_DONE,
+          cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
           this.onCloudPrintProcessInviteDone_.bind(this));
     },
 
@@ -1128,7 +1128,7 @@ cr.define('print_preview', function() {
         if (origins.length == 0 ||
             (opt_origin && origins.indexOf(opt_origin) < 0)) {
           this.cloudPrintInterface_.search(
-              this.userInfo_.activeUser || '', opt_origin);
+              this.userInfo_.activeUser, opt_origin);
           cr.dispatchSimpleEvent(
               this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
         }

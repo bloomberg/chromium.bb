@@ -31,7 +31,7 @@ cr.define('print_preview', function() {
      * @private {HTMLInputElement}
      */
     this.input_ = null;
-  };
+  }
 
   /**
    * Enumeration of event types dispatched from the search box.

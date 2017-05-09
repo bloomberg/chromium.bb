@@ -35,7 +35,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.children_ = [];
-  };
+  }
 
   Component.prototype = {
     __proto__: cr.EventTarget.prototype,
@@ -165,7 +165,8 @@ cr.define('print_preview', function() {
      * @return {!HTMLElement} Element selected by the given query.
      */
     getChildElement: function(query) {
-      return assert(this.element_.querySelector(query));
+      return /** @type {!HTMLElement} */ (
+          assert(this.element_.querySelector(query)));
     },
 
     /**

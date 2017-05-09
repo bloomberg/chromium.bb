@@ -116,9 +116,9 @@ PrintPreviewWebUITest.prototype = {
         __proto__: cr.EventTarget.prototype,
         search: function(isRecent) {}
       };
-      var oldCpInterfaceEventType = cloudprint.CloudPrintInterface.EventType;
+      var oldCpInterfaceEventType = cloudprint.CloudPrintInterfaceEventType;
       cloudprint.CloudPrintInterface = CloudPrintInterfaceStub;
-      cloudprint.CloudPrintInterface.EventType = oldCpInterfaceEventType;
+      cloudprint.CloudPrintInterfaceEventType = oldCpInterfaceEventType;
 
       print_preview.PreviewArea.prototype.checkPluginCompatibility_ =
           function() {
@@ -325,7 +325,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
   this.nativeLayer_.dispatchEvent(cloudPrintEnableEvent);
 
   var searchDoneEvent =
-      new Event(cloudprint.CloudPrintInterface.EventType.SEARCH_DONE);
+      new Event(cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE);
   searchDoneEvent.printers = [];
   searchDoneEvent.isRecent = true;
   searchDoneEvent.email = 'foo@chromium.org';

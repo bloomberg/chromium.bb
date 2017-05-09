@@ -12,7 +12,7 @@ cr.define('print_preview', function() {
    * @extends {cr.ui.FocusManager}
    */
   function PrintPreviewFocusManager() {
-  };
+  }
 
   cr.addSingletonGetter(PrintPreviewFocusManager);
 
