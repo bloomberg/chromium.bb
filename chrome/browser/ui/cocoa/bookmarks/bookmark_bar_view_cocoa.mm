@@ -108,6 +108,11 @@ static const CGFloat kTextFieldTrailingPadding = 5;
     [importBookmarksButton_ setFont:smallSystemFont];
     [importBookmarksButton_ sizeToFit];
 
+    // Hide by default so these don't flash if it takes a while for the bookmark
+    // model to load.
+    [noItemTextField_ setHidden:YES];
+    [importBookmarksButton_ setHidden:YES];
+
     [self addSubview:noItemTextField_];
     [self addSubview:importBookmarksButton_];
     [self registerForNotificationsAndDraggedTypes];
