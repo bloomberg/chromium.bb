@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
@@ -64,6 +65,25 @@ class TestChromeUserManager : public FakeChromeUserManager {
                                         browser_restart);
     active_user_ = const_cast<user_manager::User*>(FindUser(account_id));
     NotifyOnLogin();
+  }
+
+  user_manager::UserList GetUnlockUsers() const override {
+    // Test case UserPrefsChange expects that the list of the unlock users
+    // depends on prefs::kAllowScreenLock.
+    user_manager::UserList unlock_users;
+    for (user_manager::User* user : users_) {
+      Profile* user_profile =
+          chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+      // Skip if user has a profile and kAllowScreenLock is set to false.
+      if (user_profile &&
+          !user_profile->GetPrefs()->GetBoolean(prefs::kAllowScreenLock)) {
+        continue;
+      }
+
+      unlock_users.push_back(user);
+    }
+
+    return unlock_users;
   }
 
  private:
@@ -172,28 +192,29 @@ class SessionControllerClientTest : public testing::Test {
   TestChromeUserManager* user_manager() { return user_manager_; }
 
   // Adds a regular user with a profile.
-  void InitForMultiProfile() {
+  TestingProfile* InitForMultiProfile() {
     const AccountId account_id(AccountId::FromUserEmail(kUser));
     const user_manager::User* user = user_manager()->AddUser(account_id);
 
     // Note that user profiles are created after user login in reality.
-    CreateTestingProfile(user);
+    return CreateTestingProfile(user);
   }
 
-  // Calls private methods to create a testing profile.
-  void CreateTestingProfile(const user_manager::User* user) {
+  // Calls private methods to create a testing profile. The created profile
+  // is owned by ProfileManager.
+  TestingProfile* CreateTestingProfile(const user_manager::User* user) {
     const AccountId& account_id = user->GetAccountId();
-    user_profile_ =
+    TestingProfile* profile =
         profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
-    user_profile_->set_profile_name(account_id.GetUserEmail());
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
-        user, user_profile_);
+    profile->set_profile_name(account_id.GetUserEmail());
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                                      profile);
+    return profile;
   }
 
   content::TestBrowserThreadBundle threads_;
   std::unique_ptr<policy::PolicyCertVerifier> cert_verifier_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  TestingProfile* user_profile_;
   session_manager::SessionManager session_manager_;
 
  private:
@@ -246,7 +267,7 @@ TEST_F(SessionControllerClientTest, CyclingThreeUsers) {
 
 // Make sure MultiProfile disabled by primary user policy.
 TEST_F(SessionControllerClientTest, MultiProfileDisallowedByUserPolicy) {
-  InitForMultiProfile();
+  TestingProfile* user_profile = InitForMultiProfile();
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
   const AccountId account_id(AccountId::FromUserEmail(kUser));
@@ -258,7 +279,7 @@ TEST_F(SessionControllerClientTest, MultiProfileDisallowedByUserPolicy) {
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
 
-  user_profile_->GetPrefs()->SetString(
+  user_profile->GetPrefs()->SetString(
       prefs::kMultiProfileUserBehavior,
       chromeos::MultiProfileUserController::kBehaviorNotAllowed);
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
@@ -287,7 +308,7 @@ TEST_F(SessionControllerClientTest,
 // Make sure MultiProfile disabled by primary user certificates in memory.
 TEST_F(SessionControllerClientTest,
        MultiProfileDisallowedByPrimaryUserCertificatesInMemory) {
-  InitForMultiProfile();
+  TestingProfile* user_profile = InitForMultiProfile();
   user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
 
   const AccountId account_id(AccountId::FromUserEmail(kUser));
@@ -298,9 +319,9 @@ TEST_F(SessionControllerClientTest,
   g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          user_profile_, CreateTestPolicyCertService));
+          user_profile, CreateTestPolicyCertService));
   policy::PolicyCertService* service =
-      policy::PolicyCertServiceFactory::GetForProfile(user_profile_);
+      policy::PolicyCertServiceFactory::GetForProfile(user_profile);
   ASSERT_TRUE(service);
 
   EXPECT_FALSE(service->has_policy_certificates());
@@ -352,13 +373,13 @@ TEST_F(SessionControllerClientTest,
 // Make sure adding users to multiprofiles disabled by primary user policy.
 TEST_F(SessionControllerClientTest,
        AddUserToMultiprofileDisallowedByPrimaryUserPolicy) {
-  InitForMultiProfile();
+  TestingProfile* user_profile = InitForMultiProfile();
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
   const AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
-  user_profile_->GetPrefs()->SetString(
+  user_profile->GetPrefs()->SetString(
       prefs::kMultiProfileUserBehavior,
       chromeos::MultiProfileUserController::kBehaviorNotAllowed);
   user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
@@ -429,17 +450,17 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
             session_controller.last_user_session()->type);
 
   // Simulate profile creation after login.
-  CreateTestingProfile(user);
-  user_profile_->SetSupervisedUserId("child-id");
+  TestingProfile* user_profile = CreateTestingProfile(user);
+  user_profile->SetSupervisedUserId("child-id");
 
   // Simulate supervised user custodians.
-  PrefService* prefs = user_profile_->GetPrefs();
+  PrefService* prefs = user_profile->GetPrefs();
   prefs->SetString(prefs::kSupervisedUserCustodianEmail, "parent1@test.com");
   prefs->SetString(prefs::kSupervisedUserSecondCustodianEmail,
                    "parent2@test.com");
 
   // Simulate the notification that the profile is ready.
-  client.OnLoginUserProfilePrepared(user_profile_);
+  client.OnLoginUserProfilePrepared(user_profile);
   base::RunLoop().RunUntilIdle();  // For PostTask and mojo interface.
 
   // The custodians were sent over the mojo interface.
@@ -456,4 +477,45 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
   // The updated custodian was sent over the mojo interface.
   EXPECT_EQ("parent3@test.com",
             session_controller.last_user_session()->custodian_email);
+}
+
+TEST_F(SessionControllerClientTest, UserPrefsChange) {
+  // Create an object to test and connect it to our test interface.
+  SessionControllerClient client;
+  TestSessionController session_controller;
+  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
+  client.Init();
+  SessionControllerClient::FlushForTesting();
+
+  // Simulate login.
+  const AccountId account_id(AccountId::FromUserEmail("user@test.com"));
+  const user_manager::User* user = user_manager()->AddUser(account_id);
+  session_manager_.CreateSession(
+      account_id, chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+                      "user@test.com"));
+  session_manager_.SetSessionState(SessionState::ACTIVE);
+  SessionControllerClient::FlushForTesting();
+
+  // Simulate the notification that the profile is ready.
+  TestingProfile* const user_profile = CreateTestingProfile(user);
+  client.OnLoginUserProfilePrepared(user_profile);
+
+  // Manipulate user prefs and verify SessionController is updated.
+  PrefService* const user_prefs = user_profile->GetPrefs();
+
+  user_prefs->SetBoolean(prefs::kAllowScreenLock, true);
+  SessionControllerClient::FlushForTesting();
+  EXPECT_TRUE(session_controller.last_session_info()->can_lock_screen);
+  user_prefs->SetBoolean(prefs::kAllowScreenLock, false);
+  SessionControllerClient::FlushForTesting();
+  EXPECT_FALSE(session_controller.last_session_info()->can_lock_screen);
+
+  user_prefs->SetBoolean(prefs::kEnableAutoScreenLock, true);
+  SessionControllerClient::FlushForTesting();
+  EXPECT_TRUE(
+      session_controller.last_session_info()->should_lock_screen_automatically);
+  user_prefs->SetBoolean(prefs::kEnableAutoScreenLock, false);
+  SessionControllerClient::FlushForTesting();
+  EXPECT_FALSE(
+      session_controller.last_session_info()->should_lock_screen_automatically);
 }
