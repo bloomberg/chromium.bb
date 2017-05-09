@@ -18,6 +18,12 @@ namespace web {
 class NavigationContextImpl : public NavigationContext {
  public:
   // Creates navigation context for sucessful navigation to a different page.
+  // Response headers will ne null.
+  static std::unique_ptr<NavigationContextImpl> CreateNavigationContext(
+      WebState* web_state,
+      const GURL& url);
+
+  // Creates navigation context for sucessful navigation to a different page.
   static std::unique_ptr<NavigationContextImpl> CreateNavigationContext(
       WebState* web_state,
       const GURL& url,
@@ -46,6 +52,12 @@ class NavigationContextImpl : public NavigationContext {
   bool IsErrorPage() const override;
   net::HttpResponseHeaders* GetResponseHeaders() const override;
   ~NavigationContextImpl() override;
+
+  // Setters for navigation context data members.
+  void SetIsSameDocument(bool is_same_document);
+  void SetIsErrorPage(bool is_error_page);
+  void SetResponseHeaders(
+      const scoped_refptr<net::HttpResponseHeaders>& response_headers);
 
  private:
   NavigationContextImpl(

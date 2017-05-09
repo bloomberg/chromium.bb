@@ -13,6 +13,16 @@ namespace web {
 
 // static
 std::unique_ptr<NavigationContextImpl>
+NavigationContextImpl::CreateNavigationContext(WebState* web_state,
+                                               const GURL& url) {
+  std::unique_ptr<NavigationContextImpl> result(new NavigationContextImpl(
+      web_state, url, false /* is_same_document */, false /* is_error_page */,
+      nullptr /* response_headers */));
+  return result;
+}
+
+// static
+std::unique_ptr<NavigationContextImpl>
 NavigationContextImpl::CreateNavigationContext(
     WebState* web_state,
     const GURL& url,
@@ -74,6 +84,19 @@ bool NavigationContextImpl::IsErrorPage() const {
 
 net::HttpResponseHeaders* NavigationContextImpl::GetResponseHeaders() const {
   return response_headers_.get();
+}
+
+void NavigationContextImpl::SetIsSameDocument(bool is_same_document) {
+  is_same_document_ = is_same_document;
+}
+
+void NavigationContextImpl::SetIsErrorPage(bool is_error_page) {
+  is_error_page_ = is_error_page;
+}
+
+void NavigationContextImpl::SetResponseHeaders(
+    const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
+  response_headers_ = response_headers;
 }
 
 NavigationContextImpl::NavigationContextImpl(
