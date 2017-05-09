@@ -15,6 +15,11 @@ class TaskScheduler;
 
 namespace test {
 
+// DEPRECATED. Use ScopedTaskEnvironment instead.
+//
+// TODO(fdoray): Replace ScopedTaskScheduler instances by ScopedTaskEnvironment.
+// https://crbug.com/708584
+//
 // Allows usage of the base/task_scheduler/post_task.h API within its scope.
 //
 // To run pending tasks synchronously, call RunLoop::Run/RunUntilIdle() on the
