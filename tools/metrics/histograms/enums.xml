@@ -27066,8 +27066,8 @@ from previous Chrome versions.
   <int value="3" label="Timed out"/>
   <int value="4" label="Matched whitelist"/>
   <int value="5" label="Response already cached"/>
-  <int value="6" label="Not extended reporting user"/>
-  <int value="7" label="Incognito"/>
+  <int value="6" label="DEPRECATED: Not extended reporting user"/>
+  <int value="7" label="DEPRECATED: Incognito"/>
   <int value="8" label="Request malformed"/>
   <int value="9" label="Fetch failed"/>
   <int value="10" label="Response malformed"/>

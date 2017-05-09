@@ -83,7 +83,8 @@ class MockPasswordProtectionService
                     safe_browsing::LoginReputationClientRequest::Frame*));
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsIncognito, bool());
-  MOCK_METHOD0(IsPingingEnabled, bool());
+  MOCK_METHOD1(IsPingingEnabled, bool(const base::Feature&));
+  MOCK_METHOD0(IsHistorySyncEnabled, bool());
   MOCK_METHOD3(MaybeStartLowReputationRequest,
                void(const GURL&, const GURL&, const GURL&));
 

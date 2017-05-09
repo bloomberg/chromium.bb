@@ -41,17 +41,6 @@ PasswordProtectionRequest::~PasswordProtectionRequest() {
 
 void PasswordProtectionRequest::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Initially we only send ping for Safe Browsing Extended Reporting users when
-  // they are not in incognito mode. We may loose these conditions later.
-  if (password_protection_service_->IsIncognito()) {
-    Finish(RequestOutcome::INCOGNITO, nullptr);
-    return;
-  }
-  if (!password_protection_service_->IsExtendedReporting()) {
-    Finish(RequestOutcome::NO_EXTENDED_REPORTING, nullptr);
-    return;
-  }
-
   CheckWhitelistOnUIThread();
 }
 
@@ -97,6 +86,8 @@ void PasswordProtectionRequest::FillRequestProto() {
   request_proto_ = base::MakeUnique<LoginReputationClientRequest>();
   request_proto_->set_page_url(main_frame_url_.spec());
   request_proto_->set_trigger_type(request_type_);
+  password_protection_service_->FillUserPopulation(request_type_,
+                                                   request_proto_.get());
   request_proto_->set_stored_verdict_cnt(
       password_protection_service_->GetStoredVerdictCount());
   LoginReputationClientRequest::Frame* main_frame =
