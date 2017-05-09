@@ -35,6 +35,10 @@ class NET_EXPORT ReportingBrowsingDataRemover {
   // which types of data to remove: reports queued by browser features and/or
   // clients (endpoints configured by origins). |origin_filter|, if not null,
   // specifies which origins' data to remove.
+  //
+  // Note: Currently this does not clear the endpoint backoff data in
+  // ReportingEndpointManager because that's not persisted to disk. If it's ever
+  // persisted, it will need to be cleared as well.
   virtual void RemoveBrowsingData(
       int data_type_mask,
       base::Callback<bool(const GURL&)> origin_filter) = 0;
