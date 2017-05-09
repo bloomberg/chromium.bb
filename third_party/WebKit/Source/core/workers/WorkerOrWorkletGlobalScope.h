@@ -16,11 +16,13 @@ class WorkerThread;
 
 class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
  public:
-  WorkerOrWorkletGlobalScope();
+  explicit WorkerOrWorkletGlobalScope(v8::Isolate*);
   virtual ~WorkerOrWorkletGlobalScope();
 
   // ExecutionContext
   bool IsWorkerOrWorkletGlobalScope() const final { return true; }
+  bool IsJSExecutionForbidden() const final;
+  void DisableEval(const String& error_message) final;
   void PostTask(
       TaskType,
       const WebTraceLocation&,
@@ -28,7 +30,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
       const String& task_name_for_instrumentation = g_empty_string) final;
 
   virtual ScriptWrappable* GetScriptWrappable() const = 0;
-  virtual WorkerOrWorkletScriptController* ScriptController() = 0;
 
   // Returns true when the WorkerOrWorkletGlobalScope is closing (e.g. via
   // WorkerGlobalScope#close() method). If this returns true, the worker is
@@ -38,7 +39,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
 
   // Should be called before destroying the global scope object. Allows
   // sub-classes to perform any cleanup needed.
-  virtual void Dispose() = 0;
+  virtual void Dispose();
 
   // Called from UseCounter to record API use in this execution context.
   void CountFeature(UseCounter::Feature);
@@ -51,12 +52,20 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   // MainThreadWorkletGlobalScope) or after dispose() is called.
   virtual WorkerThread* GetThread() const = 0;
 
+  WorkerOrWorkletScriptController* ScriptController() {
+    return script_controller_.Get();
+  }
+
+  DECLARE_VIRTUAL_TRACE();
+
  protected:
   virtual void ReportFeature(UseCounter::Feature) = 0;
   virtual void ReportDeprecation(UseCounter::Feature) = 0;
 
  private:
   void RunTask(std::unique_ptr<ExecutionContextTask>, bool is_instrumented);
+
+  Member<WorkerOrWorkletScriptController> script_controller_;
 
   // This is the set of features that this worker has used.
   BitVector used_features_;

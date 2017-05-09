@@ -29,7 +29,6 @@
 
 #include <memory>
 #include "bindings/core/v8/V8CacheOptions.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
@@ -124,9 +123,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   // ExecutionContext
   bool IsWorkerGlobalScope() const final { return true; }
-  bool IsJSExecutionForbidden() const final;
   bool IsContextThread() const final;
-  void DisableEval(const String& error_message) final;
   String UserAgent() const final { return user_agent_; }
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
@@ -147,11 +144,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   double TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }
-
-  WorkerOrWorkletScriptController* ScriptController() final {
-    return script_controller_.Get();
-  }
-
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
   // Available only when off-main-thread-fetch is enabled.
@@ -195,10 +187,9 @@ class CORE_EXPORT WorkerGlobalScope
   mutable Member<WorkerLocation> location_;
   mutable Member<WorkerNavigator> navigator_;
 
-  Member<WorkerOrWorkletScriptController> script_controller_;
   WorkerThread* thread_;
 
-  bool closing_;
+  bool closing_ = false;
 
   Member<WorkerEventQueue> event_queue_;
 
@@ -211,7 +202,7 @@ class CORE_EXPORT WorkerGlobalScope
   HeapHashSet<Member<V8AbstractEventListener>> event_listeners_;
 
   HeapHashMap<int, Member<ErrorEvent>> pending_error_events_;
-  int last_pending_error_event_id_;
+  int last_pending_error_event_id_ = 0;
 
   Member<WorkerFetchContext> fetch_context_;
 };

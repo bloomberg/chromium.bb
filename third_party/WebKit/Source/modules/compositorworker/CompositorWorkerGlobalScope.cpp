@@ -5,6 +5,7 @@
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 
 #include <memory>
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/CompositorWorkerProxyClient.h"
 #include "core/dom/ExecutionContext.h"

@@ -34,6 +34,7 @@
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8EventTarget.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/ExecutionContext.h"

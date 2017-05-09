@@ -30,6 +30,7 @@
 
 #include "core/probe/CoreProbes.h"
 
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreProbeSink.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"

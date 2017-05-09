@@ -29,6 +29,7 @@
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/dom/TaskRunnerHelper.h"
