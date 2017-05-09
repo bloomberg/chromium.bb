@@ -233,14 +233,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         return mCustomActionButton;
     }
 
-    /**
-     * @return The close button. For test purpose only.
-     */
-    @VisibleForTesting
-    public ImageButton getCloseButtonForTest() {
-        return mCloseButton;
-    }
-
     @Override
     public int getTabStripHeight() {
         return 0;
