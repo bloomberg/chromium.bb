@@ -708,6 +708,9 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
         view_->DoBrowserControlsShrinkBlinkSize();
     resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
+    cc::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
+    if (local_surface_id.is_valid())
+      resize_params->local_surface_id = local_surface_id;
   }
 
   const bool size_changed =

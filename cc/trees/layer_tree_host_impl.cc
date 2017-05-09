@@ -1737,7 +1737,8 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   compositor_frame.render_pass_list = std::move(frame->render_passes);
   // TODO(fsamuel): Once all clients get their LocalSurfaceId from their parent,
   // the LocalSurfaceId should hang off CompositorFrameMetadata.
-  if (active_tree()->local_surface_id().is_valid()) {
+  if (settings_.enable_surface_synchronization &&
+      active_tree()->local_surface_id().is_valid()) {
     compositor_frame_sink_->SetLocalSurfaceId(
         active_tree()->local_surface_id());
   }

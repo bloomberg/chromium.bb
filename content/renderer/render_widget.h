@@ -23,6 +23,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/surfaces/local_surface_id.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_event_source_info.h"
@@ -878,6 +879,8 @@ class CONTENT_EXPORT RenderWidget
   // TODO(kenrb, fsamuel): This should be removed when SurfaceIDs can be used
   // to replace it. See https://crbug.com/695579.
   uint32_t current_content_source_id_;
+
+  cc::LocalSurfaceId local_surface_id_;
 
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 

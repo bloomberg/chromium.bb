@@ -250,9 +250,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   virtual void DidStopFlinging() {}
 
-  // Returns the compositing surface ID namespace, or 0 if Surfaces are not
-  // enabled.
+  // Returns the ID associated with the CompositorFrameSink of this view.
   virtual cc::FrameSinkId GetFrameSinkId();
+
+  virtual cc::LocalSurfaceId GetLocalSurfaceId() const;
 
   // When there are multiple RenderWidgetHostViews for a single page, input
   // events need to be targeted to the correct one for handling. The following
