@@ -136,6 +136,7 @@ source_set("authentication_ui") {
   ]
   deps = [
     "//base",
+    "//components/signin/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view/cells",
