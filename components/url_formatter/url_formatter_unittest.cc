@@ -355,6 +355,10 @@ const IDNTestCase idn_cases[] = {
   {"xn--ab-yod.com", L"a\x05f4" L"b.com", false},
   // Hebrew Gershayim with Arabic is disallowed.
   {"xn--5eb7h.eg", L"\x0628\x05f4.eg", false},
+#if defined(OS_MACOSX)
+  // Tibetan transliteration characters are disallowed on Mac.
+  {"xn--com-luma.test.pl", L"\u0f8c.test.pl", false},
+#endif
 
   // Hyphens (http://unicode.org/cldr/utility/confusables.jsp?a=-)
   // Hyphen-Minus (the only hyphen allowed)
