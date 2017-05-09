@@ -25,6 +25,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::NavigationBarDoneButton;
+
 namespace {
 
 // Returns a fake identity.
@@ -121,8 +123,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the Account Settings screen is correctly popped if the signed in
@@ -159,8 +161,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the Account Settings screen is correctly reloaded when one of
@@ -193,8 +195,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       assertWithMatcher:grey_nil()];
   AssertAuthenticatedIdentityInActiveProfile(identity1);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the Sync Settings screen is correctly reloaded when one of the
@@ -234,8 +236,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       assertWithMatcher:grey_nil()];
   AssertAuthenticatedIdentityInActiveProfile(identity1);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the Account Settings screen is popped and the user signed out
@@ -263,8 +265,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the user isn't signed out and the UI is correct when the
@@ -301,8 +303,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(identity);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 @end

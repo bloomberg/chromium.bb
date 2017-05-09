@@ -30,6 +30,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::NavigationBarDoneButton;
+
 namespace {
 
 // Returns a fake identity.
@@ -143,8 +145,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON);
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 
   // Check |identity| is signed-in.
   AssertAuthenticatedIdentityInActiveProfile(identity);
@@ -185,8 +187,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Check the signed-in user did change.
   AssertAuthenticatedIdentityInActiveProfile(identity2);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests signing in with one account, switching sync account to a second and
@@ -224,8 +226,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Check the signed-in user did change.
   AssertAuthenticatedIdentityInActiveProfile(identity2);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that switching from a managed account to a non-managed account works
@@ -274,8 +276,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   AssertAuthenticatedIdentityInActiveProfile(identity);
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that signing out from the Settings works correctly.
@@ -305,8 +307,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Check that the settings home screen is shown.
   WaitForMatcher(grey_accessibilityID(kSettingsSignInCellId));
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 
   // Check that there is no signed in user.
   AssertAuthenticatedIdentityInActiveProfile(nil);
@@ -350,8 +352,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Check that the settings home screen is shown.
   WaitForMatcher(grey_accessibilityID(kSettingsSignInCellId));
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 
   // Check that there is no signed in user.
   AssertAuthenticatedIdentityInActiveProfile(nil);
@@ -377,8 +379,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:settings_link_matcher]
       performAction:grey_tap()];
 
-  // Close Settings.
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 
   // All Settings should be gone and user signed in.
   id<GREYMatcher> settings_matcher =
@@ -416,7 +418,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   // Close sign-in screen and Settings.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Opens the add account screen and then cancels it by opening a new tab.
@@ -454,7 +457,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   // Close sign-in screen and Settings.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Starts an authentication flow and cancel it by opening a new tab. Ensures
@@ -513,7 +517,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   // Close sign-in screen and Settings.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
-  TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 }
 
@@ -585,7 +590,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Close sign-in screen and Bookmarks.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
   if (!IsIPadIdiom()) {
-    TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
+    [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+        performAction:grey_tap()];
   }
 }
 
