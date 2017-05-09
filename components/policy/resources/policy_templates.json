@@ -9526,7 +9526,7 @@
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:60-'],
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': True,
       },
       'example_value': True,
