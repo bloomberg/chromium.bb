@@ -1134,7 +1134,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
       mbmi->cfl_alpha_ind = read_cfl_alphas(
 #if CONFIG_EC_ADAPT
           xd->tile_ctx,
-#elif CONFIG_EC_MULTISYMBOL
+#else
           cm->fc,
 #endif  // CONFIG_EC_ADAPT
           r, mbmi->skip, mbmi->cfl_alpha_signs);

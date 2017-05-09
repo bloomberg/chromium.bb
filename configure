@@ -518,6 +518,7 @@ post_process_cmdline() {
 
     # Fix up experiment dependencies
     enabled pvq && enable_feature ec_adapt
+    enabled cfl && enable_feature ec_multisymbol
     enabled ec_adapt && enable_feature ec_multisymbol
     enabled new_tokenset && enable_feature ec_multisymbol
     enabled new_multisymbol && enable_feature ec_multisymbol
