@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/arc/auth/arc_auth_info_fetcher.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_code_fetcher.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace enterprise_management {
@@ -25,12 +25,12 @@ namespace arc {
 
 // This class is responsible to fetch auth code for robot account. Robot auth
 // code is used for creation an account on Android side in ARC kiosk mode.
-class ArcRobotAuthCodeFetcher : public ArcAuthInfoFetcher {
+class ArcRobotAuthCodeFetcher : public ArcAuthCodeFetcher {
  public:
   ArcRobotAuthCodeFetcher();
   ~ArcRobotAuthCodeFetcher() override;
 
-  // ArcAuthInfoFetcher:
+  // ArcAuthCodeFetcher:
   void Fetch(const FetchCallback& callback) override;
 
  private:

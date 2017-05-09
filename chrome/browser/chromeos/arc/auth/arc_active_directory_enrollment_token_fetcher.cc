@@ -13,14 +13,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/prefs/pref_service.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -66,7 +60,7 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable(
   if (dm_token.empty()) {
     LOG(ERROR) << "Retrieving the DMToken failed.";
     base::ResetAndReturn(&callback_)
-        .Run(ArcAuthInfoFetcher::Status::FAILURE, std::string());
+        .Run(Status::FAILURE, std::string(), std::string());
     return;
   }
 
@@ -87,56 +81,39 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::OnDMTokenAvailable(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-Profile* GetProfile() {
-  const user_manager::User* const primary_user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  if (!primary_user)
-    NOTREACHED() << "No primary user is present.";
-  return chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-}
-
-void SavePlayUserId(const std::string& user_id) {
-  Profile* const profile = GetProfile();
-  if (!profile) {
-    LOG(ERROR) << "Profile is not available.";
-    return;
-  }
-  profile->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId, user_id);
-}
-
 void ArcActiveDirectoryEnrollmentTokenFetcher::OnFetchEnrollmentTokenCompleted(
     policy::DeviceManagementStatus dm_status,
     int net_error,
     const enterprise_management::DeviceManagementResponse& response) {
   fetch_request_job_.reset();
 
-  ArcAuthInfoFetcher::Status fetch_status;
+  Status fetch_status;
   std::string enrollment_token;
+  std::string user_id;
 
   switch (dm_status) {
     case policy::DM_STATUS_SUCCESS:
       if (!response.has_active_directory_enroll_play_user_response()) {
         LOG(WARNING) << "Invalid Active Directory enroll Play user response.";
-        fetch_status = ArcAuthInfoFetcher::Status::FAILURE;
+        fetch_status = Status::FAILURE;
         break;
       }
-      fetch_status = ArcAuthInfoFetcher::Status::SUCCESS;
+      fetch_status = Status::SUCCESS;
       enrollment_token = response.active_directory_enroll_play_user_response()
                              .enrollment_token();
-      SavePlayUserId(
-          response.active_directory_enroll_play_user_response().user_id());
+      user_id = response.active_directory_enroll_play_user_response().user_id();
       break;
     case policy::DM_STATUS_SERVICE_ARC_DISABLED:
-      fetch_status = ArcAuthInfoFetcher::Status::ARC_DISABLED;
+      fetch_status = Status::ARC_DISABLED;
       break;
     default:  // All other error cases
       LOG(ERROR) << "Fetching an enrollment token failed. DM Status: "
                  << dm_status;
-      fetch_status = ArcAuthInfoFetcher::Status::FAILURE;
+      fetch_status = Status::FAILURE;
       break;
   }
 
-  base::ResetAndReturn(&callback_).Run(fetch_status, enrollment_token);
+  base::ResetAndReturn(&callback_).Run(fetch_status, enrollment_token, user_id);
 }
 
 }  // namespace arc

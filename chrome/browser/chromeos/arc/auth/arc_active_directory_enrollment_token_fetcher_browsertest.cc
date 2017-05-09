@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
-#include "chrome/browser/chromeos/arc/auth/arc_auth_info_fetcher.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
@@ -37,9 +37,17 @@
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
 constexpr char kFakeDmToken[] = "fake-dm-token";
 constexpr char kFakeEnrollmentToken[] = "fake-enrollment-token";
+constexpr char kFakeUserId[] = "fake-user-id";
 constexpr char kFakeGuid[] = "f04557de-5da2-40ce-ae9d-b8874d8da96e";
+constexpr char kNotYetFetched[] = "NOT-YET-FETCHED";
+
+}  // namespace
+
+namespace arc {
 
 // JobCallback for the interceptor.
 net::URLRequestJob* ResponseJob(net::URLRequest* request,
@@ -71,10 +79,13 @@ net::URLRequestJob* ResponseJob(net::URLRequest* request,
   EXPECT_TRUE(request_headers.GetHeader("Authorization", &value));
   EXPECT_EQ("GoogleDMToken token=" + std::string(kFakeDmToken), value);
 
-  // Response contains the enrollment token.
+  // Response contains the enrollment token and user id.
   enterprise_management::DeviceManagementResponse response;
-  response.mutable_active_directory_enroll_play_user_response()
-      ->set_enrollment_token(kFakeEnrollmentToken);
+  enterprise_management::ActiveDirectoryEnrollPlayUserResponse*
+      enroll_response =
+          response.mutable_active_directory_enroll_play_user_response();
+  enroll_response->set_enrollment_token(kFakeEnrollmentToken);
+  enroll_response->set_user_id(kFakeUserId);
   std::string response_data;
   EXPECT_TRUE(response.SerializeToString(&response_data));
 
@@ -93,7 +104,7 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     "http://localhost");
-    arc::SetArcAvailableCommandLineForTesting(command_line);
+    SetArcAvailableCommandLineForTesting(command_line);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -164,20 +175,26 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   policy::TestRequestInterceptor* interceptor() { return interceptor_.get(); }
 
   static void FetchEnrollmentToken(
-      arc::ArcActiveDirectoryEnrollmentTokenFetcher* fetcher,
-      arc::ArcAuthInfoFetcher::Status* output_fetch_status,
-      std::string* output_enrollment_token) {
+      ArcActiveDirectoryEnrollmentTokenFetcher* fetcher,
+      ArcActiveDirectoryEnrollmentTokenFetcher::Status* output_fetch_status,
+      std::string* output_enrollment_token,
+      std::string* output_user_id) {
     base::RunLoop run_loop;
+
     fetcher->Fetch(base::Bind(
-        [](arc::ArcAuthInfoFetcher::Status* output_fetch_status,
-           std::string* output_enrollment_token, base::RunLoop* run_loop,
-           arc::ArcAuthInfoFetcher::Status fetch_status,
-           const std::string& enrollment_token) {
+        [](ArcActiveDirectoryEnrollmentTokenFetcher::Status*
+               output_fetch_status,
+           std::string* output_enrollment_token, std::string* output_user_id,
+           base::RunLoop* run_loop,
+           ArcActiveDirectoryEnrollmentTokenFetcher::Status fetch_status,
+           const std::string& enrollment_token, const std::string& user_id) {
           *output_fetch_status = fetch_status;
           *output_enrollment_token = enrollment_token;
+          *output_user_id = user_id;
           run_loop->Quit();
         },
-        output_fetch_status, output_enrollment_token, &run_loop));
+        output_fetch_status, output_enrollment_token, output_user_id,
+        &run_loop));
     // Because the Fetch() operation needs to interact with other threads,
     // RunUntilIdle() won't work here. Instead, use Run() and Quit() explicitly
     // in the callback.
@@ -202,15 +219,19 @@ IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
   StoreCorrectDmToken();
 
   std::string enrollment_token;
-  arc::ArcAuthInfoFetcher::Status fetch_status =
-      arc::ArcAuthInfoFetcher::Status::FAILURE;
+  std::string user_id;
+  ArcActiveDirectoryEnrollmentTokenFetcher::Status fetch_status =
+      ArcActiveDirectoryEnrollmentTokenFetcher::Status::FAILURE;
 
   auto token_fetcher =
-      base::MakeUnique<arc::ArcActiveDirectoryEnrollmentTokenFetcher>();
-  FetchEnrollmentToken(token_fetcher.get(), &fetch_status, &enrollment_token);
+      base::MakeUnique<ArcActiveDirectoryEnrollmentTokenFetcher>();
+  FetchEnrollmentToken(token_fetcher.get(), &fetch_status, &enrollment_token,
+                       &user_id);
 
-  EXPECT_EQ(arc::ArcAuthInfoFetcher::Status::SUCCESS, fetch_status);
+  EXPECT_EQ(ArcActiveDirectoryEnrollmentTokenFetcher::Status::SUCCESS,
+            fetch_status);
   EXPECT_EQ(kFakeEnrollmentToken, enrollment_token);
+  EXPECT_EQ(kFakeUserId, user_id);
 }
 
 IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
@@ -226,16 +247,20 @@ IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
 
   // We expect enrollment_token is empty in this case. So initialize with
   // non-empty value.
-  std::string enrollment_token = "NOT-YET-FETCHED";
-  arc::ArcAuthInfoFetcher::Status fetch_status =
-      arc::ArcAuthInfoFetcher::Status::SUCCESS;
+  std::string enrollment_token = kNotYetFetched;
+  std::string user_id = kNotYetFetched;
+  ArcActiveDirectoryEnrollmentTokenFetcher::Status fetch_status =
+      ArcActiveDirectoryEnrollmentTokenFetcher::Status::SUCCESS;
 
   auto token_fetcher =
-      base::MakeUnique<arc::ArcActiveDirectoryEnrollmentTokenFetcher>();
-  FetchEnrollmentToken(token_fetcher.get(), &fetch_status, &enrollment_token);
+      base::MakeUnique<ArcActiveDirectoryEnrollmentTokenFetcher>();
+  FetchEnrollmentToken(token_fetcher.get(), &fetch_status, &enrollment_token,
+                       &user_id);
 
-  EXPECT_EQ(arc::ArcAuthInfoFetcher::Status::FAILURE, fetch_status);
+  EXPECT_EQ(ArcActiveDirectoryEnrollmentTokenFetcher::Status::FAILURE,
+            fetch_status);
   EXPECT_EQ(std::string(), enrollment_token);
+  EXPECT_EQ(std::string(), user_id);
 }
 
 IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
@@ -248,16 +273,20 @@ IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
 
   // We expect enrollment_token is empty in this case. So initialize with
   // non-empty value.
-  std::string enrollment_token = "NOT-YET-FETCHED";
-  arc::ArcAuthInfoFetcher::Status fetch_status =
-      arc::ArcAuthInfoFetcher::Status::SUCCESS;
+  std::string enrollment_token = kNotYetFetched;
+  std::string user_id = kNotYetFetched;
+  ArcActiveDirectoryEnrollmentTokenFetcher::Status fetch_status =
+      ArcActiveDirectoryEnrollmentTokenFetcher::Status::SUCCESS;
 
   auto token_fetcher =
-      base::MakeUnique<arc::ArcActiveDirectoryEnrollmentTokenFetcher>();
-  FetchEnrollmentToken(token_fetcher.get(), &fetch_status, &enrollment_token);
+      base::MakeUnique<ArcActiveDirectoryEnrollmentTokenFetcher>();
+  FetchEnrollmentToken(token_fetcher.get(), &fetch_status, &enrollment_token,
+                       &user_id);
 
-  EXPECT_EQ(arc::ArcAuthInfoFetcher::Status::FAILURE, fetch_status);
+  EXPECT_EQ(ArcActiveDirectoryEnrollmentTokenFetcher::Status::FAILURE,
+            fetch_status);
   EXPECT_EQ(std::string(), enrollment_token);
+  EXPECT_EQ(std::string(), user_id);
 }
 
 IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
@@ -270,14 +299,20 @@ IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
 
   // We expect enrollment_token is empty in this case. So initialize with
   // non-empty value.
-  std::string enrollment_token = "NOT-YET-FETCHED";
-  arc::ArcAuthInfoFetcher::Status fetch_status =
-      arc::ArcAuthInfoFetcher::Status::SUCCESS;
+  std::string enrollment_token = kNotYetFetched;
+  std::string user_id = kNotYetFetched;
+  ArcActiveDirectoryEnrollmentTokenFetcher::Status fetch_status =
+      ArcActiveDirectoryEnrollmentTokenFetcher::Status::SUCCESS;
 
   auto token_fetcher =
-      base::MakeUnique<arc::ArcActiveDirectoryEnrollmentTokenFetcher>();
-  FetchEnrollmentToken(token_fetcher.get(), &fetch_status, &enrollment_token);
+      base::MakeUnique<ArcActiveDirectoryEnrollmentTokenFetcher>();
+  FetchEnrollmentToken(token_fetcher.get(), &fetch_status, &enrollment_token,
+                       &user_id);
 
-  EXPECT_EQ(arc::ArcAuthInfoFetcher::Status::ARC_DISABLED, fetch_status);
+  EXPECT_EQ(ArcActiveDirectoryEnrollmentTokenFetcher::Status::ARC_DISABLED,
+            fetch_status);
   EXPECT_EQ(std::string(), enrollment_token);
+  EXPECT_EQ(std::string(), user_id);
 }
+
+}  // namespace arc

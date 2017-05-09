@@ -210,7 +210,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   ArcSupportHost* support_host() { return support_host_.get(); }
 
   // TODO(hidehiko): Get rid of the getter by migration between ArcAuthContext
-  // and ArcAuthInfoFetcher.
+  // and ArcAuthCodeFetcher.
   ArcAuthContext* auth_context() { return context_.get(); }
 
   // On provisioning completion (regardless of whether successfully done or
