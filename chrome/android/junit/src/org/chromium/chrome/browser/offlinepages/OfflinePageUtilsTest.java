@@ -16,14 +16,6 @@ import static org.mockito.Mockito.when;
 
 import android.os.Environment;
 
-import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,22 +26,34 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
+import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
+
 import java.io.File;
 
 /**
  * Unit tests for OfflinePageUtils.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        application = BaseChromiumApplication.class,
-        shadows = { OfflinePageUtilsUnitTest.WrappedEnvironment.class, ShadowMultiDex.class })
-public class OfflinePageUtilsUnitTest {
-
-    @Mock private File mMockDataDirectory;
-    @Mock private Tab mTab;
-    @Mock private WebContents mWebContents;
-    @Mock private OfflinePageBridge mOfflinePageBridge;
-    @Mock private OfflinePageUtils mOfflinePageUtils;
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {OfflinePageUtilsTest.WrappedEnvironment.class, ShadowMultiDex.class})
+public class OfflinePageUtilsTest {
+    @Mock
+    private File mMockDataDirectory;
+    @Mock
+    private Tab mTab;
+    @Mock
+    private WebContents mWebContents;
+    @Mock
+    private OfflinePageBridge mOfflinePageBridge;
+    @Mock
+    private OfflinePageUtils.Internal mOfflinePageUtils;
 
     @Before
     public void setUp() throws Exception {
@@ -100,13 +104,13 @@ public class OfflinePageUtilsUnitTest {
         assertEquals("cs.chromium.org",
                 OfflinePageUtils.stripSchemeFromOnlineUrl("http://cs.chromium.org"));
         // If there is no scheme, nothing changes.
-        assertEquals("cs.chromium.org",
-                OfflinePageUtils.stripSchemeFromOnlineUrl("cs.chromium.org"));
+        assertEquals(
+                "cs.chromium.org", OfflinePageUtils.stripSchemeFromOnlineUrl("cs.chromium.org"));
         // Path is not touched/changed.
         String urlWithPath = "code.google.com/p/chromium/codesearch#search"
                 + "/&q=offlinepageutils&sq=package:chromium&type=cs";
-        assertEquals(urlWithPath,
-                OfflinePageUtils.stripSchemeFromOnlineUrl("https://" + urlWithPath));
+        assertEquals(
+                urlWithPath, OfflinePageUtils.stripSchemeFromOnlineUrl("https://" + urlWithPath));
         // Beginning and ending spaces get trimmed.
         assertEquals("cs.chromium.org",
                 OfflinePageUtils.stripSchemeFromOnlineUrl("  https://cs.chromium.org  "));
