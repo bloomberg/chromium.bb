@@ -140,7 +140,7 @@ namespace double_conversion {
         // Conceptually rest ~= too_high - buffer
         // We need to do the following tests in this order to avoid over- and
         // underflows.
-        ASSERT(rest <= unsafe_interval);
+        DCHECK_LE(rest, unsafe_interval);
         while (rest < small_distance &&  // Negated condition 1
                unsafe_interval - rest >= ten_kappa &&  // Negated condition 2
                (rest + ten_kappa < small_distance ||  // buffer{-1} > w_high
@@ -186,7 +186,7 @@ namespace double_conversion {
                                  uint64_t ten_kappa,
                                  uint64_t unit,
                                  int* kappa) {
-        ASSERT(rest < ten_kappa);
+        DCHECK_LT(rest, ten_kappa);
         // The following tests are done in a specific order to avoid overflows. They
         // will work correctly with any uint64 values of rest < ten_kappa and unit.
         //
@@ -241,7 +241,7 @@ namespace double_conversion {
                                 int number_bits,
                                 uint32_t* power,
                                 int* exponent) {
-        ASSERT(number < (uint32_t)(1 << (number_bits + 1)));
+        DCHECK_LT(number, (uint32_t)(1 << (number_bits + 1)));
 
         switch (number_bits) {
             case 32:
@@ -387,10 +387,11 @@ namespace double_conversion {
                          Vector<char> buffer,
                          int* length,
                          int* kappa) {
-      ASSERT(low.E() == w.E() && w.E() == high.E());
-      ASSERT(low.F() + 1 <= high.F() - 1);
-      ASSERT(kMinimalTargetExponent <= w.E() &&
-             w.E() <= kMaximalTargetExponent);
+      DCHECK_EQ(low.E(), w.E());
+      DCHECK_EQ(w.E(), high.E());
+      DCHECK_LE(low.F() + 1, high.F() - 1);
+      DCHECK_LE(kMinimalTargetExponent, w.E());
+      DCHECK_LE(w.E(), kMaximalTargetExponent);
       // low, w and high are imprecise, but by less than one ulp (unit in the
       // last place). If we remove (resp. add) 1 ulp from low (resp. high) we
       // are certain that the new numbers are outside of the interval we want
@@ -456,9 +457,9 @@ namespace double_conversion {
         // data (like the interval or 'unit'), too.
         // Note that the multiplication by 10 does not overflow, because w.e >= -60
         // and thus one.e >= -60.
-        ASSERT(one.E() >= -60);
-        ASSERT(fractionals < one.F());
-        ASSERT(UINT64_2PART_C(0xFFFFFFFF, FFFFFFFF) / 10 >= one.F());
+        DCHECK_GE(one.E(), -60);
+        DCHECK_LT(fractionals, one.F());
+        DCHECK_GE(UINT64_2PART_C(0xFFFFFFFF, FFFFFFFF) / 10, one.F());
         while (true) {
             fractionals *= 10;
             unit *= 10;
@@ -512,10 +513,10 @@ namespace double_conversion {
                                 Vector<char> buffer,
                                 int* length,
                                 int* kappa) {
-      ASSERT(kMinimalTargetExponent <= w.E() &&
-             w.E() <= kMaximalTargetExponent);
-      ASSERT(kMinimalTargetExponent >= -60);
-      ASSERT(kMaximalTargetExponent <= -32);
+      DCHECK_LE(kMinimalTargetExponent, w.E());
+      DCHECK_LE(w.E(), kMaximalTargetExponent);
+      DCHECK_GE(kMinimalTargetExponent, -60);
+      DCHECK_LE(kMaximalTargetExponent, -32);
       // w is assumed to have an error less than 1 unit. Whenever w is scaled we
       // also scale its error.
       uint64_t w_error = 1;
@@ -567,9 +568,9 @@ namespace double_conversion {
         // data (the 'unit'), too.
         // Note that the multiplication by 10 does not overflow, because w.e >= -60
         // and thus one.e >= -60.
-        ASSERT(one.E() >= -60);
-        ASSERT(fractionals < one.F());
-        ASSERT(UINT64_2PART_C(0xFFFFFFFF, FFFFFFFF) / 10 >= one.F());
+        DCHECK_GE(one.E(), -60);
+        DCHECK_LT(fractionals, one.F());
+        DCHECK_GE(UINT64_2PART_C(0xFFFFFFFF, FFFFFFFF) / 10, one.F());
         while (requested_digits > 0 && fractionals > w_error) {
             fractionals *= 10;
             w_error *= 10;
@@ -609,7 +610,7 @@ namespace double_conversion {
         // Grisu3 will never output representations that lie exactly on a boundary.
         DiyFp boundary_minus, boundary_plus;
         Double(v).NormalizedBoundaries(&boundary_minus, &boundary_plus);
-        ASSERT(boundary_plus.E() == w.E());
+        DCHECK_EQ(boundary_plus.E(), w.E());
         DiyFp ten_mk;  // Cached power of ten: 10^-k
         int mk;        // -k
         int ten_mk_minimal_binary_exponent =
@@ -620,10 +621,10 @@ namespace double_conversion {
                                                                ten_mk_minimal_binary_exponent,
                                                                ten_mk_maximal_binary_exponent,
                                                                &ten_mk, &mk);
-        ASSERT((kMinimalTargetExponent <=
-                w.E() + ten_mk.E() + DiyFp::kSignificandSize) &&
-               (kMaximalTargetExponent >=
-                w.E() + ten_mk.E() + DiyFp::kSignificandSize));
+        DCHECK_LE(kMinimalTargetExponent,
+                   w.E() + ten_mk.E() + DiyFp::kSignificandSize);
+        DCHECK_GE(kMaximalTargetExponent,
+                   w.E() + ten_mk.E() + DiyFp::kSignificandSize);
         // Note that ten_mk is only an approximation of 10^-k. A DiyFp only contains a
         // 64 bit significand and ten_mk is thus only precise up to 64 bits.
 
@@ -634,8 +635,8 @@ namespace double_conversion {
         // In other words: let f = scaled_w.f() and e = scaled_w.e(), then
         //           (f-1) * 2^e < w*10^k < (f+1) * 2^e
         DiyFp scaled_w = DiyFp::Times(w, ten_mk);
-        ASSERT(scaled_w.E() ==
-               boundary_plus.E() + ten_mk.E() + DiyFp::kSignificandSize);
+        DCHECK_EQ(scaled_w.E(),
+                  boundary_plus.E() + ten_mk.E() + DiyFp::kSignificandSize);
         // In theory it would be possible to avoid some recomputations by computing
         // the difference between w and boundary_minus/plus (a power of 2) and to
         // compute scaled_boundary_minus/plus by subtracting/adding from
@@ -679,10 +680,10 @@ namespace double_conversion {
                                                                ten_mk_minimal_binary_exponent,
                                                                ten_mk_maximal_binary_exponent,
                                                                &ten_mk, &mk);
-        ASSERT((kMinimalTargetExponent <=
-                w.E() + ten_mk.E() + DiyFp::kSignificandSize) &&
-               (kMaximalTargetExponent >=
-                w.E() + ten_mk.E() + DiyFp::kSignificandSize));
+        DCHECK_LE(kMinimalTargetExponent,
+                   w.E() + ten_mk.E() + DiyFp::kSignificandSize);
+        DCHECK_GE(kMaximalTargetExponent,
+                   w.E() + ten_mk.E() + DiyFp::kSignificandSize);
         // Note that ten_mk is only an approximation of 10^-k. A DiyFp only contains a
         // 64 bit significand and ten_mk is thus only precise up to 64 bits.
 
@@ -713,7 +714,7 @@ namespace double_conversion {
                   Vector<char> buffer,
                   int* length,
                   int* decimal_point) {
-        ASSERT(v > 0);
+        DCHECK_GT(v, 0);
         DCHECK(!Double(v).IsSpecial());
 
         bool result = false;

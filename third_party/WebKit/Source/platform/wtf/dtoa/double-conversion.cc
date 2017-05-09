@@ -78,7 +78,7 @@ namespace double_conversion {
                                                                   int length,
                                                                   int exponent,
                                                                   StringBuilder* result_builder) const {
-        ASSERT(length != 0);
+        DCHECK_NE(length, 0);
         result_builder->AddCharacter(decimal_digits[0]);
         if (length != 1) {
             result_builder->AddCharacter('.');
@@ -97,7 +97,7 @@ namespace double_conversion {
             result_builder->AddCharacter('0');
             return;
         }
-        ASSERT(exponent < 1e4);
+        DCHECK_LT(exponent, 1e4);
         const int kMaxExponentLength = 5;
         char buffer[kMaxExponentLength + 1];
         int first_char_pos = kMaxExponentLength;
@@ -124,7 +124,7 @@ namespace double_conversion {
             if (digits_after_point > 0) {
                 result_builder->AddCharacter('.');
                 result_builder->AddPadding('0', -decimal_point);
-                ASSERT(length <= digits_after_point - (-decimal_point));
+                DCHECK_LE(length, digits_after_point - (-decimal_point));
                 result_builder->AddSubstring(decimal_digits, length);
                 int remaining_digits = digits_after_point - (-decimal_point) - length;
                 result_builder->AddPadding('0', remaining_digits);
@@ -139,10 +139,10 @@ namespace double_conversion {
             }
         } else {
             // "decima.l_rep000"
-            ASSERT(digits_after_point > 0);
+            DCHECK_GT(digits_after_point, 0);
             result_builder->AddSubstring(decimal_digits, decimal_point);
             result_builder->AddCharacter('.');
-            ASSERT(length - decimal_point <= digits_after_point);
+            DCHECK_LE(length - decimal_point, digits_after_point);
             result_builder->AddSubstring(&decimal_digits[decimal_point],
                                          length - decimal_point);
             int remaining_digits = digits_after_point - (length - decimal_point);
@@ -197,7 +197,7 @@ namespace double_conversion {
     bool DoubleToStringConverter::ToFixed(double value,
                                           int requested_digits,
                                           StringBuilder* result_builder) const {
-        ASSERT(kMaxFixedDigitsBeforePoint == 60);
+        DCHECK_EQ(kMaxFixedDigitsBeforePoint, 60);
         const double kFirstNonFixed = 1e60;
 
         if (Double(value).IsSpecial()) {
@@ -245,7 +245,7 @@ namespace double_conversion {
         bool sign;
         // Add space for digit before the decimal point and the '\0' character.
         const int kDecimalRepCapacity = kMaxExponentialDigits + 2;
-        ASSERT(kDecimalRepCapacity > kBase10MaximalLength);
+        DCHECK_GT(kDecimalRepCapacity, kBase10MaximalLength);
         char decimal_rep[kDecimalRepCapacity];
         int decimal_rep_length;
 
@@ -257,7 +257,7 @@ namespace double_conversion {
             DoubleToAscii(value, PRECISION, requested_digits + 1,
                           decimal_rep, kDecimalRepCapacity,
                           &sign, &decimal_rep_length, &decimal_point);
-            ASSERT(decimal_rep_length <= requested_digits + 1);
+            DCHECK_LE(decimal_rep_length, requested_digits + 1);
 
             for (int i = decimal_rep_length; i < requested_digits + 1; ++i) {
                 decimal_rep[i] = '0';
@@ -301,7 +301,7 @@ namespace double_conversion {
         DoubleToAscii(value, PRECISION, precision,
                       decimal_rep, kDecimalRepCapacity,
                       &sign, &decimal_rep_length, &decimal_point);
-        ASSERT(decimal_rep_length <= precision);
+        DCHECK_LE(decimal_rep_length, precision);
 
         bool unique_zero = ((flags_ & UNIQUE_ZERO) != 0);
         if (sign && (value != 0.0 || !unique_zero)) {
@@ -359,7 +359,7 @@ namespace double_conversion {
                                                 int* point) {
         Vector<char> vector(buffer, buffer_length);
         DCHECK(!Double(v).IsSpecial());
-        ASSERT(mode == SHORTEST || requested_digits >= 0);
+        DCHECK(mode == SHORTEST || requested_digits >= 0);
 
         if (Double(v).Sign() < 0) {
             *sign = true;
@@ -482,7 +482,7 @@ namespace double_conversion {
         // Copy significant digits of the integer part (if any) to the buffer.
         while (*current >= '0' && *current <= '9') {
             if (significant_digits < kMaxSignificantDigits) {
-                ASSERT(buffer_pos < kBufferSize);
+                DCHECK_LT(buffer_pos, kBufferSize);
                 buffer[buffer_pos++] = static_cast<char>(*current);
                 significant_digits++;
             } else {
@@ -519,7 +519,7 @@ namespace double_conversion {
             // There is a fractional part.
             while (*current >= '0' && *current <= '9') {
                 if (significant_digits < kMaxSignificantDigits) {
-                    ASSERT(buffer_pos < kBufferSize);
+                    DCHECK_LT(buffer_pos, kBufferSize);
                     buffer[buffer_pos++] = static_cast<char>(*current);
                     significant_digits++;
                     exponent--;
@@ -565,7 +565,8 @@ namespace double_conversion {
             }
 
             const int max_exponent = INT_MAX / 2;
-            ASSERT(-max_exponent / 2 <= exponent && exponent <= max_exponent / 2);
+            DCHECK_LE(-max_exponent / 2, exponent);
+            DCHECK_LE(exponent, max_exponent / 2);
             int num = 0;
             do {
                 // Check overflow.
@@ -590,7 +591,7 @@ namespace double_conversion {
             exponent--;
         }
 
-        ASSERT(buffer_pos < kBufferSize);
+        DCHECK_LT(buffer_pos, kBufferSize);
         buffer[buffer_pos] = '\0';
 
         double converted = Strtod(Vector<const char>(buffer, buffer_pos), exponent);
