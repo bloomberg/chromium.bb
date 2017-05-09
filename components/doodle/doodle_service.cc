@@ -66,6 +66,12 @@ DoodleService::DoodleService(
   DoodleState state =
       config.has_value() ? DoodleState::AVAILABLE : DoodleState::NO_DOODLE;
   HandleNewConfig(state, expiry_date - clock_->Now(), config);
+
+  // If we don't have a cached doodle, immediately start a fetch, so that the
+  // first NTP will get it quicker.
+  if (state == DoodleState::NO_DOODLE) {
+    Refresh();
+  }
 }
 
 DoodleService::~DoodleService() = default;
@@ -81,6 +87,12 @@ void DoodleService::RemoveObserver(Observer* observer) {
 }
 
 void DoodleService::Refresh() {
+  // If we're already waiting for a fetch, don't start another one. The
+  // observers will get notified when the ongoing fetch returns.
+  if (fetcher_->IsFetchInProgress()) {
+    return;
+  }
+
   base::TimeTicks now_ticks = tick_clock_->NowTicks();
   // Check if we have passed the minimum refresh interval.
   base::TimeDelta time_since_fetch = now_ticks - last_successful_fetch_;
@@ -92,6 +104,7 @@ void DoodleService::Refresh() {
     }
     return;
   }
+
   fetcher_->FetchDoodle(base::BindOnce(&DoodleService::DoodleFetched,
                                        base::Unretained(this), now_ticks));
 }

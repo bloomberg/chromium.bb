@@ -37,6 +37,10 @@ class DoodleFetcher {
   // If a fetch is already running, the callback will be queued and invoked with
   // the result from the next completed request.
   virtual void FetchDoodle(FinishedCallback callback) = 0;
+
+  // Returns whether a fetch is currently in progress, i.e. whether any callback
+  // passed to FetchDoodle hasn't been called yet.
+  virtual bool IsFetchInProgress() const = 0;
 };
 
 }  // namespace doodle
