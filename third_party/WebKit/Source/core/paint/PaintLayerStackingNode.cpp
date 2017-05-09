@@ -91,6 +91,8 @@ static inline bool CompareZIndex(PaintLayerStackingNode* first,
 
 PaintLayerCompositor* PaintLayerStackingNode::Compositor() const {
   DCHECK(GetLayoutObject().View());
+  if (!GetLayoutObject().View())
+    return nullptr;
   return GetLayoutObject().View()->Compositor();
 }
 
@@ -110,7 +112,7 @@ void PaintLayerStackingNode::DirtyZOrderLists() {
     neg_z_order_list_->clear();
   z_order_lists_dirty_ = true;
 
-  if (!GetLayoutObject().DocumentBeingDestroyed())
+  if (!GetLayoutObject().DocumentBeingDestroyed() && Compositor())
     Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
 }
 
@@ -251,7 +253,8 @@ void PaintLayerStackingNode::StyleDidChange(const ComputedStyle* old_style) {
 
   if (is_stacked_ != should_be_stacked) {
     is_stacked_ = should_be_stacked;
-    if (!GetLayoutObject().DocumentBeingDestroyed() && !Layer()->IsRootLayer())
+    if (!GetLayoutObject().DocumentBeingDestroyed() &&
+        !Layer()->IsRootLayer() && Compositor())
       Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
   }
 }
