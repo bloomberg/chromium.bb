@@ -93,10 +93,9 @@ void PositionPendingFloats(LayoutUnit origin_block_offset,
   DCHECK(container_builder->BfcOffset())
       << "Parent BFC offset should be known here";
   const auto& floating_objects = container_builder->UnpositionedFloats();
-  PositionFloats(origin_block_offset,
-                 container_builder->BfcOffset().value().block_offset,
-                 floating_objects, space);
-  container_builder->MutablePositionedFloats().AppendVector(floating_objects);
+  container_builder->MutablePositionedFloats().AppendVector(PositionFloats(
+      origin_block_offset, container_builder->BfcOffset().value().block_offset,
+      floating_objects, space));
   container_builder->MutableUnpositionedFloats().clear();
 }
 

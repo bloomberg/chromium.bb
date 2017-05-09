@@ -10,6 +10,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_positioned_float.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -112,7 +113,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   }
 
   // Mutable list of positioned floats, i.e. floats with logical_offset set.
-  Vector<RefPtr<NGFloatingObject>>& MutablePositionedFloats() {
+  Vector<NGPositionedFloat>& MutablePositionedFloats() {
     return positioned_floats_;
   }
 
@@ -173,7 +174,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   // determine its block position in space.
   Vector<RefPtr<NGFloatingObject>> unpositioned_floats_;
 
-  Vector<RefPtr<NGFloatingObject>> positioned_floats_;
+  Vector<NGPositionedFloat> positioned_floats_;
 
   WTF::Optional<NGLogicalOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;
