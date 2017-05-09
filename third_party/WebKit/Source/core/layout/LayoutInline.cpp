@@ -1079,7 +1079,7 @@ LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
       LayoutBox* curr_box = ToLayoutBox(curr);
       if (!curr_box->HasSelfPaintingLayer() && curr_box->InlineBoxWrapper()) {
         LayoutRect logical_rect =
-            curr_box->LogicalVisualOverflowRectForPropagation(StyleRef());
+            curr_box->LogicalVisualOverflowRectForPropagation();
         if (is_horizontal) {
           logical_rect.MoveBy(curr_box->Location());
           result.UniteIfNonZero(logical_rect);

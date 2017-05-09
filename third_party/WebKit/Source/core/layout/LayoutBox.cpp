@@ -5040,10 +5040,10 @@ void LayoutBox::AddOverflowFromChild(const LayoutBox& child,
 
   // Only propagate layout overflow from the child if the child isn't clipping
   // its overflow.  If it is, then its overflow is internal to it, and we don't
-  // care about it. layoutOverflowRectForPropagation takes care of this and just
+  // care about it. LayoutOverflowRectForPropagation takes care of this and just
   // propagates the border box rect instead.
   LayoutRect child_layout_overflow_rect =
-      child.LayoutOverflowRectForPropagation(StyleRef());
+      child.LayoutOverflowRectForPropagation();
   child_layout_overflow_rect.Move(delta);
   AddLayoutOverflow(child_layout_overflow_rect);
 
@@ -5054,7 +5054,7 @@ void LayoutBox::AddOverflowFromChild(const LayoutBox& child,
   if (child.HasSelfPaintingLayer())
     return;
   LayoutRect child_visual_overflow_rect =
-      child.VisualOverflowRectForPropagation(StyleRef());
+      child.VisualOverflowRectForPropagation();
   child_visual_overflow_rect.Move(delta);
   AddContentsVisualOverflow(child_visual_overflow_rect);
 }
@@ -5252,45 +5252,38 @@ PaintLayer* LayoutBox::EnclosingFloatPaintingLayer() const {
   return nullptr;
 }
 
-LayoutRect LayoutBox::LogicalVisualOverflowRectForPropagation(
-    const ComputedStyle& parent_style) const {
-  LayoutRect rect = VisualOverflowRectForPropagation(parent_style);
-  if (!parent_style.IsHorizontalWritingMode())
+LayoutRect LayoutBox::LogicalVisualOverflowRectForPropagation() const {
+  LayoutRect rect = VisualOverflowRectForPropagation();
+  if (!Parent()->StyleRef().IsHorizontalWritingMode())
     return rect.TransposedRect();
   return rect;
 }
 
 DISABLE_CFI_PERF
-LayoutRect LayoutBox::VisualOverflowRectForPropagation(
-    const ComputedStyle& parent_style) const {
-  // If the writing modes of the child and parent match, then we don't have to
-  // do anything fancy. Just return the result.
-  LayoutRect rect = VisualOverflowRect();
-  if (parent_style.GetWritingMode() == Style()->GetWritingMode())
+LayoutRect LayoutBox::RectForOverflowPropagation(const LayoutRect& rect) const {
+  // If the child and parent are in the same blocks direction, then we don't
+  // have to do anything fancy. Just return the rect.
+  if (Parent()->StyleRef().IsFlippedBlocksWritingMode() ==
+      StyleRef().IsFlippedBlocksWritingMode())
     return rect;
 
-  // We are putting ourselves into our parent's coordinate space. If there is a
-  // flipped block mismatch in a particular axis, then we have to flip the rect
-  // along that axis.
-  if (IsFlippedBlocksWritingMode(Style()->GetWritingMode()) ||
-      IsFlippedBlocksWritingMode(parent_style.GetWritingMode()))
-    rect.SetX(Size().Width() - rect.MaxX());
-
-  return rect;
+  // Convert the rect into parent's blocks direction by flipping along the y
+  // axis.
+  LayoutRect result = rect;
+  result.SetX(Size().Width() - rect.MaxX());
+  return result;
 }
 
 DISABLE_CFI_PERF
-LayoutRect LayoutBox::LogicalLayoutOverflowRectForPropagation(
-    const ComputedStyle& parent_style) const {
-  LayoutRect rect = LayoutOverflowRectForPropagation(parent_style);
-  if (!parent_style.IsHorizontalWritingMode())
+LayoutRect LayoutBox::LogicalLayoutOverflowRectForPropagation() const {
+  LayoutRect rect = LayoutOverflowRectForPropagation();
+  if (!Parent()->StyleRef().IsHorizontalWritingMode())
     return rect.TransposedRect();
   return rect;
 }
 
 DISABLE_CFI_PERF
-LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
-    const ComputedStyle& parent_style) const {
+LayoutRect LayoutBox::LayoutOverflowRectForPropagation() const {
   // Only propagate interior layout overflow if we don't clip it.
   LayoutRect rect = BorderBoxRect();
   // We want to include the margin, but only when it adds height. Quirky margins
@@ -5320,19 +5313,7 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
     FlipForWritingMode(rect);
   }
 
-  // If the writing modes of the child and parent match, then we don't have to
-  // do anything fancy. Just return the result.
-  if (parent_style.GetWritingMode() == Style()->GetWritingMode())
-    return rect;
-
-  // We are putting ourselves into our parent's coordinate space. If there is a
-  // flipped block mismatch in a particular axis, then we have to flip the rect
-  // along that axis.
-  if (IsFlippedBlocksWritingMode(Style()->GetWritingMode()) ||
-      IsFlippedBlocksWritingMode(parent_style.GetWritingMode()))
-    rect.SetX(Size().Width() - rect.MaxX());
-
-  return rect;
+  return RectForOverflowPropagation(rect);
 }
 
 DISABLE_CFI_PERF
