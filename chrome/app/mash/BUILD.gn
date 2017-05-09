@@ -89,6 +89,10 @@ catalog("catalog") {
   if (is_linux && !is_android) {
     embedded_services += [ "//components/font_service:manifest" ]
   }
+
+  if (enable_nacl && is_chromeos) {
+    embedded_services += [ "//components/nacl/loader:nacl_loader_manifest" ]
+  }
 }
 
 catalog_cpp_source("chrome_mash_catalog") {
