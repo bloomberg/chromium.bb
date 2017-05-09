@@ -4,15 +4,12 @@
  * found in the LICENSE file.
  */
 
-/* global PaymentRequest:false */
-/* global print:false */
-
 /**
  * Checks for existence of a complete VISA credit card.
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
-    var request = new PaymentRequest(
+    const request = new PaymentRequest(
         [{supportedMethods: ['visa']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.canMakePayment()
@@ -30,9 +27,9 @@ function buy() {  // eslint-disable-line no-unused-vars
 /**
  * Checks for existence of a complete MasterCard credit card.
  */
-function other_buy() {  // eslint-disable-line no-unused-vars
+function other_buy() {  // eslint-disable-line no-unused-vars, camelcase
   try {
-    var request = new PaymentRequest(
+    const request = new PaymentRequest(
         [{supportedMethods: ['mastercard']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.canMakePayment()

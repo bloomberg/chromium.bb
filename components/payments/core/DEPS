@@ -2,6 +2,7 @@ include_rules = [
   "-components/payments/content",
   "-content",
   "+components/autofill/core",
+  "+components/keyed_service/core",
   "+components/metrics",
   "+components/strings",
   "+components/ukm",

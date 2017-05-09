@@ -8,15 +8,19 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/origin_security_checker.h"
 #include "components/payments/content/payment_details_validation.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
+#include "components/payments/core/can_make_payment_query.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace payments {
 
 PaymentRequest::PaymentRequest(
+    content::RenderFrameHost* render_frame_host,
     content::WebContents* web_contents,
     std::unique_ptr<PaymentRequestDelegate> delegate,
     PaymentRequestWebContentsManager* manager,
@@ -26,6 +30,7 @@ PaymentRequest::PaymentRequest(
       delegate_(std::move(delegate)),
       manager_(manager),
       binding_(this, std::move(request)),
+      frame_origin_(GURL(render_frame_host->GetLastCommittedURL()).GetOrigin()),
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
                       web_contents_->GetLastCommittedURL(),
@@ -167,14 +172,30 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
 }
 
 void PaymentRequest::CanMakePayment() {
-  // TODO(crbug.com/704676): Implement a quota policy for this method.
-  // PaymentRequest.canMakePayments() never returns false in incognito mode.
-  client_->OnCanMakePayment(
-      delegate_->IsIncognito() || state()->CanMakePayment()
-          ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
-          : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
-  journey_logger_.SetCanMakePaymentValue(delegate_->IsIncognito() ||
-                                         state()->CanMakePayment());
+  bool can_make_payment = state()->CanMakePayment();
+  if (delegate_->IsIncognito()) {
+    client_->OnCanMakePayment(
+        mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT);
+    journey_logger_.SetCanMakePaymentValue(true);
+  } else if (CanMakePaymentQueryFactory::GetInstance()
+                 ->GetForContext(web_contents_->GetBrowserContext())
+                 ->CanQuery(frame_origin_, spec()->stringified_method_data())) {
+    client_->OnCanMakePayment(
+        can_make_payment
+            ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
+            : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
+    journey_logger_.SetCanMakePaymentValue(can_make_payment);
+  } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
+    client_->OnCanMakePayment(
+        can_make_payment
+            ? mojom::CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
+            : mojom::CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT);
+    journey_logger_.SetCanMakePaymentValue(can_make_payment);
+  } else {
+    client_->OnCanMakePayment(
+        mojom::CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED);
+  }
+
   if (observer_for_testing_)
     observer_for_testing_->OnCanMakePaymentCalled();
 }

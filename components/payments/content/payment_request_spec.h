@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_SPEC_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_SPEC_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -76,6 +77,10 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   }
   const std::set<std::string>& supported_card_networks_set() const {
     return supported_card_networks_set_;
+  }
+  const std::map<std::string, std::set<std::string>>& stringified_method_data()
+      const {
+    return stringified_method_data_;
   }
   // Returns whether the |method_name| was specified as supported through the
   // "basic-card" payment method. If false, it means either the |method_name| is
@@ -151,6 +156,10 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // Only the set of basic-card specified networks. NOTE: callers should use
   // |supported_card_networks_set_| to check merchant support.
   std::set<std::string> basic_card_specified_networks_;
+
+  // A mapping of the payment method names to the corresponding JSON-stringified
+  // payment method specific data.
+  std::map<std::string, std::set<std::string>> stringified_method_data_;
 
   // The |observer_for_testing_| will fire after all the |observers_| have been
   // notified.
