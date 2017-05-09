@@ -7710,6 +7710,7 @@ static int64_t build_and_cost_compound_type(
     const BLOCK_SIZE bsize, const int this_mode, int rs2, int rate_mv,
     BUFFER_SET *ctx, int *out_rate_mv, uint8_t **preds0, uint8_t **preds1,
     int *strides, int mi_row, int mi_col) {
+  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   int rate_sum;
@@ -7727,7 +7728,7 @@ static int64_t build_and_cost_compound_type(
       use_masked_motion_search(compound_type)) {
     *out_rate_mv = interinter_compound_motion_search(cpi, x, bsize, this_mode,
                                                      mi_row, mi_col);
-    av1_build_inter_predictors_sby(xd, mi_row, mi_col, ctx, bsize);
+    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
     model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum,
                     &tmp_skip_txfm_sb, &tmp_skip_sse_sb);
     rd = RDCOST(x->rdmult, x->rddiv, rs2 + *out_rate_mv + rate_sum, dist_sum);
@@ -8796,7 +8797,7 @@ static int64_t handle_inter_mode(
       xd->plane[j].dst.buf = tmp_buf + j * MAX_SB_SQUARE;
       xd->plane[j].dst.stride = bw;
     }
-    av1_build_inter_predictors_sby(xd, mi_row, mi_col, &orig_dst, bsize);
+    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, &orig_dst, bsize);
     restore_dst_buf(xd, orig_dst);
     mbmi->ref_frame[1] = INTRA_FRAME;
     mbmi->use_wedge_interintra = 0;
@@ -8862,7 +8863,8 @@ static int64_t handle_inter_mode(
           do_masked_motion_search(cpi, x, mask, bw, bsize, mi_row, mi_col,
                                   &tmp_mv, &tmp_rate_mv, 0);
           mbmi->mv[0].as_int = tmp_mv.as_int;
-          av1_build_inter_predictors_sby(xd, mi_row, mi_col, &orig_dst, bsize);
+          av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, &orig_dst,
+                                         bsize);
           model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum,
                           &tmp_skip_txfm_sb, &tmp_skip_sse_sb);
           rd = RDCOST(x->rdmult, x->rddiv,
