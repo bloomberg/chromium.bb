@@ -74,10 +74,15 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
   virtual sk_sp<PaintShader> CreateShader(const SkMatrix&) = 0;
   virtual bool IsLocalMatrixChanged(const SkMatrix&) const;
 
+  void AdjustExternalMemoryAllocated(int64_t delta);
+
   RepeatMode repeat_mode_;
 
-  Pattern(RepeatMode);
+  Pattern(RepeatMode, int64_t external_memory_allocated = 0);
   mutable sk_sp<PaintShader> cached_shader_;
+
+ private:
+  int64_t external_memory_allocated_;
 };
 
 }  // namespace blink
