@@ -1310,6 +1310,21 @@
             ]
         }
     ],
+    "LsdPermissionPrompt": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LsdPermissionPrompt"
+                    ]
+                }
+            ]
+        }
+    ],
     "MacAllowBackgroundingProcesses": [
         {
             "platforms": [
