@@ -546,10 +546,10 @@ def map_and_run(
             success = False
           if not success:
             print >> sys.stderr, (
-                'Failed to delete the run directory, forcibly failing\n'
-                'the task because of it. No zombie process can outlive a\n'
-                'successful task run and still be marked as successful.\n'
-                'Fix your stuff.')
+                'Failed to delete the run directory, thus failing the task.\n'
+                'This may be due to a subprocess outliving the main task\n'
+                'process, holding on to resources. Please fix the task so\n'
+                'that it releases resources and cleans up subprocesses.')
             if result['exit_code'] == 0:
               result['exit_code'] = 1
         if fs.isdir(tmp_dir):
@@ -560,10 +560,10 @@ def map_and_run(
             success = False
           if not success:
             print >> sys.stderr, (
-                'Failed to delete the temporary directory, forcibly failing\n'
-                'the task because of it. No zombie process can outlive a\n'
-                'successful task run and still be marked as successful.\n'
-                'Fix your stuff.')
+                'Failed to delete the temp directory, thus failing the task.\n'
+                'This may be due to a subprocess outliving the main task\n'
+                'process, holding on to resources. Please fix the task so\n'
+                'that it releases resources and cleans up subprocesses.')
             if result['exit_code'] == 0:
               result['exit_code'] = 1
 
