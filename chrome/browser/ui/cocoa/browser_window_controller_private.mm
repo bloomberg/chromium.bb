@@ -813,11 +813,11 @@ willPositionSheet:(NSWindow*)sheet
       setShouldSuppressTopInfoBarTip:![self hasToolbar]];
 }
 
-- (NSInteger)pageInfoBubblePointY {
+- (NSInteger)infoBarAnchorPointY {
   LocationBarViewMac* locationBarView = [self locationBarBridge];
 
   // The point, in window coordinates.
-  NSPoint iconBottom = locationBarView->GetPageInfoBubblePoint();
+  NSPoint iconBottom = locationBarView->GetInfoBarAnchorPoint();
 
   // The toolbar, in window coordinates.
   NSView* toolbar = [toolbarController_ view];
@@ -899,7 +899,7 @@ willPositionSheet:(NSWindow*)sheet
       NSHeight([[bookmarkBarController_ view] bounds])];
 
   [layout setInfoBarHeight:[infoBarContainerController_ heightOfInfoBars]];
-  [layout setPageInfoBubblePointY:[self pageInfoBubblePointY]];
+  [layout setInfoBarAnchorPointY:[self infoBarAnchorPointY]];
 
   [layout setHasDownloadShelf:(downloadShelfController_.get() != nil)];
   [layout setDownloadShelfHeight:
@@ -923,7 +923,7 @@ willPositionSheet:(NSWindow*)sheet
   [infoBarContainerController_
       setMaxTopArrowHeight:output.infoBarMaxTopArrowHeight];
   [infoBarContainerController_
-      setInfobarArrowX:[self locationBarBridge]->GetPageInfoBubblePoint().x];
+      setInfobarArrowX:[self locationBarBridge]->GetInfoBarAnchorPoint().x];
 
   [[downloadShelfController_ view] setFrame:output.downloadShelfFrame];
 

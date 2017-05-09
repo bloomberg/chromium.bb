@@ -330,6 +330,10 @@ NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
   return [field_ bubblePointForDecoration:GetPageInfoDecoration()];
 }
 
+NSPoint LocationBarViewMac::GetInfoBarAnchorPoint() const {
+  return [field_ arrowAnchorPointForDecoration:GetPageInfoDecoration()];
+}
+
 void LocationBarViewMac::OnDecorationsChanged() {
   // TODO(shess): The field-editor frame and cursor rects should not
   // change, here.

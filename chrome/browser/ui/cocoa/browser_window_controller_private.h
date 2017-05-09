@@ -93,8 +93,8 @@ class WebContents;
 // Update visibility of the infobar tip, depending on the state of the window.
 - (void)updateInfoBarTipVisibility;
 
-// The min Y of the bubble point in the coordinate space of the toolbar.
-- (NSInteger)pageInfoBubblePointY;
+// The distance from the toolbar bottom to the anchor point for InfoBars.
+- (NSInteger)infoBarAnchorPointY;
 
 // Toggles the AppKit Fullscreen API. By default, doing so enters Canonical
 // Fullscreen.
