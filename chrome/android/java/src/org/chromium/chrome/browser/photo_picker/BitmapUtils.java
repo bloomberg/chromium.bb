@@ -107,4 +107,20 @@ class BitmapUtils {
         if (height > size) y = (height - size) / 2;
         return Bitmap.createBitmap(bitmap, x, y, size, size);
     }
+
+    /**
+     * Scales a |bitmap| to a certain size.
+     * @param bitmap The bitmap to scale.
+     * @param scaleMaxSize What to scale it to.
+     * @param filter True if the source should be filtered.
+     * @return The resulting scaled bitmap.
+     */
+    public static Bitmap scale(Bitmap bitmap, float scaleMaxSize, boolean filter) {
+        float ratio = Math.min((float) scaleMaxSize / bitmap.getWidth(),
+                (float) scaleMaxSize / bitmap.getHeight());
+        int height = Math.round(ratio * bitmap.getHeight());
+        int width = Math.round(ratio * bitmap.getWidth());
+
+        return Bitmap.createScaledBitmap(bitmap, width, height, filter);
+    }
 }

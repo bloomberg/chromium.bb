@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.photo_picker;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +32,8 @@ import java.util.List;
 public class PickerCategoryView extends RelativeLayout
         implements FileEnumWorkerTask.FilesEnumeratedCallback, RecyclerView.RecyclerListener,
                    DecoderServiceHost.ServiceReadyCallback, OnMenuItemClickListener {
+    private static final int KILOBYTE = 1024;
+
     // The dialog that owns us.
     private PhotoPickerDialog mDialog;
 
@@ -59,6 +63,14 @@ public class PickerCategoryView extends RelativeLayout
 
     // The {@link SelectionDelegate} keeping track of which images are selected.
     private SelectionDelegate<PickerBitmap> mSelectionDelegate;
+
+    // A low-resolution cache for images. Helpful for cache misses from the high-resolution cache
+    // to avoid showing gray squares (we show pixelated versions instead until image can be loaded
+    // off disk, which is much less jarring).
+    private LruCache<String, Bitmap> mLowResBitmaps;
+
+    // A high-resolution cache for images.
+    private LruCache<String, Bitmap> mHighResBitmaps;
 
     /**
      * The number of columns to show. Note: mColumns and mPadding (see below) should both be even
@@ -118,7 +130,11 @@ public class PickerCategoryView extends RelativeLayout
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(mColumns, mPadding));
 
-        // TODO(finnur): Implement caching.
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / KILOBYTE);
+        final int cacheSizeLarge = maxMemory / 2; // 1/2 of the available memory.
+        final int cacheSizeSmall = maxMemory / 8; // 1/8th of the available memory.
+        mLowResBitmaps = new LruCache<String, Bitmap>(cacheSizeSmall);
+        mHighResBitmaps = new LruCache<String, Bitmap>(cacheSizeLarge);
     }
 
     /**
@@ -220,6 +236,14 @@ public class PickerCategoryView extends RelativeLayout
 
     public DecoderServiceHost getDecoderServiceHost() {
         return mDecoderServiceHost;
+    }
+
+    public LruCache<String, Bitmap> getLowResBitmaps() {
+        return mLowResBitmaps;
+    }
+
+    public LruCache<String, Bitmap> getHighResBitmaps() {
+        return mHighResBitmaps;
     }
 
     public boolean isMultiSelectAllowed() {
