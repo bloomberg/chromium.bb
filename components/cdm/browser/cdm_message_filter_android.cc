@@ -51,8 +51,8 @@ const CodecInfo<media::VideoCodec> kVideoCodecsToQuery[] = {
 };
 
 const CodecInfo<media::AudioCodec> kAudioCodecsToQuery[] = {
+    // Vorbis is not supported. See http://crbug.com/710924 for details.
     {media::EME_CODEC_WEBM_OPUS, media::kCodecOpus, "video/webm"},
-    {media::EME_CODEC_WEBM_VORBIS, media::kCodecVorbis, "video/webm"},
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {media::EME_CODEC_MP4_AAC, media::kCodecAAC, "video/mp4"},
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
