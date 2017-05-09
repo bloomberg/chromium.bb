@@ -4,8 +4,7 @@
 
 #include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
 
-#include "content/browser/compositor/surface_utils.h"
-#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_manager.h"
+#include "base/bind.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 
 namespace content {
@@ -36,8 +35,13 @@ void OffscreenCanvasProviderImpl::CreateOffscreenCanvasSurface(
     return;
   }
 
-  OffscreenCanvasSurfaceImpl::Create(parent_frame_sink_id, frame_sink_id,
-                                     std::move(client), std::move(request));
+  auto destroy_callback = base::BindOnce(
+      &OffscreenCanvasProviderImpl::DestroyOffscreenCanvasSurface,
+      base::Unretained(this), frame_sink_id);
+
+  canvas_map_[frame_sink_id] = base::MakeUnique<OffscreenCanvasSurfaceImpl>(
+      parent_frame_sink_id, frame_sink_id, std::move(client),
+      std::move(request), std::move(destroy_callback));
 }
 
 void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
@@ -50,16 +54,19 @@ void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
     return;
   }
 
-  // TODO(kylechar): Add test for bad |frame_sink_id|.
-  auto* manager = OffscreenCanvasCompositorFrameSinkManager::GetInstance();
-  auto* surface_impl = manager->GetSurfaceInstance(frame_sink_id);
-  if (!surface_impl) {
+  auto iter = canvas_map_.find(frame_sink_id);
+  if (iter == canvas_map_.end()) {
     DLOG(ERROR) << "No OffscreenCanvasSurfaceImpl for " << frame_sink_id;
     return;
   }
 
-  surface_impl->CreateCompositorFrameSink(std::move(client),
+  iter->second->CreateCompositorFrameSink(std::move(client),
                                           std::move(request));
+}
+
+void OffscreenCanvasProviderImpl::DestroyOffscreenCanvasSurface(
+    cc::FrameSinkId frame_sink_id) {
+  canvas_map_.erase(frame_sink_id);
 }
 
 }  // namespace content
