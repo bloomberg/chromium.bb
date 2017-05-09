@@ -67,6 +67,7 @@ void av1_idct4_new(const int32_t *input, int32_t *output, const int8_t *cos_bit,
 
   // stage 1;
   stage++;
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = input[2];
@@ -110,6 +111,7 @@ void av1_idct8_new(const int32_t *input, int32_t *output, const int8_t *cos_bit,
 
   // stage 1;
   stage++;
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = input[4];
@@ -195,6 +197,7 @@ void av1_idct16_new(const int32_t *input, int32_t *output,
 
   // stage 1;
   stage++;
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = input[8];
@@ -366,6 +369,7 @@ void av1_idct32_new(const int32_t *input, int32_t *output,
 
   // stage 1;
   stage++;
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = input[16];
@@ -727,6 +731,7 @@ void av1_iadst4_new(const int32_t *input, int32_t *output,
 
   // stage 1;
   stage++;
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = -input[3];
@@ -791,6 +796,7 @@ void av1_iadst8_new(const int32_t *input, int32_t *output,
 
   // stage 1;
   stage++;
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = -input[7];
@@ -904,6 +910,7 @@ void av1_iadst16_new(const int32_t *input, int32_t *output,
 
   // stage 1;
   stage++;
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = -input[15];
@@ -1118,6 +1125,7 @@ void av1_iadst32_new(const int32_t *input, int32_t *output,
 
   // stage 1;
   stage++;
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = -input[31];
@@ -1587,6 +1595,7 @@ void av1_idct64_new(const int32_t *input, int32_t *output,
   // stage 1;
   stage++;
   cospi = cospi_arr(cos_bit[stage]);
+  assert(output != input);
   bf1 = output;
   bf1[0] = input[0];
   bf1[1] = input[32];
