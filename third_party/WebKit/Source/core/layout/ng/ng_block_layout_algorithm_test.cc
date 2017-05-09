@@ -352,7 +352,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2WithFloats) {
   ASSERT_EQ(1UL, body_fragment->PositionedFloats().size());
   ASSERT_EQ(1UL, body_fragment->PositionedFloats().size());
   auto float_nonempties_fragment =
-      body_fragment->PositionedFloats().at(0)->fragment;
+      body_fragment->PositionedFloats().at(0).fragment;
   // 70 = first_child's height(50) + first child's margin-bottom(20)
   EXPECT_THAT(float_nonempties_fragment->TopOffset(), LayoutUnit(70));
   EXPECT_THAT(float_nonempties_fragment->LeftOffset(), LayoutUnit(0));
@@ -874,14 +874,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
 
   ASSERT_EQ(2UL, container_fragment->PositionedFloats().size());
   RefPtr<NGPhysicalFragment> left_float_fragment =
-      container_fragment->PositionedFloats().at(0)->fragment;
+      container_fragment->PositionedFloats().at(0).fragment;
   // inline 25 = empty2's padding(15) + left float's margin(10)
   // block 10 = left float's margin
   EXPECT_THAT(left_float_fragment->Offset(),
               NGPhysicalOffset(LayoutUnit(25), LayoutUnit(10)));
 
   auto right_float_fragment =
-      container_fragment->PositionedFloats().at(1)->fragment;
+      container_fragment->PositionedFloats().at(1).fragment;
   LayoutUnit right_float_offset = LayoutUnit(125);
   // inline offset 150 = empty2's padding(15) + right float's margin(10) + right
   // float offset(125)
@@ -997,7 +997,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   int left_float_block_offset = 8;
   EXPECT_EQ(left_float_block_offset, left_float->OffsetTop());
   auto left_float_fragment =
-      regular_fragment->PositionedFloats().at(0)->fragment;
+      regular_fragment->PositionedFloats().at(0).fragment;
   EXPECT_THAT(LayoutUnit(), left_float_fragment->TopOffset());
 
   Element* left_wide_float = GetDocument().getElementById("left-wide-float");
@@ -1007,7 +1007,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   int left_wide_float_block_offset = 38;
   EXPECT_EQ(left_wide_float_block_offset, left_wide_float->OffsetTop());
   auto left_wide_float_fragment =
-      regular_fragment->PositionedFloats().at(1)->fragment;
+      regular_fragment->PositionedFloats().at(1).fragment;
   // 30 = left-float's height.
   EXPECT_THAT(LayoutUnit(30), left_wide_float_fragment->TopOffset());
 
@@ -1028,7 +1028,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   EXPECT_EQ(right_float_inline_offset, right_float->OffsetLeft());
   EXPECT_EQ(right_float_block_offset, right_float->OffsetTop());
   auto right_float_fragment =
-      container_fragment->PositionedFloats().at(0)->fragment;
+      container_fragment->PositionedFloats().at(0).fragment;
   // 60 = right_float_block_offset(68) - body's margin(8)
   EXPECT_THAT(LayoutUnit(right_float_block_offset - 8),
               right_float_fragment->TopOffset());
@@ -1048,7 +1048,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   EXPECT_EQ(left_float_with_margin_block_offset,
             left_float_with_margin->OffsetTop());
   auto left_float_with_margin_fragment =
-      container_fragment->PositionedFloats().at(1)->fragment;
+      container_fragment->PositionedFloats().at(1).fragment;
   // 70 = left_float_with_margin_block_offset(78) - body's margin(8)
   EXPECT_THAT(LayoutUnit(left_float_with_margin_block_offset - 8),
               left_float_with_margin_fragment->TopOffset());

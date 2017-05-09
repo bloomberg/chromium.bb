@@ -50,31 +50,17 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
   NGLogicalOffset origin_offset;
   NGLogicalOffset from_offset;
 
-  // Calculated logical offset. It's never {@code nullopt} for a positioned
-  // float.
-  WTF::Optional<NGLogicalOffset> logical_offset;
-
   // Writing mode of the float's constraint space.
   NGWritingMode writing_mode;
 
   RefPtr<NGPhysicalFragment> fragment;
-
-  // In the case where a legacy FloatingObject is attached to not its own
-  // parent, e.g. a float surrounded by a bunch of nested empty divs,
-  // NG float fragment's LeftOffset() cannot be used as legacy FloatingObject's
-  // left offset because that offset should be relative to the original float
-  // parent.
-  // {@code left_offset} is calculated when we know to which parent this float
-  // would be attached.
-  LayoutUnit left_offset;
 
   bool IsLeft() const { return exclusion_type == NGExclusion::kFloatLeft; }
 
   bool IsRight() const { return exclusion_type == NGExclusion::kFloatRight; }
 
   String ToString() const {
-    return String::Format("Type: '%d' Fragment: '%s'", exclusion_type,
-                          fragment->ToString().Ascii().data());
+    return String::Format("Type: '%d'", exclusion_type);
   }
 
  private:

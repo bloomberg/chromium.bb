@@ -78,21 +78,20 @@ NGExclusion CreateExclusion(const NGFragment& fragment,
   return exclusion;
 }
 
-// Updates the Floating Object's left offset from the provided parent_space
+// Calculates the Floating Object's left offset from the provided parent_space
 // and {@code floating_object}'s space and margins.
-void UpdateFloatingObjectLeftOffset(const NGConstraintSpace& new_parent_space,
-                                    const NGLogicalOffset& float_logical_offset,
-                                    NGFloatingObject* floating_object) {
-  DCHECK(floating_object);
+LayoutUnit CalculateLeftOffset(const NGConstraintSpace& new_parent_space,
+                               const NGLogicalOffset& float_logical_offset,
+                               const NGFloatingObject& floating_object) {
   // TODO(glebl): We should use physical offset here.
-  floating_object->left_offset = floating_object->from_offset.inline_offset -
-                                 new_parent_space.BfcOffset().inline_offset +
-                                 float_logical_offset.inline_offset;
+  return floating_object.from_offset.inline_offset -
+         new_parent_space.BfcOffset().inline_offset +
+         float_logical_offset.inline_offset;
 }
 }  // namespace
 
-NGLogicalOffset PositionFloat(NGFloatingObject* floating_object,
-                              NGConstraintSpace* new_parent_space) {
+NGPositionedFloat PositionFloat(NGFloatingObject* floating_object,
+                                NGConstraintSpace* new_parent_space) {
   DCHECK(floating_object);
   DCHECK(floating_object->fragment) << "Fragment cannot be null here";
 
@@ -132,21 +131,29 @@ NGLogicalOffset PositionFloat(NGFloatingObject* floating_object,
 
   NGLogicalOffset logical_offset = CalculateLogicalOffsetForOpportunity(
       opportunity, float_offset, floating_object);
-  UpdateFloatingObjectLeftOffset(*new_parent_space, logical_offset,
-                                 floating_object);
-  return logical_offset;
+
+  LayoutUnit left_offset =
+      CalculateLeftOffset(*new_parent_space, logical_offset, *floating_object);
+
+  return NGPositionedFloat(floating_object->fragment, logical_offset,
+                           left_offset);
 }
 
-void PositionFloats(LayoutUnit origin_block_offset,
-                    LayoutUnit from_block_offset,
-                    const Vector<RefPtr<NGFloatingObject>>& floating_objects,
-                    NGConstraintSpace* space) {
+const Vector<NGPositionedFloat> PositionFloats(
+    LayoutUnit origin_block_offset,
+    LayoutUnit from_block_offset,
+    const Vector<RefPtr<NGFloatingObject>>& floating_objects,
+    NGConstraintSpace* space) {
+  Vector<NGPositionedFloat> positioned_floats;
+  positioned_floats.ReserveCapacity(floating_objects.size());
+
   for (auto& floating_object : floating_objects) {
     floating_object->origin_offset.block_offset = origin_block_offset;
     floating_object->from_offset.block_offset = from_block_offset;
-    floating_object->logical_offset =
-        PositionFloat(floating_object.Get(), space);
+    positioned_floats.push_back(PositionFloat(floating_object.Get(), space));
   }
+
+  return positioned_floats;
 }
 
 }  // namespace blink
