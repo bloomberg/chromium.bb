@@ -78,25 +78,34 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
 
   candidates = TabManagerDelegate::GetSortedCandidates(
           tab_list, arc_processes);
-  EXPECT_EQ(9U, candidates.size());
+  ASSERT_EQ(9U, candidates.size());
 
   // focused app.
+  ASSERT_TRUE(candidates[0].app());
   EXPECT_EQ("focused", candidates[0].app()->process_name());
   // visible app 1, last_activity_time larger than visible app 2.
+  ASSERT_TRUE(candidates[1].app());
   EXPECT_EQ("visible1", candidates[1].app()->process_name());
   // visible app 2, last_activity_time less than visible app 1.
+  ASSERT_TRUE(candidates[2].app());
   EXPECT_EQ("visible2", candidates[2].app()->process_name());
   // pinned and media.
+  ASSERT_TRUE(candidates[3].tab());
   EXPECT_EQ(300, candidates[3].tab()->tab_contents_id);
   // media.
+  ASSERT_TRUE(candidates[4].tab());
   EXPECT_EQ(400, candidates[4].tab()->tab_contents_id);
   // pinned.
+  ASSERT_TRUE(candidates[5].tab());
   EXPECT_EQ(100, candidates[5].tab()->tab_contents_id);
   // chrome app.
+  ASSERT_TRUE(candidates[6].tab());
   EXPECT_EQ(500, candidates[6].tab()->tab_contents_id);
   // internal page.
+  ASSERT_TRUE(candidates[7].tab());
   EXPECT_EQ(200, candidates[7].tab()->tab_contents_id);
   // background service.
+  ASSERT_TRUE(candidates[8].app());
   EXPECT_EQ("service", candidates[8].app()->process_name());
 }
 
