@@ -159,6 +159,8 @@ class NET_EXPORT ReportingCache {
   }
 
  private:
+  const ReportingReport* FindReportToEvict() const;
+
   void MaybeAddWildcardClient(const ReportingClient* client);
 
   void MaybeRemoveWildcardClient(const ReportingClient* client);

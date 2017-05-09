@@ -61,6 +61,18 @@ void ReportingCache::AddReport(const GURL& url,
       reports_.insert(std::make_pair(report.get(), std::move(report)));
   DCHECK(inserted.second);
 
+  if (reports_.size() > context_->policy().max_report_count) {
+    // There should be at most one extra report (the one added above).
+    DCHECK_EQ(context_->policy().max_report_count + 1, reports_.size());
+    const ReportingReport* to_evict = FindReportToEvict();
+    DCHECK_NE(nullptr, to_evict);
+    // The newly-added report isn't pending, so even if all other reports are
+    // pending, the cache should have a report to evict.
+    DCHECK(!base::ContainsKey(pending_reports_, to_evict));
+    size_t erased = reports_.erase(to_evict);
+    DCHECK_EQ(1u, erased);
+  }
+
   context_->NotifyCacheUpdated();
 }
 
@@ -231,6 +243,21 @@ void ReportingCache::RemoveAllClients() {
   wildcard_clients_.clear();
 
   context_->NotifyCacheUpdated();
+}
+
+const ReportingReport* ReportingCache::FindReportToEvict() const {
+  const ReportingReport* earliest_queued = nullptr;
+
+  for (const auto& it : reports_) {
+    const ReportingReport* report = it.first;
+    if (base::ContainsKey(pending_reports_, report))
+      continue;
+    if (!earliest_queued || report->queued < earliest_queued->queued) {
+      earliest_queued = report;
+    }
+  }
+
+  return earliest_queued;
 }
 
 void ReportingCache::MaybeAddWildcardClient(const ReportingClient* client) {

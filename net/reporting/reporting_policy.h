@@ -18,6 +18,9 @@ struct NET_EXPORT ReportingPolicy {
   ReportingPolicy(const ReportingPolicy& other);
   ~ReportingPolicy();
 
+  // Maximum number of reports to queue before evicting the oldest.
+  size_t max_report_count;
+
   // Minimum interval at which to attempt delivery of queued reports.
   base::TimeDelta delivery_interval;
 
