@@ -101,22 +101,22 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
     return row_index_;
   }
 
-  const BorderValue& BorderAdjoiningTableStart() const {
+  BorderValue BorderAdjoiningTableStart() const {
     if (Section()->HasSameDirectionAs(Table()))
       return Style()->BorderStart();
 
     return Style()->BorderEnd();
   }
 
-  const BorderValue& BorderAdjoiningTableEnd() const {
+  BorderValue BorderAdjoiningTableEnd() const {
     if (Section()->HasSameDirectionAs(Table()))
       return Style()->BorderEnd();
 
     return Style()->BorderStart();
   }
 
-  const BorderValue& BorderAdjoiningStartCell(const LayoutTableCell*) const;
-  const BorderValue& BorderAdjoiningEndCell(const LayoutTableCell*) const;
+  BorderValue BorderAdjoiningStartCell(const LayoutTableCell*) const;
+  BorderValue BorderAdjoiningEndCell(const LayoutTableCell*) const;
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,

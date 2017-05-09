@@ -1697,7 +1697,7 @@ LayoutTable* LayoutTable::CreateAnonymousWithParent(
   return new_table;
 }
 
-const BorderValue& LayoutTable::TableStartBorderAdjoiningCell(
+BorderValue LayoutTable::TableStartBorderAdjoiningCell(
     const LayoutTableCell* cell) const {
 #if DCHECK_IS_ON()
   DCHECK(cell->IsFirstOrLastCellInRow());
@@ -1708,7 +1708,7 @@ const BorderValue& LayoutTable::TableStartBorderAdjoiningCell(
   return Style()->BorderEnd();
 }
 
-const BorderValue& LayoutTable::TableEndBorderAdjoiningCell(
+BorderValue LayoutTable::TableEndBorderAdjoiningCell(
     const LayoutTableCell* cell) const {
 #if DCHECK_IS_ON()
   DCHECK(cell->IsFirstOrLastCellInRow());

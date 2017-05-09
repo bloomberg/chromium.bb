@@ -12,7 +12,7 @@ struct SameSizeAsComputedStyleBase {
   void* dataRefs[{{computed_style.subgroups|length}}];
   {% endif %}
   {% for field in computed_style.fields|rejectattr("is_bit_field") %}
-  {{field.type_name}} {{field.name}}};
+  {{field.type_name}} {{field.name}};
   {% endfor %}
   unsigned m_bit_fields[{{computed_style.num_32_bit_words_for_bit_fields}}];
 };

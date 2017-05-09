@@ -53,9 +53,6 @@ class OutlineValue final : public BorderValue {
   int Offset() const { return offset_; }
   void SetOffset(int offset) { offset_ = offset; }
 
-  OutlineIsAuto IsAuto() const { return static_cast<OutlineIsAuto>(is_auto_); }
-  void SetIsAuto(OutlineIsAuto is_auto) { is_auto_ = is_auto; }
-
  private:
   int offset_;
 };

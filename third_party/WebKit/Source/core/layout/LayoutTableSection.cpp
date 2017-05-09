@@ -1763,7 +1763,7 @@ unsigned LayoutTableSection::NumEffectiveColumns() const {
   return result + 1;
 }
 
-const BorderValue& LayoutTableSection::BorderAdjoiningStartCell(
+BorderValue LayoutTableSection::BorderAdjoiningStartCell(
     const LayoutTableCell* cell) const {
 #if DCHECK_IS_ON()
   DCHECK(cell->IsFirstOrLastCellInRow());
@@ -1772,7 +1772,7 @@ const BorderValue& LayoutTableSection::BorderAdjoiningStartCell(
                                   : Style()->BorderEnd();
 }
 
-const BorderValue& LayoutTableSection::BorderAdjoiningEndCell(
+BorderValue LayoutTableSection::BorderAdjoiningEndCell(
     const LayoutTableCell* cell) const {
 #if DCHECK_IS_ON()
   DCHECK(cell->IsFirstOrLastCellInRow());

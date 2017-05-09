@@ -22,52 +22,41 @@
  *
  */
 
-#ifndef BorderValue_h
-#define BorderValue_h
+#ifndef BorderColorAndStyle_h
+#define BorderColorAndStyle_h
 
 #include "core/css/StyleColor.h"
-#include "core/style/BorderColorAndStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
 
-class BorderValue {
+class BorderColorAndStyle {
   DISALLOW_NEW();
   friend class ComputedStyle;
 
  public:
-  BorderValue()
+  BorderColorAndStyle()
       : color_(0),
         color_is_current_color_(true),
         style_(kBorderStyleNone),
-        is_auto_(kOutlineIsAutoOff) {
-    SetWidth(3);
-  }
+        is_auto_(kOutlineIsAutoOff) {}
 
-  BorderValue(const BorderColorAndStyle& data, float width) {
-    SetColor(data.GetColor());
-    SetColorIsCurrentColor(ColorIsCurrentColor());
-    SetStyle(data.Style());
-    SetIsAuto(data.IsAuto());
-    SetWidth(width);
-  }
-
-  bool NonZero() const { return Width() && (style_ != kBorderStyleNone); }
+  bool NonZero() const { return (style_ != kBorderStyleNone); }
 
   bool IsTransparent() const {
     return !color_is_current_color_ && !color_.Alpha();
   }
 
-  bool operator==(const BorderValue& o) const {
-    return width_ == o.width_ && style_ == o.style_ && color_ == o.color_ &&
+  bool operator==(const BorderColorAndStyle& o) const {
+    return style_ == o.style_ && color_ == o.color_ &&
            color_is_current_color_ == o.color_is_current_color_;
   }
 
   // The default width is 3px, but if the style is none we compute a value of 0
   // (in ComputedStyle itself)
-  bool VisuallyEqual(const BorderValue& o) const {
+  bool VisuallyEqual(const BorderColorAndStyle& o) const {
     if (style_ == kBorderStyleNone && o.style_ == kBorderStyleNone)
       return true;
     if (style_ == kBorderStyleHidden && o.style_ == kBorderStyleHidden)
@@ -75,7 +64,7 @@ class BorderValue {
     return *this == o;
   }
 
-  bool operator!=(const BorderValue& o) const { return !(*this == o); }
+  bool operator!=(const BorderColorAndStyle& o) const { return !(*this == o); }
 
   void SetColor(const StyleColor& color) {
     color_ = color.Resolve(Color());
@@ -85,17 +74,6 @@ class BorderValue {
   StyleColor GetColor() const {
     return color_is_current_color_ ? StyleColor::CurrentColor()
                                    : StyleColor(color_);
-  }
-
-  float Width() const {
-    return static_cast<float>(width_) / kBorderWidthDenominator;
-  }
-  void SetWidth(float width) { width_ = WidthToFixedPoint(width); }
-
-  // Since precision is lost with fixed point, comparisons also have
-  // to be done in fixed point.
-  bool WidthEquals(float width) const {
-    return WidthToFixedPoint(width) == width_;
   }
 
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
@@ -110,17 +88,10 @@ class BorderValue {
   }
 
  protected:
-  static unsigned WidthToFixedPoint(float width) {
-    DCHECK_GE(width, 0);
-    return static_cast<unsigned>(std::min<float>(width, kMaxForBorderWidth) *
-                                 kBorderWidthDenominator);
-  }
-
   Color color_;
   unsigned color_is_current_color_ : 1;
 
-  unsigned width_ : 26;  // Fixed point width
-  unsigned style_ : 4;   // EBorderStyle
+  unsigned style_ : 4;  // EBorderStyle
 
   // This is only used by OutlineValue but moved here to keep the bits packed.
   unsigned is_auto_ : 1;  // OutlineIsAuto
@@ -128,4 +99,4 @@ class BorderValue {
 
 }  // namespace blink
 
-#endif  // BorderValue_h
+#endif  // BorderColorAndStyle_h

@@ -262,6 +262,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return cached_pseudo_styles_.get();
   }
 
+  bool BorderWidthEquals(float border_width_first,
+                         float border_width_second) const {
+    return WidthToFixedPoint(border_width_first) ==
+           WidthToFixedPoint(border_width_second);
+  }
+
   /**
      * ComputedStyle properties
      *
@@ -468,36 +474,53 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Border width properties.
   static float InitialBorderWidth() { return 3; }
 
+  // TODO(nainar): Move all fixed point logic to a separate class.
   // border-top-width
   float BorderTopWidth() const {
-    return surround_data_->border_.BorderTopWidth();
+    if (surround_data_->border_.top_.Style() == kBorderStyleNone ||
+        surround_data_->border_.top_.Style() == kBorderStyleHidden)
+      return 0;
+    return static_cast<float>(BorderTopWidthInternal()) /
+           kBorderWidthDenominator;
   }
   void SetBorderTopWidth(float v) {
-    SET_BORDER_WIDTH(surround_data_, border_.top_, v);
+    surround_data_.Access()->border_top_width_ = WidthToFixedPoint(v);
   }
 
   // border-bottom-width
   float BorderBottomWidth() const {
-    return surround_data_->border_.BorderBottomWidth();
+    if (surround_data_->border_.bottom_.Style() == kBorderStyleNone ||
+        surround_data_->border_.bottom_.Style() == kBorderStyleHidden)
+      return 0;
+    return static_cast<float>(BorderBottomWidthInternal()) /
+           kBorderWidthDenominator;
   }
   void SetBorderBottomWidth(float v) {
-    SET_BORDER_WIDTH(surround_data_, border_.bottom_, v);
+    surround_data_.Access()->border_bottom_width_ = WidthToFixedPoint(v);
   }
 
   // border-left-width
   float BorderLeftWidth() const {
-    return surround_data_->border_.BorderLeftWidth();
+    if (surround_data_->border_.left_.Style() == kBorderStyleNone ||
+        surround_data_->border_.left_.Style() == kBorderStyleHidden)
+      return 0;
+    return static_cast<float>(BorderLeftWidthInternal()) /
+           kBorderWidthDenominator;
   }
   void SetBorderLeftWidth(float v) {
-    SET_BORDER_WIDTH(surround_data_, border_.left_, v);
+    surround_data_.Access()->border_left_width_ = WidthToFixedPoint(v);
   }
 
   // border-right-width
   float BorderRightWidth() const {
-    return surround_data_->border_.BorderRightWidth();
+    if (surround_data_->border_.right_.Style() == kBorderStyleNone ||
+        surround_data_->border_.right_.Style() == kBorderStyleHidden)
+      return 0;
+    return static_cast<float>(BorderRightWidthInternal()) /
+           kBorderWidthDenominator;
   }
   void SetBorderRightWidth(float v) {
-    SET_BORDER_WIDTH(surround_data_, border_.right_, v);
+    surround_data_.Access()->border_right_width_ = WidthToFixedPoint(v);
   }
 
   // Border style properties.
@@ -2821,20 +2844,28 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   void SetBorderImageSlicesFill(bool);
   const BorderData& Border() const { return surround_data_->border_; }
-  const BorderValue& BorderLeft() const {
-    return surround_data_->border_.Left();
+  const BorderValue BorderLeft() const {
+    return BorderValue(surround_data_->border_.Left(), BorderLeftWidth());
   }
-  const BorderValue& BorderRight() const {
-    return surround_data_->border_.Right();
+  const BorderValue BorderRight() const {
+    return BorderValue(surround_data_->border_.Right(), BorderRightWidth());
   }
-  const BorderValue& BorderTop() const { return surround_data_->border_.Top(); }
-  const BorderValue& BorderBottom() const {
-    return surround_data_->border_.Bottom();
+  const BorderValue BorderTop() const {
+    return BorderValue(surround_data_->border_.Top(), BorderTopWidth());
   }
-  const BorderValue& BorderBefore() const;
-  const BorderValue& BorderAfter() const;
-  const BorderValue& BorderStart() const;
-  const BorderValue& BorderEnd() const;
+  const BorderValue BorderBottom() const {
+    return BorderValue(surround_data_->border_.Bottom(), BorderBottomWidth());
+  }
+  bool BorderSizeEquals(const ComputedStyle& o) const {
+    return BorderWidthEquals(BorderLeftWidth(), o.BorderLeftWidth()) &&
+           BorderWidthEquals(BorderTopWidth(), o.BorderTopWidth()) &&
+           BorderWidthEquals(BorderRightWidth(), o.BorderRightWidth()) &&
+           BorderWidthEquals(BorderBottomWidth(), o.BorderBottomWidth());
+  }
+  const BorderValue BorderBefore() const;
+  const BorderValue BorderAfter() const;
+  const BorderValue BorderStart() const;
+  const BorderValue BorderEnd() const;
   float BorderAfterWidth() const;
   float BorderBeforeWidth() const;
   float BorderEndWidth() const;
@@ -2843,7 +2874,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   float BorderUnderWidth() const;
 
   bool HasBorderFill() const { return Border().HasBorderFill(); }
-  bool HasBorder() const { return Border().HasBorder(); }
+  bool HasBorder() const {
+    return Border().HasBorder() || BorderLeftWidth() || BorderRightWidth() ||
+           BorderTopWidth() || BorderBottomWidth();
+  }
   bool HasBorderDecoration() const { return HasBorder() || HasBorderFill(); }
   bool HasBorderRadius() const {
     if (!BorderTopLeftRadius().Width().IsZero())
@@ -2879,16 +2913,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     ResetBorderBottomRightRadius();
   }
   void ResetBorderTop() {
-    SET_VAR(surround_data_, border_.top_, BorderValue());
+    SET_VAR(surround_data_, border_.top_, BorderColorAndStyle());
+    SetBorderTopWidth(3);
   }
   void ResetBorderRight() {
-    SET_VAR(surround_data_, border_.right_, BorderValue());
+    SET_VAR(surround_data_, border_.right_, BorderColorAndStyle());
+    SetBorderRightWidth(3);
   }
   void ResetBorderBottom() {
-    SET_VAR(surround_data_, border_.bottom_, BorderValue());
+    SET_VAR(surround_data_, border_.bottom_, BorderColorAndStyle());
+    SetBorderBottomWidth(3);
   }
   void ResetBorderLeft() {
-    SET_VAR(surround_data_, border_.left_, BorderValue());
+    SET_VAR(surround_data_, border_.left_, BorderColorAndStyle());
+    SetBorderLeftWidth(3);
   }
   void ResetBorderImage() {
     SET_VAR(surround_data_, border_.image_, NinePieceImage());

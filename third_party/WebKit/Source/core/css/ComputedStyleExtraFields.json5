@@ -3,14 +3,6 @@
 // generate, but are not CSS properties.
 
   parameters: {
-    // - field_size
-    // Number of bits needed to store this field. Only used for storage_only
-    // fields. If specified, the field will be stored as bit field. Otherwise
-    // it will be stored as a normal data member.
-    field_size: {
-      valid_type: "int",
-    },
-
     // If the field has_custom_compare_and_copy, then it does not appear in
     // ComputedStyle::operator== and ComputedStyle::CopyNonInheritedFromCached.
     has_custom_compare_and_copy: {

@@ -49,6 +49,10 @@ class CachedUAStyle {
   LengthSize top_right_;
   LengthSize bottom_left_;
   LengthSize bottom_right_;
+  float border_left_width;
+  float border_right_width;
+  float border_top_width;
+  float border_bottom_width;
   FillLayer background_layers;
   StyleColor background_color;
 
@@ -59,6 +63,10 @@ class CachedUAStyle {
         top_right_(style->BorderTopRightRadius()),
         bottom_left_(style->BorderBottomLeftRadius()),
         bottom_right_(style->BorderBottomRightRadius()),
+        border_left_width(style->BorderLeftWidth()),
+        border_right_width(style->BorderRightWidth()),
+        border_top_width(style->BorderTopWidth()),
+        border_bottom_width(style->BorderBottomWidth()),
         background_layers(style->BackgroundLayers()),
         background_color(style->BackgroundColor()) {}
 };
