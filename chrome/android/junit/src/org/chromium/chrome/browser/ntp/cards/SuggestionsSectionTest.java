@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsUnitTestUtils.bindViewHolders;
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.UpdateLayoutParamsCallback;
@@ -81,11 +83,17 @@ public class SuggestionsSectionTest {
 
     @Before
     public void setUp() {
+        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
         mBridge = new FakeOfflinePageBridge();
 
         // Set empty variation params for the test.
         CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
+    }
+
+    @After
+    public void tearDown() {
+        RecordUserAction.setDisabledForTests(false);
     }
 
     @Test

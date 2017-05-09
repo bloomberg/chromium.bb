@@ -60,6 +60,12 @@ void OnCategoryDismissed(Category category);
 
 void RecordRemoteSuggestionsProviderState(bool enabled);
 
+void RecordContentSuggestionDismissed();
+
+void RecordCategoryDismissed();
+
+void RecordFetchAction();
+
 }  // namespace metrics
 }  // namespace ntp_snippets
 

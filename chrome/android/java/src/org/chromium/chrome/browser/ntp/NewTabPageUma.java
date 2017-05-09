@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
@@ -363,7 +364,7 @@ public final class NewTabPageUma {
                 assert !NewTabPage.isNTPUrl(url);
                 return;
             }
-            if (NewTabPage.isNTPUrl(url)) {
+            if (NewTabPage.isNTPUrl(url) && !FeatureUtilities.isChromeHomeEnabled()) {
                 RecordUserAction.record("MobileNTP.Snippets.VisitEndBackInNTP");
             }
             endRecording(tab);

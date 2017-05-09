@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
@@ -343,7 +344,7 @@ public class NewTabPage
 
             @Override
             public void onHidden(Tab tab) {
-                if (mIsLoaded) recordNTPInteractionTime();
+                if (mIsLoaded) recordNTPHidden();
             }
 
             @Override
@@ -496,11 +497,14 @@ public class NewTabPage
     private void recordNTPShown() {
         mLastShownTimeNs = System.nanoTime();
         RecordUserAction.record("MobileNTPShown");
+        SuggestionsMetrics.recordSurfaceVisible();
     }
 
-    private void recordNTPInteractionTime() {
+    /** Records UMA for the NTP being hidden and the time spent on it. */
+    private void recordNTPHidden() {
         RecordHistogram.recordMediumTimesHistogram(
                 "NewTabPage.TimeSpent", System.nanoTime() - mLastShownTimeNs, TimeUnit.NANOSECONDS);
+        SuggestionsMetrics.recordSurfaceHidden();
     }
 
     /**
@@ -548,7 +552,7 @@ public class NewTabPage
         assert !mIsDestroyed;
         assert !ViewCompat
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
-        if (mIsLoaded && !mTab.isHidden()) recordNTPInteractionTime();
+        if (mIsLoaded && !mTab.isHidden()) recordNTPHidden();
 
         if (mSnippetsBridge != null) {
             mSnippetsBridge.onDestroy();

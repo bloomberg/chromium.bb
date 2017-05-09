@@ -292,6 +292,8 @@ void OnSuggestionOpened(int global_position,
   if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
     RecordContentSuggestionsUsage();
   }
+
+  base::RecordAction(base::UserMetricsAction("Suggestions.Content.Opened"));
 }
 
 void OnSuggestionMenuOpened(int global_position,
@@ -364,6 +366,18 @@ void OnCategoryDismissed(Category category) {
 void RecordRemoteSuggestionsProviderState(bool enabled) {
   UMA_HISTOGRAM_BOOLEAN(
       "NewTabPage.ContentSuggestions.Preferences.RemoteSuggestions", enabled);
+}
+
+void RecordContentSuggestionDismissed() {
+  base::RecordAction(base::UserMetricsAction("Suggestions.Content.Dismissed"));
+}
+
+void RecordCategoryDismissed() {
+  base::RecordAction(base::UserMetricsAction("Suggestions.Category.Dismissed"));
+}
+
+void RecordFetchAction() {
+  base::RecordAction(base::UserMetricsAction("Suggestions.Category.Fetch"));
 }
 
 }  // namespace metrics

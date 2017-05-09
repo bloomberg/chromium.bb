@@ -329,6 +329,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
         @Override
         public void onSwiped(ViewHolder viewHolder, int direction) {
             onItemDismissStarted(viewHolder);
+            SuggestionsMetrics.recordCardSwipedAway();
             dismissItemInternal(viewHolder);
         }
 
