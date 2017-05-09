@@ -29,11 +29,15 @@
       }
 
       :host(:not([end-justified])) cr-policy-pref-indicator {
-        -webkit-margin-start: var(--justify-margin);
+        -webkit-margin-end: calc(
+            var(--cr-control-spacing) - var(--justify-margin));
+        -webkit-margin-start: var(--cr-control-spacing);
       }
 
       :host([end-justified]) cr-policy-pref-indicator {
-        -webkit-margin-end: var(--justify-margin);
+        -webkit-margin-end: var(--cr-control-spacing);
+        -webkit-margin-start: calc(
+            var(--cr-control-spacing) - var(--justify-margin));
         order: -1;
       }
     </style>
