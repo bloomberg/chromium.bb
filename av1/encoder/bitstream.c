@@ -2975,21 +2975,11 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_CDEF
-#if CONFIG_EXT_PARTITION
-  if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
-      !sb_all_skip(cm, mi_row, mi_col)) {
+  if (bsize == cm->sb_size && !sb_all_skip(cm, mi_row, mi_col) &&
+      cm->cdef_bits != 0) {
     aom_write_literal(w, cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]
                              ->mbmi.cdef_strength,
                       cm->cdef_bits);
-  } else if (cm->sb_size == BLOCK_64X64 && bsize == BLOCK_64X64 &&
-#else
-  if (bsize == BLOCK_64X64 &&
-#endif  // CONFIG_EXT_PARTITION
-             !sb_all_skip(cm, mi_row, mi_col)) {
-    if (cm->cdef_bits != 0)
-      aom_write_literal(w, cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]
-                               ->mbmi.cdef_strength,
-                        cm->cdef_bits);
   }
 #endif
 }
