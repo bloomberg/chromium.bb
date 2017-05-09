@@ -16,6 +16,7 @@ import android.webkit.MimeTypeMap;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
@@ -260,7 +261,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         Set<ContextMenuItem> disabledOptions = getDisabledOptions(params);
         // Split the items into their respective groups.
         List<Pair<Integer, List<ContextMenuItem>>> groupedItems = new ArrayList<>();
-        if (params.isAnchor()) {
+        if (params.isAnchor()
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)) {
             populateItemGroup(LINK, R.string.contextmenu_link_title, groupedItems, supportedOptions,
                     disabledOptions);
         }
@@ -271,6 +273,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         if (params.isVideo()) {
             populateItemGroup(VIDEO, R.string.contextmenu_video_title, groupedItems,
                     supportedOptions, disabledOptions);
+        }
+        if (params.isAnchor()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)) {
+            populateItemGroup(LINK, R.string.contextmenu_link_title, groupedItems, supportedOptions,
+                    disabledOptions);
         }
 
         // If there are no groups there still needs to be a way to add items from the OTHER_GROUP
@@ -289,17 +296,20 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         // These items don't belong to any official group so they are added to a possible visible
         // list.
-        addValidItems(groupedItems.get(groupedItems.size() - 1).second, OTHER_GROUP,
+        int index = ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)
+                ? groupedItems.size() - 1
+                : 0;
+        addValidItems(groupedItems.get(groupedItems.size() - 1 - index).second, OTHER_GROUP,
                 supportedOptions, disabledOptions);
         if (mMode == CUSTOM_TAB_MODE) {
-            addValidItemsToFront(groupedItems.get(0).second, CUSTOM_TAB_GROUP, supportedOptions,
+            addValidItemsToFront(groupedItems.get(index).second, CUSTOM_TAB_GROUP, supportedOptions,
                     disabledOptions);
         }
 
-        // If there are no items from the extra items withing OTHER_GROUP and CUSTOM_TAB_GROUP, then
+        // If there are no items from the extra items within OTHER_GROUP and CUSTOM_TAB_GROUP, then
         // it's removed since there is nothing to show at all.
-        if (groupedItems.get(0).second.isEmpty()) {
-            groupedItems.remove(0);
+        if (groupedItems.get(index).second.isEmpty()) {
+            groupedItems.remove(index);
         }
 
         return groupedItems;
