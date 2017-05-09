@@ -5,12 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_INTERFACE_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_UI_INTERFACE_H_
 
-#include <memory>
-#include <string>
-
-#include "base/macros.h"
-#include "base/values.h"
-
 class GURL;
 
 namespace vr_shell {
@@ -19,11 +13,6 @@ namespace vr_shell {
 // HTML UI. State information is asynchronous and unidirectional.
 class UiInterface {
  public:
-  enum Mode {
-    STANDARD = 0,
-    WEB_VR,
-  };
-
   enum Direction {
     NONE = 0,
     LEFT,
@@ -32,30 +21,26 @@ class UiInterface {
     DOWN,
   };
 
-  explicit UiInterface(Mode initial_mode);
-  virtual ~UiInterface() = default;
+  virtual ~UiInterface() {}
 
-  // Set HTML UI state or pass events.
-  void SetMode(Mode mode);
-  void SetFullscreen(bool enabled);
-  void SetSecurityLevel(int level);
-  void SetWebVRSecureOrigin(bool secure);
-  void SetLoading(bool loading);
-  void SetLoadProgress(double progress);
-  void InitTabList();
-  void AppendToTabList(bool incognito, int id, const base::string16& title);
-  void FlushTabList();
-  void UpdateTab(bool incognito, int id, const std::string& title);
-  void RemoveTab(bool incognito, int id);
-  void SetURL(const GURL& url);
-  void HandleAppButtonGesturePerformed(Direction direction);
-  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
+  virtual void SetWebVrMode(bool enabled) = 0;
+  virtual void SetURL(const GURL& url) = 0;
+  virtual void SetFullscreen(bool enabled) = 0;
+  virtual void SetSecurityLevel(int level) = 0;
+  virtual void SetWebVrSecureOrigin(bool secure) = 0;
+  virtual void SetLoading(bool loading) = 0;
+  virtual void SetLoadProgress(double progress) = 0;
+  virtual void SetHistoryButtonsEnabled(bool can_go_back,
+                                        bool can_go_forward) = 0;
 
- private:
-  Mode mode_;
-  bool fullscreen_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(UiInterface);
+  // Tab handling.
+  virtual void InitTabList() {}
+  virtual void AppendToTabList(bool incognito,
+                               int id,
+                               const base::string16& title) {}
+  virtual void FlushTabList() {}
+  virtual void UpdateTab(bool incognito, int id, const std::string& title) {}
+  virtual void RemoveTab(bool incognito, int id) {}
 };
 
 }  // namespace vr_shell

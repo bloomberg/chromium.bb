@@ -27,18 +27,18 @@ class VrBrowserInterface {
  public:
   virtual ~VrBrowserInterface() {}
 
-  virtual void ContentSurfaceChanged(jobject surface) {}
-  virtual void GvrDelegateReady() {}
-  virtual void UpdateGamepadData(device::GvrGamepadData) {}
-  virtual void AppButtonGesturePerformed(UiInterface::Direction direction) {}
-  virtual void OnAppButtonClicked() {}
+  virtual void ContentSurfaceChanged(jobject surface) = 0;
+  virtual void GvrDelegateReady() = 0;
+  virtual void UpdateGamepadData(device::GvrGamepadData) = 0;
+  virtual void AppButtonGesturePerformed(UiInterface::Direction direction) = 0;
+  virtual void AppButtonClicked() = 0;
   virtual void ProcessContentGesture(
-      std::unique_ptr<blink::WebInputEvent> event) {}
-  virtual void ForceExitVr() {}
+      std::unique_ptr<blink::WebInputEvent> event) = 0;
+  virtual void ForceExitVr() = 0;
   virtual void RunVRDisplayInfoCallback(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-      device::mojom::VRDisplayInfoPtr* info) {}
-  virtual void OnContentPaused(bool enabled) {}
+      device::mojom::VRDisplayInfoPtr* info) = 0;
+  virtual void OnContentPaused(bool enabled) = 0;
 };
 
 }  // namespace vr_shell

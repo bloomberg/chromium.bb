@@ -50,7 +50,6 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "ui_elements/ui_element.h",
       "ui_elements/url_bar.cc",
       "ui_elements/url_bar.h",
-      "ui_interface.cc",
       "ui_interface.h",
       "ui_scene.cc",
       "ui_scene.h",

@@ -644,7 +644,7 @@ void VrShellGl::HandleControllerAppButtonActivity(
       }
     }
     if (direction == UiInterface::NONE)
-      browser_->OnAppButtonClicked();
+      browser_->AppButtonClicked();
   }
 }
 

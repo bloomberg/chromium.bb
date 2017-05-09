@@ -52,6 +52,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -103,13 +104,12 @@ VrShell::VrShell(JNIEnv* env,
   gl_thread_ = base::MakeUnique<VrGLThread>(
       weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
       for_web_vr, in_cct, reprojected_rendering_);
+  ui_ = gl_thread_.get();
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
   gl_thread_->StartWithOptions(options);
 
-  ui_ = base::MakeUnique<UiInterface>(for_web_vr ? UiInterface::Mode::WEB_VR
-                                                 : UiInterface::Mode::STANDARD);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
@@ -151,7 +151,7 @@ void VrShell::SwapContents(
   }
   input_manager_ = base::MakeUnique<VrInputManager>(web_contents_);
   vr_web_contents_observer_ =
-      base::MakeUnique<VrWebContentsObserver>(web_contents_, ui_.get(), this);
+      base::MakeUnique<VrWebContentsObserver>(web_contents_, ui_, this);
   // TODO(billorr): Make VrMetricsHelper tab-aware and able to track multiple
   // tabs. crbug.com/684661
   metrics_helper_ = base::MakeUnique<VrMetricsHelper>(web_contents_);
@@ -165,6 +165,7 @@ void VrShell::SetUiState() {
     ui_->SetURL(GURL());
     ui_->SetLoading(false);
     ui_->SetFullscreen(false);
+    ui_->SetURL(GURL());
   } else {
     ui_->SetURL(web_contents_->GetVisibleURL());
     ui_->SetLoading(web_contents_->IsLoading());
@@ -268,19 +269,13 @@ void VrShell::SetWebVrMode(JNIEnv* env,
     metrics_helper_->SetWebVREnabled(enabled);
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetWebVrMode,
                                      gl_thread_->GetVrShellGl(), enabled));
-
-  ui_->SetMode(enabled ? UiInterface::Mode::WEB_VR
-                       : UiInterface::Mode::STANDARD);
-  PostToGlThreadWhenReady(base::Bind(&UiSceneManager::SetWebVRMode,
-                                     gl_thread_->GetSceneManager(), enabled));
+  ui_->SetWebVrMode(enabled);
 }
 
 void VrShell::OnFullscreenChanged(bool enabled) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_onFullscreenChanged(env, j_vr_shell_.obj(), enabled);
-
-  PostToGlThreadWhenReady(base::Bind(&UiSceneManager::OnFullscreenChanged,
-                                     gl_thread_->GetSceneManager(), enabled));
+  ui_->SetFullscreen(enabled);
 }
 
 bool VrShell::GetWebVrMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -297,7 +292,6 @@ void VrShell::OnTabListCreated(JNIEnv* env,
                                const JavaParamRef<jobject>& obj,
                                jobjectArray tabs,
                                jobjectArray incognito_tabs) {
-  ui_->InitTabList();
   ProcessTabArray(env, tabs, false);
   ProcessTabArray(env, incognito_tabs, true);
   ui_->FlushTabList();
@@ -331,9 +325,7 @@ void VrShell::OnTabRemoved(JNIEnv* env,
 }
 
 void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
-  PostToGlThreadWhenReady(base::Bind(&UiSceneManager::SetWebVRSecureOrigin,
-                                     gl_thread_->GetSceneManager(),
-                                     secure_origin));
+  ui_->SetWebVrSecureOrigin(secure_origin);
 }
 
 void VrShell::SubmitWebVRFrame(int16_t frame_index,
@@ -406,11 +398,6 @@ void VrShell::ContentSurfaceChanged(jobject surface) {
 
 void VrShell::GvrDelegateReady() {
   delegate_provider_->SetPresentingDelegate(this, gvr_api_);
-}
-
-void VrShell::AppButtonGesturePerformed(UiInterface::Direction direction) {
-  if (vr_shell_enabled_)
-    ui_->HandleAppButtonGesturePerformed(direction);
 }
 
 void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
