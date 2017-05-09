@@ -5,24 +5,14 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/channel_info.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/version_info/version_info.h"
 
 namespace safe_browsing {
-
-namespace {
-
-bool SafeBrowsingExtendedEnabledForBrowser(const Browser* browser) {
-  const Profile* profile = browser->profile();
-  return profile && !profile->IsOffTheRecord() &&
-         IsExtendedReportingEnabled(*profile->GetPrefs());
-}
-
-}  // namespace
 
 int ChannelAsInt() {
   switch (chrome::GetChannel()) {
@@ -42,10 +32,13 @@ int ChannelAsInt() {
 }
 
 bool SafeBrowsingExtendedReportingEnabled() {
-  BrowserList* browser_list = BrowserList::GetInstance();
-  return std::any_of(browser_list->begin_last_active(),
-                     browser_list->end_last_active(),
-                     &SafeBrowsingExtendedEnabledForBrowser);
+  // Check all profiles registered with the manager.
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  return std::any_of(profiles.begin(), profiles.end(),
+                     [](const Profile* profile) {
+                       return IsExtendedReportingEnabled(*profile->GetPrefs());
+                     });
 }
 
 }  // namespace safe_browsing

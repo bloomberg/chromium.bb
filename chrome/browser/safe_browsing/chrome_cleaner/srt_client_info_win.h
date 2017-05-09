@@ -12,8 +12,8 @@ namespace safe_browsing {
 //     0: unknown; 1: canary; 2: dev; 3: beta; 4: stable.
 int ChannelAsInt();
 
-// Returns true if there is a profile that is not in incognito mode and the user
-// has opted into Safe Browsing extended reporting.
+// Returns true if there is a profile in which the user has opted into Safe
+// Browsing extended reporting.
 bool SafeBrowsingExtendedReportingEnabled();
 
 }  // namespace safe_browsing
