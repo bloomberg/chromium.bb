@@ -185,14 +185,11 @@ bool GCMMessageCryptographer::Encrypt(
     std::string* ciphertext) const {
   DCHECK_EQ(recipient_public_key.size(), 65u);
   DCHECK_EQ(sender_public_key.size(), 65u);
+  DCHECK_EQ(ecdh_shared_secret.size(), 32u);
+  DCHECK_EQ(auth_secret.size(), 16u);
+  DCHECK_EQ(salt.size(), 16u);
   DCHECK(record_size);
   DCHECK(ciphertext);
-
-  // TODO(peter): DCHECK the lengths of |ecdh_shared_secret|, |auth_secret| and
-  // |salt|.
-
-  if (salt.size() != kSaltSize)
-    return false;
 
   std::string prk = encryption_scheme_->DerivePseudoRandomKey(
       ecdh_shared_secret, auth_secret);
@@ -229,10 +226,10 @@ bool GCMMessageCryptographer::Decrypt(
     std::string* plaintext) const {
   DCHECK_EQ(recipient_public_key.size(), 65u);
   DCHECK_EQ(sender_public_key.size(), 65u);
+  DCHECK_EQ(ecdh_shared_secret.size(), 32u);
+  DCHECK_EQ(auth_secret.size(), 16u);
+  DCHECK_EQ(salt.size(), 16u);
   DCHECK(plaintext);
-
-  // TODO(peter): DCHECK the lengths of |ecdh_shared_secret|, |auth_secret| and
-  // |salt|.
 
   if (record_size <= 1)
     return false;
