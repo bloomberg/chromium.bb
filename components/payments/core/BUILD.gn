@@ -11,6 +11,8 @@ static_library("core") {
     "autofill_payment_instrument.h",
     "basic_card_response.cc",
     "basic_card_response.h",
+    "can_make_payment_query.cc",
+    "can_make_payment_query.h",
     "currency_formatter.cc",
     "currency_formatter.h",
     "journey_logger.cc",
@@ -34,6 +36,7 @@ static_library("core") {
   deps = [
     "//base",
     "//components/autofill/core/browser",
+    "//components/keyed_service/core",
     "//components/strings:components_strings_grit",
     "//components/ukm",
     "//third_party/libphonenumber",

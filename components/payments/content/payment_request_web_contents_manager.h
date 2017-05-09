@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -40,8 +41,10 @@ class PaymentRequestWebContentsManager
   static PaymentRequestWebContentsManager* GetOrCreateForWebContents(
       content::WebContents* web_contents);
 
-  // Creates the PaymentRequest that will interact with this |web_contents|.
+  // Creates the PaymentRequest that will interact with this |render_frame_host|
+  // and the associated |web_contents|.
   void CreatePaymentRequest(
+      content::RenderFrameHost* render_frame_host,
       content::WebContents* web_contents,
       std::unique_ptr<PaymentRequestDelegate> delegate,
       mojo::InterfaceRequest<payments::mojom::PaymentRequest> request,

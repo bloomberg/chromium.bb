@@ -16,8 +16,10 @@
 #include "components/payments/mojom/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "url/gurl.h"
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -45,7 +47,8 @@ class PaymentRequest : public mojom::PaymentRequest,
     virtual ~ObserverForTest() {}
   };
 
-  PaymentRequest(content::WebContents* web_contents,
+  PaymentRequest(content::RenderFrameHost* render_frame_host,
+                 content::WebContents* web_contents,
                  std::unique_ptr<PaymentRequestDelegate> delegate,
                  PaymentRequestWebContentsManager* manager,
                  mojo::InterfaceRequest<mojom::PaymentRequest> request,
@@ -100,6 +103,10 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<PaymentRequestState> state_;
+
+  // The RFC 6454 origin of the frame that has invoked PaymentRequest API. This
+  // can be either the main frame or an iframe.
+  const GURL frame_origin_;
 
   // May be null, must outlive this object.
   ObserverForTest* observer_for_testing_;

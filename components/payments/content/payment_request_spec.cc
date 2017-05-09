@@ -143,6 +143,11 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
   method_data_vector.reserve(method_data_mojom.size());
   for (const mojom::PaymentMethodDataPtr& method_data_entry :
        method_data_mojom) {
+    for (const std::string& method : method_data_entry->supported_methods) {
+      stringified_method_data_[method].insert(
+          method_data_entry->stringified_data);
+    }
+
     PaymentMethodData method_data;
     method_data.supported_methods = method_data_entry->supported_methods;
     // Transfer the supported basic card networks.

@@ -3,6 +3,7 @@ include_rules = [
   "-components/payments/content/utility",
   "+components/autofill",
   "+components/data_use_measurement",
+  "+components/keyed_service/content",
   "+components/link_header_util",
   "+components/strings",
   "+content/public",

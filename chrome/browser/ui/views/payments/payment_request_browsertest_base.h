@@ -90,6 +90,7 @@ class PaymentRequestBrowserTestBase
   explicit PaymentRequestBrowserTestBase(const std::string& test_file_path);
   ~PaymentRequestBrowserTestBase() override;
 
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
   void NavigateTo(const std::string& file_path);

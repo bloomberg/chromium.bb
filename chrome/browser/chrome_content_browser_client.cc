@@ -3226,8 +3226,8 @@ void ChromeContentBrowserClient::ExposeInterfacesToFrame(
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
     if (web_contents) {
-      registry->AddInterface(base::Bind(
-          payments::CreatePaymentRequestForWebContents, web_contents));
+      registry->AddInterface(base::Bind(payments::CreatePaymentRequest,
+                                        render_frame_host, web_contents));
     }
   }
 #endif

@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,7 +34,9 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,10 +62,18 @@ PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase(
       is_valid_ssl_(true) {}
 PaymentRequestBrowserTestBase::~PaymentRequestBrowserTestBase() {}
 
+void PaymentRequestBrowserTestBase::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  // HTTPS server only serves a valid cert for localhost, so this is needed to
+  // load pages from "a.com" without an interstitial.
+  command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+}
+
 void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   // Setup the https server.
   https_server_ = base::MakeUnique<net::EmbeddedTestServer>(
       net::EmbeddedTestServer::TYPE_HTTPS);
+  host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(https_server_->InitializeAndListen());
   https_server_->ServeFilesFromSourceDirectory("chrome/test/data/payments");
   https_server_->StartAcceptingConnections();
@@ -82,10 +93,12 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
 }
 
 void PaymentRequestBrowserTestBase::NavigateTo(const std::string& file_path) {
-  ui_test_utils::NavigateToURL(browser(),
-                               file_path.find("data:") == 0U
-                                   ? GURL(file_path)
-                                   : https_server()->GetURL(file_path));
+  if (file_path.find("data:") == 0U) {
+    ui_test_utils::NavigateToURL(browser(), GURL(file_path));
+  } else {
+    ui_test_utils::NavigateToURL(browser(),
+                                 https_server()->GetURL("a.com", file_path));
+  }
 }
 
 void PaymentRequestBrowserTestBase::SetIncognito() {
@@ -414,8 +427,8 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
           web_contents, this /* observer */, is_incognito_, is_valid_ssl_);
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
-      ->CreatePaymentRequest(web_contents, std::move(delegate),
-                             std::move(request), this);
+      ->CreatePaymentRequest(web_contents->GetMainFrame(), web_contents,
+                             std::move(delegate), std::move(request), this);
 }
 
 void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
