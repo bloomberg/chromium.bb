@@ -1038,9 +1038,11 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
     if (new_play_state == kIdle) {
       if (animation_->ready_promise_->GetState() ==
           AnimationPromise::kPending) {
-        animation_->ready_promise_->Reject(DOMException::Create(kAbortError));
+        animation_->RejectAndResetPromiseMaybeAsync(
+            animation_->ready_promise_.Get());
+      } else {
+        animation_->ready_promise_->Reset();
       }
-      animation_->ready_promise_->Reset();
       animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
     } else if (old_play_state == kPending) {
       animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
@@ -1055,10 +1057,11 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
     if (new_play_state == kIdle) {
       if (animation_->finished_promise_->GetState() ==
           AnimationPromise::kPending) {
-        animation_->finished_promise_->Reject(
-            DOMException::Create(kAbortError));
+        animation_->RejectAndResetPromiseMaybeAsync(
+            animation_->finished_promise_.Get());
+      } else {
+        animation_->finished_promise_->Reset();
       }
-      animation_->finished_promise_->Reset();
     } else if (new_play_state == kFinished) {
       animation_->ResolvePromiseMaybeAsync(animation_->finished_promise_.Get());
     } else if (old_play_state == kFinished) {
@@ -1147,6 +1150,22 @@ void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {
                              WrapPersistent(promise), WrapPersistent(this)));
   } else {
     promise->Resolve(this);
+  }
+}
+
+void Animation::RejectAndResetPromise(AnimationPromise* promise) {
+  promise->Reject(DOMException::Create(kAbortError));
+  promise->Reset();
+}
+
+void Animation::RejectAndResetPromiseMaybeAsync(AnimationPromise* promise) {
+  if (ScriptForbiddenScope::IsScriptForbidden()) {
+    TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&Animation::RejectAndResetPromise,
+                             WrapPersistent(this), WrapPersistent(promise)));
+  } else {
+    RejectAndResetPromise(promise);
   }
 }
 

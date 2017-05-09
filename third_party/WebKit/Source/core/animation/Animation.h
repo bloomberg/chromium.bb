@@ -238,6 +238,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                                                  Member<Animation>,
                                                  Member<DOMException>>;
   void ResolvePromiseMaybeAsync(AnimationPromise*);
+  void RejectAndResetPromise(AnimationPromise*);
+  void RejectAndResetPromiseMaybeAsync(AnimationPromise*);
 
   String id_;
 
