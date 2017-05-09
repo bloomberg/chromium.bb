@@ -502,6 +502,7 @@ post_process_cmdline() {
     soft_enable palette
     soft_enable alt_intra
     soft_enable palette_throughput
+    soft_enable dependent_horztiles
 
     # Workaround features currently incompatible with highbitdepth
     enabled tx64x64 && disable_feature highbitdepth
