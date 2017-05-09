@@ -163,7 +163,7 @@ struct PaintLayerRareData {
 // - some performance optimizations.
 //
 // The compositing code is also based on PaintLayer. The entry to it is the
-// PaintLayerCompositor, which fills |m_compositedLayerMapping| for hardware
+// PaintLayerCompositor, which fills |composited_layer_mapping| for hardware
 // accelerated layers.
 //
 // TODO(jchaffraix): Expand the documentation about hardware acceleration.
@@ -171,7 +171,7 @@ struct PaintLayerRareData {
 //
 // ***** SELF-PAINTING LAYER *****
 // One important concept about PaintLayer is "self-painting"
-// (m_isSelfPaintingLayer).
+// (is_self_painting_layer_).
 // PaintLayer started as the implementation of a stacking context. This meant
 // that we had to use PaintLayer's painting order (the code is now in
 // PaintLayerPainter and PaintLayerStackingNode) instead of the LayoutObject's
@@ -271,8 +271,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 #endif
     return location_;
   }
-  // FIXME: size() should DCHECK(!m_needsPositionUpdate) as well, but that fails
-  // in some tests, for example, fast/repaint/clipped-relative.html.
+  // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
+  // fails in some tests, for example, fast/repaint/clipped-relative.html.
   const IntSize& size() const { return size_; }
   void SetSizeHackForLayoutTreeAsText(const IntSize& size) { size_ = size; }
 
@@ -1196,7 +1196,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // the tree of z-order lists.
   unsigned has_compositing_descendant_ : 1;
 
-  // True iff we have scrollable overflow and all children of m_layoutObject are
+  // True iff we have scrollable overflow and all children of layout_object_ are
   // known to paint exclusively into their own composited layers.  Set by
   // updateScrollingStateAfterCompositingChange().
   unsigned is_all_scrolling_content_composited_ : 1;
@@ -1212,7 +1212,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned needs_repaint_ : 1;
   unsigned previous_paint_result_ : 1;  // PaintResult
   static_assert(kMaxPaintResult <= 2,
-                "Should update number of bits of m_previousPaintResult");
+                "Should update number of bits of previous_paint_result_");
 
   unsigned needs_paint_phase_descendant_outlines_ : 1;
   unsigned previous_paint_phase_descendant_outlines_was_empty_ : 1;

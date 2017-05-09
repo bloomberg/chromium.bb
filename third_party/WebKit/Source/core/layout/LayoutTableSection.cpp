@@ -85,9 +85,9 @@ static inline void UpdateLogicalHeightForCell(
 
 void CellSpan::EnsureConsistency(const unsigned maximum_span_size) {
   static_assert(std::is_same<decltype(start_), unsigned>::value,
-                "Asserts below assume m_start is unsigned");
+                "Asserts below assume start_ is unsigned");
   static_assert(std::is_same<decltype(end_), unsigned>::value,
-                "Asserts below assume m_end is unsigned");
+                "Asserts below assume end_ is unsigned");
   CHECK_LE(start_, maximum_span_size);
   CHECK_LE(end_, maximum_span_size);
   CHECK_LE(start_, end_);
@@ -956,7 +956,7 @@ void LayoutTableSection::UpdateLayout() {
   CHECK(!NeedsCellRecalc());
   DCHECK(!Table()->NeedsSectionRecalc());
 
-  // addChild may over-grow m_grid but we don't want to throw away the memory
+  // addChild may over-grow grid_ but we don't want to throw away the memory
   // too early as addChild can be called in a loop (e.g during parsing). Doing
   // it now ensures we have a stable-enough structure.
   grid_.ShrinkToFit();
@@ -1069,7 +1069,7 @@ void LayoutTableSection::DistributeRemainingExtraLogicalHeight(
   if (extra_logical_height <= 0 || !row_pos_[total_rows])
     return;
 
-  // FIXME: m_rowPos[totalRows] - m_rowPos[0] is the total rows' size.
+  // FIXME: row_pos_[total_rows] - row_pos_[0] is the total rows' size.
   int total_row_size = row_pos_[total_rows];
   int total_logical_height_added = 0;
   int previous_row_position = row_pos_[0];

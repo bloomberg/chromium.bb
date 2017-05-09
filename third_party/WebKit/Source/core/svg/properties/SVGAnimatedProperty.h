@@ -89,7 +89,7 @@ class SVGAnimatedPropertyBase
 
  private:
   static_assert(kNumberOfAnimatedPropertyTypes <= (1u << 5),
-                "enough bits for AnimatedPropertyType (m_type)");
+                "enough bits for AnimatedPropertyType (type_)");
   static constexpr int kCssPropertyBits = 9;
   static_assert((1u << kCssPropertyBits) - 1 >= lastCSSProperty,
                 "enough bits for CSS property ids");

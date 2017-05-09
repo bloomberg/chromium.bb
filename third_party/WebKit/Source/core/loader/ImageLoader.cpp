@@ -171,8 +171,8 @@ ImageLoader::~ImageLoader() {}
 void ImageLoader::Dispose() {
   RESOURCE_LOADING_DVLOG(1)
       << "~ImageLoader " << this
-      << "; m_hasPendingLoadEvent=" << has_pending_load_event_
-      << ", m_hasPendingErrorEvent=" << has_pending_error_event_;
+      << "; has_pending_load_event_=" << has_pending_load_event_
+      << ", has_pending_error_event_=" << has_pending_error_event_;
 
   if (image_) {
     image_->RemoveObserver(this);
@@ -279,7 +279,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
   //
   // We don't need to call clearLoader here: Either we were called from the
   // task, or our caller updateFromElement cleared the task's loader (and set
-  // m_pendingTask to null).
+  // pending_task_ to null).
   pending_task_.reset();
   // Make sure to only decrement the count when we exit this function
   std::unique_ptr<IncrementLoadEventDelayCount> load_delay_counter;
@@ -347,7 +347,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
 
     // Cancel error events that belong to the previous load, which is now
     // cancelled by changing the src attribute. If newImage is null and
-    // m_hasPendingErrorEvent is true, we know the error event has been just
+    // has_pending_error_event_ is true, we know the error event has been just
     // posted by this load and we should not cancel the event.
     // FIXME: If both previous load and this one got blocked with an error, we
     // can receive one error event instead of two.
@@ -395,7 +395,7 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
   // Prevent the creation of a ResourceLoader (and therefore a network request)
   // for ImageDocument loads. In this case, the image contents have already been
   // requested as a main resource and ImageDocumentParser will take care of
-  // funneling the main resource bytes into m_image, so just create an
+  // funneling the main resource bytes into image_, so just create an
   // ImageResource to be populated later.
   if (loading_image_document_ && update_behavior != kUpdateForcedReload) {
     ImageResource* image_resource = ImageResource::Create(
@@ -473,14 +473,14 @@ bool ImageLoader::ShouldLoadImmediately(const KURL& url) const {
 void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   RESOURCE_LOADING_DVLOG(1)
       << "ImageLoader::imageNotifyFinished " << this
-      << "; m_hasPendingLoadEvent=" << has_pending_load_event_;
+      << "; has_pending_load_event_=" << has_pending_load_event_;
 
   DCHECK(failed_load_url_.IsEmpty());
   DCHECK_EQ(resource, image_.Get());
 
   image_complete_ = true;
 
-  // Update ImageAnimationPolicy for m_image.
+  // Update ImageAnimationPolicy for image_.
   if (image_)
     image_->UpdateImageAnimationPolicy();
 

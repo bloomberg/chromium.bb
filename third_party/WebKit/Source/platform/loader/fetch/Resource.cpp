@@ -274,7 +274,7 @@ Resource::ResourceCallback::ResourceCallback() {}
 void Resource::ResourceCallback::Schedule(Resource* resource) {
   if (!task_handle_.IsActive()) {
     // WTF::unretained(this) is safe because a posted task is canceled when
-    // |m_taskHandle| is destroyed on the dtor of this ResourceCallback.
+    // |task_handle_| is destroyed on the dtor of this ResourceCallback.
     task_handle_ =
         Platform::Current()
             ->CurrentThread()
@@ -638,12 +638,12 @@ String Resource::ReasonNotDeletable() const {
   if (loader_) {
     if (!builder.IsEmpty())
       builder.Append(' ');
-    builder.Append("m_loader");
+    builder.Append("loader_");
   }
   if (preload_count_) {
     if (!builder.IsEmpty())
       builder.Append(' ');
-    builder.Append("m_preloadCount(");
+    builder.Append("preload_count_(");
     builder.AppendNumber(preload_count_);
     builder.Append(')');
   }
@@ -808,7 +808,7 @@ void Resource::FinishPendingClients() {
   //    back.
   //
   // Handle case (1) by saving a list of clients to notify. A separate list also
-  // ensure a client is either in m_clients or m_clientsAwaitingCallback.
+  // ensure a client is either in cliens_ or clients_awaiting_callback_.
   HeapVector<Member<ResourceClient>> clients_to_notify;
   CopyToVector(clients_awaiting_callback_, clients_to_notify);
 
@@ -820,7 +820,7 @@ void Resource::FinishPendingClients() {
 
     // When revalidation starts after waiting clients are scheduled and
     // before they are added here. In such cases, we just add the clients
-    // to |m_clients| without didAddClient(), as in Resource::addClient().
+    // to |clients_| without DidAddClient(), as in Resource::AddClient().
     if (!is_revalidating_)
       DidAddClient(client);
   }
