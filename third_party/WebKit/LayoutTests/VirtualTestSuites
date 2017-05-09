@@ -216,6 +216,12 @@
   },
   {
     "prefix": "sharedarraybuffer",
+    "base": "external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers",
+    "args": ["--js-flags=--harmony-sharedarraybuffer",
+             "--enable-blink-features=SharedArrayBuffer"]
+  },
+  {
+    "prefix": "sharedarraybuffer",
     "base": "fast/beacon",
     "args": ["--js-flags=--harmony-sharedarraybuffer",
              "--enable-blink-features=SharedArrayBuffer"]

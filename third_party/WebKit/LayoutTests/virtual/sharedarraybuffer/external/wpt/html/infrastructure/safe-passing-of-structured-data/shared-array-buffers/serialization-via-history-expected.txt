@@ -1,0 +1,23 @@
+This is a testharness.js-based test.
+FAIL history.pushState(): simple case assert_throws: function "() => {
+      history[method](new SharedArrayBuffer(), "dummy title");
+    }" did not throw
+FAIL history.pushState(): is interleaved correctly assert_throws: function "() => {
+      history[method]([
+        { get x() { getter1Called = true; return 5; } },
+        new SharedArrayBuffer(),
+        { get x() { getter2Called = true; return 5; } }
+      ], "dummy title");
+    }" did not throw
+FAIL history.replaceState(): simple case assert_throws: function "() => {
+      history[method](new SharedArrayBuffer(), "dummy title");
+    }" did not throw
+FAIL history.replaceState(): is interleaved correctly assert_throws: function "() => {
+      history[method]([
+        { get x() { getter1Called = true; return 5; } },
+        new SharedArrayBuffer(),
+        { get x() { getter2Called = true; return 5; } }
+      ], "dummy title");
+    }" did not throw
+Harness: the test ran to completion.
+

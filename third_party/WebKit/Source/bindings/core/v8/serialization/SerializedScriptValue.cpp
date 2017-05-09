@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 
+#include <algorithm>
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
@@ -441,6 +442,25 @@ bool SerializedScriptValue::ExtractTransferables(
     i++;
   }
   return true;
+}
+
+ArrayBufferArray SerializedScriptValue::ExtractNonSharedArrayBuffers(
+    Transferables& transferables) {
+  ArrayBufferArray& array_buffers = transferables.array_buffers;
+  ArrayBufferArray result;
+  // Partition array_buffers into [shared..., non_shared...], maintaining
+  // relative ordering of elements with the same predicate value.
+  auto non_shared_begin =
+      std::stable_partition(array_buffers.begin(), array_buffers.end(),
+                            [](Member<DOMArrayBufferBase>& array_buffer) {
+                              return array_buffer->IsShared();
+                            });
+  // Copy the non-shared array buffers into result, and remove them from
+  // array_buffers.
+  result.AppendRange(non_shared_begin, array_buffers.end());
+  array_buffers.erase(non_shared_begin - array_buffers.begin(),
+                      array_buffers.end() - non_shared_begin);
+  return result;
 }
 
 std::unique_ptr<SerializedScriptValue::ArrayBufferContentsArray>

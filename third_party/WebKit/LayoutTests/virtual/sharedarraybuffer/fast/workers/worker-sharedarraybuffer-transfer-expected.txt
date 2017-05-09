@@ -65,5 +65,9 @@ Running TransferArrayBufferAndSharedArrayBuffer test case
 PASS: ArrayBuffer was neutered during transfer.
 PASS: Transferred data is OK.
 PASS: Transferred data is OK.
+Running SharedArrayBufferInTransferListViaMessagePort test case
+PASS: Passing SharedArrayBuffer in the transfer list threw.
+PASS: ArrayBuffer 'ab1' was not neutered.
+PASS: ArrayBuffer 'ab2' was not neutered.
 DONE
 
