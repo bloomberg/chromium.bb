@@ -14,4 +14,6 @@ mojom("interfaces") {
     get_path_info("../../../..", "abspath"),
     "//mojo/services",
   ]
+
+  use_once_callback = true
 }
