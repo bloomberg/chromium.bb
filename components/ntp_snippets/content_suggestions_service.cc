@@ -235,7 +235,7 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
   // Try to fetch the favicon from a Google favicon server.
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-          publisher_url, minimum_size_in_pixel,
+          publisher_url, minimum_size_in_pixel, desired_size_in_pixel,
           base::Bind(
               &ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished,
               base::Unretained(this), publisher_url, minimum_size_in_pixel,

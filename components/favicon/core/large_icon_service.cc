@@ -40,9 +40,17 @@ const base::Feature kLargeIconServiceFetchingFeature{
 
 const char kGoogleServerV2RequestFormat[] =
     "https://t0.gstatic.com/faviconV2?"
-    "client=chrome&drop_404_icon=true&size=32&min_size=%d&max_size=64&"
-    "fallback_opts=TYPE,SIZE,URL&url=%s";
+    "client=chrome&drop_404_icon=true&check_firsttimes=true&"
+    "size=%d&min_size=%d&max_size=%d&fallback_opts=TYPE,SIZE,URL&url=%s";
 const char kGoogleServerV2RequestFormatParam[] = "request_format";
+
+const int kGoogleServerV2EnforcedMinSizeInPixel = 32;
+const char kGoogleServerV2EnforcedMinSizeInPixelParam[] =
+    "enforced_min_size_in_pixel";
+
+const double kGoogleServerV2DesiredToMaxSizeFactor = 2.0;
+const char kGoogleServerV2DesiredToMaxSizeFactorParam[] =
+    "desired_to_max_size_factor";
 
 GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
   if (!page_url.SchemeIsHTTPOrHTTPS() || page_url.HostIsIPAddress())
@@ -57,13 +65,29 @@ GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
 }
 
 GURL GetRequestUrlForGoogleServerV2(const GURL& page_url,
-                                    int min_source_size_in_pixel) {
+                                    int min_source_size_in_pixel,
+                                    int desired_size_in_pixel) {
   std::string url_format = base::GetFieldTrialParamValueByFeature(
       kLargeIconServiceFetchingFeature, kGoogleServerV2RequestFormatParam);
+  double desired_to_max_size_factor = base::GetFieldTrialParamByFeatureAsDouble(
+      kLargeIconServiceFetchingFeature,
+      kGoogleServerV2DesiredToMaxSizeFactorParam,
+      kGoogleServerV2DesiredToMaxSizeFactor);
+
+  min_source_size_in_pixel = std::max(
+      min_source_size_in_pixel, base::GetFieldTrialParamByFeatureAsInt(
+                                    kLargeIconServiceFetchingFeature,
+                                    kGoogleServerV2EnforcedMinSizeInPixelParam,
+                                    kGoogleServerV2EnforcedMinSizeInPixel));
+  desired_size_in_pixel =
+      std::max(desired_size_in_pixel, min_source_size_in_pixel);
+  int max_size_in_pixel =
+      static_cast<int>(desired_size_in_pixel * desired_to_max_size_factor);
 
   return GURL(base::StringPrintf(
       url_format.empty() ? kGoogleServerV2RequestFormat : url_format.c_str(),
-      min_source_size_in_pixel, page_url.spec().c_str()));
+      desired_size_in_pixel, min_source_size_in_pixel, max_size_in_pixel,
+      page_url.spec().c_str()));
 }
 
 bool IsDbResultAdequate(const favicon_base::FaviconRawBitmapResult& db_result,
@@ -320,12 +344,13 @@ void LargeIconService::
     GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
         const GURL& page_url,
         int min_source_size_in_pixel,
+        int desired_size_in_pixel,
         const base::Callback<void(bool success)>& callback) {
   DCHECK_LE(0, min_source_size_in_pixel);
 
   const GURL trimmed_page_url = TrimPageUrlForGoogleServer(page_url);
   const GURL server_request_url = GetRequestUrlForGoogleServerV2(
-      trimmed_page_url, min_source_size_in_pixel);
+      trimmed_page_url, min_source_size_in_pixel, desired_size_in_pixel);
 
   // Do not download if the URL is invalid after trimming, or there is a
   // previous cache miss recorded for |server_request_url|.
