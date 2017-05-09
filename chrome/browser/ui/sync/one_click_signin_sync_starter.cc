@@ -526,66 +526,6 @@ void OneClickSigninSyncStarter::ShowSyncSetupSettingsSubpage() {
   chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
 }
 
-void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
-  // Give the user a chance to configure things. We don't clear the
-  // ProfileSyncService::setup_in_progress flag because we don't want sync
-  // to start up until after the configure UI is displayed (the configure UI
-  // will clear the flag when the user is done setting up sync).
-  ProfileSyncService* profile_sync_service = GetProfileSyncService();
-  LoginUIService* login_ui = LoginUIServiceFactory::GetForProfile(profile_);
-  if (login_ui->current_login_ui()) {
-    login_ui->current_login_ui()->FocusUI();
-  } else {
-    browser_ = EnsureBrowser(browser_, profile_);
-
-    // If the sign in tab is showing the native signin page or the blank page
-    // for web-based flow, and is not about to be closed, use it to show the
-    // settings UI.
-    bool use_same_tab = false;
-    if (web_contents()) {
-      GURL current_url = web_contents()->GetLastCommittedURL();
-      std::string constrained_key;
-      net::GetValueForKeyInQuery(current_url, "constrained", &constrained_key);
-      bool is_constrained = (constrained_key == "1");
-      bool is_chrome_signin_url =
-          current_url.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL;
-      bool is_same_profile =
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()) ==
-          profile_;
-      use_same_tab = !is_constrained && is_chrome_signin_url &&
-                     !signin::IsAutoCloseEnabledInURL(current_url) &&
-                     is_same_profile;
-    }
-    if (profile_sync_service) {
-      // Need to navigate to the settings page and display the sync UI.
-      if (use_same_tab) {
-        ShowSettingsPageInWebContents(web_contents(),
-                                      chrome::kSyncSetupSubPage);
-      } else {
-        // If the user is setting up sync for the first time, let them configure
-        // advanced sync settings. However, in the case of re-authentication,
-        // return the user to the settings page without showing any config UI.
-        if (configure_sync) {
-          chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
-        } else {
-          FinishProfileSyncServiceSetup();
-          chrome::ShowSettings(browser_);
-        }
-      }
-    } else {
-      // Sync is disabled - just display the settings page or redirect to the
-      // |continue_url_|.
-      FinishProfileSyncServiceSetup();
-      if (!use_same_tab)
-        chrome::ShowSettings(browser_);
-      else if (!continue_url_.is_empty())
-        LoadContinueUrl();
-      else
-        ShowSettingsPageInWebContents(web_contents(), std::string());
-    }
-  }
-}
-
 ProfileSyncService* OneClickSigninSyncStarter::GetProfileSyncService() {
   ProfileSyncService* service = nullptr;
   if (profile_->IsSyncAllowed())
@@ -597,33 +537,3 @@ void OneClickSigninSyncStarter::FinishProfileSyncServiceSetup() {
   sync_blocker_.reset();
 }
 
-void OneClickSigninSyncStarter::ShowSettingsPageInWebContents(
-    content::WebContents* contents,
-    const std::string& sub_page) {
-  if (!continue_url_.is_empty()) {
-    // The observer deletes itself once it's done.
-    DCHECK(!sub_page.empty());
-    new OneClickSigninSyncObserver(contents, continue_url_);
-  }
-
-  GURL url = chrome::GetSettingsUrl(sub_page);
-  content::OpenURLParams params(url, content::Referrer(),
-                                WindowOpenDisposition::CURRENT_TAB,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
-  contents->OpenURL(params);
-
-  // Activate the tab.
-  Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  int content_index =
-      browser->tab_strip_model()->GetIndexOfWebContents(contents);
-  browser->tab_strip_model()->ActivateTabAt(content_index,
-                                            false /* user_gesture */);
-}
-
-void OneClickSigninSyncStarter::LoadContinueUrl() {
-  web_contents()->GetController().LoadURL(
-      continue_url_,
-      content::Referrer(),
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      std::string());
-}
