@@ -2584,6 +2584,11 @@ const char kAndroidPaymentAppsName[] = "Android payment apps";
 const char kAndroidPaymentAppsDescription[] =
     "Enable third party Android apps to integrate as payment apps";
 
+const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
+
+const char kServiceWorkerPaymentAppsDescription[] =
+    "Enable Service Worker applications to integrate as payment apps";
+
 #endif  // defined(OS_ANDROID)
 
 const char kFeaturePolicyName[] = "Feature Policy";
