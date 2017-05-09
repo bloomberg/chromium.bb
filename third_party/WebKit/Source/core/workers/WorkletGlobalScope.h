@@ -17,7 +17,6 @@
 namespace blink {
 
 class EventQueue;
-class WorkerOrWorkletScriptController;
 
 class CORE_EXPORT WorkletGlobalScope
     : public GarbageCollectedFinalized<WorkletGlobalScope>,
@@ -29,16 +28,12 @@ class CORE_EXPORT WorkletGlobalScope
 
  public:
   ~WorkletGlobalScope() override;
-  void Dispose() override;
 
   bool IsWorkletGlobalScope() const final { return true; }
 
   // WorkerOrWorkletGlobalScope
   ScriptWrappable* GetScriptWrappable() const final {
     return const_cast<WorkletGlobalScope*>(this);
-  }
-  WorkerOrWorkletScriptController* ScriptController() final {
-    return script_controller_.Get();
   }
 
   // Always returns false here as worklets don't have a #close() method on
@@ -54,8 +49,6 @@ class CORE_EXPORT WorkletGlobalScope
       v8::Local<v8::Object> wrapper) final;
 
   // ExecutionContext
-  void DisableEval(const String& error_message) final;
-  bool IsJSExecutionForbidden() const final;
   String UserAgent() const final { return user_agent_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   EventQueue* GetEventQueue() const final {
@@ -91,7 +84,6 @@ class CORE_EXPORT WorkletGlobalScope
 
   KURL url_;
   String user_agent_;
-  Member<WorkerOrWorkletScriptController> script_controller_;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope,

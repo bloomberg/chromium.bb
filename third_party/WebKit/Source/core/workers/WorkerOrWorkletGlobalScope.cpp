@@ -4,6 +4,7 @@
 
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
@@ -16,8 +17,10 @@
 
 namespace blink {
 
-WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope()
-    : used_features_(UseCounter::kNumberOfFeatures) {}
+WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(v8::Isolate* isolate)
+    : script_controller_(
+          WorkerOrWorkletScriptController::Create(this, isolate)),
+      used_features_(UseCounter::kNumberOfFeatures) {}
 
 WorkerOrWorkletGlobalScope::~WorkerOrWorkletGlobalScope() = default;
 
@@ -46,6 +49,14 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(UseCounter::Feature feature) {
   ReportDeprecation(feature);
 }
 
+bool WorkerOrWorkletGlobalScope::IsJSExecutionForbidden() const {
+  return script_controller_->IsExecutionForbidden();
+}
+
+void WorkerOrWorkletGlobalScope::DisableEval(const String& error_message) {
+  script_controller_->DisableEval(error_message);
+}
+
 void WorkerOrWorkletGlobalScope::PostTask(
     TaskType type,
     const WebTraceLocation& location,
@@ -64,6 +75,17 @@ void WorkerOrWorkletGlobalScope::PostTask(
                                            WrapCrossThreadWeakPersistent(this),
                                            WTF::Passed(std::move(task)),
                                            is_instrumented));
+}
+
+void WorkerOrWorkletGlobalScope::Dispose() {
+  DCHECK(script_controller_);
+  script_controller_->Dispose();
+  script_controller_.Clear();
+}
+
+DEFINE_TRACE(WorkerOrWorkletGlobalScope) {
+  visitor->Trace(script_controller_);
+  ExecutionContext::Trace(visitor);
 }
 
 void WorkerOrWorkletGlobalScope::RunTask(

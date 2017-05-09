@@ -17,20 +17,11 @@ WorkletGlobalScope::WorkletGlobalScope(
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate)
-    : url_(url),
-      user_agent_(user_agent),
-      script_controller_(
-          WorkerOrWorkletScriptController::Create(this, isolate)) {
+    : WorkerOrWorkletGlobalScope(isolate), url_(url), user_agent_(user_agent) {
   SetSecurityOrigin(std::move(security_origin));
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() {}
-
-void WorkletGlobalScope::Dispose() {
-  DCHECK(script_controller_);
-  script_controller_->Dispose();
-  script_controller_.Clear();
-}
 
 v8::Local<v8::Object> WorkletGlobalScope::Wrap(
     v8::Isolate*,
@@ -49,14 +40,6 @@ v8::Local<v8::Object> WorkletGlobalScope::AssociateWithWrapper(
                 "The global object of ECMAScript environment is used as the "
                 "wrapper.";
   return v8::Local<v8::Object>();
-}
-
-void WorkletGlobalScope::DisableEval(const String& error_message) {
-  script_controller_->DisableEval(error_message);
-}
-
-bool WorkletGlobalScope::IsJSExecutionForbidden() const {
-  return script_controller_->IsExecutionForbidden();
 }
 
 bool WorkletGlobalScope::IsSecureContext(String& error_message) const {
@@ -80,7 +63,6 @@ KURL WorkletGlobalScope::VirtualCompleteURL(const String& url) const {
 }
 
 DEFINE_TRACE(WorkletGlobalScope) {
-  visitor->Trace(script_controller_);
   ExecutionContext::Trace(visitor);
   SecurityContext::Trace(visitor);
   WorkerOrWorkletGlobalScope::Trace(visitor);
