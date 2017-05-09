@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class NullExecutionContext final
+class NullExecutionContext
     : public GarbageCollectedFinalized<NullExecutionContext>,
       public SecurityContext,
       public ExecutionContext {
@@ -57,7 +57,7 @@ class NullExecutionContext final
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 
-  DEFINE_INLINE_TRACE() {
+  DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(queue_);
     SecurityContext::Trace(visitor);
     ExecutionContext::Trace(visitor);
