@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<head>
+<title>Performance Paint Timing Test</title>
+</head>
+<body>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <div id="image"></div>
+
+    <script>
+      async_test(function (t) {
+        var observer = new PerformanceObserver(
+            t.step_func(function (entryList) {
+                var entries = entryList.getEntries();
+                // Nothing contentful to be painted yet.
+                assert_equals(entries.length, 1,
+                    "There should be only one paint timing instance delivered at a time.");
+                assert_equals(entries[0].entryType, "paint",
+                     "Expected entryType to be: paint.");
+                if (entries[0].name == "first-paint") {
+                    t.first_paint_time = entries[0].startTime;
+                } else if (entries[0].name == "first-contentful-paint") {
+                    assert_not_equals(t.first_paint_time, "");
+                    t.first_contentful_paint_time = entries[0].startTime;
+                    assert_greater_than(t.first_contentful_paint_time - t.first_paint_time, 100);
+                    observer.disconnect();
+                    t.done();
+                }
+            })
+        );
+        observer.observe({entryTypes: ["paint"]});
+
+        // Wait 100ms, then load image
+        setTimeout(function() {
+            var img = document.createElement("IMG");
+            img.src = "resources/circles.png";
+            document.getElementById('image').appendChild(img);
+        }, 100);
+    }, "First Paint triggered by non-contentful paint. Image load triggers First Contentful Paint.");
+
+    </script>
+    <div style="background-color:black;color:white;padding:20px;"></div>
+
+
+</body>
+</html>
