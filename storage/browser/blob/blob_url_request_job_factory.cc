@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
+#include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -31,6 +32,8 @@ std::unique_ptr<net::URLRequest> BlobProtocolHandler::CreateBlobRequest(
   const GURL kBlobUrl("blob://see_user_data/");
   std::unique_ptr<net::URLRequest> request = request_context->CreateRequest(
       kBlobUrl, net::DEFAULT_PRIORITY, request_delegate);
+  request->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DO_NOT_SEND_COOKIES);
   SetRequestedBlobDataHandle(request.get(), std::move(blob_data_handle));
   return request;
 }
