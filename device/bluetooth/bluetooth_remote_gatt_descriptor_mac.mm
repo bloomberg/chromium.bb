@@ -189,7 +189,7 @@ DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(
   const BluetoothRemoteGattCharacteristicMac* characteristic_mac =
       static_cast<const BluetoothRemoteGattCharacteristicMac*>(
           descriptor.GetCharacteristic());
-  return out << "<BluetoothRemoteGattServiceMac "
+  return out << "<BluetoothRemoteGattDescriptorMac "
              << descriptor.GetUUID().canonical_value() << "/" << &descriptor
              << ", characteristic: "
              << characteristic_mac->GetUUID().canonical_value() << "/"
