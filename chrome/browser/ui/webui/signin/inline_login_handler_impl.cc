@@ -273,9 +273,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
       bool show_settings_without_configure =
           error_controller->HasError() && sync_service &&
           sync_service->IsFirstSetupComplete();
-      start_mode = show_settings_without_configure ?
-          OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
-          OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;
+      if (!show_settings_without_configure)
+        start_mode = OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;
     }
 
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
