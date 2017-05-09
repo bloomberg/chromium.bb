@@ -12,12 +12,11 @@ namespace win {
 // static
 std::unique_ptr<DirectManipulationHelper>
 DirectManipulationHelper::CreateInstance() {
-  std::unique_ptr<DirectManipulationHelper> instance;
-
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-    instance.reset(new DirectManipulationHelper);
-
-  return instance;
+  // TODO(dtapuska): Do not create a DirectManipulationHelper on any windows
+  // versions as it only causes issues. High Precision Touchpad events seem to
+  // always be sent to apps with recent Windows 10 versions. This class should
+  // eventually be removed. See crbug.com/647038.
+  return nullptr;
 }
 
 DirectManipulationHelper::DirectManipulationHelper() {}
