@@ -200,9 +200,6 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // This is valid during Aggregate after PrewalkTree is called.
   bool has_copy_requests_;
 
-  // Resource list for the aggregated frame.
-  TransferableResourceArray* dest_resource_list_;
-
   // Tracks UMA stats for SurfaceDrawQuads during a call to Aggregate().
   SurfaceDrawQuadUmaStats uma_stats_;
 

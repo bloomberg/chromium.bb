@@ -851,7 +851,6 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
 
   CompositorFrame frame;
 
-  dest_resource_list_ = &frame.resource_list;
   dest_pass_list_ = &frame.render_pass_list;
 
   valid_surfaces_.clear();
