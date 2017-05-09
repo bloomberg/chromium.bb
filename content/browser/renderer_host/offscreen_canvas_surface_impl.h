@@ -5,8 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_IMPL_H_
 
-#include "cc/surfaces/surface_id.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "base/callback.h"
+#include "base/compiler_specific.h"
+#include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/surface_info.h"
+#include "content/browser/compositor/frame_sink_observer.h"
+#include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
 
 namespace content {
@@ -14,18 +19,28 @@ namespace content {
 // The browser owned object for an offscreen canvas connection. Holds
 // connections to both the renderer and frame sink manager.
 class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
-    : public blink::mojom::OffscreenCanvasSurface {
+    : public blink::mojom::OffscreenCanvasSurface,
+      public NON_EXPORTED_BASE(FrameSinkObserver) {
  public:
+  using DestroyCallback = base::OnceCallback<void()>;
+
   OffscreenCanvasSurfaceImpl(
       const cc::FrameSinkId& parent_frame_sink_id,
       const cc::FrameSinkId& frame_sink_id,
-      blink::mojom::OffscreenCanvasSurfaceClientPtr client);
+      blink::mojom::OffscreenCanvasSurfaceClientPtr client,
+      blink::mojom::OffscreenCanvasSurfaceRequest request,
+      DestroyCallback destroy_callback);
   ~OffscreenCanvasSurfaceImpl() override;
 
-  static void Create(const cc::FrameSinkId& parent_frame_sink_id,
-                     const cc::FrameSinkId& frame_sink_id,
-                     blink::mojom::OffscreenCanvasSurfaceClientPtr client,
-                     blink::mojom::OffscreenCanvasSurfaceRequest request);
+  const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+
+  const cc::FrameSinkId& parent_frame_sink_id() const {
+    return parent_frame_sink_id_;
+  }
+
+  const cc::LocalSurfaceId& local_surface_id() const {
+    return local_surface_id_;
+  }
 
   // Creates a MojoCompositorFrameSink connection to FrameSinkManager for an
   // offscreen canvas client. The corresponding private interface will be owned
@@ -35,35 +50,33 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
       cc::mojom::MojoCompositorFrameSinkRequest request);
 
-  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info);
+  // FrameSinkObserver implementation.
+  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
 
   // blink::mojom::OffscreenCanvasSurface implementation.
   void Require(const cc::SurfaceId& surface_id,
                const cc::SurfaceSequence& sequence) override;
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 
-  const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
-
-  const cc::FrameSinkId& parent_frame_sink_id() const {
-    return parent_frame_sink_id_;
-  }
-
-  const cc::LocalSurfaceId& current_local_surface_id() const {
-    return current_local_surface_id_;
-  }
-
  private:
+  // Registered as a callback for when |binding_| is closed. Will call
+  // |destroy_callback_|.
+  void OnSurfaceConnectionClosed();
+
   blink::mojom::OffscreenCanvasSurfaceClientPtr client_;
-  mojo::StrongBindingPtr<blink::mojom::OffscreenCanvasSurface> binding_;
+  mojo::Binding<blink::mojom::OffscreenCanvasSurface> binding_;
 
   // Private connection for the CompositorFrameSink. The CompositorFrameSink
   // will not be destroyed until both private and offscreen canvas client
   // connections are closed.
   cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink_private_;
 
+  // To be called if |binding_| is closed.
+  DestroyCallback destroy_callback_;
+
   // Surface-related state
   const cc::FrameSinkId frame_sink_id_;
-  cc::LocalSurfaceId current_local_surface_id_;
+  cc::LocalSurfaceId local_surface_id_;
   const cc::FrameSinkId parent_frame_sink_id_;
 
   bool has_created_compositor_frame_sink_ = false;
