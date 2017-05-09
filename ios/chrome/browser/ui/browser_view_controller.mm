@@ -2433,9 +2433,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (!initiatedByUser) {
     auto* helper = BlockedPopupTabHelper::FromWebState(webState);
     if (helper->ShouldBlockPopup(openerURL)) {
-      web::NavigationItem* item =
-          webState->GetNavigationManager()->GetLastCommittedItem();
-      web::Referrer referrer(openerURL, item->GetReferrer().policy);
+      // It's possible for a page to inject a popup into a window created via
+      // window.open before its initial load is committed.  Rather than relying
+      // on the last committed or pending NavigationItem's referrer policy, just
+      // use ReferrerPolicyDefault.
+      // TODO(crbug.com/719993): Update this to a more appropriate referrer
+      // policy once referrer policies are correctly recorded in
+      // NavigationItems.
+      web::Referrer referrer(openerURL, web::ReferrerPolicyDefault);
       helper->HandlePopup(URL, referrer);
       return nil;
     }
