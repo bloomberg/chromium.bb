@@ -2164,7 +2164,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreateVsSiteInstance) {
   {
     content::WebContentsAddedObserver observer;
     ASSERT_TRUE(content::ExecuteScript(old_contents,
-                                       "window.name = 'test-name';\n"
+                                       "window.name = 'old-contents';\n"
                                        "chrome.windows.create({url: '" +
                                            extension_url.spec() + "'})"));
     new_contents = observer.GetWebContents();
@@ -2184,6 +2184,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreateVsSiteInstance) {
       new_contents, "window.domAutomationController.send(!!window.opener)",
       &window_opener_cast_to_bool));
   EXPECT_FALSE(window_opener_cast_to_bool);
+
+  // Verify that |new_contents| can find |old_contents| using window.open/name.
+  std::string location_of_other_window;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      new_contents,
+      "var w = window.open('', 'old-contents');\n"
+      "window.domAutomationController.send(w.location.href);",
+      &location_of_other_window));
+  EXPECT_EQ(old_contents->GetMainFrame()->GetLastCommittedURL().spec(),
+            location_of_other_window);
 }
 
 }  // namespace extensions
