@@ -11,12 +11,12 @@ PKG_CONFIG ?= pkg-config
 
 VPATH = $(dir $(SOURCES))
 LIBDRM_CFLAGS := $(shell $(PKG_CONFIG) --cflags libdrm)
+LIBDRM_LIBS := $(shell $(PKG_CONFIG) --libs libdrm)
 
 CPPFLAGS += -Wall -fPIC -Werror -flto $(LIBDRM_CFLAGS)
 CXXFLAGS += -std=c++11
 CFLAGS   += -std=c99
-# TODO(gurchetansingh): Switch to pkg-config.
-LIBS     += -shared -lcutils -lhardware -ldrm
+LIBS     += -shared -lcutils -lhardware $(LIBDRM_LIBS)
 
 OBJS =  $(foreach source, $(SOURCES), $(addsuffix .o, $(basename $(source))))
 
