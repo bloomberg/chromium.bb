@@ -120,11 +120,9 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   UIView* contentView = self.contentView;
 
   _labelsLeadingAnchorConstraint = [_stackView.leadingAnchor
-      constraintEqualToAnchor:_imageView.trailingAnchor
-                     constant:kHorizontalSpacingBetweenImageAndLabels];
+      constraintEqualToAnchor:_imageView.trailingAnchor];
   _imageLeadingAnchorConstraint = [_imageView.leadingAnchor
-      constraintEqualToAnchor:contentView.leadingAnchor
-                     constant:kHorizontalPadding];
+      constraintEqualToAnchor:contentView.leadingAnchor];
 
   [NSLayoutConstraint activateConstraints:@[
     [_stackView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
@@ -152,7 +150,10 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   CGFloat preferredMaxLayoutWidth = parentWidth - (2 * kHorizontalPadding);
   if (_imageView.image) {
     preferredMaxLayoutWidth -=
-        kHorizontalSpacingBetweenImageAndLabels - _imageView.image.size.width;
+        kHorizontalSpacingBetweenImageAndLabels + _imageView.image.size.width;
+    _imageLeadingAnchorConstraint.constant = kHorizontalPadding;
+    _labelsLeadingAnchorConstraint.constant =
+        kHorizontalSpacingBetweenImageAndLabels;
   } else {
     _imageLeadingAnchorConstraint.constant = 0;
     _labelsLeadingAnchorConstraint.constant = kHorizontalPadding;

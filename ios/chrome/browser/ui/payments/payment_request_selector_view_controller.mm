@@ -148,6 +148,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       if ([cell isKindOfClass:[PaymentsTextCell class]]) {
         PaymentsTextCell* textCell =
             base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
+        textCell.textLabel.font = [MDCTypography body2Font];
         textCell.textLabel.textColor =
             self.dataSource.state == PaymentRequestSelectorStateError
                 ? [[MDCPalette cr_redPalette] tint600]
@@ -159,10 +160,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
       if ([cell isKindOfClass:[PaymentsTextCell class]]) {
         PaymentsTextCell* textCell =
             base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
+        textCell.textLabel.font = [MDCTypography body2Font];
+        textCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+        textCell.detailTextLabel.font = [MDCTypography body1Font];
         textCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
       }
       break;
     }
+    case ItemTypeAddItem:
+      if ([cell isKindOfClass:[PaymentsTextCell class]]) {
+        PaymentsTextCell* textCell =
+            base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
+        textCell.textLabel.font = [MDCTypography body2Font];
+        textCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+      }
+      break;
     default:
       break;
   }
