@@ -873,13 +873,8 @@ void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
 gfx::Transform LayerImpl::DrawTransform() const {
   // Only drawn layers have up-to-date draw properties.
   if (!contributes_to_drawn_render_surface()) {
-    if (GetPropertyTrees()->non_root_surfaces_enabled) {
       return draw_property_utils::DrawTransform(this, GetTransformTree(),
                                                 GetEffectTree());
-    } else {
-      return draw_property_utils::ScreenSpaceTransform(this,
-                                                       GetTransformTree());
-    }
   }
 
   return draw_properties().target_space_transform;

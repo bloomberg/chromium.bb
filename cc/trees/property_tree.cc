@@ -1004,13 +1004,11 @@ void EffectTree::AddMaskLayerId(int id) {
   mask_layer_ids_.push_back(id);
 }
 
-void EffectTree::UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl,
-                                      bool non_root_surfaces_enabled) {
+void EffectTree::UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl) {
   for (int id = kContentsRootNodeId; id < static_cast<int>(size()); ++id) {
     EffectNode* effect_node = Node(id);
     bool needs_render_surface =
-        id == kContentsRootNodeId ||
-        (non_root_surfaces_enabled && effect_node->has_render_surface);
+        id == kContentsRootNodeId || effect_node->has_render_surface;
     if (needs_render_surface == !!render_surfaces_[id])
       continue;
 
@@ -1600,7 +1598,6 @@ PropertyTreesCachedData::~PropertyTreesCachedData() {}
 
 PropertyTrees::PropertyTrees()
     : needs_rebuild(true),
-      non_root_surfaces_enabled(true),
       can_adjust_raster_scales(true),
       changed(false),
       full_tree_damaged(false),
@@ -1631,7 +1628,6 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          full_tree_damaged == other.full_tree_damaged &&
          is_main_thread == other.is_main_thread &&
          is_active == other.is_active &&
-         non_root_surfaces_enabled == other.non_root_surfaces_enabled &&
          can_adjust_raster_scales == other.can_adjust_raster_scales &&
          sequence_number == other.sequence_number;
 }
@@ -1649,7 +1645,6 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   needs_rebuild = from.needs_rebuild;
   changed = from.changed;
   full_tree_damaged = from.full_tree_damaged;
-  non_root_surfaces_enabled = from.non_root_surfaces_enabled;
   can_adjust_raster_scales = from.can_adjust_raster_scales;
   sequence_number = from.sequence_number;
   is_main_thread = from.is_main_thread;
@@ -1681,7 +1676,6 @@ void PropertyTrees::clear() {
   needs_rebuild = true;
   full_tree_damaged = false;
   changed = false;
-  non_root_surfaces_enabled = true;
   can_adjust_raster_scales = true;
   sequence_number++;
 

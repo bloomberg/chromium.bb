@@ -37,15 +37,12 @@ void CC_EXPORT ComputeTransforms(TransformTree* transform_tree);
 // Computes screen space opacity for every node in the opacity tree.
 void CC_EXPORT ComputeEffects(EffectTree* effect_tree);
 
-
 void CC_EXPORT UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
-                                   PropertyTrees* property_trees,
-                                   bool can_render_to_separate_surface);
+                                   PropertyTrees* property_trees);
 
 void CC_EXPORT
 UpdatePropertyTreesAndRenderSurfaces(LayerImpl* root_layer,
                                      PropertyTrees* property_trees,
-                                     bool can_render_to_separate_surface,
                                      bool can_adjust_raster_scales);
 
 void CC_EXPORT FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,

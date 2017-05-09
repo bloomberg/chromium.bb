@@ -86,12 +86,8 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
     LayerTreeImpl* active_tree = host_impl->active_tree();
 
     do {
-      bool can_render_to_separate_surface = true;
       int max_texture_size = 8096;
-      DoCalcDrawPropertiesImpl(can_render_to_separate_surface,
-                               max_texture_size,
-                               active_tree,
-                               host_impl);
+      DoCalcDrawPropertiesImpl(max_texture_size, active_tree, host_impl);
 
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -99,8 +95,7 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
     EndTest();
   }
 
-  void DoCalcDrawPropertiesImpl(bool can_render_to_separate_surface,
-                                int max_texture_size,
+  void DoCalcDrawPropertiesImpl(int max_texture_size,
                                 LayerTreeImpl* active_tree,
                                 LayerTreeHostImpl* host_impl) {
     RenderSurfaceList update_list;
@@ -114,7 +109,6 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
         active_tree->OuterViewportScrollLayer(),
         active_tree->elastic_overscroll()->Current(active_tree->IsActiveTree()),
         active_tree->OverscrollElasticityLayer(), max_texture_size,
-        can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
         &update_list, active_tree->property_trees());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
