@@ -18,6 +18,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/media_stream_request.h"
+#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/window_open_disposition.h"
@@ -38,10 +39,6 @@ class Message;
 
 namespace device {
 class GeolocationServiceContext;
-
-namespace mojom {
-class WakeLockContext;
-}
 }
 
 namespace gfx {
@@ -194,8 +191,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Gets the GeolocationServiceContext associated with this delegate.
   virtual device::GeolocationServiceContext* GetGeolocationServiceContext();
 
-  // Gets the WakeLockServiceContext associated with this delegate.
-  virtual device::mojom::WakeLockContext* GetWakeLockServiceContext();
+  // Gets the WakeLockService that serves wake lock requests from the renderer.
+  virtual device::mojom::WakeLockService* GetRendererWakeLock();
 
   // Notification that the frame wants to go into fullscreen mode.
   // |origin| represents the origin of the frame that requests fullscreen.

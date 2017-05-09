@@ -66,15 +66,15 @@ class WakeLockTest : public ContentBrowserTest {
     return GetNestedFrameNode()->current_frame_host();
   }
 
-  device::mojom::WakeLockContext* GetWakeLockServiceContext() {
-    return GetWebContentsImpl()->GetWakeLockServiceContext();
+  device::mojom::WakeLockService* GetRendererWakeLock() {
+    return GetWebContentsImpl()->GetRendererWakeLock();
   }
 
   bool HasWakeLock() {
     bool has_wakelock = false;
     base::RunLoop run_loop;
 
-    GetWakeLockServiceContext()->HasWakeLockForTests(
+    GetRendererWakeLock()->HasWakeLockForTests(
         base::Bind(&OnHasWakeLock, &has_wakelock));
     run_loop.Run();
     return has_wakelock;

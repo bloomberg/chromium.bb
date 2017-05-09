@@ -6,6 +6,23 @@ module device.mojom;
 
 // WebLockService receives wake lock preferences from its client.
 interface WakeLockService {
+  // Requests that a wake lock be applied on behalf of this client. Has no
+  // effect if the client has previously called this method without
+  // subsequently calling CancelWakeLock().
   RequestWakeLock();
+
+  // Cancels all outstanding wake lock requests from this client. If there are
+  // no more outstanding requests from any clients, the active wake lock (if
+  // there is one) will be turned off.
   CancelWakeLock();
+
+  // Adds a client to this WakeLockService instance. Clients are grouped on a
+  // per-WakeLockService instance basis: that is, a given WakeLockService
+  // instance turns on its wake lock whenever *any* of its clients make a
+  // request to do so and turns off its wake lock only when *all* its clients
+  // that had previously called RequestWakelock() cancel their requests.
+  AddClient(WakeLockService& wake_lock);
+
+  // Test-only method that returns whether a wake lock is currently active.
+  HasWakeLockForTests() => (bool result);
 };

@@ -44,7 +44,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "net/base/load_states.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/features/features.h"
@@ -506,7 +506,8 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
   device::GeolocationServiceContext* GetGeolocationServiceContext() override;
-  device::mojom::WakeLockContext* GetWakeLockServiceContext() override;
+  device::mojom::WakeLockContext* GetWakeLockContext() override;
+  device::mojom::WakeLockService* GetRendererWakeLock() override;
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   bool ShouldRouteMessageEvent(
@@ -1510,6 +1511,8 @@ class CONTENT_EXPORT WebContentsImpl
       geolocation_service_context_;
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
+
+  device::mojom::WakeLockServicePtr renderer_wake_lock_;
 
   std::unique_ptr<ScreenOrientationProvider> screen_orientation_provider_;
 
