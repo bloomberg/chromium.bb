@@ -259,7 +259,7 @@ def AddArguments(parser):
   parser.add_argument('--query',
                       help='Execute the given snippet. '
                            'Example: Print(size_info)')
-  parser.add_argument('--tool-prefix', default='',
+  parser.add_argument('--tool-prefix',
                       help='Path prefix for objdump. Required only for '
                            'Disassemble().')
   parser.add_argument('--output-directory',

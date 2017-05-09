@@ -323,6 +323,11 @@ def _AddSymbolAliases(raw_symbols, aliases_by_address):
       replacements.append((i, name_list))
       num_new_symbols += len(name_list) - 1
 
+  if float(num_new_symbols) / len(raw_symbols) < .1:
+    logging.warning('Number of aliases is oddly low (%.0f%%). It should '
+                    'usually be around 25%%. Ensure --tool-prefix is correct.',
+                    float(num_new_symbols) / len(raw_symbols) * 100)
+
   # Step 2: Create new symbols as siblings to each existing one.
   logging.debug('Creating %d aliases', num_new_symbols)
   src_cursor_end = len(raw_symbols)
@@ -601,8 +606,8 @@ def AddArguments(parser):
   parser.add_argument('--no-source-paths', action='store_true',
                       help='Do not use .ninja files to map '
                            'object_path -> source_path')
-  parser.add_argument('--tool-prefix', default='',
-                      help='Path prefix for c++filt.')
+  parser.add_argument('--tool-prefix',
+                      help='Path prefix for c++filt, nm, readelf.')
   parser.add_argument('--output-directory',
                       help='Path to the root build directory.')
 
