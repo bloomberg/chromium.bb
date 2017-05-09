@@ -309,7 +309,7 @@ ScriptPromise CacheStorage::match(ScriptState* script_state,
                                   const RequestInfo& request,
                                   const CacheQueryOptions& options,
                                   ExceptionState& exception_state) {
-  ASSERT(!request.isNull());
+  DCHECK(!request.isNull());
   if (!CommonChecks(script_state, exception_state))
     return ScriptPromise();
 

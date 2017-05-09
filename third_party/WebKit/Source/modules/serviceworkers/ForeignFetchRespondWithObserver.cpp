@@ -28,7 +28,7 @@ ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::Create(
 
 void ForeignFetchRespondWithObserver::OnResponseFulfilled(
     const ScriptValue& value) {
-  ASSERT(GetExecutionContext());
+  DCHECK(GetExecutionContext());
   ExceptionState exception_state(value.GetIsolate(),
                                  ExceptionState::kUnknownContext,
                                  "ForeignFetchEvent", "respondWith");

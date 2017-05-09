@@ -322,7 +322,7 @@ class CacheStorageTest : public ::testing::Test {
     }
 
     ScriptValue Call(ScriptValue value) override {
-      ASSERT(!value.IsEmpty());
+      DCHECK(!value.IsEmpty());
       *value_ = value;
       return value;
     }
@@ -357,7 +357,7 @@ TEST_F(CacheStorageTest, Basics) {
   ErrorWebCacheForTests* test_cache;
   Cache* cache =
       CreateCache(fetcher, test_cache = new NotImplementedErrorCache());
-  ASSERT(cache);
+  DCHECK(cache);
 
   const String url = "http://www.cachetest.org/";
 
@@ -390,7 +390,7 @@ TEST_F(CacheStorageTest, BasicArguments) {
   ErrorWebCacheForTests* test_cache;
   Cache* cache =
       CreateCache(fetcher, test_cache = new NotImplementedErrorCache());
-  ASSERT(cache);
+  DCHECK(cache);
 
   const String url = "http://www.cache.arguments.test/";
   test_cache->SetExpectedUrl(&url);
@@ -405,7 +405,7 @@ TEST_F(CacheStorageTest, BasicArguments) {
   options.setCacheName(expected_query_params.cache_name);
 
   Request* request = NewRequestFromUrl(url);
-  ASSERT(request);
+  DCHECK(request);
   ScriptPromise match_result =
       cache->match(GetScriptState(), RequestToRequestInfo(request), options,
                    exception_state);
@@ -420,7 +420,7 @@ TEST_F(CacheStorageTest, BasicArguments) {
   EXPECT_EQ(kNotImplementedString, GetRejectString(string_match_result));
 
   request = NewRequestFromUrl(url);
-  ASSERT(request);
+  DCHECK(request);
   ScriptPromise match_all_result =
       cache->matchAll(GetScriptState(), RequestToRequestInfo(request), options,
                       exception_state);
@@ -440,7 +440,7 @@ TEST_F(CacheStorageTest, BasicArguments) {
   EXPECT_EQ(kNotImplementedString, GetRejectString(keys_result1));
 
   request = NewRequestFromUrl(url);
-  ASSERT(request);
+  DCHECK(request);
   ScriptPromise keys_result2 =
       cache->keys(GetScriptState(), RequestToRequestInfo(request), options,
                   exception_state);
@@ -464,7 +464,7 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
   ErrorWebCacheForTests* test_cache;
   Cache* cache =
       CreateCache(fetcher, test_cache = new NotImplementedErrorCache());
-  ASSERT(cache);
+  DCHECK(cache);
 
   WebServiceWorkerCache::QueryParams expected_query_params;
   expected_query_params.cache_name = "this is another cache name";
@@ -475,7 +475,7 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
 
   const String url = "http://batch.operations.test/";
   Request* request = NewRequestFromUrl(url);
-  ASSERT(request);
+  DCHECK(request);
 
   WebServiceWorkerResponse web_response;
   std::vector<KURL> url_list;
@@ -520,7 +520,7 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
   test_cache->SetExpectedBatchOperations(&expected_put_operations);
 
   request = NewRequestFromUrl(url);
-  ASSERT(request);
+  DCHECK(request);
   ScriptPromise put_result = cache->put(
       GetScriptState(), RequestToRequestInfo(request),
       response->clone(GetScriptState(), exception_state), exception_state);

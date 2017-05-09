@@ -38,7 +38,7 @@
 namespace blink {
 
 void ModulesInitializer::Initialize() {
-  ASSERT(!IsInitialized());
+  DCHECK(!IsInitialized());
 
   // Strings must be initialized before calling CoreInitializer::init().
   const unsigned kModulesStaticStringsCount =
@@ -100,7 +100,7 @@ void ModulesInitializer::Initialize() {
   HTMLMediaElement::RegisterMediaControlsFactory(
       WTF::MakeUnique<MediaControlsImpl::Factory>());
 
-  ASSERT(IsInitialized());
+  DCHECK(IsInitialized());
 }
 
 }  // namespace blink

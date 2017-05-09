@@ -132,7 +132,7 @@ ServiceWorkerContainer* ServiceWorkerContainer::Create(
 }
 
 ServiceWorkerContainer::~ServiceWorkerContainer() {
-  ASSERT(!provider_);
+  DCHECK(!provider_);
 }
 
 void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {

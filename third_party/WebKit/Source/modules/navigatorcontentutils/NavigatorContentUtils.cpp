@@ -147,7 +147,7 @@ void NavigatorContentUtils::registerProtocolHandler(
     return;
 
   Document* document = navigator.GetFrame()->GetDocument();
-  ASSERT(document);
+  DCHECK(document);
 
   if (!VerifyCustomHandlerURL(*document, url, exception_state))
     return;
@@ -195,7 +195,7 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(
     return declined;
 
   Document* document = navigator.GetFrame()->GetDocument();
-  ASSERT(document);
+  DCHECK(document);
   if (document->IsContextDestroyed())
     return declined;
 
@@ -220,7 +220,7 @@ void NavigatorContentUtils::unregisterProtocolHandler(
     return;
 
   Document* document = navigator.GetFrame()->GetDocument();
-  ASSERT(document);
+  DCHECK(document);
 
   if (!VerifyCustomHandlerURL(*document, url, exception_state))
     return;

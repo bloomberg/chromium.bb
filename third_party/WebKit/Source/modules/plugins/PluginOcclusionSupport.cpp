@@ -110,7 +110,7 @@ static bool IframeIsAbovePlugin(
         if (ro == ro2)
           return true;
       }
-      ASSERT(false);  // We should have seen ro1 and ro2 by now.
+      NOTREACHED();  // We should have seen ro1 and ro2 by now.
       return false;
     }
   }
@@ -158,7 +158,7 @@ void GetPluginOcclusions(Element* element,
                          const IntRect& frame_rect,
                          Vector<IntRect>& occlusions) {
   LayoutObject* plugin_node = element->GetLayoutObject();
-  ASSERT(plugin_node);
+  DCHECK(plugin_node);
   if (!plugin_node->Style())
     return;
   Vector<const LayoutObject*> plugin_zstack;

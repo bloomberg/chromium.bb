@@ -93,7 +93,7 @@ static WebScreenOrientationLockType StringToOrientationLock(
 
 // static
 ScreenOrientation* ScreenOrientation::Create(LocalFrame* frame) {
-  ASSERT(frame);
+  DCHECK(frame);
 
   // Check if the ScreenOrientationController is supported for the
   // frame. It will not be for all LocalFrames, or the frame may
@@ -102,7 +102,7 @@ ScreenOrientation* ScreenOrientation::Create(LocalFrame* frame) {
     return nullptr;
 
   ScreenOrientation* orientation = new ScreenOrientation(frame);
-  ASSERT(orientation->Controller());
+  DCHECK(orientation->Controller());
   // FIXME: ideally, we would like to provide the ScreenOrientationController
   // the case where it is not defined but for the moment, it is eagerly
   // created when the LocalFrame is created so we shouldn't be in that

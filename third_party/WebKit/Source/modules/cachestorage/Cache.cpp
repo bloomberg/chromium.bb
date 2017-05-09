@@ -388,7 +388,7 @@ ScriptPromise Cache::match(ScriptState* script_state,
                            const RequestInfo& request,
                            const CacheQueryOptions& options,
                            ExceptionState& exception_state) {
-  ASSERT(!request.isNull());
+  DCHECK(!request.isNull());
   if (request.isRequest())
     return MatchImpl(script_state, request.getAsRequest(), options);
   Request* new_request =
@@ -407,7 +407,7 @@ ScriptPromise Cache::matchAll(ScriptState* script_state,
                               const RequestInfo& request,
                               const CacheQueryOptions& options,
                               ExceptionState& exception_state) {
-  ASSERT(!request.isNull());
+  DCHECK(!request.isNull());
   if (request.isRequest())
     return MatchAllImpl(script_state, request.getAsRequest(), options);
   Request* new_request =
@@ -420,7 +420,7 @@ ScriptPromise Cache::matchAll(ScriptState* script_state,
 ScriptPromise Cache::add(ScriptState* script_state,
                          const RequestInfo& request,
                          ExceptionState& exception_state) {
-  ASSERT(!request.isNull());
+  DCHECK(!request.isNull());
   HeapVector<Member<Request>> requests;
   if (request.isRequest()) {
     requests.push_back(request.getAsRequest());
@@ -456,7 +456,7 @@ ScriptPromise Cache::deleteFunction(ScriptState* script_state,
                                     const RequestInfo& request,
                                     const CacheQueryOptions& options,
                                     ExceptionState& exception_state) {
-  ASSERT(!request.isNull());
+  DCHECK(!request.isNull());
   if (request.isRequest())
     return DeleteImpl(script_state, request.getAsRequest(), options);
   Request* new_request =
@@ -470,7 +470,7 @@ ScriptPromise Cache::put(ScriptState* script_state,
                          const RequestInfo& request,
                          Response* response,
                          ExceptionState& exception_state) {
-  ASSERT(!request.isNull());
+  DCHECK(!request.isNull());
   if (request.isRequest())
     return PutImpl(script_state,
                    HeapVector<Member<Request>>(1, request.getAsRequest()),
@@ -491,7 +491,7 @@ ScriptPromise Cache::keys(ScriptState* script_state,
                           const RequestInfo& request,
                           const CacheQueryOptions& options,
                           ExceptionState& exception_state) {
-  ASSERT(!request.isNull());
+  DCHECK(!request.isNull());
   if (request.isRequest())
     return KeysImpl(script_state, request.getAsRequest(), options);
   Request* new_request =
@@ -637,7 +637,7 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
                                 "' is unsupported");
       return promise;
     }
-    ASSERT(!requests[i]->HasBody());
+    DCHECK(!requests[i]->HasBody());
 
     if (VaryHeaderContainsAsterisk(responses[i])) {
       barrier_callback->OnError("Vary header contains *");

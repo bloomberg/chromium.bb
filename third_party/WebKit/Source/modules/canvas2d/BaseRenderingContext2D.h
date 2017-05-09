@@ -476,7 +476,7 @@ void BaseRenderingContext2D::CompositedDraw(
       c->setMatrix(ctm);
       draw_func(c, &foreground_flags);
     } else {
-      ASSERT(IsFullCanvasCompositeMode(GetState().GlobalComposite()));
+      DCHECK(IsFullCanvasCompositeMode(GetState().GlobalComposite()));
       c->saveLayer(nullptr, &composite_flags);
       shadow_flags.setBlendMode(SkBlendMode::kSrcOver);
       c->setMatrix(ctm);

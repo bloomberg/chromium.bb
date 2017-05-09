@@ -32,7 +32,7 @@ USBAlternateInterface* USBAlternateInterface::Create(
 USBAlternateInterface::USBAlternateInterface(const USBInterface* interface,
                                              size_t alternate_index)
     : interface_(interface), alternate_index_(alternate_index) {
-  ASSERT(interface_);
+  DCHECK(interface_);
   ASSERT(alternate_index_ < interface_->Info().alternates.size());
 }
 

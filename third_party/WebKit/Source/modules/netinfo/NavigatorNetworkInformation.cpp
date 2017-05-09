@@ -43,7 +43,7 @@ NetworkInformation* NavigatorNetworkInformation::connection(
 
 NetworkInformation* NavigatorNetworkInformation::connection() {
   if (!connection_ && GetFrame()) {
-    ASSERT(GetFrame()->DomWindow());
+    DCHECK(GetFrame()->DomWindow());
     connection_ = NetworkInformation::Create(
         GetFrame()->DomWindow()->GetExecutionContext());
   }

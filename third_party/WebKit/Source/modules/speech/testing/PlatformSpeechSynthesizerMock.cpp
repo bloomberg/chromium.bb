@@ -51,14 +51,14 @@ PlatformSpeechSynthesizerMock::PlatformSpeechSynthesizerMock(
 PlatformSpeechSynthesizerMock::~PlatformSpeechSynthesizerMock() {}
 
 void PlatformSpeechSynthesizerMock::SpeakingErrorOccurred(TimerBase*) {
-  ASSERT(current_utterance_);
+  DCHECK(current_utterance_);
 
   Client()->SpeakingErrorOccurred(current_utterance_);
   SpeakNext();
 }
 
 void PlatformSpeechSynthesizerMock::SpeakingFinished(TimerBase*) {
-  ASSERT(current_utterance_);
+  DCHECK(current_utterance_);
   Client()->DidFinishSpeaking(current_utterance_);
   SpeakNext();
 }
@@ -99,7 +99,7 @@ void PlatformSpeechSynthesizerMock::Speak(
 }
 
 void PlatformSpeechSynthesizerMock::SpeakNow() {
-  ASSERT(current_utterance_);
+  DCHECK(current_utterance_);
   Client()->DidStartSpeaking(current_utterance_);
 
   // Fire a fake word and then sentence boundary event.

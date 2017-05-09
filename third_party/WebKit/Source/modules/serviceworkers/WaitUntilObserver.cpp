@@ -62,7 +62,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
         resolve_type_(type) {}
 
   ScriptValue Call(ScriptValue value) override {
-    ASSERT(observer_);
+    DCHECK(observer_);
     ASSERT(resolve_type_ == kFulfilled || resolve_type_ == kRejected);
     if (resolve_type_ == kRejected) {
       observer_->ReportError(value);

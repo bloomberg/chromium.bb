@@ -19,8 +19,8 @@ PresentationConnectionCallbacks::PresentationConnectionCallbacks(
     ScriptPromiseResolver* resolver,
     PresentationRequest* request)
     : resolver_(resolver), request_(request), connection_(nullptr) {
-  ASSERT(resolver_);
-  ASSERT(request_);
+  DCHECK(resolver_);
+  DCHECK(request_);
 }
 
 void PresentationConnectionCallbacks::OnSuccess(

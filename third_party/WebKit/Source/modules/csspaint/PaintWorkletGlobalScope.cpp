@@ -77,7 +77,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   v8::Isolate* isolate = ScriptController()->GetScriptState()->GetIsolate();
   v8::Local<v8::Context> context = ScriptController()->GetContext();
 
-  ASSERT(ctor_value.V8Value()->IsFunction());
+  DCHECK(ctor_value.V8Value()->IsFunction());
   v8::Local<v8::Function> constructor =
       v8::Local<v8::Function>::Cast(ctor_value.V8Value());
 

@@ -42,7 +42,7 @@ const char* ServiceWorkerGlobalScopeClient::SupplementName() {
 ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::From(
     ExecutionContext* context) {
   WorkerClients* clients = ToWorkerGlobalScope(context)->Clients();
-  ASSERT(clients);
+  DCHECK(clients);
   return static_cast<ServiceWorkerGlobalScopeClient*>(
       Supplement<WorkerClients>::From(clients, SupplementName()));
 }

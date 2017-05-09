@@ -33,8 +33,8 @@ WebGLQuery::~WebGLQuery() {
 }
 
 void WebGLQuery::SetTarget(GLenum target) {
-  ASSERT(Object());
-  ASSERT(!target_);
+  DCHECK(Object());
+  DCHECK(!target_);
   target_ = target;
 }
 

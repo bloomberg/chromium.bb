@@ -191,9 +191,9 @@ WebGLRenderingContextBase* WebGLRenderingContextBase::OldestContext() {
     return nullptr;
 
   WebGLRenderingContextBase* candidate = *(ActiveContexts().begin());
-  ASSERT(!candidate->isContextLost());
+  DCHECK(!candidate->isContextLost());
   for (WebGLRenderingContextBase* context : ActiveContexts()) {
-    ASSERT(!context->isContextLost());
+    DCHECK(!context->isContextLost());
     if (context->ContextGL()->GetLastFlushIdCHROMIUM() <
         candidate->ContextGL()->GetLastFlushIdCHROMIUM()) {
       candidate = context;
@@ -231,7 +231,7 @@ void WebGLRenderingContextBase::ActivateContext(
     removed_contexts++;
   }
 
-  ASSERT(!context->isContextLost());
+  DCHECK(!context->isContextLost());
   ActiveContexts().insert(context);
 }
 
@@ -255,8 +255,8 @@ void WebGLRenderingContextBase::RestoreEvictedContext(
     WebGLRenderingContextBase* context) {
   // These two sets keep weak references to their contexts;
   // verify that the GC already removed the |context| entries.
-  ASSERT(!ForciblyEvictedContexts().Contains(context));
-  ASSERT(!ActiveContexts().Contains(context));
+  DCHECK(!ForciblyEvictedContexts().Contains(context));
+  DCHECK(!ActiveContexts().Contains(context));
 
   unsigned max_gl_contexts = CurrentMaxGLContexts();
   // Try to re-enable the oldest inactive contexts.
@@ -591,7 +591,7 @@ struct ContextProviderCreationInfo {
 static void CreateContextProviderOnMainThread(
     ContextProviderCreationInfo* creation_info,
     WaitableEvent* waitable_event) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   creation_info->created_context_provider =
       Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
           creation_info->context_attributes, creation_info->url, 0,
@@ -1038,7 +1038,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       is_ext_srgb_formats_types_added_(false),
       is_ext_color_buffer_float_formats_added_(false),
       version_(version) {
-  ASSERT(context_provider);
+  DCHECK(context_provider);
 
   context_group_->AddContext(this);
 
@@ -1115,8 +1115,8 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
 }
 
 void WebGLRenderingContextBase::InitializeNewContext() {
-  ASSERT(!isContextLost());
-  ASSERT(GetDrawingBuffer());
+  DCHECK(!isContextLost());
+  DCHECK(GetDrawingBuffer());
 
   marked_canvas_dirty_ = false;
   animation_frame_in_progress_ = false;
@@ -1256,7 +1256,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
 }
 
 void WebGLRenderingContextBase::SetupFlags() {
-  ASSERT(GetDrawingBuffer());
+  DCHECK(GetDrawingBuffer());
   if (canvas()) {
     if (Page* p = canvas()->GetDocument().GetPage()) {
       synthesized_errors_to_console_ =
@@ -1319,7 +1319,7 @@ void WebGLRenderingContextBase::DestroyContext() {
       ConvertToBaseCallback(std::move(null_function)));
   GetDrawingBuffer()->AddNewMailboxCallback(nullptr);
 
-  ASSERT(GetDrawingBuffer());
+  DCHECK(GetDrawingBuffer());
   drawing_buffer_->BeginDestruction();
   drawing_buffer_.Clear();
 }
@@ -1483,7 +1483,7 @@ void WebGLRenderingContextBase::SetIsHidden(bool hidden) {
 
   if (!hidden && isContextLost() && restore_allowed_ &&
       auto_recovery_method_ == kAuto) {
-    ASSERT(!restore_timer_.IsActive());
+    DCHECK(!restore_timer_.IsActive());
     restore_timer_.StartOneShot(0, BLINK_FROM_HERE);
   }
 }
@@ -3979,7 +3979,7 @@ bool WebGLRenderingContextBase::ValidateReadBufferAndGetInfo(
     }
   } else {
     if (read_buffer_of_default_framebuffer_ == GL_NONE) {
-      ASSERT(IsWebGL2OrHigher());
+      DCHECK(IsWebGL2OrHigher());
       SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                         "no image to read from");
       return false;
@@ -4165,9 +4165,9 @@ void WebGLRenderingContextBase::RenderbufferStorageImpl(
     GLsizei width,
     GLsizei height,
     const char* function_name) {
-  ASSERT(!samples);             // |samples| > 0 is only valid in WebGL2's
+  DCHECK(!samples);             // |samples| > 0 is only valid in WebGL2's
                                 // renderbufferStorageMultisample().
-  ASSERT(!IsWebGL2OrHigher());  // Make sure this is overridden in WebGL 2.
+  DCHECK(!IsWebGL2OrHigher());  // Make sure this is overridden in WebGL 2.
   switch (internalformat) {
     case GL_DEPTH_COMPONENT16:
     case GL_RGBA4:
@@ -4188,7 +4188,7 @@ void WebGLRenderingContextBase::RenderbufferStorageImpl(
       renderbuffer_binding_->SetSize(width, height);
       break;
     case GL_DEPTH_STENCIL_OES:
-      ASSERT(IsDepthStencilSupported());
+      DCHECK(IsDepthStencilSupported());
       ContextGL()->RenderbufferStorage(target, GL_DEPTH24_STENCIL8_OES, width,
                                        height);
       renderbuffer_binding_->SetSize(width, height);
@@ -4559,7 +4559,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
     int height,
     const char* function_name) {
   RefPtr<Image> image(std::move(pass_image));
-  ASSERT(image);
+  DCHECK(image);
 
   IntSize size(width, height);
   ImageBuffer* buf = generated_image_cache_.GetImageBuffer(size);
@@ -5405,7 +5405,7 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
                        level, internalformat, width, height, depth, 0, format,
                        type, xoffset, yoffset, zoffset))
     return;
-  ASSERT(bitmap->BitmapImage());
+  DCHECK(bitmap->BitmapImage());
 
   // TODO(kbr): make this work for sub-rectangles of ImageBitmaps.
   if (function_id != kTexSubImage3D && function_id != kTexImage3D &&
@@ -7462,7 +7462,7 @@ void WebGLRenderingContextBase::DispatchContextLostEvent(TimerBase*) {
 }
 
 void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
-  ASSERT(isContextLost());
+  DCHECK(isContextLost());
 
   // The rendering context is not restored unless the default behavior of the
   // webglcontextlost event was prevented earlier.

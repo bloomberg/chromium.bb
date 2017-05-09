@@ -29,12 +29,12 @@ PaintRenderingContext2D::PaintRenderingContext2D(
 }
 
 int PaintRenderingContext2D::Width() const {
-  ASSERT(image_buffer_);
+  DCHECK(image_buffer_);
   return image_buffer_->size().Width();
 }
 
 int PaintRenderingContext2D::Height() const {
-  ASSERT(image_buffer_);
+  DCHECK(image_buffer_);
   return image_buffer_->size().Height();
 }
 
@@ -57,17 +57,17 @@ PaintCanvas* PaintRenderingContext2D::DrawingCanvas() const {
 }
 
 PaintCanvas* PaintRenderingContext2D::ExistingDrawingCanvas() const {
-  ASSERT(image_buffer_);
+  DCHECK(image_buffer_);
   return image_buffer_->Canvas();
 }
 
 AffineTransform PaintRenderingContext2D::BaseTransform() const {
-  ASSERT(image_buffer_);
+  DCHECK(image_buffer_);
   return image_buffer_->BaseTransform();
 }
 
 void PaintRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
-  ASSERT(image_buffer_);
+  DCHECK(image_buffer_);
   return image_buffer_->DidDraw(SkRect::Make(dirty_rect));
 }
 

@@ -55,7 +55,7 @@ DEFINE_TRACE(WorkerNavigatorNetworkInformation) {
 
 NetworkInformation* WorkerNavigatorNetworkInformation::connection(
     ExecutionContext* context) {
-  ASSERT(context);
+  DCHECK(context);
   if (!connection_)
     connection_ = NetworkInformation::Create(context);
   return connection_.Get();
