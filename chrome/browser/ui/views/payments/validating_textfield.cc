@@ -10,7 +10,7 @@ namespace payments {
 
 ValidatingTextfield::ValidatingTextfield(
     std::unique_ptr<ValidationDelegate> delegate)
-    : Textfield(), delegate_(std::move(delegate)), was_blurred_(false) {}
+    : Textfield(), delegate_(std::move(delegate)) {}
 
 ValidatingTextfield::~ValidatingTextfield() {}
 
@@ -18,11 +18,18 @@ void ValidatingTextfield::OnBlur() {
   Textfield::OnBlur();
 
   // The first validation should be on a blur. The subsequent validations will
-  // occur when the content changes.
-  if (!was_blurred_) {
+  // occur when the content changes. Do not validate if the view is being
+  // removed.
+  if (!was_blurred_ && !being_removed_) {
     was_blurred_ = true;
     Validate();
   }
+}
+
+void ValidatingTextfield::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.child == this && !details.is_add)
+    being_removed_ = true;
 }
 
 void ValidatingTextfield::OnContentsChanged() {
