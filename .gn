@@ -146,7 +146,7 @@ check_targets = [
   "//third_party/libaddressinput/*",
   "//third_party/libphonenumber/*",
   "//third_party/libwebp/*",
-  "//third_party/WebKit/Source/*",
+  "//third_party/WebKit/*",
   "//tools/*",
 
   #"//ui/*",  # Work left on Chromeos w/ use_ozone. Some parts of UI that work:
