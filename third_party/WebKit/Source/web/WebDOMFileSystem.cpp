@@ -34,12 +34,13 @@
 #include "bindings/modules/v8/V8DirectoryEntry.h"
 #include "bindings/modules/v8/V8FileEntry.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "v8/include/v8.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -66,9 +67,9 @@ WebDOMFileSystem WebDOMFileSystem::Create(WebLocalFrame* frame,
                                           const WebURL& root_url,
                                           SerializableType serializable_type) {
   DCHECK(frame);
-  DCHECK(ToWebLocalFrameImpl(frame)->GetFrame());
+  DCHECK(ToWebLocalFrameBase(frame)->GetFrame());
   DOMFileSystem* dom_file_system = DOMFileSystem::Create(
-      ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument(), name,
+      ToWebLocalFrameBase(frame)->GetFrame()->GetDocument(), name,
       static_cast<FileSystemType>(type), root_url);
   if (serializable_type == kSerializableTypeSerializable)
     dom_file_system->MakeClonable();

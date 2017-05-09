@@ -8,6 +8,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/input/EventHandler.h"
 #include "core/page/DragActions.h"
 #include "core/page/DragController.h"
@@ -20,7 +21,6 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebWidgetClient.h"
 #include "web/WebInputEventConversion.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -29,7 +29,7 @@ namespace {
 // Helper to get LocalFrame* from WebLocalFrame*.
 // TODO(dcheng): This should be moved into WebLocalFrame.
 LocalFrame* ToCoreFrame(WebLocalFrame* frame) {
-  return ToWebLocalFrameImpl(frame)->GetFrame();
+  return ToWebLocalFrameBase(frame)->GetFrame();
 }
 
 }  // namespace
@@ -228,7 +228,7 @@ WebPoint WebFrameWidgetBase::ViewportToRootFrame(
 }
 
 WebViewBase* WebFrameWidgetBase::View() const {
-  return ToWebLocalFrameImpl(LocalRoot())->ViewImpl();
+  return ToWebLocalFrameBase(LocalRoot())->ViewImpl();
 }
 
 Page* WebFrameWidgetBase::GetPage() const {
@@ -280,7 +280,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(const WebInputEvent& event) {
 
   if (GetPage()) {
     WebMouseEvent transformed_event = TransformWebMouseEvent(
-        ToWebLocalFrameImpl(LocalRoot())->GetFrameView(), mouse_event);
+        ToWebLocalFrameBase(LocalRoot())->GetFrameView(), mouse_event);
     GetPage()->GetPointerLockController().DispatchLockedMouseEvent(
         transformed_event, event_type);
   }

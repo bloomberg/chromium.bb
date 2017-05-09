@@ -320,7 +320,7 @@ class WEB_EXPORT WebLocalFrameImpl final
                             WebString& clip_html) override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
-  LocalFrame* GetFrame() const { return frame_.Get(); }
+  LocalFrame* GetFrame() const override { return frame_.Get(); }
 
   void WillBeDetached();
   void WillDetachParent();
@@ -362,7 +362,7 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   WebViewBase* ViewImpl() const override;
 
-  FrameView* GetFrameView() const {
+  FrameView* GetFrameView() const override {
     return GetFrame() ? GetFrame()->View() : 0;
   }
 
