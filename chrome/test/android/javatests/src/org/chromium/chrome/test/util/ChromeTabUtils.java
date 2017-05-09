@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.compositor.layouts.components.CompositorButto
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -33,6 +34,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -40,10 +42,70 @@ import java.util.concurrent.TimeoutException;
  * A utility class that contains methods generic to all Tabs tests.
  */
 public class ChromeTabUtils {
-    private static final String TAG = "ChromeTabUtils";
+    private static final String TAG = "cr_ChromeTabUtils";
 
     /**
-     * Waits for the given tab to finish loading it's current page.
+     * An observer that waits for a Tab to load a page.
+     *
+     * The observer can be configured to either wait for the Tab to load a specific page
+     * (if expectedUrl is non-null) or any page (otherwise). On seeing the tab finish
+     * a page load or crash, the observer will notify the provided callback and stop
+     * watching the tab. On load stop, the observer will decrement the provided latch
+     * and continue watching the page in case the tab subsequently crashes or finishes
+     * a page load.
+     *
+     * This may seem complicated, but it's intended to handle three distinct cases:
+     *  1) Successful page load + observer starts watching before onPageLoadFinished fires.
+     *     This is the most normal case: onPageLoadFinished fires, then onLoadStopped fires,
+     *     and we see both.
+     *  2) Crash on page load. onLoadStopped fires, then onCrash fires, and we see both.
+     *  3) Successful page load + observer starts watching after onPageLoadFinished fires.
+     *     We miss the onPageLoadFinished and *only* see onLoadStopped.
+     *
+     * Receiving onPageLoadFinished is sufficient to know that we're dealing with scenario #1.
+     * Receiving onCrash is sufficient to know that we're dealing with scenario #2.
+     * Receiving onLoadStopped without a preceding onPageLoadFinished indicates that we're dealing
+     * with either scenario #2 *or* #3, so we have to keep watching for a call to onCrash.
+     */
+    private static class TabPageLoadedObserver extends EmptyTabObserver {
+        private CallbackHelper mCallback;
+        private String mExpectedUrl;
+        private CountDownLatch mLoadStoppedLatch;
+
+        public TabPageLoadedObserver(CallbackHelper loadCompleteCallback, String expectedUrl,
+                CountDownLatch loadStoppedLatch) {
+            mCallback = loadCompleteCallback;
+            mExpectedUrl = expectedUrl;
+            mLoadStoppedLatch = loadStoppedLatch;
+        }
+
+        @Override
+        public void onCrash(Tab tab, boolean sadTabShown) {
+            mCallback.notifyFailed("Tab crashed :(");
+            tab.removeObserver(this);
+        }
+
+        @Override
+        public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
+            mLoadStoppedLatch.countDown();
+        }
+
+        @Override
+        public void onPageLoadFinished(Tab tab) {
+            if (mExpectedUrl == null || TextUtils.equals(tab.getUrl(), mExpectedUrl)) {
+                mCallback.notifyCalled();
+                tab.removeObserver(this);
+            }
+        }
+    }
+
+    private static boolean loadComplete(Tab tab, String url) {
+        return !tab.isLoading() && (url == null || TextUtils.equals(tab.getUrl(), url))
+                && !tab.getWebContents().isLoadingToDifferentDocument();
+    }
+
+    /**
+     * Waits for the given tab to finish loading its current page.
      *
      * @param tab The tab to wait for the page loading to be complete.
      * @param url The URL that will be waited to load for.  Pass in null if loading the
@@ -53,44 +115,47 @@ public class ChromeTabUtils {
             throws InterruptedException {
         Assert.assertFalse(ThreadUtils.runningOnUiThread());
 
-        final boolean checkUrl = url != null;
-
+        final CountDownLatch loadStoppedLatch = new CountDownLatch(1);
         final CallbackHelper loadedCallback = new CallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                if (!tab.isLoading()
-                        && (!checkUrl || TextUtils.equals(tab.getUrl(), url))
-                        && !tab.getWebContents().isLoadingToDifferentDocument()) {
+                if (loadComplete(tab, url)) {
                     loadedCallback.notifyCalled();
                     return;
                 }
-
-                tab.addObserver(new EmptyTabObserver() {
-                    @Override
-                    public void onPageLoadFinished(Tab tab) {
-                        if (!checkUrl || TextUtils.equals(tab.getUrl(), url)) {
-                            loadedCallback.notifyCalled();
-                            tab.removeObserver(this);
-                        }
-                    }
-                });
+                tab.addObserver(new TabPageLoadedObserver(loadedCallback, url, loadStoppedLatch));
             }
         });
 
         try {
             loadedCallback.waitForCallback(0);
         } catch (TimeoutException e) {
-            Assert.fail("Page did not load.  Tab information at time of failure --"
-                    + " url: " + url
-                    + ", final URL: " + tab.getUrl()
-                    + ", load progress: " + tab.getProgress()
-                    + ", is loading: " + Boolean.toString(tab.isLoading()));
+            // In the event that:
+            //  1) the tab is on the correct page
+            //  2) we weren't notified that the page load finished
+            //  3) we *were* notified that the tab stopped loading
+            //  4) the tab didn't crash
+            //
+            // then it's likely the case that we started observing the tab after
+            // onPageLoadFinished but before onLoadStopped. (The latter sets tab.mIsLoading to
+            // false.) Try to carry on with the test.
+            if (loadStoppedLatch.getCount() == 0 && loadComplete(tab, url)) {
+                Log.w(TAG,
+                        "onPageLoadFinished was never called, but loading stopped "
+                                + "on the expected page. Tentatively continuing.");
+            } else {
+                Assert.fail("Page did not load.  Tab information at time of failure --"
+                        + " url: " + url + ", final URL: " + tab.getUrl() + ", load progress: "
+                        + tab.getProgress() + ", is loading: " + Boolean.toString(tab.isLoading())
+                        + ", web contents loading: "
+                        + Boolean.toString(tab.getWebContents().isLoadingToDifferentDocument()));
+            }
         }
     }
 
     /**
-     * Waits for the given tab to finish loading it's current page.
+     * Waits for the given tab to finish loading its current page.
      *
      * @param tab The tab to wait for the page loading to be complete.
      * @param loadTrigger The trigger action that will result in a page load finished event
@@ -102,7 +167,7 @@ public class ChromeTabUtils {
     }
 
     /**
-     * Waits for the given tab to finish loading it's current page.
+     * Waits for the given tab to finish loading its current page.
      *
      * @param tab The tab to wait for the page loading to be complete.
      * @param loadTrigger The trigger action that will result in a page load finished event
@@ -112,17 +177,14 @@ public class ChromeTabUtils {
     public static void waitForTabPageLoaded(
             final Tab tab, Runnable loadTrigger, long secondsToWait)
             throws InterruptedException {
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
         final CallbackHelper loadedCallback = new CallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                tab.addObserver(new EmptyTabObserver() {
-                    @Override
-                    public void onPageLoadFinished(Tab tab) {
-                        loadedCallback.notifyCalled();
-                        tab.removeObserver(this);
-                    }
-                });
+                TabObserver observer =
+                        new TabPageLoadedObserver(loadedCallback, null, countDownLatch);
+                tab.addObserver(observer);
             }
         });
         loadTrigger.run();
@@ -130,14 +192,15 @@ public class ChromeTabUtils {
             loadedCallback.waitForCallback(0, 1, secondsToWait, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             Assert.fail("Page did not load.  Tab information at time of failure --"
-                    + " url: " + tab.getUrl()
-                    + ", load progress: " + tab.getProgress()
-                    + ", is loading: " + Boolean.toString(tab.isLoading()));
+                    + " url: " + tab.getUrl() + ", load progress: " + tab.getProgress()
+                    + ", is loading: " + Boolean.toString(tab.isLoading())
+                    + ", web contents loading: "
+                    + Boolean.toString(tab.getWebContents().isLoadingToDifferentDocument()));
         }
     }
 
     /**
-     * Waits for the given tab to start loading it's current page.
+     * Waits for the given tab to start loading its current page.
      *
      * @param tab The tab to wait for the page loading to be started.
      * @param loadTrigger The trigger action that will result in a page load started event
