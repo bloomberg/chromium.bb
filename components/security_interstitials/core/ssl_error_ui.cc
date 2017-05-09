@@ -69,6 +69,7 @@ void SSLErrorUI::PopulateStringsForHTML(base::DictionaryValue* load_time_data) {
 
   // Shared values for both the overridable and non-overridable versions.
   load_time_data->SetBoolean("bad_clock", false);
+  load_time_data->SetBoolean("hide_primary_button", false);
   load_time_data->SetString("tabTitle",
                             l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
   load_time_data->SetString("heading",
@@ -95,6 +96,7 @@ void SSLErrorUI::PopulateOverridableStrings(
       ssl_info_.cert.get(), request_url_);
 
   load_time_data->SetBoolean("overridable", true);
+  load_time_data->SetBoolean("hide_primary_button", false);
   load_time_data->SetString("explanationParagraph", error_info.details());
   load_time_data->SetString(
       "primaryButtonText",
@@ -113,6 +115,7 @@ void SSLErrorUI::PopulateNonOverridableStrings(
       ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_);
 
   load_time_data->SetBoolean("overridable", false);
+  load_time_data->SetBoolean("hide_primary_button", false);
   load_time_data->SetString(
       "explanationParagraph",
       l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE, url));

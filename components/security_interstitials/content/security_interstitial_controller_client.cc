@@ -46,6 +46,10 @@ void SecurityInterstitialControllerClient::GoBack() {
   interstitial_page_->DontProceed();
 }
 
+bool SecurityInterstitialControllerClient::CanGoBack() {
+  return web_contents_->GetController().CanGoBack();
+}
+
 void SecurityInterstitialControllerClient::GoBackAfterNavigationCommitted() {
   // If the offending entry has committed, go back or to a safe page without
   // closing the error page. This error page will be closed when the new page

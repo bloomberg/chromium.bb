@@ -71,6 +71,8 @@ class ControllerClient {
   // Close the error and go back to the previous page. This applies to
   // situations where navigation is blocked before committing.
   virtual void GoBack() = 0;
+  // Whether it is possible to go 'Back to safety'.
+  virtual bool CanGoBack() = 0;
 
   // If the offending entry has committed, go back or to a safe page without
   // closing the error page. This error page will be closed when the new page

@@ -45,6 +45,10 @@ void IOSChromeControllerClient::GoBack() {
   web_interstitial_->DontProceed();
 }
 
+bool IOSChromeControllerClient::CanGoBack() {
+  return web_state_->GetNavigationManager()->CanGoBack();
+}
+
 void IOSChromeControllerClient::GoBackAfterNavigationCommitted() {
   NOTREACHED();
 }

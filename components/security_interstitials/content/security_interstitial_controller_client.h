@@ -40,6 +40,7 @@ class SecurityInterstitialControllerClient
 
   // security_interstitials::ControllerClient overrides.
   void GoBack() override;
+  bool CanGoBack() override;
   void GoBackAfterNavigationCommitted() override;
   void Proceed() override;
   void Reload() override;
@@ -49,7 +50,7 @@ class SecurityInterstitialControllerClient
   bool CanLaunchDateAndTimeSettings() override;
   void LaunchDateAndTimeSettings() override;
 
-protected:
+ protected:
   // security_interstitials::ControllerClient overrides.
   const std::string GetExtendedReportingPrefName() const override;
   content::WebContents* web_contents_;

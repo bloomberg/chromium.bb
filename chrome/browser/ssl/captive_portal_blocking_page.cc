@@ -147,6 +147,7 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("iconClass", "icon-offline");
   load_time_data->SetString("type", "CAPTIVE_PORTAL");
   load_time_data->SetBoolean("overridable", false);
+  load_time_data->SetBoolean("hide_primary_button", false);
 
   // |IsWifiConnection| isn't accurate on some platforms, so always try to get
   // the Wi-Fi SSID even if |IsWifiConnection| is false.
