@@ -30,11 +30,9 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
  public:
   ~ModelTypeStoreImpl() override;
 
-  static void CreateStore(
-      ModelType type,
-      const std::string& path,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-      const InitCallback& callback);
+  static void CreateStore(ModelType type,
+                          const std::string& path,
+                          const InitCallback& callback);
   static void CreateInMemoryStoreForTest(ModelType type,
                                          const InitCallback& callback);
 

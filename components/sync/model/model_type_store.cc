@@ -21,9 +21,8 @@ void ModelTypeStore::CreateInMemoryStoreForTest(ModelType type,
 void ModelTypeStore::CreateStore(
     ModelType type,
     const std::string& path,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback) {
-  ModelTypeStoreImpl::CreateStore(type, path, blocking_task_runner, callback);
+  ModelTypeStoreImpl::CreateStore(type, path, callback);
 }
 
 ModelTypeStore::~ModelTypeStore() {}

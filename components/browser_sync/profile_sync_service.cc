@@ -242,12 +242,8 @@ void ProfileSyncService::Initialize() {
                  syncer::ModelTypeSet(syncer::SESSIONS)));
 
   if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
-    // TODO(skym): Stop creating leveldb files when signed out.
-    // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
-    // as the Local State file is guaranteed to be UTF-8.
     const syncer::ModelTypeStoreFactory& store_factory =
-        GetModelTypeStoreFactory(syncer::DEVICE_INFO, base_directory_,
-                                 sync_client_->GetBlockingPool());
+        GetModelTypeStoreFactory(syncer::DEVICE_INFO, base_directory_);
     device_info_sync_bridge_ = base::MakeUnique<DeviceInfoSyncBridge>(
         local_device_.get(), store_factory,
         base::BindRepeating(
@@ -1681,18 +1677,12 @@ void ProfileSyncService::SetPlatformSyncAllowedProvider(
 // static
 syncer::ModelTypeStoreFactory ProfileSyncService::GetModelTypeStoreFactory(
     ModelType type,
-    const base::FilePath& base_path,
-    base::SequencedWorkerPool* blocking_pool) {
+    const base::FilePath& base_path) {
   // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
   // as the Local State file is guaranteed to be UTF-8.
-  std::string path = FormatSharedModelTypeStorePath(base_path).AsUTF8Unsafe();
-  base::SequencedWorkerPool::SequenceToken sequence_token =
-      blocking_pool->GetNamedSequenceToken(path);
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          blocking_pool->GetNamedSequenceToken(path),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  return base::Bind(&ModelTypeStore::CreateStore, type, path, task_runner);
+  const std::string path =
+      FormatSharedModelTypeStorePath(base_path).AsUTF8Unsafe();
+  return base::Bind(&ModelTypeStore::CreateStore, type, path);
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {

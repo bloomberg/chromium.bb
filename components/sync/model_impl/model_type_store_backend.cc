@@ -76,8 +76,7 @@ class BackendMap {
   DISALLOW_COPY_AND_ASSIGN(BackendMap);
 };
 
-base::LazyInstance<BackendMap>::DestructorAtExit backend_map =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<BackendMap>::Leaky backend_map = LAZY_INSTANCE_INITIALIZER;
 
 scoped_refptr<ModelTypeStoreBackend> BackendMap::GetBackend(
     const std::string& path) const {

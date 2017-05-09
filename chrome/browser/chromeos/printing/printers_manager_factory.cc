@@ -57,8 +57,7 @@ PrintersManager* PrintersManagerFactory::BuildServiceInstanceFor(
 
   const syncer::ModelTypeStoreFactory& store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
-          syncer::PRINTERS, profile->GetPath(),
-          content::BrowserThread::GetBlockingPool());
+          syncer::PRINTERS, profile->GetPath());
 
   std::unique_ptr<PrintersSyncBridge> sync_bridge =
       base::MakeUnique<PrintersSyncBridge>(
