@@ -249,6 +249,9 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/691029
 "deadlock:libGLX.so*\n"
 
+// http://crbug.com/719633
+"race:crypto::EnsureNSSInit()\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
