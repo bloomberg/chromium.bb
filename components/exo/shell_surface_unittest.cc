@@ -624,7 +624,7 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
   shell_surface->SetRectangularSurfaceShadow(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
 
-  EXPECT_EQ(wm::ShadowElevation::MEDIUM, GetShadowElevation(window));
+  EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
 
   // For surface shadow, the underlay is placed at the bottom of shell surfaces.
@@ -701,7 +701,7 @@ TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
   shell_surface->SetRectangularShadowEnabled(true);
   surface->Commit();
 
-  EXPECT_EQ(wm::ShadowElevation::MEDIUM, GetShadowElevation(window));
+  EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
 
   // For no surface shadow, both of underlay and overlay should be stacked
@@ -747,7 +747,7 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
 
   shell_surface->SetRectangularSurfaceShadow(shadow_bounds);
   surface->Commit();
-  EXPECT_EQ(wm::ShadowElevation::MEDIUM, GetShadowElevation(window));
+  EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
 
   // Shadow overlay bounds.
   EXPECT_TRUE(shadow->layer()->visible());
