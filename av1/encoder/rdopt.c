@@ -847,7 +847,7 @@ static int prune_one_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
 static int prune_tx_types(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
                           const MACROBLOCKD *const xd, int tx_set) {
 #if CONFIG_EXT_TX
-  const int *tx_set_1D = ext_tx_used_inter_1D[tx_set];
+  const int *tx_set_1D = tx_set >= 0 ? ext_tx_used_inter_1D[tx_set] : NULL;
 #else
   const int tx_set_1D[TX_TYPES_1D] = { 0 };
 #endif  // CONFIG_EXT_TX
