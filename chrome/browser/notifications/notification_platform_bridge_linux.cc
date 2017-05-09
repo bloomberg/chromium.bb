@@ -407,30 +407,42 @@ class NotificationPlatformBridgeLinuxImpl
 
     writer.AppendString(base::UTF16ToUTF8(notification->title()));
 
-    writer.AppendString(base::UTF16ToUTF8(notification->message()));
+    std::string body;
+    if (base::ContainsKey(capabilities_, "body")) {
+      body = base::UTF16ToUTF8(notification->message());
+      if (base::ContainsKey(capabilities_, "body-markup")) {
+        base::ReplaceSubstringsAfterOffset(&body, 0, "&", "&amp;");
+        base::ReplaceSubstringsAfterOffset(&body, 0, "<", "&lt;");
+        base::ReplaceSubstringsAfterOffset(&body, 0, ">", "&gt;");
+      }
+    }
+    writer.AppendString(body);
 
     // Even-indexed elements in this vector are action IDs passed back to
     // us in OnActionInvoked().  Odd-indexed ones contain the button text.
     std::vector<std::string> actions;
-    data->action_start = data->action_end;
-    for (const auto& button_info : notification->buttons()) {
-      // FDO notification buttons can contain either an icon or a label,
-      // but not both, and the type of all buttons must be the same (all
-      // labels or all icons), so always use labels.
-      const std::string id = base::SizeTToString(data->action_end++);
-      const std::string label = base::UTF16ToUTF8(button_info.title);
-      actions.push_back(id);
-      actions.push_back(label);
+    if (base::ContainsKey(capabilities_, "actions")) {
+      data->action_start = data->action_end;
+      for (const auto& button_info : notification->buttons()) {
+        // FDO notification buttons can contain either an icon or a label,
+        // but not both, and the type of all buttons must be the same (all
+        // labels or all icons), so always use labels.
+        const std::string id = base::SizeTToString(data->action_end++);
+        const std::string label = base::UTF16ToUTF8(button_info.title);
+        actions.push_back(id);
+        actions.push_back(label);
+      }
+      if (notification->clickable()) {
+        // Special case: the pair ("default", "") will not add a button,
+        // but instead makes the entire notification clickable.
+        actions.push_back(kDefaultButtonId);
+        actions.push_back("");
+      }
+      // Always add a settings button.
+      actions.push_back(kSettingsButtonId);
+      // TODO(thomasanderson): Localize this string.
+      actions.push_back("Settings");
     }
-    if (notification->clickable()) {
-      // Special case: the pair ("default", "") will not add a button,
-      // but instead makes the entire notification clickable.
-      actions.push_back(kDefaultButtonId);
-      actions.push_back("");
-    }
-    // Always add a settings button.
-    actions.push_back(kSettingsButtonId);
-    actions.push_back("Settings");
     writer.AppendArrayOfStrings(actions);
 
     dbus::MessageWriter hints_writer(nullptr);
@@ -645,26 +657,26 @@ class NotificationPlatformBridgeLinuxImpl
     // Histogram macros must be called with the same name for each
     // callsite, so we can't roll the below into a nice loop.
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.ActionIcons",
-                          capabilities_.count("action-icons"));
+                          base::ContainsKey(capabilities_, "action-icons"));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Actions",
-                          capabilities_.count("actions"));
+                          base::ContainsKey(capabilities_, "actions"));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Body",
-                          capabilities_.count("body"));
+                          base::ContainsKey(capabilities_, "body"));
     UMA_HISTOGRAM_BOOLEAN(
         "Notifications.Freedesktop.Capabilities.BodyHyperlinks",
-        capabilities_.count("body-hyperlinks"));
+        base::ContainsKey(capabilities_, "body-hyperlinks"));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.BodyImages",
-                          capabilities_.count("body-images"));
+                          base::ContainsKey(capabilities_, "body-images"));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.BodyMarkup",
-                          capabilities_.count("body-markup"));
+                          base::ContainsKey(capabilities_, "body-markup"));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.IconMulti",
-                          capabilities_.count("icon-multi"));
+                          base::ContainsKey(capabilities_, "icon-multi"));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.IconStatic",
-                          capabilities_.count("icon-static"));
+                          base::ContainsKey(capabilities_, "icon-static"));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Persistence",
-                          capabilities_.count("persistence"));
+                          base::ContainsKey(capabilities_, "persistence"));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Sound",
-                          capabilities_.count("sound"));
+                          base::ContainsKey(capabilities_, "sound"));
   }
 
   //////////////////////////////////////////////////////////////////////////////
