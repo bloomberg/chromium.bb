@@ -42,6 +42,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/HistoryItem.h"
 #include "core/loader/NavigationPolicy.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -226,6 +227,8 @@ class CORE_EXPORT FrameLoader final {
   static void SetReferrerForFrameRequest(FrameLoadRequest&);
 
  private:
+  void CheckTimerFired(TimerBase*);
+
   bool PrepareRequestForThisFrame(FrameLoadRequest&);
   FrameLoadType DetermineFrameLoadType(const FrameLoadRequest&);
 
@@ -287,6 +290,8 @@ class CORE_EXPORT FrameLoader final {
   Member<DocumentLoader> provisional_document_loader_;
 
   bool in_stop_all_loaders_;
+
+  TaskRunnerTimer<FrameLoader> check_timer_;
 
   SandboxFlags forced_sandbox_flags_;
 
