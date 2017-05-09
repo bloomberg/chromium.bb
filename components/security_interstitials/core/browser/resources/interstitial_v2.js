@@ -102,8 +102,7 @@ function setupEvents() {
   var ssl = interstitialType == 'SSL';
   var captivePortal = interstitialType == 'CAPTIVE_PORTAL';
   var badClock = ssl && loadTimeData.getBoolean('bad_clock');
-  var hidePrimaryButton = badClock && loadTimeData.getBoolean(
-      'hide_primary_button');
+  var hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
 
   if (ssl) {
     $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
