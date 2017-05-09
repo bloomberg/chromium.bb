@@ -10,13 +10,14 @@
 
 class KeyedService;
 class Profile;
+class SubresourceFilterProfileContext;
 
 // This class is responsible for instantiating a profile-scoped context for
 // subresource filtering.
 class SubresourceFilterProfileContextFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static void EnsureForProfile(Profile* profile);
+  static SubresourceFilterProfileContext* GetForProfile(Profile* profile);
 
   static SubresourceFilterProfileContextFactory* GetInstance();
 
@@ -25,6 +26,9 @@ class SubresourceFilterProfileContextFactory
  private:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
+
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterProfileContextFactory);
 };

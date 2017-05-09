@@ -4,27 +4,128 @@
 
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 
+#include "base/auto_reset.h"
+#include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/time/default_clock.h"
+#include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/keyed_service/core/service_access_type.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "url/gurl.h"
+
+namespace {
+
+// Key into the website setting dict for the smart UI.
+const char kInfobarLastShownTimeKey[] = "InfobarLastShownTime";
+
+bool ShouldUseSmartUI() {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(
+      subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
+#endif
+  return false;
+}
+
+}  // namespace
+
+constexpr base::TimeDelta
+    SubresourceFilterContentSettingsManager::kDelayBeforeShowingInfobarAgain;
 
 SubresourceFilterContentSettingsManager::
     SubresourceFilterContentSettingsManager(Profile* profile)
-    : settings_map_(HostContentSettingsMapFactory::GetForProfile(profile)) {
+    : history_observer_(this),
+      settings_map_(HostContentSettingsMapFactory::GetForProfile(profile)),
+      clock_(base::MakeUnique<base::DefaultClock>(base::DefaultClock())),
+      should_use_smart_ui_(ShouldUseSmartUI()) {
   DCHECK(profile);
   DCHECK(settings_map_);
   settings_map_->AddObserver(this);
+
+  if (should_use_smart_ui()) {
+    if (auto* history_service = HistoryServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS)) {
+      history_observer_.Add(history_service);
+    }
+  }
 }
 
 SubresourceFilterContentSettingsManager::
     ~SubresourceFilterContentSettingsManager() {
   settings_map_->RemoveObserver(this);
+  settings_map_ = nullptr;
+  history_observer_.RemoveAll();
+}
+
+ContentSetting SubresourceFilterContentSettingsManager::GetSitePermission(
+    const GURL& url) const {
+  return settings_map_->GetContentSetting(
+      url, GURL(),
+      ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+      std::string());
+}
+
+void SubresourceFilterContentSettingsManager::WhitelistSite(const GURL& url) {
+  base::AutoReset<bool> resetter(&ignore_settings_changes_, true);
+  settings_map_->SetContentSettingDefaultScope(
+      url, GURL(),
+      ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+      std::string(), CONTENT_SETTING_BLOCK);
+  ChromeSubresourceFilterClient::LogAction(kActionContentSettingsBlockedFromUI);
+}
+
+void SubresourceFilterContentSettingsManager::OnDidShowUI(const GURL& url) {
+  if (!should_use_smart_ui())
+    return;
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  double now = clock_->Now().ToDoubleT();
+  dict->SetDouble(kInfobarLastShownTimeKey, now);
+  SetSiteMetadata(url, std::move(dict));
+}
+
+bool SubresourceFilterContentSettingsManager::ShouldShowUIForSite(
+    const GURL& url) const {
+  if (!should_use_smart_ui())
+    return true;
+
+  std::unique_ptr<base::DictionaryValue> dict = GetSiteMetadata(url);
+  if (!dict)
+    return true;
+
+  double last_shown_time_double = 0;
+  if (dict->GetDouble(kInfobarLastShownTimeKey, &last_shown_time_double)) {
+    base::Time last_shown = base::Time::FromDoubleT(last_shown_time_double);
+    if (clock_->Now() - last_shown < kDelayBeforeShowingInfobarAgain)
+      return false;
+  }
+  return true;
+}
+
+std::unique_ptr<base::DictionaryValue>
+SubresourceFilterContentSettingsManager::GetSiteMetadata(
+    const GURL& url) const {
+  return base::DictionaryValue::From(settings_map_->GetWebsiteSetting(
+      url, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA, std::string(),
+      nullptr));
+}
+
+void SubresourceFilterContentSettingsManager::SetSiteMetadata(
+    const GURL& url,
+    std::unique_ptr<base::DictionaryValue> dict) {
+  settings_map_->SetWebsiteSettingDefaultScope(
+      url, GURL(),
+      ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
+      std::string(), std::move(dict));
 }
 
 void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
@@ -32,7 +133,8 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
-  if (content_type != CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER)
+  if (content_type != CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER ||
+      ignore_settings_changes_)
     return;
 
   const ContentSettingsDetails details(primary_pattern, secondary_pattern,
@@ -75,5 +177,37 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
     ChromeSubresourceFilterClient::LogAction(kActionContentSettingsAllowed);
   } else {
     NOTREACHED();
+  }
+
+  if (!should_use_smart_ui())
+    return;
+
+  if (!ShouldShowUIForSite(url)) {
+    ChromeSubresourceFilterClient::LogAction(
+        kActionContentSettingsBlockedWhileUISuppressed);
+  }
+
+  // Reset the smart UI to ensure the user can easily change their decision.
+  SetSiteMetadata(url, nullptr);
+}
+
+// When history URLs are deleted, clear the metadata for the smart UI.
+void SubresourceFilterContentSettingsManager::OnURLsDeleted(
+    history::HistoryService* history_service,
+    bool all_history,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
+  DCHECK(should_use_smart_ui());
+  if (all_history) {
+    settings_map_->ClearSettingsForOneType(
+        CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA);
+    return;
+  }
+
+  // Careful note: This clears the setting even if there are other URLs with the
+  // same origin in the history. i.e. this is an aggressive policy.
+  for (const auto& deleted_row : deleted_rows) {
+    SetSiteMetadata(deleted_row.url(), nullptr);
   }
 }

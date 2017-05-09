@@ -50,6 +50,11 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
   CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
 
+  // Website setting which stores metadata for the subresource filter to aid in
+  // decisions for whether or not to show the UI. Currently only used on
+  // Android.
+  CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
+
   // This is special-cased in the permissions layer to always allow, and as
   // such doesn't have associated prefs data.
   CONTENT_SETTINGS_TYPE_MIDI,

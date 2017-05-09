@@ -165,6 +165,11 @@ void WebsiteSettingsRegistry::Init() {
       WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
       WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
       DESKTOP | PLATFORM_ANDROID, WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
+  Register(CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
+           "subresource-filter-data", nullptr, WebsiteSettingsInfo::UNSYNCABLE,
+           WebsiteSettingsInfo::LOSSY,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE, PLATFORM_ANDROID,
+           WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings
