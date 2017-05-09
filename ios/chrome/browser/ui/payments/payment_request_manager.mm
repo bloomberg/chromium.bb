@@ -9,12 +9,18 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "base/values.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_request_data_util.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -560,7 +566,90 @@ NSString* kCancelMessage = @"The payment request was canceled.";
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-    didConfirmWithPaymentResponse:(web::PaymentResponse)paymentResponse {
+        didCompletePaymentRequest:(PaymentRequest*)paymentRequest
+                             card:(const autofill::CreditCard&)card
+                 verificationCode:(const base::string16&)verificationCode {
+  web::PaymentResponse paymentResponse;
+
+  // If the merchant specified the card network as part of the "basic-card"
+  // payment method, return "basic-card" as the method_name. Otherwise, return
+  // the name of the network directly.
+  std::string issuer_network =
+      autofill::data_util::GetPaymentRequestData(card.network())
+          .basic_card_issuer_network;
+  paymentResponse.method_name =
+      paymentRequest->basic_card_specified_networks().find(issuer_network) !=
+              paymentRequest->basic_card_specified_networks().end()
+          ? base::ASCIIToUTF16("basic-card")
+          : base::ASCIIToUTF16(issuer_network);
+
+  // Get the billing address
+  autofill::AutofillProfile billingAddress;
+
+  // TODO(crbug.com/714768): Make sure the billing address is set and valid
+  // before getting here. Once the bug is addressed, there will be no need to
+  // copy the address, *billing_address_ptr can be used to get the basic card
+  // response.
+  if (!card.billing_address_id().empty()) {
+    autofill::AutofillProfile* billingAddressPtr =
+        autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
+            card.billing_address_id(), paymentRequest->billing_profiles());
+    if (billingAddressPtr)
+      billingAddress = *billingAddressPtr;
+  }
+
+  paymentResponse.details =
+      payments::data_util::GetBasicCardResponseFromAutofillCreditCard(
+          card, verificationCode, billingAddress,
+          GetApplicationContext()->GetApplicationLocale());
+
+  if (paymentRequest->request_shipping()) {
+    autofill::AutofillProfile* shippingAddress =
+        paymentRequest->selected_shipping_profile();
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a shipping address.
+    DCHECK(shippingAddress);
+    paymentResponse.shipping_address =
+        payments::data_util::GetPaymentAddressFromAutofillProfile(
+            *shippingAddress, GetApplicationContext()->GetApplicationLocale());
+
+    web::PaymentShippingOption* shippingOption =
+        paymentRequest->selected_shipping_option();
+    DCHECK(shippingOption);
+    paymentResponse.shipping_option = shippingOption->id;
+  }
+
+  if (paymentRequest->request_payer_name()) {
+    autofill::AutofillProfile* contactInfo =
+        paymentRequest->selected_contact_profile();
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a contact info.
+    DCHECK(contactInfo);
+    paymentResponse.payer_name =
+        contactInfo->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                             GetApplicationContext()->GetApplicationLocale());
+  }
+
+  if (paymentRequest->request_payer_email()) {
+    autofill::AutofillProfile* contactInfo =
+        paymentRequest->selected_contact_profile();
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a contact info.
+    DCHECK(contactInfo);
+    paymentResponse.payer_email =
+        contactInfo->GetRawInfo(autofill::EMAIL_ADDRESS);
+  }
+
+  if (paymentRequest->request_payer_phone()) {
+    autofill::AutofillProfile* contactInfo =
+        paymentRequest->selected_contact_profile();
+    // TODO(crbug.com/602666): User should get here only if they have selected
+    // a contact info.
+    DCHECK(contactInfo);
+    paymentResponse.payer_phone =
+        contactInfo->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
+  }
+
   [_paymentRequestJsManager
       resolveRequestPromiseWithPaymentResponse:paymentResponse
                              completionHandler:nil];

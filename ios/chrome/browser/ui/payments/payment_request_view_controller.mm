@@ -127,8 +127,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize pageHost = _pageHost;
 @synthesize pending = _pending;
 @synthesize delegate = _delegate;
-@synthesize showDataSource = _showDataSource;
-@synthesize authenticatedAccountName = _authenticatedAccountName;
+@synthesize showPaymentDataSource = _showPaymentDataSource;
+@synthesize dataSource = _dataSource;
 
 - (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   DCHECK(paymentRequest);
@@ -186,7 +186,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _paymentRequest = paymentRequest;
 
     // By default, data source is shown.
-    _showDataSource = TRUE;
+    _showPaymentDataSource = TRUE;
   }
   return self;
 }
@@ -373,14 +373,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierFooter];
   CollectionViewFooterItem* footer =
       [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooterText];
-  if (!_showDataSource) {
+  if (!_showPaymentDataSource) {
     footer.text =
         l10n_util::GetNSString(IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS);
-  } else if ([_authenticatedAccountName length]) {
+  } else if ([[_dataSource authenticatedAccountName] length]) {
     const std::string unformattedString = l10n_util::GetStringUTF8(
         IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN);
     const std::string accountName =
-        base::SysNSStringToUTF8(_authenticatedAccountName);
+        base::SysNSStringToUTF8([_dataSource authenticatedAccountName]);
     const std::string formattedString =
         base::StringPrintf(unformattedString.c_str(), accountName.c_str());
     footer.text = base::SysUTF8ToNSString(formattedString);

@@ -17,6 +17,15 @@ class PaymentRequest;
 
 @class PaymentRequestViewController;
 
+// Data source protocol for PaymentRequestViewController.
+@protocol PaymentRequestViewControllerDataSource<NSObject>
+
+// Returns the authenticated account name, if a user is authenticated.
+// Otherwise, returns nil.
+- (NSString*)authenticatedAccountName;
+
+@end
+
 // Delegate protocol for PaymentRequestViewController.
 @protocol PaymentRequestViewControllerDelegate<NSObject>
 
@@ -73,10 +82,10 @@ class PaymentRequest;
 
 // Whether the data source should be shown (usually until the first payment
 // has been completed) or not.
-@property(nonatomic, assign) BOOL showDataSource;
+@property(nonatomic, assign) BOOL showPaymentDataSource;
 
-// If the user is signed in, the name of the authenticated account.
-@property(nonatomic, copy) NSString* authenticatedAccountName;
+@property(nonatomic, weak) id<PaymentRequestViewControllerDataSource>
+    dataSource;
 
 // Updates the payment summary section UI. If |totalValueChanged| is YES,
 // adds a label to the total amount item indicating that the total amount was
