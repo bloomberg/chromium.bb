@@ -157,6 +157,9 @@ class BASE_EXPORT TaskTraits {
             internal::EnumArgGetter<base::TaskPriority,
                                     base::TaskPriority::USER_VISIBLE>(),
             args...)),
+        shutdown_behavior_set_explicitly_(
+            internal::HasArgOfType<base::TaskShutdownBehavior,
+                                   ArgTypes...>::value),
         shutdown_behavior_(internal::GetValueFromArgList(
             internal::EnumArgGetter<
                 base::TaskShutdownBehavior,
@@ -171,6 +174,14 @@ class BASE_EXPORT TaskTraits {
 
   constexpr TaskTraits(const TaskTraits& other) = default;
   TaskTraits& operator=(const TaskTraits& other) = default;
+
+  // Returns TaskTraits constructed by combining |left| and |right|. If a trait
+  // is specified in both |left| and |right|, the returned TaskTraits will have
+  // the value from |right|.
+  static constexpr TaskTraits Override(const TaskTraits& left,
+                                       const TaskTraits& right) {
+    return TaskTraits(left, right);
+  }
 
   // Deprecated.  Prefer constexpr construction to builder paradigm as
   // documented above.
@@ -188,6 +199,11 @@ class BASE_EXPORT TaskTraits {
   // Returns the priority of tasks with these traits.
   constexpr TaskPriority priority() const { return priority_; }
 
+  // Returns true if the shutdown behavior was set explicitly.
+  constexpr bool shutdown_behavior_set_explicitly() const {
+    return shutdown_behavior_set_explicitly_;
+  }
+
   // Returns the shutdown behavior of tasks with these traits.
   constexpr TaskShutdownBehavior shutdown_behavior() const {
     return shutdown_behavior_;
@@ -202,10 +218,26 @@ class BASE_EXPORT TaskTraits {
   }
 
  private:
+  constexpr TaskTraits(const TaskTraits& left, const TaskTraits& right)
+      : priority_set_explicitly_(left.priority_set_explicitly_ ||
+                                 right.priority_set_explicitly_),
+        priority_(right.priority_set_explicitly_ ? right.priority_
+                                                 : left.priority_),
+        shutdown_behavior_set_explicitly_(
+            left.shutdown_behavior_set_explicitly_ ||
+            right.shutdown_behavior_set_explicitly_),
+        shutdown_behavior_(right.shutdown_behavior_set_explicitly_
+                               ? right.shutdown_behavior_
+                               : left.shutdown_behavior_),
+        may_block_(left.may_block_ || right.may_block_),
+        with_base_sync_primitives_(left.with_base_sync_primitives_ ||
+                                   right.with_base_sync_primitives_) {}
+
   // TODO(fdoray): Make these const after refactoring away deprecated builder
   // pattern.
   bool priority_set_explicitly_;
   TaskPriority priority_;
+  bool shutdown_behavior_set_explicitly_;
   TaskShutdownBehavior shutdown_behavior_;
   bool may_block_;
   bool with_base_sync_primitives_;
