@@ -44,6 +44,16 @@ ACTION_P(OnGetCapabilities, capabilities) {
   return response;
 }
 
+ACTION_P(OnGetServerInformation, spec_version) {
+  dbus::Response* response = dbus::Response::CreateEmpty().release();
+  dbus::MessageWriter writer(response);
+  writer.AppendString("");  // name
+  writer.AppendString("");  // vendor
+  writer.AppendString("");  // version
+  writer.AppendString(spec_version);
+  return response;
+}
+
 ACTION_P(OnNotify, id) {
   // The "Notify" message must have type (susssasa{sv}i).
   // https://developer.gnome.org/notification-spec/#command-notify
@@ -141,6 +151,10 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
     EXPECT_CALL(*mock_notification_proxy_.get(),
                 MockCallMethodAndBlock(Calls("GetCapabilities"), _))
         .WillOnce(OnGetCapabilities(std::vector<std::string>()));
+
+    EXPECT_CALL(*mock_notification_proxy_.get(),
+                MockCallMethodAndBlock(Calls("GetServerInformation"), _))
+        .WillOnce(OnGetServerInformation("1.2"));
 
     EXPECT_CALL(
         *mock_notification_proxy_.get(),

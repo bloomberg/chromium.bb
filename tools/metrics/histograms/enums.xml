@@ -20803,6 +20803,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="native notifications not supported"/>
   <int value="2" label="missing required capabilities"/>
   <int value="3" label="could not connect to signals"/>
+  <int value="4" label="incompatible spec version"/>
 </enum>
 
 <enum name="LinuxSandboxStatus" type="int">
