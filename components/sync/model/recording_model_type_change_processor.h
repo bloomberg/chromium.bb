@@ -48,7 +48,8 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   // want to verify the RecordingModelTypeChangeProcessor was given data by the
   // bridge they are testing.
   static ModelTypeSyncBridge::ChangeProcessorFactory FactoryForBridgeTest(
-      RecordingModelTypeChangeProcessor** processor_address);
+      RecordingModelTypeChangeProcessor** processor_address,
+      bool expect_error = false);
 
  private:
   std::multimap<std::string, std::unique_ptr<EntityData>> put_multimap_;

@@ -141,10 +141,10 @@ class AutocompleteSyncBridgeTest : public testing::Test {
   }
   ~AutocompleteSyncBridgeTest() override {}
 
-  void ResetBridge() {
+  void ResetBridge(bool expect_error = false) {
     bridge_.reset(new AutocompleteSyncBridge(
-        &backend_,
-        RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_)));
+        &backend_, RecordingModelTypeChangeProcessor::FactoryForBridgeTest(
+                       &processor_, expect_error)));
   }
 
   void SaveSpecificsToTable(
@@ -265,6 +265,8 @@ class AutocompleteSyncBridgeTest : public testing::Test {
   const RecordingModelTypeChangeProcessor& processor() { return *processor_; }
 
   AutofillTable* table() { return &table_; }
+
+  FakeAutofillBackend* backend() { return &backend_; }
 
  private:
   ScopedTempDir temp_dir_;
@@ -590,6 +592,12 @@ TEST_F(AutocompleteSyncBridgeTest, LoadMetadataCalled) {
   EXPECT_NE(nullptr, processor().metadata());
   EXPECT_TRUE(processor().metadata()->GetModelTypeState().initial_sync_done());
   EXPECT_EQ(1u, processor().metadata()->TakeAllMetadata().size());
+}
+
+TEST_F(AutocompleteSyncBridgeTest, LoadMetadataReportsErrorForMissingDB) {
+  backend()->SetWebDatabase(nullptr);
+  // The processor's destructor will verify that an error has occured.
+  ResetBridge(/*expect_error=*/true);
 }
 
 TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataEmpty) {

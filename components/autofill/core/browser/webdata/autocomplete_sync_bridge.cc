@@ -448,6 +448,13 @@ void AutocompleteSyncBridge::ActOnLocalChanges(
 }
 
 void AutocompleteSyncBridge::LoadMetadata() {
+  if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
+      !GetAutofillTable()) {
+    change_processor()->ReportError(FROM_HERE,
+                                    "Failed to load AutofillWebDatabase.");
+    return;
+  }
+
   auto batch = base::MakeUnique<syncer::MetadataBatch>();
   if (!GetAutofillTable()->GetAllSyncMetadata(syncer::AUTOFILL, batch.get())) {
     change_processor()->ReportError(
