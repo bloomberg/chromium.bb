@@ -506,7 +506,7 @@ class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
         '+grit/",',
         '+jni/fooblat.h',
         '+policy',
-        '+third_party/WebKit',
+        '+' + os.path.join('third_party', 'WebKit'),
     ]
     new_specific_include_rules = {
         'compositor\.*': {
@@ -518,11 +518,11 @@ class CheckAddedDepsHaveTetsApprovalsTest(unittest.TestCase):
     }
 
     expected = set([
-        'chrome/DEPS',
-        'gpu/DEPS',
-        'components/DEPS',
-        'policy/DEPS',
-        'third_party/WebKit/DEPS',
+        os.path.join('chrome', 'DEPS'),
+        os.path.join('gpu', 'DEPS'),
+        os.path.join('components', 'DEPS'),
+        os.path.join('policy', 'DEPS'),
+        os.path.join('third_party', 'WebKit', 'DEPS'),
     ])
     self.assertEqual(
         expected,
