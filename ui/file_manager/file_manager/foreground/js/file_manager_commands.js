@@ -289,12 +289,12 @@ CommandUtil.isRootEntry = function(volumeManager, entry) {
 };
 
 /**
- * If entry is fake/invalid/root, we don't show menu item for it.
+ * If entry is fake/invalid/root, we don't show menu items for regular entries.
  * @param {VolumeManagerWrapper} volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
- * @return {boolean} True if we should show menu item for the entry.
+ * @return {boolean} True if we should show the menu items for regular entries.
  */
-CommandUtil.shouldShowMenuItemForEntry = function(volumeManager, entry) {
+CommandUtil.shouldShowMenuItemsForEntry = function(volumeManager, entry) {
   // If the entry is fake entry, hide context menu entries.
   if (util.isFakeEntry(entry))
     return false;
@@ -305,6 +305,9 @@ CommandUtil.shouldShowMenuItemForEntry = function(volumeManager, entry) {
 
   // If the entry is root entry of its volume, hide context menu entries.
   if (CommandUtil.isRootEntry(volumeManager, entry))
+    return false;
+
+  if (util.isTeamDrivesGrandRoot(entry) || util.isTeamDriveRoot(entry))
     return false;
 
   return true;
@@ -621,7 +624,8 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
     if (event.target instanceof DirectoryItem ||
         event.target instanceof DirectoryTree) {
       var entry = CommandUtil.getCommandEntry(event.target);
-      if (!entry || util.isFakeEntry(entry)) {
+      if (!entry || util.isFakeEntry(entry) ||
+          util.isTeamDrivesGrandRoot(entry)) {
         event.canExecute = false;
         event.command.setHidden(true);
         return;
@@ -767,7 +771,7 @@ CommandHandler.COMMANDS_['delete'] = (function() {
       // Execute might be called without a call of canExecute method,
       // e.g. called directly from code. Double check here not to delete
       // undeletable entries.
-      if (!entries.every(CommandUtil.shouldShowMenuItemForEntry.bind(
+      if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
               null, fileManager.volumeManager)) ||
           this.containsReadOnlyEntry_(entries, fileManager))
         return;
@@ -789,7 +793,7 @@ CommandHandler.COMMANDS_['delete'] = (function() {
       var entries = CommandUtil.getCommandEntries(event.target);
 
       // If entries contain fake or root entry, hide delete option.
-      if (!entries.every(CommandUtil.shouldShowMenuItemForEntry.bind(
+      if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
               null, fileManager.volumeManager))) {
         event.canExecute = false;
         event.command.setHidden(true);
@@ -858,7 +862,7 @@ CommandHandler.COMMANDS_['paste-into-folder'] = /** @type {Command} */ ({
   execute: function(event, fileManager) {
     var entries = CommandUtil.getCommandEntries(event.target);
     if (entries.length !== 1 || !entries[0].isDirectory ||
-        !CommandUtil.shouldShowMenuItemForEntry(
+        !CommandUtil.shouldShowMenuItemsForEntry(
             fileManager.volumeManager, entries[0])) {
       return;
     }
@@ -882,7 +886,7 @@ CommandHandler.COMMANDS_['paste-into-folder'] = /** @type {Command} */ ({
 
     // Show this item only when one directory is selected.
     if (entries.length !== 1 || !entries[0].isDirectory ||
-        !CommandUtil.shouldShowMenuItemForEntry(
+        !CommandUtil.shouldShowMenuItemsForEntry(
             fileManager.volumeManager, entries[0])) {
       event.canExecute = false;
       event.command.setHidden(true);
@@ -929,7 +933,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
   canExecute: function(event, fileManager) {
     var entries = CommandUtil.getCommandEntries(event.target);
     if (entries.length === 0 ||
-        !CommandUtil.shouldShowMenuItemForEntry(
+        !CommandUtil.shouldShowMenuItemsForEntry(
             fileManager.volumeManager, entries[0])) {
       event.canExecute = false;
       event.command.setHidden(true);

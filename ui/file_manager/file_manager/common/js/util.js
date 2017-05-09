@@ -645,6 +645,18 @@ util.isTeamDriveRoot = function(entry) {
 };
 
 /**
+ * Obtains whether an entry is the grand root directory of Team Drives.
+ * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean} True if the given entry is the grand root of Team Drives.
+ */
+util.isTeamDrivesGrandRoot = function(entry) {
+  if (!entry.fullPath)
+    return false;
+  var tree = entry.fullPath.split('/');
+  return tree.length == 2 && util.isTeamDriveEntry(entry);
+};
+
+/**
  * Obtains whether an entry is descendant of the Team Drives directory.
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is under Team Drives.

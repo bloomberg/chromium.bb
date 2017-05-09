@@ -635,7 +635,7 @@ FileManager.prototype = /** @struct */ {
         assert(this.fileOperationManager_), assert(this.metadataModel_),
         assert(this.thumbnailModel_), assert(this.directoryModel_),
         assert(this.volumeManager_), assert(this.selectionHandler_),
-        CommandUtil.shouldShowMenuItemForEntry.bind(
+        CommandUtil.shouldShowMenuItemsForEntry.bind(
             null, assert(this.volumeManager_)));
   };
 
