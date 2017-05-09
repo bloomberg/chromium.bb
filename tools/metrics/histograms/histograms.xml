@@ -31956,9 +31956,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>elawrence@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
-    The scheme of the URL for each main-frame navigation that goes to a
-    different page. Transitions like fragment change or history.pushState are
-    excluded.
+    The scheme of the URL for each main-frame navigation that replaces a
+    document object. This is not reported for reference fragment navigations,
+    pushState/replaceState or same page history navigation.
   </summary>
 </histogram>
 
@@ -31967,9 +31967,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>elawrence@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
-    The scheme of the URL for each main-frame navigation that goes to a
-    different page while in incognito. Transitions like fragment change or
-    history.pushState are excluded.
+    The scheme of the URL for each main-frame navigation that replaces a
+    document object while in incognito. This is not reported for reference
+    fragment navigations, pushState/replaceState or same page history
+    navigation.
   </summary>
 </histogram>
 

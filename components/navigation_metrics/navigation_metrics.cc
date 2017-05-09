@@ -50,7 +50,7 @@ static_assert(arraysize(kSchemeNames) == SCHEME_MAX + 1,
 namespace navigation_metrics {
 
 void RecordMainFrameNavigation(const GURL& url,
-                               bool is_in_page,
+                               bool is_same_document,
                                bool is_off_the_record) {
   Scheme scheme = SCHEME_UNKNOWN;
   for (int i = 1; i < SCHEME_MAX; ++i) {
@@ -61,7 +61,7 @@ void RecordMainFrameNavigation(const GURL& url,
   }
 
   UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameScheme", scheme, SCHEME_MAX);
-  if (!is_in_page) {
+  if (!is_same_document) {
     UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPage", scheme,
                               SCHEME_MAX);
   }
@@ -69,7 +69,7 @@ void RecordMainFrameNavigation(const GURL& url,
   if (is_off_the_record) {
     UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeOTR", scheme,
                               SCHEME_MAX);
-    if (!is_in_page) {
+    if (!is_same_document) {
       UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPageOTR",
                                 scheme, SCHEME_MAX);
     }
