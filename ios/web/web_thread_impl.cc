@@ -61,7 +61,7 @@ class WebThreadTaskRunner : public base::SingleThreadTaskRunner {
                                                  std::move(task), delay);
   }
 
-  bool RunsTasksOnCurrentThread() const override {
+  bool RunsTasksInCurrentSequence() const override {
     return WebThread::CurrentlyOn(id_);
   }
 

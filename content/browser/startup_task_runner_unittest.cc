@@ -86,7 +86,7 @@ class MockTaskRunner {
 class TaskRunnerProxy : public base::SingleThreadTaskRunner {
  public:
   TaskRunnerProxy(MockTaskRunner* mock) : mock_(mock) {}
-  bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksInCurrentSequence() const override { return true; }
   bool PostDelayedTask(const tracked_objects::Location& location,
                        base::OnceClosure closure,
                        base::TimeDelta delta) override {

@@ -48,7 +48,7 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
     task_ready_.Signal();
     return true;
   }
-  bool RunsTasksOnCurrentThread() const override {
+  bool RunsTasksInCurrentSequence() const override {
     return base::PlatformThread::CurrentRef() == thread_id_;
   }
 

@@ -38,7 +38,7 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override;
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
 
   // Overridden from cc::TaskGraphRunner:
   cc::NamespaceToken GenerateNamespaceToken() override;

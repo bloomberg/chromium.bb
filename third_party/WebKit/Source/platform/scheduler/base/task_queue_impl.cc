@@ -186,7 +186,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   main_thread_only().delayed_work_queue.reset();
 }
 
-bool TaskQueueImpl::RunsTasksOnCurrentThread() const {
+bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
   return base::PlatformThread::CurrentId() == thread_id_;
 }
 
@@ -355,7 +355,7 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     // However there's no point posting a DoWork for a blocked queue. NB we can
     // only tell if it's disabled from the main thread.
     bool queue_is_blocked =
-        RunsTasksOnCurrentThread() &&
+        RunsTasksInCurrentSequence() &&
         (!IsQueueEnabled() || main_thread_only().current_fence);
     any_thread().task_queue_manager->OnQueueHasIncomingImmediateWork(
         this, sequence_number, queue_is_blocked);

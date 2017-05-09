@@ -38,7 +38,7 @@ base::MessageLoop* LazySchedulerMessageLoopDelegateForTests::EnsureMessageLoop()
     const {
   if (message_loop_)
     return message_loop_;
-  DCHECK(RunsTasksOnCurrentThread());
+  DCHECK(RunsTasksInCurrentSequence());
   message_loop_ = base::MessageLoop::current();
   DCHECK(message_loop_);
   original_task_runner_ = message_loop_->task_runner();
@@ -85,7 +85,7 @@ bool LazySchedulerMessageLoopDelegateForTests::PostNonNestableDelayedTask(
       from_here, std::move(task), delay);
 }
 
-bool LazySchedulerMessageLoopDelegateForTests::RunsTasksOnCurrentThread()
+bool LazySchedulerMessageLoopDelegateForTests::RunsTasksInCurrentSequence()
     const {
   return thread_id_ == base::PlatformThread::CurrentId();
 }

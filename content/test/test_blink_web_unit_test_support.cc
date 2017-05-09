@@ -77,7 +77,7 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
     return false;
   }
 
-  bool RunsTasksOnCurrentThread() const override {
+  bool RunsTasksInCurrentSequence() const override {
     return thread_id_ == base::PlatformThread::CurrentId();
   }
 

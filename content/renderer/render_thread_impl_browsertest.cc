@@ -99,7 +99,7 @@ class TestTaskCounter : public base::SingleThreadTaskRunner {
     return true;
   }
 
-  bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksInCurrentSequence() const override { return true; }
 
   int NumTasksPosted() const {
     base::AutoLock auto_lock(lock_);

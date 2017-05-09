@@ -40,7 +40,7 @@ class SequencedTaskRunnerNoDelay : public base::SequencedTaskRunner {
     return true;
   }
 
-  bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksInCurrentSequence() const override { return true; }
 
  private:
   ~SequencedTaskRunnerNoDelay() override {}

@@ -207,8 +207,8 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
     return false;
   }
 
-  bool RunsTasksOnCurrentThread() const override {
-    return worker_pool_.pool()->RunsTasksOnCurrentThread();
+  bool RunsTasksInCurrentSequence() const override {
+    return worker_pool_.pool()->RunsTasksInCurrentSequence();
   }
 
  private:

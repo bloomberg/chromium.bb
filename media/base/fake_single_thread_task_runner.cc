@@ -55,7 +55,7 @@ bool FakeSingleThreadTaskRunner::PostDelayedTask(
   return true;
 }
 
-bool FakeSingleThreadTaskRunner::RunsTasksOnCurrentThread() const {
+bool FakeSingleThreadTaskRunner::RunsTasksInCurrentSequence() const {
   return true;
 }
 

@@ -45,7 +45,7 @@ namespace {
 
 class OtherThreadTestSimpleTaskRunner : public base::TestSimpleTaskRunner {
  public:
-  bool RunsTasksOnCurrentThread() const override { return false; }
+  bool RunsTasksInCurrentSequence() const override { return false; }
 
  protected:
   ~OtherThreadTestSimpleTaskRunner() override {}

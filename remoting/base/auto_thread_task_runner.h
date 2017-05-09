@@ -32,7 +32,7 @@ class AutoThreadTaskRunner : public base::SingleThreadTaskRunner {
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override;
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
 
   const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {
     return task_runner_;

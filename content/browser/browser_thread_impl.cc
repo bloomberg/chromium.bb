@@ -75,7 +75,7 @@ class BrowserThreadTaskRunner : public base::SingleThreadTaskRunner {
                                                      std::move(task), delay);
   }
 
-  bool RunsTasksOnCurrentThread() const override {
+  bool RunsTasksInCurrentSequence() const override {
     return BrowserThread::CurrentlyOn(id_);
   }
 

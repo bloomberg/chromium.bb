@@ -49,7 +49,7 @@ bool PepperMainThreadTaskRunner::PostNonNestableDelayedTask(
   return PostDelayedTask(from_here, std::move(task), delay);
 }
 
-bool PepperMainThreadTaskRunner::RunsTasksOnCurrentThread() const {
+bool PepperMainThreadTaskRunner::RunsTasksInCurrentSequence() const {
   return core_->IsMainThread();
 }
 

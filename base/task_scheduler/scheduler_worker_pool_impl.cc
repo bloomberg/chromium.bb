@@ -66,7 +66,7 @@ class SchedulerParallelTaskRunner : public TaskRunner {
         make_scoped_refptr(new Sequence));
   }
 
-  bool RunsTasksOnCurrentThread() const override {
+  bool RunsTasksInCurrentSequence() const override {
     return tls_current_worker_pool.Get().Get() == worker_pool_;
   }
 
@@ -110,9 +110,7 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
     return PostDelayedTask(from_here, std::move(closure), delay);
   }
 
-  bool RunsTasksOnCurrentThread() const override {
-    // TODO(fdoray): Rename TaskRunner::RunsTaskOnCurrentThread() to something
-    // that reflects this behavior more accurately. crbug.com/646905
+  bool RunsTasksInCurrentSequence() const override {
     return sequence_->token() == SequenceToken::GetForCurrentThread();
   }
 

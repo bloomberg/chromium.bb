@@ -62,7 +62,7 @@ TaskQueueManager::TaskQueueManager(
       observer_(nullptr),
       deletion_sentinel_(new DeletionSentinel()),
       weak_factory_(this) {
-  DCHECK(delegate->RunsTasksOnCurrentThread());
+  DCHECK(delegate->RunsTasksInCurrentSequence());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
       this);
@@ -569,8 +569,8 @@ void TaskQueueManager::MaybeRecordTaskDelayHistograms(
   }
 }
 
-bool TaskQueueManager::RunsTasksOnCurrentThread() const {
-  return delegate_->RunsTasksOnCurrentThread();
+bool TaskQueueManager::RunsTasksInCurrentSequence() const {
+  return delegate_->RunsTasksInCurrentSequence();
 }
 
 void TaskQueueManager::SetWorkBatchSize(int work_batch_size) {

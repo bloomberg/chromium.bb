@@ -57,7 +57,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
                        base::TimeDelta delay) override {
     return PostNonNestableDelayedTask(from_here, std::move(task), delay);
   }
-  bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksInCurrentSequence() const override { return true; }
 
   // Overridden from base::SequencedTaskRunner:
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
@@ -220,7 +220,7 @@ bool CategorizedWorkerPool::PostDelayedTask(
   return true;
 }
 
-bool CategorizedWorkerPool::RunsTasksOnCurrentThread() const {
+bool CategorizedWorkerPool::RunsTasksInCurrentSequence() const {
   return true;
 }
 

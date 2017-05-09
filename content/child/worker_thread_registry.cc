@@ -43,7 +43,7 @@ class DoNothingTaskRunner : public base::TaskRunner {
     return false;
   }
 
-  bool RunsTasksOnCurrentThread() const override { return false; }
+  bool RunsTasksInCurrentSequence() const override { return false; }
 };
 
 }  // namespace

@@ -131,7 +131,7 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   // TaskQueue implementation.
   void UnregisterTaskQueue() override;
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override;

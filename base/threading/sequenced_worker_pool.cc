@@ -145,7 +145,7 @@ class SequencedWorkerPoolTaskRunner : public TaskRunner {
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override;
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
 
  private:
   ~SequencedWorkerPoolTaskRunner() override;
@@ -176,8 +176,8 @@ bool SequencedWorkerPoolTaskRunner::PostDelayedTask(
   return pool_->PostDelayedWorkerTask(from_here, std::move(task), delay);
 }
 
-bool SequencedWorkerPoolTaskRunner::RunsTasksOnCurrentThread() const {
-  return pool_->RunsTasksOnCurrentThread();
+bool SequencedWorkerPoolTaskRunner::RunsTasksInCurrentSequence() const {
+  return pool_->RunsTasksInCurrentSequence();
 }
 
 }  // namespace
@@ -199,7 +199,8 @@ class SequencedWorkerPool::PoolSequencedTaskRunner
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override;
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
+
 
   // SequencedTaskRunner implementation
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
@@ -243,7 +244,7 @@ bool SequencedWorkerPool::PoolSequencedTaskRunner::PostDelayedTask(
 }
 
 bool SequencedWorkerPool::PoolSequencedTaskRunner::
-    RunsTasksOnCurrentThread() const {
+    RunsTasksInCurrentSequence() const {
   return pool_->IsRunningSequenceOnCurrentThread(token_);
 }
 
@@ -1617,7 +1618,7 @@ bool SequencedWorkerPool::PostDelayedTask(
   return PostDelayedWorkerTask(from_here, std::move(task), delay);
 }
 
-bool SequencedWorkerPool::RunsTasksOnCurrentThread() const {
+bool SequencedWorkerPool::RunsTasksInCurrentSequence() const {
   return inner_->RunsTasksOnCurrentThread();
 }
 

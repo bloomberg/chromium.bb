@@ -133,7 +133,7 @@ bool OrderedSimpleTaskRunner::PostNonNestableDelayedTask(
   return true;
 }
 
-bool OrderedSimpleTaskRunner::RunsTasksOnCurrentThread() const {
+bool OrderedSimpleTaskRunner::RunsTasksInCurrentSequence() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return true;
 }

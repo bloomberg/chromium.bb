@@ -26,7 +26,7 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
   void PostDelayedTask(const WebTraceLocation&,
                        base::OnceClosure,
                        double delay_ms) override;
-  bool RunsTasksOnCurrentThread() override;
+  bool RunsTasksInCurrentSequence() override;
   double VirtualTimeSeconds() const override;
   double MonotonicallyIncreasingVirtualTimeSeconds() const override;
   base::SingleThreadTaskRunner* ToSingleThreadTaskRunner() override;

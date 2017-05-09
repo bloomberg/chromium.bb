@@ -43,8 +43,8 @@ bool TaskQueueManagerDelegateForTest::PostNonNestableDelayedTask(
                                                   delay);
 }
 
-bool TaskQueueManagerDelegateForTest::RunsTasksOnCurrentThread() const {
-  return task_runner_->RunsTasksOnCurrentThread();
+bool TaskQueueManagerDelegateForTest::RunsTasksInCurrentSequence() const {
+  return task_runner_->RunsTasksInCurrentSequence();
 }
 
 bool TaskQueueManagerDelegateForTest::IsNested() const {

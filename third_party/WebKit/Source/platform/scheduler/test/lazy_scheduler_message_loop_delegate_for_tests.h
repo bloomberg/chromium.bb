@@ -41,7 +41,7 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override;
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksInCurrentSequence() const override;
   bool IsNested() const override;
   void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;

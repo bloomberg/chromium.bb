@@ -30,8 +30,8 @@ void WebTaskRunnerImpl::PostDelayedTask(const WebTraceLocation& location,
                                base::TimeDelta::FromMillisecondsD(delay_ms));
 }
 
-bool WebTaskRunnerImpl::RunsTasksOnCurrentThread() {
-  return task_queue_->RunsTasksOnCurrentThread();
+bool WebTaskRunnerImpl::RunsTasksInCurrentSequence() {
+  return task_queue_->RunsTasksInCurrentSequence();
 }
 
 double WebTaskRunnerImpl::VirtualTimeSeconds() const {

@@ -44,7 +44,7 @@ class FakeTaskRunner : public base::SingleThreadTaskRunner {
                        base::TimeDelta delay) override {
     return true;
   }
-  bool RunsTasksOnCurrentThread() const override { return true; }
+  bool RunsTasksInCurrentSequence() const override { return true; }
 
  protected:
   ~FakeTaskRunner() override {}
