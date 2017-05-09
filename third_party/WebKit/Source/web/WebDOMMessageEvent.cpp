@@ -39,7 +39,6 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSerializedScriptValue.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
