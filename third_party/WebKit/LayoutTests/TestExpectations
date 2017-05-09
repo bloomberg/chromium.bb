@@ -3250,6 +3250,11 @@ crbug.com/718394 virtual/enable_asmjs/http/tests/asmjs/asm-warnings.html [ Needs
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
 
+crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Timeout ]
+crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
+crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Timeout ]
+crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-sharedworker-failure.html [ Timeout ]
+
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 
 # CQ and Rebaseline-cl for crrev.com/2626973005 does not include this

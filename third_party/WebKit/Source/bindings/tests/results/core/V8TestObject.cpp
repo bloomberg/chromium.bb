@@ -8303,8 +8303,7 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
     // Clear references to array buffers and image bitmaps from transferables
     // so that the serializer can consider the array buffers as
     // non-transferable and serialize them into the message.
-    ArrayBufferArray transferableArrayBuffers = transferables.array_buffers;
-    transferables.array_buffers.clear();
+    ArrayBufferArray transferableArrayBuffers = SerializedScriptValue::ExtractNonSharedArrayBuffers(transferables);
     ImageBitmapArray transferableImageBitmaps = transferables.image_bitmaps;
     transferables.image_bitmaps.clear();
     SerializedScriptValue::SerializeOptions options;

@@ -21,7 +21,8 @@ var testCases = [
     "testSendFloat32Array",
     "testSendFloat64Array",
     "testSendSharedArrayBufferTwice",
-    "testTransferArrayBufferAndSharedArrayBuffer"
+    "testTransferArrayBufferAndSharedArrayBuffer",
+    "testSharedArrayBufferInTransferListViaMessagePort",
 ];
 var testIndex = 0;
 
@@ -189,6 +190,47 @@ function testSendSharedArrayBufferTwice() {
     initializeTypedArray(new Uint8Array(sab), sab.byteLength);
 
     worker.postMessage(msg);
+}
+
+function testSharedArrayBufferInTransferListViaMessagePort() {
+    var ab1 = new ArrayBuffer(4);
+    var ab2 = new ArrayBuffer(4);
+    var sab1 = new SharedArrayBuffer(16);
+    var sab2 = new SharedArrayBuffer(16);
+    var msg = {
+      name : 'SharedArrayBufferInTransferListViaMessagePort',
+      ab1: ab1,
+      ab2: ab2,
+      sab1: sab1,
+      sab2: sab2,
+    };
+
+    var channel = new MessageChannel();
+
+    channel.port2.onmessage = function() {
+        log("FAIL: Message should not be sent.");
+    };
+
+    log("Running SharedArrayBufferInTransferListViaMessagePort test case");
+
+    try {
+        channel.port1.postMessage(msg, [ab1, sab1, ab2, sab2]);
+        log("FAIL: Passing SharedArrayBuffer in the transfer list did not throw.");
+    } catch (e) {
+        log("PASS: Passing SharedArrayBuffer in the transfer list threw.");
+    }
+
+    if (ab1.byteLength === 0)
+        log("FAIL: ArrayBuffer 'ab1' was neutered.");
+    else
+        log("PASS: ArrayBuffer 'ab1' was not neutered.");
+
+    if (ab2.byteLength === 0)
+        log("FAIL: ArrayBuffer 'ab2' was neutered.");
+    else
+        log("PASS: ArrayBuffer 'ab2' was not neutered.");
+
+    runNextTest();
 }
 
 if (window.testRunner) {
