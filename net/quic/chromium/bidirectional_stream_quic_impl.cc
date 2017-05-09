@@ -35,7 +35,6 @@ BidirectionalStreamQuicImpl::BidirectionalStreamQuicImpl(
       closed_stream_sent_bytes_(0),
       closed_is_first_stream_(false),
       has_sent_headers_(false),
-      has_received_headers_(false),
       send_request_headers_automatically_(true),
       weak_factory_(this) {}
 
@@ -228,21 +227,23 @@ bool BidirectionalStreamQuicImpl::GetLoadTimingInfo(
   return true;
 }
 
-void BidirectionalStreamQuicImpl::OnHeadersAvailable(
+void BidirectionalStreamQuicImpl::OnInitialHeadersAvailable(
     const SpdyHeaderBlock& headers,
     size_t frame_len) {
   headers_bytes_received_ += frame_len;
   negotiated_protocol_ = kProtoQUIC;
-  if (!has_received_headers_) {
-    has_received_headers_ = true;
-    connect_timing_ = session_->GetConnectTiming();
-    if (delegate_)
-      delegate_->OnHeadersReceived(headers);
-  } else {
-    if (delegate_)
-      delegate_->OnTrailersReceived(headers);
-    // |this| can be destroyed after this point.
-  }
+  connect_timing_ = session_->GetConnectTiming();
+  if (delegate_)
+    delegate_->OnHeadersReceived(headers);
+}
+
+void BidirectionalStreamQuicImpl::OnTrailingHeadersAvailable(
+    const SpdyHeaderBlock& headers,
+    size_t frame_len) {
+  headers_bytes_received_ += frame_len;
+  if (delegate_)
+    delegate_->OnTrailersReceived(headers);
+  // |this| can be destroyed after this point.
 }
 
 void BidirectionalStreamQuicImpl::OnDataAvailable() {

@@ -60,7 +60,8 @@ void QuicChromiumClientStream::OnInitialHeadersComplete(
 
   if (delegate_) {
     // The delegate will receive the headers via a posted task.
-    NotifyDelegateOfHeadersCompleteLater(std::move(header_block), frame_len);
+    NotifyDelegateOfInitialHeadersAvailableLater(std::move(header_block),
+                                                 frame_len);
     return;
   }
 
@@ -74,7 +75,8 @@ void QuicChromiumClientStream::OnTrailingHeadersComplete(
     size_t frame_len,
     const QuicHeaderList& header_list) {
   QuicSpdyStream::OnTrailingHeadersComplete(fin, frame_len, header_list);
-  NotifyDelegateOfHeadersCompleteLater(received_trailers().Clone(), frame_len);
+  NotifyDelegateOfTrailingHeadersAvailableLater(received_trailers().Clone(),
+                                                frame_len);
 }
 
 void QuicChromiumClientStream::OnPromiseHeaderList(
@@ -199,8 +201,8 @@ void QuicChromiumClientStream::SetDelegate(
 
   // Should this perhaps be via PostTask to make reasoning simpler?
   if (!initial_headers_.empty()) {
-    delegate_->OnHeadersAvailable(std::move(initial_headers_),
-                                  initial_headers_frame_len_);
+    delegate_->OnInitialHeadersAvailable(std::move(initial_headers_),
+                                         initial_headers_frame_len_);
   }
 }
 
@@ -228,38 +230,61 @@ int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
   return bytes_read;
 }
 
-void QuicChromiumClientStream::NotifyDelegateOfHeadersCompleteLater(
+void QuicChromiumClientStream::NotifyDelegateOfInitialHeadersAvailableLater(
     SpdyHeaderBlock headers,
     size_t frame_len) {
   DCHECK(delegate_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&QuicChromiumClientStream::NotifyDelegateOfHeadersComplete,
-                 weak_factory_.GetWeakPtr(), base::Passed(std::move(headers)),
-                 frame_len));
+      base::Bind(
+          &QuicChromiumClientStream::NotifyDelegateOfInitialHeadersAvailable,
+          weak_factory_.GetWeakPtr(), base::Passed(std::move(headers)),
+          frame_len));
 }
 
-void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
+void QuicChromiumClientStream::NotifyDelegateOfInitialHeadersAvailable(
     SpdyHeaderBlock headers,
     size_t frame_len) {
   if (!delegate_)
     return;
-  // Only mark trailers consumed when we are about to notify delegate.
-  if (headers_delivered_) {
-    MarkTrailersConsumed();
-    // Post an async task to notify delegate of the FIN flag.
-    NotifyDelegateOfDataAvailableLater();
-    net_log_.AddEvent(
-        NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
-  } else {
-    headers_delivered_ = true;
-    net_log_.AddEvent(
-        NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_HEADERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
-  }
 
-  delegate_->OnHeadersAvailable(headers, frame_len);
+  DCHECK(!headers_delivered_);
+  headers_delivered_ = true;
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_HEADERS,
+      base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
+
+  delegate_->OnInitialHeadersAvailable(headers, frame_len);
+}
+
+void QuicChromiumClientStream::NotifyDelegateOfTrailingHeadersAvailableLater(
+    SpdyHeaderBlock headers,
+    size_t frame_len) {
+  DCHECK(delegate_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &QuicChromiumClientStream::NotifyDelegateOfTrailingHeadersAvailable,
+          weak_factory_.GetWeakPtr(), base::Passed(std::move(headers)),
+          frame_len));
+}
+
+void QuicChromiumClientStream::NotifyDelegateOfTrailingHeadersAvailable(
+    SpdyHeaderBlock headers,
+    size_t frame_len) {
+  if (!delegate_)
+    return;
+
+  DCHECK(headers_delivered_);
+  // Only mark trailers consumed when we are about to notify delegate.
+  MarkTrailersConsumed();
+  // Post an async task to notify delegate of the FIN flag.
+  NotifyDelegateOfDataAvailableLater();
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS,
+      base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
+
+  delegate_->OnTrailingHeadersAvailable(headers, frame_len);
 }
 
 void QuicChromiumClientStream::NotifyDelegateOfDataAvailableLater() {

@@ -58,9 +58,11 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
 
  private:
   // QuicChromiumClientStream::Delegate implementation:
-  void OnHeadersAvailable(const SpdyHeaderBlock& headers,
-                          size_t frame_len) override;
+  void OnInitialHeadersAvailable(const SpdyHeaderBlock& headers,
+                                 size_t frame_len) override;
   void OnDataAvailable() override;
+  void OnTrailingHeadersAvailable(const SpdyHeaderBlock& headers,
+                                  size_t frame_len) override;
   void OnClose() override;
   void OnError(int error) override;
 
@@ -111,8 +113,6 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   bool closed_is_first_stream_;
   // Indicates whether initial headers have been sent.
   bool has_sent_headers_;
-  // Indicates whether initial headers have been received.
-  bool has_received_headers_;
 
   // Whether to automatically send request headers when stream is negotiated.
   // If false, headers will not be sent until SendRequestHeaders() is called or
