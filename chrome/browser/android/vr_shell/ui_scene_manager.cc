@@ -56,10 +56,12 @@ static constexpr float kTextureOffset = 0.01;
 
 UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
                                UiScene* scene,
-                               bool in_cct)
+                               bool in_cct,
+                               bool in_web_vr)
     : browser_(browser),
       scene_(scene),
       in_cct_(in_cct),
+      web_vr_mode_(in_web_vr),
       weak_ptr_factory_(this) {
   CreateBackground();
   CreateContentQuad();
@@ -201,7 +203,7 @@ base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void UiSceneManager::SetWebVRMode(bool web_vr) {
+void UiSceneManager::SetWebVrMode(bool web_vr) {
   web_vr_mode_ = web_vr;
 
   // Make all VR scene UI elements visible if not in WebVR.
@@ -212,7 +214,7 @@ void UiSceneManager::SetWebVRMode(bool web_vr) {
   ConfigureSecurityWarnings();
 }
 
-void UiSceneManager::SetWebVRSecureOrigin(bool secure) {
+void UiSceneManager::SetWebVrSecureOrigin(bool secure) {
   secure_origin_ = secure;
   ConfigureSecurityWarnings();
 }
@@ -225,7 +227,10 @@ void UiSceneManager::OnAppButtonClicked() {
   browser_->OnContentPaused(!content_rendering_enabled_);
 }
 
-void UiSceneManager::OnFullscreenChanged(bool fullscreen) {
+void UiSceneManager::OnAppButtonGesturePerformed(
+    UiInterface::Direction direction) {}
+
+void UiSceneManager::SetFullscreen(bool fullscreen) {
   // Make all VR scene UI elements visible if not in WebVR or fullscreen.
   for (UiElement* element : browser_ui_elements_) {
     element->set_visible(!fullscreen);
@@ -269,9 +274,18 @@ void UiSceneManager::OnSecurityWarningTimer() {
   transient_security_warning_->set_visible(false);
 }
 
-void UiSceneManager::OnUrlChange(const GURL& gurl) {
+void UiSceneManager::SetURL(const GURL& gurl) {
   url_bar_->SetURL(gurl);
 }
+
+void UiSceneManager::SetSecurityLevel(int level) {}
+
+void UiSceneManager::SetLoading(bool loading) {}
+
+void UiSceneManager::SetLoadProgress(double progress) {}
+
+void UiSceneManager::SetHistoryButtonsEnabled(bool can_go_back,
+                                              bool can_go_forward) {}
 
 int UiSceneManager::AllocateId() {
   return next_available_id_++;

@@ -38,8 +38,8 @@ void VrGLThread::Init() {
   scene_ = base::MakeUnique<UiScene>();
   vr_shell_gl_ = base::MakeUnique<VrShellGl>(
       this, gvr_api_, initially_web_vr_, reprojected_rendering_, scene_.get());
-  scene_manager_ =
-      base::MakeUnique<UiSceneManager>(this, scene_.get(), in_cct_);
+  scene_manager_ = base::MakeUnique<UiSceneManager>(this, scene_.get(), in_cct_,
+                                                    initially_web_vr_);
 
   weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
   weak_scene_manager_ = scene_manager_->GetWeakPtr();
@@ -62,16 +62,16 @@ void VrGLThread::UpdateGamepadData(device::GvrGamepadData pad) {
       FROM_HERE, base::Bind(&VrShell::UpdateGamepadData, weak_vr_shell_, pad));
 }
 
-void VrGLThread::AppButtonGesturePerformed(UiInterface::Direction direction) {
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::AppButtonGesturePerformed, weak_vr_shell_,
-                            direction));
-}
-
-void VrGLThread::OnAppButtonClicked() {
-  weak_vr_shell_gl_->GetTaskRunner()->PostTask(
+void VrGLThread::AppButtonClicked() {
+  task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&UiSceneManager::OnAppButtonClicked, weak_scene_manager_));
+}
+
+void VrGLThread::AppButtonGesturePerformed(UiInterface::Direction direction) {
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UiSceneManager::OnAppButtonGesturePerformed,
+                            weak_scene_manager_, direction));
 }
 
 void VrGLThread::ProcessContentGesture(
@@ -97,6 +97,59 @@ void VrGLThread::OnContentPaused(bool enabled) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VrShell::OnContentPaused, weak_vr_shell_, enabled));
+}
+
+void VrGLThread::SetFullscreen(bool enabled) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetFullscreen,
+                                                weak_scene_manager_, enabled));
+}
+
+void VrGLThread::SetHistoryButtonsEnabled(bool can_go_back,
+                                          bool can_go_forward) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UiSceneManager::SetHistoryButtonsEnabled,
+                            weak_scene_manager_, can_go_forward, can_go_back));
+}
+
+void VrGLThread::SetLoadProgress(double progress) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&UiSceneManager::SetLoadProgress,
+                                     weak_scene_manager_, progress));
+}
+
+void VrGLThread::SetLoading(bool loading) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetLoading,
+                                                weak_scene_manager_, loading));
+}
+
+void VrGLThread::SetSecurityLevel(int level) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&UiSceneManager::SetSecurityLevel,
+                                     weak_scene_manager_, level));
+}
+
+void VrGLThread::SetURL(const GURL& gurl) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetURL,
+                                                weak_scene_manager_, gurl));
+}
+
+void VrGLThread::SetWebVrMode(bool enabled) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetWebVrMode,
+                                                weak_scene_manager_, enabled));
+}
+
+void VrGLThread::SetWebVrSecureOrigin(bool secure) {
+  WaitUntilThreadStarted();
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&UiSceneManager::SetWebVrSecureOrigin,
+                                     weak_scene_manager_, secure));
 }
 
 void VrGLThread::CleanUp() {

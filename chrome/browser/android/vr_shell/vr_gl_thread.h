@@ -14,6 +14,8 @@
 #include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
+class GURL;
+
 namespace vr_shell {
 
 class UiScene;
@@ -21,7 +23,9 @@ class UiSceneManager;
 class VrShell;
 class VrShellGl;
 
-class VrGLThread : public VrBrowserInterface, public base::Thread {
+class VrGLThread : public base::Thread,
+                   public UiInterface,
+                   public VrBrowserInterface {
  public:
   VrGLThread(
       const base::WeakPtr<VrShell>& weak_vr_shell,
@@ -37,12 +41,12 @@ class VrGLThread : public VrBrowserInterface, public base::Thread {
     return weak_scene_manager_;
   }
 
-  // VrBrowserInterface implementation.
+  // VrBrowserInterface implementation (VrShellGl calling to UI and VrShell).
   void ContentSurfaceChanged(jobject surface) override;
   void GvrDelegateReady() override;
   void UpdateGamepadData(device::GvrGamepadData) override;
+  void AppButtonClicked() override;
   void AppButtonGesturePerformed(UiInterface::Direction direction) override;
-  void OnAppButtonClicked() override;
   void ProcessContentGesture(
       std::unique_ptr<blink::WebInputEvent> event) override;
   void ForceExitVr() override;
@@ -50,6 +54,16 @@ class VrGLThread : public VrBrowserInterface, public base::Thread {
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       device::mojom::VRDisplayInfoPtr* info) override;
   void OnContentPaused(bool enabled) override;
+
+  // UiInterface implementation (VrShell calling to the UI).
+  void SetFullscreen(bool enabled) override;
+  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
+  void SetLoadProgress(double progress) override;
+  void SetLoading(bool loading) override;
+  void SetSecurityLevel(int level) override;
+  void SetURL(const GURL& gurl) override;
+  void SetWebVrMode(bool enabled) override;
+  void SetWebVrSecureOrigin(bool secure) override;
 
  protected:
   void Init() override;
