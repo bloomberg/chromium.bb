@@ -660,8 +660,7 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
                                           const Extension* extension,
                                           int event_id,
                                           const std::string& event_name) {
-  // TODO(chirantan): Turn this on once crbug.com/464513 is fixed.
-  // DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Only increment in-flight events if the lazy background page is active,
   // because that's the only time we'll get an ACK.
