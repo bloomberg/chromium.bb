@@ -20,18 +20,14 @@ namespace {
 // Translate from media::VideoEncodeAccelerator::SupportedProfile to
 // one or more instances of cricket::WebRtcVideoEncoderFactory::VideoCodec
 void VEAToWebRTCCodecs(
-    std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>* codecs,
+    std::vector<cricket::VideoCodec>* codecs,
     const media::VideoEncodeAccelerator::SupportedProfile& profile) {
-  const int width = profile.max_resolution.width();
-  const int height = profile.max_resolution.height();
-  const int fps = profile.max_framerate_numerator;
   DCHECK_EQ(profile.max_framerate_denominator, 1U);
 
   if (profile.profile >= media::VP8PROFILE_MIN &&
       profile.profile <= media::VP8PROFILE_MAX) {
     if (base::FeatureList::IsEnabled(features::kWebRtcHWVP8Encoding)) {
-      codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
-          webrtc::kVideoCodecVP8, "VP8", width, height, fps));
+      codecs->push_back(cricket::VideoCodec("VP8"));
     }
   } else if (profile.profile >= media::H264PROFILE_MIN &&
              profile.profile <= media::H264PROFILE_MAX) {
@@ -45,8 +41,8 @@ void VEAToWebRTCCodecs(
 #endif  // BUILDFLAG(RTC_USE_H264) && !defined(MEDIA_DISABLE_FFMPEG)
     if (webrtc_h264_sw_enabled ||
         base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding)) {
-      codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
-          webrtc::kVideoCodecH264, "H264", width, height, fps));
+      // TODO(magjed): Propagate H264 profile information.
+      codecs->push_back(cricket::VideoCodec("H264"));
     }
   }
 }
@@ -59,23 +55,26 @@ RTCVideoEncoderFactory::RTCVideoEncoderFactory(
   const media::VideoEncodeAccelerator::SupportedProfiles& profiles =
       gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();
   for (const auto& profile : profiles)
-    VEAToWebRTCCodecs(&codecs_, profile);
+    VEAToWebRTCCodecs(&supported_codecs_, profile);
 }
 
 RTCVideoEncoderFactory::~RTCVideoEncoderFactory() {}
 
 webrtc::VideoEncoder* RTCVideoEncoderFactory::CreateVideoEncoder(
-    webrtc::VideoCodecType type) {
-  for (const auto& codec : codecs_) {
-    if (codec.type == type)
+    const cricket::VideoCodec& codec) {
+  for (const cricket::VideoCodec& supported_codec : supported_codecs_) {
+    if (cricket::CodecNamesEq(codec.name, supported_codec.name)) {
+      webrtc::VideoCodecType type = webrtc::PayloadNameToCodecType(codec.name)
+                                        .value_or(webrtc::kVideoCodecUnknown);
       return new RTCVideoEncoder(type, gpu_factories_);
+    }
   }
   return nullptr;
 }
 
-const std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>&
-RTCVideoEncoderFactory::codecs() const {
-  return codecs_;
+const std::vector<cricket::VideoCodec>&
+RTCVideoEncoderFactory::supported_codecs() const {
+  return supported_codecs_;
 }
 
 void RTCVideoEncoderFactory::DestroyVideoEncoder(
