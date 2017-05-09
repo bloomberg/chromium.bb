@@ -29,9 +29,9 @@
 #include "core/editing/SelectionType.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/ContentSettingsClient.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ EditorClientImpl::~EditorClientImpl() {}
 
 void EditorClientImpl::RespondToChangedSelection(LocalFrame* frame,
                                                  SelectionType selection_type) {
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(frame);
   if (web_frame->Client())
     web_frame->Client()->DidChangeSelection(selection_type != kRangeSelection);
 }
@@ -66,7 +66,7 @@ bool EditorClientImpl::CanPaste(LocalFrame* frame, bool default_value) const {
 }
 
 bool EditorClientImpl::HandleKeyboardEvent(LocalFrame* frame) {
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(frame);
   return web_frame->Client()->HandleCurrentKeyboardEvent();
 }
 
