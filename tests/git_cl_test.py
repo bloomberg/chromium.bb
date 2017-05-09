@@ -594,8 +594,8 @@ class TestGitCl(TestCase):
               lambda *args, **kwargs: self._mocked_call(
                   'GetChangeDetail', *args, **kwargs))
     self.mock(git_cl.gerrit_util, 'AddReviewers',
-              lambda h, i, add, is_reviewer, notify: self._mocked_call(
-                  'AddReviewers', h, i, add, is_reviewer, notify))
+              lambda h, i, reviewers, ccs, notify: self._mocked_call(
+                  'AddReviewers', h, i, reviewers, ccs, notify))
     self.mock(git_cl.gerrit_util.GceAuthenticator, 'is_gce',
               classmethod(lambda _: False))
     self.mock(git_cl, 'DieWithError',
@@ -1515,15 +1515,11 @@ class TestGitCl(TestCase):
       else:
         ref_suffix = '%m=' + title
 
-    notify_suffix = 'notify=%s' % ('ALL' if notify else 'NONE')
+    notify_suffix = 'notify=NONE'
     if ref_suffix:
       ref_suffix += ',' + notify_suffix
     else:
       ref_suffix = '%' + notify_suffix
-
-    if reviewers:
-      ref_suffix += ',' + ','.join('r=%s' % email
-                                   for email in sorted(reviewers))
 
     if git_mirror is None:
       calls += [
@@ -1571,8 +1567,8 @@ class TestGitCl(TestCase):
     calls += [
         ((['git', 'config', 'rietveld.cc'],), ''),
         (('AddReviewers', 'chromium-review.googlesource.com',
-           123456 if squash else None,
-          ['joe@example.com'] + cc, False, notify), ''),
+           123456 if squash else None, sorted(reviewers),
+          ['joe@example.com'] + cc, notify), ''),
     ]
     calls += cls._git_post_upload_calls()
     return calls

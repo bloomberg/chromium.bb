@@ -653,32 +653,44 @@ def GetReview(host, change, revision):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def AddReviewers(host, change, add=None, is_reviewer=True, notify=True):
+def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
+                 accept_statuses=frozenset([200, 400, 422])):
   """Add reviewers to a change."""
-  errors = None
-  if not add:
+  if not reviewers and not ccs:
     return None
-  if isinstance(add, basestring):
-    add = (add,)
-  path = 'changes/%s/reviewers' % change
-  for r in add:
-    state = 'REVIEWER' if is_reviewer else 'CC'
-    notify = 'ALL' if notify else 'NONE'
-    body = {
-      'reviewer': r,
-      'state': state,
-      'notify': notify,
-    }
-    try:
-      conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-      _ = ReadHttpJsonResponse(conn)
-    except GerritError as e:
-      if e.http_status == 422:  # "Unprocessable Entity"
-        LOGGER.warn('Note: "%s" not added as a %s' % (r, state.lower()))
-        errors = True
-      else:
-        raise
-  return errors
+  reviewers = frozenset(reviewers or [])
+  ccs = frozenset(ccs or [])
+  path = 'changes/%s/revisions/current/review' % change
+
+  body = {
+    'reviewers': [],
+    'notify': 'ALL' if notify else 'NONE',
+  }
+  for r in sorted(reviewers | ccs):
+    state = 'REVIEWER' if r in reviewers else 'CC'
+    body['reviewers'].append({
+     'reviewer': r,
+     'state': state,
+     'notify': 'NONE',  # We handled `notify` argument above.
+   })
+
+  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  # Gerrit will return 400 if one or more of the requested reviewers are
+  # unprocessable. We read the response object to see which were rejected,
+  # warn about them, and retry with the remainder.
+  resp = ReadHttpJsonResponse(conn, accept_statuses=accept_statuses)
+
+  errored = set()
+  for result in resp.get('reviewers', {}).itervalues():
+    r = result.get('input')
+    state = 'REVIEWER' if r in reviewers else 'CC'
+    if result.get('error'):
+      errored.add(r)
+      LOGGER.warn('Note: "%s" not added as a %s' % (r, state.lower()))
+  if errored:
+    # Try again, adding only those that didn't fail, and only accepting 200.
+    AddReviewers(host, change, reviewers=(reviewers-errored),
+                 ccs=(ccs-errored), notify=notify, accept_statuses=[200])
 
 
 def RemoveReviewers(host, change, remove=None):
