@@ -251,16 +251,19 @@ public class AndroidSyncSettings {
         AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
-                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-                for (Account account : accounts) {
-                    if (!account.equals(mAccount)
-                            && mSyncContentResolverDelegate.getIsSyncable(
-                                       account, mContractAuthority)
-                                    > 0) {
-                        mSyncContentResolverDelegate.setIsSyncable(account, mContractAuthority, 0);
+                synchronized (mLock) {
+                    StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+                    for (Account account : accounts) {
+                        if (!account.equals(mAccount)
+                                && mSyncContentResolverDelegate.getIsSyncable(
+                                           account, mContractAuthority)
+                                        > 0) {
+                            mSyncContentResolverDelegate.setIsSyncable(
+                                    account, mContractAuthority, 0);
+                        }
                     }
+                    StrictMode.setThreadPolicy(oldPolicy);
                 }
-                StrictMode.setThreadPolicy(oldPolicy);
 
                 if (callback != null) callback.onResult(true);
             }
