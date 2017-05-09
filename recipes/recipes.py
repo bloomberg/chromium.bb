@@ -190,7 +190,7 @@ def main():
 
   repo_root = os.path.abspath(
     _git_output(['rev-parse', '--show-toplevel'],
-                cwd=os.path.dirname(__file__)).strip())
+                cwd=os.path.abspath(os.path.dirname(__file__))).strip())
 
   # TODO(iannucci): Actually make the location of recipes.cfg configurable.
   recipes_cfg_path = os.path.join(repo_root, 'infra', 'config', 'recipes.cfg')
