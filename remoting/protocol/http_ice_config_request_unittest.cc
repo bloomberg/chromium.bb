@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/base/url_request.h"
 #include "remoting/protocol/ice_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +51,8 @@ class FakeUrlRequestFactory : public UrlRequestFactory {
   // UrlRequestFactory interface.
   std::unique_ptr<UrlRequest> CreateUrlRequest(
       UrlRequest::Type type,
-      const std::string& url) override {
+      const std::string& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     EXPECT_EQ(UrlRequest::Type::POST, type);
     CHECK(results_.count(url));
     return base::MakeUnique<FakeUrlRequest>(results_[url]);

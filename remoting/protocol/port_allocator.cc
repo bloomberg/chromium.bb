@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport_context.h"
 
@@ -150,9 +151,43 @@ void PortAllocatorSession::TryCreateRelaySession() {
                     net::EscapeUrlEncodedData(username(), false) +
                     "&password=" +
                     net::EscapeUrlEncodedData(password(), false) + "&sn=1";
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("CRD_relay_session_request", R"(
+        semantics {
+          sender: "Chrome Remote Desktop"
+          description:
+            "Request is sent by Chrome Remote Desktop to allocate relay "
+            "session. Returned relay session credentials are used over UDP to "
+            "connect to Google-owned relay servers, which is required for NAT "
+            "traversal."
+          trigger:
+            "Start of each Chrome Remote Desktop and during connection when "
+            "peer-to-peer transport needs to be reconnected."
+          data:
+            "A temporary authentication token issued by Google services (over "
+            "XMPP connection)."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled by settings. You can block Chrome "
+            "Remote Desktop as specified here: "
+            "https://support.google.com/chrome/?p=remote_desktop"
+          chrome_policy {
+            RemoteAccessHostFirewallTraversal {
+              policy_options {mode: MANDATORY}
+              RemoteAccessHostFirewallTraversal: false
+            }
+          }
+          policy_exception_justification:
+            "Above specified policy is only applicable on the host side and "
+            "doesn't have effect in Android and iOS client apps. The product "
+            "is shipped separately from Chromium, except on Chrome OS."
+        })");
   std::unique_ptr<UrlRequest> url_request =
       transport_context_->url_request_factory()->CreateUrlRequest(
-          UrlRequest::Type::GET, url);
+          UrlRequest::Type::GET, url, traffic_annotation);
   url_request->AddHeader("X-Talk-Google-Relay-Auth: " +
                          ice_config_.relay_token);
   url_request->AddHeader("X-Google-Relay-Auth: " + ice_config_.relay_token);

@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/url_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/protocol/ice_config.h"
 
 namespace remoting {
@@ -97,8 +98,45 @@ HttpIceConfigRequest::HttpIceConfigRequest(
     UrlRequestFactory* url_request_factory,
     const std::string& url)
     : url_(url) {
-  url_request_ =
-      url_request_factory->CreateUrlRequest(UrlRequest::Type::POST, url_);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("CRD_ice_config_request", R"(
+        semantics {
+          sender: "Chrome Remote Desktop"
+          description:
+            "Request is used by Chrome Remote Desktop to fetch ICE "
+            "configuration which contains list of STUN & TURN servers and TURN "
+            "credentials."
+          trigger:
+            "When a Chrome Remote Desktop session is being connected and "
+            "periodically while a session is active, as necessary. Currently "
+            "the API issues credentials that expire every 24 hours, so this "
+            "request will only be sent again while session is active more than "
+            "24 hours and it needs to renegotiate the ICE connection. The 24 "
+            "hour period is controlled by the server and may change. In some "
+            "cases, e.g. if direct connection is used, it will not trigger "
+            "periodically.
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled by settings. You can block Chrome "
+            "Remote Desktop as specified here: "
+            "https://support.google.com/chrome/?p=remote_desktop"
+          chrome_policy {
+            RemoteAccessHostFirewallTraversal {
+              policy_options {mode: MANDATORY}
+              RemoteAccessHostFirewallTraversal: false
+            }
+          }
+          policy_exception_justification:
+            "Above specified policy is only applicable on the host side and "
+            "doesn't have effect in Android and iOS client apps. The product "
+            "is shipped separately from Chromium, except on Chrome OS."
+        })");
+  url_request_ = url_request_factory->CreateUrlRequest(
+      UrlRequest::Type::POST, url_, traffic_annotation);
   url_request_->SetPostData("application/json", "");
 }
 

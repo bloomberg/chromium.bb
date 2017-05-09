@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "remoting/base/url_request.h"
 
@@ -21,9 +22,11 @@ namespace remoting {
 // UrlRequest implementation based on net::URLFetcher.
 class ChromiumUrlRequest : public UrlRequest, public net::URLFetcherDelegate {
  public:
-  ChromiumUrlRequest(scoped_refptr<net::URLRequestContextGetter> url_context,
-                     UrlRequest::Type type,
-                     const std::string& url);
+  ChromiumUrlRequest(
+      scoped_refptr<net::URLRequestContextGetter> url_context,
+      UrlRequest::Type type,
+      const std::string& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~ChromiumUrlRequest() override;
 
   // UrlRequest interface.
@@ -47,8 +50,10 @@ class ChromiumUrlRequestFactory : public UrlRequestFactory {
   ~ChromiumUrlRequestFactory() override;
 
   // UrlRequestFactory interface.
-  std::unique_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
-                                               const std::string& url) override;
+  std::unique_ptr<UrlRequest> CreateUrlRequest(
+      UrlRequest::Type type,
+      const std::string& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> url_context_;

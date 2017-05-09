@@ -9,6 +9,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace remoting {
 
@@ -68,8 +69,31 @@ void TelemetryLogWriter::SendPendingEntries() {
 void TelemetryLogWriter::PostJsonToServer(const std::string& json) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!request_);
-  request_ = request_factory_->CreateUrlRequest(UrlRequest::Type::POST,
-                                                telemetry_base_url_);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("CRD_telemetry_log", R"(
+        semantics {
+          sender: "Chrome Remote Desktop"
+          description: "Telemetry logs for Chrome Remote Desktop."
+          trigger:
+            "These requests are sent periodically when a session is connected, "
+            "i.e. CRD app is open and is connected to a host."
+          data:
+            "Anonymous usage statistics. Please see https://cs.chromium.org/"
+            "chromium/src/remoting/base/chromoting_event.h for more details."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled by settings. You can block Chrome "
+            "Remote Desktop as specified here: "
+            "https://support.google.com/chrome/?p=remote_desktop"
+          policy_exception_justification:
+            "The product is shipped separately from Chromium, except on Chrome "
+            "OS."
+        })");
+  request_ = request_factory_->CreateUrlRequest(
+      UrlRequest::Type::POST, telemetry_base_url_, traffic_annotation);
   if (!auth_token_.empty()) {
     request_->AddHeader("Authorization:Bearer " + auth_token_);
   }

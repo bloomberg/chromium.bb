@@ -61,7 +61,8 @@ class FakeUrlRequestFactory : public UrlRequestFactory {
   // request_factory_ override.
   std::unique_ptr<UrlRequest> CreateUrlRequest(
       UrlRequest::Type type,
-      const std::string& url) override {
+      const std::string& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     EXPECT_FALSE(expected_requests_.empty());
     if (expected_requests_.empty()) {
       return std::unique_ptr<UrlRequest>(nullptr);
