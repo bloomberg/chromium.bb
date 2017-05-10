@@ -18,7 +18,7 @@ set(AOM_TEST_DATA_PATH "$ENV{LIBAOM_TEST_DATA_PATH}")
 
 include("${AOM_ROOT}/test/test_data_util.cmake")
 
-if (${AOM_TEST_DATA_PATH} STREQUAL "")
+if ("${AOM_TEST_DATA_PATH}" STREQUAL "")
   message(WARNING "Writing test data to ${AOM_CONFIG_DIR}, set "
           "$LIBAOM_TEST_DATA_PATH in your environment to avoid this warning.")
   set(AOM_TEST_DATA_PATH "${AOM_CONFIG_DIR}")
