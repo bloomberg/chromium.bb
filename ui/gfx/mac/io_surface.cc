@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
@@ -14,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/switches.h"
 
 namespace gfx {
 
@@ -187,16 +189,14 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
     DCHECK_EQ(kIOReturnSuccess, r);
   }
 
-  bool force_system_color_space = false;
+  bool force_color_space = false;
 
   // Displaying an IOSurface that does not have a color space using an
-  // AVSampleBufferDisplayLayer can result in a black screen. Specify the
-  // main display's color profile by default, which will result in no color
-  // correction being done for the main monitor (which is the behavior of not
-  // specifying a color space).
+  // AVSampleBufferDisplayLayer can result in a black screen. Ensure that
+  // a color space always be specified.
   // https://crbug.com/608879
   if (format == gfx::BufferFormat::YUV_420_BIPLANAR)
-    force_system_color_space = true;
+    force_color_space = true;
 
   // On Sierra, all IOSurfaces are color corrected as though they are in sRGB
   // color space by default. Prior to Sierra, IOSurfaces were not color
@@ -205,10 +205,20 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
   // color space.
   // https://crbug.com/654488
   if (base::mac::IsAtLeastOS10_12())
-    force_system_color_space = true;
+    force_color_space = true;
 
-  if (force_system_color_space) {
-    CGColorSpaceRef color_space = base::mac::GetSystemColorSpace();
+  // Ensure that all IOSurfaces start as sRGB when color correct rendering
+  // is enabled.
+  static bool color_correct_rendering_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableColorCorrectRendering);
+  if (color_correct_rendering_enabled)
+    force_color_space = true;
+
+  if (force_color_space) {
+    CGColorSpaceRef color_space = color_correct_rendering_enabled
+                                      ? base::mac::GetSRGBColorSpace()
+                                      : base::mac::GetSystemColorSpace();
     base::ScopedCFTypeRef<CFDataRef> color_space_icc(
         CGColorSpaceCopyICCProfile(color_space));
     // Note that nullptr is an acceptable input to IOSurfaceSetValue.

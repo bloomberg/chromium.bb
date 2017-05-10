@@ -21,4 +21,8 @@ const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
 // Run in headless mode, i.e., without a UI or display server dependencies.
 const char kHeadless[] = "headless";
 
+// Convert rasterization and compositing inputs to the output color space
+// before operating on them.
+const char kEnableColorCorrectRendering[] = "enable-color-correct-rendering";
+
 }  // namespace switches

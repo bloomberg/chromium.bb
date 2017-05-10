@@ -44,6 +44,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 
 namespace ui {
@@ -145,7 +146,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
       command_line->HasSwitch(cc::switches::kUIEnableLayerLists);
 
   settings.enable_color_correct_rasterization =
-      command_line->HasSwitch(cc::switches::kEnableColorCorrectRendering);
+      command_line->HasSwitch(switches::kEnableColorCorrectRendering);
   settings.renderer_settings.enable_color_correct_rendering =
       settings.enable_color_correct_rasterization ||
       command_line->HasSwitch(switches::kEnableHDR);
