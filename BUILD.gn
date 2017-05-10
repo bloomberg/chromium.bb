@@ -261,6 +261,7 @@ group("gn_all") {
       "//components/policy/android:components_policy_junit_tests",
       "//content/public/android:content_junit_tests",
       "//content/shell/android:content_shell_apk",
+      "//device:device_junit_tests",
       "//media/gpu:video_decode_accelerator_unittest",
       "//net/android:net_junit_tests",
       "//testing/android/junit:junit_unit_tests",
