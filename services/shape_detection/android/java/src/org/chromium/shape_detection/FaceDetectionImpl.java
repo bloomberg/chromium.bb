@@ -18,6 +18,7 @@ import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 import org.chromium.shape_detection.mojom.FaceDetection;
 import org.chromium.shape_detection.mojom.FaceDetectionResult;
 import org.chromium.shape_detection.mojom.FaceDetectorOptions;
+import org.chromium.shape_detection.mojom.Landmark;
 
 import java.nio.ByteBuffer;
 
@@ -104,6 +105,8 @@ public class FaceDetectionImpl implements FaceDetection {
                     faceArray[i].boundingBox.width = 2 * eyesDistance;
                     faceArray[i].boundingBox.height = 2 * eyesDistance;
                     // TODO(xianglu): Consider adding Face.confidence and Face.pose.
+
+                    faceArray[i].landmarks = new Landmark[0];
                 }
 
                 callback.call(faceArray);
