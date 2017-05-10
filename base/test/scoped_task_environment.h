@@ -63,9 +63,8 @@ class ScopedTaskEnvironment {
   ScopedTaskEnvironment(
       MainThreadType main_thread_type = MainThreadType::DEFAULT);
 
-  // Runs pending (Thread|Sequenced)TaskRunnerHandle tasks and pending
-  // BLOCK_SHUTDOWN TaskScheduler tasks. Then, unregisters the TaskScheduler and
-  // the (Thread|Sequenced)TaskRunnerHandle.
+  // Waits until no undelayed TaskScheduler tasks remain. Then, unregisters the
+  // TaskScheduler and the (Thread|Sequenced)TaskRunnerHandle.
   ~ScopedTaskEnvironment();
 
   // Synchronously runs (Thread|Sequenced)TaskRunnerHandle tasks until no
