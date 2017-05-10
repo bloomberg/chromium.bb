@@ -145,9 +145,11 @@ public class WebApkActivity extends WebappActivity {
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
         super.onDeferredStartupWithStorage(storage);
 
+        WebApkInfo info = (WebApkInfo) mWebappInfo;
+        WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.webApkPackageName());
+
         mUpdateManager = new WebApkUpdateManager(WebApkActivity.this, storage);
-        mUpdateManager.updateIfNeeded(getActivityTab(),
-                (WebApkInfo) mWebappInfo);
+        mUpdateManager.updateIfNeeded(getActivityTab(), info);
     }
 
     @Override
