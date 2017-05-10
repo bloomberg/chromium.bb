@@ -410,8 +410,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         data_frame_count_(0),
         last_payload_len_(0),
         last_frame_len_(0),
-        header_buffer_(kDefaultHeaderBufferSize),
+        header_buffer_(new char[kDefaultHeaderBufferSize]),
         header_buffer_length_(0),
+        header_buffer_size_(kDefaultHeaderBufferSize),
         header_stream_id_(static_cast<SpdyStreamId>(-1)),
         header_control_type_(SpdyFrameType::DATA),
         header_buffer_valid_(false) {}
@@ -617,7 +618,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       DLOG(FATAL) << "Attempted to init header streaming with "
                   << "invalid control frame type: " << header_control_type;
     }
-    std::fill(header_buffer_.begin(), header_buffer_.end(), 0);
+    memset(header_buffer_.get(), 0, header_buffer_size_);
     header_buffer_length_ = 0;
     header_stream_id_ = stream_id;
     header_control_type_ = header_control_type;
@@ -631,7 +632,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   // Override the default buffer size (16K). Call before using the framer!
   void set_header_buffer_size(size_t header_buffer_size) {
-    header_buffer_.resize(header_buffer_size);
+    header_buffer_size_ = header_buffer_size;
+    header_buffer_.reset(new char[header_buffer_size]);
   }
 
   // Largest control frame that the SPDY implementation sends, including the
@@ -681,8 +683,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   size_t last_frame_len_;
 
   // Header block streaming state:
-  std::vector<char> header_buffer_;
+  std::unique_ptr<char[]> header_buffer_;
   size_t header_buffer_length_;
+  size_t header_buffer_size_;
   size_t header_bytes_received_;
   SpdyStreamId header_stream_id_;
   SpdyFrameType header_control_type_;
@@ -3027,7 +3030,7 @@ TEST_P(SpdyFramerTest, ControlFrameMuchTooLarge) {
       control_frame.size());
   // It's up to the visitor to ignore extraneous header data; the framer
   // won't throw an error.
-  EXPECT_GT(visitor.header_bytes_received_, visitor.header_buffer_.size());
+  EXPECT_GT(visitor.header_bytes_received_, visitor.header_buffer_size_);
   EXPECT_EQ(1, visitor.end_of_stream_count_);
 }
 
