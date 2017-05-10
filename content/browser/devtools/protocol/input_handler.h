@@ -129,6 +129,7 @@ class InputHandler : public DevToolsDomainHandler,
       SyntheticGesture::Result result);
 
   void ClearPendingKeyAndMouseCallbacks();
+  bool PointIsWithinContents(gfx::PointF point) const;
 
   RenderFrameHostImpl* host_;
   // Callbacks for calls to Input.dispatchKey/MouseEvent that have been sent to
