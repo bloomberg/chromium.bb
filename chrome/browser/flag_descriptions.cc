@@ -3143,4 +3143,14 @@ const char kCaptureThumbnailOnLoadFinishedDescription[] =
     "Capture a page thumbnail (for use on the New Tab page) when the page load "
     "finishes, in addition to other times a thumbnail may be captured.";
 
+#if defined(OS_WIN)
+
+// Name and description of the flag that enables D3D v-sync.
+const char kEnableD3DVsync[] = "D3D v-sync";
+const char kEnableD3DVsyncDescription[] =
+    "Produces v-sync signal by having D3D wait for vertical blanking interval "
+    "to occur.";
+
+#endif  // defined(OS_WIN)
+
 }  // namespace flag_descriptions
