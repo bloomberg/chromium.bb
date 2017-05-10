@@ -86,6 +86,16 @@ struct EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
 };
 
 template <>
+struct EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
+                  autofill::PasswordForm::SubmissionIndicatorEvent> {
+  static autofill::mojom::PasswordFormSubmissionIndicatorEvent ToMojom(
+      autofill::PasswordForm::SubmissionIndicatorEvent input);
+  static bool FromMojom(
+      autofill::mojom::PasswordFormSubmissionIndicatorEvent input,
+      autofill::PasswordForm::SubmissionIndicatorEvent* output);
+};
+
+template <>
 struct StructTraits<autofill::mojom::FormFieldDataDataView,
                     autofill::FormFieldData> {
   static const base::string16& label(const autofill::FormFieldData& r) {
@@ -495,6 +505,11 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
 
   static bool does_look_like_signup_form(const autofill::PasswordForm& r) {
     return r.does_look_like_signup_form;
+  }
+
+  static autofill::PasswordForm::SubmissionIndicatorEvent submission_event(
+      const autofill::PasswordForm& r) {
+    return r.submission_event;
   }
 
   static bool Read(autofill::mojom::PasswordFormDataView data,

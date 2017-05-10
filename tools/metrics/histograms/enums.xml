@@ -33421,6 +33421,15 @@ from previous Chrome versions.
   <int value="2" label="MemoryCached StyleSheetContents was reused"/>
 </enum>
 
+<enum name="SubmissionIndicatorEvent" type="int">
+  <int value="0" label="No submission"/>
+  <int value="1" label="HTML form submission"/>
+  <int value="2" label="Same document navigation"/>
+  <int value="3" label="XHR succeeded"/>
+  <int value="4" label="Frame detached"/>
+  <int value="5" label="By context menu"/>
+</enum>
+
 <enum name="SubresourceFilterActions" type="int">
   <int value="0" label="New Navigation"/>
   <int value="1" label="UI Shown"/>

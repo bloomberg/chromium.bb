@@ -49670,6 +49670,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SuccessfulSubmissionIndicatorEvent"
+    enum="SubmissionIndicatorEvent">
+  <owner>dvadym@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The type of event that the Password Manager used for detecting a password
+    form submission. Recorded for each successful password form submission.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SyncCredentialFiltered"
     enum="CredentialFilteredType">
   <owner>gcasto@chromium.org</owner>

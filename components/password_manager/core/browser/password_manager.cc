@@ -714,6 +714,10 @@ void PasswordManager::OnLoginSuccessful() {
 
   client_->GetStoreResultFilter()->ReportFormLoginSuccess(
       *provisional_save_manager_);
+  if (provisional_save_manager_->submitted_form()) {
+    metrics_util::LogPasswordSuccessfulSubmissionIndicatorEvent(
+        provisional_save_manager_->submitted_form()->submission_event);
+  }
 
   if (base::FeatureList::IsEnabled(features::kDropSyncCredential)) {
     DCHECK(provisional_save_manager_->submitted_form());

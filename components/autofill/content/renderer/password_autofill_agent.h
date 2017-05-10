@@ -258,7 +258,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                  ProvisionallySaveRestriction restriction);
 
   // Helper function called when same-document navigation completed
-  void OnSameDocumentNavigationCompleted();
+  void OnSameDocumentNavigationCompleted(bool is_inpage_navigation);
 
   const mojom::AutofillDriverPtr& GetAutofillDriver();
 

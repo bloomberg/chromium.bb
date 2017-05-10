@@ -84,6 +84,20 @@ struct PasswordForm {
     LAYOUT_LAST = LAYOUT_LOGIN_AND_SIGNUP
   };
 
+  // Events observed by the Password Manager that indicate either that a form is
+  // potentially being submitted, or that a form has already been successfully
+  // submitted. Recorded into a UMA histogram, so order of enumerators should
+  // not be changed.
+  enum class SubmissionIndicatorEvent {
+    NONE,
+    HTML_FORM_SUBMISSION,
+    SAME_DOCUMENT_NAVIGATION,
+    XHR_SUCCEEDED,
+    FRAME_DETACHED,
+    MANUAL_SAVE,
+    SUBMISSION_INDICATOR_EVENT_COUNT
+  };
+
   // The "Realm" for the sign-on. This is scheme, host, port for SCHEME_HTML.
   // Dialog based forms also contain the HTTP realm. Android based forms will
   // contain a string of the form "android://<hash of cert>@<package name>"
@@ -278,6 +292,11 @@ struct PasswordForm {
   // If true, this form looks like SignUp form according to local heuristics.
   bool does_look_like_signup_form;
 
+  // The type of the event that was taken as an indication that this form is
+  // being or has already been submitted. This field is not persisted and filled
+  // out only for submitted forms.
+  SubmissionIndicatorEvent submission_event;
+
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
   bool IsPossibleChangePasswordForm() const;
@@ -315,6 +334,9 @@ base::string16 OtherPossibleUsernamesToString(
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);
 std::ostream& operator<<(std::ostream& os, PasswordForm* form);
+std::ostream& operator<<(
+    std::ostream& os,
+    PasswordForm::SubmissionIndicatorEvent submission_event);
 
 }  // namespace autofill
 
