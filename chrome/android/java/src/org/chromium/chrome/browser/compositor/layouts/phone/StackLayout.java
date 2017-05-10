@@ -1297,7 +1297,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
                 resourceManager, fullscreenManager);
         // If the browser controls are at the bottom make sure to use theme colors for this layout
         // specifically.
-        if (fullscreenManager.areBrowserControlsAtBottom()) {
+        if (fullscreenManager.areBrowserControlsAtBottom() && mLayoutTabs != null) {
             for (LayoutTab t : mLayoutTabs) t.setForceDefaultThemeColor(false);
         }
         assert mSceneLayer != null;
