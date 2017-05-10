@@ -70,7 +70,6 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
   // you're recreating the BookmarkModel.
   //
   // NOTE: this does not block until the bookmarks are loaded.
-  // TODO(shreyasv): If needed, write a version that blocks.
   void CreateBookmarkModel(bool delete_file);
 
   // Creates the history service. If |delete_file| is true, the history file is
