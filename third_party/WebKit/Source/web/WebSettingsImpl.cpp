@@ -62,7 +62,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings,
 
 void WebSettingsImpl::SetFromStrings(const WebString& name,
                                      const WebString& value) {
-  settings_->setFromStrings(name, value);
+  settings_->SetFromStrings(name, value);
 }
 
 void WebSettingsImpl::SetStandardFontFamily(const WebString& font,

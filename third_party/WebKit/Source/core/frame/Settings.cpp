@@ -62,8 +62,8 @@ static const bool kDefaultSelectTrailingWhitespaceEnabled = false;
 
 Settings::Settings()
 #if DEBUG_TEXT_AUTOSIZING_ON_DESKTOP
-    : m_textAutosizingWindowSizeOverride(320, 480),
-      m_textAutosizingEnabled(true)
+    : text_autosizing_window_size_override_(320, 480),
+      text_autosizing_enabled_(true)
 #else
     : text_autosizing_enabled_(false)
 #endif
