@@ -995,7 +995,7 @@ QuicHeaderList AsHeaderList(const T& container) {
     total_size += p.first.size() + p.second.size();
     l.OnHeader(p.first, p.second);
   }
-  l.OnHeaderBlockEnd(total_size);
+  l.OnHeaderBlockEnd(total_size, total_size);
   return l;
 }
 

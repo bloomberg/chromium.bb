@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_HEADER_COALESCER_H_
-#define NET_SPDY_HEADER_COALESCER_H_
+#ifndef NET_SPDY_CHROMIUM_HEADER_COALESCER_H_
+#define NET_SPDY_CHROMIUM_HEADER_COALESCER_H_
 
 #include "net/base/net_export.h"
 #include "net/spdy/core/spdy_header_block.h"
@@ -20,7 +20,6 @@ class NET_EXPORT_PRIVATE HeaderCoalescer : public SpdyHeadersHandlerInterface {
 
   void OnHeader(SpdyStringPiece key, SpdyStringPiece value) override;
 
-  void OnHeaderBlockEnd(size_t uncompressed_header_bytes) override {}
   void OnHeaderBlockEnd(size_t uncompressed_header_bytes,
                         size_t compressed_header_bytes) override {}
 
@@ -40,4 +39,4 @@ class NET_EXPORT_PRIVATE HeaderCoalescer : public SpdyHeadersHandlerInterface {
 
 }  // namespace net
 
-#endif  // NET_SPDY_HEADER_COALESCER_H_
+#endif  // NET_SPDY_CHROMIUM_HEADER_COALESCER_H_
