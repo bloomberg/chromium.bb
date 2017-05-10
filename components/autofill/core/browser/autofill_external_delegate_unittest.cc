@@ -690,7 +690,7 @@ MATCHER_P(CreditCardMatches, card, "") {
 // credit card.
 TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
   CreditCard card;
-  test::SetCreditCardInfo(&card, "Alice", "4111", "1", "3000");
+  test::SetCreditCardInfo(&card, "Alice", "4111", "1", "3000", "1");
   EXPECT_CALL(*autofill_manager_,
       FillCreditCardForm(_, _, _, CreditCardMatches(card), base::string16()));
   external_delegate_->OnCreditCardScanned(card);

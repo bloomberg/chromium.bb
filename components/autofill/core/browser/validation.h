@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
@@ -19,6 +20,7 @@ class Time;
 namespace autofill {
 
 class CreditCard;
+class AutofillProfile;
 
 // Constants for the length of a CVC.
 static const size_t GENERAL_CVC_LENGTH = 3;
@@ -30,6 +32,7 @@ static const CreditCardCompletionStatus CREDIT_CARD_COMPLETE = 0;
 static const CreditCardCompletionStatus CREDIT_CARD_EXPIRED = 1 << 0;
 static const CreditCardCompletionStatus CREDIT_CARD_NO_CARDHOLDER = 1 << 1;
 static const CreditCardCompletionStatus CREDIT_CARD_NO_NUMBER = 1 << 2;
+static const CreditCardCompletionStatus CREDIT_CARD_NO_BILLING_ADDRESS = 1 << 3;
 
 // Returns true if |year| and |month| describe a date later than |now|.
 // |year| must have 4 digits.
@@ -56,10 +59,10 @@ bool IsValidCreditCardNumberForBasicCardNetworks(
 
 // Returns the credit card's completion status. If equal to
 // CREDIT_CARD_COMPLETE, then the card is ready to be used for Payment Request.
-// TODO(crbug.com/709776): Check for billing address association.
 CreditCardCompletionStatus GetCompletionStatusForCard(
     const CreditCard& credit_card,
-    const std::string& app_locale);
+    const std::string& app_locale,
+    const std::vector<AutofillProfile*> billing_addresses);
 
 // Return the message to be displayed to the user, indicating what's missing
 // to make the credit card complete for payment. If more than one thing is

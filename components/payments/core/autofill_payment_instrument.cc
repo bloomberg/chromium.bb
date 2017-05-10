@@ -55,8 +55,6 @@ void AutofillPaymentInstrument::InvokePaymentApp(
   delegate_ = delegate;
 
   // Get the billing address.
-  // TODO(crbug.com/709776): Make sure the billing address is valid before
-  // getting here.
   if (!credit_card_.billing_address_id().empty()) {
     autofill::AutofillProfile* billing_address =
         autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
@@ -84,18 +82,21 @@ void AutofillPaymentInstrument::InvokePaymentApp(
 }
 
 bool AutofillPaymentInstrument::IsCompleteForPayment() {
-  return autofill::GetCompletionStatusForCard(credit_card_, app_locale_) ==
+  return autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
+                                              billing_profiles_) ==
          autofill::CREDIT_CARD_COMPLETE;
 }
 
 base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() {
   return autofill::GetCompletionMessageForCard(
-      autofill::GetCompletionStatusForCard(credit_card_, app_locale_));
+      autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
+                                           billing_profiles_));
 }
 
 bool AutofillPaymentInstrument::IsValidForCanMakePayment() {
   autofill::CreditCardCompletionStatus status =
-      autofill::GetCompletionStatusForCard(credit_card_, app_locale_);
+      autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
+                                           billing_profiles_);
   // Card has to have a cardholder name and number for the purposes of
   // CanMakePayment. An expired card is still valid at this stage.
   return !(status & autofill::CREDIT_CARD_NO_CARDHOLDER ||

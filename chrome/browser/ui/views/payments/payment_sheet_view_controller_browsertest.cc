@@ -36,7 +36,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest, NoData) {
 // With a supported card (Visa) present, the pay button should be enabled.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
                        SupportedCard) {
-  AddCreditCard(autofill::test::GetCreditCard());  // Visa card.
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+  autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
+  card.set_billing_address_id(profile.guid());
+  AddCreditCard(card);
 
   InvokePaymentRequestUI();
   EXPECT_TRUE(IsPayButtonEnabled());
@@ -105,8 +109,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 // enough information to enable the pay button.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        SupportedCard_CompleteContactInfo) {
-  AddCreditCard(autofill::test::GetCreditCard());  // Visa card.
-  AddAutofillProfile(autofill::test::GetFullProfile());
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+  autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
+  card.set_billing_address_id(profile.guid());
+  AddCreditCard(card);
 
   InvokePaymentRequestUI();
   EXPECT_TRUE(IsPayButtonEnabled());
@@ -163,8 +170,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        AllClickableRowsPresent) {
-  AddCreditCard(autofill::test::GetCreditCard());  // Visa card.
-  AddAutofillProfile(autofill::test::GetFullProfile());
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+  autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
+  card.set_billing_address_id(profile.guid());
+  AddCreditCard(card);
   InvokePaymentRequestUI();
 
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(

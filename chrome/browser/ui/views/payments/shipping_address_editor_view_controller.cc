@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/grit/generated_resources.h"
@@ -68,10 +69,11 @@ ShippingAddressEditorViewController::ShippingAddressEditorViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
+    BackNavigationType back_navigation_type,
     base::OnceClosure on_edited,
     base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
     autofill::AutofillProfile* profile)
-    : EditorViewController(spec, state, dialog),
+    : EditorViewController(spec, state, dialog, back_navigation_type),
       on_edited_(std::move(on_edited)),
       on_added_(std::move(on_added)),
       profile_to_edit_(profile),
@@ -81,11 +83,6 @@ ShippingAddressEditorViewController::ShippingAddressEditorViewController(
 }
 
 ShippingAddressEditorViewController::~ShippingAddressEditorViewController() {}
-
-std::unique_ptr<views::View>
-ShippingAddressEditorViewController::CreateHeaderView() {
-  return base::MakeUnique<views::View>();
-}
 
 std::vector<EditorField>
 ShippingAddressEditorViewController::GetFieldDefinitions() {
@@ -113,7 +110,6 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
   autofill::AutofillProfile profile;
   if (!SaveFieldsToProfile(&profile, /*ignore_errors=*/false))
     return false;
-
   if (!profile_to_edit_) {
     // Add the profile (will not add a duplicate).
     profile.set_origin(autofill::kSettingsOrigin);
@@ -221,6 +217,14 @@ base::string16 ShippingAddressEditorViewController::GetSheetTitle() {
   // in the case that one or more fields are missing.
   return profile_to_edit_ ? l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT_ADDRESS)
                           : l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_ADDRESS);
+}
+
+std::unique_ptr<views::Button>
+ShippingAddressEditorViewController::CreatePrimaryButton() {
+  std::unique_ptr<views::Button> button(
+      EditorViewController::CreatePrimaryButton());
+  button->set_id(static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
+  return button;
 }
 
 void ShippingAddressEditorViewController::UpdateEditorFields() {
@@ -417,7 +421,6 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     controller_->DisplayErrorMessageForField(field_, base::ASCIIToUTF16(""));
     return true;
   }
-
   bool is_required_valid = !field_.required;
   const base::string16 displayed_message =
       is_required_valid ? base::ASCIIToUTF16("")

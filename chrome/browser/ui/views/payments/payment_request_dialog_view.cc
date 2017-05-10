@@ -238,14 +238,17 @@ void PaymentRequestDialogView::ShowCvcUnmaskPrompt(
 }
 
 void PaymentRequestDialogView::ShowCreditCardEditor(
+    BackNavigationType back_navigation_type,
+    int next_ui_tag,
     base::OnceClosure on_edited,
     base::OnceCallback<void(const autofill::CreditCard&)> on_added,
     autofill::CreditCard* credit_card) {
   view_stack_->Push(
       CreateViewAndInstallController(
           base::MakeUnique<CreditCardEditorViewController>(
-              request_->spec(), request_->state(), this, std::move(on_edited),
-              std::move(on_added), credit_card),
+              request_->spec(), request_->state(), this, back_navigation_type,
+              next_ui_tag, std::move(on_edited), std::move(on_added),
+              credit_card),
           &controller_map_),
       /* animate = */ true);
   if (observer_for_testing_)
@@ -253,24 +256,28 @@ void PaymentRequestDialogView::ShowCreditCardEditor(
 }
 
 void PaymentRequestDialogView::ShowShippingAddressEditor(
+    BackNavigationType back_navigation_type,
     base::OnceClosure on_edited,
     base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
     autofill::AutofillProfile* profile) {
-  view_stack_->Push(CreateViewAndInstallController(
-                        base::MakeUnique<ShippingAddressEditorViewController>(
-                            request_->spec(), request_->state(), this,
-                            std::move(on_edited), std::move(on_added), profile),
-                        &controller_map_),
-                    /* animate = */ true);
+  view_stack_->Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<ShippingAddressEditorViewController>(
+              request_->spec(), request_->state(), this, back_navigation_type,
+              std::move(on_edited), std::move(on_added), profile),
+          &controller_map_),
+      /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnShippingAddressEditorOpened();
 }
 
 void PaymentRequestDialogView::ShowContactInfoEditor(
+    BackNavigationType back_navigation_type,
     autofill::AutofillProfile* profile) {
   view_stack_->Push(CreateViewAndInstallController(
                         base::MakeUnique<ContactInfoEditorViewController>(
-                            request_->spec(), request_->state(), this, profile),
+                            request_->spec(), request_->state(), this,
+                            back_navigation_type, profile),
                         &controller_map_),
                     /* animate = */ true);
   if (observer_for_testing_)

@@ -22,7 +22,11 @@ class PaymentRequestCvcUnmaskViewControllerTest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
                        CvcSentToResponse) {
-  AddCreditCard(autofill::test::GetCreditCard());  // Visa.
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+  autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
+  card.set_billing_address_id(profile.guid());
+  AddCreditCard(card);
 
   InvokePaymentRequestUI();
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
@@ -35,7 +39,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
 // does not crash.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
                        OpenGoBackOpenPay) {
-  AddCreditCard(autofill::test::GetCreditCard());  // Visa.
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+  autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
+  card.set_billing_address_id(profile.guid());
+  AddCreditCard(card);
 
   InvokePaymentRequestUI();
   OpenCVCPromptWithCVC(base::ASCIIToUTF16("012"));
@@ -50,10 +58,19 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
                        EnterAcceleratorConfirmsCvc) {
-  AddCreditCard(autofill::test::GetCreditCard());  // Visa.
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+  autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
+  card.set_billing_address_id(profile.guid());
+  AddCreditCard(card);
 
   InvokePaymentRequestUI();
+
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  // This prevents a timeout in error cases where PAY_BUTTON is disabled.
+  ASSERT_TRUE(dialog_view()
+                  ->GetViewByID(static_cast<int>(DialogViewID::PAY_BUTTON))
+                  ->enabled());
   OpenCVCPromptWithCVC(base::ASCIIToUTF16("012"));
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);

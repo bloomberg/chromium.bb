@@ -28,11 +28,11 @@ class ContactInfoEditorViewController : public EditorViewController {
   ContactInfoEditorViewController(PaymentRequestSpec* spec,
                                   PaymentRequestState* state,
                                   PaymentRequestDialogView* dialog,
+                                  BackNavigationType back_navigation_type,
                                   autofill::AutofillProfile* profile);
   ~ContactInfoEditorViewController() override;
 
   // EditorViewController:
-  std::unique_ptr<views::View> CreateHeaderView() override;
   std::vector<EditorField> GetFieldDefinitions() override;
   base::string16 GetInitialValueForType(
       autofill::ServerFieldType type) override;

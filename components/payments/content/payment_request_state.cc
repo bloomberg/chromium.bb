@@ -246,11 +246,9 @@ void PaymentRequestState::SetDefaultProfileSelections() {
                    [](const std::unique_ptr<PaymentInstrument>& instrument) {
                      return instrument->IsCompleteForPayment();
                    });
-
   selected_instrument_ = first_complete_instrument == instruments.end()
                              ? nullptr
                              : first_complete_instrument->get();
-
   UpdateIsReadyToPayAndNotifyObservers();
 }
 

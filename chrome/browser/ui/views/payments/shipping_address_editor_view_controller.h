@@ -36,13 +36,13 @@ class ShippingAddressEditorViewController : public EditorViewController {
       PaymentRequestSpec* spec,
       PaymentRequestState* state,
       PaymentRequestDialogView* dialog,
+      BackNavigationType back_navigation_type,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
       autofill::AutofillProfile* profile);
   ~ShippingAddressEditorViewController() override;
 
   // EditorViewController:
-  std::unique_ptr<views::View> CreateHeaderView() override;
   std::vector<EditorField> GetFieldDefinitions() override;
   base::string16 GetInitialValueForType(
       autofill::ServerFieldType type) override;
@@ -56,6 +56,7 @@ class ShippingAddressEditorViewController : public EditorViewController {
 
   // PaymentRequestSheetController:
   base::string16 GetSheetTitle() override;
+  std::unique_ptr<views::Button> CreatePrimaryButton() override;
 
  private:
   bool GetSheetId(DialogViewID* sheet_id) override;

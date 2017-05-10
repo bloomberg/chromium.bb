@@ -17,6 +17,7 @@
 #include "ui/base/models/simple_combobox_model.h"
 
 namespace autofill {
+class AutofillProfile;
 class CreditCard;
 }  // namespace autofill
 
@@ -38,6 +39,8 @@ class CreditCardEditorViewController : public EditorViewController {
       PaymentRequestSpec* spec,
       PaymentRequestState* state,
       PaymentRequestDialogView* dialog,
+      BackNavigationType back_navigation,
+      int next_ui_tag,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::CreditCard&)> on_added,
       autofill::CreditCard* credit_card);
@@ -45,6 +48,8 @@ class CreditCardEditorViewController : public EditorViewController {
 
   // EditorViewController:
   std::unique_ptr<views::View> CreateHeaderView() override;
+  std::unique_ptr<views::View> CreateCustomFieldView(
+      autofill::ServerFieldType type) override;
   std::vector<EditorField> GetFieldDefinitions() override;
   base::string16 GetInitialValueForType(
       autofill::ServerFieldType type) override;
@@ -57,6 +62,7 @@ class CreditCardEditorViewController : public EditorViewController {
  protected:
   // PaymentRequestSheetController:
   base::string16 GetSheetTitle() override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   class CreditCardValidationDelegate : public ValidationDelegate {
@@ -90,6 +96,11 @@ class CreditCardEditorViewController : public EditorViewController {
 
   bool GetSheetId(DialogViewID* sheet_id) override;
 
+  // Called when a new address was created to be used as the billing address.
+  // The lifespan of |profile| beyond this call is undefined but it's OK, it's
+  // simply propagated to the address combobox model.
+  void AddAndSelectNewBillingAddress(const autofill::AutofillProfile& profile);
+
   // Called when |credit_card_to_edit_| was successfully edited.
   base::OnceClosure on_edited_;
   // Called when a new card was added. The const reference is short-lived, and
@@ -99,6 +110,9 @@ class CreditCardEditorViewController : public EditorViewController {
   // If non-nullptr, a pointer to an object to be edited. Must outlive this
   // controller.
   autofill::CreditCard* credit_card_to_edit_;
+
+  // The value to use for the add billing address button tag.
+  int add_billing_address_button_tag_;
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardEditorViewController);
 };

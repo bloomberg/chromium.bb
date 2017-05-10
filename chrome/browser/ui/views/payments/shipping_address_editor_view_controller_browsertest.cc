@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
   base::RunLoop data_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMessageLoop(&data_loop));
-  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
   base::RunLoop data_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMessageLoop(&data_loop));
-  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   base::RunLoop data_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMessageLoop(&data_loop));
-  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   base::RunLoop data_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMessageLoop(&data_loop));
-  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   autofill::AutofillProfile profile;
   profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
                   base::ASCIIToUTF16(kNameFull), "fr_CA");
-  PaymentRequestBrowserTestBase::AddAutofillProfile(profile);
+  AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
 
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   base::RunLoop data_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMessageLoop(&data_loop));
-  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+  ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
   ExpectExistingRequiredFields(/*unset_types=*/nullptr);

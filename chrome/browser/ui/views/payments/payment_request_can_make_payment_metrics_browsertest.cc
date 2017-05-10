@@ -139,6 +139,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                        Called_False_Shown_Completed) {
   base::HistogramTester histogram_tester;
 
+  // An address is needed so that the UI can choose it as a billing address.
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+
   // Don't add a card on file, so CanMakePayment returns false.
   // Start the Payment Request and expect CanMakePayment to be called before the
   // Payment Request is shown.
@@ -156,6 +160,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   SetComboboxValue(base::UTF8ToUTF16("05"), autofill::CREDIT_CARD_EXP_MONTH);
   SetComboboxValue(base::UTF8ToUTF16("2026"),
                    autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
+  SelectBillingAddress(billing_address.guid());
   ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
   ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
 

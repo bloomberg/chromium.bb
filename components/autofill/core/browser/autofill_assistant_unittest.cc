@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/autofill_assistant.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -231,7 +232,8 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_CancelCvc) {
 
   // Create a valid card for the assist.
   CreditCard card;
-  test::SetCreditCardInfo(&card, "John Doe", "4111111111111111", "05", "2999");
+  test::SetCreditCardInfo(&card, "John Doe", "4111111111111111", "05", "2999",
+                          "1");
 
   // FillCreditCardForm should not be called if the user cancelled the CVC.
   EXPECT_CALL(autofill_manager_, FillCreditCardForm(_, _, _, _, _)).Times(0);
@@ -253,7 +255,8 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_SubmitCvc) {
 
   // Create a valid card for the assist.
   CreditCard card;
-  test::SetCreditCardInfo(&card, "John Doe", "4111111111111111", "05", "2999");
+  test::SetCreditCardInfo(&card, "John Doe", "4111111111111111", "05", "2999",
+                          "1");
 
   // FillCreditCardForm ends up being called after user has accepted the
   // prompt.

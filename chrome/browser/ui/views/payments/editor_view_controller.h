@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -37,14 +38,13 @@ namespace payments {
 
 class PaymentRequestSpec;
 class PaymentRequestState;
-class PaymentRequestDialogView;
 class ValidatingCombobox;
 class ValidatingTextfield;
 
 // Field definition for an editor field, used to build the UI.
 struct EditorField {
   enum class LengthHint : int { HINT_LONG, HINT_SHORT };
-  enum class ControlType : int { TEXTFIELD, COMBOBOX };
+  enum class ControlType : int { TEXTFIELD, COMBOBOX, CUSTOMFIELD };
 
   EditorField(autofill::ServerFieldType type,
               base::string16 label,
@@ -89,9 +89,13 @@ class EditorViewController : public PaymentRequestSheetController,
       std::map<const EditorField, views::View*, EditorField::Compare>;
 
   // Does not take ownership of the arguments, which should outlive this object.
+  // |back_navigation_type| identifies what sort of back navigation should be
+  // done when editing is successful. This is independent of the back arrow
+  // which always goes back one step.
   EditorViewController(PaymentRequestSpec* spec,
                        PaymentRequestState* state,
-                       PaymentRequestDialogView* dialog);
+                       PaymentRequestDialogView* dialog,
+                       BackNavigationType back_navigation_type);
   ~EditorViewController() override;
 
   // Will display |error_message| alongside the input field represented by
@@ -103,7 +107,13 @@ class EditorViewController : public PaymentRequestSheetController,
   const TextFieldsMap& text_fields() const { return text_fields_; }
 
  protected:
-  virtual std::unique_ptr<views::View> CreateHeaderView() = 0;
+  // A very long label will wrap. Value picked so that left + right label
+  // padding bring the label to half-way in the dialog (~225).
+  static constexpr int kMaximumLabelWidth = 192;
+
+  virtual std::unique_ptr<views::View> CreateHeaderView();
+  virtual std::unique_ptr<views::View> CreateCustomFieldView(
+      autofill::ServerFieldType type);
   // Returns the field definitions used to build the UI.
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
   virtual base::string16 GetInitialValueForType(
@@ -131,11 +141,11 @@ class EditorViewController : public PaymentRequestSheetController,
   // UpdateEditorView.
   virtual void UpdateEditorView();
 
- private:
   // PaymentRequestSheetController:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
   views::View* GetFirstFocusedView() override;
 
+ private:
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
@@ -161,6 +171,9 @@ class EditorViewController : public PaymentRequestSheetController,
 
   // The first label in the editor, used to set the initial focus.
   views::View* first_field_view_;
+
+  // Identifies where to go back when the editing completes successfully.
+  BackNavigationType back_navigation_type_;
 
   DISALLOW_COPY_AND_ASSIGN(EditorViewController);
 };

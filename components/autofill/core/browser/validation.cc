@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_regexes.h"
@@ -127,7 +128,8 @@ bool IsValidCreditCardNumberForBasicCardNetworks(
 
 CreditCardCompletionStatus GetCompletionStatusForCard(
     const CreditCard& card,
-    const std::string& app_locale) {
+    const std::string& app_locale,
+    const std::vector<AutofillProfile*> billing_addresses) {
   CreditCardCompletionStatus status = CREDIT_CARD_COMPLETE;
   if (card.IsExpired(autofill::AutofillClock::Now()))
     status |= CREDIT_CARD_EXPIRED;
@@ -139,6 +141,12 @@ CreditCardCompletionStatus GetCompletionStatusForCard(
                    app_locale)
           .empty()) {
     status |= CREDIT_CARD_NO_CARDHOLDER;
+  }
+
+  if (card.billing_address_id().empty() ||
+      !autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
+          card.billing_address_id(), billing_addresses)) {
+    status |= CREDIT_CARD_NO_BILLING_ADDRESS;
   }
 
   return status;
@@ -156,6 +164,9 @@ base::string16 GetCompletionMessageForCard(CreditCardCompletionStatus status) {
     case CREDIT_CARD_NO_NUMBER:
       return l10n_util::GetStringUTF16(
           IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE);
+    case CREDIT_CARD_NO_BILLING_ADDRESS:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED);
     default:
       // Multiple things are missing
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_MORE_INFORMATION_REQUIRED);

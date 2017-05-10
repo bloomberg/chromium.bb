@@ -32,6 +32,11 @@ class PaymentRequestSheetController;
 using ControllerMap =
     std::map<views::View*, std::unique_ptr<PaymentRequestSheetController>>;
 
+enum class BackNavigationType {
+  kOneStep = 0,
+  kPaymentSheet,
+};
+
 // The dialog delegate that represents a desktop WebPayments dialog. This class
 // is responsible for displaying the view associated with the current state of
 // the WebPayments flow and managing the transition between those states.
@@ -108,7 +113,12 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // |on_edited| is called when |credit_card| was successfully edited, and
   // |on_added| is called when a new credit card was added (the reference is
   // short-lived; callee should make a copy of the CreditCard object).
+  // |back_navigation_type| identifies the type of navigation to execute once
+  // the editor has completed successfully. |next_ui_tag| is the lowest value
+  // that the credit card editor can use to assign to custom controls.
   void ShowCreditCardEditor(
+      BackNavigationType back_navigation_type,
+      int next_ui_tag,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::CreditCard&)> on_added,
       autofill::CreditCard* credit_card = nullptr);
@@ -116,12 +126,18 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // |on_edited| is called when |profile| was successfully edited, and
   // |on_added| is called when a new profile was added (the reference is
   // short-lived; callee should make a copy of the profile object).
+  // |back_navigation_type| identifies the type of navigation to execute once
+  // the editor has completed successfully.
   void ShowShippingAddressEditor(
+      BackNavigationType back_navigation_type,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
       autofill::AutofillProfile* profile);
   // |profile| is the profile to be edited, or nullptr for adding a profile.
-  void ShowContactInfoEditor(autofill::AutofillProfile* profile = nullptr);
+  // |back_navigation_type| identifies the type of navigation to execute once
+  // the editor has completed successfully.
+  void ShowContactInfoEditor(BackNavigationType back_navigation_type,
+                             autofill::AutofillProfile* profile = nullptr);
   void EditorViewUpdated();
 
   void ShowCvcUnmaskPrompt(

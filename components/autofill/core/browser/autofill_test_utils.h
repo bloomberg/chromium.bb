@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TEST_UTILS_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "components/autofill/core/browser/field_types.h"
@@ -107,8 +108,11 @@ void SetProfileInfoWithGuid(AutofillProfile* profile,
 // tests.  |SetCreditCardInfo| provides a quick way to populate a credit card
 // with c-strings.
 void SetCreditCardInfo(CreditCard* credit_card,
-    const char* name_on_card, const char* card_number,
-    const char* expiration_month, const char* expiration_year);
+                       const char* name_on_card,
+                       const char* card_number,
+                       const char* expiration_month,
+                       const char* expiration_year,
+                       const std::string& billing_address_id);
 
 // TODO(isherman): We should do this automatically for all tests, not manually
 // on a per-test basis: http://crbug.com/57221

@@ -208,6 +208,35 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_NoNumber) {
             instrument.GetMissingInfoLabel());
 }
 
+// A local card with no billing address id is not a valid instrument for
+// payment.
+TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_NoBillinbAddressId) {
+  autofill::CreditCard& card = local_credit_card();
+  card.set_billing_address_id("");
+  base::string16 missing_info;
+  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
+                                       "en-US", nullptr);
+  EXPECT_FALSE(instrument.IsCompleteForPayment());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED),
+      instrument.GetMissingInfoLabel());
+}
+
+// A local card with an invalid billing address id is not a valid instrument for
+// payment.
+TEST_F(AutofillPaymentInstrumentTest,
+       IsCompleteForPayment_InvalidBillinbAddressId) {
+  autofill::CreditCard& card = local_credit_card();
+  card.set_billing_address_id("InvalidBillingAddressId");
+  base::string16 missing_info;
+  AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
+                                       "en-US", nullptr);
+  EXPECT_FALSE(instrument.IsCompleteForPayment());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED),
+      instrument.GetMissingInfoLabel());
+}
+
 // A local card with no name and no number is not a valid instrument for
 // payment.
 TEST_F(AutofillPaymentInstrumentTest,
@@ -226,6 +255,8 @@ TEST_F(AutofillPaymentInstrumentTest,
 // A Masked (server) card is a valid instrument for payment.
 TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_MaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
+  ASSERT_GT(billing_profiles().size(), 0UL);
+  card.set_billing_address_id(billing_profiles()[0]->guid());
   AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
                                        "en-US", nullptr);
   EXPECT_TRUE(instrument.IsCompleteForPayment());
@@ -235,6 +266,8 @@ TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_MaskedCard) {
 // An expired masked (server) card is not a valid instrument for payment.
 TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_ExpiredMaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
+  ASSERT_GT(billing_profiles().size(), 0UL);
+  card.set_billing_address_id(billing_profiles()[0]->guid());
   card.SetExpirationYear(2016);  // Expired.
   AutofillPaymentInstrument instrument("visa", card, billing_profiles(),
                                        "en-US", nullptr);

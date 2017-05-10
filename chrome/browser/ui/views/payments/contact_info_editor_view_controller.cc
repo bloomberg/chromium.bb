@@ -26,15 +26,12 @@ ContactInfoEditorViewController::ContactInfoEditorViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
+    BackNavigationType back_navigation_type,
     autofill::AutofillProfile* profile)
-    : EditorViewController(spec, state, dialog), profile_to_edit_(profile) {}
+    : EditorViewController(spec, state, dialog, back_navigation_type),
+      profile_to_edit_(profile) {}
 
 ContactInfoEditorViewController::~ContactInfoEditorViewController() {}
-
-std::unique_ptr<views::View>
-ContactInfoEditorViewController::CreateHeaderView() {
-  return base::MakeUnique<views::View>();
-}
 
 std::vector<EditorField>
 ContactInfoEditorViewController::GetFieldDefinitions() {
