@@ -73,7 +73,7 @@
         text-decoration: none;
       }
 
-      /* For elements that are simple outlinks but dont look like anchors. */
+      /* For elements that are simple out-links but don't look like anchors. */
       .inherit-color {
         color: inherit !important;
       }
@@ -85,6 +85,8 @@
        * most users will not need. */
       .primary-button {
         --paper-button: {
+          -webkit-padding-end: var(--settings-button-edge-spacing);
+          -webkit-padding-start: var(--settings-button-edge-spacing);
           font-weight: 500;
           text-align: start;
         };
@@ -102,6 +104,8 @@
       /* See notes in .primary-button. */
       .secondary-button {
         --paper-button: {
+          -webkit-padding-end: var(--settings-button-edge-spacing);
+          -webkit-padding-start: var(--settings-button-edge-spacing);
           color: var(--paper-grey-600);
           font-weight: 500;
           min-width: 1em;  /* A tighter fit than 5.14em for short buttons. */
@@ -113,12 +117,9 @@
       }
 
       .settings-box .primary-button,
-      .settings-box .secondary-button,
       .settings-box .secondary-button {
-        -webkit-margin-end: -12px;
-        -webkit-margin-start: -12px;
-        -webkit-padding-end: 12px;
-        -webkit-padding-start: 12px;
+        -webkit-margin-end: calc(var(--settings-button-edge-spacing) * -1);
+        -webkit-margin-start: calc(var(--settings-button-edge-spacing) * -1);
       }
 
       paper-checkbox {
