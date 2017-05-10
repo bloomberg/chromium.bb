@@ -22,10 +22,17 @@ TEST(ICCProfile, Conversions) {
 }
 
 TEST(ICCProfile, SRGB) {
+  ICCProfile icc_profile = ICCProfileForTestingSRGB();
   ColorSpace color_space = ColorSpace::CreateSRGB();
   sk_sp<SkColorSpace> sk_color_space = SkColorSpace::MakeSRGB();
 
-  // These should be the same pointer, not just equal.
+  // The ICC profile parser should note that this is SRGB.
+  EXPECT_EQ(icc_profile.GetColorSpace().ToSkColorSpace().get(),
+            sk_color_space.get());
+  // The parametric generating code should recognize that this is SRGB.
+  EXPECT_EQ(icc_profile.GetParametricColorSpace().ToSkColorSpace().get(),
+            sk_color_space.get());
+  // The generated color space should recognize that this is SRGB.
   EXPECT_EQ(color_space.ToSkColorSpace().get(), sk_color_space.get());
 }
 
