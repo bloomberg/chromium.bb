@@ -468,6 +468,10 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
         GetAnchorAlignment(), kTrayMenuMinimumWidth, kTrayPopupMaxWidth);
     // TODO(oshima): Change TrayBubbleView itself.
     init_params.can_activate = false;
+    // The bubble is not initially activatable, but will become activatable if
+    // the user presses Tab. For behavioral consistency with the non-activatable
+    // scenario, don't close on deactivation after Tab either.
+    init_params.close_on_deactivate = false;
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
       // is created.
@@ -475,8 +479,6 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     } else {
       init_params.bg_color = kHeaderBackgroundColor;
     }
-    if (bubble_type == SystemTrayBubble::BUBBLE_TYPE_DEFAULT)
-      init_params.close_on_deactivate = !persistent;
     SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
 
     system_bubble_.reset(new SystemBubbleWrapper(bubble));

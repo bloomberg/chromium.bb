@@ -68,7 +68,6 @@ class NetworkStateListDetailedView::InfoBubble
     set_shadow(views::BubbleBorder::NO_ASSETS);
     set_anchor_view_insets(gfx::Insets(0, 0, kBubbleMargin, 0));
     set_notify_enter_exit_on_child(true);
-    set_close_on_deactivate(true);
     SetLayoutManager(new views::FillLayout());
     AddChildView(content);
   }
@@ -305,13 +304,8 @@ void NetworkStateListDetailedView::ToggleInfoBubble() {
 bool NetworkStateListDetailedView::ResetInfoBubble() {
   if (!info_bubble_)
     return false;
-  // After losing activation, the InfoBubble will be closed.
-  owner()
-      ->system_tray()
-      ->GetSystemBubble()
-      ->bubble_view()
-      ->GetWidget()
-      ->Activate();
+
+  info_bubble_->GetWidget()->Close();
   return true;
 }
 
