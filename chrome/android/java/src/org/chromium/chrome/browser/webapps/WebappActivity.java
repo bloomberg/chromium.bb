@@ -132,9 +132,6 @@ public class WebappActivity extends FullScreenActivity {
         getActivityTab().addObserver(createTabObserver());
         getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
                 mWebappInfo.displayMode());
-        if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
-            enterImmersiveMode();
-        }
     }
 
     @Override
@@ -265,7 +262,7 @@ public class WebappActivity extends FullScreenActivity {
             });
         }
 
-        asyncSetImmersive(ENTER_IMMERSIVE_MODE_DELAY_MILLIS);
+        asyncSetImmersive(0);
     }
 
     /**
@@ -356,6 +353,10 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     private void initializeWebappData() {
+        if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
+            enterImmersiveMode();
+        }
+
         final int backgroundColor = ColorUtils.getOpaqueColor(mWebappInfo.backgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.webapp_default_bg)));
 
