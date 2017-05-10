@@ -4,8 +4,12 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,7 +17,7 @@
 
 namespace {
 
-TEST(ContentSuggestionsMostVisitedItemTest, Configure) {
+TEST(ContentSuggestionsMostVisitedItemTest, CellClass) {
   // Setup.
   ContentSuggestionsMostVisitedItem* item =
       [[ContentSuggestionsMostVisitedItem alloc] initWithType:0];
@@ -25,57 +29,25 @@ TEST(ContentSuggestionsMostVisitedItemTest, Configure) {
   ASSERT_EQ([ContentSuggestionsMostVisitedCell class], [cell class]);
 }
 
-TEST(ContentSuggestionsMostVisitedItemTest, SizeIPhone6) {
+TEST(ContentSuggestionsMostVisitedItemTest, Configure) {
   // Setup.
-  if (IsIPadIdiom())
-    return;
+  NSString* title = @"Test title.";
+  ContentSuggestionsMostVisitedItem* item =
+      [[ContentSuggestionsMostVisitedItem alloc] initWithType:0];
+  item.title = title;
+  item.attributes =
+      [FaviconAttributes attributesWithMonogram:@"C"
+                                      textColor:[UIColor whiteColor]
+                                backgroundColor:[UIColor blackColor]];
+  ContentSuggestionsMostVisitedCell* cell = [[[item cellClass] alloc] init];
+  id faviconViewMock = OCMPartialMock(cell.faviconView);
+  OCMExpect([faviconViewMock configureWithAttributes:item.attributes]);
 
-  ContentSuggestionsMostVisitedCell* cell =
-      [[ContentSuggestionsMostVisitedCell alloc] init];
-  cell.frame = CGRectMake(0, 0, 360, 0);
-  [cell layoutIfNeeded];
+  // Action.
+  [item configureCell:cell];
 
   // Test.
-  EXPECT_EQ(4U, [cell numberOfTilesPerLine]);
-}
-
-TEST(ContentSuggestionsMostVisitedItemTest, SizeIPhone5) {
-  // Setup.
-  if (IsIPadIdiom())
-    return;
-
-  ContentSuggestionsMostVisitedCell* cell =
-      [[ContentSuggestionsMostVisitedCell alloc] init];
-  cell.frame = CGRectMake(0, 0, 320, 0);
-  [cell layoutIfNeeded];
-
-  // Test.
-  EXPECT_EQ(3U, [cell numberOfTilesPerLine]);
-}
-
-// Test for iPad portrait and iPhone landscape.
-TEST(ContentSuggestionsMostVisitedItemTest, SizeLarge) {
-  // Setup.
-  ContentSuggestionsMostVisitedCell* cell =
-      [[ContentSuggestionsMostVisitedCell alloc] init];
-  cell.frame = CGRectMake(0, 0, 720, 0);
-  [cell layoutIfNeeded];
-
-  // Test.
-  EXPECT_EQ(4U, [cell numberOfTilesPerLine]);
-}
-
-TEST(ContentSuggestionsMostVisitedItemTest, SizeIPadSplit) {
-  // Setup.
-  if (!IsIPadIdiom())
-    return;
-
-  ContentSuggestionsMostVisitedCell* cell =
-      [[ContentSuggestionsMostVisitedCell alloc] init];
-  cell.frame = CGRectMake(0, 0, 360, 0);
-  [cell layoutIfNeeded];
-
-  // Test.
-  EXPECT_EQ(3U, [cell numberOfTilesPerLine]);
+  ASSERT_EQ(title, cell.titleLabel.text);
+  ASSERT_OCMOCK_VERIFY(faviconViewMock);
 }
 }

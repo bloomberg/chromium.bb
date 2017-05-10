@@ -8,12 +8,8 @@ source_set("cells") {
     "content_suggestions_article_item.mm",
     "content_suggestions_footer_item.h",
     "content_suggestions_footer_item.mm",
-    "content_suggestions_most_visited.h",
-    "content_suggestions_most_visited.mm",
     "content_suggestions_most_visited_item.h",
     "content_suggestions_most_visited_item.mm",
-    "content_suggestions_most_visited_tile.h",
-    "content_suggestions_most_visited_tile.mm",
     "content_suggestions_reading_list_item.h",
     "content_suggestions_reading_list_item.mm",
     "content_suggestions_text_item.h",
@@ -40,8 +36,6 @@ source_set("unit_tests") {
     "content_suggestions_article_item_unittest.mm",
     "content_suggestions_footer_item_unittest.mm",
     "content_suggestions_most_visited_item_unittest.mm",
-    "content_suggestions_most_visited_tile_unittest.mm",
-    "content_suggestions_most_visited_unittest.mm",
   ]
   deps = [
     ":cells",
