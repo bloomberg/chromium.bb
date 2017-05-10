@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/json/json_reader.h"
@@ -616,7 +617,7 @@ bool ResolveCertRefList(const CertPEMsByGUIDMap& certs_by_guid,
   }
 
   onc_object->RemoveWithoutPathExpansion(key_guid_ref_list, nullptr);
-  onc_object->SetWithoutPathExpansion(key_pem_list, pem_list.release());
+  onc_object->SetWithoutPathExpansion(key_pem_list, std::move(pem_list));
   return true;
 }
 
@@ -635,7 +636,7 @@ bool ResolveSingleCertRefToList(const CertPEMsByGUIDMap& certs_by_guid,
   std::unique_ptr<base::ListValue> pem_list(new base::ListValue);
   pem_list->AppendString(pem_encoded);
   onc_object->RemoveWithoutPathExpansion(key_guid_ref, nullptr);
-  onc_object->SetWithoutPathExpansion(key_pem_list, pem_list.release());
+  onc_object->SetWithoutPathExpansion(key_pem_list, std::move(pem_list));
   return true;
 }
 
@@ -916,7 +917,7 @@ void SetProxyForScheme(const net::ProxyConfig::ProxyRules& proxy_rules,
   url_dict->SetStringWithoutPathExpansion(::onc::proxy::kHost, host);
   url_dict->SetIntegerWithoutPathExpansion(::onc::proxy::kPort,
                                            server.host_port_pair().port());
-  dict->SetWithoutPathExpansion(onc_scheme, url_dict.release());
+  dict->SetWithoutPathExpansion(onc_scheme, std::move(url_dict));
 }
 
 }  // namespace
@@ -1014,7 +1015,7 @@ std::unique_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
                           manual.get());
       }
       proxy_settings->SetWithoutPathExpansion(::onc::proxy::kManual,
-                                              manual.release());
+                                              std::move(manual));
 
       // Convert the 'bypass_list' string into dictionary entries.
       std::string bypass_rules_string;
@@ -1026,7 +1027,7 @@ std::unique_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
           exclude_domains->AppendString(rule->ToString());
         if (!exclude_domains->empty()) {
           proxy_settings->SetWithoutPathExpansion(::onc::proxy::kExcludeDomains,
-                                                  exclude_domains.release());
+                                                  std::move(exclude_domains));
         }
       }
       break;

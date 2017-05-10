@@ -5,11 +5,13 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -99,8 +101,8 @@ class ShillProfileTestClient {
     if (profile_entries_.HasKey(profile_path))
       return;
 
-    base::DictionaryValue* profile = new base::DictionaryValue;
-    profile_entries_.SetWithoutPathExpansion(profile_path, profile);
+    profile_entries_.SetWithoutPathExpansion(
+        profile_path, base::MakeUnique<base::DictionaryValue>());
     profile_to_user_[profile_path] = userhash;
   }
 
@@ -111,10 +113,10 @@ class ShillProfileTestClient {
     profile_entries_.GetDictionaryWithoutPathExpansion(profile_path, &entries);
     ASSERT_TRUE(entries);
 
-    base::DictionaryValue* new_entry = entry.DeepCopy();
+    auto new_entry = base::MakeUnique<base::DictionaryValue>(entry);
     new_entry->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                              profile_path);
-    entries->SetWithoutPathExpansion(entry_path, new_entry);
+    entries->SetWithoutPathExpansion(entry_path, std::move(new_entry));
   }
 
   void GetProperties(const dbus::ObjectPath& profile_path,
@@ -126,12 +128,13 @@ class ShillProfileTestClient {
     ASSERT_TRUE(entries);
 
     std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-    base::ListValue* entry_paths = new base::ListValue;
-    result->SetWithoutPathExpansion(shill::kEntriesProperty, entry_paths);
+    auto entry_paths = base::MakeUnique<base::ListValue>();
     for (base::DictionaryValue::Iterator it(*entries); !it.IsAtEnd();
          it.Advance()) {
       entry_paths->AppendString(it.key());
     }
+    result->SetWithoutPathExpansion(shill::kEntriesProperty,
+                                    std::move(entry_paths));
 
     ASSERT_TRUE(base::ContainsKey(profile_to_user_, profile_path.value()));
     const std::string& userhash = profile_to_user_[profile_path.value()];

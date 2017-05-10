@@ -76,8 +76,8 @@ DictionaryPtr GetEditableFlags(const base::DictionaryValue& policy) {
       continue;
     }
 
-    result_editable->SetWithoutPathExpansion(
-        it.key(), GetEditableFlags(*child_policy).release());
+    result_editable->SetWithoutPathExpansion(it.key(),
+                                             GetEditableFlags(*child_policy));
   }
   return result_editable;
 }
@@ -139,7 +139,7 @@ class MergeListOfDictionaries {
         }
 
         if (merged_value)
-          result->SetWithoutPathExpansion(key, merged_value.release());
+          result->SetWithoutPathExpansion(key, std::move(merged_value));
       }
     }
     return result;
@@ -415,7 +415,8 @@ class MergeToAugmented : public MergeToEffective {
 
     if (values.active_setting) {
       augmented_value->SetWithoutPathExpansion(
-          ::onc::kAugmentationActiveSetting, values.active_setting->DeepCopy());
+          ::onc::kAugmentationActiveSetting,
+          base::MakeUnique<base::Value>(*values.active_setting));
     }
 
     if (!which_effective.empty()) {
@@ -430,22 +431,24 @@ class MergeToAugmented : public MergeToEffective {
     if (!is_credential) {
       if (values.user_policy) {
         augmented_value->SetWithoutPathExpansion(
-            ::onc::kAugmentationUserPolicy, values.user_policy->DeepCopy());
+            ::onc::kAugmentationUserPolicy,
+            base::MakeUnique<base::Value>(*values.user_policy));
       }
       if (values.device_policy) {
         augmented_value->SetWithoutPathExpansion(
             ::onc::kAugmentationDevicePolicy,
-            values.device_policy->DeepCopy());
+            base::MakeUnique<base::Value>(*values.device_policy));
       }
     }
     if (values.user_setting) {
       augmented_value->SetWithoutPathExpansion(
-          ::onc::kAugmentationUserSetting, values.user_setting->DeepCopy());
+          ::onc::kAugmentationUserSetting,
+          base::MakeUnique<base::Value>(*values.user_setting));
     }
     if (values.shared_setting) {
       augmented_value->SetWithoutPathExpansion(
           ::onc::kAugmentationSharedSetting,
-          values.shared_setting->DeepCopy());
+          base::MakeUnique<base::Value>(*values.shared_setting));
     }
     if (HasUserPolicy() && values.user_editable) {
       augmented_value->SetBooleanWithoutPathExpansion(

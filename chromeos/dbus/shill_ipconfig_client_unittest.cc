@@ -105,9 +105,8 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
 
   // Create the expected value.
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(shill::kAddressProperty,
-                                new base::Value(kAddress));
-  value.SetWithoutPathExpansion(shill::kMtuProperty, new base::Value(kMtu));
+  value.SetStringWithoutPathExpansion(shill::kAddressProperty, kAddress);
+  value.SetIntegerWithoutPathExpansion(shill::kMtuProperty, kMtu);
 
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,

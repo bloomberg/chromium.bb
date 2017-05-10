@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_shill_profile_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -62,14 +64,16 @@ void FakeShillProfileClient::GetProperties(
   if (!profile)
     return;
 
-  std::unique_ptr<base::DictionaryValue> properties(
-      profile->properties.DeepCopy());
-  base::ListValue* entry_paths = new base::ListValue;
-  properties->SetWithoutPathExpansion(shill::kEntriesProperty, entry_paths);
+  auto entry_paths = base::MakeUnique<base::ListValue>();
   for (base::DictionaryValue::Iterator it(profile->entries); !it.IsAtEnd();
        it.Advance()) {
     entry_paths->AppendString(it.key());
   }
+
+  auto properties =
+      base::MakeUnique<base::DictionaryValue>(profile->properties);
+  properties->SetWithoutPathExpansion(shill::kEntriesProperty,
+                                      std::move(entry_paths));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -149,7 +153,8 @@ void FakeShillProfileClient::AddEntry(const std::string& profile_path,
   ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
                                           ErrorCallback());
   DCHECK(profile);
-  profile->entries.SetWithoutPathExpansion(entry_path, properties.DeepCopy());
+  profile->entries.SetWithoutPathExpansion(
+      entry_path, base::MakeUnique<base::Value>(properties));
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddManagerService(entry_path, true);
 }
@@ -211,8 +216,8 @@ bool FakeShillProfileClient::AddOrUpdateServiceImpl(
     return false;
   }
 
-  profile->entries.SetWithoutPathExpansion(service_path,
-                                           service_properties->DeepCopy());
+  profile->entries.SetWithoutPathExpansion(
+      service_path, base::MakeUnique<base::Value>(*service_properties));
   return true;
 }
 

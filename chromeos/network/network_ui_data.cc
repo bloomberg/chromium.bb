@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace chromeos {
@@ -106,8 +107,8 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
     dict->SetString(kKeyONCSource, source_string);
 
   if (user_settings_)
-    dict->SetWithoutPathExpansion(kKeyUserSettings,
-                                  user_settings_->DeepCopy());
+    dict->SetWithoutPathExpansion(
+        kKeyUserSettings, base::MakeUnique<base::Value>(*user_settings_));
 }
 
 // static

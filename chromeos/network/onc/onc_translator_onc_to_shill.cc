@@ -288,8 +288,9 @@ void LocalTranslator::TranslateNetworkConfiguration() {
     // If either type is set to DHCP, provide an empty dictionary to ensure
     // that any unset properties are cleared. Note: if either type is specified,
     // the other type defaults to DHCP if not specified.
-    shill_dictionary_->SetWithoutPathExpansion(shill::kStaticIPConfigProperty,
-                                               new base::DictionaryValue);
+    shill_dictionary_->SetWithoutPathExpansion(
+        shill::kStaticIPConfigProperty,
+        base::MakeUnique<base::DictionaryValue>());
   }
 
   const base::DictionaryValue* proxy_settings = nullptr;
@@ -336,8 +337,8 @@ void LocalTranslator::CopyFieldFromONCToShill(
         << "Attempt to translate a field that is not part of the ONC format.";
     return;
   }
-  shill_dictionary_->SetWithoutPathExpansion(shill_property_name,
-                                             value->DeepCopy());
+  shill_dictionary_->SetWithoutPathExpansion(
+      shill_property_name, base::MakeUnique<base::Value>(*value));
 }
 
 void LocalTranslator::AddValueAccordingToSignature(
@@ -352,7 +353,7 @@ void LocalTranslator::AddValueAccordingToSignature(
   }
 
   shill_dictionary_->SetWithoutPathExpansion(shill_property_name,
-                                             value.release());
+                                             std::move(value));
 }
 
 void LocalTranslator::TranslateWithTableAndSet(
@@ -386,11 +387,11 @@ void TranslateONCHierarchy(const OncValueSignature& signature,
            path_to_shill_dictionary.begin();
        it != path_to_shill_dictionary.end(); ++it) {
     base::DictionaryValue* nested_shill_dict = NULL;
-    target_shill_dictionary->GetDictionaryWithoutPathExpansion(
-        *it, &nested_shill_dict);
-    if (!nested_shill_dict) {
-      nested_shill_dict = new base::DictionaryValue;
-      target_shill_dictionary->SetWithoutPathExpansion(*it, nested_shill_dict);
+    if (!target_shill_dictionary->GetDictionaryWithoutPathExpansion(
+            *it, &nested_shill_dict)) {
+      nested_shill_dict =
+          target_shill_dictionary->SetDictionaryWithoutPathExpansion(
+              *it, base::MakeUnique<base::DictionaryValue>());
     }
     target_shill_dictionary = nested_shill_dict;
   }

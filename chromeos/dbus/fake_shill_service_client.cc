@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_shill_service_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -320,8 +322,8 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
   }
 
   if (!ipconfig_path.empty()) {
-    properties->SetWithoutPathExpansion(shill::kIPConfigProperty,
-                                        new base::Value(ipconfig_path));
+    properties->SetStringWithoutPathExpansion(shill::kIPConfigProperty,
+                                              ipconfig_path);
   }
 
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
@@ -412,9 +414,12 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
     std::string key = property;
     if (base::StartsWith(property, "Provider.", case_sensitive))
       key = property.substr(strlen("Provider."));
-    base::DictionaryValue* provider = new base::DictionaryValue;
-    provider->SetWithoutPathExpansion(key, value.DeepCopy());
-    new_properties.SetWithoutPathExpansion(shill::kProviderProperty, provider);
+    base::DictionaryValue* provider =
+        new_properties.SetDictionaryWithoutPathExpansion(
+            shill::kProviderProperty,
+            base::MakeUnique<base::DictionaryValue>());
+    provider->SetWithoutPathExpansion(key,
+                                      base::MakeUnique<base::Value>(value));
     changed_property = shill::kProviderProperty;
   } else if (value.GetType() == base::Value::Type::DICTIONARY) {
     const base::DictionaryValue* new_dict = NULL;
@@ -426,13 +431,15 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
         cur_value->GetAsDictionary(&cur_dict)) {
       cur_dict->Clear();
       cur_dict->MergeDictionary(new_dict);
-      new_properties.SetWithoutPathExpansion(property, cur_value.release());
+      new_properties.SetWithoutPathExpansion(property, std::move(cur_value));
     } else {
-      new_properties.SetWithoutPathExpansion(property, value.DeepCopy());
+      new_properties.SetWithoutPathExpansion(
+          property, base::MakeUnique<base::Value>(value));
     }
     changed_property = property;
   } else {
-    new_properties.SetWithoutPathExpansion(property, value.DeepCopy());
+    new_properties.SetWithoutPathExpansion(
+        property, base::MakeUnique<base::Value>(value));
     changed_property = property;
   }
 
@@ -567,8 +574,8 @@ void FakeShillServiceClient::SetOtherServicesOffline(
     properties->GetString(shill::kTypeProperty, &type);
     if (type != service_type)
       continue;
-    properties->SetWithoutPathExpansion(shill::kStateProperty,
-                                        new base::Value(shill::kStateIdle));
+    properties->SetStringWithoutPathExpansion(shill::kStateProperty,
+                                              shill::kStateIdle);
   }
 }
 

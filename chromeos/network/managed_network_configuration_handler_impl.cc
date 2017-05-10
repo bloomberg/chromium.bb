@@ -838,12 +838,13 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
   }
 
   // Convert IPConfig dictionary to a ListValue.
-  base::ListValue* ip_configs = new base::ListValue;
+  auto ip_configs = base::MakeUnique<base::ListValue>();
   for (base::DictionaryValue::Iterator iter(device_state->ip_configs());
        !iter.IsAtEnd(); iter.Advance()) {
     ip_configs->Append(iter.value().CreateDeepCopy());
   }
-  properties->SetWithoutPathExpansion(shill::kIPConfigsProperty, ip_configs);
+  properties->SetWithoutPathExpansion(shill::kIPConfigsProperty,
+                                      std::move(ip_configs));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
@@ -916,7 +917,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess(
     const base::DictionaryValue& device_properties) {
   // Create a "Device" dictionary in |network_properties|.
   network_properties->SetWithoutPathExpansion(
-      shill::kDeviceProperty, device_properties.DeepCopy());
+      shill::kDeviceProperty, base::MakeUnique<base::Value>(device_properties));
   send_callback.Run(service_path, std::move(network_properties));
 }
 
