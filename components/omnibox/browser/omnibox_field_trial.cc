@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -452,6 +453,19 @@ float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
   return static_cast<float>(topicality_threshold);
 }
 
+int OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup() {
+  const char* param = kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam;
+  if (base::SysInfo::IsLowEndDevice())
+    param = kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam;
+  std::string param_value(variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName, param));
+  int num_urls;
+  if (base::StringToInt(param_value, &num_urls))
+    return num_urls;
+  // Default value is set to -1 for unlimited number of urls.
+  return -1;
+}
+
 bool OmniboxFieldTrial::HQPFixFewVisitsBug() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -728,6 +742,13 @@ const char OmniboxFieldTrial::kHQPExperimentalScoringBucketsParam[] =
 const char
     OmniboxFieldTrial::kHQPExperimentalScoringTopicalityThresholdParam[] =
       "HQPExperimentalScoringTopicalityThreshold";
+
+const char
+    OmniboxFieldTrial::kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam[] =
+        "MaxNumHQPUrlsIndexedAtStartupOnLowEndDevices";
+const char
+    OmniboxFieldTrial::kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[] =
+        "MaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevices";
 
 const char OmniboxFieldTrial::kPhysicalWebZeroSuggestBaseRelevanceParam[] =
     "PhysicalWebZeroSuggestBaseRelevance";
