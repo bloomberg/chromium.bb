@@ -23,6 +23,8 @@ mojom("call_stack_mojo_test_bindings") {
     ":call_stack_mojo_bindings",
     "//mojo/common:common_custom_types",
   ]
+
+  use_once_callback = true
 }
 
 mojom("single_sample_metrics_mojo_bindings") {

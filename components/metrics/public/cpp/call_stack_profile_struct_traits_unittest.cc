@@ -40,45 +40,45 @@ class CallStackProfileCollectorTestImpl
 
   // CallStackProfileCollectorTest:
   void BounceFrame(const base::StackSamplingProfiler::Frame& in,
-                   const BounceFrameCallback& callback) override {
-    callback.Run(in);
+                   BounceFrameCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceModule(const base::StackSamplingProfiler::Module& in,
-                    const BounceModuleCallback& callback) override {
-    callback.Run(in);
+                    BounceModuleCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceProfile(base::StackSamplingProfiler::CallStackProfile in,
-                     const BounceProfileCallback& callback) override {
-    callback.Run(std::move(in));
+                     BounceProfileCallback callback) override {
+    std::move(callback).Run(std::move(in));
   }
 
   void BounceTrigger(CallStackProfileParams::Trigger in,
-                     const BounceTriggerCallback& callback) override {
-    callback.Run(in);
+                     BounceTriggerCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceProcess(CallStackProfileParams::Process in,
-                     const BounceProcessCallback& callback) override {
-    callback.Run(in);
+                     BounceProcessCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceThread(CallStackProfileParams::Thread in,
-                    const BounceThreadCallback& callback) override {
-    callback.Run(in);
+                    BounceThreadCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceSampleOrderingSpec(
       CallStackProfileParams::SampleOrderingSpec in,
-      const BounceSampleOrderingSpecCallback& callback) override {
-    callback.Run(in);
+      BounceSampleOrderingSpecCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceCallStackProfileParams(
       const CallStackProfileParams& in,
-      const BounceCallStackProfileParamsCallback& callback) override {
-    callback.Run(in);
+      BounceCallStackProfileParamsCallback callback) override {
+    std::move(callback).Run(in);
   }
 
  private:
