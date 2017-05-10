@@ -5,7 +5,7 @@
 #include "ash/system/network/tray_network.h"
 
 #include "ash/login_status.h"
-#include "ash/system/network/network_state_list_detailed_view.h"
+#include "ash/system/network/network_list.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"

@@ -18,7 +18,7 @@
 namespace ash {
 namespace tray {
 class NetworkDefaultView;
-class NetworkStateListDetailedView;
+class NetworkListView;
 class NetworkTrayView;
 }
 
@@ -30,7 +30,7 @@ class TrayNetwork : public SystemTrayItem,
   explicit TrayNetwork(SystemTray* system_tray);
   ~TrayNetwork() override;
 
-  tray::NetworkStateListDetailedView* detailed() { return detailed_; }
+  tray::NetworkListView* detailed() { return detailed_; }
 
   // SystemTrayItem
   views::View* CreateTrayView(LoginStatus status) override;
@@ -52,7 +52,7 @@ class TrayNetwork : public SystemTrayItem,
  private:
   tray::NetworkTrayView* tray_;
   tray::NetworkDefaultView* default_;
-  tray::NetworkStateListDetailedView* detailed_;
+  tray::NetworkListView* detailed_;
   std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);

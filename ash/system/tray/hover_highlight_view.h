@@ -85,6 +85,8 @@ class HoverHighlightView : public ActionableView {
   // Removes current children of the view so that it can be re-populated.
   void Reset();
 
+  bool is_populated() const { return is_populated_; }
+
   views::Label* text_label() { return text_label_; }
   views::Label* sub_text_label() { return sub_text_label_; }
 

@@ -10,7 +10,7 @@
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
-#include "ash/system/network/network_state_list_detailed_view.h"
+#include "ash/system/network/network_list.h"
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray.h"
@@ -246,8 +246,7 @@ views::View* TrayNetwork::CreateDetailedView(LoginStatus status) {
       UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
-  detailed_ = new tray::NetworkStateListDetailedView(
-      this, tray::NetworkStateListDetailedView::LIST_TYPE_NETWORK, status);
+  detailed_ = new tray::NetworkListView(this, status);
   detailed_->Init();
   return detailed_;
 }
