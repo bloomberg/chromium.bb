@@ -456,8 +456,9 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   // title, but on the same y-axis, and the scroll view used to contain other
   // content can have its scrollbar aligned with the right edge of the dialog.
   views::GridLayout* layout = new views::GridLayout(container_);
-  layout->SetInsets(0, horizontal_margin, bottom_margin, 0);
   container_->SetLayoutManager(layout);
+  container_->SetBorder(
+      views::CreateEmptyBorder(0, horizontal_margin, bottom_margin, 0));
   AddChildView(container_);
 
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);

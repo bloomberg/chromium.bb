@@ -72,16 +72,16 @@ std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateExtraView() {
 std::unique_ptr<views::View> PaymentRequestItemList::Item::CreateItemView() {
   std::unique_ptr<views::View> content = CreateContentView();
 
-  std::unique_ptr<PaymentRequestRowView> row =
-      base::MakeUnique<PaymentRequestRowView>(this,
-                                              /* clickable= */ IsEnabled());
-  views::GridLayout* layout = new views::GridLayout(row.get());
-  row->SetLayoutManager(layout);
-
-  layout->SetInsets(
+  const gfx::Insets row_insets(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
       kPaymentRequestRowVerticalInsets,
       kPaymentRequestRowHorizontalInsets + kPaymentRequestRowExtraRightInset);
+  std::unique_ptr<PaymentRequestRowView> row =
+      base::MakeUnique<PaymentRequestRowView>(this,
+                                              /* clickable= */ IsEnabled(),
+                                              row_insets);
+  views::GridLayout* layout = new views::GridLayout(row.get());
+  row->SetLayoutManager(layout);
 
   // Add a column for the item's content view.
   views::ColumnSet* columns = layout->AddColumnSet(0);

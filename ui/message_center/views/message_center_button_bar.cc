@@ -17,6 +17,7 @@
 #include "ui/message_center/views/message_center_view.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -31,12 +32,7 @@
 namespace message_center {
 
 namespace {
-const int kButtonSize = 40;
-const int kLeftPaddingWidthForNonArrows = 16;
-const int kFooterTopMargin = 6;
-const int kFooterBottomMargin = 3;
-const int kFooterLeftMargin = 4;
-const int kFooterRightMargin = 14;
+constexpr int kButtonSize = 40;
 }  // namespace
 
 // NotificationCenterButton ////////////////////////////////////////////////////
@@ -190,17 +186,11 @@ MessageCenterButtonBar::MessageCenterButtonBar(
 }
 
 void MessageCenterButtonBar::ViewVisibilityChanged() {
-  gfx::ImageSkia* settings_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_NOTIFICATION_SETTINGS);
-  int image_margin = std::max(0, (kButtonSize - settings_image->width()) / 2);
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
-  layout->SetInsets(kFooterTopMargin,
-                    kFooterLeftMargin,
-                    kFooterBottomMargin,
-                    std::max(0, kFooterRightMargin - image_margin));
   views::ColumnSet* column = layout->AddColumnSet(0);
+  constexpr int kFooterLeftMargin = 4;
+  column->AddPaddingColumn(0, kFooterLeftMargin);
   if (title_arrow_->visible()) {
     // Column for the left-arrow used to back out of settings.
     column->AddColumn(views::GridLayout::LEADING,
@@ -210,6 +200,7 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
                       kButtonSize,
                       0);
   } else {
+    constexpr int kLeftPaddingWidthForNonArrows = 16;
     column->AddPaddingColumn(0.0f, kLeftPaddingWidthForNonArrows);
   }
 
@@ -222,6 +213,11 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
                     0);
 
   // Fills in the remaining space between "Notifications" and buttons.
+  gfx::ImageSkia* settings_image =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_NOTIFICATION_SETTINGS);
+  const int image_margin =
+      std::max(0, (kButtonSize - settings_image->width()) / 2);
   column->AddPaddingColumn(1.0f, image_margin);
 
   // The button area column.
@@ -241,7 +237,12 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
                     0,
                     0);
 #endif
+  constexpr int kFooterRightMargin = 14;
+  const int right_margin = std::max(0, kFooterRightMargin - image_margin);
+  column->AddPaddingColumn(0, right_margin);
 
+  constexpr int kFooterTopMargin = 6;
+  layout->AddPaddingRow(0, kFooterTopMargin);
   layout->StartRow(0, 0, kButtonSize);
   if (title_arrow_->visible())
     layout->AddView(title_arrow_);
@@ -250,6 +251,8 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   layout->AddView(close_bubble_button_);
 #endif
+  constexpr int kFooterBottomMargin = 3;
+  layout->AddPaddingRow(0, kFooterBottomMargin);
 }
 
 MessageCenterButtonBar::~MessageCenterButtonBar() {}

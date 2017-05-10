@@ -195,9 +195,9 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   constexpr int kHeaderTopVerticalInset = 14;
   constexpr int kHeaderBottomVerticalInset = 8;
   constexpr int kHeaderHorizontalInset = 16;
-  // Top, left, bottom, right.
-  layout->SetInsets(kHeaderTopVerticalInset, kHeaderHorizontalInset,
-                    kHeaderBottomVerticalInset, kHeaderHorizontalInset);
+  container->SetBorder(views::CreateEmptyBorder(
+      kHeaderTopVerticalInset, kHeaderHorizontalInset,
+      kHeaderBottomVerticalInset, kHeaderHorizontalInset));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the optional back arrow.
@@ -345,9 +345,11 @@ std::unique_ptr<views::View> GetContactInfoLabel(
   return base_label;
 }
 
-std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(SkColor color) {
+std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(
+    SkColor color,
+    const gfx::Insets& insets) {
   return views::CreateBorderPainter(
-      base::MakeUnique<PaymentRequestRowBorderPainter>(color), gfx::Insets());
+      base::MakeUnique<PaymentRequestRowBorderPainter>(color), insets);
 }
 
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text) {

@@ -23,6 +23,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_types.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -206,8 +207,8 @@ WindowTypeLauncher::WindowTypeLauncher(
           base::ASCIIToUTF16("Show a web/app notification"))),
       show_views_examples_callback_(show_views_examples_callback) {
   views::GridLayout* layout = new views::GridLayout(this);
-  layout->SetInsets(5, 5, 5, 5);
   SetLayoutManager(layout);
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(5)));
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);

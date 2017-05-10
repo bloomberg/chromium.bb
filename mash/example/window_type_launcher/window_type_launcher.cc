@@ -24,6 +24,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -267,8 +268,8 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
         jank_button_(
             MdTextButton::Create(this, base::ASCIIToUTF16("Jank for (s):"))),
         jank_duration_field_(new views::Textfield) {
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(5)));
     views::GridLayout* layout = new views::GridLayout(this);
-    layout->SetInsets(5, 5, 5, 5);
     SetLayoutManager(layout);
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddColumn(views::GridLayout::LEADING,

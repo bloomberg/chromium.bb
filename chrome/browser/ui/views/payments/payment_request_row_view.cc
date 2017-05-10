@@ -14,12 +14,14 @@
 namespace payments {
 
 PaymentRequestRowView::PaymentRequestRowView(views::ButtonListener* listener,
-                                             bool clickable)
+                                             bool clickable,
+                                             const gfx::Insets& insets)
     : views::CustomButton(listener), clickable_(clickable) {
   SetEnabled(clickable_);
-  SetBorder(
-      payments::CreatePaymentRequestRowBorder(GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_SeparatorColor)));
+  SetBorder(payments::CreatePaymentRequestRowBorder(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SeparatorColor),
+      insets));
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 }
 

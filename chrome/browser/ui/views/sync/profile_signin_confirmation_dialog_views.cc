@@ -202,8 +202,9 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       views::LayoutProvider::Get()->GetInsetsMetric(views::INSETS_PANEL);
   // The prompt bar needs to go to the edge of the dialog, so ignore insets for
   // the outer layout.
+  SetBorder(views::CreateEmptyBorder(panel_insets.top(), 0,
+                                     panel_insets.bottom(), 0));
   views::GridLayout* dialog_layout = new views::GridLayout(this);
-  dialog_layout->SetInsets(panel_insets.top(), 0, panel_insets.bottom(), 0);
   SetLayoutManager(dialog_layout);
 
   // Use GridLayout inside the prompt bar because StyledLabel requires it.

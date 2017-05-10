@@ -41,16 +41,16 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
                                                           this,
                                                           entry_point)) {
   views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  layout->SetInsets(
+  SetBorder(views::CreateEmptyBorder(
       0,
       provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN) +
           desktop_ios_promotion::GetPromoImage(
               GetNativeTheme()->GetSystemColor(
                   ui::NativeTheme::kColorId_TextfieldDefaultColor))
               .width(),
-      0, 0);
-  SetLayoutManager(layout);
+      0, 0));
   send_sms_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(IDS_DESKTOP_TO_IOS_PROMO_SEND_TO_PHONE));
   no_button_ = views::MdTextButton::CreateSecondaryUiButton(

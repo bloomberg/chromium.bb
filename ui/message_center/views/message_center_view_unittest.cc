@@ -578,7 +578,7 @@ TEST_F(MessageCenterViewTest, SizeAfterRemove) {
 
   EXPECT_FALSE(GetNotificationView(kNotificationId1));
   EXPECT_TRUE(GetNotificationView(kNotificationId2));
-  EXPECT_EQ(GetMessageListView()->height(), original_height);
+  EXPECT_EQ(original_height, GetMessageListView()->height());
 }
 
 TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
@@ -851,7 +851,7 @@ TEST_F(MessageCenterViewTest,
 }
 
 TEST_F(MessageCenterViewTest, LockScreen) {
-  const int kLockedMessageCenterViewHeight = 50;
+  const int kLockedMessageCenterViewHeight = 51;
 
   EXPECT_TRUE(GetNotificationView(kNotificationId1)->IsDrawn());
   EXPECT_TRUE(GetNotificationView(kNotificationId2)->IsDrawn());
@@ -928,7 +928,7 @@ TEST_F(MessageCenterViewTest, LockScreen) {
 }
 
 TEST_F(MessageCenterViewTest, NoNotification) {
-  const int kEmptyMessageCenterViewHeight = 50;
+  const int kEmptyMessageCenterViewHeight = 51;
 
   GetMessageCenterView()->SizeToPreferredSize();
   EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());

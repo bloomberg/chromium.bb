@@ -63,7 +63,8 @@ void FirstRunBubble::Init() {
       l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT), {original_font_list});
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  layout->SetInsets(kTopInset, kLeftInset, kBottomInset, kRightInset);
+  SetBorder(views::CreateEmptyBorder(kTopInset, kLeftInset, kBottomInset,
+                                     kRightInset));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
