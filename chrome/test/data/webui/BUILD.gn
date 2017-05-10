@@ -102,32 +102,27 @@ js2gtest("browser_tests_js_webui") {
     "print_preview.js",
     "print_preview_destination_search_test.js",
     "sandboxstatus_browsertest.js",
+    "settings/advanced_page_browsertest.js",
+    "settings/animation_browsertest.js",
+    "settings/basic_page_browsertest.js",
+    "settings/cr_settings_browsertest.js",
+    "settings/help_page_browsertest.js",
+    "settings/on_startup_browsertest.js",
+    "settings/passwords_and_autofill_fake_data.js",
+    "settings/passwords_and_forms_browsertest.js",
+    "settings/settings_autofill_section_browsertest.js",
+    "settings/settings_idle_load_browsertest.js",
+    "settings/settings_page_browsertest.js",
+    "settings/settings_passwords_section_browsertest.js",
+    "settings/settings_subpage_browsertest.js",
+    "settings/settings_ui_browsertest.js",
+    "settings/site_settings_page_browsertest.js",
     "text_defaults_browsertest.js",
     "webui_resource_async_browsertest.js",
   ]
 
-  if (!is_asan) {
-    sources += [
-      "settings/advanced_page_browsertest.js",
-      "settings/animation_browsertest.js",
-      "settings/basic_page_browsertest.js",
-      "settings/cr_settings_browsertest.js",
-      "settings/help_page_browsertest.js",
-      "settings/on_startup_browsertest.js",
-      "settings/passwords_and_autofill_fake_data.js",
-      "settings/passwords_and_forms_browsertest.js",
-      "settings/settings_autofill_section_browsertest.js",
-      "settings/settings_idle_load_browsertest.js",
-      "settings/settings_page_browsertest.js",
-      "settings/settings_passwords_section_browsertest.js",
-      "settings/settings_subpage_browsertest.js",
-      "settings/settings_ui_browsertest.js",
-      "settings/site_settings_page_browsertest.js",
-    ]
-
-    if (is_chromeos) {
-      sources += [ "settings/easy_unlock_browsertest_chromeos.js" ]
-    }
+  if (is_chromeos) {
+    sources += [ "settings/easy_unlock_browsertest_chromeos.js" ]
   }
 
   if (is_chrome_branded) {
