@@ -9,7 +9,6 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/origin_util.h"
 #include "ios/web/public/web_state/web_state.h"
-#include "ios/web/public/web_thread.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -57,10 +56,6 @@ bool AutofillDriverIOS::IsIncognito() const {
 
 net::URLRequestContextGetter* AutofillDriverIOS::GetURLRequestContext() {
   return web_state_->GetBrowserState()->GetRequestContext();
-}
-
-base::SequencedWorkerPool* AutofillDriverIOS::GetBlockingPool() {
-  return web::WebThread::GetBlockingPool();
 }
 
 bool AutofillDriverIOS::RendererIsAvailable() {

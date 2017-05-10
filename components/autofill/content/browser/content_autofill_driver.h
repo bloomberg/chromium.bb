@@ -49,7 +49,6 @@ class ContentAutofillDriver : public AutofillDriver,
   // AutofillDriver:
   bool IsIncognito() const override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
-  base::SequencedWorkerPool* GetBlockingPool() override;
   bool RendererIsAvailable() override;
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,

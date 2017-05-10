@@ -5,16 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_DRIVER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_DRIVER_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-
-namespace base {
-class SequencedWorkerPoolOwner;
-}
 
 namespace autofill {
 
@@ -29,7 +22,6 @@ class TestAutofillDriver : public AutofillDriver {
   // Returns the value passed in to the last call to |SetURLRequestContext()|
   // or NULL if that method has never been called.
   net::URLRequestContextGetter* GetURLRequestContext() override;
-  base::SequencedWorkerPool* GetBlockingPool() override;
   bool RendererIsAvailable() override;
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,
@@ -57,7 +49,6 @@ class TestAutofillDriver : public AutofillDriver {
   void SetURLRequestContext(net::URLRequestContextGetter* url_request_context);
 
  private:
-  std::unique_ptr<base::SequencedWorkerPoolOwner> blocking_pool_owner_;
   net::URLRequestContextGetter* url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDriver);

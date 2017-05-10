@@ -31,7 +31,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
@@ -478,15 +478,16 @@ void AutofillManager::StartUploadProcess(
     FormStructure* raw_form = form_structure.get();
     TimeTicks loaded_timestamp =
         forms_loaded_timestamps_[raw_form->ToFormData()];
-    driver_->GetBlockingPool()->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&AutofillManager::DeterminePossibleFieldTypesForUpload,
-                   copied_profiles, copied_credit_cards, app_locale_, raw_form),
-        base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(form_structure.release()), loaded_timestamp,
-                   initial_interaction_timestamp_, timestamp,
-                   observed_submission));
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
+                       copied_profiles, copied_credit_cards, app_locale_,
+                       raw_form),
+        base::BindOnce(&AutofillManager::UploadFormDataAsyncCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Owned(form_structure.release()), loaded_timestamp,
+                       initial_interaction_timestamp_, timestamp,
+                       observed_submission));
   }
 }
 
