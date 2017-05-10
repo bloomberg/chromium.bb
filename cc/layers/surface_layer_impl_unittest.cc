@@ -20,12 +20,12 @@ namespace {
 static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
-  float device_scale_factor = 1.25f;
+  float device_scale_factor = 1.33f;
 
-  gfx::Size layer_size(1000, 1000);
+  gfx::Size layer_size(512, 512);
   gfx::Size scaled_surface_size(
       gfx::ScaleToCeiledSize(layer_size, device_scale_factor));
-  gfx::Size viewport_size(1250, 1325);
+  gfx::Size viewport_size(681, 750);
 
   const LocalSurfaceId kArbitraryLocalSurfaceId(
       9, base::UnguessableToken::Create());
@@ -67,7 +67,7 @@ TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
 
   {
     SCOPED_TRACE("Partial occlusion");
-    gfx::Rect occluded(gfx::ScaleToEnclosingRect(gfx::Rect(200, 0, 800, 1000),
+    gfx::Rect occluded(gfx::ScaleToEnclosingRect(gfx::Rect(200, 0, 312, 512),
                                                  device_scale_factor));
     impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
 
@@ -80,7 +80,7 @@ TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
   }
   {
     SCOPED_TRACE("No outside occlusion");
-    gfx::Rect occluded(gfx::ScaleToEnclosingRect(gfx::Rect(0, 1000, 1250, 300),
+    gfx::Rect occluded(gfx::ScaleToEnclosingRect(gfx::Rect(0, 681, 681, 69),
                                                  device_scale_factor));
     impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
 
