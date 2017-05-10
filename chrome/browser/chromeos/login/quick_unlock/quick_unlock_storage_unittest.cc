@@ -30,11 +30,13 @@ base::TimeDelta GetExpirationTime(PrefService* pref_service) {
 
 class QuickUnlockStorageUnitTest : public testing::Test {
  protected:
-  QuickUnlockStorageUnitTest() : profile_(new TestingProfile()) {}
+  QuickUnlockStorageUnitTest() : profile_(base::MakeUnique<TestingProfile>()) {}
   ~QuickUnlockStorageUnitTest() override {}
 
   // testing::Test:
-  void SetUp() override { quick_unlock::EnableForTesting(); }
+  void SetUp() override {
+    quick_unlock::EnableForTesting(quick_unlock::PinStorageType::kPrefs);
+  }
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;

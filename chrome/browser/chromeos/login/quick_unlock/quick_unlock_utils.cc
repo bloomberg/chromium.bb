@@ -18,7 +18,12 @@ namespace chromeos {
 namespace quick_unlock {
 
 namespace {
+// Quick unlock is enabled regardless of flags.
 bool enable_for_testing_ = false;
+// If testing is enabled, PIN will use prefs as backend. Otherwise, it will use
+// cryptohome.
+PinStorageType testing_pin_storage_type_ = PinStorageType::kPrefs;
+
 // Options for the quick unlock whitelist.
 const char kQuickUnlockWhitelistOptionAll[] = "all";
 const char kQuickUnlockWhitelistOptionPin[] = "PIN";
@@ -87,6 +92,15 @@ bool IsPinEnabled(PrefService* pref_service) {
   return base::FeatureList::IsEnabled(features::kQuickUnlockPin);
 }
 
+PinStorageType GetPinStorageType() {
+  if (enable_for_testing_)
+    return testing_pin_storage_type_;
+
+  if (base::FeatureList::IsEnabled(features::kQuickUnlockPinSignin))
+    return PinStorageType::kCryptohome;
+  return PinStorageType::kPrefs;
+}
+
 bool IsFingerprintEnabled() {
   if (enable_for_testing_)
     return true;
@@ -95,8 +109,9 @@ bool IsFingerprintEnabled() {
   return base::FeatureList::IsEnabled(features::kQuickUnlockFingerprint);
 }
 
-void EnableForTesting() {
+void EnableForTesting(PinStorageType pin_storage_type) {
   enable_for_testing_ = true;
+  testing_pin_storage_type_ = pin_storage_type;
 }
 
 }  // namespace quick_unlock

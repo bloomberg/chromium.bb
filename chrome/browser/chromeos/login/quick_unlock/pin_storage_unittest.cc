@@ -17,11 +17,13 @@ namespace {
 
 class PinStorageUnitTest : public testing::Test {
  protected:
-  PinStorageUnitTest() : profile_(new TestingProfile()) {}
+  PinStorageUnitTest() : profile_(base::MakeUnique<TestingProfile>()) {}
   ~PinStorageUnitTest() override {}
 
   // testing::Test:
-  void SetUp() override { quick_unlock::EnableForTesting(); }
+  void SetUp() override {
+    quick_unlock::EnableForTesting(quick_unlock::PinStorageType::kPrefs);
+  }
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
