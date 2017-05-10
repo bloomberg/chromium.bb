@@ -182,17 +182,17 @@ const int kShowTreeCharacterOffset = 39;
 // Those widths are used to determine the final layout logical width, which
 // depends on the layout algorithm used and the available logical width.
 //
-// LayoutObject only has getters for the widths (minPreferredLogicalWidth and
-// maxPreferredLogicalWidth). However the storage for them is in LayoutBox
-// (see m_minPreferredLogicalWidth and m_maxPreferredLogicalWidth). This is
+// LayoutObject only has getters for the widths (MinPreferredLogicalWidth and
+// MaxPreferredLogicalWidth). However the storage for them is in LayoutBox (see
+// min_preferred_logical_width_ and max_preferred_logical_width_). This is
 // because only boxes implementing the full box model have a need for them.
 // Because LayoutBlockFlow's intrinsic widths rely on the underlying text
-// content, LayoutBlockFlow may call LayoutText::computePreferredLogicalWidths.
+// content, LayoutBlockFlow may call LayoutText::ComputePreferredLogicalWidths.
 //
 // The 2 widths are computed lazily during layout when the getters are called.
-// The computation is done by calling computePreferredLogicalWidths() behind the
+// The computation is done by calling ComputePreferredLogicalWidths() behind the
 // scene. The boolean used to control the lazy recomputation is
-// preferredLogicalWidthsDirty.
+// PreferredLogicalWidthsDirty.
 //
 // See the individual getters below for more details about what each width is.
 class CORE_EXPORT LayoutObject : public ImageResourceObserver,
@@ -404,7 +404,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   // The complete set of property nodes that should be used as a starting point
-  // to paint this LayoutObject. See: m_localBorderBoxProperties comment.
+  // to paint this LayoutObject. See also the comment for
+  // RarePaintData::local_border_box_properties_.
   const PropertyTreeState* LocalBorderBoxProperties() const {
     DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
     if (rare_paint_data_)
@@ -473,7 +474,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   //
   // For renderer creation, the inline-* values create the same renderer
   // as the non-inline version. The difference is that inline-* sets
-  // m_isInline during initialization. This means that
+  // is_inline_ during initialization. This means that
   // "display: inline-table" creates a LayoutTable, like "display: table".
   //
   // Ideally every Element::createLayoutObject would call this function to
@@ -2126,9 +2127,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // given new style, without accessing the cache.
   PassRefPtr<ComputedStyle> UncachedFirstLineStyle() const;
 
-  // Adjusts a visual rect in the space of |m_visualRect| to be in the
-  // space of the |paintInvalidationContainer|, if needed. They can be different
-  // only if |paintInvalidationContainer| is a composited scroller.
+  // Adjusts a visual rect in the space of |visual_rect_| to be in the space of
+  // the |paint_invalidation_container|, if needed. They can be different only
+  // if |paint_invalidation_container| is a composited scroller.
   void AdjustVisualRectForCompositedScrolling(
       LayoutRect&,
       const LayoutBoxModelObject& paint_invalidation_container) const;
@@ -2214,13 +2215,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   unsigned set_needs_layout_forbidden_ : 1;
 #endif
 
-#define ADD_BOOLEAN_BITFIELD(name, Name) \
- private:                                \
-  unsigned m_##name : 1;                 \
-                                         \
- public:                                 \
-  bool name() const { return m_##name; } \
-  void Set##Name(bool name) { m_##name = name; }
+#define ADD_BOOLEAN_BITFIELD(field_name_, MethodNameBase) \
+ private:                                                 \
+  unsigned field_name_ : 1;                               \
+                                                          \
+ public:                                                  \
+  bool MethodNameBase() const { return field_name_; }     \
+  void Set##MethodNameBase(bool new_value) { field_name_ = new_value; }
 
   class LayoutObjectBitfields {
     enum PositionedState {
@@ -2250,54 +2251,54 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // https://codereview.chromium.org/44673003 and subsequent relaxations
     // of the memory constraints on layout objects.
     LayoutObjectBitfields(Node* node)
-        : m_SelfNeedsLayout(false),
-          m_NeedsPositionedMovementLayout(false),
-          m_NormalChildNeedsLayout(false),
-          m_PosChildNeedsLayout(false),
-          m_NeedsSimplifiedNormalFlowLayout(false),
-          m_SelfNeedsOverflowRecalcAfterStyleChange(false),
-          m_ChildNeedsOverflowRecalcAfterStyleChange(false),
-          m_PreferredLogicalWidthsDirty(false),
-          m_MayNeedPaintInvalidation(false),
-          m_MayNeedPaintInvalidationSubtree(false),
-          m_MayNeedPaintInvalidationAnimatedBackgroundImage(false),
-          m_NeedsPaintOffsetAndVisualRectUpdate(false),
-          m_ShouldInvalidateSelection(false),
-          m_Floating(false),
-          m_IsAnonymous(!node),
-          m_IsText(false),
-          m_IsBox(false),
-          m_IsInline(true),
-          m_IsAtomicInlineLevel(false),
-          m_HorizontalWritingMode(true),
-          m_HasLayer(false),
-          m_HasOverflowClip(false),
-          m_HasTransformRelatedProperty(false),
-          m_HasReflection(false),
-          m_CanContainFixedPositionObjects(false),
-          m_HasCounterNodeMap(false),
-          m_EverHadLayout(false),
-          m_AncestorLineBoxDirty(false),
-          m_IsInsideFlowThread(false),
-          m_SubtreeChangeListenerRegistered(false),
-          m_NotifiedOfSubtreeChange(false),
-          m_ConsumesSubtreeChangeNotification(false),
-          m_ChildrenInline(false),
-          m_ContainsInlineWithOutlineAndContinuation(false),
-          m_AlwaysCreateLineBoxesForLayoutInline(false),
-          m_PreviousBackgroundObscured(false),
-          m_IsBackgroundAttachmentFixedObject(false),
-          m_IsScrollAnchorObject(false),
-          m_ScrollAnchorDisablingStyleChanged(false),
-          m_HasBoxDecorationBackground(false),
-          m_HasPreviousLocationInBacking(false),
-          m_HasPreviousSelectionVisualRect(false),
-          m_NeedsPaintPropertyUpdate(true),
-          m_SubtreeNeedsPaintPropertyUpdate(true),
-          m_DescendantNeedsPaintPropertyUpdate(true),
-          m_BackgroundChangedSinceLastPaintInvalidation(false),
-          m_OutlineMayBeAffectedByDescendants(false),
-          m_PreviousOutlineMayBeAffectedByDescendants(false),
+        : self_needs_layout_(false),
+          needs_positioned_movement_layout_(false),
+          normal_child_needs_layout_(false),
+          pos_child_needs_layout_(false),
+          needs_simplified_normal_flow_layout_(false),
+          self_needs_overflow_recalc_after_style_change_(false),
+          child_needs_overflow_recalc_after_style_change_(false),
+          preferred_logical_widths_dirty_(false),
+          may_need_paint_invalidation_(false),
+          may_need_paint_invalidation_subtree_(false),
+          may_need_paint_invalidation_animated_background_image_(false),
+          needs_paint_offset_and_visual_rect_update_(false),
+          should_invalidate_selection_(false),
+          floating_(false),
+          is_anonymous_(!node),
+          is_text_(false),
+          is_box_(false),
+          is_inline_(true),
+          is_atomic_inline_level_(false),
+          horizontal_writing_mode_(true),
+          has_layer_(false),
+          has_overflow_clip_(false),
+          has_transform_related_property_(false),
+          has_reflection_(false),
+          can_contain_fixed_position_objects_(false),
+          has_counter_node_map_(false),
+          ever_had_layout_(false),
+          ancestor_line_box_dirty_(false),
+          is_inside_flow_thread_(false),
+          subtree_change_listener_registered_(false),
+          notified_of_subtree_change_(false),
+          consumes_subtree_change_notification_(false),
+          children_inline_(false),
+          contains_inline_with_outline_and_continuation_(false),
+          always_create_line_boxes_for_layout_inline_(false),
+          previous_background_obscured_(false),
+          is_background_attachment_fixed_object_(false),
+          is_scroll_anchor_object_(false),
+          scroll_anchor_disabling_style_changed_(false),
+          has_box_decoration_background_(false),
+          has_previous_location_in_backing_(false),
+          has_previous_selection_visual_rect_(false),
+          needs_paint_property_update_(true),
+          subtree_needs_paint_property_update_(true),
+          descendant_needs_paint_property_update_(true),
+          background_changed_since_last_paint_invalidation_(false),
+          outline_may_be_affected_by_descendants_(false),
+          previous_outline_may_be_affected_by_descendants_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(SelectionNone),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
@@ -2308,7 +2309,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // everything. For CSS boxes, this includes the width (laying out the line
     // boxes again), the margins (due to block collapsing margins), the
     // positions, the height and the potential overflow.
-    ADD_BOOLEAN_BITFIELD(SelfNeedsLayout, SelfNeedsLayout);
+    ADD_BOOLEAN_BITFIELD(self_needs_layout_, SelfNeedsLayout);
 
     // A positioned movement layout is a specialized type of layout used on
     // positioned objects that only visually moved. This layout is used when
@@ -2318,70 +2319,72 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     //
     // Positioned movement layout is implemented in
     // LayoutBlock::simplifiedLayout.
-    ADD_BOOLEAN_BITFIELD(NeedsPositionedMovementLayout,
+    ADD_BOOLEAN_BITFIELD(needs_positioned_movement_layout_,
                          NeedsPositionedMovementLayout);
 
     // This boolean is set when a normal flow ('position' == static || relative)
     // child requires layout (but this object doesn't). Due to the nature of
     // CSS, laying out a child can cause the parent to resize (e.g., if 'height'
     // is auto).
-    ADD_BOOLEAN_BITFIELD(NormalChildNeedsLayout, NormalChildNeedsLayout);
+    ADD_BOOLEAN_BITFIELD(normal_child_needs_layout_, NormalChildNeedsLayout);
 
     // This boolean is set when an out-of-flow positioned ('position' == fixed
     // || absolute) child requires layout (but this object doesn't).
-    ADD_BOOLEAN_BITFIELD(PosChildNeedsLayout, PosChildNeedsLayout);
+    ADD_BOOLEAN_BITFIELD(pos_child_needs_layout_, PosChildNeedsLayout);
 
     // Simplified normal flow layout only relayouts the normal flow children,
     // ignoring the out-of-flow descendants.
     //
     // The implementation of this layout is in
     // LayoutBlock::simplifiedNormalFlowLayout.
-    ADD_BOOLEAN_BITFIELD(NeedsSimplifiedNormalFlowLayout,
+    ADD_BOOLEAN_BITFIELD(needs_simplified_normal_flow_layout_,
                          NeedsSimplifiedNormalFlowLayout);
 
     // Some properties only have a visual impact and don't impact the actual
     // layout position and sizes of the object. An example of this is the
     // 'transform' property, who doesn't modify the layout but gets applied at
     // paint time. Setting this flag only recomputes the overflow information.
-    ADD_BOOLEAN_BITFIELD(SelfNeedsOverflowRecalcAfterStyleChange,
+    ADD_BOOLEAN_BITFIELD(self_needs_overflow_recalc_after_style_change_,
                          SelfNeedsOverflowRecalcAfterStyleChange);
 
     // This flag is set on the ancestor of a LayoutObject needing
     // selfNeedsOverflowRecalcAfterStyleChange. This is needed as a descendant
     // overflow can bleed into its containing block's so we have to recompute it
     // in some cases.
-    ADD_BOOLEAN_BITFIELD(ChildNeedsOverflowRecalcAfterStyleChange,
+    ADD_BOOLEAN_BITFIELD(child_needs_overflow_recalc_after_style_change_,
                          ChildNeedsOverflowRecalcAfterStyleChange);
 
     // This boolean marks preferred logical widths for lazy recomputation.
     //
     // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS above about those
     // widths.
-    ADD_BOOLEAN_BITFIELD(PreferredLogicalWidthsDirty,
+    ADD_BOOLEAN_BITFIELD(preferred_logical_widths_dirty_,
                          PreferredLogicalWidthsDirty);
 
-    ADD_BOOLEAN_BITFIELD(MayNeedPaintInvalidation, MayNeedPaintInvalidation);
-    ADD_BOOLEAN_BITFIELD(MayNeedPaintInvalidationSubtree,
+    ADD_BOOLEAN_BITFIELD(may_need_paint_invalidation_,
+                         MayNeedPaintInvalidation);
+    ADD_BOOLEAN_BITFIELD(may_need_paint_invalidation_subtree_,
                          MayNeedPaintInvalidationSubtree);
-    ADD_BOOLEAN_BITFIELD(MayNeedPaintInvalidationAnimatedBackgroundImage,
+    ADD_BOOLEAN_BITFIELD(may_need_paint_invalidation_animated_background_image_,
                          MayNeedPaintInvalidationAnimatedBackgroundImage);
-    ADD_BOOLEAN_BITFIELD(NeedsPaintOffsetAndVisualRectUpdate,
+    ADD_BOOLEAN_BITFIELD(needs_paint_offset_and_visual_rect_update_,
                          NeedsPaintOffsetAndVisualRectUpdate);
-    ADD_BOOLEAN_BITFIELD(ShouldInvalidateSelection, ShouldInvalidateSelection);
+    ADD_BOOLEAN_BITFIELD(should_invalidate_selection_,
+                         ShouldInvalidateSelection);
 
     // This boolean is the cached value of 'float'
     // (see ComputedStyle::isFloating).
-    ADD_BOOLEAN_BITFIELD(Floating, Floating);
+    ADD_BOOLEAN_BITFIELD(floating_, Floating);
 
-    ADD_BOOLEAN_BITFIELD(IsAnonymous, IsAnonymous);
-    ADD_BOOLEAN_BITFIELD(IsText, IsText);
-    ADD_BOOLEAN_BITFIELD(IsBox, IsBox);
+    ADD_BOOLEAN_BITFIELD(is_anonymous_, IsAnonymous);
+    ADD_BOOLEAN_BITFIELD(is_text_, IsText);
+    ADD_BOOLEAN_BITFIELD(is_box_, IsBox);
 
     // This boolean represents whether the LayoutObject is 'inline-level'
     // (a CSS concept). Inline-level boxes are laid out inside a line. If
     // unset, the box is 'block-level' and thus stack on top of its
     // siblings (think of paragraphs).
-    ADD_BOOLEAN_BITFIELD(IsInline, IsInline);
+    ADD_BOOLEAN_BITFIELD(is_inline_, IsInline);
 
     // This boolean is set if the element is an atomic inline-level box.
     //
@@ -2397,100 +2400,101 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // TODO(jchaffraix): We should inspect callers and clarify their use.
     // TODO(jchaffraix): We set this boolean for replaced elements that are
     // not inline but shouldn't (crbug.com/567964). This should be enforced.
-    ADD_BOOLEAN_BITFIELD(IsAtomicInlineLevel, IsAtomicInlineLevel);
-    ADD_BOOLEAN_BITFIELD(HorizontalWritingMode, HorizontalWritingMode);
+    ADD_BOOLEAN_BITFIELD(is_atomic_inline_level_, IsAtomicInlineLevel);
+    ADD_BOOLEAN_BITFIELD(horizontal_writing_mode_, HorizontalWritingMode);
 
-    ADD_BOOLEAN_BITFIELD(HasLayer, HasLayer);
+    ADD_BOOLEAN_BITFIELD(has_layer_, HasLayer);
 
     // This boolean is set if overflow != 'visible'.
     // This means that this object may need an overflow clip to be applied
     // at paint time to its visual overflow (see OverflowModel for more
     // details). Only set for LayoutBoxes and descendants.
-    ADD_BOOLEAN_BITFIELD(HasOverflowClip, HasOverflowClip);
+    ADD_BOOLEAN_BITFIELD(has_overflow_clip_, HasOverflowClip);
 
     // This boolean is the cached value from
     // ComputedStyle::hasTransformRelatedProperty.
-    ADD_BOOLEAN_BITFIELD(HasTransformRelatedProperty,
+    ADD_BOOLEAN_BITFIELD(has_transform_related_property_,
                          HasTransformRelatedProperty);
-    ADD_BOOLEAN_BITFIELD(HasReflection, HasReflection);
+    ADD_BOOLEAN_BITFIELD(has_reflection_, HasReflection);
 
     // This boolean is used to know if this LayoutObject is a container for
     // fixed position descendants.
-    ADD_BOOLEAN_BITFIELD(CanContainFixedPositionObjects,
+    ADD_BOOLEAN_BITFIELD(can_contain_fixed_position_objects_,
                          CanContainFixedPositionObjects);
 
     // This boolean is used to know if this LayoutObject has one (or more)
     // associated CounterNode(s).
     // See class comment in LayoutCounter.h for more detail.
-    ADD_BOOLEAN_BITFIELD(HasCounterNodeMap, HasCounterNodeMap);
+    ADD_BOOLEAN_BITFIELD(has_counter_node_map_, HasCounterNodeMap);
 
-    ADD_BOOLEAN_BITFIELD(EverHadLayout, EverHadLayout);
-    ADD_BOOLEAN_BITFIELD(AncestorLineBoxDirty, AncestorLineBoxDirty);
+    ADD_BOOLEAN_BITFIELD(ever_had_layout_, EverHadLayout);
+    ADD_BOOLEAN_BITFIELD(ancestor_line_box_dirty_, AncestorLineBoxDirty);
 
-    ADD_BOOLEAN_BITFIELD(IsInsideFlowThread, IsInsideFlowThread);
+    ADD_BOOLEAN_BITFIELD(is_inside_flow_thread_, IsInsideFlowThread);
 
-    ADD_BOOLEAN_BITFIELD(SubtreeChangeListenerRegistered,
+    ADD_BOOLEAN_BITFIELD(subtree_change_listener_registered_,
                          SubtreeChangeListenerRegistered);
-    ADD_BOOLEAN_BITFIELD(NotifiedOfSubtreeChange, NotifiedOfSubtreeChange);
-    ADD_BOOLEAN_BITFIELD(ConsumesSubtreeChangeNotification,
+    ADD_BOOLEAN_BITFIELD(notified_of_subtree_change_, NotifiedOfSubtreeChange);
+    ADD_BOOLEAN_BITFIELD(consumes_subtree_change_notification_,
                          ConsumesSubtreeChangeNotification);
 
     // from LayoutBlock
-    ADD_BOOLEAN_BITFIELD(ChildrenInline, ChildrenInline);
+    ADD_BOOLEAN_BITFIELD(children_inline_, ChildrenInline);
 
     // from LayoutBlockFlow
-    ADD_BOOLEAN_BITFIELD(ContainsInlineWithOutlineAndContinuation,
+    ADD_BOOLEAN_BITFIELD(contains_inline_with_outline_and_continuation_,
                          ContainsInlineWithOutlineAndContinuation);
 
     // from LayoutInline
-    ADD_BOOLEAN_BITFIELD(AlwaysCreateLineBoxesForLayoutInline,
+    ADD_BOOLEAN_BITFIELD(always_create_line_boxes_for_layout_inline_,
                          AlwaysCreateLineBoxesForLayoutInline);
 
     // Background obscuration status of the previous frame.
-    ADD_BOOLEAN_BITFIELD(PreviousBackgroundObscured,
+    ADD_BOOLEAN_BITFIELD(previous_background_obscured_,
                          PreviousBackgroundObscured);
 
-    ADD_BOOLEAN_BITFIELD(IsBackgroundAttachmentFixedObject,
+    ADD_BOOLEAN_BITFIELD(is_background_attachment_fixed_object_,
                          IsBackgroundAttachmentFixedObject);
-    ADD_BOOLEAN_BITFIELD(IsScrollAnchorObject, IsScrollAnchorObject);
+    ADD_BOOLEAN_BITFIELD(is_scroll_anchor_object_, IsScrollAnchorObject);
 
     // Whether changes in this LayoutObject's CSS properties since the last
     // layout should suppress any adjustments that would be made during the next
     // layout by ScrollAnchor objects for which this LayoutObject is on the path
     // from the anchor node to the scroller.
     // See http://bit.ly/sanaclap for more info.
-    ADD_BOOLEAN_BITFIELD(ScrollAnchorDisablingStyleChanged,
+    ADD_BOOLEAN_BITFIELD(scroll_anchor_disabling_style_changed_,
                          ScrollAnchorDisablingStyleChanged);
 
-    ADD_BOOLEAN_BITFIELD(HasBoxDecorationBackground,
+    ADD_BOOLEAN_BITFIELD(has_box_decoration_background_,
                          HasBoxDecorationBackground);
 
-    ADD_BOOLEAN_BITFIELD(HasPreviousLocationInBacking,
+    ADD_BOOLEAN_BITFIELD(has_previous_location_in_backing_,
                          HasPreviousLocationInBacking);
-    ADD_BOOLEAN_BITFIELD(HasPreviousSelectionVisualRect,
+    ADD_BOOLEAN_BITFIELD(has_previous_selection_visual_rect_,
                          HasPreviousSelectionVisualRect);
 
     // Whether the paint properties need to be updated. For more details, see
     // LayoutObject::needsPaintPropertyUpdate().
-    ADD_BOOLEAN_BITFIELD(NeedsPaintPropertyUpdate, NeedsPaintPropertyUpdate);
+    ADD_BOOLEAN_BITFIELD(needs_paint_property_update_,
+                         NeedsPaintPropertyUpdate);
     // Whether paint properties of the whole subtree need to be updated.
-    ADD_BOOLEAN_BITFIELD(SubtreeNeedsPaintPropertyUpdate,
+    ADD_BOOLEAN_BITFIELD(subtree_needs_paint_property_update_,
                          SubtreeNeedsPaintPropertyUpdate)
     // Whether the paint properties of a descendant need to be updated. For more
     // details, see LayoutObject::descendantNeedsPaintPropertyUpdate().
-    ADD_BOOLEAN_BITFIELD(DescendantNeedsPaintPropertyUpdate,
+    ADD_BOOLEAN_BITFIELD(descendant_needs_paint_property_update_,
                          DescendantNeedsPaintPropertyUpdate);
 
-    ADD_BOOLEAN_BITFIELD(BackgroundChangedSinceLastPaintInvalidation,
+    ADD_BOOLEAN_BITFIELD(background_changed_since_last_paint_invalidation_,
                          BackgroundChangedSinceLastPaintInvalidation);
 
     // Whether shape of outline may be affected by any descendants. This is
     // updated before paint invalidation, checked during paint invalidation.
-    ADD_BOOLEAN_BITFIELD(OutlineMayBeAffectedByDescendants,
+    ADD_BOOLEAN_BITFIELD(outline_may_be_affected_by_descendants_,
                          OutlineMayBeAffectedByDescendants);
     // The outlineMayBeAffectedByDescendants status of the last paint
     // invalidation.
-    ADD_BOOLEAN_BITFIELD(PreviousOutlineMayBeAffectedByDescendants,
+    ADD_BOOLEAN_BITFIELD(previous_outline_may_be_affected_by_descendants_,
                          PreviousOutlineMayBeAffectedByDescendants);
 
    protected:
