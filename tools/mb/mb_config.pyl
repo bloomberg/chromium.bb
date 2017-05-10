@@ -177,6 +177,7 @@
       'CrWinClngLLD64dbg': 'clang_tot_full_symbols_shared_debug_use_lld',
       'CrWinClngLLDdbg': 'clang_tot_full_symbols_shared_debug_use_lld_x86',
       'EarlGreyiOS': 'ios',
+      'Fuchsia': 'release_bot_fuchsia',
       'GomaCanaryiOS': 'ios',
       'ios-simulator': 'ios',
       'Headless Linux (dbg)': 'headless_linux_debug_bot',
@@ -1374,6 +1375,10 @@
       'release_bot', 'ozone', 'ozone_linux',
     ],
 
+    'release_bot_fuchsia': [
+      'release_bot', 'fuchsia',
+    ],
+
     'ozone_linux_release_trybot': [
       'release_trybot', 'ozone', 'ozone_linux',
     ],
@@ -1809,6 +1814,10 @@
                   'ozone_platform_x11=true ozone_platform_gbm=true '
                   'enable_package_mash_services=true use_ash=false '
                   'use_xkbcommon=true'),
+    },
+
+    'fuchsia': {
+      'gn_args': 'target_os="fuchsia"',
     },
 
     'pdf_xfa': {
