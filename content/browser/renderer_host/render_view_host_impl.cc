@@ -284,8 +284,10 @@ bool RenderViewHostImpl::CreateRenderView(
   // https://crbug.com/575245.
   // TODO(creis): Remove this once we've found the cause.
   if (main_frame_routing_id_ != MSG_ROUTING_NONE &&
-      proxy_route_id != MSG_ROUTING_NONE)
+      proxy_route_id != MSG_ROUTING_NONE) {
+    NOTREACHED() << "Don't set both main_frame_routing_id_ and proxy_route_id";
     base::debug::DumpWithoutCrashing();
+  }
 
   GetWidget()->set_renderer_initialized(true);
 

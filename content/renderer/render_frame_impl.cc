@@ -1772,20 +1772,13 @@ void RenderFrameImpl::OnSwapOut(
   // the necessary cleanup has happened anyway), but it might be possible for
   // it to return false without detaching.  Catch any cases that the
   // RenderView's main_render_frame_ isn't cleared below (whether swap returns
-  // false or not), to track down https://crbug.com/575245.
+  // false or not).
   bool success = frame_->Swap(proxy->web_frame());
 
   // For main frames, the swap should have cleared the RenderView's pointer to
   // this frame.
-  if (is_main_frame) {
-    base::debug::SetCrashKeyValue("swapout_frame_id",
-                                  base::IntToString(routing_id));
-    base::debug::SetCrashKeyValue("swapout_proxy_id",
-                                  base::IntToString(proxy->routing_id()));
-    base::debug::SetCrashKeyValue(
-        "swapout_view_id", base::IntToString(render_view->GetRoutingID()));
+  if (is_main_frame)
     CHECK(!render_view->main_render_frame_);
-  }
 
   if (!success) {
     // The swap can fail when the frame is detached during swap (this can
@@ -5163,7 +5156,6 @@ bool RenderFrameImpl::SwapIn() {
 
   // Note: Calling swap() will detach and delete |proxy|, so do not reference it
   // after this.
-  int proxy_routing_id = proxy_routing_id_;
   if (!proxy->web_frame()->Swap(frame_))
     return false;
 
@@ -5174,18 +5166,6 @@ bool RenderFrameImpl::SwapIn() {
   // it needs to set RenderViewImpl's pointer for the main frame to itself
   // and ensure RenderWidget is no longer in swapped out mode.
   if (is_main_frame_) {
-    // Debug cases of https://crbug.com/575245.
-    base::debug::SetCrashKeyValue("commit_frame_id",
-                                  base::IntToString(GetRoutingID()));
-    base::debug::SetCrashKeyValue("commit_proxy_id",
-                                  base::IntToString(proxy_routing_id));
-    base::debug::SetCrashKeyValue(
-        "commit_view_id", base::IntToString(render_view_->GetRoutingID()));
-    if (render_view_->main_render_frame_) {
-      base::debug::SetCrashKeyValue(
-          "commit_main_render_frame_id",
-          base::IntToString(render_view_->main_render_frame_->GetRoutingID()));
-    }
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;
     if (render_view_->is_swapped_out())

@@ -187,11 +187,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // re-entrantly.
   void PostRenderViewReady();
 
-  // TODO(creis): Remove after debugging https:/crbug.com/575245.
-  int main_frame_routing_id() const {
-    return main_frame_routing_id_;
-  }
-
   void set_main_frame_routing_id(int routing_id) {
     main_frame_routing_id_ = routing_id;
   }

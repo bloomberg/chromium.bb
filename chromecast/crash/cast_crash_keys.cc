@@ -55,27 +55,6 @@ size_t RegisterCastCrashKeys() {
       // gin/:
       {"v8-ignition", ::crash_keys::kSmallSize},
 
-      // Temporary for http://crbug.com/575245.
-      {"swapout_frame_id", ::crash_keys::kSmallSize},
-      {"swapout_proxy_id", ::crash_keys::kSmallSize},
-      {"swapout_view_id", ::crash_keys::kSmallSize},
-      {"commit_frame_id", ::crash_keys::kSmallSize},
-      {"commit_proxy_id", ::crash_keys::kSmallSize},
-      {"commit_view_id", ::crash_keys::kSmallSize},
-      {"commit_main_render_frame_id", ::crash_keys::kSmallSize},
-      {"newproxy_proxy_id", ::crash_keys::kSmallSize},
-      {"newproxy_view_id", ::crash_keys::kSmallSize},
-      {"newproxy_opener_id", ::crash_keys::kSmallSize},
-      {"newproxy_parent_id", ::crash_keys::kSmallSize},
-      {"rvinit_view_id", ::crash_keys::kSmallSize},
-      {"rvinit_proxy_id", ::crash_keys::kSmallSize},
-      {"rvinit_main_frame_id", ::crash_keys::kSmallSize},
-      {"initrf_frame_id", ::crash_keys::kSmallSize},
-      {"initrf_proxy_id", ::crash_keys::kSmallSize},
-      {"initrf_view_id", ::crash_keys::kSmallSize},
-      {"initrf_main_frame_id", ::crash_keys::kSmallSize},
-      {"initrf_view_is_live", ::crash_keys::kSmallSize},
-
       // Temporary for https://crbug.com/591478.
       {"initrf_parent_proxy_exists", ::crash_keys::kSmallSize},
       {"initrf_render_view_is_live", ::crash_keys::kSmallSize},
