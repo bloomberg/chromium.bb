@@ -267,20 +267,6 @@ def get_waterfall_config():
          ]
       }
     ])
-
-  waterfall = add_tester(
-    waterfall, 'Win Zenbook Perf', 'win-zenbook', 'win',
-    swarming=[
-      {
-       'gpu': '8086:161e',
-       'os': 'Windows-10-10240',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build30-b1', 'build31-b1',
-           'build32-b1', 'build33-b1', 'build34-b1'
-          ]
-      }
-    ])
   waterfall = add_tester(
     waterfall, 'Win 10 High-DPI Perf', 'win-high-dpi', 'win',
     swarming=[
