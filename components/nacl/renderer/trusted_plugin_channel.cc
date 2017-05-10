@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/trusted_plugin_channel.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "components/nacl/renderer/histogram.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
@@ -30,18 +32,16 @@ void TrustedPluginChannel::OnChannelError() {
     nexe_load_manager_->NexeDidCrash();
 }
 
-void TrustedPluginChannel::ReportExitStatus(
-    int exit_status,
-    const ReportExitStatusCallback& callback) {
-  callback.Run();
+void TrustedPluginChannel::ReportExitStatus(int exit_status,
+                                            ReportExitStatusCallback callback) {
+  std::move(callback).Run();
   if (!is_helper_nexe_)
     nexe_load_manager_->set_exit_status(exit_status);
 }
 
-void TrustedPluginChannel::ReportLoadStatus(
-    NaClErrorCode load_status,
-    const ReportLoadStatusCallback& callback) {
-  callback.Run();
+void TrustedPluginChannel::ReportLoadStatus(NaClErrorCode load_status,
+                                            ReportLoadStatusCallback callback) {
+  std::move(callback).Run();
   if (load_status < 0 || load_status > NACL_ERROR_CODE_MAX) {
     load_status = LOAD_STATUS_UNKNOWN;
   }

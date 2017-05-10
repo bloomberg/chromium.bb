@@ -29,9 +29,9 @@ class TrustedPluginChannel : public mojom::NaClRendererHost {
 
   // mojom::NaClRendererHost overrides.
   void ReportExitStatus(int exit_status,
-                        const ReportExitStatusCallback& callback) override;
+                        ReportExitStatusCallback callback) override;
   void ReportLoadStatus(NaClErrorCode load_status,
-                        const ReportLoadStatusCallback& callback) override;
+                        ReportLoadStatusCallback callback) override;
   void ProvideExitControl(mojom::NaClExitControlPtr exit_control) override;
 
   // Non-owning pointer. This is safe because the TrustedPluginChannel is owned
