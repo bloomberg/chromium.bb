@@ -78,6 +78,16 @@ class SuggestionsServiceImpl : public SuggestionsService,
   bool UndoBlacklistURL(const GURL& url) override;
   void ClearBlacklist() override;
 
+  base::TimeDelta blacklist_delay_for_testing() const {
+    return scheduling_delay_;
+  }
+  void set_blacklist_delay_for_testing(base::TimeDelta delay) {
+    scheduling_delay_ = delay;
+  }
+  bool has_pending_request_for_testing() const {
+    return !!pending_request_.get();
+  }
+
   // Determines which URL a blacklist request was for, irrespective of the
   // request's status. Returns false if |request| is not a blacklist request.
   static bool GetBlacklistedUrl(const net::URLFetcher& request, GURL* url);
@@ -86,35 +96,6 @@ class SuggestionsServiceImpl : public SuggestionsService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  friend class SuggestionsServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, IgnoresNoopSyncChange);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           IgnoresUninterestingSyncChange);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, DoesNotFetchOnStartup);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           FetchSuggestionsDataSyncNotInitializedEnabled);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           FetchSuggestionsDataSyncDisabled);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           FetchSuggestionsDataNoAccessToken);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           IssueRequestIfNoneOngoingError);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           IssueRequestIfNoneOngoingResponseNotOK);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURL);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLRequestFails);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, ClearBlacklist);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURL);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           UndoBlacklistURLFailsIfNotInBlacklist);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           UndoBlacklistURLFailsIfAlreadyCandidate);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
-                           GetBlacklistedUrlBlacklistRequest);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, CheckDefaultTimeStamps);
-
   // Establishes the different sync states that matter to SuggestionsService.
   enum SyncState {
     // State: Sync service is not initialized, yet not disabled. History sync
@@ -199,10 +180,6 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   // Adds extra data to suggestions profile.
   void PopulateExtraData(SuggestionsProfile* suggestions);
-
-  // Test seams.
-  base::TimeDelta blacklist_delay() const { return scheduling_delay_; }
-  void set_blacklist_delay(base::TimeDelta delay) { scheduling_delay_ = delay; }
 
   base::ThreadChecker thread_checker_;
 
