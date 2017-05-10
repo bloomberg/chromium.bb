@@ -67,7 +67,7 @@ cr.define('print_preview', function() {
 
     /**
      * Media size to generate preview with. {@code null} indicates default size.
-     * @type {cp.cdd.MediaSizeTicketItem}
+     * @type {print_preview.ValueType}
      * @private
      */
     this.mediaSize_ = null;
@@ -110,7 +110,7 @@ cr.define('print_preview', function() {
 
     /**
      * Page ranges setting used used to generate the last preview.
-     * @type {!Array<object<{from: number, to: number}>>}
+     * @type {Array<{from: number, to: number}>}
      * @private
      */
     this.pageRanges_ = null;

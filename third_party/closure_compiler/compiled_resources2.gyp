@@ -33,8 +33,7 @@
         '<(DEPTH)/chrome/browser/resources/ntp4/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/offline_pages/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/settings/compiled_resources2.gyp:*',
-        # TODO(dpapad): Uncomment following line once all errors are fixed.
-        #'<(DEPTH)/chrome/browser/resources/print_preview/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/print_preview/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/uber/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/webapks/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/file_manager/compiled_resources2.gyp:*',

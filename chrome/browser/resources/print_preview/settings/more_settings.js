@@ -2,8 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/**
+ * Which settings are visible to the user.
+ * @enum {number}
+ */
+print_preview.MoreSettingsSettingsToShow = {
+  MOST_POPULAR: 1,
+  ALL: 2
+};
+
 cr.define('print_preview', function() {
   'use strict';
+
+  var SettingsToShow = print_preview.MoreSettingsSettingsToShow;
 
   /**
    * Toggles visibility of the specified printing options sections.
@@ -23,8 +36,8 @@ cr.define('print_preview', function() {
     /** @private {!Array<print_preview.SettingsSection>} */
     this.settingsSections_ = settingsSections;
 
-    /** @private {MoreSettings.SettingsToShow} */
-    this.settingsToShow_ = MoreSettings.SettingsToShow.MOST_POPULAR;
+    /** @private {print_preview.MoreSettingsSettingsToShow} */
+    this.settingsToShow_ = SettingsToShow.MOST_POPULAR;
 
     /** @private {boolean} */
     this.capabilitiesReady_ = false;
@@ -39,21 +52,12 @@ cr.define('print_preview', function() {
     this.metrics_ = new print_preview.PrintSettingsUiMetricsContext();
   }
 
-  /**
-   * Which settings are visible to the user.
-   * @enum {number}
-   */
-  MoreSettings.SettingsToShow = {
-    MOST_POPULAR: 1,
-    ALL: 2
-  };
-
   MoreSettings.prototype = {
     __proto__: print_preview.Component.prototype,
 
     /** @return {boolean} Returns {@code true} if settings are expanded. */
     get isExpanded() {
-      return this.settingsToShow_ == MoreSettings.SettingsToShow.ALL;
+      return this.settingsToShow_ == SettingsToShow.ALL;
     },
 
     /** @override */
@@ -87,9 +91,9 @@ cr.define('print_preview', function() {
      */
     onClick_: function() {
       this.settingsToShow_ =
-          this.settingsToShow_ == MoreSettings.SettingsToShow.MOST_POPULAR ?
-              MoreSettings.SettingsToShow.ALL :
-              MoreSettings.SettingsToShow.MOST_POPULAR;
+          this.settingsToShow_ == SettingsToShow.MOST_POPULAR ?
+              SettingsToShow.ALL :
+              SettingsToShow.MOST_POPULAR;
       this.updateState_(false);
       this.metrics_.record(this.isExpanded ?
           print_preview.Metrics.PrintSettingsUiBucket.MORE_SETTINGS_CLICKED :
@@ -131,7 +135,7 @@ cr.define('print_preview', function() {
       if (!this.capabilitiesReady_)
         return;
 
-      var all = this.settingsToShow_ == MoreSettings.SettingsToShow.ALL;
+      var all = this.settingsToShow_ == SettingsToShow.ALL;
       this.getChildElement('.more-settings-label').textContent =
           loadTimeData.getString(all ? 'lessOptionsLabel' : 'moreOptionsLabel');
       var iconEl = this.getChildElement('.more-settings-icon');
@@ -157,7 +161,7 @@ cr.define('print_preview', function() {
         fadeOutElement(this.getElement());
 
       var collapseContent =
-          this.settingsToShow_ == MoreSettings.SettingsToShow.MOST_POPULAR &&
+          this.settingsToShow_ == SettingsToShow.MOST_POPULAR &&
           hasSectionsToToggle;
       this.settingsSections_.forEach(function(section) {
         section.setCollapseContent(collapseContent, noAnimation);

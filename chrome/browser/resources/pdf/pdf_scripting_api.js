@@ -9,7 +9,7 @@
  */
 function DeserializeKeyEvent(dict) {
   var e = document.createEvent('Event');
-  e.initEvent('keydown');
+  e.initEvent('keydown', true, true);
   e.keyCode = dict.keyCode;
   e.shiftKey = dict.shiftKey;
   e.ctrlKey = dict.ctrlKey;
@@ -37,6 +37,7 @@ function SerializeKeyEvent(event) {
 /**
  * An enum containing a value specifying whether the PDF is currently loading,
  * has finished loading or failed to load.
+ * @enum {string}
  */
 var LoadState = {
   LOADING: 'loading',
@@ -49,6 +50,7 @@ var LoadState = {
  * the PDF viewer so that it can be customized by things like print preview.
  * @param {Window} window the window of the page containing the pdf viewer.
  * @param {Object} plugin the plugin element containing the pdf viewer.
+ * @constructor
  */
 function PDFScriptingAPI(window, plugin) {
   this.loadState_ = LoadState.LOADING;
@@ -64,21 +66,33 @@ function PDFScriptingAPI(window, plugin) {
     }
     switch (event.data.type) {
       case 'viewport':
+        /**
+         * @type {{
+         *   pageX: number,
+         *   pageY: number,
+         *   pageWidth: number,
+         *   viewportWidth: number,
+         *   viewportHeight: number
+         * }}
+         */
+        var viewportData = event.data;
         if (this.viewportChangedCallback_)
-          this.viewportChangedCallback_(event.data.pageX,
-                                        event.data.pageY,
-                                        event.data.pageWidth,
-                                        event.data.viewportWidth,
-                                        event.data.viewportHeight);
+          this.viewportChangedCallback_(viewportData.pageX,
+                                        viewportData.pageY,
+                                        viewportData.pageWidth,
+                                        viewportData.viewportWidth,
+                                        viewportData.viewportHeight);
         break;
       case 'documentLoaded':
-        this.loadState_ = event.data.load_state;
+        var data = /** @type {{load_state: LoadState}} */ (event.data);
+        this.loadState_ = data.load_state;
         if (this.loadCallback_)
           this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
         break;
       case 'getSelectedTextReply':
+        var data = /** @type {{selectedText: string}} */ (event.data);
         if (this.selectedTextCallback_) {
-          this.selectedTextCallback_(event.data.selectedText);
+          this.selectedTextCallback_(data.selectedText);
           this.selectedTextCallback_ = null;
         }
         break;
@@ -240,8 +254,9 @@ PDFScriptingAPI.prototype = {
  * @return {HTMLIFrameElement} the iframe element containing the PDF viewer.
  */
 function PDFCreateOutOfProcessPlugin(src) {
-  var client = new PDFScriptingAPI(window);
-  var iframe = window.document.createElement('iframe');
+  var client = new PDFScriptingAPI(window, null);
+  var iframe = assertInstanceof(window.document.createElement('iframe'),
+                                HTMLIFrameElement);
   iframe.setAttribute('src', 'pdf_preview.html?' + src);
   // Prevent the frame from being tab-focusable.
   iframe.setAttribute('tabindex', '-1');

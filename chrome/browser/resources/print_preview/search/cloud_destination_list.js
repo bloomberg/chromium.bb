@@ -18,7 +18,7 @@ cr.define('print_preview', function() {
         eventTarget,
         loadTimeData.getString('cloudDestinationsTitle'),
         loadTimeData.getString('manage'));
-  };
+  }
 
   CloudDestinationList.prototype = {
     __proto__: print_preview.DestinationList.prototype,

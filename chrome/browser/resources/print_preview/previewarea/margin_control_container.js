@@ -108,7 +108,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.clippingSize_ = null;
-  };
+  }
 
   /**
    * CSS classes used by the custom margins component.
@@ -272,7 +272,7 @@ cr.define('print_preview', function() {
 
     /**
      * @param {string} value Value to parse to points. E.g. '3.40"' or '200mm'.
-     * @return {number} Value in points represented by the input value.
+     * @return {?number} Value in points represented by the input value.
      * @private
      */
     parseValueToPts_: function(value) {
@@ -369,9 +369,10 @@ cr.define('print_preview', function() {
     /**
      * Called when the mouse moves onto the component. Shows the margin
      * controls.
+     * @param {!Event} event Contains element mouse moved from.
      * @private
      */
-    onMouseOver_: function() {
+    onMouseOver_: function(event) {
       var fromElement = event.fromElement;
       while (fromElement != null) {
         if (fromElement == this.getElement()) {
@@ -389,6 +390,7 @@ cr.define('print_preview', function() {
     /**
      * Called when the mouse moves off of the component. Hides the margin
      * controls.
+     * @param {!Event} event Contains element mouse moved to.
      * @private
      */
     onMouseOut_: function(event) {

@@ -531,8 +531,8 @@ cr.define('print_preview', function() {
     __proto__: cr.EventTarget.prototype,
 
     /**
-     * @param {string=} opt_account Account to filter destinations by. When
-     *     omitted, all destinations are returned.
+     * @param {?string=} opt_account Account to filter destinations by. When
+     *     null or omitted, all destinations are returned.
      * @return {!Array<!print_preview.Destination>} List of destinations
      *     accessible by the {@code account}.
      */
