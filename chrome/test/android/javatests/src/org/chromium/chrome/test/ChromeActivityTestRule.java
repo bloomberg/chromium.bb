@@ -110,6 +110,11 @@ public class ChromeActivityTestRule<T extends ChromeActivity>
      * {@link Instrumentation#startActivitySync(Intent)} on the timing of the
      * return, but generally speaking the activity's "onCreate" has completed
      * and the activity's main looper has become idle.
+     *
+     * TODO(yolandyan): very similar to ActivityTestRule#launchActivity(Intent),
+     * yet small differences remains (e.g. launchActivity() uses FLAG_ACTIVITY_NEW_TASK while
+     * startActivityCompletely doesn't), need to refactor and use only launchActivity
+     * after the JUnit4 migration
      */
     public void startActivityCompletely(Intent intent) {
         mTestCommon.startActivityCompletely(intent);
