@@ -62,11 +62,10 @@ void WakeLockServiceImpl::CancelWakeLock() {
   if (!(*binding_set_.dispatch_context()))
     return;
 
+  DCHECK(num_lock_requests_ > 0);
   *binding_set_.dispatch_context() = false;
-  if (num_lock_requests_ > 0) {
-    num_lock_requests_--;
-    UpdateWakeLock();
-  }
+  num_lock_requests_--;
+  UpdateWakeLock();
 }
 
 void WakeLockServiceImpl::HasWakeLockForTests(
@@ -112,16 +111,13 @@ void WakeLockServiceImpl::RemoveWakeLock() {
 }
 
 void WakeLockServiceImpl::OnConnectionError() {
-  DCHECK(binding_set_.dispatch_context());
-
-  // If the error-happening client's wakelock is in outstanding status,
-  // decrease the num_lock_requests and call UpdateWakeLock().
+  // If this client has an outstanding wake lock request, decrease the
+  // num_lock_requests and call UpdateWakeLock().
   if (*binding_set_.dispatch_context() && num_lock_requests_ > 0) {
     num_lock_requests_--;
     UpdateWakeLock();
   }
 
-  // If |binding_set_| is empty, WakeLockServiceImpl should delele itself.
   if (binding_set_.empty())
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
