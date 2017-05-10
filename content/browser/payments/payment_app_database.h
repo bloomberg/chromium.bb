@@ -24,14 +24,14 @@ class ServiceWorkerRegistration;
 class CONTENT_EXPORT PaymentAppDatabase {
  public:
   using WriteManifestCallback =
-      base::Callback<void(payments::mojom::PaymentAppManifestError)>;
+      base::OnceCallback<void(payments::mojom::PaymentAppManifestError)>;
   using ReadManifestCallback =
-      base::Callback<void(payments::mojom::PaymentAppManifestPtr,
-                          payments::mojom::PaymentAppManifestError)>;
+      base::OnceCallback<void(payments::mojom::PaymentAppManifestPtr,
+                              payments::mojom::PaymentAppManifestError)>;
   using ManifestWithID =
       std::pair<int64_t, payments::mojom::PaymentAppManifestPtr>;
   using Manifests = std::vector<ManifestWithID>;
-  using ReadAllManifestsCallback = base::Callback<void(Manifests)>;
+  using ReadAllManifestsCallback = base::OnceCallback<void(Manifests)>;
   using DeletePaymentInstrumentCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
   using ReadPaymentInstrumentCallback =
@@ -53,9 +53,9 @@ class CONTENT_EXPORT PaymentAppDatabase {
 
   void WriteManifest(const GURL& scope,
                      payments::mojom::PaymentAppManifestPtr manifest,
-                     const WriteManifestCallback& callback);
-  void ReadManifest(const GURL& scope, const ReadManifestCallback& callback);
-  void ReadAllManifests(const ReadAllManifestsCallback& callback);
+                     WriteManifestCallback callback);
+  void ReadManifest(const GURL& scope, ReadManifestCallback callback);
+  void ReadAllManifests(ReadAllManifestsCallback callback);
   void DeletePaymentInstrument(const GURL& scope,
                                const std::string& instrument_key,
                                DeletePaymentInstrumentCallback callback);
@@ -78,24 +78,24 @@ class CONTENT_EXPORT PaymentAppDatabase {
   // WriteManifest callbacks
   void DidFindRegistrationToWriteManifest(
       payments::mojom::PaymentAppManifestPtr manifest,
-      const WriteManifestCallback& callback,
+      WriteManifestCallback callback,
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
-  void DidWriteManifest(const WriteManifestCallback& callback,
+  void DidWriteManifest(WriteManifestCallback callback,
                         ServiceWorkerStatusCode status);
 
   // ReadManifest callbacks
   void DidFindRegistrationToReadManifest(
-      const ReadManifestCallback& callback,
+      ReadManifestCallback callback,
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
-  void DidReadManifest(const ReadManifestCallback& callback,
+  void DidReadManifest(ReadManifestCallback callback,
                        const std::vector<std::string>& data,
                        ServiceWorkerStatusCode status);
 
   // ReadAllManifests callbacks
   void DidReadAllManifests(
-      const ReadAllManifestsCallback& callback,
+      ReadAllManifestsCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& raw_data,
       ServiceWorkerStatusCode status);
 

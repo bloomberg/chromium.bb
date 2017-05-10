@@ -33,9 +33,9 @@ class PaymentAppContentUnitTestBase : public testing::Test {
                                        const GURL& sw_script_url);
   void SetManifest(PaymentManager* manager,
                    payments::mojom::PaymentAppManifestPtr manifest,
-                   const PaymentManager::SetManifestCallback& callback);
+                   PaymentManager::SetManifestCallback callback);
   void GetManifest(PaymentManager* manager,
-                   const PaymentManager::GetManifestCallback& callback);
+                   PaymentManager::GetManifestCallback callback);
   payments::mojom::PaymentAppManifestPtr CreatePaymentAppManifestForTest(
       const std::string& name);
   void UnregisterServiceWorker(const GURL& scope_url);
