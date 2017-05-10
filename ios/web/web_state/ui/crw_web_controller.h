@@ -253,11 +253,6 @@ class WebStateImpl;
 
 - (CRWJSInjectionReceiver*)jsInjectionReceiver;
 
-// Load the correct HTML page for |error| in a native controller, retrieved
-// from the native provider. Call |loadNativeViewWithSuccess:NO| to load the
-// native controller.
-- (void)loadErrorInNativeView:(NSError*)error;
-
 // Returns the native controller (if any) current mananging the content.
 - (id<CRWNativeContent>)nativeController;
 @end

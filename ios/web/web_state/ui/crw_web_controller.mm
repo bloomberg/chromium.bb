@@ -599,8 +599,14 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)updateCurrentBackForwardListItemHolder;
 
 // Loads the current nativeController in a native view. If a web view is
-// present, removes it and swaps in the native view in its place.
-- (void)loadNativeViewWithSuccess:(BOOL)loadSuccess;
+// present, removes it and swaps in the native view in its place. |context| can
+// not be null.
+- (void)loadNativeViewWithSuccess:(BOOL)loadSuccess
+                navigationContext:(web::NavigationContextImpl*)context;
+// Loads the correct HTML page for |error| in a native controller, retrieved
+// from the native provider.
+- (void)loadErrorInNativeView:(NSError*)error
+            navigationContext:(web::NavigationContextImpl*)context;
 // YES if the navigation to |url| should be treated as a reload.
 - (BOOL)shouldReload:(const GURL&)destinationURL
           transition:(ui::PageTransition)transition;
@@ -1336,7 +1342,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [[self sessionController] pushNewItemWithURL:pageURL
                                    stateObject:stateObject
                                     transition:transition];
-  _webStateImpl->OnSameDocumentNavigation(pageURL);
+  std::unique_ptr<web::NavigationContext> context =
+      web::NavigationContextImpl::CreateSameDocumentNavigationContext(
+          _webStateImpl, pageURL);
+  _webStateImpl->OnNavigationFinished(context.get());
   self.userInteractionRegistered = NO;
 }
 
@@ -1344,7 +1353,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                     stateObject:(NSString*)stateObject {
   [[self sessionController] updateCurrentItemWithURL:pageURL
                                          stateObject:stateObject];
-  _webStateImpl->OnSameDocumentNavigation(pageURL);
+  std::unique_ptr<web::NavigationContext> context =
+      web::NavigationContextImpl::CreateSameDocumentNavigationContext(
+          _webStateImpl, pageURL);
+  _webStateImpl->OnNavigationFinished(context.get());
 }
 
 - (void)setDocumentURL:(const GURL&)newURL {
@@ -1514,8 +1526,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
         web::NavigationManager::UserAgentOverrideOption::INHERIT);
   }
   std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(
-          _webStateImpl, requestURL, nullptr /* response_headers */);
+      web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
+                                                          requestURL);
   _webStateImpl->SetIsLoading(true);
   // TODO(crbug.com/713836): pass context to |OnProvisionalNavigationStarted|.
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
@@ -1749,15 +1761,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
     holder->set_mime_type([_pendingNavigationInfo MIMEType]);
 }
 
-- (void)loadNativeViewWithSuccess:(BOOL)loadSuccess {
+- (void)loadNativeViewWithSuccess:(BOOL)loadSuccess
+                navigationContext:(web::NavigationContextImpl*)context {
   const GURL currentURL([self currentURL]);
   [self didStartLoadingURL:currentURL];
   _loadPhase = web::PAGE_LOADED;
-  if (loadSuccess) {
-    _webStateImpl->OnNavigationCommitted(currentURL);
-  } else {
-    _webStateImpl->OnErrorPageNavigation(currentURL);
-  }
+  _webStateImpl->OnNavigationFinished(context);
 
   // Perform post-load-finished updates.
   [self didFinishWithURL:currentURL loadSuccess:loadSuccess];
@@ -1772,7 +1781,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-- (void)loadErrorInNativeView:(NSError*)error {
+- (void)loadErrorInNativeView:(NSError*)error
+            navigationContext:(web::NavigationContextImpl*)context {
   [self removeWebViewAllowingCachedReconstruction:NO];
   web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
@@ -1793,11 +1803,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self setNativeController:[_nativeProvider controllerForURL:currentURL
                                                     withError:error
                                                        isPost:isPost]];
-  [self loadNativeViewWithSuccess:NO];
+  [self loadNativeViewWithSuccess:NO navigationContext:context];
 }
 
-// Load the current URL in a native controller, retrieved from the native
-// provider. Call |loadNativeViewWithSuccess:YES| to load the native controller.
+// Loads the current URL in a native controller, retrieved from the native
+// provider.
 - (void)loadCurrentURLInNativeView {
   // Free the web view.
   [self removeWebViewAllowingCachedReconstruction:NO];
@@ -1818,7 +1828,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [self registerLoadRequestForURL:targetURL
                              referrer:referrer
                            transition:self.currentTransition];
-  [self loadNativeViewWithSuccess:YES];
+  [self loadNativeViewWithSuccess:YES
+                navigationContext:navigationContext.get()];
 }
 
 - (void)loadWithParams:(const NavigationManager::WebLoadParams&)params {
@@ -3062,6 +3073,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
       URLWithString:[userInfo objectForKey:NSURLErrorFailingURLStringErrorKey]];
   const GURL errorGURL = net::GURLWithNSURL(errorURL);
 
+  web::NavigationContextImpl* navigationContext =
+      [_navigationStates contextForNavigation:navigation];
+  navigationContext->SetIsErrorPage(true);
+
   // Handles Frame Load Interrupted errors from WebView.
   if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
       error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
@@ -3076,7 +3091,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
         [self loadCompleteWithSuccess:NO forNavigation:navigation];
         [self removeWebViewAllowingCachedReconstruction:NO];
         [self setNativeController:controller];
-        [self loadNativeViewWithSuccess:YES];
+        [self loadNativeViewWithSuccess:YES
+                      navigationContext:navigationContext];
         return;
       }
     }
@@ -3102,7 +3118,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                  NSUnderlyingErrorKey : error
                }];
     [self loadCompleteWithSuccess:NO forNavigation:navigation];
-    [self loadErrorInNativeView:wrapperError];
+    [self loadErrorInNativeView:wrapperError
+              navigationContext:navigationContext];
     return;
   }
 
@@ -3114,7 +3131,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   [self loadCompleteWithSuccess:NO forNavigation:navigation];
-  [self loadErrorInNativeView:error];
+  [self loadErrorInNativeView:error navigationContext:navigationContext];
 }
 
 - (void)handleCancelledError:(NSError*)error {
@@ -4113,6 +4130,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [_webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
   [_navigationStates setState:web::WKNavigationState::REQUESTED
                 forNavigation:navigation];
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(_webStateImpl, URL);
+  [_navigationStates setContext:std::move(context) forNavigation:navigation];
 }
 
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {
@@ -4395,6 +4415,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     } else {
       std::unique_ptr<web::NavigationContextImpl> navigationContext =
           [self registerLoadRequestForURL:webViewURL];
+      [_navigationStates setContext:std::move(navigationContext)
+                      forNavigation:navigation];
     }
   }
 
@@ -4539,7 +4561,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
       }
     }
   }
-  self.webStateImpl->OnNavigationCommitted(_documentURL);
+
+  web::NavigationContextImpl* context =
+      [_navigationStates contextForNavigation:navigation];
+  context->SetResponseHeaders(_webStateImpl->GetHttpResponseHeaders());
+  self.webStateImpl->OnNavigationFinished(context);
 
   [self updateSSLStatusForCurrentNavigationItem];
 
@@ -4731,11 +4757,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
         [self isKVOChangePotentialSameDocumentNavigationToURL:webViewURL];
     [self setDocumentURL:webViewURL];
     [self webPageChanged];
-    if (isSameDocumentNavigation) {
-      _webStateImpl->OnSameDocumentNavigation(webViewURL);
-    } else {
-      _webStateImpl->OnNavigationCommitted(webViewURL);
-    }
+
+    // Same document navigation does not contain response headers.
+    std::unique_ptr<web::NavigationContextImpl> context =
+        web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
+                                                            webViewURL);
+    net::HttpResponseHeaders* headers =
+        isSameDocumentNavigation ? nullptr
+                                 : _webStateImpl->GetHttpResponseHeaders();
+    context->SetResponseHeaders(headers);
+    context->SetIsSameDocument(isSameDocumentNavigation);
+    _webStateImpl->OnNavigationFinished(context.get());
   }
 
   [self updateSSLStatusForCurrentNavigationItem];
@@ -4884,9 +4916,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // changes.
   std::unique_ptr<web::NavigationContextImpl> navigationContext;
   if (!_changingHistoryState) {
-    // If this wasn't a previously-expected load (e.g., certain back/forward
-    // navigations), register the load request.
-    if (![self isLoadRequestPendingForURL:newURL]) {
+    if ([self isLoadRequestPendingForURL:newURL]) {
+      // |loadWithParams:| was called with URL that has different fragment
+      // comparing to the orevious URL.
+      // TODO(crbug.com/713836): Instead of creating a new context, find
+      // existing navigation context stored in |_navigationStates| and use it.
+      navigationContext = web::NavigationContextImpl::CreateNavigationContext(
+          _webStateImpl, newURL);
+    } else {
+      // This could be:
+      //   1.) Renderer-initiated fragment change
+      //   2.) Assigning same-origin URL to window.location
+      //   3.) Incorrectly handled window.location.replace (crbug.com/307072)
+      //   4.) Back-forward same document navigation
       navigationContext = [self registerLoadRequestForURL:newURL];
 
       // Use the current title for items created by same document navigations.
@@ -4894,13 +4936,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
       if (pendingItem)
         pendingItem->SetTitle(_webStateImpl->GetTitle());
     }
+    navigationContext->SetIsSameDocument(true);
   }
 
   [self setDocumentURL:newURL];
 
   if (!_changingHistoryState) {
     [self didStartLoadingURL:_documentURL];
-    _webStateImpl->OnSameDocumentNavigation(newURL);
+    _webStateImpl->OnNavigationFinished(navigationContext.get());
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation:nil];
   }
@@ -4947,7 +4990,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
         [self registerLoadRequestForURL:navigationURL
                                referrer:self.currentNavItemReferrer
                              transition:self.currentTransition];
-    [self loadPOSTRequest:request];
+    WKNavigation* navigation = [self loadPOSTRequest:request];
+    [_navigationStates setContext:std::move(navigationContext)
+                    forNavigation:navigation];
     return;
   }
 
@@ -4958,7 +5003,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
         [self registerLoadRequestForURL:navigationURL
                                referrer:self.currentNavItemReferrer
                              transition:self.currentTransition];
-    [self loadRequest:request];
+    WKNavigation* navigation = [self loadRequest:request];
+    [_navigationStates setContext:std::move(navigationContext)
+                    forNavigation:navigation];
     [self reportBackForwardNavigationTypeForFastNavigation:NO];
   };
 
@@ -5009,6 +5056,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
     [_navigationStates setState:web::WKNavigationState::REQUESTED
                   forNavigation:navigation];
+    [_navigationStates setContext:std::move(navigationContext)
+                    forNavigation:navigation];
   };
 
   // If the request is not a form submission or resubmission, or the user
