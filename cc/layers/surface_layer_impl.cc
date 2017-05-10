@@ -117,7 +117,7 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
         surface_info.device_scale_factor();
   }
 
-  visible_quad_rect = gfx::ScaleToEnclosedRect(
+  visible_quad_rect = gfx::ScaleToEnclosingRect(
       visible_quad_rect, layer_to_content_scale_x, layer_to_content_scale_y);
   visible_quad_rect = gfx::IntersectRects(quad_rect, visible_quad_rect);
 
