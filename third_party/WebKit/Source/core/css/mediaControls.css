@@ -173,7 +173,7 @@ video::-internal-media-remoting-background-image {
     border-width: 0px;
     background-color: transparent;
     padding: 0;
-    filter: grayscale(100%) blur(5px);
+    filter: grayscale(100%) blur(5px) opacity(40%);
 }
 
 video::-internal-media-remoting-cast-icon {
