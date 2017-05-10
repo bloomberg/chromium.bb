@@ -8,6 +8,8 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/url_matcher/url_matcher.h"
@@ -35,7 +37,7 @@ class EventFilter {
 
   // Retrieve the name of the event that the EventMatcher specified by |id| is
   // referring to.
-  const std::string& GetEventName(MatcherID id);
+  const std::string& GetEventName(MatcherID id) const;
 
   // Removes an event matcher, returning the name of the event that it was for.
   std::string RemoveEventMatcher(MatcherID id);
@@ -46,9 +48,9 @@ class EventFilter {
   // TODO(koz): Add a std::string* parameter for retrieving error messages.
   std::set<MatcherID> MatchEvent(const std::string& event_name,
                                  const EventFilteringInfo& event_info,
-                                 int routing_id);
+                                 int routing_id) const;
 
-  int GetMatcherCountForEventForTesting(const std::string& event_name);
+  int GetMatcherCountForEventForTesting(const std::string& event_name) const;
 
   bool IsURLMatcherEmptyForTesting() const { return url_matcher_.IsEmpty(); }
 
@@ -77,7 +79,7 @@ class EventFilter {
 
    private:
     std::unique_ptr<EventMatcher> event_matcher_;
-    // The id sets in url_matcher_ that this EventMatcher owns.
+    // The id sets in |url_matcher_| that this EventMatcher owns.
     std::vector<url_matcher::URLMatcherConditionSet::ID> condition_set_ids_;
     url_matcher::URLMatcher* url_matcher_;
 
