@@ -114,7 +114,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::MaximumTilingContentsScale;
 
   void AddTilingUntilNextDraw(float scale) {
-    last_append_quads_tilings_.push_back(AddTiling(scale));
+    last_append_quads_tilings_.push_back(
+        AddTiling(gfx::AxisTransform2d(scale, gfx::Vector2dF())));
   }
 
   float raster_page_scale() const { return raster_page_scale_; }

@@ -28,7 +28,8 @@ static const int kTimeCheckInterval = 10;
 void AddTiling(float scale,
                FakePictureLayerImpl* layer,
                std::vector<Tile*>* all_tiles) {
-  PictureLayerTiling* tiling = layer->AddTiling(scale);
+  PictureLayerTiling* tiling =
+      layer->AddTiling(gfx::AxisTransform2d(scale, gfx::Vector2dF()));
 
   tiling->set_resolution(HIGH_RESOLUTION);
   tiling->CreateAllTilesForTesting();
@@ -186,11 +187,12 @@ TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
-  pending_layer_->AddTiling(low_res_factor);
-  pending_layer_->AddTiling(0.3f);
-  pending_layer_->AddTiling(0.7f);
-  pending_layer_->AddTiling(1.0f);
-  pending_layer_->AddTiling(2.0f);
+  pending_layer_->AddTiling(
+      gfx::AxisTransform2d(low_res_factor, gfx::Vector2dF()));
+  pending_layer_->AddTiling(gfx::AxisTransform2d(0.3f, gfx::Vector2dF()));
+  pending_layer_->AddTiling(gfx::AxisTransform2d(0.7f, gfx::Vector2dF()));
+  pending_layer_->AddTiling(gfx::AxisTransform2d(1.0f, gfx::Vector2dF()));
+  pending_layer_->AddTiling(gfx::AxisTransform2d(2.0f, gfx::Vector2dF()));
 
   RunRasterQueueConstructAndIterateTest("32_100x100", 32, gfx::Size(100, 100));
   RunRasterQueueConstructAndIterateTest("32_500x500", 32, gfx::Size(500, 500));
@@ -203,11 +205,12 @@ TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstruct) {
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
-  pending_layer_->AddTiling(low_res_factor);
-  pending_layer_->AddTiling(0.3f);
-  pending_layer_->AddTiling(0.7f);
-  pending_layer_->AddTiling(1.0f);
-  pending_layer_->AddTiling(2.0f);
+  pending_layer_->AddTiling(
+      gfx::AxisTransform2d(low_res_factor, gfx::Vector2dF()));
+  pending_layer_->AddTiling(gfx::AxisTransform2d(0.3f, gfx::Vector2dF()));
+  pending_layer_->AddTiling(gfx::AxisTransform2d(0.7f, gfx::Vector2dF()));
+  pending_layer_->AddTiling(gfx::AxisTransform2d(1.0f, gfx::Vector2dF()));
+  pending_layer_->AddTiling(gfx::AxisTransform2d(2.0f, gfx::Vector2dF()));
 
   RunRasterQueueConstructTest("0_0_100x100", gfx::Rect(0, 0, 100, 100));
   RunRasterQueueConstructTest("5000_0_100x100", gfx::Rect(5000, 0, 100, 100));
