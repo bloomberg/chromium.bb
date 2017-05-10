@@ -27,12 +27,12 @@ class DiscoverySession : public mojom::DiscoverySession {
   ~DiscoverySession() override;
 
   // mojom::DiscoverySession overrides:
-  void IsActive(const IsActiveCallback& callback) override;
-  void Stop(const StopCallback& callback) override;
+  void IsActive(IsActiveCallback callback) override;
+  void Stop(StopCallback callback) override;
 
  private:
-  void OnStop(const StopCallback& callback);
-  void OnStopError(const StopCallback& callback);
+  void OnStop(StopCallback callback);
+  void OnStopError(StopCallback callback);
 
   // The underlying discovery session.
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;

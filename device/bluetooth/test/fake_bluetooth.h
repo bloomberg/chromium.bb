@@ -29,10 +29,9 @@ class FakeBluetooth : NON_EXPORTED_BASE(public mojom::FakeBluetooth) {
   static void Create(const service_manager::BindSourceInfo& source_info,
                      mojom::FakeBluetoothRequest request);
 
-  void SetLESupported(bool available,
-                      const SetLESupportedCallback& callback) override;
+  void SetLESupported(bool available, SetLESupportedCallback callback) override;
   void SimulateCentral(mojom::CentralState state,
-                       const SimulateCentralCallback& callback) override;
+                       SimulateCentralCallback callback) override;
 
  private:
   std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
