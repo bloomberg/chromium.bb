@@ -444,7 +444,6 @@ test("headless_browsertests") {
   ]
 
   data = [
-    "$root_out_dir/headless_browser_tests.pak",
     "$root_out_dir/headless_lib.pak",
     "//net/tools/testserver/",
     "//third_party/pyftpdlib/",
