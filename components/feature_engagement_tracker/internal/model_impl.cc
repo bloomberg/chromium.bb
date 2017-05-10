@@ -56,8 +56,12 @@ bool ModelImpl::IsCurrentlyShowing() const {
   return currently_showing_;
 }
 
-const Event& ModelImpl::GetEvent(const std::string& event_name) {
-  return GetNonConstEvent(event_name);
+const Event* ModelImpl::GetEvent(const std::string& event_name) const {
+  auto search = events_.find(event_name);
+  if (search == events_.end())
+    return nullptr;
+
+  return &search->second;
 }
 
 void ModelImpl::IncrementEvent(const std::string& event_name) {

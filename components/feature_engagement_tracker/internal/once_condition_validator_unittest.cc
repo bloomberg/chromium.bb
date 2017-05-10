@@ -47,8 +47,8 @@ class TestModel : public Model {
 
   EditableConfiguration& GetConfiguration() { return configuration_; }
 
-  const Event& GetEvent(const std::string& event_name) override {
-    return empty_event_;
+  const Event* GetEvent(const std::string& event_name) const override {
+    return nullptr;
   }
 
   void IncrementEvent(const std::string& event_name) override {}
@@ -57,7 +57,6 @@ class TestModel : public Model {
 
  private:
   EditableConfiguration configuration_;
-  Event empty_event_;
   bool ready_;
   bool is_showing_;
 };
