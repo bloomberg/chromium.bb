@@ -35,6 +35,8 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
+#include "ash/test/wallpaper_controller_test_api.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -1572,6 +1574,19 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(bubble_size.width(),
             test_for_overflow_view.GetPreferredSize().width());
+}
+
+TEST_F(ShelfViewTest, OverflowShelfColorIsDerivedFromWallpaper) {
+  test::WallpaperControllerTestApi wallpaper_test_api(
+      Shell::Get()->wallpaper_controller());
+  const SkColor opaque_expected_color =
+      wallpaper_test_api.ApplyColorProducingWallpaper();
+
+  AddButtonsUntilOverflow();
+  test_api_->ShowOverflowBubble();
+  OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
+
+  EXPECT_EQ(opaque_expected_color, SkColorSetA(bubble_view->color(), 255));
 }
 
 // Check the drag insertion bounds of scrolled overflow bubble.

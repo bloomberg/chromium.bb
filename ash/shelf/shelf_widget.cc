@@ -84,9 +84,7 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   DCHECK(shelf_widget_);
   SetLayoutManager(new views::FillLayout());
   set_allow_deactivate_on_esc(true);
-  opaque_background_.SetColor(SK_ColorBLACK);
   opaque_background_.SetBounds(GetLocalBounds());
-  opaque_foreground_.SetColor(SK_ColorBLACK);
   opaque_foreground_.SetBounds(GetLocalBounds());
   opaque_foreground_.SetOpacity(0.0f);
 }
