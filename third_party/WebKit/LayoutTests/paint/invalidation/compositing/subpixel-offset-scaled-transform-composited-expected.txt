@@ -1,0 +1,110 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container1' class='container scale'",
+      "position": [8, 8],
+      "contentsOpaque": true,
+      "transform": [
+        [40, 0, 0, 0],
+        [0, 40, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='child1' class='child composited'",
+      "bounds": [1, 1],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='child2' class='child scale composited'",
+      "position": [9, 58],
+      "transformOrigin": [0, 0],
+      "bounds": [1, 1],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF",
+      "transform": [
+        [40, 0, 0, 0],
+        [0, 40, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container3' class='container scale composited'",
+      "position": [8, 108],
+      "transformOrigin": [0, 0],
+      "bounds": [1, 1],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "transform": [
+        [40, 0, 0, 0],
+        [0, 40, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container4' class='container composited'",
+      "position": [9, 158],
+      "transformOrigin": [-1, 0],
+      "bounds": [40, 40],
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='container4' class='container composited'",
+          "rect": [0, 0, 40, 40],
+          "reason": "full"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container5' class='container scale composited'",
+      "position": [8, 208],
+      "contentsOpaque": true,
+      "transform": [
+        [40, 0, 0, 0],
+        [0, 40, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='child5' class='child composited'",
+      "bounds": [1, 1],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='container6' class='container composited'",
+      "position": [8, 258],
+      "contentsOpaque": true
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV id='child6' class='child scale composited'",
+      "position": [1, 0],
+      "transformOrigin": [0, 0],
+      "bounds": [1, 1],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF",
+      "transform": [
+        [40, 0, 0, 0],
+        [0, 40, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ]
+    }
+  ]
+}
+

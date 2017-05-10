@@ -892,8 +892,14 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
       IntPoint(offset_from_composited_ancestor.X().Round(),
                offset_from_composited_ancestor.Y().Round());
 
-  LayoutSize subpixel_accumulation =
-      offset_from_composited_ancestor - snapped_offset_from_composited_ancestor;
+  LayoutSize subpixel_accumulation;
+  if (!owning_layer_.Transform() ||
+      owning_layer_.Transform()->IsIdentityOrTranslation()) {
+    subpixel_accumulation = offset_from_composited_ancestor -
+                            snapped_offset_from_composited_ancestor;
+  }
+  // Otherwise discard the sub-pixel remainder because paint offset can't be
+  // transformed by a non-translation transform.
   owning_layer_.SetSubpixelAccumulation(subpixel_accumulation);
 
   // Move the bounds by the subpixel accumulation so that it pixel-snaps
