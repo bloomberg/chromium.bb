@@ -851,6 +851,14 @@ TEST_F(CRWWebControllerTitleTest, TitleChange) {
   EXPECT_GE(observer.title_change_count(), 2);
 };
 
+// Tests that fragment change navigations use title from the previous page.
+TEST_F(CRWWebControllerTitleTest, FragmentChangeNavigationsUsePreviousTitle) {
+  LoadHtml(@"<title>Title1</title>");
+  ASSERT_EQ("Title1", base::UTF16ToUTF8(web_state()->GetTitle()));
+  ExecuteJavaScript(@"window.location.hash = '#1'");
+  EXPECT_EQ("Title1", base::UTF16ToUTF8(web_state()->GetTitle()));
+}
+
 // Test fixture for JavaScript execution.
 class ScriptExecutionTest : public web::WebTestWithWebController {
  protected:
