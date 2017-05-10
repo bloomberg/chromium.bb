@@ -35,7 +35,7 @@ const char kApiUrl[] = "https://onegoogle-pa.googleapis.com/v1/getbar";
 
 const char kApiKeyFormat[] = "?key=%s";
 
-const char kApiScope[] = "https://www.googleapis.com/auth/onegoogle.readonly";
+const char kApiScope[] = "https://www.googleapis.com/auth/onegoogle.api";
 const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
 const char kResponsePreamble[] = ")]}'";
