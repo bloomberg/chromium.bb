@@ -66,9 +66,6 @@ void GetChromiumBuildAndPatchAsInts(const std::string& version_string,
 // Get the human-readable version of |client|.
 const char* GetStringForClient(Client client);
 
-// Returns true if the request method is idempotent.
-bool IsMethodIdempotent(const std::string& method);
-
 GURL AddApiKeyToUrl(const GURL& url);
 
 // Returns whether this is valid for data reduction proxy use. |proxy_info|
