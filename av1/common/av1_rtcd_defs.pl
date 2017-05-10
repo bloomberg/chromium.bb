@@ -399,6 +399,13 @@ if (aom_config("CONFIG_HIGHBITDEPTH") ne "yes") {
 
 add_proto qw/void av1_fwd_idtx/, "const int16_t *src_diff, tran_low_t *coeff, int stride, int bs, int tx_type";
 
+if (aom_config("CONFIG_DPCM_INTRA") eq "yes") {
+  @sizes = (4, 8, 16, 32);
+  foreach $size (@sizes) {
+    add_proto "void", "av1_dpcm_ft$size", "const int16_t *input, int stride, TX_TYPE_1D tx_type, tran_low_t *output";
+  }
+}
+
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   #fwd txfm
   add_proto qw/void av1_fwd_txfm2d_4x4/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";

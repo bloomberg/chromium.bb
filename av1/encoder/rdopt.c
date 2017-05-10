@@ -1525,6 +1525,23 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #else
     av1_predict_intra_block_facade(xd, plane, block, blk_col, blk_row, tx_size);
 #endif
+#if CONFIG_DPCM_INTRA
+    const int block_raster_idx =
+        av1_block_index_to_raster_order(tx_size, block);
+    const PREDICTION_MODE mode =
+        (plane == 0) ? get_y_mode(xd->mi[0], block_raster_idx) : mbmi->uv_mode;
+    TX_TYPE tx_type = get_tx_type((plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV,
+                                  xd, block, tx_size);
+    if (av1_use_dpcm_intra(plane, mode, tx_type, mbmi)) {
+      int8_t skip;
+      av1_encode_block_intra_dpcm(cm, x, mode, plane, block, blk_row, blk_col,
+                                  plane_bsize, tx_size, tx_type, a, l, &skip);
+      av1_dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
+                     tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
+                     OUTPUT_HAS_DECODED_PIXELS);
+      goto CALCULATE_RD;
+    }
+#endif  // CONFIG_DPCM_INTRA
     av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
   }
 
@@ -1556,6 +1573,9 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     cfl_store(xd->cfl, dst, dst_stride, blk_row, blk_col, tx_size);
   }
 #endif
+#if CONFIG_DPCM_INTRA
+CALCULATE_RD : {}
+#endif  // CONFIG_DPCM_INTRA
   rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
   if (args->this_rd + rd > args->best_rd) {
     args->exit_early = 1;

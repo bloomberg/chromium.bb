@@ -2917,3 +2917,157 @@ void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
+
+#if CONFIG_DPCM_INTRA
+void av1_dpcm_inv_txfm_add_4_c(const tran_low_t *input, int stride,
+                               TX_TYPE_1D tx_type, uint8_t *dest) {
+  assert(tx_type < TX_TYPES_1D);
+  static const transform_1d IHT[] = { aom_idct4_c, aom_iadst4_c, aom_iadst4_c,
+                                      iidtx4_c };
+  const transform_1d inv_tx = IHT[tx_type];
+  tran_low_t out[4];
+  inv_tx(input, out);
+  for (int i = 0; i < 4; ++i) {
+    out[i] = (tran_low_t)dct_const_round_shift(out[i] * Sqrt2);
+    dest[i * stride] =
+        clip_pixel_add(dest[i * stride], ROUND_POWER_OF_TWO(out[i], 4));
+  }
+}
+
+void av1_dpcm_inv_txfm_add_8_c(const tran_low_t *input, int stride,
+                               TX_TYPE_1D tx_type, uint8_t *dest) {
+  assert(tx_type < TX_TYPES_1D);
+  static const transform_1d IHT[] = { aom_idct8_c, aom_iadst8_c, aom_iadst8_c,
+                                      iidtx8_c };
+  const transform_1d inv_tx = IHT[tx_type];
+  tran_low_t out[8];
+  inv_tx(input, out);
+  for (int i = 0; i < 8; ++i) {
+    dest[i * stride] =
+        clip_pixel_add(dest[i * stride], ROUND_POWER_OF_TWO(out[i], 4));
+  }
+}
+
+void av1_dpcm_inv_txfm_add_16_c(const tran_low_t *input, int stride,
+                                TX_TYPE_1D tx_type, uint8_t *dest) {
+  assert(tx_type < TX_TYPES_1D);
+  static const transform_1d IHT[] = { aom_idct16_c, aom_iadst16_c,
+                                      aom_iadst16_c, iidtx16_c };
+  const transform_1d inv_tx = IHT[tx_type];
+  tran_low_t out[16];
+  inv_tx(input, out);
+  for (int i = 0; i < 16; ++i) {
+    out[i] = (tran_low_t)dct_const_round_shift(out[i] * Sqrt2);
+    dest[i * stride] =
+        clip_pixel_add(dest[i * stride], ROUND_POWER_OF_TWO(out[i], 5));
+  }
+}
+
+void av1_dpcm_inv_txfm_add_32_c(const tran_low_t *input, int stride,
+                                TX_TYPE_1D tx_type, uint8_t *dest) {
+  assert(tx_type < TX_TYPES_1D);
+  static const transform_1d IHT[] = { aom_idct32_c, ihalfright32_c,
+                                      ihalfright32_c, iidtx32_c };
+  const transform_1d inv_tx = IHT[tx_type];
+  tran_low_t out[32];
+  inv_tx(input, out);
+  for (int i = 0; i < 32; ++i) {
+    dest[i * stride] =
+        clip_pixel_add(dest[i * stride], ROUND_POWER_OF_TWO(out[i], 4));
+  }
+}
+
+dpcm_inv_txfm_add_func av1_get_dpcm_inv_txfm_add_func(int tx_length) {
+  switch (tx_length) {
+    case 4: return av1_dpcm_inv_txfm_add_4_c;
+    case 8: return av1_dpcm_inv_txfm_add_8_c;
+    case 16: return av1_dpcm_inv_txfm_add_16_c;
+    case 32:
+      return av1_dpcm_inv_txfm_add_32_c;
+    // TODO(huisu): add support for TX_64X64.
+    default: assert(0); return NULL;
+  }
+}
+
+#if CONFIG_HIGHBITDEPTH
+void av1_hbd_dpcm_inv_txfm_add_4_c(const tran_low_t *input, int stride,
+                                   TX_TYPE_1D tx_type, int bd, uint16_t *dest) {
+  assert(tx_type < TX_TYPES_1D);
+  static const highbd_transform_1d IHT[] = { aom_highbd_idct4_c,
+                                             aom_highbd_iadst4_c,
+                                             aom_highbd_iadst4_c,
+                                             highbd_iidtx4_c };
+  const highbd_transform_1d inv_tx = IHT[tx_type];
+  tran_low_t out[4];
+  inv_tx(input, out, bd);
+  for (int i = 0; i < 4; ++i) {
+    out[i] = (tran_low_t)dct_const_round_shift(out[i] * Sqrt2);
+    dest[i * stride] = highbd_clip_pixel_add(dest[i * stride],
+                                             ROUND_POWER_OF_TWO(out[i], 4), bd);
+  }
+}
+
+void av1_hbd_dpcm_inv_txfm_add_8_c(const tran_low_t *input, int stride,
+                                   TX_TYPE_1D tx_type, int bd, uint16_t *dest) {
+  static const highbd_transform_1d IHT[] = { aom_highbd_idct8_c,
+                                             aom_highbd_iadst8_c,
+                                             aom_highbd_iadst8_c,
+                                             highbd_iidtx8_c };
+  assert(tx_type < TX_TYPES_1D);
+  const highbd_transform_1d inv_tx = IHT[tx_type];
+  tran_low_t out[8];
+  inv_tx(input, out, bd);
+  for (int i = 0; i < 8; ++i) {
+    dest[i * stride] = highbd_clip_pixel_add(dest[i * stride],
+                                             ROUND_POWER_OF_TWO(out[i], 4), bd);
+  }
+}
+
+void av1_hbd_dpcm_inv_txfm_add_16_c(const tran_low_t *input, int stride,
+                                    TX_TYPE_1D tx_type, int bd,
+                                    uint16_t *dest) {
+  assert(tx_type < TX_TYPES_1D);
+  static const highbd_transform_1d IHT[] = { aom_highbd_idct16_c,
+                                             aom_highbd_iadst16_c,
+                                             aom_highbd_iadst16_c,
+                                             highbd_iidtx16_c };
+  const highbd_transform_1d inv_tx = IHT[tx_type];
+  tran_low_t out[16];
+  inv_tx(input, out, bd);
+  for (int i = 0; i < 16; ++i) {
+    out[i] = (tran_low_t)dct_const_round_shift(out[i] * Sqrt2);
+    dest[i * stride] = highbd_clip_pixel_add(dest[i * stride],
+                                             ROUND_POWER_OF_TWO(out[i], 5), bd);
+  }
+}
+
+void av1_hbd_dpcm_inv_txfm_add_32_c(const tran_low_t *input, int stride,
+                                    TX_TYPE_1D tx_type, int bd,
+                                    uint16_t *dest) {
+  assert(tx_type < TX_TYPES_1D);
+  static const highbd_transform_1d IHT[] = { aom_highbd_idct32_c,
+                                             highbd_ihalfright32_c,
+                                             highbd_ihalfright32_c,
+                                             highbd_iidtx32_c };
+  const highbd_transform_1d inv_tx = IHT[tx_type];
+  tran_low_t out[32];
+  inv_tx(input, out, bd);
+  for (int i = 0; i < 32; ++i) {
+    dest[i * stride] = highbd_clip_pixel_add(dest[i * stride],
+                                             ROUND_POWER_OF_TWO(out[i], 4), bd);
+  }
+}
+
+hbd_dpcm_inv_txfm_add_func av1_get_hbd_dpcm_inv_txfm_add_func(int tx_length) {
+  switch (tx_length) {
+    case 4: return av1_hbd_dpcm_inv_txfm_add_4_c;
+    case 8: return av1_hbd_dpcm_inv_txfm_add_8_c;
+    case 16: return av1_hbd_dpcm_inv_txfm_add_16_c;
+    case 32:
+      return av1_hbd_dpcm_inv_txfm_add_32_c;
+    // TODO(huisu): add support for TX_64X64.
+    default: assert(0); return NULL;
+  }
+}
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // CONFIG_DPCM_INTRA
