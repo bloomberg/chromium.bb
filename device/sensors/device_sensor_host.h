@@ -27,7 +27,7 @@ class DeviceSensorHost : NON_EXPORTED_BASE(public MojoInterface) {
   DeviceSensorHost();
 
   void StartPolling(
-      const typename MojoInterface::StartPollingCallback& callback) override;
+      typename MojoInterface::StartPollingCallback callback) override;
   void StopPolling() override;
 
   bool is_started_;

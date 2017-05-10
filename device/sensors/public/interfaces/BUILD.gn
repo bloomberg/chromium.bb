@@ -9,4 +9,6 @@ mojom("interfaces") {
     "motion.mojom",
     "orientation.mojom",
   ]
+
+  use_once_callback = true
 }
