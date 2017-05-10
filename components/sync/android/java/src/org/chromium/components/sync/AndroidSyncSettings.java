@@ -93,8 +93,8 @@ public class AndroidSyncSettings {
     private AndroidSyncSettings(
             Context context, SyncContentResolverDelegate syncContentResolverDelegate) {
         mApplicationContext = context.getApplicationContext();
+        mContractAuthority = mApplicationContext.getPackageName();
         mSyncContentResolverDelegate = syncContentResolverDelegate;
-        mContractAuthority = getContractAuthority();
 
         mAccount = ChromeSigninController.get().getSignedInUser();
         updateSyncability(null);
@@ -186,7 +186,7 @@ public class AndroidSyncSettings {
      */
     public static String getContractAuthority(Context context) {
         ensureInitialized(context);
-        return sInstance.getContractAuthority();
+        return sInstance.mContractAuthority;
     }
 
     /**
@@ -321,9 +321,5 @@ public class AndroidSyncSettings {
         for (AndroidSyncSettingsObserver observer : mObservers) {
             observer.androidSyncSettingsChanged();
         }
-    }
-
-    private String getContractAuthority() {
-        return mApplicationContext.getPackageName();
     }
 }

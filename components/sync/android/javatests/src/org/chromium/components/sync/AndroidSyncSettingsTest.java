@@ -107,7 +107,15 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
 
         AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate);
         mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
-        AndroidSyncSettings.updateAccount(mContext, mAccount);
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        AndroidSyncSettings.updateAccount(mContext, mAccount, new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                assertTrue(result);
+                callbackHelper.notifyCalled();
+            }
+        });
+        callbackHelper.waitForCallback(0);
         assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
 
         mSyncSettingsObserver = new MockSyncSettingsObserver();
@@ -167,6 +175,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         AndroidSyncSettings.updateAccount(mContext, null, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
+                assertTrue(result);
                 callbackHelper.notifyCalled();
             }
         });
@@ -380,6 +389,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         AndroidSyncSettings.updateAccount(mContext, null, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
+                assertTrue(result);
                 callbackHelper.notifyCalled();
             }
         });
