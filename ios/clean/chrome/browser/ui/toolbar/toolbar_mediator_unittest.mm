@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
+#import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -27,24 +28,6 @@ namespace {
 
 static const char kTestUrl[] = "http://www.chromium.org";
 
-class ToolbarTestNavigationManager : public web::TestNavigationManager {
- public:
-  ToolbarTestNavigationManager()
-      : can_go_back_(false), can_go_forward_(false) {}
-
-  bool CanGoBack() const override { return can_go_back_; }
-  bool CanGoForward() const override { return can_go_forward_; }
-
-  void set_can_go_back(bool can_go_back) { can_go_back_ = can_go_back; }
-  void set_can_go_forward(bool can_go_forward) {
-    can_go_forward_ = can_go_forward;
-  }
-
- private:
-  bool can_go_back_;
-  bool can_go_forward_;
-};
-
 class ToolbarMediatorTest : public PlatformTest {
  public:
   ToolbarMediatorTest() {
@@ -59,7 +42,7 @@ class ToolbarMediatorTest : public PlatformTest {
 
  protected:
   TestToolbarMediator* mediator_;
-  web::TestWebState test_web_state_;
+  ToolbarTestWebState test_web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
   id consumer_;
 };
@@ -70,7 +53,6 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstate) {
 
   [[consumer_ reject] setCanGoForward:NO];
   [[consumer_ reject] setCanGoBack:NO];
-  [[consumer_ reject] setCurrentPageText:[OCMArg any]];
   [[consumer_ reject] setIsLoading:YES];
 }
 
@@ -80,7 +62,6 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoConsumer) {
 
   [[consumer_ reject] setCanGoForward:NO];
   [[consumer_ reject] setCanGoBack:NO];
-  [[consumer_ reject] setCurrentPageText:[OCMArg any]];
   [[consumer_ reject] setIsLoading:YES];
 }
 
@@ -92,7 +73,6 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
 
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
-  [[consumer_ verify] setCurrentPageText:[OCMArg any]];
   [[consumer_ verify] setIsLoading:YES];
 }
 
@@ -104,7 +84,6 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupReverse) {
 
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
-  [[consumer_ verify] setCurrentPageText:[OCMArg any]];
   [[consumer_ verify] setIsLoading:YES];
 }
 
@@ -145,7 +124,16 @@ TEST_F(ToolbarMediatorTest, TestDidLoadPageWithSucess) {
 
   [[consumer_ verify] setCanGoForward:YES];
   [[consumer_ verify] setCanGoBack:YES];
-  [[consumer_ verify] setCurrentPageText:@"http://www.chromium.org/"];
+}
+
+// Test the Toolbar is updated when the Webstate observer method
+// didChangeLoadingProgress is called.
+TEST_F(ToolbarMediatorTest, TestLoadingProgress) {
+  mediator_.webState = &test_web_state_;
+  mediator_.consumer = consumer_;
+
+  [mediator_ webState:mediator_.webState didChangeLoadingProgress:0.42];
+  [[consumer_ verify] setLoadingProgress:0.42];
 }
 
 }  // namespace

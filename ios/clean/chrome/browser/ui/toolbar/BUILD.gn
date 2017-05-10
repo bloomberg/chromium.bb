@@ -39,6 +39,7 @@ source_set("toolbar_ui") {
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/tools",
+    "//ios/third_party/material_components_ios",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -72,6 +73,7 @@ source_set("unit_tests") {
     ":toolbar_ui",
     "//base",
     "//base/test:test_support",
+    "//ios/shared/chrome/browser/ui/toolbar:test_support",
     "//ios/web",
     "//ios/web:test_support",
     "//testing/gtest",

@@ -11,6 +11,7 @@
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
+#import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,6 +22,8 @@ namespace {
 CGFloat kVerticalMargin = 5.0f;
 // Stackview Horizontal Margin.
 CGFloat kHorizontalMargin = 8.0f;
+// Progress Bar Height.
+CGFloat kProgressBarHeight = 2.0f;
 }  // namespace
 
 @interface ToolbarViewController ()
@@ -34,6 +37,7 @@ CGFloat kHorizontalMargin = 8.0f;
 @property(nonatomic, strong) ToolbarButton* shareButton;
 @property(nonatomic, strong) ToolbarButton* reloadButton;
 @property(nonatomic, strong) ToolbarButton* stopButton;
+@property(nonatomic, strong) MDCProgressView* progressBar;
 @end
 
 @implementation ToolbarViewController
@@ -49,35 +53,44 @@ CGFloat kHorizontalMargin = 8.0f;
 @synthesize shareButton = _shareButton;
 @synthesize reloadButton = _reloadButton;
 @synthesize stopButton = _stopButton;
+@synthesize progressBar = _progressBar;
 
 - (instancetype)init {
   self = [super init];
   if (self) {
     [self setUpToolbarButtons];
     [self setUpLocationBarContainer];
+    [self setUpProgressBar];
   }
   return self;
 }
 
 - (void)viewDidLoad {
   self.view.backgroundColor = [UIColor lightGrayColor];
-
   [self addChildViewController:self.locationBarViewController
                      toSubview:self.locationBarContainer];
+  [self setUpToolbarStackView];
+  [self.view addSubview:self.stackView];
+  [self.view addSubview:self.progressBar];
+  [self setConstraints];
+}
 
-  // Stack view to contain toolbar items.
+#pragma mark - View Setup
+
+// Sets up the StackView that contains toolbar navigation items.
+- (void)setUpToolbarStackView {
   self.stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
     self.backButton, self.forwardButton, self.reloadButton, self.stopButton,
     self.locationBarContainer, self.shareButton, self.tabSwitchStripButton,
     self.tabSwitchGridButton, self.toolsMenuButton
   ]];
-  [self updateAllButtonsVisibility];
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
   self.stackView.spacing = 16.0;
   self.stackView.distribution = UIStackViewDistributionFill;
-  [self.view addSubview:self.stackView];
+  [self updateAllButtonsVisibility];
+}
 
-  // Set constraints.
+- (void)setConstraints {
   [self.view setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                  UIViewAutoresizingFlexibleHeight];
   [NSLayoutConstraint activateConstraints:@[
@@ -91,6 +104,14 @@ CGFloat kHorizontalMargin = 8.0f;
     [self.stackView.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor
                        constant:-kHorizontalMargin],
+    [self.progressBar.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.progressBar.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [self.progressBar.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
+    [self.progressBar.heightAnchor
+        constraintEqualToConstant:kProgressBarHeight],
   ]];
 }
 
@@ -173,6 +194,13 @@ CGFloat kHorizontalMargin = 8.0f;
   self.locationBarContainer = locationBarContainer;
 }
 
+- (void)setUpProgressBar {
+  MDCProgressView* progressBar = [[MDCProgressView alloc] init];
+  progressBar.translatesAutoresizingMaskIntoConstraints = NO;
+  progressBar.hidden = YES;
+  self.progressBar = progressBar;
+}
+
 #pragma mark - View Controller Containment
 
 - (void)addChildViewController:(UIViewController*)viewController
@@ -226,9 +254,6 @@ CGFloat kHorizontalMargin = 8.0f;
 
 #pragma mark - ToolbarWebStateConsumer
 
-- (void)setCurrentPageText:(NSString*)text {
-}
-
 - (void)setCanGoForward:(BOOL)canGoForward {
   self.forwardButton.enabled = canGoForward;
   // Update the visibility since the Forward button will be hidden on
@@ -243,7 +268,12 @@ CGFloat kHorizontalMargin = 8.0f;
 - (void)setIsLoading:(BOOL)isLoading {
   self.reloadButton.hiddenInCurrentState = isLoading;
   self.stopButton.hiddenInCurrentState = !isLoading;
+  [self.progressBar setHidden:!isLoading animated:YES completion:nil];
   [self updateAllButtonsVisibility];
+}
+
+- (void)setLoadingProgress:(double)progress {
+  [self.progressBar setProgress:progress animated:YES completion:nil];
 }
 
 #pragma mark - ZoomTransitionDelegate
