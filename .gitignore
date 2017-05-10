@@ -242,7 +242,7 @@ vs-chromium-project.txt
 /remoting/android/internal/
 /remoting/appengine/
 /remoting/host/installer/linux/internal/
-/remoting/ios/
+/remoting/ios/internal/
 /remoting/internal/
 /remoting/proto/chromotocol_proto_lib.xml
 /remoting/remoting_core_resources.xml
