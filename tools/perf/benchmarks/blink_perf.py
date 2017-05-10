@@ -166,7 +166,10 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
         # TODO(qinmin): After fixing crbug.com/592017, remove this command line.
         '--reduce-security-for-testing'
     ])
-    if 'content-shell' in options.browser_type:
+
+  def SetOptions(self, options):
+    super(_BlinkPerfMeasurement, self).SetOptions(options)
+    if 'content-shell' in options.browser_options.browser_type:
       options.AppendExtraBrowserArgs('--expose-internals-for-testing')
 
   def _ContinueTestRunWithTracing(self, tab):
@@ -282,6 +285,7 @@ class _BlinkPerfPaintMeasurement(_BlinkPerfMeasurement):
 
 
 class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
+
   test = _BlinkPerfMeasurement
 
   @classmethod
