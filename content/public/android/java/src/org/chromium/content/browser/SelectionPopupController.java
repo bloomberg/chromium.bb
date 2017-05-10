@@ -131,8 +131,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private SelectionClient mSelectionClient;
 
     // The classificaton result of the selected text if the selection exists and
-    // ContextSelectionProvider was able to classify it, otherwise null.
-    private ContextSelectionProvider.Result mClassificationResult;
+    // SmartSelectionProvider was able to classify it, otherwise null.
+    private SmartSelectionProvider.Result mClassificationResult;
 
     // The resource ID for Assist menu item.
     private int mAssistMenuItemId;
@@ -174,7 +174,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         };
 
         mSelectionClient =
-                ContextSelectionClient.create(new ContextSelectionCallback(), window, webContents);
+                SmartSelectionClient.create(new SmartSelectionCallback(), window, webContents);
 
         // TODO(timav): Use android.R.id.textAssist for the Assist item id once we switch to
         // Android O SDK and remove |mAssistMenuItemId|.
@@ -1102,10 +1102,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
     }
 
-    // The callback class that delivers result from a ContextSelectionClient.
-    private class ContextSelectionCallback implements ContextSelectionProvider.ResultCallback {
+    // The callback class that delivers result from a SmartSelectionClient.
+    private class SmartSelectionCallback implements SmartSelectionProvider.ResultCallback {
         @Override
-        public void onClassified(ContextSelectionProvider.Result result) {
+        public void onClassified(SmartSelectionProvider.Result result) {
             // If the selection does not exist any more, discard |result|.
             if (!mHasSelection) {
                 assert !mHidden;

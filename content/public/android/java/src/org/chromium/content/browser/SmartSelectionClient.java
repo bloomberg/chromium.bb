@@ -16,12 +16,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * A class that controls the classification of the textual selection.
- * It requests the selection together with its surrounding text from the focused frame and sends it
- * to ContextSelectionProvider which does the classification itself.
+ * A class that controls Smart Text selection. Smart Text selection automatically augments the
+ * selected boundaries and classifies the selected text based on the context.
+ * This class requests the selection together with its surrounding text from the focused frame and
+ * sends it to SmartSelectionProvider which does the classification itself.
  */
 @JNINamespace("content")
-public class ContextSelectionClient implements SelectionClient {
+public class SmartSelectionClient implements SelectionClient {
     @IntDef({CLASSIFY, SUGGEST_AND_CLASSIFY})
     @Retention(RetentionPolicy.SOURCE)
     private @interface RequestType {}
@@ -38,36 +39,36 @@ public class ContextSelectionClient implements SelectionClient {
     // Used for surrounding text request.
     private static final int NUM_EXTRA_CHARS = 240;
 
-    private long mNativeContextSelectionClient;
-    private ContextSelectionProvider mProvider;
-    private ContextSelectionProvider.ResultCallback mCallback;
+    private long mNativeSmartSelectionClient;
+    private SmartSelectionProvider mProvider;
+    private SmartSelectionProvider.ResultCallback mCallback;
 
     /**
-     * Creates the ContextSelectionClient. Returns null in case ContextSelectionProvider
-     * does not exist in the system.
+     * Creates the SmartSelectionClient. Returns null in case SmartSelectionProvider does not exist
+     * in the system.
      */
-    public static ContextSelectionClient create(ContextSelectionProvider.ResultCallback callback,
+    public static SmartSelectionClient create(SmartSelectionProvider.ResultCallback callback,
             WindowAndroid windowAndroid, WebContents webContents) {
-        ContextSelectionProvider provider =
-                ContentClassFactory.get().createContextSelectionProvider(callback, windowAndroid);
+        SmartSelectionProvider provider =
+                ContentClassFactory.get().createSmartSelectionProvider(callback, windowAndroid);
 
-        // ContextSelectionProvider might not exist.
+        // SmartSelectionProvider might not exist.
         if (provider == null) return null;
 
-        return new ContextSelectionClient(provider, callback, webContents);
+        return new SmartSelectionClient(provider, callback, webContents);
     }
 
-    private ContextSelectionClient(ContextSelectionProvider provider,
-            ContextSelectionProvider.ResultCallback callback, WebContents webContents) {
+    private SmartSelectionClient(SmartSelectionProvider provider,
+            SmartSelectionProvider.ResultCallback callback, WebContents webContents) {
         mProvider = provider;
         mCallback = callback;
-        mNativeContextSelectionClient = nativeInit(webContents);
+        mNativeSmartSelectionClient = nativeInit(webContents);
     }
 
     @CalledByNative
-    private void onNativeSideDestroyed(long nativeContextSelectionClient) {
-        assert nativeContextSelectionClient == mNativeContextSelectionClient;
-        mNativeContextSelectionClient = 0;
+    private void onNativeSideDestroyed(long nativeSmartSelectionClient) {
+        assert nativeSmartSelectionClient == mNativeSmartSelectionClient;
+        mNativeSmartSelectionClient = 0;
         mProvider.cancelAllRequests();
     }
 
@@ -89,27 +90,27 @@ public class ContextSelectionClient implements SelectionClient {
 
     @Override
     public void cancelAllRequests() {
-        if (mNativeContextSelectionClient != 0) {
-            nativeCancelAllRequests(mNativeContextSelectionClient);
+        if (mNativeSmartSelectionClient != 0) {
+            nativeCancelAllRequests(mNativeSmartSelectionClient);
         }
 
         mProvider.cancelAllRequests();
     }
 
     private void requestSurroundingText(@RequestType int callbackData) {
-        if (mNativeContextSelectionClient == 0) {
+        if (mNativeSmartSelectionClient == 0) {
             onSurroundingTextReceived(callbackData, "", 0, 0);
             return;
         }
 
-        nativeRequestSurroundingText(mNativeContextSelectionClient, NUM_EXTRA_CHARS, callbackData);
+        nativeRequestSurroundingText(mNativeSmartSelectionClient, NUM_EXTRA_CHARS, callbackData);
     }
 
     @CalledByNative
     private void onSurroundingTextReceived(
             @RequestType int callbackData, String text, int start, int end) {
         if (TextUtils.isEmpty(text)) {
-            mCallback.onClassified(new ContextSelectionProvider.Result());
+            mCallback.onClassified(new SmartSelectionProvider.Result());
             return;
         }
 
@@ -130,6 +131,6 @@ public class ContextSelectionClient implements SelectionClient {
 
     private native long nativeInit(WebContents webContents);
     private native void nativeRequestSurroundingText(
-            long nativeContextSelectionClient, int numExtraCharacters, int callbackData);
-    private native void nativeCancelAllRequests(long nativeContextSelectionClient);
+            long nativeSmartSelectionClient, int numExtraCharacters, int callbackData);
+    private native void nativeCancelAllRequests(long nativeSmartSelectionClient);
 }
