@@ -219,7 +219,7 @@ void HistoryBackend::Init(
   delegate_->DBLoaded();
   if (base::FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
     typed_url_sync_bridge_ = base::MakeUnique<TypedURLSyncBridge>(
-        this,
+        this, db_.get(),
         base::BindRepeating(
             &ModelTypeChangeProcessor::Create,
             // TODO(gangwu): use ReportUnrecoverableError before launch.

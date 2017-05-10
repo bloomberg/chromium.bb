@@ -4,15 +4,21 @@
 
 #include "components/history/core/browser/typed_url_sync_bridge.h"
 
+#include "base/memory/ptr_util.h"
+#include "components/sync/model_impl/sync_metadata_store_change_list.h"
+
 namespace history {
 
 TypedURLSyncBridge::TypedURLSyncBridge(
     HistoryBackend* history_backend,
+    syncer::SyncMetadataStore* sync_metadata_store,
     const ChangeProcessorFactory& change_processor_factory)
     : ModelTypeSyncBridge(change_processor_factory, syncer::TYPED_URLS),
-      history_backend_(history_backend) {
+      history_backend_(history_backend),
+      sync_metadata_store_(sync_metadata_store) {
   DCHECK(history_backend_);
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sync_metadata_store_);
   NOTIMPLEMENTED();
 }
 
@@ -24,8 +30,8 @@ TypedURLSyncBridge::~TypedURLSyncBridge() {
 std::unique_ptr<syncer::MetadataChangeList>
 TypedURLSyncBridge::CreateMetadataChangeList() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  NOTIMPLEMENTED();
-  return {};
+  return base::MakeUnique<syncer::SyncMetadataStoreChangeList>(
+      sync_metadata_store_, syncer::TYPED_URLS);
 }
 
 base::Optional<syncer::ModelError> TypedURLSyncBridge::MergeSyncData(
@@ -62,8 +68,10 @@ void TypedURLSyncBridge::GetAllData(DataCallback callback) {
 std::string TypedURLSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  NOTIMPLEMENTED();
-  return std::string();
+  DCHECK(entity_data.specifics.has_typed_url())
+      << "EntityData does not have typed urls specifics.";
+
+  return entity_data.specifics.typed_url().url();
 }
 
 // Prefer to use URLRow::id() to uniquely identify entities when coordinating
