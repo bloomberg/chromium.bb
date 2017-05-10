@@ -600,6 +600,7 @@ mojom("mojo_bindings") {
     "image_downloader/image_downloader.mojom",
     "indexed_db/indexed_db.mojom",
     "leveldb_wrapper.mojom",
+    "manifest_observer.mojom",
     "media/media_devices.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
     "memory_coordinator.mojom",

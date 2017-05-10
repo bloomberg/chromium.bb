@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/memory/ptr_util.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/manifest_manager_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -29,8 +30,8 @@ void KillRenderer(RenderFrameHost* render_frame_host) {
 } // anonymous namespace
 
 ManifestManagerHost::ManifestManagerHost(WebContents* web_contents)
-  : WebContentsObserver(web_contents) {
-}
+    : WebContentsObserver(web_contents),
+      manifest_url_change_observer_bindings_(web_contents, this) {}
 
 ManifestManagerHost::~ManifestManagerHost() {}
 
@@ -150,6 +151,16 @@ void ManifestManagerHost::OnRequestManifestResponse(
   callbacks->Remove(request_id);
   if (callbacks->IsEmpty())
     pending_get_callbacks_.erase(render_frame_host);
+}
+
+void ManifestManagerHost::ManifestUrlChanged(
+    const base::Optional<GURL>& manifest_url) {
+  if (manifest_url_change_observer_bindings_.GetCurrentTargetFrame() !=
+      web_contents()->GetMainFrame()) {
+    return;
+  }
+  static_cast<WebContentsImpl*>(web_contents())
+      ->NotifyManifestUrlChanged(manifest_url);
 }
 
 } // namespace content

@@ -1130,6 +1130,12 @@ std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
   return all_contents;
 }
 
+void WebContentsImpl::NotifyManifestUrlChanged(
+    const base::Optional<GURL>& manifest_url) {
+  for (auto& observer : observers_)
+    observer.DidUpdateWebManifestURL(manifest_url);
+}
+
 void WebContentsImpl::UpdateDeviceScaleFactor(double device_scale_factor) {
   SendPageMessage(
       new PageMsg_SetDeviceScaleFactor(MSG_ROUTING_NONE, device_scale_factor));

@@ -282,6 +282,8 @@ class CONTENT_EXPORT WebContentsImpl
   // within it (recursively).
   std::vector<WebContentsImpl*> GetWebContentsAndAllInner();
 
+  void NotifyManifestUrlChanged(const base::Optional<GURL>& manifest_url);
+
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;
   void SetDelegate(WebContentsDelegate* delegate) override;

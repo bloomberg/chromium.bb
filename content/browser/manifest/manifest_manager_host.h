@@ -10,6 +10,8 @@
 #include "base/callback_forward.h"
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "content/common/manifest_observer.mojom.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -21,7 +23,8 @@ struct Manifest;
 // ManifestManagerHost is a helper class that allows callers to get the Manifest
 // associated with a frame. It handles the IPC messaging with the child process.
 // TODO(mlamouri): keep a cached version and a dirty bit here.
-class ManifestManagerHost : public WebContentsObserver {
+class ManifestManagerHost : public WebContentsObserver,
+                            public mojom::ManifestUrlChangeObserver {
  public:
   explicit ManifestManagerHost(WebContents* web_contents);
   ~ManifestManagerHost() override;
@@ -47,8 +50,14 @@ class ManifestManagerHost : public WebContentsObserver {
   // Returns the CallbackMap associated with the given RenderFrameHost, or null.
   GetCallbackMap* GetCallbackMapForFrame(RenderFrameHost*);
 
+  // mojom::ManifestUrlChangeObserver:
+  void ManifestUrlChanged(const base::Optional<GURL>& manifest_url) override;
+
   base::hash_map<RenderFrameHost*, std::unique_ptr<GetCallbackMap>>
       pending_get_callbacks_;
+
+  WebContentsFrameBindingSet<mojom::ManifestUrlChangeObserver>
+      manifest_url_change_observer_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestManagerHost);
 };
