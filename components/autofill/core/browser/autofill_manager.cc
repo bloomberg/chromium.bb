@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -1440,9 +1441,14 @@ int AutofillManager::GetProfilesForCreditCardUpload(
   if (verified_zip.empty() && !candidate_profiles.empty())
     upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
 
-  if (!upload_decision_metrics)
+  if (!upload_decision_metrics) {
     profiles->assign(candidate_profiles.begin(), candidate_profiles.end());
-
+    if (!has_modified_profile)
+      for (const AutofillProfile& profile : candidate_profiles)
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Autofill.DaysSincePreviousUseAtSubmission.Profile",
+            (profile.use_date() - profile.previous_use_date()).InDays());
+  }
   return upload_decision_metrics;
 }
 
