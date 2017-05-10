@@ -11,7 +11,6 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -38,6 +37,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #include "base/linux_util.h"
+#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/rect.h"

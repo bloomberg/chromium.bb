@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "chromeos/login/login_state.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -23,6 +22,10 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/login_state.h"
+#endif  // defined(OS_CHROMEOS)
 
 using content::ResourceRequestInfo;
 using extensions::Extension;

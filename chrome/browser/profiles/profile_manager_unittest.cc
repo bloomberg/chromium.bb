@@ -19,7 +19,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/browser_prefs.h"
