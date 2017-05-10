@@ -1033,6 +1033,8 @@ source_set("browser") {
     "net/browser_online_state_observer.h",
     "net/network_errors_listing_ui.cc",
     "net/network_errors_listing_ui.h",
+    "net/network_quality_observer_impl.cc",
+    "net/network_quality_observer_impl.h",
     "net/quota_policy_cookie_store.cc",
     "net/quota_policy_cookie_store.h",
     "net/view_blob_internals_job_factory.cc",

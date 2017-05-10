@@ -61,6 +61,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/browser/network_quality_observer_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
@@ -90,7 +91,6 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/net_features.h"
 #include "net/nqe/external_estimate_provider.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
@@ -589,6 +589,8 @@ void IOThread::Init() {
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
       std::move(external_estimate_provider), network_quality_estimator_params,
       net_log_));
+  globals_->network_quality_observer = content::CreateNetworkQualityObserver(
+      globals_->network_quality_estimator.get());
 
   UpdateDnsClientEnabled();
 #if defined(OS_CHROMEOS)

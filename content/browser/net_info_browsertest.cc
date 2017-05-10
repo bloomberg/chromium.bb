@@ -5,7 +5,9 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
+#include "content/browser/net/network_quality_observer_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -13,6 +15,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_factory.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 
 namespace content {
 
@@ -139,6 +142,23 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, TwoRenderViewsInOneProcess) {
   // The network state should not have reinitialized to what it was when opening
   // the first window (online).
   EXPECT_FALSE(RunScriptExtractBool("getOnLine()"));
+}
+
+// Make sure the changes in the network quality are notified to the render
+// thread.
+IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotified) {
+  base::HistogramTester histogram_tester;
+  net::TestNetworkQualityEstimator estimator;
+  NetworkQualityObserverImpl impl(&estimator);
+  estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
+      net::nqe::internal::NetworkQuality(base::TimeDelta::FromSeconds(1),
+                                         base::TimeDelta::FromSeconds(2), 3));
+
+  NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
+
+  FetchHistogramsFromChildProcesses();
+  EXPECT_FALSE(
+      histogram_tester.GetAllSamples("NQE.RenderThreadNotified").empty());
 }
 
 }  // namespace content

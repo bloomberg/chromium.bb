@@ -564,6 +564,9 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnNetworkConnectionChanged(
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps) override;
+  void OnNetworkQualityChanged(double http_rtt_msec,
+                               double transport_rtt_msec,
+                               double bandwidth_kbps) override;
   void SetWebKitSharedTimersSuspended(bool suspend) override;
   void UpdateScrollbarTheme(
       mojom::UpdateScrollbarThemeParamsPtr params) override;
