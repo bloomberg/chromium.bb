@@ -915,6 +915,10 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
   (void)cm;
 #endif
 
+#if CONFIG_MOTION_VAR && (CONFIG_CHROMA_SUB8X8 || !CONFIG_CB4X4)
+  const int build_for_obmc = !(mi_col_offset == 0 && mi_row_offset == 0);
+#endif  // CONFIG_MOTION_VAR && (CONFIG_CHROMA_SUB8X8 || !CONFIG_CB4X4)
+
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
   int sub8x8_inter = bsize < BLOCK_8X8 && plane > 0;
@@ -927,7 +931,6 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
         sub8x8_inter = 0;
 
 #if CONFIG_MOTION_VAR
-  const int build_for_obmc = !(mi_col_offset == 0 && mi_row_offset == 0);
   if (!build_for_obmc && sub8x8_inter) {
 #else
   if (sub8x8_inter) {
@@ -1060,6 +1063,8 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
     for (ref = 0; ref < 2; ++ref) pd->pre[ref] = orig_pred_buf[ref];
     return;
   }
+#else
+  (void)cm;
 #endif  // CONFIG_CHROMA_SUB8X8
 
   {
