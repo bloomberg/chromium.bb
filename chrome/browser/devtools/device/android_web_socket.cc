@@ -23,6 +23,7 @@ using net::WebSocket;
 namespace {
 
 const int kBufferSize = 16 * 1024;
+const char kCloseResponse[] = "\x88\x80\x2D\x0E\x1E\xFA";
 
 }  // namespace
 
@@ -61,9 +62,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
     int mask = base::RandInt(0, 0x7FFFFFFF);
     std::string encoded_frame;
     encoder_->EncodeFrame(message, mask, &encoded_frame);
-    request_buffer_ += encoded_frame;
-    if (request_buffer_.length() == encoded_frame.length())
-      SendPendingRequests(0);
+    SendData(encoded_frame);
   }
 
  private:
@@ -102,13 +101,20 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
       parse_result = encoder_->DecodeFrame(
           response_buffer_, &bytes_consumed, &output);
     }
+    if (parse_result == WebSocket::FRAME_CLOSE)
+      SendData(kCloseResponse);
 
-    if (parse_result == WebSocket::FRAME_ERROR ||
-        parse_result == WebSocket::FRAME_CLOSE) {
+    if (parse_result == WebSocket::FRAME_ERROR) {
       Disconnect();
       return;
     }
     Read(io_buffer);
+  }
+
+  void SendData(const std::string& data) {
+    request_buffer_ += data;
+    if (request_buffer_.length() == data.length())
+      SendPendingRequests(0);
   }
 
   void SendPendingRequests(int result) {
