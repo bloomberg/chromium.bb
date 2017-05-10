@@ -44,8 +44,8 @@ class TestModel : public Model {
 
   bool IsCurrentlyShowing() const override { return false; }
 
-  const Event& GetEvent(const std::string& event_name) override {
-    return empty_event_;
+  const Event* GetEvent(const std::string& event_name) const override {
+    return nullptr;
   }
 
   void IncrementEvent(const std::string& event_name) override {}
@@ -54,7 +54,6 @@ class TestModel : public Model {
 
  private:
   FeatureConfig feature_config_;
-  Event empty_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestModel);
 };

@@ -45,10 +45,10 @@ void SetEventCountForDay(Event* event, uint32_t day, uint32_t count) {
 
 // Verifies that the given |event| contains a |day| with the correct |count|,
 // and that the day only exists a single time.
-void VerifyEventCount(const Event& event, uint32_t day, uint32_t count) {
+void VerifyEventCount(const Event* event, uint32_t day, uint32_t count) {
   bool found_day = false;
-  for (int i = 0; i < event.events_size(); ++i) {
-    Event_Count event_count = event.events(i);
+  for (int i = 0; i < event->events_size(); ++i) {
+    Event_Count event_count = event->events(i);
     if (event_count.day() == day) {
       EXPECT_FALSE(found_day);
       found_day = true;
@@ -59,11 +59,17 @@ void VerifyEventCount(const Event& event, uint32_t day, uint32_t count) {
 }
 
 // Verifies that the event |a| and |b| contain the exact same data.
-void VerifyEqual(const Event& a, const Event& b) {
-  EXPECT_EQ(a.name(), b.name());
-  EXPECT_EQ(a.events_size(), b.events_size());
-  for (int i = 0; i < a.events_size(); ++i) {
-    VerifyEventCount(b, a.events(i).day(), a.events(i).count());
+void VerifyEqual(const Event* a, const Event* b) {
+  if (!a || !b) {
+    // If one of the events are nullptr, both should be nullptr.
+    ASSERT_EQ(a, b);
+    return;
+  }
+
+  EXPECT_EQ(a->name(), b->name());
+  EXPECT_EQ(a->events_size(), b->events_size());
+  for (int i = 0; i < a->events_size(); ++i) {
+    VerifyEventCount(b, a->events(i).day(), a->events(i).count());
   }
 }
 
@@ -80,13 +86,15 @@ class TestInMemoryStore : public InMemoryStore {
     HandleLoadResult(callback, load_should_succeed_);
   }
 
-  void WriteEvent(const Event& event) override { last_written_event_ = event; }
+  void WriteEvent(const Event& event) override {
+    last_written_event_.reset(new Event(event));
+  }
 
-  Event GetLastWrittenEvent() { return last_written_event_; }
+  const Event* GetLastWrittenEvent() { return last_written_event_.get(); }
 
  private:
   // Temporary store the last written event.
-  Event last_written_event_;
+  std::unique_ptr<Event> last_written_event_;
 
   // Denotes whether the call to Load(...) should succeed or not. This impacts
   // both the ready-state and the result for the OnLoadedCallback.
@@ -205,36 +213,35 @@ TEST_F(ModelImplTest, InitializeShouldLoadEntries) {
 
   // Verify that all the data matches what was put into the store in
   // CreateStore().
-  Event foo_event = model_->GetEvent("foo");
-  EXPECT_EQ("foo", foo_event.name());
-  EXPECT_EQ(1, foo_event.events_size());
+  const Event* foo_event = model_->GetEvent("foo");
+  EXPECT_EQ("foo", foo_event->name());
+  EXPECT_EQ(1, foo_event->events_size());
   VerifyEventCount(foo_event, 1u, 1u);
 
-  Event bar_event = model_->GetEvent("bar");
-  EXPECT_EQ("bar", bar_event.name());
-  EXPECT_EQ(3, bar_event.events_size());
+  const Event* bar_event = model_->GetEvent("bar");
+  EXPECT_EQ("bar", bar_event->name());
+  EXPECT_EQ(3, bar_event->events_size());
   VerifyEventCount(bar_event, 1u, 3u);
   VerifyEventCount(bar_event, 2u, 3u);
   VerifyEventCount(bar_event, 5u, 5u);
 
-  Event qux_event = model_->GetEvent("qux");
-  EXPECT_EQ("qux", qux_event.name());
-  EXPECT_EQ(3, qux_event.events_size());
+  const Event* qux_event = model_->GetEvent("qux");
+  EXPECT_EQ("qux", qux_event->name());
+  EXPECT_EQ(3, qux_event->events_size());
   VerifyEventCount(qux_event, 1u, 5u);
   VerifyEventCount(qux_event, 2u, 1u);
   VerifyEventCount(qux_event, 3u, 2u);
 }
 
-TEST_F(ModelImplTest, RetrievingNewEventsShouldYieldEmpty) {
+TEST_F(ModelImplTest, RetrievingNewEventsShouldYieldNullptr) {
   model_->Initialize(base::Bind(&ModelImplTest::OnModelInitializationFinished,
                                 base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(model_->IsReady());
 
-  Event no_event = model_->GetEvent("no");
-  EXPECT_EQ("no", no_event.name());
-  EXPECT_EQ(0, no_event.events_size());
-  VerifyEqual(no_event, store_->GetLastWrittenEvent());
+  const Event* no_event = model_->GetEvent("no");
+  EXPECT_EQ(nullptr, no_event);
+  VerifyEqual(nullptr, store_->GetLastWrittenEvent());
 }
 
 TEST_F(ModelImplTest, IncrementingNonExistingEvent) {
@@ -247,18 +254,18 @@ TEST_F(ModelImplTest, IncrementingNonExistingEvent) {
 
   // Incrementing the event should work even if it does not exist.
   model_->IncrementEvent("nonexisting");
-  Event event1 = model_->GetEvent("nonexisting");
-  EXPECT_EQ("nonexisting", event1.name());
-  EXPECT_EQ(1, event1.events_size());
+  const Event* event1 = model_->GetEvent("nonexisting");
+  EXPECT_EQ("nonexisting", event1->name());
+  EXPECT_EQ(1, event1->events_size());
   VerifyEventCount(event1, 1u, 1u);
   VerifyEqual(event1, store_->GetLastWrittenEvent());
 
   // Incrementing the event after it has been initialized to 1, it should now
   // have a count of 2 for the given day.
   model_->IncrementEvent("nonexisting");
-  Event event2 = model_->GetEvent("nonexisting");
-  Event_Count event2_count = event2.events(0);
-  EXPECT_EQ(1, event2.events_size());
+  const Event* event2 = model_->GetEvent("nonexisting");
+  Event_Count event2_count = event2->events(0);
+  EXPECT_EQ(1, event2->events_size());
   VerifyEventCount(event2, 1u, 2u);
   VerifyEqual(event2, store_->GetLastWrittenEvent());
 }
@@ -276,8 +283,8 @@ TEST_F(ModelImplTest, IncrementingNonExistingEventMultipleDays) {
   model_->IncrementEvent("nonexisting");
   model_->SetCurrentDay(3u);
   model_->IncrementEvent("nonexisting");
-  Event event = model_->GetEvent("nonexisting");
-  EXPECT_EQ(3, event.events_size());
+  const Event* event = model_->GetEvent("nonexisting");
+  EXPECT_EQ(3, event->events_size());
   VerifyEventCount(event, 1u, 1u);
   VerifyEventCount(event, 2u, 2u);
   VerifyEventCount(event, 3u, 1u);
@@ -293,15 +300,15 @@ TEST_F(ModelImplTest, IncrementingSingleDayExistingEvent) {
   model_->SetCurrentDay(1u);
 
   // |foo| is inserted into the store with a count of 1 at day 1.
-  Event foo_event = model_->GetEvent("foo");
-  EXPECT_EQ("foo", foo_event.name());
-  EXPECT_EQ(1, foo_event.events_size());
+  const Event* foo_event = model_->GetEvent("foo");
+  EXPECT_EQ("foo", foo_event->name());
+  EXPECT_EQ(1, foo_event->events_size());
   VerifyEventCount(foo_event, 1u, 1u);
 
   // Incrementing |foo| should change count to 2.
   model_->IncrementEvent("foo");
-  Event foo_event2 = model_->GetEvent("foo");
-  EXPECT_EQ(1, foo_event2.events_size());
+  const Event* foo_event2 = model_->GetEvent("foo");
+  EXPECT_EQ(1, foo_event2->events_size());
   VerifyEventCount(foo_event2, 1u, 2u);
   VerifyEqual(foo_event2, store_->GetLastWrittenEvent());
 }
@@ -318,8 +325,8 @@ TEST_F(ModelImplTest, IncrementingSingleDayExistingEventTwice) {
   // incrementing twice should lead to 3.
   model_->IncrementEvent("foo");
   model_->IncrementEvent("foo");
-  Event foo_event = model_->GetEvent("foo");
-  EXPECT_EQ(1, foo_event.events_size());
+  const Event* foo_event = model_->GetEvent("foo");
+  EXPECT_EQ(1, foo_event->events_size());
   VerifyEventCount(foo_event, 1u, 3u);
   VerifyEqual(foo_event, store_->GetLastWrittenEvent());
 }
@@ -333,10 +340,10 @@ TEST_F(ModelImplTest, IncrementingExistingMultiDayEvent) {
   // |bar| is inserted into the store with a count of 3 at day 2. Incrementing
   // that day should lead to a count of 4.
   model_->SetCurrentDay(2u);
-  Event bar_event = model_->GetEvent("bar");
+  const Event* bar_event = model_->GetEvent("bar");
   VerifyEventCount(bar_event, 2u, 3u);
   model_->IncrementEvent("bar");
-  Event bar_event2 = model_->GetEvent("bar");
+  const Event* bar_event2 = model_->GetEvent("bar");
   VerifyEventCount(bar_event2, 2u, 4u);
   VerifyEqual(bar_event2, store_->GetLastWrittenEvent());
 }
@@ -351,11 +358,11 @@ TEST_F(ModelImplTest, IncrementingExistingMultiDayEventNewDay) {
   // the day.
   model_->SetCurrentDay(10u);
   model_->IncrementEvent("bar");
-  Event bar_event = model_->GetEvent("bar");
+  const Event* bar_event = model_->GetEvent("bar");
   VerifyEventCount(bar_event, 10u, 1u);
   VerifyEqual(bar_event, store_->GetLastWrittenEvent());
   model_->IncrementEvent("bar");
-  Event bar_event2 = model_->GetEvent("bar");
+  const Event* bar_event2 = model_->GetEvent("bar");
   VerifyEventCount(bar_event2, 10u, 2u);
   VerifyEqual(bar_event2, store_->GetLastWrittenEvent());
 }

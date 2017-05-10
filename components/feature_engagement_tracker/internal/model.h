@@ -47,9 +47,9 @@ class Model {
   virtual bool IsCurrentlyShowing() const = 0;
 
   // Retrieves the Event object for the event with the given name. If the event
-  // is not found, an empty event will be returned. Calling this before the
+  // is not found, a nullptr will be returned. Calling this before the
   // Model has finished initializing will result in undefined behavior.
-  virtual const Event& GetEvent(const std::string& event_name) = 0;
+  virtual const Event* GetEvent(const std::string& event_name) const = 0;
 
   // Increments the counter for today for how many times the event has happened.
   // If the event has never happened before, the Event object will be created.
