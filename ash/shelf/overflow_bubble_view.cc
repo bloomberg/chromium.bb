@@ -10,6 +10,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
+#include "ash/shell.h"
 #include "ash/wm_window.h"
 #include "base/i18n/rtl.h"
 #include "ui/display/display.h"
@@ -29,17 +30,24 @@ const int kEndPadding = 16;
 // Distance between overflow bubble and the main shelf.
 const int kDistanceToMainShelf = 4;
 
-constexpr SkColor kBackgroundColor =
-    SkColorSetA(kShelfDefaultBaseColor, kShelfTranslucentAlpha);
-
 }  // namespace
 
 OverflowBubbleView::OverflowBubbleView(WmShelf* wm_shelf)
-    : wm_shelf_(wm_shelf), shelf_view_(nullptr) {
+    : wm_shelf_(wm_shelf),
+      shelf_view_(nullptr),
+      background_animator_(SHELF_BACKGROUND_OVERLAP,
+                           // Don't pass the WmShelf so the translucent color is
+                           // always used.
+                           nullptr,
+                           Shell::Get()->wallpaper_controller()) {
   DCHECK(wm_shelf_);
+
+  background_animator_.AddObserver(this);
 }
 
-OverflowBubbleView::~OverflowBubbleView() {}
+OverflowBubbleView::~OverflowBubbleView() {
+  background_animator_.RemoveObserver(this);
+}
 
 void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
                                             views::View* shelf_view) {
@@ -48,7 +56,6 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   SetAnchorView(anchor);
   set_arrow(views::BubbleBorder::NONE);
   set_background(nullptr);
-  set_color(kBackgroundColor);
   if (wm_shelf_->IsHorizontalAlignment())
     set_margins(gfx::Insets(0, kEndPadding));
   else
@@ -195,6 +202,10 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   else if (bounds.bottom() > monitor_rect.bottom())
     bounds.Offset(monitor_rect.bottom() - bounds.bottom(), 0);
   return bounds;
+}
+
+void OverflowBubbleView::UpdateShelfBackground(SkColor color) {
+  set_color(color);
 }
 
 }  // namespace ash

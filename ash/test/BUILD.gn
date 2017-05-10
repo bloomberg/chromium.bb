@@ -125,6 +125,8 @@ static_library("test_support_common") {
     "ui_controls_factory_ash.h",
     "user_metrics_recorder_test_api.cc",
     "user_metrics_recorder_test_api.h",
+    "wallpaper_controller_test_api.cc",
+    "wallpaper_controller_test_api.h",
     "wm_window_test_api.cc",
     "wm_window_test_api.h",
     "workspace_event_handler_test_helper.cc",
