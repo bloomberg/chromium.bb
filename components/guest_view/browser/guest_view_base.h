@@ -23,6 +23,7 @@
 namespace guest_view {
 
 class GuestViewEvent;
+class GuestViewManager;
 
 // A struct of parameters for SetSize(). The parameters are all declared as
 // scoped pointers since they are all optional. Null pointers indicate that the
@@ -395,6 +396,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void StopTrackingEmbedderZoomLevel();
 
   void UpdateGuestSize(const gfx::Size& new_size, bool due_to_auto_resize);
+
+  GuestViewManager* GetGuestViewManager();
+  void SetOwnerHost();
 
   // This guest tracks the lifetime of the WebContents specified by
   // |owner_web_contents_|. If |owner_web_contents_| is destroyed then this
