@@ -9,10 +9,6 @@
 
 #include "components/autofill/core/common/form_data.h"
 
-namespace base {
-class SequencedWorkerPool;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -45,10 +41,6 @@ class AutofillDriver {
 
   // Returns the URL request context information associated with this driver.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
-
-  // Returns the SequencedWorkerPool on which core Autofill code should run
-  // tasks that may block. This pool must live at least as long as the driver.
-  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;
