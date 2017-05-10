@@ -154,17 +154,17 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
 void PaymentAppContentUnitTestBase::SetManifest(
     PaymentManager* manager,
     payments::mojom::PaymentAppManifestPtr manifest,
-    const PaymentManager::SetManifestCallback& callback) {
+    PaymentManager::SetManifestCallback callback) {
   ASSERT_NE(nullptr, manager);
-  manager->SetManifest(std::move(manifest), callback);
+  manager->SetManifest(std::move(manifest), std::move(callback));
   base::RunLoop().RunUntilIdle();
 }
 
 void PaymentAppContentUnitTestBase::GetManifest(
     PaymentManager* manager,
-    const PaymentManager::GetManifestCallback& callback) {
+    PaymentManager::GetManifestCallback callback) {
   ASSERT_NE(nullptr, manager);
-  manager->GetManifest(callback);
+  manager->GetManifest(std::move(callback));
   base::RunLoop().RunUntilIdle();
 }
 

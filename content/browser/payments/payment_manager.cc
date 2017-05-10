@@ -41,73 +41,74 @@ void PaymentManager::Init(const std::string& scope) {
 
 void PaymentManager::SetManifest(
     payments::mojom::PaymentAppManifestPtr manifest,
-    const SetManifestCallback& callback) {
+    SetManifestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(zino): Should implement requesting a permission for users to allow
   // the payment app to be registered. Please see http://crbug.com/665949.
 
   payment_app_context_->payment_app_database()->WriteManifest(
-      scope_, std::move(manifest), callback);
+      scope_, std::move(manifest), std::move(callback));
 }
 
-void PaymentManager::GetManifest(const GetManifestCallback& callback) {
+void PaymentManager::GetManifest(GetManifestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  payment_app_context_->payment_app_database()->ReadManifest(scope_, callback);
+  payment_app_context_->payment_app_database()->ReadManifest(
+      scope_, std::move(callback));
 }
 
 void PaymentManager::DeletePaymentInstrument(
     const std::string& instrument_key,
-    const PaymentManager::DeletePaymentInstrumentCallback& callback) {
+    PaymentManager::DeletePaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->DeletePaymentInstrument(
-      scope_, instrument_key, callback);
+      scope_, instrument_key, std::move(callback));
 }
 
 void PaymentManager::GetPaymentInstrument(
     const std::string& instrument_key,
-    const PaymentManager::GetPaymentInstrumentCallback& callback) {
+    PaymentManager::GetPaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->ReadPaymentInstrument(
-      scope_, instrument_key, callback);
+      scope_, instrument_key, std::move(callback));
 }
 
 void PaymentManager::KeysOfPaymentInstruments(
-    const PaymentManager::KeysOfPaymentInstrumentsCallback& callback) {
+    PaymentManager::KeysOfPaymentInstrumentsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->KeysOfPaymentInstruments(
-      scope_, callback);
+      scope_, std::move(callback));
 }
 
 void PaymentManager::HasPaymentInstrument(
     const std::string& instrument_key,
-    const PaymentManager::HasPaymentInstrumentCallback& callback) {
+    PaymentManager::HasPaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->HasPaymentInstrument(
-      scope_, instrument_key, callback);
+      scope_, instrument_key, std::move(callback));
 }
 
 void PaymentManager::SetPaymentInstrument(
     const std::string& instrument_key,
     payments::mojom::PaymentInstrumentPtr details,
-    const PaymentManager::SetPaymentInstrumentCallback& callback) {
+    PaymentManager::SetPaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->WritePaymentInstrument(
-      scope_, instrument_key, std::move(details), callback);
+      scope_, instrument_key, std::move(details), std::move(callback));
 }
 
 void PaymentManager::ClearPaymentInstruments(
-    const ClearPaymentInstrumentsCallback& callback) {
+    ClearPaymentInstrumentsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->ClearPaymentInstruments(
-      scope_, callback);
+      scope_, std::move(callback));
 }
 
 void PaymentManager::OnConnectionError() {

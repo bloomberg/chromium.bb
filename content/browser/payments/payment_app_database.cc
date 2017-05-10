@@ -107,32 +107,32 @@ PaymentAppDatabase::~PaymentAppDatabase() {
 void PaymentAppDatabase::WriteManifest(
     const GURL& scope,
     payments::mojom::PaymentAppManifestPtr manifest,
-    const WriteManifestCallback& callback) {
+    WriteManifestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->FindReadyRegistrationForPattern(
       scope, base::Bind(&PaymentAppDatabase::DidFindRegistrationToWriteManifest,
-                        weak_ptr_factory_.GetWeakPtr(),
-                        base::Passed(std::move(manifest)), callback));
+                        weak_ptr_factory_.GetWeakPtr(), base::Passed(&manifest),
+                        base::Passed(&callback)));
 }
 
 void PaymentAppDatabase::ReadManifest(const GURL& scope,
-                                      const ReadManifestCallback& callback) {
+                                      ReadManifestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->FindReadyRegistrationForPattern(
-      scope, base::Bind(&PaymentAppDatabase::DidFindRegistrationToReadManifest,
-                        weak_ptr_factory_.GetWeakPtr(), callback));
+      scope,
+      base::Bind(&PaymentAppDatabase::DidFindRegistrationToReadManifest,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
-void PaymentAppDatabase::ReadAllManifests(
-    const ReadAllManifestsCallback& callback) {
+void PaymentAppDatabase::ReadAllManifests(ReadAllManifestsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->GetUserDataForAllRegistrations(
       kPaymentAppManifestDataKey,
       base::Bind(&PaymentAppDatabase::DidReadAllManifests,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void PaymentAppDatabase::DeletePaymentInstrument(
@@ -218,12 +218,13 @@ void PaymentAppDatabase::ClearPaymentInstruments(
 
 void PaymentAppDatabase::DidFindRegistrationToWriteManifest(
     payments::mojom::PaymentAppManifestPtr manifest,
-    const WriteManifestCallback& callback,
+    WriteManifestCallback callback,
     ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status != SERVICE_WORKER_OK) {
-    callback.Run(payments::mojom::PaymentAppManifestError::NO_ACTIVE_WORKER);
+    std::move(callback).Run(
+        payments::mojom::PaymentAppManifestError::NO_ACTIVE_WORKER);
     return;
   }
 
@@ -251,66 +252,67 @@ void PaymentAppDatabase::DidFindRegistrationToWriteManifest(
       registration->id(), registration->pattern().GetOrigin(),
       {{kPaymentAppManifestDataKey, serialized}},
       base::Bind(&PaymentAppDatabase::DidWriteManifest,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
-void PaymentAppDatabase::DidWriteManifest(const WriteManifestCallback& callback,
+void PaymentAppDatabase::DidWriteManifest(WriteManifestCallback callback,
                                           ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return callback.Run(status == SERVICE_WORKER_OK
-                          ? payments::mojom::PaymentAppManifestError::NONE
-                          : payments::mojom::PaymentAppManifestError::
-                                MANIFEST_STORAGE_OPERATION_FAILED);
+  std::move(callback).Run(status == SERVICE_WORKER_OK
+                              ? payments::mojom::PaymentAppManifestError::NONE
+                              : payments::mojom::PaymentAppManifestError::
+                                    MANIFEST_STORAGE_OPERATION_FAILED);
 }
 
 void PaymentAppDatabase::DidFindRegistrationToReadManifest(
-    const ReadManifestCallback& callback,
+    ReadManifestCallback callback,
     ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status != SERVICE_WORKER_OK) {
-    callback.Run(payments::mojom::PaymentAppManifest::New(),
-                 payments::mojom::PaymentAppManifestError::NO_ACTIVE_WORKER);
+    std::move(callback).Run(
+        payments::mojom::PaymentAppManifest::New(),
+        payments::mojom::PaymentAppManifestError::NO_ACTIVE_WORKER);
     return;
   }
 
   service_worker_context_->GetRegistrationUserData(
       registration->id(), {kPaymentAppManifestDataKey},
       base::Bind(&PaymentAppDatabase::DidReadManifest,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
-void PaymentAppDatabase::DidReadManifest(const ReadManifestCallback& callback,
+void PaymentAppDatabase::DidReadManifest(ReadManifestCallback callback,
                                          const std::vector<std::string>& data,
                                          ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status != SERVICE_WORKER_OK || data.size() != 1) {
-    callback.Run(payments::mojom::PaymentAppManifest::New(),
-                 payments::mojom::PaymentAppManifestError::
-                     MANIFEST_STORAGE_OPERATION_FAILED);
+    std::move(callback).Run(payments::mojom::PaymentAppManifest::New(),
+                            payments::mojom::PaymentAppManifestError::
+                                MANIFEST_STORAGE_OPERATION_FAILED);
     return;
   }
 
   payments::mojom::PaymentAppManifestPtr manifest =
       DeserializePaymentAppManifest(data[0]);
   if (!manifest) {
-    callback.Run(payments::mojom::PaymentAppManifest::New(),
-                 payments::mojom::PaymentAppManifestError::
-                     MANIFEST_STORAGE_OPERATION_FAILED);
+    std::move(callback).Run(payments::mojom::PaymentAppManifest::New(),
+                            payments::mojom::PaymentAppManifestError::
+                                MANIFEST_STORAGE_OPERATION_FAILED);
     return;
   }
 
-  callback.Run(std::move(manifest),
-               payments::mojom::PaymentAppManifestError::NONE);
+  std::move(callback).Run(std::move(manifest),
+                          payments::mojom::PaymentAppManifestError::NONE);
 }
 
 void PaymentAppDatabase::DidReadAllManifests(
-    const ReadAllManifestsCallback& callback,
+    ReadAllManifestsCallback callback,
     const std::vector<std::pair<int64_t, std::string>>& raw_data,
     ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status != SERVICE_WORKER_OK) {
-    callback.Run(Manifests());
+    std::move(callback).Run(Manifests());
     return;
   }
 
@@ -325,7 +327,7 @@ void PaymentAppDatabase::DidReadAllManifests(
         ManifestWithID(item_of_raw_data.first, std::move(manifest)));
   }
 
-  callback.Run(std::move(manifests));
+  std::move(callback).Run(std::move(manifests));
 }
 
 void PaymentAppDatabase::DidFindRegistrationToDeletePaymentInstrument(

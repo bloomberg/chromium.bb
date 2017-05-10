@@ -62,9 +62,9 @@ class PaymentManifestParser : public mojom::PaymentManifestParser {
   // mojom::PaymentManifestParser
   void ParsePaymentMethodManifest(
       const std::string& content,
-      const ParsePaymentMethodManifestCallback& callback) override;
+      ParsePaymentMethodManifestCallback callback) override;
   void ParseWebAppManifest(const std::string& content,
-                           const ParseWebAppManifestCallback& callack) override;
+                           ParseWebAppManifestCallback callack) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestParser);

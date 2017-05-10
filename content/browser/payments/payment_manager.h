@@ -34,25 +34,22 @@ class CONTENT_EXPORT PaymentManager
   // payments::mojom::PaymentManager methods:
   void Init(const std::string& scope) override;
   void SetManifest(payments::mojom::PaymentAppManifestPtr manifest,
-                   const SetManifestCallback& callback) override;
-  void GetManifest(const GetManifestCallback& callback) override;
+                   SetManifestCallback callback) override;
+  void GetManifest(GetManifestCallback callback) override;
   void DeletePaymentInstrument(
       const std::string& instrument_key,
-      const DeletePaymentInstrumentCallback& callback) override;
-  void GetPaymentInstrument(
-      const std::string& instrument_key,
-      const GetPaymentInstrumentCallback& callback) override;
+      DeletePaymentInstrumentCallback callback) override;
+  void GetPaymentInstrument(const std::string& instrument_key,
+                            GetPaymentInstrumentCallback callback) override;
   void KeysOfPaymentInstruments(
-      const KeysOfPaymentInstrumentsCallback& callback) override;
-  void HasPaymentInstrument(
-      const std::string& instrument_key,
-      const HasPaymentInstrumentCallback& callback) override;
-  void SetPaymentInstrument(
-      const std::string& instrument_key,
-      payments::mojom::PaymentInstrumentPtr details,
-      const SetPaymentInstrumentCallback& callback) override;
+      KeysOfPaymentInstrumentsCallback callback) override;
+  void HasPaymentInstrument(const std::string& instrument_key,
+                            HasPaymentInstrumentCallback callback) override;
+  void SetPaymentInstrument(const std::string& instrument_key,
+                            payments::mojom::PaymentInstrumentPtr details,
+                            SetPaymentInstrumentCallback callback) override;
   void ClearPaymentInstruments(
-      const ClearPaymentInstrumentsCallback& callback) override;
+      ClearPaymentInstrumentsCallback callback) override;
 
   // Called when an error is detected on binding_.
   void OnConnectionError();
