@@ -16,11 +16,43 @@
 
 namespace blink {
 
-NinePieceImagePainter::NinePieceImagePainter(
-    const LayoutBoxModelObject& layout_object)
-    : layout_object_(layout_object) {}
+namespace {
+
+void PaintPieces(GraphicsContext& context,
+                 const LayoutRect& border_image_rect,
+                 const ComputedStyle& style,
+                 const NinePieceImage& nine_piece_image,
+                 Image* image,
+                 IntSize image_size,
+                 SkBlendMode op) {
+  IntRectOutsets border_widths(style.BorderTopWidth(), style.BorderRightWidth(),
+                               style.BorderBottomWidth(),
+                               style.BorderLeftWidth());
+  NinePieceImageGrid grid(nine_piece_image, image_size,
+                          PixelSnappedIntRect(border_image_rect),
+                          border_widths);
+
+  for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
+    NinePieceImageGrid::NinePieceDrawInfo draw_info = grid.GetNinePieceDrawInfo(
+        piece, nine_piece_image.GetImage()->ImageScaleFactor());
+
+    if (draw_info.is_drawable) {
+      if (draw_info.is_corner_piece) {
+        context.DrawImage(image, draw_info.destination, &draw_info.source, op);
+      } else {
+        context.DrawTiledImage(image, draw_info.destination, draw_info.source,
+                               draw_info.tile_scale,
+                               draw_info.tile_rule.horizontal,
+                               draw_info.tile_rule.vertical, op);
+      }
+    }
+  }
+}
+
+}  // anonymous namespace
 
 bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
+                                  const LayoutBoxModelObject& layout_object,
                                   const LayoutRect& rect,
                                   const ComputedStyle& style,
                                   const NinePieceImage& nine_piece_image,
@@ -53,20 +85,12 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // is one. For generated images, the actual image data (gradient stops, etc.)
   // are scaled to effective zoom instead so we must take care not to cause
   // scale of them again.
-  IntSize image_size = RoundedIntSize(
-      style_image->ImageSize(layout_object_, 1, border_image_rect.Size()));
-
-  IntRectOutsets border_widths(style.BorderTopWidth(), style.BorderRightWidth(),
-                               style.BorderBottomWidth(),
-                               style.BorderLeftWidth());
-  NinePieceImageGrid grid(nine_piece_image, image_size,
-                          PixelSnappedIntRect(border_image_rect),
-                          border_widths);
-
-  RefPtr<Image> image = style_image->GetImage(layout_object_, image_size);
+  IntSize image_size = RoundedIntSize(style_image->ImageSize(
+      layout_object.GetDocument(), 1, border_image_rect.Size()));
+  RefPtr<Image> image = style_image->GetImage(layout_object, image_size);
 
   InterpolationQuality interpolation_quality =
-      BoxPainter::ChooseInterpolationQuality(layout_object_, image.Get(), 0,
+      BoxPainter::ChooseInterpolationQuality(layout_object, image.Get(), 0,
                                              rect_with_outsets.Size());
   InterpolationQuality previous_interpolation_quality =
       graphics_context.ImageInterpolationQuality();
@@ -74,24 +98,10 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
-               InspectorPaintImageEvent::Data(layout_object_, *style_image));
+               InspectorPaintImageEvent::Data(layout_object, *style_image));
 
-  for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
-    NinePieceImageGrid::NinePieceDrawInfo draw_info =
-        grid.GetNinePieceDrawInfo(piece, style_image->ImageScaleFactor());
-
-    if (draw_info.is_drawable) {
-      if (draw_info.is_corner_piece) {
-        graphics_context.DrawImage(image.Get(), draw_info.destination,
-                                   &draw_info.source, op);
-      } else {
-        graphics_context.DrawTiledImage(image.Get(), draw_info.destination,
-                                        draw_info.source, draw_info.tile_scale,
-                                        draw_info.tile_rule.horizontal,
-                                        draw_info.tile_rule.vertical, op);
-      }
-    }
-  }
+  PaintPieces(graphics_context, border_image_rect, style, nine_piece_image,
+              image.Get(), image_size, op);
 
   graphics_context.SetImageInterpolationQuality(previous_interpolation_quality);
   return true;

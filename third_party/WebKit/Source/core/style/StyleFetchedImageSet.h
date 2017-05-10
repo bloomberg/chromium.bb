@@ -61,7 +61,7 @@ class StyleFetchedImageSet final : public StyleImage,
   bool CanRender() const override;
   bool IsLoaded() const override;
   bool ErrorOccurred() const override;
-  LayoutSize ImageSize(const LayoutObject&,
+  LayoutSize ImageSize(const Document&,
                        float multiplier,
                        const LayoutSize& default_object_size) const override;
   bool ImageHasRelativeSize() const override;

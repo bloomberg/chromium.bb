@@ -151,20 +151,20 @@ bool CSSImageGeneratorValue::IsFixedSize() const {
 }
 
 IntSize CSSImageGeneratorValue::FixedSize(
-    const LayoutObject& layout_object,
+    const Document& document,
     const FloatSize& default_object_size) {
   switch (GetClassType()) {
     case kCrossfadeClass:
-      return ToCSSCrossfadeValue(this)->FixedSize(layout_object,
+      return ToCSSCrossfadeValue(this)->FixedSize(document,
                                                   default_object_size);
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->FixedSize(layout_object);
+      return ToCSSLinearGradientValue(this)->FixedSize(document);
     case kPaintClass:
-      return ToCSSPaintValue(this)->FixedSize(layout_object);
+      return ToCSSPaintValue(this)->FixedSize(document);
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->FixedSize(layout_object);
+      return ToCSSRadialGradientValue(this)->FixedSize(document);
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->FixedSize(layout_object);
+      return ToCSSConicGradientValue(this)->FixedSize(document);
     default:
       NOTREACHED();
   }

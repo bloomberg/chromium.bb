@@ -29,6 +29,8 @@ blink_core_sources("paint") {
     "BoxPaintInvalidator.h",
     "BoxPainter.cpp",
     "BoxPainter.h",
+    "BoxPainterBase.cpp",
+    "BoxPainterBase.h",
     "BoxReflectionUtils.cpp",
     "BoxReflectionUtils.h",
     "ClipPathClipper.cpp",

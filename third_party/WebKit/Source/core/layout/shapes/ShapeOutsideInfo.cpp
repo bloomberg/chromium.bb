@@ -149,9 +149,9 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
     float shape_image_threshold,
     WritingMode writing_mode,
     float margin) const {
-  const LayoutSize& image_size =
-      style_image->ImageSize(layout_box_, layout_box_.Style()->EffectiveZoom(),
-                             reference_box_logical_size_);
+  const LayoutSize& image_size = style_image->ImageSize(
+      layout_box_.GetDocument(), layout_box_.Style()->EffectiveZoom(),
+      reference_box_logical_size_);
 
   const LayoutRect& margin_rect =
       GetShapeImageMarginRect(layout_box_, reference_box_logical_size_);

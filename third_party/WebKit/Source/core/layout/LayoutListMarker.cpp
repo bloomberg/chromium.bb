@@ -75,7 +75,7 @@ LayoutSize LayoutListMarker::ImageBulletSize() const {
   // marker box.
   LayoutUnit bullet_width =
       font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
-  return image_->ImageSize(*this, Style()->EffectiveZoom(),
+  return image_->ImageSize(GetDocument(), Style()->EffectiveZoom(),
                            LayoutSize(bullet_width, bullet_width));
 }
 

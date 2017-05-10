@@ -60,7 +60,7 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
   PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&);
 
   bool IsFixedSize() const;
-  IntSize FixedSize(const LayoutObject&, const FloatSize& default_object_size);
+  IntSize FixedSize(const Document&, const FloatSize& default_object_size);
 
   bool IsPending() const;
   bool KnownToBeOpaque(const LayoutObject&) const;

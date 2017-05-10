@@ -69,7 +69,7 @@ PassRefPtr<Image> LayoutImageResourceStyleImage::GetImage(
 
 LayoutSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {
   // TODO(davve): Find out the correct default object size in this context.
-  return style_image_->ImageSize(*layout_object_, multiplier,
+  return style_image_->ImageSize(layout_object_->GetDocument(), multiplier,
                                  LayoutSize(LayoutReplaced::kDefaultWidth,
                                             LayoutReplaced::kDefaultHeight));
 }
