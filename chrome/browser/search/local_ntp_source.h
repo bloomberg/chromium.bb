@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
 #include "content/public/browser/url_data_source.h"
 
@@ -29,6 +30,17 @@ class LocalNtpSource : public content::URLDataSource,
 
  private:
   class GoogleSearchProviderTracker;
+
+  struct OneGoogleBarRequest {
+    OneGoogleBarRequest(
+        base::TimeTicks start_time,
+        const content::URLDataSource::GotDataCallback& callback);
+    OneGoogleBarRequest(const OneGoogleBarRequest&);
+    ~OneGoogleBarRequest();
+
+    base::TimeTicks start_time;
+    content::URLDataSource::GotDataCallback callback;
+  };
 
   ~LocalNtpSource() override;
 
@@ -51,8 +63,7 @@ class LocalNtpSource : public content::URLDataSource,
   void OnOneGoogleBarFetchFailed() override;
   void OnOneGoogleBarServiceShuttingDown() override;
 
-  void ServeOneGoogleBar(const OneGoogleBarData& data);
-  void ServeNullOneGoogleBar();
+  void ServeOneGoogleBar(const base::Optional<OneGoogleBarData>& data);
 
   void DefaultSearchProviderIsGoogleChanged(bool is_google);
 
@@ -65,7 +76,7 @@ class LocalNtpSource : public content::URLDataSource,
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
       one_google_bar_service_observer_;
 
-  std::vector<content::URLDataSource::GotDataCallback> one_google_callbacks_;
+  std::vector<OneGoogleBarRequest> one_google_bar_requests_;
 
   std::unique_ptr<GoogleSearchProviderTracker> google_tracker_;
   bool default_search_provider_is_google_;
