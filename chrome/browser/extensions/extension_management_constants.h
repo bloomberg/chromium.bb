@@ -37,6 +37,10 @@ extern const char kMinimumVersionRequired[];
 
 extern const char kUpdateUrlPrefix[];
 
+// If the install of an extension is blocked this admin defined message is
+// appended to the error message displayed in the Chrome Webstore.
+extern const char kBlockedInstallMessage[];
+
 struct AllowedTypesMapEntry {
   // Name of allowed types of extensions used in schema of extension
   // management preference.

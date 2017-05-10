@@ -63,6 +63,7 @@ const char kExampleDictPreference[] =
     "    \"installation_mode\": \"blocked\","
     "    \"runtime_blocked_hosts\": [\"*://*.foo.com/*\", "
     "\"https://bar.org/test\"],"
+    "    \"blocked_install_message\": \"Custom Error Extension4\","
     "  },"
     "  \"jdkrmdirkjskemfioeesiofoielsmroi\": {"  // kTargetExtension5
     "    \"installation_mode\": \"normal_installed\","
@@ -77,9 +78,16 @@ const char kExampleDictPreference[] =
     "    \"allowed_types\": [\"theme\", \"user_script\"],"
     "    \"blocked_permissions\": [\"fileSystem\", \"downloads\"],"
     "    \"runtime_blocked_hosts\": [\"*://*.example.com/default*\"],"
+    "    \"blocked_install_message\": \"Custom Error Default\","
     "  },"
     "}";
 
+const char kExampleDictNoCustomError[] =
+    "{"
+    "  \"*\": {"
+    "    \"installation_mode\": \"blocked\","
+    "  },"
+    "}";
 }  // namespace
 
 class ExtensionManagementServiceTest : public testing::Test {
@@ -158,10 +166,10 @@ class ExtensionManagementServiceTest : public testing::Test {
     return GetBlockedAPIPermissions(kNonExistingExtension, update_url);
   }
 
-  void SetExampleDictPref() {
+  void SetExampleDictPref(const base::StringPiece example_dict_preference) {
     std::string error_msg;
     std::unique_ptr<base::Value> parsed = base::JSONReader::ReadAndReturnError(
-        kExampleDictPreference,
+        example_dict_preference,
         base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg);
     ASSERT_TRUE(parsed && parsed->IsType(base::Value::Type::DICTIONARY))
         << error_msg;
@@ -184,6 +192,12 @@ class ExtensionManagementServiceTest : public testing::Test {
     scoped_refptr<const Extension> extension =
         CreateExtension(Manifest::UNPACKED, "0.1", id, kNonExistingUpdateUrl);
     return extension_management_->GetRuntimeBlockedHosts(extension.get());
+  }
+
+  // Wrapper of ExtensionManagement::BlockedInstallMessage, |id| is used
+  // in case the message is extension specific.
+  const std::string GetBlockedInstallMessage(const std::string& id) {
+    return extension_management_->BlockedInstallMessage(id);
   }
 
   // Wrapper of ExtensionManagement::GetBlockedAPIPermissions, |id| and
@@ -428,7 +442,7 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallForcelist) {
 
 // Tests parsing of new dictionary preference.
 TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
-  SetExampleDictPref();
+  SetExampleDictPref(kExampleDictPreference);
 
   // Verifies the installation mode settings.
   EXPECT_TRUE(extension_management_->BlacklistedByDefault());
@@ -449,6 +463,11 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
                   .MatchesURL(GURL("http://test.foo.com/test")));
   EXPECT_TRUE(GetRuntimeBlockedHosts(kTargetExtension4)
                   .MatchesURL(GURL("https://bar.org/test")));
+  EXPECT_TRUE(GetBlockedInstallMessage(kTargetExtension).empty());
+  EXPECT_EQ("Custom Error Extension4",
+            GetBlockedInstallMessage(kTargetExtension4));
+  EXPECT_EQ("Custom Error Default",
+            GetBlockedInstallMessage(kNonExistingExtension));
 
   // Verifies global settings.
   EXPECT_TRUE(ReadGlobalSettings()->has_restricted_install_sources);
@@ -505,12 +524,17 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   EXPECT_FALSE(CheckMinimumVersion(kTargetExtension, "1.0.99"));
   EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "1.1"));
   EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "1.1.0.1"));
+
+  // Verifies that an extension using the default scope where
+  // no custom blocked install message is defined returns an empty string.
+  SetExampleDictPref(kExampleDictNoCustomError);
+  EXPECT_EQ("", GetBlockedInstallMessage(kNonExistingExtension));
 }
 
 // Tests the handling of installation mode in case it's specified in both
 // per-extension and per-update-url settings.
 TEST_F(ExtensionManagementServiceTest, InstallationModeConflictHandling) {
-  SetExampleDictPref();
+  SetExampleDictPref(kExampleDictPreference);
 
   // Per-extension installation mode settings should always override
   // per-update-url settings.
@@ -525,7 +549,7 @@ TEST_F(ExtensionManagementServiceTest, InstallationModeConflictHandling) {
 // Tests the handling of blocked permissions in case it's specified in both
 // per-extension and per-update-url settings.
 TEST_F(ExtensionManagementServiceTest, BlockedPermissionsConflictHandling) {
-  SetExampleDictPref();
+  SetExampleDictPref(kExampleDictPreference);
 
   // Both settings should be enforced.
   APIPermissionSet blocked_permissions_for_update_url;
@@ -733,7 +757,7 @@ TEST_F(ExtensionManagementServiceTest, NewInstallForcelist) {
 
 // Tests the behavior of IsInstallationExplicitlyAllowed().
 TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
-  SetExampleDictPref();
+  SetExampleDictPref(kExampleDictPreference);
 
   // Constant name indicates the installation_mode of extensions in example
   // preference.

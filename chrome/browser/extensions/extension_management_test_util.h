@@ -61,6 +61,11 @@ class ExtensionManagementPrefUpdaterBase {
   void RemoveBlockedPermission(const std::string& prefix,
                                const std::string& permission);
 
+  // Helper function for 'blocked_install_message' manipulation.
+  // |id| is extension ID.
+  void SetBlockedInstallMessage(const ExtensionId& id,
+                                const std::string& custom_error);
+
   // Helper functions for 'runtime_blocked_hosts' manipulation. |prefix| can be
   // kWildCard or a valid extension ID.
   void UnsetRuntimeBlockedHosts(const std::string& prefix);

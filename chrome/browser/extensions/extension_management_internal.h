@@ -126,6 +126,13 @@ struct IndividualSettings {
   // than the specified minimum version will be disabled.
   std::unique_ptr<base::Version> minimum_version_required;
 
+  // Allows the admin to provide text that will be displayed to the user in the
+  // chrome webstore if installation is blocked. This is plain text and will not
+  // support any HTML, links, or anything special. This can be used to direct
+  // users to company information about acceptable extensions, ways to request
+  // exceptions etc. This string is limited to 1000 characters.
+  std::string blocked_install_message;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(IndividualSettings);
 };

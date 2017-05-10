@@ -40,6 +40,8 @@ class StandardManagementPolicyProvider : public ManagementPolicy::Provider {
 
  private:
   const ExtensionManagement* settings_;
+  bool ReturnLoadError(const extensions::Extension* extension,
+                       base::string16* error) const;
 };
 
 }  // namespace extensions

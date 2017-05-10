@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -175,6 +176,29 @@ TEST_F(PermissionsBasedManagementPolicyProviderTest, APIPermissions) {
   error16.clear();
   EXPECT_FALSE(provider_.UserMayLoad(extension.get(), &error16));
   EXPECT_FALSE(error16.empty());
+  EXPECT_EQ("test (extension ID \"" + extension->id() +
+                "\") is blocked by the administrator. ",
+            base::UTF16ToASCII(error16));
+
+  // Set custom error message to display to user when install blocked.
+  const std::string blocked_install_message =
+      "Visit https://example.com/exception";
+  {
+    PrefUpdater pref(pref_service_.get());
+    pref.UnsetPerExtensionSettings(extension->id());
+    pref.UnsetPerExtensionSettings(extension->id());
+    pref.SetBlockedInstallMessage(extension->id(), blocked_install_message);
+    pref.ClearBlockedPermissions("*");
+    pref.AddBlockedPermission(extension->id(),
+                              GetAPIPermissionName(APIPermission::kDownloads));
+  }
+  error16.clear();
+  EXPECT_FALSE(provider_.UserMayLoad(extension.get(), &error16));
+  EXPECT_FALSE(error16.empty());
+  EXPECT_EQ("test (extension ID \"" + extension->id() +
+                "\") is blocked by the administrator. " +
+                blocked_install_message,
+            base::UTF16ToASCII(error16));
 }
 
 }  // namespace extensions
