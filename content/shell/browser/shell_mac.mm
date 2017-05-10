@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_piece.h"
@@ -39,8 +40,12 @@
 // sequence by getting rid of the shell and removing it and the window from
 // the various global lists. By returning YES, we allow the window to be
 // removed from the screen.
-- (BOOL)windowShouldClose:(id)window {
+- (BOOL)windowShouldClose:(id)sender {
+  NSWindow* window = base::mac::ObjCCastStrict<NSWindow>(sender);
   [window autorelease];
+  // Don't leave a dangling pointer if the window lives beyond
+  // this method. See crbug.com/719830.
+  [window setDelegate:nil];
   delete shell_;
   [self release];
 
