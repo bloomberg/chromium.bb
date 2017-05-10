@@ -13,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
 #include "net/url_request/url_request.h"
@@ -131,11 +132,6 @@ const char* GetStringForClient(Client client) {
   }
 }
 
-bool IsMethodIdempotent(const std::string& method) {
-  return method == "GET" || method == "OPTIONS" || method == "HEAD" ||
-         method == "PUT" || method == "DELETE" || method == "TRACE";
-}
-
 GURL AddApiKeyToUrl(const GURL& url) {
   GURL new_url = url;
 #if defined(USE_GOOGLE_API_KEYS)
@@ -151,7 +147,7 @@ bool EligibleForDataReductionProxy(const net::ProxyInfo& proxy_info,
                                    const GURL& url,
                                    const std::string& method) {
   return proxy_info.is_direct() && proxy_info.proxy_list().size() == 1 &&
-         !url.SchemeIsWSOrWSS() && IsMethodIdempotent(method);
+         !url.SchemeIsWSOrWSS() && net::HttpUtil::IsMethodIdempotent(method);
 }
 
 bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,

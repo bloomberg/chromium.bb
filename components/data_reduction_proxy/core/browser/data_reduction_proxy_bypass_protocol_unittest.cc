@@ -25,7 +25,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -34,6 +33,7 @@
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/http/http_util.h"
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
@@ -346,7 +346,7 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
         TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method(tests[i].method);
     EXPECT_EQ(tests[i].expected_result,
-              util::IsMethodIdempotent(request->method()));
+              net::HttpUtil::IsMethodIdempotent(request->method()));
   }
 }
 
