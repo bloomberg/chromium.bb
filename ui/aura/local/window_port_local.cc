@@ -102,6 +102,8 @@ WindowPortLocal::CreateCompositorFrameSink() {
       frame_sink_id_, context_factory_private->GetSurfaceManager());
   frame_sink->SetSurfaceChangedCallback(base::Bind(
       &WindowPortLocal::OnSurfaceChanged, weak_factory_.GetWeakPtr()));
+  if (window_->GetRootWindow())
+    window_->layer()->GetCompositor()->AddFrameSink(frame_sink_id_);
   return std::move(frame_sink);
 }
 
