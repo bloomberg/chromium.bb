@@ -2255,6 +2255,22 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'wolf',
   ])
 
+  # Pairs of similar boards to split (bvt-inline, bvt-cq) between.
+  # bvt-cq takes longer, so generally should be given to the faster board.
+  # Assigning None as the second item in a pair means bvt-cq will not be run.
+  # pylint: disable=bad-whitespace
+  _paladin_hwtest_testsharding_pairs = frozenset([
+      # bvt-inline      # bvt-cq
+      ('wolf',          'peppy'),
+      ('peach_pit',     None),
+      ('veyron_mighty', 'veyron_speedy'),
+      ('lumpy',         'stumpy'),
+      ('nyan_big',      'nyan_kitty'),
+      ('winky',         'kip'),
+      ('elm',           None),
+      ('kevin',         None),
+      ('cave',          None),
+  ])
 
   # Jetstream devices run unique hw tests
   _paladin_jetstream_hwtest_boards = frozenset([
@@ -2539,15 +2555,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Shard the bvt-inline and bvt-cq hw tests between similar builders.
   # The first builder gets bvt-inline, and the second builder gets bvt-cq.
   # bvt-cq takes longer, so it usually makes sense to give it the faster board.
-  ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
-  ShardHWTestsBetweenBuilders('peach_pit-paladin', None)
-  ShardHWTestsBetweenBuilders('veyron_mighty-paladin', 'veyron_speedy-paladin')
-  ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
-  ShardHWTestsBetweenBuilders('nyan_big-paladin', 'nyan_kitty-paladin')
-  ShardHWTestsBetweenBuilders('winky-paladin', 'kip-paladin')
-  ShardHWTestsBetweenBuilders('elm-paladin', None)
-  ShardHWTestsBetweenBuilders('kevin-paladin', None)
-  ShardHWTestsBetweenBuilders('cave-paladin', None)
+  for board_a, board_b in _paladin_hwtest_testsharding_pairs:
+    ShardHWTestsBetweenBuilders('%s-paladin' % board_a,
+                                ('%s-paladin' % board_b) if board_b else None)
 
 
 def IncrementalBuilders(site_config, boards_dict, ge_build_config):
