@@ -18,6 +18,7 @@
 #include "chrome/browser/android/download/chrome_download_delegate.h"
 #include "chrome/browser/android/download/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/android/download/download_manager_service.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
@@ -293,21 +294,26 @@ bool DownloadController::HasFileAccessPermission() {
 void DownloadController::OnDownloadStarted(
     DownloadItem* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = download_item->GetWebContents();
-  if (!web_contents)
-    return;
 
   // Register for updates to the DownloadItem.
   download_item->AddObserver(this);
 
-  ChromeDownloadDelegate* delegate =
-      ChromeDownloadDelegate::FromWebContents(web_contents);
   // For dangerous item, we need to show the dangerous infobar before the
   // download can start.
-  if (!download_item->IsDangerous() && delegate) {
-    delegate->OnDownloadStarted(
-        download_item->GetTargetFilePath().BaseName().value());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!download_item->IsDangerous()) {
+    Java_DownloadController_onDownloadStarted(
+        env, GetJavaObject()->Controller(env));
   }
+
+  WebContents* web_contents = download_item->GetWebContents();
+  if (web_contents) {
+    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+    if (tab && !tab->GetJavaObject().is_null()) {
+      Java_DownloadController_closeTabIfBlank(env, tab->GetJavaObject());
+    }
+  }
+
   OnDownloadUpdated(download_item);
 }
 
