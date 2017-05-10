@@ -14009,7 +14009,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1152" label="MediaStreamConstraintsConformant"/>
   <int value="1153" label="CSSSelectorIndirectAdjacent"/>
   <int value="1154" label="NodeRootNode (obsolete)"/>
-  <int value="1155" label="BluetoothDeviceConnectGATT"/>
+  <int value="1155"
+      label="obsolete: BluetoothDeviceConnectGATT (use
+             WebBluetoothRemoteServerConnect)"/>
   <int value="1156" label="CreateImageBitmap"/>
   <int value="1157" label="PresentationConnectionConnectEventListener"/>
   <int value="1158" label="PresentationConnectionCloseEventListener"/>
