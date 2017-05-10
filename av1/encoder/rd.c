@@ -740,27 +740,30 @@ void av1_mv_pred(const AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
   int best_sad = INT_MAX;
   int this_sad = INT_MAX;
   int max_mv = 0;
-  int near_same_nearest;
   uint8_t *src_y_ptr = x->plane[0].src.buf;
   uint8_t *ref_y_ptr;
-  const int num_mv_refs =
-      MAX_MV_REF_CANDIDATES +
-      (cpi->sf.adaptive_motion_search && block_size < x->max_partition_size);
-
-  MV pred_mv[3];
-  pred_mv[0] = x->mbmi_ext->ref_mvs[ref_frame][0].as_mv;
-  pred_mv[1] = x->mbmi_ext->ref_mvs[ref_frame][1].as_mv;
-  pred_mv[2] = x->pred_mv[ref_frame];
+  int num_mv_refs = 0;
+  MV pred_mv[MAX_MV_REF_CANDIDATES + 1];
+  if (cpi->sf.adaptive_motion_search && block_size < x->max_partition_size) {
+    pred_mv[num_mv_refs] = x->pred_mv[ref_frame];
+    num_mv_refs++;
+  }
+  if (x->mbmi_ext->ref_mv_count[ref_frame] > 0) {
+    pred_mv[num_mv_refs] = x->mbmi_ext->ref_mvs[ref_frame][0].as_mv;
+    num_mv_refs++;
+  }
+  if (x->mbmi_ext->ref_mv_count[ref_frame] > 1) {
+    if (x->mbmi_ext->ref_mvs[ref_frame][0].as_int !=
+        x->mbmi_ext->ref_mvs[ref_frame][1].as_int) {
+      pred_mv[num_mv_refs] = x->mbmi_ext->ref_mvs[ref_frame][1].as_mv;
+      num_mv_refs++;
+    }
+  }
   assert(num_mv_refs <= (int)(sizeof(pred_mv) / sizeof(pred_mv[0])));
-
-  near_same_nearest = x->mbmi_ext->ref_mvs[ref_frame][0].as_int ==
-                      x->mbmi_ext->ref_mvs[ref_frame][1].as_int;
   // Get the sad for each candidate reference mv.
   for (i = 0; i < num_mv_refs; ++i) {
     const MV *this_mv = &pred_mv[i];
     int fp_row, fp_col;
-
-    if (i == 1 && near_same_nearest) continue;
     fp_row = (this_mv->row + 3 + (this_mv->row >= 0)) >> 3;
     fp_col = (this_mv->col + 3 + (this_mv->col >= 0)) >> 3;
     max_mv = AOMMAX(max_mv, AOMMAX(abs(this_mv->row), abs(this_mv->col)) >> 3);
