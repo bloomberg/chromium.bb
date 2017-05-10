@@ -43072,6 +43072,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.OneGoogleBar.RequestLatency" units="ms">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    The time it took until a request from the New Tab page for the OneGoogleBar
+    script was served. Recorded only on the local NTP.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.OtherSessionsMenu" enum="OtherSessionsActions">
   <obsolete>
     Deprecated 05/2015. Feature was removed.
@@ -88266,6 +88274,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="OOBE.ErrorScreensTime.Signin"/>
   <affected-histogram name="OOBE.ErrorScreensTime.Supervised"/>
   <affected-histogram name="OOBE.ErrorScreensTime.Update"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NewTabPage.OneGoogleBar.RequestLatency" separator=".">
+  <suffix name="Success" label="Successfully fetched OneGoogleBar"/>
+  <suffix name="Failure" label="Failed to fetch OneGoogleBar"/>
+  <affected-histogram name="NewTabPage.OneGoogleBar.RequestLatency"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NewTabPageIconTypes" separator=".">

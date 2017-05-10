@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -298,11 +299,11 @@ void LocalNtpSource::StartDataRequest(
 
     // The OneGoogleBar injector helper.
     if (stripped_path == kOneGoogleBarScriptFilename) {
-      one_google_callbacks_.push_back(callback);
+      one_google_bar_requests_.emplace_back(base::TimeTicks::Now(), callback);
 
       // If there already is (cached) OGB data, serve it immediately.
       if (data.has_value())
-        ServeOneGoogleBar(*data);
+        ServeOneGoogleBar(data);
 
       // In any case, request a refresh.
       one_google_bar_service_->Refresh();
@@ -446,14 +447,11 @@ std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
 void LocalNtpSource::OnOneGoogleBarDataChanged() {
   const base::Optional<OneGoogleBarData>& data =
       one_google_bar_service_->one_google_bar_data();
-  if (data.has_value())
-    ServeOneGoogleBar(*data);
-  else
-    ServeNullOneGoogleBar();
+  ServeOneGoogleBar(data);
 }
 
 void LocalNtpSource::OnOneGoogleBarFetchFailed() {
-  ServeNullOneGoogleBar();
+  ServeOneGoogleBar(base::nullopt);
 }
 
 void LocalNtpSource::OnOneGoogleBarServiceShuttingDown() {
@@ -461,25 +459,35 @@ void LocalNtpSource::OnOneGoogleBarServiceShuttingDown() {
   one_google_bar_service_ = nullptr;
 }
 
-void LocalNtpSource::ServeOneGoogleBar(const OneGoogleBarData& data) {
+void LocalNtpSource::ServeOneGoogleBar(
+    const base::Optional<OneGoogleBarData>& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (one_google_callbacks_.empty())
+  if (one_google_bar_requests_.empty())
     return;
 
-  std::string json;
-  base::JSONWriter::Write(*ConvertOGBDataToDict(data), &json);
-  for (auto& callback : one_google_callbacks_) {
-    std::string data = "var og = " + json + ";";
-    callback.Run(base::RefCountedString::TakeString(&data));
+  scoped_refptr<base::RefCountedString> result;
+  if (data.has_value()) {
+    std::string js;
+    base::JSONWriter::Write(*ConvertOGBDataToDict(*data), &js);
+    js = "var og = " + js + ";";
+    result = base::RefCountedString::TakeString(&js);
   }
-  one_google_callbacks_.clear();
-}
 
-void LocalNtpSource::ServeNullOneGoogleBar() {
-  for (auto& callback : one_google_callbacks_)
-    callback.Run(nullptr);
-  one_google_callbacks_.clear();
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (const auto& request : one_google_bar_requests_) {
+    request.callback.Run(result);
+    base::TimeDelta delta = now - request.start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.OneGoogleBar.RequestLatency", delta);
+    if (result) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.OneGoogleBar.RequestLatency.Success", delta);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.OneGoogleBar.RequestLatency.Failure", delta);
+    }
+  }
+  one_google_bar_requests_.clear();
 }
 
 void LocalNtpSource::DefaultSearchProviderIsGoogleChanged(bool is_google) {
@@ -498,3 +506,13 @@ void LocalNtpSource::SetDefaultSearchProviderIsGoogleOnIOThread(
 
   default_search_provider_is_google_io_thread_ = is_google;
 }
+
+LocalNtpSource::OneGoogleBarRequest::OneGoogleBarRequest(
+    base::TimeTicks start_time,
+    const content::URLDataSource::GotDataCallback& callback)
+    : start_time(start_time), callback(callback) {}
+
+LocalNtpSource::OneGoogleBarRequest::OneGoogleBarRequest(
+    const OneGoogleBarRequest&) = default;
+
+LocalNtpSource::OneGoogleBarRequest::~OneGoogleBarRequest() = default;
