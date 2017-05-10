@@ -8,6 +8,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/ios/ios_util.h"
+#include "base/strings/string_number_conversions.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
@@ -102,6 +103,31 @@ using web::test::HttpServer;
   [[EarlGrey selectElementWithMatcher:web::ForwardButton()]
       performAction:grey_tap()];
   WaitForOffset(kOffset2);
+}
+
+// Tests that the content offset of the webview scroll view is {0, 0} after a
+// load.
+- (void)testZeroContentOffsetAfterLoad {
+  // Set up the file-based server to load the tall page.
+  const GURL baseURL = web::test::HttpServer::MakeUrl(kLongPage1);
+  web::test::SetUpFileBasedHttpServer();
+  [ShellEarlGrey loadURL:baseURL];
+
+  // Scroll the page and load again to verify that the new page's scroll offset
+  // is reset to {0, 0}.
+  const CGFloat kOffsetIncrement = 20.0;
+  for (NSInteger i = 0; i < 10; ++i) {
+    // Scroll down the page a bit before re-loading the URL.
+    CGFloat offset = (i + 1) * kOffsetIncrement;
+    [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
+        performAction:grey_scrollInDirection(kGREYDirectionDown, offset)];
+    // Add a query parameter so the next load creates another NavigationItem.
+    GURL::Replacements replacements;
+    replacements.SetQueryStr(base::IntToString(i));
+    [ShellEarlGrey loadURL:baseURL.ReplaceComponents(replacements)];
+    // Wait for the content offset to be set to {0, 0}.
+    WaitForOffset(0.0);
+  }
 }
 
 @end
