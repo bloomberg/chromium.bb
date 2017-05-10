@@ -52,6 +52,8 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.feature_engagement_tracker.EventConstants;
 import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
+import org.chromium.components.offline_items_collection.OfflineItem.Progress;
+import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.content_public.browser.DownloadState;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -66,6 +68,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class containing some utility static methods.
@@ -92,6 +95,13 @@ public class DownloadUtils {
     private static final long BYTES_PER_KILOBYTE = 1024;
     private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
     private static final long BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
+
+    @VisibleForTesting
+    static final long SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1);
+    @VisibleForTesting
+    static final long SECONDS_PER_HOUR = TimeUnit.HOURS.toSeconds(1);
+    @VisibleForTesting
+    static final long SECONDS_PER_DAY = TimeUnit.DAYS.toSeconds(1);
 
     @VisibleForTesting
     static final String ELLIPSIS = "\u2026";
@@ -581,13 +591,97 @@ public class DownloadUtils {
     }
 
     /**
-     * Determine what String to show for a given download.
+     * Creates a string that shows the time left or number of files left.
+     * @param context The application context.
+     * @param progress The download progress.
+     * @param timeRemainingInMillis The remaining time in milli seconds.
+     * @return Formatted string representing the time left or the number of files left.
+     */
+    public static String getTimeOrFilesLeftString(
+            Context context, Progress progress, long timeRemainingInMillis) {
+        if (progress.unit == OfflineItemProgressUnit.FILES) {
+            return formatRemainingFiles(context, progress);
+        } else {
+            return formatRemainingTime(context, timeRemainingInMillis);
+        }
+    }
+
+    /**
+     * Creates a string that represents the number of files left to be downloaded.
+     * @param progress Current download progress.
+     * @return String representing the number of files left.
+     */
+    public static String formatRemainingFiles(Context context, Progress progress) {
+        int filesLeft = (int) (progress.max - progress.value);
+        if (filesLeft == 1) {
+            return context.getResources().getString(R.string.one_file_left);
+        } else {
+            return context.getResources().getString(R.string.files_left, filesLeft);
+        }
+    }
+
+    /**
+     * Format remaining time for the given millis, in the following format:
+     * 5 hours; will include 1 unit, can go down to seconds precision.
+     * This is similar to what android.java.text.Formatter.formatShortElapsedTime() does. Don't use
+     * ui::TimeFormat::Simple() as it is very expensive.
+     *
+     * @param context the application context.
+     * @param millis the remaining time in milli seconds.
+     * @return the formatted remaining time.
+     */
+    @VisibleForTesting
+    public static String formatRemainingTime(Context context, long millis) {
+        long secondsLong = millis / 1000;
+
+        int days = 0;
+        int hours = 0;
+        int minutes = 0;
+        if (secondsLong >= SECONDS_PER_DAY) {
+            days = (int) (secondsLong / SECONDS_PER_DAY);
+            secondsLong -= days * SECONDS_PER_DAY;
+        }
+        if (secondsLong >= SECONDS_PER_HOUR) {
+            hours = (int) (secondsLong / SECONDS_PER_HOUR);
+            secondsLong -= hours * SECONDS_PER_HOUR;
+        }
+        if (secondsLong >= SECONDS_PER_MINUTE) {
+            minutes = (int) (secondsLong / SECONDS_PER_MINUTE);
+            secondsLong -= minutes * SECONDS_PER_MINUTE;
+        }
+        int seconds = (int) secondsLong;
+
+        if (days >= 2) {
+            days += (hours + 12) / 24;
+            return context.getString(R.string.remaining_duration_days, days);
+        } else if (days > 0) {
+            return context.getString(R.string.remaining_duration_one_day);
+        } else if (hours >= 2) {
+            hours += (minutes + 30) / 60;
+            return context.getString(R.string.remaining_duration_hours, hours);
+        } else if (hours > 0) {
+            return context.getString(R.string.remaining_duration_one_hour);
+        } else if (minutes >= 2) {
+            minutes += (seconds + 30) / 60;
+            return context.getString(R.string.remaining_duration_minutes, minutes);
+        } else if (minutes > 0) {
+            return context.getString(R.string.remaining_duration_one_minute);
+        } else if (seconds == 1) {
+            return context.getString(R.string.remaining_duration_one_second);
+        } else {
+            return context.getString(R.string.remaining_duration_seconds, seconds);
+        }
+    }
+
+    /**
+     * Determine what String to show for a given download in download home.
      * @param item Download to check the status of.
-     * @return ID of a String resource to use, or 0 if the status couldn't be determined.
+     * @return String representing the current download status.
      */
     public static String getStatusString(DownloadItem item) {
         Context context = ContextUtils.getApplicationContext();
         DownloadInfo info = item.getDownloadInfo();
+        Progress progress = info.getProgress();
 
         int state = info.state();
         if (state == DownloadState.COMPLETE) {
@@ -615,9 +709,8 @@ public class DownloadUtils {
             long bytes = info.getBytesReceived();
             return DownloadUtils.getStringForDownloadedBytes(context, bytes);
         } else {
-            // Count down the time.
-            long msRemaining = info.getTimeRemainingInMillis();
-            return DownloadNotificationService.formatRemainingTime(context, msRemaining);
+            // Count down the time or number of files.
+            return getTimeOrFilesLeftString(context, progress, info.getTimeRemainingInMillis());
         }
     }
 

@@ -10,6 +10,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItem.Progress;
+import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.content_public.browser.DownloadState;
@@ -32,7 +34,7 @@ public final class DownloadInfo {
     private final boolean mHasUserGesture;
     private final String mContentDisposition;
     private final boolean mIsGETRequest;
-    private final int mPercentCompleted;
+    private final Progress mProgress;
     private final long mTimeRemainingInMillis;
     private final boolean mIsResumable;
     private final boolean mIsPaused;
@@ -62,7 +64,7 @@ public final class DownloadInfo {
         mHasUserGesture = builder.mHasUserGesture;
         mIsGETRequest = builder.mIsGETRequest;
         mContentDisposition = builder.mContentDisposition;
-        mPercentCompleted = builder.mPercentCompleted;
+        mProgress = builder.mProgress;
         mTimeRemainingInMillis = builder.mTimeRemainingInMillis;
         mIsResumable = builder.mIsResumable;
         mIsPaused = builder.mIsPaused;
@@ -137,11 +139,8 @@ public final class DownloadInfo {
         return mContentDisposition;
     }
 
-    /**
-     * @return percent completed as an integer, -1 if there is no download progress.
-     */
-    public int getPercentCompleted() {
-        return mPercentCompleted;
+    public Progress getProgress() {
+        return mProgress;
     }
 
     /**
@@ -232,7 +231,7 @@ public final class DownloadInfo {
                 .setIsPaused(item.state == OfflineItemState.PAUSED)
                 .setIsResumable(item.isResumable)
                 .setBytesReceived(item.receivedBytes)
-                .setPercentCompleted(item.percentCompleted)
+                .setProgress(item.progress)
                 .setTimeRemainingInMillis(item.timeRemainingMs)
                 .setIcon(visuals == null ? null : visuals.icon)
                 .build();
@@ -256,7 +255,7 @@ public final class DownloadInfo {
         private String mDownloadGuid;
         private boolean mHasUserGesture;
         private String mContentDisposition;
-        private int mPercentCompleted = -1;
+        private Progress mProgress = Progress.createIndeterminateProgress();
         private long mTimeRemainingInMillis;
         private boolean mIsResumable = true;
         private boolean mIsPaused;
@@ -339,9 +338,8 @@ public final class DownloadInfo {
             return this;
         }
 
-        public Builder setPercentCompleted(int percentCompleted) {
-            assert percentCompleted <= 100;
-            mPercentCompleted = percentCompleted;
+        public Builder setProgress(OfflineItem.Progress progress) {
+            mProgress = progress;
             return this;
         }
 
@@ -425,7 +423,7 @@ public final class DownloadInfo {
                     .setHasUserGesture(downloadInfo.hasUserGesture())
                     .setContentDisposition(downloadInfo.getContentDisposition())
                     .setIsGETRequest(downloadInfo.isGETRequest())
-                    .setPercentCompleted(downloadInfo.getPercentCompleted())
+                    .setProgress(downloadInfo.getProgress())
                     .setTimeRemainingInMillis(downloadInfo.getTimeRemainingInMillis())
                     .setIsResumable(downloadInfo.isResumable())
                     .setIsPaused(downloadInfo.isPaused())
@@ -446,6 +444,8 @@ public final class DownloadInfo {
             long lastAccessTime) {
         String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
                 mimeType, url, fileName);
+        Progress progress = new Progress(percentCompleted, percentCompleted == -1 ? null : 100L,
+                OfflineItemProgressUnit.PERCENTAGE);
         return new DownloadInfo.Builder()
                 .setBytesReceived(bytesReceived)
                 .setDescription(fileName)
@@ -458,7 +458,7 @@ public final class DownloadInfo {
                 .setIsResumable(isResumable)
                 .setMimeType(remappedMimeType)
                 .setOriginalUrl(originalUrl)
-                .setPercentCompleted(percentCompleted)
+                .setProgress(progress)
                 .setReferrer(referrerUrl)
                 .setState(state)
                 .setTimeRemainingInMillis(timeRemainingInMs)

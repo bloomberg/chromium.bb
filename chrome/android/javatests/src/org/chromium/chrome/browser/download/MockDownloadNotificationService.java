@@ -11,6 +11,7 @@ import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,14 +111,14 @@ public class MockDownloadNotificationService extends DownloadNotificationService
 
     @Override
     public void notifyDownloadProgress(final ContentId id, final String fileName,
-            final int percentage, final long bytesReceived, final long timeRemainingInMillis,
+            final Progress progress, final long bytesReceived, final long timeRemainingInMillis,
             final long startTime, final boolean isOffTheRecord,
             final boolean canDownloadWhileMetered, final boolean isTransient, final Bitmap icon) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                MockDownloadNotificationService.super.notifyDownloadProgress(id, fileName,
-                        percentage, bytesReceived, timeRemainingInMillis, startTime, isOffTheRecord,
+                MockDownloadNotificationService.super.notifyDownloadProgress(id, fileName, progress,
+                        bytesReceived, timeRemainingInMillis, startTime, isOffTheRecord,
                         canDownloadWhileMetered, isTransient, icon);
             }
         });

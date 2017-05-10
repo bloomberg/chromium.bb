@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/offline_items_collection/core/offline_item_filter.h"
 #include "components/offline_items_collection/core/offline_item_state.h"
@@ -38,6 +39,14 @@ struct ContentId {
   bool operator<(const ContentId& content_id) const;
 };
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_items_collection
+enum class OfflineItemProgressUnit {
+  BYTES,
+  FILES,
+  PERCENTAGE,
+};
+
 // This struct holds the relevant pieces of information to represent an abstract
 // offline item to the front end.  This is meant to be backed by components that
 // need to both show content being offlined (downloading, saving, etc.) as well
@@ -46,6 +55,26 @@ struct ContentId {
 //
 // A new feature should expose these OfflineItems via an OfflineContentProvider.
 struct OfflineItem {
+  // This struct holds the essential pieces of information to compute the
+  // download progress for an offline item to display in the UI.
+  struct Progress {
+    Progress();
+    Progress(const Progress& other);
+    ~Progress();
+
+    bool operator==(const Progress& progress) const;
+
+    // Current value of the download progress.
+    int64_t value;
+
+    // The maximum value of the download progress. Absence of the value implies
+    // indeterminate progress.
+    base::Optional<int64_t> max;
+
+    // The unit of progress to be displayed in the UI.
+    OfflineItemProgressUnit unit;
+  };
+
   OfflineItem();
   OfflineItem(const OfflineItem& other);
   explicit OfflineItem(const ContentId& id);
@@ -122,11 +151,9 @@ struct OfflineItem {
   // if |state| is COMPLETE.
   int64_t received_bytes;
 
-  // How complete (from 0 to 100) the offlining process is for this item.  -1
-  // represents that progress cannot be determined for this item and an
-  // indeterminate progress bar should be used.  This field is not used if
+  // Represents the current progress of this item. This field is not used if
   // |state| is COMPLETE.
-  int percent_completed;
+  Progress progress;
 
   // The estimated time remaining for the download in milliseconds.  -1
   // represents an unknown time remaining.  This field is not used if |state| is
