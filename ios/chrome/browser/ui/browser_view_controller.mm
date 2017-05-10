@@ -112,7 +112,6 @@
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
 #import "ios/chrome/browser/ui/external_file_remover.h"
-#include "ios/chrome/browser/ui/file_locations.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
@@ -3025,8 +3024,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         url, ReadingListModelFactory::GetForBrowserState(_browserState));
   }
 
-  return host == kChromeUINewTabHost || host == kChromeUIBookmarksHost ||
-         host == kChromeUITermsHost;
+  return host == kChromeUINewTabHost || host == kChromeUIBookmarksHost;
 }
 
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)url
@@ -3069,18 +3067,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     }
     [pageController selectPanel:panelType];
     nativeController = pageController;
-  } else if (url_host == kChromeUITermsHost) {
-    const std::string& filename = GetTermsOfServicePath();
-
-    StaticHtmlNativeContent* staticNativeController =
-        [[StaticHtmlNativeContent alloc]
-            initWithResourcePathResource:base::SysUTF8ToNSString(filename)
-                                  loader:self
-                            browserState:_browserState
-                                     url:GURL(kChromeUITermsURL)];
-    [self setOverScrollActionControllerToStaticNativeContent:
-              staticNativeController];
-    nativeController = staticNativeController;
   } else if (url_host == kChromeUIOfflineHost &&
              [self hasControllerForURL:url]) {
     StaticHtmlNativeContent* staticNativeController =

@@ -18,6 +18,8 @@ source_set("webui") {
     "physical_web_ui.h",
     "popular_sites_internals_ui.cc",
     "popular_sites_internals_ui.h",
+    "terms_ui.h",
+    "terms_ui.mm",
     "version_handler.cc",
     "version_handler.h",
     "version_ui.h",
