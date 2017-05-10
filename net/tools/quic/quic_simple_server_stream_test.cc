@@ -193,7 +193,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<QuicVersion> {
     header_list_.OnHeader(":method", "POST");
     header_list_.OnHeader(":version", "HTTP/1.1");
     header_list_.OnHeader("content-length", "11");
-    header_list_.OnHeaderBlockEnd(128);
+    header_list_.OnHeaderBlockEnd(128, 128);
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.

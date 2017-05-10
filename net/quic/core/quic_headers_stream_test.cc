@@ -300,7 +300,7 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
     for (const auto& p : header_list) {
       headers_handler_->OnHeader(p.first, p.second);
     }
-    headers_handler_->OnHeaderBlockEnd(size);
+    headers_handler_->OnHeaderBlockEnd(size, size);
   }
 
   void WriteAndExpectRequestHeaders(QuicStreamId stream_id,

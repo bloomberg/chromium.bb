@@ -260,7 +260,7 @@ TEST_P(QuicClientSessionTest, ResetAndTrailers) {
   QuicHeaderList trailers;
   trailers.OnHeaderBlockStart();
   trailers.OnHeader(kFinalOffsetHeaderKey, "0");
-  trailers.OnHeaderBlockEnd(0);
+  trailers.OnHeaderBlockEnd(0, 0);
   session_->OnStreamHeaderList(stream_id, /*fin=*/false, 0, trailers);
 
   if (FLAGS_quic_reloadable_flag_quic_final_offset_from_trailers) {
@@ -299,7 +299,7 @@ TEST_P(QuicClientSessionTest, ReceivedMalformedTrailersAfterSendingRst) {
   QuicHeaderList trailers;
   trailers.OnHeaderBlockStart();
   trailers.OnHeader(kFinalOffsetHeaderKey, "invalid non-numeric value");
-  trailers.OnHeaderBlockEnd(0);
+  trailers.OnHeaderBlockEnd(0, 0);
 
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);
   session_->OnStreamHeaderList(stream_id, /*fin=*/false, 0, trailers);
