@@ -77,7 +77,7 @@
       }
     </style>
     <paper-input-container no-label-float on-tap="onTap_">
-      <input is="iron-input" type="search"
+      <input is="iron-input" type="search" bind-value="{{selectedItem}}"
           on-search="onInputValueChanged_" on-change="onChange_" incremental>
       <paper-icon-button suffix id="searchIcon" icon="cr:search" hidden>
       </paper-icon-button>

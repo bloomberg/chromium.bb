@@ -222,6 +222,8 @@ Polymer({
    * @private
    */
   selectedManufacturerChanged_: function(manufacturer) {
+    // Reset model if manufacturer is changed.
+    this.set('newPrinter.printerModel', '');
     if (manufacturer) {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .getCupsPrinterModelsList(manufacturer)
