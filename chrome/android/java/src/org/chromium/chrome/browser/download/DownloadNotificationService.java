@@ -56,11 +56,11 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for creating and updating download notifications even after
@@ -111,9 +111,6 @@ public class DownloadNotificationService extends Service {
             "Chrome.NotificationBundleIconIdExtra";
     private static final int STARTING_NOTIFICATION_ID = 1000000;
     private static final int MAX_RESUMPTION_ATTEMPT_LEFT = 5;
-    @VisibleForTesting static final long SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1);
-    @VisibleForTesting static final long SECONDS_PER_HOUR = TimeUnit.HOURS.toSeconds(1);
-    @VisibleForTesting static final long SECONDS_PER_DAY = TimeUnit.DAYS.toSeconds(1);
 
     private static final String KEY_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
     private static final String KEY_NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
@@ -738,8 +735,7 @@ public class DownloadNotificationService extends Service {
      * Adds or updates an in-progress download notification.
      * @param id                      The {@link ContentId} of the download.
      * @param fileName                File name of the download.
-     * @param percentage              Percentage completed. Value should be between 0 to 100 if the
-     *                                percentage can be determined, or -1 if it is unknown.
+     * @param progress                The current download progress.
      * @param bytesReceived           Total number of bytes received.
      * @param timeRemainingInMillis   Remaining download time in milliseconds.
      * @param startTime               Time when download started.
@@ -750,10 +746,10 @@ public class DownloadNotificationService extends Service {
      * @param icon                    A {@link Bitmap} to be used as the large icon for display.
      */
     @VisibleForTesting
-    public void notifyDownloadProgress(ContentId id, String fileName, int percentage,
+    public void notifyDownloadProgress(ContentId id, String fileName, Progress progress,
             long bytesReceived, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isTransient, Bitmap icon) {
-        updateActiveDownloadNotification(id, fileName, percentage, bytesReceived,
+        updateActiveDownloadNotification(id, fileName, progress, bytesReceived,
                 timeRemainingInMillis, startTime, isOffTheRecord, canDownloadWhileMetered, false,
                 isTransient, icon);
     }
@@ -770,9 +766,8 @@ public class DownloadNotificationService extends Service {
      */
     private void notifyDownloadPending(ContentId id, String fileName, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isTransient, Bitmap icon) {
-        updateActiveDownloadNotification(id, fileName,
-                DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE, 0, 0, 0, isOffTheRecord,
-                canDownloadWhileMetered, true, isTransient, icon);
+        updateActiveDownloadNotification(id, fileName, Progress.createIndeterminateProgress(), 0, 0,
+                0, isOffTheRecord, canDownloadWhileMetered, true, isTransient, icon);
     }
 
     /**
@@ -780,8 +775,7 @@ public class DownloadNotificationService extends Service {
      * progress or pending.
      * @param id                      The {@link ContentId} of the download.
      * @param fileName                File name of the download.
-     * @param percentage              Percentage completed. Value should be between 0 to 100 if the
-     *                                percentage can be determined, or -1 if it is unknown.
+     * @param progress                The current download progress.
      * @param bytesReceived           Total number of bytes received.
      * @param timeRemainingInMillis   Remaining download time in milliseconds or -1 if it is
      *                                unknown.
@@ -793,23 +787,21 @@ public class DownloadNotificationService extends Service {
      *                                downloads home.
      * @param icon                    A {@link Bitmap} to be used as the large icon for display.
      */
-    private void updateActiveDownloadNotification(ContentId id, String fileName, int percentage,
+    private void updateActiveDownloadNotification(ContentId id, String fileName, Progress progress,
             long bytesReceived, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isDownloadPending, boolean isTransient,
             Bitmap icon) {
-        boolean indeterminate =
-                (percentage == DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE) || isDownloadPending;
+        boolean indeterminate = (progress.isIndeterminate() || isDownloadPending);
         String contentText = null;
         if (isDownloadPending) {
             contentText = mContext.getResources().getString(R.string.download_notification_pending);
-        } else if (indeterminate) {
+        } else if (indeterminate || timeRemainingInMillis < 0) {
             // TODO(dimich): Enable the byte count back in M59. See bug 704049 for more info and
             // details of what was temporarily reverted (for M58).
             contentText = mContext.getResources().getString(R.string.download_started);
         } else {
-            contentText = timeRemainingInMillis < 0
-                    ? mContext.getResources().getString(R.string.download_started)
-                    : formatRemainingTime(mContext, timeRemainingInMillis);
+            contentText = DownloadUtils.getTimeOrFilesLeftString(
+                    mContext, progress, timeRemainingInMillis);
         }
         int resId = isDownloadPending ? R.drawable.ic_download_pending
                 : android.R.drawable.stat_sys_download;
@@ -819,11 +811,11 @@ public class DownloadNotificationService extends Service {
 
         // Avoid animations while the download isn't progressing.
         if (!isDownloadPending) {
-            builder.setProgress(100, percentage, indeterminate);
+            builder.setProgress(100, indeterminate ? -1 : progress.getPercentage(), indeterminate);
         }
 
         if (!indeterminate && !LegacyHelpers.isLegacyOfflinePage(id)) {
-            String percentText = DownloadUtils.getPercentageString(percentage);
+            String percentText = DownloadUtils.getPercentageString(progress.getPercentage());
             if (Build.VERSION.CODENAME.equals("N")
                     || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
                 builder.setSubText(percentText);
@@ -1422,57 +1414,5 @@ public class DownloadNotificationService extends Service {
         editor.putInt(KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, mNextNotificationId);
         editor.apply();
         return notificationId;
-    }
-
-    /**
-     * Format remaining time for the given millis, in the following format:
-     * 5 hours; will include 1 unit, can go down to seconds precision.
-     * This is similar to what android.java.text.Formatter.formatShortElapsedTime() does. Don't use
-     * ui::TimeFormat::Simple() as it is very expensive.
-     *
-     * @param context the application context.
-     * @param millis the remaining time in milli seconds.
-     * @return the formatted remaining time.
-     */
-    public static String formatRemainingTime(Context context, long millis) {
-        long secondsLong = millis / 1000;
-
-        int days = 0;
-        int hours = 0;
-        int minutes = 0;
-        if (secondsLong >= SECONDS_PER_DAY) {
-            days = (int) (secondsLong / SECONDS_PER_DAY);
-            secondsLong -= days * SECONDS_PER_DAY;
-        }
-        if (secondsLong >= SECONDS_PER_HOUR) {
-            hours = (int) (secondsLong / SECONDS_PER_HOUR);
-            secondsLong -= hours * SECONDS_PER_HOUR;
-        }
-        if (secondsLong >= SECONDS_PER_MINUTE) {
-            minutes = (int) (secondsLong / SECONDS_PER_MINUTE);
-            secondsLong -= minutes * SECONDS_PER_MINUTE;
-        }
-        int seconds = (int) secondsLong;
-
-        if (days >= 2) {
-            days += (hours + 12) / 24;
-            return context.getString(R.string.remaining_duration_days, days);
-        } else if (days > 0) {
-            return context.getString(R.string.remaining_duration_one_day);
-        } else if (hours >= 2) {
-            hours += (minutes + 30) / 60;
-            return context.getString(R.string.remaining_duration_hours, hours);
-        } else if (hours > 0) {
-            return context.getString(R.string.remaining_duration_one_hour);
-        } else if (minutes >= 2) {
-            minutes += (seconds + 30) / 60;
-            return context.getString(R.string.remaining_duration_minutes, minutes);
-        } else if (minutes > 0) {
-            return context.getString(R.string.remaining_duration_one_minute);
-        } else if (seconds == 1) {
-            return context.getString(R.string.remaining_duration_one_second);
-        } else {
-            return context.getString(R.string.remaining_duration_seconds, seconds);
-        }
     }
 }

@@ -8,6 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
+import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
 import java.util.ArrayList;
@@ -46,7 +47,8 @@ public final class OfflineItemBridge {
             boolean externallyRemoved, long creationTimeMs, long lastAccessedTimeMs,
             boolean isOpenable, String pageUrl, String originalUrl, boolean isOffTheRecord,
             @OfflineItemState int state, boolean isResumable, boolean allowMetered,
-            long receivedBytes, int percentCompleted, long timeRemainingMs) {
+            long receivedBytes, long progressValue, long progressMax,
+            @OfflineItemProgressUnit int progressUnit, long timeRemainingMs) {
         OfflineItem item = new OfflineItem();
         item.id.namespace = nameSpace;
         item.id.id = id;
@@ -66,7 +68,8 @@ public final class OfflineItemBridge {
         item.isResumable = isResumable;
         item.allowMetered = allowMetered;
         item.receivedBytes = receivedBytes;
-        item.percentCompleted = percentCompleted;
+        item.progress = new OfflineItem.Progress(
+                progressValue, progressMax == -1 ? null : progressMax, progressUnit);
         item.timeRemainingMs = timeRemainingMs;
 
         if (list != null) list.add(item);

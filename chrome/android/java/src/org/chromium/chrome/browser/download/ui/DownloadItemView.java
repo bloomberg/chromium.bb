@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
+import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -164,7 +165,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             showLayout(mLayoutInProgress);
             mDownloadStatusView.setText(item.getStatusString());
 
-            boolean isIndeterminate = item.isIndeterminate();
+            Progress progress = item.getDownloadProgress();
 
             if (item.isPaused()) {
                 mPauseResumeButton.setImageResource(R.drawable.ic_play_arrow_white_24dp);
@@ -175,21 +176,24 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                 mPauseResumeButton.setImageResource(R.drawable.ic_pause_white_24dp);
                 mPauseResumeButton.setContentDescription(
                         getContext().getString(R.string.download_notification_pause_button));
-                mProgressView.setIndeterminate(isIndeterminate);
+                mProgressView.setIndeterminate(progress.isIndeterminate());
             }
-            mProgressView.setProgress(item.getDownloadProgress());
+
+            if (!progress.isIndeterminate()) {
+                mProgressView.setProgress(progress.getPercentage());
+            }
 
             // Display the percentage downloaded in text form.
             // To avoid problems with RelativeLayout not knowing how to place views relative to
             // removed views in the hierarchy, this code instead makes the percentage View's width
             // to 0 by removing its text and eliminating the margin.
-            if (isIndeterminate) {
+            if (progress.isIndeterminate()) {
                 mDownloadPercentageView.setText(null);
                 ApiCompatibilityUtils.setMarginEnd(
                         (MarginLayoutParams) mDownloadPercentageView.getLayoutParams(), 0);
             } else {
                 mDownloadPercentageView.setText(
-                        DownloadUtils.getPercentageString(item.getDownloadProgress()));
+                        DownloadUtils.getPercentageString(progress.getPercentage()));
                 ApiCompatibilityUtils.setMarginEnd(
                         (MarginLayoutParams) mDownloadPercentageView.getLayoutParams(), mMargin);
             }

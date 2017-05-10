@@ -26,6 +26,18 @@ bool ContentId::operator<(const ContentId& content_id) const {
          std::tie(content_id.name_space, content_id.id);
 }
 
+OfflineItem::Progress::Progress()
+    : value(0), unit(OfflineItemProgressUnit::BYTES) {}
+
+OfflineItem::Progress::Progress(const OfflineItem::Progress& other) = default;
+
+OfflineItem::Progress::~Progress() = default;
+
+bool OfflineItem::Progress::operator==(
+    const OfflineItem::Progress& other) const {
+  return value == other.value && max == other.max && unit == other.unit;
+}
+
 OfflineItem::OfflineItem()
     : filter(OfflineItemFilter::FILTER_OTHER),
       is_transient(false),
@@ -37,7 +49,6 @@ OfflineItem::OfflineItem()
       is_resumable(false),
       allow_metered(false),
       received_bytes(0),
-      percent_completed(0),
       time_remaining_ms(0) {}
 
 OfflineItem::OfflineItem(const OfflineItem& other) = default;
@@ -65,7 +76,7 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
          is_resumable == offline_item.is_resumable &&
          allow_metered == offline_item.allow_metered &&
          received_bytes == offline_item.received_bytes &&
-         percent_completed == offline_item.percent_completed &&
+         progress == offline_item.progress &&
          time_remaining_ms == offline_item.time_remaining_ms;
 }
 

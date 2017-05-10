@@ -32,6 +32,8 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.OfflineItem.Progress;
+import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -375,12 +377,18 @@ public class DownloadManagerServiceTest {
         notifier.waitTillExpectedCallsComplete();
 
         // Now post multiple download updated calls and make sure all are received.
-        DownloadInfo update1 = Builder.fromDownloadInfo(downloadInfo)
-                .setPercentCompleted(10).build();
-        DownloadInfo update2 = Builder.fromDownloadInfo(downloadInfo)
-                .setPercentCompleted(30).build();
-        DownloadInfo update3 = Builder.fromDownloadInfo(downloadInfo)
-                .setPercentCompleted(30).build();
+        DownloadInfo update1 =
+                Builder.fromDownloadInfo(downloadInfo)
+                        .setProgress(new Progress(10, 100L, OfflineItemProgressUnit.PERCENTAGE))
+                        .build();
+        DownloadInfo update2 =
+                Builder.fromDownloadInfo(downloadInfo)
+                        .setProgress(new Progress(30, 100L, OfflineItemProgressUnit.PERCENTAGE))
+                        .build();
+        DownloadInfo update3 =
+                Builder.fromDownloadInfo(downloadInfo)
+                        .setProgress(new Progress(30, 100L, OfflineItemProgressUnit.PERCENTAGE))
+                        .build();
         notifier.expect(MethodID.DOWNLOAD_PROGRESS, update1)
                 .andThen(MethodID.DOWNLOAD_PROGRESS, update2)
                 .andThen(MethodID.DOWNLOAD_PROGRESS, update3);
@@ -401,12 +409,18 @@ public class DownloadManagerServiceTest {
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, LONG_UPDATE_DELAY_FOR_TEST);
         DownloadInfo downloadInfo = getDownloadInfo();
-        DownloadInfo update1 = Builder.fromDownloadInfo(downloadInfo)
-                .setPercentCompleted(10).build();
-        DownloadInfo update2 = Builder.fromDownloadInfo(downloadInfo)
-                .setPercentCompleted(20).build();
-        DownloadInfo update3 = Builder.fromDownloadInfo(downloadInfo)
-                .setPercentCompleted(30).build();
+        DownloadInfo update1 =
+                Builder.fromDownloadInfo(downloadInfo)
+                        .setProgress(new Progress(10, 100L, OfflineItemProgressUnit.PERCENTAGE))
+                        .build();
+        DownloadInfo update2 =
+                Builder.fromDownloadInfo(downloadInfo)
+                        .setProgress(new Progress(10, 100L, OfflineItemProgressUnit.PERCENTAGE))
+                        .build();
+        DownloadInfo update3 =
+                Builder.fromDownloadInfo(downloadInfo)
+                        .setProgress(new Progress(10, 100L, OfflineItemProgressUnit.PERCENTAGE))
+                        .build();
 
         // Should get 2 update calls, the first and the last. The 2nd update will be merged into
         // the last one.

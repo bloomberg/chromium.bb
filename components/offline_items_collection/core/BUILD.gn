@@ -98,6 +98,7 @@ if (is_android) {
     visibility = [ ":*" ]
 
     sources = [
+      "offline_item.h",
       "offline_item_filter.h",
       "offline_item_state.h",
     ]

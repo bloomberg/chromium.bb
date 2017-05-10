@@ -1929,6 +1929,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_FILE_SIZE_DOWNLOADED_MB" desc="Notification message showing how many MBs have been downloaded.">
         Downloaded <ph name="MBS">%1$.1f<ex>10.1</ex></ph> MB
       </message>
+      <message name="IDS_ONE_FILE_LEFT" desc="Message showing 1 file left">
+        1 file left
+      </message>
+      <message name="IDS_FILES_LEFT" desc="Message showing how many files are left.">
+        <ph name="FILES">%1$d<ex>10</ex></ph> files left
+      </message>
       <message name="IDS_FILE_SIZE_DOWNLOADED_GB" desc="Notification message showing how many GBs have been downloaded.">
         Downloaded <ph name="GBS">%1$.1f<ex>10.1</ex></ph> GB
       </message>
