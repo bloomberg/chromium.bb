@@ -64,6 +64,13 @@ TEST(DisplayTest, ForcedDeviceScaleFactorByCommandLine) {
   Display::ResetForceDeviceScaleFactorForTesting();
 }
 
+TEST(DisplayTest, ForcedDeviceScaleFactor) {
+  Display::SetForceDeviceScaleFactor(2);
+
+  EXPECT_EQ(2, Display::GetForcedDeviceScaleFactor());
+  Display::ResetForceDeviceScaleFactorForTesting();
+}
+
 TEST(DisplayTest, DisplayHDRValues) {
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();

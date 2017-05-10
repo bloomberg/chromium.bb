@@ -1031,6 +1031,12 @@ Press Search or Shift to cancel.
                desc="Notification message to tell users that they just pressed the Search+Shift+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
         High Contrast Mode enabled. Press Search+Shift+H again to toggle it off.
       </message>
+
+      <!-- Tray scale strings -->
+      <message name="IDS_ASH_STATUS_TRAY_SCALE" desc="The label used in scale setting detailed page of ash tray popup.">
+        Display scale settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SCALE_SLIDER" desc="The accessible text for the scale slider">Display scale</message>
     </messages>
   </release>
 </grit>
