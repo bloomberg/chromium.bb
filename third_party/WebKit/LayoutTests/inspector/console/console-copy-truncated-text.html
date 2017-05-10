@@ -12,6 +12,7 @@ function test()
     var shortUrlWithHashes = "www." + "0123456789".repeat(2) + "zfoobarz" + "0123456789".repeat(2);
     var urlWithHashes = "www." + "0123456789".repeat(2) + "z".repeat(150) + "0123456789".repeat(2);
     var highlightedUrl = "www." + "z".repeat(200) + ".com";
+    var longUrlInMessageWithNonTextNodePrefix = "www." + "z123456789".repeat(15) + ".com";
     var prepareCode = `
         // Keep this as the first url logged to record the max truncated length.
         console.log("${longUrl}");
@@ -22,6 +23,7 @@ function test()
         console.log("${shortUrlWithHashes}");
         console.log("${urlWithHashes}");
         console.log("${highlightedUrl}");
+        console.log("${longUrlInMessageWithNonTextNodePrefix}");
     `;
 
     var expectedMessageCount = 8;
@@ -34,79 +36,79 @@ function test()
     var tests = [
         function testSelectWithinTruncatedUrl(next)
         {
-            makeSelectionAndDump(1, 0, 1, halfMaxLength);
-            makeSelectionAndDump(1, 0, 1, halfMaxLength + 1);
-            makeSelectionAndDump(1, 0, 1, maxLength);
-            makeSelectionAndDump(1, halfMaxLength, 1, halfMaxLength + 1);
-            makeSelectionAndDump(1, halfMaxLength, 1, maxLength);
-            makeSelectionAndDump(1, halfMaxLength + 1, 1, maxLength);
+            makeSelectionAndDump(0, 0, 0, halfMaxLength);
+            makeSelectionAndDump(0, 0, 0, halfMaxLength + 1);
+            makeSelectionAndDump(0, 0, 0, maxLength);
+            makeSelectionAndDump(0, halfMaxLength, 0, halfMaxLength + 1);
+            makeSelectionAndDump(0, halfMaxLength, 0, maxLength);
+            makeSelectionAndDump(0, halfMaxLength + 1, 0, maxLength);
             next();
         },
 
         function testSelectAcrossMultipleMessages(next) {
-            makeSelectionAndDump(1, 0, 2, shortUrl.length);
-            makeSelectionAndDump(1, halfMaxLength, 2, shortUrl.length);
-            makeSelectionAndDump(1, halfMaxLength + 1, 2, shortUrl.length);
+            makeSelectionAndDump(0, 0, 1, shortUrl.length);
+            makeSelectionAndDump(0, halfMaxLength, 1, shortUrl.length);
+            makeSelectionAndDump(0, halfMaxLength + 1, 1, shortUrl.length);
             next()
         },
 
         function testSelectAcrossMultipleMessagesWithTruncatedUrls(next) {
-            makeSelectionAndDump(1, 0, 3, halfMaxLength);
-            makeSelectionAndDump(1, 0, 3, halfMaxLength + 1);
-            makeSelectionAndDump(1, 0, 3, maxLength);
+            makeSelectionAndDump(0, 0, 2, halfMaxLength);
+            makeSelectionAndDump(0, 0, 2, halfMaxLength + 1);
+            makeSelectionAndDump(0, 0, 2, maxLength);
             next()
         },
 
         function testSelectWithinMessageWithMultipleTruncatedUrls(next) {
-            makeSelectionAndDump(4, 0, 4, halfMaxLength);
-            makeSelectionAndDump(4, 0, 4, halfMaxLength + 1);
-            makeSelectionAndDump(4, 0, 4, secondLongUrlIndexInMixedUrl);
-            makeSelectionAndDump(4, 0, 4, secondLongUrlIndexInMixedUrl + halfMaxLength);
-            makeSelectionAndDump(4, 0, 4, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
-            makeSelectionAndDump(4, 0, 4, secondLongUrlIndexInMixedUrl + maxLength);
+            makeSelectionAndDump(3, 0, 3, halfMaxLength);
+            makeSelectionAndDump(3, 0, 3, halfMaxLength + 1);
+            makeSelectionAndDump(3, 0, 3, secondLongUrlIndexInMixedUrl);
+            makeSelectionAndDump(3, 0, 3, secondLongUrlIndexInMixedUrl + halfMaxLength);
+            makeSelectionAndDump(3, 0, 3, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
+            makeSelectionAndDump(3, 0, 3, secondLongUrlIndexInMixedUrl + maxLength);
 
-            makeSelectionAndDump(4, halfMaxLength, 4, halfMaxLength + 1);
-            makeSelectionAndDump(4, halfMaxLength, 4, secondLongUrlIndexInMixedUrl);
-            makeSelectionAndDump(4, halfMaxLength, 4, secondLongUrlIndexInMixedUrl + halfMaxLength);
-            makeSelectionAndDump(4, halfMaxLength, 4, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
-            makeSelectionAndDump(4, halfMaxLength, 4, secondLongUrlIndexInMixedUrl + maxLength);
+            makeSelectionAndDump(3, halfMaxLength, 3, halfMaxLength + 1);
+            makeSelectionAndDump(3, halfMaxLength, 3, secondLongUrlIndexInMixedUrl);
+            makeSelectionAndDump(3, halfMaxLength, 3, secondLongUrlIndexInMixedUrl + halfMaxLength);
+            makeSelectionAndDump(3, halfMaxLength, 3, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
+            makeSelectionAndDump(3, halfMaxLength, 3, secondLongUrlIndexInMixedUrl + maxLength);
 
-            makeSelectionAndDump(4, halfMaxLength + 1, 4, secondLongUrlIndexInMixedUrl);
-            makeSelectionAndDump(4, halfMaxLength + 1, 4, secondLongUrlIndexInMixedUrl + halfMaxLength);
-            makeSelectionAndDump(4, halfMaxLength + 1, 4, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
-            makeSelectionAndDump(4, halfMaxLength + 1, 4, secondLongUrlIndexInMixedUrl + maxLength);
+            makeSelectionAndDump(3, halfMaxLength + 1, 3, secondLongUrlIndexInMixedUrl);
+            makeSelectionAndDump(3, halfMaxLength + 1, 3, secondLongUrlIndexInMixedUrl + halfMaxLength);
+            makeSelectionAndDump(3, halfMaxLength + 1, 3, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
+            makeSelectionAndDump(3, halfMaxLength + 1, 3, secondLongUrlIndexInMixedUrl + maxLength);
 
-            makeSelectionAndDump(4, secondLongUrlIndexInMixedUrl, 4, secondLongUrlIndexInMixedUrl + halfMaxLength);
-            makeSelectionAndDump(4, secondLongUrlIndexInMixedUrl, 4, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
-            makeSelectionAndDump(4, secondLongUrlIndexInMixedUrl, 4, secondLongUrlIndexInMixedUrl + maxLength);
+            makeSelectionAndDump(3, secondLongUrlIndexInMixedUrl, 3, secondLongUrlIndexInMixedUrl + halfMaxLength);
+            makeSelectionAndDump(3, secondLongUrlIndexInMixedUrl, 3, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
+            makeSelectionAndDump(3, secondLongUrlIndexInMixedUrl, 3, secondLongUrlIndexInMixedUrl + maxLength);
 
-            makeSelectionAndDump(4, secondLongUrlIndexInMixedUrl + halfMaxLength, 4, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
-            makeSelectionAndDump(4, secondLongUrlIndexInMixedUrl + halfMaxLength, 4, secondLongUrlIndexInMixedUrl + maxLength);
+            makeSelectionAndDump(3, secondLongUrlIndexInMixedUrl + halfMaxLength, 3, secondLongUrlIndexInMixedUrl + halfMaxLength + 1);
+            makeSelectionAndDump(3, secondLongUrlIndexInMixedUrl + halfMaxLength, 3, secondLongUrlIndexInMixedUrl + maxLength);
 
-            makeSelectionAndDump(4, secondLongUrlIndexInMixedUrl + halfMaxLength + 1, 4, secondLongUrlIndexInMixedUrl + maxLength);
+            makeSelectionAndDump(3, secondLongUrlIndexInMixedUrl + halfMaxLength + 1, 3, secondLongUrlIndexInMixedUrl + maxLength);
             next()
         },
 
         function testSelectWithinShortUrlWithHashes(next)
         {
-            var hashedUrlMaxLength = consoleMessageText(5).length;
+            var hashedUrlMaxLength = consoleMessageText(4).length;
             var hashedUrlHalfMaxLength = Math.ceil(hashedUrlMaxLength / 2);
-            makeSelectionAndDump(5, 0, 5, hashedUrlHalfMaxLength);
-            makeSelectionAndDump(5, 0, 5, hashedUrlMaxLength);
-            makeSelectionAndDump(5, hashedUrlHalfMaxLength, 5, hashedUrlMaxLength);
+            makeSelectionAndDump(4, 0, 4, hashedUrlHalfMaxLength);
+            makeSelectionAndDump(4, 0, 4, hashedUrlMaxLength);
+            makeSelectionAndDump(4, hashedUrlHalfMaxLength, 4, hashedUrlMaxLength);
             next();
         },
 
         function testSelectWithinUrlWithHashes(next)
         {
-            var hashedUrlMaxLength = consoleMessageText(6).length;
+            var hashedUrlMaxLength = consoleMessageText(5).length;
             var hashedUrlHalfMaxLength = Math.ceil(hashedUrlMaxLength / 2);
-            makeSelectionAndDump(6, 0, 6, hashedUrlHalfMaxLength);
-            makeSelectionAndDump(6, 0, 6, hashedUrlHalfMaxLength + 1);
-            makeSelectionAndDump(6, 0, 6, hashedUrlMaxLength);
-            makeSelectionAndDump(6, hashedUrlHalfMaxLength, 6, hashedUrlHalfMaxLength + 1);
-            makeSelectionAndDump(6, hashedUrlHalfMaxLength, 6, hashedUrlMaxLength);
-            makeSelectionAndDump(6, hashedUrlHalfMaxLength + 1, 6, hashedUrlMaxLength);
+            makeSelectionAndDump(5, 0, 5, hashedUrlHalfMaxLength);
+            makeSelectionAndDump(5, 0, 5, hashedUrlHalfMaxLength + 1);
+            makeSelectionAndDump(5, 0, 5, hashedUrlMaxLength);
+            makeSelectionAndDump(5, hashedUrlHalfMaxLength, 5, hashedUrlHalfMaxLength + 1);
+            makeSelectionAndDump(5, hashedUrlHalfMaxLength, 5, hashedUrlMaxLength);
+            makeSelectionAndDump(5, hashedUrlHalfMaxLength + 1, 5, hashedUrlMaxLength);
             next();
         },
 
@@ -120,6 +122,25 @@ function test()
 
         function testSelectWithinHighlightedUrlEnd(next) {
             testHighlightedUrlWithSearchQuery(".com", next);
+        },
+
+        function testSelectionStartingInNonTextNode(next) {
+            var messageElement = consoleView.itemElement(7).element();
+
+            // Artificially insert an empty non-text node element in the beginning.
+            var artificialEmptyPrefixElement = createElementWithClass('div', 'artificialEmptyPrefixElement');
+            messageElement.insertBefore(artificialEmptyPrefixElement, messageElement.firstChild);
+
+            // Use .childNodes to ensure we get all nodes.
+            InspectorTest.addResult("\nMaking selection from empty prefix to end");
+            window.getSelection().setBaseAndExtent(artificialEmptyPrefixElement, 0, messageElement.lastChild, messageElement.childNodes.length - 1);
+
+            var selectedText = viewport._selectedText();
+            if (selectedText)
+                InspectorTest.addResult("Selection length: " + selectedText.length + ", " + "text: " + selectedText.replace(/\bVM\d+/g, "VM"));
+            else
+                InspectorTest.addResult("No selection");
+            next();
         }
     ];
 
@@ -128,7 +149,7 @@ function test()
 
         // Get the max truncated length from the first longUrl logged.
         try {
-            var longUrlMessageText = consoleMessageText(1);
+            var longUrlMessageText = consoleMessageText(0);
             maxLength = longUrlMessageText.length;
             halfMaxLength = Math.ceil(maxLength / 2);
             secondLongUrlIndexInMixedUrl = maxLength + 1 + shortUrl.length + 1;
@@ -140,7 +161,7 @@ function test()
         }
         InspectorTest.runTestSuite(tests);
     });
-    InspectorTest.evaluateInConsole(prepareCode);
+    InspectorTest.evaluateInPage(prepareCode);
 
     function consoleMessageText(index) {
         var messageElement = consoleView._visibleViewMessages[index].element();
@@ -180,12 +201,12 @@ function test()
             InspectorTest.addResult("Highlighted " + matches.length + " matches");
 
             // Use TextNodes for containers to get inside the highlighted match element.
-            makeSelectionAndDump(7, 0, 7, halfMaxLength, false, true);
-            makeSelectionAndDump(7, 0, 7, halfMaxLength + 1, false, true);
-            makeSelectionAndDump(7, 0, 7, maxLength, false, true);
-            makeSelectionAndDump(7, halfMaxLength, 7, halfMaxLength + 1);
-            makeSelectionAndDump(7, halfMaxLength, 7, maxLength);
-            makeSelectionAndDump(7, halfMaxLength + 1, 7, maxLength);
+            makeSelectionAndDump(6, 0, 6, halfMaxLength, false, true);
+            makeSelectionAndDump(6, 0, 6, halfMaxLength + 1, false, true);
+            makeSelectionAndDump(6, 0, 6, maxLength, false, true);
+            makeSelectionAndDump(6, halfMaxLength, 6, halfMaxLength + 1);
+            makeSelectionAndDump(6, halfMaxLength, 6, maxLength);
+            makeSelectionAndDump(6, halfMaxLength + 1, 6, maxLength);
             next();
         }
     }
