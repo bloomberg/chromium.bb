@@ -9,6 +9,14 @@ source_set("web") {
   sources = [
     "dom_altering_lock.h",
     "dom_altering_lock.mm",
+    "mailto_handler.h",
+    "mailto_handler.mm",
+    "mailto_handler_gmail.h",
+    "mailto_handler_gmail.mm",
+    "mailto_handler_system_mail.h",
+    "mailto_handler_system_mail.mm",
+    "mailto_url_rewriter.h",
+    "mailto_url_rewriter.mm",
     "navigation_manager_util.h",
     "navigation_manager_util.mm",
     "network_activity_indicator_tab_helper.h",
@@ -22,6 +30,7 @@ source_set("web") {
     ":sad_tab_tab_helper_delegate",
     "//base",
     "//components/strings",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator:alert_coordinator",
     "//ios/chrome/browser/ui/commands:commands",
@@ -30,6 +39,7 @@ source_set("web") {
     "//ios/web",
     "//ios/web:web_arc",
     "//ui/base",
+    "//url",
   ]
 }
 
@@ -44,6 +54,10 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "mailto_handler_gmail_unittest.mm",
+    "mailto_handler_system_mail_unittest.mm",
+    "mailto_handler_unittest.mm",
+    "mailto_url_rewriter_unittest.mm",
     "navigation_manager_util_unittest.mm",
     "network_activity_indicator_tab_helper_unittest.mm",
     "repost_form_tab_helper_unittest.mm",
@@ -212,8 +226,8 @@ source_set("web_internal") {
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/static_content",
+    "//ios/chrome/browser/web",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
