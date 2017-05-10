@@ -13,7 +13,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
-#include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -24,6 +23,10 @@
 #include "ui/events/event_target.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/public/activation_change_observer.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/wm/cursor_manager_chromeos.h"
+#endif  // defined(OS_CHROMEOS)
 
 class PrefRegistrySimple;
 class PrefService;

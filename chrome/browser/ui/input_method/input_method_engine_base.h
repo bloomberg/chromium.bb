@@ -11,10 +11,13 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
+#endif  // defined(OS_CHROMEOS)
 
 class Profile;
 

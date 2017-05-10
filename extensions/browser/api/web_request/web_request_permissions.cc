@@ -7,7 +7,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/login/login_state.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -19,6 +18,10 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/login_state.h"
+#endif  // defined(OS_CHROMEOS)
 
 using content::ResourceRequestInfo;
 using extensions::PermissionsData;

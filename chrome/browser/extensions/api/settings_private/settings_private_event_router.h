@@ -9,11 +9,17 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/event_router.h"
+
+// TODO(wychen): ChromeOS headers should only be included when building
+//               ChromeOS, and the following headers should be guarded by
+//               #if defined(OS_CHROMEOS). However, the types are actually
+//               used, and it takes another CL to clean them up.
+//               Reference: crbug.com/720159
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace content {
 class BrowserContext;

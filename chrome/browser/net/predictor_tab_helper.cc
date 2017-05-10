@@ -5,12 +5,15 @@
 #include "chrome/browser/net/predictor_tab_helper.h"
 
 #include "base/feature_list.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif  // defined(OS_CHROMEOS)
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::PredictorTabHelper);
 

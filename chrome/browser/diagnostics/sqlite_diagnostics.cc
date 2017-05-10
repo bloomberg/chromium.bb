@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_constants.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "content/public/common/content_constants.h"
@@ -30,6 +29,10 @@
 #include "sql/statement.h"
 #include "storage/browser/database/database_tracker.h"
 #include "third_party/sqlite/sqlite3.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_constants.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace diagnostics {
 

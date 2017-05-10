@@ -18,8 +18,11 @@
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/chromeos_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_constants.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace diagnostics {
 
