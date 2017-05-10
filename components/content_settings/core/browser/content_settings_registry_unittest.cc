@@ -124,4 +124,23 @@ TEST_F(ContentSettingsRegistryTest, Iteration) {
   EXPECT_TRUE(cookies_found);
 }
 
+TEST_F(ContentSettingsRegistryTest, IsDefaultSettingValid) {
+  const ContentSettingsInfo* info =
+      registry()->Get(CONTENT_SETTINGS_TYPE_COOKIES);
+  EXPECT_TRUE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
+
+#if !defined(OS_IOS)
+  info = registry()->Get(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
+
+  info = registry()->Get(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  info = registry()->Get(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
+  EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
+#endif
+}
+
 }  // namespace content_settings

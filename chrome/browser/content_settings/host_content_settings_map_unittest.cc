@@ -1219,13 +1219,6 @@ TEST_F(HostContentSettingsMapTest, GetContentSetting) {
                 embedder, host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
 }
 
-TEST_F(HostContentSettingsMapTest, IsDefaultSettingAllowedForType) {
-  EXPECT_FALSE(HostContentSettingsMap::IsDefaultSettingAllowedForType(
-      CONTENT_SETTING_ALLOW, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  EXPECT_FALSE(HostContentSettingsMap::IsDefaultSettingAllowedForType(
-      CONTENT_SETTING_ALLOW, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-}
-
 TEST_F(HostContentSettingsMapTest, AddContentSettingsObserver) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
