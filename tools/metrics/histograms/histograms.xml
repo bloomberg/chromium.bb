@@ -70300,6 +70300,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.BrowserMessageLoopStart.To.MainNavigationStart"
+    units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Time between Startup.BrowserMessageLoopStartTime and
+    Startup.FirstWebContents.MainNavigationStart. Recorded explicitly to allow
+    easy breakdown of Startup.FirstWebContents.MainNavigationStart when
+    diagnosing issues.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMessageLoopStart.To.NonEmptyPaint2" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Time between Startup.BrowserMessageLoopStartTime and
+    Startup.FirstWebContents.NonEmptyPaint2. Recorded explicitly to allow easy
+    breakdown of Startup.FirstWebContents.NonEmptyPaint2 when diagnosing issues.
+  </summary>
+</histogram>
+
 <histogram name="Startup.BrowserMessageLoopStartHardFaultCount" units="faults">
   <owner>chrisha@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
@@ -70340,7 +70360,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Startup.BrowserMessageLoopStartTime">
+<histogram name="Startup.BrowserMessageLoopStartTime" units="ms">
   <owner>fdoray@chromium.org</owner>
   <summary>
     Time from browser startup to the start of the main thread's message loop.
@@ -91559,6 +91579,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram
       name="LibraryLoader.PercentageOfResidentCodeBeforePrefetch"/>
   <affected-histogram name="Startup.BrowserMainToRendererMain"/>
+  <affected-histogram
+      name="Startup.BrowserMessageLoopStart.To.MainNavigationStart"/>
+  <affected-histogram name="Startup.BrowserMessageLoopStart.To.NonEmptyPaint2"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry"/>
   <affected-histogram

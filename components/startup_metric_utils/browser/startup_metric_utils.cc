@@ -53,6 +53,9 @@ base::LazyInstance<base::TimeTicks>::Leaky g_renderer_main_entry_point_ticks =
 base::LazyInstance<base::TimeTicks>::Leaky
     g_browser_exe_main_entry_point_ticks = LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<base::TimeTicks>::Leaky g_message_loop_start_ticks =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Only used by RecordMainEntryTimeHistogram(), should go away with it (do not
 // add new uses of this), see crbug.com/317481 for discussion on why it was kept
 // as-is for now.
@@ -598,10 +601,17 @@ void RecordExeMainEntryPointTicks(base::TimeTicks ticks) {
   DCHECK(!g_browser_exe_main_entry_point_ticks.Get().is_null());
 }
 
+void RecordMessageLoopStartTicks(base::TimeTicks ticks) {
+  DCHECK(g_message_loop_start_ticks.Get().is_null());
+  g_message_loop_start_ticks.Get() = ticks;
+  DCHECK(!g_message_loop_start_ticks.Get().is_null());
+}
+
 void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
                                        bool is_first_run,
                                        PrefService* pref_service) {
   DCHECK(pref_service);
+  RecordMessageLoopStartTicks(ticks);
 
   // Keep RecordSameVersionStartupCount() and RecordHardFaultHistogram()
   // near the top of this method (as much as possible) as many other
@@ -726,6 +736,10 @@ void RecordFirstWebContentsNonEmptyPaint(base::TimeTicks ticks) {
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint2",
       g_process_creation_ticks.Get(), ticks);
+  UMA_HISTOGRAM_WITH_TEMPERATURE(
+      UMA_HISTOGRAM_LONG_TIMES_100,
+      "Startup.BrowserMessageLoopStart.To.NonEmptyPaint2",
+      ticks - g_message_loop_start_ticks.Get());
 }
 
 void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
@@ -743,6 +757,10 @@ void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationStart",
       g_process_creation_ticks.Get(), ticks);
+  UMA_HISTOGRAM_WITH_TEMPERATURE(
+      UMA_HISTOGRAM_LONG_TIMES_100,
+      "Startup.BrowserMessageLoopStart.To.MainNavigationStart",
+      ticks - g_message_loop_start_ticks.Get());
 
   // Log extra information about this startup's workload. Only added to this
   // histogram as this extra suffix can help making it less noisy but isn't
