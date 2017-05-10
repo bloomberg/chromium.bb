@@ -16,14 +16,14 @@ body {
 
 .content {
   background-color: #303030;
-  color: rgb(179, 179, 179);
+  color: rgba(255, 255, 255, 0.7);
   font-size: calc(100% - 2px);
   line-height: calc(100% + 6px);
   min-width: 240px;
 }
 
 h1 {
-  color: rgb(204, 204, 204);
+  color: rgba(255, 255, 255, 0.8);
   font-size: calc(100% + 8px);
   font-weight: 400;
   line-height: calc(100% + 8px);
@@ -180,7 +180,7 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
 
 .bulletpoints + .bulletpoints.tooWide {
   -webkit-margin-start: 0;
-  margin-top: 24px;
+  margin-top: 1.5rem;
 }
 
 /* Wide screens. */
@@ -189,8 +189,8 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
   h1,
   #subtitle,
   .learn-more-button {
-    margin-bottom: 24px;
-    margin-top: 24px;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
   }
 
   .content {
@@ -247,14 +247,14 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
   h1,
   #subtitle,
   .learn-more-button {
-    margin-bottom: 24px;
-    margin-top: 24px;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
   }
 
   /* The two columns of bulletpoints are moved under each other. */
   .bulletpoints + .bulletpoints {
     -webkit-margin-start: 0;
-    margin-top: 24px;
+    margin-top: 1.5rem;
   }
 
   /* Smaller offsets on smaller screens. */
@@ -267,12 +267,12 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
     h1,
     #subtitle,
     .learn-more-button {
-      margin-bottom: 16px;
-      margin-top: 16px;
+      margin-bottom: 1rem;
+      margin-top: 1rem;
     }
 
     .bulletpoints + .bulletpoints {
-      margin-top: 16px;
+      margin-top: 1rem;
     }
   }
 
