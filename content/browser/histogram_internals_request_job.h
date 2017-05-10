@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_simple_job.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -25,14 +26,21 @@ class HistogramInternalsRequestJob : public net::URLRequestSimpleJob {
               std::string* data,
               const net::CompletionCallback& callback) const override;
 
+  // Generates the HTML for chrome://histograms. If |url| has a path, it's used
+  // to display a single histogram.
+  // base::StatisticsRecorder::ImportProvidedHistograms must have been called
+  // on the UI thread first.
+  static std::string GenerateHTML(const GURL& url);
+
  private:
   ~HistogramInternalsRequestJob() override;
 
   // Starts the real URL request.
   void StartUrlRequest();
 
-  // The string to select histograms which have |path_| as a substring.
-  std::string path_;
+  // The URL that was requested, which might have a path component to a specific
+  // histogram.
+  GURL url_;
 
   base::WeakPtrFactory<HistogramInternalsRequestJob> weak_factory_;
 
