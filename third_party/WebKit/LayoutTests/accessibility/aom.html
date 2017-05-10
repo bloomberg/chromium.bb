@@ -52,21 +52,9 @@ test(function(t) {
     assert_equals(axButton.role, "AXRole: AXCheckBox");
     assert_equals(axButton.name, "Check Me");
 
-    assert_equals(aomButton.role, "checkbox");
-    assert_equals(aomButton.label, "Check Me");
-}, "ARIA attributes are reflected into AOM properties");
-
-test(function(t) {
-    var button = document.getElementById("button");
-    var aomButton = button.accessibleNode;
-    var axButton = accessibilityController.accessibleElementById("button");
-
-    button.setAttribute("role", "beyonce");
-
-    assert_equals(axButton.role, "AXRole: AXButton");
-
-    assert_equals(aomButton.role, "beyonce");
-}, "Invalid ARIA roles are still reflected into AOM properties");
+    assert_equals(aomButton.role, null);
+    assert_equals(aomButton.label, null);
+}, "ARIA attributes are not reflected into AOM properties");
 
 test(function(t) {
     var button = document.getElementById("button");
@@ -161,14 +149,9 @@ test(function(t) {
 
     aomButton.role = null;
     aomButton.label = null;
-    assert_equals(axButton.role, "AXRole: AXButton");
-    assert_equals(axButton.name, "Click Me");
-
-    button.setAttribute("role", "combobox");
-    button.setAttribute("aria-label", "ARIA 2");
-    assert_equals(axButton.role, "AXRole: AXButton");
-    assert_equals(axButton.name, "Click Me");
-}, "Once an AOM property has been set, ARIA no longer has any effect");
+    assert_equals(axButton.role, "AXRole: AXTextField");
+    assert_equals(axButton.name, "ARIA");
+}, "Clearing an AOM property falls back on an ARIA attribute");
 </script>
 
 <button id="button4">Click Me</button>
@@ -178,9 +161,9 @@ test(function(t) {
     var aomButton;
     (function() {
         var button = document.getElementById("button4");
-        button.setAttribute("role", "checkbox");
-        button.setAttribute("aria-label", "Check Me");
         aomButton = button.accessibleNode;
+        aomButton.role = "checkbox";
+        aomButton.label = "Check Me";
     })();
     assert_equals(aomButton.role, "checkbox");
     assert_equals(aomButton.label, "Check Me");
