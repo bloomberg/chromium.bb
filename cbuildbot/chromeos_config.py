@@ -2270,6 +2270,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       ('elm',           None),
       ('kevin',         None),
       ('cave',          None),
+      ('link',          None),
   ])
 
   # Jetstream devices run unique hw tests
