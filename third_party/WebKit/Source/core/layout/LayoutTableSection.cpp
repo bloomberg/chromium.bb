@@ -42,11 +42,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// This variable is used to balance the memory consumption vs the paint
-// invalidation time on big tables.
-static unsigned g_min_table_size_to_use_fast_paint_path_with_overflowing_cell =
-    75 * 75;
-
 static inline void SetRowLogicalHeightToRowStyleLogicalHeight(
     LayoutTableSection::RowStruct& row) {
   DCHECK(row.row_layout_object);
@@ -106,7 +101,7 @@ LayoutTableSection::LayoutTableSection(Element* element)
       outer_border_before_(0),
       outer_border_after_(0),
       needs_cell_recalc_(false),
-      force_slow_paint_path_with_overflowing_cell_(false),
+      force_full_paint_(false),
       has_multiple_cell_levels_(false),
       has_spanning_cells_(false) {
   // init LayoutObject attributes
@@ -293,7 +288,7 @@ void LayoutTableSection::AddCell(LayoutTableCell* cell, LayoutTableRow* row) {
       DCHECK(cell);
       c.cells.push_back(cell);
       CheckThatVectorIsDOMOrdered(c.cells);
-      // If cells overlap then we take the slow path for painting.
+      // If cells overlap then we take the special paint path for them.
       if (c.cells.size() > 1)
         has_multiple_cell_levels_ = true;
       if (in_col_span)
@@ -1273,17 +1268,28 @@ int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
 }
 
 void LayoutTableSection::ComputeOverflowFromDescendants() {
-  unsigned total_cells_count = NumRows() * Table()->NumEffectiveColumns();
-  unsigned max_allowed_overflowing_cells_count =
-      total_cells_count <
-              g_min_table_size_to_use_fast_paint_path_with_overflowing_cell
+  // These 2 variables are used to balance the memory consumption vs the paint
+  // time on big sections with overflowing cells:
+  // 1. For small sections, don't track overflowing cells because for them the
+  //    full paint path is actually faster than the partial paint path.
+  // 2. For big sections, if overflowing cells are scarce, track overflowing
+  //    cells to enable the partial paint path.
+  // 3. Otherwise don't track overflowing cells to avoid adding a lot of cells
+  //    to the HashSet, and force the full paint path.
+  // See TableSectionPainter::PaintObject() for the full paint path and the
+  // partial paint path.
+  static const unsigned kMinCellCountToUsePartialPaint = 75 * 75;
+  static const float kMaxOverflowingCellRatioForPartialPaint = 0.1f;
+
+  unsigned total_cell_count = NumRows() * Table()->NumEffectiveColumns();
+  unsigned max_overflowing_cell_count =
+      total_cell_count < kMinCellCountToUsePartialPaint
           ? 0
-          : kGMaxAllowedOverflowingCellRatioForFastPaintPath *
-                total_cells_count;
+          : kMaxOverflowingCellRatioForPartialPaint * total_cell_count;
 
   overflow_.reset();
   overflowing_cells_.clear();
-  force_slow_paint_path_with_overflowing_cell_ = false;
+  force_full_paint_ = false;
 #if DCHECK_IS_ON()
   bool has_overflowing_cell = false;
 #endif
@@ -1305,20 +1311,16 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
         AddSelfVisualOverflow(rect);
       }
 
-      if (force_slow_paint_path_with_overflowing_cell_ ||
-          !cell->HasVisualOverflow())
+      if (force_full_paint_ || !cell->HasVisualOverflow())
         continue;
 
 #if DCHECK_IS_ON()
       has_overflowing_cell = true;
 #endif
-      if (overflowing_cells_.size() >= max_allowed_overflowing_cells_count) {
-        // We need to set force_slow_paint_path_with_overflowing_cell_ only if
-        // there is at least one overflowing cell as the hit testing code relies
-        // on this information.
-        force_slow_paint_path_with_overflowing_cell_ = true;
-        // The slow path does not make any use of the overflowing cells info,
-        // don't hold on to the memory.
+      if (overflowing_cells_.size() >= max_overflowing_cell_count) {
+        force_full_paint_ = true;
+        // The full paint path does not make any use of the overflowing cells
+        // info, so don't hold on to the memory.
         overflowing_cells_.clear();
         continue;
       }
@@ -1552,7 +1554,7 @@ LayoutRect LayoutTableSection::LogicalRectForWritingModeAndDirection(
 }
 
 CellSpan LayoutTableSection::DirtiedRows(const LayoutRect& damage_rect) const {
-  if (force_slow_paint_path_with_overflowing_cell_)
+  if (force_full_paint_)
     return FullSectionRowSpan();
 
   if (!grid_.size())
@@ -1560,8 +1562,8 @@ CellSpan LayoutTableSection::DirtiedRows(const LayoutRect& damage_rect) const {
 
   CellSpan covered_rows = SpannedRows(damage_rect);
 
-  // To issue paint invalidations for the border we might need to paint
-  // invalidate the first or last row even if they are not spanned themselves.
+  // To paint the border we might need to paint the first or last row even if
+  // they are not spanned themselves.
   CHECK_LT(covered_rows.Start(), row_pos_.size());
   if (covered_rows.Start() == row_pos_.size() - 1 &&
       row_pos_[row_pos_.size() - 1] + Table()->OuterBorderAfter() >=
@@ -1577,7 +1579,7 @@ CellSpan LayoutTableSection::DirtiedRows(const LayoutRect& damage_rect) const {
       covered_rows.Start() >= grid_.size())
     return covered_rows;
 
-  // If there are any cells spanning into the first row, expand coveredRows
+  // If there are any cells spanning into the first row, expand covered_rows
   // to cover the primary cells.
   unsigned n_cols = NumCols(covered_rows.Start());
   unsigned smallest_row = covered_rows.Start();
@@ -1595,16 +1597,15 @@ CellSpan LayoutTableSection::DirtiedRows(const LayoutRect& damage_rect) const {
 
 CellSpan LayoutTableSection::DirtiedEffectiveColumns(
     const LayoutRect& damage_rect) const {
-  if (force_slow_paint_path_with_overflowing_cell_)
+  if (force_full_paint_)
     return FullTableEffectiveColumnSpan();
 
   CHECK(Table()->NumEffectiveColumns());
   CellSpan covered_columns = SpannedEffectiveColumns(damage_rect);
 
   const Vector<int>& column_pos = Table()->EffectiveColumnPositions();
-  // To issue paint invalidations for the border we might need to paint
-  // invalidate the first or last column even if they are not spanned
-  // themselves.
+  // To paint the border we might need to paint the first or last column even if
+  // they are not spanned themselves.
   CHECK_LT(covered_columns.Start(), column_pos.size());
   if (covered_columns.Start() == column_pos.size() - 1 &&
       column_pos[column_pos.size() - 1] + Table()->OuterBorderEnd() >=
@@ -1620,7 +1621,7 @@ CellSpan LayoutTableSection::DirtiedEffectiveColumns(
     return covered_columns;
 
   // If there are any cells spanning into the first column, expand
-  // coveredRows to cover the primary cells.
+  // covered_columns to cover the primary cells.
   unsigned smallest_column = covered_columns.Start();
   CellSpan covered_rows = SpannedRows(damage_rect);
   for (unsigned r = covered_rows.Start(); r < covered_rows.end(); ++r) {

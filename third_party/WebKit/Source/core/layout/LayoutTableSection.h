@@ -33,10 +33,6 @@
 
 namespace blink {
 
-// This variable is used to balance the memory consumption vs the paint
-// invalidation time on big tables.
-const float kGMaxAllowedOverflowingCellRatioForFastPaintPath = 0.1f;
-
 // Helper class for paintObject.
 class CellSpan {
   STACK_ALLOCATED();
@@ -327,6 +323,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   const HashSet<const LayoutTableCell*>& OverflowingCells() const {
     return overflowing_cells_;
   }
+  bool HasOverflowingCell() const {
+    return overflowing_cells_.size() || force_full_paint_;
+  }
   bool HasMultipleCellLevels() const { return has_multiple_cell_levels_; }
 
   const char* GetName() const override { return "LayoutTableSection"; }
@@ -427,11 +426,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
                              unsigned row,
                              int& baseline_descent);
 
-  bool HasOverflowingCell() const {
-    return overflowing_cells_.size() ||
-           force_slow_paint_path_with_overflowing_cell_;
-  }
-
   // These two functions take a rectangle as input that has been flipped by
   // logicalRectForWritingModeAndDirection.
   // The returned span of rows or columns is end-exclusive, and empty if
@@ -485,12 +479,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   bool needs_cell_recalc_;
 
-  // This HashSet holds the overflowing cells for faster painting.
-  // If we have more than gMaxAllowedOverflowingCellRatio * total cells, it will
-  // be empty and m_forceSlowPaintPathWithOverflowingCell will be set to save
-  // memory.
+  // This HashSet holds the overflowing cells for the partial paint path. If we
+  // have too many overflowing cells, it will be empty and force_full_paint_
+  // will be set to save memory. See ComputeOverflowFromDescendants().
   HashSet<const LayoutTableCell*> overflowing_cells_;
-  bool force_slow_paint_path_with_overflowing_cell_;
+  bool force_full_paint_;
 
   // This boolean tracks if we have cells overlapping due to rowspan / colspan
   // (see class comment above about when it could appear).

@@ -116,7 +116,7 @@ static inline bool CompareCellPositions(const LayoutTableCell* elem1,
 
 // This comparison is used only when we have overflowing cells as we have an
 // unsorted array to sort. We thus need to sort both on rows and columns to
-// properly issue paint invalidations.
+// paint in proper order.
 static inline bool CompareCellPositionsWithOverflowingCells(
     const LayoutTableCell* elem1,
     const LayoutTableCell* elem2) {
@@ -229,6 +229,18 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
   const auto& overflowing_cells = layout_table_section_.OverflowingCells();
   if (!layout_table_section_.HasMultipleCellLevels() &&
       overflowing_cells.IsEmpty()) {
+    // This path is for 2 cases:
+    // 1. Normal partial paint, without overflowing cells and multiple cell
+    //    levels;
+    // 2. Full paint, for small sections or big sections with many overflowing
+    //    cells.
+    // The difference between the normal partial paint and full paint is that
+    // whether dirtied_rows and dirtied_columns cover the whole section.
+    DCHECK(!layout_table_section_.HasOverflowingCell() ||
+           (dirtied_rows == layout_table_section_.FullSectionRowSpan() &&
+            dirtied_columns ==
+                layout_table_section_.FullTableEffectiveColumnSpan()));
+
     for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.end(); r++) {
       const LayoutTableRow* row = layout_table_section_.RowLayoutObjectAt(r);
       // TODO(crbug.com/577282): This painting order is inconsistent with other
@@ -246,15 +258,9 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
       }
     }
   } else {
-    // The overflowing cells should be scarce to avoid adding a lot of cells to
-    // the HashSet.
-    DCHECK(overflowing_cells.size() <
-           layout_table_section_.NumRows() *
-               layout_table_section_.Table()->EffectiveColumns().size() *
-               kGMaxAllowedOverflowingCellRatioForFastPaintPath);
-
-    // To make sure we properly paint the section, we paint all the overflowing
-    // cells that we collected.
+    // This path paints section with multiple cell levels or a reasonable number
+    // of overflowing cells. This is the "partial paint path" for overflowing
+    // cells referred in LayoutTableSection::ComputeOverflowFromDescendants().
     Vector<const LayoutTableCell*> cells;
     CopyToVector(overflowing_cells, cells);
 
