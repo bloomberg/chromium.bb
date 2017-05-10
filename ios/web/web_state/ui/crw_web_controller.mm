@@ -1339,6 +1339,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)pushStateWithPageURL:(const GURL&)pageURL
                  stateObject:(NSString*)stateObject
                   transition:(ui::PageTransition)transition {
+  _webStateImpl->OnProvisionalNavigationStarted(pageURL);
   [[self sessionController] pushNewItemWithURL:pageURL
                                    stateObject:stateObject
                                     transition:transition];
@@ -1351,6 +1352,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)replaceStateWithPageURL:(const GURL&)pageURL
                     stateObject:(NSString*)stateObject {
+  _webStateImpl->OnProvisionalNavigationStarted(pageURL);
   [[self sessionController] updateCurrentItemWithURL:pageURL
                                          stateObject:stateObject];
   std::unique_ptr<web::NavigationContext> context =
