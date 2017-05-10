@@ -142,8 +142,6 @@ class RendererCompositorFrameSink
   cc::mojom::MojoCompositorFrameSinkPtrInfo sink_ptr_info_;
   cc::mojom::MojoCompositorFrameSinkClientRequest sink_client_request_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> sink_client_binding_;
-
-  bool bound_ = false;
 };
 
 }  // namespace content
