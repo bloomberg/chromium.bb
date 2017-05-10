@@ -674,19 +674,15 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
     for dimension in tester_config['swarming_dimensions']:
       device = None
       sharding_map = benchmark_sharding_map.get(name, None)
-      if not sharding_map:
+      device = sharding_map.get(benchmark.Name(), None)
+      if device is None:
         raise ValueError('No sharding map for benchmark %r found. Please'
                          ' disable the benchmark with @Disabled(\'all\'), and'
                          ' file a bug with Speed>Benchmarks>Waterfall'
                          ' component and cc martiniss@ and nednguyen@ to'
                          ' execute the benchmark on the waterfall.' % (
-                             name))
+                             benchmark.Name()))
 
-      device = sharding_map.get(benchmark.Name(), None)
-
-      if device is None:
-        raise Exception('Device affinity for benchmark %s not found'
-          % benchmark.Name())
       swarming_dimensions.append(get_swarming_dimension(
           dimension, device))
 
