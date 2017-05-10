@@ -90,6 +90,15 @@ void Display::ResetForceDeviceScaleFactorForTesting() {
   g_forced_device_scale_factor = -1.0;
 }
 
+// static
+void Display::SetForceDeviceScaleFactor(double dsf) {
+  // Reset any previously set values and unset the flag.
+  g_forced_device_scale_factor = -1.0;
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kForceDeviceScaleFactor, base::StringPrintf("%.2f", dsf));
+}
+
 Display::Display() : Display(kInvalidDisplayId) {}
 
 Display::Display(int64_t id) : Display(id, gfx::Rect()) {}

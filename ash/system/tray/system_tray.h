@@ -30,6 +30,7 @@ class TrayCast;
 class TrayEnterprise;
 class TrayNetwork;
 class TrayNightLight;
+class TrayScale;
 class TraySupervisedUser;
 class TraySystemInfo;
 class TrayTiles;
@@ -234,6 +235,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayEnterprise* tray_enterprise_ = nullptr;
   TrayNetwork* tray_network_ = nullptr;
   TrayTiles* tray_tiles_ = nullptr;
+  TrayScale* tray_scale_ = nullptr;
   TraySupervisedUser* tray_supervised_user_ = nullptr;
   TraySystemInfo* tray_system_info_ = nullptr;
   TrayUpdate* tray_update_ = nullptr;

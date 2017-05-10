@@ -58,6 +58,10 @@ const char kAshEnableTouchView[] = "enable-touchview";
 // Enables mirrored screen.
 const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 
+// Enables display scale tray settings. This uses force-device-scale-factor flag
+// to modify the dsf of the device to any non discrete value.
+const char kAshEnableScaleSettingsTray[] = "ash-enable-scale-settings-tray";
+
 // Disables a smoother animation for screen rotation.
 const char kAshDisableSmoothScreenRotation[] =
     "ash-disable-smooth-screen-rotation";

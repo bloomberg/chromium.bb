@@ -86,6 +86,9 @@ class DISPLAY_EXPORT Display final {
   // ensures that the command line is reevaluated.
   static void ResetForceDeviceScaleFactorForTesting();
 
+  // Resets the cache and sets a new force device scale factor.
+  static void SetForceDeviceScaleFactor(double dsf);
+
   // Sets/Gets unique identifier associated with the display.
   // -1 means invalid display and it doesn't not exit.
   int64_t id() const { return id_; }
