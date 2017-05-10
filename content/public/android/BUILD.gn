@@ -244,6 +244,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/WebContents.java",
     "java/src/org/chromium/content_public/browser/WebContentsObserver.java",
     "java/src/org/chromium/content_public/browser/WebContentsStatics.java",
+    "java/src/org/chromium/content_public/common/ContentProcessInfo.java",
     "java/src/org/chromium/content_public/common/ContentUrlConstants.java",
     "java/src/org/chromium/content_public/common/MediaMetadata.java",
     "java/src/org/chromium/content_public/common/Referrer.java",
