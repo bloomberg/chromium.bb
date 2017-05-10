@@ -38,6 +38,7 @@ import org.chromium.content.browser.ChildProcessConstants;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.IGpuProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
+import org.chromium.content_public.common.ContentProcessInfo;
 
 import java.util.concurrent.Semaphore;
 
@@ -180,6 +181,7 @@ public class ChildProcessServiceImpl {
             throw new RuntimeException("Illegal child process reuse.");
         }
         sCreateCalled = true;
+        ContentProcessInfo.setInChildProcess(true);
 
         // Initialize the context for the application that owns this ChildProcessServiceImpl object.
         ContextUtils.initApplicationContext(context);
