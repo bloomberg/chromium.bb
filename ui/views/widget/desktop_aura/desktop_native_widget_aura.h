@@ -99,6 +99,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // Overridden from internal::NativeWidgetPrivate:
   gfx::NativeWindow GetNativeWindow() const override;
+  void SetNativeWindowProperty(const char* name, void* value) override;
 
  protected:
   // Overridden from internal::NativeWidgetPrivate:
@@ -116,7 +117,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   const ui::Layer* GetLayer() const override;
   void ReorderNativeViews() override;
   void ViewRemoved(View* view) override;
-  void SetNativeWindowProperty(const char* name, void* value) override;
   void* GetNativeWindowProperty(const char* name) const override;
   TooltipManager* GetTooltipManager() const override;
   void SetCapture() override;
