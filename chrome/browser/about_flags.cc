@@ -354,7 +354,7 @@ const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
 const FeatureEntry::Choice kColorCorrectRenderingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceEnabled,
-     cc::switches::kEnableColorCorrectRendering, ""},
+     switches::kEnableColorCorrectRendering, ""},
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
 };
 

@@ -163,8 +163,6 @@ component("gfx") {
     "shadow_value.h",
     "skbitmap_operations.cc",
     "skbitmap_operations.h",
-    "switches.cc",
-    "switches.h",
     "sys_color_change_listener.cc",
     "sys_color_change_listener.h",
     "text_constants.h",
@@ -241,6 +239,7 @@ component("gfx") {
     ":memory_buffer_sources",
     ":native_widget_types",
     ":selection_bound_sources",
+    ":switches_sources",
     "//base",
     "//skia",
     "//third_party/icu",
@@ -529,6 +528,7 @@ source_set("memory_buffer_sources") {
 
   deps = [
     ":native_widget_types",
+    ":switches_sources",
     "//base",
     "//ui/gfx/geometry",
   ]
@@ -543,6 +543,22 @@ source_set("memory_buffer_sources") {
 
     deps += [ "//third_party/libdrm" ]
   }
+}
+
+source_set("switches_sources") {
+  visibility = [ ":*" ]  # Depend on through ":switches_sources".
+
+  sources = [
+    "switches.cc",
+    "switches.h",
+  ]
+
+  defines = [ "GFX_IMPLEMENTATION" ]
+
+  deps = [
+    ":gfx_export",
+    "//base",
+  ]
 }
 
 static_library("test_support") {

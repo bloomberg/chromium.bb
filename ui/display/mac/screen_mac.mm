@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -19,6 +20,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/gfx/switches.h"
 
 extern "C" {
 Boolean CGDisplayUsesForceToGray(void);
@@ -81,7 +83,10 @@ Display BuildDisplayForScreen(NSScreen* screen) {
   // IOSurfaces do not opt-out of color correction.
   // https://crbug.com/654488
   CGColorSpaceRef color_space = [[screen colorSpace] CGColorSpace];
-  if (base::mac::IsAtLeastOS10_12())
+  static bool color_correct_rendering_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableColorCorrectRendering);
+  if (base::mac::IsAtLeastOS10_12() && !color_correct_rendering_enabled)
     color_space = base::mac::GetSystemColorSpace();
 
   display.set_icc_profile(gfx::ICCProfile::FromCGColorSpace(color_space));
