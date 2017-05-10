@@ -48,6 +48,8 @@ def split_footers(message):
   Guarantees that:
     (non_footer_lines + footer_lines) == message.splitlines().
     parsed_footers is parse_footer applied on each line of footer_lines.
+      There could be fewer parsed_footers than footer lines if some lines in
+      last paragraph are malformed.
   """
   message_lines = list(message.splitlines())
   footer_lines = []
@@ -61,8 +63,8 @@ def split_footers(message):
     footer_lines = []
 
   footer_lines.reverse()
-  footers = map(parse_footer, footer_lines)
-  if not footer_lines or not all(footers):
+  footers = filter(None, map(parse_footer, footer_lines))
+  if not footers:
     return message_lines, [], []
   return message_lines[:-len(footer_lines)], footer_lines, footers
 
