@@ -540,9 +540,8 @@
 
     <request name="set_parent">
       <description summary="set the parent of this surface">
-	Set the "parent" of this surface. This window should be stacked
-	above a parent. The parent surface must be mapped as long as this
-	surface is mapped.
+	Set the "parent" of this surface. This surface should be stacked
+	this above the parent surface and all other ancestor surfaces.
 
 	Parent windows should be set on dialogs, toolboxes, or other
 	"auxiliary" surfaces, so that the parent is raised when the dialog
@@ -551,6 +550,12 @@
 	Setting a null parent for a child window removes any parent-child
 	relationship for the child. Setting a null parent for a window which
 	currently has no parent is a no-op.
+
+	If the parent is unmapped then its children are managed as
+	though the parent of the now-unmapped parent has become the
+	parent of this surface. If no parent exists for the now-unmapped
+	parent then the children are managed as though they have no
+	parent surface.
       </description>
       <arg name="parent" type="object" interface="xdg_toplevel" allow-null="true"/>
     </request>
