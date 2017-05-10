@@ -13,18 +13,18 @@
 namespace content {
 
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider() {
-  thread_checker_.DetachFromThread();
+  sequence_checker_.DetachFromSequence();
   DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   connector_ =
       ServiceManagerConnection::GetForProcess()->GetConnector()->Clone();
 }
 
 ServiceVideoCaptureProvider::~ServiceVideoCaptureProvider() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 void ServiceVideoCaptureProvider::Uninitialize() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   device_factory_.reset();
   device_factory_provider_.reset();
 }
@@ -32,14 +32,14 @@ void ServiceVideoCaptureProvider::Uninitialize() {
 void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
     const base::Callback<void(
         const std::vector<media::VideoCaptureDeviceInfo>&)>& result_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   LazyConnectToService();
   device_factory_->GetDeviceInfos(result_callback);
 }
 
 std::unique_ptr<VideoCaptureDeviceLauncher>
 ServiceVideoCaptureProvider::CreateDeviceLauncher() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   LazyConnectToService();
   return base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(&device_factory_);
 }
@@ -59,7 +59,7 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
 }
 
 void ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   // This may indicate that the video capture service has crashed. Uninitialize
   // here, so that a new connection will be established when clients try to
   // reconnect.

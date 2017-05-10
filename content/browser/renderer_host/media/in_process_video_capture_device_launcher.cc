@@ -84,7 +84,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   auto device_client = CreateDeviceClient(max_buffers, std::move(receiver));
 
   base::Closure start_capture_closure;
-  // Use of |this| is safe, because |done_cb| guarantees that |this|
+  // Use of Unretained |this| is safe, because |done_cb| guarantees that |this|
   // stays alive.
   ReceiveDeviceCallback after_start_capture_callback = media::BindToCurrentLoop(
       base::Bind(&InProcessVideoCaptureDeviceLauncher::OnDeviceStarted,

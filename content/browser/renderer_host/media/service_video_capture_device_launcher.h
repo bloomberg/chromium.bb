@@ -31,7 +31,23 @@ class ServiceVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
   void OnUtilizationReport(int frame_feedback_id, double utilization);
 
  private:
+  enum class State {
+    READY_TO_LAUNCH,
+    DEVICE_START_IN_PROGRESS,
+    DEVICE_START_ABORTING
+  };
+
+  void OnCreateDeviceCallback(
+      const media::VideoCaptureParams& params,
+      video_capture::mojom::DevicePtr device,
+      base::WeakPtr<media::VideoFrameReceiver> receiver,
+      Callbacks* callbacks,
+      base::OnceClosure done_cb,
+      video_capture::mojom::DeviceAccessResultCode result_code);
+
   video_capture::mojom::DeviceFactoryPtr* const device_factory_;
+  State state_;
+  base::SequenceChecker sequence_checker_;
 };
 
 }  // namespace content
