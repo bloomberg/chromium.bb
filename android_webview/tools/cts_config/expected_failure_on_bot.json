@@ -23,7 +23,7 @@
   ],
   "android.webkit.cts.WebChromeClientTest": [
     {
-      "name": "testWebViewIncludedStableInterfaces",
+      "name": "testOnJsBeforeUnloadIsCalled",
       "_bug_id": "crbug.com/719974"
     }
   ],
