@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
+#include "net/log/net_log_source.h"
 #include "net/spdy/chromium/header_coalescer.h"
 #include "net/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/spdy/core/spdy_framer.h"
@@ -120,7 +121,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 class NET_EXPORT_PRIVATE BufferedSpdyFramer
     : public SpdyFramerVisitorInterface {
  public:
-  BufferedSpdyFramer();
+  explicit BufferedSpdyFramer(const NetLogWithSource& net_log);
+  BufferedSpdyFramer() = delete;
   ~BufferedSpdyFramer() override;
 
   // Sets callbacks to be called from the buffered spdy framer.  A visitor must
@@ -269,6 +271,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   std::unique_ptr<GoAwayFields> goaway_fields_;
 
   std::unique_ptr<HeaderCoalescer> coalescer_;
+
+  NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedSpdyFramer);
 };
