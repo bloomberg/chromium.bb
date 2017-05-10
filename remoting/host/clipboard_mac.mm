@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -53,7 +54,7 @@ ClipboardMac::~ClipboardMac() {}
 
 void ClipboardMac::Start(
     std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
-  client_clipboard_.reset(client_clipboard.release());
+  client_clipboard_ = std::move(client_clipboard);
 
   // Synchronize local change-count with the pasteboard's. The change-count is
   // used to detect clipboard changes.
