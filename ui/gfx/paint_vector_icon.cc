@@ -25,6 +25,80 @@ namespace gfx {
 
 namespace {
 
+// Helper that simplifies iterating over a sequence of PathElements.
+class PathParser {
+ public:
+  PathParser(const PathElement* path_elements)
+      : path_elements_(path_elements) {}
+  ~PathParser() {}
+
+  void Advance() { command_index_ += GetArgumentCount() + 1; }
+
+  CommandType CurrentCommand() const {
+    return path_elements_[command_index_].command;
+  }
+
+  SkScalar GetArgument(int index) const {
+    DCHECK_LT(index, GetArgumentCount());
+    return path_elements_[command_index_ + 1 + index].arg;
+  }
+
+ private:
+  int GetArgumentCount() const {
+    switch (CurrentCommand()) {
+      case STROKE:
+      case H_LINE_TO:
+      case R_H_LINE_TO:
+      case V_LINE_TO:
+      case R_V_LINE_TO:
+      case CANVAS_DIMENSIONS:
+        return 1;
+
+      case MOVE_TO:
+      case R_MOVE_TO:
+      case LINE_TO:
+      case R_LINE_TO:
+        return 2;
+
+      case CIRCLE:
+        return 3;
+
+      case PATH_COLOR_ARGB:
+      case CUBIC_TO_SHORTHAND:
+      case CLIP:
+        return 4;
+
+      case ROUND_RECT:
+        return 5;
+
+      case CUBIC_TO:
+      case R_CUBIC_TO:
+        return 6;
+
+      case ARC_TO:
+      case R_ARC_TO:
+        return 7;
+
+      case NEW_PATH:
+      case PATH_MODE_CLEAR:
+      case CAP_SQUARE:
+      case CLOSE:
+      case DISABLE_AA:
+      case FLIPS_IN_RTL:
+      case END:
+        return 0;
+    }
+
+    NOTREACHED();
+    return 0;
+  }
+
+  const PathElement* path_elements_;
+  int command_index_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(PathParser);
+};
+
 // Translates a string such as "MOVE_TO" into a command such as MOVE_TO.
 CommandType CommandFromString(const std::string& source) {
 #define RETURN_IF_IS(command) \
@@ -94,8 +168,11 @@ void PaintPath(Canvas* canvas,
   bool flips_in_rtl = false;
   CommandType previous_command_type = NEW_PATH;
 
-  for (size_t i = 0; path_elements[i].type != END; i++) {
-    if (paths.empty() || path_elements[i].type == NEW_PATH) {
+  for (PathParser parser(path_elements); parser.CurrentCommand() != END;
+       parser.Advance()) {
+    auto arg = [&parser](int i) { return parser.GetArgument(i); };
+    const CommandType command_type = parser.CurrentCommand();
+    if (paths.empty() || command_type == NEW_PATH) {
       paths.push_back(SkPath());
       paths.back().setFillType(SkPath::kEvenOdd_FillType);
 
@@ -107,46 +184,35 @@ void PaintPath(Canvas* canvas,
 
     SkPath& path = paths.back();
     cc::PaintFlags& flags = flags_array.back();
-    CommandType command_type = path_elements[i].type;
     switch (command_type) {
       // Handled above.
       case NEW_PATH:
-        continue;
-
-      case PATH_COLOR_ARGB: {
-        int a = SkScalarFloorToInt(path_elements[++i].arg);
-        int r = SkScalarFloorToInt(path_elements[++i].arg);
-        int g = SkScalarFloorToInt(path_elements[++i].arg);
-        int b = SkScalarFloorToInt(path_elements[++i].arg);
-        flags.setColor(SkColorSetARGB(a, r, g, b));
         break;
-      }
 
-      case PATH_MODE_CLEAR: {
+      case PATH_COLOR_ARGB:
+        flags.setColor(SkColorSetARGB(
+            SkScalarFloorToInt(arg(0)), SkScalarFloorToInt(arg(1)),
+            SkScalarFloorToInt(arg(2)), SkScalarFloorToInt(arg(3))));
+        break;
+
+      case PATH_MODE_CLEAR:
         flags.setBlendMode(SkBlendMode::kClear);
         break;
-      };
 
-      case STROKE: {
+      case STROKE:
         flags.setStyle(cc::PaintFlags::kStroke_Style);
-        SkScalar width = path_elements[++i].arg;
-        flags.setStrokeWidth(width);
+        flags.setStrokeWidth(arg(0));
         break;
-      }
 
-      case CAP_SQUARE: {
+      case CAP_SQUARE:
         flags.setStrokeCap(cc::PaintFlags::kSquare_Cap);
         break;
-      }
 
-      case MOVE_TO: {
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
-        path.moveTo(x, y);
+      case MOVE_TO:
+        path.moveTo(arg(0), arg(1));
         break;
-      }
 
-      case R_MOVE_TO: {
+      case R_MOVE_TO:
         if (previous_command_type == CLOSE) {
           // This triggers injectMoveToIfNeeded() so that the next subpath
           // will start at the correct place. See [
@@ -154,21 +220,18 @@ void PaintPath(Canvas* canvas,
           path.rLineTo(0, 0);
         }
 
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
-        path.rMoveTo(x, y);
+        path.rMoveTo(arg(0), arg(1));
         break;
-      }
 
       case ARC_TO:
       case R_ARC_TO: {
-        SkScalar rx = path_elements[++i].arg;
-        SkScalar ry = path_elements[++i].arg;
-        SkScalar angle = path_elements[++i].arg;
-        SkScalar large_arc_flag = path_elements[++i].arg;
-        SkScalar arc_sweep_flag = path_elements[++i].arg;
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
+        SkScalar rx = arg(0);
+        SkScalar ry = arg(1);
+        SkScalar angle = arg(2);
+        SkScalar large_arc_flag = arg(3);
+        SkScalar arc_sweep_flag = arg(4);
+        SkScalar x = arg(5);
+        SkScalar y = arg(6);
 
         auto path_fn =
             command_type == ARC_TO
@@ -184,69 +247,43 @@ void PaintPath(Canvas* canvas,
         break;
       }
 
-      case LINE_TO: {
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
-        path.lineTo(x, y);
+      case LINE_TO:
+        path.lineTo(arg(0), arg(1));
         break;
-      }
 
-      case R_LINE_TO: {
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
-        path.rLineTo(x, y);
+      case R_LINE_TO:
+        path.rLineTo(arg(0), arg(1));
         break;
-      }
 
       case H_LINE_TO: {
         SkPoint last_point;
         path.getLastPt(&last_point);
-        SkScalar x = path_elements[++i].arg;
-        path.lineTo(x, last_point.fY);
+        path.lineTo(arg(0), last_point.fY);
         break;
       }
 
-      case R_H_LINE_TO: {
-        SkScalar x = path_elements[++i].arg;
-        path.rLineTo(x, 0);
+      case R_H_LINE_TO:
+        path.rLineTo(arg(0), 0);
         break;
-      }
 
       case V_LINE_TO: {
         SkPoint last_point;
         path.getLastPt(&last_point);
-        SkScalar y = path_elements[++i].arg;
-        path.lineTo(last_point.fX, y);
+        path.lineTo(last_point.fX, arg(0));
         break;
       }
 
-      case R_V_LINE_TO: {
-        SkScalar y = path_elements[++i].arg;
-        path.rLineTo(0, y);
+      case R_V_LINE_TO:
+        path.rLineTo(0, arg(0));
         break;
-      }
 
-      case CUBIC_TO: {
-        SkScalar x1 = path_elements[++i].arg;
-        SkScalar y1 = path_elements[++i].arg;
-        SkScalar x2 = path_elements[++i].arg;
-        SkScalar y2 = path_elements[++i].arg;
-        SkScalar x3 = path_elements[++i].arg;
-        SkScalar y3 = path_elements[++i].arg;
-        path.cubicTo(x1, y1, x2, y2, x3, y3);
+      case CUBIC_TO:
+        path.cubicTo(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5));
         break;
-      }
 
-      case R_CUBIC_TO: {
-        SkScalar x1 = path_elements[++i].arg;
-        SkScalar y1 = path_elements[++i].arg;
-        SkScalar x2 = path_elements[++i].arg;
-        SkScalar y2 = path_elements[++i].arg;
-        SkScalar x3 = path_elements[++i].arg;
-        SkScalar y3 = path_elements[++i].arg;
-        path.rCubicTo(x1, y1, x2, y2, x3, y3);
+      case R_CUBIC_TO:
+        path.rCubicTo(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5));
         break;
-      }
 
       case CUBIC_TO_SHORTHAND: {
         // Compute the first control point (|x1| and |y1|) as the reflection
@@ -269,61 +306,38 @@ void PaintPath(Canvas* canvas,
 
         SkScalar x1 = last_point.fX + delta_x;
         SkScalar y1 = last_point.fY + delta_y;
-        SkScalar x2 = path_elements[++i].arg;
-        SkScalar y2 = path_elements[++i].arg;
-        SkScalar x3 = path_elements[++i].arg;
-        SkScalar y3 = path_elements[++i].arg;
-        path.cubicTo(x1, y1, x2, y2, x3, y3);
+        path.cubicTo(x1, y1, arg(0), arg(1), arg(2), arg(3));
         break;
       }
 
-      case CIRCLE: {
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
-        SkScalar r = path_elements[++i].arg;
-        path.addCircle(x, y, r);
+      case CIRCLE:
+        path.addCircle(arg(0), arg(1), arg(2));
         break;
-      }
 
-      case ROUND_RECT: {
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
-        SkScalar w = path_elements[++i].arg;
-        SkScalar h = path_elements[++i].arg;
-        SkScalar radius = path_elements[++i].arg;
-        path.addRoundRect(SkRect::MakeXYWH(x, y, w, h), radius, radius);
+      case ROUND_RECT:
+        path.addRoundRect(SkRect::MakeXYWH(arg(0), arg(1), arg(2), arg(3)),
+                          arg(4), arg(4));
         break;
-      }
 
-      case CLOSE: {
+      case CLOSE:
         path.close();
         break;
-      }
 
-      case CANVAS_DIMENSIONS: {
-        SkScalar width = path_elements[++i].arg;
-        canvas_size = SkScalarTruncToInt(width);
+      case CANVAS_DIMENSIONS:
+        canvas_size = SkScalarTruncToInt(arg(0));
         break;
-      }
 
-      case CLIP: {
-        SkScalar x = path_elements[++i].arg;
-        SkScalar y = path_elements[++i].arg;
-        SkScalar w = path_elements[++i].arg;
-        SkScalar h = path_elements[++i].arg;
-        clip_rect = SkRect::MakeXYWH(x, y, w, h);
+      case CLIP:
+        clip_rect = SkRect::MakeXYWH(arg(0), arg(1), arg(2), arg(3));
         break;
-      }
 
-      case DISABLE_AA: {
+      case DISABLE_AA:
         flags.setAntiAlias(false);
         break;
-      }
 
-      case FLIPS_IN_RTL: {
+      case FLIPS_IN_RTL:
         flips_in_rtl = true;
         break;
-      }
 
       case END:
         NOTREACHED();
@@ -495,8 +509,8 @@ ImageSkia CreateVectorIconFromSource(const std::string& source,
 
 int GetDefaultSizeOfVectorIcon(const gfx::VectorIcon& icon) {
   const PathElement* one_x_path = icon.path_1x_ ? icon.path_1x_ : icon.path_;
-  return one_x_path[0].type == CANVAS_DIMENSIONS ? one_x_path[1].arg
-                                                 : kReferenceSizeDip;
+  return one_x_path[0].command == CANVAS_DIMENSIONS ? one_x_path[1].arg
+                                                    : kReferenceSizeDip;
 }
 
 }  // namespace gfx
