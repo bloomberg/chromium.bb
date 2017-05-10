@@ -26,7 +26,7 @@ class SafeJsonParserMojoImpl : public mojom::SafeJsonParser {
 
  private:
   // mojom::SafeJsonParser implementation.
-  void Parse(const std::string& json, const ParseCallback& callback) override;
+  void Parse(const std::string& json, ParseCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParserMojoImpl);
 };
