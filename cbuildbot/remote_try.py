@@ -45,6 +45,10 @@ class ValidationError(Exception):
   """Thrown when tryjob validation fails."""
 
 
+class RemoteRequestFailure(Exception):
+  """Thrown when requesting a tryjob fails."""
+
+
 def DefaultDescription(description_branch='master', patches=None):
   """Calculate the default description for a tryjob.
 
@@ -253,7 +257,6 @@ class RemoteTryJob(object):
       bot: The bot config to put.
       dryrun: Whether a dryrun.
     """
-
     body = json.dumps({
         'bucket': constants.TRYSERVER_BUILDBUCKET_BUCKET,
         'parameters_json': json.dumps({
@@ -263,11 +266,16 @@ class RemoteTryJob(object):
         'tags':['build_type:%s' % constants.TRYJOB_TYPE]
     })
     content = buildbucket_client.PutBuildRequest(body, dryrun)
-    buildbucket_id = buildbucket_lib.GetBuildId(content)
 
-    if buildbucket_id is not None:
-      print(self.BUILDBUCKET_PUT_RESP_FORMAT %
-            (constants.TRYSERVER_BUILDBUCKET_BUCKET, bot, buildbucket_id))
+    if buildbucket_lib.GetNestedAttr(content, ['error']):
+      raise RemoteRequestFailure(
+          'buildbucket error.\nReason: %s\n Message: %s' %
+          (buildbucket_lib.GetErrorReason(content),
+           buildbucket_lib.GetErrorMessage(content)))
+
+    buildbucket_id = buildbucket_lib.GetBuildId(content)
+    print(self.BUILDBUCKET_PUT_RESP_FORMAT %
+          (constants.TRYSERVER_BUILDBUCKET_BUCKET, bot, buildbucket_id))
 
   def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
     """Posts the tryjob configs to buildbucket.
