@@ -36,15 +36,19 @@ const char kSyncShortNudgeDelayForTest[] = "sync-short-nudge-delay-for-test";
 const base::Feature kSyncClearDataOnPassphraseEncryption{
     "ClearSyncDataOnPassphraseEncryption", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Gates registration and construction of user events machinery.
+const base::Feature kSyncUserEvents{"SyncUserEvents",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables USS implementation of Autocomplete datatype.
+const base::Feature kSyncUSSAutocomplete{"SyncUSSAutocomplete",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables USS implementation of DeviceInfo datatype. This flag controls whether
 // SyncableService based or ModelTypeSyncBridge based implementation is used for
 // DeviceInfo type.
 const base::Feature kSyncUSSDeviceInfo{"EnableSyncUSSDeviceInfo",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables USS implementation of Autocomplete datatype.
-const base::Feature kSyncUSSAutocomplete{"SyncUSSAutocomplete",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables USS implementation of typed URL datatype.
 const base::Feature kSyncUSSTypedURL{"SyncUSSTypedURL",

@@ -33,6 +33,7 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -126,6 +127,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(BookmarkUndoServiceFactory::GetInstance());
+  DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(dom_distiller::DomDistillerServiceFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());

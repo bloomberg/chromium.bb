@@ -6,8 +6,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/fake_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/model/recording_model_type_change_processor.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -39,6 +41,11 @@ class TestSyncService : public FakeSyncService {
 
 class UserEventServiceTest : public testing::Test {
  protected:
+  UserEventServiceTest() {
+    scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndEnableFeature(switches::kSyncUserEvents);
+  }
+
   std::unique_ptr<UserEventSyncBridge> MakeBridge() {
     return base::MakeUnique<UserEventSyncBridge>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
@@ -47,13 +54,27 @@ class UserEventServiceTest : public testing::Test {
 
   const RecordingModelTypeChangeProcessor& processor() { return *processor_; }
 
+  void DisableUserEvents() {
+    scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->Init();
+  }
+
  private:
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   RecordingModelTypeChangeProcessor* processor_;
   base::MessageLoop message_loop_;
 };
 
 TEST_F(UserEventServiceTest, ShouldNotRecordNoSync) {
   UserEventService service(nullptr, MakeBridge());
+  service.RecordUserEvent(base::MakeUnique<UserEventSpecifics>());
+  EXPECT_EQ(0u, processor().put_multimap().size());
+}
+
+TEST_F(UserEventServiceTest, ShouldNotRecordFeatureIsDisabled) {
+  DisableUserEvents();
+  TestSyncService sync_service(false, ModelTypeSet(HISTORY_DELETE_DIRECTIVES));
+  UserEventService service(&sync_service, MakeBridge());
   service.RecordUserEvent(base::MakeUnique<UserEventSpecifics>());
   EXPECT_EQ(0u, processor().put_multimap().size());
 }

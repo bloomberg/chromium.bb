@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -51,7 +53,8 @@ bool UserEventService::CanRecordEvent(const UserEventSpecifics& specifics) {
   // We only record events if the user is syncing history and has not enabled
   // a custom passphrase. The type HISTORY_DELETE_DIRECTIVES is enabled in and
   // only in this exact scenario.
-  return sync_service_ != nullptr && sync_service_->IsEngineInitialized() &&
+  return base::FeatureList::IsEnabled(switches::kSyncUserEvents) &&
+         sync_service_ != nullptr && sync_service_->IsEngineInitialized() &&
          sync_service_->GetPreferredDataTypes().Has(HISTORY_DELETE_DIRECTIVES);
 }
 

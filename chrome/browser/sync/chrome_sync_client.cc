@@ -30,6 +30,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
@@ -67,6 +68,7 @@
 #include "components/sync/engine/browser_thread_model_worker.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
+#include "components/sync/user_events/user_event_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/sync_sessions_client.h"
@@ -516,6 +518,10 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       // TODO(gangwu): Implement TypedURLSyncBridge and return real
       // TypedURLSyncBridge here.
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+    case syncer::USER_EVENTS:
+      return browser_sync::UserEventServiceFactory::GetForProfile(profile_)
+          ->GetSyncBridge()
+          ->AsWeakPtr();
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
