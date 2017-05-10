@@ -2113,46 +2113,40 @@
             ],
             "experiments": [
                 {
-                    "name": "ModalGestureEnabled",
-                    "params": {
-                        "require_gesture": "true"
-                    },
+                    "name": "BlockPromptsEnabled",
                     "enable_features": [
-                        "ModalPermissionPrompts"
-                    ],
-                    "disable_features": [
-                        "DisplayPersistenceToggleInPermissionPrompts"
+                        "BlockPromptsIfDismissedOften"
                     ]
-                },
+                }
+            ]
+        }
+    ],
+    "PermissionPromptUIAndroidModal": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
                 {
-                    "name": "ModalNoGestureEnabled",
-                    "params": {
-                        "require_gesture": "false"
-                    },
-                    "enable_features": [
-                        "ModalPermissionPrompts"
-                    ],
-                    "disable_features": [
-                        "DisplayPersistenceToggleInPermissionPrompts"
-                    ]
-                },
-                {
-                    "name": "ModalAndToggleEnabled",
-                    "params": {
-                        "require_gesture": "false"
-                    },
+                    "name": "ModalToggleEnabled",
                     "enable_features": [
                         "DisplayPersistenceToggleInPermissionPrompts",
                         "ModalPermissionPrompts"
                     ]
-                },
+                }
+            ]
+        }
+    ],
+    "PermissionPromptUICocoa": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
                 {
-                    "name": "ToggleEnabled",
+                    "name": "BlockPromptsEnabled",
                     "enable_features": [
-                        "DisplayPersistenceToggleInPermissionPrompts"
-                    ],
-                    "disable_features": [
-                        "ModalPermissionPrompts"
+                        "BlockPromptsIfDismissedOften"
                     ]
                 }
             ]
@@ -2167,9 +2161,9 @@
             ],
             "experiments": [
                 {
-                    "name": "ToggleEnabled",
+                    "name": "BlockPromptsEnabled",
                     "enable_features": [
-                        "DisplayPersistenceToggleInPermissionPrompts"
+                        "BlockPromptsIfDismissedOften"
                     ]
                 }
             ]
