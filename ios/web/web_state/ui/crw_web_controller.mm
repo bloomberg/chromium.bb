@@ -3899,6 +3899,22 @@ registerLoadRequestForURL:(const GURL&)requestURL
               ->RegisterAllowedCertificate(
                   leafCert, base::SysNSStringToUTF8(host), info.cert_status);
           [self loadCurrentURL];
+        } else {
+          // If discarding non-committed items results in a NavigationItem that
+          // should be loaded via a native controller, load that URL, as its
+          // native controller will need to be recreated.  Note that a
+          // successful preload of a page with an certificate error will result
+          // in this block executing on a CRWWebController with no
+          // NavigationManager.  Additionally, if a page with a certificate
+          // error is opened in a new tab, its last committed NavigationItem
+          // will be null.
+          web::NavigationManager* navigationManager =
+              self.navigationManagerImpl;
+          web::NavigationItem* item =
+              navigationManager ? navigationManager->GetLastCommittedItem()
+                                : nullptr;
+          if (item && [self shouldLoadURLInNativeView:item->GetURL()])
+            [self loadCurrentURL];
         }
       }));
 
