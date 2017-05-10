@@ -31,7 +31,7 @@ AudioDecodeScheduler::~AudioDecodeScheduler() {
 void AudioDecodeScheduler::Initialize(const protocol::SessionConfig& config) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!decoder_);
-  decoder_.reset(AudioDecoder::CreateAudioDecoder(config).release());
+  decoder_ = AudioDecoder::CreateAudioDecoder(config);
 }
 
 void AudioDecodeScheduler::ProcessAudioPacket(
