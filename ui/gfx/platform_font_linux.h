@@ -11,11 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/platform_font.h"
-
-class SkTypeface;
 
 namespace gfx {
 
@@ -52,6 +50,8 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
   std::string GetActualFontNameForTesting() const override;
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;
+
+  sk_sp<SkTypeface> typeface() const { return typeface_; }
 
  private:
   // Create a new instance of this object with the specified properties. Called
