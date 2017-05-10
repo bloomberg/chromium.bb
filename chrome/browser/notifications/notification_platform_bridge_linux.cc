@@ -29,11 +29,13 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration_linux.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace {
@@ -467,8 +469,8 @@ class NotificationPlatformBridgeLinuxImpl
       }
       // Always add a settings button.
       actions.push_back(kSettingsButtonId);
-      // TODO(thomasanderson): Localize this string.
-      actions.push_back("Settings");
+      actions.push_back(
+          l10n_util::GetStringUTF8(IDS_NOTIFICATION_BUTTON_SETTINGS));
     }
     writer.AppendArrayOfStrings(actions);
 
