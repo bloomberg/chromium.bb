@@ -134,8 +134,7 @@ class FakeCodecAllocator : public NiceMock<AVDACodecAllocator> {
 
   void ReleaseMediaCodec(
       std::unique_ptr<MediaCodecBridge> media_codec,
-      TaskType task_type,
-      const scoped_refptr<AVDASurfaceBundle>& surface_bundle) override {
+      scoped_refptr<AVDASurfaceBundle> surface_bundle) override {
     MockReleaseMediaCodec(media_codec.get(), surface_bundle->overlay.get(),
                           surface_bundle->surface_texture.get());
   }

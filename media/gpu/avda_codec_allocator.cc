@@ -33,6 +33,29 @@ namespace {
 constexpr base::TimeDelta kHungTaskDetectionTimeout =
     base::TimeDelta::FromMilliseconds(800);
 
+// This must be safe to call on any thread. Returns nullptr on failure.
+std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
+    scoped_refptr<CodecConfig> codec_config,
+    bool require_software_codec) {
+  TRACE_EVENT0("media", "CreateMediaCodecInternal");
+
+  jobject media_crypto =
+      codec_config->media_crypto ? codec_config->media_crypto->obj() : nullptr;
+
+  // |needs_protected_surface| implies that it's an encrypted stream.
+  DCHECK(!codec_config->needs_protected_surface || media_crypto);
+
+  std::unique_ptr<MediaCodecBridge> codec(
+      MediaCodecBridgeImpl::CreateVideoDecoder(
+          codec_config->codec, codec_config->needs_protected_surface,
+          codec_config->initial_expected_coded_size,
+          codec_config->surface_bundle->j_surface().obj(), media_crypto,
+          codec_config->csd0, codec_config->csd1, true,
+          require_software_codec));
+
+  return codec;
+}
+
 // Delete |codec| and signal |done_event| if it's not null.
 void DeleteMediaCodecAndSignal(std::unique_ptr<MediaCodecBridge> codec,
                                base::WaitableEvent* done_event) {
@@ -144,37 +167,41 @@ scoped_refptr<base::SingleThreadTaskRunner> AVDACodecAllocator::TaskRunnerFor(
 
 std::unique_ptr<MediaCodecBridge> AVDACodecAllocator::CreateMediaCodecSync(
     scoped_refptr<CodecConfig> codec_config) {
-  TRACE_EVENT0("media", "AVDA::CreateMediaCodecSync");
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  jobject media_crypto =
-      codec_config->media_crypto ? codec_config->media_crypto->obj() : nullptr;
+  auto task_type =
+      TaskTypeForAllocation(codec_config->software_codec_forbidden);
+  if (!task_type)
+    return nullptr;
 
-  // |needs_protected_surface| implies encrypted stream.
-  DCHECK(!codec_config->needs_protected_surface || media_crypto);
-
-  const bool require_software_codec = codec_config->task_type == SW_CODEC;
-  std::unique_ptr<MediaCodecBridge> codec(
-      MediaCodecBridgeImpl::CreateVideoDecoder(
-          codec_config->codec, codec_config->needs_protected_surface,
-          codec_config->initial_expected_coded_size,
-          codec_config->surface_bundle->j_surface().obj(), media_crypto,
-          codec_config->csd0, codec_config->csd1, true,
-          require_software_codec));
-
+  auto codec = CreateMediaCodecInternal(codec_config, task_type == SW_CODEC);
+  if (codec)
+    codec_task_types_[codec.get()] = *task_type;
   return codec;
 }
 
 void AVDACodecAllocator::CreateMediaCodecAsync(
     base::WeakPtr<AVDACodecAllocatorClient> client,
     scoped_refptr<CodecConfig> codec_config) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  auto task_type =
+      TaskTypeForAllocation(codec_config->software_codec_forbidden);
+  if (!task_type) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AVDACodecAllocatorClient::OnCodecConfigured,
+                              client, nullptr));
+    return;
+  }
+
   // Allocate the codec on the appropriate thread, and reply to this one with
   // the result.  If |client| is gone by then, we handle cleanup.
   base::PostTaskAndReplyWithResult(
-      TaskRunnerFor(codec_config->task_type).get(), FROM_HERE,
-      base::Bind(&AVDACodecAllocator::CreateMediaCodecSync,
-                 base::Unretained(this), codec_config),
+      TaskRunnerFor(*task_type).get(), FROM_HERE,
+      base::Bind(&CreateMediaCodecInternal, codec_config,
+                 task_type == SW_CODEC),
       base::Bind(&AVDACodecAllocator::ForwardOrDropCodec,
-                 base::Unretained(this), client, codec_config->task_type,
+                 base::Unretained(this), client, *task_type,
                  codec_config->surface_bundle));
 }
 
@@ -183,11 +210,17 @@ void AVDACodecAllocator::ForwardOrDropCodec(
     TaskType task_type,
     scoped_refptr<AVDASurfaceBundle> surface_bundle,
     std::unique_ptr<MediaCodecBridge> media_codec) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (media_codec)
+    codec_task_types_[media_codec.get()] = task_type;
+
   if (!client) {
     // |client| has been destroyed.  Free |media_codec| on the right thread.
     // Note that this also preserves |surface_bundle| until |media_codec| has
     // been released, in case our ref to it is the last one.
-    ReleaseMediaCodec(std::move(media_codec), task_type, surface_bundle);
+    if (media_codec)
+      ReleaseMediaCodec(std::move(media_codec), surface_bundle);
     return;
   }
 
@@ -196,10 +229,13 @@ void AVDACodecAllocator::ForwardOrDropCodec(
 
 void AVDACodecAllocator::ReleaseMediaCodec(
     std::unique_ptr<MediaCodecBridge> media_codec,
-    TaskType task_type,
-    const scoped_refptr<AVDASurfaceBundle>& surface_bundle) {
+    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(media_codec);
+
+  auto task_type = codec_task_types_[media_codec.get()];
+  int erased = codec_task_types_.erase(media_codec.get());
+  DCHECK(erased);
 
   // No need to track the release if it's a SurfaceTexture.  We still forward
   // the reference to |surface_bundle|, though, so that the SurfaceTexture
@@ -243,25 +279,19 @@ void AVDACodecAllocator::OnMediaCodecReleased(
   // Also note that |surface_bundle| lasted at least as long as the codec.
 }
 
-// Returns a hint about whether the construction thread has hung for
-// |task_type|.  Note that if a thread isn't started, then we'll just return
-// "not hung", since it'll run on the current thread anyway.  The hang
-// detector will see no pending jobs in that case, so it's automatic.
-bool AVDACodecAllocator::IsThreadLikelyHung(TaskType task_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return threads_[task_type]->hang_detector.IsThreadLikelyHung();
-}
-
 bool AVDACodecAllocator::IsAnyRegisteredAVDA() {
   return !clients_.empty();
 }
 
-base::Optional<TaskType> AVDACodecAllocator::TaskTypeForAllocation() {
-  if (!IsThreadLikelyHung(AUTO_CODEC))
+base::Optional<TaskType> AVDACodecAllocator::TaskTypeForAllocation(
+    bool software_codec_forbidden) {
+  if (!threads_[AUTO_CODEC]->hang_detector.IsThreadLikelyHung())
     return AUTO_CODEC;
 
-  if (!IsThreadLikelyHung(SW_CODEC))
+  if (!threads_[SW_CODEC]->hang_detector.IsThreadLikelyHung() &&
+      !software_codec_forbidden) {
     return SW_CODEC;
+  }
 
   return base::nullopt;
 }

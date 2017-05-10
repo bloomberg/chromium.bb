@@ -312,6 +312,9 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  codec_config_->software_codec_forbidden =
+      IsMediaCodecSoftwareDecodingForbidden();
+
   if (codec_config_->codec == kCodecH264) {
     codec_config_->csd0 = config.sps;
     codec_config_->csd1 = config.pps;
@@ -1006,8 +1009,8 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
 
   auto it = output_picture_buffers_.find(picture_buffer_id);
   if (it == output_picture_buffers_.end()) {
-    NOTIFY_ERROR(PLATFORM_FAILURE, "Can't find PictureBuffer id "
-                                       << picture_buffer_id);
+    NOTIFY_ERROR(PLATFORM_FAILURE,
+                 "Can't find PictureBuffer id " << picture_buffer_id);
     return;
   }
 
@@ -1024,27 +1027,9 @@ void AndroidVideoDecodeAccelerator::Flush() {
 void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!media_codec_);
-
   DCHECK_NE(state_, WAITING_FOR_CODEC);
   state_ = WAITING_FOR_CODEC;
 
-  base::Optional<TaskType> task_type =
-      codec_allocator_->TaskTypeForAllocation();
-  if (!task_type) {
-    // If there is no free thread, then just fail.
-    OnCodecConfigured(nullptr);
-    return;
-  }
-
-  // If autodetection is disallowed, fall back to Chrome's software decoders
-  // instead of using the software decoders provided by MediaCodec.
-  if (task_type == TaskType::SW_CODEC &&
-      IsMediaCodecSoftwareDecodingForbidden()) {
-    OnCodecConfigured(nullptr);
-    return;
-  }
-
-  codec_config_->task_type = task_type.value();
   codec_allocator_->CreateMediaCodecAsync(weak_this_factory_.GetWeakPtr(),
                                           codec_config_);
 }
@@ -1055,18 +1040,8 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   DCHECK_NE(state_, WAITING_FOR_CODEC);
   state_ = WAITING_FOR_CODEC;
 
-  base::Optional<TaskType> task_type =
-      codec_allocator_->TaskTypeForAllocation();
-  if (!task_type) {
-    // If there is no free thread, then just fail.
-    OnCodecConfigured(nullptr);
-    return;
-  }
-
-  codec_config_->task_type = task_type.value();
   std::unique_ptr<MediaCodecBridge> media_codec =
       codec_allocator_->CreateMediaCodecSync(codec_config_);
-  // Note that |media_codec| might be null, which will NotifyError.
   OnCodecConfigured(std::move(media_codec));
 }
 
@@ -1128,8 +1103,9 @@ void AndroidVideoDecodeAccelerator::StartCodecDrain(DrainType drain_type) {
   //   the codec is not VP8. We still have to drain VP8 in this case because
   //   MediaCodec can hang in release() or flush() if we don't drain it.
   //   http://crbug.com/598963
-  if (!media_codec_ || (pending_bitstream_records_.empty() &&
-                        bitstream_buffers_in_decoder_.empty()) ||
+  if (!media_codec_ ||
+      (pending_bitstream_records_.empty() &&
+       bitstream_buffers_in_decoder_.empty()) ||
       (drain_type != DRAIN_FOR_FLUSH && codec_config_->codec != kCodecVP8)) {
     OnDrainCompleted();
     return;
@@ -1697,7 +1673,6 @@ void AndroidVideoDecodeAccelerator::ReleaseCodec() {
 
   picture_buffer_manager_.CodecChanged(nullptr);
   codec_allocator_->ReleaseMediaCodec(std::move(media_codec_),
-                                      codec_config_->task_type,
                                       codec_config_->surface_bundle);
 }
 
