@@ -64,6 +64,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -197,6 +198,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   BookmarkModelFactory::GetInstance();
   BookmarkUndoServiceFactory::GetInstance();
+  browser_sync::UserEventServiceFactory::GetInstance();
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
 #endif
