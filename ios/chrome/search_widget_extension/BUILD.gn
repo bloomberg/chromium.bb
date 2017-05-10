@@ -40,9 +40,12 @@ source_set("search_widget") {
     "search_widget_view.mm",
     "search_widget_view_controller.h",
     "search_widget_view_controller.mm",
+    "ui_util.h",
+    "ui_util.mm",
   ]
 
   deps = [
+    ":resources",
     "//base",
     "//components/open_from_clipboard:open_from_clipboard_impl",
     "//ios/chrome/common/app_group",
@@ -67,4 +70,25 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+bundle_data("resources") {
+  visibility = [ ":*" ]
+  sources = [
+    "resources/quick_action_camera_search.png",
+    "resources/quick_action_camera_search@2x.png",
+    "resources/quick_action_camera_search@3x.png",
+    "resources/quick_action_incognito_search.png",
+    "resources/quick_action_incognito_search@2x.png",
+    "resources/quick_action_incognito_search@3x.png",
+    "resources/quick_action_search.png",
+    "resources/quick_action_search@2x.png",
+    "resources/quick_action_search@3x.png",
+    "resources/quick_action_voice_search.png",
+    "resources/quick_action_voice_search@2x.png",
+    "resources/quick_action_voice_search@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
 }

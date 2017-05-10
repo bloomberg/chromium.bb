@@ -12,6 +12,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/search_widget_extension/search_widget_view.h"
+#import "ios/chrome/search_widget_extension/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -68,10 +69,22 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  UIVibrancyEffect* primary;
+  UIVibrancyEffect* secondary;
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    primary = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
+    secondary = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
+  } else {
+    primary = [UIVibrancyEffect notificationCenterVibrancyEffect];
+    secondary = [UIVibrancyEffect notificationCenterVibrancyEffect];
+  }
+
   // A local variable is necessary here as the property is declared weak and the
   // object would be deallocated before being retained by the addSubview call.
   SearchWidgetView* widgetView =
-      [[SearchWidgetView alloc] initWithActionTarget:self];
+      [[SearchWidgetView alloc] initWithActionTarget:self
+                               primaryVibrancyEffect:primary
+                             secondaryVibrancyEffect:secondary];
   self.widgetView = widgetView;
   [self.view addSubview:self.widgetView];
 
@@ -82,19 +95,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
   self.widgetView.translatesAutoresizingMaskIntoConstraints = NO;
 
-  NSLayoutConstraint* heightAnchor = [self.widgetView.heightAnchor
-      constraintEqualToAnchor:self.view.heightAnchor];
-  heightAnchor.priority = 900;
-
-  [NSLayoutConstraint activateConstraints:@[
-    [self.widgetView.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [self.widgetView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-    [self.widgetView.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    heightAnchor,
-    [self.widgetView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-  ]];
+  [NSLayoutConstraint activateConstraints:ui_util::CreateSameConstraints(
+                                              self.view, self.widgetView)];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -113,7 +115,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
   if (![url isEqual:self.copiedURL]) {
     self.copiedURL = url;
-    [self.widgetView updateCopiedURL:self.copiedURL.absoluteString];
+    [self.widgetView setCopiedURLString:self.copiedURL.absoluteString];
     return YES;
   }
   return NO;
@@ -123,13 +125,28 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 - (void)widgetActiveDisplayModeDidChange:(NCWidgetDisplayMode)activeDisplayMode
                          withMaximumSize:(CGSize)maxSize {
-  CGSize fittingSize = [self.widgetView
-      systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
-  if (fittingSize.height > maxSize.height) {
-    self.preferredContentSize = maxSize;
-  } else {
-    self.preferredContentSize = fittingSize;
+  BOOL isVariableHeight = (activeDisplayMode == NCWidgetDisplayModeExpanded);
+  // Set the copied URL section here so that the fitting size is correctly
+  // calculated.
+  [self.widgetView setCopiedURLVisible:isVariableHeight];
+
+  // If the widget's height is not variable, the preferredContentSize is the
+  // maxSize. Widgets cannot be shrunk, and this ensures the view will lay
+  // itself out according to the actual screen size. (This is only likely to
+  // happen if the accessibility option for larger font is used.) If the widget
+  // is not a fixed size, if the fitting size for the widget's contents is
+  // larger than the maximum size for the current widget display mode, this
+  // maximum size is used for the widget. Otherwise, the preferredContentSize is
+  // set to the fitting size so that the widget gets the correct height.
+  if (isVariableHeight) {
+    CGSize fittingSize = [self.widgetView
+        systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+    if (fittingSize.height < maxSize.height) {
+      self.preferredContentSize = fittingSize;
+      return;
+    }
   }
+  self.preferredContentSize = maxSize;
 }
 
 #pragma mark - WidgetViewActionTarget

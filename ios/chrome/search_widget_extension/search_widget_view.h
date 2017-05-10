@@ -24,19 +24,31 @@
 
 @end
 
-// View for the search widget. Shows a blinking cursor for a fake omnibox and
-// calls the target when tapped.
+// View for the search widget. Shows two sections. The first section is a row of
+// actions to launch the app represented as a circular icon and a label. When
+// tapped, they call the callbacks in the SearchWidgetViewActionTarget protocol.
+// The second section shows a button with the |copiedURLString| if it has been
+// set. When tapped, the openCopiedURL callback in SearchWidgetViewActionTarget
+// is called. If no |copiedURLString| was set, the button is replaced by a
+// hairline separation and placeholder text. This section can be hidden with the
+// |copiedURLVisible| variable.
 @interface SearchWidgetView : UIView
 
+// Set this property to show/hide the copied URL section.
+@property(nonatomic, assign) BOOL copiedURLVisible;
+
+// The copied URL string to be shown in the copied URL section.
+@property(nonatomic, copy) NSString* copiedURLString;
+
 // Designated initializer, creates the widget view with a |target| for user
-// actions.
+// actions. View elements will be added to the |primaryVibrancyEffect| and
+// |secondaryVibrancyEffect| views.
 - (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target
+               primaryVibrancyEffect:(UIVibrancyEffect*)primaryVibrancyEffect
+             secondaryVibrancyEffect:(UIVibrancyEffect*)secondaryVibrancyEffect
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-
-// Updates the copied URL.
-- (void)updateCopiedURL:(NSString*)copiedURL;
 
 @end
 
