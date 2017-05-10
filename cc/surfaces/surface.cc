@@ -180,8 +180,9 @@ Surface::FrameData::~FrameData() = default;
 
 void Surface::ActivatePendingFrame() {
   DCHECK(pending_frame_data_);
-  ActivateFrame(std::move(*pending_frame_data_));
+  FrameData frame_data = std::move(*pending_frame_data_);
   pending_frame_data_.reset();
+  ActivateFrame(std::move(frame_data));
 }
 
 // A frame is activated if all its Surface ID dependences are active or a
