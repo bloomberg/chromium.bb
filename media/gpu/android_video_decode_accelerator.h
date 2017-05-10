@@ -261,9 +261,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // |picture_buffer_manager_|.
   void ReleaseCodec();
 
-  // ReleaseCodec(), and also drop our ref to it's surface bundle.  This is the
-  // right thing to do unless you're planning to re-use the bundle with another
-  // codec.  Normally, one doesn't.
+  // ReleaseCodec(), and also drop our ref to it's surface bundle.  This is
+  // the right thing to do unless you're planning to re-use the bundle with
+  // another codec.  Normally, one doesn't.
   void ReleaseCodecAndBundle();
 
   // Used to DCHECK that we are called on the correct thread.

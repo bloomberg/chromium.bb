@@ -64,10 +64,8 @@ class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
   // is only a hint.
   gfx::Size initial_expected_coded_size;
 
-  // The type of allocation to use for. We use this to select the right thread
-  // for construction / destruction, and to decide if we should restrict the
-  // codec to be software only.
-  TaskType task_type;
+  // Whether creating a software decoder backed MediaCodec is forbidden.
+  bool software_codec_forbidden = false;
 
   // Codec specific data (SPS and PPS for H264).
   std::vector<uint8_t> csd0;
@@ -119,7 +117,6 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // Make sure the construction threads are started for |client|. Returns true
   // on success.
   bool StartThread(AVDACodecAllocatorClient* client);
-
   void StopThread(AVDACodecAllocatorClient* client);
 
   // Create and configure a MediaCodec synchronously.
@@ -142,24 +139,10 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // this pairing wrong.
   virtual void ReleaseMediaCodec(
       std::unique_ptr<MediaCodecBridge> media_codec,
-      TaskType task_type,
-      const scoped_refptr<AVDASurfaceBundle>& surface_bundle);
-
-  // Returns a hint about whether the construction thread has hung for
-  // |task_type|.  Note that if a thread isn't started, then we'll just return
-  // "not hung", since it'll run on the current thread anyway.  The hang
-  // detector will see no pending jobs in that case, so it's automatic.
-  bool IsThreadLikelyHung(TaskType task_type);
+      scoped_refptr<AVDASurfaceBundle> surface_bundle);
 
   // Return true if and only if there is any AVDA registered.
   bool IsAnyRegisteredAVDA();
-
-  // Return the task type to use for a new codec allocation, or nullopt if
-  // both threads are hung.
-  base::Optional<TaskType> TaskTypeForAllocation();
-
-  // Return the task runner for tasks of type |type|.
-  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerFor(TaskType task_type);
 
   // Return a reference to the thread for unit tests.
   base::Thread& GetThreadForTesting(TaskType task_type);
@@ -217,6 +200,13 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
     HangDetector hang_detector;
   };
 
+  // Return the task type to use for a new codec allocation, or nullopt if
+  // both threads are hung.
+  base::Optional<TaskType> TaskTypeForAllocation(bool software_codec_forbidden);
+
+  // Return the task runner for tasks of type |type|.
+  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerFor(TaskType task_type);
+
   // Called on the gpu main thread when a codec is freed on a codec thread.
   // |surface_bundle| is the surface bundle that the codec was using.
   void OnMediaCodecReleased(scoped_refptr<AVDASurfaceBundle> surface_bundle);
@@ -241,6 +231,10 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   base::ThreadChecker thread_checker_;
 
   base::WaitableEvent* stop_event_for_testing_;
+
+  // Saves the TaskType used to create a given codec so it can later be released
+  // on the same thread.
+  std::map<MediaCodecBridge*, TaskType> codec_task_types_;
 
   // For canceling pending StopThreadTask()s.
   base::WeakPtrFactory<AVDACodecAllocator> weak_this_factory_;
