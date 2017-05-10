@@ -1,13 +1,16 @@
-Bluetooth in Content
-====================
+# Web Bluetooth Service in Content
 
-`content/*/bluetooth` implements [Web Bluetooth][WB] using the
-`device/bluetooth` code module.
+`content/*/bluetooth` implements the [Web Bluetooth specification]
+using the [/device/bluetooth] code module.
 
-[WB]: https://webbluetoothcg.github.io/web-bluetooth/
+This service is exposed to the web in the [blink bluetooth module].
 
-Testing
---------------------------------------------------------------------------------
+[Web Bluetooth specification]: https://webbluetoothcg.github.io/web-bluetooth/
+[/device/bluetooth]: /device/bluetooth
+[blink bluetooth module]: /third_party/WebKit/Source/modules/bluetooth/
+
+
+## Testing
 
 Bluetooth layout tests in `third_party/WebKit/LayoutTests/bluetooth/` rely on
 fake Bluetooth implementation classes constructed in
@@ -15,8 +18,7 @@ fake Bluetooth implementation classes constructed in
 These tests span JavaScript binding to the `device/bluetooth` API layer.
 
 
-Design Documents
---------------------------------------------------------------------------------
+## Design Documents
 
 See: [Class Diagram of Web Bluetooth through Bluetooth Android][Class]
 

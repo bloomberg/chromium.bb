@@ -1,16 +1,19 @@
-# Testing
+# Bluetooth Testing
 
 Implementation of the Bluetooth component is tested via unittests. Client code
 uses Mock Bluetooth objects:
 
+
 ## Mojo Testing Interface Implementation
-See [//public/interfaces/test/README.md](//device/bluetooth/public/interfaces/test/README.md)
+
+See [bluetooth/public/interfaces/test](/device/bluetooth/public/interfaces/test)
 for details about the interface. The current implementation of this interface
 creates a fake implementation of the current non-mojo C++ Bluetooth interface.
 This interface is implemented across files with a "fake_" prefix.
 *This interface may be removed when a Bluetooth Mojo Service is introduced, if
 Web Bluetooth remains its only client. Testing code would implement the service
 as needed for tests.*
+
 
 ## Cross Platform Unit Tests
 
@@ -28,6 +31,7 @@ operating system APIs as possible.
 `test/bluetooth_test_android.h` and typedef to the name `BluetoothTest`.
 
 [More testing information](https://docs.google.com/document/d/1mBipxn1sJu6jMqP0RQZpkYXC1o601bzLCpCxwTA2yGA/edit?usp=sharing)
+
 
 ## Legacy Platform Specific Unit Tests
 

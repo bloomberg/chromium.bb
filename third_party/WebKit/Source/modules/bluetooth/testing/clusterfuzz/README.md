@@ -1,8 +1,8 @@
 # Web Bluetooth Fuzzer
 
 The Web Bluetooth Fuzzer generates test pages that can be run as layout tests.
-These pages consist of a sequence of calls to the Web Bluetooth API whose
-purpose is to stress test the API's implementation and catch any bugs
+These pages consist of a sequence of calls to the [Web Bluetooth API](../..)
+whose purpose is to stress test the API's implementation and catch any bugs
 or regressions.
 
 This document describes the overall design of the fuzzer.
