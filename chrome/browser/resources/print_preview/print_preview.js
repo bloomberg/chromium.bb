@@ -26,6 +26,16 @@ print_preview.PrintPreviewUiState_ = {
   ERROR: 'error'
 };
 
+/**
+ * What can happen when print preview tries to print.
+ * @enum {string}
+ * @private
+ */
+print_preview.PrintAttemptResult_ = {
+  NOT_READY: 'not-ready',
+  PRINTED: 'printed',
+  READY_WAITING_FOR_PREVIEW: 'ready-waiting-for-preview'
+};
 
 cr.define('print_preview', function() {
   'use strict';
@@ -312,17 +322,6 @@ cr.define('print_preview', function() {
     this.showSystemDialogBeforeNextPrint_ = false;
   }
 
-  /**
-   * What can happen when print preview tries to print.
-   * @enum {string}
-   * @private
-   */
-  PrintPreview.PrintAttemptResult_ = {
-    NOT_READY: 'not-ready',
-    PRINTED: 'printed',
-    READY_WAITING_FOR_PREVIEW: 'ready-waiting-for-preview'
-  };
-
   PrintPreview.prototype = {
     __proto__: print_preview.Component.prototype,
 
@@ -549,9 +548,9 @@ cr.define('print_preview', function() {
       this.setIsEnabled_(false);
       this.printHeader_.isCancelButtonEnabled = true;
       var printAttemptResult = this.printIfReady_();
-      if (printAttemptResult == PrintPreview.PrintAttemptResult_.PRINTED ||
+      if (printAttemptResult == print_preview.PrintAttemptResult_.PRINTED ||
           printAttemptResult ==
-              PrintPreview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW) {
+              print_preview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW) {
         if ((this.destinationStore_.selectedDestination.isLocal &&
              !this.destinationStore_.selectedDestination.isPrivet &&
              !this.destinationStore_.selectedDestination.isExtension &&
@@ -567,7 +566,7 @@ cr.define('print_preview', function() {
 
     /**
      * Attempts to print if needed and if ready.
-     * @return {PrintPreview.PrintAttemptResult_} Attempt result.
+     * @return {print_preview.PrintAttemptResult_} Attempt result.
      * @private
      */
     printIfReady_: function() {
@@ -579,10 +578,10 @@ cr.define('print_preview', function() {
           this.destinationStore_.selectedDestination &&
           this.destinationStore_.selectedDestination.capabilities;
       if (!okToPrint) {
-        return PrintPreview.PrintAttemptResult_.NOT_READY;
+        return print_preview.PrintAttemptResult_.NOT_READY;
       }
       if (this.isPreviewGenerationInProgress_) {
-        return PrintPreview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW;
+        return print_preview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW;
       }
       assert(this.printTicketStore_.isTicketValid(),
           'Trying to print with invalid ticket');
@@ -602,7 +601,7 @@ cr.define('print_preview', function() {
           this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW,
           this.showSystemDialogBeforeNextPrint_);
       this.showSystemDialogBeforeNextPrint_ = false;
-      return PrintPreview.PrintAttemptResult_.PRINTED;
+      return print_preview.PrintAttemptResult_.PRINTED;
     },
 
     /**
@@ -1352,6 +1351,11 @@ cr.define('print_preview', function() {
 // <include src="search/destination_search.js">
 // <include src="search/provisional_destination_resolver.js">
 
+/**
+ * Global instance of PrintPreview, used by browser tests.
+ * @type {print_preview.PrintPreview}
+ */
+var printPreview;
 window.addEventListener('DOMContentLoaded', function() {
   printPreview = new print_preview.PrintPreview();
   printPreview.initialize();

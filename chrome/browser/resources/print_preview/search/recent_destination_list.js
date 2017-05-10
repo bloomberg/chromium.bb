@@ -20,7 +20,7 @@ cr.define('print_preview', function() {
         loadTimeData.getString('recentDestinationsTitle'),
         null /*actionLinkLabel*/,
         true /*opt_showAll*/);
-  };
+  }
 
   RecentDestinationList.prototype = {
     __proto__: print_preview.DestinationList.prototype,

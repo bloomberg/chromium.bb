@@ -38,7 +38,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.query_ = query;
-  };
+  }
 
   /**
    * Event types dispatched by the destination list item.
@@ -75,7 +75,7 @@ cr.define('print_preview', function() {
           this.onRegisterPromoClicked_.bind(this));
     },
 
-    /** @return {!print_preiew.Destination} */
+    /** @return {!print_preview.Destination} */
     get destination() {
       return this.destination_;
     },
@@ -190,7 +190,8 @@ cr.define('print_preview', function() {
             'extensionDestinationIconTooltip',
             this.destination_.extensionName);
         extensionIconEl.onclick = this.onExtensionIconClicked_.bind(this);
-        extensionIconEl.onkeydown = this.onExtensionIconKeyDown_.bind(this);
+        extensionIconEl.onkeydown = /** @type {function(Event)} */(
+            this.onExtensionIconKeyDown_.bind(this));
       }
 
       var extensionIndicatorEl =
@@ -241,7 +242,7 @@ cr.define('print_preview', function() {
     /**
      * Shows/Hides the configuring in progress message and starts/stops its
      * animation accordingly.
-     * @param {bool} show If the message and animation should be shown.
+     * @param {boolean} show If the message and animation should be shown.
      * @private
      */
     updateConfiguringMessage_: function(show) {
@@ -287,7 +288,7 @@ cr.define('print_preview', function() {
     /**
      * Called when the key is pressed on the destination item. Dispatches a
      * SELECT event when Enter is pressed.
-     * @param {KeyboardEvent} e Keyboard event to process.
+     * @param {!KeyboardEvent} e Keyboard event to process.
      * @private
      */
     onKeyDown_: function(e) {
@@ -319,7 +320,7 @@ cr.define('print_preview', function() {
      * Handles click and 'Enter' key down events for the extension icon element.
      * It opens extensions page with the extension associated with the
      * destination highlighted.
-     * @param {MouseEvent|KeyboardEvent} e The event to handle.
+     * @param {Event} e The event to handle.
      * @private
      */
     onExtensionIconClicked_: function(e) {
@@ -330,7 +331,7 @@ cr.define('print_preview', function() {
     /**
      * Handles key down event for the extensin icon element. Keys different than
      * 'Enter' are ignored.
-     * @param {KeyboardEvent} e The event to handle.
+     * @param {!Event} e The event to handle.
      * @private
      */
     onExtensionIconKeyDown_: function(e) {
@@ -338,7 +339,7 @@ cr.define('print_preview', function() {
         return;
       if (e.keyCode != 13 /* Enter */)
         return;
-      this.onExtensionIconClicked_(event);
+      this.onExtensionIconClicked_(e);
     }
   };
 

@@ -2,6 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/**
+ * CSS classes used by the component.
+ * @enum {string}
+ * @private
+ */
+print_preview.DestinationSettingsClasses_ = {
+  CHANGE_BUTTON: 'destination-settings-change-button',
+  ICON: 'destination-settings-icon',
+  ICON_CLOUD: 'destination-settings-icon-cloud',
+  ICON_CLOUD_SHARED: 'destination-settings-icon-cloud-shared',
+  ICON_GOOGLE_PROMOTED: 'destination-settings-icon-google-promoted',
+  ICON_LOCAL: 'destination-settings-icon-local',
+  ICON_MOBILE: 'destination-settings-icon-mobile',
+  ICON_MOBILE_SHARED: 'destination-settings-icon-mobile-shared',
+  LOCATION: 'destination-settings-location',
+  NAME: 'destination-settings-name',
+  STALE: 'stale',
+  THOBBER_NAME: 'destination-throbber-name'
+};
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -28,7 +50,7 @@ cr.define('print_preview', function() {
 
     /**
      * Current CSS class of the destination icon.
-     * @type {?DestinationSettings.Classes_}
+     * @type {?print_preview.DestinationSettingsClasses_}
      * @private
      */
     this.iconClass_ = null;
@@ -41,26 +63,6 @@ cr.define('print_preview', function() {
   DestinationSettings.EventType = {
     CHANGE_BUTTON_ACTIVATE:
         'print_preview.DestinationSettings.CHANGE_BUTTON_ACTIVATE'
-  };
-
-  /**
-   * CSS classes used by the component.
-   * @enum {string}
-   * @private
-   */
-  DestinationSettings.Classes_ = {
-    CHANGE_BUTTON: 'destination-settings-change-button',
-    ICON: 'destination-settings-icon',
-    ICON_CLOUD: 'destination-settings-icon-cloud',
-    ICON_CLOUD_SHARED: 'destination-settings-icon-cloud-shared',
-    ICON_GOOGLE_PROMOTED: 'destination-settings-icon-google-promoted',
-    ICON_LOCAL: 'destination-settings-icon-local',
-    ICON_MOBILE: 'destination-settings-icon-mobile',
-    ICON_MOBILE_SHARED: 'destination-settings-icon-mobile-shared',
-    LOCATION: 'destination-settings-location',
-    NAME: 'destination-settings-name',
-    STALE: 'stale',
-    THOBBER_NAME: 'destination-throbber-name'
   };
 
   DestinationSettings.prototype = {
@@ -79,7 +81,7 @@ cr.define('print_preview', function() {
     /** @override */
     set isEnabled(isEnabled) {
       var changeButton = this.getElement().getElementsByClassName(
-          DestinationSettings.Classes_.CHANGE_BUTTON)[0];
+          print_preview.DestinationSettingsClasses_.CHANGE_BUTTON)[0];
       changeButton.disabled = !isEnabled;
     },
 
@@ -87,7 +89,7 @@ cr.define('print_preview', function() {
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       var changeButton = this.getElement().getElementsByClassName(
-          DestinationSettings.Classes_.CHANGE_BUTTON)[0];
+          print_preview.DestinationSettingsClasses_.CHANGE_BUTTON)[0];
       this.tracker.add(
           changeButton, 'click', this.onChangeButtonClick_.bind(this));
       this.tracker.add(
@@ -122,17 +124,17 @@ cr.define('print_preview', function() {
       var destination = this.destinationStore_.selectedDestination;
       if (destination != null) {
         var nameEl = this.getElement().getElementsByClassName(
-            DestinationSettings.Classes_.NAME)[0];
+            print_preview.DestinationSettingsClasses_.NAME)[0];
         nameEl.textContent = destination.displayName;
         nameEl.title = destination.displayName;
 
         var iconEl = this.getElement().getElementsByClassName(
-            DestinationSettings.Classes_.ICON)[0];
+            print_preview.DestinationSettingsClasses_.ICON)[0];
         iconEl.src = destination.iconUrl;
 
         var hint = destination.hint;
         var locationEl = this.getElement().getElementsByClassName(
-            DestinationSettings.Classes_.LOCATION)[0];
+            print_preview.DestinationSettingsClasses_.LOCATION)[0];
         locationEl.textContent = hint;
         locationEl.title = hint;
 
@@ -144,7 +146,7 @@ cr.define('print_preview', function() {
 
         var isOffline = destination.isOffline;
         destinationSettingsBoxEl.classList.toggle(
-            DestinationSettings.Classes_.STALE, isOffline);
+            print_preview.DestinationSettingsClasses_.STALE, isOffline);
         setIsVisible(locationEl, !isOffline);
         setIsVisible(offlineStatusEl, isOffline);
       }
@@ -159,7 +161,7 @@ cr.define('print_preview', function() {
       var destinationName =
           this.destinationStore_.selectedDestination.displayName;
       var nameEl = this.getElement().getElementsByClassName(
-          DestinationSettings.Classes_.THOBBER_NAME)[0];
+          print_preview.DestinationSettingsClasses_.THOBBER_NAME)[0];
       nameEl.textContent = destinationName;
       nameEl.title = destinationName;
     }

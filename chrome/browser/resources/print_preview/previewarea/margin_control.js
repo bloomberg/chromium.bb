@@ -99,7 +99,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isInError_ = false;
-  };
+  }
 
   /**
    * Event types dispatched by the margin control.
@@ -327,6 +327,7 @@ cr.define('print_preview', function() {
           this.getElement(),
           'transitionend',
           this.onTransitionEnd_.bind(this));
+      assert(this.textbox_);
       this.tracker.add(
           this.textbox_, 'input', this.onTextboxInput_.bind(this));
       this.tracker.add(

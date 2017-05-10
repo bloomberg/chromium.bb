@@ -2,17 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/**
+ * States that the provisional destination resolver can be in.
+ * @enum {string}
+ */
+print_preview.ResolverState = {
+  INITIAL: 'INITIAL',
+  ACTIVE: 'ACTIVE',
+  GRANTING_PERMISSION: 'GRANTING_PERMISSION',
+  ERROR: 'ERROR',
+  DONE: 'DONE'
+};
+
 cr.define('print_preview', function() {
   'use strict';
-
-  /** @enum {string} */
-  var ResolverState = {
-    INITIAL: 'INITIAL',
-    ACTIVE: 'ACTIVE',
-    GRANTING_PERMISSION: 'GRANTING_PERMISSION',
-    ERROR: 'ERROR',
-    DONE: 'DONE'
-  };
 
   /**
    * Overlay used to resolve a provisional extension destination. The user is
@@ -38,8 +43,8 @@ cr.define('print_preview', function() {
     /** @private {!print_preview.Destination} */
     this.destination_ = destination;
 
-    /** @private {ResolverState} */
-    this.state_ = ResolverState.INITIAL;
+    /** @private {print_preview.ResolverState} */
+    this.state_ = print_preview.ResolverState.INITIAL;
 
     /**
      * Promise resolver for promise returned by {@code this.run}.
@@ -87,15 +92,16 @@ cr.define('print_preview', function() {
     /** @override */
     onSetVisibleInternal: function(visible) {
       if (visible) {
-        assert(this.state_ == ResolverState.INITIAL,
+        assert(this.state_ == print_preview.ResolverState.INITIAL,
                'Showing overlay while not in initial state.');
         assert(!this.promiseResolver_, 'Promise resolver already set.');
-        this.setState_(ResolverState.ACTIVE);
+        this.setState_(print_preview.ResolverState.ACTIVE);
         this.promiseResolver_ = new PromiseResolver();
         this.getChildElement('.default').focus();
-      } else if (this.state_ != ResolverState.DONE) {
-        assert(this.state_ != ResolverState.INITIAL, 'Hiding in initial state');
-        this.setState_(ResolverState.DONE);
+      } else if (this.state_ != print_preview.ResolverState.DONE) {
+        assert(this.state_ != print_preview.ResolverState.INITIAL,
+              'Hiding in initial state');
+        this.setState_(print_preview.ResolverState.DONE);
         this.promiseResolver_.reject();
         this.promiseResolver_ = null;
       }
@@ -123,10 +129,10 @@ cr.define('print_preview', function() {
      * @private
      */
     startResolveDestination_: function() {
-      assert(this.state_ == ResolverState.ACTIVE,
+      assert(this.state_ == print_preview.ResolverState.ACTIVE,
              'Invalid state in request grant permission');
 
-      this.setState_(ResolverState.GRANTING_PERMISSION);
+      this.setState_(print_preview.ResolverState.GRANTING_PERMISSION);
       this.destinationStore_.resolveProvisionalDestination(this.destination_);
     },
 
@@ -138,25 +144,25 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationResolved_: function(event) {
-      if (this.state_ == ResolverState.DONE)
+      if (this.state_ == print_preview.ResolverState.DONE)
         return;
 
       if (event.provisionalId != this.destination_.id)
         return;
 
       if (event.destination) {
-        this.setState_(ResolverState.DONE);
+        this.setState_(print_preview.ResolverState.DONE);
         this.promiseResolver_.resolve(event.destination);
         this.promiseResolver_ = null;
         this.setIsVisible(false);
       } else {
-        this.setState_(ResolverState.ERROR);
+        this.setState_(print_preview.ResolverState.ERROR);
       }
     },
 
     /**
      * Sets new resolver state and updates the UI accordingly.
-     * @param {ResolverState} state
+     * @param {print_preview.ResolverState} state
      * @private
      */
     setState_: function(state) {
@@ -173,23 +179,23 @@ cr.define('print_preview', function() {
      */
     updateUI_: function() {
       this.getChildElement('.usb-permission-ok-button').hidden =
-          this.state_ == ResolverState.ERROR;
+          this.state_ == print_preview.ResolverState.ERROR;
       this.getChildElement('.usb-permission-ok-button').disabled =
-          this.state_ != ResolverState.ACTIVE;
+          this.state_ != print_preview.ResolverState.ACTIVE;
 
       // If OK button is disabled, make sure Cancel button gets focus.
-      if (this.state_ != ResolverState.ACTIVE)
+      if (this.state_ != print_preview.ResolverState.ACTIVE)
         this.getChildElement('.cancel').focus();
 
       this.getChildElement('.throbber-placeholder').classList.toggle(
           'throbber',
-          this.state_ == ResolverState.GRANTING_PERMISSION);
+          this.state_ == print_preview.ResolverState.GRANTING_PERMISSION);
 
       this.getChildElement('.usb-permission-extension-desc').hidden =
-          this.state_ == ResolverState.ERROR;
+          this.state_ == print_preview.ResolverState.ERROR;
 
       this.getChildElement('.usb-permission-message').textContent =
-          this.state_ == ResolverState.ERROR ?
+          this.state_ == print_preview.ResolverState.ERROR ?
               loadTimeData.getStringF('resolveExtensionUSBErrorMessage',
                                       this.destination_.extensionName) :
               loadTimeData.getString('resolveExtensionUSBPermissionMessage');

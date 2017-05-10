@@ -31,7 +31,7 @@ cr.define('print_preview', function() {
 
     /**
      * Data store holding printer sharing invitations.
-     * @type {!print_preview.DestinationStore}
+     * @type {!print_preview.InvitationStore}
      * @private
      */
     this.invitationStore_ = invitationStore;
@@ -115,7 +115,7 @@ cr.define('print_preview', function() {
      */
     this.cloudList_ = new print_preview.CloudDestinationList(this);
     this.addChild(this.cloudList_);
-  };
+  }
 
   /**
    * Event types dispatched by the component.
@@ -505,7 +505,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {!printe_preview.Invitation} invitation Invitation to show.
+     * @param {!print_preview.Invitation} invitation Invitation to show.
      * @private
      */
     showInvitation_: function(invitation) {
@@ -555,8 +555,8 @@ cr.define('print_preview', function() {
         option.value = '';
         accountSelectEl.add(option);
 
-        accountSelectEl.selectedIndex =
-            this.userInfo_.users.indexOf(this.userInfo_.activeUser);
+        accountSelectEl.selectedIndex = this.userInfo_.activeUser ?
+            this.userInfo_.users.indexOf(this.userInfo_.activeUser) : -1;
       }
 
       setIsVisible(this.getChildElement('.user-info'), loggedIn);
@@ -621,7 +621,7 @@ cr.define('print_preview', function() {
       this.destinationInConfiguring_ = destination;
       this.destinationStore_.resolveCrosDestination(destination).then(
           /**
-           * @param {!print_preview.PrinterSetupResponse} response.
+           * @param {!print_preview.PrinterSetupResponse} response
            */
           function(response) {
             this.destinationInConfiguring_ = null;
@@ -677,12 +677,13 @@ cr.define('print_preview', function() {
                 }.bind(this)).
             catch(
                 function() {
-                  console.log('Failed to resolve provisional destination: ' +
-                              destination.id);
+                  console.error('Failed to resolve provisional destination: ' +
+                                destination.id);
                 }).
             then(
                 function() {
-                  this.removeChild(this.provisionalDestinationResolver_);
+                  this.removeChild(
+                      assert(this.provisionalDestinationResolver_));
                   this.provisionalDestinationResolver_ = null;
 
                   // Restore focus to the previosly focused element if it's
@@ -814,7 +815,7 @@ cr.define('print_preview', function() {
       this.metrics_.record(accept ?
           print_preview.Metrics.DestinationSearchBucket.INVITATION_ACCEPTED :
           print_preview.Metrics.DestinationSearchBucket.INVITATION_REJECTED);
-      this.invitationStore_.processInvitation(this.invitation_, accept);
+      this.invitationStore_.processInvitation(assert(this.invitation_), accept);
       this.updateInvitations_();
     },
 

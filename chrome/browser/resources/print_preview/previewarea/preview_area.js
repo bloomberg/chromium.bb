@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview');
+
+/**
+ * Enumeration of IDs shown in the preview area.
+ * @enum {string}
+ * @private
+ */
+print_preview.PreviewAreaMessageId_ = {
+  CUSTOM: 'custom',
+  LOADING: 'loading',
+  PREVIEW_FAILED: 'preview-failed'
+};
+
 /**
  * @typedef {{accessibility: Function,
  *            documentLoadComplete: Function,
@@ -19,10 +32,8 @@
  *            onScroll: Function,
  *            pageXOffset: Function,
  *            pageYOffset: Function,
- *            printPreviewPageCount: Function,
  *            reload: Function,
- *            removePrintButton: Function,
- *            resetPrintPreviewUrl: Function,
+ *            resetPrintPreviewMode: Function,
  *            sendKeyEvent: Function,
  *            setPageNumbers: Function,
  *            setPageXOffset: Function,
@@ -161,7 +172,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.openSystemDialogButton_ = null;
-  };
+  }
 
   /**
    * Event types dispatched by the preview area.
@@ -205,27 +216,17 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Enumeration of IDs shown in the preview area.
-   * @enum {string}
-   * @private
-   */
-  PreviewArea.MessageId_ = {
-    CUSTOM: 'custom',
-    LOADING: 'loading',
-    PREVIEW_FAILED: 'preview-failed'
-  };
-
-  /**
    * Maps message IDs to the CSS class that contains them.
-   * @type {Object<print_preview.PreviewArea.MessageId_, string>}
+   * @type {Object<print_preview.PreviewAreaMessageId_, string>}
    * @private
    */
   PreviewArea.MessageIdClassMap_ = {};
-  PreviewArea.MessageIdClassMap_[PreviewArea.MessageId_.CUSTOM] =
+  PreviewArea.MessageIdClassMap_[print_preview.PreviewAreaMessageId_.CUSTOM] =
       'preview-area-custom-message';
-  PreviewArea.MessageIdClassMap_[PreviewArea.MessageId_.LOADING] =
+  PreviewArea.MessageIdClassMap_[print_preview.PreviewAreaMessageId_.LOADING] =
       'preview-area-loading-message';
-  PreviewArea.MessageIdClassMap_[PreviewArea.MessageId_.PREVIEW_FAILED] =
+  PreviewArea.MessageIdClassMap_[
+      print_preview.PreviewAreaMessageId_.PREVIEW_FAILED] =
       'preview-area-preview-failed-message';
 
   /**
@@ -305,7 +306,7 @@ cr.define('print_preview', function() {
      * @param {string} message Custom message to show.
      */
     showCustomMessage: function(message) {
-      this.showMessage_(PreviewArea.MessageId_.CUSTOM, message);
+      this.showMessage_(print_preview.PreviewAreaMessageId_.CUSTOM, message);
     },
 
     /** @override */
@@ -414,7 +415,7 @@ cr.define('print_preview', function() {
 
     /**
      * Shows a given message on the overlay.
-     * @param {!print_preview.PreviewArea.MessageId_} messageId ID of the
+     * @param {!print_preview.PreviewAreaMessageId_} messageId ID of the
      *     message to show.
      * @param {string=} opt_message Optional message to show that can be used
      *     by some message IDs.
@@ -424,7 +425,7 @@ cr.define('print_preview', function() {
       // Hide all messages.
       var messageEls = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.MESSAGE);
-      for (var i = 0, messageEl; messageEl = messageEls[i]; i++) {
+      for (var i = 0, messageEl; (messageEl = messageEls[i]); i++) {
         setIsVisible(messageEl, false);
       }
       // Disable jumping animation to conserve cycles.
@@ -433,11 +434,11 @@ cr.define('print_preview', function() {
       jumpingDotsEl.classList.remove('jumping-dots');
 
       // Show specific message.
-      if (messageId == PreviewArea.MessageId_.CUSTOM) {
+      if (messageId == print_preview.PreviewAreaMessageId_.CUSTOM) {
         var customMessageTextEl = this.getElement().getElementsByClassName(
             PreviewArea.Classes_.CUSTOM_MESSAGE_TEXT)[0];
         customMessageTextEl.textContent = opt_message;
-      } else if (messageId == PreviewArea.MessageId_.LOADING) {
+      } else if (messageId == print_preview.PreviewAreaMessageId_.LOADING) {
         jumpingDotsEl.classList.add('jumping-dots');
       }
       var messageEl = this.getElement().getElementsByClassName(
@@ -541,7 +542,8 @@ cr.define('print_preview', function() {
             this, PreviewArea.EventType.PREVIEW_GENERATION_IN_PROGRESS);
         if (this.loadingTimeout_ == null) {
           this.loadingTimeout_ = setTimeout(
-              this.showMessage_.bind(this, PreviewArea.MessageId_.LOADING),
+              this.showMessage_.bind(this,
+                  print_preview.PreviewAreaMessageId_.LOADING),
               PreviewArea.LOADING_TIMEOUT_);
         }
       } else {
@@ -606,7 +608,7 @@ cr.define('print_preview', function() {
      */
     onPreviewGenerationFail_: function() {
       this.cancelTimeout();
-      this.showMessage_(PreviewArea.MessageId_.PREVIEW_FAILED);
+      this.showMessage_(print_preview.PreviewAreaMessageId_.PREVIEW_FAILED);
       cr.dispatchSimpleEvent(
           this, PreviewArea.EventType.PREVIEW_GENERATION_FAIL);
     },

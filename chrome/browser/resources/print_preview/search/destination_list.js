@@ -84,7 +84,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.listItems_ = [];
-  };
+  }
 
   /**
    * Enumeration of event types dispatched by the destination list.
@@ -262,7 +262,7 @@ cr.define('print_preview', function() {
         this.renderDestinationsList_(this.destinations_);
       } else {
         var filteredDests = this.destinations_.filter(function(destination) {
-          return destination.matches(this.query_);
+          return destination.matches(assert(this.query_));
         }, this);
         this.renderDestinationsList_(filteredDests);
       }
@@ -308,13 +308,14 @@ cr.define('print_preview', function() {
       var listEl = this.getChildElement('.destination-list > ul');
       var focusedEl = listEl.querySelector(':focus');
       for (var i = 0; i < numItems; i++) {
-        var listItem = visibleListItems[destinations[i].id];
+        var destination = assert(destinations[i]);
+        var listItem = visibleListItems[destination.id];
         if (listItem) {
           // Destination ID is the same, but it can be registered to a different
           // user account, hence passing it to the item update.
-          this.updateListItem_(listEl, listItem, focusedEl, destinations[i]);
+          this.updateListItem_(listEl, listItem, focusedEl, destination);
         } else {
-          this.renderListItem_(listEl, destinations[i]);
+          this.renderListItem_(listEl, destination);
         }
       }
     },
@@ -353,7 +354,7 @@ cr.define('print_preview', function() {
       var listItem = new print_preview.DestinationListItem(
           this.eventTarget_, destination, this.query_);
       this.addChild(listItem);
-      listItem.render(listEl);
+      listItem.render(assert(listEl));
       this.listItems_.push(listItem);
     },
 
