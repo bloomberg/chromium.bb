@@ -2956,9 +2956,7 @@
                 {
                     "name": "EnabledForPhishingSites",
                     "params": {
-                        "activation_lists": "phishing_interstitial",
-                        "activation_scope": "activation_list",
-                        "activation_state": "enabled"
+                        "enable_presets": "liverun_on_phishing_sites"
                     },
                     "enable_features": [
                         "SubresourceFilter"

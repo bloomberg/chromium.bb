@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "components/component_updater/default_component_installer.h"
 
 namespace base {
@@ -31,6 +32,8 @@ class SubresourceFilterComponentInstallerTraits
 
  private:
   friend class SubresourceFilterComponentInstallerTest;
+  FRIEND_TEST_ALL_PREFIXES(SubresourceFilterComponentInstallerTest,
+                           InstallerTag);
 
   static std::string GetInstallerTag();
 

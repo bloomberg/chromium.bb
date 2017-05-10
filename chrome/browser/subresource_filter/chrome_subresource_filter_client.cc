@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
@@ -52,9 +53,8 @@ void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
     content::NavigationHandle* navigation_handle,
     std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
   // Don't add any throttles if the feature isn't enabled at all.
-  if (subresource_filter::GetActiveConfigurations()
-          ->the_one_and_only()
-          .activation_scope == subresource_filter::ActivationScope::NO_SITES) {
+  if (!base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilter)) {
     return;
   }
 

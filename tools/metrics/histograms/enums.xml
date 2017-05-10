@@ -33440,7 +33440,7 @@ from previous Chrome versions.
   <int value="2" label="Disabled"/>
   <int value="3" label="Unsupported scheme"/>
   <int value="4" label="URL whitelisted"/>
-  <int value="5" label="Activation list not matched"/>
+  <int value="5" label="Activation conditions not met"/>
 </enum>
 
 <enum name="SubresourceFilterActivationState" type="int">

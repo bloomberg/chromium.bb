@@ -36,6 +36,7 @@
 
 namespace {
 using subresource_filter::testing::ScopedSubresourceFilterConfigurator;
+using subresource_filter::testing::ScopedSubresourceFilterFeatureToggle;
 }  // namespace
 
 // End to end unit test harness of (most of) the browser process portions of the
@@ -51,7 +52,9 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
     AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
 
     // Ensure correct features.
-    scoped_feature_list_.InitFromCommandLine("SafeBrowsingV4OnlyEnabled", "");
+    scoped_feature_toggle_.ResetSubresourceFilterState(
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        "SafeBrowsingV4OnlyEnabled" /* additional_features */);
     scoped_configuration_.ResetConfiguration(subresource_filter::Configuration(
         subresource_filter::ActivationLevel::ENABLED,
         subresource_filter::ActivationScope::ACTIVATION_LIST,
@@ -154,7 +157,7 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
  private:
   base::ScopedTempDir ruleset_service_dir_;
   TestingPrefServiceSimple pref_service_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  ScopedSubresourceFilterFeatureToggle scoped_feature_toggle_;
   ScopedSubresourceFilterConfigurator scoped_configuration_;
 
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;

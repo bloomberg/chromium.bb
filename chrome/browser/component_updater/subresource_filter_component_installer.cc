@@ -112,13 +112,15 @@ std::string SubresourceFilterComponentInstallerTraits::GetName() const {
 
 // static
 std::string SubresourceFilterComponentInstallerTraits::GetInstallerTag() {
-  const auto configurations = subresource_filter::GetActiveConfigurations();
-  const std::string& ruleset_flavor =
-      configurations->the_one_and_only().ruleset_flavor;
+  const std::string ruleset_flavor =
+      subresource_filter::GetEnabledConfigurations()
+          ->lexicographically_greatest_ruleset_flavor()
+          .as_string();
+
+  // Allow the empty, and 4 non-empty ruleset flavor identifiers: a, b, c, d.
   if (ruleset_flavor.empty())
     return ruleset_flavor;
 
-  // We allow 4 ruleset flavor identifiers: a, b, c, d
   if (ruleset_flavor.size() == 1 && ruleset_flavor.at(0) >= 'a' &&
       ruleset_flavor.at(0) <= 'd') {
     return ruleset_flavor;
