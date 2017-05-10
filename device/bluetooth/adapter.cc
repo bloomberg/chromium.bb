@@ -26,23 +26,24 @@ Adapter::~Adapter() {
 }
 
 void Adapter::ConnectToDevice(const std::string& address,
-                              const ConnectToDeviceCallback& callback) {
+                              ConnectToDeviceCallback callback) {
   device::BluetoothDevice* device = adapter_->GetDevice(address);
 
   if (!device) {
-    callback.Run(mojom::ConnectResult::DEVICE_NO_LONGER_IN_RANGE,
-                 nullptr /* device */);
+    std::move(callback).Run(mojom::ConnectResult::DEVICE_NO_LONGER_IN_RANGE,
+                            nullptr /* device */);
     return;
   }
 
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   device->CreateGattConnection(
       base::Bind(&Adapter::OnGattConnected, weak_ptr_factory_.GetWeakPtr(),
-                 callback),
+                 copyable_callback),
       base::Bind(&Adapter::OnConnectError, weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 copyable_callback));
 }
 
-void Adapter::GetDevices(const GetDevicesCallback& callback) {
+void Adapter::GetDevices(GetDevicesCallback callback) {
   std::vector<mojom::DeviceInfoPtr> devices;
 
   for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
@@ -51,10 +52,10 @@ void Adapter::GetDevices(const GetDevicesCallback& callback) {
     devices.push_back(std::move(device_info));
   }
 
-  callback.Run(std::move(devices));
+  std::move(callback).Run(std::move(devices));
 }
 
-void Adapter::GetInfo(const GetInfoCallback& callback) {
+void Adapter::GetInfo(GetInfoCallback callback) {
   mojom::AdapterInfoPtr adapter_info = mojom::AdapterInfo::New();
   adapter_info->address = adapter_->GetAddress();
   adapter_info->name = adapter_->GetName();
@@ -63,20 +64,20 @@ void Adapter::GetInfo(const GetInfoCallback& callback) {
   adapter_info->powered = adapter_->IsPowered();
   adapter_info->discoverable = adapter_->IsDiscoverable();
   adapter_info->discovering = adapter_->IsDiscovering();
-  callback.Run(std::move(adapter_info));
+  std::move(callback).Run(std::move(adapter_info));
 }
 
 void Adapter::SetClient(mojom::AdapterClientPtr client) {
   client_ = std::move(client);
 }
 
-void Adapter::StartDiscoverySession(
-    const StartDiscoverySessionCallback& callback) {
+void Adapter::StartDiscoverySession(StartDiscoverySessionCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   adapter_->StartDiscoverySession(
       base::Bind(&Adapter::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr(), callback),
+                 weak_ptr_factory_.GetWeakPtr(), copyable_callback),
       base::Bind(&Adapter::OnDiscoverySessionError,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void Adapter::AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -128,34 +129,33 @@ void Adapter::DeviceRemoved(device::BluetoothAdapter* adapter,
 }
 
 void Adapter::OnGattConnected(
-    const ConnectToDeviceCallback& callback,
+    ConnectToDeviceCallback callback,
     std::unique_ptr<device::BluetoothGattConnection> connection) {
   mojom::DevicePtr device_ptr;
   Device::Create(adapter_, std::move(connection),
                  mojo::MakeRequest(&device_ptr));
-  callback.Run(mojom::ConnectResult::SUCCESS, std::move(device_ptr));
+  std::move(callback).Run(mojom::ConnectResult::SUCCESS, std::move(device_ptr));
 }
 
 void Adapter::OnConnectError(
-    const ConnectToDeviceCallback& callback,
+    ConnectToDeviceCallback callback,
     device::BluetoothDevice::ConnectErrorCode error_code) {
-  callback.Run(mojo::ConvertTo<mojom::ConnectResult>(error_code),
-               nullptr /* Device */);
+  std::move(callback).Run(mojo::ConvertTo<mojom::ConnectResult>(error_code),
+                          nullptr /* Device */);
 }
 
 void Adapter::OnStartDiscoverySession(
-    const StartDiscoverySessionCallback& callback,
+    StartDiscoverySessionCallback callback,
     std::unique_ptr<device::BluetoothDiscoverySession> session) {
   mojom::DiscoverySessionPtr session_ptr;
   mojo::MakeStrongBinding(
       base::MakeUnique<DiscoverySession>(std::move(session)),
       mojo::MakeRequest(&session_ptr));
-  callback.Run(std::move(session_ptr));
+  std::move(callback).Run(std::move(session_ptr));
 }
 
-void Adapter::OnDiscoverySessionError(
-    const StartDiscoverySessionCallback& callback) {
-  callback.Run(nullptr /* session */);
+void Adapter::OnDiscoverySessionError(StartDiscoverySessionCallback callback) {
+  std::move(callback).Run(nullptr /* session */);
 }
 
 }  // namespace bluetooth

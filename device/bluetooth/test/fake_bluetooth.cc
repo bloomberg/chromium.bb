@@ -28,18 +28,18 @@ void FakeBluetooth::Create(const service_manager::BindSourceInfo& source_info,
 }
 
 void FakeBluetooth::SetLESupported(bool supported,
-                                   const SetLESupportedCallback& callback) {
+                                   SetLESupportedCallback callback) {
   global_factory_values_->SetLESupported(supported);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void FakeBluetooth::SimulateCentral(mojom::CentralState state,
-                                    const SimulateCentralCallback& callback) {
+                                    SimulateCentralCallback callback) {
   mojom::FakeCentralPtr fake_central_ptr;
   fake_central_ = base::MakeShared<FakeCentral>(
       state, mojo::MakeRequest(&fake_central_ptr));
   device::BluetoothAdapterFactory::SetAdapterForTesting(fake_central_);
-  callback.Run(std::move(fake_central_ptr));
+  std::move(callback).Run(std::move(fake_central_ptr));
 }
 
 }  // namespace bluetooth

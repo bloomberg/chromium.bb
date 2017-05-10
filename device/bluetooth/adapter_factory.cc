@@ -22,23 +22,23 @@ void AdapterFactory::Create(const service_manager::BindSourceInfo& source_info,
                           std::move(request));
 }
 
-void AdapterFactory::GetAdapter(const GetAdapterCallback& callback) {
+void AdapterFactory::GetAdapter(GetAdapterCallback callback) {
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&AdapterFactory::OnGetAdapter,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
   } else {
-    callback.Run(nullptr /* AdapterPtr */);
+    std::move(callback).Run(nullptr /* AdapterPtr */);
   }
 }
 
 void AdapterFactory::OnGetAdapter(
-    const GetAdapterCallback& callback,
+    GetAdapterCallback callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   mojom::AdapterPtr adapter_ptr;
   mojo::MakeStrongBinding(base::MakeUnique<Adapter>(adapter),
                           mojo::MakeRequest(&adapter_ptr));
-  callback.Run(std::move(adapter_ptr));
+  std::move(callback).Run(std::move(adapter_ptr));
 }
 
 }  // namespace bluetooth
