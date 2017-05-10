@@ -579,10 +579,12 @@ static_library("sync") {
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
+    "//base",
     "//components/sync/protocol",
+    "//net",
+    "//url",
   ]
   deps = [
-    "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//components/data_use_measurement/core",
@@ -597,13 +599,11 @@ static_library("sync") {
     "//components/version_info",
     "//crypto",
     "//google_apis",
-    "//net",
     "//sql",
     "//third_party/cacheinvalidation",
     "//third_party/leveldatabase",
     "//third_party/zlib",
     "//third_party/zlib:compression_utils",
-    "//url",
   ]
 
   if (is_android) {
