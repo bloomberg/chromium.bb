@@ -10376,6 +10376,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.Quic.DefaultAlternativeProxy"
     enum="DataReductionProxyQuicDefaultAlternativeProxy">
+  <obsolete>
+    Deprecated in 5/2017, since the experiment to use default QUIC alternative
+    proxy was deprecated.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>

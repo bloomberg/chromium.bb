@@ -24,6 +24,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 
 namespace data_reduction_proxy {
@@ -216,30 +217,6 @@ void DataReductionProxyDelegate::OnAlternativeProxyBroken(
                            1);
 }
 
-net::ProxyServer DataReductionProxyDelegate::GetDefaultAlternativeProxy()
-    const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!params::IsZeroRttQuicEnabled())
-    return net::ProxyServer();
-
-  if (alternative_proxies_broken_) {
-    RecordGetDefaultAlternativeProxy(DEFAULT_ALTERNATIVE_PROXY_STATUS_BROKEN);
-    return net::ProxyServer();
-  }
-
-  net::ProxyServer proxy_server(
-      net::ProxyServer::SCHEME_QUIC,
-      net::HostPortPair(kDataReductionCoreProxy, 443));
-  if (!config_ || !config_->IsDataReductionProxy(proxy_server, NULL)) {
-    RecordGetDefaultAlternativeProxy(
-        DEFAULT_ALTERNATIVE_PROXY_STATUS_UNAVAILABLE);
-    return net::ProxyServer();
-  }
-
-  RecordGetDefaultAlternativeProxy(DEFAULT_ALTERNATIVE_PROXY_STATUS_AVAILABLE);
-  return proxy_server;
-}
-
 bool DataReductionProxyDelegate::SupportsQUIC(
     const net::ProxyServer& proxy_server) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -257,13 +234,6 @@ void DataReductionProxyDelegate::RecordQuicProxyStatus(
   DCHECK(thread_checker_.CalledOnValidThread());
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.ProxyStatus", status,
                             QUIC_PROXY_STATUS_BOUNDARY);
-}
-
-void DataReductionProxyDelegate::RecordGetDefaultAlternativeProxy(
-    DefaultAlternativeProxyStatus status) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.DefaultAlternativeProxy",
-                            status, DEFAULT_ALTERNATIVE_PROXY_STATUS_BOUNDARY);
 }
 
 void DataReductionProxyDelegate::OnIPAddressChanged() {

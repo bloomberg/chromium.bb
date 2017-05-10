@@ -244,15 +244,6 @@ const char* GetQuicFieldTrialName() {
   return kQuicFieldTrial;
 }
 
-bool IsZeroRttQuicEnabled() {
-  if (!IsIncludedInQuicFieldTrial())
-    return false;
-  std::map<std::string, std::string> params;
-  variations::GetVariationParams(GetQuicFieldTrialName(), &params);
-  return GetStringValueForVariationParamWithDefaultValue(
-             params, "enable_zero_rtt", "false") == "true";
-}
-
 bool IsBrotliAcceptEncodingEnabled() {
   // Brotli encoding is enabled by default since the data reduction proxy server
   // controls when to serve Brotli encoded content. It can be disabled in

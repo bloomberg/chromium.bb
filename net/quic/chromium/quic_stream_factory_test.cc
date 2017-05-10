@@ -15,7 +15,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "net/base/mock_network_change_notifier.h"
-#include "net/base/test_proxy_delegate.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -212,8 +211,8 @@ class QuicStreamFactoryTestBase {
     DCHECK(!factory_);
     factory_.reset(new QuicStreamFactory(
         net_log_.net_log(), &host_resolver_, ssl_config_service_.get(),
-        &socket_factory_, &http_server_properties_, &test_proxy_delegate_,
-        cert_verifier_.get(), &ct_policy_enforcer_, channel_id_service_.get(),
+        &socket_factory_, &http_server_properties_, cert_verifier_.get(),
+        &ct_policy_enforcer_, channel_id_service_.get(),
         &transport_security_state_, cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
@@ -468,11 +467,7 @@ class QuicStreamFactoryTestBase {
   }
 
   // Verifies that the QUIC stream factory is initialized correctly.
-  // If |proxy_delegate_provides_quic_supported_proxy| is true, then
-  // ProxyDelegate provides a proxy that supports QUIC at startup. Otherwise,
-  // a non proxy server that support alternative services is added to the
-  // HttpServerProperties map.
-  void VerifyInitialization(bool proxy_delegate_provides_quic_supported_proxy) {
+  void VerifyInitialization() {
     store_server_configs_in_properties_ = true;
     idle_connection_timeout_seconds_ = 500;
     Initialize();
@@ -502,20 +497,12 @@ class QuicStreamFactoryTestBase {
     AlternativeServiceInfoVector alternative_service_info_vector2;
     alternative_service_info_vector2.push_back(
         AlternativeServiceInfo(alternative_service2, expiration));
-    if (!proxy_delegate_provides_quic_supported_proxy) {
-      http_server_properties_.SetAlternativeServices(
-          server2, alternative_service_info_vector2);
-      // Verify that the properties of both QUIC servers are stored in the
-      // HTTP properties map.
-      EXPECT_EQ(2U, http_server_properties_.alternative_service_map().size());
-    } else {
-      test_proxy_delegate_.set_alternative_proxy_server(net::ProxyServer(
-          net::ProxyServer::SCHEME_QUIC,
-          net::HostPortPair(kServer2HostName, kDefaultServerPort)));
-      // Verify that the properties of only the first QUIC server are stored in
-      // the HTTP properties map.
-      EXPECT_EQ(1U, http_server_properties_.alternative_service_map().size());
-    }
+
+    http_server_properties_.SetAlternativeServices(
+        server2, alternative_service_info_vector2);
+    // Verify that the properties of both QUIC servers are stored in the
+    // HTTP properties map.
+    EXPECT_EQ(2U, http_server_properties_.alternative_service_map().size());
 
     http_server_properties_.SetMaxServerConfigsStoredInProperties(
         kMaxQuicServersToPersist);
@@ -716,7 +703,6 @@ class QuicStreamFactoryTestBase {
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   HttpServerPropertiesImpl http_server_properties_;
-  TestProxyDelegate test_proxy_delegate_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
@@ -4403,14 +4389,7 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
 
 // Verifies that the QUIC stream factory is initialized correctly.
 TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
-  VerifyInitialization(false);
-}
-
-// Verifies that the alternative proxy server provided by the proxy delegate
-// is added to the list of supported QUIC proxy servers, and the QUIC stream
-// factory is initialized correctly.
-TEST_P(QuicStreamFactoryTest, MaybeInitializeAlternativeProxyServer) {
-  VerifyInitialization(true);
+  VerifyInitialization();
 }
 
 TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {

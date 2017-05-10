@@ -6645,6 +6645,10 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="DataReductionProxyQuicDefaultAlternativeProxy" type="int">
+  <obsolete>
+    Deprecated in 5/2017, since the experiment to use default QUIC alternative
+    proxy was deprecated.
+  </obsolete>
   <int value="0" label="QUIC proxy was available"/>
   <int value="1" label="QUIC proxy was marked as broken"/>
   <int value="2"

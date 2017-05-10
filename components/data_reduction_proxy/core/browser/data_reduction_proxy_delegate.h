@@ -12,7 +12,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_delegate.h"
 #include "net/proxy/proxy_retry_info.h"
-#include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -26,6 +25,7 @@ class HttpResponseHeaders;
 class NetLog;
 class ProxyConfig;
 class ProxyInfo;
+class ProxyServer;
 class ProxyService;
 }
 
@@ -82,7 +82,6 @@ class DataReductionProxyDelegate
       net::ProxyServer* alternative_proxy_server) const override;
   void OnAlternativeProxyBroken(
       const net::ProxyServer& alternative_proxy_server) override;
-  net::ProxyServer GetDefaultAlternativeProxy() const override;
 
   // Protected so that it can be overridden during testing.
   // Returns true if |proxy_server| supports QUIC.
@@ -97,23 +96,9 @@ class DataReductionProxyDelegate
     QUIC_PROXY_STATUS_BOUNDARY
   };
 
-  // Availability status of data reduction proxy that supports 0-RTT QUIC.
-  // Protected so that the enum values are accessible for testing.
-  enum DefaultAlternativeProxyStatus {
-    DEFAULT_ALTERNATIVE_PROXY_STATUS_AVAILABLE,
-    DEFAULT_ALTERNATIVE_PROXY_STATUS_BROKEN,
-    DEFAULT_ALTERNATIVE_PROXY_STATUS_UNAVAILABLE,
-    DEFAULT_ALTERNATIVE_PROXY_STATUS_BOUNDARY,
-  };
-
  private:
   // Records the availability status of data reduction proxy.
   void RecordQuicProxyStatus(QuicProxyStatus status) const;
-
-  // Records the availability status of data reduction proxy that supports 0-RTT
-  // QUIC.
-  void RecordGetDefaultAlternativeProxy(
-      DefaultAlternativeProxyStatus status) const;
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
