@@ -520,6 +520,17 @@ void WindowPortMus::OnPropertyChanged(const void* key,
                                                     std::move(data));
 }
 
+std::unique_ptr<cc::CompositorFrameSink>
+WindowPortMus::CreateCompositorFrameSink() {
+  // TODO(penghuang): Implement it for Mus.
+  return nullptr;
+}
+
+cc::SurfaceId WindowPortMus::GetSurfaceId() const {
+  // TODO(penghuang): Implement it for Mus.
+  return cc::SurfaceId();
+}
+
 void WindowPortMus::UpdatePrimarySurfaceInfo() {
   bool embeds_surface = window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
                         window_mus_type() == WindowMusType::EMBED_IN_OWNER;

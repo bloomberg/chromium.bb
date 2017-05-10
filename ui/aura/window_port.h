@@ -10,10 +10,16 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "cc/surfaces/surface_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/class_property.h"
+
+namespace cc {
+class CompositorFrameSink;
+}
 
 namespace gfx {
 class Rect;
@@ -69,6 +75,16 @@ class AURA_EXPORT WindowPort {
   virtual void OnPropertyChanged(const void* key,
                                  int64_t old_value,
                                  std::unique_ptr<ui::PropertyData> data) = 0;
+
+  // Called for creating a cc::CompositorFrameSink for the window.
+  virtual std::unique_ptr<cc::CompositorFrameSink>
+  CreateCompositorFrameSink() = 0;
+
+  // Get the current cc::SurfaceId.
+  virtual cc::SurfaceId GetSurfaceId() const = 0;
+
+  virtual void OnWindowAddedToRootWindow() = 0;
+  virtual void OnWillRemoveWindowFromRootWindow() = 0;
 
  protected:
   // Returns the WindowPort associated with a Window.

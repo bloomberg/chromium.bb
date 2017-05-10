@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "cc/output/compositor_frame_sink.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -28,11 +29,11 @@
 #include "ui/aura/client/window_stacking_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/local/compositor_frame_sink_local.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_port.h"
-#include "ui/aura/window_port_local.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
@@ -850,6 +851,7 @@ void Window::OnStackingChanged() {
 }
 
 void Window::NotifyRemovingFromRootWindow(Window* new_root) {
+  port_->OnWillRemoveWindowFromRootWindow();
   for (WindowObserver& observer : observers_)
     observer.OnWindowRemovingFromRootWindow(this, new_root);
   for (Window::Windows::const_iterator it = children_.begin();
@@ -859,6 +861,7 @@ void Window::NotifyRemovingFromRootWindow(Window* new_root) {
 }
 
 void Window::NotifyAddedToRootWindow() {
+  port_->OnWindowAddedToRootWindow();
   for (WindowObserver& observer : observers_)
     observer.OnWindowAddedToRootWindow(this);
   for (Window::Windows::const_iterator it = children_.begin();
@@ -986,6 +989,14 @@ bool Window::CleanupGestureState() {
     state_modified |= (*iter)->CleanupGestureState();
   }
   return state_modified;
+}
+
+std::unique_ptr<cc::CompositorFrameSink> Window::CreateCompositorFrameSink() {
+  return port_->CreateCompositorFrameSink();
+}
+
+cc::SurfaceId Window::GetSurfaceId() const {
+  return port_->GetSurfaceId();
 }
 
 void Window::OnPaintLayer(const ui::PaintContext& context) {

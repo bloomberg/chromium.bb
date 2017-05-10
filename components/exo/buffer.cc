@@ -428,10 +428,6 @@ bool Buffer::ProduceTransferableResource(
     return false;
   }
 
-  // The reference to the CompositorFrameSinkHolder keeps it alive until a
-  // release callback is received.
-  compositor_frame_sink_holder_ = compositor_frame_sink_holder;
-
   resource->id = resource_id;
   resource->format = cc::RGBA_8888;
   resource->filter = GL_LINEAR;
@@ -462,7 +458,7 @@ bool Buffer::ProduceTransferableResource(
 
     // The contents texture will be released when no longer used by the
     // compositor.
-    compositor_frame_sink_holder_->SetResourceReleaseCallback(
+    compositor_frame_sink_holder->SetResourceReleaseCallback(
         resource_id,
         base::Bind(&Buffer::Texture::ReleaseTexImage,
                    base::Unretained(contents_texture),
@@ -492,7 +488,7 @@ bool Buffer::ProduceTransferableResource(
 
   // The mailbox texture will be released when no longer used by the
   // compositor.
-  compositor_frame_sink_holder_->SetResourceReleaseCallback(
+  compositor_frame_sink_holder->SetResourceReleaseCallback(
       resource_id,
       base::Bind(&Buffer::Texture::Release, base::Unretained(texture),
                  base::Bind(&Buffer::ReleaseTexture, AsWeakPtr(),

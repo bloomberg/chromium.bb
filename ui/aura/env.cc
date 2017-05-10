@@ -12,12 +12,12 @@
 #include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
+#include "ui/aura/local/window_port_local.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_port_local.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/platform/platform_event_source.h"
 

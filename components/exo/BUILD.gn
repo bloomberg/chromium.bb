@@ -9,8 +9,6 @@ source_set("exo") {
   sources = [
     "buffer.cc",
     "buffer.h",
-    "compositor_frame_sink.cc",
-    "compositor_frame_sink.h",
     "compositor_frame_sink_holder.cc",
     "compositor_frame_sink_holder.h",
     "display.cc",
