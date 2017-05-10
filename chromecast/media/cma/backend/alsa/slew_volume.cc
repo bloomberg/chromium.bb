@@ -72,7 +72,7 @@ SlewVolume::SlewVolume(int max_slew_time_ms)
       max_slew_per_sample_(1000.0 / (max_slew_time_ms_ * sample_rate_)) {}
 
 void SlewVolume::SetSampleRate(int sample_rate) {
-  DCHECK_GT(sample_rate, 0);
+  CHECK_GT(sample_rate, 0);
 
   sample_rate_ = sample_rate;
   SetVolume(volume_scale_);
@@ -94,7 +94,7 @@ void SlewVolume::SetVolume(double volume_scale) {
 }
 
 void SlewVolume::SetMaxSlewTimeMs(int max_slew_time_ms) {
-  DCHECK_GE(max_slew_time_ms, 0);
+  CHECK_GE(max_slew_time_ms, 0);
 
   max_slew_time_ms_ = max_slew_time_ms;
 }
