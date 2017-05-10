@@ -32,6 +32,20 @@ const AtomicString& AccessibleNode::GetProperty(Element* element,
     }
   }
 
+  return g_null_atom;
+}
+
+// static
+const AtomicString& AccessibleNode::GetPropertyOrARIAAttribute(
+    Element* element,
+    AOMStringProperty property) {
+  if (!element)
+    return g_null_atom;
+
+  const AtomicString& result = GetProperty(element, property);
+  if (!result.IsNull())
+    return result;
+
   // Fall back on the equivalent ARIA attribute.
   switch (property) {
     case AOMStringProperty::kAutocomplete:

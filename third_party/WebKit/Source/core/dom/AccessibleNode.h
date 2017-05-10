@@ -49,9 +49,13 @@ class CORE_EXPORT AccessibleNode
   explicit AccessibleNode(Element*);
   virtual ~AccessibleNode();
 
+  // Returns the given string property if the Element has an AccessibleNode.
+  static const AtomicString& GetProperty(Element*, AOMStringProperty);
+
   // Returns the given string property if the Element has an AccessibleNode,
   // otherwise returns the equivalent ARIA attribute.
-  static const AtomicString& GetProperty(Element*, AOMStringProperty);
+  static const AtomicString& GetPropertyOrARIAAttribute(Element*,
+                                                        AOMStringProperty);
 
   AtomicString autocomplete() const;
   void setAutocomplete(const AtomicString&);

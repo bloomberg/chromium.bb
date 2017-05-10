@@ -389,7 +389,7 @@ const AtomicString& AXObject::GetAOMPropertyOrARIAAttribute(
   if (!node || !node->IsElementNode())
     return g_null_atom;
 
-  return AccessibleNode::GetProperty(ToElement(node), property);
+  return AccessibleNode::GetPropertyOrARIAAttribute(ToElement(node), property);
 }
 
 bool AXObject::IsARIATextControl() const {
