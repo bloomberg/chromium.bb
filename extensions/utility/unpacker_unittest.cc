@@ -89,9 +89,8 @@ TEST_F(UnpackerTest, InvalidMessagesFile) {
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(base::MatchPattern(
       unpacker_->error_message(),
-      ASCIIToUTF16(
-          "*_locales?en_US?messages.json: Line: 2, column: 11,"
-          " Syntax error.")))
+      ASCIIToUTF16("*_locales?en_US?messages.json: Line: 2, column: 10,"
+                   " Syntax error.")))
       << unpacker_->error_message();
 }
 
