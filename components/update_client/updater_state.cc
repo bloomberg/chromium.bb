@@ -27,16 +27,16 @@ UpdaterState::~UpdaterState() {}
 
 std::unique_ptr<UpdaterState::Attributes> UpdaterState::GetState(
     bool is_machine) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   UpdaterState updater_state(is_machine);
   updater_state.ReadState();
   return base::MakeUnique<Attributes>(updater_state.BuildAttributes());
 #else
   return nullptr;
-#endif  // OS_WIN
+#endif  // OS_WIN or Mac
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 void UpdaterState::ReadState() {
   is_enterprise_managed_ = IsEnterpriseManaged();
 
@@ -49,7 +49,7 @@ void UpdaterState::ReadState() {
   update_policy_ = GetUpdatePolicy();
 #endif  // GOOGLE_CHROME_BUILD
 }
-#endif  // OS_WIN
+#endif  // OS_WIN or Mac
 
 UpdaterState::Attributes UpdaterState::BuildAttributes() const {
   Attributes attributes;
