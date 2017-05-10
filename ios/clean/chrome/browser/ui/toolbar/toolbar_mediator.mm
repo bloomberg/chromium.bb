@@ -33,8 +33,6 @@
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  const GURL& pageURL = webState->GetVisibleURL();
-  [self.consumer setCurrentPageText:base::SysUTF8ToNSString(pageURL.spec())];
   [self.consumer
       setCanGoBack:self.webState->GetNavigationManager()->CanGoBack()];
   [self.consumer
@@ -47,6 +45,11 @@
 
 - (void)webStateDidStopLoading:(web::WebState*)webState {
   [self.consumer setIsLoading:self.webState->IsLoading()];
+}
+
+- (void)webState:(web::WebState*)webState
+    didChangeLoadingProgress:(double)progress {
+  [self.consumer setLoadingProgress:progress];
 }
 
 #pragma mark - Setters
@@ -73,12 +76,10 @@
 - (void)updateConsumer {
   DCHECK(self.webState);
   DCHECK(self.consumer);
-  const GURL& pageURL = self.webState->GetVisibleURL();
   [self.consumer
       setCanGoForward:self.webState->GetNavigationManager()->CanGoForward()];
   [self.consumer
       setCanGoBack:self.webState->GetNavigationManager()->CanGoBack()];
-  [self.consumer setCurrentPageText:base::SysUTF8ToNSString(pageURL.spec())];
   [self.consumer setIsLoading:self.webState->IsLoading()];
 }
 
