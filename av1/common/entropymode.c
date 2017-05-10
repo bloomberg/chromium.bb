@@ -2931,7 +2931,7 @@ static const aom_cdf_prob
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 
 #if CONFIG_CFL
-static const aom_cdf_prob default_cfl_alpha_cdf[CFL_ALPHABET_SIZE] = {
+static const aom_cdf_prob default_cfl_alpha_cdf[CDF_SIZE(CFL_ALPHABET_SIZE)] = {
   // decreasing likelihood, after 6 iterations of alpha RDO on subset 3
   AOM_ICDF(23928), AOM_ICDF(26267), AOM_ICDF(27319), AOM_ICDF(28330),
   AOM_ICDF(29341), AOM_ICDF(30160), AOM_ICDF(30581), AOM_ICDF(30983),

@@ -1642,8 +1642,9 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x, int plane,
 #error "CfL rate estimation requires ec_adapt."
 #endif
       FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
-      assert(ec_ctx->cfl_alpha_cdf[CFL_ALPHABET_SIZE - 1] == AOM_ICDF(32768U));
-      const int prob_den = 32768U;
+      assert(ec_ctx->cfl_alpha_cdf[CFL_ALPHABET_SIZE - 1] ==
+             AOM_ICDF(CDF_PROB_TOP));
+      const int prob_den = CDF_PROB_TOP;
 
       CFL_CTX *const cfl = xd->cfl;
       int cfl_costs[CFL_ALPHABET_SIZE];
