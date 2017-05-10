@@ -318,6 +318,11 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="0A7-Iy-65Q"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="^IDS_CUSTOMIZE_TOUCH_BAR" id="679" tag="40251">
+                                <connections>
+                                    <action selector="toggleTouchBarCustomizationPalette:" target="-1" id="680"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="538"/>
                             <menuItem title="^IDS_STOP_MENU_MAC" tag="33006" keyEquivalent="." id="539">
                                 <connections>
