@@ -51,6 +51,7 @@ class UiSceneManager {
 
   void ConfigureSecurityWarnings();
   void OnSecurityWarningTimer();
+  void OnBackButtonClicked();
   int AllocateId();
 
   VrBrowserInterface* browser_;

@@ -33,6 +33,7 @@ class MockBrowserInterface : public VrBrowserInterface {
       void(const base::Callback<void(device::mojom::VRDisplayInfoPtr)>&,
            device::mojom::VRDisplayInfoPtr*));
   MOCK_METHOD1(OnContentPaused, void(bool));
+  MOCK_METHOD0(NavigateBack, void());
 
   // Stub this as scoped pointers don't work as mock method parameters.
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent>) {}

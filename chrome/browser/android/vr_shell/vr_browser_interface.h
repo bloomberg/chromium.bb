@@ -39,6 +39,7 @@ class VrBrowserInterface {
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       device::mojom::VRDisplayInfoPtr* info) = 0;
   virtual void OnContentPaused(bool enabled) = 0;
+  virtual void NavigateBack() = 0;
 };
 
 }  // namespace vr_shell

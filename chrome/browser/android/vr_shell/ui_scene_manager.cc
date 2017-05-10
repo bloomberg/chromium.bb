@@ -194,6 +194,8 @@ void UiSceneManager::CreateUrlBar() {
   element->set_id(AllocateId());
   element->set_translation({0, -0.9, -1.8});
   element->set_size({0.9, 0, 1});
+  element->SetBackButtonCallback(
+      base::Bind(&UiSceneManager::OnBackButtonClicked, base::Unretained(this)));
   url_bar_ = element.get();
   browser_ui_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));
@@ -210,6 +212,7 @@ void UiSceneManager::SetWebVrMode(bool web_vr) {
   for (UiElement* element : browser_ui_elements_) {
     element->set_visible(!web_vr_mode_);
   }
+  url_bar_->SetEnabled(!web_vr);
 
   ConfigureSecurityWarnings();
 }
@@ -274,11 +277,17 @@ void UiSceneManager::OnSecurityWarningTimer() {
   transient_security_warning_->set_visible(false);
 }
 
+void UiSceneManager::OnBackButtonClicked() {
+  browser_->NavigateBack();
+}
+
 void UiSceneManager::SetURL(const GURL& gurl) {
   url_bar_->SetURL(gurl);
 }
 
-void UiSceneManager::SetSecurityLevel(int level) {}
+void UiSceneManager::SetSecurityLevel(int level) {
+  url_bar_->SetSecurityLevel(level);
+}
 
 void UiSceneManager::SetLoading(bool loading) {}
 
