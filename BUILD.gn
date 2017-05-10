@@ -165,12 +165,14 @@ group("gn_all") {
       "//media/capture:capture_unittests",
       "//media/cast:cast_unittests",
       "//media/midi:midi_unittests",
+      "//media/mojo:media_mojo_unittests",
       "//mojo",
       "//mojo/common:mojo_common_unittests",
       "//mojo/edk/system:mojo_system_unittests",
       "//mojo/edk/test:mojo_public_bindings_unittests",
       "//mojo/edk/test:mojo_public_system_unittests",
       "//net:net_perftests",
+      "//services:service_unittests",
       "//services/service_manager/public/cpp",
       "//storage:storage_unittests",
       "//third_party/WebKit/Source/platform:blink_platform_unittests",
@@ -189,6 +191,7 @@ group("gn_all") {
       "//ui/latency:latency_unittests",
       "//ui/touch_selection:ui_touch_selection_unittests",
       "//url/ipc:url_ipc_unittests",
+      "//v8:gn_all",
     ]
   } else {
     deps += [ "//ios:all" ]
@@ -232,6 +235,7 @@ group("gn_all") {
     deps += [
       "//ui/ozone",
       "//ui/ozone:ozone_unittests",
+      "//ui/ozone/demo",
       "//ui/ozone/gl:ozone_gl_unittests",
     ]
   }
@@ -256,7 +260,9 @@ group("gn_all") {
       "//base:base_junit_tests",
       "//base/android/linker:chromium_android_linker",
       "//build/android/gyp/test:hello_world",
+      "//build/android/gyp/test:hello_world",
       "//chrome/android/webapk/shell_apk:webapk",
+      "//chrome/test/vr/perf:motopho_latency_test",
       "//components/invalidation/impl:components_invalidation_impl_junit_tests",
       "//components/policy/android:components_policy_junit_tests",
       "//content/public/android:content_junit_tests",
@@ -568,13 +574,6 @@ group("gn_all") {
     ]
   }
 
-  if (!is_ios) {
-    deps += [
-      "//media/mojo:media_mojo_unittests",
-      "//services:service_unittests",
-    ]
-  }
-
   if (!is_android && !is_ios) {
     deps += [ "//content/browser/bluetooth/tools:bluetooth_metrics_hash" ]
   }
@@ -659,10 +658,6 @@ group("gn_all") {
     }
   }
 
-  if (use_ozone) {
-    deps += [ "//ui/ozone/demo" ]
-  }
-
   if ((is_linux && !is_chromeos && !is_chromecast) || (is_win && use_drfuzz) ||
       (use_libfuzzer && is_mac)) {
     deps += [
@@ -683,22 +678,11 @@ group("gn_all") {
     deps += [ "//native_client_sdk/src:nacl_core_sdk" ]
   }
 
-  if (is_android) {
-    deps += [
-      "//build/android/gyp/test:hello_world",
-      "//chrome/test/vr/perf:motopho_latency_test",
-    ]
-  }
-
   if (is_linux && use_ozone) {
     deps += [
       "//headless",
       "//headless:headless_tests",
     ]
-  }
-
-  if (!is_ios) {
-    deps += [ "//v8:gn_all" ]
   }
 }
 
