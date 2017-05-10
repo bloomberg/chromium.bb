@@ -20,6 +20,7 @@ class UrlBarTexture : public UiTexture {
 
   void SetHover(bool hover);
   void SetURL(const GURL& gurl);
+  void SetSecurityLevel(int level);
 
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
@@ -27,6 +28,7 @@ class UrlBarTexture : public UiTexture {
 
   gfx::SizeF size_;
   bool hover_ = false;
+  int security_level_;
   GURL gurl_;
 };
 

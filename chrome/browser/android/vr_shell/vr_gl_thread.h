@@ -54,6 +54,7 @@ class VrGLThread : public base::Thread,
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       device::mojom::VRDisplayInfoPtr* info) override;
   void OnContentPaused(bool enabled) override;
+  void NavigateBack() override;
 
   // UiInterface implementation (VrShell calling to the UI).
   void SetFullscreen(bool enabled) override;
