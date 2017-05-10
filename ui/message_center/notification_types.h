@@ -36,7 +36,7 @@ enum NotificationType {
   NOTIFICATION_TYPE_CUSTOM = 5,
 
   // Add new values before this line.
-  NOTIFICATION_TYPE_LAST = NOTIFICATION_TYPE_PROGRESS
+  NOTIFICATION_TYPE_LAST = NOTIFICATION_TYPE_CUSTOM
 };
 
 enum NotificationPriority {
