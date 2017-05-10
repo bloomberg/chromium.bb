@@ -2083,15 +2083,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // !CONFIG_TXK_SEL
 }
 
+static void write_mb_modes_kf(AV1_COMMON *cm,
 #if CONFIG_DELTA_Q
-static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd, const int mi_row,
-                              const int mi_col, aom_writer *w) {
-  int skip;
+                              MACROBLOCKD *xd,
 #else
-static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
+                              const MACROBLOCKD *xd,
+#endif  // CONFIG_DELTA_Q
                               const int mi_row, const int mi_col,
                               aom_writer *w) {
-#endif
   const struct segmentation *const seg = &cm->seg;
   struct segmentation_probs *const segp = &cm->fc->seg;
   const MODE_INFO *const mi = xd->mi[0];
@@ -2116,7 +2115,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (seg->update_map) write_segment_id(w, seg, segp, mbmi->segment_id);
 
 #if CONFIG_DELTA_Q
-  skip = write_skip(cm, xd, mbmi->segment_id, mi, w);
+  const int skip = write_skip(cm, xd, mbmi->segment_id, mi, w);
   if (cm->delta_q_present_flag) {
     int super_block_upper_left =
         ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
