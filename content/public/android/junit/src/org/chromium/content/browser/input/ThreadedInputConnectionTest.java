@@ -10,6 +10,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
@@ -18,6 +20,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.view.KeyCharacterMap;
 import android.view.View;
+import android.view.inputmethod.ExtractedText;
+import android.view.inputmethod.ExtractedTextRequest;
+import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
 import org.junit.Before;
@@ -222,5 +227,127 @@ public class ThreadedInputConnectionTest {
                 }));
 
         mRunningOnUiThread = false;
+    }
+
+    @Test
+    @Feature("TextInput")
+    public void testUpdateSelectionBehaviorWhenUpdatesRequested() throws InterruptedException {
+        // Arrange.
+        final ExtractedTextRequest request = new ExtractedTextRequest();
+
+        when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
+
+        // Populate the TextInputState BlockingQueue for the getExtractedText() call.
+        mConnection.updateStateOnUiThread("bello", 1, 1, -1, -1, true, true);
+
+        // Act.
+        final ExtractedText extractedText =
+                mConnection.getExtractedText(request, InputConnection.GET_EXTRACTED_TEXT_MONITOR);
+
+        // Assert.
+        assertEquals("bello", extractedText.text);
+        assertEquals(-1, extractedText.partialStartOffset);
+        assertEquals("bello".length(), extractedText.partialEndOffset);
+        assertEquals(1, extractedText.selectionStart);
+        assertEquals(1, extractedText.selectionEnd);
+
+        // Ensure that the next updateState events will invoke
+        // both updateExtractedText() and updateSelection().
+        mConnection.updateStateOnUiThread("mello", 2, 2, -1, -1, true, false);
+        mInOrder.verify(mImeAdapter).updateExtractedText(anyInt(), any(ExtractedText.class));
+        mInOrder.verify(mImeAdapter).updateSelection(2, 2, -1, -1);
+
+        mConnection.updateStateOnUiThread("cello", 3, 3, -1, -1, true, false);
+        mInOrder.verify(mImeAdapter).updateExtractedText(anyInt(), any(ExtractedText.class));
+        mInOrder.verify(mImeAdapter).updateSelection(3, 3, -1, -1);
+    }
+
+    @Test
+    @Feature("TextInput")
+    public void testUpdateSelectionBehaviorWhenUpdatesNotRequested() throws InterruptedException {
+        // Arrange.
+        final ExtractedTextRequest request = new ExtractedTextRequest();
+
+        when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
+
+        // Populate the TextInputState BlockingQueue for the getExtractedText() call.
+        mConnection.updateStateOnUiThread("hello", 1, 2, 3, 4, true, true);
+
+        // Initially we want to monitor extracted text updates.
+        final ExtractedText extractedText1 =
+                mConnection.getExtractedText(request, InputConnection.GET_EXTRACTED_TEXT_MONITOR);
+
+        mConnection.updateStateOnUiThread("bello", 1, 1, 3, 4, true, false);
+
+        // Assert.
+        assertEquals("hello", extractedText1.text);
+        assertEquals(-1, extractedText1.partialStartOffset);
+        assertEquals("hello".length(), extractedText1.partialEndOffset);
+        assertEquals(1, extractedText1.selectionStart);
+        assertEquals(2, extractedText1.selectionEnd);
+
+        mInOrder.verify(mImeAdapter).updateExtractedText(anyInt(), any(ExtractedText.class));
+        mInOrder.verify(mImeAdapter).updateSelection(1, 1, 3, 4);
+
+        // Populate the TextInputState BlockingQueue for the getExtractedText() call.
+        mConnection.updateStateOnUiThread("cello", 2, 2, 3, 4, true, true);
+
+        // Act: Now we want to stop monitoring extracted text changes.
+        final ExtractedText extractedText2 = mConnection.getExtractedText(request, 0);
+
+        // Assert
+        assertEquals("cello", extractedText2.text);
+        assertEquals(-1, extractedText2.partialStartOffset);
+        assertEquals("cello".length(), extractedText2.partialEndOffset);
+        assertEquals(2, extractedText2.selectionStart);
+        assertEquals(2, extractedText2.selectionEnd);
+
+        // Perform another updateState
+        mConnection.updateStateOnUiThread("ello", 0, 0, -1, -1, true, false);
+
+        // Assert: No more update extracted text updates sent to ImeAdapter.
+        mInOrder.verify(mImeAdapter, never())
+                .updateExtractedText(anyInt(), any(ExtractedText.class));
+        mInOrder.verify(mImeAdapter).updateSelection(0, 0, -1, -1);
+    }
+
+    @Test
+    @Feature("TextInput")
+    public void testExtractedTextNotSentAfterInputConnectionReset() throws InterruptedException {
+        // Arrange.
+        final ExtractedTextRequest request = new ExtractedTextRequest();
+
+        when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
+
+        // Populate the TextInputState BlockingQueue for the getExtractedText() call.
+        mConnection.updateStateOnUiThread("hello", 1, 2, 3, 4, true, true);
+
+        // Start monitoring for extracted text updates
+        final ExtractedText extractedText =
+                mConnection.getExtractedText(request, InputConnection.GET_EXTRACTED_TEXT_MONITOR);
+
+        // Assert.
+        assertEquals("hello", extractedText.text);
+        assertEquals(-1, extractedText.partialStartOffset);
+        assertEquals("hello".length(), extractedText.partialEndOffset);
+        assertEquals(1, extractedText.selectionStart);
+        assertEquals(2, extractedText.selectionEnd);
+
+        mConnection.updateStateOnUiThread("bello", 1, 1, 3, 4, true, false);
+
+        mInOrder.verify(mImeAdapter).updateExtractedText(anyInt(), any(ExtractedText.class));
+        mInOrder.verify(mImeAdapter).updateSelection(1, 1, 3, 4);
+
+        // Act: Force a connection reset Instead of calling ImeAdapter#onCreateInputConnection()
+        // To stop monitoring extracted text changes.
+        mConnection.resetOnUiThread();
+
+        // Perform another updateState
+        mConnection.updateStateOnUiThread("ello", 0, 0, -1, -1, true, false);
+
+        // Assert: No more update extracted text updates sent to ImeAdapter.
+        mInOrder.verify(mImeAdapter, never())
+                .updateExtractedText(anyInt(), any(ExtractedText.class));
+        mInOrder.verify(mImeAdapter).updateSelection(0, 0, -1, -1);
     }
 }
