@@ -23,6 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
@@ -54,25 +55,35 @@ MATCHER_P2(ImageSizeIs, width, height, "") {
   return arg.Size() == gfx::Size(width, height);
 }
 
-// Fill the given bmp with some test data.
-SkBitmap CreateBitmapWithEdgeSize(int size) {
+// |arg| is a gfx::Image.
+MATCHER_P(ImageColorIs, expected_color, "") {
+  SkBitmap bitmap = arg.AsBitmap();
+  if (bitmap.empty()) {
+    *result_listener << "expected color but no bitmap data available";
+    return false;
+  }
+
+  SkColor actual_color = bitmap.getColor(1, 1);
+  if (actual_color != expected_color) {
+    *result_listener << "expected color "
+                     << base::StringPrintf("%08X", expected_color)
+                     << " but actual color is "
+                     << base::StringPrintf("%08X", actual_color);
+    return false;
+  }
+  return true;
+}
+
+SkBitmap CreateBitmapWithEdgeSize(int size, SkColor color) {
   SkBitmap bmp;
   bmp.allocN32Pixels(size, size);
-
-  unsigned char* src_data =
-      reinterpret_cast<unsigned char*>(bmp.getAddr32(0, 0));
-  for (int i = 0; i < size * size; i++) {
-    src_data[i * 4 + 0] = static_cast<unsigned char>(i % 255);
-    src_data[i * 4 + 1] = static_cast<unsigned char>(i % 255);
-    src_data[i * 4 + 2] = static_cast<unsigned char>(i % 255);
-    src_data[i * 4 + 3] = static_cast<unsigned char>(i % 255);
-  }
+  bmp.eraseColor(color);
   return bmp;
 }
 
 // Fill the given data buffer with valid png data.
-std::vector<unsigned char> FillBitmapWithEdgeSize(int size) {
-  SkBitmap bitmap = CreateBitmapWithEdgeSize(size);
+std::vector<unsigned char> FillBitmapWithEdgeSize(int size, SkColor color) {
+  SkBitmap bitmap = CreateBitmapWithEdgeSize(size, color);
   std::vector<unsigned char> output;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
   return output;
@@ -82,9 +93,10 @@ std::vector<FaviconRawBitmapResult> CreateRawBitmapResult(
     const GURL& icon_url,
     favicon_base::IconType icon_type = FAVICON,
     bool expired = false,
-    int edge_size = gfx::kFaviconSize) {
+    int edge_size = gfx::kFaviconSize,
+    SkColor color = SK_ColorRED) {
   scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
-  data->data() = FillBitmapWithEdgeSize(edge_size);
+  data->data() = FillBitmapWithEdgeSize(edge_size, color);
   FaviconRawBitmapResult bitmap_result;
   bitmap_result.expired = expired;
   bitmap_result.bitmap_data = data;
@@ -126,21 +138,23 @@ class FakeImageDownloader {
     return download_id;
   }
 
-  void Add(const GURL& icon_url, const IntVector& sizes) {
-    AddWithOriginalSizes(icon_url, sizes, sizes);
-  }
-
-  void AddWithOriginalSizes(const GURL& icon_url,
-                            const IntVector& sizes,
-                            const IntVector& original_sizes) {
+  void Add(const GURL& icon_url,
+           const IntVector& sizes,
+           const IntVector& original_sizes,
+           SkColor color) {
     DCHECK_EQ(sizes.size(), original_sizes.size());
     Response response;
     response.http_status_code = 200;
     for (int size : sizes) {
       response.original_bitmap_sizes.push_back(gfx::Size(size, size));
-      response.bitmaps.push_back(CreateBitmapWithEdgeSize(size));
+      response.bitmaps.push_back(CreateBitmapWithEdgeSize(size, color));
     }
     responses_[icon_url] = response;
+  }
+
+  // Simpler overload of the function above.
+  void Add(const GURL& icon_url, const IntVector& sizes) {
+    Add(icon_url, sizes, sizes, SK_ColorRED);
   }
 
   void AddError(const GURL& icon_url, int http_status_code) {
@@ -567,22 +581,33 @@ TEST_F(FaviconHandlerTest, DownloadBookmarkedFaviconInIncognito) {
 // Test that the icon is redownloaded if the icon cached for the page URL
 // expired.
 TEST_F(FaviconHandlerTest, RedownloadExpiredPageUrlFavicon) {
+  const GURL kIconURL("http://www.google.com/favicon");
+  const SkColor kOldColor = SK_ColorBLUE;
+  const SkColor kNewColor = SK_ColorGREEN;
+
   favicon_service_.fake()->Store(
-      kPageURL, kIconURL16x16,
-      CreateRawBitmapResult(kIconURL16x16, FAVICON, /*expired=*/true));
+      kPageURL, kIconURL,
+      CreateRawBitmapResult(kIconURL, FAVICON, /*expired=*/true,
+                            gfx::kFaviconSize, kOldColor));
 
-  // TODO(crbug.com/700811): It would be nice if we could check whether the two
-  // OnFaviconUpdated() calls are called with different gfx::Images (as opposed
-  // to calling OnFaviconUpdated() with the expired gfx::Image both times).
-  EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL16x16, _, _)).Times(2);
-  EXPECT_CALL(favicon_service_, SetFavicons(_, kIconURL16x16, _, _));
+  delegate_.fake_downloader().Add(kIconURL, IntVector{gfx::kFaviconSize},
+                                  IntVector{gfx::kFaviconSize}, kNewColor);
 
-  RunHandlerWithSimpleFaviconCandidates({kIconURL16x16});
-  // We know from the |kPageUrl| database request that |kIconURL16x16| has
-  // expired. A second request for |kIconURL16x16| should not have been made
-  // because it is redundant.
+  EXPECT_CALL(favicon_service_,
+              SetFavicons(_, kIconURL, _, ImageColorIs(kNewColor)));
+
+  InSequence seq;
+  EXPECT_CALL(delegate_,
+              OnFaviconUpdated(_, _, kIconURL, _, ImageColorIs(kOldColor)));
+  EXPECT_CALL(delegate_,
+              OnFaviconUpdated(_, _, kIconURL, _, ImageColorIs(kNewColor)));
+
+  RunHandlerWithSimpleFaviconCandidates({kIconURL});
+  // We know from the |kPageUrl| database request that |kIconURL| has expired. A
+  // second request for |kIconURL| should not have been made because it is
+  // redundant.
   EXPECT_THAT(favicon_service_.fake()->db_requests(), ElementsAre(kPageURL));
-  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL16x16));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL));
 }
 
 // Test that FaviconHandler requests the new data when:
@@ -611,22 +636,26 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
 // - The invalid data is not sent to the UI.
 // - The icon is redownloaded.
 TEST_F(FaviconHandlerTest, FaviconInHistoryInvalid) {
+  const GURL kIconURL("http://www.google.com/favicon");
+
+  delegate_.fake_downloader().Add(kIconURL, IntVector{gfx::kFaviconSize},
+                                  IntVector{gfx::kFaviconSize}, SK_ColorBLUE);
+
   // Set non empty but invalid data.
   std::vector<FaviconRawBitmapResult> bitmap_result =
-      CreateRawBitmapResult(kIconURL16x16);
+      CreateRawBitmapResult(kIconURL);
   // Empty bitmap data is invalid.
   bitmap_result[0].bitmap_data = new base::RefCountedBytes();
 
-  favicon_service_.fake()->Store(kPageURL, kIconURL16x16, bitmap_result);
+  favicon_service_.fake()->Store(kPageURL, kIconURL, bitmap_result);
 
-  // TODO(crbug.com/700811): It would be nice if we could check the image
-  // being published to rule out invalid data.
-  EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL16x16, _, _));
+  EXPECT_CALL(delegate_,
+              OnFaviconUpdated(_, _, kIconURL, _, ImageColorIs(SK_ColorBLUE)));
 
-  RunHandlerWithSimpleFaviconCandidates({kIconURL16x16});
+  RunHandlerWithSimpleFaviconCandidates({kIconURL});
 
   EXPECT_THAT(favicon_service_.fake()->db_requests(), ElementsAre(kPageURL));
-  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL16x16));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL));
 }
 
 // Test that no downloads are done if a user visits a page which changed its
@@ -1143,10 +1172,10 @@ TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
   const int kOriginalSize1 = kMaximalSize + 1;
   const int kOriginalSize2 = kMaximalSize + 2;
 
-  delegate_.fake_downloader().AddWithOriginalSizes(
-      kIconURL1, IntVector{kMaximalSize}, IntVector{kOriginalSize1});
-  delegate_.fake_downloader().AddWithOriginalSizes(
-      kIconURL2, IntVector{kMaximalSize}, IntVector{kOriginalSize2});
+  delegate_.fake_downloader().Add(kIconURL1, IntVector{kMaximalSize},
+                                  IntVector{kOriginalSize1}, SK_ColorBLUE);
+  delegate_.fake_downloader().Add(kIconURL2, IntVector{kMaximalSize},
+                                  IntVector{kOriginalSize2}, SK_ColorBLUE);
 
   // Verify the best bitmap was selected (although smaller than |kIconURL2|)
   // and that it was scaled down to |kMaximalSize|.
