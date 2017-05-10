@@ -83,6 +83,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -101,6 +102,10 @@
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/window_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/input_method.h"
+#endif
 
 using testing::_;
 
@@ -4686,6 +4691,56 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
   EXPECT_EQ(4U, sink_->message_count());
 }
+
+#if defined(OS_CHROMEOS)
+// Check that when accessibility virtual keyboard is enabled, windows are
+// shifted up when focused and restored when focus is lost.
+TEST_F(RenderWidgetHostViewAuraTest, VirtualKeyboardFocusEnsureCaretInRect) {
+  // TODO (oshima): Test that overscroll occurs.
+
+  // Enable new virtual keyboard behavior.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(::switches::kUseNewVirtualKeyboardBehavior))
+    command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
+
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
+  wm::DefaultScreenPositionClient screen_position_client;
+  aura::client::SetScreenPositionClient(root_window, &screen_position_client);
+
+  const gfx::Rect orig_view_bounds = gfx::Rect(0, 300, 400, 200);
+  const gfx::Rect shifted_view_bounds = gfx::Rect(0, 200, 400, 200);
+  const gfx::Rect root_bounds = root_window->bounds();
+  const int keyboard_height = 200;
+  const gfx::Rect keyboard_view_bounds =
+      gfx::Rect(0, root_bounds.height() - keyboard_height, root_bounds.width(),
+                keyboard_height);
+
+  ui::InputMethod* input_method = root_window->GetHost()->GetInputMethod();
+
+  // Focus the window.
+  view_->SetBounds(orig_view_bounds);
+  input_method->SetFocusedTextInputClient(view_);
+  EXPECT_EQ(view_->GetNativeView()->bounds(), orig_view_bounds);
+
+  // Simulate virtual keyboard.
+  input_method->SetOnScreenKeyboardBounds(keyboard_view_bounds);
+
+  // Window should be shifted.
+  EXPECT_EQ(view_->GetNativeView()->bounds(), shifted_view_bounds);
+
+  // Detach the RenderWidgetHostViewAura from the IME.
+  view_->DetachFromInputMethod();
+
+  // Window should be restored.
+  EXPECT_EQ(view_->GetNativeView()->bounds(), orig_view_bounds);
+
+  aura::client::SetScreenPositionClient(root_window, nullptr);
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Tests that when view initiated shutdown happens (i.e. RWHView is deleted
 // before RWH), we clean up properly and don't leak the RWHVGuest.

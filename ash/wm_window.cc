@@ -42,6 +42,7 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
@@ -420,6 +421,7 @@ gfx::Rect WmWindow::GetTargetBounds() {
 
 void WmWindow::ClearRestoreBounds() {
   window_->ClearProperty(aura::client::kRestoreBoundsKey);
+  window_->ClearProperty(::wm::kVirtualKeyboardRestoreBoundsKey);
 }
 
 void WmWindow::SetRestoreBoundsInScreen(const gfx::Rect& bounds) {

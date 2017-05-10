@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
 class InputImeApiTest;
@@ -159,6 +160,9 @@ class InputMethod {
   // Management of the observer list.
   virtual void AddObserver(InputMethodObserver* observer) = 0;
   virtual void RemoveObserver(InputMethodObserver* observer) = 0;
+
+  // Set screen bounds of a on-screen keyboard.
+  virtual void SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) {}
 
  protected:
   friend class extensions::InputImeApiTest;
