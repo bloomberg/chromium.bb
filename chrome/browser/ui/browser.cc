@@ -1035,6 +1035,11 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
                                WebContents* new_contents,
                                int index,
                                int reason) {
+// Mac correctly sets the initial background color of new tabs to the theme
+// background color, so it does not need this block of code. Aura should
+// implement this as well.
+// https://crbug.com/719230
+#if !defined(OS_MACOSX)
   // Copies the background color from an old WebContents to a new one that
   // replaces it on the screen. This allows the new WebContents to use the
   // old one's background color as the starting background color, before having
@@ -1050,6 +1055,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
     if (old_view && new_view)
       new_view->SetBackgroundColor(old_view->background_color());
   }
+#endif
 
   base::RecordAction(UserMetricsAction("ActiveTabChanged"));
 

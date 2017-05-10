@@ -68,7 +68,14 @@ TEST_F(BrowserUnitTest, ReloadCrashedTab) {
   EXPECT_TRUE(contents2->IsCrashed());
 }
 
-TEST_F(BrowserUnitTest, SetBackgroundColorForNewTab) {
+// This tests a workaround which is not necessary on Mac.
+// https://crbug.com/719230
+#if defined(OS_MACOSX)
+#define MAYBE_SetBackgroundColorForNewTab DISABLED_SetBackgroundColorForNewTab
+#else
+#define MAYBE_SetBackgroundColorForNewTab SetBackgroundColorForNewTab
+#endif
+TEST_F(BrowserUnitTest, MAYBE_SetBackgroundColorForNewTab) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
 
   WebContents* contents1 = CreateTestWebContents();
