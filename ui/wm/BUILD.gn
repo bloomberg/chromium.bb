@@ -86,6 +86,13 @@ component("wm") {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/events/devices/x11" ]
   }
+
+  if (is_chromeos) {
+    sources += [
+      "core/ime_util_chromeos.cc",
+      "core/ime_util_chromeos.h",
+    ]
+  }
 }
 
 static_library("test_support") {
@@ -149,4 +156,8 @@ test("wm_unittests") {
   data_deps = [
     "//ui/resources:ui_test_pak_data",
   ]
+
+  if (is_chromeos) {
+    sources += [ "core/ime_util_chromeos_unittest.cc" ]
+  }
 }

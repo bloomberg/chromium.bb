@@ -520,6 +520,7 @@ void KeyboardController::HideAnimationFinished() {
   ui_->HideKeyboardContainer(container_.get());
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardHidden();
+  ui_->EnsureCaretInWorkArea();
 }
 
 void KeyboardController::AdjustKeyboardBounds() {

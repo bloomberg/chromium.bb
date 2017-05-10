@@ -63,6 +63,12 @@ TextInputClient* InputMethodBase::GetTextInputClient() const {
   return text_input_client_;
 }
 
+void InputMethodBase::SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) {
+  keyboard_bounds_ = new_bounds;
+  if (text_input_client_)
+    text_input_client_->EnsureCaretNotInRect(keyboard_bounds_);
+}
+
 void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
@@ -152,6 +158,10 @@ void InputMethodBase::SetFocusedTextInputClientInternal(
   text_input_client_ = client;  // nullptr allowed.
   OnDidChangeFocusedClient(old, client);
   NotifyTextInputStateChanged(text_input_client_);
+
+  // Move new focused window if necessary.
+  if (text_input_client_)
+    text_input_client_->EnsureCaretNotInRect(keyboard_bounds_);
 }
 
 std::vector<gfx::Rect> InputMethodBase::GetCompositionBounds(

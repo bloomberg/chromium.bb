@@ -374,6 +374,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            FinishCompositionByMouse);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            ForwardsBeginFrameAcks);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           VirtualKeyboardFocusEnsureCaretInRect);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            WebContentsViewReparent);
 

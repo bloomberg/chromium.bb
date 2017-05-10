@@ -78,6 +78,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
@@ -94,6 +95,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/touch_selection/touch_selection_controller.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 #include "ui/wm/public/tooltip_client.h"
@@ -117,6 +119,10 @@
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
 using gfx::RectToSkIRect;
@@ -1281,22 +1287,11 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(
 
 gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
     const gfx::Rect& rect) const {
-  gfx::Point origin = rect.origin();
-  gfx::Point end = gfx::Point(rect.right(), rect.bottom());
-
-  aura::Window* root_window = window_->GetRootWindow();
-  if (root_window) {
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(root_window);
-    screen_position_client->ConvertPointFromScreen(window_, &origin);
-    screen_position_client->ConvertPointFromScreen(window_, &end);
-    return gfx::Rect(origin.x(),
-                     origin.y(),
-                     end.x() - origin.x(),
-                     end.y() - origin.y());
-  }
-
-  return rect;
+  gfx::Rect result = rect;
+  if (window_->GetRootWindow() &&
+      aura::client::GetScreenPositionClient(window_->GetRootWindow()))
+    wm::ConvertRectFromScreen(window_, &result);
+  return result;
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
@@ -1434,16 +1429,24 @@ void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     rfh->ExtendSelectionAndDelete(before, after);
 }
 
-void RenderWidgetHostViewAura::EnsureCaretNotInRect(const gfx::Rect& rect) {
-  gfx::Rect rect_in_local_space = ConvertRectFromScreen(rect);
-  gfx::Rect hiding_area_in_this_window =
-      gfx::IntersectRects(rect_in_local_space, window_->bounds());
+void RenderWidgetHostViewAura::EnsureCaretNotInRect(
+    const gfx::Rect& rect_in_screen) {
+  aura::Window* top_level_window = window_->GetToplevelWindow();
+#if defined(OS_CHROMEOS)
+  wm::EnsureWindowNotInRect(top_level_window, rect_in_screen);
+#endif
 
-  if (hiding_area_in_this_window.IsEmpty())
+  // Perform overscroll if the caret is still hidden by the keyboard.
+  const gfx::Rect hidden_window_bounds_in_screen = gfx::IntersectRects(
+      rect_in_screen, top_level_window->GetBoundsInScreen());
+  if (hidden_window_bounds_in_screen.IsEmpty())
     return;
 
-  host_->ScrollFocusedEditableNodeIntoRect(
-      gfx::SubtractRects(window_->bounds(), hiding_area_in_this_window));
+  gfx::Rect visible_area_in_local_space = gfx::SubtractRects(
+      window_->GetBoundsInScreen(), hidden_window_bounds_in_screen);
+  visible_area_in_local_space =
+      ConvertRectFromScreen(visible_area_in_local_space);
+  host_->ScrollFocusedEditableNodeIntoRect(visible_area_in_local_space);
 }
 
 bool RenderWidgetHostViewAura::IsTextEditCommandEnabled(
@@ -2225,8 +2228,12 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
 void RenderWidgetHostViewAura::DetachFromInputMethod() {
   ui::InputMethod* input_method = GetInputMethod();
-  if (input_method)
+  if (input_method) {
     input_method->DetachTextInputClient(this);
+#if defined(OS_CHROMEOS)
+    wm::RestoreWindowBoundsOnClientFocusLost(window_->GetToplevelWindow());
+#endif  // defined(OS_CHROMEOS)
+  }
 }
 
 void RenderWidgetHostViewAura::ForwardKeyboardEvent(
