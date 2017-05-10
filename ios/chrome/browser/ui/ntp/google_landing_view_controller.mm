@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/ntp/most_visited_cell.h"
@@ -44,31 +45,13 @@ enum {
   NumberOfCollectionViewSections,
 };
 
-enum InterfaceOrientation {
-  ALL,
-  IPHONE_LANDSCAPE,
-};
-
 const CGFloat kVoiceSearchButtonWidth = 48;
 const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
-// Height for the doodle frame when Google is not the default search engine.
-const CGFloat kNonGoogleSearchDoodleHeight = 60;
-// Height for the header view on tablet when Google is not the default search
-// engine.
-const CGFloat kNonGoogleSearchHeaderHeightIPad = 10;
-
 const CGFloat kHintLabelSidePadding = 12;
-const CGFloat kNTPSearchFieldBottomPadding = 16;
 const CGFloat kWhatsNewHeaderHiddenHeight = 8;
-const CGFloat kDoodleTopMarginIPadPortrait = 82;
-const CGFloat kDoodleTopMarginIPadLandscape = 82;
 const NSInteger kMaxNumMostVisitedFaviconRows = 2;
-const CGFloat kMaxSearchFieldFrameMargin = 200;
 const CGFloat kShiftTilesDownAnimationDuration = 0.2;
-
-const CGFloat kMostVisitedPaddingIPhone = 16;
-const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
 }  // namespace
 
@@ -204,14 +187,6 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 // pushed into the header view.
 @property(nonatomic, assign) BOOL canGoBack;
 
-// iPhone landscape uses a slightly different layout for the doodle and search
-// field frame. Returns the proper frame from |frames| based on orientation,
-// centered in the view.
-- (CGRect)getOrientationFrame:(const CGRect[])frames;
-// Returns the proper frame for the doodle.
-- (CGRect)doodleFrame;
-// Returns the proper frame for the search field.
-- (CGRect)searchFieldFrame;
 // Returns the height to use for the What's New promo view.
 - (CGFloat)promoHeaderHeight;
 // Add fake search field and voice search microphone.
@@ -246,8 +221,6 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 - (NSInteger)numberOfNonEmptyTilesShown;
 // Returns the URL for the mosted visited item in |self.mostVisitedData|.
 - (GURL)urlForIndex:(NSUInteger)index;
-// Returns the expected height of the NewTabPageHeaderView.
-- (CGFloat)heightForSectionWithOmnibox;
 // Returns the nearest ancestor view that is kind of |aClass|.
 - (UIView*)nearestAncestorOfView:(UIView*)view withClass:(Class)aClass;
 // Updates the collection view's scroll view offset for the next frame of the
@@ -255,8 +228,6 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 - (void)shiftTilesDownAnimationDidFire:(CADisplayLink*)link;
 // Returns the size to use for Most Visited cells in the NTP.
 - (CGSize)mostVisitedCellSize;
-// Returns the padding for use between Most Visited cells.
-- (CGFloat)mostVisitedCellPadding;
 
 @end
 
@@ -362,7 +333,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
     CGFloat smallestDimension =
         viewSize.height > viewSize.width ? viewSize.width : viewSize.height;
     CGFloat cellWidth = AlignValueToPixel(
-        (smallestDimension - 3 * [self mostVisitedCellPadding]) / 2);
+        (smallestDimension - 3 * content_suggestions::spacingBetweenTiles()) /
+        2);
     if (cellWidth < maximumCellSize.width) {
       return CGSizeMake(cellWidth, cellWidth);
     } else {
@@ -373,90 +345,23 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   }
 }
 
-- (CGFloat)mostVisitedCellPadding {
-  return IsIPadIdiom() ? kMostVisitedPaddingIPadFavicon
-                       : kMostVisitedPaddingIPhone;
-}
-
 - (CGFloat)viewWidth {
   return [self.view frame].size.width;
 }
 
 - (int)numberOfColumns {
   CGFloat width = [self viewWidth];
-  CGFloat padding = [self mostVisitedCellPadding];
-  // Try to fit 4 columns.
-  if (width >= 5 * padding + _mostVisitedCellSize.width * 4)
-    return 4;
-  // Try to fit 3 columns.
-  if (width >= 4 * padding + _mostVisitedCellSize.width * 3)
-    return 3;
-  // Try to fit 2 columns.
-  if (width >= 3 * padding + _mostVisitedCellSize.width * 2)
-    return 2;
-  // We never want to have a layout with only one column, however: At launch,
-  // the view's size is initialized to the width of 320, which can only fit
-  // one column on iPhone 6 and 6+. TODO(crbug.com/506183): Get rid of the
-  // unecessary resize, and add a NOTREACHED() here.
-  return 1;
-}
 
-- (CGFloat)leftMargin {
-  int columns = [self numberOfColumns];
-  CGFloat whitespace = [self viewWidth] - columns * _mostVisitedCellSize.width -
-                       (columns - 1) * [self mostVisitedCellPadding];
-  CGFloat margin = AlignValueToPixel(whitespace / 2);
-  DCHECK(margin >= [self mostVisitedCellPadding]);
-  return margin;
-}
-
-- (CGRect)doodleFrame {
-  const CGRect kDoodleFrame[2] = {
-      {{0, 66}, {0, 120}}, {{0, 56}, {0, 120}},
-  };
-  CGRect doodleFrame = [self getOrientationFrame:kDoodleFrame];
-  if (!IsIPadIdiom() && !self.logoIsShowing)
-    doodleFrame.size.height = kNonGoogleSearchDoodleHeight;
-  if (IsIPadIdiom()) {
-    doodleFrame.origin.y = IsPortrait() ? kDoodleTopMarginIPadPortrait
-                                        : kDoodleTopMarginIPadLandscape;
-  }
-  return doodleFrame;
-}
-
-- (CGRect)searchFieldFrame {
-  CGFloat y = CGRectGetMaxY([self doodleFrame]);
-  CGFloat leftMargin = [self leftMargin];
-  if (leftMargin > kMaxSearchFieldFrameMargin)
-    leftMargin = kMaxSearchFieldFrameMargin;
-  const CGRect kSearchFieldFrame[2] = {
-      {{leftMargin, y + 32}, {0, 50}}, {{leftMargin, y + 16}, {0, 50}},
-  };
-  CGRect searchFieldFrame = [self getOrientationFrame:kSearchFieldFrame];
-  if (IsIPadIdiom()) {
-    CGFloat iPadTopMargin = IsPortrait() ? kDoodleTopMarginIPadPortrait
-                                         : kDoodleTopMarginIPadLandscape;
-    searchFieldFrame.origin.y += iPadTopMargin - 32;
-  }
-  return searchFieldFrame;
-}
-
-- (CGRect)getOrientationFrame:(const CGRect[])frames {
-  UIInterfaceOrientation orient =
-      [[UIApplication sharedApplication] statusBarOrientation];
-  InterfaceOrientation inter_orient =
-      (IsIPadIdiom() || UIInterfaceOrientationIsPortrait(orient))
-          ? ALL
-          : IPHONE_LANDSCAPE;
-
-  // Calculate width based on screen width and origin x.
-  CGRect frame = frames[inter_orient];
-  frame.size.width = fmax(self.view.bounds.size.width - 2 * frame.origin.x, 50);
-  return frame;
+  NSUInteger columns = content_suggestions::numberOfTilesForWidth(
+      width - 2 * content_suggestions::spacingBetweenTiles());
+  DCHECK(columns > 1);
+  return columns;
 }
 
 - (CGFloat)promoHeaderHeight {
-  CGFloat promoMaxWidth = [self viewWidth] - 2 * [self leftMargin];
+  CGFloat promoMaxWidth =
+      [self viewWidth] -
+      2 * content_suggestions::centeredTilesMarginForWidth([self viewWidth]);
   NSString* text = self.promoText;
   return [WhatsNewHeaderView heightToFitText:text inWidth:promoMaxWidth];
 }
@@ -470,7 +375,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
       // Adjust the height of |_headerView| to fit its content which may have
       // been shifted due to the visibility of the doodle.
       CGRect headerFrame = [_headerView frame];
-      headerFrame.size.height = [self heightForSectionWithOmnibox];
+      headerFrame.size.height = content_suggestions::heightForLogoHeader(
+          [self viewWidth], self.logoIsShowing, self.promoCanShow);
       [_headerView setFrame:headerFrame];
 
       // Adjust vertical positioning of |_promoHeaderView|.
@@ -491,7 +397,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
 // Initialize and add a search field tap target and a voice search button.
 - (void)addSearchField {
-  CGRect searchFieldFrame = [self searchFieldFrame];
+  CGRect searchFieldFrame = content_suggestions::searchFieldFrame(
+      [self viewWidth], self.logoIsShowing);
   _searchTapTarget.reset([[UIButton alloc] initWithFrame:searchFieldFrame]);
   if (IsIPadIdiom()) {
     UIImage* searchBoxImage = [[UIImage imageNamed:@"ntp_google_search_box"]
@@ -599,7 +506,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 }
 
 - (void)setFlowLayoutInset:(UICollectionViewFlowLayout*)layout {
-  CGFloat leftMargin = [self leftMargin];
+  CGFloat leftMargin =
+      content_suggestions::centeredTilesMarginForWidth([self viewWidth]);
   [layout setSectionInset:UIEdgeInsetsMake(0, leftMargin, 0, leftMargin)];
 }
 
@@ -615,11 +523,14 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
       base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
           [_mostVisitedView collectionViewLayout]);
   [flowLayout setItemSize:_mostVisitedCellSize];
-  self.logoVendor.view.frame = [self doodleFrame];
+  self.logoVendor.view.frame =
+      content_suggestions::doodleFrame([self viewWidth], self.logoIsShowing);
 
   [self setFlowLayoutInset:flowLayout];
   [flowLayout invalidateLayout];
-  [_promoHeaderView setSideMargin:[self leftMargin]];
+  [_promoHeaderView
+      setSideMargin:content_suggestions::centeredTilesMarginForWidth(
+                        [self viewWidth])];
 
   // On the iPhone 6 Plus, if the app is started in landscape after a fresh
   // install, the UICollectionViewLayout incorrectly sizes the widths of the
@@ -646,7 +557,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
       [self updateSearchField];
     }
   } else {
-    [_searchTapTarget setFrame:[self searchFieldFrame]];
+    [_searchTapTarget setFrame:content_suggestions::searchFieldFrame(
+                                   [self viewWidth], self.logoIsShowing)];
   }
 
   if (!_viewLoaded) {
@@ -668,7 +580,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   [flowLayout setScrollDirection:UICollectionViewScrollDirectionVertical];
   [flowLayout setItemSize:_mostVisitedCellSize];
   [flowLayout setMinimumInteritemSpacing:8];
-  [flowLayout setMinimumLineSpacing:[self mostVisitedCellPadding]];
+  [flowLayout setMinimumLineSpacing:content_suggestions::spacingBetweenTiles()];
   DCHECK(!_mostVisitedView);
   _mostVisitedView.reset([[UICollectionView alloc]
              initWithFrame:mostVisitedFrame
@@ -698,7 +610,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   NSArray* constraints =
       @[ _hintLabelLeadingConstraint, _voiceTapTrailingConstraint ];
   [_headerView updateSearchField:_searchTapTarget
-                withInitialFrame:[self searchFieldFrame]
+                withInitialFrame:content_suggestions::searchFieldFrame(
+                                     [self viewWidth], self.logoIsShowing)
               subviewConstraints:constraints
                        forOffset:[_mostVisitedView contentOffset].y];
 }
@@ -856,27 +769,6 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   [self.view setNeedsLayout];
 }
 
-- (CGFloat)heightForSectionWithOmnibox {
-  CGFloat headerHeight =
-      CGRectGetMaxY([self searchFieldFrame]) + kNTPSearchFieldBottomPadding;
-  if (IsIPadIdiom()) {
-    if (self.logoIsShowing) {
-      if (!self.promoCanShow) {
-        UIInterfaceOrientation orient =
-            [[UIApplication sharedApplication] statusBarOrientation];
-        const CGFloat kTopSpacingMaterialPortrait = 56;
-        const CGFloat kTopSpacingMaterialLandscape = 32;
-        headerHeight += UIInterfaceOrientationIsPortrait(orient)
-                            ? kTopSpacingMaterialPortrait
-                            : kTopSpacingMaterialLandscape;
-      }
-    } else {
-      headerHeight = kNonGoogleSearchHeaderHeightIPad;
-    }
-  }
-  return headerHeight;
-}
-
 #pragma mark - ToolbarOwner
 
 - (ToolbarController*)relinquishedToolbarController {
@@ -895,7 +787,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
     referenceSizeForHeaderInSection:(NSInteger)section {
   CGFloat headerHeight = 0;
   if (section == SectionWithOmnibox) {
-    headerHeight = [self heightForSectionWithOmnibox];
+    headerHeight = content_suggestions::heightForLogoHeader(
+        [self viewWidth], self.logoIsShowing, self.promoCanShow);
     ((UICollectionViewFlowLayout*)collectionViewLayout).headerReferenceSize =
         CGSizeMake(0, headerHeight);
   } else if (section == SectionWithMostVisited) {
@@ -985,7 +878,9 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
               UICollectionElementKindSectionHeader
                              withReuseIdentifier:@"whatsNew"
                                     forIndexPath:indexPath] retain]);
-      [_promoHeaderView setSideMargin:[self leftMargin]];
+      [_promoHeaderView
+          setSideMargin:content_suggestions::centeredTilesMarginForWidth(
+                            [self viewWidth])];
       [_promoHeaderView setDelegate:self];
       if (self.promoCanShow) {
         [_promoHeaderView setText:self.promoText];
