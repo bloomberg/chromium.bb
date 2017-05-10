@@ -2025,7 +2025,7 @@
             ]
         }
     ],
-    "PasswordProtectionLowReputationPing": [
+    "PasswordProtectionPasswordFieldOnFocusPing": [
         {
             "platforms": [
                 "chromeos",
@@ -2042,7 +2042,7 @@
                         "incognito": "false"
                     },
                     "enable_features": [
-                        "LowReputationPinging"
+                        "PasswordFieldOnFocusPinging"
                     ]
                 }
             ]
