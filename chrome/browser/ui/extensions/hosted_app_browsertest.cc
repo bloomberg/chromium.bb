@@ -60,10 +60,10 @@ class HostedAppTest : public ExtensionBrowserTest {
 
   // testing::Test:
   void SetUp() override {
-    ExtensionBrowserTest::SetUp();
 #if defined(OS_MACOSX)
     scoped_feature_list_.InitAndEnableFeature(features::kBookmarkApps);
 #endif
+    ExtensionBrowserTest::SetUp();
   }
 
  protected:
