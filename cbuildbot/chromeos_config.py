@@ -422,7 +422,6 @@ _arm_internal_release_boards = frozenset([
     'nyan_kitty',
     'lasilla-ground',
     'lasilla-sky',
-    'loonix',
     'oak',
     'peach_pi',
     'peach_pit',
@@ -632,7 +631,6 @@ _loonix_boards = frozenset([
     'gonzo',
     'lasilla-ground',
     'lasilla-sky',
-    'loonix',
     'wooten',
 ])
 
@@ -2205,13 +2203,16 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = frozenset([
       'fizz',
       'gale',
+      'gonzo',
       'kip',
       'lakitu-gpu',
-      'loonix',
+      'lasilla-ground',
+      'lasilla-sky',
       'poppy',
       'scarlet',
       'tatl',
       'whirlwind',
+      'wooten',
   ])
 
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards

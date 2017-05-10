@@ -10002,6 +10002,7 @@
     },
     "gonzo-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "gonzo"
         ],
@@ -13450,6 +13451,7 @@
     },
     "lasilla-ground-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "lasilla-ground"
         ],
@@ -13577,6 +13579,7 @@
     },
     "lasilla-sky-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "lasilla-sky"
         ],
@@ -14069,134 +14072,6 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "loonix-compile-only-pre-cq": {
-        "_template": "compile_only_pre_cq",
-        "boards": [
-            "loonix"
-        ],
-        "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "loonix-full": {
-        "_template": "full",
-        "boards": [
-            "loonix"
-        ],
-        "chrome_sdk": false,
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "prebuilts": "public",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "loonix-no-vmtest-pre-cq": {
-        "_template": "no_vmtest_pre_cq",
-        "boards": [
-            "loonix"
-        ],
-        "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "loonix-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "loonix"
-        ],
-        "chrome_sdk": false,
-        "description": "Commit Queue (internal)",
-        "image_test": false,
-        "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "loonix-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [
-            "loonix"
-        ],
-        "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "loonix-release": {
-        "_template": "release",
-        "afdo_use": false,
-        "boards": [
-            "loonix"
-        ],
-        "chrome_sdk": false,
-        "dev_installer_prebuilts": false,
-        "hw_tests": [],
-        "hwqual": false,
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "paygen": false,
-        "signer_tests": false,
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "loonix-unittest-stress": {
-        "_template": "unittest_stress",
-        "boards": [
-            "loonix"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -14927,14 +14802,16 @@
             "fizz-paladin",
             "gale-paladin",
             "glados-paladin",
+            "gonzo-paladin",
             "guado_moblab-paladin",
             "kevin-paladin",
             "kip-paladin",
             "lakitu-gpu-paladin",
             "lakitu-paladin",
+            "lasilla-ground-paladin",
+            "lasilla-sky-paladin",
             "leon-paladin",
             "link-paladin",
-            "loonix-paladin",
             "lumpy-incremental-paladin",
             "lumpy-paladin",
             "monroe-paladin",
@@ -14965,6 +14842,7 @@
             "winky-paladin",
             "wolf-paladin",
             "wolf-tot-paladin",
+            "wooten-paladin",
             "x86-alex-paladin",
             "x86-generic-paladin",
             "x86-mario-nowithdebug-paladin",
@@ -27861,6 +27739,7 @@
     },
     "wooten-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "wooten"
         ],
