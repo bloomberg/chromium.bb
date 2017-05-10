@@ -76,6 +76,7 @@ class SignerTestsBuilder(generic_builders.PreCqBuilder):
   """Builder that runs the cros-signing tests, and nothing else."""
   def RunTestStages(self):
     """Run the signer tests."""
+    self._RunStage(build_stages.InitSDKStage)
     self._RunStage(test_stages.CrosSigningTestStage)
 
 
