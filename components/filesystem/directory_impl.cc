@@ -29,7 +29,7 @@ DirectoryImpl::DirectoryImpl(base::FilePath directory_path,
 
 DirectoryImpl::~DirectoryImpl() {}
 
-void DirectoryImpl::Read(const ReadCallback& callback) {
+void DirectoryImpl::Read(ReadCallback callback) {
   std::vector<mojom::DirectoryEntryPtr> entries;
   base::FileEnumerator directory_enumerator(
       directory_path_, false,
@@ -44,9 +44,10 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
     entries.push_back(std::move(entry));
   }
 
-  callback.Run(mojom::FileError::OK,
-               entries.empty() ? base::nullopt
-                               : base::make_optional(std::move(entries)));
+  std::move(callback).Run(mojom::FileError::OK,
+                          entries.empty()
+                              ? base::nullopt
+                              : base::make_optional(std::move(entries)));
 }
 
 // TODO(erg): Consider adding an implementation of Stat()/Touch() to the
@@ -57,11 +58,11 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
 void DirectoryImpl::OpenFile(const std::string& raw_path,
                              mojom::FileRequest file,
                              uint32_t open_flags,
-                             const OpenFileCallback& callback) {
+                             OpenFileCallback callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error);
+    std::move(callback).Run(error);
     return;
   }
 
@@ -69,13 +70,13 @@ void DirectoryImpl::OpenFile(const std::string& raw_path,
     // We must not return directories as files. In the file abstraction, we can
     // fetch raw file descriptors over mojo pipes, and passing a file
     // descriptor to a directory is a sandbox escape on Windows.
-    callback.Run(mojom::FileError::NOT_A_FILE);
+    std::move(callback).Run(mojom::FileError::NOT_A_FILE);
     return;
   }
 
   base::File base_file(path, open_flags);
   if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file));
+    std::move(callback).Run(GetError(base_file));
     return;
   }
 
@@ -85,20 +86,20 @@ void DirectoryImpl::OpenFile(const std::string& raw_path,
                                    lock_table_),
         std::move(file));
   }
-  callback.Run(mojom::FileError::OK);
+  std::move(callback).Run(mojom::FileError::OK);
 }
 
 void DirectoryImpl::OpenFileHandle(const std::string& raw_path,
                                    uint32_t open_flags,
-                                   const OpenFileHandleCallback& callback) {
+                                   OpenFileHandleCallback callback) {
   base::File file = OpenFileHandleImpl(raw_path, open_flags);
   mojom::FileError error = GetError(file);
-  callback.Run(error, std::move(file));
+  std::move(callback).Run(error, std::move(file));
 }
 
 void DirectoryImpl::OpenFileHandles(
     std::vector<mojom::FileOpenDetailsPtr> details,
-    const OpenFileHandlesCallback& callback) {
+    OpenFileHandlesCallback callback) {
   std::vector<mojom::FileOpenResultPtr> results(details.size());
   size_t i = 0;
   for (const auto& detail : details) {
@@ -108,23 +109,23 @@ void DirectoryImpl::OpenFileHandles(
     result->error = GetError(result->file_handle);
     results[i++] = std::move(result);
   }
-  callback.Run(std::move(results));
+  std::move(callback).Run(std::move(results));
 }
 
 void DirectoryImpl::OpenDirectory(const std::string& raw_path,
                                   mojom::DirectoryRequest directory,
                                   uint32_t open_flags,
-                                  const OpenDirectoryCallback& callback) {
+                                  OpenDirectoryCallback callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error);
+    std::move(callback).Run(error);
     return;
   }
 
   if (!base::DirectoryExists(path)) {
     if (base::PathExists(path)) {
-      callback.Run(mojom::FileError::NOT_A_DIRECTORY);
+      std::move(callback).Run(mojom::FileError::NOT_A_DIRECTORY);
       return;
     }
 
@@ -132,13 +133,13 @@ void DirectoryImpl::OpenDirectory(const std::string& raw_path,
           open_flags & mojom::kFlagCreate)) {
       // The directory doesn't exist, and we weren't passed parameters to
       // create it.
-      callback.Run(mojom::FileError::NOT_FOUND);
+      std::move(callback).Run(mojom::FileError::NOT_FOUND);
       return;
     }
 
     base::File::Error error;
     if (!base::CreateDirectoryAndGetError(path, &error)) {
-      callback.Run(static_cast<filesystem::mojom::FileError>(error));
+      std::move(callback).Run(static_cast<filesystem::mojom::FileError>(error));
       return;
     }
   }
@@ -149,117 +150,117 @@ void DirectoryImpl::OpenDirectory(const std::string& raw_path,
         std::move(directory));
   }
 
-  callback.Run(mojom::FileError::OK);
+  std::move(callback).Run(mojom::FileError::OK);
 }
 
 void DirectoryImpl::Rename(const std::string& raw_old_path,
                            const std::string& raw_new_path,
-                           const RenameCallback& callback) {
+                           RenameCallback callback) {
   base::FilePath old_path;
   mojom::FileError error =
       ValidatePath(raw_old_path, directory_path_, &old_path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error);
+    std::move(callback).Run(error);
     return;
   }
 
   base::FilePath new_path;
   error = ValidatePath(raw_new_path, directory_path_, &new_path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error);
+    std::move(callback).Run(error);
     return;
   }
 
   if (!base::Move(old_path, new_path)) {
-    callback.Run(mojom::FileError::FAILED);
+    std::move(callback).Run(mojom::FileError::FAILED);
     return;
   }
 
-  callback.Run(mojom::FileError::OK);
+  std::move(callback).Run(mojom::FileError::OK);
 }
 
 void DirectoryImpl::Delete(const std::string& raw_path,
                            uint32_t delete_flags,
-                           const DeleteCallback& callback) {
+                           DeleteCallback callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error);
+    std::move(callback).Run(error);
     return;
   }
 
   bool recursive = delete_flags & mojom::kDeleteFlagRecursive;
   if (!base::DeleteFile(path, recursive)) {
-    callback.Run(mojom::FileError::FAILED);
+    std::move(callback).Run(mojom::FileError::FAILED);
     return;
   }
 
-  callback.Run(mojom::FileError::OK);
+  std::move(callback).Run(mojom::FileError::OK);
 }
 
 void DirectoryImpl::Exists(const std::string& raw_path,
-                           const ExistsCallback& callback) {
+                           ExistsCallback callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error, false);
+    std::move(callback).Run(error, false);
     return;
   }
 
   bool exists = base::PathExists(path);
-  callback.Run(mojom::FileError::OK, exists);
+  std::move(callback).Run(mojom::FileError::OK, exists);
 }
 
 void DirectoryImpl::IsWritable(const std::string& raw_path,
-                               const IsWritableCallback& callback) {
+                               IsWritableCallback callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error, false);
+    std::move(callback).Run(error, false);
     return;
   }
 
-  callback.Run(mojom::FileError::OK, base::PathIsWritable(path));
+  std::move(callback).Run(mojom::FileError::OK, base::PathIsWritable(path));
 }
 
-void DirectoryImpl::Flush(const FlushCallback& callback) {
+void DirectoryImpl::Flush(FlushCallback callback) {
   base::File file(directory_path_,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
-    callback.Run(GetError(file));
+    std::move(callback).Run(GetError(file));
     return;
   }
 
   if (!file.Flush()) {
-    callback.Run(mojom::FileError::FAILED);
+    std::move(callback).Run(mojom::FileError::FAILED);
     return;
   }
 
-  callback.Run(mojom::FileError::OK);
+  std::move(callback).Run(mojom::FileError::OK);
 }
 
 void DirectoryImpl::StatFile(const std::string& raw_path,
-                             const StatFileCallback& callback) {
+                             StatFileCallback callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error, nullptr);
+    std::move(callback).Run(error, nullptr);
     return;
   }
 
   base::File base_file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file), nullptr);
+    std::move(callback).Run(GetError(base_file), nullptr);
     return;
   }
 
   base::File::Info info;
   if (!base_file.GetInfo(&info)) {
-    callback.Run(mojom::FileError::FAILED, nullptr);
+    std::move(callback).Run(mojom::FileError::FAILED, nullptr);
     return;
   }
 
-  callback.Run(mojom::FileError::OK, MakeFileInformation(info));
+  std::move(callback).Run(mojom::FileError::OK, MakeFileInformation(info));
 }
 
 void DirectoryImpl::Clone(mojom::DirectoryRequest directory) {
@@ -271,22 +272,23 @@ void DirectoryImpl::Clone(mojom::DirectoryRequest directory) {
 }
 
 void DirectoryImpl::ReadEntireFile(const std::string& raw_path,
-                                   const ReadEntireFileCallback& callback) {
+                                   ReadEntireFileCallback callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error, std::vector<uint8_t>());
+    std::move(callback).Run(error, std::vector<uint8_t>());
     return;
   }
 
   if (base::DirectoryExists(path)) {
-    callback.Run(mojom::FileError::NOT_A_FILE, std::vector<uint8_t>());
+    std::move(callback).Run(mojom::FileError::NOT_A_FILE,
+                            std::vector<uint8_t>());
     return;
   }
 
   base::File base_file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file), std::vector<uint8_t>());
+    std::move(callback).Run(GetError(base_file), std::vector<uint8_t>());
     return;
   }
 
@@ -297,28 +299,28 @@ void DirectoryImpl::ReadEntireFile(const std::string& raw_path,
   while ((len = base_file.ReadAtCurrentPos(buf.get(), kBufferSize)) > 0)
     contents.insert(contents.end(), buf.get(), buf.get() + len);
 
-  callback.Run(mojom::FileError::OK, contents);
+  std::move(callback).Run(mojom::FileError::OK, contents);
 }
 
 void DirectoryImpl::WriteFile(const std::string& raw_path,
                               const std::vector<uint8_t>& data,
-                              const WriteFileCallback& callback) {
+                              WriteFileCallback callback) {
   base::FilePath path;
   mojom::FileError error = ValidatePath(raw_path, directory_path_, &path);
   if (error != mojom::FileError::OK) {
-    callback.Run(error);
+    std::move(callback).Run(error);
     return;
   }
 
   if (base::DirectoryExists(path)) {
-    callback.Run(mojom::FileError::NOT_A_FILE);
+    std::move(callback).Run(mojom::FileError::NOT_A_FILE);
     return;
   }
 
   base::File base_file(path,
                        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file));
+    std::move(callback).Run(GetError(base_file));
     return;
   }
 
@@ -327,12 +329,12 @@ void DirectoryImpl::WriteFile(const std::string& raw_path,
     const int data_size = static_cast<int>(data.size());
     if (base_file.Write(0, reinterpret_cast<const char*>(&data.front()),
                         data_size) == -1) {
-      callback.Run(GetError(base_file));
+      std::move(callback).Run(GetError(base_file));
       return;
     }
   }
 
-  callback.Run(mojom::FileError::OK);
+  std::move(callback).Run(mojom::FileError::OK);
 }
 
 base::File DirectoryImpl::OpenFileHandleImpl(const std::string& raw_path,

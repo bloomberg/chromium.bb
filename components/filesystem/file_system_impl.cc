@@ -34,9 +34,8 @@ FileSystemImpl::FileSystemImpl(const service_manager::Identity& remote_identity,
 FileSystemImpl::~FileSystemImpl() {
 }
 
-void FileSystemImpl::OpenTempDirectory(
-    mojom::DirectoryRequest directory,
-    const OpenTempDirectoryCallback& callback) {
+void FileSystemImpl::OpenTempDirectory(mojom::DirectoryRequest directory,
+                                       OpenTempDirectoryCallback callback) {
   // Set only if the |DirectoryImpl| will own a temporary directory.
   std::unique_ptr<base::ScopedTempDir> temp_dir(new base::ScopedTempDir);
   CHECK(temp_dir->CreateUniqueTempDir());
@@ -47,12 +46,12 @@ void FileSystemImpl::OpenTempDirectory(
   mojo::MakeStrongBinding(base::MakeUnique<DirectoryImpl>(
                               path, std::move(shared_temp_dir), lock_table_),
                           std::move(directory));
-  callback.Run(mojom::FileError::OK);
+  std::move(callback).Run(mojom::FileError::OK);
 }
 
 void FileSystemImpl::OpenPersistentFileSystem(
     mojo::InterfaceRequest<mojom::Directory> directory,
-    const OpenPersistentFileSystemCallback& callback) {
+    OpenPersistentFileSystemCallback callback) {
   std::unique_ptr<base::ScopedTempDir> temp_dir;
   base::FilePath path = persistent_dir_;
   if (!base::PathExists(path))
@@ -64,7 +63,7 @@ void FileSystemImpl::OpenPersistentFileSystem(
   mojo::MakeStrongBinding(base::MakeUnique<DirectoryImpl>(
                               path, std::move(shared_temp_dir), lock_table_),
                           std::move(directory));
-  callback.Run(mojom::FileError::OK);
+  std::move(callback).Run(mojom::FileError::OK);
 }
 
 }  // namespace filesystem
