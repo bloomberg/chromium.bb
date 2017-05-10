@@ -4873,8 +4873,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (!_changingHistoryState) {
     // If this wasn't a previously-expected load (e.g., certain back/forward
     // navigations), register the load request.
-    if (![self isLoadRequestPendingForURL:newURL])
+    if (![self isLoadRequestPendingForURL:newURL]) {
       navigationContext = [self registerLoadRequestForURL:newURL];
+
+      // Use the current title for items created by same document navigations.
+      auto* pendingItem = self.navigationManagerImpl->GetPendingItem();
+      if (pendingItem)
+        pendingItem->SetTitle(_webStateImpl->GetTitle());
+    }
   }
 
   [self setDocumentURL:newURL];
