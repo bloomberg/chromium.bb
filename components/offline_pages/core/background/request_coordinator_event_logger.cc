@@ -96,8 +96,9 @@ void RequestCoordinatorEventLogger::RecordOfflinerResult(
     const std::string& name_space,
     Offliner::RequestStatus new_status,
     int64_t request_id) {
+  std::string request_id_str = std::to_string(request_id);
   RecordActivity("Background save attempt for " + name_space + ":" +
-                 std::to_string(request_id) + " - " +
+                 request_id_str + " - " +
                  OfflinerRequestStatusToString(new_status));
 }
 
@@ -105,8 +106,9 @@ void RequestCoordinatorEventLogger::RecordDroppedSavePageRequest(
     const std::string& name_space,
     RequestNotifier::BackgroundSavePageResult result,
     int64_t request_id) {
+  std::string request_id_str = std::to_string(request_id);
   RecordActivity("Background save request removed " + name_space + ":" +
-                 std::to_string(request_id) + " - " +
+                 request_id_str + " - " +
                  BackgroundSavePageResultToString(result));
 }
 
