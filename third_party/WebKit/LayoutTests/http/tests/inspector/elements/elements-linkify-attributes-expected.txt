@@ -1,11 +1,52 @@
 Tests that you can click and hover on links in attributes.
 
-    a link
-<span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">img</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">linkify-1</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">srcset</span>=​"<span class="webkit-html-attribute-value"><span class="devtools-link devtools-link-prevent-click">./​1x/​googlelogo_color_272x92dp.png</span> 1x, <span class="devtools-link devtools-link-prevent-click">./​2x/​googlelogo_color_272x92dp.png</span> 2x</span>"</span>&gt;</span>​</span>
-<span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">img</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">linkify-2</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">srcset</span>=​"<span class="webkit-html-attribute-value"><span class="devtools-link devtools-link-prevent-click">./​1x/​googlelogo_color_272x92dp.png</span></span>"</span>&gt;</span>​</span>
-<span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">source</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">linkify-3</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">media</span>=​"<span class="webkit-html-attribute-value">(min-width:​ 650px)​</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">srcset</span>=​"<span class="webkit-html-attribute-value"><span class="devtools-link devtools-link-prevent-click">./​kitten-large.png</span></span>"</span>&gt;</span>​</span>
-<span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">source</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">linkify-4</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">media</span>=​"<span class="webkit-html-attribute-value">(min-width:​ 465px)​</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">srcset</span>=​"<span class="webkit-html-attribute-value"><span class="devtools-link devtools-link-prevent-click">./​kitten-medium.png</span></span>"</span>&gt;</span>​</span>
-<span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">source</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">linkify-5</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">media</span>=​"<span class="webkit-html-attribute-value">(min-width:​ 400px)​</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">srcset</span>=​"<span class="webkit-html-attribute-value"><span class="devtools-link devtools-link-prevent-click">./​kitten-large.png</span> 2x</span>"</span>&gt;</span>​</span>
-<span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">img</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">linkify-6</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">src</span>=​"<span class="webkit-html-attribute-value"><span class="devtools-link devtools-link-prevent-click">./​kitten-small.png</span></span>"</span>&gt;</span>​</span>
-<span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">a</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">linkify-7</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">href</span>=​"<span class="webkit-html-attribute-value"><span class="devtools-link devtools-link-prevent-click" target="_blank">http:​/​/​www.google.com</span></span>"</span>&gt;</span>​<span class="webkit-html-text-node">a link</span>​<span class="webkit-html-tag">&lt;<span class="webkit-html-close-tag-name">/a</span>&gt;</span>​</span>
+                  a link
+
+Rendered text: <img id=​"linkify-1" srcset=​"./​1x/​googlelogo_color_272x92dp.png 1x, ./​2x/​googlelogo_color_272x92dp.png 2x">​
+Link at offset: 30: ./​1x/​googlelogo_color_272x92dp.png
+Link at offset: 71: ./​2x/​googlelogo_color_272x92dp.png
+
+Rendered text: <img id=​"linkify-2" srcset=​"./​1x/​googlelogo_color_272x92dp.png">​
+Link at offset: 30: ./​1x/​googlelogo_color_272x92dp.png
+
+Rendered text: <source id=​"linkify-3" media=​"(min-width:​ 650px)​" srcset=​"./​kitten-large.png">​
+Link at offset: 63: ./​kitten-large.png
+
+Rendered text: <source id=​"linkify-4" media=​"(min-width:​ 465px)​" srcset=​"./​kitten-medium.png">​
+Link at offset: 63: ./​kitten-medium.png
+
+Rendered text: <source id=​"linkify-5" media=​"(min-width:​ 400px)​" srcset=​"./​kitten-large.png 2x">​
+Link at offset: 63: ./​kitten-large.png
+
+Rendered text: <img id=​"linkify-6" src=​"./​kitten-small.png">​
+Link at offset: 27: ./​kitten-small.png
+
+Rendered text: <img id=​"linkify-7" srcset=​"./​kitten-medium.png, ./​kitten-large.png 2x">​
+Link at offset: 30: ./​kitten-medium.png
+Link at offset: 52: ./​kitten-large.png
+
+Rendered text: <img id=​"linkify-8" srcset=​"./​kitten-medium.png 1x, ./​kitten-large.png 2x">​
+Link at offset: 30: ./​kitten-medium.png
+Link at offset: 55: ./​kitten-large.png
+
+Rendered text: <img id=​"linkify-9" srcset=​"./​kitten-medium.png 1x, ./​kitten-large.png 2x">​
+Link at offset: 30: ./​kitten-medium.png
+Link at offset: 55: ./​kitten-large.png
+
+Rendered text: <img id=​"linkify-10" srcset=​"data:​,abc">​
+Link at offset: 31: data:​,abc
+
+Rendered text: <img id=​"linkify-11" srcset=​"data:​,abc 1x">​
+Link at offset: 31: data:​,abc
+
+Rendered text: <img id=​"linkify-12" srcset=​"data:​,abc 1x, data:​,def 2x">​
+Link at offset: 31: data:​,abc
+Link at offset: 46: data:​,def
+
+Rendered text: <img id=​"linkify-13" srcset=​"data:​,abc 1x, data:​,def 2x">​
+Link at offset: 31: data:​,abc
+Link at offset: 46: data:​,def
+
+Rendered text: <a id=​"linkify-14" href=​"http:​/​/​www.google.com">​a link​</a>​
+Link at offset: 27: http:​/​/​www.google.com
 
