@@ -284,11 +284,8 @@ void PerformanceMonitor::InnerReportGenericViolation(
   if (!location)
     location = SourceLocation::Capture(context);
   for (const auto& it : *client_thresholds) {
-    if (it.value < time) {
-      if (!location)
-        location = SourceLocation::Capture(context);
+    if (it.value < time)
       it.key->ReportGenericViolation(violation, text, time, location.get());
-    }
   }
 }
 

@@ -336,6 +336,16 @@ void EventTarget::AddedEventListener(
       UseCounter::Count(executing_window->document(),
                         UseCounter::kSlotChangeEventAddListener);
     }
+  } else if (EventUtil::IsDOMMutationEventType(event_type)) {
+    if (ExecutionContext* context = GetExecutionContext()) {
+      String message_text = String::Format(
+          "Added synchronous DOM mutation listener to a '%s' event. "
+          "Consider using MutationObserver to make the page more responsive.",
+          event_type.GetString().Utf8().data());
+      PerformanceMonitor::ReportGenericViolation(
+          context, PerformanceMonitor::kDiscouragedAPIUse, message_text, 0,
+          nullptr);
+    }
   }
 }
 

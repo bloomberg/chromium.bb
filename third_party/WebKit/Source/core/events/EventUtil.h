@@ -13,6 +13,8 @@ namespace EventUtil {
 
 bool IsPointerEventType(const AtomicString& event_type);
 
+bool IsDOMMutationEventType(const AtomicString& event_type);
+
 }  // namespace eventUtil
 
 }  // namespace blink
