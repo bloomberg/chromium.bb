@@ -16,6 +16,21 @@ class LayoutTableSectionTest : public RenderingTest {
   LayoutTableSection* GetSectionByElementId(const char* id) {
     return ToLayoutTableSection(GetLayoutObjectByElementId(id));
   }
+
+  LayoutTableSection* CreateSection(unsigned rows, unsigned cols) {
+    auto* table = GetDocument().createElement("table");
+    GetDocument().body()->appendChild(table);
+    auto* section = GetDocument().createElement("tbody");
+    table->appendChild(section);
+    for (unsigned i = 0; i < rows; ++i) {
+      auto* row = GetDocument().createElement("tr");
+      section->appendChild(row);
+      for (unsigned i = 0; i < cols; ++i)
+        row->appendChild(GetDocument().createElement("td"));
+    }
+    GetDocument().View()->UpdateAllLifecyclePhases();
+    return ToLayoutTableSection(section->GetLayoutObject());
+  }
 };
 
 TEST_F(LayoutTableSectionTest,
@@ -243,6 +258,77 @@ TEST_F(LayoutTableSectionTest, VisualOverflowWithCollapsedBorders) {
   expected_visual_overflow.ExpandEdges(LayoutUnit(3), LayoutUnit(8),
                                        LayoutUnit(8), LayoutUnit(8));
   EXPECT_EQ(expected_visual_overflow, section->VisualOverflowRect());
+}
+
+static void SetCellsOverflowInRow(LayoutTableRow* row) {
+  for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell())
+    ToElement(cell->GetNode())->setAttribute(HTMLNames::classAttr, "overflow");
+}
+
+TEST_F(LayoutTableSectionTest, OverflowingCells) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  td { width: 10px; height: 10px }"
+      "  td.overflow { outline: 10px solid blue }"
+      "</style>");
+
+  LayoutRect paint_rect(50, 50, 50, 50);
+  auto* small_section = CreateSection(20, 20);
+  EXPECT_FALSE(small_section->HasOverflowingCell());
+  EXPECT_NE(small_section->FullTableEffectiveColumnSpan(),
+            small_section->DirtiedEffectiveColumns(paint_rect));
+  EXPECT_NE(small_section->FullSectionRowSpan(),
+            small_section->DirtiedRows(paint_rect));
+
+  auto* big_section = CreateSection(80, 80);
+  EXPECT_FALSE(big_section->HasOverflowingCell());
+  EXPECT_NE(big_section->FullTableEffectiveColumnSpan(),
+            big_section->DirtiedEffectiveColumns(paint_rect));
+  EXPECT_NE(big_section->FullSectionRowSpan(),
+            big_section->DirtiedRows(paint_rect));
+
+  SetCellsOverflowInRow(small_section->FirstRow());
+  SetCellsOverflowInRow(big_section->FirstRow());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Small sections with overflowing cells always use the slow path.
+  EXPECT_TRUE(small_section->HasOverflowingCell());
+  EXPECT_EQ(0u, small_section->OverflowingCells().size());
+  EXPECT_EQ(small_section->FullTableEffectiveColumnSpan(),
+            small_section->DirtiedEffectiveColumns(paint_rect));
+  EXPECT_EQ(small_section->FullSectionRowSpan(),
+            small_section->DirtiedRows(paint_rect));
+
+  // Big sections with small number of overflowing cells use the fast path.
+  EXPECT_TRUE(big_section->HasOverflowingCell());
+  EXPECT_EQ(80u, big_section->OverflowingCells().size());
+  EXPECT_NE(big_section->FullTableEffectiveColumnSpan(),
+            big_section->DirtiedEffectiveColumns(paint_rect));
+  EXPECT_NE(big_section->FullSectionRowSpan(),
+            big_section->DirtiedRows(paint_rect));
+
+  for (auto* row = small_section->FirstRow(); row; row = row->NextRow())
+    SetCellsOverflowInRow(row);
+  for (auto* row = big_section->FirstRow(); row; row = row->NextRow())
+    SetCellsOverflowInRow(row);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Small sections with overflowing cells always use the slow path.
+  EXPECT_TRUE(small_section->HasOverflowingCell());
+  EXPECT_EQ(0u, small_section->OverflowingCells().size());
+  EXPECT_EQ(small_section->FullTableEffectiveColumnSpan(),
+            small_section->DirtiedEffectiveColumns(paint_rect));
+  EXPECT_EQ(small_section->FullSectionRowSpan(),
+            small_section->DirtiedRows(paint_rect));
+
+  // Big sections with too many overflowing cells are forced to use the slow
+  // path.
+  EXPECT_TRUE(big_section->HasOverflowingCell());
+  EXPECT_EQ(0u, big_section->OverflowingCells().size());
+  EXPECT_EQ(big_section->FullTableEffectiveColumnSpan(),
+            big_section->DirtiedEffectiveColumns(paint_rect));
+  EXPECT_EQ(big_section->FullSectionRowSpan(),
+            big_section->DirtiedRows(paint_rect));
 }
 
 }  // anonymous namespace
