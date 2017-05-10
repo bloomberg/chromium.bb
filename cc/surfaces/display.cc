@@ -194,9 +194,9 @@ void Display::InitializeRenderer() {
 
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);
-    renderer_ = base::MakeUnique<GLRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
+    renderer_ = base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
+                                             resource_provider_.get(),
+                                             texture_mailbox_deleter_.get());
   } else if (output_surface_->vulkan_context_provider()) {
 #if defined(ENABLE_VULKAN)
     DCHECK(texture_mailbox_deleter_);
