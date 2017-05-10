@@ -727,8 +727,8 @@ int OmniboxResultView::GetVerticalMargin() const {
   // adequately sized touch target.
   using Md = ui::MaterialDesignController;
   const int kIconVerticalPad = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kUIExperiments,
-      OmniboxFieldTrial::kUIExperimentsVerticalMarginParam,
+      omnibox::kUIExperimentVerticalMargin,
+      OmniboxFieldTrial::kUIVerticalMarginParam,
       Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
   const int min_height = LocationBarView::kIconWidth + 2 * kIconVerticalPad;
 

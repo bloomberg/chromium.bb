@@ -32,7 +32,7 @@ extern const base::Feature kSearchProviderContextAllowHttpsUrls;
 extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kZeroSuggestSwapTitleAndUrl;
 extern const base::Feature kDisplayTitleForCurrentUrl;
-extern const base::Feature kUIExperiments;
+extern const base::Feature kUIExperimentVerticalMargin;
 }
 
 // The set of parameters customizing the HUP scoring.
@@ -497,7 +497,7 @@ class OmniboxFieldTrial {
   static const char kZeroSuggestRedirectToChromeAdditionalFieldsParam[];
 
   // Parameter names used by UI experiments.
-  static const char kUIExperimentsVerticalMarginParam[];
+  static const char kUIVerticalMarginParam[];
 
   // The amount of time to wait before sending a new suggest request after the
   // previous one unless overridden by a field trial parameter.

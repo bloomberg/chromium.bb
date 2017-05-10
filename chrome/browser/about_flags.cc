@@ -967,15 +967,15 @@ const FeatureEntry::Choice kEnableHeapProfilingChoices[] = {
      switches::kEnableHeapProfilingTaskProfiler}};
 
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin4px[] = {
-    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "4"}};
+    {OmniboxFieldTrial::kUIVerticalMarginParam, "4"}};
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin8px[] = {
-    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "8"}};
+    {OmniboxFieldTrial::kUIVerticalMarginParam, "8"}};
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin12px[] = {
-    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "12"}};
+    {OmniboxFieldTrial::kUIVerticalMarginParam, "12"}};
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin16px[] = {
-    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "16"}};
+    {OmniboxFieldTrial::kUIVerticalMarginParam, "16"}};
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin20px[] = {
-    {OmniboxFieldTrial::kUIExperimentsVerticalMarginParam, "20"}};
+    {OmniboxFieldTrial::kUIVerticalMarginParam, "20"}};
 
 const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
     {"4px vertical margin", kOmniboxUIVerticalMargin4px,
@@ -2868,7 +2868,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-ui-vertical-margin",
      flag_descriptions::kOmniboxUIVerticalMarginName,
      flag_descriptions::kOmniboxUIVerticalMarginDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kUIExperiments,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kUIExperimentVerticalMargin,
                                     kOmniboxUIVerticalMarginVariations,
                                     "OmniboxUIVerticalMarginVariations")},
 

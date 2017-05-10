@@ -80,9 +80,9 @@ const base::Feature kZeroSuggestSwapTitleAndUrl{
 const base::Feature kDisplayTitleForCurrentUrl{
     "OmniboxDisplayTitleForCurrentUrl", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used for UI experiments.
-const base::Feature kUIExperiments{"OmniboxUIExperiments",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+// Feature used for the vertical margin UI experiment.
+const base::Feature kUIExperimentVerticalMargin{
+    "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox
 
@@ -740,8 +740,7 @@ const char
     OmniboxFieldTrial::kZeroSuggestRedirectToChromeAdditionalFieldsParam[] =
         "ZeroSuggestRedirectToChromeAdditionalFields";
 
-const char OmniboxFieldTrial::kUIExperimentsVerticalMarginParam[] =
-    "UIExperimentsVerticalMargin";
+const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
 
 // static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
