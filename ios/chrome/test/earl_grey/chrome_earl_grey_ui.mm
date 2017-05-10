@@ -4,6 +4,8 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
+#import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -18,8 +20,24 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::ButtonWithAccessibilityLabel;
+using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::SettingsMenuButton;
 using testing::WaitUntilConditionOrTimeout;
 using testing::kWaitForPageLoadTimeout;
+
+namespace {
+
+// Returns a GREYAction to scroll down (swipe up) for a reasonably small amount.
+id<GREYAction> ScrollDown() {
+  // 150 is a reasonable value to ensure all menu items are seen, without too
+  // much delay. With a larger value, some menu items could be skipped while
+  // searching. A smaller value increses the area that is searched, but slows
+  // down the scroll.
+  CGFloat const kMenuScrollDisplacement = 150;
+  return grey_scrollInDirection(kGREYDirectionDown, kMenuScrollDisplacement);
+}
+}  // namespace
 
 @implementation ChromeEarlGreyUI
 
@@ -47,12 +65,39 @@ using testing::kWaitForPageLoadTimeout;
 
 + (void)openSettingsMenu {
   [ChromeEarlGreyUI openToolsMenu];
-  id<GREYMatcher> toolsMenuTableViewMatcher =
-      grey_accessibilityID(kToolsMenuTableViewId);
-  [[[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuSettingsId)]
-         usingSearchAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)
-      onElementWithMatcher:toolsMenuTableViewMatcher] performAction:grey_tap()];
+  id<GREYMatcher> interactableSettingsButton =
+      grey_allOf(SettingsMenuButton(), grey_interactable(), nil);
+  [[[EarlGrey selectElementWithMatcher:interactableSettingsButton]
+         usingSearchAction:ScrollDown()
+      onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
+      performAction:grey_tap()];
+}
+
++ (void)tapSettingsMenuButton:(id<GREYMatcher>)buttonMatcher {
+  id<GREYMatcher> interactableButtonMatcher =
+      grey_allOf(buttonMatcher, grey_interactable(), nil);
+  [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
+         usingSearchAction:ScrollDown()
+      onElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
+      performAction:grey_tap()];
+}
+
++ (void)tapClearBrowsingDataMenuButton:(id<GREYMatcher>)buttonMatcher {
+  id<GREYMatcher> interactableButtonMatcher =
+      grey_allOf(buttonMatcher, grey_interactable(), nil);
+  [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
+         usingSearchAction:ScrollDown()
+      onElementWithMatcher:ClearBrowsingDataCollectionView()]
+      performAction:grey_tap()];
+}
+
++ (void)tapPrivacyMenuButton:(id<GREYMatcher>)buttonMatcher {
+  id<GREYMatcher> interactableButtonMatcher =
+      grey_allOf(buttonMatcher, grey_interactable(), nil);
+  [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
+         usingSearchAction:ScrollDown()
+      onElementWithMatcher:grey_accessibilityID(kPrivacyCollectionViewId)]
+      performAction:grey_tap()];
 }
 
 + (void)openNewTab {

@@ -46,6 +46,7 @@ using autofill::PasswordForm;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsMenuButton;
 
 namespace {
 
@@ -53,11 +54,6 @@ namespace {
 // too low means searching takes too long and the test might time out. Setting
 // it too high could result in scrolling way past the searched element.
 constexpr int kScrollAmount = 150;
-
-// Matcher for the Settings button in the tools menu.
-id<GREYMatcher> SettingsButton() {
-  return grey_accessibilityID(kToolsMenuSettingsId);
-}
 
 // Matcher for the Save Passwords cell on the main Settings screen.
 id<GREYMatcher> PasswordsButton() {
@@ -287,7 +283,7 @@ id<GREYMatcher> CopyPasswordButton() {
 - (void)openPasswordSettings {
   // Open settings and verify data in the view controller.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:PasswordsButton()]
       performAction:grey_tap()];

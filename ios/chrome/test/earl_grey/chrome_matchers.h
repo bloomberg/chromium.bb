@@ -95,6 +95,12 @@ id<GREYMatcher> NavigationBarDoneButton();
 // Returns matcher for the account consistency setup signin button.
 id<GREYMatcher> AccountConsistencySetupSigninButton();
 
+// Returns matcher for the clear browsing data collection view.
+id<GREYMatcher> ClearBrowsingDataCollectionView();
+
+// Returns matcher for the settings button in the tools menu.
+id<GREYMatcher> SettingsMenuButton();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

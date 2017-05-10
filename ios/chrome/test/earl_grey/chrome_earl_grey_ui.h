@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_
 
+#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
 
 // Test methods that perform actions on Chrome. These methods only affect Chrome
@@ -20,6 +21,22 @@
 // Settings button. There will be a GREYAssert if the tools menu is open when
 // calling this method.
 + (void)openSettingsMenu;
+
+// Scrolls to find the button in the Settings menu with the corresponding
+// |buttonMatcher|, and then taps it. If |buttonMatcher| is not found, or
+// the Settings menu is not open when this is called there will be a GREYAssert.
++ (void)tapSettingsMenuButton:(id<GREYMatcher>)buttonMatcher;
+
+// Scrolls to find the button in the Privacy menu with the corresponding
+// |buttonMatcher|, and then taps it. If |buttonMatcher| is not found, or
+// the Privacy menu is not open when this is called there will be a GREYAssert.
++ (void)tapPrivacyMenuButton:(id<GREYMatcher>)buttonMatcher;
+
+// Scrolls to find the button in the Clear Browsing Data menu with the
+// corresponding |buttonMatcher|, and then taps it. If |buttonMatcher| is
+// not found, or the Clear Browsing Data menu is not open when this is called
+// there will be a GREYAssert.
++ (void)tapClearBrowsingDataMenuButton:(id<GREYMatcher>)buttonMatcher;
 
 // Open a new tab via the tools menu.
 + (void)openNewTab;
