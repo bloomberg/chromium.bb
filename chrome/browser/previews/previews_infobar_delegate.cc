@@ -19,6 +19,10 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/infobars/previews_infobar.h"
+#endif
+
 namespace {
 
 // Key of the UMA Previews.InfoBarAction.LoFi histogram.
@@ -74,11 +78,19 @@ void PreviewsInfoBarDelegate::Create(
   if (infobar_tab_helper->displayed_preview_infobar())
     return;
 
+  std::unique_ptr<PreviewsInfoBarDelegate> delegate(new PreviewsInfoBarDelegate(
+      web_contents, infobar_type, is_data_saver_user, on_dismiss_callback));
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<infobars::InfoBar> infobar_ptr(
+      PreviewsInfoBar::CreateInfoBar(infobar_service, std::move(delegate)));
+#else
+  std::unique_ptr<infobars::InfoBar> infobar_ptr(
+      infobar_service->CreateConfirmInfoBar(std::move(delegate)));
+#endif
+
   infobars::InfoBar* infobar =
-      infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-          std::unique_ptr<ConfirmInfoBarDelegate>(new PreviewsInfoBarDelegate(
-              web_contents, infobar_type, is_data_saver_user,
-              on_dismiss_callback))));
+      infobar_service->AddInfoBar(std::move(infobar_ptr));
 
   if (infobar && (infobar_type == LITE_PAGE || infobar_type == LOFI)) {
     auto* data_reduction_proxy_settings =
@@ -178,4 +190,8 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   }
 
   return true;
+}
+
+base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
+  return base::string16();
 }
