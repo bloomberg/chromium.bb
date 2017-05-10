@@ -13,6 +13,8 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "components/content_settings/core/browser/content_settings_info.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -355,7 +357,9 @@ void PolicyProvider::UpdateManagedDefaultSetting(
     value_map_.DeleteValue(ContentSettingsPattern::Wildcard(),
                            ContentSettingsPattern::Wildcard(),
                            entry.content_type, std::string());
-  } else {
+  } else if (ContentSettingsRegistry::GetInstance()
+                 ->Get(entry.content_type)
+                 ->IsSettingValid(IntToContentSetting(setting))) {
     // Don't set a timestamp for policy settings.
     value_map_.SetValue(ContentSettingsPattern::Wildcard(),
                         ContentSettingsPattern::Wildcard(), entry.content_type,

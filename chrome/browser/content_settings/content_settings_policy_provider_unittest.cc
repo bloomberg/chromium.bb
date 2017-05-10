@@ -71,11 +71,11 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
       profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
 
-  prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
+  prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
                         base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
 
   std::unique_ptr<RuleIterator> rule_iterator(provider.GetRuleIterator(
-      CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), false));
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), false));
   EXPECT_TRUE(rule_iterator->HasNext());
   Rule rule = rule_iterator->Next();
   EXPECT_FALSE(rule_iterator->HasNext());
@@ -140,7 +140,7 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
   provider.AddObserver(&mock_observer);
 
   // Set the managed default-content-setting.
-  prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
+  prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
                         base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
   ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
   EXPECT_CALL(mock_observer,
@@ -149,7 +149,7 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
                                       CONTENT_SETTINGS_TYPE_DEFAULT,
                                       ""));
   // Remove the managed default-content-setting.
-  prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
+  prefs->RemoveManagedPref(prefs::kManagedDefaultCookiesSetting);
   provider.ShutdownOnUIThread();
 }
 
@@ -278,6 +278,25 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   std::string actual_common_name;
   ASSERT_TRUE(dict_value->GetString("ISSUER.CN", &actual_common_name));
   EXPECT_EQ("issuer name", actual_common_name);
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PolicyProviderTest, InvalidManagedDefaultContentSetting) {
+  TestingProfile profile;
+  sync_preferences::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
+  PolicyProvider provider(prefs);
+
+  prefs->SetManagedPref(
+      prefs::kManagedDefaultCookiesSetting,
+      base::MakeUnique<base::Value>(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT));
+
+  // The setting provided in the cookies pref is not valid for cookies. It
+  // should be ignored.
+  std::unique_ptr<RuleIterator> rule_iterator(provider.GetRuleIterator(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), false));
+  EXPECT_FALSE(rule_iterator);
+
   provider.ShutdownOnUIThread();
 }
 

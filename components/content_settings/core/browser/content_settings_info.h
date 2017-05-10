@@ -46,6 +46,7 @@ class ContentSettingsInfo {
   }
 
   bool IsSettingValid(ContentSetting setting) const;
+  bool IsDefaultSettingValid(ContentSetting setting) const;
 
   IncognitoBehavior incognito_behavior() const { return incognito_behavior_; }
 

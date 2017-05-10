@@ -282,6 +282,7 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
           DCHECK(is_integer);
           DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
           std::unique_ptr<base::Value> setting_ptr(new base::Value(setting));
+          DCHECK(IsValueAllowedForType(setting_ptr.get(), content_type_));
           // Per resource settings store a single timestamps for all resources.
           value_map_.SetValue(pattern_pair.first, pattern_pair.second,
                               content_type_, resource_identifier, last_modified,

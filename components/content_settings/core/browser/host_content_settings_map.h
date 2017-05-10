@@ -241,9 +241,6 @@ class HostContentSettingsMap : public content_settings::Observer,
       base::Time begin_time,
       const PatternSourcePredicate& pattern_predicate);
 
-  static bool IsDefaultSettingAllowedForType(ContentSetting setting,
-                                             ContentSettingsType content_type);
-
   // RefcountedKeyedService implementation.
   void ShutdownOnUIThread() override;
 
