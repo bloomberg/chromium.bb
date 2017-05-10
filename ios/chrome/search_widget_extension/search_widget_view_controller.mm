@@ -149,6 +149,15 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   self.preferredContentSize = maxSize;
 }
 
+// Implementing this method removes the leading edge inset for iOS version < 10.
+// TODO(crbug.com/720490): Remove implementation when dropping ios9 support.
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+- (UIEdgeInsets)widgetMarginInsetsForProposedMarginInsets:
+    (UIEdgeInsets)defaultMa‌​rginInsets {
+  return UIEdgeInsetsZero;
+}
+#endif
+
 #pragma mark - WidgetViewActionTarget
 
 - (void)openSearch:(id)sender {

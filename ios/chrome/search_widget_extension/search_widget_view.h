@@ -41,8 +41,8 @@
 @property(nonatomic, copy) NSString* copiedURLString;
 
 // Designated initializer, creates the widget view with a |target| for user
-// actions. View elements will be added to the |primaryVibrancyEffect| and
-// |secondaryVibrancyEffect| views.
+// actions. The |primaryVibrancyEffect| and |secondaryVibrancyEffect| effects
+// will be used to display view elements.
 - (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target
                primaryVibrancyEffect:(UIVibrancyEffect*)primaryVibrancyEffect
              secondaryVibrancyEffect:(UIVibrancyEffect*)secondaryVibrancyEffect

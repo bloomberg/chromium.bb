@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/search_widget_extension/search_widget_view.h"
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "ios/chrome/search_widget_extension/ui_util.h"
 
@@ -199,7 +200,9 @@ const CGFloat kIconSpacing = 5;
                       constraints:
                           (NSMutableArray<NSLayoutConstraint*>*)constraints {
   UIView* circleView = [[UIView alloc] initWithFrame:CGRectZero];
-  circleView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
+  circleView.backgroundColor = base::ios::IsRunningOnIOS10OrLater()
+                                   ? [UIColor colorWithWhite:0 alpha:0.05]
+                                   : [UIColor whiteColor];
   circleView.layer.cornerRadius = kActionButtonSize / 2;
 
   [constraints addObjectsFromArray:@[
@@ -245,15 +248,21 @@ const CGFloat kIconSpacing = 5;
     [icon.centerXAnchor constraintEqualToAnchor:circleView.centerXAnchor],
     [icon.centerYAnchor constraintEqualToAnchor:circleView.centerYAnchor],
   ]];
-  [self.primaryEffectView.contentView addSubview:icon];
-
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    [self.primaryEffectView.contentView addSubview:icon];
+  } else {
+    [self addSubview:icon];
+  }
   return stack;
 }
 
 - (void)initializeOpenCopiedURLSectionUsingTopAnchor:
     (NSLayoutAnchor*)topAnchor {
   self.hairlineView = [[UIView alloc] initWithFrame:CGRectZero];
-  self.hairlineView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
+  self.hairlineView.backgroundColor =
+      base::ios::IsRunningOnIOS10OrLater()
+          ? [UIColor colorWithWhite:0 alpha:0.05]
+          : [UIColor whiteColor];
   self.hairlineView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.secondaryEffectView.contentView addSubview:self.hairlineView];
 
@@ -362,8 +371,11 @@ const CGFloat kIconSpacing = 5;
   self.copiedButtonView.hidden = YES;
   self.hairlineView.hidden = NO;
   self.copiedURLLabel.text = @"Links you copy will appear here.";
-  self.openCopiedURLTitleLabel.alpha = 0.5;
   self.openCopiedURLTitleLabel.text = @"No Copied Link";
-  self.copiedURLLabel.alpha = 0.5;
+
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    self.copiedURLLabel.alpha = 0.5;
+    self.openCopiedURLTitleLabel.alpha = 0.5;
+  }
 }
 @end
