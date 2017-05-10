@@ -23,6 +23,15 @@ bool IsPointerEventType(const AtomicString& event_type) {
          event_type == EventTypeNames::pointerup;
 }
 
+bool IsDOMMutationEventType(const AtomicString& event_type) {
+  return event_type == EventTypeNames::DOMCharacterDataModified ||
+         event_type == EventTypeNames::DOMNodeInserted ||
+         event_type == EventTypeNames::DOMNodeInsertedIntoDocument ||
+         event_type == EventTypeNames::DOMNodeRemoved ||
+         event_type == EventTypeNames::DOMNodeRemovedFromDocument ||
+         event_type == EventTypeNames::DOMSubtreeModified;
+}
+
 }  // namespace eventUtil
 
 }  // namespace blink

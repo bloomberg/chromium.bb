@@ -225,7 +225,6 @@ void InspectorLogAgent::ReportGenericViolation(PerformanceMonitor::Violation,
                                                const String& text,
                                                double time,
                                                SourceLocation* location) {
-  location->TakeStackTrace();
   ConsoleMessage* message = ConsoleMessage::Create(
       kViolationMessageSource, kVerboseMessageLevel, text, location->Clone());
   ConsoleMessageAdded(message);
