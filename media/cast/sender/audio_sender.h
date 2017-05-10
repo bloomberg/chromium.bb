@@ -30,9 +30,7 @@ class AudioEncoder;
 // RTCP packets.
 // Additionally it posts a bunch of delayed tasks to the main thread for various
 // timeouts.
-class AudioSender : public FrameSender,
-                    public base::NonThreadSafe,
-                    public base::SupportsWeakPtr<AudioSender> {
+class AudioSender : public FrameSender, public base::NonThreadSafe {
  public:
   AudioSender(scoped_refptr<CastEnvironment> cast_environment,
               const FrameSenderConfig& audio_config,
@@ -46,6 +44,8 @@ class AudioSender : public FrameSender,
   // should be careful about the rate at which this method is called.
   void InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time);
+
+  base::WeakPtr<AudioSender> AsWeakPtr();
 
  protected:
   int GetNumberOfFramesInEncoder() const final;
