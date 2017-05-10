@@ -424,14 +424,17 @@
 
     <request name="get_popup">
       <description summary="assign the xdg_popup surface role">
-	This creates an xdg_popup object for the given xdg_surface and gives the
-	associated wl_surface the xdg_popup role.
+	This creates an xdg_popup object for the given xdg_surface and gives
+	the associated wl_surface the xdg_popup role.
+
+	If null is passed as a parent, a parent surface must be specified using
+	some other protocol, before committing the initial state.
 
 	See the documentation of xdg_popup for more details about what an
 	xdg_popup is and how it is used.
       </description>
       <arg name="id" type="new_id" interface="xdg_popup"/>
-      <arg name="parent" type="object" interface="xdg_surface"/>
+      <arg name="parent" type="object" interface="xdg_surface" allow-null="true"/>
       <arg name="positioner" type="object" interface="xdg_positioner"/>
     </request>
 
