@@ -8,7 +8,11 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
+include(ProcessorCount)
+
 include("${AOM_ROOT}/test/test_data_util.cmake")
+
+set(AOM_UNIT_TEST_DATA_LIST_FILE "${AOM_ROOT}/test/test-data.sha1")
 
 set(AOM_UNIT_TEST_WRAPPER_SOURCES
     "${AOM_CONFIG_DIR}/usage_exit.c"
@@ -316,10 +320,52 @@ function (setup_aom_test_targets)
                                     "AOM_UNIT_TEST_COMMON_INTRIN_NEON")
   endif ()
 
-  add_custom_target(testdata
-                    COMMAND ${CMAKE_COMMAND}
+  make_test_data_lists("${AOM_UNIT_TEST_DATA_LIST_FILE}"
+                       test_files test_file_checksums)
+  list(LENGTH test_files num_test_files)
+  list(LENGTH test_file_checksums num_test_file_checksums)
+
+  math(EXPR max_file_index "${num_test_files} - 1")
+  foreach (test_index RANGE ${max_file_index})
+    list(GET test_files ${test_index} test_file)
+    list(GET test_file_checksums ${test_index} test_file_checksum)
+    add_custom_target(testdata_${test_index}
+                      COMMAND ${CMAKE_COMMAND}
+                        -DAOM_CONFIG_DIR="${AOM_CONFIG_DIR}"
+                        -DAOM_ROOT="${AOM_ROOT}"
+                        -DAOM_TEST_FILE="${test_file}"
+                        -DAOM_TEST_CHECKSUM=${test_file_checksum}
+                        -P "${AOM_ROOT}/test/test_data_download_worker.cmake")
+    set(testdata_targets ${testdata_targets} testdata_${test_index})
+  endforeach ()
+
+  # Create a custom build target for running each test data download target.
+  add_custom_target(testdata)
+  add_dependencies(testdata ${testdata_targets})
+
+  # Pick a reasonable number of targets (this controls parallelization).
+  ProcessorCount(num_test_targets)
+  if (num_test_targets EQUAL 0)
+    # Just default to 10 targets when there's no processor count available.
+    set(num_test_targets 10)
+  endif ()
+
+  # TODO(tomfinegan): This needs some work for MSVC and Xcode. Executable suffix
+  # and config based executable output paths are the obvious issues.
+  math(EXPR max_shard_index "${num_test_targets} - 1")
+  foreach (shard_index RANGE ${max_shard_index})
+    set(test_name "test_${shard_index}")
+    add_custom_target(${test_name}
+                      COMMAND ${CMAKE_COMMAND}
                       -DAOM_CONFIG_DIR="${AOM_CONFIG_DIR}"
                       -DAOM_ROOT="${AOM_ROOT}"
-                      -P "${AOM_ROOT}/test/test_worker.cmake"
-                    SOURCES ${AOM_TEST_DATA_LIST})
+                      -DAOM_TEST_TARGET=test_libaom
+                      -DGTEST_SHARD_INDEX=${shard_index}
+                      -DGTEST_TOTAL_SHARDS=${num_test_targets}
+                      -P "${AOM_ROOT}/test/test_runner.cmake"
+                      DEPENDS testdata test_libaom)
+    set(test_targets ${test_targets} ${test_name})
+  endforeach ()
+  add_custom_target(runtests)
+  add_dependencies(runtests ${test_targets})
 endfunction ()
