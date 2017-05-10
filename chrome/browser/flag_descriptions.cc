@@ -2383,6 +2383,12 @@ const char kEnableContentSuggestionsSettingsDescription[] =
     "If enabled, the content suggestions settings will be available from the "
     "main settings menu.";
 
+const char kEnableContentSuggestionsShowSummaryName[] =
+    "Show content suggestions summaries.";
+
+const char kEnableContentSuggestionsShowSummaryDescription[] =
+    "If enabled, the content suggestions summaries will be shown.";
+
 const char kEnableNtpRemoteSuggestionsName[] =
     "Show server-side suggestions on the New Tab page";
 
