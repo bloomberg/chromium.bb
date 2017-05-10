@@ -3648,6 +3648,7 @@ class _GitCookiesChecker(object):
     default = gerrit_util.CookiesAuthenticator.get_gitcookies_path()
     configured_path = RunGitSilent(
         ['config', '--global', 'http.cookiefile']).strip()
+    configured_path = os.path.expanduser(configured_path)
     if configured_path:
       self._ensure_default_gitcookies_path(configured_path, default)
     else:
