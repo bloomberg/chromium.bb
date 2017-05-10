@@ -52,6 +52,7 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
 @end
 
 @implementation MailtoURLRewriter
+@synthesize observer = _observer;
 @synthesize handlers = _handlers;
 
 + (NSString*)systemMailApp {
@@ -90,8 +91,18 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
 
 - (void)setDefaultHandlerID:(NSString*)appStoreID {
   DCHECK([appStoreID length]);
-  [[NSUserDefaults standardUserDefaults] setObject:appStoreID
-                                            forKey:kMailtoDefaultHandlerKey];
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  if ([appStoreID
+          isEqualToString:[defaults objectForKey:kMailtoDefaultHandlerKey]])
+    return;
+  [defaults setObject:appStoreID forKey:kMailtoDefaultHandlerKey];
+  [_observer rewriterDidChange:self];
+}
+
+- (NSString*)defaultHandlerName {
+  NSString* handlerID = [self defaultHandlerID];
+  MailtoHandler* handler = _handlers[handlerID];
+  return [handler appName];
 }
 
 - (NSString*)rewriteMailtoURL:(const GURL&)gURL {
