@@ -422,9 +422,9 @@ TEST_F(NotificationPlatformBridgeMacTest, TestQuitRemovesBannersAndAlerts) {
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestDisplayETLDPlusOne) {
-  std::unique_ptr<Notification> notification =
-      CreateBanner("Title", "Context", "https://hello.world.test.co.uk",
-                   "Button 1", nullptr);
+  std::unique_ptr<Notification> notification = CreateBanner(
+      "Title", "Context", "https://overthelimit.hello.world.test.co.uk",
+      "Button 1", nullptr);
 
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
       new NotificationPlatformBridgeMac(notification_center(),

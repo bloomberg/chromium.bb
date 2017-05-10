@@ -147,11 +147,8 @@ base::string16 CreateNotificationContext(const Notification& notification,
   // These numbers have been obtained through experimentation on various
   // Mac OS platforms.
 
-  // Corresponds to the string "mmmmmmmmmmmmmm"
-  constexpr size_t kMaxDomainLenghtAlert = 14;
-
-  // Corresponds to the string "mmmmmmmmmmmmmmmmmmmmm"
-  constexpr size_t kMaxDomainLenghtBanner = 21;
+  constexpr size_t kMaxDomainLenghtAlert = 19;
+  constexpr size_t kMaxDomainLenghtBanner = 28;
 
   size_t max_characters = IsPersistentNotification(notification)
                               ? kMaxDomainLenghtAlert
