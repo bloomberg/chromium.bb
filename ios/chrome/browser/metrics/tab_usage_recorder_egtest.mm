@@ -41,6 +41,7 @@
 #endif
 
 using chrome_test_util::OpenLinkInNewTabButton;
+using chrome_test_util::SettingsMenuButton;
 using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
 using tab_usage_recorder_test_util::SwitchToNormalMode;
 
@@ -148,10 +149,7 @@ void OpenSettingsMenuUnsynced() {
       grey_accessibilityID(kToolbarToolsMenuButtonIdentifier);
   WaitAndTap(tool_menu_matcher, @"Tool menu");
 
-  id<GREYMatcher> settings_button_matcher =
-      grey_accessibilityID(kToolsMenuSettingsId);
-
-  WaitAndTap(settings_button_matcher, @"Settings menu");
+  WaitAndTap(SettingsMenuButton(), @"Settings menu");
   Wait(grey_accessibilityID(kSettingsCollectionViewId), @"Setting view");
 }
 
