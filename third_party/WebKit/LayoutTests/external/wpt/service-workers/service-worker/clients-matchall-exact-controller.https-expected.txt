@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test Clients.matchAll() with exact controller assert_unreached: unexpected rejection: assert_array_equals: property 3, expected "window" but got undefined Reached unreachable code
-Harness: the test ran to completion.
-

@@ -82,6 +82,7 @@ interface CanvasPattern
 interface Client
     getter frameType
     getter id
+    getter type
     getter url
     method constructor
     method postMessage

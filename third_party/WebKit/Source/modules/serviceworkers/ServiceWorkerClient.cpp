@@ -45,9 +45,27 @@ ServiceWorkerClient* ServiceWorkerClient::Create(
 ServiceWorkerClient::ServiceWorkerClient(const WebServiceWorkerClientInfo& info)
     : uuid_(info.uuid),
       url_(info.url.GetString()),
+      type_(info.client_type),
       frame_type_(info.frame_type) {}
 
 ServiceWorkerClient::~ServiceWorkerClient() {}
+
+String ServiceWorkerClient::type() const {
+  switch (type_) {
+    case kWebServiceWorkerClientTypeWindow:
+      return "window";
+    case kWebServiceWorkerClientTypeWorker:
+      return "worker";
+    case kWebServiceWorkerClientTypeSharedWorker:
+      return "sharedworker";
+    case kWebServiceWorkerClientTypeAll:
+      NOTREACHED();
+      return String();
+  }
+
+  NOTREACHED();
+  return String();
+}
 
 String ServiceWorkerClient::frameType() const {
   switch (frame_type_) {
