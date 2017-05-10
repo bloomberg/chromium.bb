@@ -62,6 +62,14 @@ void SessionManager::SessionStarted() {
   session_started_ = true;
 }
 
+bool SessionManager::HasSessionForAccountId(
+    const AccountId& user_account_id) const {
+  return std::find_if(sessions_.begin(), sessions_.end(),
+                      [user_account_id](const Session& session) {
+                        return session.user_account_id == user_account_id;
+                      }) != sessions_.end();
+}
+
 bool SessionManager::IsInSecondaryLoginScreen() const {
   return session_state_ == SessionState::LOGIN_SECONDARY;
 }
@@ -99,11 +107,7 @@ void SessionManager::SetInstance(SessionManager* session_manager) {
 void SessionManager::CreateSessionInternal(const AccountId& user_account_id,
                                            const std::string& user_id_hash,
                                            bool browser_restart) {
-  DCHECK(std::find_if(sessions_.begin(), sessions_.end(),
-                      [user_account_id](const Session& session) {
-                        return session.user_account_id == user_account_id;
-                      }) == sessions_.end());
-
+  DCHECK(!HasSessionForAccountId(user_account_id));
   sessions_.push_back({next_id_++, user_account_id});
   NotifyUserLoggedIn(user_account_id, user_id_hash, browser_restart);
 }
