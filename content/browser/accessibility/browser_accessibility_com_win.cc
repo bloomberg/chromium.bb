@@ -311,7 +311,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_relationType(
   if (!relation_type)
     return E_INVALIDARG;
 
-  if (!owner_->GetOwner()->instance_active())
+  if (!owner_->GetOwner())
     return E_FAIL;
 
   *relation_type = SysAllocString(type_.c_str());
@@ -323,14 +323,14 @@ STDMETHODIMP BrowserAccessibilityRelation::get_nTargets(long* n_targets) {
   if (!n_targets)
     return E_INVALIDARG;
 
-  if (!owner_->GetOwner()->instance_active())
+  if (!owner_->GetOwner())
     return E_FAIL;
 
   *n_targets = static_cast<long>(target_ids_.size());
 
   for (long i = *n_targets - 1; i >= 0; --i) {
     BrowserAccessibilityComWin* result = owner_->GetFromID(target_ids_[i]);
-    if (!result || !result->GetOwner()->instance_active()) {
+    if (!result || !result->GetOwner()) {
       *n_targets = 0;
       break;
     }
@@ -343,7 +343,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_target(long target_index,
   if (!target)
     return E_INVALIDARG;
 
-  if (!owner_->GetOwner()->instance_active())
+  if (!owner_->GetOwner())
     return E_FAIL;
 
   auto* manager = owner_->GetOwner()->manager();
@@ -370,7 +370,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_targets(long max_targets,
   if (!targets || !n_targets)
     return E_INVALIDARG;
 
-  if (!owner_->GetOwner()->instance_active())
+  if (!owner_->GetOwner())
     return E_FAIL;
 
   long count = static_cast<long>(target_ids_.size());
@@ -417,8 +417,7 @@ BrowserAccessibilityComWin::~BrowserAccessibilityComWin() {
 // IAccessible methods.
 //
 // Conventions:
-// * Always test for GetOwner() and GetOwner()->instance_active first and
-//   return E_FAIL if either are false.
+// * Always test for GetOwner() first and return E_FAIL if it's false.
 // * Always check for invalid arguments first, even if they're unused.
 // * Return S_FALSE if the only output is a string argument and it's empty.
 // * There are some methods that don't touch any state such as get_toolkitName.
@@ -428,7 +427,7 @@ BrowserAccessibilityComWin::~BrowserAccessibilityComWin() {
 HRESULT BrowserAccessibilityComWin::accDoDefaultAction(VARIANT var_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_DO_DEFAULT_ACTION);
 
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -452,7 +451,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accHitTest(LONG x_left,
                                                     VARIANT* child) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_HIT_TEST);
 
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -487,7 +486,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accLocation(LONG* x_left,
                                                      LONG* height,
                                                      VARIANT var_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_LOCATION);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   return AXPlatformNodeWin::accLocation(x_left, y_top, width, height, var_id);
@@ -497,7 +496,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accNavigate(LONG nav_dir,
                                                      VARIANT start,
                                                      VARIANT* end) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_NAVIGATE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   // Forward all directions but NAVDIR_ to the platform node implementation.
@@ -545,7 +544,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accNavigate(LONG nav_dir,
 STDMETHODIMP BrowserAccessibilityComWin::get_accChild(VARIANT var_child,
                                                       IDispatch** disp_child) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_CHILD);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!disp_child)
@@ -563,7 +562,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accChild(VARIANT var_child,
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accChildCount(LONG* child_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_CHILD_COUNT);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!child_count)
@@ -578,7 +577,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accDefaultAction(
     VARIANT var_id,
     BSTR* def_action) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_DEFAULT_ACTION);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!def_action)
@@ -594,7 +593,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accDefaultAction(
 STDMETHODIMP BrowserAccessibilityComWin::get_accDescription(VARIANT var_id,
                                                             BSTR* desc) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_DESCRIPTION);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!desc)
@@ -616,7 +615,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accDescription(VARIANT var_id,
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accFocus(VARIANT* focus_child) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_FOCUS);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -644,7 +643,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accFocus(VARIANT* focus_child) {
 STDMETHODIMP BrowserAccessibilityComWin::get_accHelp(VARIANT var_id,
                                                      BSTR* help) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_HELP);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   return AXPlatformNodeWin::get_accHelp(var_id, help);
@@ -654,7 +653,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accKeyboardShortcut(
     VARIANT var_id,
     BSTR* acc_key) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_KEYBOARD_SHORTCUT);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!acc_key)
@@ -674,7 +673,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accKeyboardShortcut(
 STDMETHODIMP BrowserAccessibilityComWin::get_accName(VARIANT var_id,
                                                      BSTR* name) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_NAME);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   return AXPlatformNodeWin::get_accName(var_id, name);
@@ -683,7 +682,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accName(VARIANT var_id,
 STDMETHODIMP BrowserAccessibilityComWin::get_accParent(
     IDispatch** disp_parent) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_PARENT);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!disp_parent)
@@ -717,7 +716,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accParent(
 STDMETHODIMP BrowserAccessibilityComWin::get_accRole(VARIANT var_id,
                                                      VARIANT* role) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_ROLE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!role)
@@ -740,7 +739,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accRole(VARIANT var_id,
 STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,
                                                       VARIANT* state) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_STATE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -765,7 +764,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,
 STDMETHODIMP BrowserAccessibilityComWin::get_accValue(VARIANT var_id,
                                                       BSTR* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_VALUE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!value)
@@ -814,7 +813,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accHelpTopic(BSTR* help_file,
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accSelection(VARIANT* selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_SELECTION);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (GetOwner()->GetRole() != ui::AX_ROLE_LIST_BOX)
@@ -866,7 +865,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accSelection(VARIANT* selected) {
 STDMETHODIMP BrowserAccessibilityComWin::accSelect(LONG flags_sel,
                                                    VARIANT var_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_SELECT);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -896,7 +895,7 @@ BrowserAccessibilityComWin::put_accValue(VARIANT var_id, BSTR put_val) {
 
 STDMETHODIMP BrowserAccessibilityComWin::role(LONG* role) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ROLE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!role)
@@ -908,14 +907,14 @@ STDMETHODIMP BrowserAccessibilityComWin::role(LONG* role) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_attributes(BSTR* attributes) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_GET_ATTRIBUTES);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
   if (!attributes)
     return E_INVALIDARG;
   *attributes = nullptr;
 
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   base::string16 str;
@@ -932,7 +931,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_attributes(BSTR* attributes) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_states(AccessibleStates* states) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_STATES);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
@@ -946,7 +945,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_states(AccessibleStates* states) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_uniqueID(LONG* unique_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_UNIQUE_ID);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!unique_id)
@@ -958,7 +957,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_uniqueID(LONG* unique_id) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_windowHandle(HWND* window_handle) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_WINDOW_HANDLE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!window_handle)
@@ -977,7 +976,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_windowHandle(HWND* window_handle) {
 STDMETHODIMP BrowserAccessibilityComWin::get_indexInParent(
     LONG* index_in_parent) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_INDEX_IN_PARENT);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!index_in_parent)
@@ -990,7 +989,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_indexInParent(
 STDMETHODIMP BrowserAccessibilityComWin::get_nRelations(LONG* n_relations) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_RELATIONS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!n_relations)
@@ -1005,7 +1004,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_relation(
     IAccessibleRelation** relation) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RELATION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (relation_index < 0 ||
@@ -1027,7 +1026,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_relations(
     LONG* n_relations) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RELATIONS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!relations || !n_relations)
@@ -1048,7 +1047,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_relations(
 
 STDMETHODIMP BrowserAccessibilityComWin::scrollTo(IA2ScrollType scroll_type) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_SCROLL_TO);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -1095,7 +1094,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollToPoint(
     LONG x,
     LONG y) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_POINT);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -1128,7 +1127,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_groupPosition(
     LONG* position_in_group) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_GROUP_POSITION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!group_level || !similar_items_in_group || !position_in_group)
@@ -1148,7 +1147,7 @@ BrowserAccessibilityComWin::get_localizedExtendedRole(
     BSTR* localized_extended_role) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_EXTENDED_ROLE);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!localized_extended_role)
@@ -1202,8 +1201,6 @@ STDMETHODIMP BrowserAccessibilityComWin::get_locale(IA2Locale* locale) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_appName(BSTR* app_name) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_APP_NAME);
-  // No need to check |GetOwner()| or |GetOwner->manager()| because this
-  // interface is global, and doesn't depend on any local state.
 
   if (!app_name)
     return E_INVALIDARG;
@@ -1223,8 +1220,6 @@ STDMETHODIMP BrowserAccessibilityComWin::get_appName(BSTR* app_name) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_appVersion(BSTR* app_version) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_APP_VERSION);
-  // No need to check |GetOwner()->manager()| because this interface is
-  // global, and doesn't depend on any local state.
 
   if (!app_version)
     return E_INVALIDARG;
@@ -1274,7 +1269,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_toolkitVersion(
 
 STDMETHODIMP BrowserAccessibilityComWin::get_description(BSTR* desc) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_DESCRIPTION);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!desc)
@@ -1294,7 +1289,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_imagePosition(
     LONG* x,
     LONG* y) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IMAGE_POSITION);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!x || !y)
@@ -1322,7 +1317,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_imagePosition(
 STDMETHODIMP BrowserAccessibilityComWin::get_imageSize(LONG* height,
                                                        LONG* width) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IMAGE_SIZE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!height || !width)
@@ -1343,7 +1338,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accessibleAt(
     IUnknown** accessible) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACCESSIBLE_AT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!accessible)
@@ -1364,7 +1359,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accessibleAt(
 STDMETHODIMP BrowserAccessibilityComWin::get_caption(IUnknown** accessible) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CAPTION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!accessible)
@@ -1380,7 +1375,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_childIndex(long row,
                                                         long* cell_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHILD_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!cell_index)
@@ -1402,7 +1397,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_columnDescription(
     BSTR* description) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_DESCRIPTION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!description)
@@ -1446,7 +1441,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_columnExtentAt(
     long* n_columns_spanned) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_EXTENT_AT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!n_columns_spanned)
@@ -1474,7 +1469,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_columnIndex(long cell_index,
                                                          long* column_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!column_index)
@@ -1490,7 +1485,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_columnIndex(long cell_index,
 STDMETHODIMP BrowserAccessibilityComWin::get_nColumns(long* column_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_COLUMNS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!column_count)
@@ -1503,7 +1498,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nColumns(long* column_count) {
 STDMETHODIMP BrowserAccessibilityComWin::get_nRows(long* row_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_ROWS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!row_count)
@@ -1517,7 +1512,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nSelectedChildren(
     long* cell_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_CHILDREN);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!cell_count)
@@ -1532,7 +1527,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nSelectedColumns(
     long* column_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_COLUMNS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!column_count)
@@ -1545,7 +1540,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nSelectedColumns(
 STDMETHODIMP BrowserAccessibilityComWin::get_nSelectedRows(long* row_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_ROWS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!row_count)
@@ -1559,7 +1554,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowDescription(long row,
                                                             BSTR* description) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_DESCRIPTION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!description)
@@ -1601,7 +1596,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowExtentAt(long row,
                                                          long* n_rows_spanned) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_EXTENT_AT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!n_rows_spanned)
@@ -1628,7 +1623,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowIndex(long cell_index,
                                                       long* row_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!row_index)
@@ -1648,7 +1643,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_selectedChildren(
     long* n_children) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTED_CHILDREN);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!children || !n_children)
@@ -1664,7 +1659,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_selectedColumns(long max_columns,
                                                              long* n_columns) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTED_COLUMNS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!columns || !n_columns)
@@ -1680,7 +1675,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_selectedRows(long max_rows,
                                                           long* n_rows) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTED_ROWS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!rows || !n_rows)
@@ -1694,7 +1689,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_selectedRows(long max_rows,
 STDMETHODIMP BrowserAccessibilityComWin::get_summary(IUnknown** accessible) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SUMMARY);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!accessible)
@@ -1710,7 +1705,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_isColumnSelected(
     boolean* is_selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IS_COLUMN_SELECTED);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!is_selected)
@@ -1726,7 +1721,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_isRowSelected(
     boolean* is_selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IS_ROW_SELECTED);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!is_selected)
@@ -1742,7 +1737,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_isSelected(long row,
                                                         boolean* is_selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IS_SELECTED);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!is_selected)
@@ -1762,7 +1757,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowColumnExtentsAtIndex(
     boolean* is_selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_COLUMN_EXTENTS_AT_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!row || !column || !row_extents || !column_extents || !is_selected)
@@ -1819,7 +1814,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_cellAt(long row,
                                                     IUnknown** cell) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CELL_AT);
   AddAccessibilityModeFlags(AccessibilityMode::kScreenReader);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!cell)
@@ -1847,7 +1842,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_selectedCells(
     long* n_selected_cells) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTED_CELLS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!cells || !n_selected_cells)
@@ -1862,7 +1857,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_selectedColumns(long** columns,
                                                              long* n_columns) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE2_GET_SELECTED_COLUMNS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!columns || !n_columns)
@@ -1877,7 +1872,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_selectedRows(long** rows,
                                                           long* n_rows) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE2_GET_SELECTED_ROWS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!rows || !n_rows)
@@ -1896,7 +1891,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_columnExtent(
     long* n_columns_spanned) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_EXTENT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!n_columns_spanned)
@@ -1911,7 +1906,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_columnHeaderCells(
     long* n_column_header_cells) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_HEADER_CELLS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!cell_accessibles || !n_column_header_cells)
@@ -1954,7 +1949,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_columnHeaderCells(
 STDMETHODIMP BrowserAccessibilityComWin::get_columnIndex(long* column_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLECELL_GET_COLUMN_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!column_index)
@@ -1967,7 +1962,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_columnIndex(long* column_index) {
 STDMETHODIMP BrowserAccessibilityComWin::get_rowExtent(long* n_rows_spanned) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_EXTENT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!n_rows_spanned)
@@ -1982,7 +1977,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowHeaderCells(
     long* n_row_header_cells) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_HEADER_CELLS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!cell_accessibles || !n_row_header_cells)
@@ -2025,7 +2020,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowHeaderCells(
 STDMETHODIMP BrowserAccessibilityComWin::get_rowIndex(long* row_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLECELL_GET_ROW_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!row_index)
@@ -2038,7 +2033,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowIndex(long* row_index) {
 STDMETHODIMP BrowserAccessibilityComWin::get_isSelected(boolean* is_selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLECELL_GET_IS_SELECTED);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!is_selected)
@@ -2056,7 +2051,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowColumnExtents(
     boolean* is_selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_COLUMN_EXTENTS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!row_index || !column_index || !row_extents || !column_extents ||
@@ -2076,7 +2071,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_rowColumnExtents(
 STDMETHODIMP BrowserAccessibilityComWin::get_table(IUnknown** table) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TABLE);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!table)
@@ -2101,7 +2096,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nCharacters(LONG* n_characters) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_CHARACTERS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!n_characters)
@@ -2114,7 +2109,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nCharacters(LONG* n_characters) {
 STDMETHODIMP BrowserAccessibilityComWin::get_caretOffset(LONG* offset) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CARET_OFFSET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!offset)
@@ -2143,7 +2138,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_characterExtents(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHARACTER_EXTENTS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!out_x || !out_y || !out_width || !out_height)
@@ -2180,7 +2175,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_characterExtents(
 STDMETHODIMP BrowserAccessibilityComWin::get_nSelections(LONG* n_selections) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTIONS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!n_selections)
@@ -2202,7 +2197,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_selection(LONG selection_index,
                                                        LONG* end_offset) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!start_offset || !end_offset || selection_index != 0)
@@ -2234,7 +2229,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_text(LONG start_offset,
                                                   BSTR* text) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!text)
@@ -2279,7 +2274,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textAtOffset(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_AT_OFFSET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!start_offset || !end_offset || !text)
@@ -2332,7 +2327,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textBeforeOffset(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_BEFORE_OFFSET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!start_offset || !end_offset || !text)
@@ -2364,7 +2359,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textAfterOffset(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_AFTER_OFFSET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!start_offset || !end_offset || !text)
@@ -2390,7 +2385,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textAfterOffset(
 STDMETHODIMP BrowserAccessibilityComWin::get_newText(IA2TextSegment* new_text) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NEW_TEXT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!new_text)
@@ -2414,7 +2409,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_newText(IA2TextSegment* new_text) {
 STDMETHODIMP BrowserAccessibilityComWin::get_oldText(IA2TextSegment* old_text) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OLD_TEXT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!old_text)
@@ -2444,7 +2439,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_offsetAtPoint(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OFFSET_AT_POINT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!offset)
@@ -2477,7 +2472,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollSubstringToPoint(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_SUBSTRING_TO_POINT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (start_index > end_index)
@@ -2498,7 +2493,7 @@ STDMETHODIMP BrowserAccessibilityComWin::addSelection(LONG start_offset,
                                                       LONG end_offset) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ADD_SELECTION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   // We only support one selection.
@@ -2509,7 +2504,7 @@ STDMETHODIMP BrowserAccessibilityComWin::addSelection(LONG start_offset,
 STDMETHODIMP BrowserAccessibilityComWin::removeSelection(LONG selection_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_REMOVE_SELECTION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (selection_index != 0)
@@ -2529,7 +2524,7 @@ STDMETHODIMP BrowserAccessibilityComWin::removeSelection(LONG selection_index) {
 STDMETHODIMP BrowserAccessibilityComWin::setCaretOffset(LONG offset) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SET_CARET_OFFSET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
   SetIA2HypertextSelection(offset, offset);
   return S_OK;
@@ -2540,7 +2535,7 @@ STDMETHODIMP BrowserAccessibilityComWin::setSelection(LONG selection_index,
                                                       LONG end_offset) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SET_SELECTION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
   if (selection_index != 0)
     return E_INVALIDARG;
@@ -2559,7 +2554,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_attributes(LONG offset,
 
   *start_offset = *end_offset = 0;
   *text_attributes = nullptr;
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   const base::string16 text = GetOwner()->GetText();
@@ -2594,7 +2589,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nHyperlinks(
     long* hyperlink_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_HYPERLINKS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!hyperlink_count)
@@ -2609,7 +2604,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_hyperlink(
     IAccessibleHyperlink** hyperlink) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HYPERLINK);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!hyperlink || index < 0 ||
@@ -2632,7 +2627,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_hyperlinkIndex(
     long* hyperlink_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HYPERLINK_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!hyperlink_index)
@@ -2663,7 +2658,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_anchor(long index,
                                                     VARIANT* anchor) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ANCHOR);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner()->instance_active() || !IsHyperlink())
+  if (!GetOwner() || !IsHyperlink())
     return E_FAIL;
 
   // IA2 text links can have only one anchor, that is the text inside them.
@@ -2689,7 +2684,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_anchorTarget(
     VARIANT* anchor_target) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ANCHOR_TARGET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner()->instance_active() || !IsHyperlink())
+  if (!GetOwner() || !IsHyperlink())
     return E_FAIL;
 
   // IA2 text links can have at most one target, that is when they represent an
@@ -2717,7 +2712,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_anchorTarget(
 STDMETHODIMP BrowserAccessibilityComWin::get_startIndex(long* index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_START_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner()->instance_active() || !IsHyperlink())
+  if (!GetOwner() || !IsHyperlink())
     return E_FAIL;
 
   if (!index)
@@ -2758,7 +2753,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_valid(boolean* valid) {
 STDMETHODIMP BrowserAccessibilityComWin::nActions(long* n_actions) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_N_ACTIONS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!n_actions)
@@ -2779,7 +2774,7 @@ STDMETHODIMP BrowserAccessibilityComWin::nActions(long* n_actions) {
 STDMETHODIMP BrowserAccessibilityComWin::doAction(long action_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_DO_ACTION);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!GetOwner()->HasIntAttribute(ui::AX_ATTR_ACTION) || action_index != 0)
@@ -2810,7 +2805,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_name(long action_index,
                                                   BSTR* name) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NAME);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!name)
@@ -2840,7 +2835,7 @@ BrowserAccessibilityComWin::get_localizedName(long action_index,
                                               BSTR* localized_name) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_NAME);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!localized_name)
@@ -2872,7 +2867,7 @@ BrowserAccessibilityComWin::get_localizedName(long action_index,
 STDMETHODIMP BrowserAccessibilityComWin::get_currentValue(VARIANT* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CURRENT_VALUE);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!value)
@@ -2892,7 +2887,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_currentValue(VARIANT* value) {
 STDMETHODIMP BrowserAccessibilityComWin::get_minimumValue(VARIANT* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_MINIMUM_VALUE);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!value)
@@ -2912,7 +2907,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_minimumValue(VARIANT* value) {
 STDMETHODIMP BrowserAccessibilityComWin::get_maximumValue(VARIANT* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_MAXIMUM_VALUE);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!value)
@@ -2942,7 +2937,7 @@ STDMETHODIMP BrowserAccessibilityComWin::setCurrentValue(VARIANT new_value) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_URL(BSTR* url) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_URL);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -2967,7 +2962,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_URL(BSTR* url) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_title(BSTR* title) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TITLE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -2989,7 +2984,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_title(BSTR* title) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_mimeType(BSTR* mime_type) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_MIME_TYPE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -3011,7 +3006,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_mimeType(BSTR* mime_type) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_docType(BSTR* doc_type) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_DOC_TYPE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -3058,7 +3053,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
     unsigned short* node_type) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NODE_INFO);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!node_name || !name_space_id || !node_value || !num_children ||
@@ -3097,7 +3092,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_attributes(
     unsigned short* num_attribs) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ISIMPLEDOMNODE_GET_ATTRIBUTES);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!attrib_names || !name_space_id || !attrib_values || !num_attribs)
@@ -3124,7 +3119,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_attributesForNames(
     BSTR* attrib_values) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ATTRIBUTES_FOR_NAMES);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!attrib_names || !name_space_id || !attrib_values)
@@ -3158,7 +3153,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_computedStyle(
     unsigned short* num_style_properties) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COMPUTED_STYLE);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!style_properties || !style_values)
@@ -3187,7 +3182,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_computedStyleForProperties(
     BSTR* style_values) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COMPUTED_STYLE_FOR_PROPERTIES);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!style_properties || !style_values)
@@ -3218,7 +3213,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollTo(boolean placeTopLeft) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_parentNode(ISimpleDOMNode** node) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PARENT_NODE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!node)
@@ -3231,7 +3226,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_parentNode(ISimpleDOMNode** node) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_firstChild(ISimpleDOMNode** node) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_FIRST_CHILD);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!node)
@@ -3249,7 +3244,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_firstChild(ISimpleDOMNode** node) {
 
 STDMETHODIMP BrowserAccessibilityComWin::get_lastChild(ISimpleDOMNode** node) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LAST_CHILD);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!node)
@@ -3270,7 +3265,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_lastChild(ISimpleDOMNode** node) {
 STDMETHODIMP BrowserAccessibilityComWin::get_previousSibling(
     ISimpleDOMNode** node) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PREVIOUS_SIBLING);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!node)
@@ -3291,7 +3286,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_previousSibling(
 STDMETHODIMP BrowserAccessibilityComWin::get_nextSibling(
     ISimpleDOMNode** node) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NEXT_SIBLING);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!node)
@@ -3316,7 +3311,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nextSibling(
 STDMETHODIMP BrowserAccessibilityComWin::get_childAt(unsigned int child_index,
                                                      ISimpleDOMNode** node) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHILD_AT);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!node)
@@ -3339,7 +3334,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_childAt(unsigned int child_index,
 STDMETHODIMP BrowserAccessibilityComWin::get_innerHTML(BSTR* innerHTML) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_INNER_HTML);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
   if (GetOwner()->GetRole() != ui::AX_ROLE_MATH)
     return E_NOTIMPL;
@@ -3365,7 +3360,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_language(BSTR* language) {
     return E_INVALIDARG;
   *language = nullptr;
 
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   base::string16 lang =
@@ -3385,7 +3380,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_language(BSTR* language) {
 STDMETHODIMP BrowserAccessibilityComWin::get_domText(BSTR* dom_text) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_DOM_TEXT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!dom_text)
@@ -3420,7 +3415,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_unclippedSubstringBounds(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_UNCLIPPED_SUBSTRING_BOUNDS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!out_x || !out_y || !out_width || !out_height)
@@ -3448,7 +3443,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollToSubstring(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_SUBSTRING);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                             AccessibilityMode::kInlineTextBoxes);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   auto* manager = GetOwner()->manager();
@@ -3476,7 +3471,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_fontFamily(BSTR* font_family) {
     return E_INVALIDARG;
   *font_family = nullptr;
 
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   base::string16 family =
@@ -3497,7 +3492,7 @@ STDMETHODIMP BrowserAccessibilityComWin::QueryService(REFGUID guid_service,
                                                       REFIID riid,
                                                       void** object) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_QUERY_SERVICE);
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (guid_service == GUID_IAccessibleContentDocument) {
@@ -3573,7 +3568,7 @@ STDMETHODIMP BrowserAccessibilityComWin::GetPatternProvider(
     IUnknown** provider) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
   DVLOG(1) << "In Function: " << __func__ << " for pattern id: " << id;
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
@@ -3591,7 +3586,7 @@ STDMETHODIMP BrowserAccessibilityComWin::GetPropertyValue(PROPERTYID id,
                                                           VARIANT* ret) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
   DVLOG(1) << "In Function: " << __func__ << " for property id: " << id;
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   V_VT(ret) = VT_EMPTY;
@@ -4328,7 +4323,7 @@ BrowserAccessibilityComWin::GetSpellingAttributes() {
 
 BrowserAccessibilityComWin* BrowserAccessibilityComWin::GetTargetFromChildID(
     const VARIANT& var_id) {
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return nullptr;
 
   if (var_id.vt != VT_I4)
@@ -4355,7 +4350,7 @@ HRESULT BrowserAccessibilityComWin::GetStringAttributeAsBstr(
     ui::AXStringAttribute attribute,
     BSTR* value_bstr) {
   base::string16 str;
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return E_FAIL;
 
   if (!GetOwner()->GetString16Attribute(attribute, &str))
@@ -4892,7 +4887,7 @@ LONG BrowserAccessibilityComWin::FindStartOfStyle(
 
 BrowserAccessibilityComWin* BrowserAccessibilityComWin::GetFromID(
     int32_t id) const {
-  if (!GetOwner() || !GetOwner()->instance_active())
+  if (!GetOwner())
     return nullptr;
   return ToBrowserAccessibilityComWin(GetOwner()->manager()->GetFromID(id));
 }
@@ -4962,7 +4957,7 @@ void BrowserAccessibilityComWin::AddBidirectionalRelations(
   for (int target_id : filtered_target_ids) {
     BrowserAccessibilityComWin* target =
         GetFromID(static_cast<int32_t>(target_id));
-    if (!target || !target->GetOwner()->instance_active())
+    if (!target || !target->GetOwner())
       continue;
     relation->AddTarget(target_id);
     target->AddRelation(reverse_relation_type, GetOwner()->GetId());
@@ -5006,7 +5001,7 @@ void BrowserAccessibilityComWin::RemoveBidirectionalRelationsOfType(
       for (int target_id : relation->get_target_ids()) {
         BrowserAccessibilityComWin* target =
             GetFromID(static_cast<int32_t>(target_id));
-        if (!target || !target->GetOwner()->instance_active())
+        if (!target || !target->GetOwner())
           continue;
         DCHECK_NE(target, this);
         target->RemoveTargetFromRelation(reverse_relation_type,
