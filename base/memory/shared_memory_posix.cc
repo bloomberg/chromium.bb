@@ -33,15 +33,10 @@
 
 namespace base {
 
-SharedMemory::SharedMemory()
-    : mapped_size_(0), memory_(NULL), read_only_(false), requested_size_(0) {}
+SharedMemory::SharedMemory() {}
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
-    : shm_(handle),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(read_only),
-      requested_size_(0) {}
+    : shm_(handle), read_only_(read_only) {}
 
 SharedMemory::~SharedMemory() {
   Unmap();

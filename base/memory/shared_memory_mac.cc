@@ -79,23 +79,14 @@ bool MakeMachSharedMemoryHandleReadOnly(SharedMemoryHandle* new_handle,
   return true;
 }
 
-
 }  // namespace
 
-SharedMemory::SharedMemory()
-    : mapped_memory_mechanism_(SharedMemoryHandle::MACH),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(false),
-      requested_size_(0) {}
+SharedMemory::SharedMemory() {}
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
     : mapped_memory_mechanism_(SharedMemoryHandle::POSIX),
       shm_(handle),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(read_only),
-      requested_size_(0) {}
+      read_only_(read_only) {}
 
 SharedMemory::~SharedMemory() {
   Unmap();
