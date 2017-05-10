@@ -4,6 +4,8 @@
 
 #include "device/sensors/device_sensor_host.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "device/sensors/device_sensor_export.h"
@@ -39,14 +41,14 @@ DeviceSensorHost<MojoInterface, consumer_type>::~DeviceSensorHost() {
 
 template <typename MojoInterface, ConsumerType consumer_type>
 void DeviceSensorHost<MojoInterface, consumer_type>::DeviceSensorHost::
-    StartPolling(const typename MojoInterface::StartPollingCallback& callback) {
+    StartPolling(typename MojoInterface::StartPollingCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!is_started_);
   if (is_started_)
     return;
   is_started_ = true;
   DeviceSensorService::GetInstance()->AddConsumer(consumer_type);
-  callback.Run(
+  std::move(callback).Run(
       DeviceSensorService::GetInstance()->GetSharedMemoryHandle(consumer_type));
 }
 
