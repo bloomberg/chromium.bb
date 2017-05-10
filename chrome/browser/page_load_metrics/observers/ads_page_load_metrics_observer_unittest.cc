@@ -450,6 +450,70 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
       "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total", 20, 1);
 }
 
+TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedNavigation) {
+  // If the first navigation in a frame is aborted, keep track of its bytes.
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Create an ad subframe that aborts before committing.
+  RenderFrameHost* subframe_ad =
+      RenderFrameHostTester::For(main_frame)->AppendChild(kAdName);
+  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
+      GURL(kNonAdUrl), subframe_ad);
+  // The sub-frame renavigates before it commits.
+  navigation_simulator->Start();
+  navigation_simulator->Fail(net::ERR_ABORTED);
+
+  // Load resources for the aborted frame (e.g., simulate the navigation
+  // aborting due to a doc.write during provisional navigation). They should
+  // be counted.
+  LoadResource(subframe_ad, ResourceCached::NOT_CACHED, 10);
+  LoadResource(subframe_ad, ResourceCached::NOT_CACHED, 10);
+
+  // Navigate again to trigger histograms.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 20, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 30, 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedSecondNavigationForFrame) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Sub frame that is not an ad.
+  RenderFrameHost* sub_frame =
+      CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
+  LoadResource(sub_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Now navigate (and abort) the subframe to an ad.
+  auto navigation_simulator =
+      NavigationSimulator::CreateRendererInitiated(GURL(kAdUrl), sub_frame);
+  // The sub-frame renavigates before it commits.
+  navigation_simulator->Start();
+  navigation_simulator->Fail(net::ERR_ABORTED);
+
+  // Load resources for the aborted frame (e.g., simulate the navigation
+  // aborting due to a doc.write during provisional navigation). Since the
+  // frame attempted to load an ad, the frame is tagged forever as an ad.
+  LoadResource(sub_frame, ResourceCached::NOT_CACHED, 10);
+  LoadResource(sub_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Navigate again to trigger histograms.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 20, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 40, 1);
+}
+
 TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
   // Main frame.
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
@@ -482,13 +546,13 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
 
   // 30KB in total was loaded. Ten for the main page, ten for an aborted
   // ad subframe, and ten for a successful ad subframe. The aborted ad
-  // subframe's bytes don't count.
+  // subframe's bytes count.
 
   // Individual Ad Frame Metrics
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total", 10, 1);
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total", 20, 1);
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 10, 1);
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 20, 1);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 100,
       1);
@@ -507,22 +571,22 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
 
   // Page percentages
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds", 50, 1);
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds", 66, 1);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.PercentNetwork",
       100, 1);
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds", 50, 1);
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds", 66, 1);
 
   // Page byte counts
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 10, 1);
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 20, 1);
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network", 10, 1);
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network", 20, 1);
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 20, 1);
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 30, 1);
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network", 20, 1);
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network", 30, 1);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total", 10, 1);
 }
