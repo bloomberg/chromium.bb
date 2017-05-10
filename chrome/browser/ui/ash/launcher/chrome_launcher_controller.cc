@@ -354,7 +354,7 @@ bool ChromeLauncherController::IsPinned(const ash::ShelfID& id) {
 
 void ChromeLauncherController::SetV1AppStatus(const std::string& app_id,
                                               ash::ShelfItemStatus status) {
-  ash::ShelfID id = GetShelfIDForAppID(app_id);
+  ash::ShelfID id(app_id);
   const ash::ShelfItem* item = GetItem(id);
   if (item) {
     if (!IsPinned(id) && status == ash::STATUS_CLOSED)
@@ -385,9 +385,8 @@ bool ChromeLauncherController::IsOpen(const ash::ShelfID& id) {
 }
 
 bool ChromeLauncherController::IsPlatformApp(const ash::ShelfID& id) {
-  std::string app_id = GetAppIDForShelfID(id);
   const extensions::Extension* extension =
-      GetExtensionForAppID(app_id, profile());
+      GetExtensionForAppID(id.app_id, profile());
   // An extension can be synced / updated at any time and therefore not be
   // available.
   return extension ? extension->is_platform_app() : false;
@@ -432,40 +431,33 @@ void ChromeLauncherController::SetLauncherItemImage(
 
 void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
                                               AppState app_state) {
-  std::string app_id = launcher_controller_helper_->GetAppID(contents);
+  ash::ShelfID shelf_id(launcher_controller_helper_->GetAppID(contents));
 
   // Check if the gMail app is loaded and it matches the given content.
   // This special treatment is needed to address crbug.com/234268.
-  if (app_id.empty() && ContentCanBeHandledByGmailApp(contents))
-    app_id = kGmailAppId;
+  if (shelf_id.IsNull() && ContentCanBeHandledByGmailApp(contents))
+    shelf_id = ash::ShelfID(kGmailAppId);
 
-  // Check the old |app_id| for a tab. If the contents has changed we need to
-  // remove it from the previous app.
+  // If the tab changed apps, remove its association with the previous app item.
   if (web_contents_to_app_id_.find(contents) != web_contents_to_app_id_.end()) {
-    std::string last_app_id = web_contents_to_app_id_[contents];
-    if (last_app_id != app_id) {
-      ash::ShelfID id = GetShelfIDForAppID(last_app_id);
-      if (!id.IsNull()) {
-        // Since GetAppState() will use |web_contents_to_app_id_| we remove
-        // the connection before calling it.
-        web_contents_to_app_id_.erase(contents);
-        SetItemStatus(id, GetAppState(last_app_id));
-      }
+    ash::ShelfID old_id(web_contents_to_app_id_[contents]);
+    if (old_id != shelf_id && GetItem(old_id) != nullptr) {
+      // Since GetAppState() will use |web_contents_to_app_id_| we remove
+      // the connection before calling it.
+      web_contents_to_app_id_.erase(contents);
+      SetItemStatus(old_id, GetAppState(old_id.app_id));
     }
   }
 
   if (app_state == APP_STATE_REMOVED)
     web_contents_to_app_id_.erase(contents);
   else
-    web_contents_to_app_id_[contents] = app_id;
+    web_contents_to_app_id_[contents] = shelf_id.app_id;
 
-  ash::ShelfID id = GetShelfIDForAppID(app_id);
-  if (!id.IsNull()) {
-    SetItemStatus(id, (app_state == APP_STATE_WINDOW_ACTIVE ||
-                       app_state == APP_STATE_ACTIVE)
-                          ? ash::STATUS_ACTIVE
-                          : GetAppState(app_id));
-  }
+  SetItemStatus(shelf_id, (app_state == APP_STATE_WINDOW_ACTIVE ||
+                           app_state == APP_STATE_ACTIVE)
+                              ? ash::STATUS_ACTIVE
+                              : GetAppState(shelf_id.app_id));
 }
 
 ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
@@ -474,9 +466,9 @@ ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
   if (app_id.empty() && ContentCanBeHandledByGmailApp(contents))
     app_id = kGmailAppId;
 
-  ash::ShelfID id = GetShelfIDForAppID(app_id);
   // If there is no dedicated app item, use the browser shortcut item.
-  return id.IsNull() ? GetShelfIDForAppID(kChromeAppId) : id;
+  const ash::ShelfItem* item = GetItem(ash::ShelfID(app_id));
+  return item ? item->id : ash::ShelfID(kChromeAppId);
 }
 
 void ChromeLauncherController::SetRefocusURLPatternForTest(
@@ -574,7 +566,7 @@ ash::MenuItemList ChromeLauncherController::GetAppMenuItemsForTesting(
 std::vector<content::WebContents*>
 ChromeLauncherController::GetV1ApplicationsFromAppId(
     const std::string& app_id) {
-  const ash::ShelfItem* item = GetItem(GetShelfIDForAppID(app_id));
+  const ash::ShelfItem* item = GetItem(ash::ShelfID(app_id));
   // If there is no such item pinned to the launcher, no menu gets created.
   if (!item || item->type != ash::TYPE_PINNED_APP)
     return std::vector<content::WebContents*>();
@@ -586,7 +578,7 @@ ChromeLauncherController::GetV1ApplicationsFromAppId(
 
 void ChromeLauncherController::ActivateShellApp(const std::string& app_id,
                                                 int window_index) {
-  const ash::ShelfItem* item = GetItem(GetShelfIDForAppID(app_id));
+  const ash::ShelfItem* item = GetItem(ash::ShelfID(app_id));
   if (item &&
       (item->type == ash::TYPE_APP || item->type == ash::TYPE_PINNED_APP)) {
     ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(item->id);
@@ -608,8 +600,7 @@ bool ChromeLauncherController::IsWebContentHandledByApplication(
 
 bool ChromeLauncherController::ContentCanBeHandledByGmailApp(
     content::WebContents* web_contents) {
-  ash::ShelfID id = GetShelfIDForAppID(kGmailAppId);
-  if (!id.IsNull()) {
+  if (GetItem(ash::ShelfID(kGmailAppId)) != nullptr) {
     const GURL url = web_contents->GetURL();
     // We need to extend the application matching for the gMail app beyond the
     // manifest file's specification. This is required because of the namespace
@@ -655,7 +646,7 @@ base::string16 ChromeLauncherController::GetAppListTitle(
 
 BrowserShortcutLauncherItemController*
 ChromeLauncherController::GetBrowserShortcutLauncherItemController() {
-  ash::ShelfID id = GetShelfIDForAppID(kChromeAppId);
+  ash::ShelfID id(kChromeAppId);
   ash::mojom::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
   DCHECK(delegate) << "There should be always be a browser shortcut item.";
   return static_cast<BrowserShortcutLauncherItemController*>(delegate);
@@ -692,12 +683,6 @@ void ChromeLauncherController::OnUserProfileReadyToSwitch(Profile* profile) {
 ArcAppDeferredLauncherController*
 ChromeLauncherController::GetArcDeferredLauncher() {
   return arc_deferred_launcher_.get();
-}
-
-const std::string& ChromeLauncherController::GetLaunchIDForShelfID(
-    const ash::ShelfID& id) {
-  ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
-  return delegate ? delegate->launch_id() : base::EmptyString();
 }
 
 AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
@@ -763,22 +748,6 @@ void ChromeLauncherController::SetProfileForTest(Profile* profile) {
   profile_ = profile;
 }
 
-ash::ShelfID ChromeLauncherController::GetShelfIDForAppID(
-    const std::string& app_id) {
-  return model_->GetShelfIDForAppID(app_id);
-}
-
-ash::ShelfID ChromeLauncherController::GetShelfIDForAppIDAndLaunchID(
-    const std::string& app_id,
-    const std::string& launch_id) {
-  return model_->GetShelfIDForAppIDAndLaunchID(app_id, launch_id);
-}
-
-const std::string& ChromeLauncherController::GetAppIDForShelfID(
-    const ash::ShelfID& id) {
-  return model_->GetAppIDForShelfID(id);
-}
-
 void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
   model_->PinAppWithID(app_id);
 }
@@ -823,21 +792,15 @@ void ChromeLauncherController::OnAppUninstalledPrepared(
   // Since we might have windowed apps of this type which might have
   // outstanding locks which needs to be removed.
   const Profile* profile = Profile::FromBrowserContext(browser_context);
-  ash::ShelfID shelf_id = GetShelfIDForAppID(app_id);
-  if (!shelf_id.IsNull())
+  ash::ShelfID shelf_id(app_id);
+  if (GetItem(shelf_id) != nullptr)
     CloseWindowedAppsFromRemovedExtension(app_id, profile);
 
-  if (IsAppPinned(app_id)) {
-    if (profile == this->profile() && !shelf_id.IsNull()) {
-      // Some apps may be removed locally. Unpin the item without removing the
-      // pin position from profile preferences. When needed, it is automatically
-      // deleted on app list model update.
-      UnpinShelfItemInternal(shelf_id);
-    }
-    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
-    if (app_icon_loader)
-      app_icon_loader->ClearImage(app_id);
-  }
+  // Some apps may be removed locally. Unpin the item without removing the pin
+  // position from profile preferences. When needed, it is automatically deleted
+  // on app list model update.
+  if (IsAppPinned(app_id) && profile == this->profile())
+    UnpinShelfItemInternal(shelf_id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -893,7 +856,7 @@ void ChromeLauncherController::RememberUnpinnedRunningApplicationOrder() {
   RunningAppListIds list;
   for (int i = 0; i < model_->item_count(); i++) {
     if (model_->items()[i].type == ash::TYPE_APP)
-      list.push_back(GetAppIDForShelfID(model_->items()[i].id));
+      list.push_back(model_->items()[i].id.app_id);
   }
   const std::string user_email =
       multi_user_util::GetAccountIdFromProfile(profile()).GetUserEmail();
@@ -910,7 +873,7 @@ void ChromeLauncherController::RestoreUnpinnedRunningApplicationOrder(
   // Find the first insertion point for running applications.
   int running_index = model_->FirstRunningAppIndex();
   for (const std::string& app_id : app_id_list->second) {
-    const ash::ShelfItem* item = GetItem(GetShelfIDForAppID(app_id));
+    const ash::ShelfItem* item = GetItem(ash::ShelfID(app_id));
     if (item && item->type == ash::TYPE_APP) {
       int app_index = model_->ItemIndexByID(item->id);
       DCHECK_GE(app_index, 0);
@@ -954,37 +917,22 @@ void ChromeLauncherController::SyncPinPosition(const ash::ShelfID& shelf_id) {
   const int index = model_->ItemIndexByID(shelf_id);
   DCHECK_GT(index, 0);
 
-  const std::string& app_id = GetAppIDForShelfID(shelf_id);
-  DCHECK(!app_id.empty());
-  const std::string& launch_id = GetLaunchIDForShelfID(shelf_id);
-
-  std::string app_id_before;
-  std::string launch_id_before;
+  ash::ShelfID shelf_id_before;
   std::vector<ash::ShelfID> shelf_ids_after;
 
   for (int i = index - 1; i > 0; --i) {
-    const ash::ShelfID shelf_id_before = model_->items()[i].id;
-    if (IsPinned(shelf_id_before)) {
-      app_id_before = GetAppIDForShelfID(shelf_id_before);
-      DCHECK(!app_id_before.empty());
-      launch_id_before = GetLaunchIDForShelfID(shelf_id_before);
+    shelf_id_before = model_->items()[i].id;
+    if (IsPinned(shelf_id_before))
       break;
-    }
   }
 
   for (int i = index + 1; i < max_index; ++i) {
-    const ash::ShelfID shelf_id_after = model_->items()[i].id;
-    if (IsPinned(shelf_id_after)) {
-      const std::string app_id_after = GetAppIDForShelfID(shelf_id_after);
-      DCHECK(!app_id_after.empty());
-      const std::string launch_id_after = GetLaunchIDForShelfID(shelf_id_after);
-      shelf_ids_after.push_back(ash::ShelfID(app_id_after, launch_id_after));
-    }
+    const ash::ShelfID& shelf_id_after = model_->items()[i].id;
+    if (IsPinned(shelf_id_after))
+      shelf_ids_after.push_back(shelf_id_after);
   }
 
-  ash::ShelfID shelf_id_before = ash::ShelfID(app_id_before, launch_id_before);
-  SetPinPosition(profile(), ash::ShelfID(app_id, launch_id), shelf_id_before,
-                 shelf_ids_after);
+  SetPinPosition(profile(), shelf_id, shelf_id_before, shelf_ids_after);
 }
 
 void ChromeLauncherController::OnSyncModelUpdated() {

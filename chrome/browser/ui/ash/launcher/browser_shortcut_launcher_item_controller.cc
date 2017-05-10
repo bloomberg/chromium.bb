@@ -358,21 +358,16 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
   if (!browser || !IsBrowserFromActiveUser(browser))
     return false;
 
-  // v1 App popup windows with a valid app id have their own icon.
-  if (browser->is_app() && browser->is_type_popup() &&
-      !shelf_model_
-           ->GetShelfIDForAppID(
-               web_app::GetExtensionIdFromApplicationName(browser->app_name()))
-           .IsNull()) {
-    return false;
+  // V1 App popup windows may have their own item.
+  if (browser->is_app() && browser->is_type_popup()) {
+    ash::ShelfID id(
+        web_app::GetExtensionIdFromApplicationName(browser->app_name()));
+    if (ChromeLauncherController::instance()->GetItem(id) != nullptr)
+      return false;
   }
 
-  // Settings browsers have their own icon.
-  if (IsSettingsBrowser(browser))
-    return false;
-
-  // Tabbed browser and other popup windows are all represented.
-  return true;
+  // Settings browsers have their own item; all others should be represented.
+  return !IsSettingsBrowser(browser);
 }
 
 BrowserList::BrowserVector

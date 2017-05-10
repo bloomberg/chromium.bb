@@ -104,10 +104,6 @@ std::vector<arc::mojom::AppInfoPtr> GetTestAppsList(
   return apps;
 }
 
-ChromeLauncherController* chrome_controller() {
-  return ChromeLauncherController::instance();
-}
-
 class AppAnimatedWaiter {
  public:
   explicit AppAnimatedWaiter(const std::string& app_id) : app_id_(app_id) {}
@@ -116,7 +112,7 @@ class AppAnimatedWaiter {
     const base::TimeDelta threshold =
         base::TimeDelta::FromMilliseconds(kAppAnimatedThresholdMs);
     ArcAppDeferredLauncherController* controller =
-        chrome_controller()->GetArcDeferredLauncher();
+        ChromeLauncherController::instance()->GetArcDeferredLauncher();
     while (controller->GetActiveTime(app_id_) < threshold) {
       base::RunLoop().RunUntilIdle();
     }
@@ -256,7 +252,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
 
   ash::ShelfItemDelegate* GetShelfItemDelegate(const std::string& id) {
     ash::ShelfModel* model = ash::Shell::Get()->shelf_model();
-    return model->GetShelfItemDelegate(model->GetShelfIDForAppID(id));
+    return model->GetShelfItemDelegate(ash::ShelfID(id));
   }
 
   ArcAppListPrefs* app_prefs() { return ArcAppListPrefs::Get(profile()); }
@@ -303,16 +299,15 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   InstallTestApps(kTestAppPackage, false);
   SendPackageAdded(kTestAppPackage, false);
 
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
-  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
+  const ash::ShelfID shelf_id(app_id);
   if (is_pinned()) {
-    shelf_model->PinAppWithID(app_id);
-    const ash::ShelfID shelf_id = shelf_model->GetShelfIDForAppID(app_id);
-    EXPECT_FALSE(shelf_id.IsNull());
-    const ash::ShelfItem* item = chrome_controller()->GetItem(shelf_id);
+    controller->PinAppWithID(app_id);
+    const ash::ShelfItem* item = controller->GetItem(shelf_id);
     EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
   } else {
-    EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id).IsNull());
+    EXPECT_FALSE(controller->GetItem(shelf_id));
   }
 
   StopInstance();
@@ -326,13 +321,11 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   app_info = app_prefs()->GetApp(app_id);
   ASSERT_TRUE(app_info);
   EXPECT_FALSE(app_info->ready);
-  EXPECT_NE(is_pinned(), shelf_model->GetShelfIDForAppID(app_id).IsNull());
+  EXPECT_EQ(is_pinned(), controller->GetItem(shelf_id) != nullptr);
 
   // Launching non-ready ARC app creates item on shelf and spinning animation.
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
-  const ash::ShelfID shelf_id = shelf_model->GetShelfIDForAppID(app_id);
-  EXPECT_FALSE(shelf_id.IsNull());
-  const ash::ShelfItem* item = chrome_controller()->GetItem(shelf_id);
+  const ash::ShelfItem* item = controller->GetItem(shelf_id);
   EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
   AppAnimatedWaiter(app_id).Wait();
 
@@ -342,11 +335,10 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
       // should stop animation and delete icon from the shelf.
       InstallTestApps(kTestAppPackage, false);
       SendPackageAdded(kTestAppPackage, false);
-      EXPECT_TRUE(chrome_controller()
-                      ->GetArcDeferredLauncher()
+      EXPECT_TRUE(controller->GetArcDeferredLauncher()
                       ->GetActiveTime(app_id)
                       .is_zero());
-      EXPECT_NE(is_pinned(), shelf_model->GetShelfIDForAppID(app_id).IsNull());
+      EXPECT_EQ(is_pinned(), controller->GetItem(shelf_id) != nullptr);
       break;
     case TEST_ACTION_EXIT:
       // Just exit Chrome.
@@ -357,12 +349,10 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
         ash::ShelfItemDelegate* delegate = GetShelfItemDelegate(app_id);
         ASSERT_TRUE(delegate);
         delegate->Close();
-        EXPECT_TRUE(chrome_controller()
-                        ->GetArcDeferredLauncher()
+        EXPECT_TRUE(controller->GetArcDeferredLauncher()
                         ->GetActiveTime(app_id)
                         .is_zero());
-        EXPECT_NE(is_pinned(),
-                  shelf_model->GetShelfIDForAppID(app_id).IsNull());
+        EXPECT_EQ(is_pinned(), controller->GetItem(shelf_id) != nullptr);
       }
       break;
   }
@@ -383,33 +373,31 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
   InstallTestApps(kTestAppPackage, true);
   SendPackageAdded(kTestAppPackage, false);
 
-  const std::string app_id1 = GetTestApp1Id(kTestAppPackage);
-  const std::string app_id2 = GetTestApp2Id(kTestAppPackage);
-  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
-  shelf_model->PinAppWithID(app_id1);
-  shelf_model->PinAppWithID(app_id2);
-  const ash::ShelfID shelf_id1_before =
-      shelf_model->GetShelfIDForAppID(app_id1);
-  EXPECT_FALSE(shelf_id1_before.IsNull());
-  EXPECT_FALSE(shelf_model->GetShelfIDForAppID(app_id2).IsNull());
+  const ash::ShelfID shelf_id1(GetTestApp1Id(kTestAppPackage));
+  const ash::ShelfID shelf_id2(GetTestApp2Id(kTestAppPackage));
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+  controller->PinAppWithID(shelf_id1.app_id);
+  controller->PinAppWithID(shelf_id2.app_id);
+  EXPECT_TRUE(controller->GetItem(shelf_id1));
+  EXPECT_TRUE(controller->GetItem(shelf_id2));
 
   // Package contains only one app. App list is not shown for updated package.
   SendPackageUpdated(kTestAppPackage, false);
   // Second pin should gone.
-  EXPECT_EQ(shelf_id1_before, shelf_model->GetShelfIDForAppID(app_id1));
-  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id2).IsNull());
+  EXPECT_TRUE(controller->GetItem(shelf_id1));
+  EXPECT_FALSE(controller->GetItem(shelf_id2));
 
   // Package contains two apps. App list is not shown for updated package.
   SendPackageUpdated(kTestAppPackage, true);
   // Second pin should not appear.
-  EXPECT_EQ(shelf_id1_before, shelf_model->GetShelfIDForAppID(app_id1));
-  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id2).IsNull());
+  EXPECT_TRUE(controller->GetItem(shelf_id1));
+  EXPECT_FALSE(controller->GetItem(shelf_id2));
 
   // Package removed.
   SendPackageRemoved(kTestAppPackage);
   // No pin is expected.
-  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id1).IsNull());
-  EXPECT_TRUE(shelf_model->GetShelfIDForAppID(app_id2).IsNull());
+  EXPECT_FALSE(controller->GetItem(shelf_id1));
+  EXPECT_FALSE(controller->GetItem(shelf_id2));
 }
 
 // This test validates that app list is shown on new package and not shown

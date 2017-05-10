@@ -31,14 +31,6 @@ class ShelfController : public mojom::ShelfController {
 
   ShelfModel* model() { return &model_; }
 
-  const std::map<std::string, ShelfID>& app_id_to_shelf_id() {
-    return app_id_to_shelf_id_;
-  }
-
-  const std::map<ShelfID, std::string>& shelf_id_to_app_id() {
-    return shelf_id_to_app_id_;
-  }
-
   // Functions used to notify mojom::ShelfObserver instances of changes.
   void NotifyShelfCreated(WmShelf* shelf);
   void NotifyShelfAlignmentChanged(WmShelf* shelf);
@@ -63,10 +55,6 @@ class ShelfController : public mojom::ShelfController {
 
   // The set of shelf observers notified about shelf state and settings changes.
   mojo::AssociatedInterfacePtrSet<mojom::ShelfObserver> observers_;
-
-  // Mappings between application and shelf ids.
-  std::map<std::string, ShelfID> app_id_to_shelf_id_;
-  std::map<ShelfID, std::string> shelf_id_to_app_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfController);
 };

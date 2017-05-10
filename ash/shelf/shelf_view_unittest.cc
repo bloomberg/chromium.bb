@@ -308,14 +308,10 @@ class ShelfViewTest : public AshTestBase {
   }
 
   ShelfButton* GetButtonByID(const ShelfID& id) {
-    int index = model_->ItemIndexByID(id);
-    return test_api_->GetButton(index);
+    return test_api_->GetButton(model_->ItemIndexByID(id));
   }
 
-  ShelfItem GetItemByID(const ShelfID& id) {
-    ShelfItems::const_iterator items = model_->ItemByID(id);
-    return *items;
-  }
+  ShelfItem GetItemByID(const ShelfID& id) { return *model_->ItemByID(id); }
 
   void CheckModelIDs(
       const std::vector<std::pair<ShelfID, views::View*>>& id_map) {
@@ -634,11 +630,9 @@ class ShelfViewTest : public AshTestBase {
     return model_->items()[index].id;
   }
 
-  // Returns the center coordinates for a button. Helper function for an event
-  // generator.
+  // Returns the center point of a button. Helper function for event generators.
   gfx::Point GetButtonCenter(const ShelfID& button_id) {
-    return GetButtonCenter(
-        test_api_->GetButton(model_->ItemIndexByID(button_id)));
+    return GetButtonCenter(GetButtonByID(button_id));
   }
 
   gfx::Point GetButtonCenter(ShelfButton* button) {

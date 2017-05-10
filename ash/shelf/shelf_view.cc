@@ -529,7 +529,7 @@ bool ShelfView::StartDrag(const std::string& app_id,
                           const gfx::Point& location_in_screen_coordinates) {
   // Bail if an operation is already going on - or the cursor is not inside.
   // This could happen if mouse / touch operations overlap.
-  if (!drag_and_drop_shelf_id_.IsNull() ||
+  if (!drag_and_drop_shelf_id_.IsNull() || app_id.empty() ||
       !GetBoundsInScreen().Contains(location_in_screen_coordinates))
     return false;
 
@@ -537,19 +537,14 @@ bool ShelfView::StartDrag(const std::string& app_id,
   // button, ShelfView dragging operations are locked and we have to unlock.
   CancelDrag(-1);
   drag_and_drop_item_pinned_ = false;
-  drag_and_drop_app_id_ = app_id;
-  drag_and_drop_shelf_id_ = model_->GetShelfIDForAppID(drag_and_drop_app_id_);
-  // Check if the application is known and pinned - if not, we have to pin it so
+  drag_and_drop_shelf_id_ = ShelfID(app_id);
+  // Check if the application is pinned - if not, we have to pin it so
   // that we can re-arrange the shelf order accordingly. Note that items have
   // to be pinned to give them the same (order) possibilities as a shortcut.
   // When an item is dragged from overflow to shelf, IsShowingOverflowBubble()
   // returns true. At this time, we don't need to pin the item.
-  if (!IsShowingOverflowBubble() &&
-      (drag_and_drop_shelf_id_.IsNull() || !model_->IsAppPinned(app_id))) {
+  if (!IsShowingOverflowBubble() && !model_->IsAppPinned(app_id)) {
     model_->PinAppWithID(app_id);
-    drag_and_drop_shelf_id_ = model_->GetShelfIDForAppID(drag_and_drop_app_id_);
-    if (drag_and_drop_shelf_id_.IsNull())
-      return false;
     drag_and_drop_item_pinned_ = true;
   }
   views::View* drag_and_drop_view =
@@ -605,7 +600,7 @@ void ShelfView::EndDrag(bool cancel) {
 
   // Either destroy the temporarily created item - or - make the item visible.
   if (drag_and_drop_item_pinned_ && cancel) {
-    model_->UnpinAppWithID(drag_and_drop_app_id_);
+    model_->UnpinAppWithID(drag_and_drop_shelf_id_.app_id);
   } else if (drag_and_drop_view) {
     if (cancel) {
       // When a hosted drag gets canceled, the item can remain in the same slot
@@ -1045,8 +1040,7 @@ void ShelfView::EndDragOnOtherShelf(bool cancel) {
 bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
-  std::string dragged_app_id =
-      model_->GetAppIDForShelfID(model_->items()[current_index].id);
+  std::string dragged_app_id = model_->items()[current_index].id.app_id;
 
   gfx::Point screen_location =
       WmWindow::Get(GetWidget()->GetNativeWindow())
@@ -1200,9 +1194,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
     } else {
       // Make sure the item stays invisible upon removal.
       drag_view_->SetVisible(false);
-      std::string app_id =
-          model_->GetAppIDForShelfID(model_->items()[current_index].id);
-      model_->UnpinAppWithID(app_id);
+      model_->UnpinAppWithID(model_->items()[current_index].id.app_id);
     }
   }
   if (cancel || snap_back) {
@@ -1244,7 +1236,7 @@ ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
     return NOT_REMOVABLE;
 
   // Note: Only pinned app shortcuts can be removed!
-  std::string app_id = model_->GetAppIDForShelfID(model_->items()[index].id);
+  const std::string& app_id = model_->items()[index].id.app_id;
   return (type == TYPE_PINNED_APP && model_->IsAppPinned(app_id)) ? REMOVABLE
                                                                   : DRAGGABLE;
 }

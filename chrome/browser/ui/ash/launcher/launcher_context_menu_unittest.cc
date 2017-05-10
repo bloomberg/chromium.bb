@@ -90,7 +90,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
       ash::ShelfItemType shelf_item_type,
       ash::WmShelf* wm_shelf) {
     ash::ShelfItem item;
-    item.id = ash::ShelfID("dummy id");
+    item.id = ash::ShelfID("idmockidmockidmockidmockidmockid");
     item.type = shelf_item_type;
     return LauncherContextMenu::Create(controller(), &item, wm_shelf);
   }
@@ -220,8 +220,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
 
   controller()->PinAppWithID(app_id);
 
-  const ash::ShelfID item_id = controller()->GetShelfIDForAppID(app_id);
-  const ash::ShelfItem* item = controller()->GetItem(item_id);
+  const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
   ASSERT_TRUE(item);
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   ash::WmShelf* wm_shelf = GetWmShelf(primary_id);
@@ -272,8 +271,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   CreateArcWindow(window_app_id2);
   arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1],
                                              std::string());
-  const ash::ShelfID item_id2 = controller()->GetShelfIDForAppID(app_id2);
-  const ash::ShelfItem* item2 = controller()->GetItem(item_id2);
+  const ash::ShelfItem* item2 = controller()->GetItem(ash::ShelfID(app_id2));
   ASSERT_TRUE(item2);
   menu.reset(new ArcLauncherContextMenu(controller(), item2, wm_shelf));
 
@@ -296,8 +294,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   CreateArcWindow(window_app_id3);
   arc_test().app_instance()->SendTaskCreated(3, arc_test().fake_apps()[2],
                                              shortcuts[0].intent_uri);
-  const ash::ShelfID item_id3 = controller()->GetShelfIDForAppID(app_id3);
-  const ash::ShelfItem* item3 = controller()->GetItem(item_id3);
+  const ash::ShelfItem* item3 = controller()->GetItem(ash::ShelfID(app_id3));
   ASSERT_TRUE(item3);
   menu.reset(new ArcLauncherContextMenu(controller(), item3, wm_shelf));
 

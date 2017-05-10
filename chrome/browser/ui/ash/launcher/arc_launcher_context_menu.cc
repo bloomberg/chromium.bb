@@ -27,8 +27,8 @@ void ArcLauncherContextMenu::Init() {
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_list_prefs);
 
-  const arc::ArcAppShelfId& app_id = arc::ArcAppShelfId::FromString(
-      controller()->GetAppIDForShelfID(item().id));
+  const arc::ArcAppShelfId& app_id =
+      arc::ArcAppShelfId::FromString(item().id.app_id);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_list_prefs->GetApp(app_id.app_id());
   if (!app_info && !app_id.has_shelf_group_id()) {

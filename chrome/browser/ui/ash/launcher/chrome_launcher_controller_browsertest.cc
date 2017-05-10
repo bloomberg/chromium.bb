@@ -1535,7 +1535,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
   // Confirm that a shelf item was created and is the correct state.
   const ash::ShelfItem& item = GetLastLauncherPanelItem();
   ash::ShelfItemDelegate* shelf_item_delegate = GetShelfItemDelegate(item.id);
-  EXPECT_NE(nullptr, shelf_item_delegate);
+  EXPECT_TRUE(shelf_item_delegate);
   EXPECT_EQ(ash::TYPE_APP_PANEL, item.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 
@@ -2228,8 +2228,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
   // We assume that the web store is always there (which it apparently is).
   controller_->PinAppWithID(extensions::kWebStoreAppId);
-  ash::ShelfID id = controller_->GetShelfIDForAppID(extensions::kWebStoreAppId);
-  EXPECT_FALSE(id.IsNull());
+  const ash::ShelfID id(extensions::kWebStoreAppId);
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(id)->status);
 
   // Create a windowed application.
@@ -2307,8 +2306,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
       LoadExtension(test_data_dir_.AppendASCII("app1/"));
   ASSERT_TRUE(hosted_app);
   controller_->PinAppWithID(hosted_app->id());
-  const ash::ShelfID hosted_app_shelf_id =
-      controller_->GetShelfIDForAppID(hosted_app->id());
+  const ash::ShelfID hosted_app_shelf_id(hosted_app->id());
 
   // Load and pin a bookmark app.
   const Extension* bookmark_app = InstallExtensionWithSourceAndFlags(
@@ -2316,8 +2314,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
       extensions::Extension::FROM_BOOKMARK);
   ASSERT_TRUE(bookmark_app);
   controller_->PinAppWithID(bookmark_app->id());
-  const ash::ShelfID bookmark_app_shelf_id =
-      controller_->GetShelfIDForAppID(bookmark_app->id());
+  const ash::ShelfID bookmark_app_shelf_id(bookmark_app->id());
 
   // The apps should be closed.
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(hosted_app_shelf_id)->status);
@@ -2352,8 +2349,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
       LoadExtension(test_data_dir_.AppendASCII("app1/"));
   ASSERT_TRUE(hosted_app);
   controller_->PinAppWithID(hosted_app->id());
-  const ash::ShelfID hosted_app_shelf_id =
-      controller_->GetShelfIDForAppID(hosted_app->id());
+  const ash::ShelfID hosted_app_shelf_id(hosted_app->id());
 
   // Load and pin a bookmark app.
   const Extension* bookmark_app = InstallExtensionWithSourceAndFlags(
@@ -2361,8 +2357,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
       extensions::Extension::FROM_BOOKMARK);
   ASSERT_TRUE(bookmark_app);
   controller_->PinAppWithID(bookmark_app->id());
-  const ash::ShelfID bookmark_app_shelf_id =
-      controller_->GetShelfIDForAppID(bookmark_app->id());
+  const ash::ShelfID bookmark_app_shelf_id(bookmark_app->id());
 
   // Set both apps to open in windows.
   extensions::SetLaunchType(browser()->profile(), hosted_app->id(),

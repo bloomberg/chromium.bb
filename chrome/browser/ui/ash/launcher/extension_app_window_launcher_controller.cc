@@ -153,8 +153,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     controller->AddAppWindow(app_window);
 
     // Check for any existing pinned shelf item with a matching |shelf_id|.
-    const int item_index = owner()->shelf_model()->ItemIndexByID(shelf_id);
-    if (item_index < 0) {
+    if (owner()->GetItem(shelf_id) == nullptr) {
       owner()->CreateAppLauncherItem(std::move(controller), status);
       // Restore any existing app icon and flag as set.
       if (app_window->HasCustomIcon() && !app_window->app_icon().IsEmpty()) {

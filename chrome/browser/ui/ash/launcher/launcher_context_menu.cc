@@ -52,8 +52,7 @@ LauncherContextMenu* LauncherContextMenu::Create(
     return new DesktopShellLauncherContextMenu(controller, item, wm_shelf);
 
   // Create ArcLauncherContextMenu if the item is an ARC app.
-  const std::string& app_id = controller->GetAppIDForShelfID(item->id);
-  if (arc::IsArcItem(controller->profile(), app_id))
+  if (arc::IsArcItem(controller->profile(), item->id.app_id))
     return new ArcLauncherContextMenu(controller, item, wm_shelf);
 
   // Create ExtensionLauncherContextMenu for the item.
@@ -152,8 +151,7 @@ void LauncherContextMenu::AddPinMenu() {
   // Expect a valid ShelfID to add pin/unpin menu item.
   DCHECK(!item_.id.IsNull());
   int menu_pin_string_id;
-  const std::string app_id = controller_->GetAppIDForShelfID(item_.id);
-  switch (GetPinnableForAppID(app_id, controller_->profile())) {
+  switch (GetPinnableForAppID(item_.id.app_id, controller_->profile())) {
     case AppListControllerDelegate::PIN_EDITABLE:
       menu_pin_string_id = controller_->IsPinned(item_.id)
                                ? IDS_LAUNCHER_CONTEXT_MENU_UNPIN
