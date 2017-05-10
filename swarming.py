@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.9.0'
+__version__ = '0.9.1'
 
 import collections
 import datetime
@@ -50,52 +50,18 @@ class Failure(Exception):
   pass
 
 
-### Isolated file handling.
-
-
-def isolated_handle_options(options, args):
-  """Handles '--isolated <isolated>' and '-- <args...>' arguments.
-
-  Returns:
-    tuple(command, inputs_ref).
-  """
-  isolated_cmd_args = []
-  if not options.isolated:
-    if '--' in args:
-      index = args.index('--')
-      isolated_cmd_args = args[index+1:]
-      args = args[:index]
-    else:
-      # optparse eats '--' sometimes.
-      isolated_cmd_args = args[1:]
-      args = args[:1]
-    if len(args) != 1:
-      raise ValueError(
-          'Use --isolated, --raw-cmd or \'--\' to pass arguments to the called '
-          'process.')
-  elif args:
-    if '--' in args:
-      index = args.index('--')
-      isolated_cmd_args = args[index+1:]
-      if index != 0:
-        raise ValueError('Unexpected arguments.')
-    else:
-      # optparse eats '--' sometimes.
-      isolated_cmd_args = args
-
+def default_task_name(options):
+  """Returns a default task name if not specified."""
   if not options.task_name:
-    options.task_name = u'%s/%s/%s' % (
+    task_name = u'%s/%s' % (
         options.user,
         '_'.join(
             '%s=%s' % (k, v)
-            for k, v in sorted(options.dimensions.iteritems())),
-        options.isolated)
-
-  inputs_ref = FilesRef(
-      isolated=options.isolated,
-      isolatedserver=options.isolate_server,
-      namespace=options.namespace)
-  return isolated_cmd_args, inputs_ref
+            for k, v in sorted(options.dimensions.iteritems())))
+    if options.isolated:
+      task_name += u'/' + options.isolated
+    return task_name
+  return options.task_name
 
 
 ### Triggering.
@@ -903,7 +869,7 @@ def add_trigger_options(parser):
   group.add_option(
       '--raw-cmd', action='store_true', default=False,
       help='When set, the command after -- is used as-is without run_isolated. '
-           'In this case, no .isolated file is expected.')
+           'In this case, the .isolated file is expected to not have a command')
   group.add_option(
       '--cipd-package', action='append', default=[],
       help='CIPD packages to install on the Swarming bot.  Uses the format: '
@@ -958,32 +924,45 @@ def process_trigger_options(parser, options, args):
   """
   options.dimensions = dict(options.dimensions)
   options.env = dict(options.env)
+  if args and args[0] == '--':
+    args = args[1:]
 
   if not options.dimensions:
     parser.error('Please at least specify one --dimension')
+  if not all(len(t.split(':', 1)) == 2 for t in options.tags):
+    parser.error('--tags must be in the format key:value')
+  if options.raw_cmd and not args:
+    parser.error(
+        'Arguments with --raw-cmd should be passed after -- as command '
+        'delimiter.')
+  if options.isolate_server and not options.namespace:
+    parser.error(
+        '--namespace must be a valid value when --isolate-server is used')
+  if not options.isolated and not options.raw_cmd:
+    parser.error('Specify at least one of --raw-cmd or --isolated or both')
+
+  # Isolated
+  # --isolated is required only if --raw-cmd wasn't provided.
+  # TODO(maruel): --isolate-server may be optional as Swarming may have its own
+  # preferred server.
+  isolateserver.process_isolate_server_options(
+      parser, options, False, not options.raw_cmd)
+  inputs_ref = None
+  if options.isolate_server:
+    inputs_ref = FilesRef(
+        isolated=options.isolated,
+        isolatedserver=options.isolate_server,
+        namespace=options.namespace)
+
+  # Command
+  command = None
+  extra_args = None
   if options.raw_cmd:
-    if not args:
-      parser.error(
-          'Arguments with --raw-cmd should be passed after -- as command '
-          'delimiter.')
-    if options.isolate_server:
-      parser.error('Can\'t use both --raw-cmd and --isolate-server.')
-
     command = args
-    if not options.task_name:
-      options.task_name = u'%s/%s' % (
-          options.user,
-          '_'.join(
-            '%s=%s' % (k, v)
-            for k, v in sorted(options.dimensions.iteritems())))
-    inputs_ref = None
   else:
-    isolateserver.process_isolate_server_options(parser, options, False, True)
-    try:
-      command, inputs_ref = isolated_handle_options(options, args)
-    except ValueError as e:
-      parser.error(str(e))
+    extra_args = args
 
+  # CIPD
   cipd_packages = []
   for p in options.cipd_package:
     split = p.split(':', 2)
@@ -1000,34 +979,32 @@ def process_trigger_options(parser, options, args):
         packages=cipd_packages,
         server=None)
 
+  # Secrets
   secret_bytes = None
   if options.secret_bytes_path:
     with open(options.secret_bytes_path, 'r') as f:
       secret_bytes = f.read().encode('base64')
 
+  # Named caches
   caches = [
     {u'name': unicode(i[0]), u'path': unicode(i[1])}
     for i in options.named_cache
   ]
-  # If inputs_ref.isolated is used, command is actually extra_args.
-  # Otherwise it's an actual command to run.
-  isolated_input = inputs_ref and inputs_ref.isolated
+
   properties = TaskProperties(
       caches=caches,
       cipd_input=cipd_input,
-      command=None if isolated_input else command,
+      command=command,
       dimensions=options.dimensions,
       env=options.env,
       execution_timeout_secs=options.hard_timeout,
-      extra_args=command if isolated_input else None,
+      extra_args=extra_args,
       grace_period_secs=30,
       idempotent=options.idempotent,
       inputs_ref=inputs_ref,
       io_timeout_secs=options.io_timeout,
       outputs=options.output,
       secret_bytes=secret_bytes)
-  if not all(len(t.split(':', 1)) == 2 for t in options.tags):
-    parser.error('--tags must be in the format key:value')
 
   # Convert a service account email to a signed service account token to pass
   # to Swarming.
@@ -1040,7 +1017,7 @@ def process_trigger_options(parser, options, args):
 
   return NewTaskRequest(
       expiration_secs=options.expiration,
-      name=options.task_name,
+      name=default_task_name(options),
       parent_task_id=os.environ.get('SWARMING_TASK_ID', ''),
       priority=options.priority,
       properties=properties,
@@ -1427,12 +1404,12 @@ def CMDrun(parser, args):
   except Failure as e:
     on_error.report(
         'Failed to trigger %s(%s): %s' %
-        (options.task_name, args[0], e.args[0]))
+        (task_request.name, args[0], e.args[0]))
     return 1
   if not tasks:
     on_error.report('Failed to trigger the task.')
     return 1
-  print('Triggered task: %s' % options.task_name)
+  print('Triggered task: %s' % task_request.name)
   task_ids = [
     t['task_id']
     for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
@@ -1604,12 +1581,12 @@ def CMDtrigger(parser, args):
     tasks = trigger_task_shards(
         options.swarming, task_request, options.shards)
     if tasks:
-      print('Triggered task: %s' % options.task_name)
+      print('Triggered task: %s' % task_request.name)
       tasks_sorted = sorted(
           tasks.itervalues(), key=lambda x: x['shard_index'])
       if options.dump_json:
         data = {
-          'base_task_name': options.task_name,
+          'base_task_name': task_request.name,
           'tasks': tasks,
           'request': task_request_to_raw_request(task_request, True),
         }

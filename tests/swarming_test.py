@@ -14,6 +14,7 @@ import sys
 import tempfile
 import threading
 import time
+import traceback
 import unittest
 
 # net_utils adjusts sys.path.
@@ -102,7 +103,11 @@ def gen_request_data(properties=None, **kwargs):
       'extra_args': ['--some-arg', '123'],
       'grace_period_secs': 30,
       'idempotent': False,
-      'inputs_ref': None,
+      'inputs_ref': {
+        'isolated': None,
+        'isolatedserver': '',
+        'namespace': 'default-gzip',
+      },
       'io_timeout_secs': 60,
       'outputs': [],
       'secret_bytes': None,
@@ -236,11 +241,9 @@ class Common(object):
     try:
       return main(args)
     except:
-      logging.exception('Unexpected exception thrown in main')
-      logging.error(
-          'STDOUT:\n%s\nSTDERR:\n%s',
-          sys.stdout.getvalue(), sys.stderr.getvalue())
-      self.fail()
+      data = '%s\nSTDOUT:\n%s\nSTDERR:\n%s' % (
+          traceback.format_exc(), sys.stdout.getvalue(), sys.stderr.getvalue())
+      self.fail(data)
 
 
 class NetTestCase(net_utils.TestCase, Common):
@@ -340,7 +343,11 @@ class TestSwarmingTrigger(NetTestCase):
             extra_args=[],
             grace_period_secs=30,
             idempotent=False,
-            inputs_ref=None,
+            inputs_ref={
+              'isolated': None,
+              'isolatedserver': '',
+              'namespace': 'default-gzip',
+            },
             io_timeout_secs=60,
             outputs=[],
             secret_bytes=None),
@@ -411,7 +418,11 @@ class TestSwarmingTrigger(NetTestCase):
             extra_args=[],
             grace_period_secs=30,
             idempotent=False,
-            inputs_ref=None,
+            inputs_ref={
+              'isolated': None,
+              'isolatedserver': '',
+              'namespace': 'default-gzip',
+            },
             io_timeout_secs=60,
             outputs=[],
             secret_bytes=None),
@@ -474,7 +485,11 @@ class TestSwarmingTrigger(NetTestCase):
             extra_args=[],
             grace_period_secs=30,
             idempotent=False,
-            inputs_ref=None,
+            inputs_ref={
+              'isolated': None,
+              'isolatedserver': '',
+              'namespace': 'default-gzip',
+            },
             io_timeout_secs=60,
             outputs=[],
             secret_bytes=None),
@@ -913,6 +928,68 @@ class TestMain(NetTestCase):
         '  https://localhost:1/user/task/12300\n',
         '')
 
+  def test_run_raw_cmd_isolated(self):
+    # Minimalist use.
+    request = {
+      'expiration_secs': 21600,
+      'name': u'None/foo=bar/' + FILE_HASH,
+      'parent_task_id': '',
+      'priority': 100,
+      'properties': {
+        'caches': [],
+        'cipd_input': None,
+        'command': ['python', '-c', 'print(\'hi\')'],
+        'dimensions': [
+          {'key': 'foo', 'value': 'bar'},
+        ],
+        'env': [],
+        'execution_timeout_secs': 3600,
+        'extra_args': None,
+        'grace_period_secs': 30,
+        'idempotent': False,
+        'inputs_ref': {
+          'isolated': FILE_HASH,
+          'isolatedserver': 'https://localhost:2',
+          'namespace': 'default-gzip',
+        },
+        'io_timeout_secs': 1200,
+        'outputs': [],
+        'secret_bytes': None,
+      },
+      'tags': [],
+      'user': None,
+    }
+    result = gen_request_response(request)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = self.main_safe([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'foo', 'bar',
+        '--raw-cmd',
+        '--isolate-server', 'https://localhost:2',
+        '--isolated', FILE_HASH,
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        u'Triggered task: None/foo=bar/' + FILE_HASH + u'\n'
+        u'To collect results, use:\n'
+        u'  swarming.py collect -S https://localhost:1 12300\n'
+        u'Or visit:\n'
+        u'  https://localhost:1/user/task/12300\n',
+        u'')
+
   def test_run_raw_cmd_with_service_account(self):
     # Minimalist use.
     request = {
@@ -979,7 +1056,7 @@ class TestMain(NetTestCase):
         properties={
           'command': None,
           'inputs_ref': {
-            'isolated': u'1111111111111111111111111111111111111111',
+            'isolated': FILE_HASH,
             'isolatedserver': 'https://localhost:2',
             'namespace': 'default-gzip',
           },
@@ -1154,7 +1231,7 @@ class TestMain(NetTestCase):
           },
           'command': None,
           'inputs_ref': {
-            'isolated': u'1111111111111111111111111111111111111111',
+            'isolated': FILE_HASH,
             'isolatedserver': 'https://localhost:2',
             'namespace': 'default-gzip',
           },
@@ -1212,8 +1289,8 @@ class TestMain(NetTestCase):
         'Usage: swarming.py trigger [options] (hash|isolated) '
           '[-- extra_args|raw command]\n'
         '\n'
-        'swarming.py: error: Use --isolated, --raw-cmd or \'--\' to pass '
-          'arguments to the called process.\n')
+        'swarming.py: error: Specify at least one of --raw-cmd or --isolated '
+        'or both\n')
 
   def test_trigger_no_env_vars(self):
     with self.assertRaises(SystemExit):
@@ -1247,8 +1324,8 @@ class TestMain(NetTestCase):
         'Usage: swarming.py trigger [options] (hash|isolated) '
           '[-- extra_args|raw command]'
         '\n\n'
-        'swarming.py: error: --isolate-server is required.'
-        '\n')
+        'swarming.py: error: Specify at least one of --raw-cmd or --isolated '
+          'or both\n')
 
   def test_trigger_no_dimension(self):
     with self.assertRaises(SystemExit):
@@ -1290,7 +1367,7 @@ class TestMain(NetTestCase):
           'grace_period_secs': 30,
           'idempotent': True,
           'inputs_ref': {
-            'isolated': '1'*40,
+            'isolated': FILE_HASH,
             'isolatedserver': 'https://localhost:2',
             'namespace': 'default-gzip',
             },
