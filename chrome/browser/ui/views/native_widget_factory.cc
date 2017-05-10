@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/native_widget_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/views/theme_profile_key.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -19,29 +18,30 @@ views::NativeWidget* CreateNativeWidget(
   // it's possible that there is no contextual state that we can use.
   gfx::NativeWindow parent_or_context =
       params->parent ? params->parent : params->context;
+  // Set the profile key based on the profile of |parent_or_context|
+  // so that the widget will be styled with the apropriate
+  // NativeTheme.  For browser windows, BrowserView will reset the
+  // profile key to profile of the corresponding Browser.
   Profile* profile = nullptr;
-  if (parent_or_context)
-    profile = GetThemeProfileForWindow(parent_or_context);
-  views::NativeWidget* native_widget = nullptr;
-  aura::Window* window = nullptr;
+  if (parent_or_context) {
+    profile = reinterpret_cast<Profile*>(
+        parent_or_context->GetNativeWindowProperty(Profile::kProfileKey));
+  }
+  // Use the original profile because |window| may outlive the profile
+  // of the context window.  This can happen with incognito profiles.
+  // However, the original profile will stick around until shutdown.
+  if (profile)
+    profile = profile->GetOriginalProfile();
   if (type == NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA ||
       (!params->parent && !params->context && !params->child)) {
     views::DesktopNativeWidgetAura* desktop_native_widget =
         new views::DesktopNativeWidgetAura(delegate);
-    window = desktop_native_widget->GetNativeWindow();
-    native_widget = desktop_native_widget;
-  } else {
-    views::NativeWidgetAura* native_widget_aura =
-        new views::NativeWidgetAura(delegate);
-    if (params->parent) {
-      Profile* parent_profile = reinterpret_cast<Profile*>(
-          params->parent->GetNativeWindowProperty(Profile::kProfileKey));
-      native_widget_aura->SetNativeWindowProperty(Profile::kProfileKey,
-                                                  parent_profile);
-    }
-    window = native_widget_aura->GetNativeWindow();
-    native_widget = native_widget_aura;
+    desktop_native_widget->SetNativeWindowProperty(Profile::kProfileKey,
+                                                   profile);
+    return desktop_native_widget;
   }
-  SetThemeProfileForWindow(window, profile);
-  return native_widget;
+  views::NativeWidgetAura* native_widget_aura =
+      new views::NativeWidgetAura(delegate);
+  native_widget_aura->SetNativeWindowProperty(Profile::kProfileKey, profile);
+  return native_widget_aura;
 }

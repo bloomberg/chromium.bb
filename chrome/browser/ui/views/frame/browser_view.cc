@@ -157,7 +157,6 @@
 #endif  // !defined(OS_CHROMEOS)
 
 #if defined(USE_AURA)
-#include "chrome/browser/ui/views/theme_profile_key.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -2088,13 +2087,6 @@ void BrowserView::InitViews() {
   // can get it later when all we have is a native view.
   GetWidget()->SetNativeWindowProperty(Profile::kProfileKey,
                                        browser_->profile());
-
-#if defined(USE_AURA)
-  // Stow a pointer to the browser's original profile onto the window handle so
-  // that windows will be styled with the appropriate NativeTheme.
-  SetThemeProfileForWindow(GetNativeWindow(),
-                           browser_->profile()->GetOriginalProfile());
-#endif
 
   LoadAccelerators();
 
