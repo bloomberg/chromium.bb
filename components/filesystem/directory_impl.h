@@ -30,38 +30,37 @@ class DirectoryImpl : public mojom::Directory {
   ~DirectoryImpl() override;
 
   // |Directory| implementation:
-  void Read(const ReadCallback& callback) override;
+  void Read(ReadCallback callback) override;
   void OpenFile(const std::string& path,
                 mojom::FileRequest file,
                 uint32_t open_flags,
-                const OpenFileCallback& callback) override;
+                OpenFileCallback callback) override;
   void OpenFileHandle(const std::string& path,
                       uint32_t open_flags,
-                      const OpenFileHandleCallback& callback) override;
+                      OpenFileHandleCallback callback) override;
   void OpenFileHandles(std::vector<mojom::FileOpenDetailsPtr> details,
-                       const OpenFileHandlesCallback& callback) override;
+                       OpenFileHandlesCallback callback) override;
   void OpenDirectory(const std::string& path,
                      mojom::DirectoryRequest directory,
                      uint32_t open_flags,
-                     const OpenDirectoryCallback& callback) override;
+                     OpenDirectoryCallback callback) override;
   void Rename(const std::string& path,
               const std::string& new_path,
-              const RenameCallback& callback) override;
+              RenameCallback callback) override;
   void Delete(const std::string& path,
               uint32_t delete_flags,
-              const DeleteCallback& callback) override;
-  void Exists(const std::string& path, const ExistsCallback& callback) override;
+              DeleteCallback callback) override;
+  void Exists(const std::string& path, ExistsCallback callback) override;
   void IsWritable(const std::string& path,
-                  const IsWritableCallback& callback) override;
-  void Flush(const FlushCallback& callback) override;
-  void StatFile(const std::string& path,
-                const StatFileCallback& callback) override;
+                  IsWritableCallback callback) override;
+  void Flush(FlushCallback callback) override;
+  void StatFile(const std::string& path, StatFileCallback callback) override;
   void Clone(mojom::DirectoryRequest directory) override;
   void ReadEntireFile(const std::string& path,
-                      const ReadEntireFileCallback& callback) override;
+                      ReadEntireFileCallback callback) override;
   void WriteFile(const std::string& path,
                  const std::vector<uint8_t>& data,
-                 const WriteFileCallback& callback) override;
+                 WriteFileCallback callback) override;
 
  private:
   base::File OpenFileHandleImpl(const std::string& raw_path,

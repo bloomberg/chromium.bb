@@ -35,10 +35,10 @@ class FileSystemImpl : public mojom::FileSystem {
 
   // |Files| implementation:
   void OpenTempDirectory(mojom::DirectoryRequest directory,
-                         const OpenTempDirectoryCallback& callback) override;
+                         OpenTempDirectoryCallback callback) override;
   void OpenPersistentFileSystem(
       mojom::DirectoryRequest directory,
-      const OpenPersistentFileSystemCallback& callback) override;
+      OpenPersistentFileSystemCallback callback) override;
 
  private:
   const std::string remote_application_name_;

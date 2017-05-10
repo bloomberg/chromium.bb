@@ -45,29 +45,29 @@ class FileImpl : public mojom::File {
   const base::FilePath& path() const { return path_; }
 
   // |File| implementation:
-  void Close(const CloseCallback& callback) override;
+  void Close(CloseCallback callback) override;
   void Read(uint32_t num_bytes_to_read,
             int64_t offset,
             mojom::Whence whence,
-            const ReadCallback& callback) override;
+            ReadCallback callback) override;
   void Write(const std::vector<uint8_t>& bytes_to_write,
              int64_t offset,
              mojom::Whence whence,
-             const WriteCallback& callback) override;
-  void Tell(const TellCallback& callback) override;
+             WriteCallback callback) override;
+  void Tell(TellCallback callback) override;
   void Seek(int64_t offset,
             mojom::Whence whence,
-            const SeekCallback& callback) override;
-  void Stat(const StatCallback& callback) override;
-  void Truncate(int64_t size, const TruncateCallback& callback) override;
+            SeekCallback callback) override;
+  void Stat(StatCallback callback) override;
+  void Truncate(int64_t size, TruncateCallback callback) override;
   void Touch(mojom::TimespecOrNowPtr atime,
              mojom::TimespecOrNowPtr mtime,
-             const TouchCallback& callback) override;
-  void Dup(mojom::FileRequest file, const DupCallback& callback) override;
-  void Flush(const FlushCallback& callback) override;
-  void Lock(const LockCallback& callback) override;
-  void Unlock(const UnlockCallback& callback) override;
-  void AsHandle(const AsHandleCallback& callback) override;
+             TouchCallback callback) override;
+  void Dup(mojom::FileRequest file, DupCallback callback) override;
+  void Flush(FlushCallback callback) override;
+  void Lock(LockCallback callback) override;
+  void Unlock(UnlockCallback callback) override;
+  void AsHandle(AsHandleCallback callback) override;
 
  private:
   base::File file_;
