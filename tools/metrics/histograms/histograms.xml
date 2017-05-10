@@ -22450,6 +22450,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>True if Chrome will try to use DirectComposition overlays.</summary>
 </histogram>
 
+<histogram name="GPU.DirectComposition.OverlaySupportFlags"
+    enum="OverlaySupportFlag">
+  <owner>jbauman@chromium.org</owner>
+  <summary>
+    These are the flags explaining how well overlays are supported on the
+    current display. The is recorded for every connected display when creating a
+    DirectComposition view context.
+  </summary>
+</histogram>
+
 <histogram name="GPU.DirectComposition.OverlaysUsed" enum="BooleanOverlayUsage">
   <owner>jbauman@chromium.org</owner>
   <summary>Whether or not a frame displays an overlay.</summary>

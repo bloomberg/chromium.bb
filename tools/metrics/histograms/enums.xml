@@ -26171,6 +26171,13 @@ from previous Chrome versions.
   <int value="4" label="Internal error"/>
 </enum>
 
+<enum name="OverlaySupportFlag" type="int">
+  <int value="0" label="None"/>
+  <int value="1" label="Direct overlay support"/>
+  <int value="2" label="Scaling overlay support"/>
+  <int value="3" label="Direct and scaling overlay support"/>
+</enum>
+
 <enum name="OverscrollMode" type="int">
   <summary>Direction of the overscroll gesture.</summary>
   <int value="1" label="North">Scrolled from bottom towards top</int>
