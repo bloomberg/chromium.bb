@@ -346,7 +346,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_target(long target_index,
   if (!owner_->GetOwner())
     return E_FAIL;
 
-  auto* manager = owner_->GetOwner()->manager();
+  auto* manager = owner_->Manager();
   if (!manager)
     return E_FAIL;
 
@@ -430,7 +430,7 @@ HRESULT BrowserAccessibilityComWin::accDoDefaultAction(VARIANT var_id) {
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -454,7 +454,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accHitTest(LONG x_left,
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -618,7 +618,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accFocus(VARIANT* focus_child) {
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -693,10 +693,8 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accParent(
   if (parent_obj == NULL) {
     // This happens if we're the root of the tree;
     // return the IAccessible for the window.
-    parent_obj = GetOwner()
-                     ->manager()
-                     ->ToBrowserAccessibilityManagerWin()
-                     ->GetParentIAccessible();
+    parent_obj =
+        Manager()->ToBrowserAccessibilityManagerWin()->GetParentIAccessible();
     // |parent| can only be NULL if the manager was created before the parent
     // IAccessible was known and it wasn't subsequently set before a client
     // requested it. This has been fixed. |parent| may also be NULL during
@@ -742,7 +740,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -868,7 +866,7 @@ STDMETHODIMP BrowserAccessibilityComWin::accSelect(LONG flags_sel,
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -963,10 +961,8 @@ STDMETHODIMP BrowserAccessibilityComWin::get_windowHandle(HWND* window_handle) {
   if (!window_handle)
     return E_INVALIDARG;
 
-  *window_handle = GetOwner()
-                       ->manager()
-                       ->ToBrowserAccessibilityManagerWin()
-                       ->GetParentHWND();
+  *window_handle =
+      Manager()->ToBrowserAccessibilityManagerWin()->GetParentHWND();
   if (!*window_handle)
     return E_FAIL;
 
@@ -1050,7 +1046,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollTo(IA2ScrollType scroll_type) {
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
 
   if (!manager)
     return E_FAIL;
@@ -1097,7 +1093,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollToPoint(
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -2780,7 +2776,7 @@ STDMETHODIMP BrowserAccessibilityComWin::doAction(long action_index) {
   if (!GetOwner()->HasIntAttribute(ui::AX_ATTR_ACTION) || action_index != 0)
     return E_INVALIDARG;
 
-  GetOwner()->manager()->DoDefaultAction(*GetOwner());
+  Manager()->DoDefaultAction(*GetOwner());
   return S_OK;
 }
 
@@ -2940,7 +2936,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_URL(BSTR* url) {
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -2965,7 +2961,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_title(BSTR* title) {
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -2987,7 +2983,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_mimeType(BSTR* mime_type) {
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -3009,7 +3005,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_docType(BSTR* doc_type) {
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -3446,7 +3442,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollToSubstring(
   if (!GetOwner())
     return E_FAIL;
 
-  auto* manager = GetOwner()->manager();
+  auto* manager = Manager();
   if (!manager)
     return E_FAIL;
 
@@ -3735,7 +3731,7 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
 AXPlatformPosition::AXPositionInstance
 BrowserAccessibilityComWin::CreatePositionForSelectionAt(int offset) const {
   if (!GetOwner()->IsNativeTextControl() && !GetOwner()->IsTextOnlyObject()) {
-    auto* manager = GetOwner()->manager();
+    auto* manager = Manager();
     DCHECK(manager);
     const BrowserAccessibilityComWin* child = this;
     // TODO(nektar): Make parents of text-only objects not include the text of
@@ -3922,7 +3918,7 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   // On Windows, the value of a document should be its url.
   if (GetOwner()->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
       GetOwner()->GetRole() == ui::AX_ROLE_WEB_AREA) {
-    value = base::UTF8ToUTF16(GetOwner()->manager()->GetTreeData().url);
+    value = base::UTF8ToUTF16(Manager()->GetTreeData().url);
   }
   // If this doesn't have a value and is linked then set its value to the url
   // attribute. This allows screen readers to read an empty link's destination.
@@ -4087,6 +4083,15 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
   }
 
   old_win_attributes_.reset(nullptr);
+}
+
+BrowserAccessibilityManager* BrowserAccessibilityComWin::Manager() const {
+  auto* owner = GetOwner();
+  DCHECK(owner);
+
+  auto* manager = owner->manager();
+  DCHECK(manager);
+  return manager;
 }
 
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
@@ -4385,8 +4390,8 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
       CreatePositionForSelectionAt(static_cast<int>(start_offset));
   AXPlatformPositionInstance end_position =
       CreatePositionForSelectionAt(static_cast<int>(end_offset));
-  GetOwner()->manager()->SetSelection(AXPlatformRange(
-      start_position->AsTextPosition(), end_position->AsTextPosition()));
+  Manager()->SetSelection(AXPlatformRange(start_position->AsTextPosition(),
+                                          end_position->AsTextPosition()));
 }
 
 void BrowserAccessibilityComWin::StringAttributeToIA2(
@@ -4596,22 +4601,22 @@ int BrowserAccessibilityComWin::GetHypertextOffsetFromEndpoint(
 }
 
 int BrowserAccessibilityComWin::GetSelectionAnchor() const {
-  int32_t anchor_id = GetOwner()->manager()->GetTreeData().sel_anchor_object_id;
+  int32_t anchor_id = Manager()->GetTreeData().sel_anchor_object_id;
   const BrowserAccessibilityComWin* anchor_object = GetFromID(anchor_id);
   if (!anchor_object)
     return -1;
 
-  int anchor_offset = GetOwner()->manager()->GetTreeData().sel_anchor_offset;
+  int anchor_offset = Manager()->GetTreeData().sel_anchor_offset;
   return GetHypertextOffsetFromEndpoint(*anchor_object, anchor_offset);
 }
 
 int BrowserAccessibilityComWin::GetSelectionFocus() const {
-  int32_t focus_id = GetOwner()->manager()->GetTreeData().sel_focus_object_id;
+  int32_t focus_id = Manager()->GetTreeData().sel_focus_object_id;
   const BrowserAccessibilityComWin* focus_object = GetFromID(focus_id);
   if (!focus_object)
     return -1;
 
-  int focus_offset = GetOwner()->manager()->GetTreeData().sel_focus_offset;
+  int focus_offset = Manager()->GetTreeData().sel_focus_offset;
   return GetHypertextOffsetFromEndpoint(*focus_object, focus_offset);
 }
 
@@ -4791,7 +4796,7 @@ LONG BrowserAccessibilityComWin::FindBoundary(
   // affinity, otherwise default to downstream affinity.
   ui::AXTextAffinity affinity =
       start_offset == IA2_TEXT_OFFSET_CARET
-          ? GetOwner()->manager()->GetTreeData().sel_focus_affinity
+          ? Manager()->GetTreeData().sel_focus_affinity
           : ui::AX_TEXT_AFFINITY_DOWNSTREAM;
 
   HandleSpecialTextOffset(&start_offset);
@@ -4889,7 +4894,7 @@ BrowserAccessibilityComWin* BrowserAccessibilityComWin::GetFromID(
     int32_t id) const {
   if (!GetOwner())
     return nullptr;
-  return ToBrowserAccessibilityComWin(GetOwner()->manager()->GetFromID(id));
+  return ToBrowserAccessibilityComWin(Manager()->GetFromID(id));
 }
 
 bool BrowserAccessibilityComWin::IsListBoxOptionOrMenuListOption() {
