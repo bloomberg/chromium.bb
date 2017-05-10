@@ -82,7 +82,7 @@ void Mapper::MapFields(const OncValueSignature& object_signature,
     if (current_field_unknown)
       *found_unknown_field = true;
     else if (result_value.get() != NULL)
-      result->SetWithoutPathExpansion(it.key(), result_value.release());
+      result->SetWithoutPathExpansion(it.key(), std::move(result_value));
     else
       DCHECK(*nested_error);
   }

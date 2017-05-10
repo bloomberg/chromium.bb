@@ -121,7 +121,8 @@ void FakeShillDeviceClient::SetPropertyInternal(
     PostNotFoundError(error_callback);
     return;
   }
-  device_properties->SetWithoutPathExpansion(name, value.DeepCopy());
+  device_properties->SetWithoutPathExpansion(
+      name, base::MakeUnique<base::Value>(value));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeShillDeviceClient::NotifyObserversPropertyChanged,
@@ -495,9 +496,9 @@ void FakeShillDeviceClient::SetSimLockStatus(const std::string& device_path,
   base::DictionaryValue* simlock_dict = nullptr;
   if (!device_properties->GetDictionaryWithoutPathExpansion(
           shill::kSIMLockStatusProperty, &simlock_dict)) {
-    simlock_dict = new base::DictionaryValue;
-    device_properties->SetWithoutPathExpansion(shill::kSIMLockStatusProperty,
-                                               simlock_dict);
+    simlock_dict = device_properties->SetDictionaryWithoutPathExpansion(
+        shill::kSIMLockStatusProperty,
+        base::MakeUnique<base::DictionaryValue>());
   }
   simlock_dict->Clear();
   simlock_dict->SetStringWithoutPathExpansion(shill::kSIMLockTypeProperty,
@@ -613,8 +614,8 @@ base::DictionaryValue* FakeShillDeviceClient::GetDeviceProperties(
   base::DictionaryValue* properties = NULL;
   if (!stub_devices_.GetDictionaryWithoutPathExpansion(
       device_path, &properties)) {
-    properties = new base::DictionaryValue;
-    stub_devices_.SetWithoutPathExpansion(device_path, properties);
+    properties = stub_devices_.SetDictionaryWithoutPathExpansion(
+        device_path, base::MakeUnique<base::DictionaryValue>());
   }
   return properties;
 }

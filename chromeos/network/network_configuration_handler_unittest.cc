@@ -484,9 +484,8 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   std::string profile = "profile path";
   base::DictionaryValue value;
   shill_property_util::SetSSID(networkName, &value);
-  value.SetWithoutPathExpansion(shill::kTypeProperty, new base::Value(type));
-  value.SetWithoutPathExpansion(shill::kProfileProperty,
-                                new base::Value(profile));
+  value.SetStringWithoutPathExpansion(shill::kTypeProperty, type);
+  value.SetStringWithoutPathExpansion(shill::kProfileProperty, profile);
 
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(dbus::ObjectPath(profile), _, _, _))
@@ -505,9 +504,8 @@ TEST_F(NetworkConfigurationHandlerTest, RemoveConfiguration) {
   std::string type = "wifi";
   base::DictionaryValue value;
   shill_property_util::SetSSID("Service", &value);
-  value.SetWithoutPathExpansion(shill::kTypeProperty, new base::Value(type));
-  value.SetWithoutPathExpansion(shill::kProfileProperty,
-                                new base::Value("profile2"));
+  value.SetStringWithoutPathExpansion(shill::kTypeProperty, type);
+  value.SetStringWithoutPathExpansion(shill::kProfileProperty, "profile2");
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(dbus::ObjectPath("profile2"), _, _, _))
       .WillOnce(
@@ -556,9 +554,8 @@ TEST_F(NetworkConfigurationHandlerTest, RemoveConfigurationFromCurrentProfile) {
   std::string type = "wifi";
   base::DictionaryValue value;
   shill_property_util::SetSSID("Service", &value);
-  value.SetWithoutPathExpansion(shill::kTypeProperty, new base::Value(type));
-  value.SetWithoutPathExpansion(shill::kProfileProperty,
-                                new base::Value("profile2"));
+  value.SetStringWithoutPathExpansion(shill::kTypeProperty, type);
+  value.SetStringWithoutPathExpansion(shill::kProfileProperty, "profile2");
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(dbus::ObjectPath("profile2"), _, _, _))
       .WillOnce(

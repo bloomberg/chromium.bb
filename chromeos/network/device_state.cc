@@ -5,8 +5,10 @@
 #include "chromeos/network/device_state.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -30,7 +32,8 @@ DeviceState::~DeviceState() {
 bool DeviceState::PropertyChanged(const std::string& key,
                                   const base::Value& value) {
   // All property values get stored in |properties_|.
-  properties_.SetWithoutPathExpansion(key, value.DeepCopy());
+  properties_.SetWithoutPathExpansion(key,
+                                      base::MakeUnique<base::Value>(value));
 
   if (ManagedStatePropertyChanged(key, value))
     return true;
@@ -122,8 +125,8 @@ void DeviceState::IPConfigPropertiesChanged(
     ip_config->Clear();
   } else {
     NET_LOG_EVENT("IPConfig Added: " + ip_config_path, path());
-    ip_config = new base::DictionaryValue;
-    ip_configs_.SetWithoutPathExpansion(ip_config_path, ip_config);
+    ip_config = ip_configs_.SetDictionaryWithoutPathExpansion(
+        ip_config_path, base::MakeUnique<base::DictionaryValue>());
   }
   ip_config->MergeDictionary(&properties);
 }

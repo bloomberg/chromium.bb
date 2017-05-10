@@ -7,9 +7,11 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
@@ -259,7 +261,7 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
           shill::kHostProperty, third_party_vpn_provider_extension_id_);
     }
     dictionary->SetWithoutPathExpansion(shill::kProviderProperty,
-                                        provider_property.release());
+                                        std::move(provider_property));
   }
 
   // Tether properties

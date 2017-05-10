@@ -126,8 +126,8 @@ TEST_F(ShillDeviceClientTest, GetProperties) {
 
   // Set expectations.
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(shill::kCellularAllowRoamingProperty,
-                                new base::Value(kValue));
+  value.SetBooleanWithoutPathExpansion(shill::kCellularAllowRoamingProperty,
+                                       kValue);
   PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());

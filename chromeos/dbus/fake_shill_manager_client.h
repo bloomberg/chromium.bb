@@ -5,10 +5,12 @@
 #ifndef CHROMEOS_DBUS_FAKE_SHILL_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_SHILL_MANAGER_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_manager_client.h"
 
@@ -117,7 +119,8 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   void SetTechnologyEnabled(const std::string& type,
                             const base::Closure& callback,
                             bool enabled);
-  base::ListValue* GetEnabledServiceList(const std::string& property) const;
+  std::unique_ptr<base::ListValue> GetEnabledServiceList(
+      const std::string& property) const;
   void ScanCompleted(const std::string& device_path,
                      const base::Closure& callback);
 

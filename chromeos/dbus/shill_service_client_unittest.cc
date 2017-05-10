@@ -99,8 +99,7 @@ TEST_F(ShillServiceClientTest, GetProperties) {
 
   // Set expectations.
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(shill::kSignalStrengthProperty,
-                                new base::Value(kValue));
+  value.SetIntegerWithoutPathExpansion(shill::kSignalStrengthProperty, kValue);
   PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());

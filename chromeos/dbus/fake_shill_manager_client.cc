@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
@@ -185,7 +184,8 @@ void FakeShillManagerClient::SetProperty(const std::string& name,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
   VLOG(2) << "SetProperty: " << name;
-  stub_properties_.SetWithoutPathExpansion(name, value.DeepCopy());
+  stub_properties_.SetWithoutPathExpansion(
+      name, base::MakeUnique<base::Value>(value));
   CallNotifyObserversPropertyChanged(name);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
@@ -454,10 +454,10 @@ void FakeShillManagerClient::AddGeoNetwork(
   base::ListValue* list_value = NULL;
   if (!stub_geo_networks_.GetListWithoutPathExpansion(technology,
                                                       &list_value)) {
-    list_value = new base::ListValue;
-    stub_geo_networks_.SetWithoutPathExpansion(technology, list_value);
+    list_value = stub_geo_networks_.SetListWithoutPathExpansion(
+        technology, base::MakeUnique<base::ListValue>());
   }
-  list_value->Append(network.CreateDeepCopy());
+  list_value->GetList().push_back(network);
 }
 
 void FakeShillManagerClient::AddProfile(const std::string& profile_path) {
@@ -978,8 +978,8 @@ base::ListValue* FakeShillManagerClient::GetListProperty(
   base::ListValue* list_property = NULL;
   if (!stub_properties_.GetListWithoutPathExpansion(
       property, &list_property)) {
-    list_property = new base::ListValue;
-    stub_properties_.SetWithoutPathExpansion(property, list_property);
+    list_property = stub_properties_.SetListWithoutPathExpansion(
+        property, base::MakeUnique<base::ListValue>());
   }
   return list_property;
 }
@@ -1017,9 +1017,9 @@ void FakeShillManagerClient::SetTechnologyEnabled(
   SortManagerServices(true);
 }
 
-base::ListValue* FakeShillManagerClient::GetEnabledServiceList(
+std::unique_ptr<base::ListValue> FakeShillManagerClient::GetEnabledServiceList(
     const std::string& property) const {
-  base::ListValue* new_service_list = new base::ListValue;
+  auto new_service_list = base::MakeUnique<base::ListValue>();
   const base::ListValue* service_list;
   if (stub_properties_.GetListWithoutPathExpansion(property, &service_list)) {
     ShillServiceClient::TestInterface* service_client =
