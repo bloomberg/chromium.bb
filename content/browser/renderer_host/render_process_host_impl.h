@@ -72,10 +72,12 @@ class PermissionServiceContext;
 class PeerConnectionTrackerHost;
 class PushMessagingManager;
 class RenderFrameMessageFilter;
+class RenderProcessHostFactory;
 class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class ResourceMessageFilter;
+class SiteInstanceImpl;
 class StoragePartition;
 class StoragePartitionImpl;
 
@@ -253,6 +255,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
       RenderProcessHost* process,
       const GURL& url);
 
+  // Returns a suitable RenderProcessHost to use for |site_instance|. Depending
+  // on the SiteInstance's ProcessReusePolicy and its url, this may be an
+  // existing RenderProcessHost or a new one.
+  static RenderProcessHost* GetProcessHostForSiteInstance(
+      BrowserContext* browser_context,
+      SiteInstanceImpl* site_instance);
+
   static base::MessageLoop* GetInProcessRendererThreadForTesting();
 
   // This forces a renderer that is running "in process" to shut down.
@@ -291,6 +300,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnAudioStreamAdded() override;
   void OnAudioStreamRemoved() override;
   int get_audio_stream_count_for_testing() const { return audio_stream_count_; }
+
+  // Sets the global factory used to create new RenderProcessHosts.  It may be
+  // nullptr, in which case the default RenderProcessHost will be created (this
+  // is the behavior if you don't call this function).  The factory must be set
+  // back to nullptr before it's destroyed; ownership is not transferred.
+  static void set_render_process_host_factory(
+      const RenderProcessHostFactory* rph_factory);
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
@@ -388,6 +404,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
+
+  // Returns the default subframe RenderProcessHost to use for |site_instance|.
+  static RenderProcessHost* GetDefaultSubframeProcessHost(
+      BrowserContext* browser_context,
+      SiteInstanceImpl* site_instance,
+      bool is_for_guests_only);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   void OnRegisterAecDumpConsumer(int id);

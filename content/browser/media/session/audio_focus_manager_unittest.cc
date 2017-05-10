@@ -41,7 +41,7 @@ class AudioFocusManagerTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableDefaultMediaSession);
     rph_factory_.reset(new MockRenderProcessHostFactory());
-    SiteInstanceImpl::set_render_process_host_factory(rph_factory_.get());
+    RenderProcessHostImpl::set_render_process_host_factory(rph_factory_.get());
     browser_context_.reset(new TestBrowserContext());
     pepper_observer_.reset(new MockMediaSessionPlayerObserver());
   }
@@ -51,7 +51,7 @@ class AudioFocusManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     browser_context_.reset();
-    SiteInstanceImpl::set_render_process_host_factory(nullptr);
+    RenderProcessHostImpl::set_render_process_host_factory(nullptr);
     rph_factory_.reset();
   }
 

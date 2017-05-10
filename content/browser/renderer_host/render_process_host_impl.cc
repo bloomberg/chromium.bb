@@ -124,6 +124,7 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
@@ -257,6 +258,7 @@
 namespace content {
 namespace {
 
+const RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
 
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -446,6 +448,63 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
   std::unique_ptr<std::map<int, SessionStorageNamespaceMap>>
       session_storage_namespaces_awaiting_close_;
   DISALLOW_COPY_AND_ASSIGN(SessionStorageHolder);
+};
+
+const void* const kDefaultSubframeProcessHostHolderKey =
+    &kDefaultSubframeProcessHostHolderKey;
+
+class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
+                                         public RenderProcessHostObserver {
+ public:
+  explicit DefaultSubframeProcessHostHolder(BrowserContext* browser_context)
+      : browser_context_(browser_context) {}
+  ~DefaultSubframeProcessHostHolder() override {}
+
+  // Gets the correct render process to use for this SiteInstance.
+  RenderProcessHost* GetProcessHost(SiteInstance* site_instance,
+                                    bool is_for_guests_only) {
+    StoragePartition* default_partition =
+        BrowserContext::GetDefaultStoragePartition(browser_context_);
+    StoragePartition* partition =
+        BrowserContext::GetStoragePartition(browser_context_, site_instance);
+
+    // Is this the default storage partition? If it isn't, then just give it its
+    // own non-shared process.
+    if (partition != default_partition || is_for_guests_only) {
+      RenderProcessHostImpl* host = new RenderProcessHostImpl(
+          browser_context_, static_cast<StoragePartitionImpl*>(partition),
+          is_for_guests_only);
+      host->SetIsNeverSuitableForReuse();
+      return host;
+    }
+
+    // If we already have a shared host for the default storage partition, use
+    // it.
+    if (host_)
+      return host_;
+
+    host_ = new RenderProcessHostImpl(
+        browser_context_, static_cast<StoragePartitionImpl*>(partition),
+        false /* for guests only */);
+    host_->SetIsNeverSuitableForReuse();
+    host_->AddObserver(this);
+
+    return host_;
+  }
+
+  // Implementation of RenderProcessHostObserver.
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    DCHECK_EQ(host_, host);
+    host_->RemoveObserver(this);
+    host_ = nullptr;
+  }
+
+ private:
+  BrowserContext* browser_context_;
+
+  // The default subframe render process used for the default storage partition
+  // of this BrowserContext.
+  RenderProcessHostImpl* host_ = nullptr;
 };
 
 void CreateMemoryCoordinatorHandle(
@@ -1607,6 +1666,11 @@ void RenderProcessHostImpl::OnAudioStreamRemoved() {
   UpdateProcessPriority();
 }
 
+void RenderProcessHostImpl::set_render_process_host_factory(
+    const RenderProcessHostFactory* rph_factory) {
+  g_render_process_host_factory_ = rph_factory;
+}
+
 bool RenderProcessHostImpl::IsForGuestsOnly() const {
   return is_for_guests_only_;
 }
@@ -2702,6 +2766,52 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
     map->RegisterProcess(site, process);
 }
 
+// static
+RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
+    BrowserContext* browser_context,
+    SiteInstanceImpl* site_instance) {
+  const GURL site_url = site_instance->GetSiteURL();
+  SiteInstanceImpl::ProcessReusePolicy process_reuse_policy =
+      site_instance->process_reuse_policy();
+  bool is_for_guests_only = site_url.SchemeIs(kGuestScheme);
+  RenderProcessHost* render_process_host = nullptr;
+
+  // First, attempt to reuse an existing RenderProcessHost if necessary.
+  switch (process_reuse_policy) {
+    case SiteInstanceImpl::ProcessReusePolicy::PROCESS_PER_SITE:
+      render_process_host = GetProcessHostForSite(browser_context, site_url);
+      break;
+    case SiteInstanceImpl::ProcessReusePolicy::USE_DEFAULT_SUBFRAME_PROCESS:
+      DCHECK(SiteIsolationPolicy::IsTopDocumentIsolationEnabled());
+      render_process_host = GetDefaultSubframeProcessHost(
+          browser_context, site_instance, is_for_guests_only);
+      break;
+    default:
+      break;
+  }
+
+  // If not (or if none found), see if we should reuse an existing process.
+  if (!render_process_host &&
+      ShouldTryToUseExistingProcessHost(browser_context, site_url)) {
+    render_process_host = GetExistingProcessHost(browser_context, site_url);
+  }
+
+  // Otherwise (or if that fails), create a new one.
+  if (!render_process_host) {
+    if (g_render_process_host_factory_) {
+      render_process_host =
+          g_render_process_host_factory_->CreateRenderProcessHost(
+              browser_context, site_instance);
+    } else {
+      StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+          BrowserContext::GetStoragePartition(browser_context, site_instance));
+      render_process_host = new RenderProcessHostImpl(
+          browser_context, partition, is_for_guests_only);
+    }
+  }
+  return render_process_host;
+}
+
 void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
   // Create a persistent memory segment for renderer histograms only if
   // they're active in the browser.
@@ -3028,6 +3138,23 @@ void RenderProcessHostImpl::OnCloseACK(int old_route_id) {
 
 void RenderProcessHostImpl::OnGpuSwitched() {
   RecomputeAndUpdateWebKitPreferences();
+}
+
+// static
+RenderProcessHost* RenderProcessHostImpl::GetDefaultSubframeProcessHost(
+    BrowserContext* browser_context,
+    SiteInstanceImpl* site_instance,
+    bool is_for_guests_only) {
+  DefaultSubframeProcessHostHolder* holder =
+      static_cast<DefaultSubframeProcessHostHolder*>(
+          browser_context->GetUserData(&kDefaultSubframeProcessHostHolderKey));
+  if (!holder) {
+    holder = new DefaultSubframeProcessHostHolder(browser_context);
+    browser_context->SetUserData(kDefaultSubframeProcessHostHolderKey,
+                                 base::WrapUnique(holder));
+  }
+
+  return holder->GetProcessHost(site_instance, is_for_guests_only);
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)

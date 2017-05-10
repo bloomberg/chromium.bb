@@ -51,6 +51,32 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool RequiresDedicatedProcess() override;
   bool IsDefaultSubframeSiteInstance() const override;
 
+  // The policy to apply when selecting a RenderProcessHost for the
+  // SiteInstance. Normal SiteInstances don't proactively reuse processes, but
+  // when over the limit, they reuse randomly, not based on site. In contrast,
+  // process-per-site and ServiceWorkers proactively join a process that already
+  // contains the site.
+  enum class ProcessReusePolicy {
+    // In this mode, all instances of the site will be hosted in the same
+    // RenderProcessHost.
+    PROCESS_PER_SITE,
+
+    // In this mode, subframes will be hosted in a designated RenderProcessHost.
+    USE_DEFAULT_SUBFRAME_PROCESS,
+
+    // By default, a new RenderProcessHost will be created unless the process
+    // limit has been reached. The RenderProcessHost reused will be chosen
+    // randomly and not based on the site.
+    DEFAULT,
+  };
+
+  void set_process_reuse_policy(ProcessReusePolicy policy) {
+    process_reuse_policy_ = policy;
+  }
+  ProcessReusePolicy process_reuse_policy() const {
+    return process_reuse_policy_;
+  }
+
   // Returns the SiteInstance, related to this one, that should be used
   // for subframes when an oopif is required, but a dedicated process is not.
   // This SiteInstance will be created if it doesn't already exist. There is
@@ -101,13 +127,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Sets the global factory used to create new RenderProcessHosts.  It may be
-  // NULL, in which case the default RenderProcessHost will be created (this is
-  // the behavior if you don't call this function).  The factory must be set
-  // back to NULL before it's destroyed; ownership is not transferred.
-  static void set_render_process_host_factory(
-      const RenderProcessHostFactory* rph_factory);
-
   // Get the effective URL for the given actual URL.  This allows the
   // ContentBrowserClient to override the SiteInstance's site for certain URLs.
   // For example, Chrome uses this to replace hosted app URLs with extension
@@ -149,10 +168,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       BrowserContext* browser_context,
       bool is_for_guests_only);
 
-  void set_is_default_subframe_site_instance() {
-    is_default_subframe_site_instance_ = true;
-  }
-
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;
 
@@ -180,10 +195,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Whether SetSite has been called.
   bool has_site_;
 
-  // Whether this SiteInstance is the default subframe SiteInstance for its
-  // BrowsingInstance. Only one SiteInstance per BrowsingInstance can have this
-  // be true.
-  bool is_default_subframe_site_instance_;
+  // The ProcessReusePolicy to use when creating a RenderProcessHost for this
+  // SiteInstance.
+  ProcessReusePolicy process_reuse_policy_;
 
   base::ObserverList<Observer, true> observers_;
 
