@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -29,6 +30,96 @@ namespace {
 
 const char kFreedesktopNotificationsName[] = "org.freedesktop.Notifications";
 const char kFreedesktopNotificationsPath[] = "/org/freedesktop/Notifications";
+
+class NotificationBuilder {
+ public:
+  explicit NotificationBuilder(const std::string& id)
+      : notification_(message_center::NOTIFICATION_TYPE_SIMPLE,
+                      base::string16(),
+                      base::string16(),
+                      gfx::Image(),
+                      message_center::NotifierId(GURL()),
+                      base::string16(),
+                      GURL(),
+                      id,
+                      message_center::RichNotificationData(),
+                      new MockNotificationDelegate(id)) {}
+
+  Notification GetResult() { return notification_; }
+
+  NotificationBuilder& SetProgress(int progress) {
+    notification_.set_progress(progress);
+    return *this;
+  }
+
+  NotificationBuilder& SetTitle(const base::string16& title) {
+    notification_.set_title(title);
+    return *this;
+  }
+
+  NotificationBuilder& SetType(message_center::NotificationType type) {
+    notification_.set_type(type);
+    return *this;
+  }
+
+ private:
+  Notification notification_;
+};
+
+struct NotificationRequest {
+  std::string summary;
+};
+
+NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
+  // The "Notify" message must have type (susssasa{sv}i).
+  // https://developer.gnome.org/notification-spec/#command-notify
+  NotificationRequest request;
+
+  dbus::MessageReader reader(method_call);
+  std::string str;
+  uint32_t uint32;
+  int32_t int32;
+  EXPECT_TRUE(reader.PopString(&str));              // app_name
+  EXPECT_TRUE(reader.PopUint32(&uint32));           // replaces_id
+  EXPECT_TRUE(reader.PopString(&str));              // app_icon
+  EXPECT_TRUE(reader.PopString(&request.summary));  // summary
+  EXPECT_TRUE(reader.PopString(&str));              // body
+
+  {
+    dbus::MessageReader actions_reader(nullptr);
+    EXPECT_TRUE(reader.PopArray(&actions_reader));
+    while (actions_reader.HasMoreData()) {
+      // Actions come in pairs.
+      EXPECT_TRUE(actions_reader.PopString(&str));
+      EXPECT_TRUE(actions_reader.PopString(&str));
+    }
+  }
+
+  {
+    dbus::MessageReader hints_reader(nullptr);
+    EXPECT_TRUE(reader.PopArray(&hints_reader));
+    while (hints_reader.HasMoreData()) {
+      dbus::MessageReader dict_entry_reader(nullptr);
+      EXPECT_TRUE(hints_reader.PopDictEntry(&dict_entry_reader));
+      EXPECT_TRUE(dict_entry_reader.PopString(&str));
+      dbus::MessageReader variant_reader(nullptr);
+      EXPECT_TRUE(dict_entry_reader.PopVariant(&variant_reader));
+      EXPECT_FALSE(dict_entry_reader.HasMoreData());
+    }
+  }
+
+  EXPECT_TRUE(reader.PopInt32(&int32));  // expire_timeout
+  EXPECT_FALSE(reader.HasMoreData());
+
+  return request;
+}
+
+dbus::Response* GetIdResponse(uint32_t id) {
+  dbus::Response* response = dbus::Response::CreateEmpty().release();
+  dbus::MessageWriter writer(response);
+  writer.AppendUint32(id);
+  return response;
+}
 
 ACTION_P(RegisterSignalCallback, callback_addr) {
   *callback_addr = arg2;
@@ -55,49 +146,8 @@ ACTION_P(OnGetServerInformation, spec_version) {
 }
 
 ACTION_P(OnNotify, id) {
-  // The "Notify" message must have type (susssasa{sv}i).
-  // https://developer.gnome.org/notification-spec/#command-notify
-  dbus::MethodCall* method_call = arg0;
-  dbus::MessageReader reader(method_call);
-  std::string str;
-  uint32_t uint32;
-  int32_t int32;
-  EXPECT_TRUE(reader.PopString(&str));
-  EXPECT_TRUE(reader.PopUint32(&uint32));
-  EXPECT_TRUE(reader.PopString(&str));
-  EXPECT_TRUE(reader.PopString(&str));
-  EXPECT_TRUE(reader.PopString(&str));
-
-  {
-    dbus::MessageReader actions_reader(nullptr);
-    EXPECT_TRUE(reader.PopArray(&actions_reader));
-    while (actions_reader.HasMoreData()) {
-      // Actions come in pairs.
-      EXPECT_TRUE(actions_reader.PopString(&str));
-      EXPECT_TRUE(actions_reader.PopString(&str));
-    }
-  }
-
-  {
-    dbus::MessageReader hints_reader(nullptr);
-    EXPECT_TRUE(reader.PopArray(&hints_reader));
-    while (hints_reader.HasMoreData()) {
-      dbus::MessageReader dict_entry_reader(nullptr);
-      EXPECT_TRUE(hints_reader.PopDictEntry(&dict_entry_reader));
-      EXPECT_TRUE(dict_entry_reader.PopString(&str));
-      dbus::MessageReader variant_reader(nullptr);
-      EXPECT_TRUE(dict_entry_reader.PopVariant(&variant_reader));
-      EXPECT_FALSE(dict_entry_reader.HasMoreData());
-    }
-  }
-
-  EXPECT_TRUE(reader.PopInt32(&int32));
-  EXPECT_FALSE(reader.HasMoreData());
-
-  dbus::Response* response = dbus::Response::CreateEmpty().release();
-  dbus::MessageWriter writer(response);
-  writer.AppendUint32(id);
-  return response;
+  ParseRequest(arg0);
+  return GetIdResponse(id);
 }
 
 ACTION(OnCloseNotification) {
@@ -115,19 +165,6 @@ ACTION(OnCloseNotification) {
 // Matches a method call to the specified dbus target.
 MATCHER_P(Calls, member, "") {
   return arg->GetMember() == member;
-}
-
-Notification CreateNotification(const char* id,
-                                const char* title,
-                                const char* body,
-                                const char* origin) {
-  message_center::RichNotificationData optional_fields;
-  GURL url = GURL(origin);
-  return Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                      base::UTF8ToUTF16(title), base::UTF8ToUTF16(body),
-                      gfx::Image(), message_center::NotifierId(url),
-                      base::UTF8ToUTF16("Notifier's Name"), url, id,
-                      optional_fields, new MockNotificationDelegate(id));
 }
 
 }  // namespace
@@ -211,6 +248,28 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
   CreateNotificationBridgeLinux();
   notification_bridge_linux_->Display(NotificationCommon::PERSISTENT, "", "",
                                       false,
-                                      CreateNotification("id1", "", "", ""));
+                                      NotificationBuilder("").GetResult());
   notification_bridge_linux_->Close("", "");
+}
+
+ACTION_P2(VerifySummary, summary, id) {
+  NotificationRequest request = ParseRequest(arg0);
+  EXPECT_EQ(summary, request.summary);
+  return GetIdResponse(id);
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              MockCallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(VerifySummary(
+          base::UTF16ToUTF8(base::FormatPercent(42)) + " - The Title", 1));
+
+  CreateNotificationBridgeLinux();
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("")
+          .SetType(message_center::NOTIFICATION_TYPE_PROGRESS)
+          .SetProgress(42)
+          .SetTitle(base::UTF8ToUTF16("The Title"))
+          .GetResult());
 }

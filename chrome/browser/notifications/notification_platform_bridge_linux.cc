@@ -14,6 +14,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/files/file_util.h"
+#include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -58,6 +59,16 @@ enum class ConnectionInitializationStatusCode {
   INCOMPATIBLE_SPEC_VERSION = 4,
   NUM_ITEMS
 };
+
+base::string16 CreateNotificationTitle(const Notification& notification) {
+  base::string16 title;
+  if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
+    title += base::FormatPercent(notification.progress());
+    title += base::UTF8ToUTF16(" - ");
+  }
+  title += notification.title();
+  return title;
+}
 
 gfx::Image DeepCopyImage(const gfx::Image& image) {
   if (image.IsEmpty())
@@ -434,7 +445,8 @@ class NotificationPlatformBridgeLinuxImpl
     // app_icon passed implicitly via desktop-entry.
     writer.AppendString("");
 
-    writer.AppendString(base::UTF16ToUTF8(notification->title()));
+    writer.AppendString(
+        base::UTF16ToUTF8(CreateNotificationTitle(*notification)));
 
     std::string body;
     if (base::ContainsKey(capabilities_, "body")) {
