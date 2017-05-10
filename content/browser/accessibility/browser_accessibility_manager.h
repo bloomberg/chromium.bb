@@ -183,6 +183,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // in any BrowserAccessibilityManager.
   static void SetFocusChangeCallbackForTesting(const base::Closure& callback);
 
+  // Normally we avoid firing accessibility focus events when the containing
+  // native window isn't focused. However, this can lead to test flakiness
+  // because we can't control when a window loses focus, so this provides a
+  // way to disable that check for tests.
+  static void NeverSuppressFocusEventsForTesting();
+
   // Accessibility actions. All of these are implemented asynchronously
   // by sending a message to the renderer to perform the respective action
   // on the given node.  See the definition of |ui::AXActionData| for more
