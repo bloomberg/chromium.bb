@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/histogram_internals_url_loader.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/webui/network_error_url_loader.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -247,6 +248,10 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
               &StartBlobInternalsURLLoader, request, client.PassInterface(),
               base::Unretained(
                   ChromeBlobStorageContext::GetFor(browser_context_))));
+      return;
+    } else if (request.url.host_piece() == kChromeUINetworkErrorHost ||
+               request.url.host_piece() == kChromeUIDinoHost) {
+      StartNetworkErrorsURLLoader(request, std::move(client));
       return;
     } else if (request.url.host_piece() == kChromeUIHistogramHost) {
       StartHistogramInternalsURLLoader(request, std::move(client));

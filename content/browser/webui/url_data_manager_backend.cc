@@ -348,30 +348,6 @@ void URLRequestChromeJob::StartAsync() {
 
 namespace {
 
-bool IsValidNetworkErrorCode(int error_code) {
-  std::unique_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
-  const base::DictionaryValue* net_error_codes_dict = nullptr;
-
-  for (base::DictionaryValue::Iterator itr(*error_codes); !itr.IsAtEnd();
-           itr.Advance()) {
-    if (itr.key() == kNetworkErrorKey) {
-      itr.value().GetAsDictionary(&net_error_codes_dict);
-      break;
-    }
-  }
-
-  if (net_error_codes_dict != nullptr) {
-    for (base::DictionaryValue::Iterator itr(*net_error_codes_dict);
-             !itr.IsAtEnd(); itr.Advance()) {
-      int net_error_code;
-      itr.value().GetAsInteger(&net_error_code);
-      if (error_code == net_error_code)
-        return true;
-    }
-  }
-  return false;
-}
-
 class ChromeProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
@@ -413,7 +389,7 @@ class ChromeProtocolHandler
       int error_code;
       if (base::StringToInt(error_code_string, &error_code)) {
         // Check for a valid error code.
-        if (IsValidNetworkErrorCode(error_code) &&
+        if (URLDataManagerBackend::IsValidNetworkErrorCode(error_code) &&
             error_code != net::Error::ERR_IO_PENDING) {
           return new net::URLRequestErrorJob(request, network_delegate,
                                              error_code);
@@ -699,6 +675,30 @@ void URLDataManagerBackend::URLToRequestPath(const GURL& url,
 
   if (offset < static_cast<int>(spec.size()))
     path->assign(spec.substr(offset));
+}
+
+bool URLDataManagerBackend::IsValidNetworkErrorCode(int error_code) {
+  std::unique_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
+  const base::DictionaryValue* net_error_codes_dict = nullptr;
+
+  for (base::DictionaryValue::Iterator itr(*error_codes); !itr.IsAtEnd();
+       itr.Advance()) {
+    if (itr.key() == kNetworkErrorKey) {
+      itr.value().GetAsDictionary(&net_error_codes_dict);
+      break;
+    }
+  }
+
+  if (net_error_codes_dict != nullptr) {
+    for (base::DictionaryValue::Iterator itr(*net_error_codes_dict);
+         !itr.IsAtEnd(); itr.Advance()) {
+      int net_error_code;
+      itr.value().GetAsInteger(&net_error_code);
+      if (error_code == net_error_code)
+        return true;
+    }
+  }
+  return false;
 }
 
 std::vector<std::string> URLDataManagerBackend::GetWebUISchemes() {

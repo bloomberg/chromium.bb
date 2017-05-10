@@ -77,6 +77,9 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   // path is the remaining portion after the scheme and hostname.
   static void URLToRequestPath(const GURL& url, std::string* path);
 
+  // Check if the given integer is a valid network error code.
+  static bool IsValidNetworkErrorCode(int error_code);
+
   // Returns the schemes that are used by WebUI (i.e. the set from content and
   // its embedder).
   static std::vector<std::string> GetWebUISchemes();
