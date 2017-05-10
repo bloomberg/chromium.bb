@@ -50,6 +50,19 @@ NSString* const kGmailAppStoreID = @"422689480";
 }
 @end
 
+#pragma mark - Test Observer object
+
+@interface RewriterObserver : NSObject<MailtoURLRewriterObserver>
+@property(nonatomic, readonly) int changeCount;
+@end
+
+@implementation RewriterObserver
+@synthesize changeCount = _changeCount;
+- (void)rewriterDidChange:(MailtoURLRewriter*)rewriter {
+  ++_changeCount;
+}
+@end
+
 #pragma mark - MailtoURLRewriter private interfaces for testing.
 
 @interface MailtoURLRewriter ()
@@ -69,6 +82,7 @@ TEST_F(MailtoURLRewriterTest, TestStandardInstance) {
   MailtoURLRewriter* rewriter =
       [[MailtoURLRewriter alloc] initWithStandardHandlers];
   EXPECT_TRUE(rewriter);
+  EXPECT_GT([[rewriter defaultHandlerName] length], 0U);
   // ID for system Mail client app must not be an empty string.
   EXPECT_GT([[MailtoURLRewriter systemMailApp] length], 0U);
 
@@ -113,6 +127,42 @@ TEST_F(MailtoURLRewriterTest, TestUserPreferencePersistence) {
   MailtoURLRewriter* rewriter2 = [[MailtoURLRewriter alloc] init];
   [rewriter2 addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
   EXPECT_NSEQ(otherHandlerID, [rewriter2 defaultHandlerID]);
+}
+
+TEST_F(MailtoURLRewriterTest, TestChangeObserver) {
+  RewriterObserver* observer = [[RewriterObserver alloc] init];
+  ASSERT_EQ(0, [observer changeCount]);
+
+  // Sets up a MailtoURLRewriter object. The default handler is Gmail app
+  // because |fakeGmailHandler| reports that it is "installed".
+  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
+  MailtoHandler* fakeGmailHandler =
+      [[FakeMailtoHandlerGmailInstalled alloc] init];
+  [rewriter addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
+  EXPECT_NSEQ([fakeGmailHandler appStoreID], [rewriter defaultHandlerID]);
+  [rewriter setObserver:observer];
+
+  // Setting system Mail app as handler while current handler is Gmail should
+  // trigger the observer callback, incrementing count from 0 to 1.
+  [rewriter setDefaultHandlerID:[systemMailHandler appStoreID]];
+  EXPECT_EQ(1, [observer changeCount]);
+
+  // Setting system Mail app as handler while current handler is already
+  // system Mail app should not trigger the observer callback. Count remains
+  // at 1.
+  [rewriter setDefaultHandlerID:[systemMailHandler appStoreID]];
+  EXPECT_EQ(1, [observer changeCount]);
+
+  // Setting Gmail app as the default handler when current handler is system
+  // Mail app should trigger the observer callback. Count increases from 1 to 2.
+  [rewriter setDefaultHandlerID:[fakeGmailHandler appStoreID]];
+  EXPECT_EQ(2, [observer changeCount]);
+
+  // Deallocates the observer to test that there are no ill side-effects (e.g.
+  // crashes) when observer's lifetime is shorter than the rewriter.
+  observer = nil;
+  [rewriter setDefaultHandlerID:[systemMailHandler appStoreID]];
 }
 
 // Tests that a new user without Gmail app installed launches system Mail app.
