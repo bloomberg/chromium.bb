@@ -28,10 +28,9 @@ class WebRestrictionsMojoImplementation : public mojom::WebRestrictions {
                      mojom::WebRestrictionsRequest request);
 
  private:
-  void GetResult(const std::string& url,
-                 const GetResultCallback& callback) override;
+  void GetResult(const std::string& url, GetResultCallback callback) override;
   void RequestPermission(const std::string& url,
-                         const RequestPermissionCallback& callback) override;
+                         RequestPermissionCallback callback) override;
 
   WebRestrictionsClient* web_restrictions_client_;
 };
