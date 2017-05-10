@@ -13,10 +13,10 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import java.util.Locale;
 
 /**
- * The interface that controls contextual text selection.
+ * The interface that controls Smart Text selection.
  */
 @SuppressFBWarnings("UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD")
-public interface ContextSelectionProvider {
+public interface SmartSelectionProvider {
     /**
      * The result of the text analysis.
      */
