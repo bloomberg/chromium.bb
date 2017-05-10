@@ -25,12 +25,5 @@
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
-    {
-      'target_name': 'paper-tabs-icons-extracted',
-      'dependencies': [
-        '../iron-iconset-svg/compiled_resources2.gyp:iron-iconset-svg-extracted',
-      ],
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
   ],
 }

@@ -6,15 +6,6 @@
 {
   'targets': [
     {
-      'target_name': 'all-imports-extracted',
-      'dependencies': [
-        'paper-icon-item-extracted',
-        'paper-item-body-extracted',
-        'paper-item-extracted',
-      ],
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'paper-icon-item-extracted',
       'dependencies': [
         'paper-item-behavior-extracted',
@@ -38,10 +29,6 @@
       'dependencies': [
         'paper-item-behavior-extracted',
       ],
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'paper-item-shared-styles-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
   ],
