@@ -59,6 +59,8 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
       layer_animator_collection_(this),
+      scheduled_timeout_(base::TimeTicks()),
+      allow_locks_to_extend_timeout_(false),
       weak_ptr_factory_(this),
       lock_timeout_weak_ptr_factory_(this) {
   if (context_factory_private) {
@@ -554,21 +556,34 @@ std::unique_ptr<CompositorLock> Compositor::GetCompositorLock(
   bool was_empty = active_locks_.empty();
   active_locks_.push_back(lock.get());
 
+  bool should_extend_timeout = false;
+  if ((was_empty || allow_locks_to_extend_timeout_) && !timeout.is_zero()) {
+    const base::TimeTicks time_to_timeout = base::TimeTicks::Now() + timeout;
+    // For the first lock, scheduled_timeout.is_null is true,
+    // |time_to_timeout| will always larger than |scheduled_timeout_|. And it
+    // is ok to invalidate the weakptr of |lock_timeout_weak_ptr_factory_|.
+    if (time_to_timeout > scheduled_timeout_) {
+      scheduled_timeout_ = time_to_timeout;
+      should_extend_timeout = true;
+      lock_timeout_weak_ptr_factory_.InvalidateWeakPtrs();
+    }
+  }
+
   if (was_empty) {
     host_->SetDeferCommits(true);
     for (auto& observer : observer_list_)
       observer.OnCompositingLockStateChanged(this);
+  }
 
-    if (!timeout.is_zero()) {
-      // The timeout task uses an independent WeakPtrFactory that is invalidated
-      // when all locks are ended to prevent the timeout from leaking into
-      // another lock that should have its own timeout.
-      task_runner_->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&Compositor::TimeoutLocks,
-                     lock_timeout_weak_ptr_factory_.GetWeakPtr()),
-          timeout);
-    }
+  if (should_extend_timeout) {
+    // The timeout task uses an independent WeakPtrFactory that is invalidated
+    // when all locks are ended to prevent the timeout from leaking into
+    // another lock that should have its own timeout.
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&Compositor::TimeoutLocks,
+                   lock_timeout_weak_ptr_factory_.GetWeakPtr()),
+        timeout);
   }
   return lock;
 }
@@ -580,6 +595,7 @@ void Compositor::RemoveCompositorLock(CompositorLock* lock) {
     for (auto& observer : observer_list_)
       observer.OnCompositingLockStateChanged(this);
     lock_timeout_weak_ptr_factory_.InvalidateWeakPtrs();
+    scheduled_timeout_ = base::TimeTicks();
   }
 }
 
