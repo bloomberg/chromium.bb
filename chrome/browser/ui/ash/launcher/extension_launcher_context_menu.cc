@@ -94,8 +94,7 @@ void ExtensionLauncherContextMenu::Init() {
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
-    const extensions::MenuItem::ExtensionKey app_key(
-        controller()->GetAppIDForShelfID(item().id));
+    const extensions::MenuItem::ExtensionKey app_key(item().id.app_id);
     if (!app_key.empty()) {
       int index = 0;
       extension_items_->AppendExtensionItems(app_key, base::string16(), &index,

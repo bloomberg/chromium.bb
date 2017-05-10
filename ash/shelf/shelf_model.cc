@@ -55,86 +55,49 @@ ShelfModel::ShelfModel() = default;
 
 ShelfModel::~ShelfModel() = default;
 
-ShelfID ShelfModel::GetShelfIDForAppID(const std::string& app_id) {
-  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
-
-  if (shelf_app_id.empty())
-    return ShelfID();
-
-  for (const ShelfItem& item : items_) {
-    // ShelfWindowWatcher handles app panel windows separately.
-    if (item.type != TYPE_APP_PANEL && item.id.app_id == shelf_app_id)
-      return item.id;
-  }
-  return ShelfID();
-}
-
-ShelfID ShelfModel::GetShelfIDForAppIDAndLaunchID(
-    const std::string& app_id,
-    const std::string& launch_id) {
-  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-  const ShelfID id = ShelfID(GetShelfAppIdFromArcAppId(app_id), launch_id);
-
-  if (id.IsNull())
-    return ShelfID();
-
-  for (const ShelfItem& item : items_) {
-    // ShelfWindowWatcher handles app panel windows separately.
-    if (item.type != TYPE_APP_PANEL && item.id == id)
-      return item.id;
-  }
-  return ShelfID();
-}
-
-const std::string& ShelfModel::GetAppIDForShelfID(const ShelfID& id) {
-  ShelfItems::const_iterator item = ItemByID(id);
-  return item != items().end() ? item->id.app_id : base::EmptyString();
-}
-
 void ShelfModel::PinAppWithID(const std::string& app_id) {
   // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+  const ShelfID shelf_id(GetShelfAppIdFromArcAppId(app_id));
 
   // If the app is already pinned, do nothing and return.
-  if (IsAppPinned(shelf_app_id))
+  if (IsAppPinned(shelf_id.app_id))
     return;
 
   // Convert an existing item to be pinned, or create a new pinned item.
-  const int index = ItemIndexByID(GetShelfIDForAppID(shelf_app_id));
+  const int index = ItemIndexByID(shelf_id);
   if (index >= 0) {
     ShelfItem item = items_[index];
     DCHECK_EQ(item.type, TYPE_APP);
     DCHECK(!item.pinned_by_policy);
     item.type = TYPE_PINNED_APP;
     Set(index, item);
-  } else if (!shelf_app_id.empty()) {
+  } else if (!shelf_id.IsNull()) {
     ShelfItem item;
     item.type = TYPE_PINNED_APP;
-    item.id = ShelfID(shelf_app_id);
+    item.id = shelf_id;
     Add(item);
   }
 }
 
 bool ShelfModel::IsAppPinned(const std::string& app_id) {
   // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+  const ShelfID shelf_id(GetShelfAppIdFromArcAppId(app_id));
 
-  const int index = ItemIndexByID(GetShelfIDForAppID(shelf_app_id));
+  const int index = ItemIndexByID(shelf_id);
   return index >= 0 && (items_[index].type == TYPE_PINNED_APP ||
                         items_[index].type == TYPE_BROWSER_SHORTCUT);
 }
 
 void ShelfModel::UnpinAppWithID(const std::string& app_id) {
   // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
-  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(app_id);
+  const ShelfID shelf_id(GetShelfAppIdFromArcAppId(app_id));
 
   // If the app is already not pinned, do nothing and return.
-  if (!IsAppPinned(shelf_app_id))
+  if (!IsAppPinned(shelf_id.app_id))
     return;
 
   // Remove the item if it is closed, or mark it as unpinned.
-  const int index = ItemIndexByID(GetShelfIDForAppID(shelf_app_id));
+  const int index = ItemIndexByID(shelf_id);
   ShelfItem item = items_[index];
   DCHECK_EQ(item.type, TYPE_PINNED_APP);
   DCHECK(!item.pinned_by_policy);
@@ -218,7 +181,10 @@ void ShelfModel::Set(int index, const ShelfItem& item) {
   }
 }
 
-int ShelfModel::ItemIndexByID(const ShelfID& id) const {
+int ShelfModel::ItemIndexByID(const ShelfID& shelf_id) const {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  ShelfID id(GetShelfAppIdFromArcAppId(shelf_id.app_id), shelf_id.launch_id);
+
   ShelfItems::const_iterator i = ItemByID(id);
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
 }
@@ -231,7 +197,10 @@ int ShelfModel::GetItemIndexForType(ShelfItemType type) {
   return -1;
 }
 
-ShelfItems::const_iterator ShelfModel::ItemByID(const ShelfID& id) const {
+ShelfItems::const_iterator ShelfModel::ItemByID(const ShelfID& shelf_id) const {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  ShelfID id(GetShelfAppIdFromArcAppId(shelf_id.app_id), shelf_id.launch_id);
+
   for (ShelfItems::const_iterator i = items_.begin(); i != items_.end(); ++i) {
     if (i->id == id)
       return i;
@@ -256,15 +225,21 @@ int ShelfModel::FirstPanelIndex() const {
 }
 
 void ShelfModel::SetShelfItemDelegate(
-    const ShelfID& id,
+    const ShelfID& shelf_id,
     std::unique_ptr<ShelfItemDelegate> item_delegate) {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  ShelfID id(GetShelfAppIdFromArcAppId(shelf_id.app_id), shelf_id.launch_id);
+
   if (item_delegate)
     item_delegate->set_shelf_id(id);
   // This assignment replaces any ShelfItemDelegate already registered for |id|.
   id_to_item_delegate_map_[id] = std::move(item_delegate);
 }
 
-ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(const ShelfID& id) {
+ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(const ShelfID& shelf_id) {
+  // TODO(khmel): Fix this Arc application id mapping. See http://b/31703859
+  ShelfID id(GetShelfAppIdFromArcAppId(shelf_id.app_id), shelf_id.launch_id);
+
   if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end())
     return id_to_item_delegate_map_[id].get();
   return nullptr;

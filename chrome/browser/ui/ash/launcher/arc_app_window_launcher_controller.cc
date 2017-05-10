@@ -654,13 +654,12 @@ ArcAppWindowLauncherController::AttachControllerToTask(
       base::MakeUnique<ArcAppWindowLauncherItemController>(
           app_shelf_id.ToString());
   ArcAppWindowLauncherItemController* item_controller = controller.get();
-  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
-  const ash::ShelfID shelf_id =
-      shelf_model->GetShelfIDForAppID(app_shelf_id.ToString());
-  if (shelf_id.IsNull()) {
+  const ash::ShelfID shelf_id(app_shelf_id.ToString());
+  if (!owner()->GetItem(shelf_id)) {
     owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {
-    shelf_model->SetShelfItemDelegate(shelf_id, std::move(controller));
+    owner()->shelf_model()->SetShelfItemDelegate(shelf_id,
+                                                 std::move(controller));
     owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   }
   item_controller->AddTaskId(task_id);
@@ -673,12 +672,9 @@ void ArcAppWindowLauncherController::RegisterApp(
   AppWindow* app_window = app_window_info->app_window();
   ArcAppWindowLauncherItemController* controller =
       AttachControllerToTask(app_window->task_id(), *app_window_info);
-  DCHECK(controller);
-
-  const ash::ShelfID shelf_id =
-      ash::Shell::Get()->shelf_model()->GetShelfIDForAppID(
-          controller->app_id());
-  DCHECK(!shelf_id.IsNull());
+  DCHECK(!controller->app_id().empty());
+  const ash::ShelfID shelf_id(controller->app_id());
+  DCHECK(owner()->GetItem(shelf_id));
 
   controller->AddWindow(app_window);
   owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);

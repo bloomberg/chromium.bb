@@ -220,9 +220,6 @@ class ChromeLauncherController
   // Controller to launch ARC apps in deferred mode.
   ArcAppDeferredLauncherController* GetArcDeferredLauncher();
 
-  // Get the launch ID for a given shelf ID.
-  const std::string& GetLaunchIDForShelfID(const ash::ShelfID& id);
-
   AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
 
   // Sets the shelf auto-hide and/or alignment behavior from prefs.
@@ -254,10 +251,6 @@ class ChromeLauncherController
   void SetProfileForTest(Profile* profile);
 
   // Helpers that call through to corresponding ShelfModel functions.
-  ash::ShelfID GetShelfIDForAppID(const std::string& app_id);
-  ash::ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
-                                             const std::string& launch_id);
-  const std::string& GetAppIDForShelfID(const ash::ShelfID& id);
   void PinAppWithID(const std::string& app_id);
   bool IsAppPinned(const std::string& app_id);
   void UnpinAppWithID(const std::string& app_id);

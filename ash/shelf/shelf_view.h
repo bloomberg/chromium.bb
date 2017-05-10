@@ -431,9 +431,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // The ShelfItem currently used for drag and drop; empty if none.
   ShelfID drag_and_drop_shelf_id_;
 
-  // The application ID of the application which we drag and drop.
-  std::string drag_and_drop_app_id_;
-
   // The original launcher item's size before the dragging operation.
   gfx::Size pre_drag_and_drop_size_;
 

@@ -12,30 +12,12 @@
 #include "ash/wm_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/resources/grit/ui_resources.h"
 
 namespace ash {
 
 namespace {
-
-// Returns an icon image from an SkBitmap, or the default shelf icon image if
-// the bitmap is empty. Assumes the bitmap is a 1x icon.
-// TODO(jamescook): Support other scale factors.
-gfx::ImageSkia GetShelfIconFromBitmap(const SkBitmap& bitmap) {
-  gfx::ImageSkia icon_image;
-  if (!bitmap.isNull()) {
-    icon_image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-  } else {
-    // Use default icon.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    icon_image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
-  }
-  return icon_image;
-}
 
 // Returns the WmShelf instance for the display with the given |display_id|.
 WmShelf* GetShelfForDisplay(int64_t display_id) {
@@ -122,14 +104,7 @@ void ShelfController::UnpinItem(const std::string& app_id) {
 
 void ShelfController::SetItemImage(const std::string& app_id,
                                    const SkBitmap& image) {
-  if (!app_id_to_shelf_id_.count(app_id))
-    return;
-  ShelfID shelf_id = app_id_to_shelf_id_[app_id];
-  int index = model_.ItemIndexByID(shelf_id);
-  DCHECK_GE(index, 0);
-  ShelfItem item = *model_.ItemByID(shelf_id);
-  item.image = GetShelfIconFromBitmap(image);
-  model_.Set(index, item);
+  NOTIMPLEMENTED();
 }
 
 }  // namespace ash

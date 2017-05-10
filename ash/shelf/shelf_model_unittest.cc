@@ -97,19 +97,24 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   item1.type = TYPE_PINNED_APP;
   int index = model_->Add(item1);
   EXPECT_EQ(2, model_->item_count());
+  EXPECT_LE(0, model_->ItemIndexByID(item1.id));
+  EXPECT_NE(model_->items().end(), model_->ItemByID(item1.id));
   EXPECT_EQ("added=1", observer_->StateStringAndClear());
 
   // Change to a platform app item.
-  ShelfID original_id = model_->items()[index].id;
   item1.type = TYPE_APP;
   model_->Set(index, item1);
-  EXPECT_EQ(original_id, model_->items()[index].id);
+  EXPECT_EQ(item1.id, model_->items()[index].id);
+  EXPECT_LE(0, model_->ItemIndexByID(item1.id));
+  EXPECT_NE(model_->items().end(), model_->ItemByID(item1.id));
   EXPECT_EQ("changed=1", observer_->StateStringAndClear());
   EXPECT_EQ(TYPE_APP, model_->items()[index].type);
 
   // Remove the item.
   model_->RemoveItemAt(index);
   EXPECT_EQ(1, model_->item_count());
+  EXPECT_EQ(-1, model_->ItemIndexByID(item1.id));
+  EXPECT_EQ(model_->items().end(), model_->ItemByID(item1.id));
   EXPECT_EQ("removed=1", observer_->StateStringAndClear());
 
   // Add an app item.
@@ -117,11 +122,16 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   item2.id = ShelfID("item2");
   item2.type = TYPE_PINNED_APP;
   index = model_->Add(item2);
-  observer_->StateStringAndClear();
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_LE(0, model_->ItemIndexByID(item2.id));
+  EXPECT_NE(model_->items().end(), model_->ItemByID(item2.id));
+  EXPECT_EQ("added=1", observer_->StateStringAndClear());
 
   // Change the item type.
   item2.type = TYPE_APP;
   model_->Set(index, item2);
+  EXPECT_LE(0, model_->ItemIndexByID(item2.id));
+  EXPECT_NE(model_->items().end(), model_->ItemByID(item2.id));
   EXPECT_EQ("changed=1", observer_->StateStringAndClear());
   EXPECT_EQ(TYPE_APP, model_->items()[index].type);
 
@@ -130,7 +140,10 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   item3.id = ShelfID("item3");
   item3.type = TYPE_PINNED_APP;
   model_->Add(item3);
-  observer_->StateStringAndClear();
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_LE(0, model_->ItemIndexByID(item3.id));
+  EXPECT_NE(model_->items().end(), model_->ItemByID(item3.id));
+  EXPECT_EQ("added=1", observer_->StateStringAndClear());
 
   // Move the second to the first.
   model_->Move(1, 0);
@@ -305,52 +318,33 @@ TEST_F(ShelfModelTest, ReorderOnTypeChanges) {
   EXPECT_EQ(item2.id, model_->items()[3].id);
 }
 
-// Test conversion between ShelfID and application [launch] ids.
-TEST_F(ShelfModelTest, IdentifierConversion) {
-  const std::string app_id1("app_id1");
-  const std::string launch_id("launch_id");
+// Test getting the index of ShelfIDs as a check for item presence.
+TEST_F(ShelfModelTest, ItemIndexByID) {
+  // Expect empty and unknown ids to return the invalid index -1.
+  EXPECT_EQ(-1, model_->ItemIndexByID(ShelfID()));
+  EXPECT_EQ(-1, model_->ItemIndexByID(ShelfID("foo")));
+  EXPECT_EQ(-1, model_->ItemIndexByID(ShelfID("foo", "bar")));
 
-  // Expect empty ShelfIDs and app ids for input not found in the model.
-  EXPECT_TRUE(model_->GetShelfIDForAppID(std::string()).IsNull());
-  EXPECT_TRUE(model_->GetShelfIDForAppID(app_id1).IsNull());
-  EXPECT_TRUE(
-      model_->GetShelfIDForAppIDAndLaunchID(app_id1, std::string()).IsNull());
-  EXPECT_TRUE(
-      model_->GetShelfIDForAppIDAndLaunchID(app_id1, launch_id).IsNull());
-  EXPECT_TRUE(model_->GetAppIDForShelfID(ShelfID()).empty());
-  EXPECT_TRUE(model_->GetAppIDForShelfID(ShelfID("foo")).empty());
+  // Add an item and expect to get a valid index for its id.
+  ShelfItem item1;
+  item1.type = TYPE_PINNED_APP;
+  item1.id = ShelfID("app_id1", "launch_id1");
+  const int index1 = model_->Add(item1);
+  EXPECT_EQ(index1, model_->ItemIndexByID(item1.id));
 
-  // Add an example app with an app id and a launch id.
-  ShelfItem item;
-  item.type = TYPE_PINNED_APP;
-  item.id = ShelfID(app_id1, launch_id);
-  const int index = model_->Add(item);
+  // Add another item and expect to get another valid index for its id.
+  ShelfItem item2;
+  item2.type = TYPE_APP;
+  item2.id = ShelfID("app_id2", "launch_id2");
+  const int index2 = model_->Add(item2);
+  EXPECT_EQ(index2, model_->ItemIndexByID(item2.id));
 
-  // Ensure the item ids can be found and converted as expected.
-  EXPECT_EQ(item.id, model_->GetShelfIDForAppID(app_id1));
-  EXPECT_EQ(item.id, model_->GetShelfIDForAppIDAndLaunchID(app_id1, launch_id));
-  EXPECT_NE(item.id,
-            model_->GetShelfIDForAppIDAndLaunchID(app_id1, std::string()));
-  EXPECT_EQ(app_id1, model_->GetAppIDForShelfID(item.id));
-
-  // Removing the example app should again yield invalid ids.
-  model_->RemoveItemAt(index);
-  EXPECT_TRUE(model_->GetShelfIDForAppID(app_id1).IsNull());
-  EXPECT_TRUE(
-      model_->GetShelfIDForAppIDAndLaunchID(app_id1, launch_id).IsNull());
-  EXPECT_TRUE(model_->GetAppIDForShelfID(item.id).empty());
-
-  // Add an example app with a different app id and no launch id.
-  const std::string app_id2("app_id2");
-  item.id = ShelfID(app_id2);
-  model_->Add(item);
-
-  // Ensure the item ids can be found and converted as expected.
-  EXPECT_EQ(item.id, model_->GetShelfIDForAppID(app_id2));
-  EXPECT_EQ(item.id,
-            model_->GetShelfIDForAppIDAndLaunchID(app_id2, std::string()));
-  EXPECT_NE(item.id, model_->GetShelfIDForAppIDAndLaunchID(app_id2, launch_id));
-  EXPECT_EQ(app_id2, model_->GetAppIDForShelfID(item.id));
+  // Removing the first item should yield an invalid index for that item.
+  model_->RemoveItemAt(index1);
+  EXPECT_EQ(-1, model_->ItemIndexByID(item1.id));
+  // The index of the second item should be decremented, but still valid.
+  EXPECT_EQ(index2 - 1, model_->ItemIndexByID(item2.id));
+  EXPECT_LE(0, model_->ItemIndexByID(item2.id));
 }
 
 // Test pinning and unpinning a closed app, and checking if it is pinned.
