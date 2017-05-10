@@ -236,14 +236,9 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
       amp_cache_path_regex_(kAmpCachePathPattern),
       google_amp_viewer_path_regex_(kGoogleAmpViewerPathPattern),
       google_web_cache_query_regex_(kGoogleWebCacheQueryPattern),
-      blocking_task_runner_(
-          base::CreateTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .MayBlock()
-                  .WithPriority(base::TaskPriority::BACKGROUND)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
-              .get()),
+      blocking_task_runner_(base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       weak_ptr_factory_(this) {
   DCHECK(amp_cache_path_regex_.ok());
   DCHECK(google_amp_viewer_path_regex_.ok());

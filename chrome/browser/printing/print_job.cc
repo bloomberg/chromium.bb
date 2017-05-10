@@ -450,12 +450,9 @@ void PrintJob::ControlledWorkerShutdown() {
   // base::ThreadRestrictions::AssertWaitAllowed().
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
-      base::TaskTraits()
-          .MayBlock()
-          .WithBaseSyncPrimitives()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      {base::MayBlock(), base::WithBaseSyncPrimitives(),
+       base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&PrintJobWorker::Stop, base::Unretained(worker_.get())),
       base::BindOnce(&PrintJob::HoldUntilStopIsCalled, this));
 
