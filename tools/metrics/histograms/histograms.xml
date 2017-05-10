@@ -79103,6 +79103,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="WebApk.ShellApkVersion">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records WebAPK &quot;Shell APK version&quot; when the WebAPK is launched.
+    The &quot;Shell APK version&quot; is documented in shell_apk_version.gni
+  </summary>
+</histogram>
+
 <histogram name="WebApk.Update.GooglePlayUpdateResult"
     enum="WebApkGooglePlayInstallResult">
   <owner>hanxi@chromium.org</owner>
@@ -92140,6 +92150,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              displaying WebVR contents."/>
   <affected-histogram name="VRSessionTime"/>
   <affected-histogram name="VRSessionVideoTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="WebApkType">
+  <suffix name="BrowserApk" label="Installed by Chrome"/>
+  <suffix name="UnboundApk" label="Not installed by Chrome"/>
+  <affected-histogram name="WebApk.ShellApkVersion"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebFontFamily">

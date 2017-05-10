@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.metrics;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.concurrent.TimeUnit;
 
@@ -104,5 +105,13 @@ public class WebApkUma {
     public static void recordWebApkSessionDuration(long duration) {
         RecordHistogram.recordLongTimesHistogram(
                 "WebApk.Session.TotalDuration", duration, TimeUnit.MILLISECONDS);
+    }
+
+    /** Records the current Shell APK version. */
+    public static void recordShellApkVersion(int shellApkVersion, String packageName) {
+        String name = packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)
+                ? "WebApk.ShellApkVersion.BrowserApk"
+                : "WebApk.ShellApkVersion.UnboundApk";
+        RecordHistogram.recordSparseSlowlyHistogram(name, shellApkVersion);
     }
 }
