@@ -132,10 +132,11 @@ class BASE_EXPORT MemoryDumpManager {
   // related modes (non-SUMMARY_ONLY).
   // Initializes the peak detector, scheduler and heap profiler with the given
   // config.
-  void Enable(const TraceConfig::MemoryDumpConfig&);
+  void SetupForTracing(const TraceConfig::MemoryDumpConfig&);
 
   // Tear-down tracing related state.
-  void Disable();
+  // Non-tracing modes (e.g. SUMMARY_ONLY) will continue to work.
+  void TeardownForTracing();
 
   // NOTE: Use RequestGlobalDump() to create memory dumps. Creates a memory dump
   // for the current process and appends it to the trace. |callback| will be

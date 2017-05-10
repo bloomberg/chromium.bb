@@ -761,7 +761,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
                                   TRACE_ID_LOCAL(dump_guid));
 }
 
-void MemoryDumpManager::Enable(
+void MemoryDumpManager::SetupForTracing(
     const TraceConfig::MemoryDumpConfig& memory_dump_config) {
   scoped_refptr<HeapProfilerSerializationState>
       heap_profiler_serialization_state = new HeapProfilerSerializationState;
@@ -841,7 +841,7 @@ void MemoryDumpManager::Enable(
   }
 }
 
-void MemoryDumpManager::Disable() {
+void MemoryDumpManager::TeardownForTracing() {
   // There might be a memory dump in progress while this happens. Therefore,
   // ensure that the MDM state which depends on the tracing enabled / disabled
   // state is always accessed by the dumping methods holding the |lock_|.
