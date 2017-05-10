@@ -479,7 +479,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
     scoped_refptr<SiteInstance> site_instance =
         SiteInstance::Create(browser_context_.get());
-    SiteInstanceImpl::set_render_process_host_factory(
+    RenderProcessHostImpl::set_render_process_host_factory(
         render_process_host_factory_.get());
     web_contents_.reset(
         TestWebContents::Create(browser_context_.get(), site_instance.get()));
@@ -507,7 +507,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
     base::RunLoop().RunUntilIdle();
 
-    SiteInstanceImpl::set_render_process_host_factory(NULL);
+    RenderProcessHostImpl::set_render_process_host_factory(NULL);
     render_frame_host_factory_.reset();
     render_view_host_factory_.reset();
     render_process_host_factory_.reset();

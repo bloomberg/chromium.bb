@@ -14,18 +14,18 @@ namespace content {
 
 TestRenderViewHostFactory::TestRenderViewHostFactory(
     RenderProcessHostFactory* rph_factory) {
-  SiteInstanceImpl::set_render_process_host_factory(rph_factory);
+  RenderProcessHostImpl::set_render_process_host_factory(rph_factory);
   RenderViewHostFactory::RegisterFactory(this);
 }
 
 TestRenderViewHostFactory::~TestRenderViewHostFactory() {
   RenderViewHostFactory::UnregisterFactory();
-  SiteInstanceImpl::set_render_process_host_factory(NULL);
+  RenderProcessHostImpl::set_render_process_host_factory(NULL);
 }
 
 void TestRenderViewHostFactory::set_render_process_host_factory(
     RenderProcessHostFactory* rph_factory) {
-  SiteInstanceImpl::set_render_process_host_factory(rph_factory);
+  RenderProcessHostImpl::set_render_process_host_factory(rph_factory);
 }
 
 RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(

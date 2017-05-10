@@ -51,7 +51,8 @@ BrowsingInstance::GetDefaultSubframeSiteInstance() {
   CHECK(SiteIsolationPolicy::IsTopDocumentIsolationEnabled());
   if (!default_subframe_site_instance_) {
     SiteInstanceImpl* instance = new SiteInstanceImpl(this);
-    instance->set_is_default_subframe_site_instance();
+    instance->set_process_reuse_policy(
+        SiteInstanceImpl::ProcessReusePolicy::USE_DEFAULT_SUBFRAME_PROCESS);
 
     // TODO(nick): This is a hack for now.
     instance->SetSite(GURL("http://web-subframes.invalid"));

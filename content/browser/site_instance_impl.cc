@@ -20,8 +20,6 @@
 
 namespace content {
 
-const RenderProcessHostFactory*
-    SiteInstanceImpl::g_render_process_host_factory_ = NULL;
 int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
 SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
@@ -30,7 +28,7 @@ SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
       browsing_instance_(browsing_instance),
       process_(nullptr),
       has_site_(false),
-      is_default_subframe_site_instance_(false) {
+      process_reuse_policy_(ProcessReusePolicy::DEFAULT) {
   DCHECK(browsing_instance);
 }
 
@@ -83,82 +81,6 @@ bool SiteInstanceImpl::HasProcess() const {
   return false;
 }
 
-namespace {
-
-const void* const kDefaultSubframeProcessHostHolderKey =
-    &kDefaultSubframeProcessHostHolderKey;
-
-class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
-                                         public RenderProcessHostObserver {
- public:
-  explicit DefaultSubframeProcessHostHolder(BrowserContext* browser_context)
-      : browser_context_(browser_context) {}
-  ~DefaultSubframeProcessHostHolder() override {}
-
-  // Gets the correct render process to use for this SiteInstance.
-  RenderProcessHost* GetProcessHost(SiteInstance* site_instance,
-                                    bool is_for_guests_only) {
-    StoragePartition* default_partition =
-        BrowserContext::GetDefaultStoragePartition(browser_context_);
-    StoragePartition* partition =
-        BrowserContext::GetStoragePartition(browser_context_, site_instance);
-
-    // Is this the default storage partition? If it isn't, then just give it its
-    // own non-shared process.
-    if (partition != default_partition || is_for_guests_only) {
-      RenderProcessHostImpl* host = new RenderProcessHostImpl(
-          browser_context_, static_cast<StoragePartitionImpl*>(partition),
-          is_for_guests_only);
-      host->SetIsNeverSuitableForReuse();
-      return host;
-    }
-
-    if (host_) {
-      // If we already have a shared host for the default storage partition, use
-      // it.
-      return host_;
-    }
-
-    host_ = new RenderProcessHostImpl(
-        browser_context_, static_cast<StoragePartitionImpl*>(partition),
-        false /* for guests only */);
-    host_->SetIsNeverSuitableForReuse();
-    host_->AddObserver(this);
-
-    return host_;
-  }
-
-  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
-    DCHECK_EQ(host_, host);
-    host_->RemoveObserver(this);
-    host_ = nullptr;
-  }
-
- private:
-  BrowserContext* browser_context_;
-
-  // The default subframe render process used for the default storage partition
-  // of this BrowserContext.
-  RenderProcessHostImpl* host_ = nullptr;
-};
-
-}  // namespace
-
-RenderProcessHost* SiteInstanceImpl::GetDefaultSubframeProcessHost(
-    BrowserContext* browser_context,
-    bool is_for_guests_only) {
-  DefaultSubframeProcessHostHolder* holder =
-      static_cast<DefaultSubframeProcessHostHolder*>(
-          browser_context->GetUserData(&kDefaultSubframeProcessHostHolderKey));
-  if (!holder) {
-    holder = new DefaultSubframeProcessHostHolder(browser_context);
-    browser_context->SetUserData(kDefaultSubframeProcessHostHolderKey,
-                                 base::WrapUnique(holder));
-  }
-
-  return holder->GetProcessHost(this, is_for_guests_only);
-}
-
 RenderProcessHost* SiteInstanceImpl::GetProcess() {
   // TODO(erikkay) It would be nice to ensure that the renderer type had been
   // properly set before we get here.  The default tab creation case winds up
@@ -170,50 +92,28 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
   // Create a new process if ours went away or was reused.
   if (!process_) {
     BrowserContext* browser_context = browsing_instance_->browser_context();
-    bool is_for_guests_only = site_.SchemeIs(kGuestScheme);
 
-    // If we should use process-per-site mode (either in general or for the
-    // given site), then look for an existing RenderProcessHost for the site.
-    bool use_process_per_site = has_site_ &&
-        RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_);
-    if (use_process_per_site) {
-      process_ = RenderProcessHostImpl::GetProcessHostForSite(browser_context,
-                                                              site_);
+    // Check if the ProcessReusePolicy should be updated.
+    bool should_use_process_per_site =
+        RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_) &&
+        has_site_;
+    if (should_use_process_per_site) {
+      process_reuse_policy_ = ProcessReusePolicy::PROCESS_PER_SITE;
+    } else if (process_reuse_policy_ == ProcessReusePolicy::PROCESS_PER_SITE) {
+      process_reuse_policy_ = ProcessReusePolicy::DEFAULT;
     }
 
-    if (!process_ && IsDefaultSubframeSiteInstance() &&
-        SiteIsolationPolicy::IsTopDocumentIsolationEnabled()) {
-      process_ =
-          GetDefaultSubframeProcessHost(browser_context, is_for_guests_only);
-    }
+    process_ = RenderProcessHostImpl::GetProcessHostForSiteInstance(
+        browser_context, this);
 
-    // If not (or if none found), see if we should reuse an existing process.
-    if (!process_ && RenderProcessHostImpl::ShouldTryToUseExistingProcessHost(
-            browser_context, site_)) {
-      process_ = RenderProcessHostImpl::GetExistingProcessHost(browser_context,
-                                                               site_);
-    }
-
-    // Otherwise (or if that fails), create a new one.
-    if (!process_) {
-      if (g_render_process_host_factory_) {
-        process_ = g_render_process_host_factory_->CreateRenderProcessHost(
-            browser_context, this);
-      } else {
-        StoragePartitionImpl* partition =
-            static_cast<StoragePartitionImpl*>(
-                BrowserContext::GetStoragePartition(browser_context, this));
-        process_ = new RenderProcessHostImpl(browser_context, partition,
-                                             is_for_guests_only);
-      }
-    }
     CHECK(process_);
     process_->AddObserver(this);
 
     // If we are using process-per-site, we need to register this process
     // for the current site so that we can find it again.  (If no site is set
     // at this time, we will register it in SetSite().)
-    if (use_process_per_site) {
+    if (process_reuse_policy_ == ProcessReusePolicy::PROCESS_PER_SITE &&
+        has_site_) {
       RenderProcessHostImpl::RegisterProcessHostForSite(browser_context,
                                                         process_, site_);
     }
@@ -252,11 +152,18 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   // BrowsingInstance can script each other.
   browsing_instance_->RegisterSiteInstance(this);
 
+  // Update the process reuse policy based on the site.
+  bool should_use_process_per_site =
+      RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_);
+  if (should_use_process_per_site) {
+    process_reuse_policy_ = ProcessReusePolicy::PROCESS_PER_SITE;
+  }
+
   if (process_) {
     LockToOrigin();
 
     // Ensure the process is registered for this site if necessary.
-    if (RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_)) {
+    if (should_use_process_per_site) {
       RenderProcessHostImpl::RegisterProcessHostForSite(
           browser_context, process_, site_);
     }
@@ -323,7 +230,8 @@ bool SiteInstanceImpl::RequiresDedicatedProcess() {
 }
 
 bool SiteInstanceImpl::IsDefaultSubframeSiteInstance() const {
-  return is_default_subframe_site_instance_;
+  return process_reuse_policy_ ==
+         ProcessReusePolicy::USE_DEFAULT_SUBFRAME_PROCESS;
 }
 
 void SiteInstanceImpl::IncrementActiveFrameCount() {
@@ -351,11 +259,6 @@ void SiteInstanceImpl::AddObserver(Observer* observer) {
 
 void SiteInstanceImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void SiteInstanceImpl::set_render_process_host_factory(
-    const RenderProcessHostFactory* rph_factory) {
-  g_render_process_host_factory_ = rph_factory;
 }
 
 BrowserContext* SiteInstanceImpl::GetBrowserContext() const {
