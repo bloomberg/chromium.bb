@@ -77,6 +77,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
         network_list_changed_count_(0),
         network_count_(0),
         default_network_change_count_(0),
+        scan_requested_count_(0),
         scan_completed_count_(0) {}
 
   ~TestObserver() override {}
@@ -128,6 +129,8 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
     device_property_updates_[device->path()]++;
   }
 
+  void ScanRequested() override { scan_requested_count_++; }
+
   void ScanCompleted(const DeviceState* device) override {
     DCHECK(device);
     scan_completed_count_++;
@@ -140,12 +143,14 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   size_t default_network_change_count() {
     return default_network_change_count_;
   }
+  size_t scan_requested_count() { return scan_requested_count_; }
   size_t scan_completed_count() { return scan_completed_count_; }
   void reset_change_counts() {
     DVLOG(1) << "=== RESET CHANGE COUNTS ===";
     default_network_change_count_ = 0;
     device_list_changed_count_ = 0;
     network_list_changed_count_ = 0;
+    scan_requested_count_ = 0;
     scan_completed_count_ = 0;
     connection_state_changes_.clear();
   }
@@ -182,6 +187,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   size_t network_list_changed_count_;
   size_t network_count_;
   size_t default_network_change_count_;
+  size_t scan_requested_count_;
   size_t scan_completed_count_;
   std::string default_network_;
   std::string default_network_connection_state_;
@@ -386,19 +392,19 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
                                                &networks);
   EXPECT_EQ(kNumShillManagerClientStubImplServices + kNumTetherNetworks + 1,
             networks.size());
-  // Limit number of results, including only tether networks.
+  // Limit number of results, including only Tether networks.
   network_state_handler_->GetNetworkListByType(NetworkTypePattern::Default(),
                                                false /* configured_only */,
                                                false /* visible_only */,
                                                2 /* limit */,
                                                &networks);
   EXPECT_EQ(2u, networks.size());
-  // Limit number of results, including more than only tether networks.
+  // Limit number of results, including more than only Tether networks.
   network_state_handler_->GetNetworkListByType(
       NetworkTypePattern::Default(), false /* configured_only */,
       false /* visible_only */, 4 /* limit */, &networks);
   EXPECT_EQ(4u, networks.size());
-  // Get all tether networks.
+  // Get all Tether networks.
   network_state_handler_->GetNetworkListByType(
       NetworkTypePattern::Tether(), false /* configured_only */,
       false /* visible_only */, 0 /* no limit */, &networks);
@@ -604,7 +610,7 @@ TEST_F(NetworkStateHandlerTest, TetherTechnologyState) {
   EXPECT_EQ(tether_device_state, network_state_handler_->GetDeviceStateByType(
                                      NetworkTypePattern::Tether()));
 
-  // Test SetTechnologyEnabled() with a tether network:
+  // Test SetTechnologyEnabled() with a Tether network:
   network_state_handler_->SetTechnologyEnabled(
       NetworkTypePattern::Tether(), true, network_handler::ErrorCallback());
   EXPECT_EQ(2u, test_observer_->device_list_changed_count());
@@ -616,7 +622,7 @@ TEST_F(NetworkStateHandlerTest, TetherTechnologyState) {
   EXPECT_EQ(tether_device_state, network_state_handler_->GetDeviceStateByType(
                                      NetworkTypePattern::Tether()));
 
-  // Test SetProhibitedTechnologies() with a tether network:
+  // Test SetProhibitedTechnologies() with a Tether network:
   network_state_handler_->SetProhibitedTechnologies(
       std::vector<std::string>{kTypeTether}, network_handler::ErrorCallback());
   EXPECT_EQ(3u, test_observer_->device_list_changed_count());
@@ -732,7 +738,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   EXPECT_EQ(kTetherSignalStrength1, tether_network->signal_strength());
   EXPECT_FALSE(tether_network->tether_has_connected_to_host());
 
-  // Update the tether properties and verify the changes.
+  // Update the Tether properties and verify the changes.
   EXPECT_TRUE(network_state_handler_->UpdateTetherNetworkProperties(
       kTetherGuid1, "NewCarrier", 5 /* battery_percentage */,
       10 /* signal_strength */));
@@ -768,7 +774,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
 
   ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1));
 
-  // Updating tether properties should fail since the network was removed.
+  // Updating Tether properties should fail since the network was removed.
   EXPECT_FALSE(network_state_handler_->UpdateTetherNetworkProperties(
       kTetherGuid1, "NewNewCarrier", 15 /* battery_percentage */,
       20 /* signal_strength */));
@@ -943,7 +949,7 @@ TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
   EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
   UpdateManagerProperties();
 
-  // Associate tether and Wi-Fi networks.
+  // Associate Tether and Wi-Fi networks.
   network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
       kTetherGuid1, kWifiGuid1);
 
@@ -1109,6 +1115,12 @@ TEST_F(NetworkStateHandlerTest, RequestUpdate) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(
       kShillManagerClientStubDefaultWifi));
+}
+
+TEST_F(NetworkStateHandlerTest, RequestScan) {
+  EXPECT_EQ(0u, test_observer_->scan_requested_count());
+  network_state_handler_->RequestScan();
+  EXPECT_EQ(1u, test_observer_->scan_requested_count());
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {

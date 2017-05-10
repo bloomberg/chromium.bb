@@ -764,9 +764,10 @@ void NetworkStateHandler::GetDeviceListByType(const NetworkTypePattern& type,
   }
 }
 
-void NetworkStateHandler::RequestScan() const {
+void NetworkStateHandler::RequestScan() {
   NET_LOG_USER("RequestScan", "");
   shill_property_handler_->RequestScan();
+  NotifyScanRequested();
 }
 
 void NetworkStateHandler::RequestUpdateForNetwork(
@@ -1422,6 +1423,13 @@ void NetworkStateHandler::NotifyDevicePropertiesUpdated(
   NET_LOG_DEBUG("NOTIFY:DevicePropertiesUpdated", GetLogName(device));
   for (auto& observer : observers_)
     observer.DevicePropertiesUpdated(device);
+}
+
+void NetworkStateHandler::NotifyScanRequested() {
+  SCOPED_NET_LOG_IF_SLOW();
+  NET_LOG_DEBUG("NOTIFY:ScanRequested", "");
+  for (auto& observer : observers_)
+    observer.ScanRequested();
 }
 
 void NetworkStateHandler::NotifyScanCompleted(const DeviceState* device) {

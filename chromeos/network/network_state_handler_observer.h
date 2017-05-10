@@ -48,6 +48,9 @@ class CHROMEOS_EXPORT NetworkStateHandlerObserver {
   // One or more properties of |device| have been updated.
   virtual void DevicePropertiesUpdated(const DeviceState* device);
 
+  // A scan for has been requested.
+  virtual void ScanRequested();
+
   // A scan for |device| completed.
   virtual void ScanCompleted(const DeviceState* device);
 
