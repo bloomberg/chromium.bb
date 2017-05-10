@@ -120,8 +120,9 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   // Verify that the resulting page is chrome://terms.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
       assertWithMatcher:grey_sufficientlyVisible()];
-  NSString* kTermsText = @"Google Chrome Terms of Service";
-  [ChromeEarlGrey waitForStaticHTMLViewContainingText:kTermsText];
+  const std::string kTermsText = "Google Chrome Terms of Service";
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTermsText)]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Tests that back navigation functions properly after navigation via anchor
@@ -180,8 +181,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
     const char* host = kChromeHostURLs[i];
     // Exclude non-WebUI pages, as they do not go through a "loading" phase as
     // expected in LoadWebUIUrl.
-    if (host == kChromeUIBookmarksHost || host == kChromeUINewTabHost ||
-        host == kChromeUITermsHost) {
+    if (host == kChromeUIBookmarksHost || host == kChromeUINewTabHost) {
       continue;
     }
     if (host == kChromeUIPhysicalWebHost &&
@@ -194,11 +194,6 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
     [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(chrome_url_path)]
         assertWithMatcher:grey_sufficientlyVisible()];
   }
-  // Load chrome://terms differently since it is a Native page and is never in
-  // the "loading" phase.
-  chrome_test_util::LoadUrl(GURL(kChromeUITermsURL));
-  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
-      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that loading an invalid Chrome URL results in an error page.
