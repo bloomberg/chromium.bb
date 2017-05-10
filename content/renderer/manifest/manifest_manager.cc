@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/manifest_manager_messages.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/fetchers/manifest_fetcher.h"
 #include "content/renderer/manifest/manifest_parser.h"
@@ -21,8 +22,8 @@ namespace content {
 ManifestManager::ManifestManager(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       may_have_manifest_(false),
-      manifest_dirty_(true) {
-}
+      manifest_dirty_(true),
+      weak_factory_(this) {}
 
 ManifestManager::~ManifestManager() {
   if (fetcher_)
@@ -103,6 +104,28 @@ void ManifestManager::DidChangeManifest() {
   may_have_manifest_ = true;
   manifest_dirty_ = true;
   manifest_url_ = GURL();
+
+  if (!render_frame()->IsMainFrame())
+    return;
+
+  if (weak_factory_.HasWeakPtrs())
+    return;
+
+  // Changing the manifest URL can trigger multiple notifications; the manifest
+  // URL update may involve removing the old manifest link before adding the new
+  // one, triggering multiple calls to DidChangeManifest(). Coalesce changes
+  // during a single event loop task to avoid sending spurious notifications to
+  // the browser.
+  //
+  // During document load, coalescing is disabled to maintain relative ordering
+  // of this notification and the favicon URL reporting.
+  if (!render_frame()->GetWebFrame()->IsLoading()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ManifestManager::ReportManifestChange,
+                              weak_factory_.GetWeakPtr()));
+    return;
+  }
+  ReportManifestChange();
 }
 
 void ManifestManager::DidCommitProvisionalLoad(
@@ -207,6 +230,24 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
 
 void ManifestManager::OnDestruct() {
   delete this;
+}
+
+void ManifestManager::ReportManifestChange() {
+  auto manifest_url =
+      render_frame()->GetWebFrame()->GetDocument().ManifestURL();
+  if (manifest_url.IsNull()) {
+    GetManifestChangeObserver().ManifestUrlChanged(base::nullopt);
+  } else {
+    GetManifestChangeObserver().ManifestUrlChanged(GURL(manifest_url));
+  }
+}
+
+mojom::ManifestUrlChangeObserver& ManifestManager::GetManifestChangeObserver() {
+  if (!manifest_change_observer_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &manifest_change_observer_);
+  }
+  return *manifest_change_observer_;
 }
 
 } // namespace content
