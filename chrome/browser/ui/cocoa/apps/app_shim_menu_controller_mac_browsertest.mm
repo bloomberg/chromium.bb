@@ -45,8 +45,8 @@ class AppShimMenuControllerBrowserTest
 
   // testing::Test:
   void SetUp() override {
-    PlatformAppBrowserTest::SetUp();
     scoped_feature_list_.InitAndEnableFeature(features::kBookmarkApps);
+    PlatformAppBrowserTest::SetUp();
   }
 
   // Start testing apps and wait for them to launch. |flags| is a bitmask of
