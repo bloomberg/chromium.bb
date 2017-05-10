@@ -86,7 +86,8 @@ void CompositorFrameSinkLocal::DidReceiveCompositorFrameAck(
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!client_)
     return;
-  client_->ReclaimResources(resources);
+  if (!resources.empty())
+    client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
 

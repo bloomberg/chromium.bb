@@ -5,16 +5,14 @@
 #ifndef ASH_LASER_LASER_POINTER_VIEW_H_
 #define ASH_LASER_LASER_POINTER_VIEW_H_
 
-#include <deque>
 #include <memory>
-#include <unordered_map>
+#include <vector>
 
 #include "ash/laser/laser_pointer_points.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/resources/texture_mailbox.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "ui/views/view.h"
 
 namespace aura {
@@ -49,9 +47,8 @@ class LaserPointerView : public views::View {
   void UpdateTime();
   void Stop();
 
-  // Call this to indicate that the previous frame has been processed and
-  // resources can be reused or freed.
-  void DidReceiveCompositorFrameAck(const cc::ReturnedResourceArray& resources);
+  // Call this to indicate that the previous frame has been processed.
+  void DidReceiveCompositorFrameAck();
 
   // Call this to return resources so they can be reused or freed.
   void ReclaimResources(const cc::ReturnedResourceArray& resources);
@@ -77,13 +74,10 @@ class LaserPointerView : public views::View {
   gfx::Rect surface_damage_rect_;
   bool needs_update_surface_ = false;
   bool pending_draw_surface_ = false;
-  const cc::FrameSinkId frame_sink_id_;
   std::unique_ptr<LaserCompositorFrameSinkHolder> frame_sink_holder_;
-  cc::LocalSurfaceId local_surface_id_;
-  cc::LocalSurfaceIdAllocator id_allocator_;
   int next_resource_id_ = 1;
-  std::unordered_map<int, std::unique_ptr<LaserResource>> resources_;
-  std::deque<std::unique_ptr<LaserResource>> returned_resources_;
+  base::flat_map<int, std::unique_ptr<LaserResource>> resources_;
+  std::vector<std::unique_ptr<LaserResource>> returned_resources_;
   base::WeakPtrFactory<LaserPointerView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LaserPointerView);
