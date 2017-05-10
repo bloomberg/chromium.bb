@@ -21048,6 +21048,7 @@ from previous Chrome versions.
 
   <summary>Chrome flags that lead to chrome restart on ChromeOS.</summary>
   <int value="-2146613579" label="V8Future:disabled"/>
+  <int value="-2143961262" label="D3DVsync:disabled"/>
   <int value="-2143328006"
       label="enable-fill-on-account-select-no-highlighting"/>
   <int value="-2143113994" label="enable-ephemeral-apps-in-webstore"/>
@@ -21666,6 +21667,7 @@ from previous Chrome versions.
   <int value="121858954" label="enable-supervised-user-safesites"/>
   <int value="125581289" label="WebRtcHWVP8Encoding:disabled"/>
   <int value="125934378" label="enable-password-link"/>
+  <int value="131881947" label="D3DVsync:enabled"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
   <int value="157318016" label="AutomaticTabDiscarding:enabled"/>

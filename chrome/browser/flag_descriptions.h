@@ -3414,6 +3414,14 @@ extern const char kLocationHardReloadDescription[];
 extern const char kCaptureThumbnailOnLoadFinishedName[];
 extern const char kCaptureThumbnailOnLoadFinishedDescription[];
 
+#if defined(OS_WIN)
+
+// Name and description of the flag that enables D3D v-sync.
+extern const char kEnableD3DVsync[];
+extern const char kEnableD3DVsyncDescription[];
+
+#endif  // defined(OS_WIN)
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_

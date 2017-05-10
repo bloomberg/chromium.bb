@@ -2886,6 +2886,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCaptureThumbnailOnLoadFinishedDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kCaptureThumbnailOnLoadFinished)},
 
+#if defined(OS_WIN)
+    {"enable-d3d-vsync", flag_descriptions::kEnableD3DVsync,
+     flag_descriptions::kEnableD3DVsyncDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kD3DVsync)},
+#endif  // defined(OS_WIN)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.
