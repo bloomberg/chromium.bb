@@ -12,6 +12,7 @@
 
 namespace base {
 class DictionaryValue;
+class Time;
 }
 
 namespace chromeos {
@@ -22,7 +23,8 @@ CHROMEOS_EXPORT extern const char kPrinterId[];
 // Returns a new printer populated with the fields from |pref|.  Processes
 // dictionaries from policy i.e. cPanel.
 CHROMEOS_EXPORT std::unique_ptr<Printer> RecommendedPrinterToPrinter(
-    const base::DictionaryValue& pref);
+    const base::DictionaryValue& pref,
+    const base::Time& timestamp);
 
 }  // namespace printing
 }  // namespace chromeos

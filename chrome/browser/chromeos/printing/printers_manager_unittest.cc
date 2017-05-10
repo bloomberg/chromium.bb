@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/common/pref_names.h"
@@ -223,6 +224,25 @@ TEST_F(PrintersManagerTest, GetRecommendedPrinter) {
   EXPECT_EQ(from_list.id(), retrieved->id());
   EXPECT_EQ("LexaPrint", from_list.display_name());
   EXPECT_EQ(Printer::Source::SRC_POLICY, from_list.source());
+}
+
+TEST_F(PrintersManagerTest, PrinterNotInstalled) {
+  Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(printer));
+}
+
+TEST_F(PrintersManagerTest, PrinterIsInstalled) {
+  Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
+  manager_->PrinterInstalled(printer);
+  EXPECT_TRUE(manager_->IsConfigurationCurrent(printer));
+}
+
+TEST_F(PrintersManagerTest, UpdatedPrinterConfiguration) {
+  Printer printer(kPrinterId, base::Time::FromInternalValue(1000));
+  manager_->PrinterInstalled(printer);
+
+  Printer updated_printer(kPrinterId, base::Time::FromInternalValue(2000));
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated_printer));
 }
 
 }  // namespace chromeos

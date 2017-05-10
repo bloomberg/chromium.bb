@@ -70,47 +70,12 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
       base::Bind(&GetSettingsOnBlockingPool, printer->id(), basic_info), cb);
 }
 
-void HandlePrinterSetup(std::unique_ptr<chromeos::Printer> printer,
-                        const PrinterSetupCallback& cb,
-                        chromeos::PrinterSetupResult result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  switch (result) {
-    case chromeos::PrinterSetupResult::SUCCESS:
-      VLOG(1) << "Printer setup successful for " << printer->id()
-              << " fetching properties";
-
-      // fetch settings on the blocking pool and invoke callback.
-      FetchCapabilities(std::move(printer), cb);
-      return;
-    case chromeos::PrinterSetupResult::PPD_NOT_FOUND:
-      LOG(WARNING) << "Could not find PPD.  Check printer configuration.";
-      // Prompt user to update configuration.
-      // TODO(skau): Fill me in
-      break;
-    case chromeos::PrinterSetupResult::PPD_UNRETRIEVABLE:
-      LOG(WARNING) << "Could not download PPD.  Check Internet connection.";
-      // Could not download PPD.  Connect to Internet.
-      // TODO(skau): Fill me in
-      break;
-    case chromeos::PrinterSetupResult::PRINTER_UNREACHABLE:
-    case chromeos::PrinterSetupResult::DBUS_ERROR:
-    case chromeos::PrinterSetupResult::PPD_TOO_LARGE:
-    case chromeos::PrinterSetupResult::INVALID_PPD:
-    case chromeos::PrinterSetupResult::FATAL_ERROR:
-      LOG(ERROR) << "Unexpected error in printer setup." << result;
-      break;
-  }
-
-  // TODO(skau): Open printer settings if this is resolvable.
-  cb.Run(nullptr);
-}
-
 class PrinterBackendProxyChromeos : public PrinterBackendProxy {
  public:
   explicit PrinterBackendProxyChromeos(Profile* profile)
       : prefs_(chromeos::PrintersManagerFactory::GetForBrowserContext(profile)),
-        printer_configurer_(chromeos::PrinterConfigurer::Create(profile)) {
+        printer_configurer_(chromeos::PrinterConfigurer::Create(profile)),
+        weak_factory_(this) {
     // Construct the CupsPrintJobManager to listen for printing events.
     chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
   }
@@ -158,16 +123,61 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
       return;
     }
 
+    if (prefs_->IsConfigurationCurrent(*printer)) {
+      // Skip setup if the printer is already installed.
+      HandlePrinterSetup(std::move(printer), cb, chromeos::SUCCESS);
+      return;
+    }
+
     const chromeos::Printer& printer_ref = *printer;
     printer_configurer_->SetUpPrinter(
         printer_ref,
-        base::Bind(&HandlePrinterSetup, base::Passed(&printer), cb));
+        base::Bind(&PrinterBackendProxyChromeos::HandlePrinterSetup,
+                   weak_factory_.GetWeakPtr(), base::Passed(&printer), cb));
   };
 
  private:
+  void HandlePrinterSetup(std::unique_ptr<chromeos::Printer> printer,
+                          const PrinterSetupCallback& cb,
+                          chromeos::PrinterSetupResult result) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    switch (result) {
+      case chromeos::PrinterSetupResult::SUCCESS:
+        VLOG(1) << "Printer setup successful for " << printer->id()
+                << " fetching properties";
+        prefs_->PrinterInstalled(*printer);
+
+        // fetch settings on the blocking pool and invoke callback.
+        FetchCapabilities(std::move(printer), cb);
+        return;
+      case chromeos::PrinterSetupResult::PPD_NOT_FOUND:
+        LOG(WARNING) << "Could not find PPD.  Check printer configuration.";
+        // Prompt user to update configuration.
+        // TODO(skau): Fill me in
+        break;
+      case chromeos::PrinterSetupResult::PPD_UNRETRIEVABLE:
+        LOG(WARNING) << "Could not download PPD.  Check Internet connection.";
+        // Could not download PPD.  Connect to Internet.
+        // TODO(skau): Fill me in
+        break;
+      case chromeos::PrinterSetupResult::PRINTER_UNREACHABLE:
+      case chromeos::PrinterSetupResult::DBUS_ERROR:
+      case chromeos::PrinterSetupResult::PPD_TOO_LARGE:
+      case chromeos::PrinterSetupResult::INVALID_PPD:
+      case chromeos::PrinterSetupResult::FATAL_ERROR:
+        LOG(ERROR) << "Unexpected error in printer setup." << result;
+        break;
+    }
+
+    // TODO(skau): Open printer settings if this is resolvable.
+    cb.Run(nullptr);
+  }
+
   chromeos::PrintersManager* prefs_;
   scoped_refptr<chromeos::printing::PpdProvider> ppd_provider_;
   std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;
+  base::WeakPtrFactory<PrinterBackendProxyChromeos> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterBackendProxyChromeos);
 };

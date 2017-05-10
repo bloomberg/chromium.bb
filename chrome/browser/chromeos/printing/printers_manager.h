@@ -55,8 +55,9 @@ class PrintersManager : public KeyedService {
   // printer exists.
   std::unique_ptr<Printer> GetPrinter(const std::string& printer_id) const;
 
-  // Adds or updates a printer. Printers are identified by the id field.  Use an
-  // empty id to add a new printer.
+  // Adds or updates a printer in profile preferences.  The |printer| is
+  // identified by its id field.  Those with an empty id are treated as new
+  // printers.
   void RegisterPrinter(std::unique_ptr<Printer> printer);
 
   // Remove printer from preferences with the id |printer_id|.  Returns true if
@@ -76,6 +77,13 @@ class PrintersManager : public KeyedService {
   // Returns a ModelTypeSyncBridge for the sync client.
   PrintersSyncBridge* GetSyncBridge();
 
+  // Registers that the printer was installed in CUPS. This is independent of
+  // whether a printer is saved in profile preferences.
+  void PrinterInstalled(const Printer& printer);
+
+  // Returns true if |printer| is currently installed in CUPS.
+  bool IsConfigurationCurrent(const Printer& printer) const;
+
  private:
   // Updates the in-memory recommended printer list.
   void UpdateRecommendedPrinters();
@@ -89,8 +97,10 @@ class PrintersManager : public KeyedService {
   // Contains the keys for all recommended printers in order so we can return
   // the list of recommended printers in the order they were received.
   std::vector<std::string> recommended_printer_ids_;
-  std::map<std::string, std::unique_ptr<base::DictionaryValue>>
-      recommended_printers_;
+  std::map<std::string, std::unique_ptr<Printer>> recommended_printers_;
+
+  // Map of printer ids to installation timestamps.
+  std::map<std::string, base::Time> installed_printer_timestamps_;
 
   base::ObserverList<Observer> observers_;
 

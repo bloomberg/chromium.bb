@@ -14,7 +14,8 @@ Printer::Printer() : source_(SRC_USER_PREFS) {
   id_ = base::GenerateGUID();
 }
 
-Printer::Printer(const std::string& id) : id_(id), source_(SRC_USER_PREFS) {
+Printer::Printer(const std::string& id, const base::Time& last_updated)
+    : id_(id), source_(SRC_USER_PREFS), last_updated_(last_updated) {
   if (id_.empty())
     id_ = base::GenerateGUID();
 }
