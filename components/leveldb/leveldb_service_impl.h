@@ -26,18 +26,18 @@ class LevelDBServiceImpl : public mojom::LevelDBService {
   void Open(filesystem::mojom::DirectoryPtr directory,
             const std::string& dbname,
             leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
-            const OpenCallback& callback) override;
+            OpenCallback callback) override;
   void OpenWithOptions(
       leveldb::mojom::OpenOptionsPtr open_options,
       filesystem::mojom::DirectoryPtr directory,
       const std::string& dbname,
       leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
-      const OpenCallback& callback) override;
+      OpenCallback callback) override;
   void OpenInMemory(leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
-                    const OpenInMemoryCallback& callback) override;
+                    OpenInMemoryCallback callback) override;
   void Destroy(filesystem::mojom::DirectoryPtr directory,
                const std::string& dbname,
-               const DestroyCallback& callback) override;
+               DestroyCallback callback) override;
 
  private:
   // Thread to own the mojo message pipe. Because leveldb spawns multiple

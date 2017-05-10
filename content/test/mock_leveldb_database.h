@@ -19,39 +19,37 @@ class MockLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
   // LevelDBDatabase:
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
-           const PutCallback& callback) override;
+           PutCallback callback) override;
   void Delete(const std::vector<uint8_t>& key,
-              const DeleteCallback& callback) override;
+              DeleteCallback callback) override;
   void DeletePrefixed(const std::vector<uint8_t>& key_prefix,
-                      const DeletePrefixedCallback& callback) override;
+                      DeletePrefixedCallback callback) override;
   void Write(std::vector<leveldb::mojom::BatchedOperationPtr> operations,
-             const WriteCallback& callback) override;
-  void Get(const std::vector<uint8_t>& key,
-           const GetCallback& callback) override;
+             WriteCallback callback) override;
+  void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
   void GetPrefixed(const std::vector<uint8_t>& key_prefix,
-                   const GetPrefixedCallback& callback) override;
-  void GetSnapshot(const GetSnapshotCallback& callback) override;
+                   GetPrefixedCallback callback) override;
+  void GetSnapshot(GetSnapshotCallback callback) override;
   void ReleaseSnapshot(const base::UnguessableToken& snapshot) override;
   void GetFromSnapshot(const base::UnguessableToken& snapshot,
                        const std::vector<uint8_t>& key,
-                       const GetCallback& callback) override;
-  void NewIterator(const NewIteratorCallback& callback) override;
+                       GetCallback callback) override;
+  void NewIterator(NewIteratorCallback callback) override;
   void NewIteratorFromSnapshot(
       const base::UnguessableToken& snapshot,
-      const NewIteratorFromSnapshotCallback& callback) override;
+      NewIteratorFromSnapshotCallback callback) override;
   void ReleaseIterator(const base::UnguessableToken& iterator) override;
-  void IteratorSeekToFirst(
-      const base::UnguessableToken& iterator,
-      const IteratorSeekToFirstCallback& callback) override;
+  void IteratorSeekToFirst(const base::UnguessableToken& iterator,
+                           IteratorSeekToFirstCallback callback) override;
   void IteratorSeekToLast(const base::UnguessableToken& iterator,
-                          const IteratorSeekToLastCallback& callback) override;
+                          IteratorSeekToLastCallback callback) override;
   void IteratorSeek(const base::UnguessableToken& iterator,
                     const std::vector<uint8_t>& target,
-                    const IteratorSeekToLastCallback& callback) override;
+                    IteratorSeekToLastCallback callback) override;
   void IteratorNext(const base::UnguessableToken& iterator,
-                    const IteratorNextCallback& callback) override;
+                    IteratorNextCallback callback) override;
   void IteratorPrev(const base::UnguessableToken& iterator,
-                    const IteratorPrevCallback& callback) override;
+                    IteratorPrevCallback callback) override;
 
  private:
   std::map<std::vector<uint8_t>, std::vector<uint8_t>>& mock_data_;

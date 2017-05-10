@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/optional.h"
 #include "base/rand_util.h"
@@ -48,33 +49,32 @@ LevelDBDatabaseImpl::~LevelDBDatabaseImpl() {
 
 void LevelDBDatabaseImpl::Put(const std::vector<uint8_t>& key,
                               const std::vector<uint8_t>& value,
-                              const PutCallback& callback) {
+                              PutCallback callback) {
   leveldb::Status status =
       db_->Put(leveldb::WriteOptions(), GetSliceFor(key), GetSliceFor(value));
-  callback.Run(LeveldbStatusToError(status));
+  std::move(callback).Run(LeveldbStatusToError(status));
 }
 
 void LevelDBDatabaseImpl::Delete(const std::vector<uint8_t>& key,
-                                 const DeleteCallback& callback) {
+                                 DeleteCallback callback) {
   leveldb::Status status =
       db_->Delete(leveldb::WriteOptions(), GetSliceFor(key));
-  callback.Run(LeveldbStatusToError(status));
+  std::move(callback).Run(LeveldbStatusToError(status));
 }
 
-void LevelDBDatabaseImpl::DeletePrefixed(
-    const std::vector<uint8_t>& key_prefix,
-    const DeletePrefixedCallback& callback) {
+void LevelDBDatabaseImpl::DeletePrefixed(const std::vector<uint8_t>& key_prefix,
+                                         DeletePrefixedCallback callback) {
   leveldb::WriteBatch batch;
   leveldb::Status status = DeletePrefixedHelper(
       GetSliceFor(key_prefix), &batch);
   if (status.ok())
     status = db_->Write(leveldb::WriteOptions(), &batch);
-  callback.Run(LeveldbStatusToError(status));
+  std::move(callback).Run(LeveldbStatusToError(status));
 }
 
 void LevelDBDatabaseImpl::Write(
     std::vector<mojom::BatchedOperationPtr> operations,
-    const WriteCallback& callback) {
+    WriteCallback callback) {
   leveldb::WriteBatch batch;
 
   for (size_t i = 0; i < operations.size(); ++i) {
@@ -100,19 +100,20 @@ void LevelDBDatabaseImpl::Write(
   }
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
-  callback.Run(LeveldbStatusToError(status));
+  std::move(callback).Run(LeveldbStatusToError(status));
 }
 
 void LevelDBDatabaseImpl::Get(const std::vector<uint8_t>& key,
-                              const GetCallback& callback) {
+                              GetCallback callback) {
   std::string value;
   leveldb::Status status =
       db_->Get(leveldb::ReadOptions(), GetSliceFor(key), &value);
-  callback.Run(LeveldbStatusToError(status), StdStringToUint8Vector(value));
+  std::move(callback).Run(LeveldbStatusToError(status),
+                          StdStringToUint8Vector(value));
 }
 
 void LevelDBDatabaseImpl::GetPrefixed(const std::vector<uint8_t>& key_prefix,
-                                      const GetPrefixedCallback& callback) {
+                                      GetPrefixedCallback callback) {
   std::vector<mojom::KeyValuePtr> data;
   leveldb::Status status = ForEachWithPrefix(
       db_.get(), GetSliceFor(key_prefix),
@@ -122,14 +123,14 @@ void LevelDBDatabaseImpl::GetPrefixed(const std::vector<uint8_t>& key_prefix,
         kv->value = GetVectorFor(value);
         data.push_back(std::move(kv));
       });
-  callback.Run(LeveldbStatusToError(status), std::move(data));
+  std::move(callback).Run(LeveldbStatusToError(status), std::move(data));
 }
 
-void LevelDBDatabaseImpl::GetSnapshot(const GetSnapshotCallback& callback) {
+void LevelDBDatabaseImpl::GetSnapshot(GetSnapshotCallback callback) {
   const Snapshot* s = db_->GetSnapshot();
   base::UnguessableToken token = base::UnguessableToken::Create();
   snapshot_map_.insert(std::make_pair(token, s));
-  callback.Run(token);
+  std::move(callback).Run(token);
 }
 
 void LevelDBDatabaseImpl::ReleaseSnapshot(
@@ -144,12 +145,12 @@ void LevelDBDatabaseImpl::ReleaseSnapshot(
 void LevelDBDatabaseImpl::GetFromSnapshot(
     const base::UnguessableToken& snapshot,
     const std::vector<uint8_t>& key,
-    const GetCallback& callback) {
+    GetCallback callback) {
   // If the snapshot id is invalid, send back invalid argument
   auto it = snapshot_map_.find(snapshot);
   if (it == snapshot_map_.end()) {
-    callback.Run(mojom::DatabaseError::INVALID_ARGUMENT,
-                 std::vector<uint8_t>());
+    std::move(callback).Run(mojom::DatabaseError::INVALID_ARGUMENT,
+                            std::vector<uint8_t>());
     return;
   }
 
@@ -157,23 +158,24 @@ void LevelDBDatabaseImpl::GetFromSnapshot(
   leveldb::ReadOptions options;
   options.snapshot = it->second;
   leveldb::Status status = db_->Get(options, GetSliceFor(key), &value);
-  callback.Run(LeveldbStatusToError(status), StdStringToUint8Vector(value));
+  std::move(callback).Run(LeveldbStatusToError(status),
+                          StdStringToUint8Vector(value));
 }
 
-void LevelDBDatabaseImpl::NewIterator(const NewIteratorCallback& callback) {
+void LevelDBDatabaseImpl::NewIterator(NewIteratorCallback callback) {
   Iterator* iterator = db_->NewIterator(leveldb::ReadOptions());
   base::UnguessableToken token = base::UnguessableToken::Create();
   iterator_map_.insert(std::make_pair(token, iterator));
-  callback.Run(token);
+  std::move(callback).Run(token);
 }
 
 void LevelDBDatabaseImpl::NewIteratorFromSnapshot(
     const base::UnguessableToken& snapshot,
-    const NewIteratorFromSnapshotCallback& callback) {
+    NewIteratorFromSnapshotCallback callback) {
   // If the snapshot id is invalid, send back invalid argument
   auto it = snapshot_map_.find(snapshot);
   if (it == snapshot_map_.end()) {
-    callback.Run(base::Optional<base::UnguessableToken>());
+    std::move(callback).Run(base::Optional<base::UnguessableToken>());
     return;
   }
 
@@ -183,7 +185,7 @@ void LevelDBDatabaseImpl::NewIteratorFromSnapshot(
   Iterator* iterator = db_->NewIterator(options);
   base::UnguessableToken new_token = base::UnguessableToken::Create();
   iterator_map_.insert(std::make_pair(new_token, iterator));
-  callback.Run(new_token);
+  std::move(callback).Run(new_token);
 }
 
 void LevelDBDatabaseImpl::ReleaseIterator(
@@ -197,89 +199,88 @@ void LevelDBDatabaseImpl::ReleaseIterator(
 
 void LevelDBDatabaseImpl::IteratorSeekToFirst(
     const base::UnguessableToken& iterator,
-    const IteratorSeekToFirstCallback& callback) {
+    IteratorSeekToFirstCallback callback) {
   auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
-    callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
-                 base::nullopt);
+    std::move(callback).Run(false, mojom::DatabaseError::INVALID_ARGUMENT,
+                            base::nullopt, base::nullopt);
     return;
   }
 
   it->second->SeekToFirst();
 
-  ReplyToIteratorMessage(it->second, callback);
+  ReplyToIteratorMessage(it->second, std::move(callback));
 }
 
 void LevelDBDatabaseImpl::IteratorSeekToLast(
     const base::UnguessableToken& iterator,
-    const IteratorSeekToLastCallback& callback) {
+    IteratorSeekToLastCallback callback) {
   auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
-    callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
-                 base::nullopt);
+    std::move(callback).Run(false, mojom::DatabaseError::INVALID_ARGUMENT,
+                            base::nullopt, base::nullopt);
     return;
   }
 
   it->second->SeekToLast();
 
-  ReplyToIteratorMessage(it->second, callback);
+  ReplyToIteratorMessage(it->second, std::move(callback));
 }
 
-void LevelDBDatabaseImpl::IteratorSeek(
-    const base::UnguessableToken& iterator,
-    const std::vector<uint8_t>& target,
-    const IteratorSeekToLastCallback& callback) {
+void LevelDBDatabaseImpl::IteratorSeek(const base::UnguessableToken& iterator,
+                                       const std::vector<uint8_t>& target,
+                                       IteratorSeekToLastCallback callback) {
   auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
-    callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
-                 base::nullopt);
+    std::move(callback).Run(false, mojom::DatabaseError::INVALID_ARGUMENT,
+                            base::nullopt, base::nullopt);
     return;
   }
 
   it->second->Seek(GetSliceFor(target));
 
-  ReplyToIteratorMessage(it->second, callback);
+  ReplyToIteratorMessage(it->second, std::move(callback));
 }
 
 void LevelDBDatabaseImpl::IteratorNext(const base::UnguessableToken& iterator,
-                                       const IteratorNextCallback& callback) {
+                                       IteratorNextCallback callback) {
   auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
-    callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
-                 base::nullopt);
+    std::move(callback).Run(false, mojom::DatabaseError::INVALID_ARGUMENT,
+                            base::nullopt, base::nullopt);
     return;
   }
 
   it->second->Next();
 
-  ReplyToIteratorMessage(it->second, callback);
+  ReplyToIteratorMessage(it->second, std::move(callback));
 }
 
 void LevelDBDatabaseImpl::IteratorPrev(const base::UnguessableToken& iterator,
-                                       const IteratorPrevCallback& callback) {
+                                       IteratorPrevCallback callback) {
   auto it = iterator_map_.find(iterator);
   if (it == iterator_map_.end()) {
-    callback.Run(false, mojom::DatabaseError::INVALID_ARGUMENT, base::nullopt,
-                 base::nullopt);
+    std::move(callback).Run(false, mojom::DatabaseError::INVALID_ARGUMENT,
+                            base::nullopt, base::nullopt);
     return;
   }
 
   it->second->Prev();
 
-  ReplyToIteratorMessage(it->second, callback);
+  ReplyToIteratorMessage(it->second, std::move(callback));
 }
 
 void LevelDBDatabaseImpl::ReplyToIteratorMessage(
     leveldb::Iterator* it,
-    const IteratorSeekToFirstCallback& callback) {
+    IteratorSeekToFirstCallback callback) {
   if (!it->Valid()) {
-    callback.Run(false, LeveldbStatusToError(it->status()), base::nullopt,
-                 base::nullopt);
+    std::move(callback).Run(false, LeveldbStatusToError(it->status()),
+                            base::nullopt, base::nullopt);
     return;
   }
 
-  callback.Run(true, LeveldbStatusToError(it->status()),
-               GetVectorFor(it->key()), GetVectorFor(it->value()));
+  std::move(callback).Run(true, LeveldbStatusToError(it->status()),
+                          GetVectorFor(it->key()), GetVectorFor(it->value()));
 }
 
 leveldb::Status LevelDBDatabaseImpl::DeletePrefixedHelper(
