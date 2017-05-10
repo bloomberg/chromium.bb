@@ -25185,6 +25185,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Network channel used for invalidations.</summary>
 </histogram>
 
+<histogram name="IOS.MailtoURLRewritten" enum="Boolean">
+  <owner>pkl@chromium.org</owner>
+  <summary>
+    Counts the times when a mailto: URL is tapped by user and whether the URL
+    has been rewritten for an available native Mail client app or not.
+  </summary>
+</histogram>
+
 <histogram name="IOS.ShareExtension.ReceivedEntriesCount" units="files">
   <owner>olivierrobin@chromium.org</owner>
   <summary>
