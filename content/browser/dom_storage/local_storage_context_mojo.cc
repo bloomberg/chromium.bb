@@ -66,6 +66,7 @@ std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
 }
 
 void NoOpSuccess(bool success) {}
+void NoOpDatabaseError(leveldb::mojom::DatabaseError error) {}
 
 void MigrateStorageHelper(
     base::FilePath db_path,
@@ -88,6 +89,22 @@ void MigrateStorageHelper(
 void CallMigrationCalback(LevelDBWrapperImpl::ValueMapCallback callback,
                           std::unique_ptr<LevelDBWrapperImpl::ValueMap> data) {
   std::move(callback).Run(std::move(data));
+}
+
+void AddDeleteOriginOperations(
+    std::vector<leveldb::mojom::BatchedOperationPtr>* operations,
+    const url::Origin& origin) {
+  leveldb::mojom::BatchedOperationPtr item =
+      leveldb::mojom::BatchedOperation::New();
+  item->type = leveldb::mojom::BatchOperationType::DELETE_PREFIXED_KEY;
+  item->key = leveldb::StdStringToUint8Vector(kDataPrefix + origin.Serialize() +
+                                              kOriginSeparator);
+  operations->push_back(std::move(item));
+
+  item = leveldb::mojom::BatchedOperation::New();
+  item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
+  item->key = CreateMetaDataKey(origin);
+  operations->push_back(std::move(item));
 }
 
 }  // namespace
@@ -250,11 +267,18 @@ void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin) {
     return;
   }
 
-  LevelDBWrapperImpl* wrapper = GetOrCreateDBWrapper(origin);
-  // Renderer process expects |source| to always be two newline separated
-  // strings.
-  wrapper->DeleteAll("\n", base::Bind(&NoOpSuccess));
-  wrapper->ScheduleImmediateCommit();
+  auto found = level_db_wrappers_.find(origin);
+  if (found != level_db_wrappers_.end()) {
+    // Renderer process expects |source| to always be two newline separated
+    // strings.
+    found->second->level_db_wrapper()->DeleteAll("\n",
+                                                 base::Bind(&NoOpSuccess));
+    found->second->level_db_wrapper()->ScheduleImmediateCommit();
+  } else if (database_) {
+    std::vector<leveldb::mojom::BatchedOperationPtr> operations;
+    AddDeleteOriginOperations(&operations, origin);
+    database_->Write(std::move(operations), base::Bind(&NoOpDatabaseError));
+  }
 }
 
 void LocalStorageContextMojo::DeleteStorageForPhysicalOrigin(
