@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 #define COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -48,6 +49,9 @@ class SESSION_EXPORT SessionManager {
   // we perform additional initialization after the user is logged in but
   // before the session has been started.
   virtual void SessionStarted();
+
+  // Returns true if the session for the given user was started.
+  bool HasSessionForAccountId(const AccountId& user_account_id) const;
 
   // Convenience wrapps of session state.
   bool IsInSecondaryLoginScreen() const;
