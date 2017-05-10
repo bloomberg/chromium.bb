@@ -38,15 +38,6 @@ class CountedBrowserAccessibility : public BrowserAccessibility {
 
   int native_ref_count_;
   static int global_obj_count_;
-
-#if defined(OS_WIN)
-  // Adds some padding to prevent a heap-buffer-overflow when an instance of
-  // this class is casted into a BrowserAccessibilityWin pointer.
-  // http://crbug.com/235508
-  // TODO(dmazzoni): Fix this properly.
-  static const size_t kDataSize = sizeof(int) + sizeof(BrowserAccessibility);
-  uint8_t padding_[sizeof(BrowserAccessibilityWin) - kDataSize];
-#endif
 };
 
 int CountedBrowserAccessibility::global_obj_count_ = 0;
