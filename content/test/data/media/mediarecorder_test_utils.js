@@ -22,13 +22,13 @@ function waitFor(description, predicate) {
     console.log('Waiting for', description.toString());
     var check = setInterval(function() {
       var elapsed = new Date() - startTime;
-      if (elapsed > 3000) {
+      if (predicate()) {
+        clearInterval(check);
+        resolve();
+      } else if (elapsed > 3000) {
         startTime = new Date();
         console.log('Still waiting for satisfaction of ' +
             predicate.toString());
-      } else if (predicate()) {
-        clearInterval(check);
-        resolve();
       }
     }, 50);
   });
