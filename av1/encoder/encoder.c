@@ -490,10 +490,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
     aom_free(cpi->td.mb.palette_buffer);
 #endif  // CONFIG_PALETTE
 
-  if (cpi->source_diff_var != NULL) {
-    aom_free(cpi->source_diff_var);
-    cpi->source_diff_var = NULL;
-  }
 #if CONFIG_ANS
   aom_buf_ans_free(&cpi->buf_ans);
 #endif  // CONFIG_ANS
@@ -2520,12 +2516,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_speed_features_framesize_dependent(cpi);
-
-  // Allocate memory to store variances for a frame.
-  CHECK_MEM_ERROR(cm, cpi->source_diff_var,
-                  aom_calloc(cm->MBs, sizeof(*cpi->source_diff_var)));
-  cpi->source_var_thresh = 0;
-  cpi->frames_till_next_var_check = 0;
 
 #define BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX3F, SDX8F, SDX4DF) \
   cpi->fn_ptr[BT].sdf = SDF;                                    \

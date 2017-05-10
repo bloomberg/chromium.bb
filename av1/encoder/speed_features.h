@@ -199,10 +199,7 @@ typedef enum {
 
   // Use an arbitrary partitioning scheme based on source variance within
   // a 64X64 SB
-  VAR_BASED_PARTITION,
-
-  // Use non-fixed partitions based on source variance
-  SOURCE_VAR_BASED_PARTITION
+  VAR_BASED_PARTITION
 } PARTITION_SEARCH_TYPE;
 
 typedef enum {
@@ -439,7 +436,7 @@ typedef struct SPEED_FEATURES {
   // TODO(aconverse): Fold this into one of the other many mode skips
   BLOCK_SIZE max_intra_bsize;
 
-  // The frequency that we check if SOURCE_VAR_BASED_PARTITION or
+  // The frequency that we check if
   // FIXED_PARTITION search type should be used.
   int search_type_check_frequency;
 
