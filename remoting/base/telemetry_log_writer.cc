@@ -21,7 +21,9 @@ TelemetryLogWriter::TelemetryLogWriter(
     : telemetry_base_url_(telemetry_base_url),
       request_factory_(std::move(request_factory)) {}
 
-TelemetryLogWriter::~TelemetryLogWriter() {}
+TelemetryLogWriter::~TelemetryLogWriter() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void TelemetryLogWriter::SetAuthToken(const std::string& auth_token) {
   DCHECK(thread_checker_.CalledOnValidThread());

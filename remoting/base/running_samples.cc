@@ -15,7 +15,9 @@ RunningSamples::RunningSamples(int window_size)
   DCHECK_GT(window_size, 0);
 }
 
-RunningSamples::~RunningSamples() {}
+RunningSamples::~RunningSamples() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void RunningSamples::Record(int64_t value) {
   DCHECK(thread_checker_.CalledOnValidThread());
