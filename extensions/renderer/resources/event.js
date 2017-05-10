@@ -203,12 +203,8 @@
       this.eventOptions.unmanaged = true;
     }
 
-    // Track whether the event has been destroyed to help track down the cause
-    // of http://crbug.com/258526.
-    // This variable will eventually hold the stack trace of the destroy call.
-    // TODO(kalman): Delete this and replace with more sound logic that catches
-    // when events are used without being *attached*.
-    this.destroyed = null;
+    // Track whether the event has been destroyed as a sanity check.
+    this.destroyed = false;
 
     if (this.eventOptions.unmanaged)
       this.attachmentStrategy = new NullAttachmentStrategy(this);
@@ -346,8 +342,7 @@
 
   EventImpl.prototype.dispatch_ = function(args, listenerIDs) {
     if (this.destroyed) {
-      throw new Error(this.eventName + ' was already destroyed at: ' +
-                      this.destroyed);
+      throw new Error(this.eventName + ' was already destroyed');
     }
     if (!this.eventOptions.supportsListeners)
       throw new Error("This event does not support listeners.");
@@ -402,7 +397,7 @@
   EventImpl.prototype.destroy_ = function() {
     this.listeners.length = 0;
     this.detach_();
-    this.destroyed = exceptionHandler.getStackTrace();
+    this.destroyed = true;
   };
 
   EventImpl.prototype.addRules = function(rules, opt_cb) {
