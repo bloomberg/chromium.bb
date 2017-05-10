@@ -21,6 +21,8 @@ class PowerSaveBlocker;
 
 namespace chromeos {
 
+class LoginFeedback;
+
 // WebUI implementation of EncryptionMigrationScreenView
 class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
                                          public BaseScreenHandler,
@@ -64,6 +66,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void HandleStartMigration();
   void HandleSkipMigration();
   void HandleRequestRestart();
+  void HandleOpenFeedbackDialog();
 
   // Updates UI state.
   void UpdateUIState(UIState state);
@@ -117,6 +120,8 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   double initial_battery_percent_ = 0.0;
 
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+
+  std::unique_ptr<LoginFeedback> login_feedback_;
 
   base::WeakPtrFactory<EncryptionMigrationScreenHandler> weak_ptr_factory_;
 
