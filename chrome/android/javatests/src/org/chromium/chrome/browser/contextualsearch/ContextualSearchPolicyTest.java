@@ -4,30 +4,43 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 import java.util.ArrayList;
 
 /**
  * Tests for the ContextualSearchPolicy class.
  */
-public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class ContextualSearchPolicyTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     ContextualSearchPolicy mPolicy;
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        getInstrumentation().runOnMainSync(new Runnable() {
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mPolicy = new ContextualSearchPolicy(null, null);
@@ -35,6 +48,7 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     @RetryOnFailure
@@ -42,9 +56,10 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
         ArrayList<String> list = new ArrayList<String>();
         list.add("br");
         list.add("de");
-        assertEquals("br", mPolicy.bestTargetLanguage(list));
+        Assert.assertEquals("br", mPolicy.bestTargetLanguage(list));
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     @RetryOnFailure
@@ -53,9 +68,10 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
         ArrayList<String> list = new ArrayList<String>();
         list.add("en");
         list.add("id");
-        assertEquals("id", mPolicy.bestTargetLanguage(list, countryOfUx));
+        Assert.assertEquals("id", mPolicy.bestTargetLanguage(list, countryOfUx));
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     @RetryOnFailure
@@ -64,23 +80,25 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
         ArrayList<String> list = new ArrayList<String>();
         list.add("en");
         list.add("id");
-        assertEquals("en", mPolicy.bestTargetLanguage(list, countryOfUx));
+        Assert.assertEquals("en", mPolicy.bestTargetLanguage(list, countryOfUx));
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     @RetryOnFailure
     public void testBestTargetLanguageUsesEnglishWhenOnlyChoice() {
         ArrayList<String> list = new ArrayList<String>();
         list.add("en");
-        assertEquals("en", mPolicy.bestTargetLanguage(list));
+        Assert.assertEquals("en", mPolicy.bestTargetLanguage(list));
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testBestTargetLanguageReturnsEmptyWhenNoChoice() {
         ArrayList<String> list = new ArrayList<String>();
-        assertEquals("", mPolicy.bestTargetLanguage(list));
+        Assert.assertEquals("", mPolicy.bestTargetLanguage(list));
     }
 
     // TODO(donnd): This set of tests is not complete, add more tests.

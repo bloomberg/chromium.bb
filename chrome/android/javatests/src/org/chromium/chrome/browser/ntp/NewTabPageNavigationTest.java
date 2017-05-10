@@ -4,86 +4,101 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Tests loading the NTP and navigating between it and other pages.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @RetryOnFailure
-public class NewTabPageNavigationTest extends ChromeTabbedActivityTestBase {
+public class NewTabPageNavigationTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private EmbeddedTestServer mTestServer;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(null);
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
     }
 
     /**
      * Sanity check that we do start on the NTP by default.
      */
+    @Test
     @MediumTest
     @Feature({"NewTabPage", "Main"})
     public void testNTPIsDefault() {
-        Tab tab = getActivity().getActivityTab();
-        assertNotNull(tab);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        Assert.assertNotNull(tab);
         String url = tab.getUrl();
-        assertTrue("Unexpected url: " + url,
+        Assert.assertTrue("Unexpected url: " + url,
                 url.startsWith("chrome-native://newtab/")
-                || url.startsWith("chrome-native://bookmarks/")
-                || url.startsWith("chrome-native://recent-tabs/"));
+                        || url.startsWith("chrome-native://bookmarks/")
+                        || url.startsWith("chrome-native://recent-tabs/"));
     }
 
     /**
      * Check that navigating away from the NTP does work.
      */
+    @Test
     @LargeTest
     @Feature({"NewTabPage"})
     public void testNavigatingFromNTP() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/google.html");
-        loadUrl(url);
-        assertEquals(url, getActivity().getActivityTab().getUrl());
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals(url, mActivityTestRule.getActivity().getActivityTab().getUrl());
     }
 
     /**
      * Tests navigating back to the NTP after loading another page.
      */
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     public void testNavigateBackToNTPViaUrl() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/google.html");
-        loadUrl(url);
-        assertEquals(url, getActivity().getActivityTab().getUrl());
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals(url, mActivityTestRule.getActivity().getActivityTab().getUrl());
 
-        loadUrl(UrlConstants.NTP_URL);
-        Tab tab = getActivity().getActivityTab();
-        assertNotNull(tab);
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        Assert.assertNotNull(tab);
         url = tab.getUrl();
-        assertEquals(UrlConstants.NTP_URL, url);
+        Assert.assertEquals(UrlConstants.NTP_URL, url);
 
         // Check that the NTP is actually displayed.
-        assertNotNull(tab.getNativePage() instanceof NewTabPage);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        // Passing null below starts the activity on its default page, which is the NTP on a clean
-        // profile.
-        startMainActivityWithURL(null);
+        Assert.assertNotNull(tab.getNativePage() instanceof NewTabPage);
     }
 }

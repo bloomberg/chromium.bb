@@ -6,33 +6,43 @@ package org.chromium.chrome.browser;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MetricsUtils;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 /**
  * This test tests the logic for writing the restore histogram at two different levels
  */
-public class RestoreHistogramTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class RestoreHistogramTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-
         // TODO(aberent): Find the correct place to put this.  Calling ensureInitialized() on the
         //                current pathway fails to set this variable with the modern linker.
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-    }
-
-    @Override
-    public void startMainActivity() {
-        // Do nothing, these tests need to control when they start the activity.
     }
 
     private void clearPrefs() {
@@ -49,6 +59,7 @@ public class RestoreHistogramTest extends ChromeTabbedActivityTestBase {
      *       of mocking them in Mockito (one can disable them, but that would spoil the point of the
      *       test).
      */
+    @Test
     @SmallTest
     public void testHistogramWriter() throws ProcessInitException {
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
@@ -65,23 +76,23 @@ public class RestoreHistogramTest extends ChromeTabbedActivityTestBase {
         // Check behavior with no preference set
         clearPrefs();
         ChromeBackupAgent.recordRestoreHistogram();
-        assertEquals(1, noRestoreDelta.getDelta());
-        assertEquals(0, restoreCompletedDelta.getDelta());
-        assertEquals(
+        Assert.assertEquals(1, noRestoreDelta.getDelta());
+        Assert.assertEquals(0, restoreCompletedDelta.getDelta());
+        Assert.assertEquals(
                 ChromeBackupAgent.RESTORE_STATUS_RECORDED, ChromeBackupAgent.getRestoreStatus());
 
         // Check behavior with a restore status
         ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RESTORE_COMPLETED);
         ChromeBackupAgent.recordRestoreHistogram();
-        assertEquals(1, noRestoreDelta.getDelta());
-        assertEquals(1, restoreCompletedDelta.getDelta());
-        assertEquals(
+        Assert.assertEquals(1, noRestoreDelta.getDelta());
+        Assert.assertEquals(1, restoreCompletedDelta.getDelta());
+        Assert.assertEquals(
                 ChromeBackupAgent.RESTORE_STATUS_RECORDED, ChromeBackupAgent.getRestoreStatus());
 
         // Second call should record nothing (note this assumes it doesn't record something totally
         // random)
         ChromeBackupAgent.recordRestoreHistogram();
-        assertEquals(0, restoreStatusRecorded.getDelta());
+        Assert.assertEquals(0, restoreStatusRecorded.getDelta());
     }
 
     /**
@@ -90,6 +101,7 @@ public class RestoreHistogramTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      * @throws ProcessInitException
      */
+    @Test
     @SmallTest
     public void testWritingHistogramAtStartup() throws InterruptedException, ProcessInitException {
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
@@ -98,7 +110,7 @@ public class RestoreHistogramTest extends ChromeTabbedActivityTestBase {
                 ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT, ChromeBackupAgent.NO_RESTORE);
 
         // Histogram should be written the first time the activity is started.
-        startMainActivityOnBlankPage();
-        assertEquals(1, noRestoreDelta.getDelta());
+        mActivityTestRule.startMainActivityOnBlankPage();
+        Assert.assertEquals(1, noRestoreDelta.getDelta());
     }
 }

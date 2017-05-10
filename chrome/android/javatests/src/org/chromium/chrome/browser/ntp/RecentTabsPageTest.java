@@ -4,15 +4,27 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
@@ -24,45 +36,48 @@ import java.util.List;
 /**
  * Instrumentation tests for {@link RecentTabsPage}.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @RetryOnFailure
-public class RecentTabsPageTest extends ChromeTabbedActivityTestBase {
+public class RecentTabsPageTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private FakeRecentlyClosedTabManager mManager;
     private Tab mTab;
     private RecentTabsPage mPage;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         mManager = new FakeRecentlyClosedTabManager();
         RecentTabsManager.setRecentlyClosedTabManagerForTests(mManager);
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        leaveRecentTabsPage();
-        RecentTabsManager.setRecentlyClosedTabManagerForTests(null);
-        super.tearDown();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-        mTab = getActivity().getActivityTab();
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mTab = mActivityTestRule.getActivity().getActivityTab();
         mPage = loadRecentTabsPage();
     }
 
+    @After
+    public void tearDown() throws Exception {
+        leaveRecentTabsPage();
+        RecentTabsManager.setRecentlyClosedTabManagerForTests(null);
+    }
+
+    @Test
     @MediumTest
     @Feature({"RecentTabsPage"})
     public void testRecentlyClosedTabs() throws InterruptedException {
         // Set a recently closed tab and confirm a view is rendered for it.
         List<RecentlyClosedTab> tabs = setRecentlyClosedTabs(1);
-        assertEquals(1, mManager.getRecentlyClosedTabs(1).size());
+        Assert.assertEquals(1, mManager.getRecentlyClosedTabs(1).size());
         String title = tabs.get(0).title;
         View view = waitForView(title);
 
         // Clear the recently closed tabs with the context menu and confirm the view is gone.
         invokeContextMenu(view, RecentTabsRowAdapter.RecentlyClosedTabsGroup.ID_REMOVE_ALL);
-        assertEquals(0, mManager.getRecentlyClosedTabs(1).size());
+        Assert.assertEquals(0, mManager.getRecentlyClosedTabs(1).size());
         waitForViewToDisappear(title);
     }
 
@@ -85,14 +100,14 @@ public class RecentTabsPageTest extends ChromeTabbedActivityTestBase {
     }
 
     private RecentTabsPage loadRecentTabsPage() throws InterruptedException {
-        loadUrl(UrlConstants.RECENT_TABS_URL);
+        mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
         CriteriaHelper.pollUiThread(new Criteria("RecentTabsPage never fully loaded") {
             @Override
             public boolean isSatisfied() {
                 return mTab.getNativePage() instanceof RecentTabsPage;
             }
         });
-        assertTrue(mTab.getNativePage() instanceof RecentTabsPage);
+        Assert.assertTrue(mTab.getNativePage() instanceof RecentTabsPage);
         return (RecentTabsPage) mTab.getNativePage();
     }
 
@@ -100,7 +115,7 @@ public class RecentTabsPageTest extends ChromeTabbedActivityTestBase {
      * Leaves and destroys the {@link RecentTabsPage} by navigating the tab to {@code about:blank}.
      */
     private void leaveRecentTabsPage() throws InterruptedException {
-        loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        mActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         CriteriaHelper.pollUiThread(new Criteria("RecentTabsPage is still there") {
             @Override
             public boolean isSatisfied() {
@@ -139,8 +154,8 @@ public class RecentTabsPageTest extends ChromeTabbedActivityTestBase {
     }
 
     private void invokeContextMenu(View view, int contextMenuItemId) {
-        TestTouchUtils.longClickView(getInstrumentation(), view);
-        assertTrue(
-                getInstrumentation().invokeContextMenuAction(getActivity(), contextMenuItemId, 0));
+        TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view);
+        Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
+                mActivityTestRule.getActivity(), contextMenuItemId, 0));
     }
 }

@@ -4,7 +4,15 @@
 
 package org.chromium.chrome.browser;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
@@ -18,7 +26,9 @@ import org.chromium.blink.mojom.document_metadata.Property;
 import org.chromium.blink.mojom.document_metadata.Values;
 import org.chromium.blink.mojom.document_metadata.WebPage;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.url.mojom.Url;
@@ -28,10 +38,16 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests Copyless Paste AppIndexing using instrumented tests.
  */
-@CommandLineFlags.Add("enable-features=CopylessPaste")
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-features=CopylessPaste"})
 @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
+public class CopylessPasteTest {
     // NODATA_PAGE doesn't contain desired metadata.
+
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private static final String NODATA_PAGE = "/chrome/test/data/android/about.html";
 
     // DATA_PAGE contains desired metadata.
@@ -40,10 +56,11 @@ public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
     private EmbeddedTestServer mTestServer;
     private CopylessHelper mCallbackHelper;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         // We have to set up the test server before starting the activity.
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
 
         mCallbackHelper = new CopylessHelper();
 
@@ -60,11 +77,11 @@ public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
                 FirstRunStatus.setFirstRunFlowComplete(true);
             }
         });
-        super.setUp();
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -73,12 +90,6 @@ public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
             }
         });
         AppIndexingUtil.setCallbackForTesting(null);
-        super.tearDown();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 
     private static class CopylessHelper extends CallbackHelper {
@@ -97,49 +108,54 @@ public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
     /**
      * Tests that CopylessPaste is disabled in Incognito tabs.
      */
+    @Test
     @LargeTest
     @Feature({"CopylessPaste"})
     public void testIncognito() throws InterruptedException, TimeoutException {
         // Incognito tabs are ignored.
-        newIncognitoTabsFromMenu(1);
-        loadUrl(mTestServer.getURL(NODATA_PAGE));
-        loadUrl(mTestServer.getURL(DATA_PAGE));
-        ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
-        assertEquals(0, mCallbackHelper.getCallCount());
+        mActivityTestRule.newIncognitoTabsFromMenu(1);
+        mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE));
+        mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE));
+        ChromeTabUtils.closeCurrentTab(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        Assert.assertEquals(0, mCallbackHelper.getCallCount());
     }
 
     /**
      * Tests that CopylessPaste skips invalid schemes.
      */
+    @Test
     @LargeTest
     @Feature({"CopylessPaste"})
     public void testInvalidScheme() throws InterruptedException, TimeoutException {
         // CopylessPaste only parses http and https.
-        loadUrl("chrome://newtab");
-        loadUrl("chrome://about");
-        assertEquals(0, mCallbackHelper.getCallCount());
+        mActivityTestRule.loadUrl("chrome://newtab");
+        mActivityTestRule.loadUrl("chrome://about");
+        Assert.assertEquals(0, mCallbackHelper.getCallCount());
     }
 
     /**
      * Tests that CopylessPaste works on pages without desired metadata.
      */
+    @Test
     @LargeTest
     @Feature({"CopylessPaste"})
     @DisabledTest(message = "crbug.com/713895")
     public void testNoMeta() throws InterruptedException, TimeoutException {
-        loadUrl(mTestServer.getURL(NODATA_PAGE));
+        mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE));
         mCallbackHelper.waitForCallback(0);
-        assertNull(mCallbackHelper.getWebPage());
+        Assert.assertNull(mCallbackHelper.getWebPage());
     }
 
     /**
      * Tests that CopylessPaste works end-to-end.
      */
+    @Test
     @LargeTest
     @Feature({"CopylessPaste"})
     @DisabledTest(message = "Flaky: crbug.com/713172")
     public void testValid() throws InterruptedException, TimeoutException {
-        loadUrl(mTestServer.getURL(DATA_PAGE));
+        mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE));
         mCallbackHelper.waitForCallback(0);
         WebPage extracted = mCallbackHelper.getWebPage();
 
@@ -160,12 +176,13 @@ public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
         e.properties[1].values.setStringValues(new String[] {"Hotel Name"});
         expected.entities = new Entity[1];
         expected.entities[0] = e;
-        assertEquals(expected, extracted);
+        Assert.assertEquals(expected, extracted);
     }
 
     /**
      * Tests that CopylessPaste skips parsing visited pages.
      */
+    @Test
     @LargeTest
     @Feature({"CopylessPaste"})
     @DisabledTest(message = "Flaky: crbug.com/713172")
@@ -173,16 +190,16 @@ public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
         // The URLs used here should be unique in CopylessPasteTest.
         String uniqueTag = "#123";
         // NODATA_PAGE doesn't contain desired metadata.
-        loadUrl(mTestServer.getURL(NODATA_PAGE + uniqueTag));
+        mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE + uniqueTag));
         mCallbackHelper.waitForCallback(0);
         // DATA_PAGE contains desired metadata.
-        loadUrl(mTestServer.getURL(DATA_PAGE + uniqueTag));
+        mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE + uniqueTag));
         mCallbackHelper.waitForCallback(1);
 
         // Cache hit without entities. Shouldn't parse again.
-        loadUrl(mTestServer.getURL(NODATA_PAGE + uniqueTag));
+        mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE + uniqueTag));
         // Cache hit with entities. Shouldn't parse again.
-        loadUrl(mTestServer.getURL(DATA_PAGE + uniqueTag));
-        assertEquals(2, mCallbackHelper.getCallCount());
+        mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE + uniqueTag));
+        Assert.assertEquals(2, mCallbackHelper.getCallCount());
     }
 }

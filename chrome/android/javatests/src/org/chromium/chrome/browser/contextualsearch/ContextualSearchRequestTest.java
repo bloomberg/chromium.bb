@@ -4,29 +4,42 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 /**
  * Class responsible for testing the ContextualSearchRequest.
  */
-public class ContextualSearchRequestTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class ContextualSearchRequestTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     ContextualSearchRequest mRequest;
     ContextualSearchRequest mNormalPriorityOnlyRequest;
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        getInstrumentation().runOnMainSync(new Runnable() {
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mRequest = new ContextualSearchRequest("barack obama", "barack", "", true);
@@ -36,31 +49,34 @@ public class ContextualSearchRequestTest extends ChromeTabbedActivityTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testIsUsingLowPriority() {
-        assertTrue(mRequest.isUsingLowPriority());
-        assertFalse(mNormalPriorityOnlyRequest.isUsingLowPriority());
+        Assert.assertTrue(mRequest.isUsingLowPriority());
+        Assert.assertFalse(mNormalPriorityOnlyRequest.isUsingLowPriority());
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     @RetryOnFailure
     public void testHasFailed() {
-        assertFalse(mRequest.getHasFailed());
+        Assert.assertFalse(mRequest.getHasFailed());
         mRequest.setHasFailed();
-        assertTrue(mRequest.getHasFailed());
-        assertFalse(mNormalPriorityOnlyRequest.getHasFailed());
+        Assert.assertTrue(mRequest.getHasFailed());
+        Assert.assertFalse(mNormalPriorityOnlyRequest.getHasFailed());
         mNormalPriorityOnlyRequest.setHasFailed();
-        assertTrue(mNormalPriorityOnlyRequest.getHasFailed());
+        Assert.assertTrue(mNormalPriorityOnlyRequest.getHasFailed());
     }
 
+    @Test
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testSetNormalPriority() {
-        assertTrue(mRequest.isUsingLowPriority());
+        Assert.assertTrue(mRequest.isUsingLowPriority());
         mRequest.setNormalPriority();
-        assertFalse(mRequest.isUsingLowPriority());
-        assertFalse(mNormalPriorityOnlyRequest.isUsingLowPriority());
+        Assert.assertFalse(mRequest.isUsingLowPriority());
+        Assert.assertFalse(mNormalPriorityOnlyRequest.isUsingLowPriority());
     }
 }

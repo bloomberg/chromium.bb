@@ -6,24 +6,42 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * Tests for IncognitoTabModel.
  */
-public class IncognitoTabModelTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class IncognitoTabModelTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private TabModel mTabModel;
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-        mTabModel = getActivity().getTabModelSelector().getModel(true);
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mTabModel = mActivityTestRule.getActivity().getTabModelSelector().getModel(true);
     }
 
     private class CloseAllDuringAddTabTabModelObserver extends EmptyTabModelObserver {
@@ -37,8 +55,8 @@ public class IncognitoTabModelTest extends ChromeTabbedActivityTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().getTabCreator(true).createNewTab(new LoadUrlParams("about:blank"),
-                        TabLaunchType.FROM_CHROME_UI, null);
+                mActivityTestRule.getActivity().getTabCreator(true).createNewTab(
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI, null);
             }
         });
     }
@@ -49,14 +67,15 @@ public class IncognitoTabModelTest extends ChromeTabbedActivityTestBase {
      * "Close all incognito tabs" then quickly clicks the "+" button to add a new incognito tab.
      * See crbug.com/496651.
      */
+    @Test
     @SmallTest
     @Feature({"OffTheRecord"})
     @RetryOnFailure
     public void testCloseAllDuringAddTabDoesNotCrash() {
         createTabOnUiThread();
-        assertEquals(1, mTabModel.getCount());
+        Assert.assertEquals(1, mTabModel.getCount());
         mTabModel.addObserver(new CloseAllDuringAddTabTabModelObserver());
         createTabOnUiThread();
-        assertEquals(1, mTabModel.getCount());
+        Assert.assertEquals(1, mTabModel.getCount());
     }
 }

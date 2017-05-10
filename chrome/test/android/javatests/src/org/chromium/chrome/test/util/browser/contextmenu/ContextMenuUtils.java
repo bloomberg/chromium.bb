@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.test.util.browser.contextmenu;
 
-import android.test.ActivityInstrumentationTestCase2;
+import android.app.Activity;
+import android.app.Instrumentation;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -83,23 +84,21 @@ public class ContextMenuUtils {
 
     /**
      * Opens and selects an item from a context menu.
-     * @param testCase              The test harness.
      * @param tab                   The tab to open a context menu for.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @param itemId                The context menu item ID to select.
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    public static void selectContextMenuItem(ActivityInstrumentationTestCase2<?> testCase,
-            Tab tab, String openerDOMNodeId, final int itemId) throws InterruptedException,
-            TimeoutException {
+    public static void selectContextMenuItem(Instrumentation instrumentation, Activity activity,
+            Tab tab, String openerDOMNodeId, final int itemId)
+            throws InterruptedException, TimeoutException {
         String jsCode = "document.getElementById('" + openerDOMNodeId + "')";
-        selectContextMenuItemByJs(testCase, tab, jsCode, itemId);
+        selectContextMenuItemByJs(instrumentation, activity, tab, jsCode, itemId);
     }
 
     /**
      * Long presses to open and selects an item from a context menu.
-     * @param testCase              The test harness.
      * @param tab                   The tab to open a context menu for.
      * @param jsCode                The javascript to get the DOM node to long press
      *                              to open the context menu for.
@@ -107,27 +106,26 @@ public class ContextMenuUtils {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    public static void selectContextMenuItemByJs(ActivityInstrumentationTestCase2<?> testCase,
-            Tab tab, String jsCode, final int itemId) throws InterruptedException,
-            TimeoutException {
+    public static void selectContextMenuItemByJs(Instrumentation instrumentation, Activity activity,
+            Tab tab, String jsCode, final int itemId)
+            throws InterruptedException, TimeoutException {
         ContextMenu menu = openContextMenuByJs(tab, jsCode);
         Assert.assertNotNull("Failed to open context menu", menu);
 
-        selectOpenContextMenuItem(testCase, menu, itemId);
+        selectOpenContextMenuItem(instrumentation, activity, menu, itemId);
     }
 
     /**
      * Opens and selects an item from a context menu.
-     * @param testCase              The test harness.
      * @param tab                   The tab to open a context menu for.
      * @param openerDOMNodeId       The DOM node to long press to open the context menu for.
      * @param itemTitle             The title of the context menu item to select.
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    public static void selectContextMenuItemByTitle(ActivityInstrumentationTestCase2<?> testCase,
-            Tab tab, String openerDOMNodeId,
-            String itemTitle) throws InterruptedException, TimeoutException {
+    public static void selectContextMenuItemByTitle(Instrumentation instrumentation,
+            Activity activity, Tab tab, String openerDOMNodeId, String itemTitle)
+            throws InterruptedException, TimeoutException {
         ContextMenu menu = openContextMenu(tab, openerDOMNodeId);
         Assert.assertNotNull("Failed to open context menu", menu);
 
@@ -141,18 +139,17 @@ public class ContextMenuUtils {
         }
         Assert.assertNotNull("Couldn't find context menu item for '" + itemTitle + "'", itemId);
 
-        selectOpenContextMenuItem(testCase, menu, itemId);
+        selectOpenContextMenuItem(instrumentation, activity, menu, itemId);
     }
 
-    private static void selectOpenContextMenuItem(
-            final ActivityInstrumentationTestCase2<?> testCase, final ContextMenu menu,
-            final int itemId) {
+    private static void selectOpenContextMenuItem(Instrumentation instrumentation,
+            final Activity activity, final ContextMenu menu, final int itemId) {
         MenuItem item = menu.findItem(itemId);
         Assert.assertNotNull("Could not find '" + itemId + "' in menu", item);
         Assert.assertTrue("'" + itemId + "' is not visible", item.isVisible());
         Assert.assertTrue("'" + itemId + "' is not enabled", item.isEnabled());
 
-        testCase.getInstrumentation().runOnMainSync(new Runnable() {
+        instrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 boolean activated = menu.performIdentifierAction(itemId, 0);
@@ -163,7 +160,7 @@ public class ContextMenuUtils {
         CriteriaHelper.pollInstrumentationThread(new Criteria("Activity did not regain focus.") {
             @Override
             public boolean isSatisfied() {
-                return testCase.getActivity().hasWindowFocus();
+                return activity.hasWindowFocus();
             }
         });
     }

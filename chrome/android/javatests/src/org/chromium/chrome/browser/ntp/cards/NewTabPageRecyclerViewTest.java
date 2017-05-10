@@ -5,10 +5,18 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.res.Resources;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -17,6 +25,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -31,13 +40,16 @@ import org.chromium.chrome.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.suggestions.TileSource;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
@@ -48,8 +60,16 @@ import java.util.concurrent.TimeoutException;
 /**
  * Instrumentation tests for {@link NewTabPageRecyclerView}.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @RetryOnFailure
-public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
+public class NewTabPageRecyclerViewTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
     private static final String[] FAKE_MOST_VISITED_TITLES = new String[] {"Simple"};
     private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS = new String[] {""};
@@ -71,9 +91,10 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     private EmbeddedTestServer mTestServer;
     private FakeSuggestionsSource mSource;
 
-    @Override
-    protected void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+    @Before
+    public void setUp() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
         mSiteSuggestionUrls = new String[] {mTestServer.getURL(TEST_PAGE)};
 
         mMostVisitedSites = new FakeMostVisitedSites();
@@ -90,28 +111,23 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.INITIALIZING);
         NewTabPage.setSuggestionsSourceForTests(mSource);
 
-        super.setUp();
+        mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
+        mTab = mActivityTestRule.getActivity().getActivityTab();
+        NewTabPageTestUtils.waitForNtpLoaded(mTab);
+
+        Assert.assertTrue(mTab.getNativePage() instanceof NewTabPage);
+        mNtp = (NewTabPage) mTab.getNativePage();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         TileGroupDelegateImpl.setMostVisitedSitesForTests(null);
         NewTabPage.setSuggestionsSourceForTests(null);
         mTestServer.stopAndDestroyServer();
 
-        super.tearDown();
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityWithURL(UrlConstants.NTP_URL);
-        mTab = getActivity().getActivityTab();
-        NewTabPageTestUtils.waitForNtpLoaded(mTab);
-
-        assertTrue(mTab.getNativePage() instanceof NewTabPage);
-        mNtp = (NewTabPage) mTab.getNativePage();
-    }
-
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     public void testClickSuggestion() throws InterruptedException {
@@ -125,21 +141,22 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
             public void run() {
-                singleClickView(suggestionView);
+                TouchCommon.singleClickView(suggestionView);
             }
         });
-        assertEquals(suggestion.mUrl, mTab.getUrl());
+        Assert.assertEquals(suggestion.mUrl, mTab.getUrl());
     }
 
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     public void testAllDismissed() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(3);
-        assertEquals(3, mSource.getSuggestionsForCategory(TEST_CATEGORY).size());
-        assertEquals(RecyclerView.NO_POSITION,
+        Assert.assertEquals(3, mSource.getSuggestionsForCategory(TEST_CATEGORY).size());
+        Assert.assertEquals(RecyclerView.NO_POSITION,
                 getAdapter().getFirstPositionForType(ItemViewType.ALL_DISMISSED));
-        assertEquals(1, mSource.getCategories().length);
-        assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
+        Assert.assertEquals(1, mSource.getCategories().length);
+        Assert.assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
 
         // Dismiss the sign in promo.
         int signinPromoPosition = getAdapter().getFirstPositionForType(ItemViewType.PROMO);
@@ -151,24 +168,25 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
             if (cardPosition == RecyclerView.NO_POSITION) break;
             dismissItemAtPosition(cardPosition);
         }
-        assertEquals(0, mSource.getCategories().length);
+        Assert.assertEquals(0, mSource.getCategories().length);
 
         // Click the refresh button on the all dismissed item.
         int allDismissedPosition = getAdapter().getFirstPositionForType(ItemViewType.ALL_DISMISSED);
-        assertTrue(allDismissedPosition != RecyclerView.NO_POSITION);
+        Assert.assertTrue(allDismissedPosition != RecyclerView.NO_POSITION);
         View allDismissedView = getViewHolderAtPosition(allDismissedPosition).itemView;
-        singleClickView(allDismissedView.findViewById(R.id.action_button));
+        TouchCommon.singleClickView(allDismissedView.findViewById(R.id.action_button));
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), allDismissedView);
-        assertEquals(1, mSource.getCategories().length);
-        assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
+        Assert.assertEquals(1, mSource.getCategories().length);
+        Assert.assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
     }
 
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     public void testDismissArticleWithContextMenu() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(10);
         List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
-        assertEquals(10, suggestions.size());
+        Assert.assertEquals(10, suggestions.size());
 
         // Scroll a suggestion into view.
         int suggestionPosition = getSuggestionPosition(suggestions.get(suggestions.size() - 1));
@@ -179,9 +197,10 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), suggestionView);
 
         suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
-        assertEquals(9, suggestions.size());
+        Assert.assertEquals(9, suggestions.size());
     }
 
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     public void testDismissStatusCardWithContextMenu()
@@ -191,7 +210,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
         // Scroll the status card into view.
         int cardPosition = getAdapter().getFirstCardPosition();
-        assertEquals(ItemViewType.STATUS, getAdapter().getItemViewType(cardPosition));
+        Assert.assertEquals(ItemViewType.STATUS, getAdapter().getItemViewType(cardPosition));
 
         View statusCardView = getViewHolderAtPosition(cardPosition).itemView;
 
@@ -202,6 +221,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         assertArrayEquals(new int[0], mSource.getCategories());
     }
 
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     public void testDismissActionItemWithContextMenu()
@@ -211,7 +231,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
         // Scroll the action item into view.
         int actionItemPosition = getAdapter().getFirstCardPosition() + 1;
-        assertEquals(ItemViewType.ACTION, getAdapter().getItemViewType(actionItemPosition));
+        Assert.assertEquals(ItemViewType.ACTION, getAdapter().getItemViewType(actionItemPosition));
         View actionItemView = getViewHolderAtPosition(actionItemPosition).itemView;
 
         // Dismiss the action item using the context menu.
@@ -221,6 +241,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         assertArrayEquals(new int[0], mSource.getCategories());
     }
 
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE})
@@ -228,7 +249,8 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     public void testSnapScroll_noCondensedLayout() {
         setSuggestionsAndWaitForUpdate(0);
 
-        Resources res = getInstrumentation().getTargetContext().getResources();
+        Resources res =
+                InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
         int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         View searchBox = getNtpView().findViewById(R.id.search_box);
@@ -238,23 +260,25 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
         // Two different snapping regions with the default behavior: snapping back up to the
         // watershed point in the middle, snapping forward after that.
-        assertEquals(0, getSnapPosition(0));
-        assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
-        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight / 2));
-        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
-        assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
+        Assert.assertEquals(0, getSnapPosition(0));
+        Assert.assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
+        Assert.assertEquals(toolbarHeight, getSnapPosition(toolbarHeight / 2));
+        Assert.assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
+        Assert.assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
 
-        assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
+        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength - 1));
-        assertEquals(searchBoxTop - searchBoxTransitionLength,
+        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength));
-        assertEquals(searchBoxTop - searchBoxTransitionLength,
+        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2 - 1));
-        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2));
-        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
-        assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
+        Assert.assertEquals(
+                searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2));
+        Assert.assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
+        Assert.assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
     }
 
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE})
@@ -262,7 +286,8 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     public void testSnapScroll_condensedLayout() {
         setSuggestionsAndWaitForUpdate(0);
 
-        Resources res = getInstrumentation().getTargetContext().getResources();
+        Resources res =
+                InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
         int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         View searchBox = getNtpView().findViewById(R.id.search_box);
@@ -272,22 +297,25 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
         // With the condensed layout, the snapping regions overlap, so the effect is that of a
         // single snapping region.
-        assertEquals(0, getSnapPosition(0));
-        assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
-        assertEquals(searchBoxTop, getSnapPosition(toolbarHeight / 2));
-        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength));
-        assertEquals(searchBoxTop, getSnapPosition(toolbarHeight));
-        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
-        assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
+        Assert.assertEquals(0, getSnapPosition(0));
+        Assert.assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
+        Assert.assertEquals(searchBoxTop, getSnapPosition(toolbarHeight / 2));
+        Assert.assertEquals(
+                searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength));
+        Assert.assertEquals(searchBoxTop, getSnapPosition(toolbarHeight));
+        Assert.assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
+        Assert.assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
     }
 
+    @Test
     @MediumTest
     @Feature({"NewTabPage"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_TABLET})
     public void testSnapScroll_tablet() {
         setSuggestionsAndWaitForUpdate(0);
 
-        Resources res = getInstrumentation().getTargetContext().getResources();
+        Resources res =
+                InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
         int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         View searchBox = getNtpView().findViewById(R.id.search_box);
@@ -298,22 +326,22 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         // No snapping on tablets.
         // Note: This ignores snapping for the peeking cards, which is currently disabled
         // by default.
-        assertEquals(0, getSnapPosition(0));
-        assertEquals(toolbarHeight / 2 - 1, getSnapPosition(toolbarHeight / 2 - 1));
-        assertEquals(toolbarHeight / 2, getSnapPosition(toolbarHeight / 2));
-        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
-        assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
+        Assert.assertEquals(0, getSnapPosition(0));
+        Assert.assertEquals(toolbarHeight / 2 - 1, getSnapPosition(toolbarHeight / 2 - 1));
+        Assert.assertEquals(toolbarHeight / 2, getSnapPosition(toolbarHeight / 2));
+        Assert.assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
+        Assert.assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
 
-        assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
+        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength - 1));
-        assertEquals(searchBoxTop - searchBoxTransitionLength,
+        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength));
-        assertEquals(searchBoxTop - searchBoxTransitionLength / 2 - 1,
+        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength / 2 - 1,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2 - 1));
-        assertEquals(searchBoxTop - searchBoxTransitionLength / 2,
+        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength / 2,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2));
-        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
-        assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
+        Assert.assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
+        Assert.assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
     }
 
     private int getSnapPosition(int scrollPosition) {
@@ -355,8 +383,8 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                recyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
-                        position, getActivity().getResources().getDimensionPixelSize(
+                recyclerView.getLinearLayoutManager().scrollToPositionWithOffset(position,
+                        mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
                                 R.dimen.tab_strip_height));
             }
         });
@@ -406,13 +434,13 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     }
 
     private void invokeContextMenu(View view, int contextMenuItemId) {
-        TestTouchUtils.longClickView(getInstrumentation(), view);
-        assertTrue(
-                getInstrumentation().invokeContextMenuAction(getActivity(), contextMenuItemId, 0));
+        TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view);
+        Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
+                mActivityTestRule.getActivity(), contextMenuItemId, 0));
     }
 
 
     private static void assertArrayEquals(int[] expected, int[] actual) {
-        assertEquals(Arrays.toString(expected), Arrays.toString(actual));
+        Assert.assertEquals(Arrays.toString(expected), Arrays.toString(actual));
     }
 }

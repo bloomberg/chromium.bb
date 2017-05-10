@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.test.util;
 
+import android.app.Instrumentation;
+
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -71,13 +72,13 @@ public class TabStripUtils {
     /**
      * Click a compositor tab strip tab.
      * @param tab The tab to click.
-     * @param base The ChromeTabbedActivityTestBase where we're calling this from.
      */
-    public static void clickTab(StripLayoutTab tab, ChromeTabbedActivityTestBase base) {
-        final StripLayoutHelperManager manager = getStripLayoutHelperManager(base.getActivity());
+    public static void clickTab(
+            StripLayoutTab tab, Instrumentation instrumentation, ChromeTabbedActivity activity) {
+        final StripLayoutHelperManager manager = getStripLayoutHelperManager(activity);
         final float x = (tab.getDrawX() + tab.getWidth() / 2);
         final float y = (tab.getDrawY() + tab.getHeight() / 2);
-        base.getInstrumentation().runOnMainSync(new Runnable() {
+        instrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 manager.simulateClick(x, y, false, 0);
@@ -88,14 +89,14 @@ public class TabStripUtils {
     /**
      * Click a compositor button.
      * @param button The button to click.
-     * @param base The ChromeTabbedActivityTestBase where we're calling this from.
+     * @param activity the ChromeTabbedActivity.
      */
     public static void clickCompositorButton(CompositorButton button,
-            ChromeTabbedActivityTestBase base) {
-        final StripLayoutHelperManager manager = getStripLayoutHelperManager(base.getActivity());
+            Instrumentation instrumentation, ChromeTabbedActivity activity) {
+        final StripLayoutHelperManager manager = getStripLayoutHelperManager(activity);
         final float x = button.getX() + button.getWidth() / 2;
         final float y = button.getY() + button.getHeight() / 2;
-        base.getInstrumentation().runOnMainSync(new Runnable() {
+        instrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 manager.simulateClick(x, y, false, 0);
@@ -106,14 +107,14 @@ public class TabStripUtils {
     /**
      * Long press a compositor button.
      * @param button The button to long press.
-     * @param base The ChromeTabbedActivityTestBase where we're calling this from.
+     * @param activity the ChromeTabbedActivity.
      */
     public static void longPressCompositorButton(CompositorButton button,
-            ChromeTabbedActivityTestBase base) {
-        final StripLayoutHelperManager manager = getStripLayoutHelperManager(base.getActivity());
+            Instrumentation instrumentation, ChromeTabbedActivity activity) {
+        final StripLayoutHelperManager manager = getStripLayoutHelperManager(activity);
         final float x = button.getX() + button.getWidth() / 2;
         final float y = button.getY() + button.getHeight() / 2;
-        base.getInstrumentation().runOnMainSync(new Runnable() {
+        instrumentation.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 manager.simulateLongPress(x, y);

@@ -6,21 +6,39 @@ package org.chromium.chrome.browser.hardware_acceleration;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 /**
  * Tests that ChromeTabbedActivity is hardware accelerated only high-end devices.
  */
-public class ChromeTabbedActivityHWATest extends ChromeTabbedActivityTestBase {
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class ChromeTabbedActivityHWATest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testHardwareAcceleration() throws Exception {
-        Utils.assertHardwareAcceleration(getActivity());
+        Utils.assertHardwareAcceleration(mActivityTestRule.getActivity());
     }
 }

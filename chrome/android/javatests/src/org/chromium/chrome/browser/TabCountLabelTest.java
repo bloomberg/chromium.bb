@@ -4,15 +4,25 @@
 
 package org.chromium.chrome.browser;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.widget.ImageButton;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 
@@ -20,42 +30,54 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
  * Test suite for the tab count widget on the phone toolbar.
  */
 
-public class TabCountLabelTest extends ChromeTabbedActivityTestBase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class TabCountLabelTest {
     /**
      * Check the tabCount string against an expected value.
      */
+
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private void tabCountLabelCheck(String stepName, int tabCountExpected) {
-        ImageButton tabSwitcherBtn =
-                (ImageButton) getActivity().findViewById(R.id.tab_switcher_button);
+        ImageButton tabSwitcherBtn = (ImageButton) mActivityTestRule.getActivity().findViewById(
+                R.id.tab_switcher_button);
         TabSwitcherDrawable drawable = (TabSwitcherDrawable) tabSwitcherBtn.getDrawable();
         int tabCountFromDrawable = drawable.getTabCount();
-        assertTrue(stepName + ", " + tabCountExpected + " tab[s] expected, label shows "
-                + tabCountFromDrawable, tabCountExpected == tabCountFromDrawable);
+        Assert.assertTrue(stepName + ", " + tabCountExpected + " tab[s] expected, label shows "
+                        + tabCountFromDrawable,
+                tabCountExpected == tabCountFromDrawable);
     }
 
     /**
      * Verify displayed Tab Count matches the actual number of tabs.
      */
+    @Test
     @MediumTest
     @Feature({"Browser", "Main"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testTabCountLabel() throws InterruptedException {
-        final int tabCount = getActivity().getCurrentTabModel().getCount();
+        final int tabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         tabCountLabelCheck("Initial state", tabCount);
-        ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         // Make sure the TAB_CREATED notification went through
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         tabCountLabelCheck("After new tab", tabCount + 1);
-        ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
+        ChromeTabUtils.closeCurrentTab(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         // Make sure the TAB_CLOSED notification went through
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         tabCountLabelCheck("After close tab", tabCount);
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 }

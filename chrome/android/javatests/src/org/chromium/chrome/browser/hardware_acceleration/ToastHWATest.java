@@ -96,8 +96,8 @@ public class ToastHWATest extends DownloadTestBase {
 
         // Download an image (shows 'Downloading...' toast)
         Tab tab = getActivity().getActivityTab();
-        ContextMenuUtils.selectContextMenuItem(this, tab, IMAGE_ID,
-                R.id.contextmenu_save_image);
+        ContextMenuUtils.selectContextMenuItem(
+                getInstrumentation(), getActivity(), tab, IMAGE_ID, R.id.contextmenu_save_image);
 
         // Wait for UI activity to settle
         getInstrumentation().waitForIdleSync();
@@ -116,7 +116,7 @@ public class ToastHWATest extends DownloadTestBase {
 
         // Open link in a new tab (shows 'Tab Opened In Background' toast)
         Tab tab = getActivity().getActivityTab();
-        ContextMenuUtils.selectContextMenuItem(this, tab, LINK_ID,
+        ContextMenuUtils.selectContextMenuItem(getInstrumentation(), getActivity(), tab, LINK_ID,
                 R.id.contextmenu_open_in_new_tab);
 
         // Wait for UI activity to settle

@@ -11,23 +11,34 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStoreTest.MockTabPersistentStoreObserver;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
@@ -38,9 +49,16 @@ import org.chromium.content_public.browser.LoadUrlParams;
 /**
  * Tests merging tab models for Android N+ multi-instance.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 @MinAndroidSdkLevel(24)
-public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
+public class TabModelMergingTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String TEST_URL_0 = UrlUtils.encodeHtmlDataUri("<html>test_url_0.</html>");
     private static final String TEST_URL_1 = UrlUtils.encodeHtmlDataUri("<html>test_url_1.</html>");
@@ -57,15 +75,9 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
     private String[] mMergeIntoActivity1ExpectedTabs;
     private String[] mMergeIntoActivity2ExpectedTabs;
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
         // Make sure file migrations don't run as they are unnecessary since app data was cleared.
         ContextUtils.getAppSharedPreferences().edit().putBoolean(
                 TabbedModeTabPersistencePolicy.PREF_HAS_RUN_FILE_MIGRATION, true).apply();
@@ -78,7 +90,7 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
 
         // Initialize activities.
-        mActivity1 = getActivity();
+        mActivity1 = mActivityTestRule.getActivity();
         mActivity2 = MultiWindowUtilsTest.createSecondChromeTabbedActivity(mActivity1);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -129,12 +141,12 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
 
         // ChromeTabbedActivity should have four normal tabs, the one it started with and the three
         // just created.
-        assertEquals("Wrong number of tabs in ChromeTabbedActivity", 4,
+        Assert.assertEquals("Wrong number of tabs in ChromeTabbedActivity", 4,
                 mActivity1.getTabModelSelector().getModel(false).getCount());
 
         // ChromeTabbedActivity2 should have three normal tabs, the one it started with and the two
         // just created.
-        assertEquals("Wrong number of tabs in ChromeTabbedActivity2", 3,
+        Assert.assertEquals("Wrong number of tabs in ChromeTabbedActivity2", 3,
                 mActivity2.getTabModelSelector().getModel(false).getCount());
 
         // Construct expected tabs.
@@ -210,7 +222,8 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
     private ChromeTabbedActivity startNewChromeTabbedActivityAndAssert(Intent intent,
             String expectedSelectedTabUrl, String[] expectedTabUrls) {
         final ChromeTabbedActivity newActivity =
-                (ChromeTabbedActivity) getInstrumentation().startActivitySync(intent);
+                (ChromeTabbedActivity) InstrumentationRegistry.getInstrumentation()
+                        .startActivitySync(intent);
 
         // Wait for the tab state to be initialized.
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -228,20 +241,21 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
     private void assertTabModelMatchesExpectations(final ChromeTabbedActivity activity,
             String expectedSelectedTabUrl, final String[] expectedTabUrls) {
         // Assert there are the correct number of tabs.
-        assertEquals("Wrong number of normal tabs", expectedTabUrls.length,
+        Assert.assertEquals("Wrong number of normal tabs", expectedTabUrls.length,
                 activity.getTabModelSelector().getModel(false).getCount());
 
         // Assert that the correct tab is selected.
-        assertEquals("Wrong tab selected", expectedSelectedTabUrl,
+        Assert.assertEquals("Wrong tab selected", expectedSelectedTabUrl,
                 activity.getTabModelSelector().getCurrentTab().getUrl());
 
         // Assert that tabs are in the correct order.
         for (int i = 0; i < expectedTabUrls.length; i++) {
-            assertEquals("Wrong tab at position " + i, expectedTabUrls[i],
+            Assert.assertEquals("Wrong tab at position " + i, expectedTabUrls[i],
                     activity.getTabModelSelector().getModel(false).getTabAt(i).getUrl());
         }
     }
 
+    @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergeIntoChromeTabbedActivity1() throws Exception {
@@ -249,6 +263,7 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         mActivity1.finishAndRemoveTask();
     }
 
+    @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergeIntoChromeTabbedActivity2() throws Exception {
@@ -256,6 +271,7 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         mActivity2.finishAndRemoveTask();
     }
 
+    @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergeOnColdStart() throws Exception {
@@ -292,6 +308,7 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         newActivity.finishAndRemoveTask();
     }
 
+    @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergeOnColdStartFromChromeTabbedActivity2() throws Exception {
@@ -330,6 +347,7 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         newActivity.finishAndRemoveTask();
     }
 
+    @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -345,15 +363,16 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         overviewModeWatcher.waitForBehavior();
 
         mergeTabsAndAssert(mActivity1, mMergeIntoActivity1ExpectedTabs);
-        assertTrue("Overview mode should still be showing", mActivity1.isInOverviewMode());
+        Assert.assertTrue("Overview mode should still be showing", mActivity1.isInOverviewMode());
         mActivity1.finishAndRemoveTask();
     }
 
+    @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergeWithNoTabs() throws Exception {
         // Close all tabs and wait for the callback.
-        ChromeTabUtils.closeAllTabs(getInstrumentation(), mActivity1);
+        ChromeTabUtils.closeAllTabs(InstrumentationRegistry.getInstrumentation(), mActivity1);
 
         String[] expectedTabUrls = new String[3];
         for (int i = 0; i < 3; i++) {
@@ -365,12 +384,15 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
         mActivity1.finishAndRemoveTask();
     }
 
+    @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergingIncognitoTabs() throws InterruptedException {
         // Incognito tabs must be fully loaded so that their tab states are written out.
-        ChromeTabUtils.fullyLoadUrlInNewTab(getInstrumentation(), mActivity1, TEST_URL_5, true);
-        ChromeTabUtils.fullyLoadUrlInNewTab(getInstrumentation(), mActivity2, TEST_URL_6, true);
+        ChromeTabUtils.fullyLoadUrlInNewTab(
+                InstrumentationRegistry.getInstrumentation(), mActivity1, TEST_URL_5, true);
+        ChromeTabUtils.fullyLoadUrlInNewTab(
+                InstrumentationRegistry.getInstrumentation(), mActivity2, TEST_URL_6, true);
 
         // Save state.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -381,14 +403,14 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        assertEquals("Wrong number of incognito tabs in ChromeTabbedActivity",
-                1, mActivity1.getTabModelSelector().getModel(true).getCount());
-        assertEquals("Wrong number of tabs in ChromeTabbedActivity",
-                5, mActivity1.getTabModelSelector().getTotalTabCount());
-        assertEquals("Wrong number of incognito tabs in ChromeTabbedActivity2",
-                1, mActivity2.getTabModelSelector().getModel(true).getCount());
-        assertEquals("Wrong number of tabs in ChromeTabbedActivity2",
-                4, mActivity2.getTabModelSelector().getTotalTabCount());
+        Assert.assertEquals("Wrong number of incognito tabs in ChromeTabbedActivity", 1,
+                mActivity1.getTabModelSelector().getModel(true).getCount());
+        Assert.assertEquals("Wrong number of tabs in ChromeTabbedActivity", 5,
+                mActivity1.getTabModelSelector().getTotalTabCount());
+        Assert.assertEquals("Wrong number of incognito tabs in ChromeTabbedActivity2", 1,
+                mActivity2.getTabModelSelector().getModel(true).getCount());
+        Assert.assertEquals("Wrong number of tabs in ChromeTabbedActivity2", 4,
+                mActivity2.getTabModelSelector().getTotalTabCount());
 
         String selectedUrl = mActivity1.getTabModelSelector().getCurrentTab().getUrl();
         mergeTabsAndAssert(mActivity1, mMergeIntoActivity1ExpectedTabs, 9, selectedUrl);

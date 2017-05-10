@@ -5,7 +5,15 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -15,7 +23,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -27,8 +37,13 @@ import java.util.Map;
 /**
  * Tests WebApkUpdateManager. This class contains tests which cannot be done as JUnit tests.
  */
-@CommandLineFlags.Add(ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP)
-public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+        ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP})
+public class WebApkUpdateManagerTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String WEBAPK_PACKAGE = "test.package";
     private static final String WEBAPK_ID = "webapk_id";
@@ -119,29 +134,23 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
         return creationData;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
         RecordHistogram.setDisabledForTests(true);
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(context);
-        mTab = getActivity().getActivityTab();
+        mTab = mActivityTestRule.getActivity().getActivityTab();
 
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
         WebappRegistry.getInstance().register(WEBAPK_ID, callback);
         callback.waitForCallback(0);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
         RecordHistogram.setDisabledForTests(false);
-        super.tearDown();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 
      /** Checks whether a WebAPK update is needed. */
@@ -173,6 +182,7 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
      * the URLs in the Web Manifest have been modified by the WebAPK server prior to being stored in
      * the WebAPK Android Manifest. Chrome and the WebAPK server parse URLs differently.
      */
+    @Test
     @MediumTest
     @Feature({"WebApk"})
     public void testCanonicalUrlsIdenticalShouldNotUpgrade() throws Exception {
@@ -183,12 +193,13 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
-        assertFalse(checkUpdateNeeded(creationData));
+        Assert.assertFalse(checkUpdateNeeded(creationData));
     }
 
     /**
      * Test that an upgraded WebAPK is requested if the canonicalized "start URLs" are different.
      */
+    @Test
     @MediumTest
     @Feature({"WebApk"})
     public void testCanonicalUrlsDifferentShouldUpgrade() throws Exception {
@@ -199,6 +210,6 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
-        assertTrue(checkUpdateNeeded(creationData));
+        Assert.assertTrue(checkUpdateNeeded(creationData));
     }
 }

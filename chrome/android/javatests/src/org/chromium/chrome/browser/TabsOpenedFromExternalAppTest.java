@@ -9,13 +9,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.View;
 
-import junit.framework.Assert;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.ThreadUtils;
@@ -29,7 +35,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -45,8 +53,16 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test the behavior of tabs when opening a URL from an external app.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
 @RetryOnFailure
-public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase {
+public class TabsOpenedFromExternalAppTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private static final String EXTERNAL_APP_1_ID = "app1";
     private static final String EXTERNAL_APP_2_ID = "app2";
     private static final String ANDROID_APP_REFERRER = "android-app://com.my.great.great.app";
@@ -161,22 +177,15 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
 
     private EmbeddedTestServer mTestServer;
 
-    @Override
-    public void startMainActivity() {
-        // We'll start the activity explicitly in the tests, as we need to start it with an intent
-        // in a specific test.
+    @Before
+    public void setUp() throws Exception {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
     }
 
     /**
@@ -197,27 +206,28 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         if (extras != null) intent.putExtras(extras);
 
         if (firstParty) {
-            Context context = getInstrumentation().getTargetContext();
+            Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
             intent.setPackage(context.getPackageName());
             IntentHandler.addTrustedIntentExtras(intent);
         }
 
-        final Tab originalTab = getActivity().getActivityTab();
+        final Tab originalTab = mActivityTestRule.getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().onNewIntent(intent);
+                mActivityTestRule.getActivity().onNewIntent(intent);
             }
         });
         if (createNewTab) {
             CriteriaHelper.pollUiThread(new Criteria("Failed to select different tab") {
                 @Override
                 public boolean isSatisfied() {
-                    return getActivity().getActivityTab() != originalTab;
+                    return mActivityTestRule.getActivity().getActivityTab() != originalTab;
                 }
             });
         }
-        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), expectedUrl);
+        ChromeTabUtils.waitForTabPageLoaded(
+                mActivityTestRule.getActivity().getActivityTab(), expectedUrl);
     }
 
     private void launchUrlFromExternalApp(String url, String expectedUrl, String appId,
@@ -234,85 +244,96 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * Tests that URLs opened from external apps can set an android-app scheme referrer.
      * @throws InterruptedException
      */
+    @Test
     @LargeTest
     @Feature({"Navigation"})
     public void testReferrer() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(ANDROID_APP_REFERRER));
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
         CriteriaHelper.pollInstrumentationThread(
-                new ReferrerCriteria(getActivity().getActivityTab(), ANDROID_APP_REFERRER), 2000,
-                200);
+                new ReferrerCriteria(
+                        mActivityTestRule.getActivity().getActivityTab(), ANDROID_APP_REFERRER),
+                2000, 200);
     }
 
     /**
      * Tests that URLs opened from external apps can set an android-app scheme referrer.
      * @throws InterruptedException
      */
+    @Test
     @LargeTest
     @Feature({"Navigation"})
     public void testCannotSetArbitraryReferrer() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
         String referrer = "foobar://totally.legit.referrer";
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(referrer));
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
         CriteriaHelper.pollInstrumentationThread(
-                new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
+                new ReferrerCriteria(mActivityTestRule.getActivity().getActivityTab(), ""), 2000,
+                200);
     }
 
     /**
      * Tests that URLs opened from external applications cannot set an http:// referrer.
      * @throws InterruptedException
      */
+    @Test
     @LargeTest
     @Feature({"Navigation"})
     public void testNoHttpReferrer() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTP_REFERRER));
 
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, false);
         CriteriaHelper.pollInstrumentationThread(
-                new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
+                new ReferrerCriteria(mActivityTestRule.getActivity().getActivityTab(), ""), 2000,
+                200);
     }
 
     /**
      * Tests that URLs opened from First party apps can set an http:// referrrer.
      * @throws InterruptedException
      */
+    @Test
     @LargeTest
     @Feature({"Navigation"})
     public void testHttpReferrerFromFirstParty() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTP_REFERRER));
 
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, true);
         CriteriaHelper.pollInstrumentationThread(
-                new ReferrerCriteria(getActivity().getActivityTab(), HTTP_REFERRER), 2000, 200);
+                new ReferrerCriteria(
+                        mActivityTestRule.getActivity().getActivityTab(), HTTP_REFERRER),
+                2000, 200);
     }
 
     /**
      * Tests that an https:// referrer is stripped in case of downgrade.
      * @throws InterruptedException
      */
+    @Test
     @LargeTest
     @Feature({"Navigation"})
     public void testHttpsReferrerFromFirstPartyNoDowngrade() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTPS_REFERRER));
 
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, true);
         CriteriaHelper.pollInstrumentationThread(
-                new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
+                new ReferrerCriteria(mActivityTestRule.getActivity().getActivityTab(), ""), 2000,
+                200);
     }
 
     /**
@@ -321,42 +342,44 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      */
     // @LargeTest
     // @Feature({"Navigation"})
+    @Test
     @DisabledTest
     public void testNoNewTabForSameApp() throws InterruptedException {
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
-        int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
 
         // Launch a first URL from an app.
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
         // It should have opened in a new tab.
-        int newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url1,
-                getActivity().getActivityTab().getUrl());
+        int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url1,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // Launch a new URL from the same app, it should open in the same tab.
-        originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url2, EXTERNAL_APP_1_ID, false);
-        newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url2,
-                getActivity().getActivityTab().getUrl());
+        newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url2,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // And pressing back should close Clank.
-        assertTrue("Window does not have focus before pressing back.",
-                getActivity().hasWindowFocus());
+        Assert.assertTrue("Window does not have focus before pressing back.",
+                mActivityTestRule.getActivity().hasWindowFocus());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().onBackPressed();
+                mActivityTestRule.getActivity().onBackPressed();
             }
         });
-        getInstrumentation().waitForIdleSync();
-        assertFalse("Window still has focus after pressing back.", getActivity().hasWindowFocus());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        Assert.assertFalse("Window still has focus after pressing back.",
+                mActivityTestRule.getActivity().hasWindowFocus());
     }
 
     /**
@@ -365,11 +388,11 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * @throws InterruptedException
      */
 
-
+    @Test
     @LargeTest
     @Feature({"Navigation"})
     public void testNewTabForUnknownApp() throws InterruptedException {
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -378,37 +401,38 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         // Launch a first URL with an app.
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
 
-        assertEquals("Selected tab is not on the right URL.", url1,
-                getActivity().getActivityTab().getUrl());
-        int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        Assert.assertEquals("Selected tab is not on the right URL.", url1,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
+        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
 
         // Launch the same URL without app ID. It should open a new tab.
-        originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url1, null, false);
-        int newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url1,
-                getActivity().getActivityTab().getUrl());
+        int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url1,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // Launch another URL without app ID. It should open a new tab.
-        originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url2, null, false);
-        newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url2,
-                getActivity().getActivityTab().getUrl());
+        newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url2,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // And pressing back should close Clank.
-        assertTrue("Window does not have focus before pressing back.",
-                getActivity().hasWindowFocus());
+        Assert.assertTrue("Window does not have focus before pressing back.",
+                mActivityTestRule.getActivity().hasWindowFocus());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().onBackPressed();
+                mActivityTestRule.getActivity().onBackPressed();
             }
         });
-        getInstrumentation().waitForIdleSync();
-        assertFalse("Window still has focus after pressing back.", getActivity().hasWindowFocus());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        Assert.assertFalse("Window still has focus after pressing back.",
+                mActivityTestRule.getActivity().hasWindowFocus());
     }
 
     /**
@@ -418,42 +442,44 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      */
     // @LargeTest
     // @Feature({"Navigation"})
+    @Test
     @DisabledTest
     public void testNewTabWithNewTabExtra() throws InterruptedException {
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
-        int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
 
         // Launch a first URL from an app.
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
         // It should have opened in a new tab.
-        int newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url1,
-                getActivity().getActivityTab().getUrl());
+        int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url1,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // Launch a new URL from the same app with the right extra to open in a new tab.
-        originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url2, EXTERNAL_APP_1_ID, true);
-        newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url2,
-                getActivity().getActivityTab().getUrl());
+        newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url2,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // And pressing back should close Clank.
-        assertTrue("Window does not have focus before pressing back.",
-                getActivity().hasWindowFocus());
+        Assert.assertTrue("Window does not have focus before pressing back.",
+                mActivityTestRule.getActivity().hasWindowFocus());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().onBackPressed();
+                mActivityTestRule.getActivity().onBackPressed();
             }
         });
-        getInstrumentation().waitForIdleSync();
-        assertFalse("Window still has focus after pressing back.", getActivity().hasWindowFocus());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        Assert.assertFalse("Window still has focus after pressing back.",
+                mActivityTestRule.getActivity().hasWindowFocus());
     }
 
     /**
@@ -461,6 +487,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * tab) from the external app.
      * @throws InterruptedException
      */
+    @Test
     @LargeTest
     @Feature({"Navigation", "Main"})
     public void testNoNewTabForSameAppOnStart() throws InterruptedException {
@@ -468,39 +495,41 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
 
         // Launch Clank from the external app.
-        startMainActivityFromExternalApp(url1, EXTERNAL_APP_1_ID);
-        assertEquals("Selected tab is not on the right URL.", url1,
-                getActivity().getActivityTab().getUrl());
+        mActivityTestRule.startMainActivityFromExternalApp(url1, EXTERNAL_APP_1_ID);
+        Assert.assertEquals("Selected tab is not on the right URL.", url1,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // Launch a new URL from the same app, it should open in the same tab.
-        int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url2, EXTERNAL_APP_1_ID, false);
-        int newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url2,
-                getActivity().getActivityTab().getUrl());
+        int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url2,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // And pressing back should close Clank.
-        assertTrue("Window does not have focus before pressing back.",
-                getActivity().hasWindowFocus());
+        Assert.assertTrue("Window does not have focus before pressing back.",
+                mActivityTestRule.getActivity().hasWindowFocus());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().onBackPressed();
+                mActivityTestRule.getActivity().onBackPressed();
             }
         });
-        getInstrumentation().waitForIdleSync();
-        assertFalse("Window still has focus after pressing back.", getActivity().hasWindowFocus());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        Assert.assertFalse("Window still has focus after pressing back.",
+                mActivityTestRule.getActivity().hasWindowFocus());
     }
 
     /**
      * Test that URLs opened from different external apps do create new tabs.
      * @throws InterruptedException
      */
+    @Test
     @LargeTest
     @Feature({"Navigation", "Main"})
     public void testNewTabForDifferentApps() throws InterruptedException {
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -509,24 +538,24 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         // Launch a first URL from an app1.
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
 
-        int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
 
         // Launch a second URL from an app2, it should open in a new tab.
         launchUrlFromExternalApp(url2, EXTERNAL_APP_2_ID, false);
 
         // It should have opened in a new tab.
-        int newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url2,
-                getActivity().getActivityTab().getUrl());
+        int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url2,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         // Also try with no app id, it should also open in a new tab.
-        originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url3, null, false);
-        newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url3,
-                getActivity().getActivityTab().getUrl());
+        newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url3,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
     }
 
     /**
@@ -534,10 +563,11 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * when the user has navigated elsewhere manually in the same tab.
      * @throws InterruptedException
      */
+    @Test
     @LargeTest
     @Feature({"Navigation"})
     public void testNewTabAfterNavigation() throws InterruptedException {
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -547,15 +577,15 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
 
         // Now simulate the user manually navigating to another URL.
-        loadUrl(url3);
+        mActivityTestRule.loadUrl(url3);
 
         // Launch a second URL from the same app, it should open in a new tab.
-        int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url2, EXTERNAL_APP_1_ID, false);
-        int newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url2,
-                getActivity().getActivityTab().getUrl());
+        int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url2,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
     }
 
     /**
@@ -567,9 +597,10 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * @LargeTest
      * @Feature({"Navigation"})
      */
+    @Test
     @FlakyTest(message = "http://crbug.com/6467101")
     public void testNewTabWhenPageEdited() throws InterruptedException, TimeoutException {
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -578,27 +609,31 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
 
         // Focus the text-field and type something.
-        Tab tab = getActivity().getActivityTab();
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
         DOMUtils.focusNode(tab.getContentViewCore().getWebContents(), "textField");
 
         // Some processing needs to happen before the test-field has the focus.
-        CriteriaHelper.pollInstrumentationThread(new ElementFocusedCriteria(
-                getActivity().getActivityTab(), "textField"), 2000, 200);
+        CriteriaHelper.pollInstrumentationThread(
+                new ElementFocusedCriteria(
+                        mActivityTestRule.getActivity().getActivityTab(), "textField"),
+                2000, 200);
 
         // Now type something.
-        getInstrumentation().sendStringSync("banana");
+        InstrumentationRegistry.getInstrumentation().sendStringSync("banana");
 
         // We also have to wait for the text to happen in the page.
-        CriteriaHelper.pollInstrumentationThread(new ElementTextIsCriteria(
-                getActivity().getActivityTab(), "textField", "banana"), 2000, 200);
+        CriteriaHelper.pollInstrumentationThread(
+                new ElementTextIsCriteria(
+                        mActivityTestRule.getActivity().getActivityTab(), "textField", "banana"),
+                2000, 200);
 
         // Launch a second URL from the same app, it should open in a new tab.
-        int originalTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
+        int originalTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
         launchUrlFromExternalApp(url2, EXTERNAL_APP_1_ID, false);
-        int newTabCount = ChromeTabUtils.getNumOpenTabs(getActivity());
-        assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
-        assertEquals("Selected tab is not on the right URL.", url2,
-                getActivity().getActivityTab().getUrl());
+        int newTabCount = ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity());
+        Assert.assertEquals("Incorrect number of tabs open", originalTabCount + 1, newTabCount);
+        Assert.assertEquals("Selected tab is not on the right URL.", url2,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
     }
 
 
@@ -614,22 +649,24 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     /**
      * Catches regressions for https://crbug.com/495877.
      */
+    @Test
     @FlakyTest(message = "https://crbug.com/571030")
     @MediumTest
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     public void testBackgroundSvelteTabIsSelectedAfterClosingExternalTab() throws Exception {
         // Start up Chrome and immediately close its tab -- it gets in the way.
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                TabModelUtils.closeTabByIndex(getActivity().getCurrentTabModel(), 0);
+                TabModelUtils.closeTabByIndex(
+                        mActivityTestRule.getActivity().getCurrentTabModel(), 0);
             }
         });
         CriteriaHelper.pollUiThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return getActivity().getTabModelSelector().getTotalTabCount();
+                return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
             }
         }));
 
@@ -652,28 +689,33 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
 
         // Open a tab via an external application.
         final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(hrefLink));
-        intent.setClassName(getInstrumentation().getTargetContext().getPackageName(),
+        intent.setClassName(
+                InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName(),
                 ChromeTabbedActivity.class.getName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, "com.legit.totes");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getInstrumentation().getTargetContext().startActivity(intent);
+        InstrumentationRegistry.getInstrumentation().getTargetContext().startActivity(intent);
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return getActivity().getTabModelSelector().getTotalTabCount();
+                return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
             }
         }));
-        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(getActivity(), 0.5f, false);
+        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(
+                mActivityTestRule.getActivity(), 0.5f, false);
 
         // Long press the center of the page, which should bring up the context menu.
         final TestTabObserver observer = new TestTabObserver();
-        getActivity().getActivityTab().addObserver(observer);
-        assertNull(observer.mContextMenu);
+        mActivityTestRule.getActivity().getActivityTab().addObserver(observer);
+        Assert.assertNull(observer.mContextMenu);
         final View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() throws Exception {
-                return getActivity().getActivityTab().getContentViewCore().getContainerView();
+                return mActivityTestRule.getActivity()
+                        .getActivityTab()
+                        .getContentViewCore()
+                        .getContainerView();
             }
         });
         TouchCommon.longPressView(view);
@@ -683,13 +725,13 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 return observer.mContextMenu != null;
             }
         });
-        getActivity().getActivityTab().removeObserver(observer);
+        mActivityTestRule.getActivity().getActivityTab().removeObserver(observer);
 
         // Select the "open in new tab" option.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(observer.mContextMenu.performIdentifierAction(
+                Assert.assertTrue(observer.mContextMenu.performIdentifierAction(
                         R.id.contextmenu_open_in_new_tab, 0));
             }
         });
@@ -698,7 +740,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return getActivity().getTabModelSelector().getTotalTabCount();
+                return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
             }
         }));
 
@@ -707,13 +749,13 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().onBackPressed();
+                mActivityTestRule.getActivity().onBackPressed();
             }
         });
         CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return getActivity().getTabModelSelector().getTotalTabCount();
+                return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
             }
         }));
     }
@@ -722,11 +764,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * Tests that a Weblite url from an external app uses the lite_url param when Data Reduction
      * Proxy previews are being used.
      */
+    @Test
     @MediumTest
     @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
             "enable-data-reduction-proxy-lite-page"})
     public void testLaunchWebLiteURL() throws InterruptedException {
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
 
@@ -734,24 +777,25 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         launchUrlFromExternalApp("http://googleweblight.com/?lite_url=" + url, url,
                 EXTERNAL_APP_1_ID, false, null);
 
-        assertEquals("Selected tab is not on the right URL.",
-                url, getActivity().getActivityTab().getUrl());
+        Assert.assertEquals("Selected tab is not on the right URL.", url,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
     }
 
     /**
      * Tests that a Weblite url from an external app does not use the lite_url param when Data
      * Reduction Proxy previews are not being used.
      */
+    @Test
     @MediumTest
     public void testLaunchWebLiteURLNoPreviews() throws InterruptedException {
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         String url = "http://googleweblight.com/?lite_url=chrome/test/data/android/about.html";
 
         // Launch a first URL from an app.
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, false, null);
 
-        assertEquals("Selected tab is not on the right URL.",
-                url, getActivity().getActivityTab().getUrl());
+        Assert.assertEquals("Selected tab is not on the right URL.", url,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
     }
 }

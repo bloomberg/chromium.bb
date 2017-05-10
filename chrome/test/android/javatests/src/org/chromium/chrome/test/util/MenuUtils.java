@@ -6,7 +6,7 @@ package org.chromium.chrome.test.util;
 
 import android.app.Instrumentation;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.chrome.browser.ChromeActivity;
 
