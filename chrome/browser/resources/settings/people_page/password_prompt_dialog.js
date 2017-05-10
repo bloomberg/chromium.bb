@@ -41,7 +41,7 @@ Polymer({
      */
     setModes: {
       type: Object,
-      notify: true
+      notify: true,
     },
 
     /**
@@ -53,7 +53,7 @@ Polymer({
      */
     password_: {
       type: String,
-      observer: 'onPasswordChanged_'
+      observer: 'onPasswordChanged_',
     },
 
     /**
@@ -68,7 +68,7 @@ Polymer({
      */
     quickUnlockPrivate_: {
       type: Object,
-      value: chrome.quickUnlockPrivate
+      value: chrome.quickUnlockPrivate,
     },
 
     /**
@@ -80,7 +80,9 @@ Polymer({
      */
     writeUma_: {
       type: Object,
-      value: function() { return settings.recordLockScreenProgress; }
+      value: function() {
+        return settings.recordLockScreenProgress;
+      }
     },
 
     /**
@@ -89,8 +91,15 @@ Polymer({
      */
     passwordActiveDurationMs_: {
       type: Number,
-      value: PASSWORD_ACTIVE_DURATION_MS
+      value: PASSWORD_ACTIVE_DURATION_MS,
     },
+  },
+
+  /** @override */
+  attached: function() {
+    this.async(function() {
+      this.$.passwordInput.focus();
+    }.bind(this));
   },
 
   /**
@@ -189,9 +198,9 @@ Polymer({
   },
 
   /**
-  * Helper method that checks if the current password is valid.
-  * @param {function(boolean):void} onCheck
-  */
+   * Helper method that checks if the current password is valid.
+   * @param {function(boolean):void} onCheck
+   */
   checkAccountPassword_: function(onCheck) {
     // We check the account password by trying to update the active set of quick
     // unlock modes without changing any credentials.

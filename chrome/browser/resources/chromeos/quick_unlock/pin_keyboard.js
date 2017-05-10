@@ -62,7 +62,7 @@ Polymer({
      */
     enablePassword: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     /**
@@ -73,8 +73,37 @@ Polymer({
      */
     passwordElement: {
       type: Object,
-      value: function() { return this.$$('#pin-input'); },
-      observer: 'onPasswordElementAttached_'
+      value: function() {
+        return this.$.pinInput.inputElement;
+      },
+      observer: 'onPasswordElementAttached_',
+    },
+
+    /**
+     * The intervalID used for the backspace button set/clear interval.
+     * @private
+     */
+    repeatBackspaceIntervalId_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
+     * The timeoutID used for the auto backspace.
+     * @private
+     */
+    startAutoBackspaceId_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
+     * Whether or not to show the default pin input.
+     * @private
+     */
+    showPinInput_: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -85,26 +114,8 @@ Polymer({
       type: String,
       notify: true,
       value: '',
-      observer: 'onPinValueChange_'
+      observer: 'onPinValueChange_',
     },
-
-    /**
-     * The intervalID used for the backspace button set/clear interval.
-     * @private
-     */
-    repeatBackspaceIntervalId_: {
-      type: Number,
-      value: 0
-    },
-
-    /**
-     * The timeoutID used for the auto backspace.
-     * @private
-     */
-    startAutoBackspaceId_: {
-      type: Number,
-      value: 0
-    }
   },
 
   /**
@@ -113,8 +124,7 @@ Polymer({
    * @private
    */
   onPasswordElementAttached_: function(inputElement) {
-    if (inputElement != this.$$('#pin-input'))
-      this.$$('#pin-input').hidden = true;
+    this.showPinInput_ = inputElement == this.$.pinInput.inputElement;
     inputElement.addEventListener('input',
         this.handleInputChanged_.bind(this));
   },
