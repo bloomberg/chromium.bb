@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LOGIN_VIEWS_CONTENTS_VIEW_H_
-#define ASH_LOGIN_VIEWS_CONTENTS_VIEW_H_
+#ifndef ASH_LOGIN_UI_CONTENTS_VIEW_H_
+#define ASH_LOGIN_UI_CONTENTS_VIEW_H_
 
 #include "base/macros.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -31,4 +31,4 @@ class LockContentsView : public views::View, public views::ButtonListener {
 
 }  // namespace ash
 
-#endif  // ASH_LOGIN_VIEWS_CONTENTS_VIEW_H_
+#endif  // ASH_LOGIN_UI_CONTENTS_VIEW_H_

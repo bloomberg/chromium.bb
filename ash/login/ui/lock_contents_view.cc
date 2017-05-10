@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/login/views/lock_contents_view.h"
+#include "ash/login/ui/lock_contents_view.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/background.h"
