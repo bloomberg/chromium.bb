@@ -30,8 +30,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
     audio_encoder_.reset(new AudioEncoder(
         cast_environment, audio_config.channels, audio_config.rtp_timebase,
         audio_config.max_bitrate, audio_config.codec,
-        base::Bind(&AudioSender::OnEncodedAudioFrame,
-                   weak_factory_.GetWeakPtr(), audio_config.max_bitrate)));
+        base::Bind(&AudioSender::OnEncodedAudioFrame, AsWeakPtr(),
+                   audio_config.max_bitrate)));
   }
 
   // AudioEncoder provides no operational status changes during normal use.
@@ -70,6 +70,10 @@ void AudioSender::InsertAudio(std::unique_ptr<AudioBus> audio_bus,
   samples_in_encoder_ += audio_bus->frames();
 
   audio_encoder_->InsertAudio(std::move(audio_bus), recorded_time);
+}
+
+base::WeakPtr<AudioSender> AudioSender::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 int AudioSender::GetNumberOfFramesInEncoder() const {

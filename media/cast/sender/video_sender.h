@@ -38,9 +38,7 @@ typedef base::Callback<void(base::TimeDelta)> PlayoutDelayChangeCB;
 // RTCP packets.
 // Additionally it posts a bunch of delayed tasks to the main thread for various
 // timeouts.
-class VideoSender : public FrameSender,
-                    public base::NonThreadSafe,
-                    public base::SupportsWeakPtr<VideoSender> {
+class VideoSender : public FrameSender, public base::NonThreadSafe {
  public:
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const FrameSenderConfig& video_config,
@@ -62,6 +60,8 @@ class VideoSender : public FrameSender,
   // encoder affinity (defined as offering some sort of performance benefit). If
   // the encoder does not have any such capability, returns null.
   std::unique_ptr<VideoFrameFactory> CreateVideoFrameFactory();
+
+  base::WeakPtr<VideoSender> AsWeakPtr();
 
  protected:
   int GetNumberOfFramesInEncoder() const final;
