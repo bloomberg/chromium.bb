@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
@@ -625,14 +624,6 @@ void RenderViewImpl::Initialize(
 
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
-
-  // Debug cases of https://crbug.com/575245.
-  base::debug::SetCrashKeyValue("rvinit_view_id",
-                                base::IntToString(GetRoutingID()));
-  base::debug::SetCrashKeyValue("rvinit_proxy_id",
-                                base::IntToString(params.proxy_routing_id));
-  base::debug::SetCrashKeyValue(
-      "rvinit_main_frame_id", base::IntToString(params.main_frame_routing_id));
 
   webview()->SetDisplayMode(display_mode_);
   webview()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
