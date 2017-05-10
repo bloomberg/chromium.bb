@@ -414,9 +414,14 @@ struct ThreadArgument {
 int ExceptionHandler::ThreadEntry(void *arg) {
   const ThreadArgument *thread_arg = reinterpret_cast<ThreadArgument*>(arg);
 
+  // Close the write end of the pipe. This allows us to fail if the parent dies
+  // while waiting for the continue signal.
+  sys_close(thread_arg->handler->fdes[1]);
+
   // Block here until the crashing process unblocks us when
   // we're allowed to use ptrace
   thread_arg->handler->WaitForContinueSignal();
+  sys_close(thread_arg->handler->fdes[0]);
 
   return thread_arg->handler->DoDump(thread_arg->pid, thread_arg->context,
                                      thread_arg->context_size) == false;
@@ -523,21 +528,22 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
   }
 
   const pid_t child = sys_clone(
-      ThreadEntry, stack, CLONE_FILES | CLONE_FS | CLONE_UNTRACED,
-      &thread_arg, NULL, NULL, NULL);
+      ThreadEntry, stack, CLONE_FS | CLONE_UNTRACED, &thread_arg, NULL, NULL,
+      NULL);
   if (child == -1) {
     sys_close(fdes[0]);
     sys_close(fdes[1]);
     return false;
   }
 
+  // Close the read end of the pipe.
+  sys_close(fdes[0]);
   // Allow the child to ptrace us
   sys_prctl(PR_SET_PTRACER, child, 0, 0, 0);
   SendContinueSignalToChild();
   int status;
   const int r = HANDLE_EINTR(sys_waitpid(child, &status, __WALL));
 
-  sys_close(fdes[0]);
   sys_close(fdes[1]);
 
   if (r == -1) {
