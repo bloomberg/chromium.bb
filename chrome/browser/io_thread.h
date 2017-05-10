@@ -32,6 +32,7 @@
 #include "extensions/features/features.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_network_session.h"
+#include "net/nqe/network_quality_estimator.h"
 
 class PrefProxyConfigTracker;
 class PrefService;
@@ -191,6 +192,9 @@ class IOThread : public content::BrowserThreadDelegate {
     std::unique_ptr<net::HostMappingRules> host_mapping_rules;
     std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
+    std::unique_ptr<
+        net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver>
+        network_quality_observer;
 
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful

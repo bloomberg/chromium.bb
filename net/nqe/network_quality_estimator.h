@@ -111,9 +111,10 @@ class NET_EXPORT NetworkQualityEstimator
         base::TimeDelta transport_rtt,
         int32_t downstream_throughput_kbps) = 0;
 
+    virtual ~RTTAndThroughputEstimatesObserver() {}
+
    protected:
     RTTAndThroughputEstimatesObserver() {}
-    virtual ~RTTAndThroughputEstimatesObserver() {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(RTTAndThroughputEstimatesObserver);
@@ -446,6 +447,10 @@ class NET_EXPORT NetworkQualityEstimator
       const base::TimeTicks& start_time,
       int percentile) const;
 
+  // Observer list for RTT or throughput estimates. Protected for testing.
+  base::ObserverList<RTTAndThroughputEstimatesObserver>
+      rtt_and_throughput_estimates_observer_list_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            AdaptiveRecomputationEffectiveConnectionType);
@@ -742,10 +747,6 @@ class NET_EXPORT NetworkQualityEstimator
   // Observer list for changes in effective connection type.
   base::ObserverList<EffectiveConnectionTypeObserver>
       effective_connection_type_observer_list_;
-
-  // Observer list for RTT or throughput estimates.
-  base::ObserverList<RTTAndThroughputEstimatesObserver>
-      rtt_and_throughput_estimates_observer_list_;
 
   // Observer lists for round trip times and throughput measurements.
   base::ObserverList<RTTObserver> rtt_observer_list_;

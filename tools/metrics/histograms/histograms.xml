@@ -44468,6 +44468,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.RenderThreadNotified" enum="BooleanHit">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Count of the number of times renderers were notified of the changes in the
+    network quality estimator. This metric makes sense to compare in frequency
+    relative to other events like the number of page loads or the number of
+    renderers seen.  It is expected that we will see at least 1 notification per
+    renderer (on average), and less than 100.
+  </summary>
+</histogram>
+
 <histogram name="NQE.RTT" units="ms">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>

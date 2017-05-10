@@ -166,6 +166,7 @@ source_set("browser_sources") {
     "navigation_throttle.h",
     "navigation_type.h",
     "navigation_ui_data.h",
+    "network_quality_observer_factory.h",
     "notification_database_data.cc",
     "notification_database_data.h",
     "notification_details.h",
