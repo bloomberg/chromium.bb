@@ -308,7 +308,13 @@ TEST_F(HistoryStateOperationsTest, StateReplacement) {
 
 // Tests that the state object is reset to the correct value after reloading a
 // page whose state has been replaced.
-TEST_F(HistoryStateOperationsTest, StateReplacementReload) {
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_StateReplacementReload StateReplacementReload
+#else
+#define MAYBE_StateReplacementReload DISABLED_StateReplacementReload
+#endif
+// TODO(crbug.com/720381): Enable this test on device.
+TEST_F(HistoryStateOperationsTest, MAYBE_StateReplacementReload) {
   // Set up the state parameters and tap the replace state button.
   std::string new_state("STATE OBJECT");
   std::string empty_title;
