@@ -101,6 +101,13 @@ includes `R.java`).
     * Help -&gt; Find Action -&gt; "Show quick documentation on mouse move"
 * Turn on line numbers:
     * Help -&gt; Find Action -&gt; "Show line numbers"
+* Format changed files (Useful for changes made by running code inspection):
+    * Set up version control
+        * File -&gt; Settings -&gt; Version Control
+        * Add src directories
+    * Commit changes and reformat
+        * Help -&gt; Find Action -&gt; "Commit Changes"
+        * Check "Reformat code" & "Optimize imports" and commit
 
 ### Useful Shortcuts
 
