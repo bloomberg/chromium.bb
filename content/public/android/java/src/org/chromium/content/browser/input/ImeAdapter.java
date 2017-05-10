@@ -22,6 +22,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
@@ -575,15 +576,22 @@ public class ImeAdapter {
     /**
      * Update selection to input method manager.
      *
-     * @param selectionStart The selection start.
-     * @param selectionEnd The selection end.
+     * @param selectionStart   The selection start.
+     * @param selectionEnd     The selection end.
      * @param compositionStart The composition start.
-     * @param compositionEnd The composition end.
+     * @param compositionEnd   The composition end.
      */
     void updateSelection(
             int selectionStart, int selectionEnd, int compositionStart, int compositionEnd) {
         mInputMethodManagerWrapper.updateSelection(
                 mContainerView, selectionStart, selectionEnd, compositionStart, compositionEnd);
+    }
+
+    /**
+     * Update extracted text to input method manager.
+     */
+    void updateExtractedText(int token, ExtractedText extractedText) {
+        mInputMethodManagerWrapper.updateExtractedText(mContainerView, token, extractedText);
     }
 
     /**
