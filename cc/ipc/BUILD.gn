@@ -84,4 +84,6 @@ mojom("test_interfaces") {
   public_deps = [
     ":interfaces",
   ]
+
+  use_once_callback = true
 }
