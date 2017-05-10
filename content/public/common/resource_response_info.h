@@ -26,7 +26,7 @@
 
 namespace content {
 
-// Note: when modifying this structure, also update ResourceResponse::DeepCopy
+// NOTE: when modifying this structure, also update ResourceResponse::DeepCopy
 // in resource_response.cc.
 struct CONTENT_EXPORT ResourceResponseInfo {
   ResourceResponseInfo();
@@ -182,6 +182,9 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // True if service worker navigation preload was performed due to the request
   // for this response.
   bool did_service_worker_navigation_preload;
+
+  // NOTE: When adding or changing fields here, also update
+  // ResourceResponse::DeepCopy in resource_response.cc.
 };
 
 }  // namespace content
