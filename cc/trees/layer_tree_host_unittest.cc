@@ -2480,15 +2480,16 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
         break;
       case 1:
         EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
+        // Once the animation starts, an ImplFrame will be requested. However,
+        // main frames may be happening in the mean-time due to high-latency
+        // mode. If one happens before the next impl frame, then the source
+        // frame number may increment twice instead of just once.
         break;
       case 2:
+      case 3:
         EXPECT_EQ(1.25f, impl->active_tree()->current_page_scale_factor());
         EndTest();
         break;
-      case 3:
-        break;
-      default:
-        NOTREACHED();
     }
   }
 
