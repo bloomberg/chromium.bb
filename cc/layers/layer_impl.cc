@@ -68,6 +68,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
       was_ever_ready_since_last_transform_animation_(true),
+      viewport_layer_type_(NOT_VIEWPORT_LAYER),
       background_color_(0),
       safe_opaque_background_color_(0),
       transform_tree_index_(TransformTree::kInvalidNodeId),
@@ -279,6 +280,9 @@ void LayerImpl::SetScrollClipLayer(int scroll_clip_layer_id) {
   layer_tree_impl()->UnregisterScrollLayer(this);
   scroll_clip_layer_id_ = scroll_clip_layer_id;
   layer_tree_impl()->RegisterScrollLayer(this);
+
+  // Ensure our viewport layer type is updated.
+  layer_tree_impl()->UpdateViewportLayerTypes();
 }
 
 LayerImpl* LayerImpl::scroll_clip_layer() const {
@@ -526,14 +530,20 @@ void LayerImpl::SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta) {
     return;
 
   PropertyTrees* property_trees = GetPropertyTrees();
-  if (this == layer_tree_impl()->InnerViewportContainerLayer())
-    property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
-  else if (this == layer_tree_impl()->OuterViewportContainerLayer())
-    property_trees->SetOuterViewportContainerBoundsDelta(bounds_delta);
-  else if (this == layer_tree_impl()->InnerViewportScrollLayer())
-    property_trees->SetInnerViewportScrollBoundsDelta(bounds_delta);
-  else
-    NOTREACHED();
+  switch (viewport_layer_type_) {
+    case (INNER_VIEWPORT_CONTAINER):
+      property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
+      break;
+    case (OUTER_VIEWPORT_CONTAINER):
+      property_trees->SetOuterViewportContainerBoundsDelta(bounds_delta);
+      break;
+    case (INNER_VIEWPORT_SCROLL):
+      property_trees->SetInnerViewportScrollBoundsDelta(bounds_delta);
+      break;
+    case (OUTER_VIEWPORT_SCROLL):
+      // OUTER_VIEWPORT_SCROLL should not have viewport bounds deltas.
+      NOTREACHED();
+  }
 
   layer_tree_impl()->DidUpdateScrollState(id());
 
@@ -554,13 +564,16 @@ void LayerImpl::SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta) {
 }
 
 gfx::Vector2dF LayerImpl::ViewportBoundsDelta() const {
-  if (this == layer_tree_impl()->InnerViewportContainerLayer())
-    return GetPropertyTrees()->inner_viewport_container_bounds_delta();
-  else if (this == layer_tree_impl()->OuterViewportContainerLayer())
-    return GetPropertyTrees()->outer_viewport_container_bounds_delta();
-  else if (this == layer_tree_impl()->InnerViewportScrollLayer())
-    return GetPropertyTrees()->inner_viewport_scroll_bounds_delta();
-  return gfx::Vector2dF();
+  switch (viewport_layer_type_) {
+    case (INNER_VIEWPORT_CONTAINER):
+      return GetPropertyTrees()->inner_viewport_container_bounds_delta();
+    case (OUTER_VIEWPORT_CONTAINER):
+      return GetPropertyTrees()->outer_viewport_container_bounds_delta();
+    case (INNER_VIEWPORT_SCROLL):
+      return GetPropertyTrees()->inner_viewport_scroll_bounds_delta();
+    default:
+      return gfx::Vector2dF();
+  }
 }
 
 ScrollbarLayerImplBase* LayerImpl::ToScrollbarLayer() {

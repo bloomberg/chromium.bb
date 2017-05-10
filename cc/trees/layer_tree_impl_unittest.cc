@@ -2058,8 +2058,8 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
       root->bounds(), device_scale_factor * page_scale_factor);
   host_impl().SetViewportSize(scaled_bounds_for_root);
 
-  host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
-                                                      Layer::INVALID_ID);
+  host_impl().active_tree()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, root->id(), Layer::INVALID_ID, Layer::INVALID_ID);
   host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 

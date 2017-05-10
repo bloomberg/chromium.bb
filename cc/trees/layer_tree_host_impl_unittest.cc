@@ -306,6 +306,10 @@ class LayerTreeHostImplTest : public testing::Test,
 
   LayerImpl* CreateScrollAndContentsLayers(LayerTreeImpl* layer_tree_impl,
                                            const gfx::Size& content_size) {
+    // Clear any existing viewport layers that were setup so this function can
+    // be called multiple times.
+    layer_tree_impl->ClearViewportLayers();
+
     // Create both an inner viewport scroll layer and an outer viewport scroll
     // layer. The MaxScrollOffset of the outer viewport scroll layer will be
     // 0x0, so the scrolls will be applied directly to the inner viewport.
