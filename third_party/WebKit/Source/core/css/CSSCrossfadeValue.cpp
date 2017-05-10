@@ -86,9 +86,8 @@ static ImageResourceContent* CachedImageForCSSValue(CSSValue* value,
 }
 
 static Image* RenderableImageForCSSValue(CSSValue* value,
-                                         const LayoutObject& layout_object) {
-  ImageResourceContent* cached_image =
-      CachedImageForCSSValue(value, layout_object.GetDocument());
+                                         const Document& document) {
+  ImageResourceContent* cached_image = CachedImageForCSSValue(value, document);
 
   if (!cached_image || cached_image->ErrorOccurred() ||
       cached_image->GetImage()->IsNull())
@@ -150,11 +149,10 @@ CSSCrossfadeValue* CSSCrossfadeValue::ValueWithURLsMadeAbsolute() {
   return CSSCrossfadeValue::Create(from_value, to_value, percentage_value_);
 }
 
-IntSize CSSCrossfadeValue::FixedSize(const LayoutObject& layout_object,
+IntSize CSSCrossfadeValue::FixedSize(const Document& document,
                                      const FloatSize& default_object_size) {
-  Image* from_image =
-      RenderableImageForCSSValue(from_value_.Get(), layout_object);
-  Image* to_image = RenderableImageForCSSValue(to_value_.Get(), layout_object);
+  Image* from_image = RenderableImageForCSSValue(from_value_.Get(), document);
+  Image* to_image = RenderableImageForCSSValue(to_value_.Get(), document);
 
   if (!from_image || !to_image)
     return IntSize();
@@ -225,9 +223,9 @@ PassRefPtr<Image> CSSCrossfadeValue::GetImage(const LayoutObject& layout_object,
   if (size.IsEmpty())
     return nullptr;
 
-  Image* from_image =
-      RenderableImageForCSSValue(from_value_.Get(), layout_object);
-  Image* to_image = RenderableImageForCSSValue(to_value_.Get(), layout_object);
+  const Document& document = layout_object.GetDocument();
+  Image* from_image = RenderableImageForCSSValue(from_value_.Get(), document);
+  Image* to_image = RenderableImageForCSSValue(to_value_.Get(), document);
 
   if (!from_image || !to_image)
     return Image::NullImage();
@@ -245,7 +243,7 @@ PassRefPtr<Image> CSSCrossfadeValue::GetImage(const LayoutObject& layout_object,
 
   return CrossfadeGeneratedImage::Create(
       from_image_ref, to_image_ref, percentage_value_->GetFloatValue(),
-      FixedSize(layout_object, FloatSize(size)), size);
+      FixedSize(document, FloatSize(size)), size);
 }
 
 void CSSCrossfadeValue::CrossfadeChanged(const IntRect&) {

@@ -61,7 +61,7 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
   EFillSizeType type = fill_layer.Size().type;
 
   LayoutSize image_intrinsic_size = image->ImageSize(
-      obj, obj.Style()->EffectiveZoom(), positioning_area_size);
+      obj.GetDocument(), obj.Style()->EffectiveZoom(), positioning_area_size);
   switch (type) {
     case kSizeLength: {
       LayoutSize tile_size(positioning_area_size);

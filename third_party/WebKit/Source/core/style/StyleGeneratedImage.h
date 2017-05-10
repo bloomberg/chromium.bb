@@ -31,6 +31,7 @@ namespace blink {
 
 class CSSValue;
 class CSSImageGeneratorValue;
+class Document;
 
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  public:
@@ -43,7 +44,7 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   CSSValue* CssValue() const override;
   CSSValue* ComputedCSSValue() const override;
 
-  LayoutSize ImageSize(const LayoutObject&,
+  LayoutSize ImageSize(const Document&,
                        float multiplier,
                        const LayoutSize& default_object_size) const override;
   bool ImageHasRelativeSize() const override { return !fixed_size_; }

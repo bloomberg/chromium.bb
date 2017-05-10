@@ -36,6 +36,7 @@ namespace blink {
 
 class Color;
 class Gradient;
+class Document;
 
 enum CSSGradientType {
   kCSSDeprecatedLinearGradient,
@@ -100,7 +101,7 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   CSSGradientType GradientType() const { return gradient_type_; }
 
   bool IsFixedSize() const { return false; }
-  IntSize FixedSize(const LayoutObject&) const { return IntSize(); }
+  IntSize FixedSize(const Document&) const { return IntSize(); }
 
   bool IsPending() const { return false; }
   bool KnownToBeOpaque(const LayoutObject&) const;

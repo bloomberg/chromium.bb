@@ -24,7 +24,7 @@ class StyleInvalidImage final : public StyleImage {
 
   CSSValue* ComputedCSSValue() const override { return CssValue(); }
 
-  LayoutSize ImageSize(const LayoutObject&,
+  LayoutSize ImageSize(const Document&,
                        float /*multiplier*/,
                        const LayoutSize& /*defaultObjectSize*/) const override {
     return LayoutSize();

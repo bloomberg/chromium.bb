@@ -68,9 +68,9 @@ BoxReflection BoxReflectionForPaintLayer(const PaintLayer& layer,
       DrawingRecorder drawing_recorder(context, layer.GetLayoutObject(),
                                        DisplayItem::kReflectionMask,
                                        mask_bounding_float_rect);
-      NinePieceImagePainter(layer.GetLayoutObject())
-          .Paint(builder.Context(), mask_rect, style, mask_nine_piece,
-                 SkBlendMode::kSrcOver);
+      NinePieceImagePainter().Paint(builder.Context(), layer.GetLayoutObject(),
+                                    mask_rect, style, mask_nine_piece,
+                                    SkBlendMode::kSrcOver);
     }
     mask = builder.EndRecording();
   }

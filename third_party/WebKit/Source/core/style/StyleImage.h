@@ -36,6 +36,7 @@ class IntSize;
 class LayoutObject;
 class LayoutSize;
 class SVGImage;
+class Document;
 
 typedef void* WrappedImagePtr;
 
@@ -56,7 +57,7 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   // Note that the defaultObjectSize is assumed to be in the
   // effective zoom level given by multiplier, i.e. if multiplier is
   // the constant 1 the defaultObjectSize should be unzoomed.
-  virtual LayoutSize ImageSize(const LayoutObject&,
+  virtual LayoutSize ImageSize(const Document&,
                                float multiplier,
                                const LayoutSize& default_object_size) const = 0;
   virtual bool ImageHasRelativeSize() const = 0;

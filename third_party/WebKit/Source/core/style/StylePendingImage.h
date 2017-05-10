@@ -70,7 +70,7 @@ class StylePendingImage final : public StyleImage {
     return value_->IsImageSetValue() ? ToCSSImageSetValue(value_.Get()) : 0;
   }
 
-  LayoutSize ImageSize(const LayoutObject&,
+  LayoutSize ImageSize(const Document&,
                        float /*multiplier*/,
                        const LayoutSize& /*defaultObjectSize*/) const override {
     return LayoutSize();

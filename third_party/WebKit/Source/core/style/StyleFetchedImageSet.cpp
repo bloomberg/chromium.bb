@@ -81,7 +81,7 @@ bool StyleFetchedImageSet::ErrorOccurred() const {
 }
 
 LayoutSize StyleFetchedImageSet::ImageSize(
-    const LayoutObject&,
+    const Document&,
     float multiplier,
     const LayoutSize& default_object_size) const {
   if (best_fit_image_->GetImage() && best_fit_image_->GetImage()->IsSVGImage())
