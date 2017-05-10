@@ -32,6 +32,7 @@ from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cl_messages
 from chromite.lib import constants
+from chromite.lib import cq_config
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import fake_cidb
@@ -44,7 +45,7 @@ from chromite.lib import metadata_lib
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
-from chromite.lib import triage_lib
+
 
 # It's normal for unittests to access protected members.
 # pylint: disable=protected-access
@@ -667,35 +668,35 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     change = MockPatch()
     configs_to_test = chromeos_config.GetConfig().keys()[:5]
     return_string = ' '.join(configs_to_test)
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value=return_string)
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           configs_to_test)
 
   def testVerificationsForChangeNoSuchConfig(self):
     change = MockPatch()
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value='this_config_does_not_exist')
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeEmptyField(self):
     change = MockPatch()
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value=' ')
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeNoneField(self):
     change = MockPatch()
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value=None)
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testOverlayVerifications(self):
     change = MockPatch(project='chromiumos/overlays/chromiumos-overlay')
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value=None)
     configs = constants.PRE_CQ_DEFAULT_CONFIGS + [constants.BINHOST_PRE_CQ]
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
@@ -703,7 +704,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testRequestedDefaultVerifications(self):
     change = MockPatch()
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value='default x86-zgb-pre-cq')
     configs = constants.PRE_CQ_DEFAULT_CONFIGS + ['x86-zgb-pre-cq']
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
@@ -715,7 +716,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 Third line.
 pre-cq-configs: insect-pre-cq
 """)
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value='lumpy-pre-cq')
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           ['lumpy-pre-cq'])
@@ -726,7 +727,7 @@ pre-cq-configs: insect-pre-cq
 Third line.
 pre-cq-configs: stumpy-pre-cq
 """)
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value='lumpy-pre-cq')
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           ['stumpy-pre-cq'])
@@ -738,7 +739,7 @@ Third line.
 pre-cq-configs: stumpy-pre-cq
 pre-cq-configs: link-pre-cq
 """)
-    self.PatchObject(triage_lib, 'GetOptionForChange',
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value='lumpy-pre-cq')
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           ['stumpy-pre-cq', 'link-pre-cq'])

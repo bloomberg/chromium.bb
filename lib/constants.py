@@ -56,7 +56,6 @@ SDK_TOOLCHAINS_OUTPUT = 'tmp/toolchain-pkgs'
 SDK_OVERLAYS_OUTPUT = 'tmp/sdk-overlays'
 
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
-CQ_CONFIG_FILENAME = 'COMMIT-QUEUE.ini'
 
 # Path to the lsb-release file on the device.
 LSB_RELEASE_PATH = '/etc/lsb-release'
@@ -637,10 +636,16 @@ PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
 # As of crbug.com/591117 this is the same as the config name.
 PRE_CQ_LAUNCHER_NAME = PRE_CQ_LAUNCHER_CONFIG
 
+CQ_CONFIG_FILENAME = 'COMMIT-QUEUE.ini'
+CQ_CONFIG_SECTION_GENERAL = 'GENERAL'
+CQ_CONFIG_IGNORED_STAGES = 'ignored-stages'
+CQ_CONFIG_SUBMIT_IN_PRE_CQ = 'submit-in-pre-cq'
+CQ_CONFIG_SUBSYSTEM = 'subsystem'
+
 # The COMMIT-QUEUE.ini and commit message option that overrides pre-cq configs
 # to test with.
-PRE_CQ_CONFIGS_OPTION = 'pre-cq-configs'
-PRE_CQ_CONFIGS_OPTION_REGEX = PRE_CQ_CONFIGS_OPTION + ':'
+CQ_CONFIG_PRE_CQ_CONFIGS = 'pre-cq-configs'
+CQ_CONFIG_PRE_CQ_CONFIGS_REGEX = CQ_CONFIG_PRE_CQ_CONFIGS + ':'
 
 # Define pool of machines for Hardware tests.
 HWTEST_DEFAULT_NUM = 6

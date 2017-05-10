@@ -1270,7 +1270,7 @@ class MockPatchBase(cros_test_lib.MockTestCase):
                 project='chromiumos/chromite',
                 remote=site_config.params.EXTERNAL_REMOTE,
                 tracking_branch='refs/heads/master', is_draft=False,
-                approvals=()):
+                approvals=(), commit_message=None, mock_diff_status=None):
     """Helper function to create mock GerritPatch objects."""
     if change_id is None:
       change_id = self._patch_counter()
@@ -1307,6 +1307,12 @@ class MockPatchBase(cros_test_lib.MockTestCase):
     patch.pass_count = 0
     patch.fail_count = 1
     patch.total_fail_count = 3
+    patch.commit_message = commit_message
+
+    if mock_diff_status is None:
+      mock_diff_status = {}
+    self.PatchObject(cros_patch.GerritPatch, 'GetDiffStatus',
+                     return_value=mock_diff_status)
     return patch
 
   def GetPatches(self, how_many=1, always_use_list=False, **kwargs):

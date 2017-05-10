@@ -358,7 +358,7 @@ class TriageRelevantChanges(object):
     Some projects are configured with ignored-stages in COMMIT_QUEUE.ini. The CQ
     can still submit changes from these projects if all failed statges are
     listed in ignored-stages. Please refer to
-    triage_lib.GetStagesToIgnoreForChange for more details.
+    cq_config.CQConfigParser.GetStagesToIgnore for more details.
 
     1) if the builder_status is in 'pass' status, it means the build uploaded a
     'pass' builder_status but failed other steps in or after the completion

@@ -6,27 +6,58 @@
 
 from __future__ import print_function
 
-import ConfigParser
 import json
-import os
 
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_test_lib
+from chromite.lib import cq_config
 from chromite.lib import failure_message_lib
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import gerrit
-from chromite.lib import git
-from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 from chromite.lib import portage_util
 from chromite.lib import triage_lib
-from chromite.cbuildbot.stages import sync_stages_unittest
 
 
 site_config = config_lib.GetConfig()
 failure_msg_helper = failure_message_lib_unittest.FailureMessageHelper()
+
+
+class GetTestSubsystemForChangeTests(patch_unittest.MockPatchBase):
+  """Tests for GetTestSubsystemForChange."""
+
+  def setUp(self):
+    self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange')
+
+  def testGetSubsystemFromValidCommitMessage(self):
+    """Test whether we can get subsystem from commit message."""
+    change = self.MockPatch(
+        commit_message='First line\nThird line\nsubsystem: network audio\n'
+                       'subsystem: wifi')
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
+                     return_value='power light')
+    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
+    self.assertEqual(['network', 'audio', 'wifi'], result)
+
+  def testGetSubsystemFromInvalidCommitMessage(self):
+    """Test get subsystem from config file when commit message not have it."""
+    change = self.MockPatch(
+        commit_message='First line\nThird line\n')
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
+                     return_value='power light')
+    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
+    self.assertEqual(['power', 'light'], result)
+
+  def testGetDefaultSubsystem(self):
+    """Test if we can get default subsystem when subsystem is not specified."""
+    change = self.MockPatch(
+        commit_message='First line\nThird line\n')
+    self.PatchObject(cq_config.CQConfigParser, 'GetOption',
+                     return_value=None)
+    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
+    self.assertEqual(['default'], result)
+
 
 class MessageHelper(object):
   """Helper class to create failure messages for tests."""
@@ -379,7 +410,8 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
         MessageHelper.GetFailedMessage(
             [MessageHelper.GetGeneralFailure(stage='VMTest')], stage='VMTest')]
     subsys_by_config = None
-    m = self.PatchObject(triage_lib, 'GetStagesToIgnoreForChange')
+    self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange')
+    m = self.PatchObject(cq_config.CQConfigParser, 'GetStagesToIgnore')
 
     m.return_value = ('HWTest',)
     self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
@@ -408,7 +440,8 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
         MessageHelper.GetFailedMessage(
             [MessageHelper.GetGeneralFailure(stage='HWTest')], stage='HWTest',
             bot='cub-paladin')]
-    m = self.PatchObject(triage_lib, 'GetStagesToIgnoreForChange')
+    self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange')
+    m = self.PatchObject(cq_config.CQConfigParser, 'GetStagesToIgnore')
     m.return_value = ('VMTest', )
     cl_subsys = self.PatchObject(triage_lib, 'GetTestSubsystemForChange')
     cl_subsys.return_value = ['A']
@@ -434,130 +467,3 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
                                         'fail_subsystems': ['A']}}
     self.assertEqual(triage_lib.CalculateSuspects.CanIgnoreFailures(
         messages, change, self.build_root, subsys_by_config), (False, None))
-
-
-class GetOptionsTest(patch_unittest.MockPatchBase):
-  """Tests for functions that get options from config file."""
-
-  def GetOption(self, path, section='a', option='b'):
-    # pylint: disable=protected-access
-    return triage_lib._GetOptionFromConfigFile(path, section, option)
-
-  def testBadConfigFile(self):
-    """Test if we can handle an incorrectly formatted config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      osutils.WriteFile(path, 'foobar')
-      self.assertRaises(ConfigParser.Error, self.GetOption, path)
-
-  def testMissingConfigFile(self):
-    """Test if we can handle a missing config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      self.assertEqual(None, self.GetOption(path))
-
-  def testGoodConfigFile(self):
-    """Test if we can handle a good config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      osutils.WriteFile(path, '[a]\nb: bar baz\n')
-      ignored = self.GetOption(path)
-      self.assertEqual('bar baz', ignored)
-
-  def testGetIgnoredStages(self):
-    """Test if we can get the ignored stages from a good config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      osutils.WriteFile(path, '[GENERAL]\nignored-stages: bar baz\n')
-      ignored = self.GetOption(path, section='GENERAL', option='ignored-stages')
-      self.assertEqual('bar baz', ignored)
-
-  def testGetSubsystem(self):
-    """Test if we can get the subsystem label from a good config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      osutils.WriteFile(path, '[GENERAL]\nsubsystem: power light\n')
-      ignored = self.GetOption(path, section='GENERAL', option='subsystem')
-      self.assertEqual('power light', ignored)
-
-  def testResultForBadConfigFile(self):
-    """Test whether the return is None when handle a malformat config file."""
-    build_root = 'foo/build/root'
-    change = self.GetPatches(how_many=1)
-    self.PatchObject(git.ManifestCheckout, 'Cached')
-    self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout',
-                     return_value=git.ProjectCheckout(attrs={}))
-    self.PatchObject(git.ProjectCheckout, 'GetPath')
-
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'COMMIT-QUEUE.ini')
-      osutils.WriteFile(path, 'foo\n')
-      self.PatchObject(triage_lib, '_GetConfigFileForChange', return_value=path)
-
-      result = triage_lib.GetOptionForChange(build_root, change, 'a', 'b')
-      self.assertEqual(None, result)
-
-  def testGetSubsystemFromValidCommitMessage(self):
-    """Test whether we can get subsystem from commit message."""
-    change = sync_stages_unittest.MockPatch(
-        commit_message='First line\nThird line\nsubsystem: network audio\n'
-                       'subsystem: wifi')
-    self.PatchObject(triage_lib, 'GetOptionForChange',
-                     return_value='power light')
-    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
-    self.assertEqual(['network', 'audio', 'wifi'], result)
-
-  def testGetSubsystemFromInvalidCommitMessage(self):
-    """Test get subsystem from config file when commit message not have it."""
-    change = sync_stages_unittest.MockPatch(
-        commit_message='First line\nThird line\n')
-    self.PatchObject(triage_lib, 'GetOptionForChange',
-                     return_value='power light')
-    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
-    self.assertEqual(['power', 'light'], result)
-
-  def testGetDefaultSubsystem(self):
-    """Test if we can get default subsystem when subsystem is not specified."""
-    change = sync_stages_unittest.MockPatch(
-        commit_message='First line\nThird line\n')
-    self.PatchObject(triage_lib, 'GetOptionForChange',
-                     return_value=None)
-    result = triage_lib.GetTestSubsystemForChange('foo/build/root', change)
-    self.assertEqual(['default'], result)
-
-
-class ConfigFileTest(cros_test_lib.MockTestCase):
-  """Tests for functions that read config information for a patch."""
-  # pylint: disable=protected-access
-
-  def _GetPatch(self, affected_files):
-    return sync_stages_unittest.MockPatch(
-        mock_diff_status={path: 'M' for path in affected_files})
-
-  def testAffectedSubdir(self):
-    p = self._GetPatch(['a', 'b', 'c'])
-    self.assertEqual(triage_lib._GetCommonAffectedSubdir(p, '/a/b'),
-                     '/a/b')
-
-    p = self._GetPatch(['a/a', 'a/b', 'a/c'])
-    self.assertEqual(triage_lib._GetCommonAffectedSubdir(p, '/a/b'),
-                     '/a/b/a')
-
-    p = self._GetPatch(['a/a', 'a/b', 'a/c'])
-    self.assertEqual(triage_lib._GetCommonAffectedSubdir(p, '/a/b'),
-                     '/a/b/a')
-
-  def testGetConfigFile(self):
-    p = self._GetPatch(['a/a', 'a/b', 'a/c'])
-    self.PatchObject(os.path, 'isfile', return_value=True)
-    self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b'),
-                     '/a/b/a/COMMIT-QUEUE.ini')
-    self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b/'),
-                     '/a/b/a/COMMIT-QUEUE.ini')
-
-
-    self.PatchObject(os.path, 'isfile', return_value=False)
-    self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b'),
-                     '/a/b/COMMIT-QUEUE.ini')
-    self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b/'),
-                     '/a/b/COMMIT-QUEUE.ini')

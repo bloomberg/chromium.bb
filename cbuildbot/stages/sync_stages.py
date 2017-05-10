@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import collections
-import ConfigParser
 import contextlib
 import datetime
 import itertools
@@ -33,6 +32,7 @@ from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import commandline
+from chromite.lib import cq_config
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
@@ -42,7 +42,6 @@ from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
-from chromite.lib import triage_lib
 from chromite.scripts import cros_mark_android_as_stable
 from chromite.scripts import cros_mark_chrome_as_stable
 
@@ -1217,7 +1216,6 @@ class PreCQLauncherStage(SyncStage):
     diff = datetime.timedelta(minutes=timeout_minutes)
     return (now - start) > diff
 
-
   @staticmethod
   def _PrintPatchStatus(patch, status):
     """Print a link to |patch| with |status| info."""
@@ -1246,13 +1244,15 @@ class PreCQLauncherStage(SyncStage):
     # Otherwise, look in appropriate COMMIT-QUEUE.ini. Otherwise, default to
     # constants.PRE_CQ_DEFAULT_CONFIGS
     lines = cros_patch.GetOptionLinesFromCommitMessage(
-        change.commit_message, constants.PRE_CQ_CONFIGS_OPTION_REGEX)
+        change.commit_message, constants.CQ_CONFIG_PRE_CQ_CONFIGS_REGEX)
     if lines is not None:
-      configs_to_test = self._ParsePreCQOption(' '.join(lines))
-    configs_to_test = configs_to_test or self._ParsePreCQOption(
-        triage_lib.GetOptionForChange(self._build_root, change, 'GENERAL',
-                                      constants.PRE_CQ_CONFIGS_OPTION))
+      configs_to_test = self._ParsePreCQsFromOption(lines)
 
+    cq_config_parser = cq_config.CQConfigParser(self._build_root, change)
+    configs_from_option = self._ParsePreCQsFromOption(
+        cq_config_parser.GetPreCQConfigs())
+
+    configs_to_test = configs_to_test or configs_from_option
     return set(configs_to_test or constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def VerificationsForChange(self, change):
@@ -1264,7 +1264,7 @@ class PreCQLauncherStage(SyncStage):
     Returns:
       A set of configs to test.
     """
-    configs_to_test = set(self._ConfiguredVerificationsForChange(change))
+    configs_to_test = self._ConfiguredVerificationsForChange(change)
 
     # Add the BINHOST_PRE_CQ to any changes that affect an overlay.
     if '/overlays/' in change.project:
@@ -1272,10 +1272,17 @@ class PreCQLauncherStage(SyncStage):
 
     return configs_to_test
 
-  def _ParsePreCQOption(self, pre_cq_option):
-    """Gets a valid config list, or None, from |pre_cq_option|."""
-    if pre_cq_option and pre_cq_option.split():
-      configs_to_test = set(pre_cq_option.split())
+  def _ParsePreCQsFromOption(self, pre_cq_configs):
+    """Parse Pre-CQ configs got from option.
+
+    Args:
+      pre_cq_configs: A list of Pre-CQ configs got from option, or None.
+
+    Returns:
+      A valid Pre-CQ config list, or None.
+    """
+    if pre_cq_configs:
+      configs_to_test = set(pre_cq_configs)
 
       # Replace 'default' with the default configs.
       if 'default' in configs_to_test:
@@ -1326,12 +1333,9 @@ class PreCQLauncherStage(SyncStage):
       Boolean indicating if this change is configured to be submitted
       in the pre-CQ.
     """
-    result = None
-    try:
-      result = triage_lib.GetOptionForChange(
-          self._build_root, change, 'GENERAL', 'submit-in-pre-cq')
-    except ConfigParser.Error:
-      logging.error('%s has malformed config file', change, exc_info=True)
+    cq_config_parser = cq_config.CQConfigParser(self._build_root, change)
+    result = cq_config_parser.GetOption(constants.CQ_CONFIG_SECTION_GENERAL,
+                                        constants.CQ_CONFIG_SUBMIT_IN_PRE_CQ)
     return bool(result and result.lower() == 'yes')
 
   def GetConfigBuildbucketIdMap(self, output):

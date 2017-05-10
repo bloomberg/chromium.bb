@@ -22,6 +22,7 @@ from chromite.cbuildbot.stages import report_stages
 from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import constants
+from chromite.lib import cq_config
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import fake_cidb
@@ -490,6 +491,7 @@ class DetectRelevantChangesStageTest(
   def testGetSubsystemsWithoutEmptyEntry(self):
     """Tests the logic of GetSubsystemTobeTested() under normal case."""
     relevant_changes = self.changes
+    self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange')
     self.PatchObject(triage_lib, 'GetTestSubsystemForChange',
                      side_effect=[['light'], ['light', 'power']])
 
@@ -501,6 +503,7 @@ class DetectRelevantChangesStageTest(
   def testGetSubsystemsWithEmptyEntry(self):
     """Tests whether return empty set when have empty entry in subsystems."""
     relevant_changes = self.changes
+    self.PatchObject(cq_config.CQConfigParser, 'GetCommonConfigFileForChange')
     self.PatchObject(triage_lib, 'GetTestSubsystemForChange',
                      side_effect=[['light'], []])
 
