@@ -47,6 +47,7 @@ static_library("update_client") {
     "update_response.h",
     "updater_state.cc",
     "updater_state.h",
+    "updater_state_mac.mm",
     "updater_state_win.cc",
     "url_fetcher_downloader.cc",
     "url_fetcher_downloader.h",
@@ -68,6 +69,10 @@ static_library("update_client") {
     "//third_party/zlib:zip",
     "//url",
   ]
+  libs = []
+  if (is_mac) {
+    libs += [ "OpenDirectory.framework" ]
+  }
 }
 
 static_library("test_support") {
