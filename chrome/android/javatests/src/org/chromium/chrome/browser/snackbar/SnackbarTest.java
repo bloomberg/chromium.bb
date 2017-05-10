@@ -7,17 +7,35 @@ package org.chromium.chrome.browser.snackbar;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for {@link SnackbarManager}.
  */
-public class SnackbarTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class SnackbarTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private SnackbarManager mManager;
     private SnackbarController mDefaultController = new SnackbarController() {
         @Override
@@ -41,13 +59,14 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
 
     private boolean mDismissed;
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
+    @Before
+    public void setUp() throws InterruptedException {
         SnackbarManager.setDurationForTesting(1000);
-        startMainActivityOnBlankPage();
-        mManager = getActivity().getSnackbarManager();
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mManager = mActivityTestRule.getActivity().getSnackbarManager();
     }
 
+    @Test
     @MediumTest
     @RetryOnFailure
     public void testStackQueueOrder() {
@@ -71,9 +90,10 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 mManager.showSnackbar(queuebar);
-                assertTrue("Snackbar not showing", mManager.isShowing());
-                assertEquals("Snackbars on stack should not be cancled by snackbars on queue",
-                        stackbar, mManager.getCurrentSnackbarForTesting());
+                Assert.assertTrue("Snackbar not showing", mManager.isShowing());
+                Assert.assertEquals(
+                        "Snackbars on stack should not be cancled by snackbars on queue", stackbar,
+                        mManager.getCurrentSnackbarForTesting());
             }
         });
         CriteriaHelper.pollUiThread(new Criteria("Snackbar on queue not shown") {
@@ -90,6 +110,7 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
         });
     }
 
+    @Test
     @SmallTest
     @RetryOnFailure
     public void testQueueStackOrder() {
@@ -131,6 +152,7 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
         });
     }
 
+    @Test
     @SmallTest
     public void testDismissSnackbar() {
         final Snackbar snackbar = Snackbar.make("stack", mDismissController,

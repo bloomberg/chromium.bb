@@ -4,25 +4,42 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
-import junit.framework.Assert;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 
 /**
  * Tests for ToolbarModel.
  */
-public class ToolbarModelTest extends ChromeTabbedActivityTestBase {
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class ToolbarModelTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     /**
@@ -30,16 +47,19 @@ public class ToolbarModelTest extends ChromeTabbedActivityTestBase {
      * showing any {@link Tab}.
      * @throws InterruptedException
      */
+    @Test
     @Feature({"Android-Toolbar"})
     @MediumTest
     @RetryOnFailure
     public void testClosingLastTabReflectedInModel() throws InterruptedException {
-        assertNotSame("No current tab", Tab.INVALID_TAB_ID,
-                getCurrentTabId(getActivity()));
-        ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
-        assertEquals("Didn't close all tabs.", 0, ChromeTabUtils.getNumOpenTabs(getActivity()));
-        assertEquals("ToolbarModel is still trying to show a tab.", Tab.INVALID_TAB_ID,
-                getCurrentTabId(getActivity()));
+        Assert.assertNotSame("No current tab", Tab.INVALID_TAB_ID,
+                getCurrentTabId(mActivityTestRule.getActivity()));
+        ChromeTabUtils.closeCurrentTab(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        Assert.assertEquals("Didn't close all tabs.", 0,
+                ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity()));
+        Assert.assertEquals("ToolbarModel is still trying to show a tab.", Tab.INVALID_TAB_ID,
+                getCurrentTabId(mActivityTestRule.getActivity()));
     }
 
     /**

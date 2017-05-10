@@ -4,15 +4,26 @@
 
 package org.chromium.chrome.browser.snackbar.undo;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.widget.TextView;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 
 import java.util.concurrent.Callable;
@@ -21,104 +32,117 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for the UndoBarController.
  */
-public class UndoBarControllerTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class UndoBarControllerTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private SnackbarManager mSnackbarManager;
     private TabModel mTabModel;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        mSnackbarManager = getActivity().getSnackbarManager();
-        mTabModel = getActivity().getCurrentTabModel();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mSnackbarManager = mActivityTestRule.getActivity().getSnackbarManager();
+        mTabModel = mActivityTestRule.getActivity().getCurrentTabModel();
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
+    @Test
     @SmallTest
     public void testCloseAll_SingleTab_Undo() throws Exception {
-        assertNull(getCurrentSnackbar());
-        assertEquals(1, mTabModel.getCount());
+        Assert.assertNull(getCurrentSnackbar());
+        Assert.assertEquals(1, mTabModel.getCount());
 
-        ChromeTabUtils.closeAllTabs(getInstrumentation(), getActivity());
+        ChromeTabUtils.closeAllTabs(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
         Snackbar currentSnackbar = getCurrentSnackbar();
-        assertEquals("Closed about:blank", getSnackbarText());
-        assertTrue(currentSnackbar.getController() instanceof UndoBarController);
-        assertEquals(0, mTabModel.getCount());
+        Assert.assertEquals("Closed about:blank", getSnackbarText());
+        Assert.assertTrue(currentSnackbar.getController() instanceof UndoBarController);
+        Assert.assertEquals(0, mTabModel.getCount());
 
         clickSnackbar();
 
-        assertNull(getCurrentSnackbar());
-        assertEquals(1, mTabModel.getCount());
+        Assert.assertNull(getCurrentSnackbar());
+        Assert.assertEquals(1, mTabModel.getCount());
     }
 
+    @Test
     @SmallTest
     public void testCloseAll_SingleTab_Dismiss() throws Exception {
-        assertNull(getCurrentSnackbar());
-        assertEquals(1, mTabModel.getCount());
+        Assert.assertNull(getCurrentSnackbar());
+        Assert.assertEquals(1, mTabModel.getCount());
 
-        ChromeTabUtils.closeAllTabs(getInstrumentation(), getActivity());
+        ChromeTabUtils.closeAllTabs(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
         Snackbar currentSnackbar = getCurrentSnackbar();
-        assertEquals("Closed about:blank", getSnackbarText());
-        assertTrue(currentSnackbar.getController() instanceof UndoBarController);
-        assertEquals(0, mTabModel.getCount());
+        Assert.assertEquals("Closed about:blank", getSnackbarText());
+        Assert.assertTrue(currentSnackbar.getController() instanceof UndoBarController);
+        Assert.assertEquals(0, mTabModel.getCount());
 
         dismissSnackbars();
 
-        assertNull(getCurrentSnackbar());
-        assertEquals(0, mTabModel.getCount());
+        Assert.assertNull(getCurrentSnackbar());
+        Assert.assertEquals(0, mTabModel.getCount());
     }
 
+    @Test
     @SmallTest
     public void testCloseAll_MultipleTabs_Undo() throws Exception {
-        ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
-        assertNull(getCurrentSnackbar());
-        assertEquals(2, mTabModel.getCount());
+        Assert.assertNull(getCurrentSnackbar());
+        Assert.assertEquals(2, mTabModel.getCount());
 
-        ChromeTabUtils.closeAllTabs(getInstrumentation(), getActivity());
+        ChromeTabUtils.closeAllTabs(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
         Snackbar currentSnackbar = getCurrentSnackbar();
-        assertEquals("2 tabs closed", getSnackbarText());
-        assertTrue(currentSnackbar.getController() instanceof UndoBarController);
-        assertEquals(0, mTabModel.getCount());
+        Assert.assertEquals("2 tabs closed", getSnackbarText());
+        Assert.assertTrue(currentSnackbar.getController() instanceof UndoBarController);
+        Assert.assertEquals(0, mTabModel.getCount());
 
         clickSnackbar();
 
-        assertNull(getCurrentSnackbar());
-        assertEquals(2, mTabModel.getCount());
+        Assert.assertNull(getCurrentSnackbar());
+        Assert.assertEquals(2, mTabModel.getCount());
     }
 
+    @Test
     @SmallTest
     public void testCloseAll_MultipleTabs_Dismiss() throws Exception {
-        ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
-        assertNull(getCurrentSnackbar());
-        assertEquals(2, mTabModel.getCount());
+        Assert.assertNull(getCurrentSnackbar());
+        Assert.assertEquals(2, mTabModel.getCount());
 
-        ChromeTabUtils.closeAllTabs(getInstrumentation(), getActivity());
+        ChromeTabUtils.closeAllTabs(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
         Snackbar currentSnackbar = getCurrentSnackbar();
-        assertEquals("2 tabs closed", getSnackbarText());
-        assertTrue(currentSnackbar.getController() instanceof UndoBarController);
-        assertEquals(0, mTabModel.getCount());
+        Assert.assertEquals("2 tabs closed", getSnackbarText());
+        Assert.assertTrue(currentSnackbar.getController() instanceof UndoBarController);
+        Assert.assertEquals(0, mTabModel.getCount());
 
         dismissSnackbars();
 
-        assertNull(getCurrentSnackbar());
-        assertEquals(0, mTabModel.getCount());
+        Assert.assertNull(getCurrentSnackbar());
+        Assert.assertEquals(0, mTabModel.getCount());
     }
 
     private void clickSnackbar() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mSnackbarManager.onClick(getActivity().findViewById(R.id.snackbar_button));
+                mSnackbarManager.onClick(
+                        mActivityTestRule.getActivity().findViewById(R.id.snackbar_button));
             }
         });
     }
@@ -134,7 +158,9 @@ public class UndoBarControllerTest extends ChromeTabbedActivityTestBase {
     }
 
     private String getSnackbarText() {
-        return ((TextView) getActivity().findViewById(R.id.snackbar_message)).getText().toString();
+        return ((TextView) mActivityTestRule.getActivity().findViewById(R.id.snackbar_message))
+                .getText()
+                .toString();
     }
 
     private Snackbar getCurrentSnackbar() throws ExecutionException {

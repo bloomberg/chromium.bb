@@ -11,13 +11,23 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.preference.Preference;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.app.AlertDialog;
 import android.widget.Button;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -25,7 +35,9 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.SignInPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -41,11 +53,19 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
  *
  * The accounts used to sign in are mocked by a FakeAccountManagerDelegate.
  */
-public class SigninTest extends ChromeTabbedActivityTestBase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class SigninTest {
     /**
      * Helper class that observes when signing in becomes allowed.
      */
+
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private static class TestSignInAllowedObserver implements SigninManager.SignInAllowedObserver {
         private final Object mLock = new Object();
         private boolean mIsSignInAllowed;
@@ -196,14 +216,13 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
     private TestBookmarkModelObserver mTestBookmarkModelObserver;
     private TestSignInObserver mTestSignInObserver;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         // Mock out the account manager on the device.
-        SigninTestUtil.setUpAuthForTest(getInstrumentation());
+        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
 
-        super.setUp();
-
-        mContext = getInstrumentation().getTargetContext();
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         final TestSignInAllowedObserver signinAllowedObserver = new TestSignInAllowedObserver();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -219,19 +238,19 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
 
                 // Get these handles in the UI thread.
                 mPrefService = PrefServiceBridge.getInstance();
-                Profile profile = getActivity().getActivityTab().getProfile();
+                Profile profile = mActivityTestRule.getActivity().getActivityTab().getProfile();
                 mBookmarks = new BookmarkBridge(profile);
 
                 // Add a test bookmark, to verify later if sign out cleared the bookmarks.
                 mTestBookmarkModelObserver = new TestBookmarkModelObserver(mBookmarks);
                 mBookmarks.addObserver(mTestBookmarkModelObserver);
                 mTestBookmarkModelObserver.waitForBookmarkModelToLoad();
-                assertEquals(0, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
+                Assert.assertEquals(0, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
                 BookmarkId mTestBookmark = mBookmarks.addBookmark(
                         mBookmarks.getMobileFolderId(), 0, "Test Bookmark", "http://google.com");
                 mTestBookmarkModelObserver.waitForBookmarkAdded();
-                assertNotNull(mTestBookmark);
-                assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
+                Assert.assertNotNull(mTestBookmark);
+                Assert.assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
 
                 // Start observing if signing in is allowed. This observer must be installed on
                 // the UI thread, but waiting must be done outside the UI thread (otherwise it
@@ -241,11 +260,11 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         });
 
         signinAllowedObserver.waitForSignInAllowed();
-        assertTrue(mSigninManager.isSignInAllowed());
+        Assert.assertTrue(mSigninManager.isSignInAllowed());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -260,17 +279,10 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
                 mBookmarks.destroy();
             }
         });
-
         SigninTestUtil.tearDownAuthForTest();
-
-        super.tearDown();
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
-    }
-
+    @Test
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testConsumerSignin() {
@@ -281,23 +293,23 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 // Verify that the account isn't managed.
-                assertNull(mSigninManager.getManagementDomain());
+                Assert.assertNull(mSigninManager.getManagementDomain());
 
                 // Verify that the password manager is enabled by default.
-                assertTrue(mPrefService.isRememberPasswordsEnabled());
-                assertFalse(mPrefService.isRememberPasswordsManaged());
+                Assert.assertTrue(mPrefService.isRememberPasswordsEnabled());
+                Assert.assertFalse(mPrefService.isRememberPasswordsManaged());
             }
         });
 
         // Verify that its preference UI is enabled.
-        Preferences prefActivity = startPreferences(null);
+        Preferences prefActivity = mActivityTestRule.startPreferences(null);
         MainPreferences mainPrefs = getMainPreferences(prefActivity);
         Preference passwordPref = mainPrefs.findPreference(MainPreferences.PREF_SAVED_PASSWORDS);
-        assertNotNull(passwordPref);
+        Assert.assertNotNull(passwordPref);
         // This preference opens a new fragment when clicked.
-        assertNotNull(passwordPref.getFragment());
+        Assert.assertNotNull(passwordPref.getFragment());
         // There is no icon for this preference by default.
-        assertNull(passwordPref.getIcon());
+        Assert.assertNull(passwordPref.getIcon());
         prefActivity.finish();
 
         // Sign out now.
@@ -308,21 +320,21 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
             public void run() {
                 // Verify that the profile data hasn't been wiped when signing out of a normal
                 // account. We check that by looking for the test bookmark from setUp().
-                assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
+                Assert.assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
             }
         });
     }
 
     private void signInToSingleAccount() {
         // Verify that we aren't signed in yet.
-        assertFalse(ChromeSigninController.get().isSignedIn());
+        Assert.assertFalse(ChromeSigninController.get().isSignedIn());
 
         // Open the preferences UI.
-        final Preferences prefActivity = startPreferences(null);
-        getInstrumentation().waitForIdleSync();
+        final Preferences prefActivity = mActivityTestRule.startPreferences(null);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Create a monitor to catch the AccountSigninActivity when it is created.
-        ActivityMonitor monitor = getInstrumentation().addMonitor(
+        ActivityMonitor monitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 AccountSigninActivity.class.getName(), null, false);
 
         // Click sign in.
@@ -334,18 +346,21 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         });
 
         // Pick the mock account.
-        AccountSigninActivity signinActivity = (AccountSigninActivity)
-                getInstrumentation().waitForMonitor(monitor);
+        AccountSigninActivity signinActivity =
+                (AccountSigninActivity) InstrumentationRegistry.getInstrumentation().waitForMonitor(
+                        monitor);
         Button positiveButton = (Button) signinActivity.findViewById(R.id.positive_button);
         // Press 'sign in'.
-        TestTouchUtils.performClickOnMainSync(getInstrumentation(), positiveButton);
-        getInstrumentation().waitForIdleSync();
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), positiveButton);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         // Press 'ok, got it' (the same button is reused).
-        TestTouchUtils.performClickOnMainSync(getInstrumentation(), positiveButton);
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), positiveButton);
 
         // Sync doesn't actually start up until we finish the sync setup. This usually happens
         // in the resume of the Main activity, but we forcefully do this here.
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -358,19 +373,19 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
 
         // Verify that signin succeeded.
         mTestSignInObserver.waitForSignInEvents(1);
-        assertEquals(1, mTestSignInObserver.mSignInCount);
-        assertEquals(0, mTestSignInObserver.mSignOutCount);
-        assertTrue(ChromeSigninController.get().isSignedIn());
+        Assert.assertEquals(1, mTestSignInObserver.mSignInCount);
+        Assert.assertEquals(0, mTestSignInObserver.mSignOutCount);
+        Assert.assertTrue(ChromeSigninController.get().isSignedIn());
     }
 
     private void signOut() {
         // Verify that we are currently signed in.
-        assertTrue(ChromeSigninController.get().isSignedIn());
+        Assert.assertTrue(ChromeSigninController.get().isSignedIn());
 
         // Open the account preferences.
         final Preferences prefActivity =
-                startPreferences(AccountManagementFragment.class.getName());
-        getInstrumentation().waitForIdleSync();
+                mActivityTestRule.startPreferences(AccountManagementFragment.class.getName());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Click on the signout button.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -385,50 +400,50 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
 
         // Verify that signout succeeded.
         mTestSignInObserver.waitForSignInEvents(2);
-        assertEquals(1, mTestSignInObserver.mSignInCount);
-        assertEquals(1, mTestSignInObserver.mSignOutCount);
-        assertFalse(ChromeSigninController.get().isSignedIn());
+        Assert.assertEquals(1, mTestSignInObserver.mSignInCount);
+        Assert.assertEquals(1, mTestSignInObserver.mSignOutCount);
+        Assert.assertFalse(ChromeSigninController.get().isSignedIn());
 
         if (!prefActivity.isFinishing()) prefActivity.finish();
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private static MainPreferences getMainPreferences(Preferences prefActivity) {
         Fragment fragment = prefActivity.getFragmentForTest();
-        assertNotNull(fragment);
-        assertTrue(fragment instanceof MainPreferences);
+        Assert.assertNotNull(fragment);
+        Assert.assertTrue(fragment instanceof MainPreferences);
         return (MainPreferences) fragment;
     }
 
     private static void clickSigninPreference(Preferences prefActivity) {
         MainPreferences mainPrefs = getMainPreferences(prefActivity);
         Preference signinPref = mainPrefs.findPreference(MainPreferences.PREF_SIGN_IN);
-        assertNotNull(signinPref);
-        assertTrue(signinPref instanceof SignInPreference);
-        assertNotNull(signinPref.getOnPreferenceClickListener());
+        Assert.assertNotNull(signinPref);
+        Assert.assertTrue(signinPref instanceof SignInPreference);
+        Assert.assertNotNull(signinPref.getOnPreferenceClickListener());
         signinPref.getOnPreferenceClickListener().onPreferenceClick(signinPref);
     }
 
     private static void clickSignOut(Preferences prefActivity) {
         Fragment fragment = prefActivity.getFragmentForTest();
-        assertNotNull(fragment);
-        assertTrue(fragment instanceof AccountManagementFragment);
+        Assert.assertNotNull(fragment);
+        Assert.assertTrue(fragment instanceof AccountManagementFragment);
         AccountManagementFragment managementFragment = (AccountManagementFragment) fragment;
         Preference signOutPref = managementFragment.findPreference(
                 AccountManagementFragment.PREF_SIGN_OUT);
-        assertNotNull(signOutPref);
-        assertNotNull(signOutPref.getOnPreferenceClickListener());
+        Assert.assertNotNull(signOutPref);
+        Assert.assertNotNull(signOutPref.getOnPreferenceClickListener());
         signOutPref.getOnPreferenceClickListener().onPreferenceClick(signOutPref);
     }
 
     private void acceptAlertDialogWithTag(Activity activity, String tag) {
-        getInstrumentation().waitForIdleSync();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         DialogFragment fragment = ActivityUtils.waitForFragment(activity, tag);
         AlertDialog dialog = (AlertDialog) fragment.getDialog();
-        assertTrue(dialog != null);
-        assertTrue(dialog.isShowing());
+        Assert.assertTrue(dialog != null);
+        Assert.assertTrue(dialog.isShowing());
         Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        assertNotNull("Could not find the accept button.", button);
-        TestTouchUtils.performClickOnMainSync(getInstrumentation(), button);
+        Assert.assertNotNull("Could not find the accept button.", button);
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(), button);
     }
 }

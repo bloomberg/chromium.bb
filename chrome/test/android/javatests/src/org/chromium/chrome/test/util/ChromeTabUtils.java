@@ -5,10 +5,9 @@
 package org.chromium.chrome.test.util;
 
 import android.app.Instrumentation;
-import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -28,7 +27,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -253,9 +252,9 @@ public class ChromeTabUtils {
      * <p>
      * Does not wait for the tab to be loaded.
      */
-    public static void clickNewTabButton(InstrumentationTestCase test,
-            ChromeTabbedActivityTestBase base) throws InterruptedException {
-        final TabModel normalTabModel = base.getActivity().getTabModelSelector().getModel(false);
+    public static void clickNewTabButton(Instrumentation instrumentation,
+            ChromeTabbedActivity activity) throws InterruptedException {
+        final TabModel normalTabModel = activity.getTabModelSelector().getModel(false);
         final CallbackHelper createdCallback = new CallbackHelper();
         normalTabModel.addObserver(
                 new EmptyTabModelObserver() {
@@ -266,14 +265,14 @@ public class ChromeTabUtils {
                     }
                 });
         // Tablet and phone have different new tab buttons; click the right one.
-        if (DeviceFormFactor.isTablet(base.getActivity())) {
+        if (DeviceFormFactor.isTablet(activity)) {
             StripLayoutHelper strip =
-                    TabStripUtils.getStripLayoutHelper(base.getActivity(), false /* incognito */);
+                    TabStripUtils.getStripLayoutHelper(activity, false /* incognito */);
             CompositorButton newTabButton = strip.getNewTabButton();
-            TabStripUtils.clickCompositorButton(newTabButton, base);
-            test.getInstrumentation().waitForIdleSync();
+            TabStripUtils.clickCompositorButton(newTabButton, instrumentation, activity);
+            instrumentation.waitForIdleSync();
         } else {
-            base.singleClickView(base.getActivity().findViewById(R.id.new_tab_button));
+            TouchCommon.singleClickView(activity.findViewById(R.id.new_tab_button));
         }
 
         try {

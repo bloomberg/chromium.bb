@@ -5,15 +5,23 @@
 package org.chromium.chrome.browser.widget;
 
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -24,7 +32,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelListItem;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -33,6 +43,7 @@ import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.content.browser.test.util.TouchCommon;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -40,7 +51,14 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests accessibility UI.
  */
-public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class OverviewListLayoutTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String PAGE_1_HTML = "data:text/html;charset=utf-8,"
             + "<html><head><title>Page%201<%2Ftitle><%2Fhead><body><%2Fbody><%2Fhtml>";
@@ -85,8 +103,10 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
                     new Callable<Integer>() {
                         @Override
                         public Integer call() {
-                            return getActivity().getTabModelSelector()
-                                    .getModel(mIncognito).getCount();
+                            return mActivityTestRule.getActivity()
+                                    .getTabModelSelector()
+                                    .getModel(mIncognito)
+                                    .getCount();
                         }
                     });
             updateFailureReason("Expected tab count: " + mTabCount + ", Actual: " + actualTabCount);
@@ -94,14 +114,15 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         }
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
+    @Before
+    public void setUp() throws InterruptedException {
         CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_ACCESSIBILITY_TAB_SWITCHER);
-        startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityFromLauncher();
     }
 
     private ViewGroup getContainer() {
-        return ((OverviewListLayout) getActivity().getOverviewListLayout()).getContainer();
+        return ((OverviewListLayout) mActivityTestRule.getActivity().getOverviewListLayout())
+                .getContainer();
     }
 
     private ListView getList() {
@@ -109,10 +130,11 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
     }
 
     private void setupTabs() throws InterruptedException {
-        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 3);
+        ChromeTabUtils.newTabsFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity(), 3);
 
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
     }
@@ -137,8 +159,8 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
     }
 
     private void toggleTabSwitcher(final boolean expectVisible) throws Exception {
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -148,32 +170,35 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanEnterSwitcher() {
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
 
-        assertNotNull("Accessibility container was not initialized", getContainer());
-        assertNotNull("Accessibility container was not visible", getContainer().getParent());
+        Assert.assertNotNull("Accessibility container was not initialized", getContainer());
+        Assert.assertNotNull("Accessibility container was not visible", getContainer().getParent());
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanLeaveSwitcher() {
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
 
-        assertNotNull("Accessibility container was not initialized", getContainer());
-        assertNotNull("Accessibility container was not visible", getContainer().getParent());
+        Assert.assertNotNull("Accessibility container was not initialized", getContainer());
+        Assert.assertNotNull("Accessibility container was not visible", getContainer().getParent());
 
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
-        assertNull("Accessibility container was not visible", getContainer().getParent());
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
+        Assert.assertNull("Accessibility container was not visible", getContainer().getParent());
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
@@ -184,7 +209,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         AccessibilityTabModelListItem item = getListItemAndDisableAnimations(0);
 
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
-        final TabModel model = getActivity().getCurrentTabModel();
+        final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
         model.addObserver(new EmptyTabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
@@ -193,18 +218,19 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
 
         TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), item.findViewById(R.id.close_btn));
+                InstrumentationRegistry.getInstrumentation(), item.findViewById(R.id.close_btn));
 
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals("Tab not closed", 3, getList().getChildCount());
+                Assert.assertEquals("Tab not closed", 3, getList().getChildCount());
             }
         });
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
@@ -217,7 +243,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
                 item, SWIPE_START_X_OFFSET, SWIPE_START_Y_OFFSET);
 
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
-        final TabModel model = getActivity().getCurrentTabModel();
+        final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
         model.addObserver(new EmptyTabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
@@ -226,20 +252,22 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
 
         long downTime = SystemClock.uptimeMillis();
-        dragStart(location[0], location[1], downTime);
-        dragTo(location[0], (int) (item.getWidth() / 1.5), location[1], location[1], 20, downTime);
-        dragEnd(400, location[1], downTime);
+        TouchCommon.dragStart(mActivityTestRule.getActivity(), location[0], location[1], downTime);
+        TouchCommon.dragTo(mActivityTestRule.getActivity(), location[0],
+                (int) (item.getWidth() / 1.5), location[1], location[1], 20, downTime);
+        TouchCommon.dragEnd(mActivityTestRule.getActivity(), 400, location[1], downTime);
 
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals("Tab not closed", 3, getList().getChildCount());
+                Assert.assertEquals("Tab not closed", 3, getList().getChildCount());
             }
         });
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
@@ -251,16 +279,18 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         int[] location = TestTouchUtils.getAbsoluteLocationFromRelative(
                 item, SWIPE_START_X_OFFSET, SWIPE_START_Y_OFFSET);
 
-        dragTo(location[0], SWIPE_END_X, location[1], location[1], 20, SystemClock.uptimeMillis());
+        TouchCommon.dragTo(mActivityTestRule.getActivity(), location[0], SWIPE_END_X, location[1],
+                location[1], 20, SystemClock.uptimeMillis());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals("Tab not reset as expected", 4, getList().getChildCount());
+                Assert.assertEquals("Tab not reset as expected", 4, getList().getChildCount());
             }
         });
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
@@ -270,7 +300,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         final AccessibilityTabModelListItem item = getListItem(0);
 
         final CallbackHelper didReceivePendingClosureHelper = new CallbackHelper();
-        final TabModel model = getActivity().getCurrentTabModel();
+        final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
         model.addObserver(new EmptyTabModelObserver() {
             @Override
             public void tabPendingClosure(Tab tab) {
@@ -279,63 +309,69 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         });
 
         TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), item.findViewById(R.id.close_btn));
+                InstrumentationRegistry.getInstrumentation(), item.findViewById(R.id.close_btn));
 
         didReceivePendingClosureHelper.waitForCallback(0);
 
         TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), item.findViewById(R.id.undo_button));
+                InstrumentationRegistry.getInstrumentation(), item.findViewById(R.id.undo_button));
 
-        assertFalse("Close not undone", item.hasPendingClosure());
+        Assert.assertFalse("Close not undone", item.hasPendingClosure());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals("Tab closure not undone", 4, getList().getChildCount());
+                Assert.assertEquals("Tab closure not undone", 4, getList().getChildCount());
             }
         });
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCloseAll() throws InterruptedException {
         setupTabs();
 
-        MenuUtils.invokeCustomMenuActionSync(
-                getInstrumentation(), getActivity(), R.id.close_all_tabs_menu_id);
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), R.id.close_all_tabs_menu_id);
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(0));
         CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(false, 0));
-        assertFalse(getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
+        Assert.assertFalse(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     @RetryOnFailure
     public void testCloseAllIncognito() throws InterruptedException {
         setupTabs();
-        newIncognitoTabsFromMenu(2);
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
+        mActivityTestRule.newIncognitoTabsFromMenu(2);
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(2));
 
-        MenuUtils.invokeCustomMenuActionSync(
-                getInstrumentation(), getActivity(), R.id.close_all_incognito_tabs_menu_id);
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), R.id.close_all_incognito_tabs_menu_id);
         CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(true, 0));
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
-        assertTrue(getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
+        Assert.assertTrue(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
 
-        MenuUtils.invokeCustomMenuActionSync(
-                getInstrumentation(), getActivity(), R.id.close_all_tabs_menu_id);
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), R.id.close_all_tabs_menu_id);
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(0));
         CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(false, 0));
-        assertFalse(getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
+        Assert.assertFalse(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
@@ -344,44 +380,47 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
 
         View switcherButtons = getContainer().findViewById(R.id.button_wrapper);
 
-        assertEquals(
+        Assert.assertEquals(
                 "Tab Model Switcher buttons visible", View.GONE, switcherButtons.getVisibility());
 
-        newIncognitoTabsFromMenu(2);
+        mActivityTestRule.newIncognitoTabsFromMenu(2);
 
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
 
-        assertEquals("Tab Model switcher buttons not visible", View.VISIBLE,
+        Assert.assertEquals("Tab Model switcher buttons not visible", View.VISIBLE,
                 switcherButtons.getVisibility());
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testModelSwitcherFunctionality() throws InterruptedException {
-        newIncognitoTabsFromMenu(2);
+        mActivityTestRule.newIncognitoTabsFromMenu(2);
 
-        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 3);
+        ChromeTabUtils.newTabsFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity(), 3);
 
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
 
         View switcherButtons = getContainer().findViewById(R.id.button_wrapper);
 
-        assertEquals("Tab Model Switcher buttons visible", View.VISIBLE,
+        Assert.assertEquals("Tab Model Switcher buttons visible", View.VISIBLE,
                 switcherButtons.getVisibility());
 
         View incognitoButton = switcherButtons.findViewById(R.id.incognito_tabs_button);
 
-        assertNotNull("IncognitoButton is null", incognitoButton);
+        Assert.assertNotNull("IncognitoButton is null", incognitoButton);
 
-        TestTouchUtils.performClickOnMainSync(getInstrumentation(), incognitoButton);
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), incognitoButton);
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(2));
 
-        TestTouchUtils.performClickOnMainSync(
-                getInstrumentation(), switcherButtons.findViewById(R.id.standard_tabs_button));
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                switcherButtons.findViewById(R.id.standard_tabs_button));
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
     }
@@ -392,27 +431,30 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
      * because the TabObserver is removed/added when the tab switcher's View is detached from/
      * attached to the window.
      */
+    @Test
     @MediumTest
     @Feature({"Accessibility"})
     @RetryOnFailure
     public void testObservesTitleChanges() throws Exception {
-        loadUrl(PAGE_1_HTML);
+        mActivityTestRule.loadUrl(PAGE_1_HTML);
 
         // Bring the tab switcher forward and send it away twice.
         toggleTabSwitcher(true);
-        assertEquals("Page 1", getTabTitleOfListItem(0));
+        Assert.assertEquals("Page 1", getTabTitleOfListItem(0));
         toggleTabSwitcher(false);
         toggleTabSwitcher(true);
         toggleTabSwitcher(false);
 
         // Load another URL.
-        new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(PAGE_2_HTML);
+        new TabLoadObserver(mActivityTestRule.getActivity().getActivityTab())
+                .fullyLoadUrl(PAGE_2_HTML);
 
         // Bring the tab switcher forward and check the title.
         toggleTabSwitcher(true);
-        assertEquals("Page 2", getTabTitleOfListItem(0));
+        Assert.assertEquals("Page 2", getTabTitleOfListItem(0));
     }
 
+    @Test
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Accessibility"})
@@ -421,7 +463,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
 
         getListItemAndDisableAnimations(0);
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
-        final TabModel model = getActivity().getCurrentTabModel();
+        final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
         model.addObserver(new EmptyTabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
@@ -429,15 +471,16 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        StripLayoutTab tab = TabStripUtils.findStripLayoutTab(getActivity(), false,
-                model.getTabAt(0).getId());
-        TabStripUtils.clickCompositorButton(tab.getCloseButton(), this);
+        StripLayoutTab tab = TabStripUtils.findStripLayoutTab(
+                mActivityTestRule.getActivity(), false, model.getTabAt(0).getId());
+        TabStripUtils.clickCompositorButton(tab.getCloseButton(),
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals("Tab not closed", 3, getList().getChildCount());
+                Assert.assertEquals("Tab not closed", 3, getList().getChildCount());
             }
         });
     }

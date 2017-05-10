@@ -7,15 +7,24 @@ package org.chromium.chrome.browser;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -31,15 +40,21 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for the feature that auto locks the orientation when a video goes fullscreen.
  * See also content layer org.chromium.content.browser.VideoFullscreenOrientationLockTest
  */
-@CommandLineFlags.Add({"enable-features=VideoFullscreenOrientationLock",
-        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS})
-public class VideoFullscreenOrientationLockChromeTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS,
+        "enable-features=VideoFullscreenOrientationLock"})
+public class VideoFullscreenOrientationLockChromeTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private static final String TEST_URL = "content/test/data/media/video-player.html";
     private static final String VIDEO_URL = "content/test/data/media/bear.webm";
     private static final String VIDEO_ID = "video";
 
     private WebContents getWebContents() {
-        return getActivity().getCurrentContentViewCore().getWebContents();
+        return mActivityTestRule.getActivity().getCurrentContentViewCore().getWebContents();
     }
 
     private void waitForContentsFullscreenState(boolean fullscreenValue)
@@ -54,7 +69,7 @@ public class VideoFullscreenOrientationLockChromeTest extends ChromeTabbedActivi
     }
 
     private boolean isScreenOrientationLocked() {
-        return getActivity().getRequestedOrientation()
+        return mActivityTestRule.getActivity().getRequestedOrientation()
                 != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
@@ -92,24 +107,28 @@ public class VideoFullscreenOrientationLockChromeTest extends ChromeTabbedActivi
         });
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityWithURL(UrlUtils.getIsolatedTestFileUrl(TEST_URL));
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityWithURL(UrlUtils.getIsolatedTestFileUrl(TEST_URL));
     }
 
+    @Test
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
     @RetryOnFailure // The final waitForContentsFullscreenState(false) is flaky - crbug.com/711005.
     public void testUnlockWithDownloadViewerActivity() throws Exception {
-        if (DeviceFormFactor.isTablet(getInstrumentation().getContext())) return;
+        if (DeviceFormFactor.isTablet(InstrumentationRegistry.getInstrumentation().getContext())) {
+            return;
+        }
 
         // Start playback to guarantee it's properly loaded.
-        assertTrue(DOMUtils.isMediaPaused(getWebContents(), VIDEO_ID));
+        Assert.assertTrue(DOMUtils.isMediaPaused(getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(getWebContents(), VIDEO_ID);
         DOMUtils.waitForMediaPlay(getWebContents(), VIDEO_ID);
 
         // Trigger requestFullscreen() via a click on a button.
-        assertTrue(DOMUtils.clickNode(getActivity().getCurrentContentViewCore(), "fullscreen"));
+        Assert.assertTrue(DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getCurrentContentViewCore(), "fullscreen"));
         waitForContentsFullscreenState(true);
 
         // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.
@@ -125,7 +144,7 @@ public class VideoFullscreenOrientationLockChromeTest extends ChromeTabbedActivi
 
         // Sometimes the web page doesn't transition out of fullscreen until we exit the download
         // activity and return to the web page.
-        sendKeys(KeyEvent.KEYCODE_BACK);
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
         waitForContentsFullscreenState(false);
     }
 }

@@ -5,14 +5,26 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -22,7 +34,14 @@ import java.util.HashMap;
 /**
  * Tests the WebApkUpdateDataFetcher.
  */
-public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class WebApkUpdateDataFetcherTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String WEB_MANIFEST_URL1 = "/chrome/test/data/banners/manifest.json";
     // Name for Web Manifest at {@link WEB_MANIFEST_URL1}.
@@ -62,7 +81,7 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
 
         @Override
         public void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl) {
-            assertNull(mName);
+            Assert.assertNull(mName);
             mWebApkCompatible = true;
             mName = fetchedInfo.name();
             mBestIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap().get(bestIconUrl);
@@ -82,23 +101,17 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Context context = getInstrumentation().getTargetContext();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(context);
-        mTab = getActivity().getActivityTab();
+        mTab = mActivityTestRule.getActivity().getActivityTab();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 
     /** Creates and starts a WebApkUpdateDataFetcher. */
@@ -119,6 +132,7 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
     /**
      * Test starting WebApkUpdateDataFetcher while a page with the desired manifest URL is loading.
      */
+    @Test
     @MediumTest
     @Feature({"WebApk"})
     public void testLaunchWithDesiredManifestUrl() throws Exception {
@@ -130,8 +144,8 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
                 mTestServer.getURL(WEB_MANIFEST_URL1), waiter);
         waiter.waitForCallback(0);
 
-        assertTrue(waiter.isWebApkCompatible());
-        assertEquals(WEB_MANIFEST_NAME1, waiter.name());
+        Assert.assertTrue(waiter.isWebApkCompatible());
+        Assert.assertEquals(WEB_MANIFEST_NAME1, waiter.name());
     }
 
     /**
@@ -139,6 +153,7 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
      * ManifestUpgradeDetectorFetcher is looking for. Check that the callback is only called once
      * the user navigates to a page which uses the desired manifest URL.
      */
+    @Test
     @MediumTest
     @Feature({"Webapps"})
     @RetryOnFailure
@@ -150,19 +165,20 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
         startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
                 mTestServer.getURL(WEB_MANIFEST_URL2), waiter);
         waiter.waitForCallback(0);
-        assertFalse(waiter.isWebApkCompatible());
+        Assert.assertFalse(waiter.isWebApkCompatible());
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
                 mTestServer, mTab, WEB_MANIFEST_URL2);
         waiter.waitForCallback(1);
-        assertTrue(waiter.isWebApkCompatible());
-        assertEquals(WEB_MANIFEST_NAME2, waiter.name());
+        Assert.assertTrue(waiter.isWebApkCompatible());
+        Assert.assertEquals(WEB_MANIFEST_NAME2, waiter.name());
     }
 
     /**
      * Test that {@link onWebManifestForInitialUrlNotWebApkCompatible()} is called after attempting
      * to fetch Web Manifest for page with no Web Manifest.
      */
+    @Test
     @MediumTest
     @Feature({"Webapps"})
     public void testNoWebManifest() throws Exception {
@@ -173,13 +189,14 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
         startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
                 mTestServer.getURL(WEB_MANIFEST_URL2), waiter);
         waiter.waitForCallback(0);
-        assertFalse(waiter.isWebApkCompatible());
+        Assert.assertFalse(waiter.isWebApkCompatible());
     }
 
     /**
      * Test that large icon murmur2 hashes are correctly plumbed to Java. The hash can take on
      * values up to 2^64 - 1 which is greater than {@link Long#MAX_VALUE}.
      */
+    @Test
     @MediumTest
     @Feature({"Webapps"})
     public void testLargeIconMurmur2Hash() throws Exception {
@@ -191,6 +208,6 @@ public class WebApkUpdateDataFetcherTest extends ChromeTabbedActivityTestBase {
                 mTestServer.getURL(WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH), waiter);
         waiter.waitForCallback(0);
 
-        assertEquals(LONG_ICON_MURMUR2_HASH, waiter.bestIconMurmur2Hash());
+        Assert.assertEquals(LONG_ICON_MURMUR2_HASH, waiter.bestIconMurmur2Hash());
     }
 }

@@ -4,12 +4,20 @@
 
 package org.chromium.chrome.browser;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -18,7 +26,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
@@ -26,6 +36,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.WebContentsObserver;
 
 import java.util.ArrayDeque;
@@ -34,7 +45,14 @@ import java.util.ArrayDeque;
  * Test suite for ContentView focus and its interaction with Tab switcher,
  * Tab swiping, etc.
  */
-public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class ContentViewFocusTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final int WAIT_RESPONSE_MS = 2000;
 
@@ -84,23 +102,28 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
      * @Feature({"TabContents"})
      * @Restriction(RESTRICTION_TYPE_PHONE)
      */
+    @Test
     @FlakyTest(message = "http://crbug.com/172473")
     public void testHideSelectionOnPhoneTabSwiping() throws Exception {
         // Setup
-        ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 2);
+        ChromeTabUtils.newTabsFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity(), 2);
         String url = UrlUtils.getIsolatedTestFileUrl(
                 "chrome/test/data/android/content_view_focus/content_view_focus_long_text.html");
-        loadUrl(url);
-        View view = getActivity().getActivityTab().getContentViewCore().getContainerView();
+        mActivityTestRule.loadUrl(url);
+        View view = mActivityTestRule.getActivity()
+                            .getActivityTab()
+                            .getContentViewCore()
+                            .getContainerView();
 
         // Give the content view focus
-        TestTouchUtils.longClickView(getInstrumentation(), view, 50, 10);
-        assertTrue("ContentView is focused", view.hasFocus());
+        TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view, 50, 10);
+        Assert.assertTrue("ContentView is focused", view.hasFocus());
 
         // Start the swipe
         addFocusChangedListener(view);
         final EdgeSwipeHandler edgeSwipeHandler =
-                getActivity().getLayoutManager().getTopSwipeHandler();
+                mActivityTestRule.getActivity().getLayoutManager().getTopSwipeHandler();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -113,14 +136,14 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
                 new Criteria("Layout still requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {
-                        LayoutManager driver = getActivity().getLayoutManager();
+                        LayoutManager driver = mActivityTestRule.getActivity().getLayoutManager();
                         return !driver.getActiveLayout().shouldDisplayContentOverlay();
                     }
                 });
 
         // Make sure the view loses focus. It is immediately given focus back
         // because it's the only focusable view.
-        assertFalse("Content view didn't lose focus", blockForFocusChanged());
+        Assert.assertFalse("Content view didn't lose focus", blockForFocusChanged());
 
         // End the drag
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -134,13 +157,13 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
                 new Criteria("Layout not requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {
-                        LayoutManager driver = getActivity().getLayoutManager();
+                        LayoutManager driver = mActivityTestRule.getActivity().getLayoutManager();
                         return driver.getActiveLayout().shouldDisplayContentOverlay();
                     }
                 });
 
-        assertTrue("Content view didn't regain focus", blockForFocusChanged());
-        assertFalse("Unexpected focus change", haveFocusChanges());
+        Assert.assertTrue("Content view didn't regain focus", blockForFocusChanged());
+        Assert.assertFalse("Unexpected focus change", haveFocusChanges());
     }
 
     /**
@@ -149,36 +172,43 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
      * @throws Exception
      * @Feature({"TabContents"})
      */
+    @Test
     @MediumTest
     @Feature({"TabContents"})
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testHideSelectionOnPhoneTabSwitcher() throws Exception {
         // Setup
         OverviewModeBehaviorWatcher showWatcher = new OverviewModeBehaviorWatcher(
-                getActivity().getLayoutManager(), true, false);
+                mActivityTestRule.getActivity().getLayoutManager(), true, false);
         OverviewModeBehaviorWatcher hideWatcher = new OverviewModeBehaviorWatcher(
-                getActivity().getLayoutManager(), false, true);
-        View currentView = getActivity().getActivityTab().getContentViewCore().getContainerView();
+                mActivityTestRule.getActivity().getLayoutManager(), false, true);
+        View currentView = mActivityTestRule.getActivity()
+                                   .getActivityTab()
+                                   .getContentViewCore()
+                                   .getContainerView();
         addFocusChangedListener(currentView);
 
         // Enter the tab switcher
-        View tabSwitcherButton = getActivity().findViewById(R.id.tab_switcher_button);
-        assertNotNull("'tab_switcher_button' view is not found.", tabSwitcherButton);
-        singleClickView(getActivity().findViewById(R.id.tab_switcher_button));
+        View tabSwitcherButton =
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button);
+        Assert.assertNotNull("'tab_switcher_button' view is not found.", tabSwitcherButton);
+        TouchCommon.singleClickView(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
         showWatcher.waitForBehavior();
 
         // Make sure the view loses focus. It is immediately given focus back
         // because it's the only focusable view.
-        assertFalse("Content view didn't lose focus", blockForFocusChanged());
+        Assert.assertFalse("Content view didn't lose focus", blockForFocusChanged());
 
         // Hide the tab switcher
-        tabSwitcherButton = getActivity().findViewById(R.id.tab_switcher_button);
-        assertNotNull("'tab_switcher_button' view is not found.", tabSwitcherButton);
-        singleClickView(getActivity().findViewById(R.id.tab_switcher_button));
+        tabSwitcherButton = mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button);
+        Assert.assertNotNull("'tab_switcher_button' view is not found.", tabSwitcherButton);
+        TouchCommon.singleClickView(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
         hideWatcher.waitForBehavior();
 
-        assertTrue("Content view didn't regain focus", blockForFocusChanged());
-        assertFalse("Unexpected focus change", haveFocusChanges());
+        Assert.assertTrue("Content view didn't regain focus", blockForFocusChanged());
+        Assert.assertFalse("Unexpected focus change", haveFocusChanges());
     }
 
     /**
@@ -186,11 +216,13 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
      *
      * @throws Exception
      */
+    @Test
     @MediumTest
     public void testPauseTriggersBlur() throws Exception {
         final CallbackHelper onTitleUpdatedHelper = new CallbackHelper();
         final WebContentsObserver observer =
-                new WebContentsObserver(getActivity().getActivityTab().getWebContents()) {
+                new WebContentsObserver(
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents()) {
                     @Override
                     public void titleWasSet(String title) {
                         mTitle = title;
@@ -200,10 +232,11 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
         int callCount = onTitleUpdatedHelper.getCallCount();
         String url = UrlUtils.getIsolatedTestFileUrl(
                 "chrome/test/data/android/content_view_focus/content_view_blur_focus.html");
-        loadUrl(url);
-        final ContentViewCore cvc = getActivity().getActivityTab().getContentViewCore();
+        mActivityTestRule.loadUrl(url);
+        final ContentViewCore cvc =
+                mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
         onTitleUpdatedHelper.waitForCallback(callCount);
-        assertEquals("initial", mTitle);
+        Assert.assertEquals("initial", mTitle);
         callCount = onTitleUpdatedHelper.getCallCount();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -212,7 +245,7 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
             }
         });
         onTitleUpdatedHelper.waitForCallback(callCount);
-        assertEquals("blurred", mTitle);
+        Assert.assertEquals("blurred", mTitle);
         callCount = onTitleUpdatedHelper.getCallCount();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -221,12 +254,12 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
             }
         });
         onTitleUpdatedHelper.waitForCallback(callCount);
-        assertEquals("focused", mTitle);
-        getActivity().getActivityTab().getWebContents().removeObserver(observer);
+        Assert.assertEquals("focused", mTitle);
+        mActivityTestRule.getActivity().getActivityTab().getWebContents().removeObserver(observer);
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 }
