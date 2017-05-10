@@ -49,26 +49,20 @@ extern "C" {
 // 0: Uniform
 // 1: Difference weighted
 #define COMPOUND_SEGMENT_TYPE 1
-
-#if COMPOUND_SEGMENT_TYPE == 0
 #define MAX_SEG_MASK_BITS 1
+
 // SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
 typedef enum {
+#if COMPOUND_SEGMENT_TYPE == 0
   UNIFORM_45 = 0,
   UNIFORM_45_INV,
-  SEG_MASK_TYPES,
-} SEG_MASK_TYPE;
-
 #elif COMPOUND_SEGMENT_TYPE == 1
-#define MAX_SEG_MASK_BITS 1
-// SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
-typedef enum {
   DIFFWTD_38 = 0,
   DIFFWTD_38_INV,
+#endif  // COMPOUND_SEGMENT_TYPE
   SEG_MASK_TYPES,
 } SEG_MASK_TYPE;
 
-#endif  // COMPOUND_SEGMENT_TYPE
 #endif  // CONFIG_COMPOUND_SEGMENT
 #endif  // CONFIG_EXT_INTER
 
