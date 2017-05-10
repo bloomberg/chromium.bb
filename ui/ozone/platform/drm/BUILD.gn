@@ -162,6 +162,7 @@ source_set("gbm_unittests") {
     "gpu/mock_scanout_buffer.h",
     "gpu/mock_scanout_buffer_generator.cc",
     "gpu/mock_scanout_buffer_generator.h",
+    "gpu/proxy_helpers_unittest.cc",
     "gpu/screen_manager_unittest.cc",
   ]
 
