@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/logging.h"
+
 namespace feature_engagement_tracker {
 
 Comparator::Comparator() : type(ANY), value(0) {}
@@ -14,6 +16,29 @@ Comparator::Comparator(ComparatorType type, uint32_t value)
     : type(type), value(value) {}
 
 Comparator::~Comparator() = default;
+
+bool Comparator::MeetsCriteria(uint32_t v) const {
+  switch (type) {
+    case ANY:
+      return true;
+    case LESS_THAN:
+      return v < value;
+    case GREATER_THAN:
+      return v > value;
+    case LESS_THAN_OR_EQUAL:
+      return v <= value;
+    case GREATER_THAN_OR_EQUAL:
+      return v >= value;
+    case EQUAL:
+      return v == value;
+    case NOT_EQUAL:
+      return v != value;
+    default:
+      // All cases should be covered.
+      NOTREACHED();
+      return false;
+  }
+}
 
 EventConfig::EventConfig() : window(0), storage(0) {}
 

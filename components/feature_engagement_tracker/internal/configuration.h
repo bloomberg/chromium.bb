@@ -37,6 +37,10 @@ struct Comparator {
   Comparator(ComparatorType type, uint32_t value);
   ~Comparator();
 
+  // Returns true if the |v| meets the this criteria based on the current
+  // |type| and |value|.
+  bool MeetsCriteria(uint32_t v) const;
+
   ComparatorType type;
   uint32_t value;
 };
