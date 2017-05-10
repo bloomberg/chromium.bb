@@ -68,9 +68,8 @@ class TaskRunnerMap {
     auto iter = task_runner_map_.find(path);
     if (iter == task_runner_map_.end()) {
       scoped_refptr<base::SequencedTaskRunner> task_runner =
-          CreateSequencedTaskRunnerWithTraits(
-              base::TaskTraits().MayBlock().WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
       task_runner_map_[path] = task_runner;
       return task_runner;
     } else {
