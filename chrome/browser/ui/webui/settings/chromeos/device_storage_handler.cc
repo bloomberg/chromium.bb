@@ -70,8 +70,8 @@ StorageHandler::StorageHandler()
       updating_drive_cache_size_(false),
       updating_browsing_data_size_(false),
       updating_android_size_(false),
-      updating_other_users_size_(false) {
-}
+      updating_other_users_size_(false),
+      weak_ptr_factory_(this) {}
 
 StorageHandler::~StorageHandler() {
 }
@@ -132,7 +132,7 @@ void StorageHandler::HandleClearDriveCache(
   file_system->FreeDiskSpaceIfNeededFor(
       std::numeric_limits<int64_t>::max(),  // Removes as much as possible.
       base::Bind(&StorageHandler::OnClearDriveCacheDone,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void StorageHandler::UpdateSizeStat() {
@@ -146,7 +146,7 @@ void StorageHandler::UpdateSizeStat() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&GetSizeStatBlocking, downloads_path, total_size,
                  available_size),
-      base::Bind(&StorageHandler::OnGetSizeStat, base::Unretained(this),
+      base::Bind(&StorageHandler::OnGetSizeStat, weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(total_size), base::Owned(available_size)));
 }
 
@@ -182,7 +182,8 @@ void StorageHandler::UpdateDownloadsSize() {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&base::ComputeDirectorySize, downloads_path),
-      base::Bind(&StorageHandler::OnGetDownloadsSize, base::Unretained(this)));
+      base::Bind(&StorageHandler::OnGetDownloadsSize,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void StorageHandler::OnGetDownloadsSize(int64_t size) {
@@ -206,8 +207,8 @@ void StorageHandler::UpdateDriveCacheSize() {
                          base::Value("storage-drive-enabled-changed"),
                          base::Value(true));
   updating_drive_cache_size_ = true;
-  file_system->CalculateCacheSize(
-      base::Bind(&StorageHandler::OnGetDriveCacheSize, base::Unretained(this)));
+  file_system->CalculateCacheSize(base::Bind(
+      &StorageHandler::OnGetDriveCacheSize, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void StorageHandler::OnGetDriveCacheSize(int64_t size) {
@@ -231,8 +232,8 @@ void StorageHandler::UpdateBrowsingDataSize() {
   browsing_data::ConditionalCacheCountingHelper::CreateForRange(
       content::BrowserContext::GetDefaultStoragePartition(profile),
       base::Time(), base::Time::Max())
-      ->CountAndDestroySelfWhenFinished(
-          base::Bind(&StorageHandler::OnGetCacheSize, base::Unretained(this)));
+      ->CountAndDestroySelfWhenFinished(base::Bind(
+          &StorageHandler::OnGetCacheSize, weak_ptr_factory_.GetWeakPtr()));
 
   // Fetch the size of site data in browsing data.
   if (!site_data_size_collector_.get()) {
@@ -257,7 +258,7 @@ void StorageHandler::UpdateBrowsingDataSize() {
   }
   site_data_size_collector_->Fetch(
       base::Bind(&StorageHandler::OnGetBrowsingDataSize,
-                 base::Unretained(this), true));
+                 weak_ptr_factory_.GetWeakPtr(), true));
 }
 
 void StorageHandler::OnGetCacheSize(int64_t size, bool is_upper_limit) {
@@ -305,7 +306,7 @@ void StorageHandler::UpdateOtherUsersSize() {
     cryptohome::HomedirMethods::GetInstance()->GetAccountDiskUsage(
         cryptohome::Identification(user->GetAccountId()),
         base::Bind(&StorageHandler::OnGetOtherUserSize,
-                   base::Unretained(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
   // We should show "0 B" if there is no other user.
   if (other_users_.empty()) {
@@ -350,9 +351,8 @@ void StorageHandler::UpdateAndroidSize() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::Value("storage-android-enabled-changed"),
                          base::Value(true));
-  bool success = arc::ArcStorageManager::Get()->GetApplicationsSize(
-      base::Bind(&StorageHandler::OnGetAndroidSize,
-                 base::Unretained(this)));
+  bool success = arc::ArcStorageManager::Get()->GetApplicationsSize(base::Bind(
+      &StorageHandler::OnGetAndroidSize, weak_ptr_factory_.GetWeakPtr()));
   if (!success)
     updating_android_size_ = false;
 }
