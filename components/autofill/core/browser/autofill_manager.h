@@ -440,6 +440,12 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                                      std::vector<AutofillProfile>* profiles,
                                      std::string* rappor_metric_name) const;
 
+  // Returns metric relevant to the CVC field based on values in
+  // |found_cvc_field_|, |found_value_in_cvc_field_| and
+  // |found_cvc_value_in_non_cvc_field_|.
+  AutofillMetrics::CardUploadDecisionMetric GetCVCCardUploadDecisionMetric()
+      const;
+
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
   // needed because IPC messages can arrive out of order.
@@ -563,9 +569,21 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Collected information about a pending upload request.
   payments::PaymentsClient::UploadRequestDetails upload_request_;
   bool user_did_accept_upload_prompt_;
+
+  // |should_cvc_be_requested_| is |true| if we should request CVC from the user
+  // in the card upload dialog.
   bool should_cvc_be_requested_;
+  // |found_cvc_field_| is |true| if there exists a field that is determined to
+  // be a CVC field via heuristics.
   bool found_cvc_field_;
-  bool found_cvc_value_;
+  // |found_value_in_cvc_field_| is |true| if a field that is determined to
+  // be a CVC field via heuristics has non-empty |value|.
+  // |value| may or may not be a valid CVC.
+  bool found_value_in_cvc_field_;
+  // |found_cvc_value_in_non_cvc_field_| is |true| if a field that is not
+  // determined to be a CVC field via heuristics has a valid CVC |value|.
+  bool found_cvc_value_in_non_cvc_field_;
+
   GURL pending_upload_request_url_;
 
 #ifdef ENABLE_FORM_DEBUG_DUMP

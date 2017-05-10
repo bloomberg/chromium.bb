@@ -247,7 +247,8 @@ AutofillManager::AutofillManager(
       user_did_accept_upload_prompt_(false),
       should_cvc_be_requested_(false),
       found_cvc_field_(false),
-      found_cvc_value_(false),
+      found_value_in_cvc_field_(false),
+      found_cvc_value_in_non_cvc_field_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -1045,7 +1046,7 @@ void AutofillManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
     std::unique_ptr<base::DictionaryValue> legal_message) {
-  int card_upload_decision_metrics;
+  int upload_decision_metrics;
   if (result == AutofillClient::SUCCESS) {
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
@@ -1058,19 +1059,7 @@ void AutofillManager::OnDidGetUploadDetails(
                    weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(base::Bind(&AutofillManager::OnDidGetUploadRiskData,
                                      weak_ptr_factory_.GetWeakPtr()));
-    card_upload_decision_metrics = AutofillMetrics::UPLOAD_OFFERED;
-    if (!found_cvc_field_ || !found_cvc_value_)
-      DCHECK(should_cvc_be_requested_);
-    if (found_cvc_field_) {
-      if (found_cvc_value_) {
-        if (should_cvc_be_requested_)
-          card_upload_decision_metrics |= AutofillMetrics::INVALID_CVC_VALUE;
-      } else {
-        card_upload_decision_metrics |= AutofillMetrics::CVC_VALUE_NOT_FOUND;
-      }
-    } else {
-      card_upload_decision_metrics |= AutofillMetrics::CVC_FIELD_NOT_FOUND;
-    }
+    upload_decision_metrics = AutofillMetrics::UPLOAD_OFFERED;
   } else {
     // If the upload details request failed, fall back to a local save. The
     // reasoning here is as follows:
@@ -1088,10 +1077,19 @@ void AutofillManager::OnDidGetUploadDetails(
         base::Bind(
             base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
             base::Unretained(personal_data_), upload_request_.card));
-    card_upload_decision_metrics =
+    upload_decision_metrics =
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED;
   }
-  LogCardUploadDecisions(card_upload_decision_metrics);
+
+  if (!found_cvc_field_ || !found_value_in_cvc_field_)
+    DCHECK(should_cvc_be_requested_);
+
+  if (should_cvc_be_requested_)
+    upload_decision_metrics |= GetCVCCardUploadDecisionMetric();
+  else
+    DCHECK(found_cvc_field_ && found_value_in_cvc_field_);
+
+  LogCardUploadDecisions(upload_decision_metrics);
   pending_upload_request_url_ = GURL();
 }
 
@@ -1262,17 +1260,23 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     // If no CVC and the experiment is on, request CVC from the user in the
     // bubble and save using the provided value.
     found_cvc_field_ = false;
-    found_cvc_value_ = false;
+    found_value_in_cvc_field_ = false;
+    found_cvc_value_in_non_cvc_field_ = false;
+
     for (const auto& field : submitted_form) {
+      const bool is_valid_cvc = IsValidCreditCardSecurityCode(
+          field->value, upload_request_.card.network());
       if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE) {
         found_cvc_field_ = true;
         if (!field->value.empty())
-          found_cvc_value_ = true;
-        if (IsValidCreditCardSecurityCode(field->value,
-                                          upload_request_.card.network())) {
+          found_value_in_cvc_field_ = true;
+        if (is_valid_cvc) {
           upload_request_.cvc = field->value;
           break;
         }
+      } else if (is_valid_cvc &&
+                 field->Type().GetStorableType() == UNKNOWN_TYPE) {
+        found_cvc_value_in_non_cvc_field_ = true;
       }
     }
 
@@ -1290,12 +1294,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
           (!upload_decision_metrics &&
            IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled());
       if (!should_cvc_be_requested_) {
-        if (found_cvc_field_)
-          upload_decision_metrics |= found_cvc_value_
-                                         ? AutofillMetrics::INVALID_CVC_VALUE
-                                         : AutofillMetrics::CVC_VALUE_NOT_FOUND;
-        else
-          upload_decision_metrics |= AutofillMetrics::CVC_FIELD_NOT_FOUND;
+        upload_decision_metrics |= GetCVCCardUploadDecisionMetric();
         rappor_metric_name = "Autofill.CardUploadNotOfferedNoCvc";
       }
     }
@@ -1311,6 +1310,17 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     // All required data is available, start the upload process.
     payments_client_->GetUploadDetails(upload_request_.profiles, app_locale_);
   }
+}
+
+AutofillMetrics::CardUploadDecisionMetric
+AutofillManager::GetCVCCardUploadDecisionMetric() const {
+  if (found_cvc_field_)
+    return found_value_in_cvc_field_ ? AutofillMetrics::INVALID_CVC_VALUE
+                                     : AutofillMetrics::CVC_VALUE_NOT_FOUND;
+  else
+    return found_cvc_value_in_non_cvc_field_
+               ? AutofillMetrics::FOUND_POSSIBLE_CVC_VALUE_IN_NON_CVC_FIELD
+               : AutofillMetrics::CVC_FIELD_NOT_FOUND;
 }
 
 int AutofillManager::GetProfilesForCreditCardUpload(

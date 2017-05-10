@@ -105,33 +105,38 @@ class AutofillMetrics {
     CVC_VALUE_NOT_FOUND = 1 << 2,
     // CVC field had a value, but it was not valid for the card network.
     INVALID_CVC_VALUE = 1 << 3,
-    // No recently created or recently used address profile was available.
-    // We don't know whether we would have been able to get upload details.
-    UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS = 1 << 4,
+    // A field had a syntactically valid CVC value, but it was in a field that
+    // was not heuristically determined as |CREDIT_CARD_VERIFICATION_CODE|.
+    // Set only if |CVC_FIELD_NOT_FOUND| is not set.
+    FOUND_POSSIBLE_CVC_VALUE_IN_NON_CVC_FIELD = 1 << 4,
     // No address profile was available.
     // We don't know whether we would have been able to get upload details.
     UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE = 1 << 5,
+    // Found one or more address profiles but none were recently modified or
+    // recently used -i.e. not used in expected duration of a checkout flow.
+    // We don't know whether we would have been able to get upload details.
+    UPLOAD_NOT_OFFERED_NO_RECENTLY_USED_ADDRESS = 1 << 6,
+    // One or more recently used addresses were available but no zip code was
+    // found on any of the address(es). We don't know whether we would have
+    // been able to get upload details.
+    UPLOAD_NOT_OFFERED_NO_ZIP_CODE = 1 << 7,
+    // Multiple recently used addresses were available but the addresses had
+    // conflicting zip codes.We don't know whether we would have been able to
+    // get upload details.
+    UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS = 1 << 8,
     // One or more recently used addresses were available but no name was found
     // on either the card or the address(es). We don't know whether the
     // address(es) were otherwise valid nor whether we would have been able to
     // get upload details.
-    UPLOAD_NOT_OFFERED_NO_NAME = 1 << 6,
-    // Multiple recently used addresses were available but the addresses had
-    // conflicting zip codes.We don't know whether we would have been able to
-    // get upload details.
-    UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS = 1 << 7,
-    // One or more recently used addresses were available but no zip code was
-    // found on any of the address(es). We don't know whether we would have
-    // been able to get upload details.
-    UPLOAD_NOT_OFFERED_NO_ZIP_CODE = 1 << 8,
+    UPLOAD_NOT_OFFERED_NO_NAME = 1 << 9,
     // One or more recently used addresses were available but the names on the
     // card and/or the addresses didn't match. We don't know whether the
     // address(es) were otherwise valid nor whether we would have been able to
     // get upload details.
-    UPLOAD_NOT_OFFERED_CONFLICTING_NAMES = 1 << 9,
+    UPLOAD_NOT_OFFERED_CONFLICTING_NAMES = 1 << 10,
     // One or more valid addresses, and a name were available but the request to
     // Payments for upload details failed.
-    UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED = 1 << 10,
+    UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED = 1 << 11,
     // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
@@ -895,7 +900,7 @@ class AutofillMetrics {
   };
 
  private:
-  static const int kNumCardUploadDecisionMetrics = 11;
+  static const int kNumCardUploadDecisionMetrics = 12;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };
