@@ -36,6 +36,7 @@ class MODULES_EXPORT ServiceWorkerClient
 
   // Client.idl
   String url() const { return url_; }
+  String type() const;
   String frameType() const;
   String id() const { return uuid_; }
   void postMessage(ScriptState*,
@@ -55,6 +56,7 @@ class MODULES_EXPORT ServiceWorkerClient
  private:
   String uuid_;
   String url_;
+  WebServiceWorkerClientType type_;
   WebURLRequest::FrameType frame_type_;
 };
 

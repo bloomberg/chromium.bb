@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test Clients.matchAll() assert_array_equals: property 3, expected "window" but got undefined
-Harness: the test ran to completion.
-
