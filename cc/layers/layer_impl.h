@@ -70,6 +70,15 @@ enum DrawMode {
   DRAW_MODE_RESOURCELESS_SOFTWARE
 };
 
+enum ViewportLayerType {
+  NOT_VIEWPORT_LAYER,
+  INNER_VIEWPORT_CONTAINER,
+  OUTER_VIEWPORT_CONTAINER,
+  INNER_VIEWPORT_SCROLL,
+  OUTER_VIEWPORT_SCROLL,
+  LAST_VIEWPORT_LAYER_TYPE = OUTER_VIEWPORT_SCROLL,
+};
+
 class CC_EXPORT LayerImpl {
  public:
   static std::unique_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
@@ -264,11 +273,21 @@ class CC_EXPORT LayerImpl {
   // of pixels) due to use of single precision float.
   gfx::SizeF BoundsForScrolling() const;
 
-  // Viewport bounds delta are used for viewport layers and accounts for changes
-  // in the viewport layers from browser controls and page scale factors. These
-  // deltas are only set on the active tree.
+  // Viewport bounds delta are only used for viewport layers and account for
+  // changes in the viewport layers from browser controls and page scale
+  // factors. These deltas are only set on the active tree.
   void SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta);
   gfx::Vector2dF ViewportBoundsDelta() const;
+
+  void SetViewportLayerType(ViewportLayerType type) {
+    // Once set as a viewport layer type, the viewport type should not change.
+    DCHECK(viewport_layer_type() == NOT_VIEWPORT_LAYER ||
+           viewport_layer_type() == type);
+    viewport_layer_type_ = type;
+  }
+  ViewportLayerType viewport_layer_type() const {
+    return static_cast<ViewportLayerType>(viewport_layer_type_);
+  }
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
   gfx::ScrollOffset CurrentScrollOffset() const;
@@ -502,6 +521,10 @@ class CC_EXPORT LayerImpl {
   // This is true if and only if the layer was ever ready since it last animated
   // (all content was complete).
   bool was_ever_ready_since_last_transform_animation_ : 1;
+
+  static_assert(LAST_VIEWPORT_LAYER_TYPE < (1u << 3),
+                "enough bits for ViewportLayerType (viewport_layer_type_)");
+  uint8_t viewport_layer_type_ : 3;  // ViewportLayerType
 
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
