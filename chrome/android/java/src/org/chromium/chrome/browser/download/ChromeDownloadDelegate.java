@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser.download;
 
 import android.Manifest.permission;
-import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
@@ -20,11 +18,9 @@ import android.webkit.URLUtil;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
@@ -187,7 +183,7 @@ public class ChromeDownloadDelegate {
         } else {
             enqueueDownloadManagerRequest(downloadInfo);
         }
-        return closeBlankTab();
+        return DownloadController.closeTabIfBlank(mTab);
     }
 
     private void launchDownloadInfoBar(DownloadInfo info, File fullDirPath) {
@@ -204,7 +200,7 @@ public class ChromeDownloadDelegate {
     private void enqueueDownloadManagerRequest(final DownloadInfo info) {
         DownloadManagerService.getDownloadManagerService().enqueueDownloadManagerRequest(
                 new DownloadItem(true, info), true);
-        closeBlankTab();
+        DownloadController.closeTabIfBlank(mTab);
     }
 
     /**
@@ -269,23 +265,6 @@ public class ChromeDownloadDelegate {
                 .setIsGETRequest(true)
                 .build();
         enqueueDownloadManagerRequest(downloadInfo);
-    }
-
-    /**
-     * Called when download starts.
-     *
-     * @param filename Name of the file.
-     * @param mimeType MIME type of the content.
-     */
-    @CalledByNative
-    private void onDownloadStarted(String filename) {
-        DownloadUtils.showDownloadStartToast(mContext);
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                closeBlankTab();
-            }
-        });
     }
 
     /**
@@ -358,30 +337,6 @@ public class ChromeDownloadDelegate {
                 return null;
             }
         }.execute();
-    }
-
-    /**
-     * Close a blank tab just opened for the download purpose.
-     * @return true iff the tab was (already) closed.
-     */
-    private boolean closeBlankTab() {
-        if (mTab == null) {
-            // We do not want caller to dismiss infobar.
-            return true;
-        }
-        WebContents contents = mTab.getWebContents();
-        boolean isInitialNavigation = contents == null
-                || contents.getNavigationController().isInitialNavigation();
-        if (isInitialNavigation) {
-            // Tab is created just for download, close it.
-            Activity activity = mTab.getWindowAndroid().getActivity().get();
-            if (!(activity instanceof ChromeActivity)) return true;
-
-            TabModelSelector selector = ((ChromeActivity) activity).getTabModelSelector();
-            if (mTab.isIncognito() && selector.getModel(true).getCount() == 1) return false;
-            return selector == null ? true : selector.closeTab(mTab);
-        }
-        return false;
     }
 
     /**

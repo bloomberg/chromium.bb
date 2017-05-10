@@ -13,9 +13,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
@@ -184,6 +188,37 @@ public class DownloadController {
                             }
                         });
         builder.create().show();
+    }
+
+    /**
+     * Called when a download is started.
+     */
+    @CalledByNative
+    private void onDownloadStarted() {
+        DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
+    }
+
+    /**
+     * Close a tab if it is blank. Returns true if it is or already closed.
+     * @param Tab Tab to close.
+     * @return true iff the tab was (already) closed.
+     */
+    @CalledByNative
+    static boolean closeTabIfBlank(Tab tab) {
+        if (tab == null) return true;
+        WebContents contents = tab.getWebContents();
+        boolean isInitialNavigation = contents == null
+                || contents.getNavigationController().isInitialNavigation();
+        if (isInitialNavigation) {
+            // Tab is created just for download, close it.
+            TabModelSelector selector = tab.getTabModelSelector();
+            if (selector == null) return true;
+            if (selector.getModel(tab.isIncognito()).getCount() == 1) return false;
+            boolean closed = selector.closeTab(tab);
+            assert closed;
+            return true;
+        }
+        return false;
     }
 
     // native methods

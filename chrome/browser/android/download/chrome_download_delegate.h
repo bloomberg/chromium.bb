@@ -21,7 +21,6 @@ class ChromeDownloadDelegate
 
   void SetJavaRef(JNIEnv*, jobject obj);
 
-  void OnDownloadStarted(const std::string& filename);
   void RequestFileAccess(intptr_t callback_id);
 
   // TODO(qinmin): consolidate this with the static function above.
