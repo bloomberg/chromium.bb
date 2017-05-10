@@ -22,11 +22,13 @@ namespace test {
 // ScopedTaskEnvironment.
 //
 // Tasks posted to the (Thread|Sequenced)TaskRunnerHandle run synchronously when
-// RunLoop::Run(UntilIdle) is called on the thread where the
-// ScopedTaskEnvironment lives.
+// RunLoop::Run(UntilIdle) or ScopedTaskEnvironment::RunUntilIdle is called on
+// the thread where the ScopedTaskEnvironment lives.
 //
 // Tasks posted through base/task_scheduler/post_task.h run on dedicated threads
 // as they are posted.
+//
+// All methods of ScopedTaskEnvironment must be called from the same thread.
 //
 // Usage:
 //
@@ -65,6 +67,10 @@ class ScopedTaskEnvironment {
   // BLOCK_SHUTDOWN TaskScheduler tasks. Then, unregisters the TaskScheduler and
   // the (Thread|Sequenced)TaskRunnerHandle.
   ~ScopedTaskEnvironment();
+
+  // Synchronously runs (Thread|Sequenced)TaskRunnerHandle tasks until no
+  // undelayed (Thread|Sequenced)TaskRunnerHandle or TaskScheduler tasks remain.
+  void RunUntilIdle();
 
  private:
   // Note: |message_loop_| is an implementation detail and will be replaced in
