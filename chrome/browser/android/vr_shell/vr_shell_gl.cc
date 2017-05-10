@@ -330,6 +330,7 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
 
 void VrShellGl::SubmitWebVRFrame(int16_t frame_index,
                                  const gpu::MailboxHolder& mailbox) {
+  DCHECK(submit_client_.get());
   TRACE_EVENT0("gpu", "VrShellGl::SubmitWebVRFrame");
 
   // Swapping twice on a Surface without calling updateTexImage in
@@ -393,7 +394,9 @@ void VrShellGl::OnWebVRFrameAvailable() {
   // we move the "rendered" notification after draw, or suppress
   // the next vsync until that's done?
 
-  submit_client_->OnSubmitFrameRendered();
+  if (submit_client_) {
+    submit_client_->OnSubmitFrameRendered();
+  }
 
   DrawFrame(frame_index);
 }
@@ -1214,6 +1217,9 @@ void VrShellGl::OnResume() {
 
 void VrShellGl::SetWebVrMode(bool enabled) {
   web_vr_mode_ = enabled;
+  if (!enabled) {
+    submit_client_.reset();
+  }
 }
 
 void VrShellGl::UpdateWebVRTextureBounds(int16_t frame_index,

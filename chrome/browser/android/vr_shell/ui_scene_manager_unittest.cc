@@ -28,6 +28,7 @@ class MockBrowserInterface : public VrBrowserInterface {
 
   MOCK_METHOD0(AppButtonClicked, void());
   MOCK_METHOD0(ForceExitVr, void());
+  MOCK_METHOD0(ExitPresent, void());
   MOCK_METHOD2(
       RunVRDisplayInfoCallback,
       void(const base::Callback<void(device::mojom::VRDisplayInfoPtr)>&,
@@ -63,20 +64,12 @@ class UiSceneManagerTest : public testing::Test {
   std::unique_ptr<UiSceneManager> manager_;
 };
 
-TEST_F(UiSceneManagerTest, ContentPausesOnAppButtonClick) {
+TEST_F(UiSceneManagerTest, ExitPresentOnAppButtonClick) {
   InSequence s;
 
-  EXPECT_TRUE(scene_->GetWebVrRenderingEnabled());
-
-  // Clicking app button once should pause content rendering.
-  EXPECT_CALL(*browser_, OnContentPaused(true)).Times(1);
+  // Clicking app button should trigger to exit presentation.
+  EXPECT_CALL(*browser_, ExitPresent()).Times(1);
   manager_->OnAppButtonClicked();
-  EXPECT_FALSE(scene_->GetWebVrRenderingEnabled());
-
-  // Clicking it again should resume content rendering.
-  EXPECT_CALL(*browser_, OnContentPaused(false)).Times(1);
-  manager_->OnAppButtonClicked();
-  EXPECT_TRUE(scene_->GetWebVrRenderingEnabled());
 }
 
 }  // namespace vr_shell
