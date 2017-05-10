@@ -37,7 +37,10 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   void OnUtilizationReport(int frame_feedback_id, double utilization) override;
 
  private:
-  const video_capture::mojom::DevicePtr device_;
+  void OnLostConnectionToDevice();
+
+  video_capture::mojom::DevicePtr device_;
+  base::SequenceChecker sequence_checker_;
 };
 
 }  // namespace content

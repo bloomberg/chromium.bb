@@ -8,47 +8,69 @@ namespace content {
 
 ServiceLaunchedVideoCaptureDevice::ServiceLaunchedVideoCaptureDevice(
     video_capture::mojom::DevicePtr device)
-    : device_(std::move(device)) {}
+    : device_(std::move(device)) {
+  // Unretained |this| is safe, because |this| owns |device_|.
+  device_.set_connection_error_handler(
+      base::Bind(&ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice,
+                 base::Unretained(this)));
+}
 
-ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {}
+ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+}
 
 void ServiceLaunchedVideoCaptureDevice::GetPhotoCapabilities(
     media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) const {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   NOTIMPLEMENTED();
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
     media::mojom::PhotoSettingsPtr settings,
     media::VideoCaptureDevice::SetPhotoOptionsCallback callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   NOTIMPLEMENTED();
 }
 
 void ServiceLaunchedVideoCaptureDevice::TakePhoto(
     media::VideoCaptureDevice::TakePhotoCallback callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   NOTIMPLEMENTED();
 }
 
 void ServiceLaunchedVideoCaptureDevice::MaybeSuspendDevice() {
-  NOTIMPLEMENTED();
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  // Not yet implemented on service side. Do nothing here.
 }
 
 void ServiceLaunchedVideoCaptureDevice::ResumeDevice() {
-  NOTIMPLEMENTED();
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  // Not yet implemented on service side. Do nothing here.
 }
 
 void ServiceLaunchedVideoCaptureDevice::RequestRefreshFrame() {
-  NOTIMPLEMENTED();
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  // Not yet implemented on service side. Do nothing here.
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
     gfx::NativeViewId window_id,
     base::OnceClosure done_cb) {
-  NOTIMPLEMENTED();
+  // This method should only be called for desktop capture devices.
+  // The video_capture Mojo service does not support desktop capture devices
+  // (yet) and should not be used for it.
+  NOTREACHED();
 }
 
 void ServiceLaunchedVideoCaptureDevice::OnUtilizationReport(
     int frame_feedback_id,
     double utilization) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  device_->OnReceiverReportingUtilization(frame_feedback_id, utilization);
+}
+
+void ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   NOTIMPLEMENTED();
 }
 

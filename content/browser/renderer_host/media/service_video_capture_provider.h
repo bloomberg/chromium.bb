@@ -40,7 +40,7 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   // service-side binding for |device_factory_|.
   video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
   video_capture::mojom::DeviceFactoryPtr device_factory_;
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 };
 
 }  // namespace content

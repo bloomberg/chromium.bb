@@ -20,7 +20,7 @@ class ServiceImpl : public service_manager::Service {
   ServiceImpl();
   ~ServiceImpl() override;
 
-  // service_manager::Service:
+  // service_manager::Service implementation.
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
