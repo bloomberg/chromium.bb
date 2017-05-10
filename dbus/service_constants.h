@@ -151,6 +151,18 @@ const char kModemGsmNetworkInterface[] =
 const char kModemGobiInterface[] = "org.chromium.ModemManager.Modem.Gobi";
 }  // namespace cromo
 
+namespace media_perception {
+
+const char kMediaPerceptionServiceName[] = "org.chromium.MediaPerception";
+const char kMediaPerceptionServicePath[] = "/org/chromium/MediaPerception";
+const char kMediaPerceptionInterface[] = "org.chromium.MediaPerception";
+
+const char kStateFunction[] = "State";
+const char kGetDiagnosticsFunction[] = "GetDiagnostics";
+const char kDetectionSignal[] = "MediaPerceptionDetection";
+
+}  // namespace media_perception
+
 namespace modemmanager {
 // ModemManager D-Bus service identifiers
 const char kModemManagerSMSInterface[] =
