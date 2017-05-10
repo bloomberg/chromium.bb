@@ -38,10 +38,11 @@
   "allow_usb_devices_permission_interface_class": {
     "channel": "stable",
     "extension_types": ["platform_app"],
-    "session_types": ["kiosk"] 
+    "session_types": ["kiosk"]
   },
   "signin_screen": [ {
     "blacklist": [
+      // https://crbug.com/626342
       "9E527CDA9D7C50844E8A5DB964A54A640AE48F98"   // Chrome remote desktop
     ],
     // Allow developers to test new features.
@@ -59,6 +60,8 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
+      // https://crbug.com/626342
+      "85DA1AC24AF23CDA9F5A19858EB9C6E9E1BA57F6",  // Sign-in Screen Test App
       "EC3DE21E048B67319893889529354DFBFA96FD23",  // Smart Card Connector
       "6B748A5C005F21B7CBCF4170C2F883E435DEB511"   // CSSI Smart Card Middleware
     ]
@@ -69,6 +72,7 @@
     "component_extensions_auto_granted": false,
     "platforms": ["chromeos"],
     "whitelist": [
+      // https://crbug.com/626342
       "E24F1786D842E91E74C27929B0B3715A4689A473",  // Gnubby component extension
       "6F9E349A0561C78A0D3F41496FE521C5151C7F71",  // Gnubby app
       "8EBDF73405D0B84CEABB8C7513C9B9FA9F1DC2CE",  // Genius app (help)
