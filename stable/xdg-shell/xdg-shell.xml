@@ -547,6 +547,10 @@
 	Parent windows should be set on dialogs, toolboxes, or other
 	"auxiliary" surfaces, so that the parent is raised when the dialog
 	is raised.
+
+	Setting a null parent for a child window removes any parent-child
+	relationship for the child. Setting a null parent for a window which
+	currently has no parent is a no-op.
       </description>
       <arg name="parent" type="object" interface="xdg_toplevel" allow-null="true"/>
     </request>
