@@ -10,6 +10,8 @@ source_set("content_suggestions") {
     "content_suggestion_extra_builder.mm",
     "content_suggestions_collection_updater.h",
     "content_suggestions_collection_updater.mm",
+    "content_suggestions_collection_utils.h",
+    "content_suggestions_collection_utils.mm",
     "content_suggestions_commands.h",
     "content_suggestions_data_sink.h",
     "content_suggestions_data_source.h",
@@ -21,6 +23,7 @@ source_set("content_suggestions") {
     ":resources",
     "//base",
     "//components/strings",
+    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
@@ -39,12 +42,15 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_suggestions_collection_updater_unittest.mm",
+    "content_suggestions_collection_utils_unittest.mm",
   ]
   deps = [
     ":content_suggestions",
     "//base",
+    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
+    "//ios/chrome/test/base",
     "//testing/gtest",
     "//third_party/ocmock",
   ]
