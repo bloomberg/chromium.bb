@@ -28,6 +28,7 @@ source_set("chromeos") {
     "//chromeos:power_manager_proto",
     "//components/wallpaper",
     "//content/app/resources",
+    "//ui/accessibility:ax_gen",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/resources",
@@ -1532,6 +1533,7 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":chromeos",
     "//components/policy/proto",
     "//skia",
     "//testing/gmock",
