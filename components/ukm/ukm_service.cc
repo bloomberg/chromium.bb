@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -345,8 +346,8 @@ void UkmService::BuildAndStoreLog() {
 
 // static
 int32_t UkmService::GetNewSourceID() {
-  static int32_t next_source_id = 0;
-  return next_source_id++;
+  static base::StaticAtomicSequenceNumber seq;
+  return seq.GetNext();
 }
 
 std::unique_ptr<UkmEntryBuilder> UkmService::GetEntryBuilder(
