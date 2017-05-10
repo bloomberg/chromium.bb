@@ -124,9 +124,6 @@ bool IsIncludedInQuicFieldTrial();
 
 const char* GetQuicFieldTrialName();
 
-// Returns true if zero RTT for QUIC is enabled.
-bool IsZeroRttQuicEnabled();
-
 // Returns true if Brotli should be added to the accept-encoding header.
 bool IsBrotliAcceptEncodingEnabled();
 

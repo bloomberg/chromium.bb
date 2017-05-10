@@ -28,7 +28,6 @@
 #include "crypto/openssl_util.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
-#include "net/base/proxy_delegate.h"
 #include "net/base/trace_constants.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verifier.h"
@@ -645,7 +644,6 @@ QuicStreamFactory::QuicStreamFactory(
     SSLConfigService* ssl_config_service,
     ClientSocketFactory* client_socket_factory,
     HttpServerProperties* http_server_properties,
-    ProxyDelegate* proxy_delegate,
     CertVerifier* cert_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     ChannelIDService* channel_id_service,
@@ -679,7 +677,6 @@ QuicStreamFactory::QuicStreamFactory(
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
       push_delegate_(nullptr),
-      proxy_delegate_(proxy_delegate),
       transport_security_state_(transport_security_state),
       cert_transparency_verifier_(cert_transparency_verifier),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),

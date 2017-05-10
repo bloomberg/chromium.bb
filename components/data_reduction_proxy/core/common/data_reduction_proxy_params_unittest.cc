@@ -408,29 +408,23 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
   const struct {
     std::string trial_group_name;
     bool expected_enabled;
-    std::string zero_rtt_param;
-    bool expected_zero_rtt;
     bool enable_warmup_url;
     bool expect_warmup_url_enabled;
     std::string warmup_url;
   } tests[] = {
-      {"Enabled", true, "true", true, true, true, std::string()},
-      {"Enabled", true, "true", true, false, false, std::string()},
-      {"Enabled_Control", true, "true", true, true, true, std::string()},
-      {"Enabled_Control", true, "false", false, true, true, std::string()},
-      {"Enabled_Control", true, std::string(), false, true, true,
-       std::string()},
-      {"Control", false, "true", false, true, true, std::string()},
-      {"Disabled", false, "false", false, true, false, std::string()},
-      {"enabled", true, "false", false, true, true, std::string()},
-      {"Enabled", true, "true", true, true, true, "example.com/test.html"},
-      {std::string(), true, "true", false, false, false, std::string()},
+      {"Enabled", true, true, true, std::string()},
+      {"Enabled", true, false, false, std::string()},
+      {"Enabled_Control", true, true, true, std::string()},
+      {"Control", false, true, true, std::string()},
+      {"Disabled", false, true, false, std::string()},
+      {"enabled", true, true, true, std::string()},
+      {"Enabled", true, true, true, "example.com/test.html"},
+      {std::string(), true, false, false, std::string()},
   };
 
   for (const auto& test : tests) {
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
-    variation_params["enable_zero_rtt"] = test.zero_rtt_param;
     if (test.enable_warmup_url)
       variation_params["enable_warmup"] = "true";
 
@@ -445,7 +439,6 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
                                            test.trial_group_name);
 
     EXPECT_EQ(test.expected_enabled, params::IsIncludedInQuicFieldTrial());
-    EXPECT_EQ(test.expected_zero_rtt, params::IsZeroRttQuicEnabled());
     if (!test.warmup_url.empty()) {
       EXPECT_EQ(GURL(test.warmup_url), params::GetWarmupURL());
     } else {

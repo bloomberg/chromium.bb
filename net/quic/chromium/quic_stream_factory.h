@@ -59,7 +59,6 @@ class CTVerifier;
 class HostResolver;
 class HttpServerProperties;
 class NetLog;
-class ProxyDelegate;
 class QuicClock;
 class QuicAlarmFactory;
 class QuicChromiumConnectionHelper;
@@ -194,7 +193,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       SSLConfigService* ssl_config_service,
       ClientSocketFactory* client_socket_factory,
       HttpServerProperties* http_server_properties,
-      ProxyDelegate* proxy_delegate,
       CertVerifier* cert_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
       ChannelIDService* channel_id_service,
@@ -472,7 +470,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   ClientSocketFactory* client_socket_factory_;
   HttpServerProperties* http_server_properties_;
   ServerPushDelegate* push_delegate_;
-  ProxyDelegate* proxy_delegate_;
   TransportSecurityState* transport_security_state_;
   CTVerifier* cert_transparency_verifier_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
