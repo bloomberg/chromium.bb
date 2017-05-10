@@ -64,8 +64,8 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
 
 }  // namespace
 
-const base::Feature kLowReputationPinging{"LowReputationPinging",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPasswordFieldOnFocusPinging{
+    "PasswordFieldOnFocusPinging", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kProtectedPasswordEntryPinging{
     "ProtectedPasswordEntryPinging", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -221,7 +221,7 @@ void PasswordProtectionService::MaybeStartLowReputationRequest(
     const GURL& password_form_action,
     const GURL& password_form_frame_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsPingingEnabled(kLowReputationPinging))
+  if (!IsPingingEnabled(kPasswordFieldOnFocusPinging))
     return;
 
   // Skip URLs that we can't get a reliable reputation for.
@@ -317,7 +317,7 @@ void PasswordProtectionService::FillUserPopulation(
   user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
 
   base::FieldTrial* low_reputation_field_trial =
-      base::FeatureList::GetFieldTrial(kLowReputationPinging);
+      base::FeatureList::GetFieldTrial(kPasswordFieldOnFocusPinging);
   if (low_reputation_field_trial) {
     user_population->add_finch_active_groups(
         low_reputation_field_trial->trial_name() + "|" +

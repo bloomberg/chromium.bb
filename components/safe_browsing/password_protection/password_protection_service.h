@@ -33,7 +33,7 @@ namespace safe_browsing {
 class SafeBrowsingDatabaseManager;
 class PasswordProtectionRequest;
 
-extern const base::Feature kLowReputationPinging;
+extern const base::Feature kPasswordFieldOnFocusPinging;
 extern const base::Feature kProtectedPasswordEntryPinging;
 
 // Manage password protection pings and verdicts. There is one instance of this
