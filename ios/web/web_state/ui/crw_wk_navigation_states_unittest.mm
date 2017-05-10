@@ -122,7 +122,7 @@ TEST_F(CRWWKNavigationStatesTest, NullNavigation) {
   EXPECT_FALSE([states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::STARTED, [states_ lastAddedNavigationState]);
 
-  // navigation_1 is the is the latest again after removing null navigation.
+  // navigation_1 is the latest again after removing null navigation.
   [states_ removeNavigation:nil];
   ASSERT_EQ(navigation1_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::REQUESTED, [states_ lastAddedNavigationState]);
