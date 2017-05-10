@@ -12,9 +12,10 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/android/vr_shell/font_fallback.h"
 #include "chrome/browser/browser_process.h"
+#include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gl/gl_bindings.h"
@@ -24,6 +25,14 @@ namespace vr_shell {
 namespace {
 
 static constexpr char kDefaultFontFamily[] = "sans-serif";
+
+std::set<UChar32> CollectDifferentChars(base::string16 text) {
+  std::set<UChar32> characters;
+  for (base::i18n::UTF16CharIterator it(&text); !it.end(); it.Advance()) {
+    characters.insert(it.get());
+  }
+  return characters;
+}
 
 }  // namespace
 
@@ -48,28 +57,11 @@ gfx::FontList UiTexture::GetFontList(int size, base::string16 text) {
   gfx::Font default_font(kDefaultFontFamily, size);
   std::vector<gfx::Font> fonts{default_font};
 
-  std::set<wchar_t> characters;
-  for (base::i18n::UTF16CharIterator it(&text); !it.end(); it.Advance()) {
-    characters.insert(it.get());
-  }
-  // TODO(acondor): Obtain fallback fonts with gfx::GetFallbackFonts
-  // (which is not implemented for android yet) in order to avoid
-  // querying per character.
-
-  sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
   std::set<std::string> names;
   // TODO(acondor): Query BrowserProcess to obtain the application locale.
-  for (wchar_t character : characters) {
-    sk_sp<SkTypeface> tf(font_mgr->matchFamilyStyleCharacter(
-        kDefaultFontFamily, SkFontStyle(), nullptr, 0, character));
-
-    // TODO(acondor): How should we handle no matching font?
-    if (!tf)
-      continue;
-    SkString sk_name;
-    tf->getFamilyName(&sk_name);
-    std::string name(sk_name.c_str());
-    if (name != kDefaultFontFamily)
+  for (UChar32 c : CollectDifferentChars(text)) {
+    std::string name = GetFallbackFontNameForChar(default_font, c, "");
+    if (!name.empty())
       names.insert(name);
   }
   for (const auto& name : names)
