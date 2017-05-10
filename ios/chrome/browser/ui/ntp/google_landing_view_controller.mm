@@ -45,7 +45,6 @@ enum {
   NumberOfCollectionViewSections,
 };
 
-const CGFloat kVoiceSearchButtonWidth = 48;
 const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 const CGFloat kHintLabelSidePadding = 12;
@@ -416,63 +415,27 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   [_searchTapTarget setIsAccessibilityElement:NO];
 
   // Set up fakebox hint label.
-  CGRect hintFrame = CGRectInset([_searchTapTarget bounds], 12, 3);
-  const CGFloat kVoiceSearchOffset = 48;
-  hintFrame.size.width = searchFieldFrame.size.width - kVoiceSearchOffset;
-  UILabel* searchHintLabel =
-      [[[UILabel alloc] initWithFrame:hintFrame] autorelease];
-  [_searchTapTarget addSubview:searchHintLabel];
-  [searchHintLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
+  UILabel* searchHintLabel = [[[UILabel alloc] init] autorelease];
+  content_suggestions::configureSearchHintLabel(
+      searchHintLabel, _searchTapTarget.get(), searchFieldFrame.size.width);
+
   _hintLabelLeadingConstraint.reset([[searchHintLabel.leadingAnchor
       constraintEqualToAnchor:[_searchTapTarget leadingAnchor]
                      constant:kHintLabelSidePadding] retain]);
-
-  [NSLayoutConstraint activateConstraints:@[
-    [searchHintLabel.heightAnchor
-        constraintEqualToConstant:hintFrame.size.height],
-    [searchHintLabel.centerYAnchor
-        constraintEqualToAnchor:[_searchTapTarget centerYAnchor]],
-    _hintLabelLeadingConstraint
-  ]];
-
-  [searchHintLabel setText:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
-  if (base::i18n::IsRTL()) {
-    [searchHintLabel setTextAlignment:NSTextAlignmentRight];
-  }
-  [searchHintLabel
-      setTextColor:[UIColor
-                       colorWithWhite:kiPhoneOmniboxPlaceholderColorBrightness
-                                alpha:1.0]];
-  [searchHintLabel setFont:[MDCTypography subheadFont]];
+  [_hintLabelLeadingConstraint setActive:YES];
 
   // Add a voice search button.
-  UIImage* micImage = [UIImage imageNamed:@"voice_icon"];
-  UIButton* voiceTapTarget =
-      [[[UIButton alloc] initWithFrame:CGRectZero] autorelease];
-  [_searchTapTarget addSubview:voiceTapTarget];
+  UIButton* voiceTapTarget = [[[UIButton alloc] init] autorelease];
+  content_suggestions::configureVoiceSearchButton(voiceTapTarget,
+                                                  _searchTapTarget.get());
 
-  [voiceTapTarget setTranslatesAutoresizingMaskIntoConstraints:NO];
   _voiceTapTrailingConstraint.reset([[voiceTapTarget.trailingAnchor
       constraintEqualToAnchor:[_searchTapTarget trailingAnchor]] retain]);
-
   [NSLayoutConstraint activateConstraints:@[
-    [voiceTapTarget.centerYAnchor
-        constraintEqualToAnchor:[_searchTapTarget centerYAnchor]],
-    [voiceTapTarget.widthAnchor
-        constraintEqualToConstant:kVoiceSearchButtonWidth],
-    [voiceTapTarget.heightAnchor
-        constraintEqualToAnchor:voiceTapTarget.widthAnchor],
     [searchHintLabel.trailingAnchor
         constraintEqualToAnchor:voiceTapTarget.leadingAnchor],
     _voiceTapTrailingConstraint
   ]];
-
-  [voiceTapTarget setAdjustsImageWhenHighlighted:NO];
-  [voiceTapTarget setImage:micImage forState:UIControlStateNormal];
-  [voiceTapTarget setTag:IDC_VOICE_SEARCH];
-  [voiceTapTarget setAccessibilityLabel:l10n_util::GetNSString(
-                                            IDS_IOS_ACCNAME_VOICE_SEARCH)];
-  [voiceTapTarget setAccessibilityIdentifier:@"Voice Search"];
 
   if (self.voiceSearchIsEnabled) {
     [voiceTapTarget addTarget:self

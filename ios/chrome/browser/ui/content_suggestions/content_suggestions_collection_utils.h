@@ -34,6 +34,15 @@ CGRect searchFieldFrame(CGFloat width, BOOL logoIsShowing);
 CGFloat heightForLogoHeader(CGFloat width,
                             BOOL logoIsShowing,
                             BOOL promoCanShow);
+// Configure the |searchHintLabel| for the fake omnibox, adding it to the
+// |searchTapTarget| and constrain it.
+void configureSearchHintLabel(UILabel* searchHintLabel,
+                              UIButton* searchTapTarget,
+                              CGFloat searchFieldWidth);
+// Configure the |voiceSearchButton|, adding it to the |searchTapTarget| and
+// constraining it.
+void configureVoiceSearchButton(UIButton* voiceSearchButton,
+                                UIButton* searchTapTarget);
 
 }  // namespace content_suggestions
 
