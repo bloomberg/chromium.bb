@@ -78,6 +78,8 @@ void FocusRingLayer::CreateOrUpdateLayer(aura::Window* root_window,
   layer_->parent()->StackAtTop(layer_.get());
 
   layer_->SetBounds(bounds);
+  gfx::Rect layer_bounds(0, 0, bounds.width(), bounds.height());
+  layer_->SchedulePaint(layer_bounds);
 
   // Update the animation observer.
   display::Display display =

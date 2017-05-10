@@ -49,6 +49,18 @@ function AutomationManager() {
   this.init_();
 };
 
+/**
+ * Highlight colors for the focus ring to distinguish between different types
+ * of nodes.
+ *
+ * @const
+ */
+AutomationManager.Color = {
+  SCOPE: '#de742f', // dark orange
+  GROUP: '#ffbb33', // light orange
+  LEAF: '#78e428' //light green
+};
+
 AutomationManager.prototype = {
   /**
    * Set this.node_, this.root_, and this.desktop_ to the desktop node, and
@@ -83,7 +95,15 @@ AutomationManager.prototype = {
     if (node) {
       this.node_ = node;
       this.printNode_(this.node_);
-      chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
+
+      let color;
+      if (this.node_ === this.scope_)
+        color = AutomationManager.Color.SCOPE;
+      else if (AutomationPredicate.isInteresting(this.node_))
+        color = AutomationManager.Color.LEAF;
+      else
+        color = AutomationManager.Color.GROUP;
+      chrome.accessibilityPrivate.setFocusRing([this.node_.location], color);
     }
   },
 
@@ -114,6 +134,8 @@ AutomationManager.prototype = {
       if (oldScope) {
         this.scope_ = oldScope;
         this.treeWalker_ = this.createTreeWalker_(this.scope_, this.node_);
+        chrome.accessibilityPrivate.setFocusRing(
+            [this.node_.location], AutomationManager.Color.GROUP);
       }
       return;
     }
