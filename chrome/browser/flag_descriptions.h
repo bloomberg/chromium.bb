@@ -2606,6 +2606,13 @@ extern const char kEnableContentSuggestionsSettingsName[];
 // suggestions.
 extern const char kEnableContentSuggestionsSettingsDescription[];
 
+// Name for the flag to enable showing the summary for content suggestions.
+extern const char kEnableContentSuggestionsShowSummaryName[];
+
+// Description for the flag to enable showing the summary for content
+// suggestions.
+extern const char kEnableContentSuggestionsShowSummaryDescription[];
+
 // Name for the flag to enable server-side suggestions on the New Tab Page.
 extern const char kEnableNtpRemoteSuggestionsName[];
 

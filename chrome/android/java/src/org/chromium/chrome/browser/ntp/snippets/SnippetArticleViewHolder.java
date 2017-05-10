@@ -27,6 +27,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
@@ -284,7 +285,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         // When article's description is empty, we do not want empty space.
         if (mArticle != null && TextUtils.isEmpty(mArticle.mPreviewText)) return false;
 
-        return true;
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SHOW_SUMMARY);
     }
 
     private boolean shouldShowThumbnail(int horizontalStyle, int verticalStyle, int layout) {
