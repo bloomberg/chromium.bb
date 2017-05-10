@@ -1460,6 +1460,13 @@ EVENT_TYPE(HTTP2_SESSION_UPDATE_SEND_WINDOW)
 //   }
 EVENT_TYPE(HTTP2_SESSION_UPDATE_RECV_WINDOW)
 
+// This event indicates that an invalid response header has been received.
+//   {
+//     "header_name": <The header name>,
+//     "header_value": <The header value>,
+//   }
+EVENT_TYPE(HTTP2_SESSION_RECV_INVALID_HEADER)
+
 // Sending a data frame
 //   {
 //     "stream_id": <The stream ID for the window update>,

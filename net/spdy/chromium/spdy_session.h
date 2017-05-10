@@ -83,7 +83,6 @@ const SpdyStreamId kLastStreamId = 0x7fffffff;
 
 struct LoadTimingInfo;
 class NetLog;
-class NetLogWithSource;
 class ProxyDelegate;
 class SpdyStream;
 class SSLInfo;
