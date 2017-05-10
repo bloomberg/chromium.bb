@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
@@ -96,6 +97,10 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
 void ToggleTouchEventLogging(bool enable) {
 #if defined(OS_CHROMEOS)
 #if defined(USE_OZONE)
+  // TODO(moshayedi): crbug.com/642863. Revisit when we have mojo interface for
+  // InputController for processes that aren't mus-ws.
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    return;
   ui::InputController* controller =
       ui::OzonePlatform::GetInstance()->GetInputController();
   if (controller)
