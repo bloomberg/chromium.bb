@@ -83,6 +83,10 @@ class OSCrypt {
 // If all parameters are |nullptr|, the real implementation is restored.
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)());
+
+// Clears any caching and most lazy initialisations performed by the production
+// code. Should be used after any test which required a password.
+void ClearCacheForTesting();
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(UNIT_TEST)
 
 #endif  // COMPONENTS_OS_CRYPT_OS_CRYPT_H_
