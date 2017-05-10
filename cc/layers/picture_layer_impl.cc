@@ -744,10 +744,10 @@ const PictureLayerTiling* PictureLayerImpl::GetPendingOrActiveTwinTiling(
   const PictureLayerTiling* twin_tiling =
       twin_layer->tilings_->FindTilingWithScaleKey(
           tiling->contents_scale_key());
-  DCHECK(tiling->raster_transform().translation() == gfx::Vector2dF());
-  DCHECK(!twin_tiling ||
-         twin_tiling->raster_transform().translation() == gfx::Vector2dF());
-  return twin_tiling;
+  if (twin_tiling &&
+      twin_tiling->raster_transform() == tiling->raster_transform())
+    return twin_tiling;
+  return nullptr;
 }
 
 bool PictureLayerImpl::RequiresHighResToDraw() const {
@@ -917,13 +917,13 @@ void PictureLayerImpl::SetUseTransformedRasterization(bool use) {
   NoteLayerPropertyChanged();
 }
 
-PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
+PictureLayerTiling* PictureLayerImpl::AddTiling(
+    const gfx::AxisTransform2d& contents_transform) {
   DCHECK(CanHaveTilings());
-  DCHECK_GE(contents_scale, MinimumContentsScale());
-  DCHECK_LE(contents_scale, MaximumContentsScale());
+  DCHECK_GE(contents_transform.scale(), MinimumContentsScale());
+  DCHECK_LE(contents_transform.scale(), MaximumContentsScale());
   DCHECK(raster_source_->HasRecordings());
-  return tilings_->AddTiling(
-      gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()), raster_source_);
+  return tilings_->AddTiling(contents_transform, raster_source_);
 }
 
 void PictureLayerImpl::RemoveAllTilings() {
@@ -939,9 +939,21 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
 
   PictureLayerTiling* high_res =
       tilings_->FindTilingWithScaleKey(raster_contents_scale_);
+  // Note: This function is always invoked when raster scale is recomputed,
+  // but not necessarily changed. This means raster translation update is also
+  // always done when there are significant changes that triggered raster scale
+  // recomputation.
+  gfx::Vector2dF raster_translation =
+      CalculateRasterTranslation(raster_contents_scale_);
+  if (high_res &&
+      high_res->raster_transform().translation() != raster_translation) {
+    tilings_->Remove(high_res);
+    high_res = nullptr;
+  }
   if (!high_res) {
     // We always need a high res tiling, so create one if it doesn't exist.
-    high_res = AddTiling(raster_contents_scale_);
+    high_res = AddTiling(
+        gfx::AxisTransform2d(raster_contents_scale_, raster_translation));
   } else if (high_res->may_contain_low_resolution_tiles()) {
     // If the tiling we find here was LOW_RESOLUTION previously, it may not be
     // fully rastered, so destroy the old tiles.
@@ -1038,7 +1050,8 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
   bool is_animating = draw_properties().screen_space_transform_is_animating;
   if (!is_pinching && !is_animating) {
     if (!low_res)
-      low_res = AddTiling(low_res_raster_contents_scale_);
+      low_res = AddTiling(gfx::AxisTransform2d(low_res_raster_contents_scale_,
+                                               gfx::Vector2dF()));
     low_res->set_resolution(LOW_RESOLUTION);
   }
 }
@@ -1202,6 +1215,34 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
                            twin_set);
   DCHECK_GT(tilings_->num_tilings(), 0u);
   SanityCheckTilingState();
+}
+
+gfx::Vector2dF PictureLayerImpl::CalculateRasterTranslation(
+    float raster_scale) {
+  if (!use_transformed_rasterization_)
+    return gfx::Vector2dF();
+
+  DCHECK(!draw_properties().screen_space_transform_is_animating);
+  gfx::Transform draw_transform = DrawTransform();
+  DCHECK(draw_transform.IsScaleOrTranslation());
+
+  // It is only useful to align the content space to the target space if their
+  // relative pixel ratio is some small rational number. Currently we only
+  // align if the relative pixel ratio is 1:1.
+  // Good match if the maximum alignment error on a layer of size 10000px
+  // does not exceed 0.001px.
+  static constexpr float kErrorThreshold = 0.0000001f;
+  if (std::abs(draw_transform.matrix().getFloat(0, 0) - raster_scale) >
+          kErrorThreshold ||
+      std::abs(draw_transform.matrix().getFloat(1, 1) - raster_scale) >
+          kErrorThreshold)
+    return gfx::Vector2dF();
+
+  // Extract the fractional part of layer origin in the target space.
+  float origin_x = draw_transform.matrix().getFloat(0, 3);
+  float origin_y = draw_transform.matrix().getFloat(1, 3);
+  return gfx::Vector2dF(origin_x - floorf(origin_x),
+                        origin_y - floorf(origin_y));
 }
 
 float PictureLayerImpl::MinimumContentsScale() const {
