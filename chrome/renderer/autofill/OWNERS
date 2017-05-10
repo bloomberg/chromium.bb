@@ -4,4 +4,7 @@ rogerm@chromium.org
 sebsg@chromium.org
 vabr@chromium.org
 
+per-file *password*=dvadym@chromium.org
+per-file *password*=vasilii@chromium.org
+
 # COMPONENT: UI>Browser>Autofill
