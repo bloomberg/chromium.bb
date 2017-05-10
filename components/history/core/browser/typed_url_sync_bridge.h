@@ -10,12 +10,19 @@
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/sync_error.h"
 
+namespace syncer {
+class SyncMetadataStore;
+}
+
 namespace history {
 
 class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
                            public history::HistoryBackendObserver {
  public:
+  // |sync_metadata_store| is owned by |history_backend|, and must outlive
+  // TypedURLSyncBridge.
   TypedURLSyncBridge(HistoryBackend* history_backend,
+                     syncer::SyncMetadataStore* sync_metadata_store,
                      const ChangeProcessorFactory& change_processor_factory);
   ~TypedURLSyncBridge() override;
 
@@ -48,8 +55,13 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
                      const std::set<GURL>& favicon_urls) override;
 
  private:
-  // The backend we're syncing local changes from and sync changes to.
+  // A non-owning pointer to the backend, which we're syncing local changes from
+  // and sync changes to.
   HistoryBackend* const history_backend_;
+
+  // A non-owning pointer to the database, which is for storing typed urls sync
+  // metadata and state.
+  syncer::SyncMetadataStore* const sync_metadata_store_;
 
   // Since HistoryBackend use SequencedTaskRunner, so should use SequenceChecker
   // here.
