@@ -33614,6 +33614,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ConnectionUsedSSLDeprecatedCipherFallback2"
     enum="BooleanDeprecatedCiphers">
+  <obsolete>
+    Removed May 2017.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     For each successful HTTPS request, whether it used the deprecated cipher

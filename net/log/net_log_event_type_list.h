@@ -521,15 +521,6 @@ EVENT_TYPE(SSL_HANDSHAKE_ERROR)
 EVENT_TYPE(SSL_READ_ERROR)
 EVENT_TYPE(SSL_WRITE_ERROR)
 
-// An SSL connection needs to be retried with more cipher suites because the
-// server may require a deprecated cipher suite. The following parameters are
-// attached to the event:
-//   {
-//     "host_and_port": <String encoding the host and port>,
-//     "net_error": <Net integer error code>,
-//   }
-EVENT_TYPE(SSL_CIPHER_FALLBACK)
-
 // An SSL connection needs to be retried with a lower protocol version to detect
 // if the error was due to a middlebox interfering with the protocol version we
 // offered.
