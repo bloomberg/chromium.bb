@@ -378,12 +378,11 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   void ResetConfigurationToEnableOnPhishingSites(
       bool measure_performance = false,
       bool whitelist_site_on_reload = false) {
-    Configuration config(
-        subresource_filter::ActivationLevel::ENABLED,
-        subresource_filter::ActivationScope::ACTIVATION_LIST,
-        subresource_filter::ActivationList::PHISHING_INTERSTITIAL);
-    config.performance_measurement_rate = measure_performance ? 1.0 : 0.0;
-    config.should_whitelist_site_on_reload = whitelist_site_on_reload;
+    Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
+    config.activation_options.performance_measurement_rate =
+        measure_performance ? 1.0 : 0.0;
+    config.activation_options.should_whitelist_site_on_reload =
+        whitelist_site_on_reload;
     ResetConfiguration(std::move(config));
   }
 

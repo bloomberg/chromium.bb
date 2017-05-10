@@ -18,7 +18,7 @@ enum class ActivationScope {
   // Testing only. Allows to send activation signal to the RenderFrame for each
   // load.
   ALL_SITES,
-  LAST = ACTIVATION_LIST,
+  LAST = ALL_SITES,
 };
 
 // For logging use only.

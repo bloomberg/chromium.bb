@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_TEST_SUPPORT_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_TEST_SUPPORT_H_
 
+#include <memory>
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,11 +24,16 @@ namespace testing {
 class ScopedSubresourceFilterConfigurator {
  public:
   explicit ScopedSubresourceFilterConfigurator(
-      scoped_refptr<ConfigurationList> configs = nullptr);
+      scoped_refptr<ConfigurationList> config_list = nullptr);
   explicit ScopedSubresourceFilterConfigurator(Configuration config);
+  explicit ScopedSubresourceFilterConfigurator(
+      std::vector<Configuration> configs);
   ~ScopedSubresourceFilterConfigurator();
 
+  void ResetConfiguration(
+      scoped_refptr<ConfigurationList> config_list = nullptr);
   void ResetConfiguration(Configuration config);
+  void ResetConfiguration(std::vector<Configuration> config);
 
  private:
   scoped_refptr<ConfigurationList> original_config_;
@@ -36,21 +44,27 @@ class ScopedSubresourceFilterConfigurator {
 // Helper class to override the state of the |kSafeBrowsingSubresourceFilter|
 // feature.
 //
-// Clears the active subresource filtering configuration override, upon
+// Clears the active subresource filtering configuration override upon
 // construction, if any, and restores it on destruction. So while the instance
-// is in scope, calls to GetActiveConfigurations() will default to returning the
-// hard-coded configuration corresponding to the forced feature state. Tests
+// is in scope, calls to GetEnabledConfigurations() will default to returning
+// the hard-coded configuration corresponding to the forced feature state. Tests
 // that need to toggle both the feature and override the active configuration
 // should therefore do so in that order.
 class ScopedSubresourceFilterFeatureToggle {
  public:
+  ScopedSubresourceFilterFeatureToggle();
   explicit ScopedSubresourceFilterFeatureToggle(
-      base::FeatureList::OverrideState subresource_filter_state);
+      base::FeatureList::OverrideState feature_state,
+      const std::string& additional_features_to_enable = std::string());
   ~ScopedSubresourceFilterFeatureToggle();
+
+  void ResetSubresourceFilterState(
+      base::FeatureList::OverrideState feature_state,
+      const std::string& additional_features_to_enable = std::string());
 
  private:
   ScopedSubresourceFilterConfigurator scoped_configuration_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSubresourceFilterFeatureToggle);
 };

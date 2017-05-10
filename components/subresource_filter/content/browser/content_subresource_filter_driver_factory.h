@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/page_transition_types.h"
@@ -55,19 +56,21 @@ class ContentSubresourceFilterDriverFactory
     // Subresource filtering was activated.
     ACTIVATED,
 
-    // Did not activate because subresource filtering was disabled.
+    // Did not activate because subresource filtering was disabled by the
+    // highest priority configuration whose activation conditions were met.
     ACTIVATION_DISABLED,
 
     // Did not activate because the main frame document URL had an unsupported
     // scheme.
     UNSUPPORTED_SCHEME,
 
-    // Did not activate because the main frame document URL was whitelisted.
+    // Did not activate because although there was a configuration whose
+    // activation conditions were met, the main frame URL was whitelisted.
     URL_WHITELISTED,
 
     // Did not activate because the main frame document URL did not match the
-    // activation list.
-    ACTIVATION_LIST_NOT_MATCHED,
+    // activation conditions of any of enabled configurations.
+    ACTIVATION_CONDITIONS_NOT_MET,
 
     // Max value for enum.
     ACTIVATION_DECISION_MAX
@@ -123,18 +126,24 @@ class ContentSubresourceFilterDriverFactory
   friend class ContentSubresourceFilterDriverFactoryTest;
   friend class safe_browsing::SafeBrowsingServiceTest;
 
-  void ResetActivationState();
-
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Checks base on the value of |url| and current activation scope if
   // activation signal should be sent.
-  ActivationDecision ComputeActivationDecisionForMainFrameNavigation(
-      content::NavigationHandle* navigation_handle) const;
+  void ComputeActivationForMainFrameNavigation(
+      content::NavigationHandle* navigation_handle);
+
+  // Returns whether a main-frame navigation to the given |url| satisfies the
+  // activation |conditions| of a given configuration, except for |priority|.
+  bool DoesMainFrameURLSatisfyActivationConditions(
+      const GURL& url,
+      const Configuration::ActivationConditions& conditions) const;
 
   bool DidURLMatchActivationList(const GURL& url,
                                  ActivationList activation_list) const;
@@ -152,9 +161,25 @@ class ContentSubresourceFilterDriverFactory
 
   std::unique_ptr<ContentSubresourceFilterThrottleManager> throttle_manager_;
 
-  ActivationLevel activation_level_;
-  ActivationDecision activation_decision_;
-  bool measure_performance_;
+  // The activation decision corresponding to the most recently _started_
+  // non-same-document navigation in the main frame.
+  //
+  // The value is reset to ActivationDecision::UNKNOWN at the start of each such
+  // navigation, and will not be assigned until the navigation successfully
+  // reaches the WillProcessResponse stage (or successfully finishes if
+  // throttles are not invoked). This means that after a cancelled or otherwise
+  // unsuccessful navigation, the value will be left at UNKNOWN indefinitely.
+  ActivationDecision activation_decision_ =
+      ActivationDecision::ACTIVATION_DISABLED;
+
+  // The activation options corresponding to the most recently _committed_
+  // non-same-document navigation in the main frame.
+  //
+  // The value corresponding to the previous such navigation will be retained,
+  // and the new value not assigned until a subsequent navigation successfully
+  // reaches the WillProcessResponse stage (or successfully finishes if
+  // throttles are not invoked).
+  Configuration::ActivationOptions activation_options_;
 
   // The URLs in the navigation chain.
   std::vector<GURL> navigation_chain_;

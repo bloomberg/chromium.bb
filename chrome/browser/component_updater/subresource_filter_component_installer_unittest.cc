@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -86,9 +87,9 @@ class SubresourceFilterMockComponentUpdateService
 };
 
 subresource_filter::Configuration CreateConfigUsingRulesetFlavor(
-    const char* ruleset_flavor) {
+    const std::string& ruleset_flavor) {
   subresource_filter::Configuration config;
-  config.ruleset_flavor = ruleset_flavor;
+  config.general_settings.ruleset_flavor = ruleset_flavor;
   return config;
 }
 
@@ -169,14 +170,6 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
   update_client::InstallerAttributes GetInstallerAttributes() {
     return traits_->GetInstallerAttributes();
-  }
-
-  void ExpectInstallerTag(const char* expected_tag,
-                          const char* ruleset_flavor) {
-    subresource_filter::testing::ScopedSubresourceFilterConfigurator
-        scoped_configuration(CreateConfigUsingRulesetFlavor(ruleset_flavor));
-    EXPECT_EQ(expected_tag,
-              SubresourceFilterComponentInstallerTraits::GetInstallerTag());
   }
 
  private:
@@ -262,13 +255,41 @@ TEST_F(SubresourceFilterComponentInstallerTest, LoadFileWithData) {
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest, InstallerTag) {
-  ExpectInstallerTag("", "");
-  ExpectInstallerTag("a", "a");
-  ExpectInstallerTag("b", "b");
-  ExpectInstallerTag("c", "c");
-  ExpectInstallerTag("d", "d");
-  ExpectInstallerTag("invalid", "e");
-  ExpectInstallerTag("invalid", "foo");
+  const struct {
+    const char* expected_installer_tag_selected;
+    std::vector<std::string> ruleset_flavors;
+  } kTestCases[] = {{"", std::vector<std::string>()},
+                    {"", {""}},
+                    {"a", {"a"}},
+                    {"b", {"b"}},
+                    {"c", {"c"}},
+                    {"d", {"d"}},
+                    {"invalid", {"e"}},
+                    {"invalid", {"foo"}},
+                    {"", {"", ""}},
+                    {"a", {"a", ""}},
+                    {"a", {"", "a"}},
+                    {"a", {"a", "a"}},
+                    {"c", {"b", "", "c"}},
+                    {"b", {"", "b", "a"}},
+                    {"c", {"aaa", "c", "aba"}},
+                    {"invalid", {"", "a", "e"}},
+                    {"invalid", {"foo", "a", "b"}}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message()
+                 << "ruleset_flavors: "
+                 << ::testing::PrintToString(test_case.ruleset_flavors));
+
+    std::vector<subresource_filter::Configuration> configs;
+    for (const auto& ruleset_flavor : test_case.ruleset_flavors)
+      configs.push_back(CreateConfigUsingRulesetFlavor(ruleset_flavor));
+    subresource_filter::testing::ScopedSubresourceFilterConfigurator
+        scoped_configuration(std::move(configs));
+
+    EXPECT_EQ(test_case.expected_installer_tag_selected,
+              SubresourceFilterComponentInstallerTraits::GetInstallerTag());
+  }
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest, InstallerAttributesDefault) {

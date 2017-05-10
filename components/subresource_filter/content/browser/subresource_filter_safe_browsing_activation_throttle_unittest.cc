@@ -285,7 +285,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   SimulateStartAndExpectProceed();
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ContentSubresourceFilterDriverFactory::ActivationDecision::
-                ACTIVATION_LIST_NOT_MATCHED,
+                ACTIVATION_CONDITIONS_NOT_MET,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
                             0);
@@ -319,7 +319,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ContentSubresourceFilterDriverFactory::ActivationDecision::
-                ACTIVATION_LIST_NOT_MATCHED,
+                ACTIVATION_CONDITIONS_NOT_MET,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
                             0);
@@ -361,7 +361,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   test_io_task_runner()->FastForwardBy(expected_delay);
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ContentSubresourceFilterDriverFactory::ActivationDecision::
-                ACTIVATION_LIST_NOT_MATCHED,
+                ACTIVATION_CONDITIONS_NOT_MET,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
                             0);
@@ -438,7 +438,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
 
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ContentSubresourceFilterDriverFactory::ActivationDecision::
-                ACTIVATION_LIST_NOT_MATCHED,
+                ACTIVATION_CONDITIONS_NOT_MET,
             factory()->GetActivationDecisionForLastCommittedPageLoad());
   tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
                             0);

@@ -84,10 +84,7 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
           base::MakeUnique<ContentSubresourceFilterThrottleManager>(
               this,
               client_->GetRulesetDealer(),
-              web_contents)),
-      activation_level_(ActivationLevel::DISABLED),
-      activation_decision_(ActivationDecision::UNKNOWN),
-      measure_performance_(false) {}
+              web_contents)) {}
 
 ContentSubresourceFilterDriverFactory::
     ~ContentSubresourceFilterDriverFactory() {}
@@ -102,54 +99,72 @@ void ContentSubresourceFilterDriverFactory::
       url, GetListForThreatTypeAndMetadata(threat_type, threat_type_metadata));
 }
 
-ContentSubresourceFilterDriverFactory::ActivationDecision
-ContentSubresourceFilterDriverFactory::
-    ComputeActivationDecisionForMainFrameNavigation(
-        content::NavigationHandle* navigation_handle) const {
+void ContentSubresourceFilterDriverFactory::
+    ComputeActivationForMainFrameNavigation(
+        content::NavigationHandle* navigation_handle) {
   const GURL& url(navigation_handle->GetURL());
 
-  const auto configurations = GetActiveConfigurations();
-  if (configurations->the_one_and_only().activation_level ==
-      ActivationLevel::DISABLED)
-    return ActivationDecision::ACTIVATION_DISABLED;
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    activation_decision_ = ActivationDecision::UNSUPPORTED_SCHEME;
+    activation_options_ = Configuration::ActivationOptions();
+    return;
+  }
 
-  if (configurations->the_one_and_only().activation_scope ==
-      ActivationScope::NO_SITES)
-    return ActivationDecision::ACTIVATION_DISABLED;
+  const auto config_list = GetEnabledConfigurations();
+  const auto highest_priority_activated_config =
+      std::find_if(config_list->configs_by_decreasing_priority().begin(),
+                   config_list->configs_by_decreasing_priority().end(),
+                   [&url, this](const Configuration& config) {
+                     return DoesMainFrameURLSatisfyActivationConditions(
+                         url, config.activation_conditions);
+                   });
 
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return ActivationDecision::UNSUPPORTED_SCHEME;
+  if (highest_priority_activated_config ==
+      config_list->configs_by_decreasing_priority().end()) {
+    activation_decision_ = ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
+    activation_options_ = Configuration::ActivationOptions();
+    return;
+  }
+
   // TODO(csharrison): The throttle manager also performs this check. Remove
   // this one when the activation decision is sent directly to the throttle
   // manager.
-  if (client_->ShouldSuppressActivation(navigation_handle))
-    return ActivationDecision::URL_WHITELISTED;
+  if (client_->ShouldSuppressActivation(navigation_handle)) {
+    activation_decision_ = ActivationDecision::URL_WHITELISTED;
+    activation_options_ = Configuration::ActivationOptions();
+    return;
+  }
 
-  switch (configurations->the_one_and_only().activation_scope) {
+  activation_options_ = highest_priority_activated_config->activation_options;
+  activation_decision_ =
+      activation_options_.activation_level == ActivationLevel::DISABLED
+          ? ActivationDecision::ACTIVATION_DISABLED
+          : ActivationDecision::ACTIVATED;
+}
+
+bool ContentSubresourceFilterDriverFactory::
+    DoesMainFrameURLSatisfyActivationConditions(
+        const GURL& url,
+        const Configuration::ActivationConditions& conditions) const {
+  switch (conditions.activation_scope) {
     case ActivationScope::ALL_SITES:
-      return ActivationDecision::ACTIVATED;
-    case ActivationScope::ACTIVATION_LIST: {
-      // The logic to ensure only http/https URLs are activated lives in
-      // AddActivationListMatch to ensure the activation list only has relevant
-      // entries.
-      DCHECK(url.SchemeIsHTTPOrHTTPS() ||
-             !DidURLMatchActivationList(
-                 url, configurations->the_one_and_only().activation_list));
-      bool should_activate = DidURLMatchActivationList(
-          url, configurations->the_one_and_only().activation_list);
-      if (configurations->the_one_and_only().activation_list ==
-          ActivationList::PHISHING_INTERSTITIAL) {
+      return true;
+    case ActivationScope::ACTIVATION_LIST:
+      if (DidURLMatchActivationList(url, conditions.activation_list))
+        return true;
+      if (conditions.activation_list == ActivationList::PHISHING_INTERSTITIAL &&
+          DidURLMatchActivationList(
+              url, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL)) {
         // Handling special case, where activation on the phishing sites also
         // mean the activation on the sites with social engineering metadata.
-        should_activate |= DidURLMatchActivationList(
-            url, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
+        return true;
       }
-      return should_activate ? ActivationDecision::ACTIVATED
-                             : ActivationDecision::ACTIVATION_LIST_NOT_MATCHED;
-    }
-    default:
-      return ActivationDecision::ACTIVATION_DISABLED;
+      return false;
+    case ActivationScope::NO_SITES:
+      return false;
   }
+  NOTREACHED();
+  return false;
 }
 
 void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
@@ -182,28 +197,23 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
 
   RecordRedirectChainMatchPattern();
 
-  const auto configurations = GetActiveConfigurations();
-  if (configurations->the_one_and_only().should_whitelist_site_on_reload &&
+  if (activation_options_.should_whitelist_site_on_reload &&
       NavigationIsPageReload(url, referrer, transition)) {
     // Whitelist this host for the current as well as subsequent navigations.
     client_->WhitelistInCurrentWebContents(url);
   }
 
-  activation_decision_ =
-      ComputeActivationDecisionForMainFrameNavigation(navigation_handle);
-  DCHECK(activation_decision_ != ActivationDecision::UNKNOWN);
+  ComputeActivationForMainFrameNavigation(navigation_handle);
+  DCHECK_NE(activation_decision_, ActivationDecision::UNKNOWN);
   if (activation_decision_ != ActivationDecision::ACTIVATED) {
-    ResetActivationState();
+    DCHECK_EQ(activation_options_.activation_level, ActivationLevel::DISABLED);
     return;
   }
 
-  activation_level_ = configurations->the_one_and_only().activation_level;
-  measure_performance_ =
-      activation_level_ != ActivationLevel::DISABLED &&
-      ShouldMeasurePerformanceForPageLoad(
-          configurations->the_one_and_only().performance_measurement_rate);
-  ActivationState state = ActivationState(activation_level_);
-  state.measure_performance = measure_performance_;
+  DCHECK_NE(activation_options_.activation_level, ActivationLevel::DISABLED);
+  ActivationState state = ActivationState(activation_options_.activation_level);
+  state.measure_performance = ShouldMeasurePerformanceForPageLoad(
+      activation_options_.performance_measurement_rate);
   // TODO(csharrison): Set state.enable_logging based on metadata returns from
   // the safe browsing filter, when it is available. Add tests for this
   // behavior.
@@ -211,11 +221,9 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  const auto configurations = GetActiveConfigurations();
-  if (configurations->the_one_and_only().should_suppress_notifications)
+  if (activation_options_.should_suppress_notifications)
     return;
-
-  client_->ToggleNotificationVisibility(activation_level_ ==
+  client_->ToggleNotificationVisibility(activation_options_.activation_level ==
                                         ActivationLevel::ENABLED);
 }
 
@@ -224,20 +232,13 @@ bool ContentSubresourceFilterDriverFactory::ShouldSuppressActivation(
   return client_->ShouldSuppressActivation(navigation_handle);
 }
 
-void ContentSubresourceFilterDriverFactory::ResetActivationState() {
-  navigation_chain_.clear();
-  activation_list_matches_.clear();
-  activation_level_ = ActivationLevel::DISABLED;
-  measure_performance_ = false;
-}
-
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     activation_decision_ = ActivationDecision::UNKNOWN;
-    ResetActivationState();
-    navigation_chain_.push_back(navigation_handle->GetURL());
+    activation_list_matches_.clear();
+    navigation_chain_ = {navigation_handle->GetURL()};
     client_->ToggleNotificationVisibility(false);
   }
 }
@@ -247,6 +248,17 @@ void ContentSubresourceFilterDriverFactory::DidRedirectNavigation(
   DCHECK(!navigation_handle->IsSameDocument());
   if (navigation_handle->IsInMainFrame())
     navigation_chain_.push_back(navigation_handle->GetURL());
+}
+
+void ContentSubresourceFilterDriverFactory::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSameDocument() &&
+      activation_decision_ == ActivationDecision::UNKNOWN &&
+      navigation_handle->HasCommitted()) {
+    activation_decision_ = ActivationDecision::ACTIVATION_DISABLED;
+    activation_options_ = Configuration::ActivationOptions();
+  }
 }
 
 bool ContentSubresourceFilterDriverFactory::DidURLMatchActivationList(

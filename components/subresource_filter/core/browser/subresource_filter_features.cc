@@ -4,21 +4,52 @@
 
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 
+#include <map>
+#include <ostream>
+#include <sstream>
 #include <string>
+#include <tuple>
 #include <utility>
 
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/values.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace subresource_filter {
 
 namespace {
+
+// Helpers --------------------------------------------------------------------
+
+class CommaSeparatedStrings {
+ public:
+  CommaSeparatedStrings(std::string comma_separated_strings)
+      : backing_string_(comma_separated_strings),
+        pieces_(base::SplitStringPiece(backing_string_,
+                                       ",",
+                                       base::TRIM_WHITESPACE,
+                                       base::SPLIT_WANT_NONEMPTY)) {}
+
+  bool CaseInsensitiveContains(base::StringPiece lowercase_key) const {
+    const auto predicate = [lowercase_key](base::StringPiece element) {
+      return base::LowerCaseEqualsASCII(element, lowercase_key);
+    };
+    return std::find_if(pieces_.begin(), pieces_.end(), predicate) !=
+           pieces_.end();
+  }
+
+ private:
+  const std::string backing_string_;
+  const std::vector<base::StringPiece> pieces_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommaSeparatedStrings);
+};
 
 std::string TakeVariationParamOrReturnEmpty(
     std::map<std::string, std::string>* params,
@@ -48,30 +79,26 @@ ActivationScope ParseActivationScope(const base::StringPiece activation_scope) {
   return ActivationScope::NO_SITES;
 }
 
-ActivationList ParseActivationList(const base::StringPiece activation_lists) {
+ActivationList ParseActivationList(std::string activation_lists_string) {
   ActivationList activation_list_type = ActivationList::NONE;
-  for (const base::StringPiece& activation_list :
-       base::SplitStringPiece(activation_lists, ",", base::TRIM_WHITESPACE,
-                              base::SPLIT_WANT_NONEMPTY)) {
-    if (base::LowerCaseEqualsASCII(activation_list,
-                                   kActivationListPhishingInterstitial)) {
-      return ActivationList::PHISHING_INTERSTITIAL;
-    } else if (base::LowerCaseEqualsASCII(
-                   activation_list,
-                   kActivationListSocialEngineeringAdsInterstitial)) {
-      activation_list_type = ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL;
-    } else if (base::LowerCaseEqualsASCII(activation_list,
-                                          kActivationListSubresourceFilter)) {
-      activation_list_type = ActivationList::SUBRESOURCE_FILTER;
-    }
+  CommaSeparatedStrings activation_lists(std::move(activation_lists_string));
+  if (activation_lists.CaseInsensitiveContains(
+          kActivationListPhishingInterstitial)) {
+    return ActivationList::PHISHING_INTERSTITIAL;
+  } else if (activation_lists.CaseInsensitiveContains(
+                 kActivationListSocialEngineeringAdsInterstitial)) {
+    activation_list_type = ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL;
+  } else if (activation_lists.CaseInsensitiveContains(
+                 kActivationListSubresourceFilter)) {
+    activation_list_type = ActivationList::SUBRESOURCE_FILTER;
   }
   return activation_list_type;
 }
 
 double ParsePerformanceMeasurementRate(const std::string& rate) {
-  double value = 0;
+  double value = 0.0;
   if (!base::StringToDouble(rate, &value) || value < 0)
-    return 0;
+    return 0.0;
   return value < 1 ? value : 1;
 }
 
@@ -79,38 +106,119 @@ bool ParseBool(const base::StringPiece value) {
   return base::LowerCaseEqualsASCII(value, "true");
 }
 
-Configuration ParseFieldTrialConfiguration() {
+int ParseInt(const base::StringPiece value) {
+  int result = 0;
+  base::StringToInt(value, &result);
+  return result;
+}
+
+std::vector<Configuration> FillEnabledPresetConfigurations(
+    std::map<std::string, std::string>* params) {
+  const struct {
+    const char* name;
+    bool enabled_by_default;
+    Configuration (*factory_method)();
+  } kAvailablePresetConfigurations[] = {
+      {kPresetLiveRunOnPhishingSites, false,
+       &Configuration::MakePresetForLiveRunOnPhishingSites},
+      {kPresetPerformanceTestingDryRunOnAllSites, false,
+       &Configuration::MakePresetForPerformanceTestingDryRunOnAllSites}};
+
+  CommaSeparatedStrings enabled_presets(
+      TakeVariationParamOrReturnEmpty(params, kEnablePresetsParameterName));
+  CommaSeparatedStrings disabled_presets(
+      TakeVariationParamOrReturnEmpty(params, kDisablePresetsParameterName));
+
+  std::vector<Configuration> enabled_configurations;
+  for (const auto& available_preset : kAvailablePresetConfigurations) {
+    if ((enabled_presets.CaseInsensitiveContains(available_preset.name) ||
+         available_preset.enabled_by_default) &&
+        !disabled_presets.CaseInsensitiveContains(available_preset.name)) {
+      enabled_configurations.push_back(available_preset.factory_method());
+    }
+  }
+
+  return enabled_configurations;
+}
+
+Configuration ParseExperimentalConfiguration(
+    std::map<std::string, std::string>* params) {
   Configuration configuration;
 
-  std::map<std::string, std::string> params;
-  base::GetFieldTrialParamsByFeature(kSafeBrowsingSubresourceFilter, &params);
+  // ActivationConditions:
+  configuration.activation_conditions.activation_scope = ParseActivationScope(
+      TakeVariationParamOrReturnEmpty(params, kActivationScopeParameterName));
 
-  configuration.activation_level = ParseActivationLevel(
-      TakeVariationParamOrReturnEmpty(&params, kActivationLevelParameterName));
+  configuration.activation_conditions.activation_list = ParseActivationList(
+      TakeVariationParamOrReturnEmpty(params, kActivationListsParameterName));
 
-  configuration.activation_scope = ParseActivationScope(
-      TakeVariationParamOrReturnEmpty(&params, kActivationScopeParameterName));
+  configuration.activation_conditions.priority =
+      ParseInt(TakeVariationParamOrReturnEmpty(
+          params, kActivationPriorityParameterName));
 
-  configuration.activation_list = ParseActivationList(
-      TakeVariationParamOrReturnEmpty(&params, kActivationListsParameterName));
+  // ActivationOptions:
+  configuration.activation_options.activation_level = ParseActivationLevel(
+      TakeVariationParamOrReturnEmpty(params, kActivationLevelParameterName));
 
-  configuration.performance_measurement_rate =
+  configuration.activation_options.performance_measurement_rate =
       ParsePerformanceMeasurementRate(TakeVariationParamOrReturnEmpty(
-          &params, kPerformanceMeasurementRateParameterName));
+          params, kPerformanceMeasurementRateParameterName));
 
-  configuration.should_suppress_notifications =
+  configuration.activation_options.should_suppress_notifications =
       ParseBool(TakeVariationParamOrReturnEmpty(
-          &params, kSuppressNotificationsParameterName));
+          params, kSuppressNotificationsParameterName));
 
-  configuration.ruleset_flavor =
-      TakeVariationParamOrReturnEmpty(&params, kRulesetFlavorParameterName);
-
-  configuration.should_whitelist_site_on_reload =
+  configuration.activation_options.should_whitelist_site_on_reload =
       ParseBool(TakeVariationParamOrReturnEmpty(
-          &params, kWhitelistSiteOnReloadParameterName));
+          params, kWhitelistSiteOnReloadParameterName));
+
+  // GeneralSettings:
+  configuration.general_settings.ruleset_flavor =
+      TakeVariationParamOrReturnEmpty(params, kRulesetFlavorParameterName);
 
   return configuration;
 }
+
+std::vector<Configuration> ParseEnabledConfigurations() {
+  std::map<std::string, std::string> params;
+  base::GetFieldTrialParamsByFeature(kSafeBrowsingSubresourceFilter, &params);
+
+  std::vector<Configuration> configs = FillEnabledPresetConfigurations(&params);
+
+  Configuration experimental_config = ParseExperimentalConfiguration(&params);
+  configs.push_back(std::move(experimental_config));
+
+  return configs;
+}
+
+template <class T>
+std::string StreamToString(const T& value) {
+  std::ostringstream oss;
+  oss << value;
+  return oss.str();
+}
+
+std::vector<Configuration> SortConfigsByDecreasingPriority(
+    std::vector<Configuration> configs) {
+  auto comp = [](const Configuration& a, const Configuration& b) {
+    return a.activation_conditions.priority > b.activation_conditions.priority;
+  };
+  std::sort(configs.begin(), configs.end(), comp);
+  return configs;
+}
+
+base::StringPiece GetLexicographicallyGreatestRulesetFlavor(
+    const std::vector<Configuration>& configs) {
+  base::StringPiece greatest_flavor;
+  for (const auto& config : configs) {
+    base::StringPiece flavor = config.general_settings.ruleset_flavor;
+    if (flavor > greatest_flavor)
+      greatest_flavor = flavor;
+  }
+  return greatest_flavor;
+}
+
+// Globals --------------------------------------------------------------------
 
 base::LazyInstance<base::Lock>::Leaky g_active_configurations_lock =
     LAZY_INSTANCE_INITIALIZER;
@@ -119,6 +227,8 @@ base::LazyInstance<scoped_refptr<ConfigurationList>>::Leaky
     g_active_configurations = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
+
+// Constant definitions -------------------------------------------------------
 
 const base::Feature kSafeBrowsingSubresourceFilter{
     "SubresourceFilter", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -143,35 +253,110 @@ const char kActivationListSocialEngineeringAdsInterstitial[] =
 const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
 const char kActivationListSubresourceFilter[] = "subresource_filter";
 
-const char kRulesetFlavorParameterName[] = "ruleset_flavor";
+const char kActivationPriorityParameterName[] = "activation_priority";
 
 const char kPerformanceMeasurementRateParameterName[] =
     "performance_measurement_rate";
-
 const char kSuppressNotificationsParameterName[] = "suppress_notifications";
-
 const char kWhitelistSiteOnReloadParameterName[] = "whitelist_site_on_reload";
+
+const char kRulesetFlavorParameterName[] = "ruleset_flavor";
+
+const char kEnablePresetsParameterName[] = "enable_presets";
+const char kDisablePresetsParameterName[] = "disable_presets";
+const char kPresetLiveRunOnPhishingSites[] = "liverun_on_phishing_sites";
+const char kPresetPerformanceTestingDryRunOnAllSites[] =
+    "performance_testing_dryrun_on_all_sites";
+
+// Configuration --------------------------------------------------------------
+
+// static
+Configuration Configuration::MakePresetForLiveRunOnPhishingSites() {
+  Configuration config(ActivationLevel::ENABLED,
+                       ActivationScope::ACTIVATION_LIST,
+                       ActivationList::PHISHING_INTERSTITIAL);
+  config.activation_conditions.priority = 1000;
+  return config;
+}
+
+// static
+Configuration Configuration::MakePresetForPerformanceTestingDryRunOnAllSites() {
+  Configuration config(ActivationLevel::DRYRUN, ActivationScope::ALL_SITES);
+  config.activation_options.performance_measurement_rate = 1.0;
+  config.activation_conditions.priority = 500;
+  return config;
+}
 
 Configuration::Configuration() = default;
 Configuration::Configuration(ActivationLevel activation_level,
                              ActivationScope activation_scope,
-                             ActivationList activation_list)
-    : activation_level(activation_level),
-      activation_scope(activation_scope),
-      activation_list(activation_list) {}
+                             ActivationList activation_list) {
+  activation_options.activation_level = activation_level;
+  activation_conditions.activation_scope = activation_scope;
+  activation_conditions.activation_list = activation_list;
+}
+Configuration::Configuration(const Configuration&) = default;
 Configuration::Configuration(Configuration&&) = default;
 Configuration::~Configuration() = default;
+Configuration& Configuration::operator=(const Configuration&) = default;
 Configuration& Configuration::operator=(Configuration&&) = default;
 
-ConfigurationList::ConfigurationList(Configuration config)
-    : config_(std::move(config)) {}
+bool Configuration::operator==(const Configuration& rhs) const {
+  const auto tie = [](const Configuration& config) {
+    return std::tie(config.activation_conditions.activation_scope,
+                    config.activation_conditions.activation_list,
+                    config.activation_conditions.priority,
+                    config.activation_options.activation_level,
+                    config.activation_options.performance_measurement_rate,
+                    config.activation_options.should_whitelist_site_on_reload,
+                    config.activation_options.should_suppress_notifications,
+                    config.general_settings.ruleset_flavor);
+  };
+  return tie(*this) == tie(rhs);
+}
+
+bool Configuration::operator!=(const Configuration& rhs) const {
+  return !(*this == rhs);
+}
+
+std::ostream& operator<<(std::ostream& os, const Configuration& config) {
+  base::DictionaryValue dict;
+  dict.SetString("activation_scope",
+                 StreamToString(config.activation_conditions.activation_scope));
+  dict.SetString("activation_list",
+                 StreamToString(config.activation_conditions.activation_list));
+  dict.SetInteger("priority", config.activation_conditions.priority);
+  dict.SetString("activation_level",
+                 StreamToString(config.activation_options.activation_level));
+  dict.SetDouble("performance_measurement_rate",
+                 config.activation_options.performance_measurement_rate);
+  dict.SetBoolean("should_suppress_notifications",
+                  config.activation_options.should_suppress_notifications);
+  dict.SetBoolean("should_whitelist_site_on_reload",
+                  config.activation_options.should_whitelist_site_on_reload);
+  dict.SetString("ruleset_flavor",
+                 StreamToString(config.general_settings.ruleset_flavor));
+  std::string json;
+  base::JSONWriter::WriteWithOptions(
+      dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+  return os << json;
+}
+
+// ConfigurationList ----------------------------------------------------------
+
+ConfigurationList::ConfigurationList(std::vector<Configuration> configs)
+    : configs_by_decreasing_priority_(
+          SortConfigsByDecreasingPriority(std::move(configs))),
+      lexicographically_greatest_ruleset_flavor_(
+          GetLexicographicallyGreatestRulesetFlavor(
+              configs_by_decreasing_priority_)) {}
 ConfigurationList::~ConfigurationList() = default;
 
-scoped_refptr<ConfigurationList> GetActiveConfigurations() {
+scoped_refptr<ConfigurationList> GetEnabledConfigurations() {
   base::AutoLock lock(g_active_configurations_lock.Get());
   if (!g_active_configurations.Get()) {
     g_active_configurations.Get() =
-        base::MakeShared<ConfigurationList>(ParseFieldTrialConfiguration());
+        base::MakeShared<ConfigurationList>(ParseEnabledConfigurations());
   }
   return g_active_configurations.Get();
 }

@@ -908,10 +908,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SubresourceFilterEndToEndTest) {
   subresource_filter::testing::ScopedSubresourceFilterConfigurator
-      scoped_configuration(subresource_filter::Configuration(
-          subresource_filter::ActivationLevel::ENABLED,
-          subresource_filter::ActivationScope::ACTIVATION_LIST,
-          subresource_filter::ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
+      scoped_configuration(subresource_filter::Configuration::
+                               MakePresetForLiveRunOnPhishingSites());
 
   subresource_filter::testing::TestRulesetCreator ruleset_creator;
   subresource_filter::testing::TestRulesetPair test_ruleset_pair;
@@ -1984,10 +1982,8 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
                        SubresourceFilterEndToEndTest) {
   subresource_filter::testing::ScopedSubresourceFilterConfigurator
-      scoped_configuration(subresource_filter::Configuration(
-          subresource_filter::ActivationLevel::ENABLED,
-          subresource_filter::ActivationScope::ACTIVATION_LIST,
-          subresource_filter::ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
+      scoped_configuration(subresource_filter::Configuration::
+                               MakePresetForLiveRunOnPhishingSites());
 
   subresource_filter::testing::TestRulesetCreator ruleset_creator;
   subresource_filter::testing::TestRulesetPair test_ruleset_pair;
