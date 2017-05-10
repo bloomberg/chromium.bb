@@ -233,6 +233,10 @@ ifeq ($(CONFIG_LOOP_RESTORATION),yes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += selfguided_filter_test.cc
 endif
 
+ifeq ($(CONFIG_GLOBAL_MOTION)$(CONFIG_AV1_ENCODER),yesyes)
+LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += corner_match_test.cc
+endif
+
 TEST_INTRA_PRED_SPEED_SRCS-yes := test_intra_pred_speed.cc
 TEST_INTRA_PRED_SPEED_SRCS-yes += ../md5_utils.h ../md5_utils.c
 

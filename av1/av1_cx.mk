@@ -163,4 +163,8 @@ AV1_CX_SRCS-$(HAVE_MSA) += encoder/mips/msa/fdct16x16_msa.c
 AV1_CX_SRCS-$(HAVE_MSA) += encoder/mips/msa/fdct_msa.h
 AV1_CX_SRCS-$(HAVE_MSA) += encoder/mips/msa/temporal_filter_msa.c
 
+ifeq ($(CONFIG_GLOBAL_MOTION),yes)
+AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/corner_match_sse4.c
+endif
+
 AV1_CX_SRCS-yes := $(filter-out $(AV1_CX_SRCS_REMOVE-yes),$(AV1_CX_SRCS-yes))
