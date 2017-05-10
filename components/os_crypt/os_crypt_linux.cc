@@ -253,6 +253,14 @@ bool OSCrypt::IsEncryptionAvailable() {
   return g_get_password[Version::V11]();
 }
 
+void ClearCacheForTesting() {
+  g_cache.Get().key_storage_cache.reset();
+  g_cache.Get().password_v10_cache.reset();
+  g_cache.Get().password_v11_cache.reset();
+  g_cache.Get().is_key_storage_cached = false;
+  g_cache.Get().is_password_v11_cached = false;
+}
+
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)()) {
   // Save the real implementation to restore it later.

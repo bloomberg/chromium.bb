@@ -55,4 +55,5 @@ void OSCryptMockerLinux::SetUpWithSingleton() {
 // static
 void OSCryptMockerLinux::TearDown() {
   UseMockKeyStorageForTesting(nullptr, nullptr);
+  ClearCacheForTesting();
 }
