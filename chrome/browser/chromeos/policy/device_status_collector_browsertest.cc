@@ -47,6 +47,7 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -344,6 +345,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         base::WrapUnique<chromeos::UpdateEngineClient>(update_engine_client_));
 
     chromeos::CrasAudioHandler::InitializeForTesting();
+    chromeos::LoginState::Initialize();
   }
 
   void AddMountPoint(const std::string& mount_point) {
@@ -355,6 +357,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   ~DeviceStatusCollectorTest() override {
+    chromeos::LoginState::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
     chromeos::KioskAppManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
@@ -580,6 +583,47 @@ TEST_F(DeviceStatusCollectorTest, MixedStates) {
             GetActiveMilliseconds(device_status_));
 }
 
+// For kiosks report total uptime instead of only active periods.
+TEST_F(DeviceStatusCollectorTest, MixedStatesForKiosk) {
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_IDLE,
+  };
+  chromeos::LoginState::Get()->SetLoggedInState(
+      chromeos::LoginState::LOGGED_IN_ACTIVE,
+      chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+  GetStatus();
+  EXPECT_EQ(6 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+}
+
+// For Arc kiosks report total uptime instead of only active periods.
+TEST_F(DeviceStatusCollectorTest, MixedStatesForArcKiosk) {
+  ui::IdleState test_states[] = {
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_ACTIVE,
+    ui::IDLE_STATE_IDLE,
+  };
+  chromeos::LoginState::Get()->SetLoggedInState(
+      chromeos::LoginState::LOGGED_IN_ACTIVE,
+      chromeos::LoginState::LOGGED_IN_USER_ARC_KIOSK_APP);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+  GetStatus();
+  EXPECT_EQ(5 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+}
+
 TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
   ui::IdleState test_states[] = {
     ui::IDLE_STATE_ACTIVE,
@@ -605,23 +649,6 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
 
   GetStatus();
   EXPECT_EQ(6 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-}
-
-TEST_F(DeviceStatusCollectorTest, Times) {
-  ui::IdleState test_states[] = {
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_ACTIVE,
-    ui::IDLE_STATE_IDLE,
-    ui::IDLE_STATE_IDLE
-  };
-  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
-  GetStatus();
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
 }
 

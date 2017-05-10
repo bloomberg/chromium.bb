@@ -48,6 +48,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -299,6 +300,12 @@ int ConvertWifiSignalStrength(int signal_strength) {
   DCHECK_GT(signal_strength, 0);
   DCHECK_LE(signal_strength, 100);
   return signal_strength - 120;
+}
+
+bool IsKioskApp() {
+  auto user_type = chromeos::LoginState::Get()->GetLoggedInUserType();
+  return user_type == chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP ||
+         user_type == chromeos::LoginState::LOGGED_IN_USER_ARC_KIOSK_APP;
 }
 
 }  // namespace
@@ -668,7 +675,8 @@ void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
 
   Time now = GetCurrentTime();
 
-  if (state == ui::IDLE_STATE_ACTIVE) {
+  // For kiosk apps we report total uptime instead of active time.
+  if (state == ui::IDLE_STATE_ACTIVE || IsKioskApp()) {
     // If it's been too long since the last report, or if the activity is
     // negative (which can happen when the clock changes), assume a single
     // interval of activity.
