@@ -228,4 +228,12 @@ Polymer({
   onRestart_: function() {
     this.fire('restart');
   },
+
+  /**
+   * Handles tap on REPORT AN ISSUE button.
+   * @private
+   */
+  onReportAnIssue_: function() {
+    this.fire('openFeedbackDialog');
+  },
 });

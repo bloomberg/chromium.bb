@@ -85,6 +85,11 @@
         <div class="footer"><div>$i18n{migrationFailedMessage}</div></div>
         <div class="bottom-buttons flex layout horizontal">
           <div class="flex"></div>
+<if expr="_google_chrome">
+          <oobe-text-button border on-tap="onReportAnIssue_">
+            <div>$i18n{migrationButtonReportAnIssue}</div>
+          </oobe-text-button>
+</if>
           <oobe-text-button inverse on-tap="onRestart_">
             <div>$i18n{migrationButtonRestart}</div>
           </oobe-text-button>

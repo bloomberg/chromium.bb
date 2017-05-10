@@ -12,10 +12,14 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/ui/login_feedback.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -47,6 +51,7 @@ constexpr double kMinimumBatteryPercent = 30;
 constexpr char kJsApiStartMigration[] = "startMigration";
 constexpr char kJsApiSkipMigration[] = "skipMigration";
 constexpr char kJsApiRequestRestart[] = "requestRestart";
+constexpr char kJsApiOpenFeedbackDialog[] = "openFeedbackDialog";
 
 // UMA names.
 constexpr char kUmaNameFirstScreen[] = "Cryptohome.MigrationUI.FirstScreen";
@@ -184,6 +189,7 @@ void EncryptionMigrationScreenHandler::DeclareLocalizedValues(
   builder->Add("migrationButtonContinue",
                IDS_ENCRYPTION_MIGRATION_BUTTON_CONTINUE);
   builder->Add("migrationButtonSignIn", IDS_ENCRYPTION_MIGRATION_BUTTON_SIGNIN);
+  builder->Add("migrationButtonReportAnIssue", IDS_REPORT_AN_ISSUE);
 }
 
 void EncryptionMigrationScreenHandler::Initialize() {
@@ -205,6 +211,8 @@ void EncryptionMigrationScreenHandler::RegisterMessages() {
               &EncryptionMigrationScreenHandler::HandleSkipMigration);
   AddCallback(kJsApiRequestRestart,
               &EncryptionMigrationScreenHandler::HandleRequestRestart);
+  AddCallback(kJsApiOpenFeedbackDialog,
+              &EncryptionMigrationScreenHandler::HandleOpenFeedbackDialog);
 }
 
 void EncryptionMigrationScreenHandler::PowerChanged(
@@ -244,6 +252,15 @@ void EncryptionMigrationScreenHandler::HandleSkipMigration() {
 
 void EncryptionMigrationScreenHandler::HandleRequestRestart() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
+void EncryptionMigrationScreenHandler::HandleOpenFeedbackDialog() {
+  const std::string description = base::StringPrintf(
+      "Auto generated feedback for http://crbug.com/719266.\n"
+      "(uniquifier:%s)",
+      base::Int64ToString(base::Time::Now().ToInternalValue()).c_str());
+  login_feedback_.reset(new LoginFeedback(Profile::FromWebUI(web_ui())));
+  login_feedback_->Request(description, base::Closure());
 }
 
 void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {

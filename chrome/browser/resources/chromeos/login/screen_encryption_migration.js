@@ -31,6 +31,9 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
       encryptionMigration.addEventListener('restart', function() {
         chrome.send('requestRestart');
       });
+      encryptionMigration.addEventListener('openFeedbackDialog', function() {
+        chrome.send('openFeedbackDialog');
+      });
     },
 
     /**
