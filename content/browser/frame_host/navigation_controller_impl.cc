@@ -1099,7 +1099,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
 void NavigationControllerImpl::RendererDidNavigateToNewPage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool is_in_page,
+    bool is_same_document,
     bool replace_entry,
     NavigationHandleImpl* handle) {
   std::unique_ptr<NavigationEntryImpl> new_entry;
@@ -1108,7 +1108,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   // First check if this is an in-page navigation.  If so, clone the current
   // entry instead of looking at the pending entry, because the pending entry
   // does not have any subframe history items.
-  if (is_in_page && GetLastCommittedEntry()) {
+  if (is_same_document && GetLastCommittedEntry()) {
     FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
         params.frame_unique_name, params.item_sequence_number,
         params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
@@ -1194,10 +1194,10 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   frame_entry->set_method(params.method);
   frame_entry->set_post_id(params.post_id);
 
-  // history.pushState() is classified as a navigation to a new page, but
-  // sets is_in_page to true. In this case, we already have the title and
+  // history.pushState() is classified as a navigation to a new page, but sets
+  // is_same_document to true. In this case, we already have the title and
   // favicon available, so set them immediately.
-  if (is_in_page && GetLastCommittedEntry()) {
+  if (is_same_document && GetLastCommittedEntry()) {
     new_entry->SetTitle(GetLastCommittedEntry()->GetTitle());
     new_entry->GetFavicon() = GetLastCommittedEntry()->GetFavicon();
   }
@@ -1218,7 +1218,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool is_in_page,
+    bool is_same_document,
     bool was_restored,
     NavigationHandleImpl* handle) {
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
@@ -1236,19 +1236,20 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // meanwhile and no new page was created. We are stuck at the last committed
     // entry.
     entry = GetLastCommittedEntry();
-    // If this is an in-page navigation, then there's no SSLStatus in the
+    // If this is a same document navigation, then there's no SSLStatus in the
     // NavigationHandle so don't overwrite the existing entry's SSLStatus.
-    if (!is_in_page)
+    if (!is_same_document)
       entry->GetSSL() = handle->ssl_status();
   } else if (params.nav_entry_id) {
     // This is a browser-initiated navigation (back/forward/reload).
     entry = GetEntryWithUniqueID(params.nav_entry_id);
 
-    if (is_in_page) {
-      // There's no SSLStatus in the NavigationHandle for in-page navigations,
-      // so normally we leave |entry|'s SSLStatus as is. However if this was a
-      // restored in-page navigation entry, then it won't have an SSLStatus. So
-      // we need to copy over the SSLStatus from the entry that navigated it.
+    if (is_same_document) {
+      // There's no SSLStatus in the NavigationHandle for same document
+      // navigations, so normally we leave |entry|'s SSLStatus as is. However if
+      // this was a restored same document navigation entry, then it won't have
+      // an SSLStatus. So we need to copy over the SSLStatus from the entry that
+      // navigated it.
       NavigationEntryImpl* last_entry = GetLastCommittedEntry();
       if (entry->GetURL().GetOrigin() == last_entry->GetURL().GetOrigin() &&
           last_entry->GetSSL().initialized && !entry->GetSSL().initialized &&
@@ -1266,9 +1267,9 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // which land us at the last committed entry.
     entry = GetLastCommittedEntry();
 
-    // If this is an in-page navigation, then there's no SSLStatus in the
+    // If this is a same document navigation, then there's no SSLStatus in the
     // NavigationHandle so don't overwrite the existing entry's SSLStatus.
-    if (!is_in_page)
+    if (!is_same_document)
       entry->GetSSL() = handle->ssl_status();
   }
   DCHECK(entry);
@@ -1298,7 +1299,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 
   // The redirected to page should not inherit the favicon from the previous
   // page.
-  if (ui::PageTransitionIsRedirect(params.transition) && !is_in_page)
+  if (ui::PageTransitionIsRedirect(params.transition) && !is_same_document)
     entry->GetFavicon() = FaviconStatus();
 
   // The entry we found in the list might be pending if the user hit
@@ -1364,7 +1365,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool is_in_page,
+    bool is_same_document,
     bool replace_entry) {
   DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
                                       ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
@@ -1383,7 +1384,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
       params.url, params.referrer, params.method, params.post_id));
   std::unique_ptr<NavigationEntryImpl> new_entry =
       GetLastCommittedEntry()->CloneAndReplace(
-          frame_entry.get(), is_in_page, rfh->frame_tree_node(),
+          frame_entry.get(), is_same_document, rfh->frame_tree_node(),
           delegate_->GetFrameTree()->root());
 
   // TODO(creis): Update this to add the frame_entry if we can't find the one
