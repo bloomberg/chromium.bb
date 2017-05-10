@@ -3,10 +3,12 @@
                              sense in every scenario? -->
 
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
@@ -31,9 +33,15 @@
 
 <dom-module id="pin-keyboard">
   <template>
-    <style>
+    <style include="cr-shared-style">
       :host {
         outline: none;
+      }
+
+      :host(:not([enable-submit-button])) #pinInput {
+        left: 0;
+        text-align: center;
+        width: 180px;
       }
 
       #root {
@@ -117,8 +125,7 @@
         height: 52px;
       }
 
-      #pin-input {
-        -webkit-text-security: disc;
+      #pinInput {
         background-color: white;
         border: 0;
         box-sizing: border-box;
@@ -130,36 +137,30 @@
         outline: 0;
         position: relative;
         width: 127px;
+
+        --paper-input-container-input: {
+          caret-color: var(--paper-input-container-focus-color);
+        }
       }
 
-      #pin-input[has-content] {
+      #pinInput[has-content] {
         opacity: var(--dark-primary-opacity);
       }
 
-      #pin-input[is-input-rtl] {
+      #pinInput[is-input-rtl] {
         direction: rtl;
       }
 
-      :host(:not([enable-submit-button])) #pin-input {
-        left: 0;
-        text-align: center;
-        width: 180px;
-      }
-
-      hr {
-        border: 0;
-        border-bottom: 1px solid #000;
-        left: 10px;
-        margin: 0;
-        opacity: 0.14;
-        position: relative;
-        width: 160px;
-      }
-
-      #pin-input[type=number]::-webkit-inner-spin-button,
-      #pin-input[type=number]::-webkit-outer-spin-button {
+      #pinInput[type=number]::-webkit-inner-spin-button,
+      #pinInput[type=number]::-webkit-outer-spin-button {
         -webkit-appearance: none;
         margin: 0;
+      }
+
+      .separator {
+        border-bottom: var(--cr-separator-line);
+        margin: 0 10px;
+        position: relative;
       }
 
       /* Ensure that all children of paper-button do not consume events. This
@@ -172,61 +173,63 @@
     <div id="root">
       <div id="container-constrained-width">
         <div class="row first-row">
-          <input id="pin-input" type="password"
-                 is-input-rtl$="[[isInputRtl_(value)]]"
-                 has-content$="[[hasInput_(value)]]"
-                 placeholder="[[getInputPlaceholder_(enablePassword)]]"
-                 on-keydown="onInputKeyDown_">
-          </input>
+          <paper-input id="pinInput" type="password" no-label-float
+              value="[[value]]"
+              is-input-rtl$="[[isInputRtl_(value)]]"
+              has-content$="[[hasInput_(value)]]"
+              label="[[getInputPlaceholder_(enablePassword)]]"
+              on-keydown="onInputKeyDown_"
+              hidden="[[!showPinInput_]]">
+          </paper-input>
         </div>
-        <hr>
+        <div class="separator" hidden="[[showPinInput_]]"></div>
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="1"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard1}</inner-text>
             <paper-ripple>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="2"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard2}</inner-text>
             <paper-ripple>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="3"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard3}</inner-text>
             <paper-ripple>
           </paper-button>
         </div>
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="4"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard4}</inner-text>
             <paper-ripple>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="5"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard5}</inner-text>
             <paper-ripple>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="6"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard6}</inner-text>
             <paper-ripple>
           </paper-button>
         </div>
         <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="7"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard7}</inner-text>
             <paper-ripple>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="8"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard8}</inner-text>
             <paper-ripple>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="9"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard9}</inner-text>
             <paper-ripple>
           </paper-button>
@@ -234,19 +237,19 @@
         <div class="row keyboard bottom-row">
           <div class="digit-button"></div>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="0"
-                        noink>
+              noink>
             <inner-text>$i18n{pinKeyboard0}</inner-text>
             <paper-ripple>
           </paper-button>
           <div class="backspace-button-container">
             <paper-icon-button class="digit-button backspace-button"
-                               has-content$="[[hasInput_(value)]]"
-                               icon="pin-keyboard:backspace"
-                               on-pointerdown="onBackspacePointerDown_"
-                               on-pointerout="onBackspacePointerOut_"
-                               on-pointerup="onBackspacePointerUp_"
-                               aria-label="$i18n{pinKeyboardDeleteAccessibleName}"
-                               noink>
+                has-content$="[[hasInput_(value)]]"
+                icon="pin-keyboard:backspace"
+                on-pointerdown="onBackspacePointerDown_"
+                on-pointerout="onBackspacePointerOut_"
+                on-pointerup="onBackspacePointerUp_"
+                aria-label="$i18n{pinKeyboardDeleteAccessibleName}"
+                noink>
             </paper-icon-button>
             <paper-ripple>
           </div>

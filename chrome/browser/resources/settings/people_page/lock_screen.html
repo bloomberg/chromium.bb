@@ -21,67 +21,86 @@
 
 <dom-module id="settings-lock-screen">
   <template>
-    <style include="settings-shared action-link">
+    <style include="settings-shared">
       #easyUnlock .start {
         /* When the easy unlock toggle is shown, the easy unlock section's
          * content becomes squashed to the top and bottom edges. Use padding to
-         * ensure the easy unlock content looks correct. */
+         * ensure the easy unlock content looks correct.
+         */
         padding: 11px 0;
+      }
+
+      #lockOptionsDiv {
+        display: block;
       }
 
       paper-radio-button {
         --paper-radio-button-label: {
           display: flex;
+          line-height: 154%;  /* Apply 20px line-height to paper radio button
+                                 text to match rest of settings line-heights. */
           width: 100%;
         };
       }
 
-      paper-radio-button > .start {
-        flex: 1;
+      #pinPasswordDiv,
+      #pinPasswordSecondaryActionDiv {
+        margin: auto;
       }
     </style>
 
     <div>
-      <template is="dom-if" if="[[quickUnlockEnabled_]]">
-        <div class="list-frame">
-          <paper-radio-group id="unlockType" selected="{{selectedUnlockType}}">
-            <paper-radio-button name="password">
-              <div class="start">
-                $i18n{lockScreenPasswordOnly}
-                <div class="secondary">
-                  $i18n{lockScreenHighSecurity}
-                </div>
-              </div>
-            </paper-radio-button>
-            <paper-radio-button name="pin+password">
-              <div class="start">
-                $i18n{lockScreenPinOrPassword}
-                <div class="secondary">
-                  $i18n{lockScreenMediumSecurity}
-                </div>
-              </div>
-              <template is="dom-if"
-                  if="[[showConfigurePinButton_(selectedUnlockType)]]">
-                <paper-button id="setupPinButton" class="secondary-button"
-                    on-tap="onConfigurePin_">
-                  [[getSetupPinText_(hasPin)]]
-                </paper-button>
-              </template>
-            </paper-radio-button>
-          </paper-radio-group>
-        </div>
-      </template>
-
-      <div id="screenLockDiv" class="settings-box">
+      <div id="screenLockDiv" class="settings-box first">
         <settings-toggle-button class="start"
             pref="{{prefs.settings.enable_screen_lock}}"
             label="$i18n{enableScreenlock}">
         </settings-toggle-button>
       </div>
 
+      <template is="dom-if" if="[[quickUnlockEnabled_]]">
+        <div id="lockOptionsDiv">
+          <div class="settings-box">
+            <h2>$i18n{lockScreenOptions}</h2>
+          </div>
+          <div class="list-frame">
+            <paper-radio-group id="unlockType"
+                selected="{{selectedUnlockType}}">
+              <paper-radio-button name="password" class="list-item underbar">
+                <div class="start">
+                  $i18n{lockScreenPasswordOnly}
+                  <div class="secondary">
+                    $i18n{lockScreenHighSecurity}
+                  </div>
+                </div>
+              </paper-radio-button>
+              <paper-radio-button name="pin+password"
+                  class="list-item underbar">
+                <div id="pinPasswordDiv" class="start">
+                  $i18n{lockScreenPinOrPassword}
+                  <div class="secondary">
+                    $i18n{lockScreenMediumSecurity}
+                  </div>
+                </div>
+                <template is="dom-if"
+                    if="[[showConfigurePinButton_(selectedUnlockType)]]">
+                  <div class="separator"></div>
+                  <div id="pinPasswordSecondaryActionDiv"
+                      class="secondary-action">
+                    <paper-button id="setupPinButton" class="secondary-button"
+                        on-tap="onConfigurePin_">
+                      [[getSetupPinText_(hasPin)]]
+                    </paper-button>
+                  </div>
+                </template>
+              </paper-radio-button>
+            </paper-radio-group>
+          </div>
+        </div>
+      </template>
+
       <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
         <div id="fingerprintDiv">
-          <div class="settings-box">
+          <div class="settings-box continuation">
             <settings-toggle-button class="start"
                 pref="{{prefs.settings.enable_quick_unlock_fingerprint}}"
                 label="$i18n{lockScreenFingerprintEnable}">
@@ -89,24 +108,29 @@
           </div>
           <iron-collapse
               opened="[[prefs.settings.enable_quick_unlock_fingerprint.value]]">
-            <div class="settings-box continuation" on-tap="onEditFingerprints_"
-                actionable>
+            <div class="settings-box continuation">
               <div class="start">
                 $i18n{lockScreenEditFingerprints}
                 <div class="secondary" id="lockScreenEditFingerprintsSecondary">
                   [[getDescriptionText_(numFingerprints_)]]
                 </div>
               </div>
-              <button class="subpage-arrow" is="paper-icon-button-light"
-                  aria-label="$i18n{lockScreenEditFingerprints}"
-                  aria-describedby="lockScreenEditFingerprintsSecondary"></button>
+              <div class="separator"></div>
+              <div class="secondary-action">
+                <paper-button class="secondary-button"
+                    on-tap="onEditFingerprints_"
+                    aria-label="$i18n{lockScreenEditFingerprints}"
+                    aria-descibedby="lockScreenEditFingerprintsSecondary">
+                  $i18n{lockScreenSetupFingerprintButton}
+                </paper-button>
+              </div>
             </div>
           </iron-collapse>
         </div>
       </template>
 
       <template is="dom-if" if="[[easyUnlockAllowed_]]">
-        <div id="easyUnlock" class="settings-box two-line">
+        <div id="easyUnlock" class="settings-box two-line continuation">
           <div class="start">
             <div>$i18n{easyUnlockSectionTitle}</div>
             <div class="secondary">
