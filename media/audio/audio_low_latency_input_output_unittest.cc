@@ -48,6 +48,8 @@
 
 namespace media {
 
+namespace {
+
 #if defined(USE_PULSEAUDIO)
 typedef AudioManagerPulse AudioManagerAnyPlatform;
 #elif defined(USE_ALSA)
@@ -451,5 +453,7 @@ TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
   aos->Close();
   ais->Close();
 }
+
+}  // namespace
 
 }  // namespace media
