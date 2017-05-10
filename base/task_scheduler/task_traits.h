@@ -111,19 +111,15 @@ struct MayBlock {};
 // In doubt, consult with //base/task_scheduler/OWNERS.
 struct WithBaseSyncPrimitives {};
 
-// Describes metadata for a single task or a group of tasks.
+// Describes immutable metadata for a single task or a group of tasks.
 class BASE_EXPORT TaskTraits {
  private:
   // ValidTrait ensures TaskTraits' constructor only accepts appropriate types.
-  //
-  // TODO(fdoray): Remove base:: prefixes once the TaskTraits::MayBlock() and
-  // TaskTraits::WithBaseSyncPrimitives() methods are gone.
-  // https://crbug.com/713683
   struct ValidTrait {
     ValidTrait(TaskPriority) {}
     ValidTrait(TaskShutdownBehavior) {}
-    ValidTrait(base::MayBlock) {}
-    ValidTrait(base::WithBaseSyncPrimitives) {}
+    ValidTrait(MayBlock) {}
+    ValidTrait(WithBaseSyncPrimitives) {}
   };
 
  public:
@@ -152,24 +148,21 @@ class BASE_EXPORT TaskTraits {
                 decltype(ValidTrait(std::declval<ArgTypes>()))...>>
   constexpr TaskTraits(ArgTypes... args)
       : priority_set_explicitly_(
-            internal::HasArgOfType<base::TaskPriority, ArgTypes...>::value),
+            internal::HasArgOfType<TaskPriority, ArgTypes...>::value),
         priority_(internal::GetValueFromArgList(
-            internal::EnumArgGetter<base::TaskPriority,
-                                    base::TaskPriority::USER_VISIBLE>(),
+            internal::EnumArgGetter<TaskPriority, TaskPriority::USER_VISIBLE>(),
             args...)),
         shutdown_behavior_set_explicitly_(
-            internal::HasArgOfType<base::TaskShutdownBehavior,
-                                   ArgTypes...>::value),
+            internal::HasArgOfType<TaskShutdownBehavior, ArgTypes...>::value),
         shutdown_behavior_(internal::GetValueFromArgList(
-            internal::EnumArgGetter<
-                base::TaskShutdownBehavior,
-                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(),
+            internal::EnumArgGetter<TaskShutdownBehavior,
+                                    TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(),
             args...)),
         may_block_(internal::GetValueFromArgList(
-            internal::BooleanArgGetter<base::MayBlock>(),
+            internal::BooleanArgGetter<MayBlock>(),
             args...)),
         with_base_sync_primitives_(internal::GetValueFromArgList(
-            internal::BooleanArgGetter<base::WithBaseSyncPrimitives>(),
+            internal::BooleanArgGetter<WithBaseSyncPrimitives>(),
             args...)) {}
 
   constexpr TaskTraits(const TaskTraits& other) = default;
@@ -182,14 +175,6 @@ class BASE_EXPORT TaskTraits {
                                        const TaskTraits& right) {
     return TaskTraits(left, right);
   }
-
-  // Deprecated.  Prefer constexpr construction to builder paradigm as
-  // documented above.
-  // TODO(fdoray): Remove these methods. https://crbug.com/713683
-  TaskTraits& WithPriority(TaskPriority priority);
-  TaskTraits& WithShutdownBehavior(TaskShutdownBehavior shutdown_behavior);
-  TaskTraits& MayBlock();
-  TaskTraits& WithBaseSyncPrimitives();
 
   // Returns true if the priority was set explicitly.
   constexpr bool priority_set_explicitly() const {
@@ -233,8 +218,6 @@ class BASE_EXPORT TaskTraits {
         with_base_sync_primitives_(left.with_base_sync_primitives_ ||
                                    right.with_base_sync_primitives_) {}
 
-  // TODO(fdoray): Make these const after refactoring away deprecated builder
-  // pattern.
   bool priority_set_explicitly_;
   TaskPriority priority_;
   bool shutdown_behavior_set_explicitly_;
