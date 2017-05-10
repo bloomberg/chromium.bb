@@ -408,8 +408,20 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
   history::URLDatabase::URLEnumerator history_enum;
   if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
     return nullptr;
+
   rebuilt_data->last_time_rebuilt_from_history_ = base::Time::Now();
+
+  // Limiting the number of URLs indexed degrades the quality of suggestions to
+  // save memory. This limit is only applied for urls indexed at startup and
+  // more urls can be indexed during the browsing session. The primary use case
+  // is for Android devices where the session is typically short.
+  const int max_urls_indexed =
+      OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup();
+  int num_urls_indexed = 0;
   for (history::URLRow row; history_enum.GetNextURL(&row);) {
+    // Do not use >= to account for case of -1 for unlimited urls.
+    if (num_urls_indexed++ == max_urls_indexed)
+      break;
     rebuilt_data->IndexRow(
         history_db, nullptr, row, scheme_whitelist, nullptr);
   }

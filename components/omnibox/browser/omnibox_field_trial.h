@@ -305,6 +305,15 @@ class OmniboxFieldTrial {
   static float HQPExperimentalTopicalityThreshold();
 
   // ---------------------------------------------------------
+  // For experiment to limit HQP url indexing that's part of the bundled
+  // omnibox field trial.
+
+  // Returns the maximum number of history urls to index for HQP at the startup.
+  // Note: this limit is only applied at startup and more urls can be indexed
+  // during the session. Returns -1 if limit is not set by trials.
+  static int MaxNumHQPUrlsIndexedAtStartup();
+
+  // ---------------------------------------------------------
   // For the HQPFixFrequencyScoring experiment that's part of the
   // bundled omnibox field trial.
 
@@ -486,6 +495,11 @@ class OmniboxFieldTrial {
   // Parameter names used by the HQP experimental scoring experiments.
   static const char kHQPExperimentalScoringBucketsParam[];
   static const char kHQPExperimentalScoringTopicalityThresholdParam[];
+
+  // Parameter names used by the experiment that limits the number of history
+  // urls indexed for suggestions.
+  static const char kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam[];
+  static const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
 
   // Parameter names used by the Physical Web experimental scoring experiments.
   static const char kPhysicalWebZeroSuggestBaseRelevanceParam[];

@@ -235,26 +235,35 @@ TEST_F(URLDatabaseTest, DeleteURLDeletesKeywordSearchTermVisit) {
 }
 
 TEST_F(URLDatabaseTest, EnumeratorForSignificant) {
-  std::set<std::string> good_urls;
   // Add URLs which do and don't meet the criteria.
   URLRow url_no_match(GURL("http://www.url_no_match.com/"));
   EXPECT_TRUE(AddURL(url_no_match));
 
-  std::string url_string2("http://www.url_match_visit_count.com/");
-  good_urls.insert("http://www.url_match_visit_count.com/");
-  URLRow url_match_visit_count(GURL("http://www.url_match_visit_count.com/"));
-  url_match_visit_count.set_visit_count(kLowQualityMatchVisitLimit);
-  EXPECT_TRUE(AddURL(url_match_visit_count));
+  URLRow url_match_visit_count2(GURL("http://www.url_match_visit_count.com/"));
+  url_match_visit_count2.set_visit_count(kLowQualityMatchVisitLimit);
+  EXPECT_TRUE(AddURL(url_match_visit_count2));
 
-  good_urls.insert("http://www.url_match_typed_count.com/");
-  URLRow url_match_typed_count(GURL("http://www.url_match_typed_count.com/"));
-  url_match_typed_count.set_typed_count(kLowQualityMatchTypedLimit);
-  EXPECT_TRUE(AddURL(url_match_typed_count));
+  URLRow url_match_typed_count2(GURL("http://www.url_match_typed_count.com/"));
+  url_match_typed_count2.set_typed_count(kLowQualityMatchTypedLimit);
+  EXPECT_TRUE(AddURL(url_match_typed_count2));
 
-  good_urls.insert("http://www.url_match_last_visit.com/");
-  URLRow url_match_last_visit(GURL("http://www.url_match_last_visit.com/"));
-  url_match_last_visit.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
-  EXPECT_TRUE(AddURL(url_match_last_visit));
+  URLRow url_match_last_visit2(GURL("http://www.url_match_last_visit2.com/"));
+  url_match_last_visit2.set_last_visit(Time::Now() - TimeDelta::FromDays(2));
+  EXPECT_TRUE(AddURL(url_match_last_visit2));
+
+  URLRow url_match_typed_count1(
+      GURL("http://www.url_match_higher_typed_count.com/"));
+  url_match_typed_count1.set_typed_count(kLowQualityMatchTypedLimit + 1);
+  EXPECT_TRUE(AddURL(url_match_typed_count1));
+
+  URLRow url_match_visit_count1(
+      GURL("http://www.url_match_higher_visit_count.com/"));
+  url_match_visit_count1.set_visit_count(kLowQualityMatchVisitLimit + 1);
+  EXPECT_TRUE(AddURL(url_match_visit_count1));
+
+  URLRow url_match_last_visit1(GURL("http://www.url_match_last_visit.com/"));
+  url_match_last_visit1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
+  EXPECT_TRUE(AddURL(url_match_last_visit1));
 
   URLRow url_no_match_last_visit(GURL(
       "http://www.url_no_match_last_visit.com/"));
@@ -264,11 +273,20 @@ TEST_F(URLDatabaseTest, EnumeratorForSignificant) {
 
   URLDatabase::URLEnumerator history_enum;
   EXPECT_TRUE(InitURLEnumeratorForSignificant(&history_enum));
+
+  // Vector contains urls in order of significance.
+  std::vector<std::string> good_urls;
+  good_urls.push_back("http://www.url_match_higher_typed_count.com/");
+  good_urls.push_back("http://www.url_match_typed_count.com/");
+  good_urls.push_back("http://www.url_match_last_visit.com/");
+  good_urls.push_back("http://www.url_match_last_visit2.com/");
+  good_urls.push_back("http://www.url_match_higher_visit_count.com/");
+  good_urls.push_back("http://www.url_match_visit_count.com/");
   URLRow row;
   int row_count = 0;
   for (; history_enum.GetNextURL(&row); ++row_count)
-    EXPECT_EQ(1U, good_urls.count(row.url().spec()));
-  EXPECT_EQ(3, row_count);
+    EXPECT_EQ(good_urls[row_count], row.url().spec());
+  EXPECT_EQ(6, row_count);
 }
 
 // Test GetKeywordSearchTermRows and DeleteSearchTerm
