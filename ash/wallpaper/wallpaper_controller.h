@@ -19,6 +19,7 @@
 #include "components/wallpaper/wallpaper_layout.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "ui/compositor/compositor_lock.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -48,7 +49,8 @@ class ASH_EXPORT WallpaperController
       public ShellObserver,
       public wallpaper::WallpaperResizerObserver,
       public wallpaper::WallpaperColorCalculatorObserver,
-      public SessionObserver {
+      public SessionObserver,
+      public NON_EXPORTED_BASE(ui::CompositorLockClient) {
  public:
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
@@ -173,6 +175,12 @@ class ASH_EXPORT WallpaperController
   // Returns true if the wallpaper moved.
   bool MoveToUnlockedContainer();
 
+  // When wallpaper resizes, we can check which displays will be affected. For
+  // simplicity, we only lock the compositor for the internal display.
+  void GetInternalDisplayCompositorLock();
+  // CompositorLockClient:
+  void CompositorLockTimedOut() override;
+
   bool locked_;
 
   WallpaperMode wallpaper_mode_;
@@ -203,6 +211,8 @@ class ASH_EXPORT WallpaperController
   scoped_refptr<base::TaskRunner> task_runner_;
 
   ScopedSessionObserver scoped_session_observer_;
+
+  std::unique_ptr<ui::CompositorLock> compositor_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperController);
 };
