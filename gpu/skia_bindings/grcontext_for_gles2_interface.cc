@@ -13,6 +13,7 @@
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrContextOptions.h"
@@ -21,7 +22,8 @@
 namespace skia_bindings {
 
 GrContextForGLES2Interface::GrContextForGLES2Interface(
-    gpu::gles2::GLES2Interface* gl) {
+    gpu::gles2::GLES2Interface* gl,
+    const gpu::Capabilities& capabilities) {
   // Calculate limits to pass during initialization:
   // The limit of the number of GPU resources we hold in the GrContext's
   // GPU cache.
@@ -50,6 +52,7 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
 
   GrContextOptions options;
   options.fGlyphCacheTextureMaximumBytes = max_glyph_cache_texture_bytes;
+  options.fAvoidStencilBuffers = capabilities.avoid_stencil_buffers;
   sk_sp<GrGLInterface> interface(
       skia_bindings::CreateGLES2InterfaceBindings(gl));
   gr_context_ = sk_sp<GrContext>(GrContext::Create(
