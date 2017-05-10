@@ -154,8 +154,8 @@ QuicSocketAddress QuicSimpleClient::GetLatestClientAddress() const {
 }
 
 bool QuicSimpleClient::OnPacket(const QuicReceivedPacket& packet,
-                                IPEndPoint local_address,
-                                IPEndPoint peer_address) {
+                                const IPEndPoint& local_address,
+                                const IPEndPoint& peer_address) {
   session()->connection()->ProcessUdpPacket(
       QuicSocketAddress(QuicSocketAddressImpl(local_address)),
       QuicSocketAddress(QuicSocketAddressImpl(peer_address)), packet);
