@@ -1510,11 +1510,10 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledSoftFetchesChromeReader_Rest",
+                    "name": "Enabled-ChromeReader",
                     "params": {
                         "soft_fetching_interval_hours-fallback-active_ntp_user": "10",
-                        "soft_fetching_interval_hours-fallback-active_suggestions_consumer": "1",
-                        "soft_fetching_interval_hours-fallback-rare_ntp_user": "4",
+                        "soft_fetching_interval_hours-wifi-active_ntp_user": "6",
                         "user_classifier_active_consumer_clicks_at_least_once_per_hours": "96",
                         "user_classifier_rare_user_opens_ntp_at_most_once_per_hours": "66"
                     },
