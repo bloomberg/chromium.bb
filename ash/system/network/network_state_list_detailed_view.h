@@ -5,23 +5,17 @@
 #ifndef ASH_SYSTEM_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
 #define ASH_SYSTEM_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
 
-#include <memory>
 #include <string>
 
 #include "ash/login_status.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/gfx/image/image.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/custom_button.h"
-
-namespace ash {
-class NetworkListViewBase;
-}
 
 namespace views {
 class BubbleDialogDelegateView;
+class Button;
+class CustomButton;
 }
 
 namespace ash {
@@ -33,11 +27,6 @@ class NetworkStateListDetailedView
     : public TrayDetailsView,
       public base::SupportsWeakPtr<NetworkStateListDetailedView> {
  public:
-  enum ListType { LIST_TYPE_NETWORK, LIST_TYPE_VPN };
-
-  NetworkStateListDetailedView(SystemTrayItem* owner,
-                               ListType list_type,
-                               LoginStatus login);
   ~NetworkStateListDetailedView() override;
 
   void Init();
@@ -46,7 +35,20 @@ class NetworkStateListDetailedView
   // Manager properties (e.g. technology state) have changed.
   void Update();
 
-  void RelayoutScrollList();
+ protected:
+  enum ListType { LIST_TYPE_NETWORK, LIST_TYPE_VPN };
+
+  NetworkStateListDetailedView(SystemTrayItem* owner,
+                               ListType list_type,
+                               LoginStatus login);
+
+  // Refreshes the network list.
+  virtual void UpdateNetworkList() = 0;
+
+  // Checks whether |view| represents a network in the list. If yes, sets
+  // |guid| to the network's guid and returns |true|. Otherwise,
+  // leaves |guid| unchanged and returns |false|.
+  virtual bool IsNetworkEntry(views::View* view, std::string* guid) const = 0;
 
  private:
   class InfoBubble;
@@ -61,7 +63,6 @@ class NetworkStateListDetailedView
   void ShowSettings();
 
   // Update UI components.
-  void UpdateNetworkList();
   void UpdateHeaderButtons();
 
   // Create and manage the network info bubble.
@@ -85,8 +86,6 @@ class NetworkStateListDetailedView
 
   // A small bubble for displaying network info.
   views::BubbleDialogDelegateView* info_bubble_;
-
-  std::unique_ptr<NetworkListViewBase> network_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateListDetailedView);
 };

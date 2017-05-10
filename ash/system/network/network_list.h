@@ -13,11 +13,10 @@
 
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/network/network_info.h"
-#include "ash/system/network/network_list_view_base.h"
+#include "ash/system/network/network_state_list_detailed_view.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace views {
 class Label;
@@ -27,21 +26,22 @@ class View;
 
 namespace ash {
 class HoverHighlightView;
-struct NetworkInfo;
 class TriView;
+
+namespace tray {
 
 // A list of available networks of a given type. This class is used for all
 // network types except VPNs. For VPNs, see the |VPNList| class.
-class NetworkListView : public NetworkListViewBase,
+class NetworkListView : public NetworkStateListDetailedView,
                         public network_icon::AnimationObserver {
  public:
   class SectionHeaderRowView;
 
-  explicit NetworkListView(tray::NetworkStateListDetailedView* detailed_view);
+  NetworkListView(SystemTrayItem* owner, LoginStatus login);
   ~NetworkListView() override;
 
-  // NetworkListViewBase:
-  void Update() override;
+  // NetworkStateListDetailedView:
+  void UpdateNetworkList() override;
   bool IsNetworkEntry(views::View* view, std::string* guid) const override;
 
  private:
@@ -151,6 +151,7 @@ class NetworkListView : public NetworkListViewBase,
   DISALLOW_COPY_AND_ASSIGN(NetworkListView);
 };
 
+}  // namespace tray
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_NETWORK_NETWORK_LIST_H_

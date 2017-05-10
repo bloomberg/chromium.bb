@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -15,7 +14,7 @@
 #include "ash/system/network/network_info.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
 #include "ash/system/networking_config_delegate.h"
-#include "ash/system/tray/fixed_sized_image_view.h"
+
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -29,19 +28,15 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/device_event_log/device_event_log.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -51,10 +46,10 @@
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/painter.h"
+
 #include "ui/views/view.h"
 
 using chromeos::LoginState;
@@ -64,7 +59,7 @@ using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ash {
-
+namespace tray {
 namespace {
 
 bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
@@ -325,9 +320,8 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
 
 // NetworkListView:
 
-NetworkListView::NetworkListView(
-    tray::NetworkStateListDetailedView* detailed_view)
-    : NetworkListViewBase(detailed_view),
+NetworkListView::NetworkListView(SystemTrayItem* owner, LoginStatus login)
+    : NetworkStateListDetailedView(owner, LIST_TYPE_NETWORK, login),
       needs_relayout_(false),
       no_wifi_networks_view_(nullptr),
       no_cellular_networks_view_(nullptr),
@@ -343,8 +337,8 @@ NetworkListView::~NetworkListView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 }
 
-void NetworkListView::Update() {
-  CHECK(container());
+void NetworkListView::UpdateNetworkList() {
+  CHECK(scroll_content());
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
@@ -513,10 +507,10 @@ void NetworkListView::UpdateNetworkListInternal() {
       break;
     }
   }
-  container()->SizeToPreferredSize();
-  detailed_view()->RelayoutScrollList();
+  scroll_content()->SizeToPreferredSize();
+  scroller()->Layout();
   if (selected_view)
-    container()->ScrollRectToVisible(selected_view->bounds());
+    scroll_content()->ScrollRectToVisible(selected_view->bounds());
 }
 
 std::unique_ptr<std::set<std::string>>
@@ -625,7 +619,7 @@ NetworkListView::UpdateNetworkListEntries() {
 
 HoverHighlightView* NetworkListView::CreateViewForNetwork(
     const NetworkInfo& info) {
-  HoverHighlightView* container = new HoverHighlightView(detailed_view());
+  HoverHighlightView* container = new HoverHighlightView(this);
   if (info.connected)
     SetupConnectedItem(container, info.label, info.image);
   else if (info.connecting)
@@ -641,7 +635,7 @@ HoverHighlightView* NetworkListView::CreateViewForNetwork(
 
 void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
                                            const NetworkInfo& info) {
-  DCHECK(!view->has_children());
+  DCHECK(!view->is_populated());
   if (info.connected)
     SetupConnectedItem(view, info.label, info.image);
   else if (info.connecting)
@@ -710,12 +704,12 @@ void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
 }
 
 void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
-  if (view->parent() != container()) {
-    container()->AddChildViewAt(view, index);
+  if (view->parent() != scroll_content()) {
+    scroll_content()->AddChildViewAt(view, index);
   } else {
-    if (container()->child_at(index) == view)
+    if (scroll_content()->child_at(index) == view)
       return;
-    container()->ReorderChildView(view, index);
+    scroll_content()->ReorderChildView(view, index);
   }
   needs_relayout_ = true;
 }
@@ -732,8 +726,7 @@ void NetworkListView::UpdateInfoLabel(int message_id,
     }
     return;
   }
-  base::string16 text =
-      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(message_id);
+  base::string16 text = l10n_util::GetStringUTF16(message_id);
   if (!label) {
     // TODO(mohsen): Update info label to follow MD specs. See
     // https://crbug.com/687778.
@@ -827,4 +820,5 @@ TriView* NetworkListView::CreateConnectionWarning() {
   return connection_warning;
 }
 
+}  // namespace tray
 }  // namespace ash

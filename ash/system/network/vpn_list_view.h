@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "ash/system/network/network_list_view_base.h"
+#include "ash/system/network/network_state_list_detailed_view.h"
 #include "ash/system/network/vpn_list.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
@@ -23,8 +23,6 @@ class View;
 
 namespace ash {
 namespace tray {
-class NetworkStateListDetailedView;
-}
 
 // A list of VPN providers and networks that shows VPN providers and networks in
 // a hierarchical layout, allowing the user to see at a glance which provider a
@@ -39,13 +37,14 @@ class NetworkStateListDetailedView;
 // attempt. Clicking on the currently connected or connecting network shows its
 // configuration dialog. Clicking on a provider shows the provider's "add
 // network" dialog.
-class VPNListView : public NetworkListViewBase, public VpnList::Observer {
+class VPNListView : public NetworkStateListDetailedView,
+                    public VpnList::Observer {
  public:
-  explicit VPNListView(tray::NetworkStateListDetailedView* detailed_view);
+  VPNListView(SystemTrayItem* owner, LoginStatus login);
   ~VPNListView() override;
 
-  // NetworkListViewBase:
-  void Update() override;
+  // NetworkStateListDetailedView:
+  void UpdateNetworkList() override;
   bool IsNetworkEntry(views::View* view, std::string* guid) const override;
 
   // VpnList::Observer:
@@ -78,6 +77,7 @@ class VPNListView : public NetworkListViewBase, public VpnList::Observer {
   DISALLOW_COPY_AND_ASSIGN(VPNListView);
 };
 
+}  // namespace tray
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_NETWORK_VPN_LIST_VIEW_H_

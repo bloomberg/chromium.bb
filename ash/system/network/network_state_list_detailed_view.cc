@@ -5,62 +5,34 @@
 #include "ash/system/network/network_state_list_detailed_view.h"
 
 #include <algorithm>
-#include <vector>
 
-#include "ash/ash_constants.h"
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/network/network_icon.h"
-#include "ash/system/network/network_icon_animation.h"
-#include "ash/system/network/network_list.h"
-#include "ash/system/network/network_list_view_base.h"
-#include "ash/system/network/tray_network_state_observer.h"
-#include "ash/system/network/vpn_list_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_details_view.h"
-#include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/wm_window.h"
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/scroll_view.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
-#include "ui/wm/core/window_util.h"
 
 using chromeos::DeviceState;
-using chromeos::LoginState;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
@@ -73,16 +45,14 @@ namespace {
 // Delay between scan requests.
 const int kRequestScanDelaySeconds = 10;
 
-}  // namespace
-
-//------------------------------------------------------------------------------
-
 // This margin value is used throughout the bubble:
 // - margins inside the border
 // - horizontal spacing between bubble border and parent bubble border
 // - distance between top of this bubble's border and the bottom of the anchor
 //   view (horizontal rule).
-int kBubbleMargin = 8;
+const int kBubbleMargin = 8;
+
+}  // namespace
 
 // A bubble which displays network info.
 class NetworkStateListDetailedView::InfoBubble
@@ -201,15 +171,7 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       info_button_(nullptr),
       settings_button_(nullptr),
       proxy_settings_button_(nullptr),
-      info_bubble_(nullptr) {
-  if (list_type == LIST_TYPE_VPN) {
-    // Use a specialized class to list VPNs.
-    network_list_view_.reset(new VPNListView(this));
-  } else {
-    // Use a common class to list any other network types.
-    network_list_view_.reset(new NetworkListView(this));
-  }
-}
+      info_bubble_(nullptr) {}
 
 NetworkStateListDetailedView::~NetworkStateListDetailedView() {
   ResetInfoBubble();
@@ -222,20 +184,14 @@ void NetworkStateListDetailedView::Update() {
 }
 
 void NetworkStateListDetailedView::Init() {
-  Reset();
-  info_button_ = nullptr;
-  settings_button_ = nullptr;
-  proxy_settings_button_ = nullptr;
-
   CreateScrollableList();
   CreateTitleRow(list_type_ == ListType::LIST_TYPE_NETWORK
                      ? IDS_ASH_STATUS_TRAY_NETWORK
                      : IDS_ASH_STATUS_TRAY_VPN);
 
-  network_list_view_->set_container(scroll_content());
   Update();
 
-  if (list_type_ != LIST_TYPE_VPN)
+  if (list_type_ == LIST_TYPE_NETWORK)
     CallRequestScan();
 }
 
@@ -260,7 +216,7 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
     return;
 
   std::string guid;
-  if (!network_list_view_->IsNetworkEntry(view, &guid))
+  if (!IsNetworkEntry(view, &guid))
     return;
 
   const NetworkState* network =
@@ -323,17 +279,13 @@ void NetworkStateListDetailedView::ShowSettings() {
   Shell::Get()->system_tray_controller()->ShowNetworkSettings(std::string());
 }
 
-void NetworkStateListDetailedView::UpdateNetworkList() {
-  network_list_view_->Update();
-}
-
 void NetworkStateListDetailedView::UpdateHeaderButtons() {
   if (proxy_settings_button_) {
     proxy_settings_button_->SetEnabled(
         NetworkHandler::Get()->network_state_handler()->DefaultNetwork() !=
         nullptr);
   }
-  if (list_type_ != LIST_TYPE_VPN) {
+  if (list_type_ == LIST_TYPE_NETWORK) {
     const bool scanning =
         NetworkHandler::Get()->network_state_handler()->GetScanningByType(
             NetworkTypePattern::WiFi());
@@ -380,7 +332,7 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   }
 
   std::string ethernet_address, wifi_address;
-  if (list_type_ != LIST_TYPE_VPN) {
+  if (list_type_ == LIST_TYPE_NETWORK) {
     ethernet_address = handler->FormattedHardwareAddressForType(
         NetworkTypePattern::Ethernet());
     wifi_address =
@@ -423,10 +375,6 @@ void NetworkStateListDetailedView::CallRequestScan() {
       FROM_HERE,
       base::Bind(&NetworkStateListDetailedView::CallRequestScan, AsWeakPtr()),
       base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));
-}
-
-void NetworkStateListDetailedView::RelayoutScrollList() {
-  scroller()->Layout();
 }
 
 }  // namespace tray

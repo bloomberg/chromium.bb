@@ -15,7 +15,7 @@ namespace ash {
 class TrayNetworkStateObserver;
 
 namespace tray {
-class NetworkStateListDetailedView;
+class VPNListView;
 class VpnDefaultView;
 }
 
@@ -36,7 +36,7 @@ class TrayVPN : public SystemTrayItem,
 
  private:
   tray::VpnDefaultView* default_;
-  tray::NetworkStateListDetailedView* detailed_;
+  tray::VPNListView* detailed_;
   std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayVPN);

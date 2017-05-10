@@ -8,7 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/network/network_state_list_detailed_view.h"
+#include "ash/system/network/network_list.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/macros.h"

@@ -12,8 +12,8 @@
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
-#include "ash/system/network/network_state_list_detailed_view.h"
 #include "ash/system/network/vpn_list.h"
+#include "ash/system/network/vpn_list_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -173,8 +173,7 @@ views::View* TrayVPN::CreateDetailedView(LoginStatus status) {
     return nullptr;
 
   ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_VPN_VIEW);
-  detailed_ = new tray::NetworkStateListDetailedView(
-      this, tray::NetworkStateListDetailedView::LIST_TYPE_VPN, status);
+  detailed_ = new tray::VPNListView(this, status);
   detailed_->Init();
   return detailed_;
 }
