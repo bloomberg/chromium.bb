@@ -1258,7 +1258,7 @@ TEST_F(MemoryDumpManagerTest, DumpWithTracingDisabled) {
   const TraceConfig::MemoryDumpConfig& memory_dump_config =
       trace_config.memory_dump_config();
 
-  mdm_->Enable(memory_dump_config);
+  mdm_->SetupForTracing(memory_dump_config);
 
   EXPECT_CALL(global_dump_handler_, RequestGlobalMemoryDump(_, _)).Times(3);
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(3).WillRepeatedly(Return(true));
@@ -1271,7 +1271,7 @@ TEST_F(MemoryDumpManagerTest, DumpWithTracingDisabled) {
   // successful we also managed to add the dump to the trace.
   EXPECT_FALSE(last_callback_success_);
 
-  mdm_->Disable();
+  mdm_->TeardownForTracing();
 
   mdm_->UnregisterDumpProvider(&mdp);
 }

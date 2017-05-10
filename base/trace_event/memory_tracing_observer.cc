@@ -49,7 +49,8 @@ void MemoryTracingObserver::OnTraceLogEnabled() {
     return;
 
   // Initialize the TraceLog for the current thread. This is to avoids that the
-  // TraceLog memory dump provider is registered lazily during the MDM Enable()
+  // TraceLog memory dump provider is registered lazily during the MDM
+  // SetupForTracing().
   TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
 
   const TraceConfig& trace_config =
@@ -60,11 +61,11 @@ void MemoryTracingObserver::OnTraceLogEnabled() {
   memory_dump_config_ =
       MakeUnique<TraceConfig::MemoryDumpConfig>(memory_dump_config);
 
-  memory_dump_manager_->Enable(memory_dump_config);
+  memory_dump_manager_->SetupForTracing(memory_dump_config);
 }
 
 void MemoryTracingObserver::OnTraceLogDisabled() {
-  memory_dump_manager_->Disable();
+  memory_dump_manager_->TeardownForTracing();
   memory_dump_config_.reset();
 }
 
