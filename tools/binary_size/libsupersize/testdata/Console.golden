@@ -1,14 +1,14 @@
 ********************************************************************************
 Entering interactive Python shell. Quick reference:
 
-SizeInfo: Cluster, metadata, section_sizes, symbols
-Symbol: FlagsString, IsBss, IsGeneratedByToolchain, IsGroup, address, aliases, end_address, flags, full_name, generated_source, is_anonymous, name, num_aliases, object_path, padding, pss, pss_without_padding, section, section_name, size, size_without_padding, source_path
+SizeInfo: Clustered, metadata, raw_symbols, section_sizes, symbols
+Symbol: FlagsString, IsBss, IsGeneratedByToolchain, IsGroup, address, aliases, end_address, flags, full_name, generated_source, is_anonymous, name, num_aliases, object_path, padding, pss, pss_without_padding, section, section_name, size, size_without_padding, source_path, template_name
 
-SymbolGroup (extends Symbol): Cluster, CountUniqueSymbols, Filter, GroupBy, GroupByNamespace, GroupByPath, GroupBySectionName, Inverted, IterLeafSymbols, IterUniqueSymbols, Sorted, SortedByAddress, SortedByCount, SortedByName, WhereAddressInRange, WhereBiggerThan, WhereFullNameMatches, WhereGeneratedByToolchain, WhereHasAnyAttribution, WhereHasPath, WhereInSection, WhereMatches, WhereNameMatches, WhereObjectPathMatches, WherePathMatches, WhereSourceIsGenerated, WhereSourcePathMatches, is_sorted
+SymbolGroup (extends Symbol): Clustered, CountUniqueSymbols, Filter, GroupedBy, GroupedByName, GroupedByPath, GroupedBySectionName, Inverted, IterLeafSymbols, IterUniqueSymbols, Sorted, SortedByAddress, SortedByCount, SortedByName, WhereAddressInRange, WhereBiggerThan, WhereFullNameMatches, WhereGeneratedByToolchain, WhereHasAnyAttribution, WhereHasPath, WhereInSection, WhereIsTemplate, WhereMatches, WhereNameMatches, WhereObjectPathMatches, WherePathMatches, WhereSourceIsGenerated, WhereSourcePathMatches, WhereTemplateNameMatches, is_sorted
 
 SymbolDiff (extends SymbolGroup): IsAdded, IsRemoved, IsSimilar, WhereNotUnchanged, added_count, changed_count, removed_count, unchanged_count
 
-canned_queries: CategorizeByChromeComponent, CategorizeGenerated
+canned_queries: CategorizeByChromeComponent, CategorizeGenerated, TemplatesByName
 
 Functions: Diff(), Disassemble(), ExpandRegex(), Print(), ShowExamples()
 Variables: canned_queries, size_info
@@ -22,7 +22,7 @@ Print(size_info, verbose=True)
 
 # Show two levels of .text, grouped by first two subdirectories
 text_syms = size_info.symbols.WhereInSection("t")
-by_path = text_syms.GroupByPath(depth=2)
+by_path = text_syms.GroupedByPath(depth=2)
 Print(by_path.WhereBiggerThan(1024))
 
 # Show all non-vtable generated symbols
@@ -42,7 +42,7 @@ Print(Diff(size_info1, size_info2), to_file="output.txt")
 # View per-component breakdowns, then drill into the last entry.
 c = canned_queries.CategorizeByChromeComponent()
 Print(c)
-Print(c[-1].GroupByPath(depth=2).Sorted())
+Print(c[-1].GroupedByPath(depth=2).Clustered().Sorted())
 
 # For even more inspiration, look at canned_queries.py
 # (and feel free to add your own!).

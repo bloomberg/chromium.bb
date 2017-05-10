@@ -90,7 +90,7 @@ class _Session(object):
     Args:
       before: Defaults to first size_infos[0].
       after: Defaults to second size_infos[1].
-      cluster: When True (default), calls SymbolGroup.Cluster() after diffing.
+      cluster: When True (default), calls SymbolGroup.Clustered() after diffing.
           Generally reduces noise.
       sort: When True (default), calls SymbolGroup.Sorted() after diffing.
     """
@@ -98,7 +98,7 @@ class _Session(object):
     after = after if after is not None else self._size_infos[1]
     ret = diff.Diff(before, after)
     if cluster:
-      ret.symbols = ret.symbols.Cluster()
+      ret.symbols = ret.symbols.Clustered()
     if sort:
       ret.symbols = ret.symbols.Sorted()
     return ret
@@ -173,7 +173,7 @@ class _Session(object):
         '',
         '# Show two levels of .text, grouped by first two subdirectories',
         'text_syms = size_info.symbols.WhereInSection("t")',
-        'by_path = text_syms.GroupByPath(depth=2)',
+        'by_path = text_syms.GroupedByPath(depth=2)',
         'Print(by_path.WhereBiggerThan(1024))',
         '',
         '# Show all non-vtable generated symbols',
@@ -193,7 +193,7 @@ class _Session(object):
         '# View per-component breakdowns, then drill into the last entry.',
         'c = canned_queries.CategorizeByChromeComponent()',
         'Print(c)',
-        'Print(c[-1].GroupByPath(depth=2).Sorted())',
+        'Print(c[-1].GroupedByPath(depth=2).Clustered().Sorted())',
         '',
         '# For even more inspiration, look at canned_queries.py',
         '# (and feel free to add your own!).',

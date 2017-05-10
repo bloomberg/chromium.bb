@@ -44,86 +44,85 @@ def _StripLinkerAddedSymbolPrefixes(raw_symbols):
   Removing prefixes make symbol names match up with those found in .o files.
   """
   for symbol in raw_symbols:
-    name = symbol.name
-    if name.startswith('startup.'):
+    full_name = symbol.full_name
+    if full_name.startswith('startup.'):
       symbol.flags |= models.FLAG_STARTUP
-      symbol.name = name[8:]
-    elif name.startswith('unlikely.'):
+      symbol.full_name = full_name[8:]
+    elif full_name.startswith('unlikely.'):
       symbol.flags |= models.FLAG_UNLIKELY
-      symbol.name = name[9:]
-    elif name.startswith('rel.local.'):
+      symbol.full_name = full_name[9:]
+    elif full_name.startswith('rel.local.'):
       symbol.flags |= models.FLAG_REL_LOCAL
-      symbol.name = name[10:]
-    elif name.startswith('rel.'):
+      symbol.full_name = full_name[10:]
+    elif full_name.startswith('rel.'):
       symbol.flags |= models.FLAG_REL
-      symbol.name = name[4:]
+      symbol.full_name = full_name[4:]
 
 
 def _UnmangleRemainingSymbols(raw_symbols, tool_prefix):
   """Uses c++filt to unmangle any symbols that need it."""
-  to_process = [s for s in raw_symbols if s.name.startswith('_Z')]
+  to_process = [s for s in raw_symbols if s.full_name.startswith('_Z')]
   if not to_process:
     return
 
   logging.info('Unmangling %d names', len(to_process))
   proc = subprocess.Popen([tool_prefix + 'c++filt'], stdin=subprocess.PIPE,
                           stdout=subprocess.PIPE)
-  stdout = proc.communicate('\n'.join(s.name for s in to_process))[0]
+  stdout = proc.communicate('\n'.join(s.full_name for s in to_process))[0]
   assert proc.returncode == 0
 
   for i, line in enumerate(stdout.splitlines()):
-    to_process[i].name = line
+    to_process[i].full_name = line
 
 
-def _NormalizeNames(symbols):
+def _NormalizeNames(raw_symbols):
   """Ensures that all names are formatted in a useful way.
 
   This includes:
-    - Assigning of |full_name|.
-    - Stripping of return types in |full_name| and |name| (for functions).
-    - Stripping parameters from |name|.
+    - Deriving |name| and |template_name| from |full_name|.
+    - Stripping of return types (for functions).
     - Moving "vtable for" and the like to be suffixes rather than prefixes.
   """
   found_prefixes = set()
-  for symbol in symbols:
-    if symbol.name.startswith('*'):
+  for symbol in raw_symbols:
+    if symbol.full_name.startswith('*'):
       # See comment in _CalculatePadding() about when this
       # can happen.
+      symbol.template_name = symbol.full_name
+      symbol.name = symbol.full_name
       continue
 
     # E.g.: vtable for FOO
-    idx = symbol.name.find(' for ', 0, 30)
+    idx = symbol.full_name.find(' for ', 0, 30)
     if idx != -1:
-      found_prefixes.add(symbol.name[:idx + 4])
-      symbol.name = symbol.name[idx + 5:] + ' [' + symbol.name[:idx] + ']'
+      found_prefixes.add(symbol.full_name[:idx + 4])
+      symbol.full_name = (
+          symbol.full_name[idx + 5:] + ' [' + symbol.full_name[:idx] + ']')
 
     # E.g.: virtual thunk to FOO
-    idx = symbol.name.find(' to ', 0, 30)
+    idx = symbol.full_name.find(' to ', 0, 30)
     if idx != -1:
-      found_prefixes.add(symbol.name[:idx + 3])
-      symbol.name = symbol.name[idx + 4:] + ' [' + symbol.name[:idx] + ']'
+      found_prefixes.add(symbol.full_name[:idx + 3])
+      symbol.full_name = (
+          symbol.full_name[idx + 4:] + ' [' + symbol.full_name[:idx] + ']')
 
-    # Strip out return type, and identify where parameter list starts.
-    if symbol.section == 't':
-      symbol.full_name, symbol.name = function_signature.Parse(symbol.name)
+    # Strip out return type, and split out name, template_name.
+    # Function parsing also applies to non-text symbols. E.g. Function statics.
+    symbol.full_name, symbol.template_name, symbol.name = (
+        function_signature.Parse(symbol.full_name))
 
     # Remove anonymous namespaces (they just harm clustering).
-    non_anonymous = symbol.name.replace('(anonymous namespace)::', '')
-    if symbol.name != non_anonymous:
+    symbol.template_name = symbol.template_name.replace(
+        '(anonymous namespace)::', '')
+    symbol.full_name = symbol.full_name.replace(
+        '(anonymous namespace)::', '')
+    non_anonymous_name = symbol.name.replace('(anonymous namespace)::', '')
+    if symbol.name != non_anonymous_name:
       symbol.flags |= models.FLAG_ANONYMOUS
-      symbol.name = non_anonymous
-      symbol.full_name = symbol.full_name.replace(
-          '(anonymous namespace)::', '')
+      symbol.name = non_anonymous_name
 
-    if symbol.section != 't' and '(' in symbol.name:
-      # Pretty rare. Example:
-      # blink::CSSValueKeywordsHash::findValueImpl(char const*)::value_word_list
-      symbol.full_name = symbol.name
-      symbol.name = re.sub(r'\(.*\)', '', symbol.full_name)
-
-    # Don't bother storing both if they are the same.
-    if symbol.full_name == symbol.name:
-      symbol.full_name = ''
+    # Allow using "is" to compare names (and should help with RAM).
+    function_signature.InternSameNames(symbol)
 
   logging.debug('Found name prefixes of: %r', found_prefixes)
 
@@ -199,15 +198,15 @@ def _ComputeAnscestorPathsAndNormalizeObjectPaths(
   num_path_mismatches = 0
   num_unmatched_aliases = 0
   for symbol in raw_symbols:
-    name = symbol.name
+    full_name = symbol.full_name
     if (symbol.IsBss() or
-        not name or
-        name[0] in '*.' or  # e.g. ** merge symbols, .Lswitch.table
-        name == 'startup'):
+        not full_name or
+        full_name[0] in '*.' or  # e.g. ** merge symbols, .Lswitch.table
+        full_name == 'startup'):
       symbol.object_path = _NormalizeObjectPath(symbol.object_path)
       continue
 
-    object_paths = object_paths_by_name.get(name)
+    object_paths = object_paths_by_name.get(full_name)
     if object_paths:
       num_found_paths += 1
     else:
@@ -263,14 +262,14 @@ def _DiscoverMissedObjectPaths(raw_symbols, elf_object_paths):
   return missed_inputs
 
 
-def _CalculatePadding(symbols):
+def _CalculatePadding(raw_symbols):
   """Populates the |padding| field based on symbol addresses.
 
   Symbols must already be sorted by |address|.
   """
   seen_sections = []
-  for i, symbol in enumerate(symbols[1:]):
-    prev_symbol = symbols[i]
+  for i, symbol in enumerate(raw_symbols[1:]):
+    prev_symbol = raw_symbols[i]
     if prev_symbol.section_name != symbol.section_name:
       assert symbol.section_name not in seen_sections, (
           'Input symbols must be sorted by section, then address.')
@@ -293,7 +292,7 @@ def _CalculatePadding(symbols):
     # E.g.: Set them to 0 and see what warnings get logged, then take max value.
     # TODO(agrieve): See if these thresholds make sense for architectures
     #     other than arm32.
-    if not symbol.name.startswith('*') and (
+    if not symbol.full_name.startswith('*') and (
         symbol.section in 'rd' and padding >= 256 or
         symbol.section in 't' and padding >= 64):
       # Should not happen.
@@ -317,13 +316,14 @@ def _AddSymbolAliases(raw_symbols, aliases_by_address):
       continue
     name_list = aliases_by_address.get(s.address)
     if name_list:
-      if s.name not in name_list:
-        logging.warning('Name missing from aliases: %s %s', s.name, name_list)
+      if s.full_name not in name_list:
+        logging.warning('Name missing from aliases: %s %s', s.full_name,
+                        name_list)
         continue
       replacements.append((i, name_list))
       num_new_symbols += len(name_list) - 1
 
-  if float(num_new_symbols) / len(raw_symbols) < .1:
+  if float(num_new_symbols) / len(raw_symbols) < .05:
     logging.warning('Number of aliases is oddly low (%.0f%%). It should '
                     'usually be around 25%%. Ensure --tool-prefix is correct.',
                     float(num_new_symbols) / len(raw_symbols) * 100)
@@ -345,9 +345,9 @@ def _AddSymbolAliases(raw_symbols, aliases_by_address):
 
     # Create aliases (does not bother reusing the existing symbol).
     aliases = [None] * len(name_list)
-    for i, name in enumerate(name_list):
+    for i, full_name in enumerate(name_list):
       aliases[i] = models.Symbol(
-          sym.section_name, sym.size, address=sym.address, name=name,
+          sym.section_name, sym.size, address=sym.address, full_name=full_name,
           aliases=aliases)
 
     dst_cursor_end -= len(aliases)
@@ -366,10 +366,10 @@ def LoadAndPostProcessSizeInfo(path):
 
 def _PostProcessSizeInfo(size_info):
   logging.info('Normalizing symbol names')
-  _NormalizeNames(size_info.symbols)
+  _NormalizeNames(size_info.raw_symbols)
   logging.info('Calculating padding')
-  _CalculatePadding(size_info.symbols)
-  logging.info('Processed %d symbols', len(size_info.symbols))
+  _CalculatePadding(size_info.raw_symbols)
+  logging.info('Processed %d symbols', len(size_info.raw_symbols))
 
 
 def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
@@ -503,22 +503,22 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     for symbol in raw_symbols:
       symbol.object_path = _NormalizeObjectPath(symbol.object_path)
 
-  size_info = models.SizeInfo(section_sizes, models.SymbolGroup(raw_symbols))
+  size_info = models.SizeInfo(section_sizes, raw_symbols)
 
   # Name normalization not strictly required, but makes for smaller files.
   if raw_only:
     logging.info('Normalizing symbol names')
-    _NormalizeNames(size_info.symbols)
+    _NormalizeNames(size_info.raw_symbols)
   else:
     _PostProcessSizeInfo(size_info)
 
   if logging.getLogger().isEnabledFor(logging.DEBUG):
     # Padding is reported in size coverage logs.
     if raw_only:
-      _CalculatePadding(size_info.symbols)
+      _CalculatePadding(size_info.raw_symbols)
     for line in describe.DescribeSizeInfoCoverage(size_info):
       logging.info(line)
-  logging.info('Recorded info for %d symbols', len(size_info.symbols))
+  logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
   return size_info
 
 
