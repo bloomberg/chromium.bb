@@ -234,7 +234,7 @@ void NetworkConfigView::ShowAdvancedView() {
                                           true /* show_8021x */);
   AddChildView(child_config_view_);
   // Resize the window to be able to hold the new widgets.
-  gfx::Size size = GetWidget()->client_view()->GetPreferredSize();
+  gfx::Size size = GetWidget()->non_client_view()->GetPreferredSize();
   gfx::Size predefined_size = views::Widget::GetLocalizedContentsSize(
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_WIDTH_CHARS,
       IDS_JOIN_WIFI_NETWORK_DIALOG_ADVANCED_MINIMUM_HEIGHT_LINES);
