@@ -2834,57 +2834,6 @@ TEST_F(SSLClientSocketTest, NoDHE) {
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 
-// Tests that enabling deprecated ciphers shards the session cache.
-TEST_F(SSLClientSocketTest, DeprecatedShardSessionCache) {
-  ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
-
-  // Prepare a normal and deprecated SSL config.
-  SSLConfig ssl_config;
-  SSLConfig deprecated_ssl_config;
-  deprecated_ssl_config.deprecated_cipher_suites_enabled = true;
-
-  // Connect with deprecated ciphers enabled to warm the session cache cache.
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(deprecated_ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-  SSLInfo ssl_info;
-  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-
-  // Test that re-connecting with deprecated ciphers enabled still resumes.
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(deprecated_ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
-
-  // However, a normal connection needs a full handshake.
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-
-  // Clear the session cache for the inverse test.
-  SSLClientSocket::ClearSessionCache();
-
-  // Now make a normal connection to prime the session cache.
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-
-  // A normal connection should be able to resume.
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
-
-  // However, enabling deprecated ciphers connects fresh.
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(deprecated_ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-}
-
 // Tests that the version_interference_probe option rejects successful
 // connections and passes errors through.
 TEST_F(SSLClientSocketTest, VersionInterferenceProbe) {
