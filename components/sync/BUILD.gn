@@ -572,6 +572,8 @@ static_library("sync") {
     "syncable/write_transaction.h",
     "syncable/write_transaction_info.cc",
     "syncable/write_transaction_info.h",
+    "user_events/user_event_service.cc",
+    "user_events/user_event_service.h",
     "user_events/user_event_sync_bridge.cc",
     "user_events/user_event_sync_bridge.h",
   ]
@@ -589,6 +591,7 @@ static_library("sync") {
     "//base/third_party/dynamic_annotations",
     "//components/data_use_measurement/core",
     "//components/invalidation/public",
+    "//components/keyed_service/core",
     "//components/metrics",
     "//components/os_crypt",
     "//components/pref_registry",
@@ -942,6 +945,7 @@ source_set("unit_tests") {
     "syncable/syncable_enum_conversions_unittest.cc",
     "syncable/syncable_id_unittest.cc",
     "syncable/syncable_unittest.cc",
+    "user_events/user_event_service_unittest.cc",
     "user_events/user_event_sync_bridge_unittest.cc",
   ]
 
