@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/ash_switches.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -34,7 +35,10 @@ namespace ash {
 namespace {
 
 // How long to wait reloading the wallpaper after the display size has changed.
-const int kWallpaperReloadDelayMs = 100;
+constexpr int kWallpaperReloadDelayMs = 100;
+
+// How long to wait for resizing of the the wallpaper.
+constexpr int kCompositorLockTimeoutMs = 750;
 
 // Returns true if a color should be extracted from the wallpaper based on the
 // command kAshShelfColor line arg.
@@ -174,6 +178,7 @@ void WallpaperController::OnDisplayConfigurationChanged() {
     current_max_display_size_ = max_display_size;
     if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_) {
       timer_.Stop();
+      GetInternalDisplayCompositorLock();
       timer_.Start(FROM_HERE,
                    base::TimeDelta::FromMilliseconds(wallpaper_reload_delay_),
                    base::Bind(&WallpaperController::UpdateWallpaper,
@@ -277,6 +282,7 @@ void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
 
 void WallpaperController::OnWallpaperResized() {
   CalculateWallpaperColors();
+  compositor_lock_.reset();
 }
 
 void WallpaperController::OnColorCalculationComplete() {
@@ -406,6 +412,23 @@ bool WallpaperController::MoveToUnlockedContainer() {
 
   locked_ = false;
   return ReparentWallpaper(GetWallpaperContainerId(false));
+}
+
+void WallpaperController::GetInternalDisplayCompositorLock() {
+  if (display::Display::HasInternalDisplay()) {
+    compositor_lock_ =
+        Shell::Get()
+            ->window_tree_host_manager()
+            ->GetRootWindowForDisplayId(display::Display::InternalDisplayId())
+            ->layer()
+            ->GetCompositor()
+            ->GetCompositorLock(this, base::TimeDelta::FromMilliseconds(
+                                          kCompositorLockTimeoutMs));
+  }
+}
+
+void WallpaperController::CompositorLockTimedOut() {
+  compositor_lock_.reset();
 }
 
 }  // namespace ash

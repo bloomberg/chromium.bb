@@ -225,8 +225,14 @@ void ScreenRotationAnimator::SetRotation(
     display::Display::Rotation old_rotation,
     display::Display::Rotation new_rotation,
     display::Display::RotationSource source) {
+  // Allow compositor locks to extend timeout, so that screen rotation only
+  // takes output copy after contents are properlly resized, such as wallpaper
+  // and ARC apps.
+  ui::Compositor* compositor = root_window_->layer()->GetCompositor();
+  compositor->set_allow_locks_to_extend_timeout(true);
   Shell::Get()->display_manager()->SetDisplayRotation(display_id_, new_rotation,
                                                       source);
+  compositor->set_allow_locks_to_extend_timeout(false);
   const display::Display display =
       Shell::Get()->display_manager()->GetDisplayForId(display_id_);
   old_layer_tree_owner_->root()->SetTransform(
