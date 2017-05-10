@@ -64,11 +64,11 @@ enum CommandType {
 
 // A POD that describes either a path command or an argument for it.
 struct PathElement {
-  constexpr PathElement(CommandType value) : type(value) {}
+  constexpr PathElement(CommandType value) : command(value) {}
   constexpr PathElement(SkScalar value) : arg(value) {}
 
   union {
-    CommandType type;
+    CommandType command;
     SkScalar arg;
   };
 };
