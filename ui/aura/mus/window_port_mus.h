@@ -262,6 +262,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void OnPropertyChanged(const void* key,
                          int64_t old_value,
                          std::unique_ptr<ui::PropertyData> data) override;
+  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink() override;
+  cc::SurfaceId GetSurfaceId() const override;
+  void OnWindowAddedToRootWindow() override {}
+  void OnWillRemoveWindowFromRootWindow() override {}
 
   void UpdatePrimarySurfaceInfo();
   void UpdateClientSurfaceEmbedder();

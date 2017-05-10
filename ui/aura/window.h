@@ -31,6 +31,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/wm/public/window_types.h"
 
+namespace cc {
+class CompositorFrameSink;
+}
+
 namespace display {
 class Display;
 }
@@ -303,6 +307,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Returns true if there was state needing to be cleaned up.
   bool CleanupGestureState();
+
+  // Create a CompositorFrameSink for the aura::Window.
+  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink();
+
+  // Get the current cc::SurfaceId.
+  cc::SurfaceId GetSurfaceId() const;
 
  protected:
   // Deletes (or removes if not owned by parent) all child windows. Intended for

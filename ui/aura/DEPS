@@ -1,7 +1,6 @@
 include_rules = [
-  "+cc/surfaces/surface_id.h",
-  "+cc/surfaces/surface_sequence.h",
-  "+cc/surfaces/frame_sink_id.h",
+  "+cc/output",
+  "+cc/surfaces",
   "+mojo/common",
   "+mojo/public/cpp/bindings",
   "+net/base/filename_util.h",

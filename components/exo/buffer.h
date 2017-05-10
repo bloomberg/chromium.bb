@@ -124,11 +124,6 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // The client release callback.
   base::Closure release_callback_;
 
-  // CompositorFrameSinkHolder instance that needs to be kept alive to receive
-  // a release callback when the last produced transferable resource is no
-  // longer in use.
-  scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
-
   // Cancelable release contents callback. This is set when a release callback
   // is pending.
   base::CancelableClosure release_contents_callback_;

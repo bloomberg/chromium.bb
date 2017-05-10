@@ -6,7 +6,6 @@
 #define COMPONENTS_EXO_SURFACE_H_
 
 #include <list>
-#include <memory>
 #include <set>
 #include <utility>
 
@@ -15,11 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
-#include "components/exo/compositor_frame_sink.h"
 #include "components/exo/compositor_frame_sink_holder.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -33,10 +29,6 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
-
-namespace cc {
-class LocalSurfaceIdAllocator;
 }
 
 namespace gfx {
@@ -320,12 +312,7 @@ class Surface : public ui::ContextFactoryObserver,
   // The device scale factor sent in CompositorFrames.
   float device_scale_factor_ = 1.0f;
 
-  const cc::FrameSinkId frame_sink_id_;
-  cc::LocalSurfaceId local_surface_id_;
-
-  scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
-
-  cc::LocalSurfaceIdAllocator id_allocator_;
+  std::unique_ptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
 
   // The next resource id the buffer will be attached to.
   int next_resource_id_ = 1;
@@ -394,12 +381,6 @@ class Surface : public ui::ContextFactoryObserver,
 
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true> observers_;
-
-  // A reference factory that uses the compositor frame sink holder provided
-  // to this class to construct surface references. This object is passed to
-  // ui::Layer::SetShowSurface because the layer needs to know how to add
-  // references to surfaces.
-  scoped_refptr<cc::SurfaceReferenceFactory> surface_reference_factory_;
 
   // The begin frame source being observed.
   cc::BeginFrameSource* begin_frame_source_ = nullptr;
