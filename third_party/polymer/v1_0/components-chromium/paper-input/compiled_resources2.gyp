@@ -6,14 +6,6 @@
 {
   'targets': [
     {
-      'target_name': 'all-imports-extracted',
-      'dependencies': [
-        'paper-input-extracted',
-        'paper-textarea-extracted',
-      ],
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'paper-input-addon-behavior-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

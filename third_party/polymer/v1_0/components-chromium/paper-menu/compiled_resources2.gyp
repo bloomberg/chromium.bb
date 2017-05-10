@@ -13,10 +13,6 @@
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'paper-menu-shared-styles-extracted',
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'paper-submenu-extracted',
       'dependencies': [
         '../iron-behaviors/compiled_resources2.gyp:iron-control-state-extracted',

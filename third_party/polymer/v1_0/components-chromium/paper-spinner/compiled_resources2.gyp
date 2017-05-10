@@ -23,9 +23,5 @@
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
-    {
-      'target_name': 'paper-spinner-styles-extracted',
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
   ],
 }
