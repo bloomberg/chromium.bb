@@ -43,6 +43,7 @@ Active development in 2015 & 2016 is focused on enabling GATT features for:
 Known future work is tracked in the
 [Refactoring meta issue](https://crbug.com/580406).
 
+
 ## Android
 
 The android implementation requires crossing from C++ to Java using
@@ -79,8 +80,10 @@ See also: [Class Diagram of Web Bluetooth through Bluetooth Android][Class]
 
 [Class]: https://sites.google.com/a/chromium.org/dev/developers/design-documents/bluetooth-design-docs/web-bluetooth-through-bluetooth-android-class-diagram
 
+
 ## Testing
-See [test/README.md](//device/bluetooth/test/README.md)
+See [test/README.md](test/README.md)
+
 
 ## Design Documents
 
