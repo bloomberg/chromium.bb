@@ -18,6 +18,8 @@ static_library("internal") {
     "config.h",
     "download_service_impl.cc",
     "download_service_impl.h",
+    "scheduler/battery_listener.cc",
+    "scheduler/battery_listener.h",
   ]
 
   deps = [
@@ -33,11 +35,13 @@ source_set("unit_tests") {
 
   sources = [
     "download_service_impl_unittest.cc",
+    "scheduler/battery_listener_unittest.cc",
   ]
 
   deps = [
     ":internal",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
