@@ -594,6 +594,7 @@ void SetUpV8() {
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
+  DCHECK(!g_isolate_holder);
   g_isolate_holder = new gin::IsolateHolder(base::ThreadTaskRunnerHandle::Get(),
                                             gin::IsolateHolder::kSingleThread);
   g_isolate_holder->isolate()->Enter();
@@ -614,6 +615,10 @@ int GetBlockForJpeg(void* param,
     return 0;
   memcpy(buf, data_vector->data() + pos, size);
   return 1;
+}
+
+std::string WideStringToString(FPDF_WIDESTRING wide_string) {
+  return base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(wide_string));
 }
 
 }  // namespace
@@ -795,16 +800,11 @@ void PDFiumEngine::Form_EmailTo(FPDF_FORMFILLINFO* param,
                                 FPDF_WIDESTRING cc,
                                 FPDF_WIDESTRING bcc,
                                 FPDF_WIDESTRING message) {
-  std::string to_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(to));
-  std::string subject_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(subject));
-  std::string cc_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(cc));
-  std::string bcc_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(bcc));
-  std::string message_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(message));
+  std::string to_str = WideStringToString(to);
+  std::string subject_str = WideStringToString(subject);
+  std::string cc_str = WideStringToString(cc);
+  std::string bcc_str = WideStringToString(bcc);
+  std::string message_str = WideStringToString(message);
 
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
   engine->client_->Email(to_str, cc_str, bcc_str, subject_str, message_str);
@@ -892,16 +892,11 @@ FPDF_BOOL PDFiumEngine::Form_PostRequestURL(FPDF_FORMFILLINFO* param,
                                             FPDF_WIDESTRING encode,
                                             FPDF_WIDESTRING header,
                                             FPDF_BSTR* response) {
-  std::string url_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(url));
-  std::string data_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(data));
-  std::string content_type_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(content_type));
-  std::string encode_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(encode));
-  std::string header_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(header));
+  std::string url_str = WideStringToString(url);
+  std::string data_str = WideStringToString(data);
+  std::string content_type_str = WideStringToString(content_type);
+  std::string encode_str = WideStringToString(encode);
+  std::string header_str = WideStringToString(header);
 
   std::string javascript = "alert(\"Post:" + url_str + "," + data_str + "," +
                            content_type_str + "," + encode_str + "," +
@@ -913,12 +908,9 @@ FPDF_BOOL PDFiumEngine::Form_PutRequestURL(FPDF_FORMFILLINFO* param,
                                            FPDF_WIDESTRING url,
                                            FPDF_WIDESTRING data,
                                            FPDF_WIDESTRING encode) {
-  std::string url_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(url));
-  std::string data_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(data));
-  std::string encode_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(encode));
+  std::string url_str = WideStringToString(url);
+  std::string data_str = WideStringToString(data);
+  std::string encode_str = WideStringToString(encode);
 
   std::string javascript =
       "alert(\"Put:" + url_str + "," + data_str + "," + encode_str + "\")";
@@ -930,8 +922,7 @@ void PDFiumEngine::Form_UploadTo(FPDF_FORMFILLINFO* param,
                                  FPDF_FILEHANDLER* file_handle,
                                  int file_flag,
                                  FPDF_WIDESTRING to) {
-  std::string to_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(to));
+  std::string to_str = WideStringToString(to);
   // TODO: needs the full implementation of form uploading
 }
 
@@ -954,8 +945,7 @@ FPDF_FILEHANDLER* PDFiumEngine::Form_OpenFile(FPDF_FORMFILLINFO* param,
 void PDFiumEngine::Form_GotoURL(FPDF_FORMFILLINFO* param,
                                 FPDF_DOCUMENT document,
                                 FPDF_WIDESTRING url) {
-  std::string url_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(url));
+  std::string url_str = WideStringToString(url);
   // TODO: needs to implement GOTO URL action
 }
 
@@ -1367,10 +1357,9 @@ pp::Resource PDFiumEngine::PrintPages(
   if (HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY) &&
       (print_settings.format & PP_PRINTOUTPUTFORMAT_PDF)) {
     return PrintPagesAsPDF(page_ranges, page_range_count, print_settings);
-  } else if (HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY)) {
-    return PrintPagesAsRasterPDF(page_ranges, page_range_count, print_settings);
   }
-
+  if (HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
+    return PrintPagesAsRasterPDF(page_ranges, page_range_count, print_settings);
   return pp::Resource();
 }
 
@@ -2204,23 +2193,15 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
     resume_find_index_.Invalidate();
   } else if (current_find_index_.valid()) {
     size_t current_index = current_find_index_.GetIndex();
-    if (forward) {
-      if (current_index >= last_index) {
-        current_find_index_.Invalidate();
-        client_->NotifySelectedFindResultChanged(-1);
-        client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
-        return true;
-      }
-      new_index = current_index + 1;
-    } else {
-      if (current_find_index_.GetIndex() == 0) {
-        current_find_index_.Invalidate();
-        client_->NotifySelectedFindResultChanged(-1);
-        client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
-        return true;
-      }
-      new_index = current_index - 1;
+    if ((forward && current_index >= last_index) ||
+        (!forward && current_index == 0)) {
+      current_find_index_.Invalidate();
+      client_->NotifySelectedFindResultChanged(-1);
+      client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
+      return true;
     }
+    int increment = forward ? 1 : -1;
+    new_index = current_index + increment;
   } else {
     new_index = forward ? 0 : last_index;
   }
@@ -3729,8 +3710,7 @@ int PDFiumEngine::Form_Alert(IPDF_JSPLATFORM* param,
   };
 
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  std::string message_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(message));
+  std::string message_str = WideStringToString(message);
   if (type == ALERT_TYPE_OK) {
     engine->client_->Alert(message_str);
     return ALERT_RESULT_OK;
@@ -3754,10 +3734,8 @@ int PDFiumEngine::Form_Response(IPDF_JSPLATFORM* param,
                                 FPDF_BOOL password,
                                 void* response,
                                 int length) {
-  std::string question_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(question));
-  std::string default_str = base::UTF16ToUTF8(
-      reinterpret_cast<const base::char16*>(default_response));
+  std::string question_str = WideStringToString(question);
+  std::string default_str = WideStringToString(default_response);
 
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
   std::string rv = engine->client_->Prompt(question_str, default_str);
@@ -3791,16 +3769,11 @@ void PDFiumEngine::Form_Mail(IPDF_JSPLATFORM* param,
                              FPDF_WIDESTRING message) {
   // Note: |mail_data| and |length| are ignored. We don't handle attachments;
   // there is no way with mailto.
-  std::string to_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(to));
-  std::string cc_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(cc));
-  std::string bcc_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(bcc));
-  std::string subject_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(subject));
-  std::string message_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(message));
+  std::string to_str = WideStringToString(to);
+  std::string cc_str = WideStringToString(cc);
+  std::string bcc_str = WideStringToString(bcc);
+  std::string subject_str = WideStringToString(subject);
+  std::string message_str = WideStringToString(message);
 
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
   engine->client_->Email(to_str, cc_str, bcc_str, subject_str, message_str);
@@ -3825,8 +3798,7 @@ void PDFiumEngine::Form_SubmitForm(IPDF_JSPLATFORM* param,
                                    void* form_data,
                                    int length,
                                    FPDF_WIDESTRING url) {
-  std::string url_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(url));
+  std::string url_str = WideStringToString(url);
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
   engine->client_->SubmitForm(url_str, form_data, length);
 }
