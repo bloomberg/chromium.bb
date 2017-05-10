@@ -20,6 +20,7 @@
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -271,32 +272,43 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
           GetDisplayName(iter.first), GetDisplaySize(iter.first));
       return true;
     }
-    // We don't show rotation change notification when the rotation source is
-    // the accelerometer.
-    if (iter.second.active_rotation_source() !=
-            display::Display::ROTATION_SOURCE_ACCELEROMETER &&
-        iter.second.GetActiveRotation() !=
-            old_iter->second.GetActiveRotation()) {
-      int rotation_text_id = 0;
-      switch (iter.second.GetActiveRotation()) {
-        case display::Display::ROTATE_0:
-          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION;
-          break;
-        case display::Display::ROTATE_90:
-          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90;
-          break;
-        case display::Display::ROTATE_180:
-          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180;
-          break;
-        case display::Display::ROTATE_270:
-          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270;
-          break;
-      }
-      *out_additional_message = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetDisplayName(iter.first),
-          l10n_util::GetStringUTF16(rotation_text_id));
-      return true;
+    // Don't show rotation change notification if
+    // a) no rotation change
+    if (iter.second.GetActiveRotation() == old_iter->second.GetActiveRotation())
+      continue;
+    // b) the source is accelerometer.
+    if (iter.second.active_rotation_source() ==
+        display::Display::ROTATION_SOURCE_ACCELEROMETER) {
+      continue;
     }
+    // c) if the device is in tablet mode, and source is not user.
+    if (Shell::Get()
+            ->maximize_mode_controller()
+            ->IsMaximizeModeWindowManagerEnabled() &&
+        iter.second.active_rotation_source() !=
+            display::Display::ROTATION_SOURCE_USER) {
+      continue;
+    }
+
+    int rotation_text_id = 0;
+    switch (iter.second.GetActiveRotation()) {
+      case display::Display::ROTATE_0:
+        rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION;
+        break;
+      case display::Display::ROTATE_90:
+        rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90;
+        break;
+      case display::Display::ROTATE_180:
+        rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180;
+        break;
+      case display::Display::ROTATE_270:
+        rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270;
+        break;
+    }
+    *out_additional_message = l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetDisplayName(iter.first),
+        l10n_util::GetStringUTF16(rotation_text_id));
+    return true;
   }
 
   // Found nothing special
