@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -455,6 +456,41 @@ TEST_F(ScreenLayoutObserverTest, RotationNotification) {
                 l10n_util::GetStringUTF16(
                     IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180)),
             GetDisplayNotificationAdditionalText());
+
+  // The active source.
+  display_manager()->SetDisplayRotation(
+      primary_id, display::Display::ROTATE_270,
+      display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName(),
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270)),
+            GetDisplayNotificationAdditionalText());
+
+  // Switch to Tablet
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+
+  // The accelerometer source.
+  display_manager()->SetDisplayRotation(
+      primary_id, display::Display::ROTATE_90,
+      display::Display::ROTATION_SOURCE_ACCELEROMETER);
+  EXPECT_TRUE(GetDisplayNotificationText().empty());
+
+  // The user source.
+  display_manager()->SetDisplayRotation(primary_id,
+                                        display::Display::ROTATE_180,
+                                        display::Display::ROTATION_SOURCE_USER);
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName(),
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180)),
+            GetDisplayNotificationAdditionalText());
+
+  // The active source.
+  display_manager()->SetDisplayRotation(
+      primary_id, display::Display::ROTATE_270,
+      display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 }
 
