@@ -11,6 +11,8 @@ source_set("payments") {
     "credit_card_edit_coordinator.mm",
     "credit_card_edit_mediator.h",
     "credit_card_edit_mediator.mm",
+    "full_card_requester.h",
+    "full_card_requester.mm",
     "js_payment_request_manager.h",
     "js_payment_request_manager.mm",
     "payment_items_display_coordinator.h",

@@ -4,29 +4,15 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_coordinator.h"
 
-#include <unordered_set>
-#include <vector>
-
 #include "base/memory/ptr_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/payments/full_card_request.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
-#include "ios/chrome/browser/payments/payment_request_util.h"
-#include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
+#include "ios/chrome/browser/ui/payments/full_card_requester.h"
 #include "ios/chrome/browser/ui/payments/payment_request_mediator.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -35,100 +21,8 @@
 #endif
 
 namespace {
-using ::payments::data_util::GetBasicCardResponseFromAutofillCreditCard;
 using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 }  // namespace
-
-// The unmask prompt UI for Payment Request.
-class PRCardUnmaskPromptViewBridge
-    : public autofill::CardUnmaskPromptViewBridge {
- public:
-  PRCardUnmaskPromptViewBridge(autofill::CardUnmaskPromptController* controller,
-                               UIViewController* base_view_controller)
-      : autofill::CardUnmaskPromptViewBridge(controller),
-        base_view_controller_(base_view_controller) {}
-
-  // autofill::CardUnmaskPromptView:
-  void Show() override {
-    view_controller_.reset(
-        [[CardUnmaskPromptViewController alloc] initWithBridge:this]);
-    [view_controller_ setModalPresentationStyle:UIModalPresentationFormSheet];
-    [view_controller_
-        setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
-    [base_view_controller_ presentViewController:view_controller_
-                                        animated:YES
-                                      completion:nil];
-  };
-
- private:
-  __weak UIViewController* base_view_controller_;
-  DISALLOW_COPY_AND_ASSIGN(PRCardUnmaskPromptViewBridge);
-};
-
-// Receives the full credit card details. Also displays the unmask prompt UI.
-class FullCardRequester
-    : public autofill::payments::FullCardRequest::ResultDelegate,
-      public autofill::payments::FullCardRequest::UIDelegate,
-      public base::SupportsWeakPtr<FullCardRequester> {
- public:
-  FullCardRequester(PaymentRequestCoordinator* owner,
-                    UIViewController* base_view_controller,
-                    ios::ChromeBrowserState* browser_state)
-      : owner_(owner),
-        base_view_controller_(base_view_controller),
-        unmask_controller_(browser_state->GetPrefs(),
-                           browser_state->IsOffTheRecord()) {}
-
-  void GetFullCard(autofill::CreditCard* card,
-                   autofill::AutofillManager* autofill_manager) {
-    DCHECK(card);
-    DCHECK(autofill_manager);
-    autofill_manager->GetOrCreateFullCardRequest()->GetFullCard(
-        *card, autofill::AutofillClient::UNMASK_FOR_PAYMENT_REQUEST,
-        AsWeakPtr(), AsWeakPtr());
-  }
-
-  // payments::FullCardRequest::ResultDelegate:
-  void OnFullCardRequestSucceeded(
-      const autofill::CreditCard& card,
-      const base::string16& verificationCode) override {
-    [owner_ fullCardRequestDidSucceedWithCard:card
-                             verificationCode:verificationCode];
-  }
-
-  // payments::FullCardRequest::ResultDelegate:
-  void OnFullCardRequestFailed() override {
-    // No action is required here. PRCardUnmaskPromptViewBridge manages its own
-    // life cycle. When the prompt is explicitly dismissed via tapping the close
-    // button (either in presence or absence of an error), the unmask prompt
-    // dialog pops itself and the user is back to the Payment Request UI.
-  }
-
-  // payments::FullCardRequest::UIDelegate:
-  void ShowUnmaskPrompt(
-      const autofill::CreditCard& card,
-      autofill::AutofillClient::UnmaskCardReason reason,
-      base::WeakPtr<autofill::CardUnmaskDelegate> delegate) override {
-    unmask_controller_.ShowPrompt(
-        // PRCardUnmaskPromptViewBridge manages its own lifetime.
-        new PRCardUnmaskPromptViewBridge(&unmask_controller_,
-                                         base_view_controller_),
-        card, reason, delegate);
-  }
-
-  // payments::FullCardRequest::UIDelegate:
-  void OnUnmaskVerificationResult(
-      autofill::AutofillClient::PaymentsRpcResult result) override {
-    unmask_controller_.OnVerificationResult(result);
-  }
-
- private:
-  __weak PaymentRequestCoordinator* owner_;
-  __weak UIViewController* base_view_controller_;
-  autofill::CardUnmaskPromptControllerImpl unmask_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(FullCardRequester);
-};
 
 @implementation PaymentRequestCoordinator {
   UINavigationController* _navigationController;
