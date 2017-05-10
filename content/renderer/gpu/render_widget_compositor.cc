@@ -430,6 +430,13 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
         &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
 
+  // This is default overlay scrollbar settings for Android and DevTools mobile
+  // emulator. Aura Overlay Scrollbar will override below.
+  settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
+  settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
+  settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
+  settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
+
 #if defined(OS_ANDROID)
   bool using_synchronous_compositor =
       GetContentClient()->UsingSynchronousCompositing();
@@ -443,11 +450,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     // on sublayers.
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
-  } else {
-    settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
-    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
-    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
-    settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }
   settings.renderer_settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
@@ -487,22 +489,13 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   // TODO(danakj): Only do this on low end devices.
   settings.create_low_res_tiling = true;
 #else  // defined(OS_ANDROID)
-#if !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::AURA_OVERLAY;
     settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeDelay;
     settings.scrollbar_fade_duration = ui::kOverlayScrollbarFadeDuration;
     settings.scrollbar_thinning_duration =
         ui::kOverlayScrollbarThinningDuration;
-  } else {
-    // TODO(bokan): This section is probably unneeded? We don't use scrollbar
-    // animations for non overlay scrollbars.
-    settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
-    settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
-    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
-    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
   }
-#endif  // !defined(OS_MACOSX)
 
   // On desktop, if there's over 4GB of memory on the machine, increase the
   // image decode budget to 256MB for both gpu and software.
