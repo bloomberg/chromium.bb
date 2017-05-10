@@ -76,7 +76,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
-    quick_unlock::EnableForTesting();
+    quick_unlock::EnableForTesting(quick_unlock::PinStorageType::kPrefs);
 
     // Setup a primary user.
     auto test_account = AccountId::FromUserEmail(kTestUserEmail);

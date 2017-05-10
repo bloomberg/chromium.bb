@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -16,11 +17,13 @@ namespace {
 
 class FingerprintStorageUnitTest : public testing::Test {
  protected:
-  FingerprintStorageUnitTest() : profile_(new TestingProfile()) {}
+  FingerprintStorageUnitTest() : profile_(base::MakeUnique<TestingProfile>()) {}
   ~FingerprintStorageUnitTest() override {}
 
   // testing::Test:
-  void SetUp() override { quick_unlock::EnableForTesting(); }
+  void SetUp() override {
+    quick_unlock::EnableForTesting(quick_unlock::PinStorageType::kPrefs);
+  }
 
   void SetRecords(int records_number) {
     profile_->GetPrefs()->SetInteger(prefs::kQuickUnlockFingerprintRecord,
