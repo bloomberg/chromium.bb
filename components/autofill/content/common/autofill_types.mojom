@@ -52,6 +52,17 @@ enum PasswordFormScheme {
   SCHEME_USERNAME_ONLY
 };
 
+// autofill::PasswordForm::SubmissionIndicatorEvent
+enum PasswordFormSubmissionIndicatorEvent {
+    NONE,
+    HTML_FORM_SUBMISSION,
+    SAME_DOCUMENT_NAVIGATION,
+    XHR_SUCCEEDED,
+    FRAME_DETACHED,
+    MANUAL_SAVE,
+    SUBMISSION_INDICATOR_EVENT_COUNT
+};
+
 // autofill::PasswordFormFieldPredictionType
 enum PasswordFormFieldPredictionType {
   PREDICTION_USERNAME,
@@ -182,6 +193,7 @@ struct PasswordForm {
   bool is_public_suffix_match;
   bool is_affiliation_based_match;
   bool does_look_like_signup_form;
+  PasswordFormSubmissionIndicatorEvent submission_event;
 };
 
 // TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.

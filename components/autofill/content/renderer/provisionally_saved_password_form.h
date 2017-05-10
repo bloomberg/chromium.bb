@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/autofill/core/common/password_form.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
 namespace autofill {
@@ -40,6 +41,9 @@ class ProvisionallySavedPasswordForm {
   }
   const blink::WebFormElement& form_element() const { return form_element_; }
   const blink::WebInputElement& input_element() const { return input_element_; }
+
+  void SetSubmissionIndicatorEvent(
+      PasswordForm::SubmissionIndicatorEvent event);
 
  private:
   std::unique_ptr<PasswordForm> password_form_;

@@ -66,6 +66,9 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("affiliated_web_realm", form.affiliated_web_realm);
   target->SetBoolean("does_look_like_signup_form",
                      form.does_look_like_signup_form);
+  std::ostringstream submission_event_string_stream;
+  submission_event_string_stream << form.submission_event;
+  target->SetString("submission_event", submission_event_string_stream.str());
 }
 
 }  // namespace
@@ -86,7 +89,8 @@ PasswordForm::PasswordForm()
       was_parsed_using_autofill_predictions(false),
       is_public_suffix_match(false),
       is_affiliation_based_match(false),
-      does_look_like_signup_form(false) {}
+      does_look_like_signup_form(false),
+      submission_event(SubmissionIndicatorEvent::NONE) {}
 
 PasswordForm::PasswordForm(const PasswordForm& other) = default;
 
@@ -130,7 +134,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          is_public_suffix_match == form.is_public_suffix_match &&
          is_affiliation_based_match == form.is_affiliation_based_match &&
          affiliated_web_realm == form.affiliated_web_realm &&
-         does_look_like_signup_form == form.does_look_like_signup_form;
+         does_look_like_signup_form == form.does_look_like_signup_form &&
+         submission_event == form.submission_event;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {
@@ -216,6 +221,32 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
 
 std::ostream& operator<<(std::ostream& os, PasswordForm* form) {
   return os << "&" << *form;
+}
+
+std::ostream& operator<<(
+    std::ostream& os,
+    PasswordForm::SubmissionIndicatorEvent submission_event) {
+  switch (submission_event) {
+    case PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION:
+      os << "HTML_FORM_SUBMISSION";
+      break;
+    case PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION:
+      os << "SAME_DOCUMENT_NAVIGATION";
+      break;
+    case PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED:
+      os << "XHR_SUCCEEDED";
+      break;
+    case PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED:
+      os << "FRAME_DETACHED";
+      break;
+    case PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE:
+      os << "MANUAL_SAVE";
+      break;
+    default:
+      os << "NO_SUBMISSION";
+      break;
+  }
+  return os;
 }
 
 }  // namespace autofill

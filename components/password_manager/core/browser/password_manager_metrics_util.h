@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "components/autofill/core/common/password_form.h"
+
 namespace password_manager {
 
 namespace metrics_util {
@@ -263,6 +265,10 @@ void LogShowedHttpNotSecureExplanation();
 // Log that the Form-Not-Secure warning was shown. Should be called at most once
 // per main-frame navigation.
 void LogShowedFormNotSecureWarningOnCurrentNavigation();
+
+// Log a password successful submission event.
+void LogPasswordSuccessfulSubmissionIndicatorEvent(
+    autofill::PasswordForm::SubmissionIndicatorEvent event);
 
 }  // namespace metrics_util
 

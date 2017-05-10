@@ -100,6 +100,8 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->is_public_suffix_match = true;
   form->is_affiliation_based_match = true;
   form->does_look_like_signup_form = true;
+  form->submission_event =
+      PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 }
 
 void CreateTestFormsPredictionsMap(FormsPredictionsMap* predictions) {

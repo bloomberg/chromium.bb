@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "components/autofill/core/common/password_form.h"
-
 namespace autofill {
 
 ProvisionallySavedPasswordForm::ProvisionallySavedPasswordForm() = default;
@@ -36,6 +34,12 @@ bool ProvisionallySavedPasswordForm::IsSet() const {
 bool ProvisionallySavedPasswordForm::IsPasswordValid() const {
   return IsSet() && !(password_form_->password_value.empty() &&
                       password_form_->new_password_value.empty());
+}
+
+void ProvisionallySavedPasswordForm::SetSubmissionIndicatorEvent(
+    PasswordForm::SubmissionIndicatorEvent event) {
+  if (password_form_)
+    password_form_->submission_event = event;
 }
 
 }  // namespace autofill

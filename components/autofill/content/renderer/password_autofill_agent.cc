@@ -1032,17 +1032,25 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
 }
 
 void PasswordAutofillAgent::AJAXSucceeded() {
-  OnSameDocumentNavigationCompleted();
+  OnSameDocumentNavigationCompleted(false);
 }
 
-void PasswordAutofillAgent::OnSameDocumentNavigationCompleted() {
+void PasswordAutofillAgent::OnSameDocumentNavigationCompleted(
+    bool is_inpage_navigation) {
   if (!provisionally_saved_form_.IsPasswordValid())
     return;
+
+  provisionally_saved_form_.SetSubmissionIndicatorEvent(
+      is_inpage_navigation
+          ? PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION
+          : PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
 
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   const auto& password_form = provisionally_saved_form_.password_form();
+  // TODO(crbug.com/720347): This method could be called often and checking form
+  // visibility could be expesive. Add performance metrics for this.
   if (form_util::IsFormVisible(frame, provisionally_saved_form_.form_element(),
                                password_form.action, password_form.origin,
                                password_form.form_data) ||
@@ -1209,7 +1217,7 @@ void PasswordAutofillAgent::DidCommitProvisionalLoad(
     bool is_new_navigation,
     bool is_same_document_navigation) {
   if (is_same_document_navigation) {
-    OnSameDocumentNavigationCompleted();
+    OnSameDocumentNavigationCompleted(true);
   } else {
     checked_safe_browsing_reputation_ = false;
   }
@@ -1221,6 +1229,8 @@ void PasswordAutofillAgent::FrameDetached() {
   // for examples of sites that perform login using this technique.
   if (render_frame()->GetWebFrame()->Parent() &&
       provisionally_saved_form_.IsPasswordValid()) {
+    provisionally_saved_form_.SetSubmissionIndicatorEvent(
+        PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED);
     GetPasswordManagerDriver()->InPageNavigation(
         provisionally_saved_form_.password_form());
   }
@@ -1280,6 +1290,8 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
       submitted_form->password_value = saved_form.password_value;
       submitted_form->new_password_value = saved_form.new_password_value;
       submitted_form->username_value = saved_form.username_value;
+      submitted_form->submission_event =
+          PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
     }
 
     // Some observers depend on sending this information now instead of when
@@ -1563,6 +1575,8 @@ void PasswordAutofillAgent::FindFocusedPasswordForm(
   if (!password_form)
     password_form.reset(new PasswordForm());
 
+  password_form->submission_event =
+      PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE;
   callback.Run(*password_form);
 }
 

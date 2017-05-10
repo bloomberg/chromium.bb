@@ -507,6 +507,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     EXPECT_EQ(ASCIIToUTF16(username_value), form.username_value);
     EXPECT_EQ(ASCIIToUTF16(password_value), form.password_value);
     EXPECT_EQ(ASCIIToUTF16(new_password_value), form.new_password_value);
+    EXPECT_EQ(PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION,
+              form.submission_event);
   }
 
   void ExpectFieldPropertiesMasks(
@@ -543,7 +545,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void ExpectInPageNavigationWithUsernameAndPasswords(
       const std::string& username_value,
       const std::string& password_value,
-      const std::string& new_password_value) {
+      const std::string& new_password_value,
+      PasswordForm::SubmissionIndicatorEvent event) {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(fake_driver_.called_inpage_navigation());
     ASSERT_TRUE(
@@ -553,6 +556,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     EXPECT_EQ(ASCIIToUTF16(username_value), form.username_value);
     EXPECT_EQ(ASCIIToUTF16(password_value), form.password_value);
     EXPECT_EQ(ASCIIToUTF16(new_password_value), form.new_password_value);
+    EXPECT_EQ(event, form.submission_event);
   }
 
   void CheckIfEventsAreCalled(const std::vector<base::string16>& checkers,
@@ -2249,7 +2253,9 @@ TEST_F(PasswordAutofillAgentTest, NoForm_PromptForAJAXSubmitWithoutNavigation) {
 
   password_autofill_agent_->AJAXSucceeded();
 
-  ExpectInPageNavigationWithUsernameAndPasswords("Bob", "mypassword", "");
+  ExpectInPageNavigationWithUsernameAndPasswords(
+      "Bob", "mypassword", "",
+      PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -2540,7 +2546,9 @@ TEST_F(PasswordAutofillAgentTest,
 
   password_autofill_agent_->AJAXSucceeded();
 
-  ExpectInPageNavigationWithUsernameAndPasswords("Alice", "mypassword", "");
+  ExpectInPageNavigationWithUsernameAndPasswords(
+      "Alice", "mypassword", "",
+      PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -2702,14 +2710,9 @@ TEST_F(PasswordAutofillAgentTest, InPageNavigationSubmissionUsernameIsEmpty) {
 
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->DidCommitProvisionalLoad(false, true);
-  base::RunLoop().RunUntilIdle();
-
-  // Chect that the form was submitted with in-page navigation.
-  EXPECT_TRUE(fake_driver_.called_inpage_navigation());
-  EXPECT_EQ(base::string16(),
-            fake_driver_.password_form_inpage_navigation()->username_value);
-  EXPECT_EQ(ASCIIToUTF16("random"),
-            fake_driver_.password_form_inpage_navigation()->password_value);
+  ExpectInPageNavigationWithUsernameAndPasswords(
+      std::string(), "random", std::string(),
+      PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION);
 }
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
