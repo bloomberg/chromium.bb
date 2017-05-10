@@ -77,9 +77,6 @@ class GURL;
 // Also triggering user action |linkClicked| is passed to use it when needed.
 // The return value indicates if the native app was launched, not if a native
 // app was found.
-// TODO(shreyasv): Instead of having the CRWWebDelegate handle an external URL,
-// provide a hook/API to steal a URL navigation. That way the logic to determine
-// a URL as triggering a native app launch can also be moved.
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
                          sourceURL:(const GURL&)sourceURL
                        linkClicked:(BOOL)linkClicked;

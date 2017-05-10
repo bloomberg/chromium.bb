@@ -1225,9 +1225,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-// TODO(shreyasv): This code is shared with SnapshotManager. Remove this and add
-// it as part of WebDelegate delegate API such that a default image is returned
-// immediately.
+// TODO(crbug.com/661642): This code is shared with SnapshotManager. Remove this
+// and add it as part of WebDelegate delegate API such that a default image is
+// returned immediately.
 + (UIImage*)defaultSnapshotImage {
   static UIImage* defaultImage = nil;
 
@@ -3333,9 +3333,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_delegate webController:self retrievePlaceholderOverlayImage:callback];
 
   if (!_placeholderOverlayView.get().image) {
-    // TODO(shreyasv): This is just a blank white image. Consider adding an API
-    // so that the delegate can return something immediately for the default
-    // overlay image.
     _placeholderOverlayView.get().image = [[self class] defaultSnapshotImage];
   }
 }
