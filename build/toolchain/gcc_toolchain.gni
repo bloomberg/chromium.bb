@@ -325,7 +325,13 @@ template("gcc_toolchain") {
       # POSIX-like toolchains such as NaCl on Windows).
       ar_wrapper =
           rebase_path("//build/toolchain/gcc_ar_wrapper.py", root_build_dir)
-      command = "$python_path \"$ar_wrapper\"$whitelist_flag --output={{output}} --ar=\"$ar\" {{arflags}} rcsD @\"$rspfile\""
+      if (current_os == "aix") {
+        # We use slightly different arflags for AIX.
+        extra_arflags = "rcsT"
+      } else {
+        extra_arflags = "rcsD"
+      }
+      command = "$python_path \"$ar_wrapper\"$whitelist_flag --output={{output}} --ar=\"$ar\" {{arflags}} $extra_arflags @\"$rspfile\""
       description = "AR {{output}}"
       rspfile_content = "{{inputs}}"
       outputs = [
@@ -499,9 +505,17 @@ template("gcc_toolchain") {
         map_switch = " --map-file \"$map_file\""
       }
 
-      link_command = "$ld {{ldflags}}${extra_ldflags} -o \"$unstripped_outfile\" -Wl,--start-group @\"$rspfile\" {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
+      start_group_flag = ""
+      end_group_flag = ""
+      if (current_os != "aix") {
+        # the "--start-group .. --end-group" feature isn't available on the aix ld.
+        start_group_flag = "-Wl,--start-group"
+        end_group_flag = "-Wl,--end-group "
+      }
+      link_command = "$ld {{ldflags}}${extra_ldflags} -o \"$unstripped_outfile\" $start_group_flag @\"$rspfile\" {{solibs}} $end_group_flag $libs_section_prefix {{libs}} $libs_section_postfix"
 
       strip_switch = ""
+
       if (defined(invoker.strip)) {
         strip_switch = " --strip=\"${invoker.strip}\" --unstripped-file=\"$unstripped_outfile\""
       }
