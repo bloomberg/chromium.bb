@@ -1077,13 +1077,6 @@ hooks = [
     ],
   },
   {
-    'name': 'clang_format_merge_driver',
-    'pattern': '.',
-    'action': [ 'python',
-                'src/tools/clang_format_merge_driver/install_git_hook.py',
-    ],
-  },
-  {
     'name': 'devtools_install_node',
     'action': [ 'python',
                 'src/third_party/WebKit/Source/devtools/scripts/local_node/node.py',
