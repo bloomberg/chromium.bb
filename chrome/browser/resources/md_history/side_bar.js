@@ -55,11 +55,11 @@ Polymer({
   },
 
   /**
-   * @return {number}
+   * @return {string}
    * @private
    */
   computeClearBrowsingDataTabIndex_: function() {
-    return this.guestSession_ ? -1 : 0;
+    return this.guestSession_ ? '-1' : '';
   },
 
   /**
