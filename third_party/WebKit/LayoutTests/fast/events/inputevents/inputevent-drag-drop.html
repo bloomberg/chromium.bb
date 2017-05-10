@@ -16,10 +16,17 @@ div {
 <div id="editable2" contenteditable></div>
 <textarea id="textarea1">Text</textarea>
 <textarea id="barrier"></textarea>
+<input id="input_drag">
+<input id="input_drop">
 <script>
-function simulateDragDrop(dragElement, dropElement) {
+function simulateDragDrop(dragElement, dropElement, start, end) {
     if (dragElement.select) {
-        dragElement.select();
+        if (start === undefined || end === undefined) {
+            dragElement.select();
+        } else {
+            dragElement.focus();
+            dragElement.setSelectionRange(start, end);
+        }
     } else {
         var selection = window.getSelection();
         selection.collapse(dragElement, 0);
@@ -298,6 +305,27 @@ test(function() {
     testRunner.execCommand('undo');
     document.body.appendChild(editable1);
 }, 'Testing element removed by event handler');
+
+test(() => {
+    assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
+    assert_not_equals(window.testRunner, undefined, 'This test requires testRunner.');
+
+    const input_drag = document.getElementById('input_drag');
+    const input_drop = document.getElementById('input_drop');
+
+    input_drag.value = '12345678';
+    input_drop.value = '4';
+
+    simulateDragDrop(input_drag, input_drop, 1, 8);
+
+    assert_equals(input_drag.value, '1');
+    assert_equals(input_drop.value, '42345678');
+
+    testRunner.execCommand('undo');
+
+    assert_equals(input_drag.value, '12345678');
+    assert_equals(input_drop.value, '4');
+}, 'Undo drag&drop should update input.value');
 </script>
 </body>
 </html>
