@@ -29,13 +29,13 @@ and Linux (although Linux symbol diffs have issues, as noted below).
 ### Example Usage
 
     # Build and diff HEAD^ and HEAD.
-    tools/binary_size/diagnose_bloat.py HEAD
+    tools/binary_size/diagnose_bloat.py HEAD -v
 
     # Diff OTHERREV and REV using downloaded build artifacts.
-    tools/binary_size/diagnose_bloat.py REV --reference-rev OTHERREV --cloud
+    tools/binary_size/diagnose_bloat.py REV --reference-rev OTHERREV --cloud -v
 
     # Build and diff all contiguous revs in range OTHERREV..REV for src/v8.
-    tools/binary_size/diagnose_bloat.py REV --reference-rev OTHERREV --subrepo v8 --all
+    tools/binary_size/diagnose_bloat.py REV --reference-rev OTHERREV --subrepo v8 --all -v
 
     # Display detailed usage info (there are many options).
     tools/binary_size/diagnose_bloat.py -h
@@ -112,7 +112,7 @@ Supports Android and Linux (although Linux
 Collect size information and dump it into a `.size` file.
 
 *** note
-**Note:** Refer to 
+**Note:** Refer to
 [diagnose_bloat.py](https://cs.chromium.org/search/?q=file:diagnose_bloat.py+gn_args)
 for list of GN args to build a Release binary.
 ***

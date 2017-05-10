@@ -50,6 +50,10 @@ def _DiffPrefix(diff, sym):
   return '= '
 
 
+def _Divide(a, b):
+  return float(a) / b if b else 0
+
+
 class Describer(object):
   def __init__(self, verbose=False, recursive=False):
     self.verbose = verbose
@@ -70,7 +74,7 @@ class Describer(object):
         yield '    {}: {} ({} bytes) (not included in totals)'.format(
             name, _PrettySize(size), size)
       else:
-        percent = float(size) / total_bytes if total_bytes else 0
+        percent = _Divide(size, total_bytes)
         yield '    {}: {} ({} bytes) ({:.1%})'.format(
             name, _PrettySize(size), size, percent)
 
@@ -126,7 +130,7 @@ class Describer(object):
     for index, s in enumerate(group):
       if group.IsBss() or not s.IsBss():
         running_total += s.pss
-        running_percent = running_total / total
+        running_percent = _Divide(running_total, total)
       for l in self._DescribeSymbol(s, single_line=all_groups):
         if l[:4].isspace():
           indent_size = 8 + len(indent_prefix) + len(diff_prefix)
@@ -267,7 +271,7 @@ def DescribeSizeInfoCoverage(size_info):
     in_section = models.SymbolGroup(size_info.raw_symbols).WhereInSection(
         section)
     actual_size = in_section.size
-    size_percent = float(actual_size) / expected_size
+    size_percent = _Divide(actual_size, expected_size)
     yield ('Section {}: has {:.1%} of {} bytes accounted for from '
            '{} symbols. {} bytes are unaccounted for.').format(
                section, size_percent, actual_size, len(in_section),
@@ -276,16 +280,16 @@ def DescribeSizeInfoCoverage(size_info):
     padding = in_section.padding - star_syms.padding
     anonymous_syms = star_syms.Inverted().WhereHasAnyAttribution().Inverted()
     yield '* Padding accounts for {} bytes ({:.1%})'.format(
-        padding, float(padding) / in_section.size)
+        padding, _Divide(padding, in_section.size))
     if len(star_syms):
       yield ('* {} placeholders (symbols that start with **) account for '
              '{} bytes ({:.1%})').format(
                  len(star_syms), star_syms.size,
-                 float(star_syms.size) / in_section.size)
+                 _Divide(star_syms.size,  in_section.size))
     if anonymous_syms:
       yield '* {} anonymous symbols account for {} bytes ({:.1%})'.format(
           len(anonymous_syms), int(anonymous_syms.pss),
-          float(star_syms.size) / in_section.size)
+          _Divide(star_syms.size, in_section.size))
 
     aliased_symbols = in_section.Filter(lambda s: s.aliases)
     if section == 't':
