@@ -90,13 +90,9 @@ std::vector<std::unique_ptr<Printer>> PrintersManager::GetRecommendedPrinters()
   std::vector<std::unique_ptr<Printer>> printers;
 
   for (const std::string& key : recommended_printer_ids_) {
-    const base::DictionaryValue& printer_dictionary =
-        *(recommended_printers_.at(key));
-    std::unique_ptr<Printer> printer =
-        printing::RecommendedPrinterToPrinter(printer_dictionary);
-    if (printer) {
-      printer->set_source(Printer::SRC_POLICY);
-      printers.push_back(std::move(printer));
+    auto printer = recommended_printers_.find(key);
+    if (printer != recommended_printers_.end()) {
+      printers.push_back(base::MakeUnique<Printer>(*printer->second));
     }
   }
 
@@ -108,8 +104,10 @@ std::unique_ptr<Printer> PrintersManager::GetPrinter(
   // check for a policy printer first
   const auto& policy_printers = recommended_printers_;
   auto found = policy_printers.find(printer_id);
-  if (found != policy_printers.end())
-    return printing::RecommendedPrinterToPrinter(*(found->second));
+  if (found != policy_printers.end()) {
+    // Copy a printer.
+    return base::MakeUnique<Printer>(*(found->second));
+  }
 
   base::Optional<sync_pb::PrinterSpecifics> printer =
       sync_bridge_->GetPrinter(printer_id);
@@ -176,8 +174,11 @@ void PrintersManager::UpdateRecommendedPrinters() {
 
   const base::ListValue* values =
       prefs->GetList(prefs::kRecommendedNativePrinters);
+  const base::Time timestamp = base::Time::Now();
 
-  recommended_printer_ids_.clear();
+  // Parse the policy JSON into new structures.
+  std::vector<std::string> new_ids;
+  std::map<std::string, std::unique_ptr<Printer>> new_printers;
   for (const auto& value : *values) {
     std::string printer_json;
     if (!value.GetAsString(&printer_json)) {
@@ -201,9 +202,42 @@ void PrintersManager::UpdateRecommendedPrinters() {
     std::string id = base::MD5String(printer_json);
     printer_dictionary->SetString(printing::kPrinterId, id);
 
-    recommended_printer_ids_.push_back(id);
-    recommended_printers_[id] = std::move(printer_dictionary);
+    if (base::ContainsKey(new_printers, id)) {
+      // Skip duplicated entries.
+      LOG(WARNING) << "Duplicate printer ignored.";
+      continue;
+    }
+
+    new_ids.push_back(id);
+    // Move existing printers, create othewise.
+    auto old = recommended_printers_.find(id);
+    if (old != recommended_printers_.end()) {
+      new_printers[id] = std::move(old->second);
+    } else {
+      auto printer =
+          printing::RecommendedPrinterToPrinter(*printer_dictionary, timestamp);
+      printer->set_source(Printer::SRC_POLICY);
+
+      new_printers[id] = std::move(printer);
+    }
   }
+
+  // Objects not in the most recent update get deallocated after method exit.
+  recommended_printer_ids_.swap(new_ids);
+  recommended_printers_.swap(new_printers);
+}
+
+void PrintersManager::PrinterInstalled(const Printer& printer) {
+  DCHECK(!printer.last_updated().is_null());
+  installed_printer_timestamps_[printer.id()] = printer.last_updated();
+}
+
+bool PrintersManager::IsConfigurationCurrent(const Printer& printer) const {
+  auto found = installed_printer_timestamps_.find(printer.id());
+  if (found == installed_printer_timestamps_.end())
+    return false;
+
+  return found->second == printer.last_updated();
 }
 
 }  // namespace chromeos

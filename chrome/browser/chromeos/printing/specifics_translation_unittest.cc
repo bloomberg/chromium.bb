@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/sync/protocol/printer_specifics.pb.h"
@@ -19,6 +20,7 @@ const char manufacturer[] = "Manufacturer";
 const char model[] = "MODEL";
 const char uri[] = "ipps://notaprinter.chromium.org/ipp/print";
 const char uuid[] = "UUIDUUIDUUID";
+const base::Time kUpdateTime = base::Time::FromInternalValue(22114455660000);
 
 const char effective_make_and_model[] = "Manufacturer Model T1000";
 
@@ -36,6 +38,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinter) {
   specifics.set_model(model);
   specifics.set_uri(uri);
   specifics.set_uuid(uuid);
+  specifics.set_updated_timestamp(kUpdateTime.ToJavaTime());
 
   sync_pb::PrinterPPDReference ppd;
   ppd.set_effective_make_and_model(effective_make_and_model);
@@ -49,6 +52,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinter) {
   EXPECT_EQ(model, result->model());
   EXPECT_EQ(uri, result->uri());
   EXPECT_EQ(uuid, result->uuid());
+  EXPECT_EQ(kUpdateTime, result->last_updated());
 
   EXPECT_EQ(effective_make_and_model,
             result->ppd_reference().effective_make_and_model);

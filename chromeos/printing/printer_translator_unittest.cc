@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/values_test_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
@@ -23,12 +24,15 @@ const char kModel[] = "Inktastic Laser Magic";
 const char kUri[] = "ipp://printy.domain.co:555/ipp/print";
 const char kUUID[] = "UUID-UUID-UUID";
 
+const base::Time kTimestamp = base::Time::FromInternalValue(445566);
+
 // PpdReference test data
 const char kEffectiveMakeAndModel[] = "PrintBlaster LazerInker 2000";
 
 TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterMissingId) {
   base::DictionaryValue value;
-  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(value);
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(value, kTimestamp);
 
   EXPECT_FALSE(printer);
 }
@@ -40,7 +44,8 @@ TEST(PrinterTranslatorTest, MissingDisplayNameFails) {
   preference.SetString("uri", kUri);
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(preference, kTimestamp);
   EXPECT_FALSE(printer);
 }
 
@@ -51,7 +56,8 @@ TEST(PrinterTranslatorTest, MissingUriFails) {
   // uri omitted
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(preference, kTimestamp);
   EXPECT_FALSE(printer);
 }
 
@@ -62,7 +68,8 @@ TEST(PrinterTranslatorTest, MissingPpdResourceFails) {
   preference.SetString("uri", kUri);
   // ppd resource omitted
 
-  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(preference, kTimestamp);
   EXPECT_FALSE(printer);
 }
 
@@ -73,7 +80,8 @@ TEST(PrinterTranslatorTest, MissingEffectiveMakeModelFails) {
   preference.SetString("uri", kUri);
   preference.SetString("ppd_resource.foobarwrongfield", "gibberish");
 
-  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(preference, kTimestamp);
   EXPECT_FALSE(printer);
 }
 
@@ -84,7 +92,8 @@ TEST(PrinterTranslatorTest, RecommendedPrinterMinimalSetup) {
   preference.SetString("uri", kUri);
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(preference, kTimestamp);
   EXPECT_TRUE(printer);
 }
 
@@ -100,7 +109,8 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinter) {
 
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(preference, kTimestamp);
   EXPECT_TRUE(printer);
 
   EXPECT_EQ(kHash, printer->id());
@@ -110,6 +120,7 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinter) {
   EXPECT_EQ(kModel, printer->model());
   EXPECT_EQ(kUri, printer->uri());
   EXPECT_EQ(kUUID, printer->uuid());
+  EXPECT_EQ(kTimestamp, printer->last_updated());
 
   EXPECT_EQ(kEffectiveMakeAndModel,
             printer->ppd_reference().effective_make_and_model);

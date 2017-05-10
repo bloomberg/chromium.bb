@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -46,8 +47,8 @@ class CHROMEOS_EXPORT Printer {
   // Constructs a printer object that is completely empty.
   Printer();
 
-  // Constructs a printer object with an id.
-  explicit Printer(const std::string& id);
+  // Constructs a printer object with an |id| and a |last_updated| timestamp.
+  explicit Printer(const std::string& id, const base::Time& last_updated = {});
 
   // Copy constructor and assignment.
   Printer(const Printer& printer);
@@ -93,6 +94,10 @@ class CHROMEOS_EXPORT Printer {
   Source source() const { return source_; }
   void set_source(const Source source) { source_ = source; }
 
+  // Returns the timestamp for the most recent update.  Returns 0 if the
+  // printer was not created with a valid timestamp.
+  base::Time last_updated() const { return last_updated_; }
+
  private:
   // Globally unique identifier. Empty indicates a new printer.
   std::string id_;
@@ -121,6 +126,9 @@ class CHROMEOS_EXPORT Printer {
 
   // The datastore which holds this printer.
   Source source_;
+
+  // Timestamp of most recent change.
+  base::Time last_updated_;
 };
 
 }  // namespace chromeos

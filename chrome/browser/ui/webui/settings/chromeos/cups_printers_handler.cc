@@ -246,10 +246,12 @@ void CupsPrintersHandler::OnAddedPrinter(
     chromeos::PrinterSetupResult result_code) {
   std::string printer_name = printer->display_name();
   switch (result_code) {
-    case chromeos::PrinterSetupResult::SUCCESS:
-      PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
-          std::move(printer));
+    case chromeos::PrinterSetupResult::SUCCESS: {
+      auto* manager = PrintersManagerFactory::GetForBrowserContext(profile_);
+      manager->PrinterInstalled(*printer);
+      manager->RegisterPrinter(std::move(printer));
       break;
+    }
     case chromeos::PrinterSetupResult::PPD_NOT_FOUND:
       LOG(WARNING) << "Could not locate requested PPD";
       break;
