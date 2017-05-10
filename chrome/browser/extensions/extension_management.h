@@ -146,6 +146,11 @@ class ExtensionManagement : public KeyedService {
   std::unique_ptr<const PermissionSet> GetBlockedPermissions(
       const Extension* extension) const;
 
+  // If the extension is blocked from install and a custom error message
+  // was defined returns it. Otherwise returns an empty string. The maximum
+  // string length is 1000 characters.
+  const std::string BlockedInstallMessage(const ExtensionId& id) const;
+
   // Returns true if every permission in |perms| is allowed for |extension|.
   bool IsPermissionSetAllowed(const Extension* extension,
                               const PermissionSet& perms) const;

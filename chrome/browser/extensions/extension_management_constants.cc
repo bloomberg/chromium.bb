@@ -32,6 +32,8 @@ const char kMinimumVersionRequired[] = "minimum_version_required";
 
 const char kUpdateUrlPrefix[] = "update_url:";
 
+const char kBlockedInstallMessage[] = "blocked_install_message";
+
 const AllowedTypesMapEntry kAllowedTypesMap[] = {
   { "extension",           Manifest::TYPE_EXTENSION },
   { "theme",               Manifest::TYPE_THEME },

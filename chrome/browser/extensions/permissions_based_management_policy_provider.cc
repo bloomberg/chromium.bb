@@ -44,10 +44,11 @@ bool PermissionsBasedManagementPolicyProvider::UserMayLoad(
   if (!settings_->IsPermissionSetAllowed(
           extension, PermissionsParser::GetRequiredPermissions(extension))) {
     if (error) {
-      *error =
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED,
-                                     base::UTF8ToUTF16(extension->name()),
-                                     base::UTF8ToUTF16(extension->id()));
+      *error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED,
+          base::UTF8ToUTF16(extension->name()),
+          base::UTF8ToUTF16(extension->id()),
+          base::UTF8ToUTF16(settings_->BlockedInstallMessage(extension->id())));
     }
     return false;
   }

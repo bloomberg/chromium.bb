@@ -37,17 +37,6 @@ bool AdminPolicyIsModifiable(const extensions::Extension* extension,
   return false;
 }
 
-bool ReturnLoadError(const extensions::Extension* extension,
-                     base::string16* error) {
-  if (error) {
-    *error = l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED,
-        base::UTF8ToUTF16(extension->name()),
-        base::UTF8ToUTF16(extension->id()));
-  }
-  return false;
-}
-
 }  // namespace
 
 StandardManagementPolicyProvider::StandardManagementPolicyProvider(
@@ -168,6 +157,19 @@ bool StandardManagementPolicyProvider::MustRemainInstalled(
           base::UTF8ToUTF16(extension->name()));
     }
     return true;
+  }
+  return false;
+}
+
+bool StandardManagementPolicyProvider::ReturnLoadError(
+    const extensions::Extension* extension,
+    base::string16* error) const {
+  if (error) {
+    *error = l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED,
+        base::UTF8ToUTF16(extension->name()),
+        base::UTF8ToUTF16(extension->id()),
+        base::UTF8ToUTF16(settings_->BlockedInstallMessage(extension->id())));
   }
   return false;
 }

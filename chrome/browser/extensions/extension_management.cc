@@ -255,6 +255,14 @@ bool ExtensionManagement::IsPermissionSetAllowed(
   return true;
 }
 
+const std::string ExtensionManagement::BlockedInstallMessage(
+    const ExtensionId& id) const {
+  auto iter_id = settings_by_id_.find(id);
+  if (iter_id != settings_by_id_.end())
+    return iter_id->second->blocked_install_message;
+  return default_settings_->blocked_install_message;
+}
+
 bool ExtensionManagement::CheckMinimumVersion(
     const Extension* extension,
     std::string* required_version) const {

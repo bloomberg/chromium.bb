@@ -161,6 +161,16 @@ void ExtensionManagementPrefUpdaterBase::RemoveBlockedPermission(
                        permission);
 }
 
+// Helper function for 'blocked_install_message' manipulation -----------------
+
+void ExtensionManagementPrefUpdaterBase::SetBlockedInstallMessage(
+    const ExtensionId& id,
+    const std::string& blocked_install_message) {
+  DCHECK(id == schema::kWildcard || crx_file::id_util::IdIsValid(id));
+  pref_->SetString(make_path(id, schema::kBlockedInstallMessage),
+                   blocked_install_message);
+}
+
 // Helper functions for 'runtime_blocked_hosts' manipulation ------------------
 
 void ExtensionManagementPrefUpdaterBase::UnsetRuntimeBlockedHosts(

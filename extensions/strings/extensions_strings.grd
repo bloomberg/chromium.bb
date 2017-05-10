@@ -194,7 +194,7 @@
 
       <!-- Policy strings. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED" desc="Error message when a user tries to install an extension that is blocked by administrator policy.">
-        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is blocked by the administrator.
+        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is blocked by the administrator. <ph name="ADMIN_INFO">$3<ex>To request an exception visit https://example.com/exception</ex></ph>
       </message>
       <message name="IDS_EXTENSION_CANT_MODIFY_POLICY_REQUIRED" desc="Error message when a user tries to remove or change an extension that is required by administrator policy.">
         The administrator of this machine requires <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> to be installed. It cannot be removed or modified.

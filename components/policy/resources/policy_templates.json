@@ -2407,6 +2407,9 @@
                   },
                   'runtime_allowed_hosts': {
                     '$ref': 'ListOfUrlPatterns'
+                  },
+                  'blocked_install_message': {
+                    'type': 'string'
                   }
                 },
               },
@@ -2448,6 +2451,9 @@
                   },
                   'runtime_allowed_hosts': {
                     '$ref': 'ListOfUrlPatterns'
+                  },
+                  'blocked_install_message': {
+                    'type': 'string'
                   }
                 },
               },
@@ -2512,6 +2518,7 @@
           "install_sources": Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e.  the referrer) must be allowed by these patterns.
 
           "allowed_types": This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.  The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extensions documentation for more information on these types.
+          "blocked_install_message": If a user tries to install an extension, but it is blocked by policy the Chrome Webstore displays a generic error message. This setting allows you to append text to the error message. This could be be used to direct users to your help desk, explain why a particular extension is blocked, or something else. This error message will be truncated if longer than 1000 characters.
 
           This policy isn't ready for usage yet, please don't use it.
           '''
