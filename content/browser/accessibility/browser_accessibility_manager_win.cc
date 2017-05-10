@@ -272,7 +272,9 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
-      ToBrowserAccessibilityWin(obj)->UpdateStep1ComputeWinAttributes();
+      ToBrowserAccessibilityWin(obj)
+          ->GetCOM()
+          ->UpdateStep1ComputeWinAttributes();
   }
 
   // The next step updates the hypertext of each node, which is a
@@ -283,7 +285,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
-      ToBrowserAccessibilityWin(obj)->UpdateStep2ComputeHypertext();
+      ToBrowserAccessibilityWin(obj)->GetCOM()->UpdateStep2ComputeHypertext();
   }
 
   // The third step fires events on nodes based on what's changed - like
@@ -299,7 +301,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf()) {
-      ToBrowserAccessibilityWin(obj)->UpdateStep3FireEvents(
+      ToBrowserAccessibilityWin(obj)->GetCOM()->UpdateStep3FireEvents(
           changes[i].type == AXTreeDelegate::SUBTREE_CREATED);
     }
   }

@@ -16,7 +16,7 @@ namespace ui {
 struct AXNodeData;
 class AXPlatformNodeDelegate;
 
-class AXPlatformNodeBase : public AXPlatformNode {
+class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
  public:
    virtual void Init(AXPlatformNodeDelegate* delegate);
 

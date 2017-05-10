@@ -60,7 +60,7 @@ std::string BstrToUTF8(BSTR bstr) {
   // Pretty-print the embedded object character as <obj> so that test output
   // is human-readable.
   base::StringPiece16 embedded_character(
-      &BrowserAccessibilityWin::kEmbeddedCharacter, 1);
+      &BrowserAccessibilityComWin::kEmbeddedCharacter, 1);
   base::ReplaceChars(str16, embedded_character, L"<obj>", &str16);
 
   return base::UTF16ToUTF8(str16);
@@ -287,7 +287,7 @@ HRESULT AccessibilityEventRecorderWin::AccessibleObjectFromWindowWrapper(
   if (accessibility_hwnd != hwnd)
     return E_FAIL;
 
-  IAccessible* obj = ToBrowserAccessibilityWin(manager_->GetRoot());
+  IAccessible* obj = ToBrowserAccessibilityComWin(manager_->GetRoot());
   obj->AddRef();
   *ppv_object = obj;
   return S_OK;

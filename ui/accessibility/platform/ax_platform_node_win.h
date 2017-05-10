@@ -41,7 +41,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                            &LIBID_IAccessible2Lib>,
       public IAccessibleText,
       public IServiceProvider,
-      public NON_EXPORTED_BASE(AXPlatformNodeBase) {
+      public AXPlatformNodeBase {
  public:
   BEGIN_COM_MAP(AXPlatformNodeWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2_2)

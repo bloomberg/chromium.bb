@@ -1696,7 +1696,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   base::win::ScopedComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
   base::string16 embedded_character(
-      1, BrowserAccessibilityWin::kEmbeddedCharacter);
+      1, BrowserAccessibilityComWin::kEmbeddedCharacter);
   std::vector<std::wstring> words;
   words.push_back(L"Game ");
   words.push_back(L"theory ");
