@@ -43,6 +43,7 @@ component("printing") {
     "metafile.h",
     "metafile_skia_wrapper.cc",
     "metafile_skia_wrapper.h",
+    "native_drawing_context.h",
     "page_number.cc",
     "page_number.h",
     "page_range.cc",
