@@ -14,6 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -174,11 +175,16 @@ class AutofillProfile : public AutofillDataModel {
   // creates its own. The ID is a hash of the data contained in the profile.
   void GenerateServerProfileIdentifier();
 
-  // Logs the number of days since the profile was last used and records its
-  // use.
+  // Logs the number of days since the profile was last used, records its
+  // use and updates |previous_use_date_| to the last value of |use_date_|.
   void RecordAndLogUse();
 
-  // Valid only when type() == SERVER_PROFILE.
+  const base::Time& previous_use_date() const { return previous_use_date_; }
+  void set_previous_use_date(const base::Time& time) {
+    previous_use_date_ = time;
+  }
+
+  // Valid only when |record_type()| == |SERVER_PROFILE|.
   bool has_converted() const { return has_converted_; }
   void set_has_converted(bool has_converted) { has_converted_ = has_converted; }
 
@@ -210,8 +216,6 @@ class AutofillProfile : public AutofillDataModel {
   // Same as operator==, but ignores differences in GUID.
   bool EqualsSansGuid(const AutofillProfile& profile) const;
 
-  RecordType record_type_;
-
   // Personal information for this profile.
   NameInfo name_;
   EmailInfo email_;
@@ -225,6 +229,11 @@ class AutofillProfile : public AutofillDataModel {
   // ID used for identifying this profile. Only set for SERVER_PROFILEs. This is
   // a hash of the contents.
   std::string server_id_;
+
+  // Penultimate time model was used, not persisted to database.
+  base::Time previous_use_date_;
+
+  RecordType record_type_;
 
   // Only useful for SERVER_PROFILEs. Whether this server profile has been
   // converted to a local profile.

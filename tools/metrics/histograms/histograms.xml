@@ -3711,6 +3711,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.DaysSincePreviousUseAtSubmission.Profile"
+    units="days">
+  <owner>csashi@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <summary>
+    Logs the number of days between most recent use without modification and the
+    penultimate use of the profile when submitting a credit card form.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.DeveloperEngagement"
     enum="AutofillDeveloperEngagement">
   <owner>isherman@chromium.org</owner>
