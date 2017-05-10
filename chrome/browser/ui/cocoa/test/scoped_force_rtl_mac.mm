@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/i18n/rtl.h"
-#include "chrome/browser/ui/cocoa/l10n_util.h"
+#include "chrome/common/chrome_features.h"
 
 namespace {
 
@@ -21,7 +21,7 @@ const char kDefaultRTLLocale[] = "he";  // Hebrew.
 namespace cocoa_l10n_util {
 
 ScopedForceRTLMac::ScopedForceRTLMac() {
-  scoped_feature_list_.InitAndEnableFeature(kExperimentalMacRTL);
+  scoped_feature_list_.InitAndEnableFeature(features::kMacRTL);
   NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
   original_apple_text_direction_ =
       [standard_defaults boolForKey:kAppleTextDirectionDefaultsKey];

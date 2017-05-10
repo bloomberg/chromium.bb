@@ -104,6 +104,10 @@ extern const base::Feature kLinuxObsoleteSystemIsEndOfTheLine;
 
 extern const base::Feature kLsdPermissionPrompt;
 
+#if defined(OS_MACOSX)
+extern const base::Feature kMacRTL;
+#endif
+
 extern const base::Feature kMaterialDesignBookmarks;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

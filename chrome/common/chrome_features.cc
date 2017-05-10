@@ -180,6 +180,11 @@ const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
 const base::Feature kLsdPermissionPrompt{"LsdPermissionPrompt",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_MACOSX)
+// Enables RTL layout in macOS top chrome.
+const base::Feature kMacRTL{"MacRTL", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables or disables the Material Design version of chrome://bookmarks.
 const base::Feature kMaterialDesignBookmarks{"MaterialDesignBookmarks",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
