@@ -324,6 +324,9 @@
             $i18n{cancelButtonText}
           </paper-button>
           <paper-button class="action-button" id="addPrinterButton"
+              disabled="[[!canAddPrinter_(newPrinter.printerManufacturer,
+                                          newPrinter.printerModel,
+                                          newPrinter.printerPPDPath)]]"
               on-tap="switchToConfiguringDialog_">
             $i18n{addPrinterButtonText}
           </paper-button>
