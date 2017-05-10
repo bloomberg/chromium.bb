@@ -483,7 +483,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   cpi->tile_tok[0][0] = 0;
 
   av1_free_pc_tree(&cpi->td);
-  av1_free_var_tree(&cpi->td);
 
 #if CONFIG_PALETTE
   if (cpi->common.allow_screen_content_tools)
@@ -2588,7 +2587,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #endif  // CONFIG_PALETTE
       aom_free(thread_data->td->counts);
       av1_free_pc_tree(thread_data->td);
-      av1_free_var_tree(thread_data->td);
       aom_free(thread_data->td);
     }
   }
@@ -3963,7 +3961,6 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
     reset_use_upsampled_references(cpi);
 
   av1_set_quantizer(cm, q);
-  av1_set_variance_partition_thresholds(cpi, q);
   setup_frame(cpi);
   suppress_active_map(cpi);
 

@@ -195,11 +195,7 @@ typedef enum {
   // Always use a fixed size partition
   FIXED_PARTITION,
 
-  REFERENCE_PARTITION,
-
-  // Use an arbitrary partitioning scheme based on source variance within
-  // a 64X64 SB
-  VAR_BASED_PARTITION
+  REFERENCE_PARTITION
 } PARTITION_SEARCH_TYPE;
 
 typedef enum {

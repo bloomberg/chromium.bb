@@ -327,7 +327,6 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
 
     set(AOM_DSP_ENCODER_INTRIN_MSA
-        "${AOM_ROOT}/aom_dsp/mips/avg_msa.c"
         "${AOM_ROOT}/aom_dsp/mips/sad_msa.c"
         "${AOM_ROOT}/aom_dsp/mips/subtract_msa.c"
         "${AOM_ROOT}/aom_dsp/mips/variance_msa.c"

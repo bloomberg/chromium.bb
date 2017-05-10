@@ -35,8 +35,6 @@ void av1_init_tile_data(struct AV1_COMP *cpi);
 void av1_encode_tile(struct AV1_COMP *cpi, struct ThreadData *td, int tile_row,
                      int tile_col);
 
-void av1_set_variance_partition_thresholds(struct AV1_COMP *cpi, int q);
-
 void av1_update_tx_type_count(const struct AV1Common *cm, MACROBLOCKD *xd,
 #if CONFIG_TXK_SEL
                               int block, int plane,

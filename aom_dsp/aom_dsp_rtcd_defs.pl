@@ -617,13 +617,8 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   #
   # Avg
   #
-  add_proto qw/unsigned int aom_avg_8x8/, "const uint8_t *, int p";
   specialize qw/aom_avg_8x8 sse2 neon msa/;
-  add_proto qw/unsigned int aom_avg_4x4/, "const uint8_t *, int p";
-  specialize qw/aom_avg_4x4 sse2 neon msa/;
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
-    add_proto qw/unsigned int aom_highbd_avg_8x8/, "const uint8_t *, int p";
-    add_proto qw/unsigned int aom_highbd_avg_4x4/, "const uint8_t *, int p";
     add_proto qw/void aom_highbd_subtract_block/, "int rows, int cols, int16_t *diff_ptr, ptrdiff_t diff_stride, const uint8_t *src_ptr, ptrdiff_t src_stride, const uint8_t *pred_ptr, ptrdiff_t pred_stride, int bd";
     specialize qw/aom_highbd_subtract_block sse2/;
   }

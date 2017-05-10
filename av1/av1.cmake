@@ -145,9 +145,7 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/tokenize.c"
     "${AOM_ROOT}/av1/encoder/tokenize.h"
     "${AOM_ROOT}/av1/encoder/treewriter.c"
-    "${AOM_ROOT}/av1/encoder/treewriter.h"
-    "${AOM_ROOT}/av1/encoder/variance_tree.c"
-    "${AOM_ROOT}/av1/encoder/variance_tree.h")
+    "${AOM_ROOT}/av1/encoder/treewriter.h")
 
 set(AOM_AV1_COMMON_INTRIN_SSE2
     "${AOM_ROOT}/av1/common/x86/idct_intrin_sse2.c")

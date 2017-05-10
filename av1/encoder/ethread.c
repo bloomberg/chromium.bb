@@ -93,10 +93,6 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
         thread_data->td->pc_tree = NULL;
         av1_setup_pc_tree(cm, thread_data->td);
 
-        // Set up variance tree if needed.
-        if (cpi->sf.partition_search_type == VAR_BASED_PARTITION)
-          av1_setup_var_tree(cm, thread_data->td);
-
         // Allocate frame counters in thread data.
         CHECK_MEM_ERROR(cm, thread_data->td->counts,
                         aom_calloc(1, sizeof(*thread_data->td->counts)));

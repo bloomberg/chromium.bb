@@ -374,8 +374,7 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   if (cpi->oxcf.pass != 1) {
     av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);
 
-    if (cpi->sf.partition_search_type != VAR_BASED_PARTITION ||
-        cm->frame_type == KEY_FRAME) {
+    if (cm->frame_type == KEY_FRAME) {
 #if CONFIG_EXT_PARTITION_TYPES
       for (i = 0; i < PARTITION_PLOFFSET; ++i)
         av1_cost_tokens(cpi->partition_cost[i], cm->fc->partition_prob[i],

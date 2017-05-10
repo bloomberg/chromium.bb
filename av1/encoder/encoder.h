@@ -37,7 +37,6 @@
 #include "av1/encoder/rd.h"
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/tokenize.h"
-#include "av1/encoder/variance_tree.h"
 #if CONFIG_XIPHRC
 #include "av1/encoder/ratectrl_xiph.h"
 #endif
@@ -326,9 +325,6 @@ typedef struct ThreadData {
   PICK_MODE_CONTEXT *leaf_tree;
   PC_TREE *pc_tree;
   PC_TREE *pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2 + 1];
-
-  VAR_TREE *var_tree;
-  VAR_TREE *var_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2 + 1];
 
 #if CONFIG_PALETTE
   PALETTE_BUFFER *palette_buffer;
@@ -619,17 +615,6 @@ typedef struct AV1_COMP {
 #if CONFIG_FRAME_SUPERRES
   int superres_pending;
 #endif  // CONFIG_FRAME_SUPERRES
-
-  // VAR_BASED_PARTITION thresholds
-  // 0 - threshold_128x128;
-  // 1 - threshold_64x64;
-  // 2 - threshold_32x32;
-  // 3 - threshold_16x16;
-  // 4 - threshold_8x8;
-  int64_t vbp_thresholds[5];
-  int64_t vbp_threshold_minmax;
-  int64_t vbp_threshold_sad;
-  BLOCK_SIZE vbp_bsize_min;
 
   // VARIANCE_AQ segment map refresh
   int vaq_refresh;
