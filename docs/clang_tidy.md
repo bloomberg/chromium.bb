@@ -91,17 +91,6 @@ Copy-Paste Friendly (though you'll still need to stub in the variables):
 I've had no problems building a component release build, both with and without
 goma. if you run into issues, let us know!
 
-## Troubleshooting
-
-If you see errors like
-```
-src/build/linux/debian_wheezy_amd64-sysroot/usr/include/wchar.h:40:11: error: 'stdarg.h' file not found [clang-diagnostic-error]
-```
-
-then you should also build the `clang-headers` target in your llvm checkout.
-This is fixed by http://reviews.llvm.org/D22046, so if your llvm checkout is
-up-to-date, this shouldn't be needed.
-
 ## Questions
 
 Questions? Reach out to rdevlin.cronin@chromium.org or thakis@chromium.org.
