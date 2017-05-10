@@ -5,15 +5,9 @@
 #include "ui/app_list/app_list_switches.h"
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial_params.h"
-#include "build/build_config.h"
 
 namespace app_list {
 namespace switches {
-
-// If empty, search answers in the app app list are disabled, otherwise the URL
-// of the answer server.
-const char kAnswerServerUrl[] = "answer-server-url";
 
 // Specifies the chrome-extension:// URL for the contents of an additional page
 // added to the app launcher.
@@ -26,9 +20,6 @@ const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
 
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[] = "enable-app-list";
-
-// Enables the fullscreen app list.
-extern const char kEnableFullscreenAppList[] = "enable-fullscreen-app-list";
 
 // Enable/disable syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
@@ -80,27 +71,6 @@ bool IsDriveSearchInChromeLauncherEnabled() {
     return false;
 
   return true;
-}
-
-std::string AnswerServerUrl() {
-  // If the answer server URL is passed in the command line, use it, otherwise
-  // get it from the variations server.
-  const std::string variations_url = base::GetFieldTrialParamValue(
-      "SearchAnswerCard", switches::kAnswerServerUrl);
-  const std::string url =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          kAnswerServerUrl);
-  return !url.empty() ? url : variations_url;
-}
-
-bool IsAnswerCardEnabled() {
-  static const bool enabled = !AnswerServerUrl().empty();
-  return enabled;
-}
-
-bool IsFullscreenAppListEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableFullscreenAppList);
 }
 
 }  // namespace switches

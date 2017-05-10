@@ -14,10 +14,10 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_box_model.h"
@@ -49,7 +49,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate)
       search_box_view_(nullptr),
       contents_view_(nullptr) {
   SetLayoutManager(
-      switches::IsAnswerCardEnabled()
+      features::IsAnswerCardEnabled()
           ? static_cast<views::LayoutManager*>(new views::FillLayout)
           : static_cast<views::LayoutManager*>(
                 new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0)));

@@ -10,7 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_box_view.h"
@@ -212,7 +212,7 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
     AppListModel::State state) const {
-  gfx::Rect onscreen_bounds = switches::IsAnswerCardEnabled()
+  gfx::Rect onscreen_bounds = features::IsAnswerCardEnabled()
                                   ? GetFullContentsBounds()
                                   : GetDefaultContentsBounds();
   switch (state) {

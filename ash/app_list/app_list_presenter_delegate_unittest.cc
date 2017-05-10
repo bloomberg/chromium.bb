@@ -14,7 +14,8 @@
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "ui/app_list/app_list_switches.h"
+#include "base/test/scoped_feature_list.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -27,11 +28,6 @@ namespace {
 
 int64_t GetPrimaryDisplayId() {
   return display::Screen::GetScreen()->GetPrimaryDisplay().id();
-}
-
-void SetFullscreenAppListSwitch() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      app_list::switches::kEnableFullscreenAppList);
 }
 
 }  // namespace
@@ -54,15 +50,21 @@ class AppListPresenterDelegateTest : public test::AshTestBase,
     if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
       test_with_fullscreen_ = GetParam();
       if (test_with_fullscreen_)
-        SetFullscreenAppListSwitch();
+        EnableFullscreenAppList();
     }
     // Make the display big enough to hold the app list.
     UpdateDisplay("1024x768");
   }
 
  private:
+  void EnableFullscreenAppList() {
+    scoped_feature_list_.InitAndEnableFeature(
+        app_list::features::kEnableFullscreenAppList);
+  }
+
   test::TestAppListViewPresenterImpl app_list_presenter_impl_;
   bool test_with_fullscreen_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
 };

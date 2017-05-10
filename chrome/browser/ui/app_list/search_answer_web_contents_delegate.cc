@@ -18,8 +18,8 @@
 #include "content/public/common/renderer_preferences.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
@@ -83,7 +83,7 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
           content::WebContents::Create(content::WebContents::CreateParams(
               profile,
               content::SiteInstance::Create(profile)))),
-      answer_server_url_(switches::AnswerServerUrl()) {
+      answer_server_url_(features::AnswerServerUrl()) {
   content::RendererPreferences* renderer_prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_prefs->can_accept_load_drops = false;
