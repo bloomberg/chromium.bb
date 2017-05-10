@@ -10,7 +10,7 @@ Rendered version of this file: https://chromium.googlesource.com/chromium/src/+/
 
 
 ## Procedure for adding/modifying file type(s)
-  * **Edit** `download_file_types.asciipb` and update `histograms.xml`
+  * **Edit** `download_file_types.asciipb` and update `enums.xml`
   * Get it reviewed, **submit.**
   * **Push** it to all users via component update:
     * Wait 1-3 day for this to run on Canary to verify it doesn't crash Chrome.
@@ -34,7 +34,7 @@ See `download_file_types.proto` for all fields.
     first one wins. Only the `default_file_type` should leave this unset.
 
   * `uma_value`: (required) must be unique and match one in the
-    `SBClientDownloadExtensions` enum in `histograms.xml`.
+    `SBClientDownloadExtensions` enum in `enums.xml`.
 
   * `is_archive`: `True` if this filetype is a container for other files.
      Leave it unset for `false`.
