@@ -181,7 +181,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
 
   renderer_ = base::MakeUnique<GLRenderer>(
       &settings_.renderer_settings, output_surface_.get(),
-      resource_provider_.get(), texture_mailbox_deleter_.get(), 0);
+      resource_provider_.get(), texture_mailbox_deleter_.get());
   renderer_->Initialize();
   renderer_->SetVisible(true);
 }

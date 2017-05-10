@@ -374,7 +374,7 @@ class FakeRendererGL : public GLRenderer {
   FakeRendererGL(const RendererSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider)
-      : GLRenderer(settings, output_surface, resource_provider, nullptr, 0) {}
+      : GLRenderer(settings, output_surface, resource_provider, nullptr) {}
 
   FakeRendererGL(const RendererSettings* settings,
                  OutputSurface* output_surface,
@@ -383,8 +383,7 @@ class FakeRendererGL : public GLRenderer {
       : GLRenderer(settings,
                    output_surface,
                    resource_provider,
-                   texture_mailbox_deleter,
-                   0) {}
+                   texture_mailbox_deleter) {}
 
   void SetOverlayProcessor(OverlayProcessor* processor) {
     overlay_processor_.reset(processor);
@@ -2231,9 +2230,8 @@ class GLRendererWithMockContextTest : public ::testing::Test {
     output_surface_->BindToClient(&output_surface_client_);
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_->context_provider(), nullptr);
-    renderer_ =
-        base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
-                                     resource_provider_.get(), nullptr, 0);
+    renderer_ = base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
+                                             resource_provider_.get(), nullptr);
     renderer_->Initialize();
   }
 

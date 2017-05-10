@@ -52,8 +52,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   GLRenderer(const RendererSettings* settings,
              OutputSurface* output_surface,
              ResourceProvider* resource_provider,
-             TextureMailboxDeleter* texture_mailbox_deleter,
-             int highp_threshold_min);
+             TextureMailboxDeleter* texture_mailbox_deleter);
   ~GLRenderer() override;
 
   bool use_swap_with_bounds() const { return use_swap_with_bounds_; }
@@ -323,7 +322,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool blend_shadow_ = false;
   const Program* current_program_ = nullptr;
   TexturedQuadDrawCache draw_cache_;
-  int highp_threshold_min_ = 0;
   int highp_threshold_cache_ = 0;
 
   struct PendingAsyncReadPixels;

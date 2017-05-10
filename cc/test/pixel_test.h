@@ -101,13 +101,11 @@ class GLRendererWithExpandedViewport : public GLRenderer {
   GLRendererWithExpandedViewport(const RendererSettings* settings,
                                  OutputSurface* output_surface,
                                  ResourceProvider* resource_provider,
-                                 TextureMailboxDeleter* texture_mailbox_deleter,
-                                 int highp_threshold_min)
+                                 TextureMailboxDeleter* texture_mailbox_deleter)
       : GLRenderer(settings,
                    output_surface,
                    resource_provider,
-                   texture_mailbox_deleter,
-                   highp_threshold_min) {}
+                   texture_mailbox_deleter) {}
 };
 
 class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
@@ -123,13 +121,11 @@ class GLRendererWithFlippedSurface : public GLRenderer {
   GLRendererWithFlippedSurface(const RendererSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider,
-                               TextureMailboxDeleter* texture_mailbox_deleter,
-                               int highp_threshold_min)
+                               TextureMailboxDeleter* texture_mailbox_deleter)
       : GLRenderer(settings,
                    output_surface,
                    resource_provider,
-                   texture_mailbox_deleter,
-                   highp_threshold_min) {}
+                   texture_mailbox_deleter) {}
 };
 
 template<>
