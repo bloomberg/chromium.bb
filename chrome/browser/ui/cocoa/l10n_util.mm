@@ -8,6 +8,7 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/common/chrome_features.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace cocoa_l10n_util {
@@ -84,12 +85,8 @@ NSString* TooltipForURLAndTitle(NSString* url, NSString* title) {
     return [NSString stringWithFormat:@"%@\n%@", title, url];
 }
 
-const base::Feature kExperimentalMacRTL{"ExperimentalMacRTL",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 bool ShouldDoExperimentalRTLLayout() {
-  return base::i18n::IsRTL() &&
-         base::FeatureList::IsEnabled(kExperimentalMacRTL);
+  return base::i18n::IsRTL() && base::FeatureList::IsEnabled(features::kMacRTL);
 }
 
 bool ShouldFlipWindowControlsInRTL() {
