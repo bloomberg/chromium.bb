@@ -10,6 +10,8 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from third_party import schema
+
 import gclient_eval
 
 
@@ -75,13 +77,12 @@ class GClientExecTest(unittest.TestCase):
 
 class CheckTest(unittest.TestCase):
   TEST_CODE="""
-list_var = ["a", "b", "c"]
+include_rules = ["a", "b", "c"]
 
-dict_var = {"a": "1", "b": "2", "c": "3"}
+vars = {"a": "1", "b": "2", "c": "3"}
 
-nested_var = {
-  "list": ["a", "b", "c"],
-  "dict": {"a": "1", "b": "2", "c": "3"}
+deps_os = {
+  "linux": {"a": "1", "b": "2", "c": "3"}
 }"""
 
   def setUp(self):
@@ -92,19 +93,28 @@ nested_var = {
     gclient_eval.Check(self.TEST_CODE, '<string>', {}, self.expected)
 
   def test_fail_list(self):
-    self.expected['list_var'][0] = 'x'
+    self.expected['include_rules'][0] = 'x'
     with self.assertRaises(gclient_eval.CheckFailure):
       gclient_eval.Check(self.TEST_CODE, '<string>', {}, self.expected)
 
   def test_fail_dict(self):
-    self.expected['dict_var']['a'] = 'x'
+    self.expected['vars']['a'] = 'x'
     with self.assertRaises(gclient_eval.CheckFailure):
       gclient_eval.Check(self.TEST_CODE, '<string>', {}, self.expected)
 
   def test_fail_nested(self):
-    self.expected['nested_var']['dict']['c'] = 'x'
+    self.expected['deps_os']['linux']['c'] = 'x'
     with self.assertRaises(gclient_eval.CheckFailure):
       gclient_eval.Check(self.TEST_CODE, '<string>', {}, self.expected)
+
+  def test_schema_unknown_key(self):
+    with self.assertRaises(schema.SchemaWrongKeyError):
+      gclient_eval.Check('foo = "bar"', '<string>', {}, {'foo': 'bar'})
+
+  def test_schema_wrong_type(self):
+    with self.assertRaises(schema.SchemaError):
+      gclient_eval.Check(
+          'include_rules = {}', '<string>', {}, {'include_rules': {}})
 
 
 if __name__ == '__main__':

@@ -4,6 +4,76 @@
 
 import ast
 
+from third_party import schema
+
+
+# See https://github.com/keleshev/schema for docs how to configure schema.
+_GCLIENT_HOOKS_SCHEMA = [{
+    # Hook action: list of command-line arguments to invoke.
+    'action': [basestring],
+
+    # Name of the hook. Doesn't affect operation.
+    schema.Optional('name'): basestring,
+
+    # Hook pattern (regex). Originally intended to limit some hooks to run
+    # only when files matching the pattern have changed. In practice, with git,
+    # gclient runs all the hooks regardless of this field.
+    schema.Optional('pattern'): basestring,
+}]
+
+_GCLIENT_SCHEMA = schema.Schema({
+    # List of host names from which dependencies are allowed (whitelist).
+    # NOTE: when not present, all hosts are allowed.
+    # NOTE: scoped to current DEPS file, not recursive.
+    schema.Optional('allowed_hosts'): [basestring],
+
+    # Mapping from paths to repo and revision to check out under that path.
+    # Applying this mapping to the on-disk checkout is the main purpose
+    # of gclient, and also why the config file is called DEPS.
+    #
+    # The following functions are allowed:
+    #
+    #   File(): specifies to expect to checkout a file instead of a directory
+    #   From(): used to fetch a dependency definition from another DEPS file
+    #   Var(): allows variable substitution (either from 'vars' dict below,
+    #          or command-line override)
+    schema.Optional('deps'): {schema.Optional(basestring): basestring},
+
+    # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
+    schema.Optional('deps_os'): {basestring: {basestring: basestring}},
+
+    # Hooks executed after gclient sync (unless suppressed), or explicitly
+    # on gclient hooks. See _GCLIENT_HOOKS_SCHEMA for details.
+    # Also see 'pre_deps_hooks'.
+    schema.Optional('hooks'): _GCLIENT_HOOKS_SCHEMA,
+
+    # Rules which #includes are allowed in the directory.
+    # Also see 'skip_child_includes' and 'specific_include_rules'.
+    schema.Optional('include_rules'): [basestring],
+
+    # Hooks executed before processing DEPS. See 'hooks' for more details.
+    schema.Optional('pre_deps_hooks'): _GCLIENT_HOOKS_SCHEMA,
+
+    # Whitelists deps for which recursion should be enabled.
+    schema.Optional('recursedeps'): [
+        schema.Or(basestring, (basestring, basestring))
+    ],
+
+    # Blacklists directories for checking 'include_rules'.
+    schema.Optional('skip_child_includes'): [basestring],
+
+    # Mapping from paths to include rules specific for that path.
+    # See 'include_rules' for more details.
+    schema.Optional('specific_include_rules'): {basestring: [basestring]},
+
+    # For recursed-upon sub-dependencies, check out their own dependencies
+    # relative to the paren't path, rather than relative to the .gclient file.
+    schema.Optional('use_relative_paths'): bool,
+
+    # Variables that can be referenced using Var() - see 'deps'.
+    schema.Optional('vars'): {basestring: basestring},
+})
+
 
 def _gclient_eval(node_or_string, global_scope, filename='<unknown>'):
   """Safely evaluates a single expression. Returns the result."""
@@ -140,3 +210,5 @@ def Check(content, path, global_scope, expected_scope):
   result_scope = _gclient_exec(content, global_scope, filename=path)
 
   compare(expected_scope, result_scope, '', result_scope)
+
+  _GCLIENT_SCHEMA.validate(result_scope)
