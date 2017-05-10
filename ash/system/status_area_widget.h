@@ -14,6 +14,7 @@
 
 namespace ash {
 class ImeMenuTray;
+class LockScreenActionTray;
 class LogoutButtonTray;
 class OverviewButtonTray;
 class PaletteTray;
@@ -81,6 +82,10 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfItemBackground(SkColor color) override;
 
+  LockScreenActionTray* lock_screen_action_tray_for_testing() {
+    return lock_screen_action_tray_;
+  }
+
   LogoutButtonTray* logout_button_tray_for_testing() {
     return logout_button_tray_;
   }
@@ -92,6 +97,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
  private:
   void AddSystemTray();
   void AddWebNotificationTray();
+  void AddLockScreenActionTray();
   void AddLogoutButtonTray();
   void AddPaletteTray();
   void AddVirtualKeyboardTray();
@@ -103,6 +109,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   OverviewButtonTray* overview_button_tray_;
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
+  LockScreenActionTray* lock_screen_action_tray_;
   LogoutButtonTray* logout_button_tray_;
   PaletteTray* palette_tray_;
   VirtualKeyboardTray* virtual_keyboard_tray_;
