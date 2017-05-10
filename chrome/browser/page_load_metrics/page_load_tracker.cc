@@ -145,7 +145,14 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     // crbug.com/590212.
     LOG(ERROR) << "Invalid response_start " << timing.response_start
                << " for parse_start " << timing.parse_timing.parse_start;
-    return internal::INVALID_ORDER_RESPONSE_START_PARSE_START;
+    // When browser-side navigation is enabled, we sometimes encounter this
+    // error case. For now, we disable reporting of this error, since most
+    // PageLoadMetricsObservers don't care about response_start and we want to
+    // see how much closer fixing this error will get us to page load metrics
+    // being consistent with and without browser side navigation enabled. See
+    // crbug.com/716587 for more details.
+    //
+    // return internal::INVALID_ORDER_RESPONSE_START_PARSE_START;
   }
 
   if (!EventsInOrder(timing.parse_timing.parse_start,
