@@ -63,6 +63,8 @@ if (is_android) {
     sources = [
       "interfaces/web_restrictions.mojom",
     ]
+
+    use_once_callback = true
   }
 
   generate_jni("test_support_jni_headers") {

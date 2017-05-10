@@ -16,9 +16,9 @@ namespace web_restrictions {
 namespace {
 
 void ClientRequestPermissionCallback(
-    const mojom::WebRestrictions::RequestPermissionCallback& callback,
+    mojom::WebRestrictions::RequestPermissionCallback callback,
     bool result) {
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 }  // namespace
@@ -38,14 +38,13 @@ void WebRestrictionsMojoImplementation::Create(
       std::move(request));
 }
 
-void WebRestrictionsMojoImplementation::GetResult(
-    const std::string& url,
-    const GetResultCallback& callback) {
+void WebRestrictionsMojoImplementation::GetResult(const std::string& url,
+                                                  GetResultCallback callback) {
   std::unique_ptr<const WebRestrictionsClientResult> web_restrictions_result(
       web_restrictions_client_->GetCachedWebRestrictionsResult(url));
   mojom::ClientResultPtr result = mojom::ClientResult::New();
   if (!web_restrictions_result) {
-    callback.Run(std::move(result));
+    std::move(callback).Run(std::move(result));
     return;
   }
   int columnCount = web_restrictions_result->GetColumnCount();
@@ -58,14 +57,15 @@ void WebRestrictionsMojoImplementation::GetResult(
           web_restrictions_result->GetInt(i);
     }
   }
-  callback.Run(std::move(result));
+  std::move(callback).Run(std::move(result));
 }
 
 void WebRestrictionsMojoImplementation::RequestPermission(
     const std::string& url,
-    const mojom::WebRestrictions::RequestPermissionCallback& callback) {
+    mojom::WebRestrictions::RequestPermissionCallback callback) {
   web_restrictions_client_->RequestPermission(
-      url, base::Bind(&ClientRequestPermissionCallback, callback));
+      url,
+      base::Bind(&ClientRequestPermissionCallback, base::Passed(&callback)));
 }
 
 }  // namespace web_restrictions
