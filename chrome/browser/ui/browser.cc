@@ -1425,8 +1425,8 @@ void Browser::OnWindowDidShow() {
 
   startup_metric_utils::RecordBrowserWindowDisplay(base::TimeTicks::Now());
 
-  // Nothing to do for non-tabbed and minimized windows.
-  if (!is_type_tabbed() || window_->IsMinimized())
+  // Nothing to do for non-tabbed windows.
+  if (!is_type_tabbed())
     return;
 
   // Show any pending global error bubble.
