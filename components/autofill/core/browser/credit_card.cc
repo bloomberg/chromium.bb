@@ -678,7 +678,9 @@ bool CreditCard::IsLocalDuplicateOfServerCard(const CreditCard& other) const {
   if ((!name_on_card_.empty() && name_on_card_ != other.name_on_card_) ||
       (expiration_month_ != 0 &&
        expiration_month_ != other.expiration_month_) ||
-      (expiration_year_ != 0 && expiration_year_ != other.expiration_year_)) {
+      (expiration_year_ != 0 && expiration_year_ != other.expiration_year_) ||
+      (!billing_address_id_.empty() &&
+       billing_address_id_ != other.billing_address_id_)) {
     return false;
   }
 

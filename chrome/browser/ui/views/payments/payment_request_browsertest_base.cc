@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/browser/address_combobox_model.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -50,6 +51,10 @@
 #include "ui/views/controls/styled_label.h"
 
 namespace payments {
+
+namespace {
+const auto kBillingAddressType = autofill::ADDRESS_BILLING_LINE1;
+}  // namespace
 
 PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() {}
 PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() {}
@@ -572,6 +577,17 @@ void PaymentRequestBrowserTestBase::SetComboboxValue(
   combobox->SelectValue(value);
   combobox->OnContentsChanged();
   combobox->OnBlur();
+}
+
+void PaymentRequestBrowserTestBase::SelectBillingAddress(
+    const std::string& billing_address_id) {
+  views::Combobox* address_combobox(static_cast<views::Combobox*>(
+      dialog_view()->GetViewByID(static_cast<int>(kBillingAddressType))));
+  ASSERT_NE(address_combobox, nullptr);
+  autofill::AddressComboboxModel* address_combobox_model(
+      static_cast<autofill::AddressComboboxModel*>(address_combobox->model()));
+  address_combobox->SetSelectedIndex(
+      address_combobox_model->GetIndexOfIdentifier(billing_address_id));
 }
 
 bool PaymentRequestBrowserTestBase::IsEditorTextfieldInvalid(

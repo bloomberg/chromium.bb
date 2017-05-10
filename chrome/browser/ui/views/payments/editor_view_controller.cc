@@ -72,11 +72,14 @@ std::unique_ptr<views::View> CreateErrorLabelView(const base::string16& error,
 
 }  // namespace
 
-EditorViewController::EditorViewController(PaymentRequestSpec* spec,
-                                           PaymentRequestState* state,
-                                           PaymentRequestDialogView* dialog)
+EditorViewController::EditorViewController(
+    PaymentRequestSpec* spec,
+    PaymentRequestState* state,
+    PaymentRequestDialogView* dialog,
+    BackNavigationType back_navigation_type)
     : PaymentRequestSheetController(spec, state, dialog),
-      first_field_view_(nullptr) {}
+      first_field_view_(nullptr),
+      back_navigation_type_(back_navigation_type) {}
 
 EditorViewController::~EditorViewController() {}
 
@@ -92,6 +95,15 @@ void EditorViewController::DisplayErrorMessageForField(
         CreateErrorLabelView(error_message, field).release());
   }
   RelayoutPane();
+}
+
+std::unique_ptr<views::View> EditorViewController::CreateHeaderView() {
+  return nullptr;
+}
+
+std::unique_ptr<views::View> EditorViewController::CreateCustomFieldView(
+    autofill::ServerFieldType type) {
+  return nullptr;
 }
 
 std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
@@ -113,7 +125,9 @@ void EditorViewController::FillContentView(views::View* content_view) {
   // No insets. Child views below are responsible for their padding.
 
   // An editor can optionally have a header view specific to it.
-  content_view->AddChildView(CreateHeaderView().release());
+  std::unique_ptr<views::View> header_view = CreateHeaderView();
+  if (header_view.get())
+    content_view->AddChildView(header_view.release());
 
   // The heart of the editor dialog: all the input fields with their labels.
   content_view->AddChildView(CreateEditorView().release());
@@ -154,8 +168,16 @@ void EditorViewController::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   switch (sender->tag()) {
     case static_cast<int>(EditorViewControllerTags::SAVE_BUTTON):
-      if (ValidateModelAndSave())
-        dialog()->GoBackToPaymentSheet();
+      if (ValidateModelAndSave()) {
+        switch (back_navigation_type_) {
+          case BackNavigationType::kOneStep:
+            dialog()->GoBack();
+            break;
+          case BackNavigationType::kPaymentSheet:
+            dialog()->GoBackToPaymentSheet();
+            break;
+        }
+      }
       break;
     default:
       PaymentRequestSheetController::ButtonPressed(sender, event);
@@ -201,13 +223,13 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  // The LayoutManager needs to be set before input fields are created, so we
-  // keep a handle to it before we release it to the view.
-  views::GridLayout* layout_handle = editor_layout.get();
   editor_view->SetLayoutManager(editor_layout.release());
   std::vector<EditorField> fields = GetFieldDefinitions();
-  for (const auto& field : fields)
-    CreateInputField(layout_handle, field);
+  for (const auto& field : fields) {
+    CreateInputField(
+        static_cast<views::GridLayout*>(editor_view->GetLayoutManager()),
+        field);
+  }
 
   return editor_view;
 }
@@ -226,9 +248,7 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
 
   std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(
       field.required ? field.label + base::ASCIIToUTF16("*") : field.label);
-  // A very long label will wrap. Value picked so that left + right label
-  // padding bring the label to half-way in the dialog (~225).
-  constexpr int kMaximumLabelWidth = 192;
+
   label->SetMultiLine(true);
   label->SetMaximumWidth(kMaximumLabelWidth);
   layout->AddView(label.release());
@@ -267,7 +287,9 @@ void EditorViewController::CreateInputField(views::GridLayout* layout,
     layout->AddView(combobox, 1, 1, views::GridLayout::FILL,
                     views::GridLayout::FILL, 0, kInputFieldHeight);
   } else {
-    NOTREACHED();
+    // Custom field view will now be owned by |row|. And it must be valid since
+    // the derived class specified a custom view for this field.
+    layout->AddView(CreateCustomFieldView(field.type).release());
   }
 
   layout->StartRow(0, 0);

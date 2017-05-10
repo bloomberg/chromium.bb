@@ -83,7 +83,7 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
 
   // Case 00: Empty credit card with empty strings.
   CreditCard credit_card00(base::GenerateGUID(), "https://www.example.com/");
-  test::SetCreditCardInfo(&credit_card00, "John Dillinger", "", "", "");
+  test::SetCreditCardInfo(&credit_card00, "John Dillinger", "", "", "", "");
   base::string16 summary00 = credit_card00.Label();
   EXPECT_EQ(base::string16(ASCIIToUTF16("John Dillinger")), summary00);
   base::string16 obfuscated00 = credit_card00.NetworkAndLastFourDigits();
@@ -91,7 +91,8 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
 
   // Case 1: No credit card number.
   CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
-  test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010");
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010",
+                          "1");
   base::string16 summary1 = credit_card1.Label();
   EXPECT_EQ(base::string16(ASCIIToUTF16("John Dillinger")), summary1);
   base::string16 obfuscated1 = credit_card1.NetworkAndLastFourDigits();
@@ -99,8 +100,8 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
 
   // Case 2: No month.
   CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
-  test::SetCreditCardInfo(
-      &credit_card2, "John Dillinger", "5105 1051 0510 5100", "", "2010");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "5105 1051 0510 5100", "", "2010", "1");
   base::string16 summary2 = credit_card2.Label();
   EXPECT_EQ(
       UTF8ToUTF16(std::string("MasterCard") + kUTF8MidlineEllipsis + "5100"),
@@ -112,8 +113,8 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
 
   // Case 3: No year.
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
-  test::SetCreditCardInfo(
-      &credit_card3, "John Dillinger", "5105 1051 0510 5100", "01", "");
+  test::SetCreditCardInfo(&credit_card3, "John Dillinger",
+                          "5105 1051 0510 5100", "01", "", "1");
   base::string16 summary3 = credit_card3.Label();
   EXPECT_EQ(
       UTF8ToUTF16(std::string("MasterCard") + kUTF8MidlineEllipsis + "5100"),
@@ -125,8 +126,8 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
 
   // Case 4: Have everything.
   CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com/");
-  test::SetCreditCardInfo(
-      &credit_card4, "John Dillinger", "5105 1051 0510 5100", "01", "2010");
+  test::SetCreditCardInfo(&credit_card4, "John Dillinger",
+                          "5105 1051 0510 5100", "01", "2010", "1");
   base::string16 summary4 = credit_card4.Label();
   EXPECT_EQ(UTF8ToUTF16(std::string("MasterCard") + kUTF8MidlineEllipsis +
                         "5100, 01/2010"),
@@ -139,9 +140,9 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
   // Case 5: Very long credit card
   CreditCard credit_card5(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
-      &credit_card5,
-      "John Dillinger",
-      "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010");
+      &credit_card5, "John Dillinger",
+      "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010",
+      "1");
   base::string16 summary5 = credit_card5.Label();
   EXPECT_EQ(
       UTF8ToUTF16(std::string("Card") + kUTF8MidlineEllipsis + "5100, 01/2010"),
@@ -153,7 +154,8 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
 
 TEST(CreditCardTest, AssignmentOperator) {
   CreditCard a(base::GenerateGUID(), "some origin");
-  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
+  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010",
+                          "1");
 
   // Result of assignment should be logically equal to the original profile.
   CreditCard b(base::GenerateGUID(), "some other origin");
@@ -251,7 +253,8 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST(CreditCardTest, Copy) {
   CreditCard a(base::GenerateGUID(), "https://www.example.com");
-  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
+  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010",
+                          base::GenerateGUID());
 
   // Clone should be logically equal to the original.
   CreditCard b(a);
@@ -264,12 +267,14 @@ struct IsLocalDuplicateOfServerCardTestCase {
   const char* first_card_number;
   const char* first_card_exp_mo;
   const char* first_card_exp_yr;
+  const char* first_billing_address_id;
 
   CreditCard::RecordType second_card_record_type;
   const char* second_card_name;
   const char* second_card_number;
   const char* second_card_exp_mo;
   const char* second_card_exp_yr;
+  const char* second_billing_address_id;
   const char* second_card_issuer_network;
 
   bool is_local_duplicate;
@@ -284,13 +289,15 @@ TEST_P(IsLocalDuplicateOfServerCardTest, IsLocalDuplicateOfServerCard) {
   a.set_record_type(test_case.first_card_record_type);
   test::SetCreditCardInfo(
       &a, test_case.first_card_name, test_case.first_card_number,
-      test_case.first_card_exp_mo, test_case.first_card_exp_yr);
+      test_case.first_card_exp_mo, test_case.first_card_exp_yr,
+      test_case.first_billing_address_id);
 
   CreditCard b(base::GenerateGUID(), std::string());
   b.set_record_type(test_case.second_card_record_type);
   test::SetCreditCardInfo(
       &b, test_case.second_card_name, test_case.second_card_number,
-      test_case.second_card_exp_mo, test_case.second_card_exp_yr);
+      test_case.second_card_exp_mo, test_case.second_card_exp_yr,
+      test_case.second_billing_address_id);
 
   if (test_case.second_card_record_type == CreditCard::MASKED_SERVER_CARD)
     b.SetNetworkForMaskedCard(test_case.second_card_issuer_network);
@@ -303,39 +310,43 @@ INSTANTIATE_TEST_CASE_P(
     CreditCardTest,
     IsLocalDuplicateOfServerCardTest,
     testing::Values(
-        IsLocalDuplicateOfServerCardTestCase{LOCAL_CARD, "", "", "", "",
-                                             LOCAL_CARD, "", "", "", "",
+        IsLocalDuplicateOfServerCardTestCase{LOCAL_CARD, "", "", "", "", "",
+                                             LOCAL_CARD, "", "", "", "", "",
                                              nullptr, false},
-        IsLocalDuplicateOfServerCardTestCase{LOCAL_CARD, "", "", "", "",
+        IsLocalDuplicateOfServerCardTestCase{LOCAL_CARD, "", "", "", "", "",
                                              FULL_SERVER_CARD, "", "", "", "",
-                                             nullptr, true},
+                                             "", nullptr, true},
         IsLocalDuplicateOfServerCardTestCase{FULL_SERVER_CARD, "", "", "", "",
-                                             FULL_SERVER_CARD, "", "", "", "",
-                                             nullptr, false},
+                                             "", FULL_SERVER_CARD, "", "", "",
+                                             "", "", nullptr, false},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "John Dillinger", "423456789012", "01", "2010",
+            LOCAL_CARD, "John Dillinger", "423456789012", "01", "2010", "1",
             FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010",
-            nullptr, true},
+            "1", nullptr, true},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "J Dillinger", "423456789012", "01", "2010",
+            LOCAL_CARD, "J Dillinger", "423456789012", "01", "2010", "1",
             FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010",
-            nullptr, false},
+            "1", nullptr, false},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "", "423456789012", "01", "2010", FULL_SERVER_CARD,
-            "John Dillinger", "423456789012", "01", "2010", nullptr, true},
+            LOCAL_CARD, "", "423456789012", "01", "2010", "1", FULL_SERVER_CARD,
+            "John Dillinger", "423456789012", "01", "2010", "1", nullptr, true},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "", "423456789012", "", "", FULL_SERVER_CARD,
-            "John Dillinger", "423456789012", "01", "2010", nullptr, true},
+            LOCAL_CARD, "", "423456789012", "", "", "1", FULL_SERVER_CARD,
+            "John Dillinger", "423456789012", "01", "2010", "1", nullptr, true},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "", "423456789012", "", "", MASKED_SERVER_CARD,
-            "John Dillinger", "9012", "01", "2010", kVisaCard, true},
+            LOCAL_CARD, "", "423456789012", "", "", "1", MASKED_SERVER_CARD,
+            "John Dillinger", "9012", "01", "2010", "1", kVisaCard, true},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "", "423456789012", "", "", MASKED_SERVER_CARD,
-            "John Dillinger", "9012", "01", "2010", kMasterCard, false},
+            LOCAL_CARD, "", "423456789012", "", "", "1", MASKED_SERVER_CARD,
+            "John Dillinger", "9012", "01", "2010", "1", kMasterCard, false},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "John Dillinger", "4234-5678-9012", "01", "2010",
+            LOCAL_CARD, "John Dillinger", "4234-5678-9012", "01", "2010", "1",
             FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010",
-            nullptr, true}));
+            "1", nullptr, true},
+        IsLocalDuplicateOfServerCardTestCase{
+            LOCAL_CARD, "John Dillinger", "4234-5678-9012", "01", "2010", "1",
+            FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010",
+            "2", nullptr, false}));
 
 TEST(CreditCardTest, HasSameNumberAs) {
   CreditCard a(base::GenerateGUID(), std::string());
@@ -390,8 +401,8 @@ TEST(CreditCardTest, Compare) {
   EXPECT_EQ(0, a.Compare(b));
 
   // Different values produce non-zero results.
-  test::SetCreditCardInfo(&a, "Jimmy", NULL, NULL, NULL);
-  test::SetCreditCardInfo(&b, "Ringo", NULL, NULL, NULL);
+  test::SetCreditCardInfo(&a, "Jimmy", NULL, NULL, NULL, "");
+  test::SetCreditCardInfo(&b, "Ringo", NULL, NULL, NULL, "");
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
 }
@@ -422,8 +433,8 @@ TEST(CreditCardTest, IconResourceId) {
 
 TEST(CreditCardTest, UpdateFromImportedCard) {
   CreditCard original_card(base::GenerateGUID(), "https://www.example.com");
-  test::SetCreditCardInfo(
-      &original_card, "John Dillinger", "123456789012", "09", "2017");
+  test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
+                          "09", "2017", "1");
 
   CreditCard a = original_card;
 
@@ -578,8 +589,8 @@ TEST(CreditCardTest, IsValid) {
 TEST(CreditCardTest, SetRawInfoCreditCardNumber) {
   CreditCard card(base::GenerateGUID(), "https://www.example.com/");
 
-  test::SetCreditCardInfo(&card, "Bob Dylan",
-                          "4321-5432-6543-xxxx", "07", "2013");
+  test::SetCreditCardInfo(&card, "Bob Dylan", "4321-5432-6543-xxxx", "07",
+                          "2013", "1");
   EXPECT_EQ(ASCIIToUTF16("4321-5432-6543-xxxx"),
             card.GetRawInfo(CREDIT_CARD_NUMBER));
 }
@@ -851,8 +862,8 @@ TEST(CreditCardTest, LastFourDigits) {
   CreditCard card(base::GenerateGUID(), "https://www.example.com/");
   ASSERT_EQ(base::string16(), card.LastFourDigits());
 
-  test::SetCreditCardInfo(&card, "Baby Face Nelson",
-                          "5212341234123489", "01", "2010");
+  test::SetCreditCardInfo(&card, "Baby Face Nelson", "5212341234123489", "01",
+                          "2010", "1");
   ASSERT_EQ(base::ASCIIToUTF16("3489"), card.LastFourDigits());
 
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("3489"));
@@ -1022,12 +1033,13 @@ TEST(CreditCardTest, GetLastUsedDateForDisplay) {
   credit_card0.set_use_count(1);
   credit_card0.set_use_date(kArbitraryTime - base::TimeDelta::FromDays(1));
   test::SetCreditCardInfo(&credit_card0, "John Dillinger",
-                          "423456789012" /* Visa */, "01", "2021");
+                          "423456789012" /* Visa */, "01", "2021", "1");
 
   // Test for last used date.
   CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
-                          "347666888555" /* American Express */, "04", "2021");
+                          "347666888555" /* American Express */, "04", "2021",
+                          "1");
   credit_card1.set_use_count(10);
   credit_card1.set_use_date(kArbitraryTime - base::TimeDelta::FromDays(10));
 
@@ -1036,7 +1048,7 @@ TEST(CreditCardTest, GetLastUsedDateForDisplay) {
   credit_card2.set_use_count(5);
   credit_card2.set_use_date(kArbitraryTime - base::TimeDelta::FromDays(366));
   test::SetCreditCardInfo(&credit_card2, "Bonnie Parker",
-                          "518765432109" /* Mastercard */, "12", "2021");
+                          "518765432109" /* Mastercard */, "12", "2021", "1");
 
   static const struct {
     const char* show_expiration_date;

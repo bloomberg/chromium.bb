@@ -175,6 +175,9 @@
   <message name="IDS_PAYMENTS_NAME_ON_CARD_REQUIRED" desc="The label to indicate the cardholder name (the name of the owner or “holder” of the credit card)  must be entered." formatter_data="android_java">
     Cardholder name required
   </message>
+  <message name="IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED" desc="The label to indicate the billing address of the credit card  must be entered." formatter_data="android_java">
+    Card billing address required
+  </message>
   <message name="IDS_PAYMENTS_MORE_INFORMATION_REQUIRED" desc="The label to indicate more information is required for payment card or shipping address or contact info." formatter_data="android_java">
     More information required
   </message>

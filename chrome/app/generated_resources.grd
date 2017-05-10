@@ -7478,6 +7478,7 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_PASSWORDS_AUTOLOGIN" desc="The label of the 'autologinEnabled' checkbox">
           Offer to sign in to Google sites automatically with this account
         </message>
+        <!-- TODO(718146) Move autofill strings to autofill_strings.grd -->
         <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable Autofill' radio button">
           Enable Autofill to fill out web forms in a single click.
         </message>
@@ -7547,6 +7548,12 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_YEAR" desc="The label of the Expiration date entry.">
           Expiration year
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_BILLING_ADDRESS" desc="The label of the Billing Address chooser.">
+          Billing address
+        </message>
+        <message name="IDS_AUTOFILL_BUTTON_LABEL_ADD_BILLING_ADDRESS" desc="The label of the button to add a new billing address.">
+          Add billing address
         </message>
 
         <!-- Extension settings -->

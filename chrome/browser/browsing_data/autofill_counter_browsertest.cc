@@ -72,10 +72,11 @@ class AutofillCounterTest : public SyncTest {
 
   void AddCreditCard(const char* card_number,
                      const char* exp_month,
-                     const char* exp_year) {
+                     const char* exp_year,
+                     const char* billing_address_id) {
     autofill::CreditCard card;
     autofill::test::SetCreditCardInfo(&card, nullptr, card_number, exp_month,
-                                      exp_year);
+                                      exp_year, billing_address_id);
     credit_card_ids_.push_back(card.guid());
     web_data_service_->AddCreditCard(card);
   }
@@ -271,17 +272,17 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, CreditCards) {
   WaitForCounting();
   EXPECT_EQ(0, GetNumCreditCards());
 
-  AddCreditCard("0000-0000-0000-0000", "1", "2015");
+  AddCreditCard("0000-0000-0000-0000", "1", "2015", "1");
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(1, GetNumCreditCards());
 
-  AddCreditCard("0123-4567-8910-1112", "10", "2015");
+  AddCreditCard("0123-4567-8910-1112", "10", "2015", "1");
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(2, GetNumCreditCards());
 
-  AddCreditCard("1211-1098-7654-3210", "10", "2030");
+  AddCreditCard("1211-1098-7654-3210", "10", "2030", "1");
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(3, GetNumCreditCards());
@@ -343,8 +344,8 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, ComplexResult) {
   AddAutocompleteSuggestion("tel", "+987654321");
   AddAutocompleteSuggestion("city", "Munich");
 
-  AddCreditCard("0000-0000-0000-0000", "1", "2015");
-  AddCreditCard("1211-1098-7654-3210", "10", "2030");
+  AddCreditCard("0000-0000-0000-0000", "1", "2015", "1");
+  AddCreditCard("1211-1098-7654-3210", "10", "2030", "1");
 
   AddAddress("John", "Doe", "Main Street 12345");
   AddAddress("Jane", "Smith", "Main Street 12346");
@@ -370,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   base::Time time1 = base::Time::FromTimeT(base::Time::Now().ToTimeT());
 
   AddAutocompleteSuggestion("email", "example@example.com");
-  AddCreditCard("0000-0000-0000-0000", "1", "2015");
+  AddCreditCard("0000-0000-0000-0000", "1", "2015", "1");
   AddAddress("John", "Doe", "Main Street 12345");
   WaitForDBThread();
 
@@ -378,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
   base::Time time2 = base::Time::FromTimeT(base::Time::Now().ToTimeT());
 
-  AddCreditCard("0123-4567-8910-1112", "10", "2015");
+  AddCreditCard("0123-4567-8910-1112", "10", "2015", "1");
   AddAddress("Jane", "Smith", "Main Street 12346");
   AddAddress("John", "Smith", "Side Street 47");
   WaitForDBThread();
@@ -388,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   base::Time time3 = base::Time::FromTimeT(base::Time::Now().ToTimeT());
 
   AddAutocompleteSuggestion("tel", "+987654321");
-  AddCreditCard("1211-1098-7654-3210", "10", "2030");
+  AddCreditCard("1211-1098-7654-3210", "10", "2030", "1");
   WaitForDBThread();
 
   // Test the results for different starting points.

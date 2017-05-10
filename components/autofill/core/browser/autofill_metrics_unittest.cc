@@ -170,7 +170,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>(
           "10000000-0000-0000-0000-000000000001", std::string());
       test::SetCreditCardInfo(credit_card.get(), nullptr, "4111111111111111",
-                              "12", "24");
+                              "12", "24", "1");
       local_credit_cards_.push_back(std::move(credit_card));
     }
     if (include_masked_server_credit_card) {

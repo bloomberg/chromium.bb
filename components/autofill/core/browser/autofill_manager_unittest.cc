@@ -241,7 +241,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234 5678 9012 3456",  // Visa
-                            "04", "2999");
+                            "04", "2999", "1");
     credit_card->set_guid("00000000-0000-0000-0000-000000000008");
     local_credit_cards_.push_back(std::move(credit_card));
   }
@@ -252,7 +252,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234-5678-9012-3456",  // Visa
-                            "04", "2999");
+                            "04", "2999", "1");
     credit_card->set_guid("00000000-0000-0000-0000-000000000009");
     local_credit_cards_.push_back(std::move(credit_card));
   }
@@ -262,7 +262,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Miku Hatsune",
                             "4234567890654321",  // Visa
-                            month, year);
+                            month, year, "1");
     credit_card->set_guid("00000000-0000-0000-0000-000000000007");
     local_credit_cards_.push_back(std::move(credit_card));
   }
@@ -272,7 +272,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Homer Simpson",
                             "4234567890654321",  // Visa
-                            "05", "2000");
+                            "05", "2000", "1");
     credit_card->set_guid("00000000-0000-0000-0000-000000000009");
     local_credit_cards_.push_back(std::move(credit_card));
   }
@@ -306,7 +306,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234567890123456",  // Visa
-                            "04", "2999");
+                            "04", "2999", "1");
     credit_card->set_guid("00000000-0000-0000-0000-000000000004");
     credit_card->set_use_count(10);
     credit_card->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
@@ -315,14 +315,14 @@ class TestPersonalDataManager : public PersonalDataManager {
     credit_card = base::MakeUnique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Buddy Holly",
                             "5187654321098765",  // Mastercard
-                            "10", "2998");
+                            "10", "2998", "1");
     credit_card->set_guid("00000000-0000-0000-0000-000000000005");
     credit_card->set_use_count(5);
     credit_card->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(4));
     credit_cards->push_back(std::move(credit_card));
 
     credit_card = base::MakeUnique<CreditCard>();
-    test::SetCreditCardInfo(credit_card.get(), "", "", "", "");
+    test::SetCreditCardInfo(credit_card.get(), "", "", "", "", "");
     credit_card->set_guid("00000000-0000-0000-0000-000000000006");
     credit_cards->push_back(std::move(credit_card));
   }
@@ -1036,7 +1036,7 @@ class AutofillManagerTest : public testing::Test {
     FormsSeen(std::vector<FormData>(1, *form));
     *card = CreditCard(CreditCard::MASKED_SERVER_CARD, "a123");
     test::SetCreditCardInfo(card, "John Dillinger", "1881" /* Visa */, "01",
-                            "2017");
+                            "2017", "1");
     card->SetNetworkForMaskedCard(kVisaCard);
 
     EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _))
@@ -1675,7 +1675,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsWithInput) {
   CreditCard credit_card;
   test::SetCreditCardInfo(&credit_card, "John Smith",
                           "5255667890123123",  // Mastercard
-                          "08", "2017");
+                          "08", "2017", "1");
   credit_card.set_guid("00000000-0000-0000-0000-000000000007");
   autofill_manager_->AddCreditCard(credit_card);
 
@@ -1959,7 +1959,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_RepeatedObfuscatedNumber) {
   CreditCard credit_card;
   test::SetCreditCardInfo(&credit_card, "Elvis Presley",
                           "5231567890123456",  // Mastercard
-                          "05", "2999");
+                          "05", "2999", "1");
   credit_card.set_guid("00000000-0000-0000-0000-000000000007");
   credit_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
   autofill_manager_->AddCreditCard(credit_card);
@@ -3911,7 +3911,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   std::vector<CreditCard> credit_cards;
   CreditCard credit_card;
   test::SetCreditCardInfo(&credit_card, "John Doe", "4234-5678-9012-3456", "04",
-                          "2999");
+                          "2999", "1");
   credit_card.set_guid("00000000-0000-0000-0000-000000000003");
   credit_cards.push_back(credit_card);
 
@@ -4098,7 +4098,7 @@ TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
   std::vector<CreditCard> credit_cards;
   CreditCard credit_card;
   test::SetCreditCardInfo(&credit_card, "Elvis Presley", "4234-5678-9012-3456",
-                          "04", "2999");
+                          "04", "2999", "1");
   credit_card.set_guid("00000000-0000-0000-0000-000000000003");
   credit_cards.push_back(credit_card);
 
@@ -5956,7 +5956,8 @@ TEST_F(AutofillManagerTest, DuplicateMaskedCreditCard) {
   // Add a masked credit card whose |TypeAndLastFourDigits| matches what we will
   // below.
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11", "2017");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11", "2017",
+                          "1");
   credit_card.SetNetworkForMaskedCard(kVisaCard);
   personal_data_.AddServerCreditCard(credit_card);
 

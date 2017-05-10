@@ -65,7 +65,8 @@ enum class PaymentSheetViewControllerTags {
   SHOW_CONTACT_INFO_BUTTON,     // Navigate to the contact info screen
   ADD_CONTACT_INFO_BUTTON,      // Navigate to the contact info editor
   SHOW_SHIPPING_OPTION_BUTTON,  // Navigate to the shipping options screen
-  PAY_BUTTON
+  PAY_BUTTON,
+  MAX_TAG,  // Always keep last.
 };
 
 // A class that ensures proper elision of labels in the form
@@ -485,6 +486,7 @@ void PaymentSheetViewController::ButtonPressed(
 
     case static_cast<int>(PaymentSheetViewControllerTags::ADD_SHIPPING_BUTTON):
       dialog()->ShowShippingAddressEditor(
+          BackNavigationType::kPaymentSheet,
           /*on_edited=*/base::OnceClosure(),  // This is always an add.
           /*on_added=*/
           base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
@@ -500,6 +502,8 @@ void PaymentSheetViewController::ButtonPressed(
     case static_cast<int>(
         PaymentSheetViewControllerTags::ADD_PAYMENT_METHOD_BUTTON):
       dialog()->ShowCreditCardEditor(
+          BackNavigationType::kPaymentSheet,
+          static_cast<int>(PaymentSheetViewControllerTags::MAX_TAG),
           /*on_edited=*/base::OnceClosure(),  // This is always an add.
           /*on_added=*/
           base::BindOnce(&PaymentRequestState::AddAutofillPaymentInstrument,
@@ -515,7 +519,7 @@ void PaymentSheetViewController::ButtonPressed(
 
     case static_cast<int>(
         PaymentSheetViewControllerTags::ADD_CONTACT_INFO_BUTTON):
-      dialog()->ShowContactInfoEditor();
+      dialog()->ShowContactInfoEditor(BackNavigationType::kPaymentSheet);
       break;
 
     case static_cast<int>(

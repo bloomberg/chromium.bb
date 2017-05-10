@@ -189,6 +189,9 @@ class PaymentRequestBrowserTestBase
   base::string16 GetComboboxValue(autofill::ServerFieldType type);
   void SetComboboxValue(const base::string16& value,
                         autofill::ServerFieldType type);
+  // Special case for the billing address since the interesting value is not
+  // the visible one accessible directly on the base combobox model.
+  void SelectBillingAddress(const std::string& billing_address_id);
 
   // Whether the editor textfield/combobox for the given |type| is currently in
   // an invalid state.

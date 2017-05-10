@@ -30,7 +30,8 @@ TEST(CreditCardEditorViewControllerTest, ExpirationMonth_FromJanuary) {
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
       new CreditCardEditorViewController(
-          nullptr, nullptr, nullptr, base::OnceClosure(),
+          nullptr, nullptr, nullptr, BackNavigationType::kPaymentSheet, 0,
+          base::OnceClosure(),
           base::OnceCallback<void(const autofill::CreditCard&)>(), nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =
@@ -61,7 +62,8 @@ TEST(CreditCardEditorViewControllerTest, ExpirationMonth_FromJune) {
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
       new CreditCardEditorViewController(
-          nullptr, nullptr, nullptr, base::OnceClosure(),
+          nullptr, nullptr, nullptr, BackNavigationType::kPaymentSheet, 0,
+          base::OnceClosure(),
           base::OnceCallback<void(const autofill::CreditCard&)>(), nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =
@@ -91,7 +93,8 @@ TEST(CreditCardEditorViewControllerTest, ExpirationYear_From2017) {
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
       new CreditCardEditorViewController(
-          nullptr, nullptr, nullptr, base::OnceClosure(),
+          nullptr, nullptr, nullptr, BackNavigationType::kPaymentSheet, 0,
+          base::OnceClosure(),
           base::OnceCallback<void(const autofill::CreditCard&)>(), nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =

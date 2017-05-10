@@ -29,6 +29,8 @@ enum class DialogViewID : int {
   CANCEL_BUTTON,
   BACK_BUTTON,
   CVC_PROMPT_CONFIRM_BUTTON,
+  ADD_BILLING_ADDRESS_BUTTON,
+  SAVE_ADDRESS_BUTTON,
 
   // The following are buttons that are displayed inline in the Payment Sheet
   // sections when no option is selected or available.
@@ -74,6 +76,9 @@ enum class DialogViewID : int {
   CREDIT_CARD_EDITOR_SHEET,
   CVC_UNMASK_SHEET,
   SHIPPING_ADDRESS_EDITOR_SHEET,
+
+  // The combobox to choose a billing address to associate to a credit card.
+  CREDIT_CARD_BILLING_ADDRESS,
 };
 
 }  // namespace payments

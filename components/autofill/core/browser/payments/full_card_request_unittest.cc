@@ -167,7 +167,7 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForLocalCard) {
               OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
   CreditCard card;
-  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050");
+  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050", "1");
   request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          result_delegate()->AsWeakPtr(),
                          ui_delegate()->AsWeakPtr());
@@ -188,7 +188,8 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForFullServerCard) {
               OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
   CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
-  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12", "2050");
+  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12", "2050",
+                          "1");
   request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          result_delegate()->AsWeakPtr(),
                          ui_delegate()->AsWeakPtr());
@@ -212,7 +213,8 @@ TEST_F(FullCardRequestTest,
               OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
   CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
-  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12", "2050");
+  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12", "2050",
+                          "1");
   full_server_card.SetServerStatus(CreditCard::EXPIRED);
   request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          result_delegate()->AsWeakPtr(),
@@ -242,7 +244,8 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForExpiredFullServerCard) {
   base::Time::Now().LocalExplode(&today);
   CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
   test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12",
-                          base::StringPrintf("%d", today.year - 1).c_str());
+                          base::StringPrintf("%d", today.year - 1).c_str(),
+                          "1");
   full_server_card.SetServerStatus(CreditCard::OK);
   request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          result_delegate()->AsWeakPtr(),
@@ -286,7 +289,7 @@ TEST_F(FullCardRequestTest, SecondRequestOkAfterFirstFinished) {
       .Times(2);
 
   CreditCard card;
-  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050");
+  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050", "1");
   request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          result_delegate()->AsWeakPtr(),
                          ui_delegate()->AsWeakPtr());
@@ -435,7 +438,8 @@ TEST_F(FullCardRequestTest, UpdateExpDateForFullServerCard) {
               OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
   CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
-  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "10", "2000");
+  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "10", "2000",
+                          "1");
   request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          result_delegate()->AsWeakPtr(),
                          ui_delegate()->AsWeakPtr());
@@ -465,7 +469,8 @@ TEST_F(FullCardRequestTest, UpdateExpDateForLocalCard) {
   base::Time::Now().LocalExplode(&today);
   CreditCard card;
   test::SetCreditCardInfo(&card, nullptr, "4111", "10",
-                          base::StringPrintf("%d", today.year - 1).c_str());
+                          base::StringPrintf("%d", today.year - 1).c_str(),
+                          "1");
   request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          result_delegate()->AsWeakPtr(),
                          ui_delegate()->AsWeakPtr());
@@ -574,7 +579,7 @@ TEST_F(FullCardRequestTest, IsGettingFullCardForLocalCard) {
   EXPECT_FALSE(request()->IsGettingFullCard());
 
   CreditCard card;
-  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050");
+  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050", "1");
   request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          result_delegate()->AsWeakPtr(),
                          ui_delegate()->AsWeakPtr());

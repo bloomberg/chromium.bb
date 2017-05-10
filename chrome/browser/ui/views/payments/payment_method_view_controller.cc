@@ -44,6 +44,8 @@ enum class PaymentMethodViewControllerTags : int {
   // The tag for the button that triggers the "add card" flow. Starts at
   // |kFirstTagValue| not to conflict with tags common to all views.
   ADD_CREDIT_CARD_BUTTON = kFirstTagValue,
+  // This value is passed to inner views so they can use it as a starting tag.
+  MAX_TAG,
 };
 
 class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
@@ -126,9 +128,11 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
       case PaymentInstrument::Type::AUTOFILL:
         // Since we are a list item, we only care about the on_edited callback.
         dialog_->ShowCreditCardEditor(
-            /*on_edited=*/base::BindOnce(
-                &PaymentRequestState::SetSelectedInstrument,
-                base::Unretained(state()), instrument_),
+            BackNavigationType::kPaymentSheet,
+            static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
+            /*on_edited=*/
+            base::BindOnce(&PaymentRequestState::SetSelectedInstrument,
+                           base::Unretained(state()), instrument_),
             /*on_added=*/
             base::OnceCallback<void(const autofill::CreditCard&)>(),
             static_cast<AutofillPaymentInstrument*>(instrument_)
@@ -204,6 +208,8 @@ void PaymentMethodViewController::ButtonPressed(views::Button* sender,
         PaymentMethodViewControllerTags::ADD_CREDIT_CARD_BUTTON):
       // Only provide the |on_added| callback, in response to this button.
       dialog()->ShowCreditCardEditor(
+          BackNavigationType::kPaymentSheet,
+          static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
           /*on_edited=*/base::OnceClosure(),
           /*on_added=*/
           base::BindOnce(&PaymentRequestState::AddAutofillPaymentInstrument,

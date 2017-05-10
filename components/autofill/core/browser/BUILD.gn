@@ -8,6 +8,8 @@ static_library("browser") {
   sources = [
     "address.cc",
     "address.h",
+    "address_combobox_model.cc",
+    "address_combobox_model.h",
     "address_field.cc",
     "address_field.h",
     "address_i18n.cc",
@@ -315,6 +317,7 @@ bundle_data("unit_tests_bundle_data") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "address_combobox_model_unittest.cc",
     "address_field_unittest.cc",
     "address_i18n_unittest.cc",
     "address_rewriter_unittest.cc",

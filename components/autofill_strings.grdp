@@ -346,10 +346,16 @@
   <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC" desc="The placeholder/label text for credit card verification code in the requestAutocomplete dialog.">
     CVC
   </message>
-  <message name="IDS_AUTOFILL_LOADING_REGIONS" desc="The string to display in the regions combo box while loading the region data.">
+  <message name="IDS_AUTOFILL_LOADING_REGIONS" desc="The string to display in the regions combobox while loading the region data.">
     Loading...
   </message>
   <message name="IDS_AUTOFILL_FAILED_LOADING_REGIONS" desc="The string to display in the regions combo box when loading the region data failed.">
     Failed loading regions data
+  </message>
+  <message name="IDS_AUTOFILL_SELECT" desc="The string to display in comboboxes when nothing got selected yet.">
+    Select
+  </message>
+  <message name="IDS_AUTOFILL_ADD_BILLING_ADDRESS" desc="The string to display in comboboxes when no billing addresses are available.">
+    Add a billing address
   </message>
 </grit-part>

@@ -227,14 +227,14 @@ AutofillProfile GetVerifiedProfile2() {
 CreditCard GetCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), "http://www.example.com");
   SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
-                    "11", "2022");
+                    "11", "2022", "1");
   return credit_card;
 }
 
 CreditCard GetCreditCard2() {
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
   SetCreditCardInfo(&credit_card, "Someone Else", "378282246310005" /* AmEx */,
-                    "07", "2022");
+                    "07", "2022", "1");
   return credit_card;
 }
 
@@ -253,15 +253,15 @@ CreditCard GetVerifiedCreditCard2() {
 CreditCard GetMaskedServerCard() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2020");
+                          "2109" /* Mastercard */, "12", "2020", "1");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
   return credit_card;
 }
 
 CreditCard GetMaskedServerCardAmex() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "b456");
-  test::SetCreditCardInfo(&credit_card, "Justin Thyme",
-                          "8431" /* Amex */, "9", "2020");
+  test::SetCreditCardInfo(&credit_card, "Justin Thyme", "8431" /* Amex */, "9",
+                          "2020", "1");
   credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
   return credit_card;
 }
@@ -300,12 +300,16 @@ void SetProfileInfoWithGuid(AutofillProfile* profile,
 }
 
 void SetCreditCardInfo(CreditCard* credit_card,
-    const char* name_on_card, const char* card_number,
-    const char* expiration_month, const char* expiration_year) {
+                       const char* name_on_card,
+                       const char* card_number,
+                       const char* expiration_month,
+                       const char* expiration_year,
+                       const std::string& billing_address_id) {
   check_and_set(credit_card, CREDIT_CARD_NAME_FULL, name_on_card);
   check_and_set(credit_card, CREDIT_CARD_NUMBER, card_number);
   check_and_set(credit_card, CREDIT_CARD_EXP_MONTH, expiration_month);
   check_and_set(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR, expiration_year);
+  credit_card->set_billing_address_id(billing_address_id);
 }
 
 void DisableSystemServices(PrefService* prefs) {
