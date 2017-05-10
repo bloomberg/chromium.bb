@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/login/views/lock_screen.h"
+#include "ash/login/ui/lock_screen.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/shell.h"

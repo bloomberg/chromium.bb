@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LOGIN_VIEWS_LOCK_SCREEN_H_
-#define ASH_LOGIN_VIEWS_LOCK_SCREEN_H_
+#ifndef ASH_LOGIN_UI_LOCK_SCREEN_H_
+#define ASH_LOGIN_UI_LOCK_SCREEN_H_
 
 #include "ash/ash_export.h"
 
@@ -20,4 +20,4 @@ ASH_EXPORT void ShowLockScreenInWidget(views::Widget* widget);
 
 }  // namespace ash
 
-#endif  // ASH_LOGIN_VIEWS_LOCK_SCREEN_H_
+#endif  // ASH_LOGIN_UI_LOCK_SCREEN_H_
