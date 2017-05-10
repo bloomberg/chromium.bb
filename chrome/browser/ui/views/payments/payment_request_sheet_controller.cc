@@ -10,6 +10,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_search.h"
@@ -229,6 +230,11 @@ void PaymentRequestSheetController::ButtonPressed(views::Button* sender,
 std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
 
+  // The distance between the elements and the dialog borders.
+  constexpr int kInset = 16;
+  container->SetBorder(
+      views::CreateEmptyBorder(kInset, kInset, kInset, kInset));
+
   views::GridLayout* layout = new views::GridLayout(container.get());
   container->SetLayoutManager(layout);
 
@@ -239,14 +245,6 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                      0, views::GridLayout::USE_PREF, 0, 0);
 
-  // The horizontal distance between the right/left edges of the dialog and the
-  // elements.
-  constexpr int kFooterHorizontalInset = 16;
-  // The vertical distance between footer elements and the top/bottom border
-  // (the bottom border is the edge of the dialog).
-  constexpr int kFooterVerticalInset = 16;
-  layout->SetInsets(kFooterVerticalInset, kFooterHorizontalInset,
-                    kFooterVerticalInset, kFooterHorizontalInset);
   layout->StartRow(0, 0);
   std::unique_ptr<views::View> extra_view = CreateExtraFooterView();
   if (extra_view)

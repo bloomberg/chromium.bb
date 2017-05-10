@@ -15,8 +15,10 @@ namespace payments {
 class PaymentRequestRowView : public views::CustomButton {
  public:
   // Creates a row view. If |clickable| is true, the row will be shaded on hover
-  // and handle click events.
-  PaymentRequestRowView(views::ButtonListener* listener, bool clickable);
+  // and handle click events. |insets| are used as padding around the content.
+  PaymentRequestRowView(views::ButtonListener* listener,
+                        bool clickable,
+                        const gfx::Insets& insets);
   ~PaymentRequestRowView() override;
 
  private:

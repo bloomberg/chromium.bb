@@ -44,21 +44,20 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
                                                 DialogViewID amount_label_id) {
   std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
 
-  row->SetBorder(payments::CreatePaymentRequestRowBorder(
-      row->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_SeparatorColor)));
-
-  views::GridLayout* layout = new views::GridLayout(row.get());
-
   // The vertical spacing for these rows is slightly different than the spacing
   // spacing for clickable rows, so don't use kPaymentRequestRowVerticalInsets.
   constexpr int kRowVerticalInset = 4;
-  layout->SetInsets(kRowVerticalInset,
-                    payments::kPaymentRequestRowHorizontalInsets,
-                    kRowVerticalInset,
-                    payments::kPaymentRequestRowHorizontalInsets);
+  const gfx::Insets row_insets(
+      kRowVerticalInset, payments::kPaymentRequestRowHorizontalInsets,
+      kRowVerticalInset, payments::kPaymentRequestRowHorizontalInsets);
+  row->SetBorder(payments::CreatePaymentRequestRowBorder(
+      row->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_SeparatorColor),
+      row_insets));
 
+  views::GridLayout* layout = new views::GridLayout(row.get());
   row->SetLayoutManager(layout);
+
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // The first column has resize_percent = 1 so that it streches all the way
   // across the row up to the amount label. This way the first label elides as

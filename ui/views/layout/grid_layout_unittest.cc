@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/border.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/view.h"
 
@@ -498,10 +499,10 @@ TEST_F(GridLayoutTest, TestVerticalResize1) {
   RemoveAll();
 }
 
-TEST_F(GridLayoutTest, Insets) {
+TEST_F(GridLayoutTest, Border) {
+  host.SetBorder(CreateEmptyBorder(1, 2, 3, 4));
   SettableSizeView v1(gfx::Size(10, 20));
   ColumnSet* c1 = layout.AddColumnSet(0);
-  layout.SetInsets(1, 2, 3, 4);
   c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
                 0, GridLayout::USE_PREF, 0, 0);
   layout.StartRow(0, 0);
@@ -518,7 +519,7 @@ TEST_F(GridLayoutTest, Insets) {
 }
 
 TEST_F(GridLayoutTest, FixedSize) {
-  layout.SetInsets(2, 2, 2, 2);
+  host.SetBorder(CreateEmptyBorder(2, 2, 2, 2));
 
   ColumnSet* set = layout.AddColumnSet(0);
 

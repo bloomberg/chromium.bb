@@ -21,6 +21,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -47,11 +48,11 @@ class CatalogViewerContents : public views::WidgetDelegateView,
         table_view_parent_(nullptr),
         observer_(nullptr),
         capability_(new views::Textfield) {
-    const int kPadding = 5;
+    constexpr int kPadding = 5;
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kPadding)));
     set_background(views::Background::CreateStandardPanelBackground());
 
     views::GridLayout* layout = new views::GridLayout(this);
-    layout->SetInsets(kPadding, kPadding, kPadding, kPadding);
     SetLayoutManager(layout);
 
     views::ColumnSet* columns = layout->AddColumnSet(0);

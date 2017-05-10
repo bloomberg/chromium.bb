@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/layout_manager.h"
 
@@ -104,12 +103,9 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   explicit GridLayout(View* host);
   ~GridLayout() override;
 
-  // Creates a GridLayout with kPanel*Margin insets.
+  // Creates a GridLayout, assigns it as the LayoutManager of |host|, and gives
+  // it a INSETS_PANEL-sized padding border.
   static GridLayout* CreatePanel(View* host);
-
-  // Sets the insets. All views are placed relative to these offsets.
-  void SetInsets(int top, int left, int bottom, int right);
-  void SetInsets(const gfx::Insets& insets);
 
   // Creates a new column set with the specified id and returns it.
   // The id is later used when starting a new row.
@@ -238,9 +234,6 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
 
   // Column set for the current row. This is null for padding rows.
   ColumnSet* current_row_col_set_;
-
-  // Insets.
-  gfx::Insets insets_;
 
   // Set to true when adding a View.
   bool adding_view_;

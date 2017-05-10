@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "components/payments/mojom/payment_request.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -113,9 +114,12 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     const PaymentOptionsProvider& options,
     const PaymentsProfileComparator& comp);
 
-// Creates a views::Border object that can paint the gray horizontal ruler used
-// as a separator between items in the Payment Request dialog.
-std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(SkColor color);
+// Creates a views::Border object with |insets| that can paint the gray
+// horizontal ruler used as a separator between items in the Payment Request
+// dialog.
+std::unique_ptr<views::Border> CreatePaymentRequestRowBorder(
+    SkColor color,
+    const gfx::Insets& insets);
 
 // Creates a label with a bold font.
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text);

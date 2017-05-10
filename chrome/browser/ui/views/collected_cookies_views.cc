@@ -310,8 +310,10 @@ void CollectedCookiesViews::Init() {
 
   GridLayout* layout = new GridLayout(this);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  if (provider->UseExtraDialogPadding())
-    layout->SetInsets(gfx::Insets(kTabbedPaneTopPadding, 0, 0, 0));
+  if (provider->UseExtraDialogPadding()) {
+    SetBorder(
+        views::CreateEmptyBorder(gfx::Insets(kTabbedPaneTopPadding, 0, 0, 0)));
+  }
   SetLayoutManager(layout);
 
   const int single_column_layout_id = 0;

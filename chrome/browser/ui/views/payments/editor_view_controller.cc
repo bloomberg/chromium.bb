@@ -208,9 +208,10 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   std::unique_ptr<views::GridLayout> editor_layout =
       base::MakeUnique<views::GridLayout>(editor_view.get());
 
-  // The editor grid layout is padded horizontally.
-  editor_layout->SetInsets(0, payments::kPaymentRequestRowHorizontalInsets, 0,
-                           payments::kPaymentRequestRowHorizontalInsets);
+  // The editor view is padded horizontally.
+  editor_view->SetBorder(views::CreateEmptyBorder(
+      0, payments::kPaymentRequestRowHorizontalInsets, 0,
+      payments::kPaymentRequestRowHorizontalInsets));
 
   views::ColumnSet* columns = editor_layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,

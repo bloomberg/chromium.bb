@@ -147,11 +147,12 @@ void CookieInfoView::Init() {
   expires_value_field_ = new views::Textfield;
 
   views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   int dialog_button_margin =
       provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN);
-  layout->SetInsets(0, dialog_button_margin, 0, dialog_button_margin);
-  SetLayoutManager(layout);
+  SetBorder(views::CreateEmptyBorder(0, dialog_button_margin, 0,
+                                     dialog_button_margin));
 
   int three_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);

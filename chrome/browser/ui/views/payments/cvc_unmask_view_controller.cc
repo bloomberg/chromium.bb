@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
@@ -123,9 +124,9 @@ base::string16 CvcUnmaskViewController::GetSheetTitle() {
 void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   std::unique_ptr<views::GridLayout> layout =
       base::MakeUnique<views::GridLayout>(content_view);
-  layout->SetInsets(
+  content_view->SetBorder(views::CreateEmptyBorder(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
-      kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets);
+      kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets));
 
   views::ColumnSet* instructions_columns = layout->AddColumnSet(0);
   instructions_columns->AddColumn(views::GridLayout::Alignment::LEADING,

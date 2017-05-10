@@ -155,17 +155,16 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
     bool clickable,
     bool extra_trailing_inset,
     int name_column_width) {
+  const int trailing_inset = extra_trailing_inset
+                                 ? kPaymentRequestRowHorizontalInsets +
+                                       kPaymentRequestRowExtraRightInset
+                                 : kPaymentRequestRowHorizontalInsets;
+  const gfx::Insets row_insets(
+      kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
+      kPaymentRequestRowVerticalInsets, trailing_inset);
   std::unique_ptr<PaymentRequestRowView> row =
-      base::MakeUnique<PaymentRequestRowView>(listener, clickable);
+      base::MakeUnique<PaymentRequestRowView>(listener, clickable, row_insets);
   views::GridLayout* layout = new views::GridLayout(row.get());
-
-  int trailing_inset = extra_trailing_inset
-                           ? kPaymentRequestRowHorizontalInsets +
-                                 kPaymentRequestRowExtraRightInset
-                           : kPaymentRequestRowHorizontalInsets;
-  layout->SetInsets(kPaymentRequestRowVerticalInsets,
-                    kPaymentRequestRowHorizontalInsets,
-                    kPaymentRequestRowVerticalInsets, trailing_inset);
   row->SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
