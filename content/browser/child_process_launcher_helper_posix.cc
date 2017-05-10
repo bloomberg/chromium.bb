@@ -80,9 +80,12 @@ std::unique_ptr<FileDescriptorInfo> CreateDefaultPosixFilesToMap(
   std::unique_ptr<FileDescriptorInfo> files_to_register(
       FileDescriptorInfoImpl::Create());
 
-  int field_trial_handle = base::FieldTrialList::GetFieldTrialHandle();
-  if (field_trial_handle != base::kInvalidPlatformFile)
-    files_to_register->Share(kFieldTrialDescriptor, field_trial_handle);
+  base::SharedMemoryHandle shm = base::FieldTrialList::GetFieldTrialHandle();
+  if (shm.IsValid()) {
+    files_to_register->Share(
+        kFieldTrialDescriptor,
+        base::SharedMemory::GetFdFromSharedMemoryHandle(shm));
+  }
 
   DCHECK(mojo_client_handle.is_valid());
   files_to_register->Share(kMojoIPCChannel, mojo_client_handle.handle);
