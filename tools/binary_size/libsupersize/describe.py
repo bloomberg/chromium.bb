@@ -93,7 +93,7 @@ class Describer(object):
           sym.source_path, sym.object_path)
       if sym.name:
         yield '    flags={}  name={}'.format(sym.FlagsString(), sym.name)
-        if sym.full_name:
+        if sym.full_name is not sym.name:
           yield '         full_name={}'.format(sym.full_name)
       elif sym.full_name:
         yield '    flags={}  full_name={}'.format(
@@ -253,8 +253,9 @@ def DescribeSizeInfoCoverage(size_info):
       expected_size = size_info.section_sizes[
           models.SECTION_TO_SECTION_NAME[section]]
 
-
-    in_section = size_info.symbols.WhereInSection(section)
+    # Use raw_symbols in case symbols contains groups.
+    in_section = models.SymbolGroup(size_info.raw_symbols).WhereInSection(
+        section)
     actual_size = in_section.size
     size_percent = float(actual_size) / expected_size
     yield ('Section {}: has {:.1%} of {} bytes accounted for from '
@@ -269,11 +270,12 @@ def DescribeSizeInfoCoverage(size_info):
     if len(star_syms):
       yield ('* {} placeholders (symbols that start with **) account for '
              '{} bytes ({:.1%})').format(
-                 len(star_syms), star_syms.pss, star_syms.pss / in_section.size)
+                 len(star_syms), star_syms.size,
+                 float(star_syms.size) / in_section.size)
     if anonymous_syms:
       yield '* {} anonymous symbols account for {} bytes ({:.1%})'.format(
           len(anonymous_syms), int(anonymous_syms.pss),
-          star_syms.pss / in_section.size)
+          float(star_syms.size) / in_section.size)
 
     aliased_symbols = in_section.Filter(lambda s: s.aliases)
     if section == 't':

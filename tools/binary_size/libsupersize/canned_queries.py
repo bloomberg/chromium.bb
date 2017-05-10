@@ -139,3 +139,9 @@ class CannedQueries(object):
   def CategorizeByChromeComponent(self, symbols=None):
     """Groups symbols by component using predefined queries."""
     return _CategorizeByChromeComponent(self._SymbolsArg(symbols))
+
+  def TemplatesByName(self, symbols=None, depth=0):
+    """Lists C++ templates grouped by name."""
+    symbols = self._SymbolsArg(symbols)
+    # TODO(agrieve): Might be nice to recursively GroupedByName() on these.
+    return symbols.WhereIsTemplate().GroupedByName(depth).Clustered().Sorted()
