@@ -259,6 +259,7 @@ const CGFloat kKernAmount = 0.2;
 - (void)setBookmarkNode:(const BookmarkNode*)node image:(NSImage*)image {
   [self setRepresentedObject:[NSValue valueWithPointer:node]];
   if (node) {
+    [self setEmpty:NO];
     NSString* title = base::SysUTF16ToNSString(node->GetTitle());
     [self setBookmarkCellText:title image:image];
   } else {

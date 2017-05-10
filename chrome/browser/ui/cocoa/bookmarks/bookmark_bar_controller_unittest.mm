@@ -962,6 +962,34 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   }
 }
 
+// Tests that buttons in the reuse pool have their node pointer
+// nulled out.
+TEST_F(BookmarkBarControllerTest, ReusePoolNulled) {
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* barNode = model->bookmark_bar_node();
+  for (int i = 0; i < 20; i++) {
+    model->AddURL(barNode, barNode->child_count(), ASCIIToUTF16("title"),
+                  GURL("http://www.google.com"));
+  }
+  NSMutableSet* oldButtons = [NSMutableSet setWithArray:[bar_ buttons]];
+  // Resize the view so some buttons get removed and added to the
+  // reuse pool.
+  CGRect viewFrame = [[bar_ view] frame];
+  viewFrame.size.width -= 200;
+  [[bar_ view] setFrame:viewFrame];
+
+  NSSet* newButtons = [NSSet setWithArray:[bar_ buttons]];
+  [oldButtons minusSet:newButtons];
+
+  // Make sure this test is actually testing something.
+  ASSERT_GT([oldButtons count], 0U);
+
+  for (BookmarkButton* button in oldButtons) {
+    EXPECT_TRUE([button isHidden]);
+    EXPECT_EQ([button bookmarkNode], nullptr);
+  }
+}
+
 // http://crbug.com/46175 is a crash when deleting bookmarks from the
 // off-the-side menu while it is open.  This test tries to bang hard
 // in this area to reproduce the crash.
