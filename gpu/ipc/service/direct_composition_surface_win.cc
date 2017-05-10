@@ -148,11 +148,17 @@ bool HardwareSupportsOverlays() {
                                             d3d11_device.Get(), &flags)))
       continue;
 
-    // Direct-only support might be ok in some circumstances, but since the
-    // overlay processor isn't set up to try to distinguish, only try to use
-    // overlays when scaling's enabled.
-    if (flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING)
+    UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DirectComposition.OverlaySupportFlags",
+                                flags);
+
+    // Some new Intel drivers only claim to support unscaled overlays, but
+    // scaled overlays still work. Even when scaled overlays aren't actually
+    // supported, presentation using the overlay path should be relatively
+    // efficient.
+    if (flags & (DXGI_OVERLAY_SUPPORT_FLAG_SCALING |
+                 DXGI_OVERLAY_SUPPORT_FLAG_DIRECT)) {
       return true;
+    }
   }
   return false;
 }
