@@ -5,7 +5,6 @@
 package org.chromium.shape_detection;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.SparseArray;
@@ -21,12 +20,9 @@ import org.chromium.gfx.mojom.PointF;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
-import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
 import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.BarcodeDetectionResult;
-
-import java.nio.ByteBuffer;
 
 /**
  * Implementation of mojo BarcodeDetection, using Google Play Services vision package.
@@ -61,31 +57,9 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
             return;
         }
 
-        final long numPixels = (long) width * height;
-        // TODO(mcasas): https://crbug.com/670028 homogeneize overflow checking.
-        if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
-            callback.call(new BarcodeDetectionResult[0]);
-            return;
-        }
-
-        // Mapping |frameData| will fail if the intended mapped size is larger
-        // than its actual capacity, which is limited by the appropriate
-        // mojo::edk::Configuration entry.
-        ByteBuffer imageBuffer = frameData.map(0, numPixels * 4, MapFlags.none());
-        if (imageBuffer.capacity() <= 0) {
-            callback.call(new BarcodeDetectionResult[0]);
-            return;
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        bitmap.copyPixelsFromBuffer(imageBuffer);
-
-        Frame frame = null;
-        try {
-            // This constructor implies a pixel format conversion to YUV.
-            frame = new Frame.Builder().setBitmap(bitmap).build();
-        } catch (IllegalArgumentException | IllegalStateException ex) {
-            Log.e(TAG, "Frame.Builder().setBitmap() or build(): " + ex);
+        Frame frame = SharedBufferUtils.convertToFrame(frameData, width, height);
+        if (frame == null) {
+            Log.e(TAG, "Error converting SharedMemory to Frame");
             callback.call(new BarcodeDetectionResult[0]);
             return;
         }
