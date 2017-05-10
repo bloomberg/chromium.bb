@@ -189,16 +189,6 @@ config("compiler") {
     # --------------------------------
     cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
 
-    # Visibility attribute is not supported on AIX.
-    if (current_os != "aix") {
-      cflags_cc += [
-        # Not exporting C++ inline functions can generally be applied anywhere
-        # so we do so here. Normal function visibility is controlled by
-        # //build/config/gcc:symbol_visibility_hidden.
-        "-fvisibility-inlines-hidden",
-      ]
-    }
-
     # Stack protection.
     if (is_mac) {
       # The strong variant of the stack protector significantly increases
