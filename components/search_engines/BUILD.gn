@@ -46,16 +46,19 @@ static_library("search_engines") {
   ]
 
   public_deps = [
+    "//base",
+    "//components/google/core/browser",
+    "//components/keyed_service/core",
     "//components/metrics/proto",
+    "//components/prefs",
+    "//components/sync",
+    "//components/webdata/common",
   ]
 
   deps = [
     ":prepopulated_engines",
-    "//base",
     "//base:i18n",
-    "//components/google/core/browser",
     "//components/history/core/browser",
-    "//components/keyed_service/core",
     "//components/metrics/proto",
 
     # The search_engines target is in an include cycle with
@@ -65,12 +68,9 @@ static_library("search_engines") {
     #"//components/omnibox/browser",
     "//components/infobars/core",
     "//components/pref_registry",
-    "//components/prefs",
     "//components/rappor",
     "//components/strings",
-    "//components/sync",
     "//components/url_formatter",
-    "//components/webdata/common",
     "//google_apis",
     "//net",
     "//sql",
