@@ -9,31 +9,33 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-@class ContentSuggestionsMostVisited;
 @class FaviconAttributes;
+@class FaviconViewNew;
 
-// Item containing the Most Visited suggestions.
+// Item containing a Most Visited suggestion.
 @interface ContentSuggestionsMostVisitedItem
     : CollectionViewItem<ContentSuggestionIdentification>
 
-// Most Visited suggestions for this item.
-@property(nonatomic, copy, nonnull)
-    NSArray<ContentSuggestionsMostVisited*>* suggestions;
+// Attributes to configure the favicon view.
+@property(nonatomic, strong, nonnull) FaviconAttributes* attributes;
+
+// Text for the title and the accessibility label of the cell.
+@property(nonatomic, copy, nonnull) NSString* title;
 
 @end
 
-// Associated cell to display the Most Visited suggestions.
-// This cell displays the most visited suggestions on two rows, vertically
-// stacked. Each row is a horizontal stack of ContentSuggestionsTiles. The
-// number of tiles per row depends of the available width.
+// Associated cell to display a Most Visited tile based on the suggestion.
+// It displays the favicon for this Most Visited suggestion and its title.
 @interface ContentSuggestionsMostVisitedCell : MDCCollectionViewCell
 
-// Sets the Most Visited suggestions of this cell.
-- (void)setSuggestions:
-    (nonnull NSArray<ContentSuggestionsMostVisited*>*)suggestions;
+// FaviconView displaying the favicon.
+@property(nonatomic, strong, readonly, nonnull) FaviconViewNew* faviconView;
 
-// Returns the maximum number of tiles per line, limited to 4.
-- (NSUInteger)numberOfTilesPerLine;
+// Title of the Most Visited.
+@property(nonatomic, strong, readonly, nonnull) UILabel* titleLabel;
+
+// Size for a Most Visited tile.
++ (CGSize)defaultSize;
 
 @end
 

@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_reading_list_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
@@ -238,9 +237,6 @@ SectionIdentifier SectionIdentifierForInfo(
     return [NSArray array];
   }
 
-  NSMutableArray<ContentSuggestionsMostVisited*>* mostVisitedToAdd =
-      [NSMutableArray array];
-
   CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
   NSMutableArray<NSIndexPath*>* indexPaths = [NSMutableArray array];
@@ -293,35 +289,16 @@ SectionIdentifier SectionIdentifierForInfo(
         break;
       }
       case ContentSuggestionTypeMostVisited: {
-        NSInteger section =
-            [model sectionForSectionIdentifier:SectionIdentifierMostVisited];
-        NSIndexPath* indexPath =
-            [NSIndexPath indexPathForItem:0 inSection:section];
-
-        if ([model numberOfItemsInSection:section] == 0) {
-          [model addItem:[[ContentSuggestionsMostVisitedItem alloc]
-                             initWithType:ItemTypeMostVisited]
-              toSectionWithIdentifier:SectionIdentifierMostVisited];
-          [indexPaths addObject:indexPath];
-        }
-
-        ContentSuggestionsMostVisited* mostVisited =
-            [ContentSuggestionsMostVisited mostVisitedWithTitle:suggestion.title
-                                                     attributes:nil];
-        [mostVisitedToAdd addObject:mostVisited];
+        ContentSuggestionsMostVisitedItem* mostVisitedItem =
+            [[ContentSuggestionsMostVisitedItem alloc]
+                initWithType:ItemTypeMostVisited];
+        mostVisitedItem.title = suggestion.title;
+        [model addItem:mostVisitedItem
+            toSectionWithIdentifier:SectionIdentifierMostVisited];
+        [indexPaths addObject:indexPath];
         break;
       }
     }
-  }
-
-  if ([model hasSectionForSectionIdentifier:SectionIdentifierMostVisited]) {
-    NSInteger section =
-        [model sectionForSectionIdentifier:SectionIdentifierMostVisited];
-    NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:section];
-    ContentSuggestionsMostVisitedItem* item =
-        base::mac::ObjCCast<ContentSuggestionsMostVisitedItem>(
-            [model itemAtIndexPath:indexPath]);
-    item.suggestions = mostVisitedToAdd;
   }
 
   return indexPaths;
