@@ -166,7 +166,7 @@ void LayerTreeHost::InitializeProxy(std::unique_ptr<Proxy> proxy) {
 LayerTreeHost::~LayerTreeHost() {
   // Track when we're inside a main frame to see if compositor is being
   // destroyed midway which causes a crash. crbug.com/654672
-  CHECK(!inside_main_frame_);
+  DCHECK(!inside_main_frame_);
   TRACE_EVENT0("cc", "LayerTreeHostInProcess::~LayerTreeHostInProcess");
 
   // Clear any references into the LayerTreeHost.
