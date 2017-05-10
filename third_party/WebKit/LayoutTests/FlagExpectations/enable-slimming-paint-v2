@@ -1202,6 +1202,7 @@ Bug(none) paint/invalidation/compositing/should-not-repaint-scrolling-contents-o
 Bug(none) paint/invalidation/compositing/squash-partial-repaint-inside-squashed-layer.html [ Failure ]
 Bug(none) paint/invalidation/compositing/squashing-inside-preserve-3d-element.html [ Failure ]
 Bug(none) paint/invalidation/compositing/stacked-float-under-composited-inline.html [ Failure ]
+Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 Bug(none) paint/invalidation/compositing/text-color-change.html [ Failure ]
 Bug(none) paint/invalidation/compositing/text-match-highlight.html [ Failure ]
 Bug(none) paint/invalidation/compositing/tricky-element-removal-crash.html [ Failure ]
