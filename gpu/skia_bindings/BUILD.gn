@@ -12,6 +12,7 @@ source_set("skia_bindings") {
   deps = [
     "//base",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/ipc/common:interfaces",
     "//skia",
   ]
 }

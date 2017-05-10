@@ -87,7 +87,8 @@ class GrContext* TestInProcessContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
-  gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(ContextGL()));
+  gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
+      ContextGL(), ContextCapabilities()));
   cache_controller_->SetGrContext(gr_context_->get());
   return gr_context_->get();
 }

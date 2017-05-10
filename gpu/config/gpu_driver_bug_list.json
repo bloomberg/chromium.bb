@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.6",
+  "version": "10.7",
   "entries": [
     {
       "id": 1,
@@ -2432,6 +2432,20 @@
       },
       "features": [
         "disable_accelerated_vpx_decode"
+      ]
+    },
+    {
+      "id": 227,
+      "description": "Certain Apple devices leak stencil buffers",
+      "cr_bugs": [713854],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0412", "0x0d26", "0x0a2e", "0x0a26", "0x0d22", "0x161e",
+                    "0x1626", "0x162b", "0x1622"],
+      "features": [
+        "avoid_stencil_buffers"
       ]
     }
   ],

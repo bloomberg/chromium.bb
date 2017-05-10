@@ -217,6 +217,8 @@
          disable_software_to_accelerated_canvas_upgrade)     \
   GPU_OP(DISABLE_NON_EMPTY_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES, \
          disable_non_empty_post_sub_buffers_for_onscreen_surfaces) \
+  GPU_OP(AVOID_STENCIL_BUFFERS,                              \
+         avoid_stencil_buffers)                              \
 // clang-format on
 
 namespace gpu {

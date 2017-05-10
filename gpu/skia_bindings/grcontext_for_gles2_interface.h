@@ -11,6 +11,8 @@
 class GrContext;
 
 namespace gpu {
+struct Capabilities;
+
 namespace gles2 {
 class GLES2Interface;
 }
@@ -23,7 +25,8 @@ namespace skia_bindings {
 // is alive.
 class GrContextForGLES2Interface {
  public:
-  explicit GrContextForGLES2Interface(gpu::gles2::GLES2Interface* gl);
+  explicit GrContextForGLES2Interface(gpu::gles2::GLES2Interface* gl,
+                                      const gpu::Capabilities& capabilities);
   virtual ~GrContextForGLES2Interface();
 
   GrContext* get() { return gr_context_.get(); }
