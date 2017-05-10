@@ -97,6 +97,8 @@ git cl patch <CL number or URL>
 *   [Code Reviews](code_reviews.md) - Code review requirements and guidelines
 *   [Closure Compilation](closure_compilation.md) - The _Closure_ JavaScript
     compiler
+*   [Threading and Tasks in Chrome](threading_and_tasks.md) - How to run tasks
+    and handle thread safety in Chrome.
 *   [Callback<> and Bind()](callback.md) - All about Callbacks, Closures, and
     Bind().
 *   [Views Platform Styling](ui/views/platform_style.md) - How views are styled
