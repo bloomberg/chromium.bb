@@ -4859,6 +4859,7 @@ test("net_unittests") {
     "ssl/ssl_platform_key_mac_unittest.cc",
     "ssl/ssl_platform_key_nss_unittest.cc",
     "ssl/ssl_platform_key_util_unittest.cc",
+    "ssl/ssl_platform_key_win_unittest.cc",
     "ssl/ssl_private_key_test_util.cc",
     "ssl/ssl_private_key_test_util.h",
     "test/embedded_test_server/embedded_test_server_unittest.cc",
@@ -5272,7 +5273,10 @@ test("net_unittests") {
   }
 
   if (is_win) {
-    libs = [ "iphlpapi.lib" ]
+    libs = [
+      "iphlpapi.lib",
+      "ncrypt.lib",
+    ]
   }
 
   if (is_chromecast && use_nss_certs) {
