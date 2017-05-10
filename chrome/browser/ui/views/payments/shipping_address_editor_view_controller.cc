@@ -93,10 +93,9 @@ base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     autofill::ServerFieldType type) {
   // Temporary profile has precedence over profile to edit since its existence
   // is based on having unsaved stated to restore.
-  if (temporary_profile_.get()) {
+  if (temporary_profile_.get())
     return temporary_profile_->GetInfo(autofill::AutofillType(type),
                                        state()->GetApplicationLocale());
-  }
 
   if (!profile_to_edit_)
     return base::string16();
@@ -299,9 +298,9 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
   }
   // Always add phone number at the end.
   editor_fields_.emplace_back(
-      autofill::PHONE_HOME_NUMBER,
+      autofill::PHONE_HOME_WHOLE_NUMBER,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_PHONE),
-      EditorField::LengthHint::HINT_LONG, /*required=*/false,
+      EditorField::LengthHint::HINT_LONG, /*required=*/true,
       EditorField::ControlType::TEXTFIELD);
 }
 
@@ -331,31 +330,38 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
     // ValidatingTextfield* is the key, EditorField is the value.
     if (field.first->invalid()) {
       success = false;
-      if (!ignore_errors)
-        return false;
+    } else {
+      success = profile->SetInfo(autofill::AutofillType(field.second.type),
+                                 field.first->text(), locale);
     }
-    profile->SetInfo(autofill::AutofillType(field.second.type),
-                     field.first->text(), locale);
+    DCHECK(success || ignore_errors)
+        << "Can't setinfo(" << field.second.type << ", " << field.first->text();
+    if (!success && !ignore_errors)
+      return false;
   }
   for (const auto& field : comboboxes()) {
     // ValidatingCombobox* is the key, EditorField is the value.
     ValidatingCombobox* combobox = field.first;
     if (combobox->invalid()) {
       success = false;
-      if (!ignore_errors)
-        return false;
-    }
-
-    if (combobox->id() == autofill::ADDRESS_HOME_COUNTRY) {
-      profile->SetInfo(
-          autofill::AutofillType(field.second.type),
-          base::UTF8ToUTF16(country_codes_[combobox->selected_index()]),
-          locale);
     } else {
-      profile->SetInfo(autofill::AutofillType(field.second.type),
-                       combobox->GetTextForRow(combobox->selected_index()),
-                       locale);
+      if (combobox->id() == autofill::ADDRESS_HOME_COUNTRY) {
+        success = profile->SetInfo(
+            autofill::AutofillType(field.second.type),
+            base::UTF8ToUTF16(country_codes_[combobox->selected_index()]),
+            locale);
+      } else {
+        success = profile->SetInfo(
+            autofill::AutofillType(field.second.type),
+            combobox->GetTextForRow(combobox->selected_index()), locale);
+      }
     }
+    DCHECK(success || ignore_errors)
+        << "Can't setinfo(" << field.second.type << ", "
+
+        << combobox->GetTextForRow(combobox->selected_index());
+    if (!success && !ignore_errors)
+      return false;
   }
   return success;
 }
@@ -408,7 +414,7 @@ void ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ValidateValue(const base::string16& value) {
   if (!value.empty()) {
-    if (field_.type == autofill::PHONE_HOME_NUMBER &&
+    if (field_.type == autofill::PHONE_HOME_WHOLE_NUMBER &&
         !autofill::IsValidPhoneNumber(
             value,
             controller_->country_codes_[controller_->chosen_country_index_])) {
