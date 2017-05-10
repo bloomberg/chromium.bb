@@ -224,7 +224,7 @@ following conventions. Here we refer to the parameter type as `T` and name as
   * If the function does not modify `t`'s ownership, declare the param as `T*`. The
     caller is expected to ensure `t` stays alive as long as necessary, generally
     through the duration of the call. Exception: In rare cases (e.g. using
-    lambdas with STL algorithms over containers of `uniuqe_ptr<>`s), you may be
+    lambdas with STL algorithms over containers of `unique_ptr<>`s), you may be
     forced to declare the param as `const std::unique_ptr<T>&`. Do this only when
     required.
 
