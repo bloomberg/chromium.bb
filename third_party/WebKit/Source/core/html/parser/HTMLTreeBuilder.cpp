@@ -618,6 +618,8 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
   if (token->GetName() == formTag) {
     if (tree_.IsFormElementPointerNonNull() && !IsParsingTemplateContents()) {
       ParseError(token);
+      UseCounter::Count(tree_.CurrentNode()->GetDocument(),
+                        UseCounter::kHTMLParseErrorNestedForm);
       return;
     }
     ProcessFakePEndTagIfPInButtonScope();
