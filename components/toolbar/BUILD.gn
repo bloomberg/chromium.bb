@@ -66,9 +66,12 @@ static_library("test_support") {
     "test_toolbar_model.h",
   ]
 
-  deps = [
+  public_deps = [
     ":toolbar",
     "//base",
+  ]
+
+  deps = [
     "//components/resources",
     "//ui/gfx",
   ]
