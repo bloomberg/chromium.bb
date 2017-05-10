@@ -616,8 +616,7 @@ NetworkIconImpl::NetworkIconImpl(const std::string& path,
       icon_type_(icon_type),
       strength_index_(-1),
       behind_captive_portal_(false) {
-  // Default image
-  image_ = GetBasicImage(false, icon_type, network_type);
+  // Default image is null.
 }
 
 void NetworkIconImpl::Update(const NetworkState* network) {
