@@ -110,7 +110,7 @@ config("executable_ldconfig") {
     }
   }
 
-  if (!is_android || !use_gold) {
+  if ((!is_android || !use_gold) && current_os != "aix") {
     # Find the path containing shared libraries for this toolchain
     # relative to the build directory. ${root_out_dir} will be a
     # subdirectory of ${root_build_dir} when cross compiling.

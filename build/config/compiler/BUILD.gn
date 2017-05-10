@@ -172,6 +172,8 @@ config("compiler") {
     configs += [ "//build/config/mac:compiler" ]
   } else if (is_ios) {
     configs += [ "//build/config/ios:compiler" ]
+  } else if (current_os == "aix") {
+    configs += [ "//build/config/aix:compiler" ]
   }
 
   # See the definitions below.
@@ -186,12 +188,16 @@ config("compiler") {
     # Common GCC compiler flags setup.
     # --------------------------------
     cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
-    cflags_cc += [
-      # Not exporting C++ inline functions can generally be applied anywhere
-      # so we do so here. Normal function visibility is controlled by
-      # //build/config/gcc:symbol_visibility_hidden.
-      "-fvisibility-inlines-hidden",
-    ]
+
+    # Visibility attribute is not supported on AIX.
+    if (current_os != "aix") {
+      cflags_cc += [
+        # Not exporting C++ inline functions can generally be applied anywhere
+        # so we do so here. Normal function visibility is controlled by
+        # //build/config/gcc:symbol_visibility_hidden.
+        "-fvisibility-inlines-hidden",
+      ]
+    }
 
     # Stack protection.
     if (is_mac) {
@@ -210,14 +216,16 @@ config("compiler") {
       # The x86 toolchain currently has problems with stack-protector.
       if (is_android && current_cpu == "x86") {
         cflags += [ "-fno-stack-protector" ]
-      } else {
+      } else if (current_os != "aix") {
+        # Not available on aix.
         cflags += [ "-fstack-protector" ]
       }
     }
 
     # Linker warnings.
     if (fatal_linker_warnings && !(is_chromeos && current_cpu == "arm") &&
-        !(is_android && use_order_profiling) && !is_mac && !is_ios) {
+        !(is_android && use_order_profiling) && !is_mac && !is_ios &&
+        current_os != "aix") {
       # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
       # TODO(lizeb,pasko): Fix link errors when linking with order_profiling=1
       # crbug.com/485542
@@ -446,7 +454,7 @@ config("compiler") {
 
   # C++11 compiler flags setup.
   # ---------------------------
-  if (is_linux || is_android || (is_nacl && is_clang)) {
+  if (is_linux || is_android || (is_nacl && is_clang) || current_os == "aix") {
     # gnu++11 instead of c++11 is needed because some code uses typeof() (a
     # GNU extension).
     # TODO(thakis): Eventually switch this to c++11 instead,
@@ -1169,7 +1177,9 @@ config("chromium_code") {
     ]
 
     if (!is_debug && !using_sanitizer &&
-        (!is_linux || !is_clang || is_official_build)) {
+        (!is_linux || !is_clang || is_official_build) &&
+        current_cpu != "s390x" && current_cpu != "s390" &&
+        current_cpu != "ppc64" && current_cpu != "ppc64") {
       # _FORTIFY_SOURCE isn't really supported by Clang now, see
       # http://llvm.org/bugs/show_bug.cgi?id=16821.
       # It seems to work fine with Ubuntu 12 headers though, so use it in
@@ -1389,8 +1399,9 @@ if (is_win) {
       # Mac dead code stripping requires symbols.
       common_optimize_on_ldflags += [ "-Wl,-dead_strip" ]
     }
-  } else {
+  } else if (current_os != "aix") {
     # Non-Mac Posix flags.
+    # Aix does not support these.
 
     common_optimize_on_cflags += [
       # Don't emit the GCC version ident directives, they just end up in the

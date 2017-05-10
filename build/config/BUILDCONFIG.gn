@@ -135,8 +135,10 @@ declare_args() {
 
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
-  is_clang = current_os == "mac" || current_os == "ios" ||
-             current_os == "linux" || current_os == "chromeos"
+  is_clang =
+      current_os == "mac" || current_os == "ios" || current_os == "chromeos" ||
+      (current_os == "linux" && current_cpu != "s390x" &&
+       current_cpu != "s390" && current_cpu != "ppc64" && current_cpu != "ppc")
 
   # Allows the path to a custom target toolchain to be injected as a single
   # argument, and set as the default toolchain.
@@ -207,6 +209,8 @@ if (host_toolchain == "") {
     } else {
       host_toolchain = "//build/toolchain/win:$target_cpu"
     }
+  } else if (host_os == "aix") {
+    host_toolchain = "//build/toolchain/aix:$host_cpu"
   } else {
     assert(false, "Unsupported host_os: $host_os")
   }
@@ -242,6 +246,8 @@ if (target_os == "android") {
   } else {
     _default_toolchain = "//build/toolchain/win:$target_cpu"
   }
+} else if (target_os == "aix") {
+  _default_toolchain = "//build/toolchain/aix:$target_cpu"
 } else if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
            target_os == "winrt_10") {
   _default_toolchain = "//build/toolchain/win:winrt_$target_cpu"
@@ -342,6 +348,15 @@ if (current_os == "win" || current_os == "winrt_81" ||
   is_nacl = false
   is_posix = true
   is_win = false
+} else if (current_os == "aix") {
+  is_android = false
+  is_chromeos = false
+  is_ios = false
+  is_linux = false
+  is_mac = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
 }
 
 # =============================================================================
@@ -370,6 +385,7 @@ if (!is_posix) {
     "*\bposix/*",
   ]
 }
+
 if (!is_win) {
   sources_assignment_filter += [
     "*_win.cc",
@@ -498,11 +514,13 @@ if (current_os == "winrt_81" || current_os == "winrt_81_phone" ||
     current_os == "winrt_10") {
   default_compiler_configs += [ "//build/config/win:target_winrt" ]
 }
+
 if (is_posix) {
-  default_compiler_configs += [
-    "//build/config/gcc:no_exceptions",
-    "//build/config/gcc:symbol_visibility_hidden",
-  ]
+  default_compiler_configs += [ "//build/config/gcc:no_exceptions" ]
+  if (current_os != "aix") {
+    default_compiler_configs +=
+        [ "//build/config/gcc:symbol_visibility_hidden" ]
+  }
 }
 
 if (is_android) {
