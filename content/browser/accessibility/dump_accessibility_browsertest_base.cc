@@ -195,6 +195,11 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   BrowserAccessibilityStateImpl::GetInstance()->
       set_disable_hot_tracking_for_testing(true);
 
+  // Normally we avoid firing accessibility focus events when the containing
+  // native window isn't focused. Suppress this check to avoid flaky tests,
+  // since we can't always control when a native window loses focus.
+  BrowserAccessibilityManager::NeverSuppressFocusEventsForTesting();
+
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   std::string html_contents;

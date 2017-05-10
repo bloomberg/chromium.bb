@@ -38,8 +38,6 @@ BrowserAccessibility* FindNodeWithChildTreeId(BrowserAccessibility* node,
   return nullptr;
 }
 
-}  // namespace
-
 // Map from AXTreeID to BrowserAccessibilityManager
 using AXTreeIDMap = base::hash_map<ui::AXTreeIDRegistry::AXTreeID,
                                    BrowserAccessibilityManager*>;
@@ -49,6 +47,11 @@ base::LazyInstance<AXTreeIDMap>::DestructorAtExit g_ax_tree_id_map =
 // A function to call when focus changes, for testing only.
 base::LazyInstance<base::Closure>::DestructorAtExit
     g_focus_change_callback_for_testing = LAZY_INSTANCE_INITIALIZER;
+
+// A flag for use in tests to ensure focus events aren't suppressed.
+bool g_never_suppress_focus_events_for_testing = false;
+
+}  // namespace
 
 ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node1,
@@ -207,9 +210,9 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded(
   BrowserAccessibility* focus = GetFocus();
 
   // Don't fire focus events if the window itself doesn't have focus.
-  // Bypass this check if a global focus listener was set up for testing
-  // so that the test passes whether the window is active or not.
-  if (g_focus_change_callback_for_testing.Get().is_null()) {
+  // Bypass this check for some tests.
+  if (!g_never_suppress_focus_events_for_testing &&
+      !g_focus_change_callback_for_testing.Get()) {
     if (delegate_ && !delegate_->AccessibilityViewHasFocus())
       focus = nullptr;
 
@@ -244,7 +247,7 @@ void BrowserAccessibilityManager::FireFocusEvent(
     BrowserAccessibility* node) {
   NotifyAccessibilityEvent(source, ui::AX_EVENT_FOCUS, node);
 
-  if (!g_focus_change_callback_for_testing.Get().is_null())
+  if (g_focus_change_callback_for_testing.Get())
     g_focus_change_callback_for_testing.Get().Run();
 }
 
@@ -601,6 +604,11 @@ void BrowserAccessibilityManager::SetFocusLocallyForTesting(
 void BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
     const base::Closure& callback) {
   g_focus_change_callback_for_testing.Get() = callback;
+}
+
+// static
+void BrowserAccessibilityManager::NeverSuppressFocusEventsForTesting() {
+  g_never_suppress_focus_events_for_testing = true;
 }
 
 void BrowserAccessibilityManager::Decrement(
