@@ -58,7 +58,6 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
   }
   MOCK_METHOD2(OnTrailingHeadersAvailableMock,
                void(const SpdyHeaderBlock& headers, size_t frame_len));
-  MOCK_METHOD2(OnDataReceived, int(const char*, int));
   MOCK_METHOD0(OnDataAvailable, void());
   MOCK_METHOD0(OnClose, void());
   MOCK_METHOD1(OnError, void(int));
@@ -69,14 +68,6 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
-};
-
-class TestQuicClientSessionBaseStream : public QuicSpdyStream {
- public:
-  TestQuicClientSessionBaseStream(QuicStreamId id, QuicSpdySession* session)
-      : QuicSpdyStream(id, session) {}
-
-  void OnDataAvailable() override {}
 };
 
 class MockQuicClientSessionBase : public QuicClientSessionBase {
@@ -149,7 +140,8 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
 
   std::unique_ptr<QuicStream> CreateStream(QuicStreamId id) {
-    return QuicMakeUnique<TestQuicClientSessionBaseStream>(id, this);
+    return QuicMakeUnique<QuicChromiumClientStream>(id, this,
+                                                    NetLogWithSource());
   }
 
   using QuicSession::ActivateStream;
