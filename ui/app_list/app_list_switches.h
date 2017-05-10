@@ -5,8 +5,6 @@
 #ifndef UI_APP_LIST_APP_LIST_SWITCHES_H_
 #define UI_APP_LIST_APP_LIST_SWITCHES_H_
 
-#include <string>
-
 #include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
 
@@ -14,11 +12,9 @@ namespace app_list {
 namespace switches {
 
 // Please keep these flags sorted (but keep enable/disable pairs together).
-APP_LIST_EXPORT extern const char kAnswerServerUrl[];
 APP_LIST_EXPORT extern const char kCustomLauncherPage[];
 APP_LIST_EXPORT extern const char kDisableAppListDismissOnBlur[];
 APP_LIST_EXPORT extern const char kEnableAppList[];
-APP_LIST_EXPORT extern const char kEnableFullscreenAppList[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
@@ -37,12 +33,6 @@ bool APP_LIST_EXPORT ShouldNotDismissOnBlur();
 bool APP_LIST_EXPORT IsDriveAppsInAppListEnabled();
 
 bool APP_LIST_EXPORT IsDriveSearchInChromeLauncherEnabled();
-
-std::string APP_LIST_EXPORT AnswerServerUrl();
-
-bool APP_LIST_EXPORT IsAnswerCardEnabled();
-
-bool APP_LIST_EXPORT IsFullscreenAppListEnabled();
 
 }  // namespace switches
 }  // namespace app_list

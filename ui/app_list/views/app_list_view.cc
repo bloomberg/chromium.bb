@@ -13,8 +13,8 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_folder_view.h"
@@ -196,7 +196,7 @@ void AppListView::Initialize(gfx::NativeView parent, int initial_apps_page) {
   set_color(kContentsBackgroundColor);
   set_parent_window(parent);
 
-  if (switches::IsFullscreenAppListEnabled())
+  if (features::IsFullscreenAppListEnabled())
     InitializeFullscreen(parent, initial_apps_page);
   else
     InitializeBubble(parent, initial_apps_page);
@@ -217,7 +217,7 @@ void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
 
 void AppListView::MaybeSetAnchorPoint(const gfx::Point& anchor_point) {
   // if the AppListView is a bubble
-  if (!switches::IsFullscreenAppListEnabled())
+  if (!features::IsFullscreenAppListEnabled())
     SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
 }
 
@@ -237,7 +237,7 @@ void AppListView::CloseAppList() {
 
 void AppListView::UpdateBounds() {
   // if the AppListView is a bubble
-  if (!switches::IsFullscreenAppListEnabled())
+  if (!features::IsFullscreenAppListEnabled())
     SizeToContents();
 }
 

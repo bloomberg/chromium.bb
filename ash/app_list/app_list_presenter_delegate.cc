@@ -19,6 +19,7 @@
 #include "ash/wm_window.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/presenter/app_list_view_delegate_factory.h"
@@ -102,7 +103,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
 
   view->Initialize(container, current_apps_page);
 
-  if (!app_list::switches::IsFullscreenAppListEnabled()) {
+  if (!app_list::features::IsFullscreenAppListEnabled()) {
     view->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(
         wm_root_window, GetMinimumBoundsHeightForAppList(view)));
   }
