@@ -365,6 +365,10 @@ class COMPOSITOR_EXPORT Compositor
   int activated_frame_count() const { return activated_frame_count_; }
   float refresh_rate() const { return refresh_rate_; }
 
+  void set_allow_locks_to_extend_timeout(bool allowed) {
+    allow_locks_to_extend_timeout_ = allowed;
+  }
+
  private:
   friend class base::RefCounted<Compositor>;
 
@@ -417,6 +421,11 @@ class COMPOSITOR_EXPORT Compositor
 
   gfx::ColorSpace output_color_space_;
   gfx::ColorSpace blending_color_space_;
+
+  // The estimated time that the locks will timeout.
+  base::TimeTicks scheduled_timeout_;
+  // If true, the |scheduled_timeout_| might be recalculated and extended.
+  bool allow_locks_to_extend_timeout_;
 
   base::WeakPtrFactory<Compositor> weak_ptr_factory_;
   base::WeakPtrFactory<Compositor> lock_timeout_weak_ptr_factory_;
