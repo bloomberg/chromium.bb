@@ -518,6 +518,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                           autofill::ADDRESS_HOME_CITY);
   SetEditorTextfieldValue(base::ASCIIToUTF16("BobZip"),
                           autofill::ADDRESS_HOME_ZIP);
+  SetEditorTextfieldValue(base::ASCIIToUTF16("5755555555"),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
 
   // Come back to credit card editor.
   ResetEventObserver(DialogEvent::BACK_NAVIGATION);

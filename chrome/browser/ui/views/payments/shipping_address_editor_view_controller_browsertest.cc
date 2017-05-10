@@ -29,6 +29,8 @@ const char kNameFull[] = "Bob Jones";
 const char kHomeAddress[] = "42 Answers-All Avenue";
 const char kHomeCity[] = "Question-City";
 const char kHomeZip[] = "ziiiiiip";
+const char kHomePhone[] = "5755555555";  // 5555555555 is invalid :-(.
+const char kFormattedHomePhone[] = "(575) 555-5555";
 const char kAnyState[] = "any state";
 
 }  // namespace
@@ -63,6 +65,10 @@ class PaymentRequestShippingAddressEditorTest
         textfield_text = base::ASCIIToUTF16(kHomeZip);
         break;
       }
+      case (autofill::PHONE_HOME_WHOLE_NUMBER): {
+        textfield_text = base::ASCIIToUTF16(kHomePhone);
+        break;
+      }
       default:
         ADD_FAILURE() << "Unexpected type: " << type;
     }
@@ -74,6 +80,7 @@ class PaymentRequestShippingAddressEditorTest
     SetFieldTestValue(autofill::ADDRESS_HOME_STREET_ADDRESS);
     SetFieldTestValue(autofill::ADDRESS_HOME_CITY);
     SetFieldTestValue(autofill::ADDRESS_HOME_ZIP);
+    SetFieldTestValue(autofill::PHONE_HOME_WHOLE_NUMBER);
   }
 
   // First check if the requested field of |type| exists, if so set it's value
@@ -88,8 +95,13 @@ class PaymentRequestShippingAddressEditorTest
     return true;
   }
 
+  // |unset_types| can be null, but when it's not, the fields that are not set
+  // get their type added to it, so that the caller can tell which types are not
+  // set for a given country. |accept_empty_phone_number| can be set to true to
+  // accept a phone type field set to empty, and mark it as unset.
   void ExpectExistingRequiredFields(
-      std::set<autofill::ServerFieldType>* unset_types) {
+      std::set<autofill::ServerFieldType>* unset_types,
+      bool accept_empty_phone_number) {
     base::string16 textfield_text;
     if (GetEditorTextfieldValueIfExists(autofill::NAME_FULL, &textfield_text)) {
       EXPECT_EQ(base::ASCIIToUTF16(kNameFull), textfield_text);
@@ -116,6 +128,22 @@ class PaymentRequestShippingAddressEditorTest
       EXPECT_EQ(base::ASCIIToUTF16(kHomeZip), textfield_text);
     } else if (unset_types) {
       unset_types->insert(autofill::ADDRESS_HOME_ZIP);
+    }
+
+    if (GetEditorTextfieldValueIfExists(autofill::PHONE_HOME_WHOLE_NUMBER,
+                                        &textfield_text)) {
+      // The phone can be empty when restored from a saved state, or it may be
+      // formatted based on the currently selected country.
+      if (!accept_empty_phone_number) {
+        EXPECT_EQ(base::ASCIIToUTF16(kHomePhone), textfield_text);
+      } else if (textfield_text.empty()) {
+        if (unset_types)
+          unset_types->insert(autofill::PHONE_HOME_WHOLE_NUMBER);
+      } else if (textfield_text != base::ASCIIToUTF16(kHomePhone)) {
+        EXPECT_EQ(base::ASCIIToUTF16(kFormattedHomePhone), textfield_text);
+      }
+    } else if (unset_types) {
+      unset_types->insert(autofill::PHONE_HOME_WHOLE_NUMBER);
     }
   }
 
@@ -176,7 +204,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
             profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr,
+                               /*accept_empty_phone_number=*/false);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
@@ -221,7 +250,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
             profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr,
+                               /*accept_empty_phone_number=*/false);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
@@ -259,7 +289,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
             profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr,
+                               /*accept_empty_phone_number=*/false);
 
   // One shipping profile is available and selected.
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
@@ -360,8 +391,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
     test_region_data_loader_.SendAsynchronousData(use_regions1 ? regions1
                                                                : regions2);
     // Make sure the fields common between previous and new country have been
-    // properly restored.
-    ExpectExistingRequiredFields(&unset_types);
+    // properly restored. Note that some country don't support the test phone
+    // number so the phone field will be present, but the value will not have
+    // been restored from the profile.
+    ExpectExistingRequiredFields(&unset_types,
+                                 /*accept_empty_phone_number=*/true);
   }
 }
 
@@ -398,7 +432,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr,
+                               /*accept_empty_phone_number=*/false);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
@@ -437,7 +472,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
   EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
-  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr,
+                               /*accept_empty_phone_number=*/false);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
@@ -482,7 +518,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
   data_loop.Run();
 
-  ExpectExistingRequiredFields(/*unset_types=*/nullptr);
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr,
+                               /*accept_empty_phone_number=*/false);
 
   // Still have one shipping address, but now it's selected.
   EXPECT_EQ(1U, request->state()->shipping_profiles().size());
