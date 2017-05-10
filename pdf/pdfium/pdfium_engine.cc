@@ -1706,18 +1706,12 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
 
   // Decide whether to open link or not based on user action in mouse up and
   // mouse move events.
-  if (area == PDFiumPage::WEBLINK_AREA)
+  if (area == PDFiumPage::WEBLINK_AREA || area == PDFiumPage::DOCLINK_AREA)
     return true;
 
   // Prevent middle mouse button from selecting texts.
   if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
     return false;
-
-  if (area == PDFiumPage::DOCLINK_AREA) {
-    client_->ScrollToPage(target.page);
-    client_->FormTextFieldFocusChange(false);
-    return true;
-  }
 
   if (page_index != -1) {
     last_page_mouse_down_ = page_index;
@@ -1813,6 +1807,11 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
           middle_button, alt_key, ctrl_key, meta_key, shift_key);
 
       client_->NavigateTo(target.url, disposition);
+      client_->FormTextFieldFocusChange(false);
+      return true;
+    }
+    if (area == PDFiumPage::DOCLINK_AREA) {
+      client_->ScrollToPage(target.page);
       client_->FormTextFieldFocusChange(false);
       return true;
     }
