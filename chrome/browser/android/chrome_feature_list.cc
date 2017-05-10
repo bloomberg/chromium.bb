@@ -140,7 +140,7 @@ const base::Feature kContextualSearchSingleActions{
     "ContextualSearchSingleActions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchUrlActions{
-    "ContextualSearchUrlActions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextualSearchUrlActions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCustomContextMenu{"CustomContextMenu",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
