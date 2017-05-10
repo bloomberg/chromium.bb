@@ -399,6 +399,10 @@
     "label": "//dbus:dbus_unittests",
     "type": "windowed_test_launcher",
   },
+  "device_junit_tests": {
+    "label": "//device:device_junit_tests",
+    "type": "junit_test",
+  },
   "device_unittests": {
     "label": "//device:device_unittests",
     "type": "console_test_launcher",

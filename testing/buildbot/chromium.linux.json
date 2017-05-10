@@ -1524,6 +1524,9 @@
         "test": "content_junit_tests"
       },
       {
+        "test": "device_junit_tests"
+      },
+      {
         "test": "junit_unit_tests"
       },
       {
@@ -3074,6 +3077,9 @@
       },
       {
         "test": "content_junit_tests"
+      },
+      {
+        "test": "device_junit_tests"
       },
       {
         "test": "junit_unit_tests"

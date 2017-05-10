@@ -9,9 +9,9 @@ import android.view.MotionEvent;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.util.Feature;
@@ -257,6 +257,7 @@ public class GamepadMappingsTest {
     }
 
     @Test
+    @Ignore("https://crbug.com/719765")
     @Feature({"Gamepad"})
     public void testPS4GamepadMappings() throws Exception {
         GamepadMappings mappings =
