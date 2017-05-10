@@ -993,6 +993,16 @@ util.getRootTypeLabel = function(locationInfo) {
       return str('DOWNLOADS_DIRECTORY_LABEL');
     case VolumeManagerCommon.RootType.DRIVE:
       return str('DRIVE_MY_DRIVE_LABEL');
+    case VolumeManagerCommon.RootType.TEAM_DRIVE:
+    // |locationInfo| points to either the root directory of an individual Team
+    // Drive or subdirectory under it, but not the Team Drives grand directory.
+    // Every Team Drive and its subdirectories always have individual names
+    // (locationInfo.hasFixedLabel is false). So getRootTypeLabel() is only used
+    // by LocationLine.show() to display the ancestor name in the location line
+    // like this:
+    //   Team Drives > ABC Team Drive > Folder1
+    //   ^^^^^^^^^^^
+    // By this reason, we return the label of the Team Drives grand root here.
     case VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT:
       return str('DRIVE_TEAM_DRIVES_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
