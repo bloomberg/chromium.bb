@@ -116,6 +116,8 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   bool updating_android_size_;
   bool updating_other_users_size_;
 
+  base::WeakPtrFactory<StorageHandler> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(StorageHandler);
 };
 
