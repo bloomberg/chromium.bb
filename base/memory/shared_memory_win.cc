@@ -136,28 +136,12 @@ HANDLE CreateFileMappingWithReducedPermissions(SECURITY_ATTRIBUTES* sa,
 
 namespace base {
 
-SharedMemory::SharedMemory()
-    : external_section_(false),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(false),
-      requested_size_(0) {}
+SharedMemory::SharedMemory() {}
 
-SharedMemory::SharedMemory(const std::wstring& name)
-    : external_section_(false),
-      name_(name),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(false),
-      requested_size_(0) {}
+SharedMemory::SharedMemory(const string16& name) : name_(name) {}
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
-    : external_section_(true),
-      shm_(handle),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(read_only),
-      requested_size_(0) {}
+    : external_section_(true), shm_(handle), read_only_(read_only) {}
 
 SharedMemory::~SharedMemory() {
   Unmap();

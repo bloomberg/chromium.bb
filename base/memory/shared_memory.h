@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
@@ -75,7 +76,7 @@ class BASE_EXPORT SharedMemory {
   // Similar to the default constructor, except that this allows for
   // calling LockDeprecated() to acquire the named mutex before either Create or
   // Open are called on Windows.
-  explicit SharedMemory(const std::wstring& name);
+  explicit SharedMemory(const string16& name);
 #endif
 
   // Create a new SharedMemory object from an existing, open
@@ -241,10 +242,9 @@ class BASE_EXPORT SharedMemory {
 #if defined(OS_WIN)
   // If true indicates this came from an external source so needs extra checks
   // before being mapped.
-  bool external_section_;
-  std::wstring       name_;
+  bool external_section_ = false;
+  string16 name_;
 #else
-
   // If valid, points to the same memory region as shm_, but with readonly
   // permissions.
   SharedMemoryHandle readonly_shm_;
@@ -253,16 +253,16 @@ class BASE_EXPORT SharedMemory {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // The mechanism by which the memory is mapped. Only valid if |memory_| is not
   // |nullptr|.
-  SharedMemoryHandle::Type mapped_memory_mechanism_;
+  SharedMemoryHandle::Type mapped_memory_mechanism_ = SharedMemoryHandle::MACH;
 #endif
 
   // The OS primitive that backs the shared memory region.
   SharedMemoryHandle shm_;
 
-  size_t             mapped_size_;
-  void*              memory_;
-  bool               read_only_;
-  size_t             requested_size_;
+  size_t mapped_size_ = 0;
+  void* memory_ = nullptr;
+  bool read_only_ = false;
+  size_t requested_size_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemory);
 };
