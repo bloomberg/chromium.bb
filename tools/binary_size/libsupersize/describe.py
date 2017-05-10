@@ -62,14 +62,17 @@ class Describer(object):
     total_bytes = sum(v for k, v in section_sizes.iteritems()
                       if k in section_names and k != '.bss')
     yield ''
-    yield 'Section Sizes (Total={:,} bytes):'.format(total_bytes)
+    yield 'Section Sizes (Total={} ({} bytes)):'.format(
+        _PrettySize(total_bytes), total_bytes)
     for name in section_names:
       size = section_sizes[name]
       if name == '.bss':
-        yield '    {}: {:,} bytes (not included in totals)'.format(name, size)
+        yield '    {}: {} ({} bytes) (not included in totals)'.format(
+            name, _PrettySize(size), size)
       else:
         percent = float(size) / total_bytes if total_bytes else 0
-        yield '    {}: {:,} bytes ({:.1%})'.format(name, size, percent)
+        yield '    {}: {} ({} bytes) ({:.1%})'.format(
+            name, _PrettySize(size), size, percent)
 
     if self.verbose:
       yield ''
@@ -77,7 +80,8 @@ class Describer(object):
       section_names = sorted(k for k in section_sizes.iterkeys()
                              if k not in section_names)
       for name in section_names:
-        yield '    {}: {:,} bytes'.format(name, section_sizes[name])
+        yield '    {}: {} ({} bytes)'.format(
+            name, _PrettySize(section_sizes[name]), section_sizes[name])
 
   def _DescribeSymbol(self, sym, single_line=False):
     if sym.IsGroup():
@@ -142,19 +146,25 @@ class Describer(object):
     total_size = group.pss
     code_size = 0
     ro_size = 0
+    data_size = 0
+    bss_size = 0
     unique_paths = set()
     for s in group.IterLeafSymbols():
       if s.section == 't':
         code_size += s.pss
       elif s.section == 'r':
         ro_size += s.pss
+      elif s.section == 'd':
+        data_size += s.pss
+      elif s.section == 'b':
+        bss_size += s.pss
       unique_paths.add(s.object_path)
     header_desc = [
         'Showing {:,} symbols ({:,} unique) with total pss: {} bytes'.format(
             len(group), group.CountUniqueSymbols(), int(total_size)),
-        '.text={:<10} .rodata={:<10} other={:<10} total={}'.format(
+        '.text={:<10} .rodata={:<10} .data*={:<10} .bss={:<10} total={}'.format(
             _PrettySize(int(code_size)), _PrettySize(int(ro_size)),
-            _PrettySize(int(total_size - code_size - ro_size)),
+            _PrettySize(int(data_size)), _PrettySize(int(bss_size)),
             _PrettySize(int(total_size))),
         'Number of object files: {}'.format(len(unique_paths)),
         '',

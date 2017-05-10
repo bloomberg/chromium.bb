@@ -359,9 +359,9 @@ class SymbolGroup(BaseSymbol):
   def pss(self):
     if self._pss is None:
       if self.IsBss():
-        self._pss = float(self.size)
-      else:
         self._pss = sum(s.pss for s in self)
+      else:
+        self._pss = sum(s.pss for s in self if not s.IsBss())
     return self._pss
 
   @property
