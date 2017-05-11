@@ -1,2 +1,1 @@
-CONSOLE WARNING: -webkit-gradient is deprecated. Please use linear-gradient or radial-gradient instead.
 This test should not crash.

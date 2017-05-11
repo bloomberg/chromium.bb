@@ -1,4 +1,3 @@
-CONSOLE WARNING: -webkit-gradient is deprecated. Please use linear-gradient or radial-gradient instead.
 Linear gradient with 1px border-bottom. Should not crash
 
 
