@@ -74,6 +74,14 @@ ImageResourceContent::ImageResourceContent(PassRefPtr<blink::Image> image)
   info_ = &null_info;
 }
 
+ImageResourceContent* ImageResourceContent::CreateLoaded(
+    PassRefPtr<blink::Image> image) {
+  DCHECK(image);
+  ImageResourceContent* content = new ImageResourceContent(std::move(image));
+  content->content_status_ = ResourceStatus::kCached;
+  return content;
+}
+
 ImageResourceContent* ImageResourceContent::Fetch(FetchParameters& params,
                                                   ResourceFetcher* fetcher) {
   // TODO(hiroshige): Remove direct references to ImageResource by making
