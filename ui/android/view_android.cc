@@ -104,8 +104,10 @@ float ViewAndroid::GetDipScale() {
 
 ScopedJavaLocalRef<jobject> ViewAndroid::GetEventForwarder() {
   if (!event_forwarder_) {
-    DCHECK(!ViewTreeHasEventForwarder(this))
-        << "Root of the ViewAndroid can have at most one handler.";
+    DCHECK(!RootPathHasEventForwarder(parent_))
+        << "The view tree path already has an event forwarder.";
+    DCHECK(!SubtreeHasEventForwarder(this))
+        << "The view tree path already has an event forwarder.";
     event_forwarder_.reset(new EventForwarder(this));
   }
   return event_forwarder_->GetJavaObject();
@@ -115,8 +117,9 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
   DCHECK(child);
   DCHECK(std::find(children_.begin(), children_.end(), child) ==
          children_.end());
-  DCHECK(!SubtreeHasEventForwarder(child) || !ViewTreeHasEventForwarder(this))
-      << "Only one event handler is allowed.";
+  DCHECK(!RootPathHasEventForwarder(this) || !SubtreeHasEventForwarder(child))
+      << "Some view tree path will have more than one event forwarder "
+         "if the child is added.";
 
   // The new child goes to the top, which is the end of the list.
   children_.push_back(child);
@@ -126,20 +129,21 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
 }
 
 // static
-bool ViewAndroid::ViewTreeHasEventForwarder(ViewAndroid* view) {
-  ViewAndroid* v = view;
-  do {
-    if (v->has_event_forwarder())
+bool ViewAndroid::RootPathHasEventForwarder(ViewAndroid* view) {
+  while (view) {
+    if (view->has_event_forwarder())
       return true;
-    v = v->parent_;
-  } while (v);
-  return SubtreeHasEventForwarder(view);
+    view = view->parent_;
+  }
+
+  return false;
 }
 
 // static
 bool ViewAndroid::SubtreeHasEventForwarder(ViewAndroid* view) {
   if (view->has_event_forwarder())
     return true;
+
   for (auto* child : view->children_) {
     if (SubtreeHasEventForwarder(child))
       return true;
