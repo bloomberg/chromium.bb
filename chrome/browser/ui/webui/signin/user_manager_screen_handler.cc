@@ -771,8 +771,8 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("addUser",
       l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON));
   localized_strings->SetString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
-  localized_strings->SetString("browseAsGuest",
-      l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON));
+  localized_strings->SetString(
+      "browseAsGuest", l10n_util::GetStringUTF16(IDS_BROWSE_AS_GUEST_BUTTON));
   localized_strings->SetString("signOutUser",
       l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
   localized_strings->SetString("addSupervisedUser",
