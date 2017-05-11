@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
+#include "chrome/browser/ui/views/profiles/avatar_button.h"
 
 AvatarButtonManager::AvatarButtonManager(BrowserNonClientFrameView* frame_view)
     : frame_view_(frame_view), view_(nullptr) {}

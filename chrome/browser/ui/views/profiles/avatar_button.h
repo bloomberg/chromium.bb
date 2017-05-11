@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_NEW_AVATAR_BUTTON_H_
-#define CHROME_BROWSER_UI_VIEWS_PROFILES_NEW_AVATAR_BUTTON_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_BUTTON_H_
+#define CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_BUTTON_H_
 
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -67,4 +67,4 @@ class NewAvatarButton : public views::LabelButton,
   DISALLOW_COPY_AND_ASSIGN(NewAvatarButton);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_NEW_AVATAR_BUTTON_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_BUTTON_H_
