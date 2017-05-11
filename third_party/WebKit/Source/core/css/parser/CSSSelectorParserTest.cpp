@@ -69,6 +69,12 @@ TEST(CSSSelectorParserTest, ValidANPlusB) {
       {"+n/**/- 48", 1, -48},
       {"-n + 81", -1, 81},
       {"-N - 88", -1, -88},
+
+      {"3091970736n + 1", std::numeric_limits<int>::max(), 1},
+      {"-3091970736n + 1", std::numeric_limits<int>::min(), 1},
+      // B is calculated as +ve first, then negated.
+      {"N- 3091970736", 1, -std::numeric_limits<int>::max()},
+      {"N+ 3091970736", 1, std::numeric_limits<int>::max()},
   };
 
   for (auto test_case : test_cases) {
@@ -79,8 +85,8 @@ TEST(CSSSelectorParserTest, ValidANPlusB) {
     CSSParserTokenRange range = tokenizer.TokenRange();
     bool passed = CSSSelectorParser::ConsumeANPlusB(range, ab);
     EXPECT_TRUE(passed);
-    EXPECT_EQ(ab.first, test_case.a);
-    EXPECT_EQ(ab.second, test_case.b);
+    EXPECT_EQ(test_case.a, ab.first);
+    EXPECT_EQ(test_case.b, ab.second);
   }
 }
 

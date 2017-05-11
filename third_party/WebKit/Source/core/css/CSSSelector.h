@@ -284,7 +284,7 @@ class CORE_EXPORT CSSSelector {
   void SetSelectorList(std::unique_ptr<CSSSelectorList>);
 
   void SetNth(int a, int b);
-  bool MatchNth(int count) const;
+  bool MatchNth(unsigned count) const;
 
   bool IsAdjacentSelector() const {
     return relation_ == kDirectAdjacent || relation_ == kIndirectAdjacent;
@@ -378,7 +378,7 @@ class CORE_EXPORT CSSSelector {
     }
     ~RareData();
 
-    bool MatchNth(int count);
+    bool MatchNth(unsigned count);
     int NthAValue() const { return bits_.nth_.a_; }
     int NthBValue() const { return bits_.nth_.b_; }
 
