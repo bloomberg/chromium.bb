@@ -17,7 +17,6 @@ class DocumentMarkerListEditor {
  public:
   using MarkerList = HeapVector<Member<RenderedDocumentMarker>>;
 
-  static void AddMarkerAndMergeOverlapping(MarkerList*, const DocumentMarker*);
   static void AddMarkerWithoutMergingOverlapping(MarkerList*,
                                                  const DocumentMarker*);
 

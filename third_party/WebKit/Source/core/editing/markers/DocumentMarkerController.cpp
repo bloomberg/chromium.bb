@@ -38,6 +38,7 @@
 #include "core/editing/markers/DocumentMarkerListEditor.h"
 #include "core/editing/markers/GenericDocumentMarkerListImpl.h"
 #include "core/editing/markers/RenderedDocumentMarker.h"
+#include "core/editing/markers/SpellCheckMarkerListImpl.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 
@@ -70,6 +71,9 @@ DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
   switch (type) {
     case DocumentMarker::kComposition:
       return new CompositionMarkerListImpl();
+    case DocumentMarker::kSpelling:
+    case DocumentMarker::kGrammar:
+      return new SpellCheckMarkerListImpl();
     default:
       return new GenericDocumentMarkerListImpl();
   }
