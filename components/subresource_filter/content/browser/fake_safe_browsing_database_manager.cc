@@ -19,6 +19,10 @@ void FakeSafeBrowsingDatabaseManager::AddBlacklistedUrl(
   url_to_threat_type_[url] = threat_type;
 }
 
+void FakeSafeBrowsingDatabaseManager::RemoveBlacklistedUrl(const GURL& url) {
+  url_to_threat_type_.erase(url);
+}
+
 void FakeSafeBrowsingDatabaseManager::SimulateTimeout() {
   simulate_timeout_ = true;
 }
@@ -53,6 +57,10 @@ void FakeSafeBrowsingDatabaseManager::OnCheckUrlForSubresourceFilterComplete(
     return;
   client->OnCheckBrowseUrlResult(url, url_to_threat_type_[url],
                                  safe_browsing::ThreatMetadata());
+  // Erase the client when a check is complete. Otherwise, it's possible
+  // subsequent clients that share an address with this one will DCHECK in
+  // CheckUrlForSubresourceFilter.
+  checks_.erase(client);
 }
 
 bool FakeSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,

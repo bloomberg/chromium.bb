@@ -51,8 +51,7 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
 
   // Website setting which stores metadata for the subresource filter to aid in
-  // decisions for whether or not to show the UI. Currently only used on
-  // Android.
+  // decisions for whether or not to show the UI.
   CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
 
   // This is special-cased in the permissions layer to always allow, and as

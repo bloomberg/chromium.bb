@@ -48,10 +48,15 @@ class SubresourceFilterContentSettingsManager
   // the content setting to turn off the subresource filter.
   void WhitelistSite(const GURL& url);
 
+  // Public for testing.
+  std::unique_ptr<base::DictionaryValue> GetSiteMetadata(const GURL& url) const;
+
   // Specific logic for more intelligent UI.
   void OnDidShowUI(const GURL& url);
   bool ShouldShowUIForSite(const GURL& url) const;
   bool should_use_smart_ui() const { return should_use_smart_ui_; }
+
+  void ClearSiteMetadata(const GURL& url);
 
   void set_clock_for_testing(std::unique_ptr<base::Clock> tick_clock) {
     clock_ = std::move(tick_clock);
@@ -76,7 +81,6 @@ class SubresourceFilterContentSettingsManager
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
 
-  std::unique_ptr<base::DictionaryValue> GetSiteMetadata(const GURL& url) const;
   void SetSiteMetadata(const GURL& url,
                        std::unique_ptr<base::DictionaryValue> dict);
 
