@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import datetime
 
 from chromite.cbuildbot import relevant_changes
@@ -75,6 +76,11 @@ class SlaveStatus(object):
     # Dict mapping all slave config names to BuildbucketInfo
     self.all_buildbucket_info_dict = None
     self.status_buildset_dict = None
+
+    # Records history (per-tick) of self.completed_builds. Keep only the most
+    # recent 2 entries of history. Used only for metrics purposes, not used for
+    # any decision logic.
+    self._completed_build_history = collections.deque([], 2)
 
     self.dependency_map = None
 
@@ -402,6 +408,21 @@ class SlaveStatus(object):
 
     return set([build for build, _, _ in new_scheduled_slaves])
 
+  @staticmethod
+  def _LastSlavesToComplete(completed_builds_history):
+    """Given a |completed_builds_history|, find the last to complete.
+
+    Returns:
+      A set of build_configs that were the last to complete.
+    """
+    if not completed_builds_history:
+      return set()
+    elif len(completed_builds_history) == 1:
+      return set(completed_builds_history[0])
+    else:
+      return (set(completed_builds_history[-1]) -
+              set(completed_builds_history[-2]))
+
   def ShouldWait(self):
     """Decides if we should continue to wait for the builds to finish.
 
@@ -414,9 +435,35 @@ class SlaveStatus(object):
     Returns:
       A bool of True if we should continue to wait and False if we should not.
     """
+    retval, slaves_remain, long_pole = self._ShouldWait()
+
+    # If we're no longer waiting, record last-slave-to-complete metrics.
+    if not retval and long_pole:
+      m = metrics.CumulativeMetric(constants.MON_LAST_SLAVE)
+      slaves = self._LastSlavesToComplete(self._completed_build_history)
+      if slaves and self.config:
+        increment = 1.0 / len(slaves)
+        for s in slaves:
+          m.increment_by(increment, fields={'master_config': self.config.name,
+                                            'last_slave_config': s,
+                                            'slaves_remain': slaves_remain})
+
+    return retval
+
+  def _ShouldWait(self):
+    """Private helper with all the main logic of ShouldWait.
+
+    Returns:
+      A tuple of (bool indicating if we should wait,
+                  bool indicating if slaves remain,
+                  bool indicating if the final slave(s) to complete should
+                  be considered the long-pole reason for terminating)
+    """
+    self._completed_build_history.append(list(self.completed_builds))
+
     # Check if all builders completed.
     if self._Completed():
-      return False
+      return False, False, True
 
     current_time = datetime.datetime.now()
 
@@ -424,7 +471,7 @@ class SlaveStatus(object):
     if self._ShouldFailForBuilderStartTimeout(current_time):
       logging.error('Ending build since at least one builder has not started '
                     'within 5 mins.')
-      return False
+      return False, True, False
 
     if self.pool is not None:
       triage_relevant_changes = relevant_changes.TriageRelevantChanges(
@@ -454,7 +501,7 @@ class SlaveStatus(object):
                 message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
                 message_value=str(self.all_cidb_status_dict[build].build_id))
 
-        return False
+        return False, True, True
 
     # We got here which means no problems, we should still wait.
     logging.info('Still waiting for the following builds to complete: %r',
@@ -464,4 +511,4 @@ class SlaveStatus(object):
       retried_builds = self._RetryBuilds(self.builds_to_retry)
       self.builds_to_retry -= retried_builds
 
-    return True
+    return True, True, False

@@ -240,6 +240,7 @@ MON_CQ_SELF_DESTRUCTION_COUNT = ('chromeos/cbuildbot/build/'
                                  'cq_self_destruction_count')
 MON_CQ_BUILD_DURATION = 'chromeos/cbuildbot/build/cq_build_durations'
 MON_CL_ACTION = 'chromeos/cbuildbot/cl_action'
+MON_LAST_SLAVE = 'chromeos/cbuildbot/last_completed_slave'
 MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
 MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
 MON_PRECQ_TICK_COUNT = 'chromeos/cbuildbot/pre-cq/tick_count'

@@ -410,6 +410,21 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertEqual(slave_status._GetUncompletedBuilds(completed_builds),
                      {'scheduled', 'started', 'completed_canceled'})
 
+  def testLastSlavesToComplete(self):
+    """Tests _LastSlavesToComplete."""
+    history = []
+    self.assertEqual(set(),
+                     build_status.SlaveStatus._LastSlavesToComplete(history))
+
+    history = [['foo']]
+    self.assertEqual({'foo'},
+                     build_status.SlaveStatus._LastSlavesToComplete(history))
+
+    history = [['foo'], ['bar', 'foo', 'qux']]
+    self.assertEqual({'bar', 'qux'},
+                     build_status.SlaveStatus._LastSlavesToComplete(history))
+
+
   def testGetRetriableBuildsReturnsNone(self):
     """GetRetriableBuilds returns no build to retry."""
     self._Mock_GetSlaveStatusesFromCIDB(CIDBStatusInfos.GetFullCIDBStatusInfo())
