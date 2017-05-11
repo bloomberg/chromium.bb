@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL WebCryptoAPI: encrypt() Using AES-CTR Uncaught TypeError: Cannot read property 'importKey' of undefined
-Harness: the test ran to completion.
-

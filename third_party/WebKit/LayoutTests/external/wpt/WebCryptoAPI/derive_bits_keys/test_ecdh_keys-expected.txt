@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL WebCryptoAPI:deriveKey() Using ECDH Uncaught TypeError: Cannot read property 'importKey' of undefined
-Harness: the test ran to completion.
-

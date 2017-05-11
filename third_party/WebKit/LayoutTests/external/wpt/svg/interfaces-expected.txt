@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6082 tests; 5729 PASS, 353 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6072 tests; 5729 PASS, 343 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Document interface: attribute rootElement 
 PASS SVGElement interface: existence and properties of interface object 
 PASS SVGElement interface object length 
@@ -3496,16 +3496,6 @@ PASS SVGElement interface: script must inherit property "ontimeupdate" with the 
 PASS SVGElement interface: script must inherit property "ontoggle" with the proper type (67) 
 PASS SVGElement interface: script must inherit property "onvolumechange" with the proper type (68) 
 PASS SVGElement interface: script must inherit property "onwaiting" with the proper type (69) 
-FAIL SVGZoomEvent interface: existence and properties of interface object assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface object length assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface object name assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface: attribute zoomRectScreen assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface: attribute previousScale assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface: attribute previousTranslate assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface: attribute newScale assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
-FAIL SVGZoomEvent interface: attribute newTranslate assert_own_property: self does not have own property "SVGZoomEvent" expected property "SVGZoomEvent" missing
 PASS SVGAElement interface: existence and properties of interface object 
 PASS SVGAElement interface object length 
 PASS SVGAElement interface object name 

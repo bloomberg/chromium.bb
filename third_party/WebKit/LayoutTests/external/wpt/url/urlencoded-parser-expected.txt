@@ -1,0 +1,94 @@
+This is a testharness.js-based test.
+Found 90 tests; 25 PASS, 65 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS URLSearchParams constructed with: test 
+FAIL request.formData() with input: test (intermediate value).formData is not a function
+FAIL response.formData() with input: test (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: ﻿test=﻿ 
+FAIL request.formData() with input: ﻿test=﻿ (intermediate value).formData is not a function
+FAIL response.formData() with input: ﻿test=﻿ (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: %EF%BB%BFtest=%EF%BB%BF 
+FAIL request.formData() with input: %EF%BB%BFtest=%EF%BB%BF (intermediate value).formData is not a function
+FAIL response.formData() with input: %EF%BB%BFtest=%EF%BB%BF (intermediate value).formData is not a function
+FAIL URLSearchParams constructed with: %FE%FF assert_array_equals: property 0, expected "\ufffd\ufffd" but got "þÿ"
+FAIL request.formData() with input: %FE%FF (intermediate value).formData is not a function
+FAIL response.formData() with input: %FE%FF (intermediate value).formData is not a function
+FAIL URLSearchParams constructed with: %FF%FE assert_array_equals: property 0, expected "\ufffd\ufffd" but got "ÿþ"
+FAIL request.formData() with input: %FF%FE (intermediate value).formData is not a function
+FAIL response.formData() with input: %FF%FE (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: †&†=x 
+FAIL request.formData() with input: †&†=x (intermediate value).formData is not a function
+FAIL response.formData() with input: †&†=x (intermediate value).formData is not a function
+FAIL URLSearchParams constructed with: %C2 assert_array_equals: property 0, expected "\ufffd" but got "Â"
+FAIL request.formData() with input: %C2 (intermediate value).formData is not a function
+FAIL response.formData() with input: %C2 (intermediate value).formData is not a function
+FAIL URLSearchParams constructed with: %C2x assert_array_equals: property 0, expected "\ufffdx" but got "Âx"
+FAIL request.formData() with input: %C2x (intermediate value).formData is not a function
+FAIL response.formData() with input: %C2x (intermediate value).formData is not a function
+FAIL URLSearchParams constructed with: _charset_=windows-1252&test=%C2x assert_array_equals: property 1, expected "\ufffdx" but got "Âx"
+FAIL request.formData() with input: _charset_=windows-1252&test=%C2x (intermediate value).formData is not a function
+FAIL response.formData() with input: _charset_=windows-1252&test=%C2x (intermediate value).formData is not a function
+PASS URLSearchParams constructed with:  
+FAIL request.formData() with input:  (intermediate value).formData is not a function
+FAIL response.formData() with input:  (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a 
+FAIL request.formData() with input: a (intermediate value).formData is not a function
+FAIL response.formData() with input: a (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a=b 
+FAIL request.formData() with input: a=b (intermediate value).formData is not a function
+FAIL response.formData() with input: a=b (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a= 
+FAIL request.formData() with input: a= (intermediate value).formData is not a function
+FAIL response.formData() with input: a= (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: =b 
+FAIL request.formData() with input: =b (intermediate value).formData is not a function
+FAIL response.formData() with input: =b (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: & 
+FAIL request.formData() with input: & (intermediate value).formData is not a function
+FAIL response.formData() with input: & (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: &a 
+FAIL request.formData() with input: &a (intermediate value).formData is not a function
+FAIL response.formData() with input: &a (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a& 
+FAIL request.formData() with input: a& (intermediate value).formData is not a function
+FAIL response.formData() with input: a& (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a&a 
+FAIL request.formData() with input: a&a (intermediate value).formData is not a function
+FAIL response.formData() with input: a&a (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a&b&c 
+FAIL request.formData() with input: a&b&c (intermediate value).formData is not a function
+FAIL response.formData() with input: a&b&c (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a=b&c=d 
+FAIL request.formData() with input: a=b&c=d (intermediate value).formData is not a function
+FAIL response.formData() with input: a=b&c=d (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a=b&c=d& 
+FAIL request.formData() with input: a=b&c=d& (intermediate value).formData is not a function
+FAIL response.formData() with input: a=b&c=d& (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: &&&a=b&&&&c=d& 
+FAIL request.formData() with input: &&&a=b&&&&c=d& (intermediate value).formData is not a function
+FAIL response.formData() with input: &&&a=b&&&&c=d& (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a=a&a=b&a=c 
+FAIL request.formData() with input: a=a&a=b&a=c (intermediate value).formData is not a function
+FAIL response.formData() with input: a=a&a=b&a=c (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a==a 
+FAIL request.formData() with input: a==a (intermediate value).formData is not a function
+FAIL response.formData() with input: a==a (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: a=a+b+c+d 
+FAIL request.formData() with input: a=a+b+c+d (intermediate value).formData is not a function
+FAIL response.formData() with input: a=a+b+c+d (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: %=a 
+FAIL request.formData() with input: %=a (intermediate value).formData is not a function
+FAIL response.formData() with input: %=a (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: %a=a 
+FAIL request.formData() with input: %a=a (intermediate value).formData is not a function
+FAIL response.formData() with input: %a=a (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: %a_=a 
+FAIL request.formData() with input: %a_=a (intermediate value).formData is not a function
+FAIL response.formData() with input: %a_=a (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: %61=a 
+FAIL request.formData() with input: %61=a (intermediate value).formData is not a function
+FAIL response.formData() with input: %61=a (intermediate value).formData is not a function
+PASS URLSearchParams constructed with: %61+%4d%4D= 
+FAIL request.formData() with input: %61+%4d%4D= (intermediate value).formData is not a function
+FAIL response.formData() with input: %61+%4d%4D= (intermediate value).formData is not a function
+Harness: the test ran to completion.
+

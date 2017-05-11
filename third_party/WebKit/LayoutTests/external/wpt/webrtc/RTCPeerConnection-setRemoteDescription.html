@@ -9,8 +9,10 @@
   <script src="/resources/testharness.js"></script>
   <script src="/resources/testharnessreport.js"></script>
   <script type="text/javascript">
+  'use strict';
+
   // tests that ontrack is called and parses the msid information from the SDP and creates
-  // the streams and tracks with matching identifiers.
+  // the streams with matching identifiers.
   async_test(function(test) {
     const sdp = 'v=0\r\n' +
         'o=- 166855176514521964 2 IN IP4 127.0.0.1\r\n' +
@@ -34,9 +36,6 @@
     var pc = new RTCPeerConnection(null);
 
     pc.ontrack = test.step_func(function(event) {
-      assert_equals(event.track.kind, 'audio', 'ontrack fires with an audio track');
-      assert_equals(event.track.id, 'track1', 'the track name is parsed from the MSID line');
-
       assert_equals(event.streams.length, 1, 'the track belongs to one MediaStream');
       assert_equals(event.streams[0].id, 'stream1', 'the stream name is parsed from the MSID line');
       test.done();
@@ -46,7 +45,43 @@
     .catch(test.step_func(function(e) {
       assert_unreached('Error ' + e.name + ': ' + e.message);
     }));
-  }, 'Triggers ontrack when called with a remote description and the MSID is parsed.');
+  }, 'Triggers ontrack when called with a remote description and the MSID of the stream is is parsed.');
+
+  promise_test(t => {
+    const pc = new RTCPeerConnection();
+    return promise_rejects(t, new RTCError(),
+      pc.setRemoteDescription({
+        // valid SDP type
+        type: 'offer',
+        // malformed SDP description
+        sdp: 'bogus'
+      }));
+  }, 'Malformed SDP description should be rejected with RTCError');
+
+  promise_test(t => {
+    const pc = new RTCPeerConnection();
+    return promise_rejects(t, new TypeError(),
+      pc.setRemoteDescription({
+        // invalid enum value is caught at IDL level before
+        // method is executed
+        type: 'bogus',
+        // bogus SDP should never be validated before type
+        sdp: 'bogus'
+      }));
+  }, 'Invalid SDP type should be rejected with TypeError');
+
+  promise_test(t => {
+    const pc = new RTCPeerConnection();
+
+    return promise_rejects(t, new InvalidStateError(),
+      pc.setRemoteDescription({
+        // a new connection with stable state cannot accept answer type SDP
+        type: 'answer',
+        // bogus SDP should never be validated before validating type
+        sdp: 'bogus'
+      }));
+  }, 'SDP type that is invalid for current signaling state should be rejected with InvalidStateError');
+
 </script>
 
 </body>

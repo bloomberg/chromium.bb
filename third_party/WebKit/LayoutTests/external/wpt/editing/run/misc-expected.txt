@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 423 tests; 408 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 423 tests; 415 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL [["defaultparagraphseparator",""]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "") return value assert_equals: expected false but got true
 PASS [["defaultparagraphseparator",""]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["defaultparagraphseparator",""]] "foo[bar]baz" compare innerHTML 
@@ -14,7 +14,7 @@ PASS [["defaultparagraphseparator","div"]] "foo[bar]baz" checks for modification
 PASS [["defaultparagraphseparator","div"]] "foo[bar]baz" compare innerHTML 
 PASS [["defaultparagraphseparator","div"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before 
 PASS [["defaultparagraphseparator","div"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") before 
-FAIL [["defaultparagraphseparator","div"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before assert_equals: Wrong result returned expected "p" but got "div"
+PASS [["defaultparagraphseparator","div"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
 PASS [["defaultparagraphseparator","div"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator","div"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator","div"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after 
@@ -36,6 +36,24 @@ PASS [["defaultparagraphseparator","DIV"]] "foo[bar]baz" queryCommandValue("defa
 PASS [["defaultparagraphseparator","DIV"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator","DIV"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator","DIV"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after 
+FAIL [["defaultparagraphseparator"," p "]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, " p ") return value assert_equals: expected false but got true
+PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" checks for modifications to non-editable content 
+PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" compare innerHTML 
+PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before 
+PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") before 
+PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
+PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
+PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
+PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after 
+FAIL [["defaultparagraphseparator","<p>"]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "<p>") return value assert_equals: expected false but got true
+PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" checks for modifications to non-editable content 
+PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" compare innerHTML 
+PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before 
+PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") before 
+PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
+PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
+PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
+PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator","P"]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "P") return value 
 PASS [["defaultparagraphseparator","P"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["defaultparagraphseparator","P"]] "foo[bar]baz" compare innerHTML 
@@ -53,16 +71,7 @@ PASS [["defaultparagraphseparator"," div "]] "foo[bar]baz" queryCommandState("de
 PASS [["defaultparagraphseparator"," div "]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
 PASS [["defaultparagraphseparator"," div "]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator"," div "]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
-FAIL [["defaultparagraphseparator"," div "]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after assert_equals: Wrong result returned expected "div" but got "p"
-FAIL [["defaultparagraphseparator"," p "]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, " p ") return value assert_equals: expected false but got true
-PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" checks for modifications to non-editable content 
-PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" compare innerHTML 
-PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
-PASS [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
-FAIL [["defaultparagraphseparator"," p "]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after assert_equals: Wrong result returned expected "div" but got "p"
+PASS [["defaultparagraphseparator"," div "]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after 
 FAIL [["defaultparagraphseparator","<div>"]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "<div>") return value assert_equals: expected false but got true
 PASS [["defaultparagraphseparator","<div>"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["defaultparagraphseparator","<div>"]] "foo[bar]baz" compare innerHTML 
@@ -71,16 +80,7 @@ PASS [["defaultparagraphseparator","<div>"]] "foo[bar]baz" queryCommandState("de
 PASS [["defaultparagraphseparator","<div>"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
 PASS [["defaultparagraphseparator","<div>"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator","<div>"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
-FAIL [["defaultparagraphseparator","<div>"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after assert_equals: Wrong result returned expected "div" but got "p"
-FAIL [["defaultparagraphseparator","<p>"]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "<p>") return value assert_equals: expected false but got true
-PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" checks for modifications to non-editable content 
-PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" compare innerHTML 
-PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
-PASS [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
-FAIL [["defaultparagraphseparator","<p>"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after assert_equals: Wrong result returned expected "div" but got "p"
+PASS [["defaultparagraphseparator","<div>"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after 
 FAIL [["defaultparagraphseparator","li"]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "li") return value assert_equals: expected false but got true
 PASS [["defaultparagraphseparator","li"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["defaultparagraphseparator","li"]] "foo[bar]baz" compare innerHTML 
@@ -89,7 +89,7 @@ PASS [["defaultparagraphseparator","li"]] "foo[bar]baz" queryCommandState("defau
 PASS [["defaultparagraphseparator","li"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
 PASS [["defaultparagraphseparator","li"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator","li"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
-FAIL [["defaultparagraphseparator","li"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after assert_equals: Wrong result returned expected "div" but got "p"
+PASS [["defaultparagraphseparator","li"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after 
 FAIL [["defaultparagraphseparator","blockquote"]] "foo[bar]baz": execCommand("defaultparagraphseparator", false, "blockquote") return value assert_equals: expected false but got true
 PASS [["defaultparagraphseparator","blockquote"]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["defaultparagraphseparator","blockquote"]] "foo[bar]baz" compare innerHTML 
@@ -98,7 +98,7 @@ PASS [["defaultparagraphseparator","blockquote"]] "foo[bar]baz" queryCommandStat
 PASS [["defaultparagraphseparator","blockquote"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") before 
 PASS [["defaultparagraphseparator","blockquote"]] "foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") after 
 PASS [["defaultparagraphseparator","blockquote"]] "foo[bar]baz" queryCommandState("defaultparagraphseparator") after 
-FAIL [["defaultparagraphseparator","blockquote"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after assert_equals: Wrong result returned expected "div" but got "p"
+PASS [["defaultparagraphseparator","blockquote"]] "foo[bar]baz" queryCommandValue("defaultparagraphseparator") after 
 PASS [["selectall",""]] "foo[bar]baz": execCommand("selectall", false, "") return value 
 PASS [["selectall",""]] "foo[bar]baz" checks for modifications to non-editable content 
 PASS [["selectall",""]] "foo[bar]baz" compare innerHTML 

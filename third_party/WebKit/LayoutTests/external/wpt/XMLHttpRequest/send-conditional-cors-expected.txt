@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL 304 without appropriate CORS header CROSSDOMAIN is not defined
-FAIL 304 with appropriate CORS header CROSSDOMAIN is not defined
-Harness: the test ran to completion.
-
