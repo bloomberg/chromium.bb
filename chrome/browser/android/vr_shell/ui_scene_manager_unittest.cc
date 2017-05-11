@@ -29,6 +29,7 @@ class MockBrowserInterface : public VrBrowserInterface {
   MOCK_METHOD0(AppButtonClicked, void());
   MOCK_METHOD0(ForceExitVr, void());
   MOCK_METHOD0(ExitPresent, void());
+  MOCK_METHOD0(ExitFullscreen, void());
   MOCK_METHOD2(
       RunVRDisplayInfoCallback,
       void(const base::Callback<void(device::mojom::VRDisplayInfoPtr)>&,
@@ -64,11 +65,11 @@ class UiSceneManagerTest : public testing::Test {
   std::unique_ptr<UiSceneManager> manager_;
 };
 
-TEST_F(UiSceneManagerTest, ExitPresentOnAppButtonClick) {
-  InSequence s;
-
+TEST_F(UiSceneManagerTest, ExitPresentAndFullscreenOnAppButtonClick) {
   // Clicking app button should trigger to exit presentation.
   EXPECT_CALL(*browser_, ExitPresent()).Times(1);
+  // And also trigger exit fullscreen.
+  EXPECT_CALL(*browser_, ExitFullscreen()).Times(1);
   manager_->OnAppButtonClicked();
 }
 

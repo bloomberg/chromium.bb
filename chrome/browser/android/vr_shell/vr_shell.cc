@@ -488,6 +488,12 @@ void VrShell::ExitPresent() {
   delegate_provider_->ExitWebVRPresent();
 }
 
+void VrShell::ExitFullscreen() {
+  if (web_contents_ && web_contents_->IsFullscreen()) {
+    web_contents_->ExitFullscreen(false);
+  }
+}
+
 void VrShell::OnVRVsyncProviderRequest(
     device::mojom::VRVSyncProviderRequest request) {
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::OnRequest,

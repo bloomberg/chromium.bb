@@ -223,15 +223,16 @@ void UiSceneManager::SetWebVrSecureOrigin(bool secure) {
 }
 
 void UiSceneManager::OnAppButtonClicked() {
-  // App button click exits the WebVR presentation.
+  // App button click exits the WebVR presentation and fullscreen.
   browser_->ExitPresent();
+  browser_->ExitFullscreen();
 }
 
 void UiSceneManager::OnAppButtonGesturePerformed(
     UiInterface::Direction direction) {}
 
 void UiSceneManager::SetFullscreen(bool fullscreen) {
-  // Make all VR scene UI elements visible if not in WebVR or fullscreen.
+  // Make all VR scene UI elements visible if not in fullscreen.
   for (UiElement* element : browser_ui_elements_) {
     element->set_visible(!fullscreen);
   }

@@ -36,6 +36,7 @@ class VrBrowserInterface {
       std::unique_ptr<blink::WebInputEvent> event) = 0;
   virtual void ForceExitVr() = 0;
   virtual void ExitPresent() = 0;
+  virtual void ExitFullscreen() = 0;
   virtual void RunVRDisplayInfoCallback(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       device::mojom::VRDisplayInfoPtr* info) = 0;
