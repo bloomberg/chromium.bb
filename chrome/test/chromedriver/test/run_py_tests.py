@@ -73,8 +73,6 @@ _NEGATIVE_FILTER = [
 
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1803
-    'ChromeDriverTest.testAlertHandlingOnPageUnload',
 ]
 _VERSION_SPECIFIC_FILTER['58'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
@@ -173,8 +171,6 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
         'ChromeDriverTest.testHoverOverElement',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1478
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1803
-        'ChromeDriverTest.testAlertHandlingOnPageUnload',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
@@ -681,6 +677,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testAlertHandlingOnPageUnload(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript('window.onbeforeunload=function(){return true}')
+    self._driver.FindElement('tag name', 'body').Click()
     self._driver.GoBack()
     self.assertTrue(self._driver.IsAlertOpen())
     self._driver.HandleAlert(True)
