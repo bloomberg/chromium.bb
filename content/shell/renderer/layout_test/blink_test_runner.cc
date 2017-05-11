@@ -252,10 +252,10 @@ WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
 BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<BlinkTestRunner>(render_view),
+      test_config_(mojom::ShellTestConfiguration::New()),
       is_main_window_(false),
       focus_on_next_commit_(false),
-      leak_detector_(new LeakDetector(this)) {
-}
+      leak_detector_(new LeakDetector(this)) {}
 
 BlinkTestRunner::~BlinkTestRunner() {
 }
