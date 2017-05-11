@@ -434,6 +434,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-inline-002l.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-inline-002r.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-inline-003l.xht [ Skip ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-inline-003r.xht [ Skip ]
 
 ### external/wpt/css/CSS2/positioning
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-non-replaced-height-002.xht [ Skip ]

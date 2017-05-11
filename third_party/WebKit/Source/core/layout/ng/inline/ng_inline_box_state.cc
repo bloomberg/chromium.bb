@@ -80,8 +80,9 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
 NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
     const NGInlineItem& item,
     NGLineBoxFragmentBuilder* line_box,
-    NGInlineBoxState* box) {
-  EndBoxState(box, line_box);
+    NGInlineBoxState* box,
+    FontBaseline baseline_type) {
+  EndBoxState(box, line_box, baseline_type);
   // TODO(kojii): When the algorithm restarts from a break token, the stack may
   // underflow. We need either synthesize a missing box state, or push all
   // parents on initialize.
@@ -90,10 +91,11 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
 }
 
 void NGInlineLayoutStateStack::OnEndPlaceItems(
-    NGLineBoxFragmentBuilder* line_box) {
+    NGLineBoxFragmentBuilder* line_box,
+    FontBaseline baseline_type) {
   for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
     NGInlineBoxState* box = &(*it);
-    EndBoxState(box, line_box);
+    EndBoxState(box, line_box, baseline_type);
   }
 
   DCHECK(!LineBoxState().metrics.IsEmpty());
@@ -101,8 +103,10 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(
 }
 
 void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
-                                           NGLineBoxFragmentBuilder* line_box) {
-  PositionPending position_pending = ApplyBaselineShift(box, line_box);
+                                           NGLineBoxFragmentBuilder* line_box,
+                                           FontBaseline baseline_type) {
+  PositionPending position_pending =
+      ApplyBaselineShift(box, line_box, baseline_type);
 
   // Unite the metrics to the parent box.
   if (position_pending == kPositionNotPending && box != stack_.begin()) {
@@ -111,19 +115,31 @@ void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
 }
 
 NGInlineLayoutStateStack::PositionPending
-NGInlineLayoutStateStack::ApplyBaselineShift(
-    NGInlineBoxState* box,
-    NGLineBoxFragmentBuilder* line_box) {
+NGInlineLayoutStateStack::ApplyBaselineShift(NGInlineBoxState* box,
+                                             NGLineBoxFragmentBuilder* line_box,
+                                             FontBaseline baseline_type) {
   // Compute descendants that depend on the layout size of this box if any.
   LayoutUnit baseline_shift;
   if (!box->pending_descendants.IsEmpty()) {
     for (auto& child : box->pending_descendants) {
       switch (child.vertical_align) {
         case EVerticalAlign::kTextTop:
+          DCHECK(!box->text_metrics.IsEmpty());
+          baseline_shift = child.metrics.ascent + box->text_top;
+          break;
         case EVerticalAlign::kTop:
           baseline_shift = child.metrics.ascent - box->metrics.ascent;
           break;
         case EVerticalAlign::kTextBottom:
+          if (const SimpleFontData* font_data =
+                  box->style->GetFont().PrimaryFont()) {
+            LayoutUnit text_bottom =
+                font_data->GetFontMetrics().FixedDescent(baseline_type);
+            baseline_shift = text_bottom - child.metrics.descent;
+            break;
+          }
+          NOTREACHED();
+        // Fall through.
         case EVerticalAlign::kBottom:
           baseline_shift = box->metrics.descent - child.metrics.descent;
           break;
