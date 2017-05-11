@@ -56,7 +56,6 @@ blink_core_sources("rendering") {
     "ShadowData.h",
     "ShadowList.cpp",
     "ShadowList.h",
-    "StyleBoxData.h",
     "StyleContentAlignmentData.h",
     "StyleDeprecatedFlexibleBoxData.cpp",
     "StyleDeprecatedFlexibleBoxData.h",
