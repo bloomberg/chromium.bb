@@ -824,6 +824,11 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
      (cmd == @selector(noop:) &&
       ([event type] == NSKeyDown || [event type] == NSKeyUp) &&
       [event keyCode] == kVK_Return)) {
+    // If the user hasn't entered any text in keyword search mode, we need to
+    // return early in order to avoid cancelling the search.
+    if (GetTextLength() == 0)
+      return true;
+
     WindowOpenDisposition disposition =
         ui::WindowOpenDispositionFromNSEvent(event);
     model()->AcceptInput(disposition, false);
