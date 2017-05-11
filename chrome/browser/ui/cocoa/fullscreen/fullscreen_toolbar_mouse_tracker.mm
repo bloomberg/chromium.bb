@@ -15,7 +15,7 @@ namespace {
 // Additional height threshold added at the toolbar's bottom. This is to mimic
 // threshold the mouse position needs to be at before the menubar automatically
 // hides.
-const CGFloat kTrackingAreaAdditionalThreshold = 20;
+const CGFloat kTrackingAreaAdditionalThreshold = 50;
 
 }  // namespace
 
