@@ -80,7 +80,8 @@ def main():
   if is_os:
     target_os = 'ios'
     test_target = 'cronet_test'
-    gn_args = 'is_cronet_build=true is_component_build=false '
+    gn_args = 'is_cronet_build=true is_component_build=false ' \
+        'use_xcode_clang=true '
     gn_extra = '--ide=xcode'
     if options.iphoneos:
       gn_args += ' target_cpu="arm64" '
