@@ -63,7 +63,7 @@ bool AddShellLink(base::win::ScopedComPtr<IObjectCollection> collection,
   // shortcut which doesn't have titles.
   // So, we should use the IPropertyStore interface to set its title.
   base::win::ScopedComPtr<IPropertyStore> property_store;
-  result = link.CopyTo(property_store.Receive());
+  result = link.CopyTo(property_store.GetAddressOf());
   if (FAILED(result))
     return false;
 
@@ -194,7 +194,7 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
   // interface to retrieve each item in the list. So, we retrieve the
   // IObjectArray interface from the EnumerableObjectCollection object.
   base::win::ScopedComPtr<IObjectArray> object_array;
-  result = collection.CopyTo(object_array.Receive());
+  result = collection.CopyTo(object_array.GetAddressOf());
   if (FAILED(result))
     return false;
 
@@ -244,7 +244,7 @@ bool JumpListUpdater::AddCustomCategory(const base::string16& category_name,
   // It seems the ICustomDestinationList::AppendCategory() function just
   // replaces all items in the given category with the ones in the new list.
   base::win::ScopedComPtr<IObjectArray> object_array;
-  result = collection.CopyTo(object_array.Receive());
+  result = collection.CopyTo(object_array.GetAddressOf());
   if (FAILED(result))
     return false;
 

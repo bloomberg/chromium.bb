@@ -48,7 +48,7 @@ bool D3D11PictureBuffer::Init(
   view_desc.Texture2D.ArraySlice = (UINT)level_;
 
   HRESULT hr = video_device->CreateVideoDecoderOutputView(
-      texture.Get(), &view_desc, output_view_.Receive());
+      texture.Get(), &view_desc, output_view_.GetAddressOf());
 
   CHECK(SUCCEEDED(hr));
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();

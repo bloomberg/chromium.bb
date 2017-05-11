@@ -93,8 +93,8 @@ class ScopedComPtr {
   // Retrieves the pointer address.
   // Used to receive object pointers as out arguments (and take ownership).
   // The function DCHECKs on the current value being NULL.
-  // Usage: Foo(p.Receive());
-  Interface** Receive() {
+  // Usage: Foo(p.GetAddressOf());
+  Interface** GetAddressOf() {
     DCHECK(!ptr_) << "Object leak. Pointer must be NULL";
     return &ptr_;
   }
@@ -120,7 +120,7 @@ class ScopedComPtr {
   // error code from the other->QueryInterface operation.
   HRESULT QueryFrom(IUnknown* object) {
     DCHECK(object);
-    return object->QueryInterface(IID_PPV_ARGS(Receive()));
+    return object->QueryInterface(IID_PPV_ARGS(GetAddressOf()));
   }
 
   // Convenience wrapper around CoCreateInstance
@@ -224,7 +224,7 @@ class ScopedComPtrRef {
 
   // ComPtr equivalent conversion operators.
   operator void**() const {
-    return reinterpret_cast<void**>(scoped_com_ptr_->Receive());
+    return reinterpret_cast<void**>(scoped_com_ptr_->GetAddressOf());
   }
 
   // Allows ScopedComPtr to be passed to functions as a pointer.

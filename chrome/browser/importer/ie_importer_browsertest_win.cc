@@ -188,9 +188,8 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
     if (FAILED(property_set_storage.QueryFrom(locator.Get())))
       return false;
     base::win::ScopedComPtr<IPropertyStorage> property_storage;
-    if (FAILED(property_set_storage->Open(FMTID_Intshcut,
-                                          STGM_WRITE,
-                                          property_storage.Receive()))) {
+    if (FAILED(property_set_storage->Open(FMTID_Intshcut, STGM_WRITE,
+                                          property_storage.GetAddressOf()))) {
       return false;
     }
     PROPSPEC properties[] = {{PRSPEC_PROPID, {PID_IS_ICONFILE}}};

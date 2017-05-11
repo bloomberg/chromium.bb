@@ -183,7 +183,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
   if (!accessible)
     return nullptr;
   base::win::ScopedComPtr<AXPlatformNodeWin> ax_platform_node;
-  accessible->QueryInterface(ax_platform_node.Receive());
+  accessible->QueryInterface(ax_platform_node.GetAddressOf());
   return ax_platform_node.Get();
 }
 
@@ -243,9 +243,9 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ui::AXEvent event_type) {
 int AXPlatformNodeWin::GetIndexInParent() {
   base::win::ScopedComPtr<IDispatch> parent_dispatch;
   base::win::ScopedComPtr<IAccessible> parent_accessible;
-  if (S_OK != get_accParent(parent_dispatch.Receive()))
+  if (S_OK != get_accParent(parent_dispatch.GetAddressOf()))
     return -1;
-  if (S_OK != parent_dispatch.CopyTo(parent_accessible.Receive()))
+  if (S_OK != parent_dispatch.CopyTo(parent_accessible.GetAddressOf()))
     return -1;
 
   LONG child_count = 0;
@@ -255,9 +255,9 @@ int AXPlatformNodeWin::GetIndexInParent() {
     base::win::ScopedVariant childid_index(index);
     base::win::ScopedComPtr<IDispatch> child_dispatch;
     base::win::ScopedComPtr<IAccessible> child_accessible;
-    if (S_OK == parent_accessible->get_accChild(childid_index,
-                                                child_dispatch.Receive()) &&
-        S_OK == child_dispatch.CopyTo(child_accessible.Receive())) {
+    if (S_OK == parent_accessible->get_accChild(
+                    childid_index, child_dispatch.GetAddressOf()) &&
+        S_OK == child_dispatch.CopyTo(child_accessible.GetAddressOf())) {
       if (child_accessible.Get() == this)
         return index - 1;
     }

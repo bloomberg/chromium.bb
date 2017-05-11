@@ -99,8 +99,8 @@ class AXPlatformNodeWinTest : public testing::Test {
     ScopedComPtr<IServiceProvider> service_provider;
     service_provider.QueryFrom(accessible.Get());
     ScopedComPtr<IAccessible2> result;
-    CHECK(SUCCEEDED(
-        service_provider->QueryService(IID_IAccessible2, result.Receive())));
+    CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2,
+                                                   result.GetAddressOf())));
     return result;
   }
 
@@ -290,21 +290,24 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
 
   {
     ScopedComPtr<IDispatch> result;
-    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(SELF, result.Receive()));
+    EXPECT_EQ(S_OK,
+              root_iaccessible->get_accChild(SELF, result.GetAddressOf()));
     EXPECT_EQ(result.Get(), root_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant child1(1);
-    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(child1, result.Receive()));
+    EXPECT_EQ(S_OK,
+              root_iaccessible->get_accChild(child1, result.GetAddressOf()));
     EXPECT_EQ(result.Get(), button_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant child2(2);
-    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(child2, result.Receive()));
+    EXPECT_EQ(S_OK,
+              root_iaccessible->get_accChild(child2, result.GetAddressOf()));
     EXPECT_EQ(result.Get(), checkbox_iaccessible);
   }
 
@@ -313,7 +316,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
     ScopedComPtr<IDispatch> result;
     ScopedVariant child3(3);
     EXPECT_EQ(E_INVALIDARG,
-              root_iaccessible->get_accChild(child3, result.Receive()));
+              root_iaccessible->get_accChild(child3, result.GetAddressOf()));
   }
 
   // We should be able to ask for the button by its unique id too.
@@ -326,7 +329,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
     ScopedComPtr<IDispatch> result;
     ScopedVariant button_id_variant(button_unique_id);
     EXPECT_EQ(S_OK, root_iaccessible->get_accChild(button_id_variant,
-                                                   result.Receive()));
+                                                   result.GetAddressOf()));
     EXPECT_EQ(result.Get(), button_iaccessible);
   }
 
@@ -340,26 +343,26 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant root_id_variant(root_unique_id);
-    EXPECT_EQ(E_INVALIDARG, button_iaccessible->get_accChild(root_id_variant,
-                                                             result.Receive()));
+    EXPECT_EQ(E_INVALIDARG, button_iaccessible->get_accChild(
+                                root_id_variant, result.GetAddressOf()));
   }
 
   // Now check parents.
   {
     ScopedComPtr<IDispatch> result;
-    EXPECT_EQ(S_OK, button_iaccessible->get_accParent(result.Receive()));
+    EXPECT_EQ(S_OK, button_iaccessible->get_accParent(result.GetAddressOf()));
     EXPECT_EQ(result.Get(), root_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
-    EXPECT_EQ(S_OK, checkbox_iaccessible->get_accParent(result.Receive()));
+    EXPECT_EQ(S_OK, checkbox_iaccessible->get_accParent(result.GetAddressOf()));
     EXPECT_EQ(result.Get(), root_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
-    EXPECT_EQ(S_FALSE, root_iaccessible->get_accParent(result.Receive()));
+    EXPECT_EQ(S_FALSE, root_iaccessible->get_accParent(result.GetAddressOf()));
   }
 }
 

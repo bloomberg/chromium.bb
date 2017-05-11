@@ -108,7 +108,7 @@ class PlatformParentalControlsValue {
       return false;
 
     base::win::ScopedComPtr<IWPCSettings> settings;
-    hr = parent_controls->GetUserSettings(nullptr, settings.Receive());
+    hr = parent_controls->GetUserSettings(nullptr, settings.GetAddressOf());
     if (FAILED(hr))
       return false;
 

@@ -23,13 +23,13 @@ bool LegacyFirewallManager::Init(const base::string16& app_name,
   }
 
   base::win::ScopedComPtr<INetFwPolicy> firewall_policy;
-  hr = firewall_manager->get_LocalPolicy(firewall_policy.Receive());
+  hr = firewall_manager->get_LocalPolicy(firewall_policy.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
-  hr = firewall_policy->get_CurrentProfile(current_profile_.Receive());
+  hr = firewall_policy->get_CurrentProfile(current_profile_.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     current_profile_ = NULL;
@@ -56,9 +56,9 @@ bool LegacyFirewallManager::GetAllowIncomingConnection(bool* value) {
     return false;
 
   base::win::ScopedComPtr<INetFwAuthorizedApplication> chrome_application;
-  HRESULT hr = authorized_apps->Item(
-      base::win::ScopedBstr(app_path_.value().c_str()),
-      chrome_application.Receive());
+  HRESULT hr =
+      authorized_apps->Item(base::win::ScopedBstr(app_path_.value().c_str()),
+                            chrome_application.GetAddressOf());
   if (FAILED(hr))
     return false;
   VARIANT_BOOL is_enabled = VARIANT_FALSE;
@@ -98,8 +98,8 @@ void LegacyFirewallManager::DeleteRule() {
 base::win::ScopedComPtr<INetFwAuthorizedApplications>
 LegacyFirewallManager::GetAuthorizedApplications() {
   base::win::ScopedComPtr<INetFwAuthorizedApplications> authorized_apps;
-  HRESULT hr =
-      current_profile_->get_AuthorizedApplications(authorized_apps.Receive());
+  HRESULT hr = current_profile_->get_AuthorizedApplications(
+      authorized_apps.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return base::win::ScopedComPtr<INetFwAuthorizedApplications>();

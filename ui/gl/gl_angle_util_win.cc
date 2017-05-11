@@ -119,14 +119,14 @@ base::win::ScopedComPtr<IDCompositionDevice2> QueryDirectCompositionDevice(
     return dcomp_device;
 
   base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
-  d3d11_device.CopyTo(dxgi_device.Receive());
+  d3d11_device.CopyTo(dxgi_device.GetAddressOf());
   base::win::ScopedComPtr<IDCompositionDesktopDevice> desktop_device;
   hr = create_device_function(dxgi_device.Get(),
-                              IID_PPV_ARGS(desktop_device.Receive()));
+                              IID_PPV_ARGS(desktop_device.GetAddressOf()));
   if (FAILED(hr))
     return dcomp_device;
 
-  hr = desktop_device.CopyTo(dcomp_device.Receive());
+  hr = desktop_device.CopyTo(dcomp_device.GetAddressOf());
   CHECK(SUCCEEDED(hr));
   d3d11_device->SetPrivateDataInterface(kDirectCompositionGUID,
                                         dcomp_device.Get());

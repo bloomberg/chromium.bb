@@ -191,7 +191,8 @@ void TtsPlatformImplWin::GetVoices(
     std::vector<VoiceData>* out_voices) {
   base::win::ScopedComPtr<IEnumSpObjectTokens> voice_tokens;
   unsigned long voice_count;
-  if (S_OK != SpEnumTokens(SPCAT_VOICES, NULL, NULL, voice_tokens.Receive()))
+  if (S_OK !=
+      SpEnumTokens(SPCAT_VOICES, NULL, NULL, voice_tokens.GetAddressOf()))
     return;
   if (S_OK != voice_tokens->GetCount(&voice_count))
     return;
@@ -200,7 +201,7 @@ void TtsPlatformImplWin::GetVoices(
     VoiceData voice;
 
     base::win::ScopedComPtr<ISpObjectToken> voice_token;
-    if (S_OK != voice_tokens->Next(1, voice_token.Receive(), NULL))
+    if (S_OK != voice_tokens->Next(1, voice_token.GetAddressOf(), NULL))
       return;
 
     base::win::ScopedCoMem<WCHAR> description;
@@ -209,7 +210,7 @@ void TtsPlatformImplWin::GetVoices(
     voice.name = base::WideToUTF8(description.get());
 
     base::win::ScopedComPtr<ISpDataKey> attributes;
-    if (S_OK != voice_token->OpenKey(kAttributesKey, attributes.Receive()))
+    if (S_OK != voice_token->OpenKey(kAttributesKey, attributes.GetAddressOf()))
       continue;
 
     base::win::ScopedCoMem<WCHAR> gender;
@@ -289,14 +290,15 @@ void TtsPlatformImplWin::SetVoiceFromName(const std::string& name) {
 
   base::win::ScopedComPtr<IEnumSpObjectTokens> voice_tokens;
   unsigned long voice_count;
-  if (S_OK != SpEnumTokens(SPCAT_VOICES, NULL, NULL, voice_tokens.Receive()))
+  if (S_OK !=
+      SpEnumTokens(SPCAT_VOICES, NULL, NULL, voice_tokens.GetAddressOf()))
     return;
   if (S_OK != voice_tokens->GetCount(&voice_count))
     return;
 
   for (unsigned i = 0; i < voice_count; i++) {
     base::win::ScopedComPtr<ISpObjectToken> voice_token;
-    if (S_OK != voice_tokens->Next(1, voice_token.Receive(), NULL))
+    if (S_OK != voice_tokens->Next(1, voice_token.GetAddressOf(), NULL))
       return;
 
     base::win::ScopedCoMem<WCHAR> description;

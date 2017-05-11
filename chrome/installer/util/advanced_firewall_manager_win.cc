@@ -29,7 +29,7 @@ bool AdvancedFirewallManager::Init(const base::string16& app_name,
     firewall_policy_ = NULL;
     return false;
   }
-  hr = firewall_policy_->get_Rules(firewall_rules_.Receive());
+  hr = firewall_policy_->get_Rules(firewall_rules_.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     firewall_rules_ = NULL;
@@ -151,7 +151,7 @@ base::win::ScopedComPtr<INetFwRule> AdvancedFirewallManager::CreateUDPRule(
 void AdvancedFirewallManager::GetAllRules(
     std::vector<base::win::ScopedComPtr<INetFwRule> >* rules) {
   base::win::ScopedComPtr<IUnknown> rules_enum_unknown;
-  HRESULT hr = firewall_rules_->get__NewEnum(rules_enum_unknown.Receive());
+  HRESULT hr = firewall_rules_->get__NewEnum(rules_enum_unknown.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return;

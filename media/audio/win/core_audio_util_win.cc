@@ -155,7 +155,7 @@ static HRESULT GetDeviceFriendlyNameInternal(IMMDevice* device,
   // Retrieve user-friendly name of endpoint device.
   // Example: "Microphone (Realtek High Definition Audio)".
   ScopedComPtr<IPropertyStore> properties;
-  HRESULT hr = device->OpenPropertyStore(STGM_READ, properties.Receive());
+  HRESULT hr = device->OpenPropertyStore(STGM_READ, properties.GetAddressOf());
   if (FAILED(hr))
     return hr;
 
@@ -261,9 +261,8 @@ int CoreAudioUtil::NumberOfActiveDevices(EDataFlow data_flow) {
   // devices for the specified data-flow direction.
   // This method will succeed even if all devices are disabled.
   ScopedComPtr<IMMDeviceCollection> collection;
-  HRESULT hr = device_enumerator->EnumAudioEndpoints(data_flow,
-                                                     DEVICE_STATE_ACTIVE,
-                                                     collection.Receive());
+  HRESULT hr = device_enumerator->EnumAudioEndpoints(
+      data_flow, DEVICE_STATE_ACTIVE, collection.GetAddressOf());
   if (FAILED(hr)) {
     LOG(ERROR) << "IMMDeviceCollection::EnumAudioEndpoints: " << std::hex << hr;
     return 0;
@@ -294,7 +293,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDefaultDevice(EDataFlow data_flow,
   // Retrieve the default audio endpoint for the specified data-flow
   // direction and role.
   HRESULT hr = device_enumerator->GetDefaultAudioEndpoint(
-      data_flow, role, endpoint_device.Receive());
+      data_flow, role, endpoint_device.GetAddressOf());
 
   if (FAILED(hr)) {
     DVLOG(1) << "IMMDeviceEnumerator::GetDefaultAudioEndpoint: "
@@ -329,7 +328,7 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDevice(
   // Retrieve an audio device specified by an endpoint device-identification
   // string.
   HRESULT hr = device_enumerator->GetDevice(
-      base::UTF8ToUTF16(device_id).c_str(), endpoint_device.Receive());
+      base::UTF8ToUTF16(device_id).c_str(), endpoint_device.GetAddressOf());
   DVLOG_IF(1, FAILED(hr)) << "IMMDeviceEnumerator::GetDevice: "
                           << std::hex << hr;
 
@@ -377,11 +376,11 @@ std::string CoreAudioUtil::GetAudioControllerID(IMMDevice* device,
   ScopedComPtr<IConnector> connector;
   ScopedCoMem<WCHAR> filter_id;
   if (FAILED(device->Activate(__uuidof(IDeviceTopology), CLSCTX_ALL, NULL,
-             &topology)) ||
+                              &topology)) ||
       // For our purposes checking the first connected device should be enough
       // and if there are cases where there are more than one device connected
       // we're not sure how to handle that anyway. So we pass 0.
-      FAILED(topology->GetConnector(0, connector.Receive())) ||
+      FAILED(topology->GetConnector(0, connector.GetAddressOf())) ||
       FAILED(connector->GetDeviceIdConnectedTo(&filter_id))) {
     DLOG(ERROR) << "Failed to get the device identifier of the audio device";
     return std::string();
@@ -393,8 +392,9 @@ std::string CoreAudioUtil::GetAudioControllerID(IMMDevice* device,
   ScopedComPtr<IMMDevice> device_node;
   ScopedComPtr<IPropertyStore> properties;
   base::win::ScopedPropVariant instance_id;
-  if (FAILED(enumerator->GetDevice(filter_id, device_node.Receive())) ||
-      FAILED(device_node->OpenPropertyStore(STGM_READ, properties.Receive())) ||
+  if (FAILED(enumerator->GetDevice(filter_id, device_node.GetAddressOf())) ||
+      FAILED(device_node->OpenPropertyStore(STGM_READ,
+                                            properties.GetAddressOf())) ||
       FAILED(properties->GetValue(PKEY_Device_InstanceId,
                                   instance_id.Receive())) ||
       instance_id.get().vt != VT_LPWSTR) {
@@ -445,7 +445,7 @@ std::string CoreAudioUtil::GetMatchingOutputDeviceID(
   // them is associated with the same controller.
   ScopedComPtr<IMMDeviceCollection> collection;
   enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE,
-      collection.Receive());
+                                 collection.GetAddressOf());
   if (!collection.Get())
     return std::string();
 
@@ -453,7 +453,7 @@ std::string CoreAudioUtil::GetMatchingOutputDeviceID(
   collection->GetCount(&count);
   ScopedComPtr<IMMDevice> output_device;
   for (UINT i = 0; i < count; ++i) {
-    collection->Item(i, output_device.Receive());
+    collection->Item(i, output_device.GetAddressOf());
     std::string output_controller_id(
         GetAudioControllerID(output_device.Get(), enumerator.Get()));
     if (output_controller_id == controller_id)
@@ -490,7 +490,7 @@ bool CoreAudioUtil::DeviceIsDefault(EDataFlow flow,
 
 EDataFlow CoreAudioUtil::GetDataFlow(IMMDevice* device) {
   ScopedComPtr<IMMEndpoint> endpoint;
-  HRESULT hr = device->QueryInterface(endpoint.Receive());
+  HRESULT hr = device->QueryInterface(endpoint.GetAddressOf());
   if (FAILED(hr)) {
     DVLOG(1) << "IMMDevice::QueryInterface: " << std::hex << hr;
     return eAll;
@@ -890,7 +890,7 @@ bool CoreAudioUtil::GetDxDiagDetails(std::string* driver_name,
     return false;
 
   ScopedComPtr<IDxDiagContainer, &IID_IDxDiagContainer> root;
-  hr = provider->GetRootContainer(root.Receive());
+  hr = provider->GetRootContainer(root.GetAddressOf());
   if (FAILED(hr))
     return false;
 
@@ -898,7 +898,7 @@ bool CoreAudioUtil::GetDxDiagDetails(std::string* driver_name,
   // enormous and only this branch contains useful information.
   ScopedComPtr<IDxDiagContainer, &IID_IDxDiagContainer> sound_devices;
   hr = root->GetChildContainer(L"DxDiag_DirectSound.DxDiag_SoundDevices.0",
-                               sound_devices.Receive());
+                               sound_devices.GetAddressOf());
   if (FAILED(hr))
     return false;
 

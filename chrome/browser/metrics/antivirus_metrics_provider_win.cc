@@ -347,7 +347,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   base::win::ScopedComPtr<IWbemServices> wmi_services;
   hr = wmi_locator->ConnectServer(
       base::win::ScopedBstr(L"ROOT\\SecurityCenter2"), nullptr, nullptr,
-      nullptr, 0, nullptr, nullptr, wmi_services.Receive());
+      nullptr, 0, nullptr, nullptr, wmi_services.GetAddressOf());
   if (FAILED(hr))
     return RESULT_FAILED_TO_CONNECT_TO_WMI;
 
@@ -366,7 +366,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   hr = wmi_services->ExecQuery(
       query_language, query,
       WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr,
-      enumerator.Receive());
+      enumerator.GetAddressOf());
   if (FAILED(hr))
     return RESULT_FAILED_TO_EXEC_WMI_QUERY;
 
@@ -375,7 +375,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   while (true) {
     base::win::ScopedComPtr<IWbemClassObject> class_object;
     ULONG items_returned = 0;
-    hr = enumerator->Next(WBEM_INFINITE, 1, class_object.Receive(),
+    hr = enumerator->Next(WBEM_INFINITE, 1, class_object.GetAddressOf(),
                           &items_returned);
     if (FAILED(hr))
       return RESULT_FAILED_TO_ITERATE_RESULTS;

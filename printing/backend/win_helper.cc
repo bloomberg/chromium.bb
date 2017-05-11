@@ -405,7 +405,7 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     return dev_mode;
 
   base::win::ScopedComPtr<IStream> pt_stream;
-  HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.Receive());
+  HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.GetAddressOf());
   if (FAILED(hr))
     return dev_mode;
 

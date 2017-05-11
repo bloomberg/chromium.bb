@@ -130,17 +130,17 @@ bool HardwareSupportsOverlays() {
   }
 
   base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
-  d3d11_device.CopyTo(dxgi_device.Receive());
+  d3d11_device.CopyTo(dxgi_device.GetAddressOf());
   base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
-  dxgi_device->GetAdapter(dxgi_adapter.Receive());
+  dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
 
   unsigned int i = 0;
   while (true) {
     base::win::ScopedComPtr<IDXGIOutput> output;
-    if (FAILED(dxgi_adapter->EnumOutputs(i++, output.Receive())))
+    if (FAILED(dxgi_adapter->EnumOutputs(i++, output.GetAddressOf())))
       break;
     base::win::ScopedComPtr<IDXGIOutput3> output3;
-    if (FAILED(output.CopyTo(output3.Receive())))
+    if (FAILED(output.CopyTo(output3.GetAddressOf())))
       continue;
 
     UINT flags = 0;
@@ -313,20 +313,20 @@ class DCLayerTree::SwapChainPresenter {
 };
 
 bool DCLayerTree::Initialize(HWND window) {
-  d3d11_device_.CopyTo(video_device_.Receive());
+  d3d11_device_.CopyTo(video_device_.GetAddressOf());
   base::win::ScopedComPtr<ID3D11DeviceContext> context;
-  d3d11_device_->GetImmediateContext(context.Receive());
-  context.CopyTo(video_context_.Receive());
+  d3d11_device_->GetImmediateContext(context.GetAddressOf());
+  context.CopyTo(video_context_.GetAddressOf());
 
   base::win::ScopedComPtr<IDCompositionDesktopDevice> desktop_device;
-  dcomp_device_.CopyTo(desktop_device.Receive());
+  dcomp_device_.CopyTo(desktop_device.GetAddressOf());
 
-  HRESULT hr = desktop_device->CreateTargetForHwnd(window, TRUE,
-                                                   dcomp_target_.Receive());
+  HRESULT hr = desktop_device->CreateTargetForHwnd(
+      window, TRUE, dcomp_target_.GetAddressOf());
   if (FAILED(hr))
     return false;
 
-  hr = dcomp_device_->CreateVisual(root_visual_.Receive());
+  hr = dcomp_device_->CreateVisual(root_visual_.GetAddressOf());
   if (FAILED(hr))
     return false;
 
@@ -356,11 +356,11 @@ void DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   desc.OutputHeight = output_size.height();
   desc.Usage = D3D11_VIDEO_USAGE_PLAYBACK_NORMAL;
   HRESULT hr = video_device_->CreateVideoProcessorEnumerator(
-      &desc, video_processor_enumerator_.Receive());
+      &desc, video_processor_enumerator_.GetAddressOf());
   CHECK(SUCCEEDED(hr));
 
   hr = video_device_->CreateVideoProcessor(video_processor_enumerator_.Get(), 0,
-                                           video_processor_.Receive());
+                                           video_processor_.GetAddressOf());
   CHECK(SUCCEEDED(hr));
 }
 
@@ -375,10 +375,10 @@ DCLayerTree::SwapChainPresenter::SwapChainPresenter(
     DCLayerTree* surface,
     base::win::ScopedComPtr<ID3D11Device> d3d11_device)
     : surface_(surface), d3d11_device_(d3d11_device) {
-  d3d11_device_.CopyTo(video_device_.Receive());
+  d3d11_device_.CopyTo(video_device_.GetAddressOf());
   base::win::ScopedComPtr<ID3D11DeviceContext> context;
-  d3d11_device_->GetImmediateContext(context.Receive());
-  context.CopyTo(video_context_.Receive());
+  d3d11_device_->GetImmediateContext(context.GetAddressOf());
+  context.CopyTo(video_context_.GetAddressOf());
   HMODULE dcomp = ::GetModuleHandleA("dcomp.dll");
   CHECK(dcomp);
   create_surface_handle_function_ =
@@ -439,14 +439,14 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
     desc.MiscFlags = 0;
     desc.SampleDesc.Count = 1;
     base::win::ScopedComPtr<ID3D11Texture2D> texture;
-    HRESULT hr = d3d11_device_->CreateTexture2D(&desc, nullptr,
-                                                staging_texture_.Receive());
+    HRESULT hr = d3d11_device_->CreateTexture2D(
+        &desc, nullptr, staging_texture_.GetAddressOf());
     CHECK(SUCCEEDED(hr)) << "Creating D3D11 video upload texture failed: "
                          << std::hex << hr;
     staging_texture_size_ = texture_size;
   }
   base::win::ScopedComPtr<ID3D11DeviceContext> context;
-  d3d11_device_->GetImmediateContext(context.Receive());
+  d3d11_device_->GetImmediateContext(context.GetAddressOf());
   D3D11_MAPPED_SUBRESOURCE mapped_resource;
   HRESULT hr = context->Map(staging_texture_.Get(), 0, D3D11_MAP_WRITE_DISCARD,
                             0, &mapped_resource);
@@ -544,20 +544,20 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   if (!out_view_) {
     base::win::ScopedComPtr<ID3D11Texture2D> texture;
-    swap_chain_->GetBuffer(0, IID_PPV_ARGS(texture.Receive()));
+    swap_chain_->GetBuffer(0, IID_PPV_ARGS(texture.GetAddressOf()));
     D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC out_desc = {};
     out_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
     out_desc.Texture2D.MipSlice = 0;
     HRESULT hr = video_device_->CreateVideoProcessorOutputView(
         texture.Get(), video_processor_enumerator_.Get(), &out_desc,
-        out_view_.Receive());
+        out_view_.GetAddressOf());
     CHECK(SUCCEEDED(hr));
   }
 
   // TODO(jbauman): Use correct colorspace.
   gfx::ColorSpace src_color_space = gfx::ColorSpace::CreateREC709();
   base::win::ScopedComPtr<ID3D11VideoContext1> context1;
-  if (SUCCEEDED(video_context_.CopyTo(context1.Receive()))) {
+  if (SUCCEEDED(video_context_.CopyTo(context1.GetAddressOf()))) {
     context1->VideoProcessorSetStreamColorSpace1(
         video_processor_.Get(), 0,
         gfx::ColorSpaceWin::GetDXGIColorSpace(src_color_space));
@@ -578,7 +578,7 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   }
 
   base::win::ScopedComPtr<IDXGISwapChain3> swap_chain3;
-  if (SUCCEEDED(swap_chain_.CopyTo(swap_chain3.Receive()))) {
+  if (SUCCEEDED(swap_chain_.CopyTo(swap_chain3.GetAddressOf()))) {
     DXGI_COLOR_SPACE_TYPE color_space =
         gfx::ColorSpaceWin::GetDXGIColorSpace(output_color_space);
     HRESULT hr = swap_chain3->SetColorSpace1(color_space);
@@ -601,7 +601,7 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     base::win::ScopedComPtr<ID3D11VideoProcessorInputView> in_view;
     HRESULT hr = video_device_->CreateVideoProcessorInputView(
         input_texture.Get(), video_processor_enumerator_.Get(), &in_desc,
-        in_view.Receive());
+        in_view.GetAddressOf());
     CHECK(SUCCEEDED(hr));
 
     D3D11_VIDEO_PROCESSOR_STREAM stream = {};
@@ -642,13 +642,13 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     // workaround doesn't help.
     base::win::ScopedComPtr<ID3D11Texture2D> dest_texture;
     HRESULT hr =
-        swap_chain_->GetBuffer(0, IID_PPV_ARGS(dest_texture.Receive()));
+        swap_chain_->GetBuffer(0, IID_PPV_ARGS(dest_texture.GetAddressOf()));
     DCHECK(SUCCEEDED(hr));
     base::win::ScopedComPtr<ID3D11Texture2D> src_texture;
-    hr = swap_chain_->GetBuffer(1, IID_PPV_ARGS(src_texture.Receive()));
+    hr = swap_chain_->GetBuffer(1, IID_PPV_ARGS(src_texture.GetAddressOf()));
     DCHECK(SUCCEEDED(hr));
     base::win::ScopedComPtr<ID3D11DeviceContext> context;
-    d3d11_device_->GetImmediateContext(context.Receive());
+    d3d11_device_->GetImmediateContext(context.GetAddressOf());
     context->CopyResource(dest_texture.Get(), src_texture.Get());
   }
 
@@ -659,7 +659,7 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   frames_since_color_space_change_++;
 
   base::win::ScopedComPtr<IDXGISwapChainMedia> swap_chain_media;
-  if (SUCCEEDED(swap_chain_.CopyTo(swap_chain_media.Receive()))) {
+  if (SUCCEEDED(swap_chain_.CopyTo(swap_chain_media.GetAddressOf()))) {
     DXGI_FRAME_STATISTICS_MEDIA stats = {};
     if (SUCCEEDED(swap_chain_media->GetFrameStatisticsMedia(&stats))) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DirectComposition.CompositionMode",
@@ -692,14 +692,14 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   DCHECK(!swap_chain_);
 
   base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
-  d3d11_device_.CopyTo(dxgi_device.Receive());
+  d3d11_device_.CopyTo(dxgi_device.GetAddressOf());
   base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
-  dxgi_device->GetAdapter(dxgi_adapter.Receive());
+  dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
   base::win::ScopedComPtr<IDXGIFactory2> dxgi_factory;
-  dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.Receive()));
+  dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
 
   base::win::ScopedComPtr<IDXGIFactoryMedia> media_factory;
-  dxgi_factory.CopyTo(media_factory.Receive());
+  dxgi_factory.CopyTo(media_factory.GetAddressOf());
   DXGI_SWAP_CHAIN_DESC1 desc = {};
   desc.Width = swap_chain_size_.width();
   desc.Height = swap_chain_size_.height();
@@ -734,7 +734,7 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   if (yuy2) {
     hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
-        swap_chain_.Receive());
+        swap_chain_.GetAddressOf());
     is_yuy2_swapchain_ = SUCCEEDED(hr);
     failed_to_create_yuy2_swapchain_ = !is_yuy2_swapchain_;
   }
@@ -748,7 +748,7 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
     desc.Flags = 0;
     hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
-        swap_chain_.Receive());
+        swap_chain_.GetAddressOf());
     CHECK(SUCCEEDED(hr));
   }
   out_view_.Reset();
@@ -761,8 +761,8 @@ void DCLayerTree::InitVisual(size_t i) {
     return;
   DCHECK(!visual_info->clip_visual);
   base::win::ScopedComPtr<IDCompositionVisual2> visual;
-  dcomp_device_->CreateVisual(visual_info->clip_visual.Receive());
-  dcomp_device_->CreateVisual(visual.Receive());
+  dcomp_device_->CreateVisual(visual_info->clip_visual.GetAddressOf());
+  dcomp_device_->CreateVisual(visual.GetAddressOf());
   visual_info->content_visual = visual;
   visual_info->clip_visual->AddVisual(visual.Get(), FALSE, nullptr);
 
@@ -814,7 +814,7 @@ void DCLayerTree::UpdateVisualForVideo(
     dc_visual->SetOffsetX(bounds_rect.x());
     dc_visual->SetOffsetY(bounds_rect.y());
     base::win::ScopedComPtr<IDCompositionMatrixTransform> dcomp_transform;
-    dcomp_device_->CreateMatrixTransform(dcomp_transform.Receive());
+    dcomp_device_->CreateMatrixTransform(dcomp_transform.GetAddressOf());
     D2D_MATRIX_3X2_F d2d_matrix = {{{final_transform.matrix().get(0, 0),
                                      final_transform.matrix().get(0, 1),
                                      final_transform.matrix().get(1, 0),
@@ -868,7 +868,7 @@ void DCLayerTree::UpdateVisualClip(VisualInfo* visual_info,
     visual_info->clip_rect = params.clip_rect;
     if (params.is_clipped) {
       base::win::ScopedComPtr<IDCompositionRectangleClip> clip;
-      dcomp_device_->CreateRectangleClip(clip.Receive());
+      dcomp_device_->CreateRectangleClip(clip.GetAddressOf());
       gfx::Rect offset_clip = params.clip_rect;
       clip->SetLeft(offset_clip.x());
       clip->SetRight(offset_clip.right());
@@ -1024,18 +1024,18 @@ void DirectCompositionSurfaceWin::InitializeSurface() {
     // become transparent.
     HRESULT hr = dcomp_device_->CreateSurface(
         size_.width(), size_.height(), output_format,
-        DXGI_ALPHA_MODE_PREMULTIPLIED, dcomp_surface_.Receive());
+        DXGI_ALPHA_MODE_PREMULTIPLIED, dcomp_surface_.GetAddressOf());
     has_been_rendered_to_ = false;
     CHECK(SUCCEEDED(hr));
   } else {
     DXGI_ALPHA_MODE alpha_mode =
         has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
-    d3d11_device_.CopyTo(dxgi_device.Receive());
+    d3d11_device_.CopyTo(dxgi_device.GetAddressOf());
     base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
-    dxgi_device->GetAdapter(dxgi_adapter.Receive());
+    dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
     base::win::ScopedComPtr<IDXGIFactory2> dxgi_factory;
-    dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.Receive()));
+    dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
 
     DXGI_SWAP_CHAIN_DESC1 desc = {};
     desc.Width = size_.width();
@@ -1050,7 +1050,7 @@ void DirectCompositionSurfaceWin::InitializeSurface() {
     desc.AlphaMode = alpha_mode;
     desc.Flags = 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
-        d3d11_device_.Get(), &desc, nullptr, swap_chain_.Receive());
+        d3d11_device_.Get(), &desc, nullptr, swap_chain_.GetAddressOf());
     has_been_rendered_to_ = false;
     first_swap_ = true;
     CHECK(SUCCEEDED(hr));
@@ -1078,7 +1078,7 @@ void DirectCompositionSurfaceWin::ReleaseDrawTexture(bool will_discard) {
         // committing the DirectComposition tree, or else the swapchain
         // may flicker black when it's first presented.
         base::win::ScopedComPtr<IDXGIDevice2> dxgi_device2;
-        HRESULT hr = d3d11_device_.CopyTo(dxgi_device2.Receive());
+        HRESULT hr = d3d11_device_.CopyTo(dxgi_device2.GetAddressOf());
         DCHECK(SUCCEEDED(hr));
         base::WaitableEvent event(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -1240,12 +1240,12 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
   if (dcomp_surface_) {
     POINT update_offset;
     HRESULT hr = dcomp_surface_->BeginDraw(
-        &rect, IID_PPV_ARGS(draw_texture_.Receive()), &update_offset);
+        &rect, IID_PPV_ARGS(draw_texture_.GetAddressOf()), &update_offset);
     draw_offset_ = gfx::Point(update_offset) - gfx::Rect(rect).origin();
     CHECK(SUCCEEDED(hr));
   } else {
     HRESULT hr =
-        swap_chain_->GetBuffer(0, IID_PPV_ARGS(draw_texture_.Receive()));
+        swap_chain_->GetBuffer(0, IID_PPV_ARGS(draw_texture_.GetAddressOf()));
     swap_rect_ = rectangle;
     draw_offset_ = gfx::Vector2d();
     CHECK(SUCCEEDED(hr));

@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 
+#include <objbase.h>
+
 #include <memory>
 
 #include "base/command_line.h"
@@ -114,9 +116,8 @@ bool LegacyRenderWidgetHostHWND::Init() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
-  HRESULT hr = ::CreateStdAccessibleObject(
-      hwnd(), OBJID_WINDOW, IID_IAccessible,
-      reinterpret_cast<void **>(window_accessible_.Receive()));
+  HRESULT hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
+                                           IID_PPV_ARGS(&window_accessible_));
   DCHECK(SUCCEEDED(hr));
 
   AccessibilityMode mode =

@@ -131,10 +131,10 @@ base::string16 GetIA2Hypertext(BrowserAccessibilityWin& ax_object) {
       DCHECK_GE(index_of_embed, 0);
       base::win::ScopedComPtr<IAccessibleHyperlink> embedded_object;
       hr = ax_object.GetCOM()->get_hyperlink(index_of_embed,
-                                             embedded_object.Receive());
+                                             embedded_object.GetAddressOf());
       DCHECK(SUCCEEDED(hr));
       base::win::ScopedComPtr<IAccessible2> ax_embed;
-      hr = embedded_object.CopyTo(ax_embed.Receive());
+      hr = embedded_object.CopyTo(ax_embed.GetAddressOf());
       DCHECK(SUCCEEDED(hr));
       hr = ax_embed->get_indexInParent(&child_index);
       DCHECK(SUCCEEDED(hr));

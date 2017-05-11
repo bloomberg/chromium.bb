@@ -323,7 +323,7 @@ GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
 
   base::win::ScopedComPtr<IPropertyStorage> property_storage;
   if (FAILED(property_set_storage->Open(FMTID_Intshcut, STGM_READ,
-                                        property_storage.Receive()))) {
+                                        property_storage.GetAddressOf()))) {
     return GURL();
   }
 
@@ -513,7 +513,7 @@ void IEImporter::ImportHistory() {
     return;
   }
   base::win::ScopedComPtr<IEnumSTATURL> enum_url;
-  if (SUCCEEDED(url_history_stg2->EnumUrls(enum_url.Receive()))) {
+  if (SUCCEEDED(url_history_stg2->EnumUrls(enum_url.GetAddressOf()))) {
     std::vector<ImporterURLRow> rows;
     STATURL stat_url;
 
@@ -589,7 +589,7 @@ void IEImporter::ImportPasswordsIE6() {
   }
 
   base::win::ScopedComPtr<IPStore, &IID_IPStore> pstore;
-  HRESULT result = PStoreCreateInstance(pstore.Receive(), 0, 0, 0);
+  HRESULT result = PStoreCreateInstance(pstore.GetAddressOf(), 0, 0, 0);
   if (result != S_OK) {
     FreeLibrary(pstorec_dll);
     return;
@@ -599,8 +599,8 @@ void IEImporter::ImportPasswordsIE6() {
 
   // Enumerates AutoComplete items in the protected database.
   base::win::ScopedComPtr<IEnumPStoreItems, &IID_IEnumPStoreItems> item;
-  result = pstore->EnumItems(0, &AutocompleteGUID,
-                             &AutocompleteGUID, 0, item.Receive());
+  result = pstore->EnumItems(0, &AutocompleteGUID, &AutocompleteGUID, 0,
+                             item.GetAddressOf());
   if (result != PST_E_OK) {
     pstore.Reset();
     FreeLibrary(pstorec_dll);

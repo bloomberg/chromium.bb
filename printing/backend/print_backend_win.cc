@@ -322,7 +322,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
   if (provider) {
     base::win::ScopedComPtr<IStream> print_capabilities_stream;
     hr = CreateStreamOnHGlobal(NULL, TRUE,
-                               print_capabilities_stream.Receive());
+                               print_capabilities_stream.GetAddressOf());
     DCHECK(SUCCEEDED(hr));
     if (print_capabilities_stream.Get()) {
       base::win::ScopedBstr error;
@@ -345,7 +345,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
         return false;
       base::win::ScopedComPtr<IStream> printer_defaults_stream;
       hr = CreateStreamOnHGlobal(NULL, TRUE,
-                                 printer_defaults_stream.Receive());
+                                 printer_defaults_stream.GetAddressOf());
       DCHECK(SUCCEEDED(hr));
       if (printer_defaults_stream.Get()) {
         DWORD dm_size = devmode_out->dmSize + devmode_out->dmDriverExtra;

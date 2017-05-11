@@ -291,7 +291,7 @@ static base::win::ScopedComPtr<IMFSample> CreateInputSample(
                     base::win::ScopedComPtr<IMFSample>());
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;
-  HRESULT hr = sample->GetBufferByIndex(0, buffer.Receive());
+  HRESULT hr = sample->GetBufferByIndex(0, buffer.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from sample",
                        base::win::ScopedComPtr<IMFSample>());
 
@@ -656,7 +656,7 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
 
   HRESULT hr = E_FAIL;
 
-  hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d9_.Receive());
+  hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d9_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Direct3DCreate9Ex failed", false);
 
   hr = d3d9_->CheckDeviceFormatConversion(
@@ -692,19 +692,19 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
         D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, NULL,
         D3DCREATE_FPU_PRESERVE | D3DCREATE_MIXED_VERTEXPROCESSING |
             D3DCREATE_MULTITHREADED,
-        &present_params, NULL, d3d9_device_ex_.Receive());
+        &present_params, NULL, d3d9_device_ex_.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to create D3D device", false);
   }
 
   hr = DXVA2CreateDirect3DDeviceManager9(&dev_manager_reset_token_,
-                                         device_manager_.Receive());
+                                         device_manager_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "DXVA2CreateDirect3DDeviceManager9 failed", false);
 
   hr = device_manager_->ResetDevice(d3d9_device_ex_.Get(),
                                     dev_manager_reset_token_);
   RETURN_ON_HR_FAILURE(hr, "Failed to reset device", false);
 
-  hr = d3d9_device_ex_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
+  hr = d3d9_device_ex_->CreateQuery(D3DQUERYTYPE_EVENT, query_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to create D3D device query", false);
   // Ensure query_ API works (to avoid an infinite loop later in
   // CopyOutputSampleDataToPictureBuffer).
@@ -778,7 +778,7 @@ bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
 
     // Create video processor
     hr = video_processor_service_->CreateVideoProcessor(
-        guids[g], &inputDesc, D3DFMT_X8R8G8B8, 0, processor_.Receive());
+        guids[g], &inputDesc, D3DFMT_X8R8G8B8, 0, processor_.GetAddressOf());
     if (hr)
       continue;
 
@@ -801,8 +801,8 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // The device may exist if the last state was a config change.
   if (D3D11Device())
     return true;
-  HRESULT hr = create_dxgi_device_manager_(&dx11_dev_manager_reset_token_,
-                                           d3d11_device_manager_.Receive());
+  HRESULT hr = create_dxgi_device_manager_(
+      &dx11_dev_manager_reset_token_, d3d11_device_manager_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "MFCreateDXGIDeviceManager failed", false);
 
   angle_device_ = gl::QueryD3D11DeviceObjectFromANGLE();
@@ -831,8 +831,9 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 
     hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
                            feature_levels, arraysize(feature_levels),
-                           D3D11_SDK_VERSION, d3d11_device_.Receive(),
-                           &feature_level_out, d3d11_device_context_.Receive());
+                           D3D11_SDK_VERSION, d3d11_device_.GetAddressOf(),
+                           &feature_level_out,
+                           d3d11_device_context_.GetAddressOf());
     if (hr == DXGI_ERROR_SDK_COMPONENT_MISSING) {
       LOG(ERROR)
           << "Debug DXGI device creation failed, falling back to release.";
@@ -842,17 +843,18 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
     }
 #endif
     if (!d3d11_device_context_) {
-      hr = D3D11CreateDevice(
-          NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags, feature_levels,
-          arraysize(feature_levels), D3D11_SDK_VERSION, d3d11_device_.Receive(),
-          &feature_level_out, d3d11_device_context_.Receive());
+      hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
+                             feature_levels, arraysize(feature_levels),
+                             D3D11_SDK_VERSION, d3d11_device_.GetAddressOf(),
+                             &feature_level_out,
+                             d3d11_device_context_.GetAddressOf());
       RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device", false);
     }
 
-    hr = d3d11_device_.CopyTo(video_device_.Receive());
+    hr = d3d11_device_.CopyTo(video_device_.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to get video device", false);
 
-    hr = d3d11_device_context_.CopyTo(video_context_.Receive());
+    hr = d3d11_device_context_.CopyTo(video_context_.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to get video context", false);
   }
 
@@ -896,7 +898,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   D3D11_QUERY_DESC query_desc;
   query_desc.Query = D3D11_QUERY_EVENT;
   query_desc.MiscFlags = 0;
-  hr = D3D11Device()->CreateQuery(&query_desc, d3d11_query_.Receive());
+  hr = D3D11Device()->CreateQuery(&query_desc, d3d11_query_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device query", false);
 
   return true;
@@ -1376,7 +1378,7 @@ std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxH264Resolution() {
 
       base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder;
       hr = video_device->CreateVideoDecoder(&desc, &config,
-                                            video_decoder.Receive());
+                                            video_decoder.GetAddressOf());
       if (!video_decoder.Get())
         return max_resolution;
 
@@ -1407,7 +1409,7 @@ bool DXVAVideoDecodeAccelerator::IsLegacyGPU(ID3D11Device* device) {
     return legacy_gpu;
 
   base::win::ScopedComPtr<IDXGIAdapter> adapter;
-  hr = dxgi_device->GetAdapter(adapter.Receive());
+  hr = dxgi_device->GetAdapter(adapter.GetAddressOf());
   if (FAILED(hr))
     return legacy_gpu;
 
@@ -1597,7 +1599,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
 
 bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
   base::win::ScopedComPtr<IMFAttributes> attributes;
-  HRESULT hr = decoder_->GetAttributes(attributes.Receive());
+  HRESULT hr = decoder_->GetAttributes(attributes.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to get decoder attributes", false);
 
   UINT32 dxva = 0;
@@ -1664,7 +1666,7 @@ bool DXVAVideoDecodeAccelerator::SetDecoderMediaTypes() {
 
 bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
   base::win::ScopedComPtr<IMFMediaType> media_type;
-  HRESULT hr = MFCreateMediaType(media_type.Receive());
+  HRESULT hr = MFCreateMediaType(media_type.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "MFCreateMediaType failed", false);
 
   hr = media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
@@ -1711,7 +1713,7 @@ bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
   if (share_nv12_textures_) {
     base::win::ScopedComPtr<IMFAttributes> out_attributes;
     HRESULT hr =
-        decoder_->GetOutputStreamAttributes(0, out_attributes.Receive());
+        decoder_->GetOutputStreamAttributes(0, out_attributes.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to get stream attributes", false);
     out_attributes->SetUINT32(MF_SA_D3D11_BINDFLAGS,
                               D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DECODER);
@@ -1948,7 +1950,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       base::win::ScopedComPtr<IMFMediaBuffer> output_buffer;
       HRESULT hr = pending_sample->output_sample->GetBufferByIndex(
-          0, output_buffer.Receive());
+          0, output_buffer.GetAddressOf());
       RETURN_AND_NOTIFY_ON_HR_FAILURE(
           hr, "Failed to get buffer from output sample", PLATFORM_FAILURE, );
 
@@ -1963,10 +1965,10 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
             PLATFORM_FAILURE, );
         hr = dxgi_buffer->GetResource(
             __uuidof(ID3D11Texture2D),
-            reinterpret_cast<void**>(d3d11_texture.Receive()));
+            reinterpret_cast<void**>(d3d11_texture.GetAddressOf()));
       } else {
         hr = MFGetService(output_buffer.Get(), MR_BUFFER_SERVICE,
-                          IID_PPV_ARGS(surface.Receive()));
+                          IID_PPV_ARGS(surface.GetAddressOf()));
       }
       RETURN_AND_NOTIFY_ON_HR_FAILURE(
           hr, "Failed to get surface from output sample", PLATFORM_FAILURE, );
@@ -2687,7 +2689,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   }
 
   base::win::ScopedComPtr<IMFMediaBuffer> output_buffer;
-  hr = input_sample->GetBufferByIndex(0, output_buffer.Receive());
+  hr = input_sample->GetBufferByIndex(0, output_buffer.GetAddressOf());
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get buffer from output sample",
                                   PLATFORM_FAILURE, );
 
@@ -2701,7 +2703,8 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
                                   PLATFORM_FAILURE, );
 
   base::win::ScopedComPtr<ID3D11Texture2D> dx11_decoding_texture;
-  hr = dxgi_buffer->GetResource(IID_PPV_ARGS(dx11_decoding_texture.Receive()));
+  hr = dxgi_buffer->GetResource(
+      IID_PPV_ARGS(dx11_decoding_texture.GetAddressOf()));
   RETURN_AND_NOTIFY_ON_HR_FAILURE(
       hr, "Failed to get resource from output sample", PLATFORM_FAILURE, );
 
@@ -2711,7 +2714,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   base::win::ScopedComPtr<ID3D11VideoProcessorOutputView> output_view;
   hr = video_device_->CreateVideoProcessorOutputView(
       dest_texture, enumerator_.Get(), &output_view_desc,
-      output_view.Receive());
+      output_view.GetAddressOf());
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get output view",
                                   PLATFORM_FAILURE, );
 
@@ -2722,7 +2725,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   base::win::ScopedComPtr<ID3D11VideoProcessorInputView> input_view;
   hr = video_device_->CreateVideoProcessorInputView(
       dx11_decoding_texture.Get(), enumerator_.Get(), &input_view_desc,
-      input_view.Receive());
+      input_view.GetAddressOf());
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get input view",
                                   PLATFORM_FAILURE, );
 
@@ -2830,12 +2833,12 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     desc.Usage = D3D11_VIDEO_USAGE_PLAYBACK_NORMAL;
 
     HRESULT hr = video_device_->CreateVideoProcessorEnumerator(
-        &desc, enumerator_.Receive());
+        &desc, enumerator_.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to enumerate video processors", false);
 
     // TODO(Hubbe): Find correct index
     hr = video_device_->CreateVideoProcessor(enumerator_.Get(), 0,
-                                             d3d11_processor_.Receive());
+                                             d3d11_processor_.GetAddressOf());
     RETURN_ON_HR_FAILURE(hr, "Failed to create video processor.", false);
     processor_width_ = width;
     processor_height_ = height;
@@ -2861,7 +2864,7 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     dx11_converter_output_color_space_ = gfx::ColorSpace::CreateSRGB();
     if (use_color_info_ || use_fp16_) {
       base::win::ScopedComPtr<ID3D11VideoContext1> video_context1;
-      HRESULT hr = video_context_.CopyTo(video_context1.Receive());
+      HRESULT hr = video_context_.CopyTo(video_context1.GetAddressOf());
       if (SUCCEEDED(hr)) {
         if (use_fp16_ &&
             base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2923,7 +2926,7 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,
                                                          int* width,
                                                          int* height) {
   base::win::ScopedComPtr<IMFMediaBuffer> output_buffer;
-  HRESULT hr = sample->GetBufferByIndex(0, output_buffer.Receive());
+  HRESULT hr = sample->GetBufferByIndex(0, output_buffer.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from output sample", false);
 
   if (use_dx11_) {
@@ -2934,7 +2937,7 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,
                          false);
     hr = dxgi_buffer->GetResource(
         __uuidof(ID3D11Texture2D),
-        reinterpret_cast<void**>(d3d11_texture.Receive()));
+        reinterpret_cast<void**>(d3d11_texture.GetAddressOf()));
     RETURN_ON_HR_FAILURE(hr, "Failed to get D3D11Texture from output buffer",
                          false);
     D3D11_TEXTURE2D_DESC d3d11_texture_desc;
@@ -2945,7 +2948,7 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,
   } else {
     base::win::ScopedComPtr<IDirect3DSurface9> surface;
     hr = MFGetService(output_buffer.Get(), MR_BUFFER_SERVICE,
-                      IID_PPV_ARGS(surface.Receive()));
+                      IID_PPV_ARGS(surface.GetAddressOf()));
     RETURN_ON_HR_FAILURE(hr, "Failed to get D3D surface from output sample",
                          false);
     D3DSURFACE_DESC surface_desc;
@@ -2964,8 +2967,8 @@ bool DXVAVideoDecodeAccelerator::SetTransformOutputType(IMFTransform* transform,
   HRESULT hr = E_FAIL;
   base::win::ScopedComPtr<IMFMediaType> media_type;
 
-  for (uint32_t i = 0;
-       SUCCEEDED(transform->GetOutputAvailableType(0, i, media_type.Receive()));
+  for (uint32_t i = 0; SUCCEEDED(
+           transform->GetOutputAvailableType(0, i, media_type.GetAddressOf()));
        ++i) {
     GUID out_subtype = {0};
     hr = media_type->GetGUID(MF_MT_SUBTYPE, &out_subtype);
@@ -2992,7 +2995,7 @@ HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(IMFSample* sample,
     return S_FALSE;
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;
-  HRESULT hr = sample->GetBufferByIndex(0, buffer.Receive());
+  HRESULT hr = sample->GetBufferByIndex(0, buffer.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from input sample", hr);
 
   mf::MediaBufferScopedPointer scoped_media_buffer(buffer.Get());

@@ -357,15 +357,15 @@ base::win::ScopedComPtr<ISensor> PlatformSensorReaderWin::GetSensorForType(
     base::win::ScopedComPtr<ISensorManager> sensor_manager) {
   base::win::ScopedComPtr<ISensor> sensor;
   base::win::ScopedComPtr<ISensorCollection> sensor_collection;
-  HRESULT hr = sensor_manager->GetSensorsByType(sensor_type,
-                                                sensor_collection.Receive());
+  HRESULT hr = sensor_manager->GetSensorsByType(
+      sensor_type, sensor_collection.GetAddressOf());
   if (FAILED(hr) || !sensor_collection)
     return sensor;
 
   ULONG count = 0;
   hr = sensor_collection->GetCount(&count);
   if (SUCCEEDED(hr) && count > 0)
-    sensor_collection->GetAt(0, sensor.Receive());
+    sensor_collection->GetAt(0, sensor.GetAddressOf());
   return sensor;
 }
 
@@ -439,7 +439,7 @@ bool PlatformSensorReaderWin::SetReportingInterval(
 
     if (SUCCEEDED(hr)) {
       base::win::ScopedComPtr<IPortableDeviceValues> return_props;
-      hr = sensor_->SetProperties(props.Get(), return_props.Receive());
+      hr = sensor_->SetProperties(props.Get(), return_props.GetAddressOf());
       return SUCCEEDED(hr);
     }
   }

@@ -234,8 +234,9 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
       scoped_refptr<SensorEventSink> sink(
           new SensorEventSinkOrientation(orientation_buffer_));
-      bool inclinometer_available = RegisterForSensor(
-          SENSOR_TYPE_INCLINOMETER_3D, sensor_inclinometer_.Receive(), sink);
+      bool inclinometer_available =
+          RegisterForSensor(SENSOR_TYPE_INCLINOMETER_3D,
+                            sensor_inclinometer_.GetAddressOf(), sink);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.InclinometerWindowsAvailable",
                             inclinometer_available);
       if (inclinometer_available)
@@ -252,7 +253,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       // absolute angles.
       bool inclinometer_available =
           RegisterForSensor(SENSOR_TYPE_INCLINOMETER_3D,
-                            sensor_inclinometer_absolute_.Receive(), sink);
+                            sensor_inclinometer_absolute_.GetAddressOf(), sink);
       // TODO(timvolodine): consider adding UMA.
       if (inclinometer_available)
         return true;
@@ -263,10 +264,11 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
       scoped_refptr<SensorEventSink> sink(
           new SensorEventSinkMotion(motion_buffer_));
-      bool accelerometer_available = RegisterForSensor(
-          SENSOR_TYPE_ACCELEROMETER_3D, sensor_accelerometer_.Receive(), sink);
+      bool accelerometer_available =
+          RegisterForSensor(SENSOR_TYPE_ACCELEROMETER_3D,
+                            sensor_accelerometer_.GetAddressOf(), sink);
       bool gyrometer_available = RegisterForSensor(
-          SENSOR_TYPE_GYROMETER_3D, sensor_gyrometer_.Receive(), sink);
+          SENSOR_TYPE_GYROMETER_3D, sensor_gyrometer_.GetAddressOf(), sink);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.AccelerometerWindowsAvailable",
                             accelerometer_available);
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.GyrometerWindowsAvailable",
@@ -321,7 +323,7 @@ bool DataFetcherSharedMemory::RegisterForSensor(
 
   base::win::ScopedComPtr<ISensorCollection> sensor_collection;
   hr = sensor_manager->GetSensorsByType(sensor_type,
-                                        sensor_collection.Receive());
+                                        sensor_collection.GetAddressOf());
 
   if (FAILED(hr) || !sensor_collection.Get())
     return false;
@@ -341,7 +343,8 @@ bool DataFetcherSharedMemory::RegisterForSensor(
             SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL,
             GetInterval().InMilliseconds()))) {
       base::win::ScopedComPtr<IPortableDeviceValues> return_values;
-      (*sensor)->SetProperties(device_values.Get(), return_values.Receive());
+      (*sensor)->SetProperties(device_values.Get(),
+                               return_values.GetAddressOf());
     }
   }
 

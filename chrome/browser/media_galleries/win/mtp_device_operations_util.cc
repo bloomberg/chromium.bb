@@ -59,7 +59,7 @@ base::win::ScopedComPtr<IPortableDeviceContent> GetDeviceContent(
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
   base::win::ScopedComPtr<IPortableDeviceContent> content;
-  if (SUCCEEDED(device->Content(content.Receive())))
+  if (SUCCEEDED(device->Content(content.GetAddressOf())))
     return content;
   return base::win::ScopedComPtr<IPortableDeviceContent>();
 }
@@ -80,7 +80,7 @@ base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
 
   base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids;
   if (SUCCEEDED(content->EnumObjects(0, parent_id.c_str(), NULL,
-                                     enum_object_ids.Receive())))
+                                     enum_object_ids.GetAddressOf())))
     return enum_object_ids;
   return base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs>();
 }
@@ -186,7 +186,7 @@ bool GetObjectDetails(IPortableDevice* device,
     return false;
 
   base::win::ScopedComPtr<IPortableDeviceProperties> properties;
-  HRESULT hr = content->Properties(properties.Receive());
+  HRESULT hr = content->Properties(properties.GetAddressOf());
   if (FAILED(hr))
     return false;
 
@@ -207,9 +207,8 @@ bool GetObjectDetails(IPortableDevice* device,
     return false;
 
   base::win::ScopedComPtr<IPortableDeviceValues> properties_values;
-  hr = properties->GetValues(object_id.c_str(),
-                             properties_to_read.Get(),
-                             properties_values.Receive());
+  hr = properties->GetValues(object_id.c_str(), properties_to_read.Get(),
+                             properties_values.GetAddressOf());
   if (FAILED(hr))
     return false;
 
@@ -364,7 +363,7 @@ HRESULT GetFileStreamForObject(IPortableDevice* device,
     return E_FAIL;
 
   base::win::ScopedComPtr<IPortableDeviceResources> resources;
-  HRESULT hr = content->Transfer(resources.Receive());
+  HRESULT hr = content->Transfer(resources.GetAddressOf());
   if (FAILED(hr))
     return hr;
   return resources->GetStream(file_object_id.c_str(), WPD_RESOURCE_DEFAULT,

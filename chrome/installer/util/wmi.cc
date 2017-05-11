@@ -24,9 +24,9 @@ bool WMI::CreateLocalConnection(bool set_blanket,
     return false;
 
   base::win::ScopedComPtr<IWbemServices> wmi_services_r;
-  hr = wmi_locator->ConnectServer(base::win::ScopedBstr(L"ROOT\\CIMV2"),
-                                  NULL, NULL, 0, NULL, 0, 0,
-                                  wmi_services_r.Receive());
+  hr = wmi_locator->ConnectServer(base::win::ScopedBstr(L"ROOT\\CIMV2"), NULL,
+                                  NULL, 0, NULL, 0, 0,
+                                  wmi_services_r.GetAddressOf());
   if (FAILED(hr))
     return false;
 
@@ -53,12 +53,13 @@ bool WMI::CreateClassMethodObject(IWbemServices* wmi_services,
   base::win::ScopedComPtr<IWbemClassObject> class_object;
   HRESULT hr;
   hr = wmi_services->GetObject(b_class_name, 0, NULL,
-                               class_object.Receive(), NULL);
+                               class_object.GetAddressOf(), NULL);
   if (FAILED(hr))
     return false;
 
   base::win::ScopedComPtr<IWbemClassObject> params_def;
-  hr = class_object->GetMethod(b_method_name, 0, params_def.Receive(), NULL);
+  hr = class_object->GetMethod(b_method_name, 0, params_def.GetAddressOf(),
+                               NULL);
   if (FAILED(hr))
     return false;
 
@@ -88,14 +89,14 @@ bool SetParameter(IWbemClassObject* class_method,
 
 bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
   base::win::ScopedComPtr<IWbemServices> wmi_local;
-  if (!WMI::CreateLocalConnection(true, wmi_local.Receive()))
+  if (!WMI::CreateLocalConnection(true, wmi_local.GetAddressOf()))
     return false;
 
   const wchar_t class_name[] = L"Win32_Process";
   const wchar_t method_name[] = L"Create";
   base::win::ScopedComPtr<IWbemClassObject> process_create;
   if (!WMI::CreateClassMethodObject(wmi_local.Get(), class_name, method_name,
-                                    process_create.Receive()))
+                                    process_create.GetAddressOf()))
     return false;
 
   ScopedVariant b_command_line(command_line.c_str());
@@ -107,7 +108,7 @@ bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
   base::win::ScopedComPtr<IWbemClassObject> out_params;
   HRESULT hr = wmi_local->ExecMethod(
       base::win::ScopedBstr(class_name), base::win::ScopedBstr(method_name), 0,
-      NULL, process_create.Get(), out_params.Receive(), NULL);
+      NULL, process_create.Get(), out_params.GetAddressOf(), NULL);
   if (FAILED(hr))
     return false;
 
@@ -131,22 +132,22 @@ bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
 
 base::string16 WMIComputerSystem::GetModel() {
   base::win::ScopedComPtr<IWbemServices> services;
-  if (!WMI::CreateLocalConnection(true, services.Receive()))
+  if (!WMI::CreateLocalConnection(true, services.GetAddressOf()))
     return base::string16();
 
   base::win::ScopedBstr query_language(L"WQL");
   base::win::ScopedBstr query(L"SELECT * FROM Win32_ComputerSystem");
   base::win::ScopedComPtr<IEnumWbemClassObject> enumerator;
-  HRESULT hr = services->ExecQuery(
-      query_language, query,
-      WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL,
-      enumerator.Receive());
+  HRESULT hr =
+      services->ExecQuery(query_language, query,
+                          WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+                          NULL, enumerator.GetAddressOf());
   if (FAILED(hr) || !enumerator.Get())
     return base::string16();
 
   base::win::ScopedComPtr<IWbemClassObject> class_object;
   ULONG items_returned = 0;
-  hr = enumerator->Next(WBEM_INFINITE, 1,  class_object.Receive(),
+  hr = enumerator->Next(WBEM_INFINITE, 1, class_object.GetAddressOf(),
                         &items_returned);
   if (!items_returned)
     return base::string16();
