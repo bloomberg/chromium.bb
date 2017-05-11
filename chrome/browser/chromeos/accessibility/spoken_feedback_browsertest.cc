@@ -532,8 +532,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxShiftSearch) {
   }
 }
 
-#if defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
 // Fails under MemorySanitizer: http://crbug.com/472125
+// TODO(crbug.com/721475): Flaky on CrOS.
 #define MAYBE_ChromeVoxNavigateAndSelect DISABLED_ChromeVoxNavigateAndSelect
 #else
 #define MAYBE_ChromeVoxNavigateAndSelect ChromeVoxNavigateAndSelect
