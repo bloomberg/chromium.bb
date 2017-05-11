@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
@@ -30,7 +31,7 @@ class Extension;
 
 // ExtensionAppItem represents an extension app in app list.
 class ExtensionAppItem : public ChromeAppListItem,
-                         public extensions::IconImage::Observer,
+                         public extensions::ChromeAppIconDelegate,
                          public ExtensionEnableFlowDelegate,
                          public app_list::AppContextMenuDelegate {
  public:
@@ -47,9 +48,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Reload the title and icon from the underlying extension.
   void Reload();
 
-  // Updates the app item's icon, if necessary making it gray.
-  void UpdateIcon();
-
   // Update page and app launcher ordinals to put the app in between |prev| and
   // |next|. Note that |prev| and |next| could be NULL when the app is put at
   // the beginning or at the end.
@@ -63,9 +61,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   // no longer exists.
   const extensions::Extension* GetExtension() const;
 
-  // Loads extension icon.
-  void LoadImage(const extensions::Extension* extension);
-
   // Checks if extension is disabled and if enable flow should be started.
   // Returns true if extension enable flow is started or there is already one
   // running.
@@ -73,10 +68,6 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Private equivalent to Activate(), without refocus for already-running apps.
   void Launch(int event_flags);
-
-  // Overridden from extensions::IconImage::Observer:
-  void OnExtensionIconImageChanged(extensions::IconImage* image) override;
-  void OnExtensionIconImageDestroyed(extensions::IconImage* image) override;
 
   // Overridden from ExtensionEnableFlowDelegate:
   void ExtensionEnableFlowFinished() override;
@@ -90,7 +81,10 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Overridden from app_list::AppContextMenuDelegate:
   void ExecuteLaunchCommand(int event_flags) override;
 
-  std::unique_ptr<extensions::IconImage> icon_;
+  // extensions::ChromeAppIconDelegate:
+  void OnIconUpdated(extensions::ChromeAppIcon* icon) override;
+
+  std::unique_ptr<extensions::ChromeAppIcon> icon_;
   std::unique_ptr<app_list::ExtensionAppContextMenu> context_menu_;
   std::unique_ptr<ExtensionEnableFlow> extension_enable_flow_;
   AppListControllerDelegate* extension_enable_flow_controller_;
@@ -99,7 +93,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   std::string extension_name_;
 
   // Icon for the extension if we can't access the installed extension.
-  gfx::ImageSkia installing_icon_;
+  const gfx::ImageSkia installing_icon_;
 
   // Whether or not this app is a platform app.
   bool is_platform_app_;

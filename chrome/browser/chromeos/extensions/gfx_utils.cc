@@ -94,6 +94,8 @@ const struct {
     // Google News
     {"com.google.android.apps.genie.geniewidget",
      "dllkocilcinkggkchnjgegijklcililc"},
+    // Used in unit tests.
+    {"fake.package.name1", "emfkafnhnpcmabnnkckkchdilgeoekbo"},
 };
 
 // This class maintains the maps between the extension id and its equivalent

@@ -117,7 +117,7 @@ void ArcAppDeferredLauncherController::Close(const std::string& app_id) {
   app_controller_map_.erase(it);
   if (need_close_item)
     owner_->CloseLauncherItem(shelf_id);
-  owner_->OnAppUpdated(owner_->profile(), shelf_app_id);
+  UpdateApp(shelf_app_id);
 }
 
 void ArcAppDeferredLauncherController::OnAppReadyChanged(
@@ -168,13 +168,19 @@ base::TimeDelta ArcAppDeferredLauncherController::GetActiveTime(
   return it->second->GetActiveTime();
 }
 
+void ArcAppDeferredLauncherController::UpdateApp(const std::string& app_id) {
+  AppIconLoader* icon_loader = owner_->GetAppIconLoaderForApp(app_id);
+  if (icon_loader)
+    icon_loader->UpdateImage(app_id);
+}
+
 void ArcAppDeferredLauncherController::UpdateApps() {
   if (app_controller_map_.empty())
     return;
 
   RegisterNextUpdate();
   for (const auto pair : app_controller_map_)
-    owner_->OnAppUpdated(owner_->profile(), pair.first);
+    UpdateApp(pair.first);
 }
 
 void ArcAppDeferredLauncherController::RegisterNextUpdate() {

@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_APPLICATION_NOTIFIER_SOURCE_H_
 #define CHROME_BROWSER_NOTIFICATIONS_APPLICATION_NOTIFIER_SOURCE_H_
 
-#include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/notifications/notifier_source.h"
+#include "chrome/browser/ui/app_icon_loader_delegate.h"
+
+class AppIconLoader;
 
 class ApplicationNotifierSource : public NotifierSource,
                                   public AppIconLoaderDelegate {

@@ -21,7 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/extensions/extension_app_icon_loader.h"
+#include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -778,14 +778,6 @@ void ChromeLauncherController::OnAppInstalled(
   UpdateAppLaunchersFromPref();
 }
 
-void ChromeLauncherController::OnAppUpdated(
-    content::BrowserContext* browser_context,
-    const std::string& app_id) {
-  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
-  if (app_icon_loader)
-    app_icon_loader->UpdateImage(app_id);
-}
-
 void ChromeLauncherController::OnAppUninstalledPrepared(
     content::BrowserContext* browser_context,
     const std::string& app_id) {
@@ -1174,10 +1166,10 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   // Since icon size changes are possible, the icon could be requested to be
   // reloaded. However - having it not multi profile aware would cause problems
   // if the icon cache gets deleted upon user switch.
-  std::unique_ptr<AppIconLoader> extension_app_icon_loader =
-      base::MakeUnique<extensions::ExtensionAppIconLoader>(
+  std::unique_ptr<AppIconLoader> chrome_app_icon_loader =
+      base::MakeUnique<extensions::ChromeAppIconLoader>(
           profile_, extension_misc::EXTENSION_ICON_SMALL, this);
-  app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
+  app_icon_loaders_.push_back(std::move(chrome_app_icon_loader));
 
   if (arc::IsArcAllowedForProfile(profile_)) {
     std::unique_ptr<AppIconLoader> arc_app_icon_loader =

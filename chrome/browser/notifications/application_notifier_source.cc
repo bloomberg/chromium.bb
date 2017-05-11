@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/application_notifier_source.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,7 +30,7 @@ ApplicationNotifierSource::GetNotifierList(Profile* profile) {
   // back to the default icon. The fetched icon will be resized in the
   // settings dialog. See chrome/browser/extensions/extension_icon_image.cc
   // and crbug.com/222931
-  app_icon_loader_.reset(new extensions::ExtensionAppIconLoader(
+  app_icon_loader_.reset(new extensions::ChromeAppIconLoader(
       profile, extension_misc::EXTENSION_ICON_SMALL, this));
   for (extensions::ExtensionSet::const_iterator iter = extension_set.begin();
        iter != extension_set.end(); ++iter) {

@@ -13,6 +13,8 @@
 class Profile;
 
 // Base class that loads and updates Chrome app's icons.
+// TODO(khmel): Switch to using ChromeAppIconService instead ChromeAppIconLoader
+// and ArcAppIconLoader.
 class AppIconLoader {
  public:
   virtual ~AppIconLoader();

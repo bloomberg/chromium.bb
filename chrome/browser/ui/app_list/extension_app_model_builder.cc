@@ -142,15 +142,6 @@ void ExtensionAppModelBuilder::OnAppInstalled(
                           extension->is_platform_app()));
 }
 
-void ExtensionAppModelBuilder::OnAppUpdated(
-    content::BrowserContext* browser_context,
-    const std::string& app_id) {
-  ExtensionAppItem* item = GetExtensionAppItem(app_id);
-  if (!item)
-    return;
-  item->UpdateIcon();
-}
-
 void ExtensionAppModelBuilder::OnAppUninstalled(
     content::BrowserContext* browser_context,
     const std::string& app_id) {

@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/extensions/extension_app_icon_loader.h"
+#include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -104,7 +104,7 @@ RequestFileSystemNotification::RequestFileSystemNotification(
     Profile* profile,
     const extensions::Extension& extension)
     : icon_loader_(
-          new extensions::ExtensionAppIconLoader(profile, kIconSize, this)) {
+          new extensions::ChromeAppIconLoader(profile, kIconSize, this)) {
   icon_loader_->FetchImage(extension.id());
 }
 

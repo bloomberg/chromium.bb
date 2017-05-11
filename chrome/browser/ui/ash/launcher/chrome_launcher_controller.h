@@ -258,8 +258,6 @@ class ChromeLauncherController
   // LauncherAppUpdater::Delegate:
   void OnAppInstalled(content::BrowserContext* browser_context,
                       const std::string& app_id) override;
-  void OnAppUpdated(content::BrowserContext* browser_context,
-                    const std::string& app_id) override;
   void OnAppUninstalledPrepared(content::BrowserContext* browser_context,
                                 const std::string& app_id) override;
 

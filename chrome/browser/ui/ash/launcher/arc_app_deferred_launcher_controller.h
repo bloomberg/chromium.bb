@@ -62,6 +62,7 @@ class ArcAppDeferredLauncherController
       std::map<std::string, ArcAppDeferredLauncherItemController*>;
 
   void UpdateApps();
+  void UpdateApp(const std::string& app_id);
   void RegisterNextUpdate();
 
   // Unowned pointers.
