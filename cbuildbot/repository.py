@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import glob
+import multiprocessing
 import os
 import re
 import shutil
@@ -14,13 +15,14 @@ import time
 import urlparse
 
 from chromite.lib import config_lib
-from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import locking
 from chromite.lib import metrics
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import retry_util
 from chromite.lib import rewrite_git_alternates
@@ -344,6 +346,79 @@ class RepoRepository(object):
       self._CleanUpRepoManifest(self.directory)
       raise e
 
+  def BuildRootGitCleanup(self, prune_all=False):
+    """Put buildroot onto manifest branch. Delete branches created on last run.
+
+    Args:
+      prune_all: If True, prune all loose objects regardless of gc.pruneExpire.
+    """
+    lock_path = os.path.join(self.directory, '.clean_lock')
+    deleted_objdirs = multiprocessing.Event()
+
+    def RunCleanupCommands(project, cwd):
+      with locking.FileLock(lock_path, verbose=False).read_lock() as lock:
+        # Calculate where the git repository is stored.
+        relpath = os.path.relpath(cwd, self.directory)
+        projects_dir = os.path.join(self.directory, '.repo', 'projects')
+        project_objects_dir = os.path.join(
+            self.directory, '.repo', 'project-objects')
+        repo_git_store = '%s.git' % os.path.join(projects_dir, relpath)
+        repo_obj_store = '%s.git' % os.path.join(project_objects_dir, project)
+
+        try:
+          if os.path.isdir(cwd):
+            git.CleanAndDetachHead(cwd)
+
+          if os.path.isdir(repo_git_store):
+            git.GarbageCollection(repo_git_store, prune_all=prune_all)
+        except cros_build_lib.RunCommandError as e:
+          result = e.result
+          logging.PrintBuildbotStepWarnings()
+          logging.warning('\n%s', result.error)
+
+          # If there's no repository corruption, just delete the index.
+          corrupted = git.IsGitRepositoryCorrupted(repo_git_store)
+          lock.write_lock()
+          logging.warning('Deleting %s because %s failed', cwd, result.cmd)
+          osutils.RmDir(cwd, ignore_missing=True, sudo=True)
+          if corrupted:
+            # Looks like the object dir is corrupted. Delete it.
+            deleted_objdirs.set()
+            for store in (repo_git_store, repo_obj_store):
+              logging.warning('Deleting %s as well', store)
+              osutils.RmDir(store, ignore_missing=True)
+
+        # TODO: Make the deletions below smarter. Look to see what exists,
+        # instead of just deleting things we think might be there.
+
+        # Delete all branches created by cbuildbot.
+        if os.path.isdir(repo_git_store):
+          cmd = ['branch', '-D'] + list(constants.CREATED_BRANCHES)
+          # Ignore errors, since we delete branches without checking existence.
+          git.RunGit(repo_git_store, cmd, error_code_ok=True)
+
+        if os.path.isdir(cwd):
+          # Above we deleted refs/heads/<branch> for each created branch, now we
+          # need to delete the bare ref <branch> if it was created somehow.
+          for ref in constants.CREATED_BRANCHES:
+            # Ignore errors, since we delete branches without checking
+            # existence.
+            git.RunGit(cwd, ['update-ref', '-d', ref], error_code_ok=True)
+
+
+    # Cleanup all of the directories.
+    dirs = [[attrs['name'], os.path.join(self.directory, attrs['path'])]
+            for attrs in
+            git.ManifestCheckout.Cached(self.directory).ListCheckouts()]
+    parallel.RunTasksInProcessPool(RunCleanupCommands, dirs)
+
+    # repo shares git object directories amongst multiple project paths. If the
+    # first pass deleted an object dir for a project path, then other
+    # repositories (project paths) of that same project may now be broken. Do a
+    # second pass to clean them up as well.
+    if deleted_objdirs.is_set():
+      parallel.RunTasksInProcessPool(RunCleanupCommands, dirs)
+
   def Initialize(self, local_manifest=None, manifest_repo_url=None,
                  extra_args=()):
     """Initializes a repository.  Optionally forces a local manifest.
@@ -483,7 +558,7 @@ class RepoRepository(object):
 
     This is only called in repo network Sync retries.
     """
-    commands.BuildRootGitCleanup(self.directory)
+    self.BuildRootGitCleanup()
     local_manifest = kwargs.pop('local_manifest', None)
     # Always re-initialize to the current branch.
     self.Initialize(local_manifest)

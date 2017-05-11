@@ -1134,14 +1134,15 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     # commits.
     if (config_lib.IsCQType(self._run.config.build_type) or
         not (self.success or staging_branch is not None)):
+      repo = self.GetRepoRepository()
+
       # Clean up our root and sync down the latest changes that were
       # submitted.
-      commands.BuildRootGitCleanup(self._build_root)
+      repo.BuildRootGitCleanup(self._build_root)
 
       # Sync down the latest changes we have submitted.
       if self._run.options.sync:
         next_manifest = self._run.config.manifest
-        repo = self.GetRepoRepository()
         repo.Sync(next_manifest)
 
       # Commit an uprev locally.

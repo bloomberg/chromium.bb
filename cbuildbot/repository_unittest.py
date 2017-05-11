@@ -10,7 +10,6 @@ import os
 import time
 import mock
 
-from chromite.cbuildbot import commands
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.cbuildbot import repository
@@ -177,7 +176,7 @@ class RepoSyncTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
                                           self.tempdir, branch='master')
     self.PatchObject(repository.RepoRepository, 'Initialize')
     self.PatchObject(repository.RepoRepository, '_EnsureMirroring')
-    self.PatchObject(commands, 'BuildRootGitCleanup')
+    self.PatchObject(repository.RepoRepository, 'BuildRootGitCleanup')
     self.PatchObject(time, 'sleep')
 
   def testSyncWithException(self):

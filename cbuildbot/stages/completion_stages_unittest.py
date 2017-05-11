@@ -957,7 +957,6 @@ class PublishUprevChangesStageTest(
                      '_ExtractOverlays', return_value=[['foo'], ['bar']])
     self.PatchObject(prebuilts.BinhostConfWriter, 'Perform')
     self.push_mock = self.PatchObject(commands, 'UprevPush')
-    self.PatchObject(commands, 'BuildRootGitCleanup')
     self.PatchObject(generic_stages.BuilderStage, 'GetRepoRepository')
     self.PatchObject(commands, 'UprevPackages')
 
