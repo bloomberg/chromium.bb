@@ -149,6 +149,7 @@ class VrShell : public device::PresentingGvrDelegate,
 
   void ForceExitVr();
   void ExitPresent();
+  void ExitFullscreen();
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
   void SubmitControllerModel(std::unique_ptr<VrControllerModel> model);
