@@ -163,7 +163,8 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root_window) {
   gfx::Point chrome_icon =
       GetChromeIconBoundsForRootWindow(root_window).CenterPoint();
   gfx::Point release_point = chrome_icon;
-  release_point.Offset(50, -120);
+  // -153 moves the cursor up to the "New window" menu option.
+  release_point.Offset(0, -153);
   ui_controls::SendMouseMoveNotifyWhenDone(
       chrome_icon.x(), chrome_icon.y(),
       base::Bind(&WindowSizerContextMenuTest::Step1, release_point));

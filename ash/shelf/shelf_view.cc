@@ -11,6 +11,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/scoped_root_window_for_new_windows.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -1631,11 +1632,32 @@ void ShelfView::AfterItemSelected(
 void ShelfView::ShowContextMenuForView(views::View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
+  // Align the context menu to the edge of the shelf.
+  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
+  gfx::Rect shelf_bounds =
+      is_overflow_mode()
+          ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
+          : ScreenUtil::GetDisplayBoundsWithShelf(shelf_window);
+
+  gfx::Point context_menu_point;
+  switch (wm_shelf_->GetAlignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      context_menu_point.SetPoint(point.x(),
+                                  shelf_bounds.bottom() - kShelfSize);
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      context_menu_point.SetPoint(shelf_bounds.x() + kShelfSize, point.y());
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      context_menu_point.SetPoint(shelf_bounds.right() - kShelfSize, point.y());
+      break;
+  }
   last_pressed_index_ = -1;
 
   const ShelfItem* item = ShelfItemForView(source);
   if (!item) {
-    ShellPort::Get()->ShowContextMenu(point, source_type);
+    ShellPort::Get()->ShowContextMenu(context_menu_point, source_type);
     return;
   }
 
@@ -1645,8 +1667,8 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
 
   context_menu_id_ = item ? item->id : ShelfID();
-  ShowMenu(std::move(context_menu_model), source, point, true, source_type,
-           nullptr);
+  ShowMenu(std::move(context_menu_model), source, context_menu_point, true,
+           source_type, nullptr);
 }
 
 void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
@@ -1663,7 +1685,8 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
   closing_event_time_ = base::TimeTicks();
   int run_types = 0;
   if (context_menu)
-    run_types |= views::MenuRunner::CONTEXT_MENU;
+    run_types |=
+        views::MenuRunner::CONTEXT_MENU | views::MenuRunner::FIXED_ANCHOR;
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter_->CreateMenu(), run_types));
 
@@ -1699,6 +1722,13 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
         menu_alignment = views::MENU_ANCHOR_BUBBLE_LEFT;
         break;
     }
+  } else {
+    // Distinguish the touch events that triggered on the bottom or left / right
+    // shelf. Since they should have different |MenuAnchorPosition|.
+    if (wm_shelf_->IsHorizontalAlignment())
+      menu_alignment = views::MENU_ANCHOR_FIXED_BOTTOMCENTER;
+    else
+      menu_alignment = views::MENU_ANCHOR_FIXED_SIDECENTER;
   }
 
   // NOTE: if you convert to HAS_MNEMONICS be sure to update menu building code.
@@ -1787,7 +1817,7 @@ bool ShelfView::CanPrepareForDrag(Pointer pointer,
     return false;
   }
 
-  // Touch dragging only begins after a dealy from the press event. This
+  // Touch dragging only begins after a delay from the press event. This
   // prevents accidental dragging on swipe or scroll gestures.
   if (pointer == TOUCH &&
       (base::TimeTicks::Now() - touch_press_time_) <

@@ -1950,15 +1950,19 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       if (menu_config.offset_context_menus && state_.context_menu)
         x -= 1;
     } else if (state_.anchor == MENU_ANCHOR_BOTTOMCENTER) {
-      x = x - (pref.width() - state_.initial_bounds.width()) / 2;
+      x += (state_.initial_bounds.width() - pref.width()) / 2;
       if (pref.height() >
           state_.initial_bounds.y() + kCenteredContextMenuYOffset) {
-        // Menu does not fit above the anchor. We move it to below.
+        // Place the menu below if it does not fit above.
         y = state_.initial_bounds.y() - kCenteredContextMenuYOffset;
       } else {
         y = std::max(0, state_.initial_bounds.y() - pref.height()) +
             kCenteredContextMenuYOffset;
       }
+    } else if (state_.anchor == MENU_ANCHOR_FIXED_BOTTOMCENTER) {
+      x += (state_.initial_bounds.width() - pref.width()) / 2;
+    } else if (state_.anchor == MENU_ANCHOR_FIXED_SIDECENTER) {
+      y += (state_.initial_bounds.height() - pref.height()) / 2;
     }
 
     if (!state_.monitor_bounds.IsEmpty() &&

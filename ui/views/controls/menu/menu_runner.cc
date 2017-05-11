@@ -53,7 +53,7 @@ void MenuRunner::RunMenuAt(Widget* parent,
         internal::DisplayChangeListener::Create(parent, this));
   }
 
-  if (run_types_ & CONTEXT_MENU) {
+  if ((run_types_ & CONTEXT_MENU) && !(run_types_ & FIXED_ANCHOR)) {
     switch (source_type) {
       case ui::MENU_SOURCE_NONE:
       case ui::MENU_SOURCE_KEYBOARD:

@@ -85,6 +85,10 @@ class VIEWS_EXPORT MenuRunner {
     // the caller is responsible for closing the menu upon completion of the
     // drag-and-drop.
     NESTED_DRAG = 1 << 5,
+
+    // Menu with fixed anchor position, so |MenuRunner| will not attempt to
+    // adjust the anchor point. For example the context menu of shelf item.
+    FIXED_ANCHOR = 1 << 6,
   };
 
   // Creates a new MenuRunner, which may use a native menu if available.
