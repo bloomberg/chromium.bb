@@ -65,11 +65,12 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
     DCHECK(observer_);
     ASSERT(resolve_type_ == kFulfilled || resolve_type_ == kRejected);
     if (resolve_type_ == kRejected) {
-      observer_->ReportError(value);
+      observer_->OnPromiseRejected();
       value =
           ScriptPromise::Reject(value.GetScriptState(), value).GetScriptValue();
+    } else {
+      observer_->OnPromiseFulfilled();
     }
-    observer_->DecrementPendingActivity();
     observer_ = nullptr;
     return value;
   }
@@ -97,17 +98,17 @@ void WaitUntilObserver::WillDispatchEvent() {
   IncrementPendingActivity();
 }
 
-void WaitUntilObserver::DidDispatchEvent(bool error_occurred) {
-  if (error_occurred)
-    has_error_ = true;
+void WaitUntilObserver::DidDispatchEvent(bool event_dispatch_failed) {
+  event_dispatch_state_ = event_dispatch_failed
+                              ? EventDispatchState::kFailed
+                              : EventDispatchState::kCompleted;
   DecrementPendingActivity();
-  event_dispatched_ = true;
 }
 
 void WaitUntilObserver::WaitUntil(ScriptState* script_state,
                                   ScriptPromise script_promise,
                                   ExceptionState& exception_state) {
-  if (event_dispatched_) {
+  if (event_dispatch_state_ != EventDispatchState::kInitial) {
     exception_state.ThrowDOMException(kInvalidStateError,
                                       "The event handler is already finished.");
     return;
@@ -143,11 +144,13 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
           this,
           &WaitUntilObserver::ConsumeWindowInteraction) {}
 
-void WaitUntilObserver::ReportError(const ScriptValue& value) {
-  // FIXME: Propagate error message to the client for onerror handling.
-  NOTIMPLEMENTED();
+void WaitUntilObserver::OnPromiseFulfilled() {
+  DecrementPendingActivity();
+}
 
-  has_error_ = true;
+void WaitUntilObserver::OnPromiseRejected() {
+  has_rejected_promise_ = true;
+  DecrementPendingActivity();
 }
 
 void WaitUntilObserver::IncrementPendingActivity() {
@@ -156,14 +159,18 @@ void WaitUntilObserver::IncrementPendingActivity() {
 
 void WaitUntilObserver::DecrementPendingActivity() {
   ASSERT(pending_activity_ > 0);
-  if (!execution_context_ || (!has_error_ && --pending_activity_))
+  if (!execution_context_ ||
+      (event_dispatch_state_ != EventDispatchState::kFailed &&
+       --pending_activity_))
     return;
 
   ServiceWorkerGlobalScopeClient* client =
       ServiceWorkerGlobalScopeClient::From(execution_context_);
   WebServiceWorkerEventResult result =
-      has_error_ ? kWebServiceWorkerEventResultRejected
-                 : kWebServiceWorkerEventResultCompleted;
+      (event_dispatch_state_ == EventDispatchState::kFailed ||
+       has_rejected_promise_)
+          ? kWebServiceWorkerEventResultRejected
+          : kWebServiceWorkerEventResultCompleted;
   switch (type_) {
     case kActivate:
       client->DidHandleActivateEvent(event_id_, result, event_dispatch_time_);

@@ -16,7 +16,6 @@ class ExceptionState;
 class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
-class ScriptValue;
 
 // Created for each ExtendableEvent instance.
 class MODULES_EXPORT WaitUntilObserver final
@@ -40,9 +39,13 @@ class MODULES_EXPORT WaitUntilObserver final
 
   static WaitUntilObserver* Create(ExecutionContext*, EventType, int event_id);
 
-  // Must be called before and after dispatching the event.
+  // Must be called before dispatching the event.
   void WillDispatchEvent();
-  void DidDispatchEvent(bool error_occurred);
+  // Must be called after dispatching the event. If |event_dispatch_failed| is
+  // true, then DidDispatchEvent() immediately reports to
+  // ServiceWorkerGlobalScopeClient that the event finished, without waiting for
+  // all waitUntil promises to settle.
+  void DidDispatchEvent(bool event_dispatch_failed);
 
   // Observes the promise and delays calling the continuation until
   // the given promise is resolved or rejected.
@@ -62,9 +65,25 @@ class MODULES_EXPORT WaitUntilObserver final
   friend class InternalsServiceWorker;
   class ThenFunction;
 
+  enum class EventDispatchState {
+    // Event dispatch has not yet finished.
+    kInitial,
+    // Event dispatch completed. There may still be outstanding waitUntil
+    // promises that must settle before notifying ServiceWorkerGlobalScopeClient
+    // that the event finished.
+    kCompleted,
+    // Event dispatch failed. Any outstanding waitUntil promises are ignored.
+    kFailed
+  };
+
   WaitUntilObserver(ExecutionContext*, EventType, int event_id);
 
-  void ReportError(const ScriptValue&);
+  // Called when a promise passed to a waitUntil() call that is associated with
+  // this observer was fulfilled.
+  void OnPromiseFulfilled();
+  // Called when a promise passed to a waitUntil() call that is associated with
+  // this observer was rejected.
+  void OnPromiseRejected();
 
   void ConsumeWindowInteraction(TimerBase*);
 
@@ -72,8 +91,8 @@ class MODULES_EXPORT WaitUntilObserver final
   EventType type_;
   int event_id_;
   int pending_activity_ = 0;
-  bool has_error_ = false;
-  bool event_dispatched_ = false;
+  EventDispatchState event_dispatch_state_ = EventDispatchState::kInitial;
+  bool has_rejected_promise_ = false;
   double event_dispatch_time_ = 0;
   TaskRunnerTimer<WaitUntilObserver> consume_window_interaction_timer_;
 };
