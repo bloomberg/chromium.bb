@@ -12,28 +12,38 @@ namespace extensions {
 TEST(ExtensionWebRequestPermissions, IsSensitiveURL) {
   struct TestCase {
     const char* url;
-    bool is_sensitive;
+    bool is_sensitive_if_request_from_common_renderer;
+    bool is_sensitive_if_request_from_browser_or_webui_renderer;
   } cases[] = {
-      {"http://www.google.com", false},
-      {"http://www.example.com", false},
-      {"http://clients.google.com", true},
-      {"http://clients4.google.com", true},
-      {"http://clients9999.google.com", true},
-      {"http://clients9999..google.com", false},
-      {"http://clients9999.example.google.com", false},
-      {"http://clients.google.com.", true},
-      {"http://.clients.google.com.", true},
-      {"http://google.example.com", false},
-      {"http://www.example.com", false},
-      {"http://clients.google.com", true},
-      {"http://sb-ssl.google.com", true},
-      {"http://sb-ssl.random.google.com", false},
-      {"http://chrome.google.com", false},
-      {"http://chrome.google.com/webstore", true},
-      {"http://chrome.google.com/webstore?query", true},
+      {"http://www.google.com", false, false},
+      {"http://www.example.com", false, false},
+      {"http://clients.google.com", false, true},
+      {"http://clients4.google.com", false, true},
+      {"http://clients9999.google.com", false, true},
+      {"http://clients9999..google.com", false, false},
+      {"http://clients9999.example.google.com", false, false},
+      {"http://clients.google.com.", false, true},
+      {"http://.clients.google.com.", false, true},
+      {"http://google.example.com", false, false},
+      {"http://www.example.com", false, false},
+      {"http://clients.google.com", false, true},
+      {"http://sb-ssl.google.com", true, true},
+      {"http://sb-ssl.random.google.com", false, false},
+      {"http://chrome.google.com", false, false},
+      {"http://chrome.google.com/webstore", true, true},
+      {"http://chrome.google.com/webstore?query", true, true},
   };
   for (const TestCase& test : cases) {
-    EXPECT_EQ(test.is_sensitive, IsSensitiveURL(GURL(test.url))) << test.url;
+    EXPECT_EQ(
+        test.is_sensitive_if_request_from_common_renderer,
+        IsSensitiveURL(GURL(test.url),
+                       false /* is_request_from_browser_or_webui_renderer */))
+        << test.url;
+    EXPECT_EQ(
+        test.is_sensitive_if_request_from_browser_or_webui_renderer,
+        IsSensitiveURL(GURL(test.url),
+                       true /* is_request_from_browser_or_webui_renderer */))
+        << test.url;
   }
 }
 
