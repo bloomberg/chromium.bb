@@ -1033,9 +1033,14 @@ void ScrollAnimatorMac::UpdateScrollerStyle() {
 }
 
 void ScrollAnimatorMac::StartScrollbarPaintTimer() {
-  initial_scrollbar_paint_task_handle_ = task_runner_->PostCancellableTask(
-      BLINK_FROM_HERE, WTF::Bind(&ScrollAnimatorMac::InitialScrollbarPaintTask,
-                                 WrapWeakPersistent(this)));
+  // Post a task with 1 ms delay to give a chance to run other immediate tasks
+  // that may cancel this.
+  initial_scrollbar_paint_task_handle_ =
+      task_runner_->PostDelayedCancellableTask(
+          BLINK_FROM_HERE,
+          WTF::Bind(&ScrollAnimatorMac::InitialScrollbarPaintTask,
+                    WrapWeakPersistent(this)),
+          1);
 }
 
 bool ScrollAnimatorMac::ScrollbarPaintTimerIsActive() const {
