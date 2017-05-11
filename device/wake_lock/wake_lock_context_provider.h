@@ -28,7 +28,7 @@ class WakeLockContextProvider : public mojom::WakeLockContextProvider {
       const WakeLockContextCallback& native_view_getter);
 
   // mojom::WakeLockContextProvider:
-  void GetContext(
+  void GetWakeLockContextForID(
       int context_id,
       mojo::InterfaceRequest<mojom::WakeLockContext> request) override;
 

@@ -41,7 +41,8 @@ WakeLockContextHost::WakeLockContextHost(WebContents* web_contents)
     device::mojom::WakeLockContextProviderPtr context_provider;
     connector->BindInterface(device::mojom::kServiceName,
                              mojo::MakeRequest(&context_provider));
-    context_provider->GetContext(id_, mojo::MakeRequest(&wake_lock_context_));
+    context_provider->GetWakeLockContextForID(
+        id_, mojo::MakeRequest(&wake_lock_context_));
   }
 }
 

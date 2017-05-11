@@ -2637,7 +2637,10 @@ device::mojom::WakeLockService* WebContentsImpl::GetRendererWakeLock() {
     if (!wake_lock_context) {
       return nullptr;
     }
-    wake_lock_context->GetWakeLock(mojo::MakeRequest(&renderer_wake_lock_));
+    wake_lock_context->GetWakeLock(
+        device::mojom::WakeLockType::PreventDisplaySleep,
+        device::mojom::WakeLockReason::ReasonOther, "Wake Lock API",
+        mojo::MakeRequest(&renderer_wake_lock_));
   }
   return renderer_wake_lock_.get();
 }

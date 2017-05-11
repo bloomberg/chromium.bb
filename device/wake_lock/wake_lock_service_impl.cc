@@ -10,10 +10,45 @@
 
 namespace device {
 
+namespace {
+
+PowerSaveBlocker::PowerSaveBlockerType ToPowerSaveBlockerType(
+    mojom::WakeLockType type) {
+  switch (type) {
+    case mojom::WakeLockType::PreventAppSuspension:
+      return PowerSaveBlocker::PowerSaveBlockerType::
+          kPowerSaveBlockPreventAppSuspension;
+    case mojom::WakeLockType::PreventDisplaySleep:
+      return PowerSaveBlocker::PowerSaveBlockerType::
+          kPowerSaveBlockPreventDisplaySleep;
+  }
+
+  NOTREACHED();
+  return PowerSaveBlocker::PowerSaveBlockerType::
+      kPowerSaveBlockPreventAppSuspension;
+}
+
+PowerSaveBlocker::Reason ToPowerSaveBlockerReason(
+    mojom::WakeLockReason reason) {
+  switch (reason) {
+    case mojom::WakeLockReason::ReasonAudioPlayback:
+      return PowerSaveBlocker::Reason::kReasonAudioPlayback;
+    case mojom::WakeLockReason::ReasonVideoPlayback:
+      return PowerSaveBlocker::Reason::kReasonVideoPlayback;
+    case mojom::WakeLockReason::ReasonOther:
+      return PowerSaveBlocker::Reason::kReasonOther;
+  }
+
+  NOTREACHED();
+  return PowerSaveBlocker::Reason::kReasonOther;
+}
+
+}  // namespace
+
 WakeLockServiceImpl::WakeLockServiceImpl(
     mojom::WakeLockServiceRequest request,
-    device::PowerSaveBlocker::PowerSaveBlockerType type,
-    device::PowerSaveBlocker::Reason reason,
+    mojom::WakeLockType type,
+    mojom::WakeLockReason reason,
     const std::string& description,
     int context_id,
     WakeLockContextCallback native_view_getter,
@@ -87,16 +122,15 @@ void WakeLockServiceImpl::UpdateWakeLock() {
 void WakeLockServiceImpl::CreateWakeLock() {
   DCHECK(!wake_lock_);
 
-  if (type_ != device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep ||
-      reason_ != device::PowerSaveBlocker::kReasonOther ||
-      *description_ != "Wake Lock API") {
-    // TODO(ke.he@intel.com): Fully generalize the WakeLock interface and impl.
-    NOTREACHED();
-    return;
-  }
+  // TODO(heke): Switch PowerSaveBlocker to use mojom::WakeLockType and
+  // mojom::WakeLockReason once all its clients are converted to be the clients
+  // of WakeLock.
+  wake_lock_ = base::MakeUnique<PowerSaveBlocker>(
+      ToPowerSaveBlockerType(type_), ToPowerSaveBlockerReason(reason_),
+      *description_, main_task_runner_, file_task_runner_);
 
-  wake_lock_ = base::MakeUnique<device::PowerSaveBlocker>(
-      type_, reason_, *description_, main_task_runner_, file_task_runner_);
+  if (type_ != mojom::WakeLockType::PreventDisplaySleep)
+    return;
 
 #if defined(OS_ANDROID)
   gfx::NativeView native_view = native_view_getter_.Run(context_id_);
