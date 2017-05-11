@@ -68,14 +68,11 @@ public class SectionList
         int categoryIndex = 0;
         for (int category : categories) {
             int categoryStatus = suggestionsSource.getCategoryStatus(category);
-            if (categoryStatus == CategoryStatus.LOADING_ERROR
-                    || categoryStatus == CategoryStatus.NOT_PROVIDED
-                    || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED) {
-                continue;
+            int suggestionsCount = 0;
+            if (SnippetsBridge.isCategoryEnabled(categoryStatus)) {
+                suggestionsCount = resetSection(category, categoryStatus, alwaysAllowEmptySections);
             }
-
-            suggestionsPerCategory[categoryIndex] =
-                    resetSection(category, categoryStatus, alwaysAllowEmptySections);
+            suggestionsPerCategory[categoryIndex] = suggestionsCount;
             ++categoryIndex;
         }
 
