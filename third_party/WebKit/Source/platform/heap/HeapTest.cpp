@@ -2510,6 +2510,21 @@ TEST(HeapTest, HeapVectorShrinkInlineCapacity) {
 #endif
 }
 
+TEST(HeapTest, HeapVectorOnStackLargeObjectPageSized) {
+  ClearOutOldGarbage();
+  // Try to allocate a vector of a size that will end exactly where the
+  // LargeObjectPage ends.
+  using Container = HeapVector<Member<IntWrapper>>;
+  Container vector;
+  size_t size = (kLargeObjectSizeThreshold + kBlinkGuardPageSize -
+                 LargeObjectPage::PageHeaderSize() - sizeof(HeapObjectHeader)) /
+                sizeof(Container::ValueType);
+  vector.ReserveCapacity(size);
+  for (unsigned i = 0; i < size; ++i)
+    vector.push_back(IntWrapper::Create(i));
+  ConservativelyCollectGarbage();
+}
+
 template <typename T, size_t inlineCapacity, typename U>
 bool DequeContains(HeapDeque<T, inlineCapacity>& deque, U u) {
   typedef typename HeapDeque<T, inlineCapacity>::iterator iterator;

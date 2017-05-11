@@ -228,6 +228,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
   void Mark();
   void Unmark();
 
+  // The payload starts directly after the HeapObjectHeader, and the payload
+  // size does not include the sizeof(HeapObjectHeader).
   Address Payload();
   size_t PayloadSize();
   Address PayloadEnd();
@@ -547,6 +549,13 @@ class LargeObjectPage final : public BasePage {
  public:
   LargeObjectPage(PageMemory*, BaseArena*, size_t);
 
+  // LargeObjectPage has the following memory layout:
+  //
+  //     | metadata | HeapObjectHeader | ObjectPayload |
+  //
+  // LargeObjectPage::PayloadSize() returns the size of HeapObjectHeader and
+  // ObjectPayload. HeapObjectHeader::PayloadSize() returns just the size of
+  // ObjectPayload.
   Address Payload() { return GetHeapObjectHeader()->Payload(); }
   size_t PayloadSize() { return payload_size_; }
   Address PayloadEnd() { return Payload() + PayloadSize(); }
@@ -884,7 +893,8 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {
   size_t size = encoded_ & kHeaderSizeMask;
   if (UNLIKELY(size == kLargeObjectSizeInHeader)) {
     DCHECK(PageFromObject(this)->IsLargeObjectPage());
-    return static_cast<LargeObjectPage*>(PageFromObject(this))->PayloadSize();
+    return static_cast<LargeObjectPage*>(PageFromObject(this))->PayloadSize() -
+           sizeof(HeapObjectHeader);
   }
   DCHECK(!PageFromObject(this)->IsLargeObjectPage());
   return size - sizeof(HeapObjectHeader);
