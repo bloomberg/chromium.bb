@@ -3441,6 +3441,15 @@ extern const char kOneGoogleBarOnLocalNtpDescription[];
 
 #endif
 
+#if defined(OS_MACOSX)
+
+// Name and description of the flag that enables RTL in
+// Cocoa browser.
+extern const char kMacRTLName[];
+extern const char kMacRTLDescription[];
+
+#endif  // defined(OS_MACOSX)
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_
