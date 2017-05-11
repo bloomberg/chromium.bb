@@ -910,6 +910,8 @@ InputHandlerProxy::HandleGestureScrollUpdate(
       gesture_event.source_device == blink::kWebGestureDeviceTouchpad &&
       touchpad_and_wheel_scroll_latching_enabled_) {
     gesture_scroll_on_impl_thread_ = false;
+    client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
+
     if (!gesture_pinch_on_impl_thread_)
       return DID_NOT_HANDLE;
   }
