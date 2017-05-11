@@ -519,15 +519,16 @@ def _FindToolPrefix(output_directory):
 def _SyncAndBuild(archive, build, subrepo):
   """Sync, build and return non 0 if any commands failed."""
   # Simply do a checkout if subrepo is used.
+  retcode = 0
   if subrepo != _SRC_ROOT:
     _GitCmd(['checkout',  archive.rev], subrepo)
-    return 0
   else:
     # Move to a detached state since gclient sync doesn't work with local
     # commits on a branch.
     _GitCmd(['checkout', '--detach'], subrepo)
     logging.info('Syncing to %s', archive.rev)
-    return _GclientSyncCmd(archive.rev, subrepo) or build.Run()
+    retcode = _GclientSyncCmd(archive.rev, subrepo)
+  return retcode or build.Run()
 
 
 def _GenerateRevList(rev, reference_rev, all_in_range, subrepo):
@@ -545,7 +546,7 @@ def _GenerateRevList(rev, reference_rev, all_in_range, subrepo):
     revs = [all_revs[0], all_revs[-1]]
   if len(revs) >= _COMMIT_COUNT_WARN_THRESHOLD:
     _VerifyUserAccepts(
-        'You\'ve provided a commit range that contains %d commits' % len(revs))
+        'You\'ve provided a commit range that contains %d commits.' % len(revs))
   return revs
 
 
@@ -569,7 +570,7 @@ def _ValidateRevs(rev, reference_rev, subrepo):
 
 
 def _VerifyUserAccepts(message):
-  print message + 'Do you want to proceed? [y/n]'
+  print message + ' Do you want to proceed? [y/n]'
   if raw_input('> ').lower() != 'y':
     sys.exit()
 
@@ -761,7 +762,7 @@ def main():
   _EnsureDirectoryClean(subrepo)
   _SetRestoreFunc(subrepo)
   if build.IsLinux():
-    _VerifyUserAccepts('Linux diffs have known deficiencies (crbug/717550). ')
+    _VerifyUserAccepts('Linux diffs have known deficiencies (crbug/717550).')
 
   rev, reference_rev = _ValidateRevs(
       args.rev, args.reference_rev or args.rev + '^', subrepo)
