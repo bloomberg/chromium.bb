@@ -26397,7 +26397,6 @@ crbug.com/591099 webaudio/internals/scriptprocessornode-premature-death.html [ F
 crbug.com/591099 webaudio/OfflineAudioContext/offlineaudiocontext-detached-no-crash.html [ Failure ]
 crbug.com/591099 webaudio/ScriptProcessor/scriptprocessornode-detached-no-crash.html [ Failure ]
 crbug.com/591099 webaudio/ScriptProcessor/scriptprocessornode-rewrap.html [ Failure ]
-crbug.com/591099 webaudio/unit-tests/jstest-test.html [ Failure ]
 crbug.com/591099 webexposed/custom-elements.html [ Failure ]
 crbug.com/591099 webexposed/element-instance-property-listing.html [ Timeout ]
 crbug.com/591099 webexposed/event-target-in-prototype.html [ Failure ]
