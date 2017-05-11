@@ -55,6 +55,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "device/power_save_blocker/power_save_blocker.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -2713,6 +2714,34 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
 
   ReadAndVerifyFileContents(parameters.pattern_generator_seed, parameters.size,
                             download->GetTargetFilePath());
+}
+
+// Test to verify that the browser-side enforcement of X-Frame-Options does
+// not impact downloads. Since XFO is only checked for subframes, this test
+// initiates a download in an iframe and expects it to succeed.
+// See https://crbug.com/717971.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadIgnoresXFO) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/cross_site_iframe_factory.html?a(b)"));
+  GURL download_url(
+      embedded_test_server()->GetURL("/download/download-with-xfo-deny.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  NavigateFrameToURL(web_contents->GetFrameTree()->root()->child_at(0),
+                     download_url);
+  observer->WaitForFinished();
+  EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+
+  EXPECT_EQ(FILE_PATH_LITERAL("foo"),
+            downloads[0]->GetTargetFilePath().BaseName().value());
 }
 
 }  // namespace content

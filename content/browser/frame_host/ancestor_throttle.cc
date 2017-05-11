@@ -105,6 +105,11 @@ AncestorThrottle::WillProcessResponse() {
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle());
 
+  // Downloads should be exempt from checking for X-Frame-Options, so
+  // proceed if this is a download.
+  if (handle->is_download())
+    return NavigationThrottle::PROCEED;
+
   std::string header_value;
   HeaderDisposition disposition =
       ParseHeader(handle->GetResponseHeaders(), &header_value);
