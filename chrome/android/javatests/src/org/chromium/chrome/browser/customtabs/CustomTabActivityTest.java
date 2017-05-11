@@ -67,6 +67,9 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
+import org.chromium.chrome.browser.history.HistoryItem;
+import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -80,6 +83,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.util.ChromeRestriction;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.BrowserStartupController;
@@ -95,6 +99,7 @@ import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1632,7 +1637,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     @SmallTest
     @RetryOnFailure
-    public void testPrecreatedRenderer() throws InterruptedException {
+    public void testPrecreatedRenderer() throws Exception {
         CustomTabsConnection connection = warmUpAndWait();
         Context context = getInstrumentation().getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
@@ -1656,6 +1661,11 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
         assertFalse(getActivity().getActivityTab().canGoBack());
+        assertFalse(getActivity().getActivityTab().canGoForward());
+
+        List<HistoryItem> history = getHistory();
+        assertEquals(1, history.size());
+        assertEquals(mTestPage, history.get(0).getUrl());
     }
 
     /** Tests that calling warmup() is optional without prerendering. */
@@ -1887,6 +1897,11 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         }
         assertFalse(tab.canGoForward());
         assertFalse(tab.canGoBack());
+
+        // TODO(ahemery):
+        // Fragment misses will trigger two history entries
+        // - url#speculated and url#actual are both inserted
+        // This should ideally not be the case.
     }
 
     /**
@@ -2381,6 +2396,35 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         }
     }
 
+    /**
+     * Test intended to verify the way we test history is correct.
+     * Start an activity and then navigate to a different url.
+     * We test NavigationController behavior through canGoBack/Forward as well
+     * as browser history through an HistoryProvider.
+     */
+    @SmallTest
+    public void testHistoryNoSpeculation() throws Exception {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        startCustomTabActivityWithIntent(intent);
+        final Tab tab = getActivity().getActivityTab();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                tab.loadUrl(new LoadUrlParams(mTestPage2));
+            }
+        });
+        ChromeTabUtils.waitForTabPageLoaded(tab, mTestPage2);
+
+        assertTrue(tab.canGoBack());
+        assertFalse(tab.canGoForward());
+
+        List<HistoryItem> history = getHistory();
+        assertEquals(2, history.size());
+        assertEquals(mTestPage2, history.get(0).getUrl());
+        assertEquals(mTestPage, history.get(1).getUrl());
+    }
+
     private void mayLaunchUrlWithoutWarmup(int speculationMode) {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         CustomTabsConnection connection =
@@ -2519,14 +2563,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         }
         if (speculationMode == CustomTabsConnection.SpeculationParams.HIDDEN_TAB) {
-            CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
+            CriteriaHelper.pollUiThread(new Criteria("Tab was not created") {
                 @Override
                 public boolean isSatisfied() {
-                    return connection.mSpeculation != null && connection.mSpeculation.tab != null
-                            && !connection.mSpeculation.tab.isLoading()
-                            && !connection.mSpeculation.tab.isShowingErrorPage();
+                    return connection.mSpeculation != null && connection.mSpeculation.tab != null;
                 }
             }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            ChromeTabUtils.waitForTabPageLoaded(connection.mSpeculation.tab, url);
         }
     }
 
@@ -2625,5 +2668,21 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             default:
                 return "visible";
         }
+    }
+
+    private static List<HistoryItem> getHistory() throws Exception {
+        final TestBrowsingHistoryObserver historyObserver = new TestBrowsingHistoryObserver();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                BrowsingHistoryBridge historyService = new BrowsingHistoryBridge();
+                historyService.setObserver(historyObserver);
+                String historyQueryFilter = "";
+                int historyQueryTimeout = 0;
+                historyService.queryHistory(historyQueryFilter, historyQueryTimeout);
+            }
+        });
+        historyObserver.getQueryCallback().waitForCallback(0);
+        return historyObserver.getHistoryQueryResults();
     }
 }
