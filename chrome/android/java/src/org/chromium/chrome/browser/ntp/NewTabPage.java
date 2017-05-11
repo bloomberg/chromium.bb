@@ -616,4 +616,9 @@ public class NewTabPage
     public void captureThumbnail(Canvas canvas) {
         mNewTabPageView.captureThumbnail(canvas);
     }
+
+    @VisibleForTesting
+    public NewTabPageManager getManagerForTesting() {
+        return mNewTabPageManager;
+    }
 }
