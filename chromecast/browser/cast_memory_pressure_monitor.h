@@ -13,8 +13,6 @@ namespace chromecast {
 
 // Memory pressure monitor for Cast: polls for current memory
 // usage periodically and sends memory pressure notifications.
-// TODO(halliwell): switch to //components/memory_pressure when that's
-// ready.
 class CastMemoryPressureMonitor : public base::MemoryPressureMonitor {
  public:
   CastMemoryPressureMonitor();
