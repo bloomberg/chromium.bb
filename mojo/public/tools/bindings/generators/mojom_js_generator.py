@@ -95,16 +95,14 @@ def GetRelativePath(module, base_module):
 class Generator(generator.Generator):
   def _GetParameters(self):
     return {
-      "namespace": self.module.namespace,
-      "imports": self._GetImports(),
-      "kinds": self.module.kinds,
       "enums": self.module.enums,
+      "imports": self.module.imports,
+      "interfaces": self.module.interfaces,
+      "kinds": self.module.kinds,
       "module": self.module,
-      "structs": self.GetStructs() + self.GetStructsFromMethods(),
-      "unions": self.GetUnions(),
+      "structs": self.module.structs + self._GetStructsFromMethods(),
+      "unions": self.module.unions,
       "use_new_js_bindings": self.use_new_js_bindings,
-      "interfaces": self.GetInterfaces(),
-      "imported_interfaces": self._GetImportedInterfaces(),
     }
 
   @staticmethod
@@ -118,6 +116,7 @@ class Generator(generator.Generator):
       "encode_snippet": self._JavaScriptEncodeSnippet,
       "expression_to_text": self._ExpressionToText,
       "field_offset": JavaScriptFieldOffset,
+      "get_relative_path": GetRelativePath,
       "has_callbacks": mojom.HasCallbacks,
       "is_any_handle_or_interface_kind": mojom.IsAnyHandleOrInterfaceKind,
       "is_array_kind": mojom.IsArrayKind,
@@ -137,8 +136,8 @@ class Generator(generator.Generator):
       "js_type": self._JavaScriptType,
       "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
       "payload_size": JavaScriptPayloadSize,
-      "get_relative_path": GetRelativePath,
-      "stylize_method": generator.StudlyCapsToCamel,
+      "stylize_method": lambda x: generator.ToCamel(x, lower_initial=True),
+      "to_camel": generator.ToCamel,
       "union_decode_snippet": self._JavaScriptUnionDecodeSnippet,
       "union_encode_snippet": self._JavaScriptUnionEncodeSnippet,
       "validate_array_params": self._JavaScriptValidateArrayParams,
@@ -158,11 +157,13 @@ class Generator(generator.Generator):
     if self.variant:
       raise Exception("Variants not supported in JavaScript bindings.")
 
+    # TODO(yzshen): Remove this method once the old JS bindings go away.
+    self._SetUniqueNameForImports()
+
     self.Write(self._GenerateAMDModule(),
         self.MatchMojomFilePath("%s.js" % self.module.name))
 
-  def _GetImports(self):
-    # TODO(yzshen): Remove this method once the old JS bindings go away.
+  def _SetUniqueNameForImports(self):
     used_names = set()
     for each_import in self.module.imports:
       simple_name = each_import.name.split(".")[0]
@@ -178,15 +179,6 @@ class Generator(generator.Generator):
       used_names.add(unique_name)
       each_import.unique_name = unique_name + "$"
       counter += 1
-    return self.module.imports
-
-  def _GetImportedInterfaces(self):
-    interface_to_import = {};
-    for each_import in self.module.imports:
-      for each_interface in each_import.interfaces:
-        name = each_interface.name
-        interface_to_import[name] = each_import.unique_name + "." + name
-    return interface_to_import;
 
   def _JavaScriptType(self, kind):
     name = []
@@ -381,3 +373,11 @@ class Generator(generator.Generator):
   def _ExpressionToText(self, value):
     return self._TranslateConstants(value)
 
+  def _GetStructsFromMethods(self):
+    result = []
+    for interface in self.module.interfaces:
+      for method in interface.methods:
+        result.append(method.param_struct)
+        if method.response_param_struct is not None:
+          result.append(method.response_param_struct)
+    return result

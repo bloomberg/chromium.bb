@@ -12,17 +12,25 @@ import module as mojom
 import mojom.fileutil as fileutil
 import pack
 
+
 def ExpectedArraySize(kind):
   if mojom.IsArrayKind(kind):
     return kind.length
   return None
 
-def StudlyCapsToCamel(studly):
-  return studly[0].lower() + studly[1:]
 
-def UnderToCamel(under):
-  """Converts underscore_separated strings to CamelCase strings."""
-  return ''.join(word.capitalize() for word in under.split('_'))
+def ToCamel(identifier, lower_initial=False, dilimiter='_'):
+  """Splits |identifier| using |dilimiter|, makes the first character of each
+  word uppercased (but makes the first character of the first word lowercased
+  if |lower_initial| is set to True), and joins the words. Please note that for
+  each word, all the characters except the first one are untouched.
+  """
+  result = ''.join(
+      word[0].upper() + word[1:] for word in identifier.split(dilimiter))
+  if lower_initial:
+    result = result[0].lower() + result[1:]
+  return result
+
 
 def WriteFile(contents, full_path):
   # Make sure the containing directory exists.
@@ -32,6 +40,76 @@ def WriteFile(contents, full_path):
   # Dump the data to disk.
   with open(full_path, "w+") as f:
     f.write(contents)
+
+
+def AddComputedData(module):
+  """Adds computed data to the given module. The data is computed once and
+  used repeatedly in the generation process."""
+
+  def _AddStructComputedData(exported, struct):
+    struct.packed = pack.PackedStruct(struct)
+    struct.bytes = pack.GetByteLayout(struct.packed)
+    struct.versions = pack.GetVersionInfo(struct.packed)
+    struct.exported = exported
+
+  def _AddUnionComputedData(union):
+    ordinal = 0
+    for field in union.fields:
+      if field.ordinal is not None:
+        ordinal = field.ordinal
+      field.ordinal = ordinal
+      ordinal += 1
+
+  def _AddInterfaceComputedData(interface):
+    next_ordinal = 0
+    interface.version = 0
+    for method in interface.methods:
+      if method.ordinal is None:
+        method.ordinal = next_ordinal
+      next_ordinal = method.ordinal + 1
+
+      if method.min_version is not None:
+        interface.version = max(interface.version, method.min_version)
+
+      method.param_struct = _GetStructFromMethod(method)
+      interface.version = max(interface.version,
+                              method.param_struct.versions[-1].version)
+
+      if method.response_parameters is not None:
+        method.response_param_struct = _GetResponseStructFromMethod(method)
+        interface.version = max(
+            interface.version,
+            method.response_param_struct.versions[-1].version)
+      else:
+        method.response_param_struct = None
+
+  def _GetStructFromMethod(method):
+    """Converts a method's parameters into the fields of a struct."""
+    params_class = "%s_%s_Params" % (method.interface.name, method.name)
+    struct = mojom.Struct(params_class, module=method.interface.module)
+    for param in method.parameters:
+      struct.AddField(param.name, param.kind, param.ordinal,
+                      attributes=param.attributes)
+    _AddStructComputedData(False, struct)
+    return struct
+
+  def _GetResponseStructFromMethod(method):
+    """Converts a method's response_parameters into the fields of a struct."""
+    params_class = "%s_%s_ResponseParams" % (method.interface.name, method.name)
+    struct = mojom.Struct(params_class, module=method.interface.module)
+    for param in method.response_parameters:
+      struct.AddField(param.name, param.kind, param.ordinal,
+                      attributes=param.attributes)
+    _AddStructComputedData(False, struct)
+    return struct
+
+  for struct in module.structs:
+    _AddStructComputedData(True, struct)
+  for union in module.unions:
+    _AddUnionComputedData(union)
+  for interface in module.interfaces:
+    _AddInterfaceComputedData(interface)
+
 
 class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all
@@ -51,24 +129,6 @@ class Generator(object):
     self.export_attribute = export_attribute
     self.export_header = export_header
     self.generate_non_variant_code = generate_non_variant_code
-
-  def GetStructsFromMethods(self):
-    result = []
-    for interface in self.module.interfaces:
-      for method in interface.methods:
-        result.append(self._GetStructFromMethod(method))
-        if method.response_parameters != None:
-          result.append(self._GetResponseStructFromMethod(method))
-    return result
-
-  def GetStructs(self):
-    return map(partial(self._AddStructComputedData, True), self.module.structs)
-
-  def GetUnions(self):
-    return map(self._AddUnionComputedData, self.module.unions)
-
-  def GetInterfaces(self):
-    return map(self._AddInterfaceComputedData, self.module.interfaces)
 
   # Prepend the filename with a directory that matches the directory of the
   # original .mojom file, relative to the import root.
@@ -93,61 +153,3 @@ class Generator(object):
     """Returns global mappings for the template generation."""
     return {}
 
-  def _AddStructComputedData(self, exported, struct):
-    """Adds computed data to the given struct. The data is computed once and
-    used repeatedly in the generation process."""
-    struct.packed = pack.PackedStruct(struct)
-    struct.bytes = pack.GetByteLayout(struct.packed)
-    struct.versions = pack.GetVersionInfo(struct.packed)
-    struct.exported = exported
-    return struct
-
-  def _AddUnionComputedData(self, union):
-    """Adds computed data to the given union. The data is computed once and
-    used repeatedly in the generation process."""
-    ordinal = 0
-    for field in union.fields:
-      if field.ordinal is not None:
-        ordinal = field.ordinal
-      field.ordinal = ordinal
-      ordinal += 1
-    return union
-
-  def _AddInterfaceComputedData(self, interface):
-    """Adds computed data to the given interface. The data is computed once and
-    used repeatedly in the generation process."""
-    interface.version = 0
-    for method in interface.methods:
-      if method.min_version is not None:
-        interface.version = max(interface.version, method.min_version)
-
-      method.param_struct = self._GetStructFromMethod(method)
-      interface.version = max(interface.version,
-                              method.param_struct.versions[-1].version)
-
-      if method.response_parameters is not None:
-        method.response_param_struct = self._GetResponseStructFromMethod(method)
-        interface.version = max(
-            interface.version,
-            method.response_param_struct.versions[-1].version)
-      else:
-        method.response_param_struct = None
-    return interface
-
-  def _GetStructFromMethod(self, method):
-    """Converts a method's parameters into the fields of a struct."""
-    params_class = "%s_%s_Params" % (method.interface.name, method.name)
-    struct = mojom.Struct(params_class, module=method.interface.module)
-    for param in method.parameters:
-      struct.AddField(param.name, param.kind, param.ordinal,
-                      attributes=param.attributes)
-    return self._AddStructComputedData(False, struct)
-
-  def _GetResponseStructFromMethod(self, method):
-    """Converts a method's response_parameters into the fields of a struct."""
-    params_class = "%s_%s_ResponseParams" % (method.interface.name, method.name)
-    struct = mojom.Struct(params_class, module=method.interface.module)
-    for param in method.response_parameters:
-      struct.AddField(param.name, param.kind, param.ordinal,
-                      attributes=param.attributes)
-    return self._AddStructComputedData(False, struct)

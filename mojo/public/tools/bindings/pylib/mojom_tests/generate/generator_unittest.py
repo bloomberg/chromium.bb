@@ -27,10 +27,14 @@ from mojom.generate import generator
 class StringManipulationTest(unittest.TestCase):
   """generator contains some string utilities, this tests only those."""
 
-  def testUnderToCamel(self):
-    """Tests UnderToCamel which converts underscore_separated to CamelCase."""
-    self.assertEquals("CamelCase", generator.UnderToCamel("camel_case"))
-    self.assertEquals("CamelCase", generator.UnderToCamel("CAMEL_CASE"))
+  def testToCamel(self):
+    self.assertEquals("CamelCase", generator.ToCamel("camel_case"))
+    self.assertEquals("CAMELCASE", generator.ToCamel("CAMEL_CASE"))
+    self.assertEquals("camelCase", generator.ToCamel("camel_case",
+                                                     lower_initial=True))
+    self.assertEquals("CamelCase", generator.ToCamel("camel case",
+                                                     dilimiter=' '))
+    self.assertEquals("CaMelCaSe", generator.ToCamel("caMel_caSe"))
 
 if __name__ == "__main__":
   unittest.main()
