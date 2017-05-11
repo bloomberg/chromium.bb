@@ -1529,7 +1529,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   if (display_lock) {
     lock_button_ = new BackgroundColorHoverButton(
         this, l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON),
-        gfx::CreateVectorIcon(kLockIcon, kIconSize, gfx::kChromeIconGrey));
+        gfx::CreateVectorIcon(ui::kLockIcon, kIconSize, gfx::kChromeIconGrey));
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
   } else if (!is_guest) {
