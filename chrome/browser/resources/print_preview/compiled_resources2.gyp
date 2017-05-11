@@ -17,6 +17,11 @@
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
         '<(EXTERNS_GYP):chrome_send',
       ],
+      'variables': {
+        'extra_inputs': [
+          '<!@(python <(CLOSURE_DIR)/build/get_includes.py print_preview.js)',
+        ],
+      },
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     }
   ],
