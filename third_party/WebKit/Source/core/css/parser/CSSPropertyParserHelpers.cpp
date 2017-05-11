@@ -1295,12 +1295,11 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
   } else if (id == CSSValueRepeatingRadialGradient) {
     result = ConsumeRadialGradient(args, context->Mode(), kRepeating);
   } else if (id == CSSValueWebkitLinearGradient) {
-    context->CountDeprecation(UseCounter::kDeprecatedWebKitLinearGradient);
+    context->Count(UseCounter::kDeprecatedWebKitLinearGradient);
     result = ConsumeLinearGradient(args, context->Mode(), kNonRepeating,
                                    kCSSPrefixedLinearGradient);
   } else if (id == CSSValueWebkitRepeatingLinearGradient) {
-    context->CountDeprecation(
-        UseCounter::kDeprecatedWebKitRepeatingLinearGradient);
+    context->Count(UseCounter::kDeprecatedWebKitRepeatingLinearGradient);
     result = ConsumeLinearGradient(args, context->Mode(), kRepeating,
                                    kCSSPrefixedLinearGradient);
   } else if (id == CSSValueRepeatingLinearGradient) {
@@ -1310,15 +1309,14 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
     result = ConsumeLinearGradient(args, context->Mode(), kNonRepeating,
                                    kCSSLinearGradient);
   } else if (id == CSSValueWebkitGradient) {
-    context->CountDeprecation(UseCounter::kDeprecatedWebKitGradient);
+    context->Count(UseCounter::kDeprecatedWebKitGradient);
     result = ConsumeDeprecatedGradient(args, context->Mode());
   } else if (id == CSSValueWebkitRadialGradient) {
-    context->CountDeprecation(UseCounter::kDeprecatedWebKitRadialGradient);
+    context->Count(UseCounter::kDeprecatedWebKitRadialGradient);
     result =
         ConsumeDeprecatedRadialGradient(args, context->Mode(), kNonRepeating);
   } else if (id == CSSValueWebkitRepeatingRadialGradient) {
-    context->CountDeprecation(
-        UseCounter::kDeprecatedWebKitRepeatingRadialGradient);
+    context->Count(UseCounter::kDeprecatedWebKitRepeatingRadialGradient);
     result = ConsumeDeprecatedRadialGradient(args, context->Mode(), kRepeating);
   } else if (id == CSSValueConicGradient) {
     result = ConsumeConicGradient(args, context->Mode(), kNonRepeating);

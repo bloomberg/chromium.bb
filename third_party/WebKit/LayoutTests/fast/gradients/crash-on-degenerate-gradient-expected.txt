@@ -1,4 +1,3 @@
-CONSOLE WARNING: -webkit-radial-gradient is deprecated. Please use radial-gradient instead.
 Degenerate Linear gradient. Should not crash
 
 
