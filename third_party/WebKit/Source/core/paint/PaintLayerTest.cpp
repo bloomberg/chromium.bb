@@ -329,6 +329,16 @@ TEST_P(PaintLayerTest, SubsequenceCachingSVGRoot) {
   EXPECT_TRUE(svgroot->SupportsSubsequenceCaching());
 }
 
+TEST_P(PaintLayerTest, SubsequenceCachingMuticol) {
+  SetBodyInnerHTML(
+      "<div style='columns: 2'>"
+      "  <svg id='svgroot' style='position: relative'></svg>"
+      "</div>");
+
+  PaintLayer* svgroot = GetPaintLayerByElementId("svgroot");
+  EXPECT_FALSE(svgroot->SupportsSubsequenceCaching());
+}
+
 TEST_P(PaintLayerTest, HasDescendantWithClipPath) {
   SetBodyInnerHTML(
       "<div id='parent' style='position:relative'>"

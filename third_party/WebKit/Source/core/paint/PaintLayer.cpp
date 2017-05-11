@@ -2769,6 +2769,9 @@ bool PaintLayer::PaintsWithTransform(
 }
 
 bool PaintLayer::SupportsSubsequenceCaching() const {
+  if (EnclosingPaginationLayer())
+    return false;
+
   // SVG paints atomically.
   if (GetLayoutObject().IsSVGRoot())
     return true;
