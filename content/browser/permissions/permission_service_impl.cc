@@ -82,25 +82,23 @@ PermissionServiceImpl::PendingRequest::~PendingRequest() {
   callback.Run(result);
 }
 
-PermissionServiceImpl::PermissionServiceImpl(
-    PermissionServiceContext* context,
-    mojo::InterfaceRequest<blink::mojom::PermissionService> request)
-    : context_(context),
-      binding_(this, std::move(request)),
-      weak_factory_(this) {
-  binding_.set_connection_error_handler(
-      base::Bind(&PermissionServiceImpl::OnConnectionError,
-                 base::Unretained(this)));
-}
+PermissionServiceImpl::PermissionServiceImpl(PermissionServiceContext* context)
+    : context_(context), weak_factory_(this) {}
 
 PermissionServiceImpl::~PermissionServiceImpl() {
-  DCHECK(pending_requests_.IsEmpty());
-}
+  DCHECK(context_->GetBrowserContext());
 
-void PermissionServiceImpl::OnConnectionError() {
-  CancelPendingOperations();
-  context_->ServiceHadConnectionError(this);
-  // After that call, |this| will be deleted.
+  PermissionManager* permission_manager =
+      context_->GetBrowserContext()->GetPermissionManager();
+  if (!permission_manager)
+    return;
+
+  // Cancel pending requests.
+  for (RequestsMap::Iterator<PendingRequest> it(&pending_requests_);
+       !it.IsAtEnd(); it.Advance()) {
+    permission_manager->CancelPermissionRequest(it.GetCurrentValue()->id);
+  }
+  pending_requests_.Clear();
 }
 
 void PermissionServiceImpl::RequestPermission(
@@ -199,23 +197,6 @@ void PermissionServiceImpl::OnRequestPermissionsResponse(
   request->callback.Reset();
   pending_requests_.Remove(pending_request_id);
   callback.Run(result);
-}
-
-void PermissionServiceImpl::CancelPendingOperations() {
-  DCHECK(context_->GetBrowserContext());
-
-  PermissionManager* permission_manager =
-      context_->GetBrowserContext()->GetPermissionManager();
-  if (!permission_manager)
-    return;
-
-  // Cancel pending requests.
-  for (RequestsMap::Iterator<PendingRequest> it(&pending_requests_);
-       !it.IsAtEnd(); it.Advance()) {
-    permission_manager->CancelPermissionRequest(
-        it.GetCurrentValue()->id);
-  }
-  pending_requests_.Clear();
 }
 
 void PermissionServiceImpl::HasPermission(
