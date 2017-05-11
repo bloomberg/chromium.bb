@@ -250,7 +250,7 @@ inline bool NeedsLineBreakIterator(UChar ch) {
 
 template <typename CharacterType, LineBreakType lineBreakType>
 static inline int NextBreakablePosition(
-    LazyLineBreakIterator& lazy_break_iterator,
+    const LazyLineBreakIterator& lazy_break_iterator,
     const CharacterType* str,
     unsigned length,
     int pos) {
@@ -314,7 +314,7 @@ static inline bool ShouldKeepAfter(UChar last_ch, UChar ch, UChar next_ch) {
 }
 
 static inline int NextBreakablePositionKeepAllInternal(
-    LazyLineBreakIterator& lazy_break_iterator,
+    const LazyLineBreakIterator& lazy_break_iterator,
     const UChar* str,
     unsigned length,
     int pos) {
@@ -364,7 +364,7 @@ static inline int NextBreakablePositionKeepAllInternal(
 
 template <LineBreakType lineBreakType>
 static inline int NextBreakablePosition(
-    LazyLineBreakIterator& lazy_break_iterator,
+    const LazyLineBreakIterator& lazy_break_iterator,
     const String& string,
     int pos) {
   if (string.Is8Bit())
@@ -374,20 +374,37 @@ static inline int NextBreakablePosition(
       lazy_break_iterator, string.Characters16(), string.length(), pos);
 }
 
-int LazyLineBreakIterator::NextBreakablePositionIgnoringNBSP(int pos) {
+int LazyLineBreakIterator::NextBreakablePositionIgnoringNBSP(int pos) const {
   return NextBreakablePosition<LineBreakType::kNormal>(*this, string_, pos);
 }
 
-int LazyLineBreakIterator::NextBreakablePositionBreakAll(int pos) {
+int LazyLineBreakIterator::NextBreakablePositionBreakAll(int pos) const {
   return NextBreakablePosition<LineBreakType::kBreakAll>(*this, string_, pos);
 }
 
-int LazyLineBreakIterator::NextBreakablePositionKeepAll(int pos) {
+int LazyLineBreakIterator::NextBreakablePositionKeepAll(int pos) const {
   if (string_.Is8Bit())
     return NextBreakablePosition<LChar, LineBreakType::kNormal>(
         *this, string_.Characters8(), string_.length(), pos);
   return NextBreakablePositionKeepAllInternal(*this, string_.Characters16(),
                                               string_.length(), pos);
+}
+
+unsigned LazyLineBreakIterator::NextBreakOpportunity(unsigned offset) const {
+  int next_break = 0;
+  IsBreakable(offset, next_break);
+  return next_break;
+}
+
+unsigned LazyLineBreakIterator::PreviousBreakOpportunity(unsigned offset,
+                                                         unsigned min) const {
+  unsigned pos = std::min(offset, string_.length());
+  for (; pos > min; pos--) {
+    int next_break = 0;
+    if (IsBreakable(pos, next_break))
+      return pos;
+  }
+  return min;
 }
 
 }  // namespace blink
