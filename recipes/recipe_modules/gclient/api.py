@@ -80,12 +80,12 @@ class GclientApi(recipe_api.RecipeApi):
       prefix = ('[spec: %s] ' % self.spec_alias) + prefix
 
     # TODO(phajdan.jr): create a helper for adding to PATH.
-    env = self.m.step.get_from_context('env', {})
+    env = self.m.context.env
     env.setdefault('PATH', '%(PATH)s')
     env['PATH'] = self.m.path.pathsep.join([
         env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
 
-    with self.m.step.context({'env': env}):
+    with self.m.context(env=env):
       return self.m.python(prefix + name,
                            self.package_repo_resource('gclient.py'),
                            cmd,
@@ -268,12 +268,8 @@ class GclientApi(recipe_api.RecipeApi):
   def runhooks(self, args=None, name='runhooks', **kwargs):
     args = args or []
     assert isinstance(args, (list, tuple))
-    context = {}
-    if not self.m.step.get_from_context('cwd') and self.m.path['checkout']:
-      context['cwd'] = self.m.path['checkout']
-    with self.m.step.context(context):
-      return self(
-        name, ['runhooks'] + list(args), infra_step=False, **kwargs)
+    with self.m.context(cwd=(self.m.context.cwd or self.m.path['checkout'])):
+      return self(name, ['runhooks'] + list(args), infra_step=False, **kwargs)
 
   @property
   def is_blink_mode(self):

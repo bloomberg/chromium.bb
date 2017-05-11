@@ -14,9 +14,8 @@ class GitClApi(recipe_api.RecipeApi):
     if kwargs.get('suffix'):
       name = name + ' (%s)' % kwargs.pop('suffix')
 
-    with self.m.step.context({
-        'cwd': self.m.step.get_from_context(
-            'cwd', (self.c and self.c.repo_location) or None)}):
+    my_loc = self.c.repo_location if self.c else None
+    with self.m.context(cwd=self.m.context.cwd or my_loc):
       return self.m.step(
           name, [self.package_repo_resource('git_cl.py'), subcmd] + args,
           **kwargs)

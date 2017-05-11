@@ -27,10 +27,7 @@ class GitApi(recipe_api.RecipeApi):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
     can_fail_build = kwargs.pop('can_fail_build', True)
     try:
-      context = {}
-      if not self.m.step.get_from_context('cwd') and self.m.path['checkout']:
-        context['cwd'] = self.m.path['checkout']
-      with self.m.step.context(context):
+      with self.m.context(cwd=(self.m.context.cwd or self.m.path['checkout'])):
         return self.m.step(name, git_cmd + list(args), infra_step=infra_step,
                            **kwargs)
     except self.m.step.StepFailure as f:
@@ -43,7 +40,7 @@ class GitApi(recipe_api.RecipeApi):
     """Ensures that depot_tools/git.bat actually exists."""
     if not self.m.platform.is_win or self.initialized_win_git:
       return
-    with self.m.step.context({'cwd': self.package_repo_resource()}):
+    with self.m.context(cwd=self.package_repo_resource()):
       self.m.python(
           'ensure git tooling on windows',
           self.package_repo_resource('bootstrap', 'win', 'git_bootstrap.py'),
@@ -215,9 +212,9 @@ class GitApi(recipe_api.RecipeApi):
     path = self.m.path.pathsep.join([
         str(self.package_repo_resource()), '%(PATH)s'])
 
-    with self.m.step.context({'cwd': dir_path}):
+    with self.m.context(cwd=dir_path):
       if use_git_cache:
-        with self.m.step.context({'env': {'PATH': path}}):
+        with self.m.context(env={'PATH': path}):
           self('retry', 'cache', 'populate', '-c',
                self.m.infra_paths.default_git_cache_dir, url,
 
@@ -278,7 +275,7 @@ class GitApi(recipe_api.RecipeApi):
             name='count-objects before %s' % fetch_step_name,
             step_test_data=lambda: self.m.raw_io.test_api.stream_output(
                 self.test_api.count_objects_output(1000)))
-      with self.m.step.context({'env': fetch_env}):
+      with self.m.context(env=fetch_env):
         self('retry', 'fetch', *fetch_args,
           name=fetch_step_name,
           stderr=fetch_stderr,
@@ -355,7 +352,7 @@ class GitApi(recipe_api.RecipeApi):
     remote_name (str): the remote name to rebase from if not origin
     """
     remote_name = remote_name or 'origin'
-    with self.m.step.context({'cwd': dir_path}):
+    with self.m.context(cwd=dir_path):
       try:
         self('rebase', '%s/master' % remote_name,
              name="%s rebase" % name_prefix, **kwargs)
@@ -413,7 +410,7 @@ class GitApi(recipe_api.RecipeApi):
       upstream (str): to origin/master.
       kwargs: Forwarded to '__call__'.
     """
-    env = self.m.step.get_from_context('env', {})
+    env = self.m.context.env
     env['PATH'] = self.m.path.pathsep.join([
         str(self.package_repo_resource()), '%(PATH)s'])
     args = ['new-branch', branch]
@@ -421,5 +418,5 @@ class GitApi(recipe_api.RecipeApi):
       args.extend(['--upstream', upstream])
     if not name:
       name = 'git new-branch %s' % branch
-    with self.m.step.context({'env': env}):
+    with self.m.context(env=env):
       return self(*args, name=name, **kwargs)

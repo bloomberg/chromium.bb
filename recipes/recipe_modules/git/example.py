@@ -4,6 +4,7 @@
 
 DEPS = [
   'git',
+  'recipe_engine/context',
   'recipe_engine/path',
   'recipe_engine/platform',
   'recipe_engine/properties',
@@ -59,7 +60,7 @@ def RunSteps(api):
 
   # If you need to run more arbitrary git commands, you can use api.git itself,
   # which behaves like api.step(), but automatically sets the name of the step.
-  with api.step.context({'cwd': api.path['checkout']}):
+  with api.context(cwd=api.path['checkout']):
     api.git('status')
 
   api.git('status', name='git status can_fail_build',

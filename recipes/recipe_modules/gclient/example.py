@@ -4,6 +4,7 @@
 
 DEPS = [
   'gclient',
+  'recipe_engine/context',
   'recipe_engine/path',
   'recipe_engine/properties',
   'recipe_engine/step',
@@ -61,8 +62,7 @@ def RunSteps(api):
   bl_cfg.revisions['src/third_party/angle'] = 'refs/heads/lkgr'
 
   bl_cfg.got_revision_mapping['src/blatley'] = 'got_blatley_revision'
-  with api.step.context({
-      'cwd': api.path['start_dir'].join('src', 'third_party')}):
+  with api.context(cwd=api.path['start_dir'].join('src', 'third_party')):
     api.gclient.checkout(
         gclient_config=bl_cfg,
         with_branch_heads=True)

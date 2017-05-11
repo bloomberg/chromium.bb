@@ -84,7 +84,7 @@ class TryserverApi(recipe_api.RecipeApi):
     patch_path = patch_dir.join('patch.diff')
 
     self.m.python('patch git setup', git_setup_py, git_setup_args)
-    with self.m.step.context({'cwd': patch_dir}):
+    with self.m.context(cwd=patch_dir):
       self.m.git('fetch', 'origin', patch_ref, name='patch fetch')
       self.m.git('clean', '-f', '-d', '-x', name='patch clean')
       self.m.git('checkout', '-f', 'FETCH_HEAD', name='patch git checkout')
@@ -138,9 +138,9 @@ class TryserverApi(recipe_api.RecipeApi):
     # removed.
     if patch_root is None:
       return self._old_get_files_affected_by_patch()
-    with self.m.step.context({
-        'cwd': self.m.step.get_from_context(
-            'cwd', self.m.path['start_dir'].join(patch_root))}):
+
+    cwd = self.m.context.cwd or self.m.path['start_dir'].join(patch_root)
+    with self.m.context(cwd=cwd):
       step_result = self.m.git('diff', '--cached', '--name-only',
                                name='git diff to analyze patch',
                                stdout=self.m.raw_io.output(),
@@ -158,11 +158,10 @@ class TryserverApi(recipe_api.RecipeApi):
 
 
   def _old_get_files_affected_by_patch(self):
-    context = {}
     issue_root = self.m.rietveld.calculate_issue_root()
-    if issue_root:
-      context['cwd'] = self.m.path['checkout'].join(issue_root)
-    with self.m.step.context(context):
+    cwd = self.m.path['checkout'].join(issue_root) if issue_root else None
+
+    with self.m.context(cwd=cwd):
       step_result = self.m.git('diff', '--cached', '--name-only',
                                name='git diff to analyze patch',
                                stdout=self.m.raw_io.output(),

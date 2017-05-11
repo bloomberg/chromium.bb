@@ -33,7 +33,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     assert isinstance(cmd, (list, tuple))
     bot_update_path = self.resource('bot_update.py')
     kwargs.setdefault('infra_step', True)
-    env = self.m.step.get_from_context('env', {})
+    env = self.m.context.env
     env.setdefault('PATH', '%(PATH)s')
     env['PATH'] = self.m.path.pathsep.join([
         env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
@@ -42,7 +42,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # and die with an error "error: RPC failed; curl 28 Operation too slow"
     env['GIT_HTTP_LOW_SPEED_LIMIT'] = 1000
     env['GIT_HTTP_LOW_SPEED_TIME'] = 300
-    with self.m.step.context({'env': env}):
+    with self.m.context(env=env):
       return self.m.python(name, bot_update_path, cmd, **kwargs)
 
   @property
@@ -55,7 +55,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                        gerrit_no_rebase_patch_ref=False, **kwargs):
     apply_gerrit_path = self.resource('apply_gerrit.py')
     kwargs.setdefault('infra_step', True)
-    env = self.m.step.get_from_context('env', {})
+    env = self.m.context.env
     env.setdefault('PATH', '%(PATH)s')
     env['PATH'] = self.m.path.pathsep.join([
         env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
@@ -68,7 +68,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_reset')
     if gerrit_no_rebase_patch_ref:
       cmd.append('--gerrit_no_rebase_patch_ref')
-    with self.m.step.context({'env': env}):
+    with self.m.context(env=env):
       return self.m.python('apply_gerrit', apply_gerrit_path, cmd, **kwargs)
 
   def ensure_checkout(self, gclient_config=None, suffix=None,
@@ -291,7 +291,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
           try:
             if return_code == 3:
               # This is download failure, hence an infra failure.
-              with self.m.step.context({'infra_step': True}):
+              with self.m.context(infra_steps=True):
                 self.m.python.failing_step(
                     'Patch failure', 'Git reported a download failure')
             else:
@@ -308,7 +308,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         # first solution.
         if result['did_run']:
           co_root = result['root']
-          cwd = self.m.step.get_from_context('cwd', self.m.path['start_dir'])
+          cwd = self.m.context.cwd or self.m.path['start_dir']
           if 'checkout' not in self.m.path:
             self.m.path['checkout'] = cwd.join(*co_root.split(self.m.path.sep))
 
