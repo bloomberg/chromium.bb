@@ -3374,8 +3374,6 @@ crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug1055-2.htm
 crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure ]
 
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
-crbug.com/718717 [ Win ] fast/css-grid-layout/grid-self-baseline-two-dimensional.html [ Failure Pass Timeout ]
-crbug.com/718717 [ Win ] fast/css-grid-layout/grid-align-justify-stretch-with-orthogonal-flows.html [ Failure Pass Timeout ]
 crbug.com/719298 [ Win ] fast/dnd/dropEffect-for-effectAllowed.html [ Failure Pass Timeout ]
 crbug.com/719299 [ Win ] external/wpt/css/css-ui-3/outline-004.html [ Failure Pass Timeout ]
 
