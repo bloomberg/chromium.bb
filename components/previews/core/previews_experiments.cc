@@ -157,9 +157,10 @@ int OfflinePreviewsVersion() {
 }
 
 bool IsClientLoFiEnabled() {
-  return base::StartsWith(
-      base::FieldTrialList::FindFullName(kClientLoFiExperimentName), kEnabled,
-      base::CompareCase::SENSITIVE);
+  return base::FeatureList::IsEnabled(features::kClientLoFi) ||
+         base::StartsWith(
+             base::FieldTrialList::FindFullName(kClientLoFiExperimentName),
+             kEnabled, base::CompareCase::SENSITIVE);
 }
 
 int ClientLoFiVersion() {

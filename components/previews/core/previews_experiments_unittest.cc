@@ -166,6 +166,22 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
   variations::testing::ClearAllVariationParams();
 }
 
+// Verifies that we can enable offline previews via comand line.
+TEST(PreviewsExperimentsTest, TestCommandLineClientLoFi) {
+  EXPECT_FALSE(params::IsClientLoFiEnabled());
+
+  std::unique_ptr<base::FeatureList> feature_list =
+      base::MakeUnique<base::FeatureList>();
+
+  // The feature is explicitly enabled on the command-line.
+  feature_list->InitializeFromCommandLine("ClientLoFi", "");
+  base::FeatureList::ClearInstanceForTesting();
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  EXPECT_TRUE(params::IsClientLoFiEnabled());
+  base::FeatureList::ClearInstanceForTesting();
+}
+
 }  // namespace
 
 }  // namespace previews
