@@ -222,17 +222,18 @@ base::string16 GetFlyoutParentAutomationId(IUIAutomation* automation,
   base::win::ScopedVariant class_name(L"Flyout");
   base::win::ScopedComPtr<IUIAutomationCondition> condition;
   HRESULT result = automation->CreatePropertyCondition(
-      UIA_ClassNamePropertyId, class_name, condition.Receive());
+      UIA_ClassNamePropertyId, class_name, condition.GetAddressOf());
   if (FAILED(result))
     return base::string16();
 
   base::win::ScopedComPtr<IUIAutomationTreeWalker> tree_walker;
-  result = automation->CreateTreeWalker(condition.Get(), tree_walker.Receive());
+  result =
+      automation->CreateTreeWalker(condition.Get(), tree_walker.GetAddressOf());
   if (FAILED(result))
     return base::string16();
 
   base::win::ScopedComPtr<IUIAutomationCacheRequest> cache_request;
-  result = automation->CreateCacheRequest(cache_request.Receive());
+  result = automation->CreateCacheRequest(cache_request.GetAddressOf());
   if (FAILED(result))
     return base::string16();
   ConfigureCacheRequest(cache_request.Get());
@@ -723,7 +724,7 @@ SettingsAppMonitor::Context::GetEventHandler() {
     if (SUCCEEDED(result)) {
       obj->Initialize(task_runner_, weak_ptr_factory_.GetWeakPtr(),
                       automation_);
-      obj->QueryInterface(event_handler_.Receive());
+      obj->QueryInterface(event_handler_.GetAddressOf());
     }
   }
   return event_handler_;
@@ -752,7 +753,8 @@ HRESULT SettingsAppMonitor::Context::InstallObservers() {
   // Create a cache request so that elements received by way of events contain
   // all data needed for procesing.
   base::win::ScopedComPtr<IUIAutomationCacheRequest> cache_request;
-  HRESULT result = automation_->CreateCacheRequest(cache_request.Receive());
+  HRESULT result =
+      automation_->CreateCacheRequest(cache_request.GetAddressOf());
   if (FAILED(result))
     return result;
   ConfigureCacheRequest(cache_request.Get());
@@ -765,7 +767,7 @@ HRESULT SettingsAppMonitor::Context::InstallObservers() {
 
   // Observe invocations.
   base::win::ScopedComPtr<IUIAutomationElement> desktop;
-  result = automation_->GetRootElement(desktop.Receive());
+  result = automation_->GetRootElement(desktop.GetAddressOf());
   if (desktop) {
     result = automation_->AddAutomationEventHandler(
         UIA_Invoke_InvokedEventId, desktop.Get(), TreeScope_Subtree,

@@ -73,7 +73,7 @@ void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
   }
 
   base::win::ScopedComPtr<IShellFolder> desktop;
-  HRESULT hr = SHGetDesktopFolder(desktop.Receive());
+  HRESULT hr = SHGetDesktopFolder(desktop.GetAddressOf());
   if (FAILED(hr))
     return;
 

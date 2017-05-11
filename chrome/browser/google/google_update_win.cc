@@ -195,8 +195,8 @@ HRESULT CreateGoogleUpdate3WebClass(
 
   ConfigureProxyBlanket(class_factory.Get());
 
-  return class_factory->CreateInstance(nullptr,
-                                       IID_PPV_ARGS(google_update->Receive()));
+  return class_factory->CreateInstance(
+      nullptr, IID_PPV_ARGS(google_update->GetAddressOf()));
 }
 
 // UpdateCheckDriver -----------------------------------------------------------
@@ -526,10 +526,10 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
   if (!app_bundle_) {
     base::win::ScopedComPtr<IAppBundleWeb> app_bundle;
     base::win::ScopedComPtr<IDispatch> dispatch;
-    hresult = google_update_->createAppBundleWeb(dispatch.Receive());
+    hresult = google_update_->createAppBundleWeb(dispatch.GetAddressOf());
     if (FAILED(hresult))
       return hresult;
-    hresult = dispatch.CopyTo(app_bundle.Receive());
+    hresult = dispatch.CopyTo(app_bundle.GetAddressOf());
     if (FAILED(hresult))
       return hresult;
     dispatch.Reset();
@@ -572,11 +572,11 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
     // this point onward result in it being released.
     base::win::ScopedComPtr<IAppBundleWeb> app_bundle;
     app_bundle.swap(app_bundle_);
-    hresult = app_bundle->get_appWeb(0, dispatch.Receive());
+    hresult = app_bundle->get_appWeb(0, dispatch.GetAddressOf());
     if (FAILED(hresult))
       return hresult;
     base::win::ScopedComPtr<IAppWeb> app;
-    hresult = dispatch.CopyTo(app.Receive());
+    hresult = dispatch.CopyTo(app.GetAddressOf());
     if (FAILED(hresult))
       return hresult;
     ConfigureProxyBlanket(app.Get());
@@ -595,10 +595,10 @@ bool UpdateCheckDriver::GetCurrentState(
     CurrentState* state_value,
     HRESULT* hresult) const {
   base::win::ScopedComPtr<IDispatch> dispatch;
-  *hresult = app_->get_currentState(dispatch.Receive());
+  *hresult = app_->get_currentState(dispatch.GetAddressOf());
   if (FAILED(*hresult))
     return false;
-  *hresult = dispatch.CopyTo(current_state->Receive());
+  *hresult = dispatch.CopyTo(current_state->GetAddressOf());
   if (FAILED(*hresult))
     return false;
   ConfigureProxyBlanket(current_state->Get());

@@ -159,13 +159,13 @@ TEST_F(CoreAudioUtilWinTest, GetAudioControllerID) {
   EDataFlow flows[] = { eRender , eCapture };
   for (size_t i = 0; i < arraysize(flows); ++i) {
     ScopedComPtr<IMMDeviceCollection> collection;
-    ASSERT_TRUE(SUCCEEDED(enumerator->EnumAudioEndpoints(flows[i],
-        DEVICE_STATE_ACTIVE, collection.Receive())));
+    ASSERT_TRUE(SUCCEEDED(enumerator->EnumAudioEndpoints(
+        flows[i], DEVICE_STATE_ACTIVE, collection.GetAddressOf())));
     UINT count = 0;
     collection->GetCount(&count);
     for (UINT j = 0; j < count; ++j) {
       ScopedComPtr<IMMDevice> device;
-      collection->Item(j, device.Receive());
+      collection->Item(j, device.GetAddressOf());
       std::string controller_id(
           CoreAudioUtil::GetAudioControllerID(device.Get(), enumerator.Get()));
       EXPECT_FALSE(controller_id.empty());
@@ -485,13 +485,13 @@ TEST_F(CoreAudioUtilWinTest, GetMatchingOutputDeviceID) {
   // Enumerate all active input and output devices and fetch the ID of
   // the associated device.
   ScopedComPtr<IMMDeviceCollection> collection;
-  ASSERT_TRUE(SUCCEEDED(enumerator->EnumAudioEndpoints(eCapture,
-      DEVICE_STATE_ACTIVE, collection.Receive())));
+  ASSERT_TRUE(SUCCEEDED(enumerator->EnumAudioEndpoints(
+      eCapture, DEVICE_STATE_ACTIVE, collection.GetAddressOf())));
   UINT count = 0;
   collection->GetCount(&count);
   for (UINT i = 0; i < count && !found_a_pair; ++i) {
     ScopedComPtr<IMMDevice> device;
-    collection->Item(i, device.Receive());
+    collection->Item(i, device.GetAddressOf());
     base::win::ScopedCoMem<WCHAR> wide_id;
     device->GetId(&wide_id);
     std::string id;

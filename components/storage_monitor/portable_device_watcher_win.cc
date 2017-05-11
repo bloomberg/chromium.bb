@@ -211,14 +211,14 @@ bool GetObjectUniqueId(IPortableDevice* device,
   DCHECK(device);
   DCHECK(unique_id);
   base::win::ScopedComPtr<IPortableDeviceContent> content;
-  HRESULT hr = device->Content(content.Receive());
+  HRESULT hr = device->Content(content.GetAddressOf());
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceContent interface";
     return false;
   }
 
   base::win::ScopedComPtr<IPortableDeviceProperties> properties;
-  hr = content->Properties(properties.Receive());
+  hr = content->Properties(properties.GetAddressOf());
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceProperties interface";
     return false;
@@ -229,9 +229,8 @@ bool GetObjectUniqueId(IPortableDevice* device,
     return false;
 
   base::win::ScopedComPtr<IPortableDeviceValues> properties_values;
-  if (FAILED(properties->GetValues(object_id.c_str(),
-                                   properties_to_read.Get(),
-                                   properties_values.Receive()))) {
+  if (FAILED(properties->GetValues(object_id.c_str(), properties_to_read.Get(),
+                                   properties_values.GetAddressOf()))) {
     return false;
   }
 
@@ -262,7 +261,7 @@ bool GetRemovableStorageObjectIds(
   DCHECK(device);
   DCHECK(storage_object_ids);
   base::win::ScopedComPtr<IPortableDeviceCapabilities> capabilities;
-  HRESULT hr = device->Capabilities(capabilities.Receive());
+  HRESULT hr = device->Capabilities(capabilities.GetAddressOf());
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDeviceCapabilities interface";
     return false;
@@ -270,7 +269,7 @@ bool GetRemovableStorageObjectIds(
 
   base::win::ScopedComPtr<IPortableDevicePropVariantCollection> storage_ids;
   hr = capabilities->GetFunctionalObjects(WPD_FUNCTIONAL_CATEGORY_STORAGE,
-                                          storage_ids.Receive());
+                                          storage_ids.GetAddressOf());
   if (FAILED(hr)) {
     DPLOG(ERROR) << "Failed to get IPortableDevicePropVariantCollection";
     return false;

@@ -169,7 +169,7 @@ int GetHttpStatusFromBitsError(HRESULT error) {
 HRESULT GetFilesInJob(IBackgroundCopyJob* job,
                       std::vector<ScopedComPtr<IBackgroundCopyFile>>* files) {
   ScopedComPtr<IEnumBackgroundCopyFiles> enum_files;
-  HRESULT hr = job->EnumFiles(enum_files.Receive());
+  HRESULT hr = job->EnumFiles(enum_files.GetAddressOf());
   if (FAILED(hr))
     return hr;
 
@@ -180,7 +180,7 @@ HRESULT GetFilesInJob(IBackgroundCopyJob* job,
 
   for (ULONG i = 0; i != num_files; ++i) {
     ScopedComPtr<IBackgroundCopyFile> file;
-    if (enum_files->Next(1, file.Receive(), NULL) == S_OK && file.Get())
+    if (enum_files->Next(1, file.GetAddressOf(), NULL) == S_OK && file.Get())
       files->push_back(file);
   }
 
@@ -265,7 +265,7 @@ HRESULT GetJobDescription(IBackgroundCopyJob* job, const base::string16* name) {
 HRESULT GetJobError(IBackgroundCopyJob* job, HRESULT* error_code_out) {
   *error_code_out = S_OK;
   ScopedComPtr<IBackgroundCopyError> copy_error;
-  HRESULT hr = job->GetError(copy_error.Receive());
+  HRESULT hr = job->GetError(copy_error.GetAddressOf());
   if (FAILED(hr))
     return hr;
 
@@ -287,7 +287,7 @@ HRESULT FindBitsJobIf(Predicate pred,
                       IBackgroundCopyManager* bits_manager,
                       std::vector<ScopedComPtr<IBackgroundCopyJob>>* jobs) {
   ScopedComPtr<IEnumBackgroundCopyJobs> enum_jobs;
-  HRESULT hr = bits_manager->EnumJobs(0, enum_jobs.Receive());
+  HRESULT hr = bits_manager->EnumJobs(0, enum_jobs.GetAddressOf());
   if (FAILED(hr))
     return hr;
 
@@ -300,7 +300,7 @@ HRESULT FindBitsJobIf(Predicate pred,
   // the job description matches the component updater jobs.
   for (ULONG i = 0; i != job_count; ++i) {
     ScopedComPtr<IBackgroundCopyJob> current_job;
-    if (enum_jobs->Next(1, current_job.Receive(), NULL) == S_OK &&
+    if (enum_jobs->Next(1, current_job.GetAddressOf(), NULL) == S_OK &&
         pred(current_job.Get())) {
       base::string16 job_description;
       hr = GetJobDescription(current_job.Get(), &job_description);
@@ -484,7 +484,7 @@ HRESULT BackgroundDownloader::BeginDownloadHelper(const GURL& url) {
   if (FAILED(hr))
     return hr;
 
-  hr = CreateBitsManager(bits_manager_.Receive());
+  hr = CreateBitsManager(bits_manager_.GetAddressOf());
   if (FAILED(hr))
     return hr;
 
@@ -492,7 +492,7 @@ HRESULT BackgroundDownloader::BeginDownloadHelper(const GURL& url) {
   if (FAILED(hr))
     return hr;
 
-  hr = QueueBitsJob(url, job_.Receive());
+  hr = QueueBitsJob(url, job_.GetAddressOf());
   if (FAILED(hr))
     return hr;
 
@@ -717,7 +717,7 @@ HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url,
   DCHECK(task_runner()->RunsTasksOnCurrentThread());
 
   ScopedComPtr<IBackgroundCopyJob> p;
-  HRESULT hr = CreateOrOpenJob(url, p.Receive());
+  HRESULT hr = CreateOrOpenJob(url, p.GetAddressOf());
   if (FAILED(hr))
     return hr;
 

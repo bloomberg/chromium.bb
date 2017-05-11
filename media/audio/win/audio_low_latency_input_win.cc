@@ -528,24 +528,24 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
     // Note that, in Windows Vista, the MMDevice API supports device roles
     // but the system-supplied user interface programs do not.
     hr = enumerator->GetDefaultAudioEndpoint(eCapture, eConsole,
-                                             endpoint_device_.Receive());
+                                             endpoint_device_.GetAddressOf());
   } else if (device_id_ == AudioDeviceDescription::kCommunicationsDeviceId) {
     hr = enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications,
-                                             endpoint_device_.Receive());
+                                             endpoint_device_.GetAddressOf());
   } else if (device_id_ == AudioDeviceDescription::kLoopbackWithMuteDeviceId) {
     // Capture the default playback stream.
     hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                             endpoint_device_.Receive());
+                                             endpoint_device_.GetAddressOf());
 
     endpoint_device_->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL,
                                &system_audio_volume_);
   } else if (device_id_ == AudioDeviceDescription::kLoopbackInputDeviceId) {
     // Capture the default playback stream.
     hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                             endpoint_device_.Receive());
+                                             endpoint_device_.GetAddressOf());
   } else {
     hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id_).c_str(),
-                               endpoint_device_.Receive());
+                               endpoint_device_.GetAddressOf());
   }
 
   if (FAILED(hr)) {

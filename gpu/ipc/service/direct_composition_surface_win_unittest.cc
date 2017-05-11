@@ -121,7 +121,8 @@ base::win::ScopedComPtr<ID3D11Texture2D> CreateNV12Texture(
   data.SysMemPitch = size.width();
 
   base::win::ScopedComPtr<ID3D11Texture2D> texture;
-  HRESULT hr = d3d11_device->CreateTexture2D(&desc, &data, texture.Receive());
+  HRESULT hr =
+      d3d11_device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
   CHECK(SUCCEEDED(hr));
   return texture;
 }

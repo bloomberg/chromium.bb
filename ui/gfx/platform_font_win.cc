@@ -81,7 +81,7 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
                                       LOGFONT* font_info,
                                       IDWriteFont** dwrite_font) {
   base::win::ScopedComPtr<IDWriteGdiInterop> gdi_interop;
-  HRESULT hr = factory->GetGdiInterop(gdi_interop.Receive());
+  HRESULT hr = factory->GetGdiInterop(gdi_interop.GetAddressOf());
   if (FAILED(hr)) {
     CHECK(false);
     return hr;
@@ -92,7 +92,7 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
     return hr;
 
   base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
-  hr = factory->GetSystemFontCollection(font_collection.Receive());
+  hr = factory->GetSystemFontCollection(font_collection.GetAddressOf());
   if (FAILED(hr)) {
     CHECK(false);
     return hr;
@@ -106,7 +106,7 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
   base::win::ScopedSelectObject scoped_font(screen_dc, font.get());
 
   base::win::ScopedComPtr<IDWriteFontFace> font_face;
-  hr = gdi_interop->CreateFontFaceFromHdc(screen_dc, font_face.Receive());
+  hr = gdi_interop->CreateFontFaceFromHdc(screen_dc, font_face.GetAddressOf());
   if (FAILED(hr))
     return hr;
 
@@ -142,7 +142,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   // Get a matching font from the system font collection exposed by
   // DirectWrite.
   base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
-  hr = factory->GetSystemFontCollection(font_collection.Receive());
+  hr = factory->GetSystemFontCollection(font_collection.GetAddressOf());
   if (FAILED(hr)) {
     CHECK(false);
     return hr;
@@ -196,11 +196,11 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   }
 
   if (index != UINT_MAX && exists) {
-    hr = font_collection->GetFontFamily(index, font_family.Receive());
+    hr = font_collection->GetFontFamily(index, font_family.GetAddressOf());
   } else {
     // If we fail to find a matching font, then fallback to the first font in
     // the list. This is what skia does as well.
-    hr = font_collection->GetFontFamily(0, font_family.Receive());
+    hr = font_collection->GetFontFamily(0, font_family.GetAddressOf());
   }
 
   if (FAILED(hr)) {
@@ -229,7 +229,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   // state in canary.
   base::win::ScopedComPtr<IDWriteFontList> matching_font_list;
   hr = font_family->GetMatchingFonts(weight, stretch, style,
-                                     matching_font_list.Receive());
+                                     matching_font_list.GetAddressOf());
   uint32_t matching_font_count = 0;
   if (SUCCEEDED(hr))
     matching_font_count = matching_font_list->GetFontCount();
@@ -267,12 +267,12 @@ IDWriteFactory* PlatformFontWin::direct_write_factory_ = nullptr;
 HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
                                          base::string16* family_name) {
   base::win::ScopedComPtr<IDWriteFontFamily> font_family;
-  HRESULT hr = dwrite_font->GetFontFamily(font_family.Receive());
+  HRESULT hr = dwrite_font->GetFontFamily(font_family.GetAddressOf());
   if (FAILED(hr))
     CHECK(false);
 
   base::win::ScopedComPtr<IDWriteLocalizedStrings> family_names;
-  hr = font_family->GetFamilyNames(family_names.Receive());
+  hr = font_family->GetFamilyNames(family_names.GetAddressOf());
   if (FAILED(hr))
     CHECK(false);
 
@@ -525,7 +525,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   // DirectWrite to calculate the cap height.
   base::win::ScopedComPtr<IDWriteFont> dwrite_font;
   HRESULT hr = GetMatchingDirectWriteFont(
-      &font_info, italic, direct_write_factory_, dwrite_font.Receive());
+      &font_info, italic, direct_write_factory_, dwrite_font.GetAddressOf());
   if (FAILED(hr)) {
     CHECK(false);
     return nullptr;

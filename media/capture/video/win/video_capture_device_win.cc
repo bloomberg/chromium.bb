@@ -116,7 +116,7 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
 
   ScopedComPtr<IEnumMoniker> enum_moniker;
   hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       enum_moniker.Receive(), 0);
+                                       enum_moniker.GetAddressOf(), 0);
   // CreateClassEnumerator returns S_FALSE on some Windows OS
   // when no camera exist. Therefore the FAILED macro can't be used.
   if (hr != S_OK)
@@ -124,7 +124,7 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
 
   ScopedComPtr<IBaseFilter> capture_filter;
   for (ScopedComPtr<IMoniker> moniker;
-       enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK;
+       enum_moniker->Next(1, moniker.GetAddressOf(), NULL) == S_OK;
        moniker.Reset()) {
     ScopedComPtr<IPropertyBag> prop_bag;
     hr = moniker->BindToStorage(0, 0, IID_PPV_ARGS(&prop_bag));
@@ -171,13 +171,13 @@ ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
                                                  REFGUID major_type) {
   ScopedComPtr<IPin> pin;
   ScopedComPtr<IEnumPins> pin_enum;
-  HRESULT hr = filter->EnumPins(pin_enum.Receive());
+  HRESULT hr = filter->EnumPins(pin_enum.GetAddressOf());
   if (pin_enum.Get() == NULL)
     return pin;
 
   // Get first unconnected pin.
   hr = pin_enum->Reset();  // set to first pin
-  while ((hr = pin_enum->Next(1, pin.Receive(), NULL)) == S_OK) {
+  while ((hr = pin_enum->Next(1, pin.GetAddressOf(), NULL)) == S_OK) {
     PIN_DIRECTION this_pin_dir = static_cast<PIN_DIRECTION>(-1);
     hr = pin->QueryDirection(&this_pin_dir);
     if (pin_dir == this_pin_dir) {
@@ -294,7 +294,8 @@ bool VideoCaptureDeviceWin::Init() {
   DCHECK(thread_checker_.CalledOnValidThread());
   HRESULT hr;
 
-  hr = GetDeviceFilter(device_descriptor_.device_id, capture_filter_.Receive());
+  hr = GetDeviceFilter(device_descriptor_.device_id,
+                       capture_filter_.GetAddressOf());
   DLOG_IF_FAILED_WITH_HRESULT("Failed to create capture filter", hr);
   if (!capture_filter_.Get())
     return false;
@@ -333,7 +334,7 @@ bool VideoCaptureDeviceWin::Init() {
   if (FAILED(hr))
     return false;
 
-  hr = graph_builder_.CopyTo(media_control_.Receive());
+  hr = graph_builder_.CopyTo(media_control_.GetAddressOf());
   DLOG_IF_FAILED_WITH_HRESULT("Failed to create media control builder", hr);
   if (FAILED(hr))
     return false;
@@ -358,11 +359,11 @@ bool VideoCaptureDeviceWin::Init() {
 
   hr = capture_graph_builder_->FindInterface(
       &PIN_CATEGORY_CAPTURE, &MEDIATYPE_Interleaved, capture_filter_.Get(),
-      IID_IAMStreamConfig, (void**)stream_config.Receive());
+      IID_IAMStreamConfig, (void**)stream_config.GetAddressOf());
   if (FAILED(hr)) {
     hr = capture_graph_builder_->FindInterface(
         &PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, capture_filter_.Get(),
-        IID_IAMStreamConfig, (void**)stream_config.Receive());
+        IID_IAMStreamConfig, (void**)stream_config.GetAddressOf());
     DLOG_IF_FAILED_WITH_HRESULT("Failed to find CapFilter:IAMStreamConfig", hr);
   }
 
@@ -389,7 +390,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
                found_capability.supported_format.frame_rate);
 
   ScopedComPtr<IAMStreamConfig> stream_config;
-  HRESULT hr = output_capture_pin_.CopyTo(stream_config.Receive());
+  HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
   if (FAILED(hr)) {
     SetErrorState(FROM_HERE, "Can't get the Capture format settings", hr);
     return;
@@ -497,7 +498,7 @@ void VideoCaptureDeviceWin::GetPhotoCapabilities(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::win::ScopedComPtr<IKsTopologyInfo> info;
-  HRESULT hr = capture_filter_.CopyTo(info.Receive());
+  HRESULT hr = capture_filter_.CopyTo(info.GetAddressOf());
   if (FAILED(hr)) {
     SetErrorState(FROM_HERE, "Failed to obtain the topology info.", hr);
     return;
@@ -517,7 +518,7 @@ void VideoCaptureDeviceWin::GetPhotoCapabilities(
   for (size_t i = 0; i < num_nodes; i++) {
     info->get_NodeType(i, &node_type);
     if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_CAMERA_TERMINAL)) {
-      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(camera_control.Receive()));
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&camera_control));
       if (SUCCEEDED(hr))
         break;
       SetErrorState(FROM_HERE, "Failed to retrieve the ICameraControl.", hr);
@@ -530,7 +531,7 @@ void VideoCaptureDeviceWin::GetPhotoCapabilities(
   for (size_t i = 0; i < num_nodes; i++) {
     info->get_NodeType(i, &node_type);
     if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_PROCESSING)) {
-      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(video_control.Receive()));
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&video_control));
       if (SUCCEEDED(hr))
         break;
       SetErrorState(FROM_HERE, "Failed to retrieve the IVideoProcAmp.", hr);
@@ -649,7 +650,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScopedComPtr<IAMStreamConfig> stream_config;
-  HRESULT hr = output_capture_pin_.CopyTo(stream_config.Receive());
+  HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
   DLOG_IF_FAILED_WITH_HRESULT(
       "Failed to get IAMStreamConfig from capture device", hr);
   if (FAILED(hr))
@@ -657,7 +658,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
 
   // Get interface used for getting the frame rate.
   ScopedComPtr<IAMVideoControl> video_control;
-  hr = capture_filter_.CopyTo(video_control.Receive());
+  hr = capture_filter_.CopyTo(video_control.GetAddressOf());
 
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);

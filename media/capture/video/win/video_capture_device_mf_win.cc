@@ -63,7 +63,7 @@ HRESULT FillCapabilities(IMFSourceReader* source,
   ScopedComPtr<IMFMediaType> type;
   HRESULT hr;
   while (SUCCEEDED(hr = source->GetNativeMediaType(
-                       kFirstVideoStream, stream_index, type.Receive()))) {
+                       kFirstVideoStream, stream_index, type.GetAddressOf()))) {
     VideoCaptureFormat format;
     if (FillFormat(type.Get(), &format))
       capabilities->emplace_back(stream_index, format);
@@ -123,7 +123,7 @@ class MFReaderCallback final
 
     for (DWORD i = 0; i < count; ++i) {
       ScopedComPtr<IMFMediaBuffer> buffer;
-      sample->GetBufferByIndex(i, buffer.Receive());
+      sample->GetBufferByIndex(i, buffer.GetAddressOf());
       if (buffer.Get()) {
         DWORD length = 0, max_length = 0;
         BYTE* data = NULL;
@@ -202,14 +202,14 @@ bool VideoCaptureDeviceMFWin::Init(
   DCHECK(!reader_.Get());
 
   ScopedComPtr<IMFAttributes> attributes;
-  MFCreateAttributes(attributes.Receive(), 1);
+  MFCreateAttributes(attributes.GetAddressOf(), 1);
   DCHECK(attributes.Get());
 
   callback_ = new MFReaderCallback(this);
   attributes->SetUnknown(MF_SOURCE_READER_ASYNC_CALLBACK, callback_.get());
 
   return SUCCEEDED(MFCreateSourceReaderFromMediaSource(
-      source.Get(), attributes.Get(), reader_.Receive()));
+      source.Get(), attributes.Get(), reader_.GetAddressOf()));
 }
 
 void VideoCaptureDeviceMFWin::AllocateAndStart(
@@ -230,8 +230,9 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
       const CapabilityWin found_capability =
           GetBestMatchedCapability(params.requested_format, capabilities);
       ScopedComPtr<IMFMediaType> type;
-      hr = reader_->GetNativeMediaType(
-          kFirstVideoStream, found_capability.stream_index, type.Receive());
+      hr = reader_->GetNativeMediaType(kFirstVideoStream,
+                                       found_capability.stream_index,
+                                       type.GetAddressOf());
       if (SUCCEEDED(hr)) {
         hr = reader_->SetCurrentMediaType(kFirstVideoStream, NULL, type.Get());
         if (SUCCEEDED(hr)) {

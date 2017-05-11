@@ -40,7 +40,7 @@ void DirectManipulationHelper::Initialize(HWND window) {
       nullptr, CLSCTX_INPROC_SERVER);
   CHECK(SUCCEEDED(hr));
 
-  hr = manager_->GetUpdateManager(IID_PPV_ARGS(update_manager_.Receive()));
+  hr = manager_->GetUpdateManager(IID_PPV_ARGS(update_manager_.GetAddressOf()));
   CHECK(SUCCEEDED(hr));
 
   hr = compositor_->SetUpdateManager(update_manager_.Get());
@@ -50,7 +50,7 @@ void DirectManipulationHelper::Initialize(HWND window) {
   CHECK(SUCCEEDED(hr));
 
   hr = manager_->CreateViewport(frame_info_.Get(), window,
-      IID_PPV_ARGS(view_port_outer_.Receive()));
+                                IID_PPV_ARGS(view_port_outer_.GetAddressOf()));
   CHECK(SUCCEEDED(hr));
 
   //
@@ -74,7 +74,7 @@ void DirectManipulationHelper::SetBounds(const gfx::Rect& bounds) {
   base::win::ScopedComPtr<IDirectManipulationPrimaryContent>
       primary_content_outer;
   HRESULT hr = view_port_outer_->GetPrimaryContent(
-      IID_PPV_ARGS(primary_content_outer.Receive()));
+      IID_PPV_ARGS(primary_content_outer.GetAddressOf()));
   CHECK(SUCCEEDED(hr));
 
   base::win::ScopedComPtr<IDirectManipulationContent> content_outer;

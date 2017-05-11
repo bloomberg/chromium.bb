@@ -357,16 +357,16 @@ bool GetFallbackFont(const Font& font,
   text_length = std::min(wcslen(text), static_cast<size_t>(text_length));
 
   base::win::ScopedComPtr<IDWriteFactory> factory;
-  gfx::win::CreateDWriteFactory(factory.Receive());
+  gfx::win::CreateDWriteFactory(factory.GetAddressOf());
   base::win::ScopedComPtr<IDWriteFactory2> factory2;
-  factory.CopyTo(factory2.Receive());
+  factory.CopyTo(factory2.GetAddressOf());
   if (!factory2) {
     // IDWriteFactory2 is not available before Win8.1
     return GetUniscribeFallbackFont(font, text, text_length, result);
   }
 
   base::win::ScopedComPtr<IDWriteFontFallback> fallback;
-  if (FAILED(factory2->GetSystemFontFallback(fallback.Receive())))
+  if (FAILED(factory2->GetSystemFontFallback(fallback.GetAddressOf())))
     return false;
 
   base::string16 locale = base::UTF8ToUTF16(base::i18n::GetConfiguredLocale());
@@ -374,7 +374,7 @@ bool GetFallbackFont(const Font& font,
   base::win::ScopedComPtr<IDWriteNumberSubstitution> number_substitution;
   if (FAILED(factory2->CreateNumberSubstitution(
           DWRITE_NUMBER_SUBSTITUTION_METHOD_NONE, locale.c_str(),
-          true /* ignoreUserOverride */, number_substitution.Receive()))) {
+          true /* ignoreUserOverride */, number_substitution.GetAddressOf()))) {
     return false;
   }
 
@@ -386,7 +386,7 @@ bool GetFallbackFont(const Font& font,
       base::i18n::IsRTL() ? DWRITE_READING_DIRECTION_RIGHT_TO_LEFT
                           : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
   if (FAILED(Microsoft::WRL::MakeAndInitialize<gfx::win::TextAnalysisSource>(
-          text_analysis.Receive(), text, locale.c_str(),
+          text_analysis.GetAddressOf(), text, locale.c_str(),
           number_substitution.Get(), reading_direction))) {
     return false;
   }
@@ -397,8 +397,8 @@ bool GetFallbackFont(const Font& font,
   if (FAILED(fallback->MapCharacters(
           text_analysis.Get(), 0, text_length, nullptr, original_name.c_str(),
           static_cast<DWRITE_FONT_WEIGHT>(font.GetWeight()), font_style,
-          DWRITE_FONT_STRETCH_NORMAL, &mapped_length, mapped_font.Receive(),
-          &scale))) {
+          DWRITE_FONT_STRETCH_NORMAL, &mapped_length,
+          mapped_font.GetAddressOf(), &scale))) {
     return false;
   }
 

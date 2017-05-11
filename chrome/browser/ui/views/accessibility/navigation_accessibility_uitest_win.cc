@@ -121,8 +121,8 @@ void WinAccessibilityEventMonitor::WaitForNextEvent(
   base::win::ScopedComPtr<IAccessible> acc_obj;
   base::win::ScopedVariant child_variant;
   CHECK(S_OK == AccessibleObjectFromEvent(
-      event_info.hwnd, event_info.obj_id, event_info.child_id,
-      acc_obj.Receive(), child_variant.Receive()));
+                    event_info.hwnd, event_info.obj_id, event_info.child_id,
+                    acc_obj.GetAddressOf(), child_variant.Receive()));
 
   base::win::ScopedVariant role_variant;
   if (S_OK == acc_obj->get_accRole(child_variant, role_variant.Receive()))

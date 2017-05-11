@@ -48,12 +48,12 @@ bool D3D11VideoDecodeAccelerator::Initialize(const Config& config,
   make_context_current_cb_.Run();
 
   device_ = gl::QueryD3D11DeviceObjectFromANGLE();
-  device_->GetImmediateContext(device_context_.Receive());
+  device_->GetImmediateContext(device_context_.GetAddressOf());
 
-  HRESULT hr = device_context_.CopyTo(video_context_.Receive());
+  HRESULT hr = device_context_.CopyTo(video_context_.GetAddressOf());
   CHECK(SUCCEEDED(hr));
 
-  hr = device_.CopyTo(video_device_.Receive());
+  hr = device_.CopyTo(video_device_.GetAddressOf());
   CHECK(SUCCEEDED(hr));
 
   bool is_h264 =
@@ -104,7 +104,7 @@ bool D3D11VideoDecodeAccelerator::Initialize(const Config& config,
 
   base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder;
   hr = video_device_->CreateVideoDecoder(&desc, &dec_config,
-                                         video_decoder.Receive());
+                                         video_decoder.GetAddressOf());
   CHECK(video_decoder.Get());
 
   h264_accelerator_.reset(new D3D11H264Accelerator(
@@ -178,8 +178,8 @@ void D3D11VideoDecodeAccelerator::AssignPictureBuffers(
   texture_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
   base::win::ScopedComPtr<ID3D11Texture2D> out_texture;
-  HRESULT hr =
-      device_->CreateTexture2D(&texture_desc, nullptr, out_texture.Receive());
+  HRESULT hr = device_->CreateTexture2D(&texture_desc, nullptr,
+                                        out_texture.GetAddressOf());
   CHECK(SUCCEEDED(hr));
 
   make_context_current_cb_.Run();

@@ -278,16 +278,13 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
 
   // Instantiate the RDP ActiveX control.
   result = activex_window.CreateControlEx(
-      OLESTR("MsTscAx.MsTscAx"),
-      nullptr,
-      nullptr,
-      control.Receive(),
+      OLESTR("MsTscAx.MsTscAx"), nullptr, nullptr, control.GetAddressOf(),
       __uuidof(mstsc::IMsTscAxEvents),
       reinterpret_cast<IUnknown*>(static_cast<RdpEventsSink*>(this)));
   if (FAILED(result))
     return LogOnCreateError(result);
 
-  result = control.CopyTo(client_.Receive());
+  result = control.CopyTo(client_.GetAddressOf());
   if (FAILED(result))
     return LogOnCreateError(result);
 
@@ -305,7 +302,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
     return LogOnCreateError(result);
 
   // Check to see if the platform exposes the interface used for resizing.
-  result = client_.CopyTo(client_9_.Receive());
+  result = client_.CopyTo(client_9_.GetAddressOf());
   if (FAILED(result) && result != E_NOINTERFACE) {
     return LogOnCreateError(result);
   }
@@ -316,7 +313,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
     return LogOnCreateError(result);
 
   // Fetch IMsRdpClientAdvancedSettings interface for the client.
-  result = client_->get_AdvancedSettings2(client_settings_.Receive());
+  result = client_->get_AdvancedSettings2(client_settings_.GetAddressOf());
   if (FAILED(result))
     return LogOnCreateError(result);
 
@@ -370,7 +367,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   if (FAILED(result))
     return LogOnCreateError(result);
 
-  result = client_->get_SecuredSettings2(secured_settings2.Receive());
+  result = client_->get_SecuredSettings2(secured_settings2.GetAddressOf());
   if (SUCCEEDED(result)) {
     result =
         secured_settings2->put_AudioRedirectionMode(kRdpAudioModeRedirect);
@@ -378,7 +375,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
       return LogOnCreateError(result);
   }
 
-  result = client_->get_SecuredSettings(secured_settings.Receive());
+  result = client_->get_SecuredSettings(secured_settings.GetAddressOf());
   if (FAILED(result))
     return LogOnCreateError(result);
 
@@ -469,7 +466,7 @@ HRESULT RdpClientWindow::OnDisconnected(long reason) {
   // Get the error message as well.
   base::win::ScopedBstr error_message;
   base::win::ScopedComPtr<mstsc::IMsRdpClient5> client5;
-  result = client_.CopyTo(client5.Receive());
+  result = client_.CopyTo(client5.GetAddressOf());
   if (SUCCEEDED(result)) {
     result = client5->GetErrorDescription(reason, extended_code,
                                           error_message.Receive());

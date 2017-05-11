@@ -51,7 +51,7 @@ class NativeViewAccessibilityWinTest : public ViewsTestBase {
     ScopedComPtr<IAccessible> view_accessible(
         view->GetNativeViewAccessible());
     ScopedComPtr<IServiceProvider> service_provider;
-    ASSERT_EQ(S_OK, view_accessible.CopyTo(service_provider.Receive()));
+    ASSERT_EQ(S_OK, view_accessible.CopyTo(service_provider.GetAddressOf()));
     ASSERT_EQ(S_OK,
         service_provider->QueryService(IID_IAccessible2_2, result));
   }
@@ -82,9 +82,9 @@ TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
   ScopedComPtr<IAccessible> textfield_accessible;
   ScopedVariant child_index(1);
   ASSERT_EQ(S_OK, content_accessible->get_accChild(
-      child_index, textfield_dispatch.Receive()));
-  ASSERT_EQ(S_OK, textfield_dispatch.CopyTo(
-      textfield_accessible.Receive()));
+                      child_index, textfield_dispatch.GetAddressOf()));
+  ASSERT_EQ(S_OK,
+            textfield_dispatch.CopyTo(textfield_accessible.GetAddressOf()));
 
   ScopedBstr name;
   ScopedVariant childid_self(CHILDID_SELF);
@@ -121,9 +121,9 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   ScopedComPtr<IAccessible> child_view_accessible;
   ScopedVariant child_index_1(1);
   ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
-      child_index_1, child_view_dispatch.Receive()));
-  ASSERT_EQ(S_OK, child_view_dispatch.CopyTo(
-      child_view_accessible.Receive()));
+                      child_index_1, child_view_dispatch.GetAddressOf()));
+  ASSERT_EQ(S_OK,
+            child_view_dispatch.CopyTo(child_view_accessible.GetAddressOf()));
 
   Widget owned_widget;
   Widget::InitParams owned_init_params =
@@ -140,9 +140,9 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   ScopedComPtr<IAccessible> child_widget_accessible;
   ScopedVariant child_index_2(2);
   ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
-      child_index_2, child_widget_dispatch.Receive()));
+                      child_index_2, child_widget_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK, child_widget_dispatch.CopyTo(
-      child_widget_accessible.Receive()));
+                      child_widget_accessible.GetAddressOf()));
 
   ScopedComPtr<IDispatch> child_widget_sibling_dispatch;
   ScopedComPtr<IAccessible> child_widget_sibling_accessible;
@@ -153,15 +153,15 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   ASSERT_EQ(VT_DISPATCH, V_VT(result.ptr()));
   child_widget_sibling_dispatch = V_DISPATCH(result.ptr());
   ASSERT_EQ(S_OK, child_widget_sibling_dispatch.CopyTo(
-      child_widget_sibling_accessible.Receive()));
+                      child_widget_sibling_accessible.GetAddressOf()));
   ASSERT_EQ(child_view_accessible.Get(), child_widget_sibling_accessible.Get());
 
   ScopedComPtr<IDispatch> child_widget_parent_dispatch;
   ScopedComPtr<IAccessible> child_widget_parent_accessible;
   ASSERT_EQ(S_OK, child_widget_accessible->get_accParent(
-      child_widget_parent_dispatch.Receive()));
+                      child_widget_parent_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK, child_widget_parent_dispatch.CopyTo(
-      child_widget_parent_accessible.Receive()));
+                      child_widget_parent_accessible.GetAddressOf()));
   ASSERT_EQ(root_view_accessible.Get(), child_widget_parent_accessible.Get());
 }
 
@@ -186,13 +186,14 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   ASSERT_EQ(NULL, root_view->parent());
 
   ScopedComPtr<IAccessible2_2> root_view_accessible;
-  GetIAccessible2InterfaceForView(root_view, root_view_accessible.Receive());
+  GetIAccessible2InterfaceForView(root_view,
+                                  root_view_accessible.GetAddressOf());
 
   ScopedComPtr<IAccessible2_2> infobar_accessible;
-  GetIAccessible2InterfaceForView(infobar, infobar_accessible.Receive());
+  GetIAccessible2InterfaceForView(infobar, infobar_accessible.GetAddressOf());
 
   ScopedComPtr<IAccessible2_2> infobar2_accessible;
-  GetIAccessible2InterfaceForView(infobar2, infobar2_accessible.Receive());
+  GetIAccessible2InterfaceForView(infobar2, infobar2_accessible.GetAddressOf());
 
   // Initially, there are no alerts
   ScopedBstr alerts_bstr(L"alerts");

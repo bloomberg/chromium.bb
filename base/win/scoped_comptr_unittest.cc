@@ -46,7 +46,7 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
   EXPECT_TRUE(unk2.Get() != NULL);
 
   ScopedComPtr<IMalloc> mem_alloc;
-  EXPECT_TRUE(SUCCEEDED(CoGetMalloc(1, mem_alloc.Receive())));
+  EXPECT_TRUE(SUCCEEDED(CoGetMalloc(1, mem_alloc.GetAddressOf())));
 
   ScopedComPtr<IUnknown> qi_test;
   EXPECT_HRESULT_SUCCEEDED(mem_alloc.CopyTo(IID_PPV_ARGS(&qi_test)));

@@ -387,7 +387,7 @@ class MidiManagerWinrt::MidiPortManager {
       return false;
 
     hr = dev_info_statics->CreateWatcherAqsFilter(device_selector,
-                                                  watcher_.Receive());
+                                                  watcher_.GetAddressOf());
     if (FAILED(hr)) {
       VLOG(1) << "CreateWatcherAqsFilter failed: " << PrintHr(hr);
       return false;
@@ -794,14 +794,14 @@ class MidiManagerWinrt::MidiInPortManager final
               std::string dev_id = GetDeviceIdString(handle);
 
               ScopedComPtr<IMidiMessage> message;
-              HRESULT hr = args->get_Message(message.Receive());
+              HRESULT hr = args->get_Message(message.GetAddressOf());
               if (FAILED(hr)) {
                 VLOG(1) << "get_Message failed: " << PrintHr(hr);
                 return hr;
               }
 
               ScopedComPtr<IBuffer> buffer;
-              hr = message->get_RawData(buffer.Receive());
+              hr = message->get_RawData(buffer.GetAddressOf());
               if (FAILED(hr)) {
                 VLOG(1) << "get_RawData failed: " << PrintHr(hr);
                 return hr;
@@ -1014,7 +1014,7 @@ void MidiManagerWinrt::SendOnComThread(uint32_t port_index,
 
   ScopedComPtr<IBuffer> buffer;
   HRESULT hr = buffer_factory->Create(static_cast<UINT32>(data.size()),
-                                      buffer.Receive());
+                                      buffer.GetAddressOf());
   if (FAILED(hr)) {
     VLOG(1) << "Create failed: " << PrintHr(hr);
     return;
