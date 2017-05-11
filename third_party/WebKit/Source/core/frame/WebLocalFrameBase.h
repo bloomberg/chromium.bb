@@ -10,9 +10,11 @@
 
 namespace blink {
 
+class FrameOwner;
 class FrameView;
 class LocalFrame;
 class Node;
+class Page;
 class WebFrameClient;
 class WebTextCheckClient;
 class WebViewBase;
@@ -25,7 +27,8 @@ class WebViewBase;
 // cyclic dependencies in web/ and move classes from web/ into core/ or
 // modules.
 // TODO(slangley): Remove this class once WebLocalFrameImpl is in core/.
-class WebLocalFrameBase : public WebLocalFrame {
+class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
+                          public WebLocalFrame {
  public:
   CORE_EXPORT static WebLocalFrameBase* FromFrame(LocalFrame*);
   CORE_EXPORT static WebLocalFrameBase* FromFrame(LocalFrame&);
@@ -37,6 +40,11 @@ class WebLocalFrameBase : public WebLocalFrame {
   virtual void ClearContextMenuNode() = 0;
   virtual LocalFrame* GetFrame() const = 0;
   virtual FrameView* GetFrameView() const = 0;
+  virtual void InitializeCoreFrame(Page&,
+                                   FrameOwner*,
+                                   const AtomicString& name) = 0;
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
   explicit WebLocalFrameBase(WebTreeScopeType scope) : WebLocalFrame(scope) {}
