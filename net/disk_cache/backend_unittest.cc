@@ -3886,41 +3886,6 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationBasics) {
   EXPECT_TRUE(keys_to_match.empty());
 }
 
-TEST_F(DiskCacheBackendTest, SimpleCacheIndexRecovery) {
-  // Make sure we can recover set of entries when the index was removed.
-  SetSimpleCacheMode();
-  InitCache();
-  std::set<std::string> key_pool;
-  ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
-
-  cache_.reset();
-
-  // Give it a chance to write out the index, so we can delete it (rather
-  // than have it write it after we delete it).
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::RunLoop().RunUntilIdle();
-
-  base::FilePath index_path =
-      cache_path_.AppendASCII("index-dir").AppendASCII("the-real-index");
-  ASSERT_TRUE(base::DeleteFile(index_path, false));
-
-  DisableFirstCleanup();
-  InitCache();
-  // A bit surprising, but it calls it "NEWCACHE" if there was no index,
-  // even if it reconstructed non-zero things.
-  EXPECT_EQ(disk_cache::SimpleIndex::INITIALIZE_METHOD_NEWCACHE,
-            simple_cache_impl_->index()->init_method());
-
-  // Check that enumeration returns all entries.
-  std::set<std::string> keys_to_match(key_pool);
-  std::unique_ptr<TestIterator> iter = CreateIterator();
-  size_t count = 0;
-  ASSERT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &keys_to_match, &count));
-  iter.reset();
-  EXPECT_EQ(key_pool.size(), count);
-  EXPECT_TRUE(keys_to_match.empty());
-}
-
 // Tests that the enumerations are not affected by dooming an entry in the
 // middle.
 TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationWhileDoomed) {
