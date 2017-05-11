@@ -2893,24 +2893,6 @@
             ]
         }
     ],
-    "SpeculativeResourcePrefetchingValidation": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Prefetching",
-                    "params": {
-                        "mode": "prefetching"
-                    },
-                    "enable_features": [
-                        "SpeculativeResourcePrefetching"
-                    ]
-                }
-            ]
-        }
-    ],
     "StrictSecureCookies": [
         {
             "platforms": [
