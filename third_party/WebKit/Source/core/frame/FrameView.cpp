@@ -2783,7 +2783,7 @@ void FrameView::ScrollbarStyleChanged() {
 
 bool FrameView::ScheduleAnimation() {
   if (PlatformChromeClient* client = GetChromeClient()) {
-    client->ScheduleAnimation(frame_);
+    client->ScheduleAnimation(this);
     return true;
   }
   return false;

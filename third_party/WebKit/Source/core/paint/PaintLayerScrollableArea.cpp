@@ -1943,7 +1943,7 @@ bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
 
 bool PaintLayerScrollableArea::ScheduleAnimation() {
   if (PlatformChromeClient* client = GetChromeClient()) {
-    client->ScheduleAnimation(Box().GetFrame());
+    client->ScheduleAnimation(Box().GetFrame()->View());
     return true;
   }
   return false;

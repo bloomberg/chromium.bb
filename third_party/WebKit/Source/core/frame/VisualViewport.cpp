@@ -680,7 +680,7 @@ LocalFrame* VisualViewport::MainFrame() const {
 
 bool VisualViewport::ScheduleAnimation() {
   if (PlatformChromeClient* client = GetChromeClient()) {
-    client->ScheduleAnimation(MainFrame());
+    client->ScheduleAnimation(MainFrame()->View());
     return true;
   }
   return false;

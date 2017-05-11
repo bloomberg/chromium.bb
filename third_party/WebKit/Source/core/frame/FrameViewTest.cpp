@@ -43,7 +43,7 @@ class MockChromeClient : public EmptyChromeClient {
     MockSetToolTip(&frame, tooltip_text, dir);
   }
 
-  void ScheduleAnimation(LocalFrame*) override {
+  void ScheduleAnimation(const PlatformFrameView*) override {
     has_scheduled_animation_ = true;
   }
   bool has_scheduled_animation_;

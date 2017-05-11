@@ -297,6 +297,7 @@ component("platform") {
     "PasteMode.h",
     "PlatformChromeClient.h",
     "PlatformExport.h",
+    "PlatformFrameView.h",
     "PlatformResourceLoader.cpp",
     "PlatformResourceLoader.h",
     "PluginScriptForbiddenScope.cpp",
