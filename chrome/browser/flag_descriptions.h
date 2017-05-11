@@ -2888,20 +2888,20 @@ extern const char kExpensiveBackgroundTimerThrottlingDescription[];
 
 #if !defined(OS_ANDROID)
 
-// Name for the flag to enable default MediaSession on desktop
-extern const char kEnableDefaultMediaSessionName[];
+// Name for the flag to enable audio focus on desktop.
+extern const char kEnableAudioFocusName[];
 
-// Desciption for the flag to enable default MediaSession on desktop
-extern const char kEnableDefaultMediaSessionDescription[];
+// Desciption for the flag to enable audio focus on desktop.
+extern const char kEnableAudioFocusDescription[];
 
-// Option for disabling the default MediaSession
-extern const char kEnableDefaultMediaSessionDisabled[];
+// Option for disabling audio focus on desktop.
+extern const char kEnableAudioFocusDisabled[];
 
-// Option for enabling the default MediaSession
-extern const char kEnableDefaultMediaSessionEnabled[];
+// Option for enabling audio focus on desktop.
+extern const char kEnableAudioFocusEnabled[];
 
-// Option for enabling the default MediaSession with Flash
-extern const char kEnableDefaultMediaSessionEnabledDuckFlash[];
+// Option for enabling audio focus with Flash support on desktop.
+extern const char kEnableAudioFocusEnabledDuckFlash[];
 
 #endif  // !defined(OS_ANDROID)
 

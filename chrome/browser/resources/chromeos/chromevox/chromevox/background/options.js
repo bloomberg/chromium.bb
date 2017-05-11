@@ -74,7 +74,7 @@ cvox.OptionsPage.init = function() {
       localStorage['brailleSideBySide'] === 'true' ?
       currentlyDisplayingSideBySide : currentlyDisplayingInterleave;
 
-  chrome.commandLinePrivate.hasSwitch('enable-default-media-session',
+  chrome.commandLinePrivate.hasSwitch('enable-audio-focus',
       function(result) {
         if (!result) {
           $('audioStrategy').hidden = true;

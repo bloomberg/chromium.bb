@@ -22266,6 +22266,7 @@ from previous Chrome versions.
       label="enable-supervised-user-managed-bookmarks-folder"/>
   <int value="2079672348" label="ExperimentalKeyboardLockUI:disabled"/>
   <int value="2085438501" label="ChromeHome:enabled"/>
+  <int value="2089897928" label="enable-audio-focus"/>
   <int value="2093235103" label="default-tile-width"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2098714203" label="enable-generic-sensors"/>

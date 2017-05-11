@@ -17,7 +17,7 @@ bool IsDefaultMediaSessionEnabled() {
   return true;
 #else
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDefaultMediaSession);
+      switches::kEnableAudioFocus);
 #endif
 }
 

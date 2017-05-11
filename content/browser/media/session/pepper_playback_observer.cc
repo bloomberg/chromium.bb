@@ -19,8 +19,8 @@ namespace {
 
 bool ShouldDuckFlash() {
   return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-             switches::kEnableDefaultMediaSession) ==
-         switches::kEnableDefaultMediaSessionDuckFlash;
+             switches::kEnableAudioFocus) ==
+         switches::kEnableAudioFocusDuckFlash;
 }
 
 }  // anonymous namespace

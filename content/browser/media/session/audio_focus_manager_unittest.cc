@@ -39,7 +39,7 @@ class AudioFocusManagerTest : public testing::Test {
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableDefaultMediaSession);
+        switches::kEnableAudioFocus);
     rph_factory_.reset(new MockRenderProcessHostFactory());
     RenderProcessHostImpl::set_render_process_host_factory(rph_factory_.get());
     browser_context_.reset(new TestBrowserContext());

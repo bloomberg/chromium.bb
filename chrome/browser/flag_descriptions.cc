@@ -2659,16 +2659,16 @@ const char kExpensiveBackgroundTimerThrottlingDescription[] =
 
 #if !defined(OS_ANDROID)
 
-const char kEnableDefaultMediaSessionName[] = "Manage audio focus across tabs";
+const char kEnableAudioFocusName[] = "Manage audio focus across tabs";
 
-const char kEnableDefaultMediaSessionDescription[] =
+const char kEnableAudioFocusDescription[] =
     "Manage audio focus across tabs to improve the audio mixing.";
 
-const char kEnableDefaultMediaSessionDisabled[] = "Disabled";
+const char kEnableAudioFocusDisabled[] = "Disabled";
 
-const char kEnableDefaultMediaSessionEnabled[] = "Enabled";
+const char kEnableAudioFocusEnabled[] = "Enabled";
 
-const char kEnableDefaultMediaSessionEnabledDuckFlash[] =
+const char kEnableAudioFocusEnabledDuckFlash[] =
     "Enabled (Flash lowers volume when interrupted by other sound, "
     "experimental)";
 
