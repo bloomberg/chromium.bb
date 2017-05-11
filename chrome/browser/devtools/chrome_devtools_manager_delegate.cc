@@ -365,7 +365,7 @@ std::string ChromeDevToolsManagerDelegate::GetTargetType(
   std::string extension_name;
   std::string extension_type;
   if (!GetExtensionInfo(host, &extension_name, &extension_type))
-    return std::string();
+    return DevToolsAgentHost::kTypeOther;
   return extension_type;
 }
 
