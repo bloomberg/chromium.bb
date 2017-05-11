@@ -28,7 +28,7 @@ test(function() {
   assert_true(iterator.next().done);
 
   assert_equals(entry.value[0], 'width');
-  assert_true(entry.value[1] instanceof CSSSimpleLength);
+  assert_equals(entry.value[1].constructor.name, CSSSimpleLength.name);
   assert_equals(entry.value[1].cssText, '50px');
 }, "Iterator for single entry returns iterator with a single value");
 
@@ -53,7 +53,7 @@ test(function() {
   // Should only be one entry.
   assert_true(iterator.next().done);
 
-  assert_true(entry.value instanceof CSSSimpleLength);
+  assert_equals(entry.value.constructor.name, CSSSimpleLength.name);
   assert_equals(entry.value.cssText, '70px');
 }, "Iterator for single value returns iterator with a single value");
 

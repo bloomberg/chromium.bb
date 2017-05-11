@@ -21,7 +21,8 @@ test(function() {
     var value = 10 * (i + 1);
     testElement.style[gettingProperties[i]] = "" + value;
     var result = testElement.styleMap.get(gettingProperties[i]);
-    assert_true(result instanceof CSSNumberValue, "result from " + gettingProperties[i]);
+    assert_equals(result.constructor.name, CSSNumberValue.name,
+        "result from " + gettingProperties[i].name);
     assert_equals(result.value, value);
   }
 }, "Single valued CSSNumberValues can be retrieved from Inline StyleMap");
@@ -31,9 +32,9 @@ test(function() {
 
   var result = testElement.styleMap.getAll('animation-iteration-count');
   assert_equals(result.length, 3);
-  assert_true(result[0] instanceof CSSNumberValue);
-  assert_true(result[1] instanceof CSSNumberValue);
-  assert_true(result[2] instanceof CSSNumberValue);
+  assert_equals(result[0].constructor.name, CSSNumberValue.name);
+  assert_equals(result[1].constructor.name, CSSNumberValue.name);
+  assert_equals(result[2].constructor.name, CSSNumberValue.name);
   assert_equals(result[0].value, 6.2);
   assert_equals(result[1].value, 9.8);
   assert_equals(result[2].value, 1);

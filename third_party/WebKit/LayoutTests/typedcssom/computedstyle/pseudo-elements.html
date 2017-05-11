@@ -27,7 +27,7 @@ var t1 = async_test('get on Computed StyleMap of pseudo element returns correct 
 function t1Callback(pseudoComputedStyleMap) {
   t1.step(function() {
     var pseudoResult = pseudoComputedStyleMap.get('width');
-    assert_true(pseudoResult instanceof CSSSimpleLength);
+    assert_equals(pseudoResult.constructor.name, CSSSimpleLength.name);
     assert_equals(pseudoResult.cssText, '100px');
   });
   t1.done();

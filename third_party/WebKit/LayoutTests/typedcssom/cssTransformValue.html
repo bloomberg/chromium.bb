@@ -6,8 +6,7 @@
 
 test(function() {
   var transformValueObject = new CSSTransformValue();
-    assert_true(transformValueObject instanceof CSSTransformValue);
-    assert_true(transformValueObject instanceof CSSStyleValue);
+    assert_equals(transformValueObject.constructor.name, CSSTransformValue.name);
 }, "A CSSTransformValue object can be constructed");
 
 test(function() {
@@ -34,9 +33,9 @@ test(function() {
     newTransformArray.push(component);
   }
   assert_true(newTransformArray.length == 3);
-  assert_true(newTransformArray[0] instanceof CSSScale);
-  assert_true(newTransformArray[1] instanceof CSSMatrixComponent);
-  assert_true(newTransformArray[2] instanceof CSSScale);
+  assert_equals(newTransformArray[0].constructor.name, CSSScale.name);
+  assert_equals(newTransformArray[1].constructor.name, CSSMatrixComponent.name);
+  assert_equals(newTransformArray[2].constructor.name, CSSScale.name);
 }, "CSSTransformValue can iterate through all its all its transformComponent members");
 
 </script>

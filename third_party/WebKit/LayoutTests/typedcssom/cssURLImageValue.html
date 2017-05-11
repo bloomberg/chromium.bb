@@ -23,7 +23,7 @@ function base64Url() {
 }
 
 function assertCorrectURLImageValue(image, expectedUrl, expectedWidth, expectedHeight, expectedRatio) {
-  assert_true(image instanceof CSSURLImageValue);
+  assert_equals(image.constructor.name, CSSURLImageValue.name);
   assert_equals(image.url, expectedUrl);
   assert_equals(image.state, "loaded");
   assert_equals(image.intrinsicWidth, expectedWidth);

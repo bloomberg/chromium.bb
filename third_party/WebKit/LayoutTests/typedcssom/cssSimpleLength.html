@@ -32,7 +32,7 @@ test(function() {
 
   assert_not_equals(simpleLength1, result);
   assert_not_equals(simpleLength2, result);
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSSimpleLength.name);
   assert_equals(result.value, 15.1);
   assert_equals(result.type, 'px');
 }, 'Adding CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value.');
@@ -43,7 +43,7 @@ test(function() {
 
   var result = simpleLength1.add(simpleLength2);
 
-  assert_true(result instanceof CSSCalcLength);
+  assert_equals(result.constructor.name, CSSCalcLength.name);
   assert_equals(result.px, 5.1);
   assert_equals(result.percent, 10);
 }, 'Adding CSSSimpleLengths with different units produces a calc length with the correct values.');
@@ -56,7 +56,7 @@ test(function() {
 
   assert_not_equals(simpleLength1, result);
   assert_not_equals(simpleLength2, result);
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSSimpleLength.name);
   assert_equals(result.value, -4.9);
   assert_equals(result.type, 'px');
 }, 'Subtracting CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value.');
@@ -67,7 +67,7 @@ test(function() {
 
   var result = simpleLength1.subtract(simpleLength2);
 
-  assert_true(result instanceof CSSCalcLength);
+  assert_equals(result.constructor.name, CSSCalcLength.name);
   assert_equals(result.px, 5.1);
   assert_equals(result.percent, -10);
 }, 'Subtracting CSSSimpleLengths with different units produces a calc length with the correct values.');
@@ -77,7 +77,7 @@ test(function() {
   var result = simpleLength.multiply(4);
 
   assert_not_equals(simpleLength, result);
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSSimpleLength.name);
   assert_approx_equals(result.value, 20.8, 0.00000001);
   assert_equals(result.type, 'px');
 }, 'Multiplying a CSSSimpleLength produces a new CSSSimpleLength with the correct value.');
@@ -87,7 +87,7 @@ test(function() {
   var result = simpleLength.divide(2);
 
   assert_not_equals(simpleLength, result);
-  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.constructor.name, CSSSimpleLength.name);
   assert_equals(result.value, 12.5);
   assert_equals(result.type, 'px');
 }, 'Dividing a CSSSimpleLength produces a new CSSSimpleLength with the correct value.');

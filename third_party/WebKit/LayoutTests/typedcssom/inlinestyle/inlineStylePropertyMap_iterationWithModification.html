@@ -12,7 +12,7 @@ test(function() {
   var iterator = testElement.styleMap.entries();
   var entry = iterator.next();
   assert_equals(entry.value[0], 'width');
-  assert_true(entry.value[1] instanceof CSSSimpleLength);
+  assert_equals(entry.value[1].constructor.name, CSSSimpleLength.name);
   assert_equals(entry.value[1].cssText, '60px');
 
   // This shouldn't appear in the iterator.
@@ -20,7 +20,7 @@ test(function() {
 
   entry = iterator.next();
   assert_equals(entry.value[0], 'border-left-width');
-  assert_true(entry.value[1] instanceof CSSSimpleLength);
+  assert_equals(entry.value[1].constructor.name, CSSSimpleLength.name);
   assert_equals(entry.value[1].cssText, '30px');
 
   assert_true(iterator.next().done);
@@ -31,14 +31,14 @@ test(function() {
 
   var iterator = testElement.styleMap.values();
   var entry = iterator.next();
-  assert_true(entry.value instanceof CSSSimpleLength);
+  assert_equals(entry.value.constructor.name, CSSSimpleLength.name);
   assert_equals(entry.value.cssText, '60px');
 
   // This shouldn't appear in the iterator.
   testElement.style.borderTopWidth = '10px';
 
   entry = iterator.next();
-  assert_true(entry.value instanceof CSSSimpleLength);
+  assert_equals(entry.value.constructor.name, CSSSimpleLength.name);
   assert_equals(entry.value.cssText, '30px');
 
   assert_true(iterator.next().done);

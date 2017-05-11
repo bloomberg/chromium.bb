@@ -119,8 +119,7 @@ function runGetterTests(
       element.style[propertyName] = keyword;
 
       let result = element.styleMap.get(propertyName);
-      assert_true(result instanceof CSSKeywordValue,
-          'result instanceof CSSKeywordValue:');
+      assert_equals(result.constructor.name, CSSKeywordValue.name);
       assert_equals(result.cssText, keyword);
     }, 'Getting ' + propertyName + ' when it is set to ' + keyword);
   }
