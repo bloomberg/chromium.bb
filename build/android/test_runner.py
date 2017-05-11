@@ -84,12 +84,6 @@ def AddCommandLineOptions(parser):
       type=os.path.realpath,
       help='The relative filepath to a file containing '
            'command-line flags to set on the device')
-  # TODO(jbudorick): This is deprecated. Remove once clients have switched
-  # to passing command-line flags directly.
-  parser.add_argument(
-      '-a', '--test-arguments',
-      dest='test_arguments', default='',
-      help=argparse.SUPPRESS)
   parser.set_defaults(allow_unknown=True)
   parser.set_defaults(command_line_flags=None)
 
@@ -431,10 +425,6 @@ def AddInstrumentationTestOptions(parser):
       '--timeout-scale',
       type=float,
       help='Factor by which timeouts should be scaled.')
-  parser.add_argument(
-      '-w', '--wait_debugger',
-      action='store_true', dest='wait_for_debugger',
-      help='Wait for debugger.')
 
   # These arguments are suppressed from the help text because they should
   # only ever be specified by an intermediate script.

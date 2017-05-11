@@ -654,13 +654,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if args.regenerate_goldens:
       self._flags.append('--regenerate-goldens')
 
-    if args.test_arguments:
-      # --test-arguments is deprecated for gtests and is in the process of
-      # being removed.
-      raise Exception(
-          '--test-arguments is not supported for instrumentation '
-          'tests. Pass command-line flags directly instead.')
-
   def _initializeDriverAttributes(self):
     self._driver_apk = os.path.join(
         constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,

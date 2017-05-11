@@ -237,7 +237,7 @@ output a message.
 To run unit tests use the following command:
 
 ```shell
-out/Debug/bin/run_test_name -f <test_filter_if_any> --test-arguments=--wait-for-debugger -t 6000
+out/Debug/bin/run_test_name -f <test_filter_if_any> --wait-for-debugger -t 6000
 ```
 
 That command will cause the test process to wait until a debugger is attached.
