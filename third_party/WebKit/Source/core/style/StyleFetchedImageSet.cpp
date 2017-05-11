@@ -128,9 +128,6 @@ PassRefPtr<Image> StyleFetchedImageSet::GetImage(
 
 bool StyleFetchedImageSet::KnownToBeOpaque(
     const LayoutObject& layout_object) const {
-  TRACE_EVENT1(
-      TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
-      InspectorPaintImageEvent::Data(&layout_object, *best_fit_image_.Get()));
   return best_fit_image_->GetImage()->CurrentFrameKnownToBeOpaque(
       Image::kPreCacheMetadata);
 }
