@@ -708,24 +708,24 @@ public class VideoCaptureCamera
             }
         }
 
-        if (parameters.getSupportedFlashModes() != null
-                && fillLightMode != AndroidFillLightMode.NOT_SET) {
-            switch (fillLightMode) {
-                case AndroidFillLightMode.OFF:
-                    parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_OFF);
-                    break;
-                case AndroidFillLightMode.AUTO:
-                    parameters.setFlashMode(hasRedEyeReduction && redEyeReduction
-                                    ? android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE
-                                    : android.hardware.Camera.Parameters.FLASH_MODE_AUTO);
-                    break;
-                case AndroidFillLightMode.FLASH:
-                    parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_ON);
-                    break;
-                default:
-            }
+        if (parameters.getSupportedFlashModes() != null) {
             if (hasTorch && torch) {
                 parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_TORCH);
+            } else if (fillLightMode != AndroidFillLightMode.NOT_SET) {
+                switch (fillLightMode) {
+                    case AndroidFillLightMode.OFF:
+                        parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_OFF);
+                        break;
+                    case AndroidFillLightMode.AUTO:
+                        parameters.setFlashMode(hasRedEyeReduction && redEyeReduction
+                                        ? android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE
+                                        : android.hardware.Camera.Parameters.FLASH_MODE_AUTO);
+                        break;
+                    case AndroidFillLightMode.FLASH:
+                        parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_ON);
+                        break;
+                    default:
+                }
             }
         }
 

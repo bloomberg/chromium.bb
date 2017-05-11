@@ -390,27 +390,40 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     range.getLower() + (range.getUpper() + range.getLower()) / 2 /* nanoseconds*/);
 
         } else {
+            requestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
             requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, mAeFpsRange);
         }
-        switch (mFillLightMode) {
-            case AndroidFillLightMode.OFF:
-                requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
-                break;
-            case AndroidFillLightMode.AUTO:
-                // Setting the AE to CONTROL_AE_MODE_ON_AUTO_FLASH[_REDEYE] overrides FLASH_MODE.
-                requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, mRedEyeReduction
-                                ? CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE
-                                : CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                break;
-            case AndroidFillLightMode.FLASH:
-                // Setting the AE to CONTROL_AE_MODE_ON_ALWAYS_FLASH overrides FLASH_MODE.
-                requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CameraMetadata.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                break;
-            default:
+
+        if (mTorch) {
+            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                    mExposureMode == AndroidMeteringMode.CONTINUOUS
+                            ? CameraMetadata.CONTROL_AE_MODE_ON
+                            : CameraMetadata.CONTROL_AE_MODE_OFF);
+            requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH);
+        } else {
+            switch (mFillLightMode) {
+                case AndroidFillLightMode.OFF:
+                    requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
+                    break;
+                case AndroidFillLightMode.AUTO:
+                    // Setting the AE to CONTROL_AE_MODE_ON_AUTO_FLASH[_REDEYE] overrides
+                    // FLASH_MODE.
+                    requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                            mRedEyeReduction ? CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE
+                                             : CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                    break;
+                case AndroidFillLightMode.FLASH:
+                    // Setting the AE to CONTROL_AE_MODE_ON_ALWAYS_FLASH overrides FLASH_MODE.
+                    requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                            CameraMetadata.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                    requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_SINGLE);
+                    break;
+                default:
+            }
+            requestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
+                    CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_IDLE);
         }
-        if (mTorch) requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH);
 
         requestBuilder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, mExposureCompensation);
 
