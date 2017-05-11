@@ -130,19 +130,7 @@ class WTF_EXPORT Partitions {
   static base::subtle::SpinLock initialization_lock_;
   static bool initialized_;
 
-  // We have the following four partitions.
-  //   - LayoutObject partition: A partition to allocate LayoutObjects.
-  //     We prepare a dedicated partition for LayoutObjects because they
-  //     are likely to be a source of use-after-frees. Another reason
-  //     is for performance: As LayoutObjects are guaranteed to only be used
-  //     by the main thread, we can bypass acquiring a lock. Also we can
-  //     improve memory locality by putting LayoutObjects together.
-  //   - ArrayBuffer partition: A partition to allocate array buffers.
-  //   - Buffer partition: A partition to allocate other buffers that have
-  //     a strong risk where the length and/or the contents are exploited from
-  //     user scripts. Vectors, HashTables and Strings are allocated in the
-  //      buffer partition.
-  //   - Fast malloc partition: A partition to allocate all other objects.
+  // See Allocator.md for a description of these partitions.
   static base::PartitionAllocatorGeneric fast_malloc_allocator_;
   static base::PartitionAllocatorGeneric array_buffer_allocator_;
   static base::PartitionAllocatorGeneric buffer_allocator_;
