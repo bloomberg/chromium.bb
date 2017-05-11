@@ -229,10 +229,10 @@ DefaultCommandLineSwitch g_default_switches[] = {
     {switches::kEnableDefaultMediaSession, ""},
 #endif
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
+    {switches::kDisableGpu, ""},
 #if defined(OS_ANDROID)
     {switches::kDisableGLDrawingForTests, ""},
-#else
-    {switches::kDisableGpu, ""},
+    {switches::kSkipGpuDataLoading, ""},
 #endif  // defined(OS_ANDROID)
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 #if defined(OS_LINUX)
