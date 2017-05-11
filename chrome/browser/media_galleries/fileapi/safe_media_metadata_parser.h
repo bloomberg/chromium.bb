@@ -71,19 +71,19 @@ class SafeMediaMetadataParser
   // Sequence of functions that bounces from the IO thread to the UI thread to
   // read the blob data, then sends the data back to the utility process.
   void StartBlobRequest(
-      const extensions::mojom::MediaDataSource::ReadBlobCallback& callback,
+      extensions::mojom::MediaDataSource::ReadBlobCallback callback,
       int64_t position,
       int64_t length);
   void StartBlobReaderOnUIThread(
-      const extensions::mojom::MediaDataSource::ReadBlobCallback& callback,
+      extensions::mojom::MediaDataSource::ReadBlobCallback callback,
       int64_t position,
       int64_t length);
   void BlobReaderDoneOnUIThread(
-      const extensions::mojom::MediaDataSource::ReadBlobCallback& callback,
+      extensions::mojom::MediaDataSource::ReadBlobCallback callback,
       std::unique_ptr<std::string> data,
       int64_t /* blob_total_size */);
   void FinishBlobRequest(
-      const extensions::mojom::MediaDataSource::ReadBlobCallback& callback,
+      extensions::mojom::MediaDataSource::ReadBlobCallback callback,
       std::unique_ptr<std::string> data);
 
   // All member variables are only accessed on the IO thread.
