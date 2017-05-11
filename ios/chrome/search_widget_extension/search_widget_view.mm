@@ -219,6 +219,7 @@ const CGFloat kIconSpacing = 5;
   labelView.numberOfLines = 0;
   labelView.textAlignment = NSTextAlignmentCenter;
   labelView.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  labelView.isAccessibilityElement = NO;
   [labelView
       setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisVertical];
@@ -238,6 +239,7 @@ const CGFloat kIconSpacing = 5;
                    action:actionSelector
          forControlEvents:UIControlEventTouchUpInside];
   actionButton.translatesAutoresizingMaskIntoConstraints = NO;
+  actionButton.accessibilityLabel = title;
   [self addSubview:actionButton];
   [constraints
       addObjectsFromArray:ui_util::CreateSameConstraints(actionButton, stack)];
@@ -274,6 +276,8 @@ const CGFloat kIconSpacing = 5;
   self.copiedButtonView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
   self.copiedButtonView.layer.cornerRadius = 5;
   self.copiedButtonView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.copiedButtonView.accessibilityLabel =
+      NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
   [self.secondaryEffectView.contentView addSubview:self.copiedButtonView];
   [self.copiedButtonView addTarget:self.target
                             action:@selector(openCopiedURL:)
@@ -366,9 +370,11 @@ const CGFloat kIconSpacing = 5;
     self.copiedButtonView.hidden = NO;
     self.hairlineView.hidden = YES;
     self.copiedURLLabel.text = self.copiedURLString;
+    self.copiedURLLabel.accessibilityLabel = self.copiedURLString;
     self.openCopiedURLTitleLabel.alpha = 1;
     self.openCopiedURLTitleLabel.text =
         NSLocalizedString(@"IDS_IOS_OPEN_COPIED_LINK", nil);
+    self.openCopiedURLTitleLabel.isAccessibilityElement = NO;
     self.copiedURLLabel.alpha = 1;
     return;
   }
@@ -377,8 +383,13 @@ const CGFloat kIconSpacing = 5;
   self.hairlineView.hidden = NO;
   self.copiedURLLabel.text =
       NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_MESSAGE", nil);
+  self.copiedURLLabel.accessibilityLabel =
+      NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_MESSAGE", nil);
   self.openCopiedURLTitleLabel.text =
       NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_TITLE", nil);
+  self.openCopiedURLTitleLabel.accessibilityLabel =
+      NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_TITLE", nil);
+  self.openCopiedURLTitleLabel.isAccessibilityElement = YES;
 
   if (base::ios::IsRunningOnIOS10OrLater()) {
     self.copiedURLLabel.alpha = 0.5;
