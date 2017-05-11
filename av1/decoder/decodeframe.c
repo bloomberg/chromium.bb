@@ -1709,9 +1709,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #endif
 
 #if CONFIG_CB4X4
-  if (mbmi->skip) reset_skip_context(xd, bsize);
+  if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize);
 #else
-  if (mbmi->skip) reset_skip_context(xd, AOMMAX(BLOCK_8X8, bsize));
+  if (mbmi->skip) {
+    av1_reset_skip_context(xd, mi_row, mi_col, AOMMAX(BLOCK_8X8, bsize));
+  }
 #endif
 
 #if CONFIG_COEF_INTERLEAVE
@@ -2408,7 +2410,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     set_skip_context(xd, mi_row, mi_col);
     skip = read_skip(cm, xd, xd->mi[0]->mbmi.segment_id_supertx, r);
     if (skip) {
-      reset_skip_context(xd, bsize);
+      av1_reset_skip_context(xd, mi_row, mi_col, bsize);
     } else {
 #if CONFIG_EXT_TX
       if (get_ext_tx_types(supertx_size, bsize, 1, cm->reduced_tx_set_used) >

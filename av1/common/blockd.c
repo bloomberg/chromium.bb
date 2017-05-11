@@ -259,6 +259,36 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
 }
 #endif
 
+void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
+                            BLOCK_SIZE bsize) {
+  int i;
+  int nplanes;
+#if CONFIG_CB4X4
+  int chroma_ref;
+  chroma_ref =
+      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y);
+  nplanes = 1 + (MAX_MB_PLANE - 1) * chroma_ref;
+#else
+  (void)mi_row;
+  (void)mi_col;
+  nplanes = MAX_MB_PLANE;
+#endif
+  for (i = 0; i < nplanes; i++) {
+    struct macroblockd_plane *const pd = &xd->plane[i];
+#if CONFIG_CHROMA_2X2 || !CONFIG_CB4X4
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
+    const BLOCK_SIZE plane_bsize =
+        AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+#endif
+    const int txs_wide = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+    const int txs_high = block_size_high[plane_bsize] >> tx_size_high_log2[0];
+    memset(pd->above_context, 0, sizeof(ENTROPY_CONTEXT) * txs_wide);
+    memset(pd->left_context, 0, sizeof(ENTROPY_CONTEXT) * txs_high);
+  }
+}
+
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y) {
   int i;
 

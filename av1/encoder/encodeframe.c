@@ -2522,12 +2522,13 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
       if (!x->skip) {
         int this_rate = 0;
         av1_encode_sb_supertx((AV1_COMMON *)cm, x, bsize);
-        av1_tokenize_sb_supertx(cpi, td, tp, dry_run, bsize, rate);
+        av1_tokenize_sb_supertx(cpi, td, tp, dry_run, mi_row, mi_col, bsize,
+                                rate);
         if (rate) *rate += this_rate;
       } else {
         xd->mi[0]->mbmi.skip = 1;
         if (!dry_run) td->counts->skip[av1_get_skip_context(xd)][1]++;
-        reset_skip_context(xd, bsize);
+        av1_reset_skip_context(xd, mi_row, mi_col, bsize);
       }
       if (!dry_run) {
         for (y_idx = 0; y_idx < mi_height; y_idx++)

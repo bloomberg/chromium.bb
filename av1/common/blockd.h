@@ -1137,17 +1137,8 @@ get_plane_block_size(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
   return ss_size_lookup[bsize][pd->subsampling_x][pd->subsampling_y];
 }
 
-static INLINE void reset_skip_context(MACROBLOCKD *xd, BLOCK_SIZE bsize) {
-  int i;
-  for (i = 0; i < MAX_MB_PLANE; i++) {
-    struct macroblockd_plane *const pd = &xd->plane[i];
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-    const int txs_wide = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-    const int txs_high = block_size_high[plane_bsize] >> tx_size_high_log2[0];
-    memset(pd->above_context, 0, sizeof(ENTROPY_CONTEXT) * txs_wide);
-    memset(pd->left_context, 0, sizeof(ENTROPY_CONTEXT) * txs_high);
-  }
-}
+void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
+                            BLOCK_SIZE bsize);
 
 typedef void (*foreach_transformed_block_visitor)(int plane, int block,
                                                   int blk_row, int blk_col,

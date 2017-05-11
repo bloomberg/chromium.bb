@@ -90,8 +90,8 @@ void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,
                      int *rate, const int mi_row, const int mi_col);
 #if CONFIG_SUPERTX
 void av1_tokenize_sb_supertx(const struct AV1_COMP *cpi, struct ThreadData *td,
-                             TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,
-                             int *rate);
+                             TOKENEXTRA **t, RUN_TYPE dry_run, int mi_row,
+                             int mi_col, BLOCK_SIZE bsize, int *rate);
 #endif
 
 extern const int16_t *av1_dct_value_cost_ptr;

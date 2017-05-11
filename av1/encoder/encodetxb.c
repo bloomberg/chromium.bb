@@ -568,7 +568,7 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
   (void)mi_col;
   if (mbmi->skip) {
     if (!dry_run) td->counts->skip[ctx][1] += skip_inc;
-    reset_skip_context(xd, bsize);
+    av1_reset_skip_context(xd, mi_row, mi_col, bsize);
     return;
   }
 
