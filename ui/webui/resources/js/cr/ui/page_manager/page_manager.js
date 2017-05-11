@@ -509,8 +509,12 @@ cr.define('cr.ui.pageManager', function() {
 
       if ($('search-field') && $('search-field').value == '') {
         var section = overlay.associatedSection;
-        if (section)
-          options.BrowserOptions.scrollToSection(section);
+        if (section) {
+          /** @suppress {checkTypes|checkVars} */
+          (function() {
+            options.BrowserOptions.scrollToSection(section);
+          })();
+        }
       }
 
       return true;
