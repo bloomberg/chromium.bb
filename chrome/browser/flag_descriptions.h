@@ -1360,6 +1360,12 @@ extern const char kEnableOfflinePreviewsName[];
 // Describes an about:flags experiment to enable offline page previews.
 extern const char kEnableOfflinePreviewsDescription[];
 
+// An about:flags experiment title to enable client-side Lo-Fi previews.
+extern const char kEnableClientLoFiName[];
+
+// Describes an about:flags experiment to enable client-side Lo-Fi previews.
+extern const char kEnableClientLoFiDescription[];
+
 #endif  // defined(OS_ANDROID)
 
 // Name of about:flags option for LCD text.

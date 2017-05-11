@@ -11,6 +11,7 @@ namespace previews {
 namespace features {
 
 extern const base::Feature kOfflinePreviews;
+extern const base::Feature kClientLoFi;
 
 }  // namespace features
 }  // namespace previews

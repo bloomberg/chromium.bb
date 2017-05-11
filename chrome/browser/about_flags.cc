@@ -1897,6 +1897,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},
+    {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
+     flag_descriptions::kEnableClientLoFiDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(previews::features::kClientLoFi)},
 #endif  // OS_ANDROID
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhost,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,

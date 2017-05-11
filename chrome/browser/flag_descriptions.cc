@@ -1213,6 +1213,11 @@ const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
 const char kEnableOfflinePreviewsDescription[] =
     "Enable showing offline page previews on slow networks.";
 
+const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
+
+const char kEnableClientLoFiDescription[] =
+    "Enable showing low fidelity images on some pages on slow networks.";
+
 #endif  // defined(OS_ANDROID)
 
 const char kLcdTextName[] = "LCD text antialiasing";
