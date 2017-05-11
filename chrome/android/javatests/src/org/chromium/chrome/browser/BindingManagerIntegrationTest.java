@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
-import android.test.MoreAsserts;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 
@@ -34,7 +33,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.PrerenderTestHelper;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ManagedChildProcessConnection;
@@ -45,7 +43,6 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.base.PageTransition;
 
 import java.util.concurrent.Callable;
 
@@ -123,22 +120,15 @@ public class BindingManagerIntegrationTest {
         }
 
         @Override
-        public void setInForeground(int pid, boolean inForeground) {
-            mProcessInForegroundMap.put(pid, inForeground);
+        public void setPriority(int pid, boolean foreground, boolean boostForPendingViews) {
+            mProcessInForegroundMap.put(pid, foreground);
 
             synchronized (mVisibilityCallsMap) {
-                if (inForeground) {
+                if (foreground) {
                     mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "FG;");
                 } else {
                     mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "BG;");
                 }
-            }
-        }
-
-        @Override
-        public void onDeterminedVisibility(int pid) {
-            synchronized (mVisibilityCallsMap) {
-                mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "DETERMINED;");
             }
         }
 
@@ -428,100 +418,6 @@ public class BindingManagerIntegrationTest {
                 return tab.getContentViewCore().getCurrentRenderProcessId();
             }
         });
-    }
-
-    /**
-     * Ensures correctness of the visibilityDetermined() calls, that would be generally preceded by
-     * setInForeground(), but it can't be guaranteed because they are triggered from different
-     * threads.
-     */
-    @Test
-    @LargeTest
-    @Feature({"ProcessManagement"})
-    public void testVisibilityDetermined() throws InterruptedException {
-        // Create a tab in foreground and wait until it is loaded.
-        final Tab fgTab = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<Tab>() {
-                    @Override
-                    public Tab call() {
-                        TabCreator tabCreator =
-                                mActivityTestRule.getActivity().getCurrentTabCreator();
-                        return tabCreator.createNewTab(
-                                new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                        TabLaunchType.FROM_CHROME_UI, null);
-                    }});
-        ChromeTabUtils.waitForTabPageLoaded(fgTab, mTestServer.getURL(FILE_PATH));
-        int initialNavigationPid = getRenderProcessId(fgTab);
-        // Ensure the following calls happened:
-        //  - FG - setInForeground(true) - when the tab is created in the foreground
-        //  - DETERMINED - visibilityDetermined() - after the initial navigation is committed
-        Assert.assertEquals(
-                "FG;DETERMINED;", mBindingManager.getVisibilityCalls(initialNavigationPid));
-
-        // Navigate to about:version which requires a different renderer.
-        mActivityTestRule.loadUrlInTab(ABOUT_VERSION_PATH, PageTransition.LINK, fgTab);
-        int secondNavigationPid = getRenderProcessId(fgTab);
-        MoreAsserts.assertNotEqual(secondNavigationPid, initialNavigationPid);
-        // Ensure the following calls happened:
-        //  - BG - setInForeground(false) - when the renderer is created for uncommited frame
-        //  - FG - setInForeground(true) - when the frame is swapped in on commit
-        //  - DETERMINED - visibilityDetermined() - after the navigation is committed
-        // Or BG -> DETERMINED -> FG is also possible because setInForeground() and
-        // visibilityDetermined() are triggered from different threads.
-        mBindingManager.assertIsInForeground(secondNavigationPid);
-        String visibilityCalls = mBindingManager.getVisibilityCalls(secondNavigationPid);
-        Assert.assertTrue(visibilityCalls,
-                "BG;FG;DETERMINED;".equals(visibilityCalls)
-                        || "BG;DETERMINED;FG;".equals(visibilityCalls));
-
-        // Open a tab in the background and load it.
-        final Tab bgTab = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<Tab>() {
-                    @Override
-                    public Tab call() {
-                        TabCreator tabCreator =
-                                mActivityTestRule.getActivity().getCurrentTabCreator();
-                        Tab tab = tabCreator.createNewTab(
-                                new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                        TabLaunchType.FROM_LONGPRESS_BACKGROUND, null);
-                        // On Svelte devices the background tab would not be loaded automatically,
-                        // so trigger the load manually.
-                        tab.show(TabSelectionType.FROM_USER);
-                        tab.hide();
-                        return tab;
-                    }});
-        ChromeTabUtils.waitForTabPageLoaded(bgTab, mTestServer.getURL(FILE_PATH));
-        int bgNavigationPid = getRenderProcessId(bgTab);
-        // Ensure the following calls happened:
-        //  - BG - setInForeground(false) - when tab is created in the background
-        //  - DETERMINED - visibilityDetermined() - after the navigation is committed
-        Assert.assertEquals("BG;DETERMINED;", mBindingManager.getVisibilityCalls(bgNavigationPid));
-    }
-
-    /**
-     * When a user navigates to a prererendered URL, the tab swaps in the prerender's render
-     * process and discards its old render process. Test that visibilityDetermined() is called for
-     * the swapped in render process.
-     */
-    @Test
-    @LargeTest
-    @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @Feature({"ProcessManagement"})
-    public void testVisibilityDeterminedNavigateToPrerenderedPage() throws InterruptedException {
-        mActivityTestRule.loadUrl(mTestServer.getURL(FILE_PATH));
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        int pid1 = getRenderProcessId(tab);
-
-        String prerenderUrl = mTestServer.getURL(FILE_PATH2);
-        PrerenderTestHelper.prerenderUrl(prerenderUrl, tab);
-        Assert.assertEquals(
-                TabLoadStatus.FULL_PRERENDERED_PAGE_LOAD, mActivityTestRule.loadUrl(prerenderUrl));
-
-        int pid2 = getRenderProcessId(tab);
-        MoreAsserts.assertNotEqual(pid1, pid2);
-
-        Assert.assertTrue(mBindingManager.getVisibilityCalls(pid1).contains("DETERMINED;"));
-        Assert.assertTrue(mBindingManager.getVisibilityCalls(pid2).contains("DETERMINED;"));
     }
 
     /**

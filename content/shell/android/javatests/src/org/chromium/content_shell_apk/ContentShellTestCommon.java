@@ -80,12 +80,13 @@ public final class ContentShellTestCommon {
     }
 
     // TODO(yolandyan): This should use the url exactly without the getIsolatedTestFileUrl call.
-    void launchContentShellWithUrlSync(String url) {
+    ContentShellActivity launchContentShellWithUrlSync(String url) {
         String isolatedTestFileUrl = UrlUtils.getIsolatedTestFileUrl(url);
-        launchContentShellWithUrl(isolatedTestFileUrl);
+        ContentShellActivity activity = launchContentShellWithUrl(isolatedTestFileUrl);
         Assert.assertNotNull(mCallback.getActivityForTestCommon());
         waitForActiveShellToBeDoneLoading();
         Assert.assertEquals(isolatedTestFileUrl, getContentViewCore().getWebContents().getUrl());
+        return activity;
     }
 
     void waitForActiveShellToBeDoneLoading() {

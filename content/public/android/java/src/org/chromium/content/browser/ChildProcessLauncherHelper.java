@@ -103,10 +103,11 @@ class ChildProcessLauncherHelper {
     }
 
     @CalledByNative
-    private void setInForeground(int pid, boolean inForeground) {
+    private void setInForeground(int pid, boolean foreground, boolean boostForPendingViews) {
         assert LauncherThread.runningOnLauncherThread();
+        assert mChildProcessConnection != null;
         assert getPid() == pid;
-        ChildProcessLauncher.getBindingManager().setInForeground(pid, inForeground);
+        ChildProcessLauncher.getBindingManager().setPriority(pid, foreground, boostForPendingViews);
     }
 
     @CalledByNative

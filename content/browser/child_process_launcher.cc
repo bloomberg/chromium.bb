@@ -59,14 +59,16 @@ ChildProcessLauncher::~ChildProcessLauncher() {
   }
 }
 
-void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
+void ChildProcessLauncher::SetProcessPriority(bool background,
+                                              bool boost_for_pending_views) {
   DCHECK(CalledOnValidThread());
   base::Process to_pass = process_.process.Duplicate();
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
       base::Bind(
-          &ChildProcessLauncherHelper::SetProcessBackgroundedOnLauncherThread,
-          helper_, base::Passed(&to_pass), background));
+          &ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread,
+          helper_, base::Passed(&to_pass), background,
+          boost_for_pending_views));
 }
 
 void ChildProcessLauncher::Notify(

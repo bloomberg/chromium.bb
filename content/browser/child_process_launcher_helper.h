@@ -153,8 +153,9 @@ class ChildProcessLauncherHelper :
   static void ForceNormalProcessTerminationAsync(
       ChildProcessLauncherHelper::Process process);
 
-  void SetProcessBackgroundedOnLauncherThread(base::Process process,
-                                              bool background);
+  void SetProcessPriorityOnLauncherThread(base::Process process,
+                                          bool background,
+                                          bool boost_for_pending_views);
 
   static void SetRegisteredFilesForService(
       const std::string& service_name,

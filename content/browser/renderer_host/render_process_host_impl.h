@@ -506,6 +506,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Whether this process currently has backgrounded priority. Tracked so that
   // UpdateProcessPriority() can avoid redundantly setting the priority.
   bool is_process_backgrounded_;
+  // Same as |pending_views_| but keep this in sync with value passed to
+  // |child_process_launcher_|, so need a separate state. This is used to
+  // compute process priority on some platforms.
+  bool boost_priority_for_pending_views_;
 
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.

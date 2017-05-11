@@ -18,7 +18,7 @@ public class AwRendererPriorityManager {
     @CalledByNative
     private static void setRendererPriority(int pid, @RendererPriority int rendererPriority) {
         // TODO(tobiasjs): handle RendererPriority.LOW separately from WAIVED.
-        ChildProcessLauncher.getBindingManager().setInForeground(
-                pid, rendererPriority == RendererPriority.HIGH);
+        ChildProcessLauncher.getBindingManager().setPriority(
+                pid, rendererPriority == RendererPriority.HIGH, false /* boostForPendingViews */);
     }
 }

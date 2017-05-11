@@ -110,6 +110,12 @@ public class ManagedChildProcessConnection extends BaseChildProcessConnection {
         return mStrongBinding.isBound();
     }
 
+    public void addInitialBinding() {
+        assert LauncherThread.runningOnLauncherThread();
+        mInitialBinding.bind();
+        updateOomProtectedState();
+    }
+
     public void removeInitialBinding() {
         assert LauncherThread.runningOnLauncherThread();
         mInitialBinding.unbind();

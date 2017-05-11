@@ -70,9 +70,9 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * The url is synchronously loaded.
      * @param url Test url to load.
      */
-    public void launchContentShellWithUrlSync(String url) {
+    public ContentShellActivity launchContentShellWithUrlSync(String url) {
         Assert.assertFalse(mLaunchActivity);
-        mDelegate.launchContentShellWithUrlSync(url);
+        return mDelegate.launchContentShellWithUrlSync(url);
     }
 
     /**

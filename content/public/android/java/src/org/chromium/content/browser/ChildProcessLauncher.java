@@ -68,6 +68,7 @@ public class ChildProcessLauncher {
     private static ChildConnectionAllocator sPrivilegedChildConnectionAllocator;
 
     // Used by test to override the default sandboxed service allocator settings.
+    private static BaseChildProcessConnection.Factory sSandboxedServiceFactoryForTesting;
     private static int sSandboxedServicesCountForTesting = -1;
     private static String sSandboxedServicesNameForTesting;
 
@@ -92,12 +93,15 @@ public class ChildProcessLauncher {
             ChildConnectionAllocator connectionAllocator = null;
             if (sSandboxedServicesCountForTesting != -1) {
                 // Testing case where allocator settings are overriden.
+                BaseChildProcessConnection.Factory factory =
+                        sSandboxedServiceFactoryForTesting == null
+                        ? ManagedChildProcessConnection.FACTORY
+                        : sSandboxedServiceFactoryForTesting;
                 String serviceName = !TextUtils.isEmpty(sSandboxedServicesNameForTesting)
                         ? sSandboxedServicesNameForTesting
                         : SandboxedProcessService.class.getName();
                 connectionAllocator = ChildConnectionAllocator.createForTest(
-                        ManagedChildProcessConnection.FACTORY, packageName, serviceName,
-                        sSandboxedServicesCountForTesting);
+                        factory, packageName, serviceName, sSandboxedServicesCountForTesting);
             } else {
                 connectionAllocator = ChildConnectionAllocator.create(context,
                         ManagedChildProcessConnection.FACTORY, packageName,
@@ -277,20 +281,6 @@ public class ChildProcessLauncher {
     @VisibleForTesting
     public static void setBindingManagerForTesting(BindingManager manager) {
         sBindingManager = manager;
-    }
-
-    /**
-     * Called when the renderer commits a navigation. This signals a time at which it is safe to
-     * rely on renderer visibility signalled through setInForeground. See http://crbug.com/421041.
-     */
-    public static void determinedVisibility(final int pid) {
-        assert ThreadUtils.runningOnUiThread();
-        LauncherThread.post(new Runnable() {
-            @Override
-            public void run() {
-                getBindingManager().onDeterminedVisibility(pid);
-            }
-        });
     }
 
     /**
@@ -615,7 +605,9 @@ public class ChildProcessLauncher {
     }
 
     @VisibleForTesting
-    public static void setSandboxServicesSettingsForTesting(int serviceCount, String serviceName) {
+    public static void setSandboxServicesSettingsForTesting(
+            BaseChildProcessConnection.Factory factory, int serviceCount, String serviceName) {
+        sSandboxedServiceFactoryForTesting = factory;
         sSandboxedServicesCountForTesting = serviceCount;
         sSandboxedServicesNameForTesting = serviceName;
     }
