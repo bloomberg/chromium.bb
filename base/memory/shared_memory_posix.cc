@@ -113,8 +113,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   FilePath path;
   if (options.name_deprecated == NULL || options.name_deprecated->empty()) {
-    bool result =
-        CreateAnonymousSharedMemory(options, &fp, &readonly_fd, &path);
+    bool result = CreateAnonymousSharedMemory(options, &fp, &readonly_fd, &path,
+                                              &last_error_);
     if (!result)
       return false;
   } else {
@@ -205,8 +205,9 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   int mapped_file = -1;
   int readonly_mapped_file = -1;
-  bool result = PrepareMapFile(std::move(fp), std::move(readonly_fd),
-                               &mapped_file, &readonly_mapped_file);
+  bool result =
+      PrepareMapFile(std::move(fp), std::move(readonly_fd), &mapped_file,
+                     &readonly_mapped_file, &last_error_);
   shm_ = SharedMemoryHandle(base::FileDescriptor(mapped_file, false),
                             UnguessableToken::Create());
   readonly_shm_ = SharedMemoryHandle(
@@ -245,8 +246,9 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   }
   int mapped_file = -1;
   int readonly_mapped_file = -1;
-  bool result = PrepareMapFile(std::move(fp), std::move(readonly_fd),
-                               &mapped_file, &readonly_mapped_file);
+  bool result =
+      PrepareMapFile(std::move(fp), std::move(readonly_fd), &mapped_file,
+                     &readonly_mapped_file, &last_error_);
   // This form of sharing shared memory is deprecated. https://crbug.com/345734.
   // However, we can't get rid of it without a significant refactor because its
   // used to communicate between two versions of the same service process, very
